@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 
 type ExitsCallback = (exists: boolean) => void;
 
@@ -9,7 +9,7 @@ type ExitsCallback = (exists: boolean) => void;
  * Deprecated in node api
  */
 export function exists(path: string | URL, callback: ExitsCallback): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   Deno.lstat(path).then(() => callback(true), () => callback(false));
 }
 
@@ -18,7 +18,7 @@ export function exists(path: string | URL, callback: ExitsCallback): void {
  * are implemented. See https://github.com/denoland/deno/issues/3403
  */
 export function existsSync(path: string | URL): boolean {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   try {
     Deno.lstatSync(path);
     return true;

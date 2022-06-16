@@ -12,7 +12,7 @@ import * as path from "../../path/mod.ts";
 import { isWindows } from "../../_util/os.ts";
 import { AbortError } from "./../internal/errors.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
 const testDataDir = path.resolve(moduleDir, "testdata");
 const decoder = new TextDecoder("utf-8");
 
@@ -171,7 +171,7 @@ Deno.test("Path can be an URL", async function testCorrectWriteUsingURL() {
           .replace(/\\/g, "/")
       : "file://" + path.join(testDataDir, "_fs_writeFile_test_file_url.txt"),
   );
-  const filePath = path.fromFileUrl(url);
+  const filePath = path.fromFileURL(url);
   const res = await new Promise((resolve) => {
     writeFile(url, "hello world", resolve);
   });

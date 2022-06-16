@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
-import { dirname, fromFileUrl, relative, resolve } from "../path/mod.ts";
+import { dirname, fromFileURL, relative, resolve } from "../path/mod.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 
 /** Example of how to do basic tests */
 Deno.test("t1", function (): void {

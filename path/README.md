@@ -14,8 +14,8 @@ non platform specific path like:
 
 ```ts
 import { posix, win32 } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-const p1 = posix.fromFileUrl("file:///home/foo");
-const p2 = win32.fromFileUrl("file:///home/foo");
+const p1 = posix.fromFileURL("file:///home/foo");
+const p2 = win32.fromFileURL("file:///home/foo");
 console.log(p1); // "/home/foo"
 console.log(p2); // "\\home\\foo"
 ```
@@ -65,13 +65,13 @@ const p = format({
 console.log(p); // "/home/user/dir/index.html"
 ```
 
-### fromFileUrl
+### fromFileURL
 
 Converts a file URL to a path string.
 
 ```ts
-import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-const p = fromFileUrl("file:///home/foo");
+import { fromFileURL } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+const p = fromFileURL("file:///home/foo");
 console.log(p); // "/home/foo"
 ```
 

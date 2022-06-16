@@ -10,19 +10,19 @@ import { assertEquals, assertThrows } from "../../../../../testing/asserts.ts";
 // Test RSA encryption/decryption
 Deno.test("node tests", function () {
   const keyPem = fs.readFileSync(
-    path.fromFileUrl(new URL("test_key.pem", import.meta.url)),
+    path.fromFileURL(new URL("test_key.pem", import.meta.url)),
     "ascii",
   );
   const rsaPubPem = fs.readFileSync(
-    path.fromFileUrl(new URL("test_rsa_pubkey.pem", import.meta.url)),
+    path.fromFileURL(new URL("test_rsa_pubkey.pem", import.meta.url)),
     "ascii",
   );
   const rsaKeyPem = fs.readFileSync(
-    path.fromFileUrl(new URL("test_rsa_privkey.pem", import.meta.url)),
+    path.fromFileURL(new URL("test_rsa_privkey.pem", import.meta.url)),
     "ascii",
   );
   const rsaKeyPemEncrypted = fs.readFileSync(
-    path.fromFileUrl(
+    path.fromFileURL(
       new URL("test_rsa_privkey_encrypted.pem", import.meta.url),
     ),
     "ascii",

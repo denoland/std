@@ -7,7 +7,7 @@ import { getFileInfoType, isSubdir, PathType } from "./_util.ts";
 import { ensureFileSync } from "./ensure_file.ts";
 import { ensureDirSync } from "./ensure_dir.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("_isSubdir", function (): void {

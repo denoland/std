@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
-import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
+import { dirname, fromFileURL, resolve } from "../../path/mod.ts";
 import { TextLineStream } from "../../streams/delimiter.ts";
 
-const moduleDir = resolve(dirname(fromFileUrl(import.meta.url)));
+const moduleDir = resolve(dirname(fromFileURL(import.meta.url)));
 
 async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
   const server = Deno.spawnChild(Deno.execPath(), {

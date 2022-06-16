@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { dirname, fromFileURL, join, resolve } from "../path/mod.ts";
 import { readAll, writeAll } from "../streams/conversion.ts";
 import { deferred, delay } from "../async/mod.ts";
 import {
@@ -14,7 +14,7 @@ import {
   unreachable,
 } from "../testing/asserts.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 type AcceptCallSideEffect = ({

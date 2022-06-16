@@ -1,13 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { CallbackWithError } from "./_fs_common.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 
 export function truncate(
   path: string | URL,
   lenOrCallback: number | CallbackWithError,
   maybeCallback?: CallbackWithError,
 ) {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   const len: number | undefined = typeof lenOrCallback === "number"
     ? lenOrCallback
     : undefined;
@@ -21,7 +21,7 @@ export function truncate(
 }
 
 export function truncateSync(path: string | URL, len?: number) {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
 
   Deno.truncateSync(path, len);
 }

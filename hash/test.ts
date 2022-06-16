@@ -3,9 +3,9 @@ import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import { createHash, SupportedAlgorithm } from "./mod.ts";
 import { Message } from "./hasher.ts";
 import * as bytes from "../bytes/mod.ts";
-import { dirname, fromFileUrl } from "../path/mod.ts";
+import { dirname, fromFileURL } from "../path/mod.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 
 const millionAs = "a".repeat(1000000);
 

@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl } from "../../path/mod.ts";
+import { fromFileURL } from "../../path/mod.ts";
 import { readableStreamFromReader } from "../../streams/conversion.ts";
 
 const clients = new Map<number, WebSocket>();
@@ -46,7 +46,7 @@ async function requestHandler(req: Deno.RequestEvent) {
       });
     } else {
       // server launched by deno run ./server.ts
-      const file = await Deno.open(fromFileUrl(u));
+      const file = await Deno.open(fromFileURL(u));
       req.respondWith(
         new Response(readableStreamFromReader(file), {
           status: 200,

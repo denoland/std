@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 
 /**
  * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
@@ -12,9 +12,9 @@ export function link(
   callback: CallbackWithError,
 ): void {
   existingPath = existingPath instanceof URL
-    ? fromFileUrl(existingPath)
+    ? fromFileURL(existingPath)
     : existingPath;
-  newPath = newPath instanceof URL ? fromFileUrl(newPath) : newPath;
+  newPath = newPath instanceof URL ? fromFileURL(newPath) : newPath;
 
   Deno.link(existingPath, newPath).then(() => callback(null), callback);
 }
@@ -28,9 +28,9 @@ export function linkSync(
   newPath: string | URL,
 ): void {
   existingPath = existingPath instanceof URL
-    ? fromFileUrl(existingPath)
+    ? fromFileURL(existingPath)
     : existingPath;
-  newPath = newPath instanceof URL ? fromFileUrl(newPath) : newPath;
+  newPath = newPath instanceof URL ? fromFileURL(newPath) : newPath;
 
   Deno.linkSync(existingPath, newPath);
 }

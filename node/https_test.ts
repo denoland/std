@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { serveTls } from "../http/server.ts";
-import { dirname, fromFileUrl, join } from "../path/mod.ts";
+import { dirname, fromFileURL, join } from "../path/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { Agent } from "./https.ts";
 
-const stdRoot = dirname(dirname(fromFileUrl(import.meta.url)));
+const stdRoot = dirname(dirname(fromFileURL(import.meta.url)));
 const tlsDataDir = join(stdRoot, "http", "testdata", "tls");
 const keyFile = join(tlsDataDir, "localhost.key");
 const certFile = join(tlsDataDir, "localhost.crt");

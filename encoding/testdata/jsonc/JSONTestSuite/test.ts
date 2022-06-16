@@ -3,7 +3,7 @@
 import * as JSONC from "../../../jsonc.ts";
 import { assertEquals } from "../../../../testing/asserts.ts";
 import { walk } from "../../../../fs/mod.ts";
-import { fromFileUrl } from "../../../../path/mod.ts";
+import { fromFileURL } from "../../../../path/mod.ts";
 
 function getError<T>(
   fn: () => T,
@@ -25,7 +25,7 @@ const ignoreFile = new Set([
 
 // Make sure that the JSON.parse and JSONC.parse results match.
 for await (
-  const dirEntry of walk(fromFileUrl(new URL("./", import.meta.url)))
+  const dirEntry of walk(fromFileURL(new URL("./", import.meta.url)))
 ) {
   if (!dirEntry.isFile) {
     continue;

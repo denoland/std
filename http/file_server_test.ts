@@ -6,7 +6,7 @@ import {
 } from "../testing/asserts.ts";
 import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { serveDir, serveFile } from "./file_server.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { dirname, fromFileURL, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
 
@@ -24,7 +24,7 @@ interface FileServerCfg {
   target?: string;
 }
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({

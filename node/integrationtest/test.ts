@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { fromFileUrl, join } from "../../path/mod.ts";
+import { fromFileURL, join } from "../../path/mod.ts";
 import { delay } from "../../async/delay.ts";
 import { assert } from "../../testing/asserts.ts";
 
@@ -64,13 +64,13 @@ Deno.test("integration test of compat mode", {
 
   // Runs test only when docker command is available
   if (hasDocker) {
-    const pwd = fromFileUrl(new URL(".", import.meta.url));
+    const pwd = fromFileURL(new URL(".", import.meta.url));
     await exec(
       `docker run -d --name mysql-test -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test -v ${pwd}/testdata/mysql-conf:/etc/mysql/conf.d -v ${pwd}/testdata/mysql-certs:/certs -p 3306:3306 mysql:8.0.18`,
     );
     await t.step("Runs basic mysql2 example", async () => {
       await Deno.copyFile(
-        fromFileUrl(new URL("mysql2-example.js", import.meta.url)),
+        fromFileURL(new URL("mysql2-example.js", import.meta.url)),
         join(tempDir, "mysql2-example.js"),
       );
       // Wait for the mysql server starting

@@ -952,14 +952,14 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./win32.ts";
- *      fromFileUrl("file:///home/foo"); // "\\home\\foo"
- *      fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
- *      fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
+ *      import { fromFileURL } from "./win32.ts";
+ *      fromFileURL("file:///home/foo"); // "\\home\\foo"
+ *      fromFileURL("file:///C:/Users/foo"); // "C:\\Users\\foo"
+ *      fromFileURL("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
  * ```
  * @param url of a file URL
  */
-export function fromFileUrl(url: string | URL): string {
+export function fromFileURL(url: string | URL): string {
   url = url instanceof URL ? url : new URL(url);
   if (url.protocol != "file:") {
     throw new TypeError("Must be a file URL.");
@@ -1011,7 +1011,7 @@ export default {
   dirname,
   extname,
   format,
-  fromFileUrl,
+  fromFileURL,
   isAbsolute,
   join,
   normalize,

@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { existsSync } from "../../fs/exists.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { getOpenOptions } from "./_fs_common.ts";
 
 export type openFlags =
@@ -56,7 +56,7 @@ export function open(
     ? callbackOrMode
     : maybeCallback;
   const mode = typeof callbackOrMode === "number" ? callbackOrMode : undefined;
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
 
   if (!callback) throw new Error("No callback function supplied");
 
@@ -100,7 +100,7 @@ export function openSync(
 ) {
   const flags = typeof flagsOrMode === "string" ? flagsOrMode : undefined;
   const mode = typeof flagsOrMode === "number" ? flagsOrMode : maybeMode;
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
 
   if (["ax", "ax+", "wx", "wx+"].includes(flags || "") && existsSync(path)) {
     throw new Error(`EEXIST: file already exists, open '${path}'`);

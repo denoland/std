@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This is an example of a https server
 import { listenAndServeTls } from "../server.ts";
-import { dirname, fromFileUrl, join } from "../../path/mod.ts";
+import { dirname, fromFileURL, join } from "../../path/mod.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 
 const addr = "0.0.0.0:4505";
 const certFile = join(moduleDir, "tls/localhost.crt");

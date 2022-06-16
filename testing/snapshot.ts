@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
+import { fromFileURL, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
 import { assert, AssertionError, equal } from "./asserts.ts";
@@ -120,7 +120,7 @@ class AssertSnapshotContext {
     options: SnapshotOptions,
   ): AssertSnapshotContext {
     let path: string;
-    const testFilePath = fromFileUrl(testContext.origin);
+    const testFilePath = fromFileURL(testContext.origin);
     const { dir, base } = parse(testFilePath);
     if (options.path) {
       path = resolve(dir, options.path);
@@ -193,7 +193,7 @@ class AssertSnapshotContext {
       const formattedName = escapeStringForJs(name);
       buf.push(`\nsnapshot[\`${formattedName}\`] = \`${formattedSnapshot}\`;`);
     });
-    const snapshotFilePath = fromFileUrl(this.#snapshotFileUrl);
+    const snapshotFilePath = fromFileURL(this.#snapshotFileUrl);
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
@@ -222,7 +222,7 @@ class AssertSnapshotContext {
     }
 
     if (getIsUpdate(options)) {
-      await ensureFile(fromFileUrl(this.#snapshotFileUrl));
+      await ensureFile(fromFileURL(this.#snapshotFileUrl));
     }
 
     try {

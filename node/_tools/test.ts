@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { magenta } from "../../fmt/colors.ts";
-import { dirname, fromFileUrl, join } from "../../path/mod.ts";
+import { dirname, fromFileURL, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
 import { config, getPathsFromTestSuites } from "./common.ts";
 
@@ -16,10 +16,10 @@ const filters = Deno.args;
  * code for the test is reported, the test suite will fail immediately
  */
 
-const toolsPath = dirname(fromFileUrl(import.meta.url));
+const toolsPath = dirname(fromFileURL(import.meta.url));
 const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
-const cwd = fromFileUrl(new URL("./", import.meta.url));
+const cwd = fromFileURL(new URL("./", import.meta.url));
 const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),

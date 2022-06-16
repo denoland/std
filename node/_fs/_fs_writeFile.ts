@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "../_utils.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { Buffer } from "../buffer.ts";
 import { writeAllSync } from "../../streams/conversion.ts";
 import {
@@ -31,7 +31,7 @@ export function writeFile(
     throw new TypeError("Callback must be a function.");
   }
 
-  pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
+  pathOrRid = pathOrRid instanceof URL ? fromFileURL(pathOrRid) : pathOrRid;
 
   const flag: string | undefined = isFileOptions(options)
     ? options.flag
@@ -87,7 +87,7 @@ export function writeFileSync(
   data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
 ): void {
-  pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
+  pathOrRid = pathOrRid instanceof URL ? fromFileURL(pathOrRid) : pathOrRid;
 
   const flag: string | undefined = isFileOptions(options)
     ? options.flag

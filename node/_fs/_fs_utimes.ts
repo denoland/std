@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as DenoUnstable from "../../_deno_unstable.ts";
 import type { CallbackWithError } from "./_fs_common.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 
 function getValidTime(
   time: number | string | Date,
@@ -29,7 +29,7 @@ export function utimes(
   mtime: number | string | Date,
   callback: CallbackWithError,
 ): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
 
   if (!callback) {
     throw new Deno.errors.InvalidData("No callback function supplied");
@@ -46,7 +46,7 @@ export function utimesSync(
   atime: number | string | Date,
   mtime: number | string | Date,
 ): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 

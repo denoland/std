@@ -57,7 +57,7 @@ if (isWindows) {
   ignore.push("testdata/wasi_path_open.wasm");
 }
 
-const rootdir = path.dirname(path.fromFileUrl(import.meta.url));
+const rootdir = path.dirname(path.fromFileURL(import.meta.url));
 const testdir = path.join(rootdir, "testdata");
 
 for (const pathname of tests) {

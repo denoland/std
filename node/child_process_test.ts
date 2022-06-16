@@ -90,7 +90,7 @@ Deno.test({
   fn: async () => {
     const promise = withTimeout(10000);
     const p = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/binary_stdio.js",
     );
     const childProcess = spawn(Deno.execPath(), ["run", p], {
@@ -343,7 +343,7 @@ Deno.test({
   async fn() {
     let child: unknown;
     const script = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/exec_file_text_output.js",
     );
     const promise = new Promise<string | null>((resolve, reject) => {
@@ -369,7 +369,7 @@ Deno.test({
   async fn() {
     let child: unknown;
     const script = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/exec_file_text_output.js",
     );
     const promise = new Promise<Buffer | null>((resolve, reject) => {
@@ -401,7 +401,7 @@ Deno.test({
   async fn() {
     let child: unknown;
     const script = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/exec_file_text_error.js",
     );
     const promise = new Promise<
@@ -432,7 +432,7 @@ Deno.test({
   async fn() {
     let child: unknown;
     const script = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/exec_file_text_error.js",
     );
     const promise = new Promise<
@@ -470,7 +470,7 @@ Deno.test({
   name: "[node/child_process] ChildProcess.kill()",
   async fn() {
     const script = path.join(
-      path.dirname(path.fromFileUrl(import.meta.url)),
+      path.dirname(path.fromFileURL(import.meta.url)),
       "./testdata/infinite_loop.js",
     );
     const childProcess = spawn(Deno.execPath(), ["run", script]);

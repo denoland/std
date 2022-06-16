@@ -10,7 +10,7 @@ import * as path from "../path/mod.ts";
 import Module, { createRequire } from "./module.ts";
 import nodeMods from "./module_all.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
 const testdataDir = path.resolve(moduleDir, path.join("_fs", "testdata"));
 
 const require = createRequire(import.meta.url);
@@ -137,7 +137,7 @@ Deno.test("Require .mjs", () => {
 });
 
 Deno.test("requireErrorInEval", async function () {
-  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+  const cwd = path.dirname(path.fromFileURL(import.meta.url));
 
   const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
     args: [

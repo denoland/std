@@ -2,9 +2,9 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import * as bytes from "../bytes/mod.ts";
-import { dirname, fromFileUrl } from "../path/mod.ts";
+import { dirname, fromFileURL } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "../_wasm_crypto/mod.ts";
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 
 const webCrypto = globalThis.crypto;
 

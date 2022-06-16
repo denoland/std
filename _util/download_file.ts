@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { fromFileUrl } from "../path/mod.ts";
+import { fromFileURL } from "../path/mod.ts";
 import { ensureFile } from "../fs/ensure_file.ts";
 
 /** Download the file at the given url to the given path.  */
@@ -18,7 +18,7 @@ export async function downloadFile(url: string, fileUrl: URL) {
     );
   }
 
-  await ensureFile(fromFileUrl(fileUrl));
+  await ensureFile(fromFileURL(fileUrl));
   const file = await Deno.open(fileUrl, { truncate: true, write: true });
   for await (const chunk of response.body) {
     Deno.writeSync(file.rid, chunk);

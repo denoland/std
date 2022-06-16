@@ -8,7 +8,7 @@ import parseKey from "../mod.js";
 import { assert } from "../../../../../testing/asserts.ts";
 
 function loadPath(str) {
-  return fs.readFileSync(path.fromFileUrl(new URL("." + str, import.meta.url)));
+  return fs.readFileSync(path.fromFileURL(new URL("." + str, import.meta.url)));
 }
 const rsa1024 = {
   private: loadPath("/rsa.1024.priv"),

@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { EventEmitter } from "../events.ts";
 import { notImplemented } from "../_utils.ts";
 
@@ -76,7 +76,7 @@ export function watch(
     : typeof optionsOrListener2 === "object"
     ? optionsOrListener2
     : undefined;
-  filename = filename instanceof URL ? fromFileUrl(filename) : filename;
+  filename = filename instanceof URL ? fromFileURL(filename) : filename;
 
   const iterator = Deno.watchFs(filename, {
     recursive: options?.recursive || false,

@@ -3,12 +3,12 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { delay } from "../async/delay.ts";
 import { deferred } from "../async/deferred.ts";
-import { fromFileUrl, join } from "./path.ts";
+import { fromFileURL, join } from "./path.ts";
 import { serveTls } from "../http/server.ts";
 import * as tls from "./tls.ts";
 import * as net from "./net.ts";
 
-const tlsTestdataDir = fromFileUrl(
+const tlsTestdataDir = fromFileURL(
   new URL("../http/testdata/tls", import.meta.url),
 );
 const keyFile = join(tlsTestdataDir, "localhost.key");

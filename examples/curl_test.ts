@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { listenAndServe } from "../http/server.ts";
 import { assertStrictEquals } from "../testing/asserts.ts";
-import { dirname, fromFileUrl } from "../path/mod.ts";
+import { dirname, fromFileURL } from "../path/mod.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 
 Deno.test({
   name: "[examples/curl] send a request to a specified url",

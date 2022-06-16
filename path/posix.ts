@@ -481,12 +481,12 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./posix.ts";
- *      fromFileUrl("file:///home/foo"); // "/home/foo"
+ *      import { fromFileURL } from "./posix.ts";
+ *      fromFileURL("file:///home/foo"); // "/home/foo"
  * ```
  * @param url of a file URL
  */
-export function fromFileUrl(url: string | URL): string {
+export function fromFileURL(url: string | URL): string {
   url = url instanceof URL ? url : new URL(url);
   if (url.protocol != "file:") {
     throw new TypeError("Must be a file URL.");
@@ -494,6 +494,12 @@ export function fromFileUrl(url: string | URL): string {
   return decodeURIComponent(
     url.pathname.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
   );
+}
+/**
+ * @deprecated use fromFileURL instead
+ */
+export function fromFileUrl(url: string | URL): string {
+  return fromFileURL(url);
 }
 
 /**
@@ -505,7 +511,7 @@ export function fromFileUrl(url: string | URL): string {
  * ```
  * @param path to convert to file URL
  */
-export function toFileUrl(path: string): URL {
+export function toFileURL(path: string): URL {
   if (!isAbsolute(path)) {
     throw new TypeError("Must be an absolute path.");
   }
@@ -514,4 +520,11 @@ export function toFileUrl(path: string): URL {
     path.replace(/%/g, "%25").replace(/\\/g, "%5C"),
   );
   return url;
+}
+
+/**
+ * @deprecated use toFileURL instead
+ */
+export function toFileUrl(path: string): URL {
+  return toFileUrl(path);
 }

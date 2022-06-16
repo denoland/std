@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { path, ReleasesMdFile, Repo, semver } from "./deps.ts";
 
-const currentDirPath = path.dirname(path.fromFileUrl(import.meta.url));
+const currentDirPath = path.dirname(path.fromFileURL(import.meta.url));
 export const rootDirPath = path.resolve(currentDirPath, "../../");
 
 export class VersionFile {

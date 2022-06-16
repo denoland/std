@@ -46,7 +46,7 @@ async function readTest(
 Deno.test({
   name: "readSuccess",
   async fn() {
-    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(1024);
     await readTest(
@@ -68,7 +68,7 @@ Deno.test({
   name:
     "[std/node/fs] Read only five bytes, so that the position moves to five",
   async fn() {
-    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(5);
     await readTest(
@@ -89,7 +89,7 @@ Deno.test({
 Deno.test({
   name: "[std/node/fs] Specifies where to begin reading from in the file",
   async fn() {
-    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(11);
     await readTest(
@@ -155,7 +155,7 @@ Deno.test({
 Deno.test({
   name: "SYNC: readSuccess",
   fn() {
-    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buffer = Buffer.alloc(1024);
     const fd = openSync(testData);
@@ -174,7 +174,7 @@ Deno.test({
 Deno.test({
   name: "[std/node/fs] Read only two bytes, so that the position moves to two",
   fn() {
-    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buffer = Buffer.alloc(2);
     const fd = openSync(testData);

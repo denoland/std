@@ -8,9 +8,9 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "../../testing/asserts.ts";
-import { fromFileUrl, join } from "../../path/mod.ts";
+import { fromFileURL, join } from "../../path/mod.ts";
 
-const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
+const testdataDir = join(fromFileURL(import.meta.url), "../../testdata");
 
 Deno.test({
   name: "[encoding/csv/stream] CSVStream",

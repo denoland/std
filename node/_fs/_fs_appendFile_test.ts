@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
 import { appendFile, appendFileSync } from "./_fs_appendFile.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 
 const decoder = new TextDecoder("utf-8");
@@ -125,13 +125,13 @@ Deno.test({
     })
       .then(async () => {
         assertEquals(Deno.resources(), openResourcesBeforeAppend);
-        const data = await Deno.readFile(fromFileUrl(fileURL));
+        const data = await Deno.readFile(fromFileURL(fileURL));
         assertEquals(decoder.decode(data), "hello world");
       }, (err) => {
         fail("No error was expected: " + err);
       })
       .finally(async () => {
-        await Deno.remove(fromFileUrl(fileURL));
+        await Deno.remove(fromFileURL(fileURL));
       });
   },
 });

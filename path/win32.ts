@@ -955,14 +955,14 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./win32.ts";
- *      fromFileUrl("file:///home/foo"); // "\\home\\foo"
- *      fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
- *      fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
+ *      import { fromFileURL } from "./win32.ts";
+ *      fromFileURL("file:///home/foo"); // "\\home\\foo"
+ *      fromFileURL("file:///C:/Users/foo"); // "C:\\Users\\foo"
+ *      fromFileURL("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
  * ```
  * @param url of a file URL
  */
-export function fromFileUrl(url: string | URL): string {
+export function fromFileURL(url: string | URL): string {
   url = url instanceof URL ? url : new URL(url);
   if (url.protocol != "file:") {
     throw new TypeError("Must be a file URL.");
@@ -980,17 +980,16 @@ export function fromFileUrl(url: string | URL): string {
 }
 
 /**
- * Converts a path string to a file URL.
- *
- * ```ts
- *      import { toFileUrl } from "./win32.ts";
- *      toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
- *      toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
- *      toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
- * ```
- * @param path to convert to file URL
+ * @deprecated use fromFileURL instead
  */
-export function toFileUrl(path: string): URL {
+export function fromFileUrl(url: string | URL): string {
+  return fromFileURL(url);
+}
+
+/**
+ * @deprecated use toFileURL instead
+ */
+export function toFileURL(path: string): URL {
   if (!isAbsolute(path)) {
     throw new TypeError("Must be an absolute path.");
   }
@@ -1006,4 +1005,22 @@ export function toFileUrl(path: string): URL {
     }
   }
   return url;
+}
+/**
+ * Converts a path string to a file URL.
+ *
+ * ```ts
+ *      import { toFileUrl } from "./win32.ts";
+ *      toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
+ *      toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
+ *      toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
+ * ```
+ * @param path to convert to file URL
+ */
+
+/**
+ * @deprecated use toFileURL instead
+ */
+export function toFileUrl(path: string): URL {
+  return toFileUrl(path);
 }

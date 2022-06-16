@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { notImplemented } from "../_utils.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { Buffer } from "../buffer.ts";
 import { Readable as NodeReadable } from "../stream.ts";
 
@@ -10,7 +10,7 @@ export class ReadStream extends NodeReadable {
   public path: string;
 
   constructor(path: string | URL, opts?: ReadStreamOptions) {
-    path = path instanceof URL ? fromFileUrl(path) : path;
+    path = path instanceof URL ? fromFileURL(path) : path;
     const hasBadOptions = opts && (
       opts.fd || opts.start || opts.end || opts.fs
     );

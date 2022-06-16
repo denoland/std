@@ -478,12 +478,12 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./posix.ts";
- *      fromFileUrl("file:///home/foo"); // "/home/foo"
+ *      import { fromFileURL } from "./posix.ts";
+ *      fromFileURL("file:///home/foo"); // "/home/foo"
  * ```
  * @param url of a file URL
  */
-export function fromFileUrl(url: string | URL): string {
+export function fromFileURL(url: string | URL): string {
   url = url instanceof URL ? url : new URL(url);
   if (url.protocol != "file:") {
     throw new TypeError("Must be a file URL.");
@@ -519,7 +519,7 @@ export default {
   dirname,
   extname,
   format,
-  fromFileUrl,
+  fromFileURL,
   isAbsolute,
   join,
   normalize,

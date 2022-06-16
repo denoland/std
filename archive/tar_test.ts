@@ -11,13 +11,13 @@
  */
 import { assert, assertEquals } from "../testing/asserts.ts";
 
-import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
+import { dirname, fromFileURL, resolve } from "../path/mod.ts";
 import { Tar, Untar } from "./tar.ts";
 import type { TarMeta } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy, readAll } from "../streams/conversion.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const moduleDir = dirname(fromFileURL(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 const filePath = resolve(testdataDir, "example.txt");
 

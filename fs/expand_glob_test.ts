@@ -5,7 +5,7 @@ import {
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import {
-  fromFileUrl,
+  fromFileURL,
   join,
   joinGlobs,
   normalize,
@@ -43,7 +43,7 @@ async function expandGlobArray(
 }
 
 const EG_OPTIONS: ExpandGlobOptions = {
-  root: fromFileUrl(new URL(join("testdata", "glob"), import.meta.url)),
+  root: fromFileURL(new URL(join("testdata", "glob"), import.meta.url)),
   includeDirs: true,
   extended: false,
   globstar: false,

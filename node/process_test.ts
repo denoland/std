@@ -128,7 +128,7 @@ Deno.test({
     process.emit("exit");
     assert(triggered);
 
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+    const cwd = path.dirname(path.fromFileURL(import.meta.url));
 
     const { stdout } = await Deno.spawn(Deno.execPath(), {
       args: [
@@ -215,12 +215,12 @@ Deno.test({
     );
     assertEquals(
       process.argv[1],
-      path.fromFileUrl(Deno.mainModule),
+      path.fromFileURL(Deno.mainModule),
     );
     // argv supports array methods.
     assert(Array.isArray(process.argv.slice(2)));
     assertEquals(process.argv.indexOf(Deno.execPath()), 0);
-    assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
+    assertEquals(process.argv.indexOf(path.fromFileURL(Deno.mainModule)), 1);
   },
 });
 
@@ -457,7 +457,7 @@ Deno.test("process.execPath", () => {
 Deno.test({
   name: "process.exit",
   async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+    const cwd = path.dirname(path.fromFileURL(import.meta.url));
 
     const { stdout } = await Deno.spawn(Deno.execPath(), {
       args: [

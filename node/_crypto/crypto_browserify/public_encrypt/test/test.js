@@ -9,7 +9,7 @@ import * as myCrypto from "../mod.js";
 import { assertEquals } from "../../../../../testing/asserts.ts";
 
 function load(filename) {
-  return fs.readFileSync(path.fromFileUrl(new URL(filename, import.meta.url)));
+  return fs.readFileSync(path.fromFileURL(new URL(filename, import.meta.url)));
 }
 const rsa1024 = {
   private: load("rsa.1024.priv"),

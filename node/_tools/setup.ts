@@ -7,7 +7,7 @@ import { walk } from "../../fs/walk.ts";
 import {
   basename,
   dirname,
-  fromFileUrl,
+  fromFileURL,
   join,
   resolve,
   sep,
@@ -89,7 +89,7 @@ async function clearTests() {
   console.log("Cleaning up previous tests");
 
   const files = walk(
-    fromFileUrl(new URL(config.suitesFolder, import.meta.url)),
+    fromFileURL(new URL(config.suitesFolder, import.meta.url)),
     {
       includeDirs: false,
       skip: ignoreList,
@@ -113,7 +113,7 @@ async function decompressTests(archivePath: string) {
   Deno.close(compressedFile.rid);
 
   const tar = new Untar(buffer);
-  const outFolder = dirname(fromFileUrl(new URL(archivePath, import.meta.url)));
+  const outFolder = dirname(fromFileURL(new URL(archivePath, import.meta.url)));
   const testsFolder = `${NODE_FILE}${NATIVE_NODE_TESTS_FOLDER}`.replace(
     "NODE_VERSION",
     config.nodeVersion,
@@ -157,10 +157,10 @@ function getRequestedFileSuite(
 async function copyTests(filePath: string): Promise<void> {
   console.log("Copying test files...");
   const path = join(
-    fromFileUrl(new URL(filePath, import.meta.url)),
+    fromFileURL(new URL(filePath, import.meta.url)),
     NATIVE_NODE_TESTS_FOLDER,
   );
-  const suitesFolder = fromFileUrl(
+  const suitesFolder = fromFileURL(
     new URL(config.suitesFolder, import.meta.url),
   );
 

@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { walk } from "../../../../fs/mod.ts";
-import { fromFileUrl } from "../../../../path/mod.ts";
+import { fromFileURL } from "../../../../path/mod.ts";
 
 // helper used for testing
 const sta = await Deno.readTextFile(new URL("./sta.js", import.meta.url));
@@ -11,7 +11,7 @@ const propertyHelper = await Deno.readTextFile(
 );
 const jsoncModule = new URL("../../../jsonc.ts", import.meta.url);
 for await (
-  const dirEntry of walk(fromFileUrl(new URL("./JSON/", import.meta.url)))
+  const dirEntry of walk(fromFileURL(new URL("./JSON/", import.meta.url)))
 ) {
   if (!dirEntry.isFile) {
     continue;

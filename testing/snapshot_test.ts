@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { stripColor } from "../fmt/colors.ts";
-import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
+import { dirname, fromFileURL, join, toFileUrl } from "../path/mod.ts";
 import { assert, assertInstanceOf, AssertionError, fail } from "./asserts.ts";
 import { assertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
-  dirname(fromFileUrl(import.meta.url)),
+  dirname(fromFileURL(import.meta.url)),
   "snapshot.ts",
 ));
 

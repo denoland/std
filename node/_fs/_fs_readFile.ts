@@ -6,7 +6,7 @@ import {
   TextOptionsArgument,
 } from "./_fs_common.ts";
 import { Buffer } from "../buffer.ts";
-import { fromFileUrl } from "../path.ts";
+import { fromFileURL } from "../path.ts";
 import { BinaryEncodings, Encodings, TextEncodings } from "../_utils.ts";
 
 function maybeDecode(data: Uint8Array, encoding: TextEncodings): string;
@@ -49,7 +49,7 @@ export function readFile(
   optOrCallback?: FileOptionsArgument | Callback | null | undefined,
   callback?: Callback,
 ): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   let cb: Callback | undefined;
   if (typeof optOrCallback === "function") {
     cb = optOrCallback;
@@ -85,7 +85,7 @@ export function readFileSync(
   path: string | URL,
   opt?: FileOptionsArgument,
 ): string | Buffer {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = path instanceof URL ? fromFileURL(path) : path;
   const data = Deno.readFileSync(path);
   const encoding = getEncoding(opt);
   if (encoding && encoding !== "binary") {

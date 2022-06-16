@@ -7,7 +7,7 @@ import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/assert.ts";
-import { fromFileUrl } from "../path/mod.ts";
+import { fromFileURL } from "../path/mod.ts";
 import {
   arch,
   chdir,
@@ -66,7 +66,7 @@ const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
-Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+Object.defineProperty(argv, "1", { get: () => fromFileURL(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number | string) => {

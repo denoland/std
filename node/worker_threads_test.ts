@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertObjectMatch } from "../testing/asserts.ts";
-import { fromFileUrl, relative } from "../path/mod.ts";
+import { fromFileURL, relative } from "../path/mod.ts";
 import { EventEmitter, once } from "./events.ts";
 import * as workerThreads from "./worker_threads.ts";
 
@@ -179,7 +179,7 @@ Deno.test({
   async fn() {
     const worker = new workerThreads.Worker(relative(
       Deno.cwd(),
-      fromFileUrl(new URL("./testdata/worker_threads.ts", import.meta.url)),
+      fromFileURL(new URL("./testdata/worker_threads.ts", import.meta.url)),
     ));
     worker.postMessage("Hello, how are you my thread?");
     assertEquals((await once(worker, "message"))[0], "I'm fine!");

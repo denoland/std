@@ -8,7 +8,7 @@ import {
 import { config, configSync, MissingEnvVarsError, parse } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const moduleDir = path.dirname(path.fromFileURL(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 const testOptions = {
