@@ -146,7 +146,7 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  // Set last modified header if access timestamp is available
+  // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
     headers.set("last-modified", lastModified.toUTCString());

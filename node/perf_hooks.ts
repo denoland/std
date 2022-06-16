@@ -12,7 +12,13 @@ const constants = {};
 const performance:
   & Omit<
     Performance,
-    "clearMeasures" | "getEntries" | "getEntriesByName" | "getEntriesByType"
+    | "clearMeasures"
+    | "getEntries"
+    | "getEntriesByName"
+    | "getEntriesByType"
+    | "addEventListener"
+    | "removeEventListener"
+    | "dispatchEvent"
   >
   & {
     // deno-lint-ignore no-explicit-any
