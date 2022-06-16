@@ -1,8 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
+// Ported mostly from https://github.com/browserify/path-browserify/
 
 /**
- * Ported mostly from https://github.com/browserify/path-browserify/
+ * Utilities for working with OS-specific file paths.
+ *
  * This module is browser compatible.
  * @module
  */

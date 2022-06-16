@@ -7,7 +7,7 @@
  * Example:
  *
  * ```ts
- * import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/sum_of.ts"
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const people = [

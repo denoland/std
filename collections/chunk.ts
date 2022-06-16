@@ -7,7 +7,7 @@
  * Example:
  *
  * ```ts
- * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/chunk.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
