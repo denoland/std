@@ -4,25 +4,72 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { loadConfigFile, loadConfigFileSync } from "./loadConfigFile.ts";
+import {
+  readConfigFile,
+  readConfigFileSync,
+  resolveConfigFilePath,
+} from "./readConfigFile.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testData = path.resolve(moduleDir, "testdata");
+Deno.test({
+  name: "resolveConfigFilePath",
+  async fn(t) {
+    await t.step({
+      name: "dir json",
+      fn() {
+        const configFilePath = resolveConfigFilePath(
+          path.join(testData, "json"),
+        );
+        assertEquals(configFilePath, path.join(testData, "json/deno.json"));
+      },
+    });
+    await t.step({
+      name: "dir jsonc",
+      fn() {
+        const configFilePath = resolveConfigFilePath(
+          path.join(testData, "jsonc"),
+        );
+        assertEquals(configFilePath, path.join(testData, "jsonc/deno.jsonc"));
+      },
+    });
+    await t.step({
+      name: "parent dir json",
+      fn() {
+        const configFilePath = resolveConfigFilePath(
+          path.join(testData, "parent/child"),
+        );
+        assertEquals(configFilePath, path.join(testData, "parent/deno.json"));
+      },
+    });
+    await t.step({
+      name: "out of cwd scope",
+      fn() {
+        const configFilePath = resolveConfigFilePath("/other/scope");
+        assertEquals(configFilePath, null);
+      },
+    });
+  },
+});
 
 Deno.test({
-  name: "loadConfigFile",
+  name: "readConfigFile",
   async fn(t) {
     await t.step({
       name: "json",
       async fn() {
-        const data = await loadConfigFile(path.join(testData, "json"));
+        const data = await readConfigFile(
+          path.join(testData, "json/deno.json"),
+        );
         assertEquals(data, { compilerOptions: {} });
       },
     });
     await t.step({
       name: "jsonc",
       async fn() {
-        const data = await loadConfigFile(path.join(testData, "jsonc"));
+        const data = await readConfigFile(
+          path.join(testData, "jsonc/deno.jsonc"),
+        );
         assertEquals(data, { compilerOptions: {} });
       },
     });
@@ -30,7 +77,7 @@ Deno.test({
       name: "not found",
       async fn() {
         await assertRejects(async () =>
-          await loadConfigFile(path.join(testData, "notFound"))
+          await readConfigFile(path.join(testData, "notFound"))
         );
       },
     });
@@ -38,26 +85,28 @@ Deno.test({
 });
 
 Deno.test({
-  name: "loadConfigFileSync",
+  name: "readConfigFileSync",
   async fn(t) {
     await t.step({
       name: "json",
       fn() {
-        const data = loadConfigFileSync(path.join(testData, "json"));
+        const data = readConfigFileSync(path.join(testData, "json/deno.json"));
         assertEquals(data, { compilerOptions: {} });
       },
     });
     await t.step({
       name: "jsonc",
       fn() {
-        const data = loadConfigFileSync(path.join(testData, "jsonc"));
+        const data = readConfigFileSync(
+          path.join(testData, "jsonc/deno.jsonc"),
+        );
         assertEquals(data, { compilerOptions: {} });
       },
     });
     await t.step({
       name: "not found",
       fn() {
-        assertThrows(() => loadConfigFileSync(path.join(testData, "notFound")));
+        assertThrows(() => readConfigFileSync(path.join(testData, "notFound")));
       },
     });
   },
