@@ -11,10 +11,3 @@ deno task build:crypto
 ```
 
 This will regenerate the files in the `./lib/` folder from the Rust source.
-
-### CI
-
-If CI fails in `Verify Wasm hasn't changed` step, you need to download built
-artifacts from that CI run and commit them back to the PR. Visit
-`https://github.com/denoland/deno_std/actions/runs/<CI_RUN_ID>#artifacts` and
-click on `Artifacts` at the top of the page.
