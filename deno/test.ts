@@ -10,7 +10,7 @@ import {
   readConfigFile,
   readConfigFileSync,
   resolveConfigFilePath,
-} from "./readConfigFile.ts";
+} from "./config_file.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testData = path.resolve(moduleDir, "testdata");
