@@ -1022,5 +1022,5 @@ export function toFileURL(path: string): URL {
  * @deprecated use toFileURL instead
  */
 export function toFileUrl(path: string): URL {
-  return toFileUrl(path);
+  return toFileURL(path);
 }
