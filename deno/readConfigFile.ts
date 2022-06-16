@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import { parse } from "../encoding/jsonc.ts";
 import * as path from "../path/mod.ts";
 
