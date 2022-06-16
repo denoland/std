@@ -265,7 +265,14 @@ Deno.test("Snapshot Test - Options", async (t) => {
         await Deno.writeTextFile(tempTestFilePath, test);
 
         const process = await Deno.run({
-          cmd: ["deno", "test", "--allow-all", tempTestFilePath, "--", "-u"],
+          cmd: [
+            Deno.execPath(),
+            "test",
+            "--allow-all",
+            tempTestFilePath,
+            "--",
+            "-u",
+          ],
           stdout: "piped",
           stderr: "piped",
         });
@@ -313,7 +320,7 @@ Deno.test(
     async function runTestWithUpdateFlag(test: string) {
       await Deno.writeTextFile(tempTestFilePath, test);
 
-      const { stdout, stderr } = await Deno.spawn("deno", {
+      const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
         args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
       });
 
