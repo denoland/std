@@ -19,14 +19,12 @@ import {
 } from "./_util.ts";
 
 type DB = typeof db;
-
 type ContentTypeToExtension = {
   [K in keyof DB]: DB[K] extends { "extensions": readonly string[] }
     ? DB[K]["extensions"][number]
     : never;
 };
-
-type ExtensionOrType =
+type KnownExtensionOrType =
   | keyof ContentTypeToExtension
   | ContentTypeToExtension[keyof ContentTypeToExtension]
   | `.${ContentTypeToExtension[keyof ContentTypeToExtension]}`;
@@ -106,13 +104,13 @@ export const types = new Map<string, KeyOfDb>();
  */
 export function contentType<T extends string>(
   extensionOrType: T,
-): Lowercase<T> extends ExtensionOrType ? string : string | undefined {
+): Lowercase<T> extends KnownExtensionOrType ? string : string | undefined {
   try {
     const [mediaType, params = {}] = extensionOrType.includes("/")
       ? parseMediaType(extensionOrType)
       : [typeByExtension(extensionOrType), undefined];
     if (!mediaType) {
-      return undefined as Lowercase<T> extends ExtensionOrType ? string
+      return undefined as Lowercase<T> extends KnownExtensionOrType ? string
         : string | undefined;
     }
     if (!("charset" in params)) {
@@ -125,7 +123,7 @@ export function contentType<T extends string>(
   } catch {
     // just swallow returning undefined
   }
-  return undefined as Lowercase<T> extends ExtensionOrType ? string
+  return undefined as Lowercase<T> extends KnownExtensionOrType ? string
     : string | undefined;
 }
 
