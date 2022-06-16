@@ -176,7 +176,7 @@ export function once<T = undefined>(
  * @param {number} [expectedExecutions = 1]
  * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
 export function mustCall<T extends unknown[]>(
-  fn: ((...args: T) => void) = () => {},
+  fn: (...args: T) => void = () => {},
   expectedExecutions = 1,
   timeout = 1000,
 ): [Promise<void>, (...args: T) => void] {
