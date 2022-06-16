@@ -1,3 +1,6 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 export default {
   "application/1d-interleaved-parityfec": {
     "source": "iana",
