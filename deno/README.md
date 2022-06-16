@@ -2,10 +2,10 @@
 
 deno module is made to provide helpers for deno related actions.
 
-## loadConfigFile
+## readConfigFile
 
 ```ts
-import { loadConfigFile } from "https://deno.land/std@$STD_VERSION/deno/loadConfigFile.ts";
+import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/readConfigFile.ts";
 ```
 
 loads the deno
@@ -18,6 +18,6 @@ from the given directory.
 ```
 
 ```ts
-import { loadConfigFile } from "https://deno.land/std@$STD_VERSION/deno/loadConfigFile.ts";
-const config = await loadConfigFile(Deno.cwd()); // { compilerOptions: { strict: true } }
+import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/readConfigFile.ts";
+const config = await readConfigFile(Deno.cwd()); // { compilerOptions: { strict: true } }
 ```
