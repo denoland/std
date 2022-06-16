@@ -5,7 +5,7 @@ deno module is made to provide helpers for deno related actions.
 ## readConfigFile
 
 ```ts
-import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/readConfigFile.ts";
+import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/config_file.ts";
 ```
 
 loads the deno
@@ -18,6 +18,6 @@ from the given directory.
 ```
 
 ```ts
-import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/readConfigFile.ts";
+import { readConfigFile } from "https://deno.land/std@$STD_VERSION/deno/config_file.ts";
 const config = await readConfigFile(Deno.cwd()); // { compilerOptions: { strict: true } }
 ```
