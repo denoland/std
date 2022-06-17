@@ -26,19 +26,19 @@
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => number),
+  selector: (el: T) => number,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => string),
+  selector: (el: T) => string,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => bigint),
+  selector: (el: T) => bigint,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => Date),
+  selector: (el: T) => Date,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],

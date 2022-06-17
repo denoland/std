@@ -146,7 +146,7 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  // Set last modified header if access timestamp is available
+  // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
     headers.set("last-modified", lastModified.toUTCString());
@@ -251,15 +251,15 @@ export async function serveFile(
     });
 
     return new Response(body, {
-      status: 206,
-      statusText: "Partial Content",
+      status: Status.PartialContent,
+      statusText: STATUS_TEXT[Status.PartialContent],
       headers,
     });
   }
 
   return new Response(file.readable, {
-    status: 200,
-    statusText: "OK",
+    status: Status.OK,
+    statusText: STATUS_TEXT[Status.OK],
     headers,
   });
 }
