@@ -102,7 +102,11 @@ export const types = new Map<string, KeyOfDb>();
  * contentType("file.json"); // undefined
  * ```
  */
-export function contentType<T extends string>(
+export function contentType<
+  // Workaround to autocomplete for parameters: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-567871939
+  // deno-lint-ignore ban-types
+  T extends (string & {}) | KnownExtensionOrType,
+>(
   extensionOrType: T,
 ): Lowercase<T> extends KnownExtensionOrType ? string : string | undefined {
   try {
