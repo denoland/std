@@ -251,15 +251,15 @@ export async function serveFile(
     });
 
     return new Response(body, {
-      status: 206,
-      statusText: "Partial Content",
+      status: Status.PartialContent,
+      statusText: STATUS_TEXT[Status.PartialContent],
       headers,
     });
   }
 
   return new Response(file.readable, {
-    status: 200,
-    statusText: "OK",
+    status: Status.OK,
+    statusText: STATUS_TEXT[Status.OK],
     headers,
   });
 }
