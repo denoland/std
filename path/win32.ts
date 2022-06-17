@@ -535,7 +535,7 @@ export function toNamespacedPath(path: string): string {
 }
 
 /**
- * Return the full directory path of a `path`.
+ * Return the directory path of a `path`.
  * @param path to determine the directory path for
  */
 export function dirname(path: string): string {
