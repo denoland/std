@@ -20,28 +20,31 @@ export interface ConfigOptions {
   defaults?: string;
 }
 
-const RE_VariableStart = /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/;
-const RE_SingleQuotes = /^'([\s\S]*)'$/;
-const RE_DoubleQuotes = /^"([\s\S]*)"$/;
+type LineParseResult = {
+  key: string;
+  unquoted: string;
+  interpolated: string;
+  notInterpolated: string;
+};
+
+type CharactersMap = { [key: string]: string };
+
+const RE_KeyValue =
+  /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('(?:\n)?(?<notInterpolated>(.|\n)*?)(?:\n)?'|"(?:\n)?(?<interpolated>(.|\n)*?)(?:\n)?"|(?<unquoted>[^\n#]*))\ *#*[\ \w]*$/gm;
 
 export function parse(rawDotenv: string): DotenvConfig {
   const env: DotenvConfig = {};
+  let match;
 
-  for (const line of rawDotenv.split("\n")) {
-    if (!RE_VariableStart.test(line)) continue;
-    const eqIdx = line.indexOf("=");
-    const key = line.slice(0, eqIdx).trim();
-    let value = line.slice(eqIdx + 1);
-    const hashIdx = value.indexOf("#");
-    if (hashIdx >= 0) value = value.slice(0, hashIdx);
-    value = value.trim();
-    if (RE_SingleQuotes.test(value)) {
-      value = value.slice(1, -1);
-    } else if (RE_DoubleQuotes.test(value)) {
-      value = value.slice(1, -1);
-      value = expandNewlines(value);
-    } else value = value.trim();
-    env[key] = value;
+  while ((match = RE_KeyValue.exec(rawDotenv)) != null) {
+    const { key, interpolated, notInterpolated, unquoted } = match
+      ?.groups as LineParseResult;
+
+    env[key] = notInterpolated
+      ? notInterpolated
+      : interpolated
+      ? expandCharacters(interpolated)
+      : unquoted.trim();
   }
 
   return env;
@@ -141,8 +144,17 @@ async function parseFileAsync(filepath: string) {
   }
 }
 
-function expandNewlines(str: string): string {
-  return str.replaceAll("\\n", "\n");
+function expandCharacters(str: string): string {
+  const charactersMap: CharactersMap = {
+    "\\n": "\n",
+    "\\r": "\r",
+    "\\t": "\t",
+  };
+
+  return str.replace(
+    /\\([nrt])/g,
+    ($1: keyof CharactersMap): string => charactersMap[$1],
+  );
 }
 
 function assertSafe(

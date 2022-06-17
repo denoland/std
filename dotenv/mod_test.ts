@@ -118,6 +118,24 @@ Deno.test("parser", () => {
     "indented value",
     "accepts values that are indented with tabs",
   );
+
+  assertEquals(
+    config.PRIVATE_KEY_SINGLE_QUOTED,
+    "-----BEGIN RSA PRIVATE KEY-----\n...\nHkVN9...\n...\n-----END DSA PRIVATE KEY-----",
+    "Private Key Single Quoted",
+  );
+
+  assertEquals(
+    config.PRIVATE_KEY_DOUBLE_QUOTED,
+    "-----BEGIN RSA PRIVATE KEY-----\n...\nHkVN9...\n...\n-----END DSA PRIVATE KEY-----",
+    "Private Key Double Quoted",
+  );
+
+  assertEquals(
+    config.EXPORT_IS_IGNORED,
+    "export is ignored",
+    "export at the start of the key is ignored",
+  );
 });
 
 Deno.test("with comments", () => {
