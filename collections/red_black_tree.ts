@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
-import { ascend, BSTree } from "./bs_tree.ts";
-import { direction, RBNode } from "./rb_node.ts";
+import { ascend, BinarySearchTree } from "./binary_search_tree.ts";
+import { direction, RedBlackNode } from "./red_black_node.ts";
 export * from "./_comparators.ts";
 
 /**
@@ -10,8 +10,8 @@ export * from "./_comparators.ts";
  * The values are in ascending order by default,
  * using JavaScript's built in comparison operators to sort the values.
  */
-export class RBTree<T> extends BSTree<T> {
-  declare protected root: RBNode<T> | null;
+export class RedBlackTree<T> extends BinarySearchTree<T> {
+  declare protected root: RedBlackNode<T> | null;
 
   constructor(
     compare: (a: T, b: T) => number = ascend,
@@ -21,52 +21,54 @@ export class RBTree<T> extends BSTree<T> {
 
   /** Creates a new red-black tree from an array like or iterable object. */
   static override from<T>(
-    collection: ArrayLike<T> | Iterable<T> | RBTree<T>,
-  ): RBTree<T>;
+    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
+  ): RedBlackTree<T>;
   static override from<T>(
-    collection: ArrayLike<T> | Iterable<T> | RBTree<T>,
+    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options: {
-      Node?: typeof RBNode;
+      Node?: typeof RedBlackNode;
       compare?: (a: T, b: T) => number;
     },
-  ): RBTree<T>;
+  ): RedBlackTree<T>;
   static override from<T, U, V>(
-    collection: ArrayLike<T> | Iterable<T> | RBTree<T>,
+    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options: {
       compare?: (a: U, b: U) => number;
       map: (value: T, index: number) => U;
       thisArg?: V;
     },
-  ): RBTree<U>;
+  ): RedBlackTree<U>;
   static override from<T, U, V>(
-    collection: ArrayLike<T> | Iterable<T> | RBTree<T>,
+    collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
     options?: {
       compare?: (a: U, b: U) => number;
       map?: (value: T, index: number) => U;
       thisArg?: V;
     },
-  ): RBTree<U> {
-    let result: RBTree<U>;
+  ): RedBlackTree<U> {
+    let result: RedBlackTree<U>;
     let unmappedValues: ArrayLike<T> | Iterable<T> = [];
-    if (collection instanceof RBTree) {
-      result = new RBTree(
-        options?.compare ?? (collection as unknown as RBTree<U>).compare,
+    if (collection instanceof RedBlackTree) {
+      result = new RedBlackTree(
+        options?.compare ?? (collection as unknown as RedBlackTree<U>).compare,
       );
       if (options?.compare || options?.map) {
         unmappedValues = collection;
       } else {
-        const nodes: RBNode<U>[] = [];
+        const nodes: RedBlackNode<U>[] = [];
         if (collection.root) {
-          result.root = RBNode.from(collection.root as unknown as RBNode<U>);
+          result.root = RedBlackNode.from(
+            collection.root as unknown as RedBlackNode<U>,
+          );
           nodes.push(result.root);
         }
         while (nodes.length) {
-          const node: RBNode<U> = nodes.pop()!;
-          const left: RBNode<U> | null = node.left
-            ? RBNode.from(node.left)
+          const node: RedBlackNode<U> = nodes.pop()!;
+          const left: RedBlackNode<U> | null = node.left
+            ? RedBlackNode.from(node.left)
             : null;
-          const right: RBNode<U> | null = node.right
-            ? RBNode.from(node.right)
+          const right: RedBlackNode<U> | null = node.right
+            ? RedBlackNode.from(node.right)
             : null;
 
           if (left) {
@@ -81,8 +83,8 @@ export class RBTree<T> extends BSTree<T> {
       }
     } else {
       result = (options?.compare
-        ? new RBTree(options.compare)
-        : new RBTree()) as RBTree<U>;
+        ? new RedBlackTree(options.compare)
+        : new RedBlackTree()) as RedBlackTree<U>;
       unmappedValues = collection;
     }
     const values: Iterable<U> = options?.map
@@ -92,13 +94,16 @@ export class RBTree<T> extends BSTree<T> {
     return result;
   }
 
-  protected removeFixup(parent: RBNode<T> | null, current: RBNode<T> | null) {
+  protected removeFixup(
+    parent: RedBlackNode<T> | null,
+    current: RedBlackNode<T> | null,
+  ) {
     while (parent && !current?.red) {
       const direction: direction = parent.left === current ? "left" : "right";
       const siblingDirection: direction = direction === "right"
         ? "left"
         : "right";
-      let sibling: RBNode<T> | null = parent[siblingDirection];
+      let sibling: RedBlackNode<T> | null = parent[siblingDirection];
 
       if (sibling?.red) {
         sibling.red = false;
@@ -135,15 +140,16 @@ export class RBTree<T> extends BSTree<T> {
    * Returns true if successful.
    */
   override insert(value: T): boolean {
-    let node = this.insertNode(RBNode, value) as (RBNode<T> | null);
+    let node = this.insertNode(RedBlackNode, value) as (RedBlackNode<T> | null);
     if (node) {
       while (node.parent?.red) {
-        let parent: RBNode<T> = node.parent!;
+        let parent: RedBlackNode<T> = node.parent!;
         const parentDirection: direction = parent.directionFromParent()!;
         const uncleDirection: direction = parentDirection === "right"
           ? "left"
           : "right";
-        const uncle: RBNode<T> | null = parent.parent![uncleDirection] ?? null;
+        const uncle: RedBlackNode<T> | null = parent.parent![uncleDirection] ??
+          null;
 
         if (uncle?.red) {
           parent.red = false;
@@ -171,7 +177,7 @@ export class RBTree<T> extends BSTree<T> {
    * Returns true if found and removed.
    */
   override remove(value: T): boolean {
-    const node = this.removeNode(value) as (RBNode<T> | null);
+    const node = this.removeNode(value) as (RedBlackNode<T> | null);
     if (node && !node.red) {
       this.removeFixup(node.parent, node.left ?? node.right);
     }
