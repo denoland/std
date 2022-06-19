@@ -1733,12 +1733,8 @@ export default class Context {
       );
     }
 
-    if (typeof _initialize != "function") {
-      throw new TypeError(
-        "WebAsembly.instance export _initialize must be a function",
-      );
+    if (typeof _initialize == "function") {
+      _initialize();
     }
-
-    _initialize();
   }
 }
