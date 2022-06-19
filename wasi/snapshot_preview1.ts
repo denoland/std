@@ -1735,7 +1735,7 @@ export default class Context {
 
     if (_initialize && typeof _initialize != "function") {
       throw new TypeError(
-        "WebAssembly.Instance export _start must be a function or not be defined",
+        "WebAssembly.Instance export _initialize must be a function or not be defined",
       );
     }
     _initialize?.();
