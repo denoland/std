@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
   copy,
   iterateReader,
@@ -350,7 +350,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] toTransformStream() - iterable, not asynciterable",
+  name: "[streams] toTransformStream() Pass iterable instead of asyncIterable",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
       .pipeThrough(toTransformStream(function* (_src) {
@@ -520,6 +520,27 @@ Deno.test({
         assertEquals(actualError, expectedError);
       },
     });
+  },
+});
+
+Deno.test({
+  name:
+    "[streams] toTransformStream() Cancel streams with the correct error message",
+  async fn() {
+    const src = readableStreamFromIterable([0, 1, 2]);
+    // deno-lint-ignore require-yield
+    const transform = toTransformStream(function* (src) {
+      src.getReader(); // lock the source stream to cause error at cancel
+      throw new Error("foo");
+    });
+
+    await assertRejects(
+      async () => {
+        for await (const _ of src.pipeThrough(transform));
+      },
+      Error,
+      "foo",
+    );
   },
 });
 

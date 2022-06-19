@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Streams
+ * Utilities for working with the Streams API. Includes buffering and conversion.
  *
  * @module
  */

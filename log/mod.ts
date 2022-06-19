@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * log
+ * Logging library with the support for terminal and file outputs. Provides
+ * interfaces for building custom loggers.
  * @module
  */
 import { Logger } from "./logger.ts";
