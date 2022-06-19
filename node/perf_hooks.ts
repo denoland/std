@@ -12,13 +12,7 @@ const constants = {};
 const performance:
   & Omit<
     Performance,
-    | "clearMeasures"
-    | "getEntries"
-    | "getEntriesByName"
-    | "getEntriesByType"
-    | "addEventListener"
-    | "removeEventListener"
-    | "dispatchEvent"
+    "clearMeasures" | "getEntries" | "getEntriesByName" | "getEntriesByType"
   >
   & {
     // deno-lint-ignore no-explicit-any
@@ -59,6 +53,15 @@ const performance:
     // @ts-ignore waiting on update in `deno`, but currently this is
     // a circular dependency
     toJSON: () => shimPerformance.toJSON(),
+    addEventListener: (
+      ...args: Parameters<typeof shimPerformance.addEventListener>
+    ) => shimPerformance.addEventListener(...args),
+    removeEventListener: (
+      ...args: Parameters<typeof shimPerformance.removeEventListener>
+    ) => shimPerformance.removeEventListener(...args),
+    dispatchEvent: (
+      ...args: Parameters<typeof shimPerformance.dispatchEvent>
+    ) => shimPerformance.dispatchEvent(...args),
   };
 
 const monitorEventLoopDelay = () =>
