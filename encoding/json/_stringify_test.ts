@@ -23,7 +23,7 @@ async function assertInvalidStringify(
   chunks: unknown[],
   options: StringifyStreamOptions,
   // deno-lint-ignore no-explicit-any
-  ErrorClass: (new (...args: any[]) => Error),
+  ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
   const r = readableStreamFromIterable(chunks);
