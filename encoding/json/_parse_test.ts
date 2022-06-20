@@ -31,7 +31,7 @@ async function assertInvalidParse(
   chunks: string[],
   options: ParseStreamOptions,
   // deno-lint-ignore no-explicit-any
-  ErrorClass: (new (...args: any[]) => Error),
+  ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
   const r = readableStreamFromIterable(chunks);
@@ -301,7 +301,7 @@ Deno.test({
       [`{${"foo".repeat(100)}}`],
       {},
       SyntaxError,
-      `Unexpected token f in JSON at position 1 (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
+      `Expected property name or '}' in JSON at position 1 (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
     );
   },
 });
