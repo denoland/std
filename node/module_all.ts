@@ -93,7 +93,7 @@ import vm from "./vm.ts";
 import workerThreads from "./worker_threads.ts";
 import wasi from "./wasi.ts";
 import zlib from "./zlib.ts";
-import diagnostics_channel from "./diagnostics_channel.ts"
+import diagnostics_channel from "./diagnostics_channel.ts";
 // Canonical mapping of supported modules
 export default {
   diagnostics_channel,
