@@ -57,9 +57,9 @@ Deno.test("process is correctly defined", () => {
 });
 
 Deno.test("global timers are not Node.js timers", () => {
-  assertNotEquals(setTimeout, timers.setTimeout);
+  assertNotEquals<unknown>(setTimeout, timers.setTimeout);
   assertNotEquals(clearTimeout, timers.clearTimeout);
-  assertNotEquals(setInterval, timers.setInterval);
+  assertNotEquals<unknown>(setInterval, timers.setInterval);
   assertNotEquals(clearInterval, timers.clearInterval);
 });
 

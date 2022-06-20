@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // @generated file from build script, do not edit
 // deno-lint-ignore-file
+// source-hash: 7963e5ca9662eff61201ba74cb71cb7a202a672f
 let wasm;
 
 let cachedInt32Memory0;
@@ -44,7 +45,7 @@ const u32CvtShim = new Uint32Array(2);
 
 const uint64CvtShim = new BigUint64Array(u32CvtShim.buffer);
 /**
- * @param {BigInt} val
+ * @param {bigint} val
  * @returns {Uint8Array}
  */
 export function encode_u64(val) {
@@ -85,7 +86,7 @@ export function decode_u32(buff) {
 
 /**
  * @param {Uint8Array} buff
- * @returns {BigInt}
+ * @returns {bigint}
  */
 export function decode_u64(buff) {
   try {
@@ -403,8 +404,8 @@ JmOTBiZGRmYWI5ZmRhZjkDDl9fcnVzdF9yZWFsbG9jBE5jb3JlOjpmbXQ6Om51bTo6aW1wOjo8aW1w\
 bCBjb3JlOjpmbXQ6OkRpc3BsYXkgZm9yIHUzMj46OmZtdDo6aDA0NmVjYzVlYWFiMzRjZDUFMGRsbW\
 FsbG9jOjpEbG1hbGxvYzxBPjo6bWFsbG9jOjpoMTg5ZmJjYTAzNzNhYjgyOAYKZW5jb2RlX3U2NAcK\
 ZW5jb2RlX3UzMggGbWVtY3B5CU5hbGxvYzo6cmF3X3ZlYzo6UmF3VmVjPFQsQT46OnJlc2VydmU6Om\
-RvX3Jlc2VydmVfYW5kX2hhbmRsZTo6aDhkMzQyNTFmMDQ4ODlkYzQKLmFsbG9jOjpyYXdfdmVjOjpm\
-aW5pc2hfZ3Jvdzo6aGYyM2E3ODg0OWY0OTkyMjcLCmRlY29kZV91NjQMCmRlY29kZV91MzINNmNvcm\
+RvX3Jlc2VydmVfYW5kX2hhbmRsZTo6aDg1NjBhYzI1ZTFiNTQ3ZjMKLmFsbG9jOjpyYXdfdmVjOjpm\
+aW5pc2hfZ3Jvdzo6aGZjMDY3MzRmZGU4NmY4NWELCmRlY29kZV91NjQMCmRlY29kZV91MzINNmNvcm\
 U6OnBhbmlja2luZzo6cGFuaWNfYm91bmRzX2NoZWNrOjpoY2UwNTAyZjYzNzExZmFkOA43c3RkOjpw\
 YW5pY2tpbmc6OnJ1c3RfcGFuaWNfd2l0aF9ob29rOjpoNjA2ZDdjN2Y3YTQyM2I5OA9DY29yZTo6Zm\
 10OjpGb3JtYXR0ZXI6OnBhZF9pbnRlZ3JhbDo6d3JpdGVfcHJlZml4OjpoYWEwYWRmMDBjYjY3ZGVk\
@@ -419,9 +420,9 @@ U6OmhhMDNhYmVmMDJhOGI3MGZkGjE8VCBhcyBjb3JlOjphbnk6OkFueT46OnR5cGVfaWQ6OmhhMGM0\
 NDkyMjE2ZDRkMmU3GwpydXN0X3BhbmljHDdzdGQ6OmFsbG9jOjpkZWZhdWx0X2FsbG9jX2Vycm9yX2\
 hvb2s6OmhmOWMzOTNiYTNjZDI4N2UxHW9jb3JlOjpwdHI6OmRyb3BfaW5fcGxhY2U8JmNvcmU6Oml0\
 ZXI6OmFkYXB0ZXJzOjpjb3BpZWQ6OkNvcGllZDxjb3JlOjpzbGljZTo6aXRlcjo6SXRlcjx1OD4+Pj\
-o6aDYzYzJlMTQ5N2I1MmYzZDcA+4CAgAAJcHJvZHVjZXJzAghsYW5ndWFnZQEEUnVzdAAMcHJvY2Vz\
+o6aDYzYzJlMTQ5N2I1MmYzZDcA74CAgAAJcHJvZHVjZXJzAghsYW5ndWFnZQEEUnVzdAAMcHJvY2Vz\
 c2VkLWJ5AwVydXN0Yx0xLjU3LjAgKGYxZWRkMDQyOSAyMDIxLTExLTI5KQZ3YWxydXMGMC4xOS4wDH\
-dhc20tYmluZGdlbhIwLjIuODAgKDlhNmU3N2Y1ZSk=\
+dhc20tYmluZGdlbgYwLjIuODE=\
 ",
   );
   const wasmModule = new WebAssembly.Module(wasmBytes);

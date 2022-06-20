@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Dotenv config
+ * Configure environmental variables using `.env` files.
+ *
  * @module
  */
 

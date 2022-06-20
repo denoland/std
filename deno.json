@@ -42,12 +42,13 @@
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/",
     "test:browser": "git grep --name-only \"// This module is browser compatible.\" | grep -v \".github/workflows\" | xargs deno cache --config browser-compat.tsconfig.json",
-    "node:unit": "DENO_FUTURE_CHECK=1 deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
+    "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
-    "build:crypto": "cd _wasm_crypto && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_std_wasm_crypto.generated.js lib/deno_std_wasm_crypto.generated.mjs",
-    "build:hash": "cd hash/_wasm && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_hash.generated.js lib/deno_hash.generated.mjs",
-    "build:varint": "cd _wasm_varint && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_std_wasm_varint.generated.js lib/deno_std_wasm_varint.generated.mjs"
+    "build:crypto": "deno task --cwd _wasm_crypto wasmbuild",
+    "build:hash": "deno task --cwd hash/_wasm wasmbuild",
+    "build:varint": "deno task --cwd _wasm_varint wasmbuild",
+    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.6.0/main.ts --js-ext mjs --sync"
   }
 }
