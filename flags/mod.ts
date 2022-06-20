@@ -265,7 +265,7 @@ export interface ParseOptions<
 
   /** A string or array of strings argument names to always treat as arrays.
    * Collectable options can be used multiple times. All values will be
-   * colelcted into one array. If a non-collectable option is used multiple
+   * collected into one array. If a non-collectable option is used multiple
    * times, the last value is used. */
   collect?: C | ReadonlyArray<Extract<C, string>>;
 
