@@ -27,6 +27,7 @@ import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
+import diagnostics_channel from "./diagnostics_channel.ts";
 import dns from "./dns.ts";
 import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
@@ -93,10 +94,9 @@ import vm from "./vm.ts";
 import workerThreads from "./worker_threads.ts";
 import wasi from "./wasi.ts";
 import zlib from "./zlib.ts";
-import diagnostics_channel from "./diagnostics_channel.ts";
+
 // Canonical mapping of supported modules
 export default {
-  diagnostics_channel,
   _http_agent,
   _http_outgoing,
   _stream_duplex,
@@ -114,6 +114,7 @@ export default {
   child_process: childProcess,
   cluster,
   dgram,
+  diagnostics_channel,
   dns,
   "dns/promises": dnsPromises,
   domain,
