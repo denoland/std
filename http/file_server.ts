@@ -659,7 +659,7 @@ function main(): void {
       v: "verbose",
     },
   });
-  const port = serverArgs.port;
+  const port = Number(serverArgs.port);
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -690,17 +690,17 @@ function main(): void {
     });
   };
 
-  const useTls = Boolean(keyFile || certFile);
+  const useTls = !!(keyFile && certFile);
 
   if (useTls) {
     serveTls(handler, {
-      port: Number(port),
+      port,
       hostname: host,
       certFile,
       keyFile,
     });
   } else {
-    serve(handler, { port: Number(port), hostname: host });
+    serve(handler, { port, hostname: host });
   }
 }
 
