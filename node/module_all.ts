@@ -114,7 +114,7 @@ export default {
   child_process: childProcess,
   cluster,
   dgram,
-  diagnosticsChannel,
+  diagnostics_channel: diagnosticsChannel,
   dns,
   "dns/promises": dnsPromises,
   domain,
