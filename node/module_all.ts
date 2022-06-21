@@ -86,16 +86,17 @@ import timersPromises from "./timers/promises.ts";
 import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
-import utilTypes from "./util/types.mjs";
+import utilTypes from "./util/types.ts";
 import util from "./util.ts";
 import v8 from "./v8.ts";
 import vm from "./vm.ts";
 import workerThreads from "./worker_threads.ts";
 import wasi from "./wasi.ts";
 import zlib from "./zlib.ts";
-
+import diagnostics_channel from "./diagnostics_channel.ts";
 // Canonical mapping of supported modules
 export default {
+  diagnostics_channel,
   _http_agent,
   _http_outgoing,
   _stream_duplex,
