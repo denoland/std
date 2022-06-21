@@ -36,6 +36,8 @@ import {
   stdin as stdin_,
   stdout as stdout_,
 } from "./_process/streams.mjs";
+import { core } from "./_core.ts";
+
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
 const stderr = stderr_ as any;
@@ -89,7 +91,7 @@ export const exit = (code?: number | string) => {
   if (!process._exiting) {
     process._exiting = true;
     // FIXME(bartlomieju): this is wrong, we won't be using syscall to exit
-    // and thus the `unload` event will be emitted to properly trigget "emit"
+    // and thus the `unload` event will not be emitted to properly trigger "emit"
     // event on `process`.
     process.emit("exit", process.exitCode || 0);
   }
@@ -268,8 +270,11 @@ class Process extends EventEmitter {
   constructor() {
     super();
 
-    globalThis.addEventListener("beforeunload", () => {
+    globalThis.addEventListener("beforeunload", (e) => {
       super.emit("beforeExit", process.exitCode || 0);
+      if (core.eventLoopHasMoreWork()) {
+        e.preventDefault();
+      }
     });
 
     globalThis.addEventListener("unload", () => {
