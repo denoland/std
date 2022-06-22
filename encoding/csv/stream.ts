@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { defaultReadOptions, parseRecord } from "./_io.ts";
 import type { LineReader } from "./_io.ts";
-import { TextLineStream } from "../../streams/delimiter.ts";
+import { TextDelimiterStream } from "../../streams/delimiter.ts";
 
 export interface CSVStreamOptions {
   separator?: string;
@@ -21,7 +21,8 @@ class StreamLineReader implements LineReader {
       this.#done = true;
       return null;
     } else {
-      return value!;
+      // NOTE: Remove trailing CR for compatibility with golang's `encoding/csv`
+      return stripLastCR(value!);
     }
   }
 
@@ -34,11 +35,15 @@ class StreamLineReader implements LineReader {
   }
 }
 
+function stripLastCR(s: string): string {
+  return s.endsWith("\r") ? s.slice(0, -1) : s;
+}
+
 export class CSVStream implements TransformStream<string, Array<string>> {
   readonly #readable: ReadableStream<Array<string>>;
   readonly #options: CSVStreamOptions;
   readonly #lineReader: StreamLineReader;
-  readonly #textLine: TextLineStream;
+  readonly #lines: TextDelimiterStream;
   #lineIndex = 0;
 
   constructor(options: CSVStreamOptions = defaultReadOptions) {
@@ -47,9 +52,8 @@ export class CSVStream implements TransformStream<string, Array<string>> {
       ...options,
     };
 
-    const textLine = new TextLineStream();
-    this.#textLine = textLine;
-    this.#lineReader = new StreamLineReader(textLine.readable.getReader());
+    this.#lines = new TextDelimiterStream("\n");
+    this.#lineReader = new StreamLineReader(this.#lines.readable.getReader());
     this.#readable = new ReadableStream<Array<string>>({
       pull: (controller) => this.#pull(controller),
     });
@@ -96,6 +100,6 @@ export class CSVStream implements TransformStream<string, Array<string>> {
   }
 
   get writable(): WritableStream<string> {
-    return this.#textLine.writable;
+    return this.#lines.writable;
   }
 }
