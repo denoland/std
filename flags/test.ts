@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
-import { parse } from "./mod.ts";
+import { Args, parse, ParseOptions } from "./mod.ts";
+import { assertType, IsExact } from "../_util/assert_type.ts";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("flagBooleanTrue", function (): void {
@@ -92,7 +93,7 @@ Deno.test("booleanAndAliasWithOptionsHash", function (): void {
   const opts = {
     alias: { h: "herp" },
     boolean: "herp",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const expected = {
@@ -111,7 +112,7 @@ Deno.test("booleanAndAliasArrayWithOptionsHash", function (): void {
   const opts = {
     alias: { h: ["herp", "harp"] },
     boolean: "h",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const altPropertyArgv = parse(alt, opts);
@@ -132,7 +133,7 @@ Deno.test("booleanAndAliasUsingExplicitTrue", function (): void {
   const opts = {
     alias: { h: "herp" },
     boolean: "h",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const expected = {
@@ -197,37 +198,57 @@ Deno.test("booleanParsingTrueLike", function (): void {
 });
 
 Deno.test("booleanNegationAfterBoolean", function (): void {
-  const parsed = parse(["--foo", "--no-foo"], { boolean: ["foo"] });
+  const parsed = parse(["--foo", "--no-foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, false);
 
-  const parsed2 = parse(["--foo", "--no-foo", "123"], { boolean: ["foo"] });
+  const parsed2 = parse(["--foo", "--no-foo", "123"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed2.foo, false);
 });
 
 Deno.test("booleanAfterBooleanNegation", function (): void {
-  const parsed = parse(["--no--foo", "--foo"], { boolean: ["foo"] });
+  const parsed = parse(["--no-foo", "--foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, true);
 
-  const parsed2 = parse(["--no--foo", "--foo", "123"], { boolean: ["foo"] });
+  const parsed2 = parse(["--no-foo", "--foo", "123"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed2.foo, true);
 });
 
 Deno.test("latestFlagIsBooleanNegation", function (): void {
-  const parsed = parse(["--no-foo", "--foo", "--no-foo"], { boolean: ["foo"] });
+  const parsed = parse(["--no-foo", "--foo", "--no-foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, false);
 
   const parsed2 = parse(["--no-foo", "--foo", "--no-foo", "123"], {
     boolean: ["foo"],
+    negatable: ["foo"],
   });
   assertEquals(parsed2.foo, false);
 });
 
 Deno.test("latestFlagIsBoolean", function (): void {
-  const parsed = parse(["--foo", "--no-foo", "--foo"], { boolean: ["foo"] });
+  const parsed = parse(["--foo", "--no-foo", "--foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, true);
 
   const parsed2 = parse(["--foo", "--no-foo", "--foo", "123"], {
     boolean: ["foo"],
+    negatable: ["foo"],
   });
   assertEquals(parsed2.foo, true);
 });
@@ -370,7 +391,7 @@ Deno.test("alreadyNumber", function (): void {
 });
 
 Deno.test("parseArgs", function (): void {
-  assertEquals(parse(["--no-moo"]), { moo: false, _: [] });
+  assertEquals(parse(["--no-moo"]), { "no-moo": true, _: [] });
   assertEquals(parse(["-v", "a", "-v", "b", "-v", "c"]), {
     v: "c",
     _: [],
@@ -413,7 +434,7 @@ Deno.test("comprehensive", function (): void {
       bool: true,
       key: "value",
       multi: "baz",
-      meep: false,
+      "no-meep": true,
       name: "meowmers",
       _: ["bare", "--not-a-flag", "eek"],
     },
@@ -828,6 +849,7 @@ Deno.test("collectNegateableArgs", function (): void {
   ], {
     string: ["foo"],
     collect: ["foo"],
+    negatable: ["foo"],
     alias: {
       foo: "f",
     },
@@ -838,4 +860,948 @@ Deno.test("collectNegateableArgs", function (): void {
     f: false,
     _: [],
   });
+});
+
+/** ---------------------- TYPE TESTS ---------------------- */
+
+Deno.test("typesOfDefaultOptions", function (): void {
+  const argv = parse([]);
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabled", function (): void {
+  const argv = parse([], {
+    boolean: false,
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: false,
+    default: {
+      bar: 123,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledAndStringArgs", function (): void {
+  const argv = parse([], {
+    boolean: false,
+    string: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: false,
+    string: ["foo"],
+    default: {
+      foo: 123,
+      bar: false,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: string | number;
+        bar: unknown;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBoolean", function (): void {
+  const argv = parse([], {
+    boolean: true,
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: true,
+    default: {
+      foo: "123",
+      bar: 123,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: unknown;
+        bar: unknown;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
+  const argv = parse([], {
+    boolean: true,
+    string: ["foo", "bar", "foo-bar"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar?: string | undefined;
+        "foo-bar"?: string | undefined;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: true,
+    string: ["foo", "bar", "foo-bar"],
+    default: {
+      bar: 123,
+      baz: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar: string | number;
+        baz: unknown;
+        "foo-bar"?: string | undefined;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "foo-bar"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: boolean;
+        bar: boolean;
+        "foo-bar": boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "foo-bar"],
+    default: {
+      bar: 123,
+      baz: "123",
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: boolean;
+        bar: number | boolean;
+        baz: unknown;
+        "foo-bar": boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfStringArgs", function (): void {
+  const argv = parse([], {
+    string: ["foo", "bar", "foo-bar"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar?: string | undefined;
+        "foo-bar"?: string | undefined;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfStringArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    string: ["foo", "bar", "foo-bar"],
+    default: {
+      bar: true,
+      baz: 123,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar: string | boolean;
+        baz: unknown;
+        "foo-bar"?: string | undefined;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanAndStringArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "foo-bar"],
+    string: ["beep", "boop", "beep-boop"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        beep?: string | undefined;
+        boop?: string | undefined;
+        "beep-boop"?: string | undefined;
+        foo: boolean;
+        bar: boolean;
+        "foo-bar": boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "foo-bar"],
+    string: ["beep", "boop", "beep-boop"],
+    default: {
+      bar: 123,
+      baz: new Error(),
+      beep: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: boolean;
+        boop?: string | undefined;
+        "beep-boop"?: string | undefined;
+        bar: number | boolean;
+        baz: unknown;
+        beep: string | Date;
+        "foo-bar": boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+/** ------------------------ DOTTED OPTIONS ------------------------ */
+
+Deno.test("typesOfDottedBooleanArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: boolean;
+        foo: {
+          bar: boolean;
+          baz: {
+            biz: boolean;
+            buz: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedBooleanArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
+    default: {
+      blubb: "123",
+      foo: {
+        bar: 123,
+        baz: {
+          biz: new Date(),
+        },
+      },
+      bla: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: boolean | string;
+        foo: {
+          bar: boolean | number;
+          baz: {
+            biz: boolean | Date;
+            buz: boolean;
+          };
+        };
+        bla: unknown;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringArgs", function (): void {
+  const argv = parse([], {
+    string: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb?: string | undefined;
+        foo?: {
+          bar?: string | undefined;
+          baz?: {
+            biz?: string | undefined;
+            buz?: string | undefined;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    string: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
+    default: {
+      blubb: true,
+      foo: {
+        bar: 123,
+        baz: {
+          biz: new Date(),
+        },
+      },
+      bla: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: string | boolean;
+        foo: {
+          bar: string | number;
+          baz: {
+            biz: string | Date;
+            buz?: string | undefined;
+          };
+        };
+        bla: unknown;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
+    string: ["bla", "beep.boop", "beep.bib.bab", "foo.baz.buz"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: boolean;
+        foo: {
+          bar: boolean;
+          baz: {
+            biz: boolean;
+            buz?: string | undefined;
+          };
+        };
+        bla?: string | undefined;
+        beep: {
+          boop?: string | undefined;
+          bib: {
+            bab?: string | undefined;
+            bub: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
+    string: ["beep.boop", "beep.bib.bab", "foo.baz.buz"],
+    default: {
+      blubb: true,
+      foo: {
+        bar: 123,
+        baz: {
+          biz: new Date(),
+        },
+      },
+      beep: {
+        boop: true,
+        bib: {
+          bab: new Date(),
+        },
+      },
+      bla: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bla: unknown;
+        blubb: boolean;
+        foo: {
+          bar: boolean | number;
+          baz: {
+            biz: boolean | Date;
+            buz?: string | undefined;
+          };
+        };
+        beep: {
+          boop: string | boolean;
+          bib: {
+            bab: string | Date;
+            bub: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
+    string: ["beep.boop", "beep.bib.bab", "foo.baz.buz"],
+    default: {
+      bla: new Date(),
+      blubb: true,
+      "foo.bar": 123,
+      "foo.baz.biz": new Date(),
+      "beep.boop": true,
+      "beep.bib.bab": new Date(),
+      "mee.moo": true,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bla: unknown;
+        blubb: boolean;
+        mee: unknown;
+        foo: {
+          bar: boolean | number;
+          baz: {
+            biz: boolean | Date;
+            buz?: string | undefined;
+          };
+        };
+        beep: {
+          boop: string | boolean;
+          bib: {
+            bab: string | Date;
+            bub: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedArgsWithUnionDefaults", function (): void {
+  const argv = parse([], {
+    string: ["foo.bar.baz"],
+    boolean: ["beep.boop.bab"],
+    default: {
+      "foo": 1,
+      "beep": new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: number | {
+          bar?: {
+            baz?: string | undefined;
+          } | undefined;
+        };
+        beep: Date | {
+          boop: {
+            bab: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
+  const argv = parse([], {
+    string: ["foo.bar.baz"],
+    boolean: ["beep.boop.bab"],
+    default: {
+      "foo.bar": 1,
+      "beep.boop": new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: {
+          bar: number | {
+            baz?: string | undefined;
+          };
+        };
+        beep: {
+          boop: Date | {
+            bab: boolean;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfArgsWithDottedDefaults", function (): void {
+  const argv = parse([], {
+    string: ["foo"],
+    default: {
+      "foo.bar": 1,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: string | {
+          bar: number;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+/** ------------------------ COLLECT OPTION -------------------------- */
+
+Deno.test("typesOfCollectUnknownArgs", function (): void {
+  const argv = parse([], {
+    collect: ["foo", "bar.baz"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<unknown>;
+        bar: {
+          baz: Array<unknown>;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "dotted.beep"],
+    string: ["bar", "dotted.boop"],
+    collect: ["foo", "dotted.boop"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bar?: string | undefined;
+        dotted: {
+          boop: Array<string>;
+          beep: boolean;
+        };
+        foo: Array<boolean>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "dotted.beep"],
+    string: ["bar", "dotted.boop"],
+    collect: ["foo", "dotted.boop"],
+    default: {
+      bar: 123,
+      dotted: {
+        beep: new Date(),
+        boop: /.*/,
+      },
+      foo: new TextDecoder(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bar: number | string;
+        foo: TextDecoder | Array<boolean>;
+        dotted: {
+          beep: boolean | Date;
+          boop: RegExp | Array<string>;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+/** -------------------------- NEGATABLE OPTIONS --------------------------- */
+
+Deno.test("typesOfNegatableArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
+    string: ["beep", "boop", "dotted.zig", "dotted.zag"],
+    negatable: ["bar", "boop", "dotted.tick", "dotted.zig"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        beep?: string | undefined;
+        boop?: string | false | undefined;
+        dotted: {
+          zig?: string | false | undefined;
+          zag?: string | undefined;
+          tick: boolean;
+          tock: boolean;
+        };
+        foo: boolean;
+        bar: boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
+    string: ["beep", "boop", "dotted.zig", "dotted.zag"],
+    negatable: ["bar", "boop", "dotted.tick", "dotted.zig"],
+    default: {
+      bar: 123,
+      boop: new TextDecoder(),
+      dotted: {
+        tick: new Date(),
+        zig: /.*/,
+      },
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: boolean;
+        beep?: string | undefined;
+        bar: number | boolean;
+        boop: string | false | TextDecoder;
+        dotted: {
+          zag?: string | undefined;
+          tock: boolean;
+          tick: boolean | Date;
+          zig: string | false | RegExp;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+/** ----------------------------- ALIAS OPTION ----------------------------- */
+
+Deno.test("typesOfAliasArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo"],
+    string: ["beep"],
+    alias: {
+      foo: "bar",
+      beep: "boop",
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        beep?: string | undefined;
+        boop?: string | undefined;
+        foo: boolean;
+        bar: boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAliasArgsWithOptions", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "biz"],
+    string: ["beep", "bib"],
+    negatable: ["foo", "beep"],
+    alias: {
+      foo: "bar",
+      beep: "boop",
+      biz: "baz",
+    },
+    default: {
+      foo: 1,
+      beep: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        baz: boolean;
+        biz: boolean;
+        bib?: string | undefined;
+        foo: number | boolean;
+        bar: number | boolean;
+        beep: string | false | Date;
+        boop: string | false | Date;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+/** ----------------------- OTHER TYPE TESTS ------------------------ */
+
+Deno.test("typesOfDoubleDashOption", function (): void {
+  const argv = parse([], {
+    boolean: true,
+    string: ["foo"],
+    "--": true,
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        _: Array<string | number>;
+        "--": Array<string>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfNullishDefaults", function (): void {
+  const argv = parse([], {
+    boolean: true,
+    string: ["foo", "bar", "baz"],
+    default: {
+      bar: undefined,
+      baz: null,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar: string | undefined;
+        baz: string | null;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfParseGenerics", function (): void {
+  const argv = parse<{ foo?: number } & { bar: string }, true>([]);
+  assertType<
+    IsExact<
+      typeof argv,
+      {
+        foo?: number | undefined;
+        bar: string;
+        _: Array<string | number>;
+        "--": Array<string>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfArgsGenerics", function (): void {
+  type ArgsResult = Args<{ foo?: number } & { bar: string }, true>;
+  assertType<
+    IsExact<
+      ArgsResult,
+      {
+        foo?: number | undefined;
+        bar: string;
+        _: Array<string | number>;
+        "--": Array<string>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfParseOptionsGenerics", function (): void {
+  type Opts = ParseOptions<"foo", "bar" | "baz">;
+  assertType<
+    IsExact<
+      Pick<Opts, "string">,
+      { string?: "bar" | "baz" | ReadonlyArray<"bar" | "baz"> | undefined }
+    >
+  >(true);
+
+  assertType<
+    IsExact<
+      Pick<Opts, "boolean">,
+      { boolean?: "foo" | ReadonlyArray<"foo"> | undefined }
+    >
+  >(true);
+
+  assertType<
+    IsExact<
+      Pick<Opts, "default">,
+      {
+        default?: {
+          [x: string]: unknown;
+          bar?: unknown;
+          baz?: unknown;
+          foo?: unknown;
+        } | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfParseOptionsGenericDefaults", function (): void {
+  const opts: ParseOptions = {
+    boolean: ["foo"],
+    string: ["bar"],
+  };
+
+  const args = parse([], opts);
+
+  assertType<
+    IsExact<
+      typeof args,
+      {
+        // deno-lint-ignore no-explicit-any
+        [x: string]: any;
+        _: (string | number)[];
+        "--"?: string[] | undefined;
+      }
+    >
+  >(true);
 });

@@ -2,8 +2,9 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import {
-  crypto as wasmCrypto,
   DigestAlgorithm,
+  DigestContext,
+  instantiateWasm,
 } from "../../../_wasm_crypto/mod.ts";
 import { Buffer } from "../../buffer.ts";
 import { Transform } from "../../stream.ts";
@@ -39,10 +40,10 @@ const coerceToBytes = (data: string | BufferSource): Uint8Array => {
  * The crypto.createHash() method is used to create Hash instances. Hash objects are not to be created directly using the new keyword.
  */
 export class Hash extends Transform {
-  #context: wasmCrypto.DigestContext;
+  #context: DigestContext;
 
   constructor(
-    algorithm: string | wasmCrypto.DigestContext,
+    algorithm: string | DigestContext,
     _opts?: TransformOptions,
   ) {
     super({
@@ -63,7 +64,7 @@ export class Hash extends Transform {
       if (opensslToWebCryptoDigestNames[algorithm]) {
         algorithm = opensslToWebCryptoDigestNames[algorithm];
       }
-      this.#context = new wasmCrypto.DigestContext(
+      this.#context = new (instantiateWasm().DigestContext)(
         algorithm as DigestAlgorithm,
       );
     } else {

@@ -45,12 +45,15 @@ options can be:
   as strings.
 - `options.boolean` - a boolean, string or array of strings to always treat as
   booleans. if `true` will treat all double hyphenated arguments without equal
-  signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`).
+  signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`). All
+  `boolean` arguments will be set to `false` by default.
 - `options.collect` - a string or array of strings argument names to always
   treat as arrays. Collectable options can be used multiple times. All values
   will be collected into an array. If a non collectable option is used multiple
   times, the last value is used. All Collectable arguments will be set to `[]`
   by default.
+- `options.negatable` - a string or array of strings argument names which can be
+  negated by prefixing them with `--no-`, like `--no-config`.
 - `options.alias` - an object mapping string names to strings or arrays of
   string argument names to use as aliases.
 - `options.default` - an object mapping string argument names to default values.
@@ -70,3 +73,11 @@ options can be:
 - `options.unknown` - a function which is invoked with a command line parameter
   not defined in the `options` configuration object. If the function returns
   `false`, the unknown option is not added to `parsedArgs`.
+
+By default, the flags module tries to determine the type of all arguments
+automatically and the return type of the `parse` method will have an index
+signature with `any` as value (`{ [x: string]: any }`).
+
+If the `string`, `boolean` or `collect` option is set, the return value of the
+`parse` method will be fully typed and the index signature of the return type
+will change to `{ [x: string]: unknown }`.

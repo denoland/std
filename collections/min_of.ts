@@ -9,7 +9,7 @@
  * Example:
  *
  * ```ts
- * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts"
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const inventory = [

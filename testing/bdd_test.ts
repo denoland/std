@@ -75,6 +75,8 @@ Deno.test("global", async (t) => {
   interface GlobalContext {
     allTimer: number;
     eachTimer: number;
+    x?: number;
+    y?: number;
   }
 
   let timerIdx = 1;
@@ -1677,16 +1679,26 @@ Deno.test("global", async (t) => {
       interface NestedContext extends GlobalContext {
         allTimerNested: number;
         eachTimerNested: number;
+        x: number;
+        y: number;
       }
 
       await t.step(
         "nested with hooks",
         async () => {
           const test = stub(Deno, "test"),
-            fns = [spy(), spy()],
+            fns = [
+              spy(function (this: NestedContext) {
+                this.x = 2;
+              }),
+              spy(function (this: NestedContext) {
+                this.y = 3;
+              }),
+            ],
             { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns(),
             beforeAllFnNested = spy(async function (this: NestedContext) {
               await Promise.resolve();
+              this.x = 1;
               this.allTimerNested = timerIdx++;
               timers.set(
                 this.allTimerNested,
@@ -1701,6 +1713,7 @@ Deno.test("global", async (t) => {
             ),
             beforeEachFnNested = spy(async function (this: NestedContext) {
               await Promise.resolve();
+              this.y = 2;
               this.eachTimerNested = timerIdx++;
               timers.set(
                 this.eachTimerNested,
@@ -1764,6 +1777,8 @@ Deno.test("global", async (t) => {
               allTimerNested: 2,
               eachTimer: 3,
               eachTimerNested: 4,
+              x: 2,
+              y: 2,
             },
             args: [context.steps[0].steps[0]],
             returned: undefined,
@@ -1777,6 +1792,8 @@ Deno.test("global", async (t) => {
               allTimerNested: 2,
               eachTimer: 5,
               eachTimerNested: 6,
+              x: 1,
+              y: 3,
             },
             args: [context.steps[0].steps[1]],
             returned: undefined,
@@ -1784,13 +1801,71 @@ Deno.test("global", async (t) => {
           assertSpyCalls(fn, 1);
 
           assertSpyCalls(beforeAllFn, 1);
+
+          assertSpyCall(afterAllFn, 0, {
+            self: {
+              allTimer: 1,
+            } as GlobalContext,
+          });
           assertSpyCalls(afterAllFn, 1);
+
           assertSpyCalls(beforeEachFn, 2);
+
+          assertSpyCall(afterEachFn, 0, {
+            self: {
+              allTimer: 1,
+              allTimerNested: 2,
+              eachTimer: 3,
+              eachTimerNested: 4,
+              x: 2,
+              y: 2,
+            } as NestedContext,
+          });
+          assertSpyCall(afterEachFn, 1, {
+            self: {
+              allTimer: 1,
+              allTimerNested: 2,
+              eachTimer: 5,
+              eachTimerNested: 6,
+              x: 1,
+              y: 3,
+            } as NestedContext,
+          });
           assertSpyCalls(afterEachFn, 2);
 
           assertSpyCalls(beforeAllFnNested, 1);
+
+          assertSpyCall(afterAllFnNested, 0, {
+            self: {
+              allTimer: 1,
+              allTimerNested: 2,
+              x: 1,
+            } as NestedContext,
+          });
           assertSpyCalls(afterAllFnNested, 1);
+
           assertSpyCalls(beforeEachFnNested, 2);
+
+          assertSpyCall(afterEachFnNested, 0, {
+            self: {
+              allTimer: 1,
+              allTimerNested: 2,
+              eachTimer: 3,
+              eachTimerNested: 4,
+              x: 2,
+              y: 2,
+            },
+          });
+          assertSpyCall(afterEachFnNested, 1, {
+            self: {
+              allTimer: 1,
+              allTimerNested: 2,
+              eachTimer: 5,
+              eachTimerNested: 6,
+              x: 1,
+              y: 3,
+            },
+          });
           assertSpyCalls(afterEachFnNested, 2);
         },
       );

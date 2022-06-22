@@ -19,7 +19,7 @@ export function equalsNaive(a: Uint8Array, b: Uint8Array): boolean {
  * @param a first array to check equality
  * @param b second array to check equality
  */
-export function equalsSimd(a: Uint8Array, b: Uint8Array): boolean {
+export function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
   const len = a.length;
   const compressable = Math.floor(len / 4);
@@ -40,5 +40,5 @@ export function equalsSimd(a: Uint8Array, b: Uint8Array): boolean {
  */
 export function equals(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length < 1000) return equalsNaive(a, b);
-  return equalsSimd(a, b);
+  return equals32Bit(a, b);
 }

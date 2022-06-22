@@ -173,7 +173,7 @@ Deno.test({
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-event.js` works.
 Deno.test("[child_process spawn] 'spawn' event", async () => {
   const timeout = withTimeout(3000);
-  const subprocess = spawn("echo", ["ok"]);
+  const subprocess = spawn(Deno.execPath(), ["eval", "console.log('ok')"]);
 
   let didSpawn = false;
   subprocess.on("spawn", function () {

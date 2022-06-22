@@ -146,7 +146,7 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  // Set last modified header if access timestamp is available
+  // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
     headers.set("last-modified", lastModified.toUTCString());
@@ -251,15 +251,15 @@ export async function serveFile(
     });
 
     return new Response(body, {
-      status: 206,
-      statusText: "Partial Content",
+      status: Status.PartialContent,
+      statusText: STATUS_TEXT[Status.PartialContent],
       headers,
     });
   }
 
   return new Response(file.readable, {
-    status: 200,
-    statusText: "OK",
+    status: Status.OK,
+    statusText: STATUS_TEXT[Status.OK],
     headers,
   });
 }
@@ -640,6 +640,7 @@ function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
+    negatable: ["dir-listing", "dotfiles", "cors"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -658,7 +659,7 @@ function main(): void {
       v: "verbose",
     },
   });
-  const port = serverArgs.port;
+  const port = Number(serverArgs.port);
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -689,17 +690,17 @@ function main(): void {
     });
   };
 
-  const useTls = Boolean(keyFile || certFile);
+  const useTls = !!(keyFile && certFile);
 
   if (useTls) {
     serveTls(handler, {
-      port: Number(port),
+      port,
       hostname: host,
       certFile,
       keyFile,
     });
   } else {
-    serve(handler, { port: Number(port), hostname: host });
+    serve(handler, { port, hostname: host });
   }
 }
 
@@ -722,6 +723,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  --no-cors           Disable cross-origin resource sharing
   -v, --verbose       Print request level logs
 
   All TLS options are required when one is provided.`);

@@ -1,5 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-export * as crypto from "./crypto.mjs";
+export {
+  DigestContext,
+  instantiate as instantiateWasm,
+} from "./lib/deno_std_wasm_crypto.generated.mjs";
 
 /**
  * All cryptographic hash/digest algorithms supported by std/_wasm_crypto.
