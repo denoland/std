@@ -8,7 +8,8 @@ export type JSONValue =
   | JSONValue[]
   | string
   | number
-  | boolean;
+  | boolean
+  | null;
 
 /** Optional object interface for `JSONParseStream` and `ConcatenatedJSONParseStream`. */
 export interface ParseStreamOptions {
