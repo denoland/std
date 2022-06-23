@@ -584,7 +584,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error("[non-error thrown]");
-    console.error(red(err.message));
+    if (!opts.quiet) console.error(red(err.message));
     response = await serveFallback(req, err);
   }
 
