@@ -504,6 +504,7 @@ export interface ServeDirOptions {
   quiet?: boolean;
   /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
   etagAlgorithm?: EtagAlgorithm;
+  disableCache?: boolean;
 }
 
 /**
@@ -597,6 +598,10 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     );
   }
 
+  if (opts.disableCache) {
+    response.headers.append("cache-control", "no-store");
+  }
+
   if (!opts.quiet) serverLog(req, response!.status);
 
   return response!;
@@ -639,8 +644,8 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
-    negatable: ["dir-listing", "dotfiles", "cors"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "cache"],
+    negatable: ["dir-listing", "dotfiles", "cors", "cache"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -650,6 +655,7 @@ function main(): void {
       port: "4507",
       cert: "",
       key: "",
+      cache: true,
     },
     alias: {
       p: "port",
@@ -687,6 +693,7 @@ function main(): void {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
+      disableCache: !serverArgs.cache,
     });
   };
 
@@ -724,6 +731,7 @@ OPTIONS:
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
   --no-cors           Disable cross-origin resource sharing
+  --no-cache          Disable cached responses 
   -v, --verbose       Print request level logs
 
   All TLS options are required when one is provided.`);
