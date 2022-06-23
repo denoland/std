@@ -1,7 +1,6 @@
 ### 0.145.0 / 2022.06.23
 
-- Fix WASI initialize() (#2372)
-- Revert "fix(node): omit EventTarget methods from performance (#2358)" (#2360)
+- fix(wasi): Fix WASI initialize() (#2372)
 - feat(encoding): add json/stream.ts (#2231)
 - feat(flags): infer argument types, names and defaults (#2180)
 - feat(media_types): Improve contentType type definition (#2357)
@@ -10,7 +9,6 @@
 - fix(encoding/csv/stream): properly handle CR characters (#2325)
 - fix(http): Disable `console.error` if `opts.quiet` is true (#2379)
 - fix(node): make performance object event target (#2371)
-- fix(node): omit EventTarget methods from performance (#2358)
 - fix(testing/bdd): fix flat test grouping context (#2308)
 - node: improve error for unsupported import (#2380)
 
