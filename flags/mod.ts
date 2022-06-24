@@ -49,16 +49,16 @@ type Values<
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
 > = UseTypes<B, S, C> extends true ? 
-  & Record<string, unknown>
-  & AddAliases<
-    SpreadDefaults<
-      & CollectValues<S, string, C, N>
-      & RecursiveRequired<CollectValues<B, boolean, C>>
-      & CollectUnknownValues<B, S, C, N>,
-      DedotRecord<D>
-    >,
-    A
-  >
+    & Record<string, unknown>
+    & AddAliases<
+      SpreadDefaults<
+        & CollectValues<S, string, C, N>
+        & RecursiveRequired<CollectValues<B, boolean, C>>
+        & CollectUnknownValues<B, S, C, N>,
+        DedotRecord<D>
+      >,
+      A
+    >
   : // deno-lint-ignore no-explicit-any
   Record<string, any>;
 
@@ -89,14 +89,14 @@ type AliasName<
  */
 type SpreadDefaults<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
-    & Omit<A, keyof D>
-    & {
-      [K in keyof D]: K extends keyof A
-        ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
-          ? NonNullable<SpreadDefaults<A[K], D[K]>>
-        : D[K] | NonNullable<A[K]>
-        : unknown;
-    }
+      & Omit<A, keyof D>
+      & {
+        [K in keyof D]: K extends keyof A
+          ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
+            ? NonNullable<SpreadDefaults<A[K], D[K]>>
+          : D[K] | NonNullable<A[K]>
+          : unknown;
+      }
   : never;
 
 /**
@@ -120,8 +120,8 @@ type MapDefaults<T extends ArgType> = Partial<
 >;
 
 type RecursiveRequired<T> = T extends Record<string, unknown> ? {
-  [K in keyof T]-?: RecursiveRequired<T[K]>;
-}
+    [K in keyof T]-?: RecursiveRequired<T[K]>;
+  }
   : T;
 
 /** Same as `MapTypes` but also supports collectable options. */
@@ -132,10 +132,10 @@ type CollectValues<
   N extends Negatable = undefined,
 > = UnionToIntersection<
   C extends string ? 
-    & MapTypes<Exclude<T, C>, V, N>
-    & (T extends undefined ? Record<never, never> : RecursiveRequired<
-      MapTypes<Extract<C, T>, Array<V>, N>
-    >)
+      & MapTypes<Exclude<T, C>, V, N>
+      & (T extends undefined ? Record<never, never> : RecursiveRequired<
+        MapTypes<Extract<C, T>, Array<V>, N>
+      >)
     : MapTypes<T, V, N>
 >;
 
@@ -143,12 +143,12 @@ type CollectValues<
 type MapTypes<T extends ArgType, V, N extends Negatable = undefined> =
   undefined extends T ? Record<never, never>
     : T extends `${infer Name}.${infer Rest}` ? {
-      [K in Name]?: MapTypes<
-        Rest,
-        V,
-        N extends `${Name}.${infer Negate}` ? Negate : undefined
-      >;
-    }
+        [K in Name]?: MapTypes<
+          Rest,
+          V,
+          N extends `${Name}.${infer Negate}` ? Negate : undefined
+        >;
+      }
     : T extends string ? Partial<Record<T, N extends T ? V | false : V>>
     : Record<never, never>;
 
@@ -180,10 +180,10 @@ type CollectUnknownValues<
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<T> = Record<string, unknown> extends T ? T
   : T extends Record<string, unknown> ? UnionToIntersection<
-    ValueOf<
-      { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+      ValueOf<
+        { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+      >
     >
-  >
   : T;
 
 type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`

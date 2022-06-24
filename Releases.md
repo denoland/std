@@ -1,3 +1,17 @@
+### 0.145.0 / 2022.06.23
+
+- fix(wasi): Fix WASI initialize() (#2372)
+- feat(encoding): add json/stream.ts (#2231)
+- feat(flags): infer argument types, names and defaults (#2180)
+- feat(media_types): Improve contentType type definition (#2357)
+- feat(node): add missing modules node/util/types.ts node/diagnostics_channel.ts
+  (#2369)
+- fix(encoding/csv/stream): properly handle CR characters (#2325)
+- fix(http): Disable `console.error` if `opts.quiet` is true (#2379)
+- fix(node): make performance object event target (#2371)
+- fix(testing/bdd): fix flat test grouping context (#2308)
+- node: improve error for unsupported import (#2380)
+
 ### 0.144.0 / 2022.06.15
 
 - Add warning on usage of collections/mod.ts (#2321, #2346)
