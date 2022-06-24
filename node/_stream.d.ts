@@ -1157,9 +1157,9 @@ type PipelineDestinationPromiseFunction<T, P> = (
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
   PipelineTransformSource<infer ST> ? 
-  | WritableStream
-  | PipelineDestinationIterableFunction<ST>
-  | PipelineDestinationPromiseFunction<ST, P>
+    | WritableStream
+    | PipelineDestinationIterableFunction<ST>
+    | PipelineDestinationPromiseFunction<ST, P>
   : never;
 type PipelineCallback<S extends PipelineDestination<any, any>> = S extends
   PipelineDestinationPromiseFunction<any, infer P>
