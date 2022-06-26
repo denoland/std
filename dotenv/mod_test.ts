@@ -136,6 +136,37 @@ Deno.test("parser", () => {
     "export is ignored",
     "export at the start of the key is ignored",
   );
+
+  assertEquals(config.EXPAND_VAR, "42", "variable is expanded");
+  assertEquals(
+    config.EXPAND_TWO_VARS,
+    "single quoted!==double quoted",
+    "two variables are expanded",
+  );
+  assertEquals(
+    config.EXPAND_RECURSIVE,
+    "single quoted!==double quoted",
+    "recursive expanded",
+  );
+  assertEquals(config.EXPAND_DEFAULT_TRUE, "default", "default expanded");
+
+  assertEquals(config.EXPAND_DEFAULT_FALSE, "42", "default not expanded");
+  assertEquals(config.EXPAND_DEFAULT_VAR, "42", "default var expanded");
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_RECURSIVE,
+    "single quoted!==double quoted",
+    "default recursive var expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_DEFAULT,
+    "default",
+    "default variable's default value is used",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_WITH_SPECIAL_CHARACTERS,
+    "/default/path",
+    "default with special characters expanded",
+  );
 });
 
 Deno.test("with comments", () => {

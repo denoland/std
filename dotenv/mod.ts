@@ -32,13 +32,20 @@ type CharactersMap = { [key: string]: string };
 const RE_KeyValue =
   /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('(?:\n)?(?<notInterpolated>(.|\n)*?)(?:\n)?'|"(?:\n)?(?<interpolated>(.|\n)*?)(?:\n)?"|(?<unquoted>[^\n#]*))\ *#*[\ \w]*$/gm;
 
+const RE_ExpandVar = /(?:\${)(.+?)((?:\:-)(.+))?(?:})/g;
+
 export function parse(rawDotenv: string): DotenvConfig {
   const env: DotenvConfig = {};
   let match;
+  const keysForExpandCheck = [];
 
   while ((match = RE_KeyValue.exec(rawDotenv)) != null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
+
+    if (unquoted) {
+      keysForExpandCheck.push(key);
+    }
 
     env[key] = notInterpolated
       ? notInterpolated
@@ -46,6 +53,12 @@ export function parse(rawDotenv: string): DotenvConfig {
       ? expandCharacters(interpolated)
       : unquoted.trim();
   }
+
+  //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
+  const variablesMap = { ...env, ...Deno.env.toObject() };
+  keysForExpandCheck.forEach((key) => {
+    env[key] = expand(env[key], variablesMap);
+  });
 
   return env;
 }
@@ -196,5 +209,18 @@ export class MissingEnvVarsError extends Error {
     super(message);
     this.name = "MissingEnvVarsError";
     Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+function expand(str: string, variablesMap: { [key: string]: string }): string {
+  if (RE_ExpandVar.test(str)) {
+    return expand(
+      str.replace(RE_ExpandVar, function (_1, $1, _2, $2) {
+        return variablesMap[$1] || expand($2, variablesMap);
+      }),
+      variablesMap,
+    );
+  } else {
+    return str;
   }
 }
