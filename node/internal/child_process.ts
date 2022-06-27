@@ -8,7 +8,8 @@ import { os } from "../internal_binding/constants.ts";
 import { notImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
 import { deferred } from "../../async/deferred.ts";
-import { iterateReader, writeAll } from "../../streams/conversion.ts";
+import { core } from "../_core.ts";
+import { writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
@@ -231,11 +232,23 @@ export class ChildProcess extends EventEmitter {
   }
 
   ref(): void {
-    notImplemented("ChildProcess.ref()");
+    this.#process.ref();
+    if (this.stdout) {
+      this.stdout[ReadableRefSymbol]();
+    }
+    if (this.stderr) {
+      this.stderr[ReadableRefSymbol]();
+    }
   }
 
   unref(): void {
-    notImplemented("ChildProcess.unref()");
+    this.#process.unref();
+    if (this.stdout) {
+      this.stdout[ReadableUnrefSymbol]();
+    }
+    if (this.stderr) {
+      this.stderr[ReadableUnrefSymbol]();
+    }
   }
 
   async #_waitForChildStreamsToClose(): Promise<void> {
@@ -407,26 +420,64 @@ function isAlreadyClosed(err: unknown): boolean {
     err instanceof Deno.errors.Interrupted;
 }
 
+const ReadableUnrefSymbol = Symbol.for("Readable.unref");
+const ReadableRefSymbol = Symbol.for("Readable.ref");
+const ReadableUnrefedSymbol = Symbol.for("Readable.unrefed");
+
 function createReadableFromReader(
   reader: Deno.Reader,
 ): Readable {
-  // TODO(uki00a): This could probably be more efficient.
-  return Readable.from(cloneIterator(iterateReader(reader)), {
+  const bufSize = 32 * 1024;
+  let promiseId: number;
+  
+  const readable = new Readable({
     objectMode: false,
-  });
-}
+    highWaterMark: 1,
+    read: function (size) {
+      const b = new Uint8Array(size ?? bufSize);
+      const promise = reader.read(b);
+      promiseId = promise[Symbol.for("Deno.core.internalPromiseId")]
+      if (this[ReadableUnrefedSymbol]) {
+        core.unrefOp(promiseId!);
+      }
 
-async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
-  try {
-    for await (const chunk of iterator) {
-      yield new Buffer(chunk);
+      promise.then((result) => {
+        if (result === null) {
+          this.push(null);
+        } else {
+          this.push(new Buffer(b.subarray(0, result)));
+        }
+      }, (err) => {
+        if (isAlreadyClosed(err)) {
+          err = null;
+        }
+        this.destroy(err);
+      });
+    },
+  });
+  readable.once("close", () => {
+    try {
+      reader.close();
+    } catch (e) {
+      if (isAlreadyClosed(e)) {
+        return;
+      }
+      throw e;
     }
-  } catch (e) {
-    if (isAlreadyClosed(e)) {
-      return;
+  });
+  readable[ReadableUnrefSymbol] = () => {
+    readable[ReadableUnrefedSymbol] = true;
+    if (promiseId) {
+      core.unrefOp(promiseId);
     }
-    throw e;
-  }
+  };
+  readable[ReadableRefSymbol] = () => {
+    readable[ReadableUnrefedSymbol] = false;
+    if (promiseId) {
+      core.refOp(promiseId);
+    }
+  };
+  return readable;
 }
 
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
