@@ -1552,3 +1552,22 @@ Deno.test("Assert False with truthy values", () => {
   assertThrows(() => assertFalse({}));
   assertThrows(() => assertFalse([]));
 });
+
+Deno.test("assertEquals same Set with object keys", () => {
+  const data = [
+    {
+      id: "_1p7ZED73OF98VbT1SzSkjn",
+      type: { id: "_ETGENUS" },
+      name: "Thuja",
+      friendlyId: "g-thuja",
+    },
+    {
+      id: "_567qzghxZmeQ9pw3q09bd3",
+      type: { id: "_ETGENUS" },
+      name: "Pinus",
+      friendlyId: "g-pinus",
+    },
+  ];
+  assertEquals(data, data);
+  assertEquals(new Set(data), new Set(data));
+});

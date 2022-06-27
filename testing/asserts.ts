@@ -88,6 +88,7 @@ export function equal(c: unknown, d: unknown): boolean {
               (compare(aKey, bKey) && compare(aValue, bValue))
             ) {
               unmatchedEntries--;
+              break;
             }
           }
         }
