@@ -672,11 +672,11 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
           `{ byteLength: ${formatNumber(ctx.stylize, value.byteLength)} }`;
       }
       braces[0] = `${prefix}{`;
-      Array.prototype.unshift(keys, "byteLength");
+      Array.prototype.unshift.call(keys, "byteLength");
     } else if (types.isDataView(value)) {
       braces[0] = `${getPrefix(constructor, tag, "DataView")}{`;
       // .buffer goes last, it's not a primitive like the others.
-      Array.prototype.unshift(keys, "byteLength", "byteOffset", "buffer");
+      Array.prototype.unshift.call(keys, "byteLength", "byteOffset", "buffer");
     } else if (types.isPromise(value)) {
       braces[0] = `${getPrefix(constructor, tag, "Promise")}{`;
       (formatter) = formatPromise;
@@ -821,11 +821,11 @@ function addPrototypeProperties(
     if (depth === 0) {
       keySet = new Set();
     } else {
-      Array.prototype.forEach(keys, (key) => keySet.add(key));
+      Array.prototype.forEach.call(keys, (key) => keySet.add(key));
     }
     // Get all own property names and symbols.
     keys = Reflect.ownKeys(obj);
-    Array.prototype.push(ctx.seen, main);
+    Array.prototype.push.call(ctx.seen, main);
     for (const key of keys) {
       // Ignore the `constructor` property and keys that exist on layers above.
       if (
@@ -851,12 +851,12 @@ function addPrototypeProperties(
       );
       if (ctx.colors) {
         // Faint!
-        Array.prototype.push(output, `\u001b[2m${value}\u001b[22m`);
+        Array.prototype.push.call(output, `\u001b[2m${value}\u001b[22m`);
       } else {
-        Array.prototype.push(output, value);
+        Array.prototype.push.call(output, value);
       }
     }
-    Array.prototype.pop(ctx.seen);
+    Array.prototype.pop.call(ctx.seen);
     // Limit the inspection to up to three prototype layers. Using `recurseTimes`
     // is not a good choice here, because it's as if the properties are declared
     // on the current object from the users perspective.
@@ -1071,7 +1071,7 @@ function formatSet(value, ctx, _ignored, recurseTimes) {
   const output = [];
   ctx.indentationLvl += 2;
   for (const v of value) {
-    Array.prototype.push(output, formatValue(ctx, v, recurseTimes));
+    Array.prototype.push.call(output, formatValue(ctx, v, recurseTimes));
   }
   ctx.indentationLvl -= 2;
   return output;
@@ -1124,7 +1124,7 @@ function formatTypedArray(
       ]
     ) {
       const str = formatValue(ctx, value[key], recurseTimes, true);
-      Array.prototype.push(output, `[${key}]: ${str}`);
+      Array.prototype.push.call(output, `[${key}]: ${str}`);
     }
     ctx.indentationLvl -= 2;
   }
@@ -1155,7 +1155,7 @@ function formatIterator(braces, ctx, value, recurseTimes) {
 }
 
 function getFunctionBase(value, constructor, tag) {
-  const stringified = Function.prototype.toString(value);
+  const stringified = Function.prototype.toString.call(value);
   if (stringified.slice(0, 5) === "class" && stringified.endsWith("}")) {
     const slice = stringified.slice(5, -1);
     const bracketIndex = slice.indexOf("{");
@@ -1819,10 +1819,10 @@ function groupArrayElements(ctx, output, value) {
       } else {
         str += output[j];
       }
-      Array.prototype.push(tmp, str);
+      Array.prototype.push.call(tmp, str);
     }
     if (ctx.maxArrayLength < output.length) {
-      Array.prototype.push(tmp, output[outputLength]);
+      Array.prototype.push.call(tmp, output[outputLength]);
     }
     output = tmp;
   }
@@ -1902,7 +1902,7 @@ function formatSetIterInner(
   }
   const remaining = entries.length - maxLength;
   if (remaining > 0) {
-    Array.prototype.push(
+    Array.prototype.push.call(
       output,
       `... ${remaining} more item${remaining > 1 ? "s" : ""}`,
     );
