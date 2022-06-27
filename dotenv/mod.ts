@@ -175,14 +175,19 @@ function assertSafe(
       `If you expect any of these variables to be empty, you can set the allowEmptyValues option to true.`,
     ];
 
-    throw new MissingEnvVarsError(errorMessages.filter(Boolean).join("\n\n"));
+    throw new MissingEnvVarsError(
+      errorMessages.filter(Boolean).join("\n\n"),
+      missing,
+    );
   }
 }
 
 export class MissingEnvVarsError extends Error {
-  constructor(message?: string) {
+  missing: string[];
+  constructor(message: string, missing: string[]) {
     super(message);
     this.name = "MissingEnvVarsError";
+    this.missing = missing;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
