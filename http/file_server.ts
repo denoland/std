@@ -251,15 +251,15 @@ export async function serveFile(
     });
 
     return new Response(body, {
-      status: 206,
-      statusText: "Partial Content",
+      status: Status.PartialContent,
+      statusText: STATUS_TEXT[Status.PartialContent],
       headers,
     });
   }
 
   return new Response(file.readable, {
-    status: 200,
-    statusText: "OK",
+    status: Status.OK,
+    statusText: STATUS_TEXT[Status.OK],
     headers,
   });
 }
@@ -584,7 +584,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error("[non-error thrown]");
-    console.error(red(err.message));
+    if (!opts.quiet) console.error(red(err.message));
     response = await serveFallback(req, err);
   }
 
@@ -659,7 +659,7 @@ function main(): void {
       v: "verbose",
     },
   });
-  const port = serverArgs.port;
+  const port = Number(serverArgs.port);
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -690,17 +690,17 @@ function main(): void {
     });
   };
 
-  const useTls = Boolean(keyFile || certFile);
+  const useTls = !!(keyFile && certFile);
 
   if (useTls) {
     serveTls(handler, {
-      port: Number(port),
+      port,
       hostname: host,
       certFile,
       keyFile,
     });
   } else {
-    serve(handler, { port: Number(port), hostname: host });
+    serve(handler, { port, hostname: host });
   }
 }
 

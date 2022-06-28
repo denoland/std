@@ -514,8 +514,10 @@ Deno.test("configureSafe", () => {
     "accepts paths to fetch env and env example from",
   );
 
+  let error: MissingEnvVarsError;
+
   // Throws if not all required vars are there
-  assertThrows(() => {
+  error = assertThrows(() => {
     configSync({
       path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
@@ -523,14 +525,18 @@ Deno.test("configureSafe", () => {
     });
   });
 
+  assertEquals(error.missing, ["ANOTHER"]);
+
   // Throws if any of the required vars is empty
-  assertThrows(() => {
+  error = assertThrows(() => {
     configSync({
       path: path.join(configTestdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(configTestdataDir, "./.env.example2.test"),
     });
   });
+
+  assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
   configSync({
@@ -654,8 +660,10 @@ Deno.test("configureSafe async", async () => {
     "accepts paths to fetch env and env example from",
   );
 
+  let error: MissingEnvVarsError;
+
   // Throws if not all required vars are there
-  assertRejects(async () => {
+  error = await assertRejects(async () => {
     await config({
       path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
@@ -663,14 +671,18 @@ Deno.test("configureSafe async", async () => {
     });
   });
 
+  assertEquals(error.missing, ["ANOTHER"]);
+
   // Throws if any of the required vars is empty
-  assertRejects(async () => {
+  error = await assertRejects(async () => {
     await config({
       path: path.join(configTestdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(configTestdataDir, "./.env.example2.test"),
     });
   });
+
+  assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
   await config({

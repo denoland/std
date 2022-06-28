@@ -1,4 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+/** fs module is made to provide helpers to manipulate the filesystem.
+ * @module
+ */
+
 export * from "./empty_dir.ts";
 export * from "./ensure_dir.ts";
 export * from "./ensure_file.ts";

@@ -30,6 +30,27 @@ Deno.test({
 });
 
 Deno.test({
+  name: "media_types - contentType()",
+  fn() {
+    let _str: string;
+    // For well-known content types, the return type is a string.
+    // string is assignable to string
+    _str = contentType(".json");
+    _str = contentType("text/html");
+    _str = contentType("txt");
+
+    // @ts-expect-error: string | undefined is not assignable to string
+    _str = contentType("text/plain; charset=ISO-8859-1");
+    // @ts-expect-error: string | undefined is not assignable to string
+    _str = contentType("foo");
+    // @ts-expect-error: string | undefined is not assignable to string
+    _str = contentType("file.json");
+    // @ts-expect-error: string | undefined is not assignable to string
+    _str = contentType("application/foo");
+  },
+});
+
+Deno.test({
   name: "media_types - extension()",
   fn() {
     const fixtures: [string, string | undefined][] = [

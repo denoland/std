@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+import { readAll } from "../streams/conversion.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -225,8 +226,9 @@ export async function assertCallbackErrorUncaught(
 ) {
   // Since the error has to be uncaught, and that will kill the Deno process,
   // the only way to test this is to spawn a subprocess.
-  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
-    args: [
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
       "eval",
       "--no-check", // Running TSC for every one of these tests would take way too long
       "--unstable",
@@ -238,10 +240,15 @@ export async function assertCallbackErrorUncaught(
         if (!err) throw new Error("success");
       });`,
     ],
+    stderr: "piped",
   });
+  const status = await p.status();
+  const stderr = new TextDecoder().decode(await readAll(p.stderr));
+  p.close();
+  p.stderr.close();
   await cleanup?.();
   assert(!status.success);
-  assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
+  assertStringIncludes(stderr, "Error: success");
 }
 
 export function makeMethodsEnumerable(klass: { new (): unknown }): void {

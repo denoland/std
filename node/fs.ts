@@ -180,6 +180,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createReadStream,
   createWriteStream,
   Dir,
   Dirent,

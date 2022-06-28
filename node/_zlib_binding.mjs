@@ -22,6 +22,7 @@ export const Z_STREAM_ERROR = constants.Z_STREAM_ERROR;
 export const Z_DATA_ERROR = constants.Z_DATA_ERROR;
 export const Z_MEM_ERROR = constants.Z_MEM_ERROR;
 export const Z_BUF_ERROR = constants.Z_BUF_ERROR;
+export const Z_VERSION_ERROR = constants.Z_VERSION_ERROR;
 export const Z_NO_COMPRESSION = constants.Z_NO_COMPRESSION;
 export const Z_BEST_SPEED = constants.Z_BEST_SPEED;
 export const Z_BEST_COMPRESSION = constants.Z_BEST_COMPRESSION;
