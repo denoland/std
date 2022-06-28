@@ -56,6 +56,7 @@ export class CSVStream implements TransformStream<string, Array<string>> {
     this.#lineReader = new StreamLineReader(this.#lines.readable.getReader());
     this.#readable = new ReadableStream<Array<string>>({
       pull: (controller) => this.#pull(controller),
+      cancel: () => this.#lineReader.cancel(),
     });
   }
 
