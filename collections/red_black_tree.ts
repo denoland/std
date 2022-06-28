@@ -2,7 +2,7 @@
 /** This module is browser compatible. */
 
 import { ascend, BinarySearchTree } from "./binary_search_tree.ts";
-import { direction, RedBlackNode } from "./red_black_node.ts";
+import { Direction, RedBlackNode } from "./red_black_node.ts";
 export * from "./_comparators.ts";
 
 /**
@@ -99,8 +99,8 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     current: RedBlackNode<T> | null,
   ) {
     while (parent && !current?.red) {
-      const direction: direction = parent.left === current ? "left" : "right";
-      const siblingDirection: direction = direction === "right"
+      const direction: Direction = parent.left === current ? "left" : "right";
+      const siblingDirection: Direction = direction === "right"
         ? "left"
         : "right";
       let sibling: RedBlackNode<T> | null = parent[siblingDirection];
@@ -144,8 +144,8 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     if (node) {
       while (node.parent?.red) {
         let parent: RedBlackNode<T> = node.parent!;
-        const parentDirection: direction = parent.directionFromParent()!;
-        const uncleDirection: direction = parentDirection === "right"
+        const parentDirection: Direction = parent.directionFromParent()!;
+        const uncleDirection: Direction = parentDirection === "right"
           ? "left"
           : "right";
         const uncle: RedBlackNode<T> | null = parent.parent![uncleDirection] ??

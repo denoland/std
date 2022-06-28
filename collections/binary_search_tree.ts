@@ -2,7 +2,7 @@
 /** This module is browser compatible. */
 
 import { ascend } from "./_comparators.ts";
-import { BinarySearchNode, direction } from "./binary_search_node.ts";
+import { BinarySearchNode, Direction } from "./binary_search_node.ts";
 export * from "./_comparators.ts";
 
 /**
@@ -107,8 +107,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return node;
   }
 
-  protected rotateNode(node: BinarySearchNode<T>, direction: direction) {
-    const replacementDirection: direction = direction === "left"
+  protected rotateNode(node: BinarySearchNode<T>, direction: Direction) {
+    const replacementDirection: Direction = direction === "left"
       ? "right"
       : "left";
     if (!node[replacementDirection]) {
@@ -121,7 +121,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
     if (replacement[direction]) replacement[direction]!.parent = node;
     replacement.parent = node.parent;
     if (node.parent) {
-      const parentDirection: direction = node === node.parent[direction]
+      const parentDirection: Direction = node === node.parent[direction]
         ? direction
         : replacementDirection;
       node.parent[parentDirection] = replacement;
@@ -145,7 +145,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
       while (true) {
         const order: number = this.compare(value, node.value);
         if (order === 0) break;
-        const direction: direction = order < 0 ? "left" : "right";
+        const direction: Direction = order < 0 ? "left" : "right";
         if (node[direction]) {
           node = node[direction]!;
         } else {

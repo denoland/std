@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
-export type direction = "left" | "right";
+export type Direction = "left" | "right";
 
 export class BinarySearchNode<T> {
   left: BinarySearchNode<T> | null;
@@ -21,7 +21,7 @@ export class BinarySearchNode<T> {
     return copy;
   }
 
-  directionFromParent(): direction | null {
+  directionFromParent(): Direction | null {
     return this.parent === null
       ? null
       : this === this.parent.left
@@ -46,7 +46,7 @@ export class BinarySearchNode<T> {
   findSuccessorNode(): BinarySearchNode<T> | null {
     if (this.right !== null) return this.right.findMinNode();
     let parent: BinarySearchNode<T> | null = this.parent;
-    let direction: direction | null = this.directionFromParent();
+    let direction: Direction | null = this.directionFromParent();
     while (parent && direction === "right") {
       direction = parent.directionFromParent();
       parent = parent.parent;
