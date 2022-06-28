@@ -1460,7 +1460,7 @@ var constants$2 = {
   Z_DATA_ERROR: -3,
   Z_MEM_ERROR: -4,
   Z_BUF_ERROR: -5,
-  //Z_VERSION_ERROR: -6,
+  Z_VERSION_ERROR: -6,
 
   /* compression levels */
   Z_NO_COMPRESSION: 0,
