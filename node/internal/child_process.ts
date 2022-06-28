@@ -438,17 +438,11 @@ function createReadableFromReader(
       const promise = core.read(reader.rid, b);
       promiseId = promise[Symbol.for("Deno.core.internalPromiseId")]
       if (this[ReadableUnrefedSymbol]) {
-        // console.log("unrefing read", reader.rid, promiseId);
         core.unrefOp(promiseId!);
       }
 
       promise.then((result) => {
         result = result === 0 ? null : result;
-        // if (result) {
-        //   console.log(new TextDecoder().decode(b.subarray(0, result)));
-        // } else {
-        //   console.log("result is null");
-        // }
         if (result === null) {
           this.push(null);
         } else {
@@ -475,7 +469,6 @@ function createReadableFromReader(
   readable[ReadableUnrefSymbol] = () => {
     readable[ReadableUnrefedSymbol] = true;
     if (promiseId) {
-      // console.log("unrefing read", reader.rid);
       core.unrefOp(promiseId);
     }
   };
