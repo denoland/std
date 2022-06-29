@@ -462,5 +462,5 @@ export function createAssertSnapshot<T>(
     };
 
     await baseAssertSnapshot(context, actual, mergedOptions);
-  }
+  };
 }
