@@ -680,10 +680,10 @@ export function assertThrows<E extends Error = Error>(
 }
 
 /** Executes a function which returns a promise, expecting it to reject. */
-export function assertRejects(
+export function assertRejects<T = unknown>(
   fn: () => Promise<unknown>,
   msg?: string,
-): Promise<unknown>;
+): Promise<T>;
 /** Executes a function which returns a promise, expecting it to reject.
  * If it does not, then it throws. An error class and a string that should be
  * included in the error message can also be asserted. */
