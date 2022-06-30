@@ -1,3 +1,15 @@
+### 0.146.0 / 2022.06.30
+
+- BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
+  (#2400)
+- feat(dotenv): include missing vars in MissingEnvVarsError (#2390)
+- fix(encoding/json): add `null` to JSONValue union (#2384)
+- fix(node): export createReadStream() from fs (#2393)
+- fix(node): use call() to call prototype methods in inspect() (#2392)
+- fix(node/zlib) zlib codes contains undefined values and keys (#2396)
+- fix(streams/delimiter): avoid recursion in TextLineStream (#2318)
+- fix(testing): break out of Set equality check on match (#2394)
+
 ### 0.145.0 / 2022.06.23
 
 - fix(wasi): Fix WASI initialize() (#2372)
