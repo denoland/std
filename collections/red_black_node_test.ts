@@ -1,15 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertStrictEquals } from "../testing/asserts.ts";
-import { RBNode } from "./rb_node.ts";
+import { RedBlackNode } from "./red_black_node.ts";
 
-Deno.test("[collections/RBNode] constructor and from", () => {
-  const parent: RBNode<number> = new RBNode(null, 5);
-  const child: RBNode<number> = new RBNode(parent, 7);
+Deno.test("[collections/RedBlackNode] constructor and from", () => {
+  const parent: RedBlackNode<number> = new RedBlackNode(null, 5);
+  const child: RedBlackNode<number> = new RedBlackNode(parent, 7);
   parent.left = child;
   assertStrictEquals(parent.red, true);
   parent.red = false;
-  const parentClone: RBNode<number> = RBNode.from(parent);
-  const childClone: RBNode<number> = RBNode.from(child);
+  const parentClone: RedBlackNode<number> = RedBlackNode.from(parent);
+  const childClone: RedBlackNode<number> = RedBlackNode.from(child);
 
   assertStrictEquals(parent.parent, null);
   assertStrictEquals(parent.left, child);
