@@ -175,8 +175,22 @@ Deno.test("with comments", () => {
   );
 
   const config = parse(testDotenv);
-  assertEquals(config.FOO, "bar");
-  assertEquals(config.GREETING, "hello world");
+  assertEquals(config.FOO, "bar", "unquoted value with a simple comment");
+  assertEquals(
+    config.GREETING,
+    "hello world",
+    "double quoted value with a simple comment",
+  );
+  assertEquals(
+    config.SPECIAL_CHARACTERS_UNQUOTED,
+    "123",
+    "unquoted value with special characters in comment",
+  );
+  assertEquals(
+    config.SPECIAL_CHARACTERS_UNQUOTED_NO_SPACES,
+    "123",
+    "unquoted value with special characters in comment which is right after value",
+  );
 });
 
 Deno.test("configure", () => {

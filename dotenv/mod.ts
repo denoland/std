@@ -30,7 +30,7 @@ type LineParseResult = {
 type CharactersMap = { [key: string]: string };
 
 const RE_KeyValue =
-  /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('(?:\n)?(?<notInterpolated>(.|\n)*?)(?:\n)?'|"(?:\n)?(?<interpolated>(.|\n)*?)(?:\n)?"|(?<unquoted>[^\n#]*))\ *#*[\ \w]*$/gm;
+  /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
 
 const RE_ExpandVar = /(?:\${)(.+?)((?:\:-)(.+))?(?:})/g;
 
