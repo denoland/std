@@ -276,7 +276,7 @@ with default options.
 ```ts
 // example_test.ts
 import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
-import { stripColor } from "https://deno.land/std@$STD_VERSION/testing/fmt/colors.ts";
+import { stripColor } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
 
 const assertSnapshot = createAssertSnapshot({
   dir: ".snaps",
