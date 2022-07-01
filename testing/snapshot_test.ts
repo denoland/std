@@ -527,13 +527,13 @@ Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
       name: "[MISSING SNAPSHOT]",
     });
 
-    const err = await assertRejects<AssertionError>(async () => {
+    const err = await assertRejects(async () => {
       await assertMissingSnapshot(
         t,
         null,
         "This snapshot has failed as expected",
       );
-    });
+    }, AssertionError);
 
     await assertSnapshot(t, err.message);
   });
