@@ -1,6 +1,6 @@
 ### 0.146.0 / 2022.06.30
 
-- BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
+- BREAKING(collections): rename RedBlackTree/BSTree to RedBlackTree/BinarySearchTree
   (#2400)
 - feat(dotenv): include missing vars in MissingEnvVarsError (#2390)
 - fix(encoding/json): add `null` to JSONValue union (#2384)
@@ -140,7 +140,7 @@
 
 ### 0.132.0 / 2022.03.25
 
-- feat(collections): Add BSTree and RBTree (#2023)
+- feat(collections): Add BSTree and RedBlackTree (#2023)
 - feat(node): add ReadStream and createReadStream (#1435)
 - feat(node): export URLSearchParams via url module (#2056)
 
