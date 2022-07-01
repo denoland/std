@@ -270,8 +270,8 @@ function will function the same as the default function exported from the
 snapshot module. If passed an optional options object, this will take precedence
 over the default options, where the value provded for an option differs.
 
-It is possible to "extend" an `assertSnapshot` function which has been configured
-with default options.
+It is possible to "extend" an `assertSnapshot` function which has been
+configured with default options.
 
 ```ts
 // example_test.ts
