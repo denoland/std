@@ -32,7 +32,8 @@ type CharactersMap = { [key: string]: string };
 const RE_KeyValue =
   /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
 
-const RE_ExpandVar = /(?:\${)(.+?)((?:\:-)(.+))?(?:})/g;
+const RE_ExpandValue =
+  /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
 export function parse(rawDotenv: string): DotenvConfig {
   const env: DotenvConfig = {};
@@ -213,10 +214,20 @@ export class MissingEnvVarsError extends Error {
 }
 
 function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (RE_ExpandVar.test(str)) {
+  if (RE_ExpandValue.test(str)) {
     return expand(
-      str.replace(RE_ExpandVar, function (_1, $1, _2, $2) {
-        return variablesMap[$1] || expand($2, variablesMap);
+      str.replace(RE_ExpandValue, function (...params) {
+        const {
+          inBrackets,
+          inBracketsDefault,
+          notInBrackets,
+          notInBracketsDefault,
+        } = params[params.length - 1];
+        const expandValue = inBrackets || notInBrackets;
+        const defaultValue = inBracketsDefault || notInBracketsDefault;
+
+        return variablesMap[expandValue] ||
+          expand(defaultValue, variablesMap);
       }),
       variablesMap,
     );

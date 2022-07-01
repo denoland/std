@@ -130,7 +130,21 @@ line" }
   (`FOO= some value` becomes `{ FOO: "some value" }`)
 - whitespace is preserved on both ends of quoted values (`FOO=" some value "`
   becomes `{ FOO: " some value " }`)
+- dollar sign with an environment key in or without curly braces in unquoted
+  values will expand the environment key (`KEY=$KEY` or `KEY=${KEY}` becomes
+  `{ KEY: "<KEY_VALUE_FROM_ENV>" }`)
+- escaped dollar sign with an environment key in unquoted values will escape the
+  environment key rather than expand (`KEY=\$KEY` becomes `{ KEY: "\\$KEY" }`)
+- colon and a minus sign with a default value(which can also be another expand
+  value) in expanding construction in unquoted values will first attempt to
+  expand the environment key. If it’s not found, then it will return the default
+  value (`KEY=${KEY:-default}` If KEY exists it becomes
+  `{ KEY: "<KEY_VALUE_FROM_ENV>" }` If not, then it becomes
+  `{ KEY: "default" }`. Also there is possible to do this case
+  `KEY=${NO_SUCH_KEY:-${EXISTING_KEY:-default}}` which becomes
+  `{ KEY: "<EXISTING_KEY_VALUE_FROM_ENV>" }`)
 
 ## Credit
 
-- Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv).
+- Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv)and
+  [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
