@@ -358,7 +358,7 @@ class AssertSnapshotContext {
  * ```
  */
 export async function assertSnapshot<T>(
-  t: Deno.TestContext,
+  context: Deno.TestContext,
   actual: T,
   options: SnapshotOptions<T>,
 ): Promise<void>;
@@ -441,4 +441,26 @@ export async function assertSnapshot(
     }
     return context.name;
   }
+}
+
+export function createAssertSnapshot<T>(
+  options: SnapshotOptions<T>,
+  baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
+): typeof assertSnapshot {
+  return async function _assertSnapshot(
+    context: Deno.TestContext,
+    actual: T,
+    messageOrOptions?: string | SnapshotOptions<T>,
+  ): Promise<void> {
+    const mergedOptions: SnapshotOptions<T> = {
+      ...options,
+      ...(typeof messageOrOptions === "string"
+        ? {
+          msg: messageOrOptions,
+        }
+        : messageOrOptions),
+    };
+
+    await baseAssertSnapshot(context, actual, mergedOptions);
+  };
 }

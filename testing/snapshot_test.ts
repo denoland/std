@@ -1,8 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { stripColor } from "../fmt/colors.ts";
 import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
-import { assert, assertInstanceOf, AssertionError, fail } from "./asserts.ts";
-import { assertSnapshot, serialize } from "./snapshot.ts";
+import {
+  assert,
+  assertInstanceOf,
+  AssertionError,
+  assertRejects,
+  fail,
+} from "./asserts.ts";
+import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
@@ -490,4 +496,56 @@ Deno.test("Snapshot Test - Regression #2144", async (t) => {
 
 Deno.test("Snapshot Test - Empty #2245", async (t) => {
   await assertSnapshot(t, "", { serializer: (x) => x });
+});
+
+Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
+  const assertMonochromeSnapshot = createAssertSnapshot<string>({
+    serializer: stripColor,
+  });
+
+  await t.step("No Options", async (t) => {
+    await assertMonochromeSnapshot(
+      t,
+      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+    );
+  });
+
+  await t.step("Options Object", async (t) => {
+    await assertMonochromeSnapshot(
+      t,
+      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+      {
+        name:
+          "SnapshotTest - createAssertSnapshot - Options Object - Custom Name",
+      },
+    );
+  });
+
+  await t.step("Message", async (t) => {
+    const assertMissingSnapshot = createAssertSnapshot<string>({
+      mode: "assert",
+      name: "[MISSING SNAPSHOT]",
+    });
+
+    const err = await assertRejects(async () => {
+      await assertMissingSnapshot(
+        t,
+        null,
+        "This snapshot has failed as expected",
+      );
+    }, AssertionError);
+
+    await assertSnapshot(t, err.message);
+  });
+
+  await t.step("Composite", async (t) => {
+    const assertMonochromeSnapshotComposite = createAssertSnapshot<string>({
+      name: "SnapshotTest - createAssertSnapshot - Composite - Custom Name",
+    }, assertMonochromeSnapshot);
+
+    await assertMonochromeSnapshotComposite(
+      t,
+      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+    );
+  });
 });
