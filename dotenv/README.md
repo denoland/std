@@ -131,6 +131,19 @@ line" }
 - whitespace is preserved on both ends of quoted values (`FOO=" some value "`
   becomes `{ FOO: " some value " }`)
 
+## Stringify
+
+```ts
+import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
+const string = stringify({ GREETING: "hello world" });
+
+console.log(string);
+/*
+GREETING='hello world'
+*/
+```
+
 ## Credit
 
 - Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv).
