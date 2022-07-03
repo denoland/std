@@ -235,3 +235,39 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
     return str;
   }
 }
+
+/**
+ * @param object EnvObject to be stringified
+ * @returns string of EnvObject
+ * ```ts
+ * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
+ * const object = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
+ * const string = stringify(object);
+ * ```
+ */
+export function stringify(object: DotenvConfig) {
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(object)) {
+    let quote;
+
+    let escapedValue = value ?? "";
+
+    if (escapedValue.includes("\n")) {
+      // escape inner new lines
+      escapedValue = escapedValue.replaceAll("\n", "\\n");
+      quote = `"`;
+    } else if (escapedValue.match(/[ \W]/)) {
+      quote = "'";
+    }
+
+    if (quote) {
+      // escape inner quotes
+      escapedValue = escapedValue.replaceAll(quote, `\\${quote}`);
+      escapedValue = `${quote}${escapedValue}${quote}`;
+    }
+    const line = `${key}=${escapedValue}`;
+    lines.push(line);
+  }
+  return lines.join("\n");
+}
