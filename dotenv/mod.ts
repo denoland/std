@@ -242,7 +242,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  * ```ts
  * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
  *
- * const object = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
+ * const object = { GREETING: "hello world" };
  * const string = stringify(object);
  * ```
  */
