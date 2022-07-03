@@ -66,7 +66,13 @@ const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
-Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+Object.defineProperty(argv, "1", { get: () => {
+  if (Deno.mainModule.startsWith("file:")) {
+    return fromFileUrl(Deno.mainModule) 
+  } else {
+    return Deno.cwd() + "$deno$node.js";
+  }
+}});
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number | string) => {
