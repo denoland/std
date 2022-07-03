@@ -2,4 +2,4 @@
 
 import { loadSync } from "./mod.ts";
 
-loadSync({ export: true });
+loadSync();

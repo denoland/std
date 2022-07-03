@@ -5,7 +5,7 @@
  * @module
  */
 
-import { difference, removeEmptyValues } from "./util.ts";
+import { difference, removeEmptyValues, setDenoEnv } from "./util.ts";
 
 /**
  * @deprecated use Record<string, string> instead
@@ -27,12 +27,10 @@ export interface ConfigOptions {
 }
 
 export interface LoadOptions {
-  path?: string;
-  export?: boolean;
-  safe?: boolean;
-  example?: string;
+  envPath?: string;
+  examplePath?: string;
   allowEmptyValues?: boolean;
-  defaults?: string;
+  defaultsPath?: string;
 }
 
 const RE_VariableStart = /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/;
@@ -63,28 +61,21 @@ export function parse(rawDotenv: string): Record<string, string> {
 }
 
 const defaultLoadOptions = {
-  path: `.env`,
+  envPath: `.env`,
   export: false,
-  safe: false,
-  example: `.env.example`,
+  examplePath: `.env.example`,
   allowEmptyValues: false,
-  defaults: `.env.defaults`,
+  defaultsPath: `.env.defaults`,
 };
 
-/**
- * @deprecated use loadSync instead
- */
-export function configSync(options: ConfigOptions = {}) {
-  return loadSync(options);
-}
-
-export function loadSync(options: LoadOptions = {}): Record<string, string> {
+// @timreichen move function code into loadSync function once configSync is removed
+function parseEnvFilesSync(options: LoadOptions) {
   const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
 
-  const conf = parseFile(o.path);
+  const conf = parseFile(o.envPath);
 
-  if (o.defaults) {
-    const confDefaults = parseFile(o.defaults);
+  if (o.defaultsPath) {
+    const confDefaults = parseFile(o.defaultsPath);
     for (const key in confDefaults) {
       if (!(key in conf)) {
         conf[key] = confDefaults[key];
@@ -92,16 +83,53 @@ export function loadSync(options: LoadOptions = {}): Record<string, string> {
     }
   }
 
-  if (o.safe) {
-    const confExample = parseFile(o.example);
+  if (o.examplePath) {
+    const confExample = parseFile(o.examplePath);
     assertSafe(conf, confExample, o.allowEmptyValues);
   }
+  return conf;
+}
 
-  if (o.export) {
-    for (const key in conf) {
-      if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
+/**
+ * @deprecated use loadSync instead
+ */
+export function configSync(options: ConfigOptions = {}) {
+  const configOptions = {
+    envPath: options.path,
+    examplePath: options.safe ? options.example : undefined,
+    defaultsPath: options.defaults,
+    allowEmptyValues: options.allowEmptyValues,
+  };
+  const conf = parseEnvFilesSync(configOptions);
+  if (options.export) {
+    setDenoEnv(Deno.env, conf);
+  }
+  return conf;
+}
+export function loadSync(options: LoadOptions = {}): Record<string, string> {
+  const conf = parseEnvFilesSync(options);
+  setDenoEnv(Deno.env, conf);
+  return conf;
+}
+
+// @timreichen move function code into load function once configSync is removed
+async function parseEnvFiles(options: LoadOptions) {
+  const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
+
+  const conf = await parseFileAsync(o.envPath);
+
+  if (o.defaultsPath) {
+    const confDefaults = await parseFileAsync(o.defaultsPath);
+    for (const key in confDefaults) {
+      if (!(key in conf)) {
+        conf[key] = confDefaults[key];
+      }
     }
+  }
+
+  if (o.examplePath) {
+    const confExample = await parseFileAsync(o.examplePath);
+    assertSafe(conf, confExample, o.allowEmptyValues);
   }
 
   return conf;
@@ -111,35 +139,24 @@ export function loadSync(options: LoadOptions = {}): Record<string, string> {
  * @deprecated use load instead
  */
 export async function config(options: ConfigOptions = {}) {
-  return await load(options);
+  const configOptions = {
+    envPath: options.path,
+    examplePath: options.safe ? options.example : undefined,
+    defaultsPath: options.defaults,
+    allowEmptyValues: options.allowEmptyValues,
+  };
+  const conf = await parseEnvFiles(configOptions);
+  if (options.export) {
+    setDenoEnv(Deno.env, conf);
+  }
+  return conf;
 }
 export async function load(
   options: LoadOptions = {},
 ): Promise<Record<string, string>> {
-  const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
+  const conf = await parseEnvFiles(options);
 
-  const conf = await parseFileAsync(o.path);
-
-  if (o.defaults) {
-    const confDefaults = await parseFileAsync(o.defaults);
-    for (const key in confDefaults) {
-      if (!(key in conf)) {
-        conf[key] = confDefaults[key];
-      }
-    }
-  }
-
-  if (o.safe) {
-    const confExample = await parseFileAsync(o.example);
-    assertSafe(conf, confExample, o.allowEmptyValues);
-  }
-
-  if (o.export) {
-    for (const key in conf) {
-      if (Deno.env.get(key) !== undefined) continue;
-      Deno.env.set(key, conf[key]);
-    }
-  }
+  setDenoEnv(Deno.env, conf);
 
   return conf;
 }
@@ -151,6 +168,7 @@ function parseFile(filepath: string) {
     if (typeof Deno.readFileSync !== "function") {
       return {};
     }
+
     return parse(new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)));
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
