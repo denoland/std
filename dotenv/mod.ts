@@ -1,17 +1,32 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Configure environmental variables using `.env` files.
+ * Loadure environmental variables using `.env` files.
  *
  * @module
  */
 
 import { difference, removeEmptyValues } from "./util.ts";
 
+/**
+ * @deprecated use Record<string, string> instead
+ */
 export interface DotenvConfig {
   [key: string]: string;
 }
 
+/**
+ * @deprecated use LoadOptions instead
+ */
 export interface ConfigOptions {
+  path?: string;
+  export?: boolean;
+  safe?: boolean;
+  example?: string;
+  allowEmptyValues?: boolean;
+  defaults?: string;
+}
+
+export interface LoadOptions {
   path?: string;
   export?: boolean;
   safe?: boolean;
@@ -64,7 +79,7 @@ export function parse(rawDotenv: string): DotenvConfig {
   return env;
 }
 
-const defaultConfigOptions = {
+const defaultLoadOptions = {
   path: `.env`,
   export: false,
   safe: false,
@@ -73,8 +88,15 @@ const defaultConfigOptions = {
   defaults: `.env.defaults`,
 };
 
-export function configSync(options: ConfigOptions = {}): DotenvConfig {
-  const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
+/**
+ * @deprecated use loadSync instead
+ */
+export function configSync(options: ConfigOptions = {}) {
+  return loadSync(options);
+}
+
+export function loadSync(options: LoadOptions = {}): Record<string, string> {
+  const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
 
   const conf = parseFile(o.path);
 
@@ -102,10 +124,16 @@ export function configSync(options: ConfigOptions = {}): DotenvConfig {
   return conf;
 }
 
-export async function config(
-  options: ConfigOptions = {},
-): Promise<DotenvConfig> {
-  const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
+/**
+ * @deprecated use load instead
+ */
+export async function config(options: ConfigOptions = {}) {
+  return await load(options);
+}
+export async function load(
+  options: LoadOptions = {},
+): Promise<Record<string, string>> {
+  const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
 
   const conf = await parseFileAsync(o.path);
 
@@ -167,8 +195,8 @@ function expandCharacters(str: string): string {
 }
 
 function assertSafe(
-  conf: DotenvConfig,
-  confExample: DotenvConfig,
+  conf: Record<string, string>,
+  confExample: Record<string, string>,
   allowEmptyValues: boolean,
 ) {
   const currentEnv = Deno.env.toObject();
@@ -178,7 +206,7 @@ function assertSafe(
 
   const missing = difference(
     Object.keys(confExample),
-    // If allowEmptyValues is false, filter out empty values from configuration
+    // If allowEmptyValues is false, filter out empty values from loaduration
     Object.keys(
       allowEmptyValues ? confWithEnv : removeEmptyValues(confWithEnv),
     ),

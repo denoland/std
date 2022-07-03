@@ -5,7 +5,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { config, configSync, MissingEnvVarsError, parse } from "./mod.ts";
+import { load, loadSync, MissingEnvVarsError, parse } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -163,13 +163,13 @@ Deno.test("with comments", () => {
 });
 
 Deno.test("configure", () => {
-  let conf = configSync(testOptions);
+  let conf = loadSync(testOptions);
 
   assertEquals(conf.GREETING, "hello world", "fetches .env");
 
   assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 
-  conf = configSync({ ...testOptions, export: true });
+  conf = loadSync({ ...testOptions, export: true });
   assertEquals(
     Deno.env.get("GREETING"),
     "hello world",
@@ -177,7 +177,7 @@ Deno.test("configure", () => {
   );
 
   Deno.env.set("DO_NOT_OVERRIDE", "Hello there");
-  conf = configSync({ ...testOptions, export: true });
+  conf = loadSync({ ...testOptions, export: true });
   assertEquals(
     Deno.env.get("DO_NOT_OVERRIDE"),
     "Hello there",
@@ -185,7 +185,7 @@ Deno.test("configure", () => {
   );
 
   assertEquals(
-    configSync(
+    loadSync(
       {
         path: "./.some.non.existent.env",
         defaults: "./.some.non.existent.env",
@@ -196,7 +196,7 @@ Deno.test("configure", () => {
   );
 
   assertEquals(
-    configSync({
+    loadSync({
       path: "./.some.non.existent.env",
       defaults: testOptions.defaults,
     }),
@@ -207,14 +207,14 @@ Deno.test("configure", () => {
 
 Deno.test("configureSafe", () => {
   // Default
-  let conf = configSync({
+  let conf = loadSync({
     ...testOptions,
     safe: true,
   });
   assertEquals(conf.GREETING, "hello world", "fetches .env");
 
   // Custom .env.example
-  conf = configSync({
+  conf = loadSync({
     safe: true,
     ...testOptions,
     example: path.join(testdataDir, "./.env.example.test"),
@@ -227,7 +227,7 @@ Deno.test("configureSafe", () => {
   );
 
   // Custom .env and .env.example
-  conf = configSync({
+  conf = loadSync({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example.test"),
@@ -243,7 +243,7 @@ Deno.test("configureSafe", () => {
 
   // Throws if not all required vars are there
   error = assertThrows(() => {
-    configSync({
+    loadSync({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -254,7 +254,7 @@ Deno.test("configureSafe", () => {
 
   // Throws if any of the required vars is empty
   error = assertThrows(() => {
-    configSync({
+    loadSync({
       path: path.join(testdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -264,7 +264,7 @@ Deno.test("configureSafe", () => {
   assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
-  configSync({
+  loadSync({
     path: path.join(testdataDir, "./.env.safe.empty.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example3.test"),
@@ -272,7 +272,7 @@ Deno.test("configureSafe", () => {
   });
 
   // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
-  configSync({
+  loadSync({
     path: path.join(testdataDir, "./.env.safe.empty.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
@@ -281,7 +281,7 @@ Deno.test("configureSafe", () => {
 
   // Does not throw if any of the required vars passed externally
   Deno.env.set("ANOTHER", "VAR");
-  configSync({
+  loadSync({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
@@ -290,7 +290,7 @@ Deno.test("configureSafe", () => {
   // Throws if any of the required vars passed externally is empty
   Deno.env.set("ANOTHER", "");
   assertThrows(() => {
-    configSync({
+    loadSync({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -299,7 +299,7 @@ Deno.test("configureSafe", () => {
 
   // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
   Deno.env.set("ANOTHER", "");
-  configSync({
+  loadSync({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
@@ -308,15 +308,15 @@ Deno.test("configureSafe", () => {
 });
 
 Deno.test("configure async", async () => {
-  let conf = await config(testOptions);
+  let conf = await load(testOptions);
   assertEquals(conf.GREETING, "hello world", "fetches .env");
 
   assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 
-  conf = await config({ path: path.join(testdataDir, "./.env.test") });
+  conf = await load({ path: path.join(testdataDir, "./.env.test") });
   assertEquals(conf.BASIC, "basic", "accepts a path to fetch env from");
 
-  conf = await config({ ...testOptions, export: true });
+  conf = await load({ ...testOptions, export: true });
   assertEquals(
     Deno.env.get("GREETING"),
     "hello world",
@@ -324,7 +324,7 @@ Deno.test("configure async", async () => {
   );
 
   Deno.env.set("DO_NOT_OVERRIDE", "Hello there");
-  conf = await config({ ...testOptions, export: true });
+  conf = await load({ ...testOptions, export: true });
   assertEquals(
     Deno.env.get("DO_NOT_OVERRIDE"),
     "Hello there",
@@ -332,7 +332,7 @@ Deno.test("configure async", async () => {
   );
 
   assertEquals(
-    await config(
+    await load(
       {
         path: "./.some.non.existent.env",
         defaults: "./.some.non.existent.env",
@@ -343,7 +343,7 @@ Deno.test("configure async", async () => {
   );
 
   assertEquals(
-    await config({ ...testOptions, path: "./.some.non.existent.env" }),
+    await load({ ...testOptions, path: "./.some.non.existent.env" }),
     { DEFAULT1: "Some Default" },
     "returns with defaults if file doesn't exist",
   );
@@ -351,14 +351,14 @@ Deno.test("configure async", async () => {
 
 Deno.test("configureSafe async", async () => {
   // Default
-  let conf = await config({
+  let conf = await load({
     ...testOptions,
     safe: true,
   });
   assertEquals(conf.GREETING, "hello world", "fetches .env");
 
   // Custom .env.example
-  conf = await config({
+  conf = await load({
     safe: true,
     ...testOptions,
     example: path.join(testdataDir, "./.env.example.test"),
@@ -371,7 +371,7 @@ Deno.test("configureSafe async", async () => {
   );
 
   // Custom .env and .env.example
-  conf = await config({
+  conf = await load({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example.test"),
@@ -387,7 +387,7 @@ Deno.test("configureSafe async", async () => {
 
   // Throws if not all required vars are there
   error = await assertRejects(async () => {
-    await config({
+    await load({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -398,7 +398,7 @@ Deno.test("configureSafe async", async () => {
 
   // Throws if any of the required vars is empty
   error = await assertRejects(async () => {
-    await config({
+    await load({
       path: path.join(testdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -408,7 +408,7 @@ Deno.test("configureSafe async", async () => {
   assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
-  await config({
+  await load({
     path: path.join(testdataDir, "./.env.safe.empty.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example3.test"),
@@ -416,7 +416,7 @@ Deno.test("configureSafe async", async () => {
   });
 
   // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
-  await config({
+  await load({
     path: path.join(testdataDir, "./.env.safe.empty.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
@@ -425,7 +425,7 @@ Deno.test("configureSafe async", async () => {
 
   // Does not throw if any of the required vars passed externally
   Deno.env.set("ANOTHER", "VAR");
-  await config({
+  await load({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
@@ -434,7 +434,7 @@ Deno.test("configureSafe async", async () => {
   // Throws if any of the required vars passed externally is empty
   Deno.env.set("ANOTHER", "");
   assertRejects(async () => {
-    await config({
+    await load({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
@@ -443,7 +443,7 @@ Deno.test("configureSafe async", async () => {
 
   // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
   Deno.env.set("ANOTHER", "");
-  await config({
+  await load({
     path: path.join(testdataDir, "./.env.safe.test"),
     safe: true,
     example: path.join(testdataDir, "./.env.example2.test"),
