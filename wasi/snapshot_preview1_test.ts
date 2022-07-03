@@ -254,18 +254,6 @@ Deno.test("context_initialize", function () {
       context.initialize({
         exports: {
           memory: new WebAssembly.Memory({ initial: 1 }),
-        },
-      });
-    },
-    TypeError,
-    "export _initialize must be a function",
-  );
-  assertThrows(
-    () => {
-      const context = new Context({});
-      context.initialize({
-        exports: {
-          memory: new WebAssembly.Memory({ initial: 1 }),
           _initialize() {},
         },
       });
@@ -276,6 +264,20 @@ Deno.test("context_initialize", function () {
     Error,
     "WebAssembly.Instance has already started",
   );
+
+  {
+    let wasCalled = false;
+    const context = new Context({});
+    context.initialize({
+      exports: {
+        _initialize() {
+          wasCalled = true;
+        },
+        memory: new WebAssembly.Memory({ initial: 1 }),
+      },
+    });
+    assertEquals(wasCalled, true);
+  }
 });
 
 Deno.test("std_io_stdin.wasm with stdin as file", function () {

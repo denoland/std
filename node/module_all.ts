@@ -27,6 +27,7 @@ import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
+import diagnosticsChannel from "./diagnostics_channel.ts";
 import dns from "./dns.ts";
 import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
@@ -86,7 +87,7 @@ import timersPromises from "./timers/promises.ts";
 import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
-import utilTypes from "./util/types.mjs";
+import utilTypes from "./util/types.ts";
 import util from "./util.ts";
 import v8 from "./v8.ts";
 import vm from "./vm.ts";
@@ -113,6 +114,7 @@ export default {
   child_process: childProcess,
   cluster,
   dgram,
+  diagnostics_channel: diagnosticsChannel,
   dns,
   "dns/promises": dnsPromises,
   domain,

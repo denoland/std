@@ -171,34 +171,9 @@ jobs:
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Rebuild Wasm
+      - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:crypto
-
-      - name: Verify Wasm hasn't changed
-        id: build
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          set -o errexit
-          shopt -s inherit_errexit
-          declare modifications="$(git status --porcelain)"
-          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "Generated code modified? $modified"
-          echo "$modifications"
-
-          if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt Wasm doesn't match committed Wasm. Please rebuild and commit."
-            exit 1
-          fi
-
-      - name: Upload rebuilt ./_wasm_crypto/ as artifact if it didn't match committed
-        if: failure() && steps.build.outputs.modified == 'true'
-        uses: actions/upload-artifact@v2
-        with:
-          name: Rebuilt _wasm_crypto
-          path: |-
-            ./_wasm_crypto/lib/deno_std_wasm_crypto.generated.mjs
+        run: deno task build:crypto --check
 
   varint-wasm:
     name: "_wasm_varint/"
@@ -236,31 +211,6 @@ jobs:
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Rebuild Wasm
+      - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:varint
-
-      - name: Verify Wasm hasn't changed
-        id: build
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          set -o errexit
-          shopt -s inherit_errexit
-          declare modifications="$(git status --porcelain)"
-          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "Generated code modified? $modified"
-          echo "$modifications"
-
-          if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt Wasm doesn't match committed Wasm. Please rebuild and commit."
-            exit 1
-          fi
-
-      - name: Upload rebuilt ./_wasm_varint/ as artifact if it didn't match committed
-        if: failure() && steps.build.outputs.modified == 'true'
-        uses: actions/upload-artifact@v2
-        with:
-          name: Rebuilt _wasm_varint
-          path: |-
-            ./_wasm_varint/lib/deno_std_wasm_varint.generated.mjs
+        run: deno task build:varint --check

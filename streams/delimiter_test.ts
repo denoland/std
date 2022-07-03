@@ -60,15 +60,13 @@ Deno.test("[streams] TextLineStream", async () => {
   assertEquals(lines, [
     "qwertzuiopasd",
     "mnbvcxylk\rjhgfds",
-    "apoiuzt",
-    "qwr\r09ei\rqwrjiowqr",
+    "apoiuzt\rqwr\r09ei\rqwrjiowqr",
     "rewq0987",
     "",
     "654321",
     "rewq0987",
     "",
-    "654321",
-    "",
+    "654321\r",
   ]);
 
   const textStream2 = new ReadableStream({
@@ -143,6 +141,23 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
     "654321",
     "",
   ]);
+});
+
+Deno.test("[streams] TextLineStream - large chunks", async () => {
+  const textStream = new ReadableStream({
+    start(controller) {
+      controller.enqueue("\n".repeat(10000));
+      controller.enqueue("\n".repeat(10000));
+      controller.close();
+    },
+  });
+
+  let lines = 0;
+  for await (const chunk of textStream.pipeThrough(new TextLineStream())) {
+    assertEquals(chunk, "");
+    lines++;
+  }
+  assertEquals(lines, 20001);
 });
 
 Deno.test("[streams] DelimiterStream", async () => {

@@ -132,7 +132,7 @@ Deno.test("Require .mjs", () => {
   assertThrows(
     () => require("./testdata/inspect.mjs"),
     Error,
-    "Importing ESM module",
+    "Importing ESM module:",
   );
 });
 

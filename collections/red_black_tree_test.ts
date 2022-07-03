@@ -1,10 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
-import { ascend, descend, RBTree } from "./rb_tree.ts";
+import { ascend, descend, RedBlackTree } from "./red_black_tree.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
-Deno.test("[collections/RBTree] with default ascend comparator", () => {
-  const trees: RBTree<number>[] = [new RBTree(), new RBTree()];
+Deno.test("[collections/RedBlackTree] with default ascend comparator", () => {
+  const trees: RedBlackTree<number>[] = [
+    new RedBlackTree(),
+    new RedBlackTree(),
+  ];
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -120,8 +123,11 @@ Deno.test("[collections/RBTree] with default ascend comparator", () => {
   }
 });
 
-Deno.test("[collections/RBTree] with descend comparator", () => {
-  const trees: RBTree<number>[] = [new RBTree(descend), new RBTree(descend)];
+Deno.test("[collections/RedBlackTree] with descend comparator", () => {
+  const trees: RedBlackTree<number>[] = [
+    new RedBlackTree(descend),
+    new RedBlackTree(descend),
+  ];
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -237,8 +243,8 @@ Deno.test("[collections/RBTree] with descend comparator", () => {
   }
 });
 
-Deno.test("[collections/RBTree] containing objects", () => {
-  const tree: RBTree<Container> = new RBTree((
+Deno.test("[collections/RedBlackTree] containing objects", () => {
+  const tree: RedBlackTree<Container> = new RedBlackTree((
     a: Container,
     b: Container,
   ) => ascend(a.id, b.id));
@@ -297,23 +303,23 @@ Deno.test("[collections/RBTree] containing objects", () => {
   assertEquals(tree.isEmpty(), true);
 });
 
-Deno.test("[collections/RBTree] from Iterable", () => {
+Deno.test("[collections/RedBlackTree] from Iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-  let tree: RBTree<number> = RBTree.from(values);
+  let tree: RedBlackTree<number> = RedBlackTree.from(values);
   assertEquals(values, originalValues);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [-1, -10, -100, -9, 9, 1, 0, 100, 10]);
   assertEquals([...tree.lvlValues()], [-1, -10, 9, -100, -9, 1, 100, 0, 10]);
 
-  tree = RBTree.from(values, { compare: descend });
+  tree = RedBlackTree.from(values, { compare: descend });
   assertEquals(values, originalValues);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], [-1, 9, 100, 10, 1, 0, -10, -9, -100]);
   assertEquals([...tree.lvlValues()], [-1, 9, -10, 100, 1, -9, -100, 10, 0]);
 
-  tree = RBTree.from(values, {
+  tree = RedBlackTree.from(values, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...tree], expected.map((v: number) => 2 * v));
@@ -321,7 +327,7 @@ Deno.test("[collections/RBTree] from Iterable", () => {
   assertEquals([...tree.lvlValues()], [-2, -20, 18, -200, -18, 2, 200, 0, 20]);
 
   const math = new MyMath();
-  tree = RBTree.from(values, {
+  tree = RedBlackTree.from(values, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -332,7 +338,7 @@ Deno.test("[collections/RBTree] from Iterable", () => {
   assertEquals([...tree.nlrValues()], [-3, -30, -300, -27, 27, 3, 0, 300, 30]);
   assertEquals([...tree.lvlValues()], [-3, -30, 27, -300, -27, 3, 300, 0, 30]);
 
-  tree = RBTree.from(values, {
+  tree = RedBlackTree.from(values, {
     compare: descend,
     map: (v: number) => 2 * v,
   });
@@ -341,7 +347,7 @@ Deno.test("[collections/RBTree] from Iterable", () => {
   assertEquals([...tree.nlrValues()], [-2, 18, 200, 20, 2, 0, -20, -18, -200]);
   assertEquals([...tree.lvlValues()], [-2, 18, -20, 200, 2, -18, -200, 20, 0]);
 
-  tree = RBTree.from(values, {
+  tree = RedBlackTree.from(values, {
     compare: descend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -354,24 +360,24 @@ Deno.test("[collections/RBTree] from Iterable", () => {
   assertEquals([...tree.lvlValues()], [-3, 27, -30, 300, 3, -27, -300, 30, 0]);
 });
 
-Deno.test("[collections/RBTree] from RBTree with default ascend comparator", () => {
+Deno.test("[collections/RedBlackTree] from RedBlackTree with default ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-  const originalTree: RBTree<number> = new RBTree();
+  const originalTree: RedBlackTree<number> = new RedBlackTree();
   for (const value of values) originalTree.insert(value);
-  let tree: RBTree<number> = RBTree.from(originalTree);
+  let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
-  tree = RBTree.from(originalTree, { compare: descend });
+  tree = RedBlackTree.from(originalTree, { compare: descend });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], [-1, 1, 10, 100, 9, 0, -10, -9, -100]);
   assertEquals([...tree.lvlValues()], [-1, 1, -10, 10, 0, -9, -100, 100, 9]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
@@ -380,7 +386,7 @@ Deno.test("[collections/RBTree] from RBTree with default ascend comparator", () 
   assertEquals([...tree.lvlValues()], [-2, -20, 2, -200, -18, 0, 20, 18, 200]);
 
   const math = new MyMath();
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -391,7 +397,7 @@ Deno.test("[collections/RBTree] from RBTree with default ascend comparator", () 
   assertEquals([...tree.nlrValues()], [-3, -30, -300, -27, 3, 0, 30, 27, 300]);
   assertEquals([...tree.lvlValues()], [-3, -30, 3, -300, -27, 0, 30, 27, 300]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     compare: descend,
     map: (v: number) => 2 * v,
   });
@@ -400,7 +406,7 @@ Deno.test("[collections/RBTree] from RBTree with default ascend comparator", () 
   assertEquals([...tree.nlrValues()], [-2, 2, 20, 200, 18, 0, -20, -18, -200]);
   assertEquals([...tree.lvlValues()], [-2, 2, -20, 20, 0, -18, -200, 200, 18]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     compare: descend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -413,24 +419,24 @@ Deno.test("[collections/RBTree] from RBTree with default ascend comparator", () 
   assertEquals([...tree.lvlValues()], [-3, 3, -30, 30, 0, -27, -300, 300, 27]);
 });
 
-Deno.test("[collections/RBTree] from RBTree with descend comparator", () => {
+Deno.test("[collections/RedBlackTree] from RedBlackTree with descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];
-  const originalTree: RBTree<number> = new RBTree(descend);
+  const originalTree: RedBlackTree<number> = new RedBlackTree(descend);
   for (const value of values) originalTree.insert(value);
-  let tree: RBTree<number> = RBTree.from(originalTree);
+  let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
-  tree = RBTree.from(originalTree, { compare: ascend });
+  tree = RedBlackTree.from(originalTree, { compare: ascend });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], [1, -1, -10, -100, -9, 0, 10, 9, 100]);
   assertEquals([...tree.lvlValues()], [1, -1, 10, -10, 0, 9, 100, -100, -9]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
@@ -439,7 +445,7 @@ Deno.test("[collections/RBTree] from RBTree with descend comparator", () => {
   assertEquals([...tree.lvlValues()], [2, 20, -2, 200, 18, 0, -20, -18, -200]);
 
   const math = new MyMath();
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -450,7 +456,7 @@ Deno.test("[collections/RBTree] from RBTree with descend comparator", () => {
   assertEquals([...tree.nlrValues()], [3, 30, 300, 27, -3, 0, -30, -27, -300]);
   assertEquals([...tree.lvlValues()], [3, 30, -3, 300, 27, 0, -30, -27, -300]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     compare: ascend,
     map: (v: number) => 2 * v,
   });
@@ -459,7 +465,7 @@ Deno.test("[collections/RBTree] from RBTree with descend comparator", () => {
   assertEquals([...tree.nlrValues()], [2, -2, -20, -200, -18, 0, 20, 18, 200]);
   assertEquals([...tree.lvlValues()], [2, -2, 20, -20, 0, 18, 200, -200, -18]);
 
-  tree = RBTree.from(originalTree, {
+  tree = RedBlackTree.from(originalTree, {
     compare: ascend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -472,223 +478,223 @@ Deno.test("[collections/RBTree] from RBTree with descend comparator", () => {
   assertEquals([...tree.lvlValues()], [3, -3, 30, -30, 0, 27, 300, -300, -27]);
 });
 
-Deno.test("[collections/RBTree] insert rebalance left", () => {
+Deno.test("[collections/RedBlackTree] insert rebalance left", () => {
   let values: number[] = [8, 4, 10, 0, 6, 11, -2, 2];
-  let tree: RBTree<number> = RBTree.from(values);
+  let tree: RedBlackTree<number> = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [8, 4, 0, -2, 2, 6, 10, 11]);
   assertEquals([...tree.lvlValues()], [8, 4, 10, 0, 6, 11, -2, 2]);
   assertEquals(tree.insert(-3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, 2, 8, 6, 10, 11]);
   assertEquals([...tree.lvlValues()], [4, 0, 8, -2, 2, 6, 10, -3, 11]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(-1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -1, 2, 8, 6, 10, 11]);
   assertEquals([...tree.lvlValues()], [4, 0, 8, -2, 2, 6, 10, -1, 11]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 1, 8, 6, 10, 11]);
   assertEquals([...tree.lvlValues()], [4, 0, 8, -2, 2, 6, 10, 1, 11]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 3, 8, 6, 10, 11]);
   assertEquals([...tree.lvlValues()], [4, 0, 8, -2, 2, 6, 10, 3, 11]);
 
   values = [4, -4, 6, -5, 0, 7, -2, 2];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, -4, -5, 0, -2, 2, 6, 7]);
   assertEquals([...tree.lvlValues()], [4, -4, 6, -5, 0, 7, -2, 2]);
   assertEquals(tree.insert(-3), true);
   assertEquals([...tree.nlrValues()], [0, -4, -5, -2, -3, 4, 2, 6, 7]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -5, -2, 2, 6, -3, 7]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(-1), true);
   assertEquals([...tree.nlrValues()], [0, -4, -5, -2, -1, 4, 2, 6, 7]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -5, -2, 2, 6, -1, 7]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(1), true);
   assertEquals([...tree.nlrValues()], [0, -4, -5, -2, 4, 2, 1, 6, 7]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -5, -2, 2, 6, 1, 7]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(3), true);
   assertEquals([...tree.nlrValues()], [0, -4, -5, -2, 4, 2, 3, 6, 7]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -5, -2, 2, 6, 3, 7]);
 });
 
-Deno.test("[collections/RBTree] insert rebalance right", () => {
+Deno.test("[collections/RedBlackTree] insert rebalance right", () => {
   let values: number[] = [-4, -6, 4, 0, 6, -7, -2, 2];
-  let tree: RBTree<number> = RBTree.from(values);
+  let tree: RedBlackTree<number> = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -6, -7, 4, 0, -2, 2, 6]);
   assertEquals([...tree.lvlValues()], [-4, -6, 4, -7, 0, 6, -2, 2]);
   assertEquals(tree.insert(-3), true);
   assertEquals([...tree.nlrValues()], [0, -4, -6, -7, -2, -3, 4, 2, 6]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -6, -2, 2, 6, -7, -3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(-1), true);
   assertEquals([...tree.nlrValues()], [0, -4, -6, -7, -2, -1, 4, 2, 6]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -6, -2, 2, 6, -7, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(1), true);
   assertEquals([...tree.nlrValues()], [0, -4, -6, -7, -2, 4, 2, 1, 6]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -6, -2, 2, 6, -7, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(3), true);
   assertEquals([...tree.nlrValues()], [0, -4, -6, -7, -2, 4, 2, 3, 6]);
   assertEquals([...tree.lvlValues()], [0, -4, 4, -6, -2, 2, 6, -7, 3]);
 
   values = [-8, -10, -4, -11, -6, 0, -2, 2];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-8, -10, -11, -4, -6, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-8, -10, -4, -11, -6, 0, -2, 2]);
   assertEquals(tree.insert(-3), true);
   assertEquals([...tree.nlrValues()], [-4, -8, -10, -11, -6, 0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -8, 0, -10, -6, -2, 2, -11, -3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(-1), true);
   assertEquals([...tree.nlrValues()], [-4, -8, -10, -11, -6, 0, -2, -1, 2]);
   assertEquals([...tree.lvlValues()], [-4, -8, 0, -10, -6, -2, 2, -11, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(1), true);
   assertEquals([...tree.nlrValues()], [-4, -8, -10, -11, -6, 0, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [-4, -8, 0, -10, -6, -2, 2, -11, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.insert(3), true);
   assertEquals([...tree.nlrValues()], [-4, -8, -10, -11, -6, 0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -8, 0, -10, -6, -2, 2, -11, 3]);
 });
 
-Deno.test("[collections/RBTree] remove rebalance root", () => {
+Deno.test("[collections/RedBlackTree] remove rebalance root", () => {
   let values: number[] = [0];
-  let tree: RBTree<number> = RBTree.from(values);
+  let tree: RedBlackTree<number> = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], []);
 
   values = [0, -1, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -1, 1]);
   assertEquals([...tree.lvlValues()], [0, -1, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [1, -1]);
   assertEquals([...tree.lvlValues()], [1, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [0, 1]);
   assertEquals([...tree.lvlValues()], [0, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [0, -1]);
   assertEquals([...tree.lvlValues()], [0, -1]);
 
   values = [0, -2, 2, -3, -1, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [1, -2, -3, -1, 2, 3]);
   assertEquals([...tree.lvlValues()], [1, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, -1, -3, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -1, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 3, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 3, -3, -1, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [0, -2, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -1, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1, 1]);
 
   values = [0, -2, 2, -3, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-2, -3, 2, -1]);
   assertEquals([...tree.lvlValues()], [-2, -3, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, -1, -3, 2]);
   assertEquals([...tree.lvlValues()], [0, -1, 2, -3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-2, -3, 0, -1]);
   assertEquals([...tree.lvlValues()], [-2, -3, 0, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [0, -2, -1, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3]);
 
   values = [0, -2, 2, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [1, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [1, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [2, 0, 1, 3]);
   assertEquals([...tree.lvlValues()], [2, 0, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2, 3, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 1]);
 
   values = [0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3]);
   assertEquals(tree.remove(-3), true);
@@ -698,20 +704,20 @@ Deno.test("[collections/RBTree] remove rebalance root", () => {
   assertEquals([...tree.nlrValues()], [2, -2]);
   assertEquals([...tree.lvlValues()], [2, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, 2]);
   assertEquals([...tree.lvlValues()], [0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2]);
   assertEquals([...tree.lvlValues()], [0, -2]);
 
   values = [0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 3]);
   assertEquals(tree.remove(3), true);
@@ -721,194 +727,194 @@ Deno.test("[collections/RBTree] remove rebalance root", () => {
   assertEquals([...tree.nlrValues()], [2, -2]);
   assertEquals([...tree.lvlValues()], [2, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, 2]);
   assertEquals([...tree.lvlValues()], [0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2]);
   assertEquals([...tree.lvlValues()], [0, -2]);
 
   values = [0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-2, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, -3, 2]);
   assertEquals([...tree.lvlValues()], [0, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-2, -3, 0]);
   assertEquals([...tree.lvlValues()], [-2, -3, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2]);
 
   values = [0, -2, 2, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, -1, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-1, -2, 2]);
   assertEquals([...tree.lvlValues()], [-1, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [0, -1, 2]);
   assertEquals([...tree.lvlValues()], [0, -1, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-1, -2, 0]);
   assertEquals([...tree.lvlValues()], [-1, -2, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2]);
 
   values = [0, -2, 2, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [1, -2, 2]);
   assertEquals([...tree.lvlValues()], [1, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [1, 0, 2]);
   assertEquals([...tree.lvlValues()], [1, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2, 1]);
   assertEquals([...tree.lvlValues()], [0, -2, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2]);
 
   values = [0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [2, -2, 3]);
   assertEquals([...tree.lvlValues()], [2, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [2, 0, 3]);
   assertEquals([...tree.lvlValues()], [2, 0, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [0, -2, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2]);
 });
 
-Deno.test("[collections/RBTree] remove rebalance left", () => {
+Deno.test("[collections/RedBlackTree] remove rebalance left", () => {
   let values = [4, 5, 0];
-  let tree = RBTree.from(values);
+  let tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, 5]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 5]);
 
   values = [4, 5, 0, -1, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -1, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -1, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 1, -1, 5]);
   assertEquals([...tree.lvlValues()], [4, 1, 5, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [4, 0, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -1]);
 
   values = [4, 5, 0, -2, 2, -3, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, -1, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, -2, -3, 2, -1, 5]);
   assertEquals([...tree.lvlValues()], [4, -2, 5, -3, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -1, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -1, 2, -3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, -2, -3, 0, -1, 5]);
   assertEquals([...tree.lvlValues()], [4, -2, 5, -3, 0, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -1, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3]);
 
   values = [4, 5, 0, -2, 2, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 1, -2, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 1, 5, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 2, 0, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 2, 5, 0, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 3, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 1]);
 
   values = [4, 5, 0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3]);
   assertEquals(tree.remove(-3), true);
@@ -918,32 +924,32 @@ Deno.test("[collections/RBTree] remove rebalance left", () => {
   assertEquals([...tree.nlrValues()], [4, 2, -2, 5]);
   assertEquals([...tree.lvlValues()], [4, 2, 5, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, 5, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 5, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, 4, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 4, 2]);
 
   values = [4, 5, 0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 3]);
   assertEquals(tree.remove(3), true);
@@ -953,294 +959,294 @@ Deno.test("[collections/RBTree] remove rebalance left", () => {
   assertEquals([...tree.nlrValues()], [4, 2, -2, 5]);
   assertEquals([...tree.lvlValues()], [4, 2, 5, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, 5, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 5, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, 4, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 4, 2]);
 
   values = [4, 5, 0, -2, 2, -3, -1, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, -1, 2, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3, -1, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 1, -2, -3, -1, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 1, 5, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -1, -3, 2, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -1, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, -1, 3, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 3, -3, -1, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -1, 2, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -1, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, 2, 1, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, -1, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, -1, 2, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3, -1, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2, 1, 5, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1, 1, 5, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, -1, 2, 1, 4, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -3, -1, 1, 4, 3]);
 
   values = [4, 5, 0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, -2, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, -2, 5, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -3, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, -2, -3, 0, 5]);
   assertEquals([...tree.lvlValues()], [4, -2, 5, -3, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 5, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 5, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, -3, 4, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 4, -3, 2]);
 
   values = [4, 5, 0, -2, 2, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, -1, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, -1, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, -1, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -1, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -1, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, -1, -2, 0, 5]);
   assertEquals([...tree.lvlValues()], [4, -1, 5, -2, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, -1, 5, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 5, -1, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, -1, 4, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 4, -1, 2]);
 
   values = [4, 5, 0, -2, 2, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 1, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 1, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 1, 0, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 1, 5, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 1, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 1, 5]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 1, 5]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, 2, 1, 4]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, 1, 4]);
 
   values = [4, 5, 0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [4, 2, -2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 2, 5, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [4, 2, 0, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 2, 5, 0, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 3, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [4, 0, -2, 2, 5]);
   assertEquals([...tree.lvlValues()], [4, 0, 5, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(4), true);
   assertEquals([...tree.nlrValues()], [0, -2, 3, 2, 5]);
   assertEquals([...tree.lvlValues()], [0, -2, 3, 2, 5]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(5), true);
   assertEquals([...tree.nlrValues()], [0, -2, 3, 2, 4]);
   assertEquals([...tree.lvlValues()], [0, -2, 3, 2, 4]);
 });
 
-Deno.test("[collections/RBTree] remove rebalance right", () => {
+Deno.test("[collections/RedBlackTree] remove rebalance right", () => {
   let values = [-4, -5, 0];
-  let tree = RBTree.from(values);
+  let tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5]);
 
   values = [-4, -5, 0, -1, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -1, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -1, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 1, -1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 1, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -1]);
 
   values = [-4, -5, 0, -2, 2, -3, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, -1, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -2, -3, 2, -1]);
   assertEquals([...tree.lvlValues()], [-4, -5, -2, -3, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -1, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -1, 2, -3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -2, -3, 0, -1]);
   assertEquals([...tree.lvlValues()], [-4, -5, -2, -3, 0, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -1, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3]);
 
   values = [-4, -5, 0, -2, 2, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 1, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 1, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 2, 0, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 2, 0, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 3, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 3, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 1]);
 
   values = [-4, -5, 0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3]);
   assertEquals(tree.remove(-3), true);
@@ -1250,32 +1256,32 @@ Deno.test("[collections/RBTree] remove rebalance right", () => {
   assertEquals([...tree.nlrValues()], [-4, -5, 2, -2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 2, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-2, -5, 0, 2]);
   assertEquals([...tree.lvlValues()], [-2, -5, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -4, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2]);
 
   values = [-4, -5, 0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 3]);
   assertEquals(tree.remove(3), true);
@@ -1285,214 +1291,214 @@ Deno.test("[collections/RBTree] remove rebalance right", () => {
   assertEquals([...tree.nlrValues()], [-4, -5, 2, -2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 2, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-2, -5, 0, 2]);
   assertEquals([...tree.lvlValues()], [-2, -5, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -4, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2]);
 
   values = [-4, -5, 0, -2, 2, -3, -1, 1, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3, -1, 1, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 1, -2, -3, -1, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 1, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -1, -3, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -1, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, -1, 3, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 3, -3, -1, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -1, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, -1, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3, -1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, -1, 2, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3, -1, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-3, -5, 0, -2, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [-3, -5, 0, -2, 2, -1, 1, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -2, -4, -3, -1, 2, 1, 3]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -4, -1, 1, 3, -3]);
 
   values = [-4, -5, 0, -2, 2, -3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -2, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, -2, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -3, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -3, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -2, -3, 0]);
   assertEquals([...tree.lvlValues()], [-4, -5, -2, -3, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-3, -5, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-3, -5, 0, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -3, -4, -2, 2]);
   assertEquals([...tree.lvlValues()], [0, -3, 2, -4, -2]);
 
   values = [-4, -5, 0, -2, 2, -1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, -1, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, -1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -1, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, -1, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -1, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -1, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, -1, -2, 0]);
   assertEquals([...tree.lvlValues()], [-4, -5, -1, -2, 0]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-2, -5, 0, -1, 2]);
   assertEquals([...tree.lvlValues()], [-2, -5, 0, -1, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -2, -4, -1, 2]);
   assertEquals([...tree.lvlValues()], [0, -2, 2, -4, -1]);
 
   values = [-4, -5, 0, -2, 2, 1];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 1]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 1, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 1, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 1, 0, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 1, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 1]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 1]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(1), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-2, -5, 1, 0, 2]);
   assertEquals([...tree.lvlValues()], [-2, -5, 1, 0, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -4, -2, 2, 1]);
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2, 1]);
 
   values = [-4, -5, 0, -2, 2, 3];
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2, 3]);
   assertEquals(tree.remove(0), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 2, -2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 2, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 2, 0, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 2, 0, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(2), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 3]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(3), true);
   assertEquals([...tree.nlrValues()], [-4, -5, 0, -2, 2]);
   assertEquals([...tree.lvlValues()], [-4, -5, 0, -2, 2]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-4), true);
   assertEquals([...tree.nlrValues()], [-2, -5, 2, 0, 3]);
   assertEquals([...tree.lvlValues()], [-2, -5, 2, 0, 3]);
 
-  tree = RBTree.from(values);
+  tree = RedBlackTree.from(values);
   assertEquals(tree.remove(-5), true);
   assertEquals([...tree.nlrValues()], [0, -4, -2, 2, 3]);
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2, 3]);
 });
 
-Deno.test("[collections/RBTree] README example", () => {
+Deno.test("[collections/RedBlackTree] README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
-  const tree = new RBTree<number>();
+  const tree = new RedBlackTree<number>();
   values.forEach((value) => tree.insert(value));
   assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
   assertEquals(tree.min(), 1);
@@ -1503,7 +1509,7 @@ Deno.test("[collections/RBTree] README example", () => {
   assertEquals(tree.remove(7), true);
   assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
 
-  const invertedTree = new RBTree<number>(descend);
+  const invertedTree = new RedBlackTree<number>(descend);
   values.forEach((value) => invertedTree.insert(value));
   assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
   assertEquals(invertedTree.min(), 14);
@@ -1514,7 +1520,7 @@ Deno.test("[collections/RBTree] README example", () => {
   assertEquals(invertedTree.remove(7), true);
   assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
 
-  const words = new RBTree<string>((a, b) =>
+  const words = new RedBlackTree<string>((a, b) =>
     ascend(a.length, b.length) || ascend(a, b)
   );
   ["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
