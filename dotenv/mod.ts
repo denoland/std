@@ -257,7 +257,7 @@ export function stringify(object: DotenvConfig) {
       // escape inner new lines
       escapedValue = escapedValue.replaceAll("\n", "\\n");
       quote = `"`;
-    } else if (escapedValue.match(/[ \W]/)) {
+    } else if (escapedValue.match(/\W/)) {
       quote = "'";
     }
 
