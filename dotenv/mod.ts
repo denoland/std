@@ -198,7 +198,7 @@ export class MissingEnvVarsError extends Error {
  * ```ts
  * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
  *
- * const object = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
+ * const object = { GREETING: "hello world" };
  * const string = stringify(object);
  * ```
  */
