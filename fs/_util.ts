@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
+import { basename, normalize } from "../path/mod.ts";
 
 /**
  * Test whether or not `dest` is a sub-directory of `src`
@@ -36,4 +37,36 @@ export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | undefined {
     : fileInfo.isSymlink
     ? "symlink"
     : undefined;
+}
+
+export interface WalkEntry extends Deno.DirEntry {
+  path: string;
+}
+
+/** Create WalkEntry for the `path` synchronously */
+export function createWalkEntrySync(path: string): WalkEntry {
+  path = normalize(path);
+  const name = basename(path);
+  const info = Deno.statSync(path);
+  return {
+    path,
+    name,
+    isFile: info.isFile,
+    isDirectory: info.isDirectory,
+    isSymlink: info.isSymlink,
+  };
+}
+
+/** Create WalkEntry for the `path` asynchronously */
+export async function createWalkEntry(path: string): Promise<WalkEntry> {
+  path = normalize(path);
+  const name = basename(path);
+  const info = await Deno.stat(path);
+  return {
+    path,
+    name,
+    isFile: info.isFile,
+    isDirectory: info.isDirectory,
+    isSymlink: info.isSymlink,
+  };
 }

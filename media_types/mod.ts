@@ -9,7 +9,7 @@
  * @module
  */
 
-import db from "./vendor/mime-db.v1.52.0.json" assert { type: "json" };
+import db from "./vendor/mime-db.v1.52.0.ts";
 import {
   consumeMediaParam,
   decode2331Encoding,
@@ -17,6 +17,17 @@ import {
   isToken,
   needsEncoding,
 } from "./_util.ts";
+
+type DB = typeof db;
+type ContentTypeToExtension = {
+  [K in keyof DB]: DB[K] extends { "extensions": readonly string[] }
+    ? DB[K]["extensions"][number]
+    : never;
+};
+type KnownExtensionOrType =
+  | keyof ContentTypeToExtension
+  | ContentTypeToExtension[keyof ContentTypeToExtension]
+  | `.${ContentTypeToExtension[keyof ContentTypeToExtension]}`;
 
 interface DBEntry {
   source: string;
@@ -91,13 +102,20 @@ export const types = new Map<string, KeyOfDb>();
  * contentType("file.json"); // undefined
  * ```
  */
-export function contentType(extensionOrType: string): string | undefined {
+export function contentType<
+  // Workaround to autocomplete for parameters: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-567871939
+  // deno-lint-ignore ban-types
+  T extends (string & {}) | KnownExtensionOrType,
+>(
+  extensionOrType: T,
+): Lowercase<T> extends KnownExtensionOrType ? string : string | undefined {
   try {
     const [mediaType, params = {}] = extensionOrType.includes("/")
       ? parseMediaType(extensionOrType)
       : [typeByExtension(extensionOrType), undefined];
     if (!mediaType) {
-      return undefined;
+      return undefined as Lowercase<T> extends KnownExtensionOrType ? string
+        : string | undefined;
     }
     if (!("charset" in params)) {
       const charset = getCharset(mediaType);
@@ -109,7 +127,8 @@ export function contentType(extensionOrType: string): string | undefined {
   } catch {
     // just swallow returning undefined
   }
-  return undefined;
+  return undefined as Lowercase<T> extends KnownExtensionOrType ? string
+    : string | undefined;
 }
 
 /** For a given media type, return the most relevant extension, or `undefined`

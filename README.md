@@ -69,7 +69,7 @@ Before opening a PR make sure to:
 - have the latest Deno version installed locally
 - add tests that cover your changes.
 - `deno task test` passes.
-- `deno fmt` passes without changing files.
+- `deno fmt --check` passes.
 - `deno lint` passes.
 
 Give the PR a descriptive title.

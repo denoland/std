@@ -222,6 +222,12 @@ this flag is passed, then any snapshots which do not match will be updated.
 deno test --allow-all -- --update
 ```
 
+Note: In Powershell, you need to quote `--`.
+
+```powershell
+deno test --allow-all "--" --update
+```
+
 Additionally, new snapshots will only be created when this flag is present.
 
 ### Permissions:
@@ -234,6 +240,71 @@ be enabled, as this is required in order to update snapshot files.
 The `assertSnapshot` function will only attempt to read from and write to
 snapshot files. As such, the allow list for `--allow-read` and `--allow-write`
 can be limited to only include existing snapshot files, if so desired.
+
+### Options:
+
+The `assertSnapshot` function optionally accepts an options object.
+
+```ts
+// example_test.ts
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+  const a = {
+    hello: "world!",
+    example: 123,
+  };
+  await assertSnapshot(t, a, {
+    // options
+  });
+});
+```
+
+You can also configure default options for `assertSnapshot`.
+
+```ts
+// example_test.ts
+import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+
+const assertSnapshot = createAssertSnapshot({
+  // options
+});
+```
+
+When configuring default options like this, the resulting `assertSnapshot`
+function will function the same as the default function exported from the
+snapshot module. If passed an optional options object, this will take precedence
+over the default options, where the value provded for an option differs.
+
+It is possible to "extend" an `assertSnapshot` function which has been
+configured with default options.
+
+```ts
+// example_test.ts
+import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+import { stripColor } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+
+const assertSnapshot = createAssertSnapshot({
+  dir: ".snaps",
+});
+
+const assertMonochromeSnapshot = createAssertSnapshot<string>(
+  { serializer: stripColor },
+  assertSnapshot,
+);
+
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+  const a = "\x1b[32mThis green text has had it's colours stripped\x1b[39m";
+  await assertMonochromeSnapshot(t, a);
+});
+```
+
+```js
+// .snaps/example_test.ts.snap
+export const snapshot = {};
+
+snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
+```
 
 ### Version Control:
 

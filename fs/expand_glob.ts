@@ -8,15 +8,10 @@ import {
   resolve,
   SEP_PATTERN,
 } from "../path/mod.ts";
-import {
-  _createWalkEntry,
-  _createWalkEntrySync,
-  walk,
-  WalkEntry,
-  walkSync,
-} from "./walk.ts";
+import { walk, walkSync } from "./walk.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
+import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
 
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   root?: string;
@@ -105,7 +100,7 @@ export async function* expandGlob(
 
   let fixedRootInfo: WalkEntry;
   try {
-    fixedRootInfo = await _createWalkEntry(fixedRoot);
+    fixedRootInfo = await createWalkEntry(fixedRoot);
   } catch (error) {
     return throwUnlessNotFound(error);
   }
@@ -120,7 +115,7 @@ export async function* expandGlob(
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
-          return yield await _createWalkEntry(parentPath);
+          return yield await createWalkEntry(parentPath);
         }
       } catch (error) {
         throwUnlessNotFound(error);
@@ -213,7 +208,7 @@ export function* expandGlobSync(
 
   let fixedRootInfo: WalkEntry;
   try {
-    fixedRootInfo = _createWalkEntrySync(fixedRoot);
+    fixedRootInfo = createWalkEntrySync(fixedRoot);
   } catch (error) {
     return throwUnlessNotFound(error);
   }
@@ -228,7 +223,7 @@ export function* expandGlobSync(
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
-          return yield _createWalkEntrySync(parentPath);
+          return yield createWalkEntrySync(parentPath);
         }
       } catch (error) {
         throwUnlessNotFound(error);

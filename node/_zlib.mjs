@@ -34,7 +34,7 @@ export const codes = Object.freeze({
   [binding.Z_DATA_ERROR]: "Z_DATA_ERROR",
   [binding.Z_MEM_ERROR]: "Z_MEM_ERROR",
   [binding.Z_BUF_ERROR]: "Z_BUF_ERROR",
-  [binding.Z_VERSION_ERRO]: "Z_VERSION_ERROR",
+  [binding.Z_VERSION_ERROR]: "Z_VERSION_ERROR",
 });
 
 export const createDeflate = function (o) {

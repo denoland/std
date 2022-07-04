@@ -1327,7 +1327,7 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
   if (filename.endsWith(".js")) {
     const pkg = readPackageScope(filename);
     if (pkg !== false && pkg.data && pkg.data.type === "module") {
-      throw new Error("Importing ESM module");
+      throw new Error(`Importing ESM module: ${filename}.`);
     }
   }
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
@@ -1335,8 +1335,8 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
 };
 
 // Native extension for .mjs
-Module._extensions[".mjs"] = (): void => {
-  throw new Error("Importing ESM module");
+Module._extensions[".mjs"] = (_module: Module, filename: string): void => {
+  throw new Error(`Importing ESM module: ${filename}.`);
 };
 
 // Native extension for .json

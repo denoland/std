@@ -1,25 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
-import { BSNode, direction } from "./bs_node.ts";
-export type { direction };
+import { Direction } from "./bs_node.ts";
+import { RedBlackNode } from "./red_black_node.ts";
 
-export class RBNode<T> extends BSNode<T> {
-  declare parent: RBNode<T> | null;
-  declare left: RBNode<T> | null;
-  declare right: RBNode<T> | null;
-  red: boolean;
+/** @deprecated use Direction instead */
+export type { Direction as direction };
 
-  constructor(parent: RBNode<T> | null, value: T) {
-    super(parent, value);
-    this.red = true;
-  }
+export type { Direction };
 
-  static override from<T>(node: RBNode<T>): RBNode<T> {
-    const copy: RBNode<T> = new RBNode(node.parent, node.value);
-    copy.left = node.left;
-    copy.right = node.right;
-    copy.red = node.red;
-    return copy;
-  }
-}
+/** @deprecated use RedBlackNode instead */
+export { RedBlackNode as RBNode };
