@@ -223,7 +223,7 @@ function assertSafe(
 
   const missing = difference(
     Object.keys(confExample),
-    // If allowEmptyValues is false, filter out empty values from loaduration
+    // If allowEmptyValues is false, filter out empty values from configuration
     Object.keys(
       allowEmptyValues ? confWithEnv : removeEmptyValues(confWithEnv),
     ),
