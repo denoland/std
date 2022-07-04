@@ -9,7 +9,7 @@
 
 import { preferredEncodings } from "./_negotiation/encoding.ts";
 import { preferredLanguages } from "./_negotiation/language.ts";
-import { preferredMediaTypes } from "./_negotiation/mediaType.ts";
+import { preferredMediaTypes } from "./_negotiation/media_type.ts";
 
 export type Request = {
   headers: {
