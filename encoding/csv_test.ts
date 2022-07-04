@@ -228,21 +228,33 @@ Deno.test({
   name: "ExtraneousQuote",
   async fn() {
     const input = `"a "word","b"`;
-    await assertRejects(async () => await parse(input));
+    await assertRejects(
+      async () => await parse(input),
+      ParseError,
+      `parse error on line 1, column 3: extraneous or missing " in quoted-field`,
+    );
   },
 });
 Deno.test({
   name: "BadFieldCount",
   async fn() {
     const input = "a,b,c\nd,e";
-    await assertRejects(async () => await parse(input, { fieldsPerRecord: 0 }));
+    await assertRejects(
+      async () => await parse(input, { fieldsPerRecord: 0 }),
+      ParseError,
+      "record on line 2: wrong number of fields",
+    );
   },
 });
 Deno.test({
   name: "BadFieldCount1",
   async fn() {
     const input = `a,b,c`;
-    await assertRejects(async () => await parse(input, { fieldsPerRecord: 2 }));
+    await assertRejects(
+      async () => await parse(input, { fieldsPerRecord: 2 }),
+      ParseError,
+      "record on line 1: wrong number of fields",
+    );
   },
 });
 Deno.test({
@@ -552,7 +564,11 @@ Deno.test({
   name: "QuoteWithTrailingCRLF",
   async fn() {
     const input = '"foo"bar"\r\n';
-    await assertRejects(async () => await parse(input), ParseError, "");
+    await assertRejects(
+      async () => await parse(input),
+      ParseError,
+      `parse error on line 1, column 4: extraneous or missing " in quoted-field`,
+    );
   },
 });
 Deno.test({
@@ -583,7 +599,11 @@ Deno.test({
   name: "OddQuotes",
   async fn() {
     const input = `"""""""`;
-    await assertRejects(async () => await parse(input), Error, "");
+    await assertRejects(
+      async () => await parse(input),
+      ParseError,
+      `parse error on line 1, column 7: extraneous or missing " in quoted-field`,
+    );
   },
 });
 Deno.test({
