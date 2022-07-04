@@ -567,4 +567,324 @@ Deno.test("expand variables", () => {
     "single quoted!==double quoted",
     "variables within and without brackets expanded",
   );
+const testOptions = {
+  envPath: path.join(testdataDir, "./.env"),
+  defaultsPath: path.join(testdataDir, "./.env.defaults"),
+};
+
+Deno.test("loadSync", () => {
+  let conf = loadSync(testOptions);
+
+  assertEquals(conf.GREETING, "hello world", "fetches .env");
+
+  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
+
+  conf = loadSync({ ...testOptions });
+  assertEquals(
+    Deno.env.get("GREETING"),
+    "hello world",
+    "exports variables to env when requested",
+  );
+
+  Deno.env.set("DO_NOT_OVERRIDE", "Hello there");
+  conf = loadSync({ ...testOptions });
+  assertEquals(
+    Deno.env.get("DO_NOT_OVERRIDE"),
+    "Hello there",
+    "does not export .env value if environment variable is already set",
+  );
+
+  assertEquals(
+    loadSync(
+      {
+        envPath: "./.some.non.existent.env",
+        defaultsPath: "./.some.non.existent.env",
+      },
+    ),
+    {},
+    "returns empty object if file doesn't exist",
+  );
+
+  const originalDenoReadFileSync = Deno.readFileSync;
+  try {
+    // @ts-ignore: for test
+    delete Deno.readFileSync;
+    assertEquals(
+      loadSync(testOptions),
+      {},
+      "returns empty object if Deno.readFileSync is not a function",
+    );
+  } finally {
+    Deno.readFileSync = originalDenoReadFileSync;
+  }
+
+  assertEquals(
+    loadSync({
+      envPath: "./.some.non.existent.env",
+      defaultsPath: testOptions.defaultsPath,
+    }),
+    { DEFAULT1: "Some Default" },
+    "returns with defaults if file doesn't exist",
+  );
+});
+
+Deno.test("loadSync with example", () => {
+  // Default
+  let conf = loadSync({
+    ...testOptions,
+  });
+  assertEquals(conf.GREETING, "hello world", "fetches .env");
+
+  // Custom .env.example
+  conf = loadSync({
+    ...testOptions,
+    examplePath: path.join(testdataDir, "./.env.example.test"),
+  });
+
+  assertEquals(
+    conf.GREETING,
+    "hello world",
+    "accepts a path to fetch env example from",
+  );
+
+  // Custom .env and .env.example
+  conf = loadSync({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example.test"),
+  });
+
+  assertEquals(
+    conf.GREETING,
+    "hello world",
+    "accepts paths to fetch env and env example from",
+  );
+
+  let error: MissingEnvVarsError;
+
+  // Throws if not all required vars are there
+  error = assertThrows(() => {
+    loadSync({
+      envPath: path.join(testdataDir, "./.env.safe.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
+
+  // Throws if any of the required vars is empty
+  error = assertThrows(() => {
+    loadSync({
+      envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
+
+  // Does not throw if required vars are provided by example
+  loadSync({
+    envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example3.test"),
+    defaultsPath: path.join(moduleDir, "./.env.defaults"),
+  });
+
+  // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
+  loadSync({
+    envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+    allowEmptyValues: true,
+  });
+
+  // Does not throw if any of the required vars passed externally
+  Deno.env.set("ANOTHER", "VAR");
+  loadSync({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+  });
+
+  // Throws if any of the required vars passed externally is empty
+  Deno.env.set("ANOTHER", "");
+  assertThrows(() => {
+    loadSync({
+      envPath: path.join(testdataDir, "./.env.safe.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  });
+
+  // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
+  Deno.env.set("ANOTHER", "");
+  loadSync({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+    allowEmptyValues: true,
+  });
+});
+
+Deno.test("load", async () => {
+  let conf = await load(testOptions);
+  assertEquals(conf.GREETING, "hello world", "fetches .env");
+
+  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
+
+  conf = await load({ envPath: path.join(testdataDir, "./.env.test") });
+  assertEquals(conf.BASIC, "basic", "accepts a path to fetch env from");
+
+  conf = await load({ ...testOptions });
+  assertEquals(
+    Deno.env.get("GREETING"),
+    "hello world",
+    "exports variables to env when requested",
+  );
+
+  Deno.env.set("DO_NOT_OVERRIDE", "Hello there");
+  conf = await load({ ...testOptions });
+  assertEquals(
+    Deno.env.get("DO_NOT_OVERRIDE"),
+    "Hello there",
+    "does not export .env value if environment variable is already set",
+  );
+
+  assertEquals(
+    await load(
+      {
+        envPath: "./.some.non.existent.env",
+        defaultsPath: "./.some.non.existent.env",
+      },
+    ),
+    {},
+    "returns empty object if file doesn't exist",
+  );
+
+  assertEquals(
+    await load({ ...testOptions, envPath: "./.some.non.existent.env" }),
+    { DEFAULT1: "Some Default" },
+    "returns with defaults if file doesn't exist",
+  );
+});
+
+Deno.test("load with example", async () => {
+  // Default
+  let conf = await load({
+    ...testOptions,
+  });
+  assertEquals(conf.GREETING, "hello world", "fetches .env");
+
+  // Custom .env.example
+  conf = await load({
+    ...testOptions,
+    examplePath: path.join(testdataDir, "./.env.example.test"),
+  });
+
+  assertEquals(
+    conf.GREETING,
+    "hello world",
+    "accepts a path to fetch env example from",
+  );
+
+  // Custom .env and .env.example
+  conf = await load({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example.test"),
+  });
+
+  assertEquals(
+    conf.GREETING,
+    "hello world",
+    "accepts paths to fetch env and env example from",
+  );
+
+  let error: MissingEnvVarsError;
+
+  // Throws if not all required vars are there
+  error = await assertRejects(async () => {
+    await load({
+      envPath: path.join(testdataDir, "./.env.safe.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
+
+  // Throws if any of the required vars is empty
+  error = await assertRejects(async () => {
+    await load({
+      envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
+
+  // Does not throw if required vars are provided by example
+  await load({
+    envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example3.test"),
+    defaultsPath: path.join(moduleDir, "./.env.defaults"),
+  });
+
+  // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
+  await load({
+    envPath: path.join(testdataDir, "./.env.safe.empty.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+    allowEmptyValues: true,
+  });
+
+  // Does not throw if any of the required vars passed externally
+  Deno.env.set("ANOTHER", "VAR");
+  await load({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+  });
+
+  // Throws if any of the required vars passed externally is empty
+  Deno.env.set("ANOTHER", "");
+  assertRejects(async () => {
+    await load({
+      envPath: path.join(testdataDir, "./.env.safe.test"),
+
+      examplePath: path.join(testdataDir, "./.env.example2.test"),
+    });
+  });
+
+  // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
+  Deno.env.set("ANOTHER", "");
+  await load({
+    envPath: path.join(testdataDir, "./.env.safe.test"),
+
+    examplePath: path.join(testdataDir, "./.env.example2.test"),
+    allowEmptyValues: true,
+  });
+});
+
+Deno.test("load defaults", async () => {
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--allow-read",
+      "--allow-env",
+      path.join(testdataDir, "./app_defaults.ts"),
+    ],
+    cwd: testdataDir,
+  });
+
+  const decoder = new TextDecoder();
+  const conf = JSON.parse(decoder.decode(stdout).trim());
+
+  assertEquals(conf.GREETING, "hello world", "fetches .env by default");
+
+  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 });

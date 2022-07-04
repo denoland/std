@@ -48,8 +48,8 @@ const RE_KeyValue =
 const RE_ExpandValue =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
-export function parse(rawDotenv: string): DotenvConfig {
-  const env: DotenvConfig = {};
+export function parse(rawDotenv: string): Record<string, string> {
+  const env: Record<string, string> = {};
   let match;
   const keysForExpandCheck = [];
 
