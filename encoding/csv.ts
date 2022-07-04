@@ -138,20 +138,6 @@ export async function readMatrix(
   return result;
 }
 
-/**
- * Parse the CSV string/buffer with the options provided.
- *
- * ColumnOptions provides the column definition
- * and the parse function for each entry of the
- * column.
- */
-export interface ColumnOptions {
-  /**
-   * Name of the column to be used as property
-   */
-  name: string;
-}
-
 export interface ParseOptions extends ReadOptions {
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be skipped.
@@ -162,7 +148,7 @@ export interface ParseOptions extends ReadOptions {
   /**
    * If you provide `string[]` or `ColumnOptions[]`, those names will be used for header definition.
    */
-  columns?: string[] | ColumnOptions[];
+  columns?: string[];
 }
 
 /**
@@ -183,7 +169,7 @@ export async function parse(
 export async function parse(
   input: string | BufReader,
   opt: Omit<ParseOptions, "columns"> & {
-    columns: string[] | ColumnOptions[];
+    columns: string[];
   },
 ): Promise<Record<string, unknown>[]>;
 export async function parse(
@@ -209,35 +195,18 @@ export async function parse(
     r = await readMatrix(new BufReader(new StringReader(input)), opt);
   }
   if (opt.skipFirstRow || opt.columns) {
-    let headers: ColumnOptions[] = [];
+    let headers: string[] = [];
     let i = 0;
 
     if (opt.skipFirstRow) {
       const head = r.shift();
       assert(head != null);
-      headers = head.map(
-        (e): ColumnOptions => {
-          return {
-            name: e,
-          };
-        },
-      );
+      headers = head;
       i++;
     }
 
     if (opt.columns) {
-      if (typeof opt.columns[0] !== "string") {
-        headers = opt.columns as ColumnOptions[];
-      } else {
-        const h = opt.columns as string[];
-        headers = h.map(
-          (e): ColumnOptions => {
-            return {
-              name: e,
-            };
-          },
-        );
-      }
+      headers = opt.columns;
     }
 
     return r.map((e) => {
@@ -249,7 +218,7 @@ export async function parse(
       i++;
       const out: Record<string, unknown> = {};
       for (let j = 0; j < e.length; j++) {
-        out[headers[j].name] = e[j];
+        out[headers[j]] = e[j];
       }
       return out;
     });

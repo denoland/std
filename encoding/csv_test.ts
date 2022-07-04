@@ -543,7 +543,7 @@ const parseTestCases = [
   {
     name: "header mapping object",
     in: "a,b,c\ne,f,g\n",
-    columns: [{ name: "this" }, { name: "is" }, { name: "sparta" }],
+    columns: ["this", "is", "sparta"],
     result: [
       { this: "a", is: "b", sparta: "c" },
       { this: "e", is: "f", sparta: "g" },
@@ -554,9 +554,9 @@ const parseTestCases = [
     in: "a,b,1\nc,d,2\ne,f,3",
     skipFirstRow: true,
     columns: [
-      { name: "foo" },
-      { name: "bar" },
-      { name: "baz" },
+      "foo",
+      "bar",
+      "baz",
     ],
     result: [
       { foo: "c", bar: "d", baz: "2" },
@@ -566,7 +566,7 @@ const parseTestCases = [
   {
     name: "mismatching number of headers and fields",
     in: "a,b,c\nd,e",
-    columns: [{ name: "a" }, { name: "b" }, { name: "c" }],
+    columns: ["a", "b", "c"],
     error: new Error(
       `Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2`,
     ),
