@@ -6,8 +6,6 @@
 
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import { parse, ParseError } from "./csv.ts";
-import { StringReader } from "../io/readers.ts";
-import { BufReader } from "../io/buffer.ts";
 
 Deno.test({
   name: "Simple",
@@ -689,14 +687,7 @@ Deno.test({
     assertEquals(await parse(input, { skipFirstRow: false }), output);
   },
 });
-Deno.test({
-  name: "simple Bufreader",
-  async fn() {
-    const input = new BufReader(new StringReader("a,b,c"));
-    const output = [["a", "b", "c"]];
-    assertEquals(await parse(input, { skipFirstRow: false }), output);
-  },
-});
+
 Deno.test({
   name: "multiline",
   async fn() {
