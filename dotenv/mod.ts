@@ -85,7 +85,7 @@ const defaultLoadOptions = {
   defaultsPath: `.env.defaults`,
 };
 
-// @timreichen move function code into loadSync function once configSync is removed
+// TODO(timreichen): move function code into loadSync function once configSync is removed
 function parseEnvFilesSync(options: LoadOptions) {
   const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
 
@@ -129,7 +129,7 @@ export function loadSync(options: LoadOptions = {}): Record<string, string> {
   return conf;
 }
 
-// @timreichen move function code into load function once configSync is removed
+// TODO(timreichen): move function code into load function once configSync is removed
 async function parseEnvFiles(options: LoadOptions) {
   const o: Required<LoadOptions> = { ...defaultLoadOptions, ...options };
 
