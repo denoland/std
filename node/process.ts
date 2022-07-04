@@ -7,7 +7,7 @@ import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/assert.ts";
-import { fromFileUrl } from "../path/mod.ts";
+import { fromFileUrl, join } from "../path/mod.ts";
 import {
   arch,
   chdir,
@@ -71,7 +71,7 @@ Object.defineProperty(argv, "1", {
     if (Deno.mainModule.startsWith("file:")) {
       return fromFileUrl(Deno.mainModule);
     } else {
-      return Deno.cwd() + "$deno$node.js";
+      return join(Deno.cwd(), "$deno$node.js");
     }
   },
 });
