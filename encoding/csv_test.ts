@@ -4,7 +4,11 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import {
+  assertEquals,
+  assertRejects,
+  assertThrows,
+} from "../testing/asserts.ts";
 import {
   ERR_BARE_QUOTE,
   ERR_FIELD_COUNT,
@@ -12,10 +16,8 @@ import {
   ERR_QUOTE,
   parse,
   ParseError,
-  readMatrix,
 } from "./csv.ts";
-import { StringReader } from "../io/readers.ts";
-import { BufReader } from "../io/buffer.ts";
+import { Parser } from "./csv/_parser.ts";
 
 // Test cases for `readMatrix()`
 const testCases = [
@@ -451,7 +453,7 @@ x,,,
 for (const t of testCases) {
   Deno.test({
     name: `[CSV] ${t.Name}`,
-    async fn() {
+    fn() {
       let separator = ",";
       let comment: string | undefined;
       let fieldsPerRec: number | undefined;
@@ -474,28 +476,25 @@ for (const t of testCases) {
       }
       let actual;
       if (t.Error) {
-        await assertRejects(async () => {
-          await readMatrix(new BufReader(new StringReader(t.Input ?? "")), {
+        assertThrows(() => {
+          const parser = new Parser({
             separator,
             comment: comment,
             trimLeadingSpace: trim,
             fieldsPerRecord: fieldsPerRec,
             lazyQuotes: lazyquote,
           });
-        }, (error: Error) => {
-          assertEquals(error, t.Error);
-        });
+          parser.parse(t.Input ?? "");
+        }, t.Error.message);
       } else {
-        actual = await readMatrix(
-          new BufReader(new StringReader(t.Input ?? "")),
-          {
-            separator,
-            comment: comment,
-            trimLeadingSpace: trim,
-            fieldsPerRecord: fieldsPerRec,
-            lazyQuotes: lazyquote,
-          },
-        );
+        const parser = new Parser({
+          separator,
+          comment: comment,
+          trimLeadingSpace: trim,
+          fieldsPerRecord: fieldsPerRec,
+          lazyQuotes: lazyquote,
+        });
+        actual = parser.parse(t.Input ?? "");
         const expected = t.Output;
         assertEquals(actual, expected);
       }
@@ -512,7 +511,7 @@ const parseTestCases = [
   },
   {
     name: "simple Bufreader",
-    in: new BufReader(new StringReader("a,b,c")),
+    in: "a,b,c",
     skipFirstRow: false,
     result: [["a", "b", "c"]],
   },
