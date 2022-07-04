@@ -581,7 +581,7 @@ Deno.test("stringify", async (t) => {
     () =>
       assertEquals(
         stringify({ "#COMMENT": "comment" }),
-        `#COMMENT=comment`,
+        ``,
       ),
   );
   await t.step(

@@ -237,8 +237,8 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 }
 
 /**
- * @param object EnvObject to be stringified
- * @returns string of EnvObject
+ * @param object object to be stringified
+ * @returns string of object
  * ```ts
  * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
  *
@@ -252,8 +252,12 @@ export function stringify(object: DotenvConfig) {
     let quote;
 
     let escapedValue = value ?? "";
-
-    if (escapedValue.includes("\n")) {
+    if (key.startsWith("#")) {
+      console.warn(
+        `key starts with a '#' indicates a comment and is ignored: '${key}'`,
+      );
+      continue;
+    } else if (escapedValue.includes("\n")) {
       // escape inner new lines
       escapedValue = escapedValue.replaceAll("\n", "\\n");
       quote = `"`;
