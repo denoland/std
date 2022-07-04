@@ -567,6 +567,8 @@ Deno.test("expand variables", () => {
     "single quoted!==double quoted",
     "variables within and without brackets expanded",
   );
+});
+
 const testOptions = {
   envPath: path.join(testdataDir, "./.env"),
   defaultsPath: path.join(testdataDir, "./.env.defaults"),
