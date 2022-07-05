@@ -1,3 +1,14 @@
+### 0.147.0 / 2022.07.05
+
+- feat(dotenv): add expand feature, move parse logic to RegExp (#2387)
+- feat(dotenv): stringify (#2412)
+- feat(http): add HTTP errors (#2307)
+- feat(http): add content negotiation (#2302)
+- feat: add createAssertSnapshot (#2403)
+- fix(node/fs/exists): fix promisified exists (#2409)
+- node: process.argv[1] uses phony local module if executing remote module
+  (#2418)
+
 ### 0.146.0 / 2022.06.30
 
 - BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
