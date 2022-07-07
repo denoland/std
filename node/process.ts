@@ -56,8 +56,6 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "uncaughtException",
-  "uncaughtExceptionMonitor",
   "unhandledRejection",
   "worker",
 ];
@@ -267,9 +265,39 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
   return true;
 }
 
+function uncaughtExceptionHandler(err, origin) {
+  process.emit("uncaughtExceptionMonitor", err, origin);
+  process.emit("uncaughtException", err, origin);
+}
+
 class Process extends EventEmitter {
   constructor() {
     super();
+
+    globalThis.addEventListener("unhandledrejection", (event) => {
+      if (process.listenerCount("unhandledRejection") === 0) {
+        // The Node.js default behavior is to raise an uncaught exception if
+        // an unhandled rejection occurs and there are no unhandledRejection
+        // listeners.
+        if (process.listenerCount("uncaughtException") === 0) {
+          throw event.reason;
+        }
+
+        uncaughtExceptionHandler(event.reason, "unhandledRejection");
+        return;
+      }
+
+      event.preventDefault();
+      process.emit("unhandledRejection", event.reason, event.promise);
+    });
+
+    globalThis.addEventListener("error", (event) => {
+      if (process.listenerCount("uncaughtException") > 0) {
+        event.preventDefault();
+      }
+
+      uncaughtExceptionHandler(event.error, "uncaughtException");
+    });
 
     globalThis.addEventListener("beforeunload", (e) => {
       super.emit("beforeExit", process.exitCode || 0);
