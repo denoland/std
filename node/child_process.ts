@@ -80,11 +80,13 @@ export function fork(
   // V8 flag to get Prisma integration running, we should fill this out with
   // more
   const v8Flags: string[] = [];
-  for (let index = 0; index < execArgv.length; index++) {
-    const flag = execArgv[index];
-    if (flag.startsWith("--max-old-space-size")) {
-      execArgv.splice(index, 1);
-      v8Flags.push(flag);
+  if (Array.isArray(execArgv)) {
+    for (let index = 0; index < execArgv.length; index++) {
+      const flag = execArgv[index];
+      if (flag.startsWith("--max-old-space-size")) {
+        execArgv.splice(index, 1);
+        v8Flags.push(flag);
+      }
     }
   }
   const stringifiedV8Flags: string[] = [];
