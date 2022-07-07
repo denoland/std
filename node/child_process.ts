@@ -76,7 +76,28 @@ export function fork(
     }
   }
 
-  args = [...denoCompatArgv, ...execArgv, modulePath, ...args];
+  // TODO(bartlomieju): this is incomplete, currently only handling a single
+  // V8 flag to get Prisma integration running, we should fill this out with
+  // more
+  const v8Flags: string[] = [];
+  for (let index = 0; index < execArgv.length; index++) {
+    const flag = execArgv[index];
+    if (flag.startsWith("--max-old-space-size")) {
+      execArgv.splice(index, 1);
+      v8Flags.push(flag);
+    }
+  }
+  const stringifiedV8Flags: string[] = [];
+  if (v8Flags.length > 0) {
+    stringifiedV8Flags.push("--v8-flags=" + v8Flags.join(","));
+  }
+  args = [
+    ...denoCompatArgv,
+    ...stringifiedV8Flags,
+    ...execArgv,
+    modulePath,
+    ...args,
+  ];
 
   if (typeof options.stdio === "string") {
     options.stdio = stdioStringToArray(options.stdio, "ipc");
