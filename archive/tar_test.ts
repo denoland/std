@@ -12,8 +12,8 @@
 import { assert, assertEquals, assertExists } from "../testing/asserts.ts";
 
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { Tar, Untar, TarEntry } from "./tar.ts";
-import type { TarMeta, TarEntry as TarEntryType, TarHeader } from "./tar.ts";
+import { Tar, TarEntry, Untar } from "./tar.ts";
+import type { TarEntry as TarEntryType, TarHeader, TarMeta } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy, readAll } from "../streams/conversion.ts";
 
@@ -448,11 +448,11 @@ Deno.test({
     // Test TarEntry type
     const bufSizes = [1, 53, 256, 511];
     const header: TarHeader = {
-      test: new Uint8Array(bufSizes)
+      test: new Uint8Array(bufSizes),
     };
     const content = new TextEncoder().encode("hello tar world!");
     const reader = new Buffer(content);
-    const tarMeta =  {
+    const tarMeta = {
       fileName: "archive/",
       fileSize: 0,
       fileMode: 509,
@@ -463,7 +463,7 @@ Deno.test({
       group: "deno",
       type: "directory",
     };
-    const tarEntry: TarEntryType = new TarEntry(tarMeta, header, reader)
+    const tarEntry: TarEntryType = new TarEntry(tarMeta, header, reader);
     assertExists(tarEntry);
-  }
-})
+  },
+});

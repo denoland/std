@@ -703,4 +703,4 @@ export class Untar {
   }
 }
 
-export { TarEntry }
+export { TarEntry };
