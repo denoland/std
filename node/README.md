@@ -160,7 +160,7 @@ following:
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
-a path inside `https://github.com/nodejs/node/tree/master/test`.
+a path inside `https://github.com/nodejs/node/tree/main/test`.
 
 Adding a new entry under the `ignore` option will indicate the test runner that
 it should not regenerate that file from scratch the next time the setup is run,
