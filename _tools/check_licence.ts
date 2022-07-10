@@ -12,6 +12,7 @@ const EXCLUDED_PATHS = [
   "node/_module/node_modules",
   "node/_tools",
   "node/testdata",
+  "semver/node_modules"
 ];
 
 const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);
