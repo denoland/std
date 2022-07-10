@@ -443,7 +443,7 @@ Deno.test({
   name: "test TarEntry",
   // only: true,
   fn() {
-    // test TraEntry class
+    // test TarEntry class
     assertExists(TarEntry);
     // Test TarEntry type
     const bufSizes = [1, 53, 256, 511];
