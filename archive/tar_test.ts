@@ -9,11 +9,11 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals, assertExists } from "../testing/asserts.ts";
 
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { Tar, Untar } from "./tar.ts";
-import type { TarMeta } from "./tar.ts";
+import { Tar, Untar, TarEntry } from "./tar.ts";
+import type { TarMeta, TarEntry as TarEntryType, TarHeader } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy, readAll } from "../streams/conversion.ts";
 
@@ -438,3 +438,32 @@ Deno.test("directoryEntryType", async function () {
   reader.close();
   await Deno.remove(outputFile);
 });
+
+Deno.test({
+  name: "test TarEntry",
+  // only: true,
+  fn() {
+    // test TraEntry class
+    assertExists(TarEntry);
+    // Test TarEntry type
+    const bufSizes = [1, 53, 256, 511];
+    const header: TarHeader = {
+      test: new Uint8Array(bufSizes)
+    };
+    const content = new TextEncoder().encode("hello tar world!");
+    const reader = new Buffer(content);
+    const tarMeta =  {
+      fileName: "archive/",
+      fileSize: 0,
+      fileMode: 509,
+      mtime: 1591800767,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "directory",
+    };
+    const tarEntry: TarEntryType = new TarEntry(tarMeta, header, reader)
+    assertExists(tarEntry);
+  }
+})
