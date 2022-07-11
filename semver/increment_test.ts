@@ -1,4 +1,4 @@
-import {  assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
 import * as semver from "./mod.ts";
 
