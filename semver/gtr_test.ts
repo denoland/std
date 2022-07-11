@@ -1,5 +1,6 @@
+// Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../testing/asserts.ts";
-
 import * as semver from "./mod.ts";
 
 Deno.test("gtr", function (): void {

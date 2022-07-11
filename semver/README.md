@@ -1,18 +1,9 @@
-# semver -- The semantic versioner for deno
-
-**A fork of [node-semver](https://github.com/npm/node-semver) using TypeScript**
-
-[![tag](https://img.shields.io/github/release/justjavac/deno-semver)](https://github.com/justjavac/deno-semver/releases)
-[![Build Status](https://github.com/justjavac/deno-semver/workflows/ci/badge.svg?branch=master)](https://github.com/justjavac/deno-semver/actions)
-[![license](https://img.shields.io/github/license/justjavac/deno-semver)](https://github.com/justjavac/deno-semver/blob/master/LICENSE)
-[![](https://img.shields.io/badge/deno-v1.3-green.svg)](https://github.com/denoland/deno)
+# Semver
 
 ## Usage
 
-As a deno module:
-
 ```ts
-import * as semver from "https://deno.land/x/semver/mod.ts";
+import * as semver from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
 
 semver.valid("1.2.3"); // "1.2.3"
 semver.valid("a.b.c"); // null
@@ -23,18 +14,6 @@ semver.lt("1.2.3", "9.8.7"); // true
 semver.minVersion(">=1.0.0"); // "1.0.0"
 semver.valid(semver.coerce("v2")); // "2.0.0"
 semver.valid(semver.coerce("42.6.7.9.3-alpha")); // "42.6.7"
-```
-
-This module can also be used in the cli like this:
-
-```bash
-deno run https://deno.land/x/semver/cli.ts valid 1.2.3 // "1.2.3"
-deno run https://deno.land/x/semver/cli.ts valid a.b.c // null
-deno run https://deno.land/x/semver/cli.ts clean "  =v1.2.3   " // "1.2.3"
-deno run https://deno.land/x/semver/cli.ts satisfies "1.2.3" "1.x || >=2.5.0 || 5.0.0 - 7.2.3" // true
-deno run https://deno.land/x/semver/cli.ts gt "1.2.3" "9.8.7" // false
-deno run https://deno.land/x/semver/cli.ts lt "1.2.3" "9.8.7" // true
-deno run https://deno.land/x/semver/cli.ts minVersion ">=1.0.0" // "1.0.0"
 ```
 
 ## Versions
