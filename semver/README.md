@@ -226,7 +226,7 @@ this object are `false` by default. The options supported are:
   compatibility reasons, if the `options` argument is a boolean value instead of
   an object, it is interpreted to be the `loose` param.
 - `includePrerelease` Set to suppress the
-  [default behavior](https://github.com/justjavac/deno-semver#prerelease-tags)
+  [default behavior](https://github.com/denoland/deno_std/tree/main/semver#prerelease-tags)
   of excluding prerelease tagged versions from ranges unless they are explicitly
   opted into.
 
