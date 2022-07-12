@@ -1,3 +1,10 @@
+### 0.148.0 / 2022.07.12
+
+- fix(archive/tar): export TarEntry class (#2429)
+- fix(encoding/csv/stream): cancel lineReader if readable is canceled (#2401)
+- fix(node): add missing named zlib exports (#2435)
+- node: handle v8 flag passed to child_process.fork (#2424)
+
 ### 0.147.0 / 2022.07.05
 
 - feat(dotenv): add expand feature, move parse logic to RegExp (#2387)
