@@ -37,6 +37,7 @@ import {
   stdout as stdout_,
 } from "./_process/streams.mjs";
 import { core } from "./_core.ts";
+import { processTicksAndRejections } from "./_next_tick.ts";
 
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
@@ -272,6 +273,7 @@ class Process extends EventEmitter {
 
     globalThis.addEventListener("beforeunload", (e) => {
       super.emit("beforeExit", process.exitCode || 0);
+      processTicksAndRejections();
       if (core.eventLoopHasMoreWork()) {
         e.preventDefault();
       }
