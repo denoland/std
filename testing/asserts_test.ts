@@ -1300,14 +1300,15 @@ Deno.test("assert almost equals number", () => {
 Deno.test({
   name: "assertInstanceOf",
   fn(): void {
-    class TestClassA {}
-    class TestClassB {}
+    class TestClass1 {}
+    class TestClass2 {}
+    class TestClass3 {}
 
     // Regular types
     assertInstanceOf(new Date(), Date);
     assertInstanceOf(new Number(), Number);
     assertInstanceOf(Promise.resolve(), Promise);
-    assertInstanceOf(new TestClassA(), TestClassA);
+    assertInstanceOf(new TestClass1(), TestClass1);
 
     // Throwing cases
     assertThrows(
@@ -1321,9 +1322,9 @@ Deno.test({
       `Expected object to be an instance of "Date" but was "number".`,
     );
     assertThrows(
-      () => assertInstanceOf(new TestClassA(), TestClassB),
+      () => assertInstanceOf(new TestClass1(), TestClass2),
       AssertionError,
-      `Expected object to be an instance of "TestClassB" but was "TestClassA".`,
+      `Expected object to be an instance of "TestClass2" but was "TestClass1".`,
     );
 
     // Custom message
@@ -1342,44 +1343,45 @@ Deno.test({
 
     let TestClassWithSameName: new () => unknown;
     {
-      class TestClassA {}
-      TestClassWithSameName = TestClassA;
+      class TestClass3 {}
+      TestClassWithSameName = TestClass3;
     }
+    // todo(dsherret): this is a bug in swc and below it should only say TestClass3
     assertThrows(
-      () => assertInstanceOf(new TestClassWithSameName(), TestClassA),
+      () => assertInstanceOf(new TestClassWithSameName(), TestClass3),
       AssertionError,
-      `Expected object to be an instance of "TestClassA".`,
+      `Expected object to be an instance of "TestClass3" but was "TestClass31".`,
     );
 
     assertThrows(
-      () => assertInstanceOf(TestClassA, TestClassA),
+      () => assertInstanceOf(TestClass1, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was not an instanced object.`,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
     );
     assertThrows(
-      () => assertInstanceOf(() => {}, TestClassA),
+      () => assertInstanceOf(() => {}, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was not an instanced object.`,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
     );
     assertThrows(
-      () => assertInstanceOf(null, TestClassA),
+      () => assertInstanceOf(null, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was "null".`,
+      `Expected object to be an instance of "TestClass1" but was "null".`,
     );
     assertThrows(
-      () => assertInstanceOf(undefined, TestClassA),
+      () => assertInstanceOf(undefined, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was "undefined".`,
+      `Expected object to be an instance of "TestClass1" but was "undefined".`,
     );
     assertThrows(
-      () => assertInstanceOf({}, TestClassA),
+      () => assertInstanceOf({}, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was "Object".`,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
     );
     assertThrows(
-      () => assertInstanceOf(Object.create(null), TestClassA),
+      () => assertInstanceOf(Object.create(null), TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClassA" but was "Object".`,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
     );
 
     // Test TypeScript types functionality, wrapped in a function that never runs
