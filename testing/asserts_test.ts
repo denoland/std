@@ -1302,6 +1302,7 @@ Deno.test({
   fn(): void {
     class TestClass1 {}
     class TestClass2 {}
+    class TestClass3 {}
 
     // Regular types
     assertInstanceOf(new Date(), Date);
@@ -1342,13 +1343,14 @@ Deno.test({
 
     let TestClassWithSameName: new () => unknown;
     {
-      class TestClass1 {}
-      TestClassWithSameName = TestClass1;
+      class TestClass3 {}
+      TestClassWithSameName = TestClass3;
     }
+    // todo(dsherret): this is a bug in swc and below it should only say TestClass3
     assertThrows(
-      () => assertInstanceOf(new TestClassWithSameName(), TestClass1),
+      () => assertInstanceOf(new TestClassWithSameName(), TestClass3),
       AssertionError,
-      `Expected object to be an instance of "TestClass1".`,
+      `Expected object to be an instance of "TestClass3" but was "TestClass31".`,
     );
 
     assertThrows(
