@@ -149,8 +149,6 @@ src[GTLT] = "((?:<|>)?=?)";
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifer, meaning "any version"
 // Only the first item is strictly required.
-const XRANGEIDENTIFIERLOOSE: number = R++;
-src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + "|x|X|\\*";
 const XRANGEIDENTIFIER: number = R++;
 src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + "|x|X|\\*";
 
@@ -171,27 +169,8 @@ src[XRANGEPLAIN] = "[v=\\s]*(" +
   "?" +
   ")?)?";
 
-const XRANGEPLAINLOOSE: number = R++;
-src[XRANGEPLAINLOOSE] = "[v=\\s]*(" +
-  src[XRANGEIDENTIFIERLOOSE] +
-  ")" +
-  "(?:\\.(" +
-  src[XRANGEIDENTIFIERLOOSE] +
-  ")" +
-  "(?:\\.(" +
-  src[XRANGEIDENTIFIERLOOSE] +
-  ")" +
-  "(?:" +
-  src[PRERELEASELOOSE] +
-  ")?" +
-  src[BUILD] +
-  "?" +
-  ")?)?";
-
 const XRANGE: number = R++;
 src[XRANGE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAIN] + "$";
-const XRANGELOOSE = R++;
-src[XRANGELOOSE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAINLOOSE] + "$";
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
@@ -205,8 +184,6 @@ const tildeTrimReplace = "$1~";
 
 const TILDE: number = R++;
 src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$";
-const TILDELOOSE: number = R++;
-src[TILDELOOSE] = "^" + src[LONETILDE] + src[XRANGEPLAINLOOSE] + "$";
 
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
@@ -220,12 +197,8 @@ const caretTrimReplace = "$1^";
 
 const CARET: number = R++;
 src[CARET] = "^" + src[LONECARET] + src[XRANGEPLAIN] + "$";
-const CARETLOOSE: number = R++;
-src[CARETLOOSE] = "^" + src[LONECARET] + src[XRANGEPLAINLOOSE] + "$";
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
-const COMPARATORLOOSE: number = R++;
-src[COMPARATORLOOSE] = "^" + src[GTLT] + "\\s*(" + LOOSEPLAIN + ")$|^$";
 const COMPARATOR: number = R++;
 src[COMPARATOR] = "^" + src[GTLT] + "\\s*(" + FULLPLAIN + ")$|^$";
 
@@ -247,16 +220,6 @@ src[HYPHENRANGE] = "^\\s*(" +
   "\\s+-\\s+" +
   "(" +
   src[XRANGEPLAIN] +
-  ")" +
-  "\\s*$";
-
-const HYPHENRANGELOOSE: number = R++;
-src[HYPHENRANGELOOSE] = "^\\s*(" +
-  src[XRANGEPLAINLOOSE] +
-  ")" +
-  "\\s+-\\s+" +
-  "(" +
-  src[XRANGEPLAINLOOSE] +
   ")" +
   "\\s*$";
 
