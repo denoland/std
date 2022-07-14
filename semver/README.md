@@ -10,7 +10,6 @@ import * as semver from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
 
 semver.valid("1.2.3"); // "1.2.3"
 semver.valid("a.b.c"); // null
-semver.clean("  =v1.2.3   "); // "1.2.3"
 semver.satisfies("1.2.3", "1.x || >=2.5.0 || 5.0.0 - 7.2.3"); // true
 semver.gt("1.2.3", "9.8.7"); // false
 semver.lt("1.2.3", "9.8.7"); // true
@@ -328,21 +327,3 @@ semver component considered for coercion is 16 characters; longer components
 will be ignored (`10000000000000000.4.7.4` becomes `4.7.4`). The maximum value
 for any semver component is `Integer.MAX_SAFE_INTEGER || (2**53 - 1)`; higher
 value components are invalid (`9999999999999999.4.7.4` is likely invalid).
-
-### Clean
-
-- `clean(version)`: Clean a string to be a valid semver if possible
-
-This will return a cleaned and trimmed semver version. If the provided version
-is not valid a null will be returned. This does not work for ranges.
-
-ex.
-
-- `s.clean(" = v 2.1.5foo")`: `null`
-- `s.clean(" = v 2.1.5foo", { loose: true })`: `"2.1.5-foo"`
-- `s.clean(" = v 2.1.5-foo")`: `null`
-- `s.clean(" = v 2.1.5-foo", { loose: true })`: `"2.1.5-foo"`
-- `s.clean("=v2.1.5")`: `"2.1.5"`
-- `s.clean(" =v2.1.5")`: `2.1.5`
-- `s.clean(" 2.1.5 ")`: `"2.1.5"`
-- `s.clean("~1.0.0")`: `null`

@@ -341,17 +341,6 @@ export function valid(
   return v ? v.version : null;
 }
 
-export function clean(
-  version: string,
-  optionsOrLoose?: boolean | Options,
-): string | null {
-  const s: SemVer | null = parse(
-    version.trim().replace(/^[=v]+/, ""),
-    optionsOrLoose,
-  );
-  return s ? s.version : null;
-}
-
 export class SemVer {
   raw!: string;
   loose!: boolean;
