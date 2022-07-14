@@ -3,12 +3,10 @@
 import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-type Version = string;
-
 Deno.test("diff", function (): void {
   //  [version1, version2, result]
   //  diff(version1, version2) -> result
-  const versions: [Version, Version, semver.ReleaseType | null][] = [
+  const versions: [string, string, semver.ReleaseType | null][] = [
     ["1.2.3", "0.2.3", "major"],
     ["1.4.5", "0.2.3", "major"],
     ["1.2.3", "2.0.0-pre", "premajor"],

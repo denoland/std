@@ -4,7 +4,6 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 type Version = string;
-type Options = semver.Options | boolean;
 
 Deno.test("comparators", function (): void {
   // [range, comparators]
@@ -119,8 +118,6 @@ Deno.test("test", function (): void {
   assert(c.test("1.2.4"));
   const c2 = new semver.Comparator(c);
   assert(c2.test("1.2.4"));
-  const c3 = new semver.Comparator(c, true);
-  assert(c3.test("1.2.4"));
 });
 
 Deno.test("intersect", function (): void {
@@ -162,16 +159,12 @@ Deno.test("intersect", function (): void {
     const comparator2 = new semver.Comparator(v[1]);
     const expect = v[2];
 
-    const actual1 = comparator1.intersects(comparator2, false);
-    const actual2 = comparator2.intersects(comparator1, { loose: false });
+    const actual1 = comparator1.intersects(comparator2);
+    const actual2 = comparator2.intersects(comparator1);
     const actual3 = semver.intersects(comparator1, comparator2);
     const actual4 = semver.intersects(comparator2, comparator1);
-    const actual5 = semver.intersects(comparator1, comparator2, true);
-    const actual6 = semver.intersects(comparator2, comparator1, true);
-    const actual7 = semver.intersects(v[0], v[1]);
-    const actual8 = semver.intersects(v[1], v[0]);
-    const actual9 = semver.intersects(v[0], v[1], true);
-    const actual10 = semver.intersects(v[1], v[0], true);
+    const actual5 = semver.intersects(v[0], v[1]);
+    const actual6 = semver.intersects(v[1], v[0]);
 
     assertEquals(actual1, expect);
     assertEquals(actual2, expect);
@@ -179,10 +172,6 @@ Deno.test("intersect", function (): void {
     assertEquals(actual4, expect);
     assertEquals(actual5, expect);
     assertEquals(actual6, expect);
-    assertEquals(actual7, expect);
-    assertEquals(actual8, expect);
-    assertEquals(actual9, expect);
-    assertEquals(actual10, expect);
   });
 });
 

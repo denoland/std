@@ -3,31 +3,16 @@
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-type Version = string;
-type Options = semver.Options | boolean;
-
 Deno.test("comparison", function (): void {
-  // [version1, version2, loose]
+  // [version1, version2]
   // version1 should be greater than version2
-  const versions: [Version, Version, Options?][] = [
+  const versions: [string, string][] = [
     ["0.0.0", "0.0.0-foo"],
     ["0.0.1", "0.0.0"],
     ["1.0.0", "0.9.9"],
     ["0.10.0", "0.9.0"],
-    ["0.99.0", "0.10.0", {}],
-    ["2.0.0", "1.2.3", { loose: false }],
-    ["v0.0.0", "0.0.0-foo", true],
-    ["v0.0.1", "0.0.0", { loose: true }],
-    ["v1.0.0", "0.9.9", true],
-    ["v0.10.0", "0.9.0", true],
-    ["v0.99.0", "0.10.0", true],
-    ["v2.0.0", "1.2.3", true],
-    ["0.0.0", "v0.0.0-foo", true],
-    ["0.0.1", "v0.0.0", true],
-    ["1.0.0", "v0.9.9", true],
-    ["0.10.0", "v0.9.0", true],
-    ["0.99.0", "v0.10.0", true],
-    ["2.0.0", "v1.2.3", true],
+    ["0.99.0", "0.10.0"],
+    ["2.0.0", "1.2.3"],
     ["1.2.3", "1.2.3-asdf"],
     ["1.2.3", "1.2.3-4"],
     ["1.2.3", "1.2.3-4-foo"],
@@ -46,28 +31,27 @@ Deno.test("comparison", function (): void {
   versions.forEach(function (v) {
     const v0 = v[0];
     const v1 = v[1];
-    const loose = v[2];
-    assert(semver.gt(v0, v1, loose), "gt('" + v0 + "', '" + v1 + "')");
-    assert(semver.lt(v1, v0, loose), "lt('" + v1 + "', '" + v0 + "')");
-    assert(!semver.gt(v1, v0, loose), "!gt('" + v1 + "', '" + v0 + "')");
-    assert(!semver.lt(v0, v1, loose), "!lt('" + v0 + "', '" + v1 + "')");
-    assert(semver.eq(v0, v0, loose), "eq('" + v0 + "', '" + v0 + "')");
-    assert(semver.eq(v1, v1, loose), "eq('" + v1 + "', '" + v1 + "')");
-    assert(semver.neq(v0, v1, loose), "neq('" + v0 + "', '" + v1 + "')");
+    assert(semver.gt(v0, v1), "gt('" + v0 + "', '" + v1 + "')");
+    assert(semver.lt(v1, v0), "lt('" + v1 + "', '" + v0 + "')");
+    assert(!semver.gt(v1, v0), "!gt('" + v1 + "', '" + v0 + "')");
+    assert(!semver.lt(v0, v1), "!lt('" + v0 + "', '" + v1 + "')");
+    assert(semver.eq(v0, v0), "eq('" + v0 + "', '" + v0 + "')");
+    assert(semver.eq(v1, v1), "eq('" + v1 + "', '" + v1 + "')");
+    assert(semver.neq(v0, v1), "neq('" + v0 + "', '" + v1 + "')");
     assert(
-      semver.cmp(v1, "==", v1, loose),
+      semver.cmp(v1, "==", v1),
       "cmp('" + v1 + "' == '" + v1 + "')",
     );
     assert(
-      semver.cmp(v0, ">=", v1, loose),
+      semver.cmp(v0, ">=", v1),
       "cmp('" + v0 + "' >= '" + v1 + "')",
     );
     assert(
-      semver.cmp(v1, "<=", v0, loose),
+      semver.cmp(v1, "<=", v0),
       "cmp('" + v1 + "' <= '" + v0 + "')",
     );
     assert(
-      semver.cmp(v0, "!=", v1, loose),
+      semver.cmp(v0, "!=", v1),
       "cmp('" + v0 + "' != '" + v1 + "')",
     );
   });
@@ -124,32 +108,6 @@ Deno.test("compareIdentifierst", function (): void {
   });
   assertEquals(semver.compareIdentifiers("0", "0"), 0);
   assertEquals(semver.rcompareIdentifiers("0", "0"), 0);
-});
-
-Deno.test("strictVsLooseVersion", function (): void {
-  [
-    ["=1.2.3", "1.2.3"],
-    ["01.02.03", "1.2.3"],
-    ["1.2.3-beta.01", "1.2.3-beta.1"],
-    ["   =1.2.3", "1.2.3"],
-    ["1.2.3foo", "1.2.3-foo"],
-  ].forEach(function (v) {
-    const loose = v[0];
-    const strict = v[1];
-    assertThrows(function () {
-      new semver.SemVer(loose);
-    });
-    const lv = new semver.SemVer(loose, true);
-    assertEquals(lv.version, strict);
-    assert(semver.eq(loose, strict, true));
-    assertThrows(function () {
-      semver.eq(loose, strict);
-    });
-    assertThrows(function () {
-      new semver.SemVer(strict).compare(loose);
-    });
-    assertEquals(semver.compareLoose(v[0], v[1]), 0);
-  });
 });
 
 Deno.test("invalidCmpUsage", function (): void {

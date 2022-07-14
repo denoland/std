@@ -4,9 +4,9 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 Deno.test("major", function (): void {
-  // [range, version, loose]
+  // [range, version]
   // Version should be detectable despite extra characters
-  const versions: [string, number, boolean?][] = [
+  const versions: [string, number][] = [
     ["1.2.3", 1],
     [" 1.2.3 ", 1],
     [" 2.2.3-4 ", 2],
@@ -14,15 +14,12 @@ Deno.test("major", function (): void {
     ["v5.2.3", 5],
     [" v8.2.3 ", 8],
     ["\t13.2.3", 13],
-    ["=21.2.3", 21, true],
-    ["v=34.2.3", 34, true],
   ];
 
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `major(${range}, ${loose}) = ${version}`;
-    assertEquals(semver.major(range, loose), version, msg);
+    const msg = `major(${range}) = ${version}`;
+    assertEquals(semver.major(range), version, msg);
   });
 });

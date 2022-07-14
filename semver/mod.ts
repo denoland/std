@@ -32,7 +32,6 @@ export type Operator =
   | "<=";
 
 export interface Options {
-  loose?: boolean;
   includePrerelease?: boolean;
 }
 
@@ -144,9 +143,6 @@ const LOOSEPLAIN: string = "[v=\\s]*" +
   src[BUILD] +
   "?";
 
-const LOOSE: number = R++;
-src[LOOSE] = "^" + LOOSEPLAIN + "$";
-
 const GTLT: number = R++;
 src[GTLT] = "((?:<|>)?=?)";
 
@@ -244,9 +240,6 @@ re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], "g");
 const comparatorTrimReplace = "$1$2$3";
 
 // Something like `1.2.3 - 1.2.4`
-// Note that these all use the loose form, because they'll be
-// checked against either the strict or loose comparator form
-// later.
 const HYPHENRANGE: number = R++;
 src[HYPHENRANGE] = "^\\s*(" +
   src[XRANGEPLAIN] +
@@ -281,11 +274,10 @@ for (let i = 0; i < R; i++) {
 
 export function parse(
   version: string | SemVer | null,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): SemVer | null {
-  if (!optionsOrLoose || typeof optionsOrLoose !== "object") {
-    optionsOrLoose = {
-      loose: !!optionsOrLoose,
+  if (typeof options !== "object") {
+    options = {
       includePrerelease: false,
     };
   }
@@ -302,13 +294,13 @@ export function parse(
     return null;
   }
 
-  const r: RegExp = optionsOrLoose.loose ? re[LOOSE] : re[FULL];
+  const r: RegExp = re[FULL];
   if (!r.test(version)) {
     return null;
   }
 
   try {
-    return new SemVer(version, optionsOrLoose);
+    return new SemVer(version, options);
   } catch {
     return null;
   }
@@ -316,16 +308,15 @@ export function parse(
 
 export function valid(
   version: string | SemVer | null,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): string | null {
   if (version === null) return null;
-  const v: SemVer | null = parse(version, optionsOrLoose);
+  const v: SemVer | null = parse(version, options);
   return v ? v.version : null;
 }
 
 export class SemVer {
   raw!: string;
-  loose!: boolean;
   options!: Options;
 
   major!: number;
@@ -335,19 +326,14 @@ export class SemVer {
   build!: ReadonlyArray<string>;
   prerelease!: Array<string | number>;
 
-  constructor(version: string | SemVer, optionsOrLoose?: boolean | Options) {
-    if (!optionsOrLoose || typeof optionsOrLoose !== "object") {
-      optionsOrLoose = {
-        loose: !!optionsOrLoose,
+  constructor(version: string | SemVer, options?: Options) {
+    if (typeof options !== "object") {
+      options = {
         includePrerelease: false,
       };
     }
     if (version instanceof SemVer) {
-      if (version.loose === optionsOrLoose.loose) {
-        return version;
-      } else {
-        version = version.version;
-      }
+      version = version.version;
     } else if (typeof version !== "string") {
       throw new TypeError("Invalid Version: " + version);
     }
@@ -359,13 +345,12 @@ export class SemVer {
     }
 
     if (!(this instanceof SemVer)) {
-      return new SemVer(version, optionsOrLoose);
+      return new SemVer(version, options);
     }
 
-    this.options = optionsOrLoose;
-    this.loose = !!optionsOrLoose.loose;
+    this.options = options;
 
-    const m = version.trim().match(optionsOrLoose.loose ? re[LOOSE] : re[FULL]);
+    const m = version.trim().match(re[FULL]);
 
     if (!m) {
       throw new TypeError("Invalid Version: " + version);
@@ -614,15 +599,15 @@ export class SemVer {
 export function inc(
   version: string | SemVer,
   release: ReleaseType,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
   identifier?: string,
 ): string | null {
-  if (typeof optionsOrLoose === "string") {
-    identifier = optionsOrLoose;
-    optionsOrLoose = undefined;
+  if (typeof options === "string") {
+    identifier = options;
+    options = undefined;
   }
   try {
-    return new SemVer(version, optionsOrLoose).inc(release, identifier).version;
+    return new SemVer(version, options).inc(release, identifier).version;
   } catch {
     return null;
   }
@@ -631,9 +616,9 @@ export function inc(
 export function diff(
   version1: string | SemVer,
   version2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): ReleaseType | null {
-  if (eq(version1, version2, optionsOrLoose)) {
+  if (eq(version1, version2, options)) {
     return null;
   } else {
     const v1: SemVer | null = parse(version1);
@@ -690,9 +675,9 @@ export function rcompareIdentifiers(
  */
 export function major(
   v: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): number {
-  return new SemVer(v, optionsOrLoose).major;
+  return new SemVer(v, options).major;
 }
 
 /**
@@ -700,9 +685,9 @@ export function major(
  */
 export function minor(
   v: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): number {
-  return new SemVer(v, optionsOrLoose).minor;
+  return new SemVer(v, options).minor;
 }
 
 /**
@@ -710,115 +695,108 @@ export function minor(
  */
 export function patch(
   v: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): number {
-  return new SemVer(v, optionsOrLoose).patch;
+  return new SemVer(v, options).patch;
 }
 
 export function compare(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): 1 | 0 | -1 {
-  return new SemVer(v1, optionsOrLoose).compare(new SemVer(v2, optionsOrLoose));
-}
-
-export function compareLoose(
-  a: string | SemVer,
-  b: string | SemVer,
-): 1 | 0 | -1 {
-  return compare(a, b, true);
+  return new SemVer(v1, options).compare(new SemVer(v2, options));
 }
 
 export function compareBuild(
   a: string | SemVer,
   b: string | SemVer,
-  loose?: boolean | Options,
+  options?: Options,
 ): 1 | 0 | -1 {
-  const versionA = new SemVer(a, loose);
-  const versionB = new SemVer(b, loose);
+  const versionA = new SemVer(a, options);
+  const versionB = new SemVer(b, options);
   return versionA.compare(versionB) || versionA.compareBuild(versionB);
 }
 
 export function rcompare(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): 1 | 0 | -1 {
-  return compare(v2, v1, optionsOrLoose);
+  return compare(v2, v1, options);
 }
 
 export function sort<T extends string | SemVer>(
   list: T[],
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): T[] {
   return list.sort((a, b) => {
-    return compareBuild(a, b, optionsOrLoose);
+    return compareBuild(a, b, options);
   });
 }
 
 export function rsort<T extends string | SemVer>(
   list: T[],
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): T[] {
   return list.sort((a, b) => {
-    return compareBuild(b, a, optionsOrLoose);
+    return compareBuild(b, a, options);
   });
 }
 
 export function gt(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) > 0;
+  return compare(v1, v2, options) > 0;
 }
 
 export function lt(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) < 0;
+  return compare(v1, v2, options) < 0;
 }
 
 export function eq(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) === 0;
+  return compare(v1, v2, options) === 0;
 }
 
 export function neq(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) !== 0;
+  return compare(v1, v2, options) !== 0;
 }
 
 export function gte(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) >= 0;
+  return compare(v1, v2, options) >= 0;
 }
 
 export function lte(
   v1: string | SemVer,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return compare(v1, v2, optionsOrLoose) <= 0;
+  return compare(v1, v2, options) <= 0;
 }
 
 export function cmp(
   v1: string | SemVer,
   operator: Operator,
   v2: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
   switch (operator) {
     case "===":
@@ -834,22 +812,22 @@ export function cmp(
     case "":
     case "=":
     case "==":
-      return eq(v1, v2, optionsOrLoose);
+      return eq(v1, v2, options);
 
     case "!=":
-      return neq(v1, v2, optionsOrLoose);
+      return neq(v1, v2, options);
 
     case ">":
-      return gt(v1, v2, optionsOrLoose);
+      return gt(v1, v2, options);
 
     case ">=":
-      return gte(v1, v2, optionsOrLoose);
+      return gte(v1, v2, options);
 
     case "<":
-      return lt(v1, v2, optionsOrLoose);
+      return lt(v1, v2, options);
 
     case "<=":
-      return lte(v1, v2, optionsOrLoose);
+      return lte(v1, v2, options);
 
     default:
       throw new TypeError("Invalid operator: " + operator);
@@ -862,31 +840,24 @@ export class Comparator {
   semver!: SemVer;
   operator!: "" | "=" | "<" | ">" | "<=" | ">=";
   value!: string;
-  loose!: boolean;
   options!: Options;
 
-  constructor(comp: string | Comparator, optionsOrLoose?: boolean | Options) {
-    if (!optionsOrLoose || typeof optionsOrLoose !== "object") {
-      optionsOrLoose = {
-        loose: !!optionsOrLoose,
+  constructor(comp: string | Comparator, options?: Options) {
+    if (typeof options !== "object") {
+      options = {
         includePrerelease: false,
       };
     }
 
     if (comp instanceof Comparator) {
-      if (comp.loose === !!optionsOrLoose.loose) {
-        return comp;
-      } else {
-        comp = comp.value;
-      }
+      return comp;
     }
 
     if (!(this instanceof Comparator)) {
-      return new Comparator(comp, optionsOrLoose);
+      return new Comparator(comp, options);
     }
 
-    this.options = optionsOrLoose;
-    this.loose = !!optionsOrLoose.loose;
+    this.options = options;
     this.parse(comp);
 
     if (this.semver === ANY) {
@@ -897,7 +868,7 @@ export class Comparator {
   }
 
   parse(comp: string): void {
-    const r = this.options.loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
+    const r = re[COMPARATOR];
     const m = comp.match(r);
 
     if (!m) {
@@ -915,7 +886,7 @@ export class Comparator {
     if (!m[2]) {
       this.semver = ANY;
     } else {
-      this.semver = new SemVer(m[2], this.options.loose);
+      this.semver = new SemVer(m[2], this.options);
     }
   }
 
@@ -931,14 +902,13 @@ export class Comparator {
     return cmp(version, this.operator, this.semver, this.options);
   }
 
-  intersects(comp: Comparator, optionsOrLoose?: boolean | Options): boolean {
+  intersects(comp: Comparator, options?: Options): boolean {
     if (!(comp instanceof Comparator)) {
       throw new TypeError("a Comparator is required");
     }
 
-    if (!optionsOrLoose || typeof optionsOrLoose !== "object") {
-      optionsOrLoose = {
-        loose: !!optionsOrLoose,
+    if (typeof options !== "object") {
+      options = {
         includePrerelease: false,
       };
     }
@@ -949,14 +919,14 @@ export class Comparator {
       if (this.value === "") {
         return true;
       }
-      rangeTmp = new Range(comp.value, optionsOrLoose);
-      return satisfies(this.value, rangeTmp, optionsOrLoose);
+      rangeTmp = new Range(comp.value, options);
+      return satisfies(this.value, rangeTmp, options);
     } else if (comp.operator === "") {
       if (comp.value === "") {
         return true;
       }
-      rangeTmp = new Range(this.value, optionsOrLoose);
-      return satisfies(comp.semver, rangeTmp, optionsOrLoose);
+      rangeTmp = new Range(this.value, options);
+      return satisfies(comp.semver, rangeTmp, options);
     }
 
     const sameDirectionIncreasing: boolean =
@@ -970,11 +940,11 @@ export class Comparator {
       (this.operator === ">=" || this.operator === "<=") &&
       (comp.operator === ">=" || comp.operator === "<=");
     const oppositeDirectionsLessThan: boolean =
-      cmp(this.semver, "<", comp.semver, optionsOrLoose) &&
+      cmp(this.semver, "<", comp.semver, options) &&
       (this.operator === ">=" || this.operator === ">") &&
       (comp.operator === "<=" || comp.operator === "<");
     const oppositeDirectionsGreaterThan: boolean =
-      cmp(this.semver, ">", comp.semver, optionsOrLoose) &&
+      cmp(this.semver, ">", comp.semver, options) &&
       (this.operator === "<=" || this.operator === "<") &&
       (comp.operator === ">=" || comp.operator === ">");
 
@@ -995,44 +965,40 @@ export class Comparator {
 export class Range {
   range!: string;
   raw!: string;
-  loose!: boolean;
   options!: Options;
   includePrerelease!: boolean;
   set!: ReadonlyArray<ReadonlyArray<Comparator>>;
 
   constructor(
     range: string | Range | Comparator,
-    optionsOrLoose?: boolean | Options,
+    options?: Options,
   ) {
-    if (!optionsOrLoose || typeof optionsOrLoose !== "object") {
-      optionsOrLoose = {
-        loose: !!optionsOrLoose,
+    if (typeof options !== "object") {
+      options = {
         includePrerelease: false,
       };
     }
 
     if (range instanceof Range) {
       if (
-        range.loose === !!optionsOrLoose.loose &&
-        range.includePrerelease === !!optionsOrLoose.includePrerelease
+        range.includePrerelease === !!options.includePrerelease
       ) {
         return range;
       } else {
-        return new Range(range.raw, optionsOrLoose);
+        return new Range(range.raw, options);
       }
     }
 
     if (range instanceof Comparator) {
-      return new Range(range.value, optionsOrLoose);
+      return new Range(range.value, options);
     }
 
     if (!(this instanceof Range)) {
-      return new Range(range, optionsOrLoose);
+      return new Range(range, options);
     }
 
-    this.options = optionsOrLoose;
-    this.loose = !!optionsOrLoose.loose;
-    this.includePrerelease = !!optionsOrLoose.includePrerelease;
+    this.options = options;
+    this.includePrerelease = !!options.includePrerelease;
 
     // First, split based on boolean or ||
     this.raw = range;
@@ -1060,10 +1026,9 @@ export class Range {
   }
 
   parseRange(range: string): ReadonlyArray<Comparator> {
-    const loose = this.options.loose;
     range = range.trim();
     // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-    const hr: RegExp = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
+    const hr: RegExp = re[HYPHENRANGE];
     range = range.replace(hr, hyphenReplace);
 
     // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
@@ -1081,18 +1046,11 @@ export class Range {
     // At this point, the range is completely trimmed and
     // ready to be split into comparators.
 
-    const compRe: RegExp = loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
-    let set: string[] = range
+    const set: string[] = range
       .split(" ")
       .map((comp) => parseComparator(comp, this.options))
       .join(" ")
       .split(/\s+/);
-    if (this.options.loose) {
-      // in loose mode, throw out any that are not valid comparators
-      set = set.filter((comp) => {
-        return !!comp.match(compRe);
-      });
-    }
 
     return set.map((comp) => new Comparator(comp, this.options));
   }
@@ -1110,22 +1068,22 @@ export class Range {
     return false;
   }
 
-  intersects(range?: Range, optionsOrLoose?: boolean | Options): boolean {
+  intersects(range?: Range, options?: Options): boolean {
     if (!(range instanceof Range)) {
       throw new TypeError("a Range is required");
     }
 
     return this.set.some((thisComparators) => {
       return (
-        isSatisfiable(thisComparators, optionsOrLoose) &&
+        isSatisfiable(thisComparators, options) &&
         range.set.some((rangeComparators) => {
           return (
-            isSatisfiable(rangeComparators, optionsOrLoose) &&
+            isSatisfiable(rangeComparators, options) &&
             thisComparators.every((thisComparator) => {
               return rangeComparators.every((rangeComparator) => {
                 return thisComparator.intersects(
                   rangeComparator,
-                  optionsOrLoose,
+                  options,
                 );
               });
             })
@@ -1185,7 +1143,7 @@ function testSet(
 // exists a version which can satisfy it
 function isSatisfiable(
   comparators: readonly Comparator[],
-  options?: boolean | Options,
+  options?: Options,
 ): boolean {
   let result = true;
   const remainingComparators: Comparator[] = comparators.slice();
@@ -1205,9 +1163,9 @@ function isSatisfiable(
 // Mostly just for testing and legacy API reasons
 export function toComparators(
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): string[][] {
-  return new Range(range, optionsOrLoose).set.map((comp) => {
+  return new Range(range, options).set.map((comp) => {
     return comp
       .map((c) => c.value)
       .join(" ")
@@ -1245,8 +1203,8 @@ function replaceTildes(comp: string, options: Options): string {
     .join(" ");
 }
 
-function replaceTilde(comp: string, options: Options): string {
-  const r: RegExp = options.loose ? re[TILDELOOSE] : re[TILDE];
+function replaceTilde(comp: string, _options: Options): string {
+  const r: RegExp = re[TILDE];
   return comp.replace(
     r,
     (_: string, M: string, m: string, p: string, pr: string) => {
@@ -1297,8 +1255,8 @@ function replaceCarets(comp: string, options: Options): string {
     .join(" ");
 }
 
-function replaceCaret(comp: string, options: Options): string {
-  const r: RegExp = options.loose ? re[CARETLOOSE] : re[CARET];
+function replaceCaret(comp: string, _options: Options): string {
+  const r: RegExp = re[CARET];
   return comp.replace(r, (_: string, M, m, p, pr) => {
     let ret: string;
 
@@ -1372,9 +1330,9 @@ function replaceXRanges(comp: string, options: Options): string {
     .join(" ");
 }
 
-function replaceXRange(comp: string, options: Options): string {
+function replaceXRange(comp: string, _options: Options): string {
   comp = comp.trim();
-  const r: RegExp = options.loose ? re[XRANGELOOSE] : re[XRANGE];
+  const r: RegExp = re[XRANGE];
   return comp.replace(r, (ret: string, gtlt, M, m, p, _pr) => {
     const xM: boolean = isX(M);
     const xm: boolean = xM || isX(m);
@@ -1439,7 +1397,6 @@ function replaceXRange(comp: string, options: Options): string {
 // Because * is AND-ed with everything else in the comparator,
 // and '' means "any version", just remove the *s entirely.
 function replaceStars(comp: string, _options: Options): string {
-  // Looseness is ignored here.  star is always as loose as it gets!
   return comp.trim().replace(re[STAR], "");
 }
 
@@ -1491,10 +1448,10 @@ function hyphenReplace(
 export function satisfies(
   version: string | SemVer,
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
   try {
-    range = new Range(range, optionsOrLoose);
+    range = new Range(range, options);
   } catch {
     return false;
   }
@@ -1504,14 +1461,14 @@ export function satisfies(
 export function maxSatisfying<T extends string | SemVer>(
   versions: ReadonlyArray<T>,
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): T | null {
   //todo
   let max: T | SemVer | null = null;
   let maxSV: SemVer | null = null;
   let rangeObj: Range;
   try {
-    rangeObj = new Range(range, optionsOrLoose);
+    rangeObj = new Range(range, options);
   } catch {
     return null;
   }
@@ -1521,7 +1478,7 @@ export function maxSatisfying<T extends string | SemVer>(
       if (!max || (maxSV && maxSV.compare(v) === -1)) {
         // compare(max, v, true)
         max = v;
-        maxSV = new SemVer(max, optionsOrLoose);
+        maxSV = new SemVer(max, options);
       }
     }
   });
@@ -1531,14 +1488,14 @@ export function maxSatisfying<T extends string | SemVer>(
 export function minSatisfying<T extends string | SemVer>(
   versions: ReadonlyArray<T>,
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): T | null {
   //todo
   let min: string | SemVer | null = null;
   let minSV: SemVer | null = null;
   let rangeObj: Range;
   try {
-    rangeObj = new Range(range, optionsOrLoose);
+    rangeObj = new Range(range, options);
   } catch {
     return null;
   }
@@ -1548,7 +1505,7 @@ export function minSatisfying<T extends string | SemVer>(
       if (!min || minSV!.compare(v) === 1) {
         // compare(min, v, true)
         min = v;
-        minSV = new SemVer(min, optionsOrLoose);
+        minSV = new SemVer(min, options);
       }
     }
   });
@@ -1557,9 +1514,9 @@ export function minSatisfying<T extends string | SemVer>(
 
 export function minVersion(
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): SemVer | null {
-  range = new Range(range, optionsOrLoose);
+  range = new Range(range, options);
 
   let minver: SemVer | null = new SemVer("0.0.0");
   if (range.test(minver)) {
@@ -1613,13 +1570,13 @@ export function minVersion(
 
 export function validRange(
   range: string | Range | null,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): string | null {
   try {
     if (range === null) return null;
     // Return '*' instead of '' so that truthiness works.
     // This will throw if it's invalid anyway
-    return new Range(range, optionsOrLoose).range || "*";
+    return new Range(range, options).range || "*";
   } catch {
     return null;
   }
@@ -1631,9 +1588,9 @@ export function validRange(
 export function ltr(
   version: string | SemVer,
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return outside(version, range, "<", optionsOrLoose);
+  return outside(version, range, "<", options);
 }
 
 /**
@@ -1642,9 +1599,9 @@ export function ltr(
 export function gtr(
   version: string | SemVer,
   range: string | Range,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  return outside(version, range, ">", optionsOrLoose);
+  return outside(version, range, ">", options);
 }
 
 /**
@@ -1655,10 +1612,10 @@ export function outside(
   version: string | SemVer,
   range: string | Range,
   hilo: ">" | "<",
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  version = new SemVer(version, optionsOrLoose);
-  range = new Range(range, optionsOrLoose);
+  version = new SemVer(version, options);
+  range = new Range(range, options);
 
   let gtfn: typeof gt;
   let ltefn: typeof lte;
@@ -1685,7 +1642,7 @@ export function outside(
   }
 
   // If it satisifes the range it is not outside
-  if (satisfies(version, range, optionsOrLoose)) {
+  if (satisfies(version, range, options)) {
     return false;
   }
 
@@ -1704,9 +1661,9 @@ export function outside(
       }
       high = high || comparator;
       low = low || comparator;
-      if (gtfn(comparator.semver, high.semver, optionsOrLoose)) {
+      if (gtfn(comparator.semver, high.semver, options)) {
         high = comparator;
-      } else if (ltfn(comparator.semver, low.semver, optionsOrLoose)) {
+      } else if (ltfn(comparator.semver, low.semver, options)) {
         low = comparator;
       }
     }
@@ -1735,9 +1692,9 @@ export function outside(
 
 export function prerelease(
   version: string | SemVer,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): ReadonlyArray<string | number> | null {
-  const parsed = parse(version, optionsOrLoose);
+  const parsed = parse(version, options);
   return parsed && parsed.prerelease.length ? parsed.prerelease : null;
 }
 
@@ -1747,10 +1704,10 @@ export function prerelease(
 export function intersects(
   range1: string | Range | Comparator,
   range2: string | Range | Comparator,
-  optionsOrLoose?: boolean | Options,
+  options?: Options,
 ): boolean {
-  range1 = new Range(range1, optionsOrLoose);
-  range2 = new Range(range2, optionsOrLoose);
+  range1 = new Range(range1, options);
+  range2 = new Range(range2, options);
   return range1.intersects(range2);
 }
 

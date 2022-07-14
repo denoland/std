@@ -4,8 +4,8 @@ import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 Deno.test("minVersion", function (): void {
-  // [range, version, loose]
-  const versions: [string, string | null, boolean?][] = [
+  // [range, version]
+  const versions: [string, string | null][] = [
     // Stars
     ["*", "0.0.0"],
     ["* || >=2", "0.0.0"],
@@ -70,9 +70,8 @@ Deno.test("minVersion", function (): void {
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `minVersion(${range}, ${loose}) = ${version}`;
-    const min = semver.minVersion(range, loose);
+    const msg = `minVersion(${range}) = ${version}`;
+    const min = semver.minVersion(range);
     assert((min as null) === version || (min && min.version === version), msg);
   });
 });

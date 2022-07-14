@@ -4,9 +4,9 @@ import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 Deno.test("ltr", function (): void {
-  // [range, version, loose]
+  // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string, boolean?]> = [
+  const versions: ReadonlyArray<[string, string]> = [
     ["~1.2.2", "1.2.1"],
     ["~0.6.1-1", "0.6.1-0"],
     ["1.0.0 - 2.0.0", "0.0.1"],
@@ -34,7 +34,6 @@ Deno.test("ltr", function (): void {
     ["~ 1.0", "0.1.0"],
     [">1.2", "1.2.0"],
     ["> 1.2", "1.2.1"],
-    ["1", "0.0.0beta", true],
     ["~v0.5.4-pre", "0.5.4-alpha"],
     ["~v0.5.4-pre", "0.5.4-alpha"],
     ["=0.7.x", "0.6.0"],
@@ -62,14 +61,10 @@ Deno.test("ltr", function (): void {
     ["~>1", "0.2.3"],
     ["~1.0", "0.0.0"], // >=1.0.0 <1.1.0
     [">1", "1.0.0"],
-    ["2", "1.0.0beta", true],
-    [">1", "1.0.0beta", true],
-    ["> 1", "1.0.0beta", true],
     ["=0.7.x", "0.6.2"],
     ["=0.7.x", "0.7.0-asdf"],
     ["^1", "1.0.0-0"],
     [">=0.7.x", "0.7.0-asdf"],
-    ["1", "1.0.0beta", true],
     [">=0.7.x", "0.6.2"],
     [">1.2.3", "1.3.0-alpha"],
   ];
@@ -77,23 +72,21 @@ Deno.test("ltr", function (): void {
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `ltr(${version}, ${range}, ${loose})`;
-    assert(semver.ltr(version, range, loose), msg);
+    const msg = `ltr(${version}, ${range})`;
+    assert(semver.ltr(version, range), msg);
   });
 });
 
 Deno.test("ltrNegative", function (): void {
-  // [range, version, loose]
+  // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string, boolean?]> = [
+  const versions: ReadonlyArray<[string, string]> = [
     ["~ 1.0", "1.1.0"],
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["1.0.0 - 2.0.0", "2.9.9"],
     ["1.0.0", "1.0.0"],
     [">=*", "0.2.4"],
-    ["", "1.0.0", true],
     ["*", "1.2.3"],
     [">=1.0.0", "1.0.0"],
     [">=1.0.0", "1.0.1"],
@@ -161,13 +154,7 @@ Deno.test("ltrNegative", function (): void {
     ["^3.0.0", "4.0.0"],
     ["^1.0.0 || ~2.0.1", "2.0.0"],
     ["^0.1.0 || ~3.0.1 || 5.0.0", "3.2.0"],
-    ["^0.1.0 || ~3.0.1 || 5.0.0", "1.0.0beta", true],
-    ["^0.1.0 || ~3.0.1 || 5.0.0", "5.0.0-0", true],
     ["^0.1.0 || ~3.0.1 || >4 <=5.0.0", "3.5.0"],
-    ["^1.0.0alpha", "1.0.0beta", true],
-    ["~1.0.0alpha", "1.0.0beta", true],
-    ["^1.0.0-alpha", "1.0.0beta", true],
-    ["~1.0.0-alpha", "1.0.0beta", true],
     ["^1.0.0-alpha", "1.0.0-beta"],
     ["~1.0.0-alpha", "1.0.0-beta"],
     ["=0.1.0", "1.0.0"],
@@ -176,8 +163,7 @@ Deno.test("ltrNegative", function (): void {
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `!ltr(${version}, ${range}, ${loose})`;
-    assert(!semver.ltr(version, range, loose), msg);
+    const msg = `!ltr(${version}, ${range})`;
+    assert(!semver.ltr(version, range), msg);
   });
 });

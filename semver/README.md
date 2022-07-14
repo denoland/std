@@ -220,10 +220,6 @@ part       ::= nr | [-0-9A-Za-z]+
 All methods and classes take a final `options` object argument. All options in
 this object are `false` by default. The options supported are:
 
-- `loose` Be more forgiving about not-quite-valid semver strings. (Any resulting
-  output will always be 100% strict compliant, of course.) For backwards
-  compatibility reasons, if the `options` argument is a boolean value instead of
-  an object, it is interpreted to be the `loose` param.
 - `includePrerelease` Set to suppress the
   [default behavior](https://github.com/denoland/deno_std/tree/main/semver#prerelease-tags)
   of excluding prerelease tagged versions from ranges unless they are explicitly
@@ -247,8 +243,8 @@ they parse.
 - `major(v)`: Return the major version number.
 - `minor(v)`: Return the minor version number.
 - `patch(v)`: Return the patch version number.
-- `intersects(r1, r2, loose)`: Return true if the two supplied ranges or
-  comparators intersect.
+- `intersects(r1, r2)`: Return true if the two supplied ranges or comparators
+  intersect.
 - `parse(v)`: Attempt to parse a string as a semantic version, returning either
   a `SemVer` object or `null`.
 

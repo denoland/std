@@ -9,8 +9,7 @@ Deno.test("versionIsTooLong", function (): void {
   assertThrows(function () {
     new semver.SemVer(v);
   });
-  assertEquals(semver.valid(v, false), null);
-  assertEquals(semver.valid(v, true), null);
+  assertEquals(semver.valid(v), null);
   assertEquals(semver.inc(v, "patch"), null);
 });
 
@@ -19,8 +18,7 @@ Deno.test("tooBig", function (): void {
   assertThrows(function () {
     new semver.SemVer(v);
   });
-  assertEquals(semver.valid(v, false), null);
-  assertEquals(semver.valid(v, true), null);
+  assertEquals(semver.valid(v), null);
   assertEquals(semver.inc(v, "patch"), null);
 });
 

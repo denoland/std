@@ -2,21 +2,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
-
-type Version = string;
-type Options = semver.Options | boolean;
+import type { Options } from "./mod.ts";
 
 Deno.test("range", function (): void {
-  // [range, version]
+  // [range, version, options]
   // version should be included by range
-  const versions: [Version, Version, Options?][] = [
+  const versions: [string, string, Options?][] = [
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["^1.2.3+build", "1.2.3"],
     ["^1.2.3+build", "1.3.0"],
     ["1.2.3-pre+asdf - 2.4.3-pre+asdf", "1.2.3"],
-    ["1.2.3pre+asdf - 2.4.3-pre+asdf", "1.2.3", true],
-    ["1.2.3-pre+asdf - 2.4.3pre+asdf", "1.2.3", true],
-    ["1.2.3pre+asdf - 2.4.3pre+asdf", "1.2.3", true],
     ["1.2.3-pre+asdf - 2.4.3-pre+asdf", "1.2.3-pre.2"],
     ["1.2.3-pre+asdf - 2.4.3-pre+asdf", "2.4.3-alpha"],
     ["1.2.3+asdf - 2.4.3+asdf", "1.2.3"],
@@ -24,11 +19,7 @@ Deno.test("range", function (): void {
     [">=*", "0.2.4"],
     ["", "1.0.0"],
     ["*", "1.2.3", {}],
-    ["*", "v1.2.3", { loose: 123 } as unknown as Options],
     [">=1.0.0", "1.0.0", /asdf/ as unknown as Options],
-    [">=1.0.0", "1.0.1", { loose: null! }],
-    [">=1.0.0", "1.1.0", { loose: 0 as unknown as boolean }],
-    [">1.0.0", "1.0.1", { loose: undefined }],
     [">1.0.0", "1.1.0"],
     ["<=2.0.0", "2.0.0"],
     ["<=2.0.0", "1.9999.9999"],
@@ -45,7 +36,6 @@ Deno.test("range", function (): void {
     ["<=  2.0.0", "0.2.9"],
     ["<    2.0.0", "1.9999.9999"],
     ["<\t2.0.0", "0.2.9"],
-    [">=0.1.97", "v0.1.97", true],
     [">=0.1.97", "0.1.97"],
     ["0.1.20 || 1.2.4", "1.2.4"],
     [">=0.2.3 || <0.0.1", "0.0.0"],
@@ -77,7 +67,6 @@ Deno.test("range", function (): void {
     ["~1.0", "1.0.2"], // >=1.0.0 <1.1.0,
     ["~ 1.0", "1.0.2"],
     ["~ 1.0.3", "1.0.12"],
-    ["~ 1.0.3alpha", "1.0.12", { loose: true }],
     [">=1", "1.0.0"],
     [">= 1", "1.0.0"],
     ["<1.2", "1.1.1"],
@@ -121,15 +110,18 @@ Deno.test("range", function (): void {
   versions.forEach(function (v) {
     const range = v[0];
     const ver = v[1];
-    const loose = v[2];
-    assert(semver.satisfies(ver, range, loose), range + " satisfied by " + ver);
+    const options = v[2];
+    assert(
+      semver.satisfies(ver, range, options),
+      range + " satisfied by " + ver,
+    );
   });
 });
 
 Deno.test("negativeRange", function (): void {
   // [range, version]
   // version should not be included by range
-  const versions: [Version, Version, Options?][] = [
+  const versions: [string, string, Options?][] = [
     ["1.0.0 - 2.0.0", "2.2.3"],
     ["1.2.3+asdf - 2.4.3+asdf", "1.2.3-pre.2"],
     ["1.2.3+asdf - 2.4.3+asdf", "2.4.3-alpha"],
@@ -142,9 +134,6 @@ Deno.test("negativeRange", function (): void {
     ["^1.2.3", "1.2.3-beta"],
     ["=0.7.x", "0.7.0-asdf"],
     [">=0.7.x", "0.7.0-asdf"],
-    ["1", "1.0.0beta", { loose: 420 } as unknown as Options],
-    ["<1", "1.0.0beta", true],
-    ["< 1", "1.0.0beta", true],
     ["1.0.0", "1.0.1"],
     [">=1.0.0", "0.0.0"],
     [">=1.0.0", "0.0.1"],
@@ -156,12 +145,10 @@ Deno.test("negativeRange", function (): void {
     ["<=2.0.0", "2.2.9"],
     ["<2.0.0", "2.9999.9999"],
     ["<2.0.0", "2.2.9"],
-    [">=0.1.97", "v0.1.93", true],
     [">=0.1.97", "0.1.93"],
     ["0.1.20 || 1.2.4", "1.2.3"],
     [">=0.2.3 || <0.0.1", "0.0.3"],
     [">=0.2.3 || <0.0.1", "0.2.2"],
-    ["2.x.x", "1.1.3", { loose: NaN as unknown as boolean }],
     ["2.x.x", "3.1.3"],
     ["1.2.x", "1.3.3"],
     ["1.2.x || 2.x", "3.1.3"],
@@ -184,7 +171,6 @@ Deno.test("negativeRange", function (): void {
     ["~1.0", "1.1.0"], // >=1.0.0 <1.1.0
     ["<1", "1.0.0"],
     [">=1.2", "1.1.1"],
-    ["1", "2.0.0beta", true],
     ["~v0.5.4-beta", "0.5.4-alpha"],
     ["=0.7.x", "0.8.2"],
     [">=0.7.x", "0.6.2"],
@@ -197,18 +183,16 @@ Deno.test("negativeRange", function (): void {
     ["^1.2.3", "2.0.0-alpha"],
     ["^1.2.3", "1.2.2"],
     ["^1.2", "1.1.9"],
-    ["*", "v1.2.3-foo", true],
     // invalid ranges never satisfied!
     ["blerg", "1.2.3"],
-    ["git+https://user:password0123@github.com/foo", "123.0.0", true],
     ["^1.2.3", "2.0.0-pre"],
   ];
 
   versions.forEach(function (v) {
     const range = v[0];
     const ver = v[1];
-    const loose = v[2];
-    const found = semver.satisfies(ver, range, loose);
+    const options = v[2];
+    const found = semver.satisfies(ver, range, options);
     assert(!found, ver + " not satisfied by " + range);
   });
 });
@@ -216,7 +200,7 @@ Deno.test("negativeRange", function (): void {
 Deno.test("unlockedPrereleaseRange", function (): void {
   // [range, version]
   // version should be included by range
-  const versions: [Version, Version][] = [
+  const versions: [string, string][] = [
     ["*", "1.0.0-rc1"],
     ["^1.0.0", "2.0.0-rc1"],
     ["^1.0.0-0", "1.0.1-rc1"],
@@ -239,7 +223,7 @@ Deno.test("unlockedPrereleaseRange", function (): void {
 Deno.test("negativeUnlockedPrereleaseRange", function (): void {
   // [range, version]
   // version should be included by range
-  const versions: [Version, Version][] = [
+  const versions: [string, string][] = [
     ["^1.0.0", "1.0.0-rc1"],
     ["^1.2.3-rc2", "2.0.0"],
   ];
@@ -257,7 +241,7 @@ Deno.test("validRange", function (): void {
   // [range, result]
   // validRange(range) -> result
   // translate ranges into their canonical form
-  const versions: [Version | null, Version | null, Options?][] = [
+  const versions: [string | null, string | null, Options?][] = [
     ["1.0.0 - 2.0.0", ">=1.0.0 <=2.0.0"],
     ["1.0.0", "1.0.0"],
     [">=*", "*"],
@@ -325,9 +309,7 @@ Deno.test("validRange", function (): void {
     ["<1.2", "<1.2.0"],
     ["< 1.2", "<1.2.0"],
     ["1", ">=1.0.0 <2.0.0"],
-    [">01.02.03", ">1.2.3", true],
     [">01.02.03", null],
-    ["~1.2.3beta", ">=1.2.3-beta <1.3.0", true],
     ["~1.2.3beta", null],
     ["^ 1.2 ^ 1", ">=1.2.0 <2.0.0 >=1.0.0 <2.0.0"],
   ];
@@ -335,25 +317,9 @@ Deno.test("validRange", function (): void {
   versions.forEach(function (v) {
     const pre = v[0];
     const wanted = v[1];
-    const loose = v[2];
-    const found = semver.validRange(pre, loose);
+    const options = v[2];
+    const found = semver.validRange(pre, options);
     assertEquals(found, wanted, "validRange(" + pre + ") === " + wanted);
-  });
-});
-
-Deno.test("strictVsLoose", function (): void {
-  const versions: [Version, Version][] = [
-    [">=01.02.03", ">=1.2.3"],
-    ["~1.02.03beta", ">=1.2.3-beta <1.3.0"],
-  ];
-
-  versions.forEach(function (v) {
-    const loose = v[0];
-    const comps = v[1];
-    assertThrows(function () {
-      new semver.Range(loose);
-    });
-    assertEquals(new semver.Range(loose, true).range, comps);
   });
 });
 
@@ -445,21 +411,13 @@ Deno.test("rangesIntersect", function (): void {
     const actual2 = range2.intersects(range1);
     const actual3 = semver.intersects(v[1], v[0]);
     const actual4 = semver.intersects(v[0], v[1]);
-    const actual5 = semver.intersects(v[1], v[0], true);
-    const actual6 = semver.intersects(v[0], v[1], true);
-    const actual7 = semver.intersects(range1, range2);
-    const actual8 = semver.intersects(range2, range1);
-    const actual9 = semver.intersects(range1, range2, true);
-    const actual0 = semver.intersects(range2, range1, true);
+    const actual5 = semver.intersects(range1, range2);
+    const actual6 = semver.intersects(range2, range1);
     assertEquals(actual1, expect);
     assertEquals(actual2, expect);
     assertEquals(actual3, expect);
     assertEquals(actual4, expect);
     assertEquals(actual5, expect);
     assertEquals(actual6, expect);
-    assertEquals(actual7, expect);
-    assertEquals(actual8, expect);
-    assertEquals(actual9, expect);
-    assertEquals(actual0, expect);
   });
 });

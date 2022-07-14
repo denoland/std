@@ -4,9 +4,9 @@ import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 Deno.test("gtr", function (): void {
-  // [range, version, loose]
+  // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string, boolean?]> = [
+  const versions: ReadonlyArray<[string, string]> = [
     ["~1.2.2", "1.3.0"],
     ["~0.6.1-1", "0.7.1-1"],
     ["1.0.0 - 2.0.0", "2.0.1"],
@@ -34,7 +34,6 @@ Deno.test("gtr", function (): void {
     ["~ 1.0", "1.1.0"],
     ["<1.2", "1.2.0"],
     ["< 1.2", "1.2.1"],
-    ["1", "2.0.0beta", true],
     ["~v0.5.4-pre", "0.6.0"],
     ["~v0.5.4-pre", "0.6.1-pre"],
     ["=0.7.x", "0.8.0"],
@@ -62,9 +61,6 @@ Deno.test("gtr", function (): void {
     ["~>1", "2.2.3"],
     ["~1.0", "1.1.0"], // >=1.0.0 <1.1.0
     ["<1", "1.0.0"],
-    ["1", "2.0.0beta", true],
-    ["<1", "1.0.0beta", true],
-    ["< 1", "1.0.0beta", true],
     ["=0.7.x", "0.8.2"],
     ["<0.7.x", "0.7.2"],
   ];
@@ -72,22 +68,20 @@ Deno.test("gtr", function (): void {
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `gtr(${version}, ${range}, ${loose})`;
-    assert(semver.gtr(version, range, loose), msg);
+    const msg = `gtr(${version}, ${range})`;
+    assert(semver.gtr(version, range), msg);
   });
 });
 
 Deno.test("gtrNegative", function (): void {
-  // [range, version, loose]
+  // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string, boolean?]> = [
+  const versions: ReadonlyArray<[string, string]> = [
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["1.0.0 - 2.0.0", "0.9.9"],
     ["1.0.0", "1.0.0"],
     [">=*", "0.2.4"],
-    ["", "1.0.0", true],
     ["*", "1.2.3"],
     ["*", "v1.2.3-foo"],
     [">=1.0.0", "1.0.0"],
@@ -145,7 +139,6 @@ Deno.test("gtrNegative", function (): void {
     [">= 1", "1.0.0"],
     ["<1.2", "1.1.1"],
     ["< 1.2", "1.1.1"],
-    ["1", "1.0.0beta", true],
     ["~v0.5.4-pre", "0.5.5"],
     ["~v0.5.4-pre", "0.5.4"],
     ["=0.7.x", "0.7.2"],
@@ -160,16 +153,13 @@ Deno.test("gtrNegative", function (): void {
     ["^3.0.0", "2.0.0"],
     ["^1.0.0 || ~2.0.1", "2.0.0"],
     ["^0.1.0 || ~3.0.1 || 5.0.0", "3.2.0"],
-    ["^0.1.0 || ~3.0.1 || 5.0.0", "1.0.0beta", true],
-    ["^0.1.0 || ~3.0.1 || 5.0.0", "5.0.0-0", true],
     ["^0.1.0 || ~3.0.1 || >4 <=5.0.0", "3.5.0"],
   ];
 
   versions.forEach(function (tuple) {
     const range = tuple[0];
     const version = tuple[1];
-    const loose = tuple[2] || false;
-    const msg = `!gtr(${version}, ${range}, ${loose})`;
-    assert(!semver.gtr(version, range, loose), msg);
+    const msg = `!gtr(${version}, ${range})`;
+    assert(!semver.gtr(version, range), msg);
   });
 });
