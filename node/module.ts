@@ -684,13 +684,11 @@ class Module {
       try {
         filepath = fileURLToPath(filename);
       } catch (err) {
-        if (
-          err instanceof Deno.errors.InvalidData &&
-          err.message.includes("invalid url scheme")
-        ) {
+        // deno-lint-ignore no-explicit-any
+        if ((err as any).code === "ERR_INVALID_URL_SCHEME") {
           // Provide a descriptive error when url scheme is invalid.
           throw new Error(
-            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter. Received '${filename}'`,
           );
         } else {
           throw err;
