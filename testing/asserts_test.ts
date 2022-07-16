@@ -857,6 +857,18 @@ Deno.test("assertRejects with non-error value rejected and error callback", asyn
   );
 });
 
+Deno.test("assertRejects with PromiseLike", async () => {
+  await assertRejects(
+    () => ({
+      then() {
+        throw new Error("some error");
+      },
+    }),
+    Error,
+    "some error",
+  );
+});
+
 Deno.test("assertThrows with non-error value thrown and error class", () => {
   assertThrows(
     () => {
