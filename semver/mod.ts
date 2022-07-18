@@ -54,8 +54,6 @@ let R = 0;
 
 const NUMERICIDENTIFIER: number = R++;
 src[NUMERICIDENTIFIER] = "0|[1-9]\\d*";
-const NUMERICIDENTIFIERLOOSE: number = R++;
-src[NUMERICIDENTIFIERLOOSE] = "[0-9]+";
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
@@ -71,19 +69,11 @@ const MAINVERSION: number = R++;
 const nid = src[NUMERICIDENTIFIER];
 src[MAINVERSION] = `(${nid})\\.(${nid})\\.(${nid})`;
 
-const MAINVERSIONLOOSE: number = R++;
-const nidl = src[NUMERICIDENTIFIERLOOSE];
-src[MAINVERSIONLOOSE] = `(${nidl})\\.(${nidl})\\.(${nidl})`;
-
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
 
 const PRERELEASEIDENTIFIER: number = R++;
 src[PRERELEASEIDENTIFIER] = "(?:" + src[NUMERICIDENTIFIER] + "|" +
-  src[NONNUMERICIDENTIFIER] + ")";
-
-const PRERELEASEIDENTIFIERLOOSE: number = R++;
-src[PRERELEASEIDENTIFIERLOOSE] = "(?:" + src[NUMERICIDENTIFIERLOOSE] + "|" +
   src[NONNUMERICIDENTIFIER] + ")";
 
 // ## Pre-release Version
@@ -95,13 +85,6 @@ src[PRERELEASE] = "(?:-(" +
   src[PRERELEASEIDENTIFIER] +
   "(?:\\." +
   src[PRERELEASEIDENTIFIER] +
-  ")*))";
-
-const PRERELEASELOOSE: number = R++;
-src[PRERELEASELOOSE] = "(?:-?(" +
-  src[PRERELEASEIDENTIFIERLOOSE] +
-  "(?:\\." +
-  src[PRERELEASEIDENTIFIERLOOSE] +
   ")*))";
 
 // ## Build Metadata Identifier
@@ -132,16 +115,6 @@ const FULLPLAIN = "v?" + src[MAINVERSION] + src[PRERELEASE] + "?" + src[BUILD] +
   "?";
 
 src[FULL] = "^" + FULLPLAIN + "$";
-
-// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-// common in the npm registry.
-const LOOSEPLAIN: string = "[v=\\s]*" +
-  src[MAINVERSIONLOOSE] +
-  src[PRERELEASELOOSE] +
-  "?" +
-  src[BUILD] +
-  "?";
 
 const GTLT: number = R++;
 src[GTLT] = "((?:<|>)?=?)";
@@ -177,11 +150,6 @@ src[XRANGE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAIN] + "$";
 const LONETILDE: number = R++;
 src[LONETILDE] = "(?:~>?)";
 
-const TILDETRIM: number = R++;
-src[TILDETRIM] = "(\\s*)" + src[LONETILDE] + "\\s+";
-re[TILDETRIM] = new RegExp(src[TILDETRIM], "g");
-const tildeTrimReplace = "$1~";
-
 const TILDE: number = R++;
 src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$";
 
@@ -190,27 +158,12 @@ src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$";
 const LONECARET: number = R++;
 src[LONECARET] = "(?:\\^)";
 
-const CARETTRIM: number = R++;
-src[CARETTRIM] = "(\\s*)" + src[LONECARET] + "\\s+";
-re[CARETTRIM] = new RegExp(src[CARETTRIM], "g");
-const caretTrimReplace = "$1^";
-
 const CARET: number = R++;
 src[CARET] = "^" + src[LONECARET] + src[XRANGEPLAIN] + "$";
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 const COMPARATOR: number = R++;
 src[COMPARATOR] = "^" + src[GTLT] + "\\s*(" + FULLPLAIN + ")$|^$";
-
-// An expression to strip any whitespace between the gtlt and the thing
-// it modifies, so that `> 1.2.3` ==> `>1.2.3`
-const COMPARATORTRIM: number = R++;
-src[COMPARATORTRIM] = "(\\s*)" + src[GTLT] + "\\s*(" + LOOSEPLAIN + "|" +
-  src[XRANGEPLAIN] + ")";
-
-// this one has to use the /g flag
-re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], "g");
-const comparatorTrimReplace = "$1$2$3";
 
 // Something like `1.2.3 - 1.2.4`
 const HYPHENRANGE: number = R++;
@@ -993,15 +946,6 @@ export class Range {
     // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
     const hr: RegExp = re[HYPHENRANGE];
     range = range.replace(hr, hyphenReplace);
-
-    // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
-    range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
-
-    // `~ 1.2.3` => `~1.2.3`
-    range = range.replace(re[TILDETRIM], tildeTrimReplace);
-
-    // `^ 1.2.3` => `^1.2.3`
-    range = range.replace(re[CARETTRIM], caretTrimReplace);
 
     // normalize spaces
     range = range.split(/\s+/).join(" ");
