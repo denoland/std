@@ -681,14 +681,14 @@ export function assertThrows<E extends Error = Error>(
 
 /** Executes a function which returns a promise, expecting it to reject. */
 export function assertRejects(
-  fn: () => Promise<unknown>,
+  fn: () => PromiseLike<unknown>,
   msg?: string,
 ): Promise<unknown>;
 /** Executes a function which returns a promise, expecting it to reject.
  * If it does not, then it throws. An error class and a string that should be
  * included in the error message can also be asserted. */
 export function assertRejects<E extends Error = Error>(
-  fn: () => Promise<unknown>,
+  fn: () => PromiseLike<unknown>,
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
@@ -697,12 +697,12 @@ export function assertRejects<E extends Error = Error>(
 /** @deprecated Use assertRejects(fn, msg) instead, which now returns rejected value
  * and you can assert on it. */
 export function assertRejects(
-  fn: () => Promise<unknown>,
+  fn: () => PromiseLike<unknown>,
   errorCallback: (e: Error) => unknown,
   msg?: string,
 ): Promise<Error>;
 export async function assertRejects<E extends Error = Error>(
-  fn: () => Promise<unknown>,
+  fn: () => PromiseLike<unknown>,
   errorClassOrCallbackOrMsg?:
     // deno-lint-ignore no-explicit-any
     | (new (...args: any[]) => E)
@@ -738,7 +738,11 @@ export async function assertRejects<E extends Error = Error>(
   const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
     const possiblePromise = fn();
-    if (possiblePromise instanceof Promise) {
+    if (
+      possiblePromise &&
+      typeof possiblePromise === "object" &&
+      typeof possiblePromise.then === "function"
+    ) {
       isPromiseReturned = true;
       await possiblePromise;
     }
