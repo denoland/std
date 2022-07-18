@@ -92,13 +92,13 @@ function exec(cmd: string, opts: Opts = {}) {
 }
 async function execCmd(command: string, args: string[], opts: Opts) {
   console.log(`Executing the command: "${args.join(" ")}"`);
-  const { status, stdout, stderr } = await Deno.spawn(command, {
+  const { code, stdout, stderr } = await Deno.spawn(command, {
     args,
     stdout: "piped",
     stderr: "piped",
     ...opts,
   });
-  if (status.code !== 0) {
+  if (code !== 0) {
     console.log(new TextDecoder().decode(stdout));
     console.log(new TextDecoder().decode(stderr));
     throw new Error(`The command: "${args.join(" ")}" failed`);
