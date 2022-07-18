@@ -37,7 +37,7 @@ export class BaseHandler {
       return this.formatter(logRecord);
     }
 
-    return this.formatter.replace(/{(\S+)}/g, (match, p1): string => {
+    return this.formatter.replace(/{([^\s}]+)}/g, (match, p1): string => {
       const value = logRecord[p1 as keyof LogRecord];
 
       // do not interpolate missing values

@@ -4,6 +4,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+/**
+ * A reader for dealing with text based protocols like HTTP.
+ * @module
+ */
+
 import type { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { concat } from "../bytes/mod.ts";
 

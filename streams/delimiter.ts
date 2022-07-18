@@ -1,11 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { BytesList } from "../bytes/bytes_list.ts";
 
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
-/** Transform a stream into a stream where each chunk is divided by a newline,
+/** @deprecated Use TextLineStream instead, as it can handle empty lines.
+ *
+ * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`.
  *
  * ```ts
@@ -72,6 +75,70 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   }
 }
 
+interface TextLineStreamOptions {
+  /** Allow splitting by solo \r */
+  allowCR: boolean;
+}
+
+/** Transform a stream into a stream where each chunk is divided by a newline,
+ * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
+ *
+ * ```ts
+ * import { TextLineStream } from "./delimiter.ts";
+ * const res = await fetch("https://example.com");
+ * const lines = res.body!
+ *   .pipeThrough(new TextDecoderStream())
+ *   .pipeThrough(new TextLineStream());
+ * ```
+ */
+export class TextLineStream extends TransformStream<string, string> {
+  readonly #allowCR: boolean;
+  #buf = "";
+
+  constructor(options?: TextLineStreamOptions) {
+    super({
+      transform: (chunk, controller) => this.#handle(chunk, controller),
+      flush: (controller) => this.#handle("\r\n", controller),
+    });
+    this.#allowCR = options?.allowCR ?? false;
+  }
+
+  #handle(chunk: string, controller: TransformStreamDefaultController<string>) {
+    chunk = this.#buf + chunk;
+
+    for (;;) {
+      const lfIndex = chunk.indexOf("\n");
+
+      if (this.#allowCR) {
+        const crIndex = chunk.indexOf("\r");
+
+        if (
+          crIndex !== -1 && crIndex !== (chunk.length - 1) &&
+          (lfIndex === -1 || (lfIndex - 1) > crIndex)
+        ) {
+          controller.enqueue(chunk.slice(0, crIndex));
+          chunk = chunk.slice(crIndex + 1);
+          continue;
+        }
+      }
+
+      if (lfIndex !== -1) {
+        let crOrLfIndex = lfIndex;
+        if (chunk[lfIndex - 1] === "\r") {
+          crOrLfIndex--;
+        }
+        controller.enqueue(chunk.slice(0, crOrLfIndex));
+        chunk = chunk.slice(lfIndex + 1);
+        continue;
+      }
+
+      break;
+    }
+
+    this.#buf = chunk;
+  }
+}
+
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
@@ -123,6 +190,70 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
           controller.enqueue(readyBytes);
           // Reset match, different from KMP.
           this.#bufs.shift(this.#inspectIndex);
+          this.#inspectIndex = 0;
+          this.#matchIndex = 0;
+        }
+      } else {
+        if (this.#matchIndex === 0) {
+          this.#inspectIndex++;
+          localIndex++;
+        } else {
+          this.#matchIndex = this.#delimLPS[this.#matchIndex - 1];
+        }
+      }
+    }
+  }
+}
+
+/** Transform a stream into a stream where each chunk is divided by a given delimiter.
+ *
+ * ```ts
+ * import { TextDelimiterStream } from "./delimiter.ts";
+ * const res = await fetch("https://example.com");
+ * const parts = res.body!
+ *   .pipeThrough(new TextDecoderStream())
+ *   .pipeThrough(new TextDelimiterStream("foo"));
+ * ```
+ */
+export class TextDelimiterStream extends TransformStream<string, string> {
+  #buf = "";
+  #delimiter: string;
+  #inspectIndex = 0;
+  #matchIndex = 0;
+  #delimLPS: Uint8Array;
+
+  constructor(delimiter: string) {
+    super({
+      transform: (chunk, controller) => {
+        this.#handle(chunk, controller);
+      },
+      flush: (controller) => {
+        controller.enqueue(this.#buf);
+      },
+    });
+
+    this.#delimiter = delimiter;
+    this.#delimLPS = createLPS(new TextEncoder().encode(delimiter));
+  }
+
+  #handle(
+    chunk: string,
+    controller: TransformStreamDefaultController<string>,
+  ) {
+    this.#buf += chunk;
+    let localIndex = 0;
+    while (this.#inspectIndex < this.#buf.length) {
+      if (chunk[localIndex] === this.#delimiter[this.#matchIndex]) {
+        this.#inspectIndex++;
+        localIndex++;
+        this.#matchIndex++;
+        if (this.#matchIndex === this.#delimiter.length) {
+          // Full match
+          const matchEnd = this.#inspectIndex - this.#delimiter.length;
+          const readyString = this.#buf.slice(0, matchEnd);
+          controller.enqueue(readyString);
+          // Reset match, different from KMP.
+          this.#buf = this.#buf.slice(this.#inspectIndex);
           this.#inspectIndex = 0;
           this.#matchIndex = 0;
         }

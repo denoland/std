@@ -1,7 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 // Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
-// Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
+// Support for RFC4122 version 1, 4, and 5 UUIDs
+
+/**
+ * Generators and validators for UUIDs for versions 1, 4 and 5.
+ * @module
+ */
 
 import * as v1 from "./v1.ts";
 import * as v4 from "./v4.ts";

@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import * as base64 from "./base64.ts";
 
@@ -7,7 +8,7 @@ import * as base64 from "./base64.ts";
  * https://en.wikipedia.org/wiki/Base64#The_URL_applications
  * @param base64url
  */
-export function addPaddingToBase64url(base64url: string): string {
+function addPaddingToBase64url(base64url: string): string {
   if (base64url.length % 4 === 2) return base64url + "==";
   if (base64url.length % 4 === 3) return base64url + "=";
   if (base64url.length % 4 === 1) {

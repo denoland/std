@@ -1,13 +1,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  crypto as wasmCrypto,
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
+  instantiateWasm,
 } from "../_wasm_crypto/mod.ts";
+
+import { fnv } from "./_fnv/index.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
+ * @module
  */
 const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),
@@ -33,11 +36,7 @@ const bufferSourceBytes = (data: BufferSource | unknown) => {
   if (data instanceof Uint8Array) {
     bytes = data;
   } else if (ArrayBuffer.isView(data)) {
-    bytes = new Uint8Array(
-      data.buffer,
-      data.byteOffset,
-      data.byteLength,
-    );
+    bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
     bytes = new Uint8Array(data);
   }
@@ -65,6 +64,10 @@ const stdCrypto = ((x) => x)({
       const { name, length } = normalizeAlgorithm(algorithm);
       const bytes = bufferSourceBytes(data);
 
+      if (FNVAlgorithms.includes(name)) {
+        return fnv(name, bytes);
+      }
+
       // We delegate to WebCrypto whenever possible,
       if (
         // if the algorithm is supported by the WebCrypto standard,
@@ -73,9 +76,9 @@ const stdCrypto = ((x) => x)({
         bytes
       ) {
         return webCrypto.subtle.digest(algorithm, bytes);
-      } else if (wasmDigestAlgorithms.includes(name)) {
+      } else if (wasmDigestAlgorithms.includes(name as WasmDigestAlgorithm)) {
         if (bytes) {
-          // Otherwise, we use our bundled WASM implementation via digestSync
+          // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
           return stdCrypto.subtle.digestSync(algorithm, bytes);
         } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
@@ -86,6 +89,7 @@ const stdCrypto = ((x) => x)({
         } else if (
           (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
         ) {
+          const wasmCrypto = instantiateWasm();
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
             const chunkBytes = bufferSourceBytes(chunk);
@@ -126,6 +130,11 @@ const stdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
+      if (FNVAlgorithms.includes(algorithm.name)) {
+        return fnv(algorithm.name, bytes);
+      }
+
+      const wasmCrypto = instantiateWasm();
       if (bytes) {
         return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
           .buffer;
@@ -148,6 +157,8 @@ const stdCrypto = ((x) => x)({
   },
 });
 
+const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
+
 /** Digest algorithms supported by WebCrypto. */
 const webCryptoDigestAlgorithms = [
   "SHA-384",
@@ -157,7 +168,8 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
-type DigestAlgorithmName = WasmDigestAlgorithm;
+type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 type DigestAlgorithmObject = {
   name: DigestAlgorithmName;

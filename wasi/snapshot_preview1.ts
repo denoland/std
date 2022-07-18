@@ -346,7 +346,7 @@ export default class Context {
 
   exports: Record<string, WebAssembly.ImportValue>;
 
-  constructor(options: ContextOptions) {
+  constructor(options: ContextOptions = {}) {
     this.#args = options.args ?? [];
     this.#env = options.env ?? {};
     this.#exitOnReturn = options.exitOnReturn ?? true;
@@ -1733,12 +1733,11 @@ export default class Context {
       );
     }
 
-    if (typeof _initialize != "function") {
+    if (_initialize && typeof _initialize != "function") {
       throw new TypeError(
-        "WebAsembly.instance export _initialize must be a function",
+        "WebAssembly.Instance export _initialize must be a function or not be defined",
       );
     }
-
-    _initialize();
+    _initialize?.();
   }
 }

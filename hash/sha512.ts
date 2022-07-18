@@ -1,4 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /*
  * [js-sha512]{@link https://github.com/emn178/js-sha512}
  *
@@ -228,13 +230,40 @@ export class Sha512 {
 
   protected init(bits: number, sharedMemory: boolean): void {
     if (sharedMemory) {
-      blocks[0] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] =
-        blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
-          blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] =
-            blocks[16] = blocks[17] = blocks[18] = blocks[19] = blocks[20] =
-              blocks[21] = blocks[22] = blocks[23] = blocks[24] = blocks[25] =
-                blocks[26] = blocks[27] = blocks[28] = blocks[29] = blocks[30] =
-                  blocks[31] = blocks[32] = 0;
+      blocks[0] =
+        blocks[1] =
+        blocks[2] =
+        blocks[3] =
+        blocks[4] =
+        blocks[5] =
+        blocks[6] =
+        blocks[7] =
+        blocks[8] =
+        blocks[9] =
+        blocks[10] =
+        blocks[11] =
+        blocks[12] =
+        blocks[13] =
+        blocks[14] =
+        blocks[15] =
+        blocks[16] =
+        blocks[17] =
+        blocks[18] =
+        blocks[19] =
+        blocks[20] =
+        blocks[21] =
+        blocks[22] =
+        blocks[23] =
+        blocks[24] =
+        blocks[25] =
+        blocks[26] =
+        blocks[27] =
+        blocks[28] =
+        blocks[29] =
+        blocks[30] =
+        blocks[31] =
+        blocks[32] =
+          0;
       this.#blocks = blocks;
     } else {
       this.#blocks = [
@@ -344,7 +373,11 @@ export class Sha512 {
       this.#h7l = 0x137e2179;
     }
     this.#bits = bits;
-    this.#block = this.#start = this.#bytes = this.#hBytes = 0;
+    this.#block =
+      this.#start =
+      this.#bytes =
+      this.#hBytes =
+        0;
     this.#finalized = this.#hashed = false;
   }
 
@@ -366,13 +399,39 @@ export class Sha512 {
       if (this.#hashed) {
         this.#hashed = false;
         blocks[0] = this.#block;
-        blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] =
-          blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] =
-            blocks[12] = blocks[13] = blocks[14] = blocks[15] = blocks[16] =
-              blocks[17] = blocks[18] = blocks[19] = blocks[20] = blocks[21] =
-                blocks[22] = blocks[23] = blocks[24] = blocks[25] = blocks[26] =
-                  blocks[27] = blocks[28] = blocks[29] = blocks[30] =
-                    blocks[31] = blocks[32] = 0;
+        blocks[1] =
+          blocks[2] =
+          blocks[3] =
+          blocks[4] =
+          blocks[5] =
+          blocks[6] =
+          blocks[7] =
+          blocks[8] =
+          blocks[9] =
+          blocks[10] =
+          blocks[11] =
+          blocks[12] =
+          blocks[13] =
+          blocks[14] =
+          blocks[15] =
+          blocks[16] =
+          blocks[17] =
+          blocks[18] =
+          blocks[19] =
+          blocks[20] =
+          blocks[21] =
+          blocks[22] =
+          blocks[23] =
+          blocks[24] =
+          blocks[25] =
+          blocks[26] =
+          blocks[27] =
+          blocks[28] =
+          blocks[29] =
+          blocks[30] =
+          blocks[31] =
+          blocks[32] =
+            0;
       }
       if (typeof msg !== "string") {
         for (i = this.#start; index < length && i < 128; ++index) {
@@ -433,13 +492,39 @@ export class Sha512 {
         this.hash();
       }
       blocks[0] = this.#block;
-      blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] =
-        blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] =
-          blocks[12] = blocks[13] = blocks[14] = blocks[15] = blocks[16] =
-            blocks[17] = blocks[18] = blocks[19] = blocks[20] = blocks[21] =
-              blocks[22] = blocks[23] = blocks[24] = blocks[25] = blocks[26] =
-                blocks[27] = blocks[28] = blocks[29] = blocks[30] = blocks[31] =
-                  blocks[32] = 0;
+      blocks[1] =
+        blocks[2] =
+        blocks[3] =
+        blocks[4] =
+        blocks[5] =
+        blocks[6] =
+        blocks[7] =
+        blocks[8] =
+        blocks[9] =
+        blocks[10] =
+        blocks[11] =
+        blocks[12] =
+        blocks[13] =
+        blocks[14] =
+        blocks[15] =
+        blocks[16] =
+        blocks[17] =
+        blocks[18] =
+        blocks[19] =
+        blocks[20] =
+        blocks[21] =
+        blocks[22] =
+        blocks[23] =
+        blocks[24] =
+        blocks[25] =
+        blocks[26] =
+        blocks[27] =
+        blocks[28] =
+        blocks[29] =
+        blocks[30] =
+        blocks[31] =
+        blocks[32] =
+          0;
     }
     blocks[30] = (this.#hBytes << 3) | (this.#bytes >>> 29);
     blocks[31] = this.#bytes << 3;

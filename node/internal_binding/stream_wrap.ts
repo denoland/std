@@ -87,8 +87,6 @@ export class LibuvStreamWrap extends HandleWrap {
 
   reading!: boolean;
   #reading = false;
-  #currentReads: Set<Promise<void>> = new Set();
-  #currentWrites: Set<Promise<void>> = new Set();
   destroyed = false;
   writeQueueSize = 0;
   bytesRead = 0;
@@ -111,12 +109,7 @@ export class LibuvStreamWrap extends HandleWrap {
   readStart(): number {
     if (!this.#reading) {
       this.#reading = true;
-      const readPromise = this.#read();
-      this.#currentReads.add(readPromise);
-      readPromise.then(
-        () => this.#currentReads.delete(readPromise),
-        () => this.#currentReads.delete(readPromise),
-      );
+      this.#read();
     }
 
     return 0;
@@ -138,15 +131,13 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   shutdown(req: ShutdownWrap<LibuvStreamWrap>): number {
-    (async () => {
-      const status = await this._onClose();
+    const status = this._onClose();
 
-      try {
-        req.oncomplete(status);
-      } catch {
-        // swallow callback error.
-      }
-    })();
+    try {
+      req.oncomplete(status);
+    } catch {
+      // swallow callback error.
+    }
 
     return 0;
   }
@@ -157,7 +148,7 @@ export class LibuvStreamWrap extends HandleWrap {
    */
   useUserBuffer(_userBuf: unknown): number {
     // TODO(cmorten)
-    notImplemented();
+    notImplemented("LibuvStreamWrap.prototype.useUserBuffer");
   }
 
   /**
@@ -167,12 +158,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
-    const currentWrite = this.#write(req, data);
-    this.#currentWrites.add(currentWrite);
-    currentWrite.then(
-      () => this.#currentWrites.delete(currentWrite),
-      () => this.#currentWrites.delete(currentWrite),
-    );
+    this.#write(req, data);
 
     return 0;
   }
@@ -185,13 +171,32 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writev(
-    _req: WriteWrap<LibuvStreamWrap>,
-    // deno-lint-ignore no-explicit-any
-    _chunks: any,
-    _allBuffers: boolean,
+    req: WriteWrap<LibuvStreamWrap>,
+    chunks: Buffer[] | (string | Buffer)[],
+    allBuffers: boolean,
   ): number {
-    // TODO(cmorten)
-    notImplemented();
+    const count = allBuffers ? chunks.length : chunks.length >> 1;
+    const buffers: Buffer[] = new Array(count);
+
+    if (!allBuffers) {
+      for (let i = 0; i < count; i++) {
+        const chunk = chunks[i * 2];
+
+        if (Buffer.isBuffer(chunk)) {
+          buffers[i] = chunk;
+        }
+
+        // String chunk
+        const encoding: string = chunks[i * 2 + 1] as string;
+        buffers[i] = Buffer.from(chunk as string, encoding);
+      }
+    } else {
+      for (let i = 0; i < count; i++) {
+        buffers[i] = chunks[i] as Buffer;
+      }
+    }
+
+    return this.writeBuffer(req, Buffer.concat(buffers));
   }
 
   /**
@@ -219,7 +224,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writeUcs2String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
-    notImplemented();
+    notImplemented("LibuvStreamWrap.prototype.writeUcs2String");
   }
 
   /**
@@ -231,7 +236,7 @@ export class LibuvStreamWrap extends HandleWrap {
     return this.writeBuffer(req, buffer);
   }
 
-  override async _onClose(): Promise<number> {
+  override _onClose(): number {
     let status = 0;
     this.#reading = false;
 
@@ -240,9 +245,6 @@ export class LibuvStreamWrap extends HandleWrap {
     } catch {
       status = codeMap.get("ENOTCONN")!;
     }
-
-    await Promise.allSettled(this.#currentWrites);
-    await Promise.allSettled(this.#currentReads);
 
     return status;
   }
@@ -268,6 +270,11 @@ export class LibuvStreamWrap extends HandleWrap {
         e instanceof Deno.errors.BadResource
       ) {
         nread = codeMap.get("EOF")!;
+      } else if (
+        e instanceof Deno.errors.ConnectionReset ||
+        e instanceof Deno.errors.ConnectionAborted
+      ) {
+        nread = codeMap.get("ECONNRESET")!;
       } else {
         nread = codeMap.get("UNKNOWN")!;
       }
@@ -294,12 +301,7 @@ export class LibuvStreamWrap extends HandleWrap {
     }
 
     if (nread >= 0 && this.#reading) {
-      const readPromise = this.#read();
-      this.#currentReads.add(readPromise);
-      readPromise.then(
-        () => this.#currentReads.delete(readPromise),
-        () => this.#currentReads.delete(readPromise),
-      );
+      this.#read();
     }
   }
 
@@ -312,11 +314,19 @@ export class LibuvStreamWrap extends HandleWrap {
     const { byteLength } = data;
 
     try {
-      // TODO(cmorten): somewhat over simplifying what Node does.
       await writeAll(this[kStreamBaseField]!, data);
-    } catch {
+    } catch (e) {
+      let status: number;
+
       // TODO(cmorten): map err to status codes
-      const status = codeMap.get("UNKNOWN")!;
+      if (
+        e instanceof Deno.errors.BadResource ||
+        e instanceof Deno.errors.BrokenPipe
+      ) {
+        status = codeMap.get("EBADF")!;
+      } else {
+        status = codeMap.get("UNKNOWN")!;
+      }
 
       try {
         req.oncomplete(status);

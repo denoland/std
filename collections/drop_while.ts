@@ -8,7 +8,7 @@
  * Example:
  *
  * ```ts
- * import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/drop_while.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]

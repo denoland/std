@@ -1,4 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /*
  * [js-sha1]{@link https://github.com/emn178/js-sha1}
  *
@@ -37,9 +39,24 @@ export class Sha1 {
   }
   protected init(sharedMemory: boolean) {
     if (sharedMemory) {
-      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] =
-        blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
-          blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[0] =
+        blocks[16] =
+        blocks[1] =
+        blocks[2] =
+        blocks[3] =
+        blocks[4] =
+        blocks[5] =
+        blocks[6] =
+        blocks[7] =
+        blocks[8] =
+        blocks[9] =
+        blocks[10] =
+        blocks[11] =
+        blocks[12] =
+        blocks[13] =
+        blocks[14] =
+        blocks[15] =
+          0;
       this.#blocks = blocks;
     } else {
       this.#blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -51,7 +68,11 @@ export class Sha1 {
     this.#h3 = 0x10325476;
     this.#h4 = 0xc3d2e1f0;
 
-    this.#block = this.#start = this.#bytes = this.#hBytes = 0;
+    this.#block =
+      this.#start =
+      this.#bytes =
+      this.#hBytes =
+        0;
     this.#finalized = this.#hashed = false;
   }
   update(message: Message): this {
@@ -75,9 +96,23 @@ export class Sha1 {
       if (this.#hashed) {
         this.#hashed = false;
         blocks[0] = this.#block;
-        blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] =
-          blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
-            blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+        blocks[16] =
+          blocks[1] =
+          blocks[2] =
+          blocks[3] =
+          blocks[4] =
+          blocks[5] =
+          blocks[6] =
+          blocks[7] =
+          blocks[8] =
+          blocks[9] =
+          blocks[10] =
+          blocks[11] =
+          blocks[12] =
+          blocks[13] =
+          blocks[14] =
+          blocks[15] =
+            0;
       }
 
       if (typeof msg !== "string") {
@@ -112,7 +147,7 @@ export class Sha1 {
       if (i >= 64) {
         this.#block = blocks[16];
         this.#start = i - 64;
-        this.hash();
+        this.#hash();
         this.#hashed = true;
       } else {
         this.#start = i;
@@ -137,19 +172,33 @@ export class Sha1 {
     this.#block = blocks[16];
     if (i >= 56) {
       if (!this.#hashed) {
-        this.hash();
+        this.#hash();
       }
       blocks[0] = this.#block;
-      blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] =
-        blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
-          blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[16] =
+        blocks[1] =
+        blocks[2] =
+        blocks[3] =
+        blocks[4] =
+        blocks[5] =
+        blocks[6] =
+        blocks[7] =
+        blocks[8] =
+        blocks[9] =
+        blocks[10] =
+        blocks[11] =
+        blocks[12] =
+        blocks[13] =
+        blocks[14] =
+        blocks[15] =
+          0;
     }
     blocks[14] = (this.#hBytes << 3) | (this.#bytes >>> 29);
     blocks[15] = this.#bytes << 3;
-    this.hash();
+    this.#hash();
   }
 
-  private hash(): void {
+  #hash(): void {
     let a = this.#h0;
     let b = this.#h1;
     let c = this.#h2;

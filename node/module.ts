@@ -511,6 +511,11 @@ class Module {
       }
     }
 
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(request, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
+
     const filename = Module._resolveFilename(request, parent, isMain);
     if (filename.startsWith("node:")) {
       // Slice 'node:' prefix
@@ -539,11 +544,6 @@ class Module {
     // Native module polyfills
     const mod = loadNativeModule(filename, request);
     if (mod) return mod.exports;
-
-    // NOTE(@bartlomieju): this is a temporary solution. We provide some
-    // npm modules with fixes in inconsistencies between Deno and Node.js.
-    const upstreamMod = loadUpstreamModule(filename, parent, request);
-    if (upstreamMod) return upstreamMod.exports;
 
     // Don't call updateChildren(), Module constructor already does.
     const module = new Module(filename, parent);
@@ -690,13 +690,11 @@ class Module {
       try {
         filepath = fileURLToPath(filename);
       } catch (err) {
-        if (
-          err instanceof Deno.errors.InvalidData &&
-          err.message.includes("invalid url scheme")
-        ) {
+        // deno-lint-ignore no-explicit-any
+        if ((err as any).code === "ERR_INVALID_URL_SCHEME") {
           // Provide a descriptive error when url scheme is invalid.
           throw new Error(
-            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter. Received '${filename}'`,
           );
         } else {
           throw err;
@@ -1333,7 +1331,7 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
   if (filename.endsWith(".js")) {
     const pkg = readPackageScope(filename);
     if (pkg !== false && pkg.data && pkg.data.type === "module") {
-      throw new Error("Importing ESM module");
+      throw new Error(`Importing ESM module: ${filename}.`);
     }
   }
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
@@ -1341,8 +1339,8 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
 };
 
 // Native extension for .mjs
-Module._extensions[".mjs"] = (): void => {
-  throw new Error("Importing ESM module");
+Module._extensions[".mjs"] = (_module: Module, filename: string): void => {
+  throw new Error(`Importing ESM module: ${filename}.`);
 };
 
 // Native extension for .json

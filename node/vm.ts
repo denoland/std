@@ -15,20 +15,20 @@ export class Script {
   }
 
   runInContext(_contextifiedObject: any, _options: any) {
-    notImplemented();
+    notImplemented("Script.prototype.runInContext");
   }
 
   runInNewContext(_contextObject: any, _options: any) {
-    notImplemented();
+    notImplemented("Script.prototype.runInNewContext");
   }
 
   createCachedData() {
-    notImplemented();
+    notImplemented("Script.prototyp.createCachedData");
   }
 }
 
 export function createContext(_contextObject: any, _options: any) {
-  notImplemented();
+  notImplemented("createContext");
 }
 
 export function createScript(code: string, options: any) {
@@ -40,7 +40,7 @@ export function runInContext(
   _contextifiedObject: any,
   _options: any,
 ) {
-  notImplemented();
+  notImplemented("unInContext");
 }
 
 export function runInNewContext(
@@ -48,7 +48,7 @@ export function runInNewContext(
   _contextObject: any,
   _options: any,
 ) {
-  notImplemented();
+  notImplemented("runInNewContext");
 }
 
 export function runInThisContext(
@@ -59,15 +59,15 @@ export function runInThisContext(
 }
 
 export function isContext(_maybeContext: any) {
-  notImplemented();
+  notImplemented("isContext");
 }
 
 export function compileFunction(_code: string, _params: any, _options: any) {
-  notImplemented();
+  notImplemented("compileFunction");
 }
 
 export function measureMemory(_options: any) {
-  notImplemented();
+  notImplemented("measureMemory");
 }
 
 export default {

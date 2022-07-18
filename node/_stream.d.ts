@@ -492,7 +492,7 @@ export class Readable extends Stream implements ReadableStream {
   ): this;
   [Symbol.asyncIterator](): AsyncIterableIterator<any>;
 }
-interface WritableOptions extends StreamOptions<Writable> {
+export interface WritableOptions extends StreamOptions<Writable> {
   decodeStrings?: boolean | undefined;
   defaultEncoding?: BufferEncoding | undefined;
   write?(
@@ -1157,9 +1157,9 @@ type PipelineDestinationPromiseFunction<T, P> = (
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
   PipelineTransformSource<infer ST> ? 
-  | WritableStream
-  | PipelineDestinationIterableFunction<ST>
-  | PipelineDestinationPromiseFunction<ST, P>
+    | WritableStream
+    | PipelineDestinationIterableFunction<ST>
+    | PipelineDestinationPromiseFunction<ST, P>
   : never;
 type PipelineCallback<S extends PipelineDestination<any, any>> = S extends
   PipelineDestinationPromiseFunction<any, infer P>

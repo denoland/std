@@ -1,3 +1,211 @@
+### 0.148.0 / 2022.07.12
+
+- fix(archive/tar): export TarEntry class (#2429)
+- fix(encoding/csv/stream): cancel lineReader if readable is canceled (#2401)
+- fix(node): add missing named zlib exports (#2435)
+- node: handle v8 flag passed to child_process.fork (#2424)
+
+### 0.147.0 / 2022.07.05
+
+- feat(dotenv): add expand feature, move parse logic to RegExp (#2387)
+- feat(dotenv): stringify (#2412)
+- feat(http): add HTTP errors (#2307)
+- feat(http): add content negotiation (#2302)
+- feat: add createAssertSnapshot (#2403)
+- fix(node/fs/exists): fix promisified exists (#2409)
+- node: process.argv[1] uses phony local module if executing remote module
+  (#2418)
+
+### 0.146.0 / 2022.06.30
+
+- BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
+  (#2400)
+- feat(dotenv): include missing vars in MissingEnvVarsError (#2390)
+- fix(encoding/json): add `null` to JSONValue union (#2384)
+- fix(node): export createReadStream() from fs (#2393)
+- fix(node): use call() to call prototype methods in inspect() (#2392)
+- fix(node/zlib) zlib codes contains undefined values and keys (#2396)
+- fix(streams/delimiter): avoid recursion in TextLineStream (#2318)
+- fix(testing): break out of Set equality check on match (#2394)
+
+### 0.145.0 / 2022.06.23
+
+- fix(wasi): Fix WASI initialize() (#2372)
+- feat(encoding): add json/stream.ts (#2231)
+- feat(flags): infer argument types, names and defaults (#2180)
+- feat(media_types): Improve contentType type definition (#2357)
+- feat(node): add missing modules node/util/types.ts node/diagnostics_channel.ts
+  (#2369)
+- fix(encoding/csv/stream): properly handle CR characters (#2325)
+- fix(http): Disable `console.error` if `opts.quiet` is true (#2379)
+- fix(node): make performance object event target (#2371)
+- fix(testing/bdd): fix flat test grouping context (#2308)
+- node: improve error for unsupported import (#2380)
+
+### 0.144.0 / 2022.06.15
+
+- Add warning on usage of collections/mod.ts (#2321, #2346)
+- encoding: add front matter module (#2335)
+- feat(node): add missing TTY methods to stdout,stderr (#2337)
+- fix: update ci script and fix type errors (#2344)
+
+### 0.143.0 / 2022.06.09
+
+- BREAKING feat(http): improve type safety and docs for http_status (#2297)
+- BREAKING(flags): introduce negatable option (#2301)
+- feat(encoding): add unsigned LEB128 varint encoding (#2265)
+- feat(node/assert): add deepEqual and notDeepEqual (#2288)
+- fix(dotenv): support inline comment (#2316)
+- fix(media_types): work around type issues under Node.js (#2304)
+- fix: pass resolved ephemeral port to onListen (#2311)
+
+### 0.142.0 / 2022.06.02
+
+- feat(crypto): add fnv algorithms (#2200)
+- feat: add media_types (#2286)
+- fix(node): type checking on AsyncResource (#2289)
+- fix: assertSnapshot errors on empty snapshot in non-update mode (#2269)
+- fix: put TextLineStream CR handling behind option (#2277)
+
+### 0.141.0 / 2022.05.27
+
+- BREAKING(flags): introduce `collect` option (#2247)
+- BREAKING(testing): use Object.is() for strict equality (#2244)
+- BREAKING(testing/asserts): remove implicit any types from assert signatures.
+  (#2203)
+- feat(http/util): add compareEtag (#2259)
+- feat(node/crypto): stub out missing exports (#2263)
+- feat(node/dns): `NAPTR`, `NS`, `CAA`, and `SOA` support (#2233)
+- feat(streams): toTransformStream (#2227)
+- feat(streams/delimiter): support `\r` in `TextLineStream` (#2267)
+- feat(streams/merge): earlyZipReadableStreams (#2264)
+- feat(testing/asserts): return error from `assertRejects` and `assertThrows`
+  (#2226)
+- fix(async/pooledMap): return ordered result (#2239)
+- fix(node/fs): export fs.ReadStream (#2253)
+
+### 0.140.0 / 2022.05.18
+
+- feat(http): add onListen option to serve (#2218)
+- feat(node/dgram): support dgram (udp) node module compat (#2205)
+- fix(assertRejects): fails on synchronous throw #1302 (#2234)
+- fix(collections): prevent cycles in deepMerge() (#2228)
+- fix(encoding/csv): improve error message for csv's parse function (#2191)
+- fix(http/file_server): fix handling of 'W/' prefixed etag (#2229)
+- fix(testing/bdd): support using bdd tests with dnt (#2235)
+- fix: add toJSON to node/perf_hooks.ts (#2209)
+
+### 0.139.0 / 2022.05.12
+
+- feat(encoding): add jsonc parser (#2154)
+- feat(node/dns): Implement Resolver APIs (#2201)
+- feat(node/net): unix domain socket support (#2146)
+- feat(testing/snapshot): add "assertSnapshot" options overload (#2179)
+- fix(node/module): interpret length parameter as optional in blitBuffer (#2199)
+- fix(node/timers): set custom promisify function (#2198)
+
+### 0.138.0 / 2022.05.05
+
+- fix: Export equalSimd and equalsNaive (#2187)
+- BREAKING(testing/snapshot): change multiline string serialization (#2166)
+- feat(node/dns): support dns promises lookup (#2164)
+- feat(testing): assertFalse (#2093)
+- fix(node/dns): export more types (#2185)
+- fix(node/worker_threads): Don't wait for parent message in web worker (#2182)
+- fix(testing): Compare circular objects (#2172)
+
+### 0.137.0 / 2022.04.28
+
+- feat(testing): infer stub and spy return types from properties (#2137)
+- fix(http): export interface ServeTlsInit (#2148)
+- fix(node): use Web Crypto API via globalThis (#2115)
+- fix(wasi): ContextOptions is an optional argument (#2138)
+- http: serve() should log where it is listening (#1641)
+
+### 0.136.0 / 2022.04.21
+
+- feat(testing): Implement "assertSnapshot" (#2039)
+- feat(testing): add TestContext argument to "it" function (#2117)
+- fix(http): use the `addEventListener` method instead of `onabort` properties
+  (#2124)
+- fix(node/crypto): fix randomInt (#2101)
+- perf(http): optimize file server (#2116)
+
+### 0.135.0 / 2022.04.14
+
+- BREAKING(io/readers): use an array as a MultiReader constructor parameter to
+  avoid Maximum call stack size exceeded (#2016)
+- BREAKING(mime/multipart): deprecate mime/multipart module (#2105)
+- BREAKING(testing/bench): deprecate testing/bench module (#2104)
+- feat(node): `Duplex.fromWeb` (#2086)
+- feat(testing): add behavior-driven development (#2067)
+- feat(testing): add utility for faking time (#2069)
+- fix(node): Make global.ts evaluate synchronously (#2098)
+
+### 0.134.0 / 2022.04.07
+
+- feat(node/child_process): support `signal` parameter for `ChildProcess.kill`
+  (#2083)
+- feat(node/net): add server.ref/unref methods (#2087)
+- feat: web streams based encoding/csv (#1993)
+- fix(log): fix log formatter issue (#2070)
+- fix(node/fs): fix writing redundant data (#2076)
+
+### 0.133.0 / 2022.03.31
+
+- BREAKING: improve bytes/ module (#2074)
+- feat(testing): add mocking utilities (#2048)
+
+### 0.132.0 / 2022.03.25
+
+- feat(collections): Add BSTree and RBTree (#2023)
+- feat(node): add ReadStream and createReadStream (#1435)
+- feat(node): export URLSearchParams via url module (#2056)
+
+### 0.131.0 / 2022.03.24
+
+- feat(node): add NodeEventTarget (#2032)
+- feat(node): add Console constructor (#2037)
+- feat(node): worker_threads (#1151)
+- feat(node): add process.allowedNodeEnvironmentFlags (#2049)
+- feat(collections): add BinaryHeap (#2022)
+- feat(async): expose asyncPromise and asyncAsyncIterable (#2034)
+- fix(node/http): ignore error from `respondWith` (#2058)
+- fix(node): warn on non supported event, but still register listener (#2050)
+- fix(node): fix `EventEmitter` methods (#2035)
+- fix(node): make global.<timerFunc> Node.js timers (#2038)
+
+### 0.130.0 / 2022.03.16
+
+- feat(testing): add `assertInstanceOf` (#2028)
+- feat(node): shim get-caller-file (#2029)
+- fix(node): fix dynamic require (#2024)
+- feat(node/fs): add `fs.writevSync(fd, buffers[, position])` (#2020)
+
+### 0.129.0 / 2022.03.10
+
+- feat: streams based `Buffer` (#1970)
+- feat(node/crypto): add crypto.publicEncrypt (#1987)
+- feat(node/fs): add `fs.writev(fd, buffers[, position], callback)` (#2008)
+- feat(streams): LimitedTransformStream & LimitedBytesTransformStream (#2007)
+- feat(streams): TextDelimiterStream (#2006)
+- feat(testing/asserts): use assertion signature for "assertStrictEquals"
+  (#1984)
+- fix(async): re-export abortable in mod.ts (#1959)
+- fix(fmt/colors): update `ANSI_PATTERN` (#1996)
+- fix(node): fix http.request for minipass-fetch 2.x (#2004)
+- fix(node/process): ignore SIGBREAK binding when the platform is not windows
+  (#2014)
+- fix(testing): Misleading assertion error in assertNotEquals (#1989)
+
+### 0.128.0 / 2022.03.03
+
+- feat(node): add crypto.webcrypto (#1961)
+- feat(streams): TextLineStream (#1978)
+- fix(dotenv): avoid top-level-await in load.ts (#1964)
+- fix(node): fix http client reqs with bodies (#1983)
+- fix(testing): fix assertObjectMatch for RegExp/Map/Set (#1967)
+
 ### 0.127.0 / 2022.02.24
 
 - feat(async): add `abortable` to async module. (#1939)

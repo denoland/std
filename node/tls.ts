@@ -36,7 +36,7 @@ export class CryptoStream {}
 export class SecurePair {}
 export class Server {}
 export function createSecurePair() {
-  notImplemented();
+  notImplemented("tls.createSecurePair");
 }
 
 export default {

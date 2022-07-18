@@ -15,7 +15,7 @@ change once the library is stabilized.
 
 To check compatibility of different version of standard library with Deno CLI
 see
-[this list](https://raw.githubusercontent.com/denoland/deno_website2/main/versions.json).
+[this list](https://raw.githubusercontent.com/denoland/dotland/main/versions.json).
 
 ## How to use
 
@@ -66,10 +66,11 @@ After cloning don't forget to `git submodule update --init`.
 
 Before opening a PR make sure to:
 
-- Add tests that cover your changes.
-- `deno test --unstable --allow-all` passes.
-- `deno run -A _tools/format.js` passes without changing files.
-- `deno run -A _tools/lint.js` passes.
+- have the latest Deno version installed locally
+- add tests that cover your changes.
+- `deno task test` passes.
+- `deno fmt --check` passes.
+- `deno lint` passes.
 
 Give the PR a descriptive title.
 

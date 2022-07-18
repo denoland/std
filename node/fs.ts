@@ -4,6 +4,7 @@ import { appendFile, appendFileSync } from "./_fs/_fs_appendFile.ts";
 import { chmod, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
+import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -35,6 +36,8 @@ import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
 import { write, writeSync } from "./_fs/_fs_write.mjs";
+// @deno-types="./_fs/_fs_writev.d.ts"
+import { writev, writevSync } from "./_fs/_fs_writev.mjs";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
 import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
@@ -93,6 +96,7 @@ export default {
   constants,
   copyFile,
   copyFileSync,
+  createReadStream,
   createWriteStream,
   Dir,
   Dirent,
@@ -129,6 +133,7 @@ export default {
   readFileSync,
   readlink,
   readlinkSync,
+  ReadStream,
   realpath,
   realpathSync,
   rename,
@@ -153,6 +158,8 @@ export default {
   watchFile,
   write,
   writeFile,
+  writev,
+  writevSync,
   writeFileSync,
   WriteStream,
   writeSync,
@@ -173,6 +180,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createReadStream,
   createWriteStream,
   Dir,
   Dirent,
@@ -236,5 +244,7 @@ export {
   writeFileSync,
   WriteStream,
   writeSync,
+  writev,
+  writevSync,
   X_OK,
 };

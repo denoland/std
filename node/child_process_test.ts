@@ -3,6 +3,7 @@
 import {
   assert,
   assertEquals,
+  assertExists,
   assertNotStrictEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
@@ -172,7 +173,7 @@ Deno.test({
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-event.js` works.
 Deno.test("[child_process spawn] 'spawn' event", async () => {
   const timeout = withTimeout(3000);
-  const subprocess = spawn("echo", ["ok"]);
+  const subprocess = spawn(Deno.execPath(), ["eval", "console.log('ok')"]);
 
   let didSpawn = false;
   subprocess.on("spawn", function () {
@@ -462,5 +463,23 @@ Deno.test({
         child.kill();
       }
     }
+  },
+});
+
+Deno.test({
+  name: "[node/child_process] ChildProcess.kill()",
+  async fn() {
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/infinite_loop.js",
+    );
+    const childProcess = spawn(Deno.execPath(), ["run", script]);
+    const p = withTimeout(3000);
+    childProcess.on("exit", () => p.resolve());
+    childProcess.kill("SIGKILL");
+    await p;
+    assert(childProcess.killed);
+    assertEquals(childProcess.signalCode, "SIGKILL");
+    assertExists(childProcess.exitCode);
   },
 });
