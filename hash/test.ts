@@ -518,10 +518,10 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   writer.releaseLock();
   await process.stdin.close();
 
-  const { status, stdout } = await process.output();
+  const { success, stdout } = await process.output();
   const processedStdout = new TextDecoder().decode(stdout);
 
-  assertEquals(status.success, true);
+  assert(success);
   const {
     heapBytesInitial,
     smallDigest,

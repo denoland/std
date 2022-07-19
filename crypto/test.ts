@@ -195,7 +195,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   const res = await process.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assertEquals(res.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -293,7 +293,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   const res = await process.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assert(res.success);
   const {
     heapBytesInitial,
     heapBytesFinal,

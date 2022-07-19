@@ -10,7 +10,7 @@ import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
 
-let fileServer: Deno.Child<Deno.SpawnOptions>;
+let fileServer: Deno.Child;
 
 interface FileServerCfg {
   port?: string;

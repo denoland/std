@@ -107,7 +107,7 @@ for (const pathname of tests) {
 
         process.stdin.close();
 
-        const { status, stdout, stderr } = await process.output();
+        const { code, stdout, stderr } = await process.output();
 
         if (options.stdout) {
           assertEquals(new TextDecoder().decode(stdout), options.stdout);
@@ -121,7 +121,7 @@ for (const pathname of tests) {
           await writeAll(Deno.stderr, stderr);
         }
 
-        assertEquals(status.code, options.exitCode ? +options.exitCode : 0);
+        assertEquals(code, options.exitCode ? +options.exitCode : 0);
       } catch (err) {
         throw err;
       } finally {
