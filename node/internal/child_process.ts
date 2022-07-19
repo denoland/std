@@ -195,7 +195,7 @@ export class ChildProcess extends EventEmitter {
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
           this.emit("exit", exitCode, signalCode);
           await this.#_waitForChildStreamsToClose();
-          // this.#close();
+          this.#closePipes();
           this.emit("close", exitCode, signalCode);
         });
       })();
@@ -213,7 +213,7 @@ export class ChildProcess extends EventEmitter {
     }
 
     const denoSignal = signal == null ? "SIGTERM" : toDenoSignal(signal);
-    // this.#closePipes();
+    this.#closePipes();
     try {
       this.#process.kill(denoSignal);
     } catch (err) {
@@ -257,30 +257,18 @@ export class ChildProcess extends EventEmitter {
     });
   }
 
-  // #close(): void {
-  //   this.#closePipes();
-  //   try {
-  //     this.#process.close();
-  //   } catch (err) {
-  //     if (isAlreadyClosed(err)) {
-  //       return;
-  //     }
-  //     throw err;
-  //   }
-  // }
-
-  // #closePipes(): void {
-  //   if (this.#process.stdin) {
-  //     assert(this.stdin);
-  //     this.#process.stdin.close();
-  //   }
-  //   if (this.#process.stdout) {
-  //     this.#process.stdout.close();
-  //   }
-  //   if (this.#process.stderr) {
-  //     this.#process.stderr.close();
-  //   }
-  // }
+  #closePipes(): void {
+    if (this.stdin) {
+      assert(this.stdin);
+      this.stdin.destroy();
+    }
+    if (this.stdout) {
+      this.stdout.destroy();
+    }
+    if (this.stderr) {
+      this.stderr.destroy();
+    }
+  }
 }
 
 const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
