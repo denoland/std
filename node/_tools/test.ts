@@ -68,7 +68,7 @@ for await (const path of testPaths) {
 
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
-      const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+      const { code, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
         args,
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
@@ -80,7 +80,7 @@ for await (const path of testPaths) {
       if (stderr.length) console.error(decodedStderr);
       if (stdout.length) console.log(decoder.decode(stdout));
 
-      if (status.code !== 0) {
+      if (code !== 0) {
         console.log(`Error: "${path}" failed`);
         console.log(
           "You can repeat only this test with the command:",
