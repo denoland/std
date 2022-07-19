@@ -2,6 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
+import { validateBoolean, validateObject } from "../validators.mjs";
 import { _uint8ArrayToBuffer } from "./_utils.ts";
 import { addAbortSignalNoValidate } from "./add-abort-signal.mjs";
 import { Buffer } from "../../buffer.ts";
@@ -16,6 +17,7 @@ import {
   ERR_STREAM_CANNOT_PIPE,
   ERR_STREAM_DESTROYED,
   ERR_STREAM_NULL_VALUES,
+  ERR_STREAM_PREMATURE_CLOSE,
   ERR_STREAM_WRITE_AFTER_END,
   ERR_UNKNOWN_ENCODING,
 } from "../errors.ts";
@@ -23,6 +25,7 @@ import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.mjs";
 import EE from "../../events.ts";
 import Readable from "./readable.mjs";
+import { isWritableEnded } from "./utils.mjs";
 
 const { errorOrDestroy } = destroyImpl;
 
@@ -922,7 +925,7 @@ Writable.fromWeb = function (writableStream, options = {}) {
           // thrown we don't want those to cause an unhandled
           // rejection. Let's just escape the promise and
           // handle it separately.
-          process.nextTick(() => destroy(duplex, error));
+          process.nextTick(() => destroy.call(writable, error));
         }
       }
 
@@ -949,7 +952,7 @@ Writable.fromWeb = function (writableStream, options = {}) {
         try {
           callback(error);
         } catch (error) {
-          destroy(duplex, error);
+          destroy(this, duplex, error);
         }
       }
 
@@ -997,7 +1000,7 @@ Writable.fromWeb = function (writableStream, options = {}) {
           // thrown we don't want those to cause an unhandled
           // rejection. Let's just escape the promise and
           // handle it separately.
-          process.nextTick(() => destroy(duplex, error));
+          process.nextTick(() => destroy.call(writable, error));
         }
       }
 
@@ -1010,17 +1013,17 @@ Writable.fromWeb = function (writableStream, options = {}) {
   writer.closed.then(
     () => {
       closed = true;
-      if (!isWritableEnded(duplex)) {
-        destroy(writable, new ERR_STREAM_PREMATURE_CLOSE());
+      if (!isWritableEnded(writable)) {
+        destroy.call(writable, new ERR_STREAM_PREMATURE_CLOSE());
       }
     },
     (error) => {
       closed = true;
-      destroy(writable, error);
+      destroy.call(writable, error);
     },
   );
 
-  return duplex;
+  return writable;
 };
 
 export default Writable;

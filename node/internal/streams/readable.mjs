@@ -8,7 +8,7 @@ import { debuglog } from "../util/debuglog.ts";
 import { getDefaultHighWaterMark, getHighWaterMark } from "./state.mjs";
 import { prependListener, Stream } from "./legacy.mjs";
 import { StringDecoder } from "../../string_decoder.ts";
-import { validateObject } from "../validators.mjs";
+import { validateBoolean, validateObject } from "../validators.mjs";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
@@ -22,6 +22,7 @@ import _from from "./from.mjs";
 import BufferList from "./buffer_list.mjs";
 import destroyImpl from "./destroy.mjs";
 import EE from "../../events.ts";
+import { isReadableEnded } from "./utils.mjs";
 
 let debug = debuglog("stream", (fn) => {
   debug = fn;
@@ -1416,12 +1417,12 @@ Readable.fromWeb = function (readableStream, options = {}) {
       reader.read().then(
         (chunk) => {
           if (chunk.done) {
-            duplex.push(null);
+            readable.push(null);
           } else {
-            duplex.push(chunk.value);
+            readable.push(chunk.value);
           }
         },
-        (error) => destroy(duplex, error),
+        (error) => destroy.call(readable, error),
       );
     },
 
@@ -1453,13 +1454,13 @@ Readable.fromWeb = function (readableStream, options = {}) {
   reader.closed.then(
     () => {
       closed = true;
-      if (!isReadableEnded(duplex)) {
+      if (!isReadableEnded(readable)) {
         readable.push(null);
       }
     },
     (error) => {
       closed = true;
-      destroy(readable, error);
+      destroy.call(readable, error);
     },
   );
 
