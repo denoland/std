@@ -11,6 +11,7 @@ import { StringDecoder } from "../../string_decoder.ts";
 import { validateObject } from "../validators.mjs";
 import {
   ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
   ERR_METHOD_NOT_IMPLEMENTED,
   ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
@@ -1375,6 +1376,95 @@ function endWritableNT(stream) {
 function readableFrom(iterable, opts) {
   return _from(Readable, iterable, opts);
 }
+
+function isReadableStream(object) {
+  return object instanceof ReadableStream;
+}
+
+Readable.fromWeb = function (readableStream, options = {}) {
+  if (!isReadableStream(readableStream)) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "readableStream",
+      "ReadableStream",
+      readableStream,
+    );
+  }
+
+  validateObject(options, "options");
+  const {
+    highWaterMark,
+    encoding,
+    objectMode = false,
+    signal,
+  } = options;
+
+  if (encoding !== undefined && !Buffer.isEncoding(encoding)) {
+    throw new ERR_INVALID_ARG_VALUE(encoding, "options.encoding");
+  }
+  validateBoolean(objectMode, "options.objectMode");
+
+  const reader = readableStream.getReader();
+  let closed = false;
+
+  const readable = new Readable({
+    objectMode,
+    highWaterMark,
+    encoding,
+    signal,
+
+    read() {
+      reader.read().then(
+        (chunk) => {
+          if (chunk.done) {
+            duplex.push(null);
+          } else {
+            duplex.push(chunk.value);
+          }
+        },
+        (error) => destroy(duplex, error),
+      );
+    },
+
+    destroy(error, callback) {
+      function done() {
+        try {
+          callback(error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => {
+            throw error;
+          });
+        }
+      }
+
+      if (!closed) {
+        reader.cancel(error).then(done, done);
+        return;
+      }
+
+      done();
+    },
+  });
+
+  reader.closed.then(
+    () => {
+      closed = true;
+      if (!isReadableEnded(duplex)) {
+        readable.push(null);
+      }
+    },
+    (error) => {
+      closed = true;
+      destroy(readable, error);
+    },
+  );
+
+  return readable;
+};
 
 function wrap(src, options) {
   return new Readable({

@@ -878,5 +878,150 @@ Writable.prototype[EE.captureRejectionSymbol] = function (err) {
 
 Writable.WritableState = WritableState;
 
+function isWritableStream(object) {
+  return object instanceof WritableStream;
+}
+
+Writable.fromWeb = function (writableStream, options = {}) {
+  if (!isWritableStream(writableStream)) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "writableStream",
+      "WritableStream",
+      writableStream,
+    );
+  }
+
+  validateObject(options, "options");
+  const {
+    highWaterMark,
+    decodeStrings = true,
+    objectMode = false,
+    signal,
+  } = options;
+
+  validateBoolean(objectMode, "options.objectMode");
+  validateBoolean(decodeStrings, "options.decodeStrings");
+
+  const writer = writableStream.getWriter();
+  let closed = false;
+
+  const writable = new Writable({
+    highWaterMark,
+    objectMode,
+    decodeStrings,
+    signal,
+
+    writev(chunks, callback) {
+      function done(error) {
+        error = error.filter((e) => e);
+        try {
+          callback(error.length === 0 ? undefined : error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => destroy(duplex, error));
+        }
+      }
+
+      writer.ready.then(
+        () =>
+          Promise.All(
+            chunks.map((data) => writer.write(data.chunk)),
+          ).then(done, done),
+        done,
+      );
+    },
+
+    write(chunk, encoding, callback) {
+      if (typeof chunk === "string" && decodeStrings && !objectMode) {
+        chunk = Buffer.from(chunk, encoding);
+        chunk = new Uint8Array(
+          chunk.buffer,
+          chunk.byteOffset,
+          chunk.byteLength,
+        );
+      }
+
+      function done(error) {
+        try {
+          callback(error);
+        } catch (error) {
+          destroy(duplex, error);
+        }
+      }
+
+      writer.ready.then(
+        () => writer.write(chunk).then(done, done),
+        done,
+      );
+    },
+
+    destroy(error, callback) {
+      function done() {
+        try {
+          callback(error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => {
+            throw error;
+          });
+        }
+      }
+
+      if (!closed) {
+        if (error != null) {
+          writer.abort(error).then(done, done);
+        } else {
+          writer.close().then(done, done);
+        }
+        return;
+      }
+
+      done();
+    },
+
+    final(callback) {
+      function done(error) {
+        try {
+          callback(error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => destroy(duplex, error));
+        }
+      }
+
+      if (!closed) {
+        writer.close().then(done, done);
+      }
+    },
+  });
+
+  writer.closed.then(
+    () => {
+      closed = true;
+      if (!isWritableEnded(duplex)) {
+        destroy(writable, new ERR_STREAM_PREMATURE_CLOSE());
+      }
+    },
+    (error) => {
+      closed = true;
+      destroy(writable, error);
+    },
+  );
+
+  return duplex;
+};
+
 export default Writable;
 export { Writable, WritableState };
