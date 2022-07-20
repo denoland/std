@@ -1,3 +1,10 @@
+### 0.149.0 / 2022.07.20
+
+- feat(semver): add "semver" module (#2434)
+- fix(node/module): improve error message of createRequire (#2440)
+- fix(testing): add support for `PromiseLike` in `assertRejects` (#2443)
+- node: process.on("beforeExit") (#2331)
+
 ### 0.148.0 / 2022.07.12
 
 - fix(archive/tar): export TarEntry class (#2429)
