@@ -6,3 +6,4 @@
  * will match versions with cli as we have in the past.
  */
 export const VERSION = "0.148.0";
+export const DO_NOT_MERGE = "DO_NOT_MERGE";
