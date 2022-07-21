@@ -50,6 +50,20 @@ export class Readable extends Stream implements ReadableStream {
     iterable: Iterable<any> | AsyncIterable<any>,
     options?: ReadableOptions,
   ): Readable;
+
+  /**
+   * A utility method for creating `Readable` from a `ReadableStream`.
+   * @since v17.0.0
+   * @experimental
+   */
+  static fromWeb(
+    readableStream: globalThis.ReadableStream,
+    options?: Pick<
+      ReadableOptions,
+      "encoding" | "highWaterMark" | "objectMode" | "signal"
+    >,
+  ): Readable;
+
   /**
    * Returns whether the stream has been read from or cancelled.
    * @since v16.8.0
@@ -515,6 +529,19 @@ export interface WritableOptions extends StreamOptions<Writable> {
  * @since v0.9.4
  */
 export class Writable extends Stream implements WritableStream {
+  /**
+   * A utility method for creating `Writable` from a `WritableStream`.
+   * @since v17.0.0
+   * @experimental
+   */
+  static fromWeb(
+    writableStream: globalThis.WritableStream,
+    options?: Pick<
+      WritableOptions,
+      "decodeStrings" | "highWaterMark" | "objectMode" | "signal"
+    >,
+  ): Writable;
+
   /**
    * Is `true` if it is safe to call `writable.write()`, which means
    * the stream has not been destroyed, errored or ended.

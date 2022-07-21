@@ -24,9 +24,8 @@ export type Algorithms =
   | "sha384"
   | "sha512";
 
-const createHasher = (algorithm: string) =>
-  (value: Uint8Array) =>
-    Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
+const createHasher = (algorithm: string) => (value: Uint8Array) =>
+  Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
 
 function getZeroes(zeros: number) {
   return Buffer.alloc(zeros);
