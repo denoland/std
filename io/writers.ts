@@ -22,7 +22,7 @@ export class StringWriter implements Writer, WriterSync {
   }
 
   writeSync(p: Uint8Array): number {
-    this.#chunks.push(p);
+    this.#chunks.push(new Uint8Array(p));
     this.#byteLength += p.byteLength;
     this.#cache = undefined;
     return p.byteLength;
