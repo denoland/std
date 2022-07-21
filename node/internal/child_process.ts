@@ -217,7 +217,8 @@ export class ChildProcess extends EventEmitter {
     try {
       this.#process.kill(denoSignal);
     } catch (err) {
-      const alreadyClosed = err instanceof TypeError || err instanceof Deno.errors.PermissionDenied;
+      const alreadyClosed = err instanceof TypeError ||
+        err instanceof Deno.errors.PermissionDenied;
       if (!alreadyClosed) {
         throw err;
       }
