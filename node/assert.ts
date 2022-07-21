@@ -751,8 +751,7 @@ function validateThrownError(
     }
     throw createAssertionError({
       message:
-        `The error is expected to be an instance of "${error.name}". Received "${e
-          ?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
+        `The error is expected to be an instance of "${error.name}". Received "${e?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
       actual: e,
       expected: error,
       operator: options.operator.name,
