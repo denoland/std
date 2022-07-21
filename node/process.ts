@@ -7,7 +7,7 @@ import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/assert.ts";
-import { fromFileUrl } from "../path/mod.ts";
+import { fromFileUrl, join } from "../path/mod.ts";
 import {
   arch,
   chdir,
@@ -36,6 +36,9 @@ import {
   stdin as stdin_,
   stdout as stdout_,
 } from "./_process/streams.mjs";
+import { core } from "./_core.ts";
+import { processTicksAndRejections } from "./_next_tick.ts";
+
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
 const stderr = stderr_ as any;
@@ -49,7 +52,6 @@ import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 const notImplementedEvents = [
-  "beforeExit",
   "disconnect",
   "message",
   "multipleResolves",
@@ -66,7 +68,15 @@ const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
-Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+Object.defineProperty(argv, "1", {
+  get: () => {
+    if (Deno.mainModule.startsWith("file:")) {
+      return fromFileUrl(Deno.mainModule);
+    } else {
+      return join(Deno.cwd(), "$deno$node.js");
+    }
+  },
+});
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number | string) => {
@@ -81,6 +91,9 @@ export const exit = (code?: number | string) => {
 
   if (!process._exiting) {
     process._exiting = true;
+    // FIXME(bartlomieju): this is wrong, we won't be using syscall to exit
+    // and thus the `unload` event will not be emitted to properly trigger "emit"
+    // event on `process`.
     process.emit("exit", process.exitCode || 0);
   }
 
@@ -257,6 +270,14 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
 class Process extends EventEmitter {
   constructor() {
     super();
+
+    globalThis.addEventListener("beforeunload", (e) => {
+      super.emit("beforeExit", process.exitCode || 0);
+      processTicksAndRejections();
+      if (core.eventLoopHasMoreWork()) {
+        e.preventDefault();
+      }
+    });
 
     globalThis.addEventListener("unload", () => {
       if (!process._exiting) {

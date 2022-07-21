@@ -1,5 +1,17 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+/** This module includes pure functions for specific common tasks around collection
+types like `Array` and `Record`.
+ * @module
+ */
+
+// Not sure what's causing this warning? Run `deno info <entry-point-path>` to
+// analyze the module graph. It's not recommended to import directly from
+// mod.ts here because it adds a lot of bloat.
+console.warn(
+  "%c[WARN] deno_std: prefer importing collections/<function_name_in_snake_case>.ts " +
+    "instead of collections/mod.ts",
+  "color: yellow;",
+);
 
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";

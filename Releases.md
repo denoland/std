@@ -1,3 +1,134 @@
+### 0.149.0 / 2022.07.20
+
+- feat(semver): add "semver" module (#2434)
+- fix(node/module): improve error message of createRequire (#2440)
+- fix(testing): add support for `PromiseLike` in `assertRejects` (#2443)
+- node: process.on("beforeExit") (#2331)
+
+### 0.148.0 / 2022.07.12
+
+- fix(archive/tar): export TarEntry class (#2429)
+- fix(encoding/csv/stream): cancel lineReader if readable is canceled (#2401)
+- fix(node): add missing named zlib exports (#2435)
+- node: handle v8 flag passed to child_process.fork (#2424)
+
+### 0.147.0 / 2022.07.05
+
+- feat(dotenv): add expand feature, move parse logic to RegExp (#2387)
+- feat(dotenv): stringify (#2412)
+- feat(http): add HTTP errors (#2307)
+- feat(http): add content negotiation (#2302)
+- feat: add createAssertSnapshot (#2403)
+- fix(node/fs/exists): fix promisified exists (#2409)
+- node: process.argv[1] uses phony local module if executing remote module
+  (#2418)
+
+### 0.146.0 / 2022.06.30
+
+- BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
+  (#2400)
+- feat(dotenv): include missing vars in MissingEnvVarsError (#2390)
+- fix(encoding/json): add `null` to JSONValue union (#2384)
+- fix(node): export createReadStream() from fs (#2393)
+- fix(node): use call() to call prototype methods in inspect() (#2392)
+- fix(node/zlib) zlib codes contains undefined values and keys (#2396)
+- fix(streams/delimiter): avoid recursion in TextLineStream (#2318)
+- fix(testing): break out of Set equality check on match (#2394)
+
+### 0.145.0 / 2022.06.23
+
+- fix(wasi): Fix WASI initialize() (#2372)
+- feat(encoding): add json/stream.ts (#2231)
+- feat(flags): infer argument types, names and defaults (#2180)
+- feat(media_types): Improve contentType type definition (#2357)
+- feat(node): add missing modules node/util/types.ts node/diagnostics_channel.ts
+  (#2369)
+- fix(encoding/csv/stream): properly handle CR characters (#2325)
+- fix(http): Disable `console.error` if `opts.quiet` is true (#2379)
+- fix(node): make performance object event target (#2371)
+- fix(testing/bdd): fix flat test grouping context (#2308)
+- node: improve error for unsupported import (#2380)
+
+### 0.144.0 / 2022.06.15
+
+- Add warning on usage of collections/mod.ts (#2321, #2346)
+- encoding: add front matter module (#2335)
+- feat(node): add missing TTY methods to stdout,stderr (#2337)
+- fix: update ci script and fix type errors (#2344)
+
+### 0.143.0 / 2022.06.09
+
+- BREAKING feat(http): improve type safety and docs for http_status (#2297)
+- BREAKING(flags): introduce negatable option (#2301)
+- feat(encoding): add unsigned LEB128 varint encoding (#2265)
+- feat(node/assert): add deepEqual and notDeepEqual (#2288)
+- fix(dotenv): support inline comment (#2316)
+- fix(media_types): work around type issues under Node.js (#2304)
+- fix: pass resolved ephemeral port to onListen (#2311)
+
+### 0.142.0 / 2022.06.02
+
+- feat(crypto): add fnv algorithms (#2200)
+- feat: add media_types (#2286)
+- fix(node): type checking on AsyncResource (#2289)
+- fix: assertSnapshot errors on empty snapshot in non-update mode (#2269)
+- fix: put TextLineStream CR handling behind option (#2277)
+
+### 0.141.0 / 2022.05.27
+
+- BREAKING(flags): introduce `collect` option (#2247)
+- BREAKING(testing): use Object.is() for strict equality (#2244)
+- BREAKING(testing/asserts): remove implicit any types from assert signatures.
+  (#2203)
+- feat(http/util): add compareEtag (#2259)
+- feat(node/crypto): stub out missing exports (#2263)
+- feat(node/dns): `NAPTR`, `NS`, `CAA`, and `SOA` support (#2233)
+- feat(streams): toTransformStream (#2227)
+- feat(streams/delimiter): support `\r` in `TextLineStream` (#2267)
+- feat(streams/merge): earlyZipReadableStreams (#2264)
+- feat(testing/asserts): return error from `assertRejects` and `assertThrows`
+  (#2226)
+- fix(async/pooledMap): return ordered result (#2239)
+- fix(node/fs): export fs.ReadStream (#2253)
+
+### 0.140.0 / 2022.05.18
+
+- feat(http): add onListen option to serve (#2218)
+- feat(node/dgram): support dgram (udp) node module compat (#2205)
+- fix(assertRejects): fails on synchronous throw #1302 (#2234)
+- fix(collections): prevent cycles in deepMerge() (#2228)
+- fix(encoding/csv): improve error message for csv's parse function (#2191)
+- fix(http/file_server): fix handling of 'W/' prefixed etag (#2229)
+- fix(testing/bdd): support using bdd tests with dnt (#2235)
+- fix: add toJSON to node/perf_hooks.ts (#2209)
+
+### 0.139.0 / 2022.05.12
+
+- feat(encoding): add jsonc parser (#2154)
+- feat(node/dns): Implement Resolver APIs (#2201)
+- feat(node/net): unix domain socket support (#2146)
+- feat(testing/snapshot): add "assertSnapshot" options overload (#2179)
+- fix(node/module): interpret length parameter as optional in blitBuffer (#2199)
+- fix(node/timers): set custom promisify function (#2198)
+
+### 0.138.0 / 2022.05.05
+
+- fix: Export equalSimd and equalsNaive (#2187)
+- BREAKING(testing/snapshot): change multiline string serialization (#2166)
+- feat(node/dns): support dns promises lookup (#2164)
+- feat(testing): assertFalse (#2093)
+- fix(node/dns): export more types (#2185)
+- fix(node/worker_threads): Don't wait for parent message in web worker (#2182)
+- fix(testing): Compare circular objects (#2172)
+
+### 0.137.0 / 2022.04.28
+
+- feat(testing): infer stub and spy return types from properties (#2137)
+- fix(http): export interface ServeTlsInit (#2148)
+- fix(node): use Web Crypto API via globalThis (#2115)
+- fix(wasi): ContextOptions is an optional argument (#2138)
+- http: serve() should log where it is listening (#1641)
+
 ### 0.136.0 / 2022.04.21
 
 - feat(testing): Implement "assertSnapshot" (#2039)

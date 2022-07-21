@@ -124,37 +124,41 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         sanitizeOps,
         sanitizeResources,
         fn: async (t) => {
-          if (!TestSuiteInternal.running) TestSuiteInternal.running = true;
-          const context = {} as T;
-          const { beforeAll } = this.describe;
-          if (typeof beforeAll === "function") {
-            await beforeAll.call(context);
-          } else if (beforeAll) {
-            for (const hook of beforeAll) {
-              await hook.call(context);
-            }
-          }
+          TestSuiteInternal.runningCount++;
           try {
-            TestSuiteInternal.active.push(this.symbol);
-            await TestSuiteInternal.run(this, context, t);
-          } finally {
-            TestSuiteInternal.active.pop();
-            const { afterAll } = this.describe;
-            if (typeof afterAll === "function") {
-              await afterAll.call(context);
-            } else if (afterAll) {
-              for (const hook of afterAll) {
+            const context = {} as T;
+            const { beforeAll } = this.describe;
+            if (typeof beforeAll === "function") {
+              await beforeAll.call(context);
+            } else if (beforeAll) {
+              for (const hook of beforeAll) {
                 await hook.call(context);
               }
             }
+            try {
+              TestSuiteInternal.active.push(this.symbol);
+              await TestSuiteInternal.run(this, context, t);
+            } finally {
+              TestSuiteInternal.active.pop();
+              const { afterAll } = this.describe;
+              if (typeof afterAll === "function") {
+                await afterAll.call(context);
+              } else if (afterAll) {
+                for (const hook of afterAll) {
+                  await hook.call(context);
+                }
+              }
+            }
+          } finally {
+            TestSuiteInternal.runningCount--;
           }
         },
       });
     }
   }
 
-  /** If the test cases have begun executing. */
-  static running = false;
+  /** Stores how many test suites are executing. */
+  static runningCount = 0;
 
   /** If a test has been registered yet. Block adding global hooks if a test has been registered. */
   static started = false;
@@ -172,7 +176,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
 
   /** This is used internally for testing this module. */
   static reset(): void {
-    TestSuiteInternal.running = false;
+    TestSuiteInternal.runningCount = 0;
     TestSuiteInternal.started = false;
     TestSuiteInternal.current = null;
     TestSuiteInternal.active = [];
@@ -329,7 +333,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     const suite = TestSuiteInternal.active[activeIndex];
     const testSuite = suite && TestSuiteInternal.suites.get(suite);
     if (testSuite) {
-      context = { ...context };
+      if (activeIndex === 0) context = { ...context };
       const { beforeEach } = testSuite.describe;
       if (typeof beforeEach === "function") {
         await beforeEach.call(context);

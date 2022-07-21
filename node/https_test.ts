@@ -19,9 +19,8 @@ Deno.test("[node/https] request makes https request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--unstable",
@@ -29,19 +28,12 @@ Deno.test("[node/https] request makes https request", async () => {
       "--no-check",
       "node/testdata/https_request.ts",
     ],
-    stdout: "piped",
-    stderr: "piped",
     env: {
       NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
     },
   });
-  const [output, stderrOutput] = await Promise.all([
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  assertEquals(dec.decode(stderrOutput), "");
-  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
-  p.close();
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
   controller.abort();
   await serveFinish;
 });
@@ -54,9 +46,8 @@ Deno.test("[node/https] get makes https GET request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--unstable",
@@ -70,13 +61,8 @@ Deno.test("[node/https] get makes https GET request", async () => {
       NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
     },
   });
-  const [output, stderrOutput] = await Promise.all([
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  assertEquals(dec.decode(stderrOutput), "");
-  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
-  p.close();
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
   controller.abort();
   await serveFinish;
 });

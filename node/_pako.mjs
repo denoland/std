@@ -805,7 +805,7 @@ const build_tree = (s, desc) => //    deflate_state *s;
   /* The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
    * establish sub-heaps of increasing lengths:
    */
-  for (n = (s.heap_len >> 1 /*int /2*/); n >= 1; n--) pqdownheap(s, tree, n);
+  for (n = s.heap_len >> 1 /*int /2*/; n >= 1; n--) pqdownheap(s, tree, n);
 
   /* Construct the Huffman tree by repeatedly combining the least two
    * frequent nodes.
@@ -1460,7 +1460,7 @@ var constants$2 = {
   Z_DATA_ERROR: -3,
   Z_MEM_ERROR: -4,
   Z_BUF_ERROR: -5,
-  //Z_VERSION_ERROR: -6,
+  Z_VERSION_ERROR: -6,
 
   /* compression levels */
   Z_NO_COMPRESSION: 0,
@@ -6275,11 +6275,12 @@ const inflate$2 = (strm, flush) => {
           strm.total_out += _out;
           state.total += _out;
           if (_out) {
-            strm.adler = state.check =
-              /*UPDATE(state.check, put - _out, _out);*/
-              state.flags
-                ? crc32_1(state.check, output, _out, put - _out)
-                : adler32_1(state.check, output, _out, put - _out);
+            strm.adler =
+              state.check =
+                /*UPDATE(state.check, put - _out, _out);*/
+                state.flags
+                  ? crc32_1(state.check, output, _out, put - _out)
+                  : adler32_1(state.check, output, _out, put - _out);
           }
           _out = left;
           // NB: crc32 stored as signed 32-bit int, zswap32 returns signed too
@@ -6364,11 +6365,12 @@ const inflate$2 = (strm, flush) => {
   strm.total_out += _out;
   state.total += _out;
   if (state.wrap && _out) {
-    strm.adler = state
-      .check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
-      state.flags
-        ? crc32_1(state.check, output, _out, strm.next_out - _out)
-        : adler32_1(state.check, output, _out, strm.next_out - _out);
+    strm.adler =
+      state
+        .check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
+        state.flags
+          ? crc32_1(state.check, output, _out, strm.next_out - _out)
+          : adler32_1(state.check, output, _out, strm.next_out - _out);
   }
   strm.data_type = state.bits + (state.last ? 64 : 0) +
     (state.mode === TYPE ? 128 : 0) +

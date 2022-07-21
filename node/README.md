@@ -8,7 +8,7 @@ Deno standard library as it's a compatibility module.
 
 ## Supported modules
 
-- [x] assert _partly_
+- [x] assert
 - [x] assert/strict _partly_
 - [x] async_hooks _partly_
 - [x] buffer
@@ -112,7 +112,7 @@ workflow.
 $ deno task node:setup
 ```
 
-You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+You can additionally pass the `-y`/`-n` flag to use test cache or generating
 tests from scratch instead of being prompted at the moment of running it.
 
 ```zsh
@@ -136,8 +136,8 @@ $ deno test -A node/_tools/test.ts -- <pattern-to-match>
 ```
 
 For example, if you want to run only
-`node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js`, you
-can use:
+`node/_tools/test/parallel/test-event-emitter-check-listener-leaks.js`, you can
+use:
 
 ```shellsession
 $ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
@@ -160,7 +160,7 @@ following:
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
-a path inside `https://github.com/nodejs/node/tree/master/test`.
+a path inside `https://github.com/nodejs/node/tree/main/test`.
 
 Adding a new entry under the `ignore` option will indicate the test runner that
 it should not regenerate that file from scratch the next time the setup is run,

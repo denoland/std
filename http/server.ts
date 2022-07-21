@@ -475,6 +475,9 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 
   /** The handler to invoke when route handlers throw an error. */
   onError?: (error: unknown) => Response | Promise<Response>;
+
+  /** The callback which is called when the server started listening */
+  onListen?: (params: { hostname: string; port: number }) => void;
 }
 
 /**
@@ -524,8 +527,8 @@ function hostnameForDisplay(hostname: string) {
 
 /** Serves HTTP requests with the given handler.
  *
- * You can specify an object with a port and hostname option, which is the address to listen on.
- * The default is port 8000 on hostname "0.0.0.0".
+ * You can specify an object with a port and hostname option, which is the
+ * address to listen on. The default is port 8000 on hostname "0.0.0.0".
  *
  * The below example serves with the port 8000.
  *
@@ -534,12 +537,33 @@ function hostnameForDisplay(hostname: string) {
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
- * You can change the listening address by the host and port option. The below example
- * serves with the port 3000.
+ * You can change the listening address by the `hostname` and `port` options.
+ * The below example serves with the port 3000.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
+ * ```
+ *
+ * `serve` function prints the message `Listening on http://<hostname>:<port>/`
+ * on start-up by default. If you like to change this message, you can specify
+ * `onListen` option to override it.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"), {
+ *   onListen({ port, hostname }) {
+ *     console.log(`Server started at http://${hostname}:${port}`);
+ *     // ... more info specific to your server ..
+ *   },
+ * });
+ * ```
+ *
+ * You can also specify `undefined` or `null` to stop the logging behavior.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
  *
  * @param handler The handler for individual HTTP requests.
@@ -549,7 +573,7 @@ export async function serve(
   handler: Handler,
   options: ServeInit = {},
 ): Promise<void> {
-  const port = options.port ?? 8000;
+  let port = options.port ?? 8000;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
@@ -563,7 +587,15 @@ export async function serve(
   });
 
   const s = server.listenAndServe();
-  console.log(`Listening on http://${hostnameForDisplay(hostname)}:${port}/`);
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
+
+  if ("onListen" in options) {
+    options.onListen?.({ port, hostname });
+  } else {
+    console.log(`Listening on http://${hostnameForDisplay(hostname)}:${port}/`);
+  }
+
   return await s;
 }
 
@@ -579,8 +611,8 @@ export interface ServeTlsInit extends ServeInit {
  *
  * You must specify `keyFile` and `certFile` options.
  *
- * You can specify an object with a port and hostname option, which is the address to listen on.
- * The default is port 8443 on hostname "0.0.0.0".
+ * You can specify an object with a port and hostname option, which is the
+ * address to listen on. The default is port 8443 on hostname "0.0.0.0".
  *
  * The below example serves with the default port 8443.
  *
@@ -589,7 +621,37 @@ export interface ServeTlsInit extends ServeInit {
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
- * console.log("Listening on https://localhost:8443");
+ * ```
+ *
+ * `serveTls` function prints the message `Listening on https://<hostname>:<port>/`
+ * on start-up by default. If you like to change this message, you can specify
+ * `onListen` option to override it.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * serveTls((_req) => new Response("Hello, world"), {
+ *   certFile,
+ *   keyFile,
+ *   onListen({ port, hostname }) {
+ *     console.log(`Server started at https://${hostname}:${port}`);
+ *     // ... more info specific to your server ..
+ *   },
+ * });
+ * ```
+ *
+ * You can also specify `undefined` or `null` to stop the logging behavior.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * serveTls((_req) => new Response("Hello, world"), {
+ *   certFile,
+ *   keyFile,
+ *   onListen: undefined,
+ * });
  * ```
  *
  * @param handler The handler for individual HTTPS requests.
@@ -608,7 +670,7 @@ export async function serveTls(
     throw new Error("TLS config is given, but 'certFile' is missing.");
   }
 
-  const port = options.port ?? 8443;
+  let port = options.port ?? 8443;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
@@ -622,7 +684,17 @@ export async function serveTls(
   });
 
   const s = server.listenAndServeTls(options.certFile, options.keyFile);
-  console.log(`Listening on https://${hostnameForDisplay(hostname)}:${port}/`);
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
+
+  if ("onListen" in options) {
+    options.onListen?.({ port, hostname });
+  } else {
+    console.log(
+      `Listening on https://${hostnameForDisplay(hostname)}:${port}/`,
+    );
+  }
+
   return await s;
 }
 

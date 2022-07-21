@@ -54,6 +54,8 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
     assertStrictEquals(childProcess.exitCode, exitCode);
   } finally {
     childProcess.kill();
+    childProcess.stdout?.destroy();
+    childProcess.stderr?.destroy();
   }
 });
 
@@ -173,7 +175,7 @@ Deno.test({
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-event.js` works.
 Deno.test("[child_process spawn] 'spawn' event", async () => {
   const timeout = withTimeout(3000);
-  const subprocess = spawn("echo", ["ok"]);
+  const subprocess = spawn(Deno.execPath(), ["eval", "console.log('ok')"]);
 
   let didSpawn = false;
   subprocess.on("spawn", function () {
@@ -240,6 +242,8 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
     await promise;
   } finally {
     doesNotExist.kill();
+    doesNotExist.stdout?.destroy();
+    doesNotExist.stderr?.destroy();
   }
 });
 

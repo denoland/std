@@ -1,4 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * A collection of APIs to provide help with asynchronous tasks like
+ * delays, debouncing, deferreds or pooling.
+ *
+ * @module
+ */
+
 export * from "./abortable.ts";
 export * from "./deadline.ts";
 export * from "./debounce.ts";

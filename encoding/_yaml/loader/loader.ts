@@ -1447,8 +1447,8 @@ function composeNode(
   state.kind = null;
   state.result = null;
 
-  const allowBlockStyles =
-    (allowBlockScalars = allowBlockCollections =
+  const allowBlockStyles = (allowBlockScalars =
+    allowBlockCollections =
       CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
 
   if (allowToSeek) {
