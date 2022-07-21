@@ -464,7 +464,12 @@ Deno.test({
       }
     } finally {
       if (child instanceof ChildProcess) {
-        child.kill();
+        try {
+          child.kill();
+        } catch {
+          // ignore the error
+          // Note: the above kill call causes PermissionError on windows
+        }
       }
     }
   },
