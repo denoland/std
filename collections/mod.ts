@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-/** This module is browser compatible.
+/** This module includes pure functions for specific common tasks around collection
+types like `Array` and `Record`.
  * @module
  */
 

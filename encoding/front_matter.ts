@@ -31,7 +31,7 @@ export type Extract<T> = {
  * const { attrs, body, frontMatter } = extract<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\n");
  * assertEquals(attrs.title, "Three dashes marks the spot");
  * assertEquals(body, "");
- * assertEquals(frontMatter, "---\ntitle: Three dashes marks the spot\n---\n");
+ * assertEquals(frontMatter, "title: Three dashes marks the spot");
  * ```
  */
 export function extract<T = unknown>(str: string): Extract<T> {

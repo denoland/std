@@ -857,6 +857,18 @@ Deno.test("assertRejects with non-error value rejected and error callback", asyn
   );
 });
 
+Deno.test("assertRejects with PromiseLike", async () => {
+  await assertRejects(
+    () => ({
+      then() {
+        throw new Error("some error");
+      },
+    }),
+    Error,
+    "some error",
+  );
+});
+
 Deno.test("assertThrows with non-error value thrown and error class", () => {
   assertThrows(
     () => {
@@ -1302,6 +1314,7 @@ Deno.test({
   fn(): void {
     class TestClass1 {}
     class TestClass2 {}
+    class TestClass3 {}
 
     // Regular types
     assertInstanceOf(new Date(), Date);
@@ -1342,13 +1355,14 @@ Deno.test({
 
     let TestClassWithSameName: new () => unknown;
     {
-      class TestClass1 {}
-      TestClassWithSameName = TestClass1;
+      class TestClass3 {}
+      TestClassWithSameName = TestClass3;
     }
+    // todo(dsherret): this is a bug in swc and below it should only say TestClass3
     assertThrows(
-      () => assertInstanceOf(new TestClassWithSameName(), TestClass1),
+      () => assertInstanceOf(new TestClassWithSameName(), TestClass3),
       AssertionError,
-      `Expected object to be an instance of "TestClass1".`,
+      `Expected object to be an instance of "TestClass3" but was "TestClass31".`,
     );
 
     assertThrows(
@@ -1551,4 +1565,23 @@ Deno.test("Assert False with truthy values", () => {
   assertThrows(() => assertFalse("a"));
   assertThrows(() => assertFalse({}));
   assertThrows(() => assertFalse([]));
+});
+
+Deno.test("assertEquals same Set with object keys", () => {
+  const data = [
+    {
+      id: "_1p7ZED73OF98VbT1SzSkjn",
+      type: { id: "_ETGENUS" },
+      name: "Thuja",
+      friendlyId: "g-thuja",
+    },
+    {
+      id: "_567qzghxZmeQ9pw3q09bd3",
+      type: { id: "_ETGENUS" },
+      name: "Pinus",
+      friendlyId: "g-pinus",
+    },
+  ];
+  assertEquals(data, data);
+  assertEquals(new Set(data), new Set(data));
 });

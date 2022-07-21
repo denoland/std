@@ -217,3 +217,16 @@ Deno.test("require in a web worker", async () => {
   });
   worker.terminate();
 });
+
+Deno.test("createRequire with http(s):// URL  throws with correct error message", () => {
+  assertThrows(
+    () => createRequire("http://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'http://example.com/foo.js'",
+  );
+  assertThrows(
+    () => createRequire("https://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'https://example.com/foo.js'",
+  );
+});

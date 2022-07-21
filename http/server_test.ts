@@ -1390,7 +1390,7 @@ Deno.test("serve - onListen callback is called with ephemeral port", () => {
 });
 
 Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
-  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+  const { code, stdout } = await Deno.spawn(Deno.execPath(), {
     args: [
       "eval",
       `
@@ -1400,12 +1400,12 @@ Deno.test("serve - doesn't print the message when onListen set to undefined", as
       `,
     ],
   });
-  assertEquals(status.code, 0);
+  assertEquals(code, 0);
   assertEquals(new TextDecoder().decode(stdout), "");
 });
 
 Deno.test("serve - can print customized start-up message in onListen handler", async () => {
-  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+  const { code, stdout } = await Deno.spawn(Deno.execPath(), {
     args: [
       "eval",
       `
@@ -1417,7 +1417,7 @@ Deno.test("serve - can print customized start-up message in onListen handler", a
       `,
     ],
   });
-  assertEquals(status.code, 0);
+  assertEquals(code, 0);
   assertEquals(
     new TextDecoder().decode(stdout),
     "Server started at 0.0.0.0 port 8000\n",

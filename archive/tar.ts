@@ -300,7 +300,7 @@ function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
   return data;
 }
 
-interface TarHeader {
+export interface TarHeader {
   [key: string]: Uint8Array;
 }
 
@@ -702,3 +702,5 @@ export class Untar {
     }
   }
 }
+
+export { TarEntry };

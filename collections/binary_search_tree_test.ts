@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
-import { ascend, BSTree, descend } from "./bs_tree.ts";
+import { ascend, BinarySearchTree, descend } from "./binary_search_tree.ts";
 
 class MyMath {
   multiply(a: number, b: number): number {
@@ -13,8 +13,11 @@ interface Container {
   values: number[];
 }
 
-Deno.test("[collections/BSTree] with default ascend comparator", () => {
-  const trees: BSTree<number>[] = [new BSTree(), new BSTree()];
+Deno.test("[collections/BinarySearchTree] with default ascend comparator", () => {
+  const trees: BinarySearchTree<number>[] = [
+    new BinarySearchTree(),
+    new BinarySearchTree(),
+  ];
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -130,8 +133,11 @@ Deno.test("[collections/BSTree] with default ascend comparator", () => {
   }
 });
 
-Deno.test("[collections/BSTree] with descend comparator", () => {
-  const trees: BSTree<number>[] = [new BSTree(descend), new BSTree(descend)];
+Deno.test("[collections/BinarySearchTree] with descend comparator", () => {
+  const trees: BinarySearchTree<number>[] = [
+    new BinarySearchTree(descend),
+    new BinarySearchTree(descend),
+  ];
   const values: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   const expectedMin: number[][] = [
@@ -247,8 +253,8 @@ Deno.test("[collections/BSTree] with descend comparator", () => {
   }
 });
 
-Deno.test("[collections/BSTree] containing objects", () => {
-  const tree: BSTree<Container> = new BSTree((
+Deno.test("[collections/BinarySearchTree] containing objects", () => {
+  const tree: BinarySearchTree<Container> = new BinarySearchTree((
     a: Container,
     b: Container,
   ) => ascend(a.id, b.id));
@@ -307,23 +313,23 @@ Deno.test("[collections/BSTree] containing objects", () => {
   assertEquals(tree.isEmpty(), true);
 });
 
-Deno.test("[collections/BSTree] from Iterable", () => {
+Deno.test("[collections/BinarySearchTree] from Iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-  let tree: BSTree<number> = BSTree.from(values);
+  let tree: BinarySearchTree<number> = BinarySearchTree.from(values);
   assertEquals(values, originalValues);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [-10, -100, 9, -1, -9, 1, 0, 100, 10]);
   assertEquals([...tree.lvlValues()], [-10, -100, 9, -1, 100, -9, 1, 10, 0]);
 
-  tree = BSTree.from(values, { compare: descend });
+  tree = BinarySearchTree.from(values, { compare: descend });
   assertEquals(values, originalValues);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], [-10, 9, 100, 10, -1, 1, 0, -9, -100]);
   assertEquals([...tree.lvlValues()], [-10, 9, -100, 100, -1, 10, 1, -9, 0]);
 
-  tree = BSTree.from(values, {
+  tree = BinarySearchTree.from(values, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...tree], expected.map((v: number) => 2 * v));
@@ -331,7 +337,7 @@ Deno.test("[collections/BSTree] from Iterable", () => {
   assertEquals([...tree.lvlValues()], [-20, -200, 18, -2, 200, -18, 2, 20, 0]);
 
   const math = new MyMath();
-  tree = BSTree.from(values, {
+  tree = BinarySearchTree.from(values, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -342,7 +348,7 @@ Deno.test("[collections/BSTree] from Iterable", () => {
   assertEquals([...tree.nlrValues()], [-30, -300, 27, -3, -27, 3, 0, 300, 30]);
   assertEquals([...tree.lvlValues()], [-30, -300, 27, -3, 300, -27, 3, 30, 0]);
 
-  tree = BSTree.from(values, {
+  tree = BinarySearchTree.from(values, {
     compare: descend,
     map: (v: number) => 2 * v,
   });
@@ -351,7 +357,7 @@ Deno.test("[collections/BSTree] from Iterable", () => {
   assertEquals([...tree.nlrValues()], [-20, 18, 200, 20, -2, 2, 0, -18, -200]);
   assertEquals([...tree.lvlValues()], [-20, 18, -200, 200, -2, 20, 2, -18, 0]);
 
-  tree = BSTree.from(values, {
+  tree = BinarySearchTree.from(values, {
     compare: descend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -364,31 +370,31 @@ Deno.test("[collections/BSTree] from Iterable", () => {
   assertEquals([...tree.lvlValues()], [-30, 27, -300, 300, -3, 30, 3, -27, 0]);
 });
 
-Deno.test("[collections/BSTree] from BSTree with default ascend comparator", () => {
+Deno.test("[collections/BinarySearchTree] from BinarySearchTree with default ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
-  const originalTree: BSTree<number> = new BSTree();
+  const originalTree: BinarySearchTree<number> = new BinarySearchTree();
   for (const value of values) originalTree.insert(value);
-  let tree: BSTree<number> = BSTree.from(originalTree);
+  let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
-  tree = BSTree.from(originalTree, { compare: descend });
+  tree = BinarySearchTree.from(originalTree, { compare: descend });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], expected);
   assertEquals([...tree.lvlValues()], expected);
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected.map((v: number) => 2 * v));
 
   const math = new MyMath();
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -397,14 +403,14 @@ Deno.test("[collections/BSTree] from BSTree with default ascend comparator", () 
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected.map((v: number) => 3 * v));
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     compare: descend,
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected.map((v: number) => 2 * v));
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     compare: descend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -415,31 +421,31 @@ Deno.test("[collections/BSTree] from BSTree with default ascend comparator", () 
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BSTree] from BSTree with descend comparator", () => {
+Deno.test("[collections/BinarySearchTree] from BinarySearchTree with descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];
-  const originalTree = new BSTree<number>(descend);
+  const originalTree = new BinarySearchTree<number>(descend);
   for (const value of values) originalTree.insert(value);
-  let tree: BSTree<number> = BSTree.from(originalTree);
+  let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
-  tree = BSTree.from(originalTree, { compare: ascend });
+  tree = BinarySearchTree.from(originalTree, { compare: ascend });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected);
   assertEquals([...tree.nlrValues()], expected);
   assertEquals([...tree.lvlValues()], expected);
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected.map((v: number) => 2 * v));
 
   const math = new MyMath();
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
     },
@@ -448,14 +454,14 @@ Deno.test("[collections/BSTree] from BSTree with descend comparator", () => {
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected.map((v: number) => 3 * v));
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     compare: ascend,
     map: (v: number) => 2 * v,
   });
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected.map((v: number) => 2 * v));
 
-  tree = BSTree.from(originalTree, {
+  tree = BinarySearchTree.from(originalTree, {
     compare: ascend,
     map: function (this: MyMath, v: number) {
       return this.multiply(3, v);
@@ -466,9 +472,9 @@ Deno.test("[collections/BSTree] from BSTree with descend comparator", () => {
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("[collections/BSTree] README example", () => {
+Deno.test("[collections/BinarySearchTree] README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
-  const tree = new BSTree<number>();
+  const tree = new BinarySearchTree<number>();
   values.forEach((value) => tree.insert(value));
   assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
   assertEquals(tree.min(), 1);
@@ -479,7 +485,7 @@ Deno.test("[collections/BSTree] README example", () => {
   assertEquals(tree.remove(7), true);
   assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
 
-  const invertedTree = new BSTree<number>(descend);
+  const invertedTree = new BinarySearchTree<number>(descend);
   values.forEach((value) => invertedTree.insert(value));
   assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
   assertEquals(invertedTree.min(), 14);
@@ -490,7 +496,7 @@ Deno.test("[collections/BSTree] README example", () => {
   assertEquals(invertedTree.remove(7), true);
   assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
 
-  const words = new BSTree<string>((a, b) =>
+  const words = new BinarySearchTree<string>((a, b) =>
     ascend(a.length, b.length) || ascend(a, b)
   );
   ["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]

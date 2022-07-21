@@ -54,6 +54,8 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
     assertStrictEquals(childProcess.exitCode, exitCode);
   } finally {
     childProcess.kill();
+    childProcess.stdout?.destroy();
+    childProcess.stderr?.destroy();
   }
 });
 
@@ -244,6 +246,8 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
     await promise;
   } finally {
     doesNotExist.kill();
+    doesNotExist.stdout?.destroy();
+    doesNotExist.stderr?.destroy();
   }
 });
 

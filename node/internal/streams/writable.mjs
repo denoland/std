@@ -2,6 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
+import { validateBoolean, validateObject } from "../validators.mjs";
 import { _uint8ArrayToBuffer } from "./_utils.ts";
 import { addAbortSignalNoValidate } from "./add-abort-signal.mjs";
 import { Buffer } from "../../buffer.ts";
@@ -16,6 +17,7 @@ import {
   ERR_STREAM_CANNOT_PIPE,
   ERR_STREAM_DESTROYED,
   ERR_STREAM_NULL_VALUES,
+  ERR_STREAM_PREMATURE_CLOSE,
   ERR_STREAM_WRITE_AFTER_END,
   ERR_UNKNOWN_ENCODING,
 } from "../errors.ts";
@@ -23,6 +25,7 @@ import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.mjs";
 import EE from "../../events.ts";
 import Readable from "./readable.mjs";
+import { isWritableEnded } from "./utils.mjs";
 
 const { errorOrDestroy } = destroyImpl;
 
@@ -877,6 +880,151 @@ Writable.prototype[EE.captureRejectionSymbol] = function (err) {
 };
 
 Writable.WritableState = WritableState;
+
+function isWritableStream(object) {
+  return object instanceof WritableStream;
+}
+
+Writable.fromWeb = function (writableStream, options = {}) {
+  if (!isWritableStream(writableStream)) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "writableStream",
+      "WritableStream",
+      writableStream,
+    );
+  }
+
+  validateObject(options, "options");
+  const {
+    highWaterMark,
+    decodeStrings = true,
+    objectMode = false,
+    signal,
+  } = options;
+
+  validateBoolean(objectMode, "options.objectMode");
+  validateBoolean(decodeStrings, "options.decodeStrings");
+
+  const writer = writableStream.getWriter();
+  let closed = false;
+
+  const writable = new Writable({
+    highWaterMark,
+    objectMode,
+    decodeStrings,
+    signal,
+
+    writev(chunks, callback) {
+      function done(error) {
+        error = error.filter((e) => e);
+        try {
+          callback(error.length === 0 ? undefined : error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => destroy.call(writable, error));
+        }
+      }
+
+      writer.ready.then(
+        () =>
+          Promise.All(
+            chunks.map((data) => writer.write(data.chunk)),
+          ).then(done, done),
+        done,
+      );
+    },
+
+    write(chunk, encoding, callback) {
+      if (typeof chunk === "string" && decodeStrings && !objectMode) {
+        chunk = Buffer.from(chunk, encoding);
+        chunk = new Uint8Array(
+          chunk.buffer,
+          chunk.byteOffset,
+          chunk.byteLength,
+        );
+      }
+
+      function done(error) {
+        try {
+          callback(error);
+        } catch (error) {
+          destroy(this, duplex, error);
+        }
+      }
+
+      writer.ready.then(
+        () => writer.write(chunk).then(done, done),
+        done,
+      );
+    },
+
+    destroy(error, callback) {
+      function done() {
+        try {
+          callback(error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => {
+            throw error;
+          });
+        }
+      }
+
+      if (!closed) {
+        if (error != null) {
+          writer.abort(error).then(done, done);
+        } else {
+          writer.close().then(done, done);
+        }
+        return;
+      }
+
+      done();
+    },
+
+    final(callback) {
+      function done(error) {
+        try {
+          callback(error);
+        } catch (error) {
+          // In a next tick because this is happening within
+          // a promise context, and if there are any errors
+          // thrown we don't want those to cause an unhandled
+          // rejection. Let's just escape the promise and
+          // handle it separately.
+          process.nextTick(() => destroy.call(writable, error));
+        }
+      }
+
+      if (!closed) {
+        writer.close().then(done, done);
+      }
+    },
+  });
+
+  writer.closed.then(
+    () => {
+      closed = true;
+      if (!isWritableEnded(writable)) {
+        destroy.call(writable, new ERR_STREAM_PREMATURE_CLOSE());
+      }
+    },
+    (error) => {
+      closed = true;
+      destroy.call(writable, error);
+    },
+  );
+
+  return writable;
+};
 
 export default Writable;
 export { Writable, WritableState };

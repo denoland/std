@@ -44,20 +44,20 @@ Deno.test({
     const writer = p.stdin.getWriter();
     await writer.write(new TextEncoder().encode("hello"));
     await writer.close();
-    const { status, stdout } = await p.output();
-    assertEquals(status, { code: 0, signal: null, success: true });
+    const { success, stdout } = await p.output();
+    assertEquals(success, true);
     assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
   },
 });
 
 Deno.test("xevalCliSyntaxError", async function () {
-  const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+  const { code, success, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
     args: ["run", "--quiet", xevalPath, "("],
     cwd: moduleDir,
   });
   const decoder = new TextDecoder();
-  assertEquals(status.code, 1);
-  assertEquals(status.success, false);
+  assertEquals(code, 1);
+  assertEquals(success, false);
   assertEquals(decoder.decode(stdout), "");
   assertStringIncludes(decoder.decode(stderr), "SyntaxError");
 });
