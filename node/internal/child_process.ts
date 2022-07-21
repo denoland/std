@@ -262,12 +262,6 @@ export class ChildProcess extends EventEmitter {
       assert(this.stdin);
       this.stdin.destroy();
     }
-    if (this.stdout) {
-      this.stdout.destroy();
-    }
-    if (this.stderr) {
-      this.stderr.destroy();
-    }
   }
 }
 
