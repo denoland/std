@@ -230,22 +230,10 @@ export class ChildProcess extends EventEmitter {
 
   ref(): void {
     this.#process.ref();
-    if (this.stdout) {
-      this.stdout[ReadableRefSymbol]();
-    }
-    if (this.stderr) {
-      this.stderr[ReadableRefSymbol]();
-    }
   }
 
   unref(): void {
     this.#process.unref();
-    if (this.stdout) {
-      this.stdout[ReadableUnrefSymbol]();
-    }
-    if (this.stderr) {
-      this.stderr[ReadableUnrefSymbol]();
-    }
   }
 
   async #_waitForChildStreamsToClose(): Promise<void> {
