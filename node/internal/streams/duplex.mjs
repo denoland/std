@@ -131,7 +131,7 @@ function isWritableStream(object) {
   return object instanceof WritableStream;
 }
 
-Duplex.fromWeb = function (pair, options) {
+Duplex.fromWeb = function (pair, options = {}) {
   validateObject(pair, "pair");
   const {
     readable: readableStream,

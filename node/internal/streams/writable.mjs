@@ -421,6 +421,7 @@ function onwriteError(stream, state, er, cb) {
   // writes.
   errorBuffer(state);
   // This can emit error, but error must always follow cb.
+  console.log("errorOrDestroy", er);
   errorOrDestroy(stream, er);
 }
 

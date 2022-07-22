@@ -297,6 +297,11 @@ export class TCP extends ConnectionWrap {
     return 0;
   }
 
+  setTimeout(ms: number): this {
+    // TODO(bartlomieju):
+    return this;
+  }
+
   /**
    * Windows only.
    *

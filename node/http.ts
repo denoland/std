@@ -15,6 +15,8 @@ import {
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
+// import Duplex from "./internal/streams/duplex.mjs";
+import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
 const METHODS = [
   "ACL",
@@ -389,8 +391,20 @@ export class IncomingMessageForServer extends NodeReadable {
   get headers() {
     return Object.fromEntries(this.#req.headers.entries());
   }
+
   get method() {
     return this.#req.method;
+  }
+
+  get _webRequest() {
+    return this.#req;
+  }
+
+  get upgrade(): boolean {
+    return Boolean(
+      this.#req.headers.get("connection")?.toLowerCase().includes("upgrade") &&
+        this.#req.headers.get("upgrade"),
+    );
   }
 }
 
@@ -462,7 +476,18 @@ class ServerImpl extends EventEmitter {
           }
           const req = new IncomingMessageForServer(reqEvent.request);
           const res = new ServerResponse(reqEvent);
-          this.emit("request", req, res);
+          if (req.upgrade && this.listenerCount("upgrade") > 0) {
+            Deno.upgradeHttp(req._webRequest).then(([conn, head]) => {
+              const socket = new Socket({
+                handle: new TCP(constants.SERVER, conn),
+              });
+              this.emit("upgrade", req, socket, new Buffer(head));
+            }).catch((err) => {
+              console.error("upgrade errored", err);
+            });
+          } else {
+            this.emit("request", req, res);
+          }
         }
       } finally {
         this.#httpConnections.delete(httpConn);
