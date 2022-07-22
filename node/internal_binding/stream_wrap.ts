@@ -312,6 +312,7 @@ export class LibuvStreamWrap extends HandleWrap {
    */
   async #write(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array) {
     const { byteLength } = data;
+
     try {
       await writeAll(this[kStreamBaseField]!, data);
     } catch (e) {
