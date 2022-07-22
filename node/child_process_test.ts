@@ -487,3 +487,23 @@ Deno.test({
     assertExists(childProcess.exitCode);
   },
 });
+
+Deno.test({
+  name: "[node/child_process] ChildProcess.unref()",
+  async fn() {
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "testdata",
+      "child_process_unref.js",
+    );
+    const childProcess = spawn(Deno.execPath(), [
+      "run",
+      "-A",
+      "--unstable",
+      script,
+    ]);
+    const p = deferred();
+    childProcess.on("exit", () => p.resolve());
+    await p;
+  },
+});

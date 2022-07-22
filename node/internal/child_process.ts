@@ -229,11 +229,11 @@ export class ChildProcess extends EventEmitter {
   }
 
   ref(): void {
-    notImplemented("ChildProcess.ref()");
+    this.#process.ref();
   }
 
   unref(): void {
-    notImplemented("ChildProcess.unref()");
+    this.#process.unref();
   }
 
   async #_waitForChildStreamsToClose(): Promise<void> {
