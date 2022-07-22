@@ -2,6 +2,7 @@
 import { fromFileUrl } from "../path.ts";
 import { EventEmitter } from "../events.ts";
 import { notImplemented } from "../_utils.ts";
+import { statSync } from "./_fs_stat.ts";
 
 export function asyncIterableIteratorToCallback<T>(
   iterator: AsyncIterableIterator<T>,
@@ -47,6 +48,8 @@ type watchOptions = {
 
 type watchListener = (eventType: string, filename: string) => void;
 
+const statMap = new Map();
+
 export function watch(
   filename: string | URL,
   options: watchOptions,
@@ -67,17 +70,19 @@ export function watch(
   optionsOrListener2?: watchOptions | watchListener,
 ) {
   const listener = typeof optionsOrListener === "function"
-    ? optionsOrListener
-    : typeof optionsOrListener2 === "function"
-    ? optionsOrListener2
-    : undefined;
+  ? optionsOrListener
+  : typeof optionsOrListener2 === "function"
+  ? optionsOrListener2
+  : undefined;
   const options = typeof optionsOrListener === "object"
-    ? optionsOrListener
-    : typeof optionsOrListener2 === "object"
-    ? optionsOrListener2
-    : undefined;
+  ? optionsOrListener
+  : typeof optionsOrListener2 === "object"
+  ? optionsOrListener2
+  : undefined;
   filename = filename instanceof URL ? fromFileUrl(filename) : filename;
+  console.log("watch file!", filename, options, listener);
 
+  statMap.set(filename, statSync(filename));
   const iterator = Deno.watchFs(filename, {
     recursive: options?.recursive || false,
   });
@@ -88,9 +93,16 @@ export function watch(
     if (iterator.return) iterator.return();
   });
 
-  fsWatcher.on("change", listener);
+  fsWatcher.on("change", (_kind, filename) => {
+    console.log("watch file change called");
+    const curr = statSync(filename);
+    const prev = statMap.get(filename);
+    statMap.set(filename, curr);
+    listener(curr, prev)
+  });
 
   asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
+    console.log("there was a change", val, done);
     if (done) return;
     fsWatcher.emit("change", val.kind, val.paths[0]);
   }, (e) => {
