@@ -493,7 +493,8 @@ Deno.test({
   async fn() {
     const script = path.join(
       path.dirname(path.fromFileUrl(import.meta.url)),
-      "./testdata/child_process_unref.js",
+      "testdata",
+      "child_process_unref.js",
     );
     const childProcess = spawn(Deno.execPath(), [
       "run",
