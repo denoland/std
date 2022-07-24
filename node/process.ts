@@ -267,6 +267,13 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
 
 // deno-lint-ignore no-explicit-any
 function uncaughtExceptionHandler(err: any, origin: string) {
+  // The origin parameter can be 'unhandledRejection' or 'uncaughtException'
+  // depending on how the uncaught exception was created. In Node.js,
+  // exceptions thrown from the top level of a CommonJS module are reported as
+  // 'uncaughtException', while exceptions thrown from the top level of an ESM
+  // module are reported as 'unhandledRejection'. Deno does not have a true
+  // CommonJS implementation, so all exceptions thrown from the top level are
+  // reported as 'uncaughtException'.
   process.emit("uncaughtExceptionMonitor", err, origin);
   process.emit("uncaughtException", err, origin);
 }
