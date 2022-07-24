@@ -265,7 +265,8 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
   return true;
 }
 
-function uncaughtExceptionHandler(err, origin) {
+// deno-lint-ignore no-explicit-any
+function uncaughtExceptionHandler(err: any, origin: string) {
   process.emit("uncaughtExceptionMonitor", err, origin);
   process.emit("uncaughtException", err, origin);
 }
