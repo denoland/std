@@ -139,7 +139,7 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
         this.#expose = false;
       }
       if (options?.headers) {
-        this.#headers = options.headers;
+        this.#headers = new Headers(options.headers);
       }
       Object.defineProperty(this, "name", {
         configurable: true,
