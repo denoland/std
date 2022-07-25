@@ -98,7 +98,7 @@ export type ErrorStatusKeys = keyof typeof ERROR_STATUS_MAP;
 
 export interface HttpErrorOptions extends ErrorOptions {
   expose?: boolean;
-  headers?: Headers;
+  headers?: HeadersInit;
 }
 
 /** The base class that all derivative HTTP extend, providing a `status` and an
