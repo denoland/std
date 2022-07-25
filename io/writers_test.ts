@@ -25,13 +25,13 @@ Deno.test("ioStringWriterSync", function (): void {
 
 Deno.test("ioStringWriterIsolationTest", async function () {
   const encoder = new TextEncoder();
-  const src =  "ABC";
-  const srcChunks = src.split("").map(c => encoder.encode(c))
+  const src = "ABC";
+  const srcChunks = src.split("").map((c) => encoder.encode(c));
 
   const w = new StringWriter();
   for (const c of srcChunks) {
     const written = await w.write(c);
-    assertEquals(written, 1)
+    assertEquals(written, 1);
   }
   srcChunks[0][0] = 88;
   assertEquals(w.toString(), src);
