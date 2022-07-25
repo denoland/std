@@ -98,6 +98,7 @@ export type ErrorStatusKeys = keyof typeof ERROR_STATUS_MAP;
 
 export interface HttpErrorOptions extends ErrorOptions {
   expose?: boolean;
+  headers?: Headers;
 }
 
 /** The base class that all derivative HTTP extend, providing a `status` and an
@@ -113,6 +114,10 @@ export class HttpError extends Error {
   get expose(): boolean {
     return false;
   }
+  /** The optional headers object that is set on the error. */
+  get headers(): Headers | undefined {
+    return undefined;
+  }
   /** The error status that is set on the error. */
   get status(): ErrorStatus {
     return Status.InternalServerError;
@@ -123,6 +128,7 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
   const name = `${Status[status]}Error`;
   const ErrorCtor = class extends HttpError {
     #expose = isClientErrorStatus(status);
+    #headers?: Headers;
 
     constructor(message = STATUS_TEXT[status], options?: HttpErrorOptions) {
       super(message, options);
@@ -131,6 +137,9 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
       }
       if (options?.expose === false) {
         this.#expose = false;
+      }
+      if (options?.headers) {
+        this.#headers = options.headers;
       }
       Object.defineProperty(this, "name", {
         configurable: true,
@@ -142,6 +151,10 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
 
     override get expose() {
       return this.#expose;
+    }
+
+    override get headers() {
+      return this.#headers;
     }
 
     override get status() {
