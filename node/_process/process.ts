@@ -32,46 +32,42 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
-const envTarget = {};
-
 const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
-
-const envProxyHandlerGetter: ProxyHandler<typeof envTarget>['get'] = (_target, prop) => {
-  if (typeof prop === 'symbol') {
-    notImplemented(`process.env[${prop.toString()}]`);
-  }
-
-  const envValue = Deno.env.get(prop);
-
-  if (envValue) {
-    return envValue;
-  }
-
-  if (!OBJECT_PROTO_PROP_NAMES.includes(prop) && envValue === undefined) {
-    return envValue;
-  }
-
-  switch(prop) {
-    case 'hasOwnProperty': return (prop: PropertyKey) => {
-      if (typeof prop === 'symbol' || typeof prop === 'number') {
-        return false;
-      }
-      return Reflect.ownKeys(Deno.env.toObject()).includes(prop);
-    };
-    case 'valueOf': return () => {
-      return Deno.env.toObject();
-    };
-    case 'toString': return () => Object.prototype.toString.call(envTarget);
-    case 'toLocaleString': return () => Object.prototype.toString.call(envTarget);
-    default: notImplemented(`process.env[${prop}]`)
-  }
-}
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
  */
-export const env: Record<string, string> = new Proxy(envTarget, {
-  get: envProxyHandlerGetter,
+export const env: Record<string, string> = new Proxy({}, {
+  get: (target, prop) => {
+    if (typeof prop === "symbol") {
+      notImplemented(`process.env[${prop.toString()}]`);
+    }
+
+    const envValue = Deno.env.get(prop);
+
+    if (envValue) {
+      return envValue;
+    }
+
+    if (!OBJECT_PROTO_PROP_NAMES.includes(prop) && envValue === undefined) {
+      return envValue;
+    }
+
+    switch(prop) {
+      case "hasOwnProperty": return (prop: PropertyKey) => {
+        if (typeof prop === "symbol" || typeof prop === "number") {
+          return false;
+        }
+        return Reflect.ownKeys(Deno.env.toObject()).includes(prop);
+      };
+      case "valueOf": return () => {
+        return Deno.env.toObject();
+      };
+      case "toString": return () => Object.prototype.toString.call(target);
+      case "toLocaleString": return () => Object.prototype.toString.call(target);
+      default: notImplemented(`process.env[${prop}]`);
+    }
+  },
   ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
   getOwnPropertyDescriptor: (_target, name) => {
     const e = Deno.env.toObject();
@@ -88,7 +84,7 @@ export const env: Record<string, string> = new Proxy(envTarget, {
     Deno.env.set(String(prop), String(value));
     return value;
   },
-  has: (target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
+  has: (_target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
 });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
