@@ -104,16 +104,14 @@ export interface HttpErrorOptions extends ErrorOptions {
 /** The base class that all derivative HTTP extend, providing a `status` and an
  * `expose` property. */
 export class HttpError extends Error {
-  #status: number;
+  #status: ErrorStatus = Status.InternalServerError;
   #expose: boolean;
   #headers?: Headers;
   constructor(
-    status: number,
     message = "Http Error",
     options?: HttpErrorOptions,
   ) {
     super(message, options);
-    this.#status = status;
     this.#expose = options?.expose === undefined
       ? isClientErrorStatus(this.status)
       : options.expose;
@@ -142,17 +140,20 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
   const name = `${Status[status]}Error`;
   const ErrorCtor = class extends HttpError {
     constructor(
-      status = Status.InternalServerError,
       message = STATUS_TEXT[status],
       options?: HttpErrorOptions,
     ) {
-      super(status, message, options);
+      super(message, options);
       Object.defineProperty(this, "name", {
         configurable: true,
         enumerable: false,
         value: name,
         writable: true,
       });
+    }
+
+    override get status() {
+      return status;
     }
   };
   return ErrorCtor;
@@ -184,11 +185,7 @@ export function createHttpError(
   message?: string,
   options?: HttpErrorOptions,
 ): HttpError {
-  return new errors[Status[status] as ErrorStatusKeys](
-    status,
-    message,
-    options,
-  );
+  return new errors[Status[status] as ErrorStatusKeys](message, options);
 }
 
 /** A type guard that determines if the value is an HttpError or not. */
