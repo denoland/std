@@ -104,61 +104,55 @@ export interface HttpErrorOptions extends ErrorOptions {
 /** The base class that all derivative HTTP extend, providing a `status` and an
  * `expose` property. */
 export class HttpError extends Error {
-  constructor(message = "Http Error", options?: HttpErrorOptions) {
+  #status: number;
+  #expose: boolean;
+  #headers?: Headers;
+  constructor(
+    status: number,
+    message = "Http Error",
+    options?: HttpErrorOptions,
+  ) {
     super(message, options);
+    this.#status = status;
+    this.#expose = options?.expose === undefined
+      ? isClientErrorStatus(this.status)
+      : options.expose;
+    if (options?.headers) {
+      this.#headers = new Headers(options.headers);
+    }
   }
   /** A flag to indicate if the internals of the error, like the stack, should
    * be exposed to a client, or if they are "private" and should not be leaked.
    * By default, all client errors are `true` and all server errors are
    * `false`. */
   get expose(): boolean {
-    return false;
+    return this.#expose;
   }
   /** The optional headers object that is set on the error. */
   get headers(): Headers | undefined {
-    return undefined;
+    return this.#headers;
   }
   /** The error status that is set on the error. */
   get status(): ErrorStatus {
-    return Status.InternalServerError;
+    return this.#status;
   }
 }
 
 function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
   const name = `${Status[status]}Error`;
   const ErrorCtor = class extends HttpError {
-    #expose = isClientErrorStatus(status);
-    #headers?: Headers;
-
-    constructor(message = STATUS_TEXT[status], options?: HttpErrorOptions) {
-      super(message, options);
-      if (options?.expose) {
-        this.#expose = true;
-      }
-      if (options?.expose === false) {
-        this.#expose = false;
-      }
-      if (options?.headers) {
-        this.#headers = new Headers(options.headers);
-      }
+    constructor(
+      status = Status.InternalServerError,
+      message = STATUS_TEXT[status],
+      options?: HttpErrorOptions,
+    ) {
+      super(status, message, options);
       Object.defineProperty(this, "name", {
         configurable: true,
         enumerable: false,
         value: name,
         writable: true,
       });
-    }
-
-    override get expose() {
-      return this.#expose;
-    }
-
-    override get headers() {
-      return this.#headers;
-    }
-
-    override get status() {
-      return status;
     }
   };
   return ErrorCtor;
@@ -190,7 +184,11 @@ export function createHttpError(
   message?: string,
   options?: HttpErrorOptions,
 ): HttpError {
-  return new errors[Status[status] as ErrorStatusKeys](message, options);
+  return new errors[Status[status] as ErrorStatusKeys](
+    status,
+    message,
+    options,
+  );
 }
 
 /** A type guard that determines if the value is an HttpError or not. */
