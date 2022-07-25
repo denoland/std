@@ -291,6 +291,7 @@ class Process extends EventEmitter {
           throw event.reason;
         }
 
+        event.preventDefault();
         uncaughtExceptionHandler(event.reason, "unhandledRejection");
         return;
       }
