@@ -7,6 +7,7 @@
 import { isWindows } from "../../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
 import { _exiting } from "./exiting.ts";
+import { notImplemented } from "../_utils.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {
@@ -31,13 +32,44 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
+const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
  */
 export const env: Record<string, string> = new Proxy({}, {
-  get(_target, prop) {
-    return Deno.env.get(String(prop));
+  get: (target, prop) => {
+    if (typeof prop === "symbol") {
+      notImplemented(`process.env[${prop.toString()}]`);
+    }
+
+    const envValue = Deno.env.get(prop);
+
+    if (envValue) {
+      return envValue;
+    }
+
+    if (!OBJECT_PROTO_PROP_NAMES.includes(prop) && envValue === undefined) {
+      return envValue;
+    }
+
+    switch (prop) {
+      case "hasOwnProperty":
+        return (prop: PropertyKey) => {
+          if (typeof prop === "symbol" || typeof prop === "number") {
+            return false;
+          }
+          return Reflect.ownKeys(Deno.env.toObject()).includes(prop);
+        };
+      case "valueOf":
+        return () => Deno.env.toObject();
+      case "toString":
+        return () => Object.prototype.toString.call(target);
+      case "toLocaleString":
+        return () => Object.prototype.toString.call(target);
+      default:
+        notImplemented(`process.env[${prop}]`);
+    }
   },
   ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
   getOwnPropertyDescriptor: (_target, name) => {
@@ -55,6 +87,7 @@ export const env: Record<string, string> = new Proxy({}, {
     Deno.env.set(String(prop), String(value));
     return value;
   },
+  has: (_target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
 });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
