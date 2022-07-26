@@ -258,6 +258,14 @@ Deno.test({
         "SURELY_NON_EXISTENT_VAR",
       ),
     );
+
+    // deno-lint-ignore no-prototype-builtins
+    assert(process.env.hasOwnProperty("HELLO"));
+    assert("HELLO" in process.env);
+    assert(Object.keys(process.env.valueOf()).includes("HELLO"));
+
+    assertEquals(process.env.toString(), "[object Object]");
+    assertEquals(process.env.toLocaleString(), "[object Object]");
   },
 });
 
