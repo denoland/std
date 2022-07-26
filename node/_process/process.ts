@@ -31,31 +31,48 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
+const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
  */
-export const env: Record<string, string> = new Proxy({}, {
-  get(_target, prop) {
-    return Deno.env.get(String(prop));
-  },
-  ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
-  getOwnPropertyDescriptor: (_target, name) => {
-    const e = Deno.env.toObject();
-    if (name in Deno.env.toObject()) {
-      const o = { enumerable: true, configurable: true };
-      if (typeof name === "string") {
-        // @ts-ignore we do want to set it only when name is of type string
-        o.value = e[name];
+export const env: InstanceType<ObjectConstructor> & Record<string, string> =
+  new Proxy(Object(), {
+    get: (target, prop) => {
+      if (typeof prop === "symbol") {
+        return target[prop];
       }
-      return o;
-    }
-  },
-  set(_target, prop, value) {
-    Deno.env.set(String(prop), String(value));
-    return value;
-  },
-});
+
+      const envValue = Deno.env.get(prop);
+
+      if (envValue) {
+        return envValue;
+      }
+
+      if (OBJECT_PROTO_PROP_NAMES.includes(prop)) {
+        return target[prop];
+      }
+
+      return envValue;
+    },
+    ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
+    getOwnPropertyDescriptor: (_target, name) => {
+      const e = Deno.env.toObject();
+      if (name in Deno.env.toObject()) {
+        const o = { enumerable: true, configurable: true };
+        if (typeof name === "string") {
+          // @ts-ignore we do want to set it only when name is of type string
+          o.value = e[name];
+        }
+        return o;
+      }
+    },
+    set(_target, prop, value) {
+      Deno.env.set(String(prop), String(value));
+      return value;
+    },
+    has: (_target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
+  });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
 export const pid = Deno.pid;
