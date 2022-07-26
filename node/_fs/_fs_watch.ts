@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl } from "../path.ts";
+import { basename } from "../path.ts";
 import { EventEmitter } from "../events.ts";
 import { notImplemented } from "../_utils.ts";
+import { getValidatedPath } from "../internal/fs/utils.mjs";
 
 export function asyncIterableIteratorToCallback<T>(
   iterator: AsyncIterableIterator<T>,
@@ -76,26 +77,45 @@ export function watch(
     : typeof optionsOrListener2 === "object"
     ? optionsOrListener2
     : undefined;
-  filename = filename instanceof URL ? fromFileUrl(filename) : filename;
 
-  const iterator = Deno.watchFs(filename, {
-    recursive: options?.recursive || false,
-  });
+  const watchPath = getValidatedPath(filename).toString();
 
-  if (!listener) throw new Error("No callback function supplied");
+  let iterator: Deno.FsWatcher;
+  // Start the actual watcher in the next event loop
+  // to avoid error in compat test case (parallel/test-fs-watch.js)
+  const timer = setTimeout(() => {
+    iterator = Deno.watchFs(watchPath, {
+      recursive: options?.recursive || false,
+    });
+
+    asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
+      if (done) return;
+      fsWatcher.emit(
+        "change",
+        convertDenoFsEventToNodeFsEvent(val.kind),
+        basename(val.paths[0]),
+      );
+    }, (e) => {
+      fsWatcher.emit("error", e);
+    });
+  }, 0);
 
   const fsWatcher = new FSWatcher(() => {
-    if (iterator.return) iterator.return();
+    clearTimeout(timer);
+    try {
+      iterator?.close();
+    } catch (e) {
+      if (e instanceof Deno.errors.BadResource) {
+        // already closed
+        return;
+      }
+      throw e;
+    }
   });
 
-  fsWatcher.on("change", listener);
-
-  asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
-    if (done) return;
-    fsWatcher.emit("change", val.kind, val.paths[0]);
-  }, (e) => {
-    fsWatcher.emit("error", e);
-  });
+  if (listener) {
+    fsWatcher.on("change", listener);
+  }
 
   return fsWatcher;
 }
@@ -103,15 +123,36 @@ export function watch(
 export { watch as watchFile };
 
 class FSWatcher extends EventEmitter {
-  close: () => void;
+  #closer: () => void;
+  #closed = false;
   constructor(closer: () => void) {
     super();
-    this.close = closer;
+    this.#closer = closer;
+  }
+  close() {
+    if (this.#closed) {
+      return;
+    }
+    this.#closed = true;
+    this.emit("close");
+    this.#closer();
   }
   ref() {
     notImplemented("FSWatcher.ref() is not implemented");
   }
   unref() {
     notImplemented("FSWatcher.unref() is not implemented");
+  }
+}
+
+type NodeFsEventType = "rename" | "change";
+
+function convertDenoFsEventToNodeFsEvent(
+  kind: Deno.FsEvent["kind"],
+): NodeFsEventType {
+  if (kind === "create" || kind === "remove") {
+    return "rename";
+  } else {
+    return "change";
   }
 }
