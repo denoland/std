@@ -1,3 +1,14 @@
+### 0.150.0 / 2022.07.28
+
+- feat(http/http_errors): add headers property (#2462)
+- feat(node): support uncaughtException and uncaughtExceptionMonitor (#2460)
+- fix(io): StringWriter retaining references after write (#2456)
+- fix(node): correct import specifiers (#2474)
+- fix(node/fs): fix fs.watch (#2469)
+- fix(node/process.env) support built-in object methods for process.env (#2468)
+- node: ChildProcess.ref()/.unref() (#2395)
+- node: Use "Deno.spawnChild" API for "child_process" polyfill (#2450)
+
 ### 0.149.0 / 2022.07.20
 
 - feat(semver): add "semver" module (#2434)
