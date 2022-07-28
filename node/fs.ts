@@ -33,7 +33,7 @@ import { symlink, symlinkSync } from "./_fs/_fs_symlink.ts";
 import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
-import { watch, watchFile } from "./_fs/_fs_watch.ts";
+import { unwatchFile, watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
 import { write, writeSync } from "./_fs/_fs_write.mjs";
 // @deno-types="./_fs/_fs_writev.d.ts"
@@ -151,6 +151,7 @@ export default {
   truncateSync,
   unlink,
   unlinkSync,
+  unwatchFile,
   utimes,
   utimesSync,
   W_OK,
@@ -234,6 +235,7 @@ export {
   truncateSync,
   unlink,
   unlinkSync,
+  unwatchFile,
   utimes,
   utimesSync,
   W_OK,

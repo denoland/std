@@ -2,7 +2,38 @@
 import { basename } from "../path.ts";
 import { EventEmitter } from "../events.ts";
 import { notImplemented } from "../_utils.ts";
+import { promisify } from "../util.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
+import { validateFunction } from "../internal/validators.mjs";
+import { stat, Stats } from "./_fs_stat.ts";
+import { Stats as StatsClass } from "../internal/fs/utils.mjs";
+import { Buffer } from "../buffer.ts";
+import { delay } from "../../async/delay.ts";
+
+const statPromisified = promisify(stat);
+const statAsync = async (filename: string): Promise<Stats | null> => {
+  try {
+    return await statPromisified(filename);
+  } catch {
+    return emptyStats;
+  }
+};
+const emptyStats = new StatsClass(
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  Date.UTC(1970, 0, 1, 0, 0, 0),
+  Date.UTC(1970, 0, 1, 0, 0, 0),
+  Date.UTC(1970, 0, 1, 0, 0, 0),
+  Date.UTC(1970, 0, 1, 0, 0, 0),
+) as unknown as Stats;
 
 export function asyncIterableIteratorToCallback<T>(
   iterator: AsyncIterableIterator<T>,
@@ -114,13 +145,152 @@ export function watch(
   });
 
   if (listener) {
-    fsWatcher.on("change", listener);
+    fsWatcher.on("change", listener.bind({ _handle: fsWatcher }));
   }
 
   return fsWatcher;
 }
 
-export { watch as watchFile };
+type WatchFileListener = (curr: Stats, prev: Stats) => void;
+type WatchFileOptions = {
+  bigint?: boolean;
+  persistent?: boolean;
+  interval?: number;
+};
+
+export function watchFile(
+  filename: string | Buffer | URL,
+  listener: WatchFileListener,
+): StatWatcher;
+export function watchFile(
+  filename: string | Buffer | URL,
+  options: WatchFileOptions,
+  listener: WatchFileListener,
+): StatWatcher;
+export function watchFile(
+  filename: string | Buffer | URL,
+  listenerOrOptions: WatchFileListener | WatchFileOptions,
+  listener?: WatchFileListener,
+): StatWatcher {
+  const watchPath = getValidatedPath(filename).toString();
+  const handler = typeof listenerOrOptions === "function"
+    ? listenerOrOptions
+    : listener!;
+  validateFunction(handler, "listener");
+  const {
+    bigint = false,
+    persistent = true,
+    interval = 5007,
+  } = typeof listenerOrOptions === "object" ? listenerOrOptions : {};
+
+  let stat = statWatchers.get(watchPath);
+  if (stat === undefined) {
+    stat = new StatWatcher(bigint);
+    stat[kFSStatWatcherStart](watchPath, persistent, interval);
+    statWatchers.set(watchPath, stat);
+  }
+
+  stat.addListener("change", listener!);
+  return stat;
+}
+
+export function unwatchFile(
+  filename: string | Buffer | URL,
+  listener?: WatchFileListener,
+): void {
+  const watchPath = getValidatedPath(filename).toString();
+  const stat = statWatchers.get(watchPath);
+
+  if (!stat) {
+    return;
+  }
+
+  if (typeof listener === "function") {
+    const beforeListenerCount = stat.listenerCount("change");
+    stat.removeListener("change", listener);
+    if (stat.listenerCount("change") < beforeListenerCount) {
+      stat[kFSStatWatcherAddOrCleanRef]("clean");
+    }
+  } else {
+    stat.removeAllListeners("change");
+    stat[kFSStatWatcherAddOrCleanRef]("cleanAll");
+  }
+
+  if (stat.listenerCount("change") === 0) {
+    stat.stop();
+    statWatchers.delete(watchPath);
+  }
+}
+
+const statWatchers = new Map<string, StatWatcher>();
+
+const kFSStatWatcherStart = Symbol("kFSStatWatcherStart");
+const kFSStatWatcherAddOrCleanRef = Symbol("kFSStatWatcherAddOrCleanRef");
+
+class StatWatcher extends EventEmitter {
+  #bigint: boolean;
+  #refCount = 0;
+  #abortController = new AbortController();
+  constructor(bigint: boolean) {
+    super();
+    this.#bigint = bigint;
+  }
+  [kFSStatWatcherStart](
+    filename: string,
+    persistent: boolean,
+    interval: number,
+  ) {
+    if (persistent) {
+      this.#refCount++;
+    }
+
+    (async () => {
+      let prev = await statAsync(filename);
+
+      if (prev === emptyStats) {
+        this.emit("change", prev, prev);
+      }
+
+      try {
+        while (true) {
+          await delay(interval, { signal: this.#abortController.signal });
+          const curr = await statAsync(filename);
+          if (curr?.mtime !== prev?.mtime) {
+            this.emit("change", curr, prev);
+            prev = curr;
+          }
+        }
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          return;
+        }
+        this.emit("error", e);
+      }
+    })();
+  }
+  [kFSStatWatcherAddOrCleanRef](addOrClean: "add" | "clean" | "cleanAll") {
+    if (addOrClean === "add") {
+      this.#refCount++;
+    } else if (addOrClean === "clean") {
+      this.#refCount--;
+    } else {
+      this.#refCount = 0;
+    }
+  }
+  stop() {
+    if (this.#abortController.signal.aborted) {
+      return;
+    }
+    this.#abortController.abort();
+    this.emit("stop");
+  }
+  ref() {
+    notImplemented("FSWatcher.ref() is not implemented");
+  }
+  unref() {
+    notImplemented("FSWatcher.unref() is not implemented");
+  }
+}
 
 class FSWatcher extends EventEmitter {
   #closer: () => void;
