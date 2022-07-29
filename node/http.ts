@@ -176,7 +176,7 @@ class ClientRequest extends NodeWritable {
       } = opts;
       return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${
         host ?? hostname
-      }${port ? `:${port}` : ""}${path}`;
+      }${port ? `:${port}` : ""}${path || ""}`;
     }
   }
 }
