@@ -591,7 +591,14 @@ export function get(...args: any[]) {
   return req;
 }
 
-export { Agent, ClientRequest, METHODS, OutgoingMessage, STATUS_CODES };
+export {
+  Agent,
+  ClientRequest,
+  IncomingMessageForServer as IncomingMessage,
+  METHODS,
+  OutgoingMessage,
+  STATUS_CODES,
+};
 export default {
   Agent,
   ClientRequest,
@@ -600,6 +607,8 @@ export default {
   createServer,
   Server,
   IncomingMessage: IncomingMessageForServer,
+  IncomingMessageForClient,
+  IncomingMessageForServer,
   OutgoingMessage,
   ServerResponse,
   request,

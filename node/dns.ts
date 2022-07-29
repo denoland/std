@@ -898,18 +898,7 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-const promises = Object.defineProperties(promisesBase, {
-  setServers: {
-    configurable: true,
-    enumerable: true,
-    value: setServers,
-  },
-  setDefaultResultOrder: {
-    configurable: true,
-    enumerable: true,
-    value: setDefaultResultOrder,
-  },
-});
+const promises = promisesBase;
 
 export { ADDRCONFIG, ALL, promises, setDefaultResultOrder, V4MAPPED };
 

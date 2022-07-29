@@ -26,3 +26,5 @@ export const {
   trace,
   warn,
 } = console;
+// deno-lint-ignore no-explicit-any
+export const indentLevel = (console as any)?.indentLevel;

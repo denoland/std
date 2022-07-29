@@ -444,3 +444,4 @@ export function execFile(
 }
 
 export default { fork, spawn, execFile, ChildProcess };
+export { ChildProcess };

@@ -42,19 +42,6 @@ import {
 } from "../internal/dns/promises.ts";
 import { setDefaultResultOrder, setServers } from "../dns.ts";
 
-const promises = Object.defineProperties(promisesBase, {
-  setServers: {
-    configurable: true,
-    enumerable: true,
-    value: setServers,
-  },
-  setDefaultResultOrder: {
-    configurable: true,
-    enumerable: true,
-    value: setDefaultResultOrder,
-  },
-});
-
 export {
   getServers,
   lookup,
@@ -73,7 +60,28 @@ export {
   resolveSrv,
   resolveTxt,
   reverse,
+  setDefaultResultOrder,
   setServers,
 };
 
-export default promises;
+export default {
+  getServers,
+  lookup,
+  resolve,
+  resolve4,
+  resolve6,
+  resolveAny,
+  resolveCaa,
+  resolveCname,
+  resolveMx,
+  resolveNaptr,
+  resolveNs,
+  resolvePtr,
+  Resolver,
+  resolveSoa,
+  resolveSrv,
+  resolveTxt,
+  reverse,
+  setDefaultResultOrder,
+  setServers,
+};

@@ -217,6 +217,7 @@ export {
   readFileSync,
   readlink,
   readlinkSync,
+  ReadStream,
   readSync,
   realpath,
   realpathSync,
