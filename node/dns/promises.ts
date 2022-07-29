@@ -39,7 +39,7 @@ import {
   resolveTxt,
   reverse,
 } from "../internal/dns/promises.ts";
-import { setDefaultResultOrder, setServers } from "../dns.ts";
+import { promises, setDefaultResultOrder, setServers } from "../dns.ts";
 
 export {
   getServers,
@@ -63,24 +63,4 @@ export {
   setServers,
 };
 
-export default {
-  getServers,
-  lookup,
-  resolve,
-  resolve4,
-  resolve6,
-  resolveAny,
-  resolveCaa,
-  resolveCname,
-  resolveMx,
-  resolveNaptr,
-  resolveNs,
-  resolvePtr,
-  Resolver,
-  resolveSoa,
-  resolveSrv,
-  resolveTxt,
-  reverse,
-  setDefaultResultOrder,
-  setServers,
-};
+export default promises;

@@ -898,7 +898,7 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-const promises = promisesBase;
+const promises = { ...promisesBase, setDefaultResultOrder, setServers };
 
 export { ADDRCONFIG, ALL, promises, setDefaultResultOrder, V4MAPPED };
 
