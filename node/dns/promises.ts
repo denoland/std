@@ -19,29 +19,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-import {
-  getServers,
-  lookup,
-  resolve,
-  resolve4,
-  resolve6,
-  resolveAny,
-  resolveCaa,
-  resolveCname,
-  resolveMx,
-  resolveNaptr,
-  resolveNs,
-  resolvePtr,
-  Resolver,
-  resolveSoa,
-  resolveSrv,
-  resolveTxt,
-  reverse,
-} from "../internal/dns/promises.ts";
-import { promises, setDefaultResultOrder, setServers } from "../dns.ts";
-
-export {
+import { promises } from "../dns.ts";
+export const {
   getServers,
   lookup,
   resolve,
@@ -61,6 +40,5 @@ export {
   reverse,
   setDefaultResultOrder,
   setServers,
-};
-
+} = promises;
 export default promises;
