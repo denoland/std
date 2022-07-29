@@ -57,7 +57,7 @@ export function get(...args: any[]) {
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
 class HttpsClientRequest extends ClientRequest {
-  defaultProtocol = 'https:';
+  override defaultProtocol = "https:";
   override async _createCustomClient(): Promise<
     DenoUnstable.HttpClient | undefined
   > {

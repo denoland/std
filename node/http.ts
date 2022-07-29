@@ -90,7 +90,7 @@ export interface RequestOptions {
 
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
-  defaultProtocol = 'http:';
+  defaultProtocol = "http:";
   body: null | ReadableStream = null;
   controller: ReadableStreamDefaultController | null = null;
   constructor(
@@ -174,9 +174,9 @@ class ClientRequest extends NodeWritable {
         path,
         port,
       } = opts;
-      return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
-        port ? `:${port}` : ""
-      }${path}`;
+      return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${
+        host ?? hostname
+      }${port ? `:${port}` : ""}${path}`;
     }
   }
 }
