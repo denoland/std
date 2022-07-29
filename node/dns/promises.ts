@@ -21,7 +21,6 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import {
-  default as promisesBase,
   getServers,
   lookup,
   resolve,
