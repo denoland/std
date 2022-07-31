@@ -17,6 +17,7 @@
  * };
  *
  * assertEquals(includesValue(input, 34), true);
+ * ```
  */
 
 export function includesValue<T>(
