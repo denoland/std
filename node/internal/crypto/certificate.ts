@@ -6,6 +6,7 @@ import { Buffer } from "../../buffer.ts";
 import { BinaryLike } from "./types.ts";
 
 export class Certificate {
+  static Certificate = Certificate;
   static exportChallenge(_spkac: BinaryLike, _encoding?: string): Buffer {
     notImplemented("crypto.Certificate.exportChallenge");
   }

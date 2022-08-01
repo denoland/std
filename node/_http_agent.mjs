@@ -519,7 +519,7 @@ function asyncResetHandle(socket) {
   }
 }
 
-const globalAgent = new Agent();
+export const globalAgent = new Agent();
 export default {
   Agent,
   globalAgent,

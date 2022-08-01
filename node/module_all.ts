@@ -1,24 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This aliases are used in some node tests and represent a legacy alias
-// for the stream modules
-// deno-lint-ignore camelcase
 import _http_agent from "./_http_agent.mjs";
-// deno-lint-ignore camelcase
 import _http_outgoing from "./_http_outgoing.ts";
-// deno-lint-ignore camelcase
 import _stream_duplex from "./internal/streams/duplex.mjs";
-// deno-lint-ignore camelcase
 import _stream_passthrough from "./internal/streams/passthrough.mjs";
-// deno-lint-ignore camelcase
 import _stream_readable from "./internal/streams/readable.mjs";
-// deno-lint-ignore camelcase
 import _stream_transform from "./internal/streams/transform.mjs";
-// deno-lint-ignore camelcase
 import _stream_writable from "./internal/streams/writable.mjs";
-
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
-// deno-lint-ignore camelcase
 import async_hooks from "./async_hooks.ts";
 import buffer from "./buffer.ts";
 import childProcess from "./child_process.ts";
@@ -34,7 +23,6 @@ import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
-import internalFsUtils from "./internal/fs/utils.mjs";
 import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
@@ -56,17 +44,18 @@ import internalDgram from "./internal/dgram.ts";
 import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
 import internalEventTarget from "./internal/event_target.mjs";
+import internalFsUtils from "./internal/fs/utils.mjs";
 import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.mjs";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
-import internalStreamsAddBufferList from "./internal/streams/buffer_list.mjs";
+import internalStreamsBufferList from "./internal/streams/buffer_list.mjs";
 import internalStreamsDuplexify from "./internal/streams/duplexify.mjs";
 import internalStreamsLazyTransform from "./internal/streams/lazy_transform.mjs";
 import internalStreamsState from "./internal/streams/state.mjs";
 import internalTestBinding from "./internal/test/binding.ts";
 import internalTimers from "./internal/timers.mjs";
-import internalUtilInspect from "./internal/util/inspect.mjs";
 import internalUtil from "./internal/util.mjs";
+import internalUtilInspect from "./internal/util/inspect.mjs";
 import net from "./net.ts";
 import os from "./os.ts";
 import pathPosix from "./path/posix.ts";
@@ -148,9 +137,9 @@ export default {
   "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
-  "internal/streams/buffer_list": internalStreamsAddBufferList,
+  "internal/streams/buffer_list": internalStreamsBufferList,
   "internal/streams/duplexify": internalStreamsDuplexify,
-  "internal/streasm/lazy_transform": internalStreamsLazyTransform,
+  "internal/streams/lazy_transform": internalStreamsLazyTransform,
   "internal/streams/state": internalStreamsState,
   "internal/test/binding": internalTestBinding,
   "internal/timers": internalTimers,
@@ -186,8 +175,8 @@ export default {
   tls,
   tty,
   url,
-  "util/types": utilTypes,
   util,
+  "util/types": utilTypes,
   v8,
   vm,
   wasi,
