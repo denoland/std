@@ -34,7 +34,7 @@ export function existsSync(path: string | URL): boolean {
   try {
     Deno.lstatSync(path);
     return true;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 }
