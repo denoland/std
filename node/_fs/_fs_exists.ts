@@ -35,9 +35,6 @@ export function existsSync(path: string | URL): boolean {
     Deno.lstatSync(path);
     return true;
   } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
-      return false;
-    }
-    throw err;
+    return false;
   }
 }
