@@ -300,7 +300,7 @@ function parseSetCookie(value: string): Cookie {
 /**
  * Parse set-cookies of a header
  * @param {Headers} headers The headers instance to get set-cookies from
- * @return {Object} Object with cookie names as keys
+ * @return {Cookie[]} List of cookies
  */
 export function getSetCookies(headers: Headers): Cookie[] {
   if (!headers.has("set-cookie")) {
