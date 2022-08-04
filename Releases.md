@@ -1,3 +1,9 @@
+### 0.151.0 / 2022.08.04
+
+- fix(node): fs.existsSync never throws (#2495)
+- fix(node/fs): add watchFile & unwatchFile (#2477)
+- fix(node/http,https): set the url protocol by default (#2480)
+
 ### 0.150.0 / 2022.07.28
 
 - feat(http/http_errors): add headers property (#2462)
