@@ -4,7 +4,7 @@
 
 Read reader[like file], line by line:
 
-```ts title="readLines"
+```ts
 import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
 
@@ -20,7 +20,7 @@ for await (let line of readLines(fileReader)) {
 
 Read reader`[like file]` chunk by chunk, splitting based on delimiter.
 
-```ts title="readStringDelim"
+```ts
 import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
 
