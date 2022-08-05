@@ -449,7 +449,7 @@ class ServerImpl extends EventEmitter {
     // we on the other hand default to 0.0.0.0.
     const hostname = options.host ?? "";
 
-    this.#listener = Deno.listen({ port, hostname });
+    // this.#listener = Deno.listen({ port, hostname });
     nextTick(() => this.#listenLoop());
 
     return this;
