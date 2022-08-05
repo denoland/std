@@ -56,7 +56,6 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "unhandledRejection",
   "worker",
 ];
 
