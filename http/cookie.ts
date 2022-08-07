@@ -5,7 +5,6 @@
 
 import { assert } from "../_util/assert.ts";
 import { toIMF } from "../datetime/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 
 export interface Cookie {
   /** Name of the cookie. */
@@ -223,7 +222,7 @@ export function deleteCookie(
  * @param value
  * @returns
  */
-function parseSetCookie(value: string): Cookie {
+function parseSetCookie(value: string): Cookie | null {
   const attrs = value
     .split(";")
     .map((attr) =>
@@ -273,26 +272,32 @@ function parseSetCookie(value: string): Cookie {
   }
   if (cookie.name.startsWith("__Secure-")) {
     /** This requirement is mentioned in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie but not the RFC. */
-    assert(
-      cookie.secure,
-      "Cookies with names starting with `__Secure-` must be set with the secure flag.",
-    );
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Secure-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
   }
   if (cookie.name.startsWith("__Host-")) {
-    assert(
-      cookie.secure,
-      "Cookies with names starting with `__Host-` must be set with the secure flag.",
-    );
-    assertEquals(
-      cookie.domain,
-      undefined,
-      "Cookies with names starting with `__Host-` must not have a domain specified.",
-    );
-    assertEquals(
-      cookie.path,
-      "/",
-      "Cookies with names starting with `__Host-` must have path be `/`.",
-    );
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.domain !== undefined) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must not have a domain specified. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.path !== "/") {
+      console.warn(
+        "Cookies with names starting with `__Host-` must have path be `/`. Cookie has been ignored.",
+      );
+      return null;
+    }
   }
   return cookie;
 }
@@ -310,5 +315,7 @@ export function getSetCookies(headers: Headers): Cookie[] {
     .filter(([key]) => key === "set-cookie")
     .map(([_, value]) => value)
     /** Parse each `set-cookie` header separately */
-    .map(parseSetCookie);
+    .map(parseSetCookie)
+    /** Skip empty cookies */
+    .filter(Boolean) as Cookie[];
 }

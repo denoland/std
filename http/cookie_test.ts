@@ -519,13 +519,7 @@ Deno.test({
     }]);
 
     headers = new Headers({ "set-cookie": "__Secure-Kitty=Meow" });
-    error = false;
-    try {
-      getSetCookies(headers);
-    } catch {
-      error = true;
-    }
-    assert(error);
+    assertEquals(getSetCookies(headers), []);
 
     headers = new Headers({
       "set-cookie": "__Host-Kitty=Meow; Secure; Path=/",
@@ -538,35 +532,17 @@ Deno.test({
     }]);
 
     headers = new Headers({ "set-cookie": "__Host-Kitty=Meow; Path=/" });
-    error = false;
-    try {
-      getSetCookies(headers);
-    } catch {
-      error = true;
-    }
-    assert(error);
+    assertEquals(getSetCookies(headers), []);
 
     headers = new Headers({
       "set-cookie": "__Host-Kitty=Meow; Secure; Domain=deno.land; Path=/",
     });
-    error = false;
-    try {
-      getSetCookies(headers);
-    } catch {
-      error = true;
-    }
-    assert(error);
+    assertEquals(getSetCookies(headers), []);
 
     headers = new Headers({
       "set-cookie": "__Host-Kitty=Meow; Secure; Path=/not-root",
     });
-    error = false;
-    try {
-      getSetCookies(headers);
-    } catch {
-      error = true;
-    }
-    assert(error);
+    assertEquals(getSetCookies(headers), []);
 
     headers = new Headers([
       ["set-cookie", "cookie-1=value-1; Secure"],
