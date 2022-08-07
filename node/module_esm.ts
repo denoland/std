@@ -26,8 +26,6 @@
  * Unfortunately we have no way to call ESM resolution in Rust from TypeScript code.
  */
 
-import "./global.ts";
-
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import {
   ERR_INVALID_MODULE_SPECIFIER,
