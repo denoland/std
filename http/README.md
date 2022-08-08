@@ -322,7 +322,7 @@ cookies.delete("bar");
 const response = new Response("test", {
   headers: mergeHeaders({
     "content-type": "text/plain",
-  }, cookies);
+  }, cookies),
 });
 ```
 
