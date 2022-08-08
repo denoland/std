@@ -32,22 +32,6 @@ export interface KeyRing {
 
 const encoder = new TextEncoder();
 
-function assert(value: unknown, message = "Assertion error"): asserts value {
-  if (!value) {
-    throw new Error(message);
-  }
-}
-
-const REPLACEMENTS: Record<string, string> = {
-  "/": "_",
-  "+": "-",
-  "=": "",
-};
-
-function encodeBase64Safe(data: string | ArrayBuffer): string {
-  return base64.encode(data).replace(/\/|\+|=/g, (c) => REPLACEMENTS[c]);
-}
-
 function importKey(key: Key): Promise<CryptoKey> {
   if (typeof key === "string") {
     key = encoder.encode(key);
