@@ -8,7 +8,9 @@ export function timingSafeEqual(
   a: ArrayBufferView | ArrayBufferLike | DataView,
   b: ArrayBufferView | ArrayBufferLike | DataView,
 ): boolean {
-  assert(a.byteLength === b.byteLength, "Byte lengths must match.");
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
   if (!(a instanceof DataView)) {
     a = new DataView(ArrayBuffer.isView(a) ? a.buffer : a);
   }
