@@ -132,6 +132,9 @@ export async function serveFile(
   } else {
     file = await Deno.open(filePath);
   }
+  if (fileInfo.isDirectory) {
+    throw new Deno.errors.NotFound();
+  }
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
