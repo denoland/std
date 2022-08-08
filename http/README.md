@@ -360,14 +360,14 @@ more straight forward to use.
 
 ```ts
 import {
-  SecureCookieMap,
-  mergeHeaders,
   type KeyRing,
+  mergeHeaders,
+  SecureCookieMap,
 } from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
 
 const request = new Request("https://localhost/", {
   headers: {
-    "cookie": "bar=foo; bar.sig=S7GhXzJF3n4j8JwTupr7H-h25qtt_vs0stdETXZb-Ro"
+    "cookie": "bar=foo; bar.sig=S7GhXzJF3n4j8JwTupr7H-h25qtt_vs0stdETXZb-Ro",
   },
 });
 
@@ -380,7 +380,7 @@ await cookies.set("session", "1234567"); // this will be automatically signed
 const response = new Response("test", {
   headers: mergeHeaders({
     "content-type": "text/plain",
-  }, cookies);
+  }, cookies),
 });
 ```
 
