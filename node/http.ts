@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as DenoUnstable from "../_deno_unstable.ts";
+import { deferred, Deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
@@ -233,10 +234,11 @@ export class ServerResponse extends NodeWritable {
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  #reqEvent: Deno.RequestEvent;
+  // #reqEvent: Deno.RequestEvent;
+  #promise: Deferred<Response>;
   #firstChunk: Chunk | null = null;
 
-  constructor(reqEvent: Deno.RequestEvent) {
+  constructor(promise: Deferred<Response>) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
@@ -278,7 +280,8 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.#readable = readable;
-    this.#reqEvent = reqEvent;
+    // this.#reqEvent = reqEvent;
+    this.#promise = promise;
   }
 
   setHeader(name: string, value: string) {
@@ -321,15 +324,13 @@ export class ServerResponse extends NodeWritable {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
-    this.#reqEvent.respondWith(
+    this.#promise.resolve(
       new Response(body, {
         headers: this.#headers,
         status: this.statusCode,
         statusText: this.statusMessage,
-      }),
-    ).catch(() => {
-      // ignore this error
-    });
+      })
+    );
   }
 
   // deno-lint-ignore no-explicit-any
@@ -419,6 +420,7 @@ export function Server(handler?: ServerHandler): ServerImpl {
 class ServerImpl extends EventEmitter {
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
+  #addr?: Deno.NetAddr;
 
   constructor(handler?: ServerHandler) {
     super();
@@ -451,6 +453,37 @@ class ServerImpl extends EventEmitter {
 
     // this.#listener = Deno.listen({ port, hostname });
     nextTick(() => this.#listenLoop());
+
+    return this;
+  }
+
+  listen1(...args: unknown[]): this {
+    // TODO(bnoordhuis) Delegate to net.Server#listen().
+    const normalized = _normalizeArgs(args);
+    const options = normalized[0] as Partial<ListenOptions>;
+    const cb = normalized[1];
+
+    if (cb !== null) {
+      // @ts-ignore change EventEmitter's sig to use CallableFunction
+      this.once("listening", cb);
+    }
+
+    let port = 0;
+    if (typeof options.port === "number" || typeof options.port === "string") {
+      validatePort(options.port, "options.port");
+      port = options.port | 0;
+    }
+
+    // TODO(bnoordhuis) Node prefers [::] when host is omitted,
+    // we on the other hand default to 0.0.0.0.
+    const hostname = options.host ?? "";
+
+    // this.#listener = Deno.listen({ port, hostname });
+    this.#addr = {
+      hostname,
+      port
+    } as Deno.NetAddr;
+    nextTick(() => this.#serve());
 
     return this;
   }
@@ -512,8 +545,34 @@ class ServerImpl extends EventEmitter {
     }
   }
 
+  async #serve() {
+    this.emit("listening");
+    
+    Deno.serve(async (request) => {
+      const req = new IncomingMessageForServer(request);
+      if (req.upgrade && this.listenerCount("upgrade") > 0) {
+        console.log("will be upgrading");
+        const [conn, head] = Deno.upgradeHttp(request);
+        const socket = new Socket({
+          handle: new TCP(constants.SERVER, conn),
+        });
+        console.log("emit upgrade");
+        this.emit("upgrade", req, socket, new Buffer(head));
+      } else {
+        const promise = deferred();
+        const res = new ServerResponse(promise);
+        this.emit("request", req, res);
+        const response = await promise;
+        return response;
+      }
+      
+    }, this.#addr);
+  }
+
   get listening() {
-    return this.#listener !== undefined;
+    // FIXME(bartlomieju):
+    // return this.#listener !== undefined;
+    return true;
   }
 
   close(cb?: (err?: Error) => void): this {
@@ -550,7 +609,8 @@ class ServerImpl extends EventEmitter {
   }
 
   address() {
-    const addr = this.#listener!.addr as Deno.NetAddr;
+    const addr = this.#addr;
+    // const addr = this.#listener!.addr as Deno.NetAddr;
     return {
       port: addr.port,
       address: addr.hostname,

@@ -1387,6 +1387,10 @@ function urlToHttpOptions(url: URL): HttpOptions {
   return options;
 }
 
+const _URLSearchParams = URLSearchParams;
+export { _URLSearchParams as URLSearchParams };
+
+
 export default {
   parse,
   format,
