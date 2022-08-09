@@ -10,7 +10,7 @@ export {
   doesNotThrow,
   equal,
   fail,
-  // ifError,
+  ifError,
   match,
   notDeepEqual,
   notDeepStrictEqual,
@@ -20,7 +20,6 @@ export {
   rejects,
   strictEqual,
   throws,
-  // CallTracker
 } from "../assert.ts";
 
 export { strict };

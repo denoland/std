@@ -885,7 +885,10 @@ function isWritableStream(object) {
   return object instanceof WritableStream;
 }
 
-Writable.fromWeb = function (writableStream, options = {}) {
+export const fromWeb = Writable.fromWeb = function (
+  writableStream,
+  options = {},
+) {
   if (!isWritableStream(writableStream)) {
     throw new ERR_INVALID_ARG_TYPE(
       "writableStream",
@@ -1025,6 +1028,8 @@ Writable.fromWeb = function (writableStream, options = {}) {
 
   return writable;
 };
+
+Writable.Writable = Writable;
 
 export default Writable;
 export { Writable, WritableState };

@@ -131,7 +131,7 @@ function isWritableStream(object) {
   return object instanceof WritableStream;
 }
 
-Duplex.fromWeb = function (pair, options = {}) {
+export const fromWeb = Duplex.fromWeb = function (pair, options) {
   validateObject(pair, "pair");
   const {
     readable: readableStream,
@@ -703,6 +703,7 @@ function duplexFrom(body) {
 }
 
 Duplex.from = duplexFrom;
+Duplex.duplexify = duplexify;
 
 export default Duplex;
 export { duplexFrom as from, duplexify };

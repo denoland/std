@@ -146,9 +146,11 @@ promisify.custom = kCustomPromisifiedSymbol;
 export default {
   createDeferredPromise,
   customInspectSymbol,
+  customPromisifyArgs,
   kEnumerableProperty,
   normalizeEncoding,
   once,
   deprecate,
   promisify,
+  slowCases,
 };

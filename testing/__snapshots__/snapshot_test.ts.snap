@@ -208,7 +208,6 @@ snapshot[`Snapshot Test - Options > mode 1`] = `
 snapshot[`Snapshot Test - Options > mode 2`] = `
 "running 1 test from <tempDir>/test.ts
 snapshot ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
@@ -221,7 +220,6 @@ ok | 1 passed | 0 failed (--ms)
 snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
@@ -267,7 +265,6 @@ snapshot[\`Snapshot Test - Update 1\`] = \`
 snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
@@ -295,7 +292,6 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-
 ------- output -------
 
  > 2 snapshots updated.

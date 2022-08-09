@@ -92,6 +92,7 @@ export interface RequestOptions {
 
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
+  defaultProtocol = "http:";
   body: null | ReadableStream = null;
   controller: ReadableStreamDefaultController | null = null;
   constructor(
@@ -175,9 +176,9 @@ class ClientRequest extends NodeWritable {
         path,
         port,
       } = opts;
-      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
-        port ? `:${port}` : ""
-      }${path}`;
+      return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${
+        host ?? hostname
+      }${port ? `:${port}` : ""}${path || ""}`;
     }
   }
 }
@@ -376,6 +377,7 @@ export class IncomingMessageForServer extends NodeReadable {
       },
     });
     this.#req = req;
+    console.log("constructing URL", this.#req.url);
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
     this.url = req.url.slice(this.#req.url.indexOf("/", 8));
@@ -389,6 +391,9 @@ export class IncomingMessageForServer extends NodeReadable {
   }
 
   get headers() {
+    console.log("url", this.url);
+    console.log("method", this.method);
+    console.log("headers", Object.fromEntries(this.#req.headers.entries()));
     return Object.fromEntries(this.#req.headers.entries());
   }
 
@@ -430,7 +435,7 @@ class ServerImpl extends EventEmitter {
     }
   }
 
-  listen(...args: unknown[]): this {
+  listen1(...args: unknown[]): this {
     // TODO(bnoordhuis) Delegate to net.Server#listen().
     const normalized = _normalizeArgs(args);
     const options = normalized[0] as Partial<ListenOptions>;
@@ -457,7 +462,7 @@ class ServerImpl extends EventEmitter {
     return this;
   }
 
-  listen1(...args: unknown[]): this {
+  listen(...args: unknown[]): this {
     // TODO(bnoordhuis) Delegate to net.Server#listen().
     const normalized = _normalizeArgs(args);
     const options = normalized[0] as Partial<ListenOptions>;
@@ -480,7 +485,7 @@ class ServerImpl extends EventEmitter {
 
     // this.#listener = Deno.listen({ port, hostname });
     this.#addr = {
-      hostname,
+      hostname: "127.0.0.1",
       port
     } as Deno.NetAddr;
     nextTick(() => this.#serve());
@@ -546,12 +551,14 @@ class ServerImpl extends EventEmitter {
   }
 
   async #serve() {
+    console.log("serving!", this.#addr);
     this.emit("listening");
     
     Deno.serve(async (request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
         console.log("will be upgrading");
+        return;
         const [conn, head] = Deno.upgradeHttp(request);
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
@@ -674,7 +681,14 @@ export function get(...args: any[]) {
   return req;
 }
 
-export { Agent, ClientRequest, METHODS, OutgoingMessage, STATUS_CODES };
+export {
+  Agent,
+  ClientRequest,
+  IncomingMessageForServer as IncomingMessage,
+  METHODS,
+  OutgoingMessage,
+  STATUS_CODES,
+};
 export default {
   Agent,
   ClientRequest,
@@ -683,6 +697,8 @@ export default {
   createServer,
   Server,
   IncomingMessage: IncomingMessageForServer,
+  IncomingMessageForClient,
+  IncomingMessageForServer,
   OutgoingMessage,
   ServerResponse,
   request,
