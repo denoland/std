@@ -377,7 +377,6 @@ export class IncomingMessageForServer extends NodeReadable {
       },
     });
     this.#req = req;
-    console.log("constructing URL", this.#req.url);
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
     this.url = req.url.slice(this.#req.url.indexOf("/", 8));
@@ -391,9 +390,6 @@ export class IncomingMessageForServer extends NodeReadable {
   }
 
   get headers() {
-    console.log("url", this.url);
-    console.log("method", this.method);
-    console.log("headers", Object.fromEntries(this.#req.headers.entries()));
     return Object.fromEntries(this.#req.headers.entries());
   }
 
@@ -557,13 +553,13 @@ class ServerImpl extends EventEmitter {
     Deno.serve(async (request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        console.log("will be upgrading");
-        return;
+        // TODO(bartlomieju): calling these getters is required or else
+        // flash will panic, they should be consumed automatically on Deno.upgradeHttp
+        console.log("will be upgrading", request.method, request.url);
         const [conn, head] = Deno.upgradeHttp(request);
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
         });
-        console.log("emit upgrade");
         this.emit("upgrade", req, socket, new Buffer(head));
       } else {
         const promise = deferred();
