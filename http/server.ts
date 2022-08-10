@@ -600,11 +600,17 @@ export async function serve(
 }
 
 export interface ServeTlsInit extends ServeInit {
+  /** Server private key in PEM format */
+  key?: string;
+
+  /** Cert chain in PEM format */
+  cert?: string;
+
   /** The path to the file containing the TLS private key. */
-  keyFile: string;
+  keyFile?: string;
 
   /** The path to the file containing the TLS certificate */
-  certFile: string;
+  certFile?: string;
 }
 
 /** Serves HTTPS requests with the given handler.
@@ -662,13 +668,16 @@ export async function serveTls(
   handler: Handler,
   options: ServeTlsInit,
 ): Promise<void> {
-  if (!options.keyFile) {
-    throw new Error("TLS config is given, but 'keyFile' is missing.");
+  if (!options.key && !options.keyFile) {
+    throw new Error("TLS config is given, but 'key' is missing.");
   }
 
-  if (!options.certFile) {
-    throw new Error("TLS config is given, but 'certFile' is missing.");
+  if (!options.cert && !options.certFile) {
+    throw new Error("TLS config is given, but 'cert' is missing.");
   }
+
+  const key = options.key || await Deno.readTextFile(options.keyFile!);
+  const cert = options.cert || await Deno.readTextFile(options.certFile!);
 
   let port = options.port ?? 8443;
   const hostname = options.hostname ?? "0.0.0.0";
@@ -683,7 +692,17 @@ export async function serveTls(
     once: true,
   });
 
-  const s = server.listenAndServeTls(options.certFile, options.keyFile);
+  const listener = Deno.listenTls({
+    port,
+    hostname,
+    cert,
+    key,
+    transport: "tcp",
+    // ALPN protocol support not yet stable.
+    // alpnProtocols: ["h2", "http/1.1"],
+  });
+
+  const s = server.serve(listener);
 
   port = (server.addrs[0] as Deno.NetAddr).port;
 
