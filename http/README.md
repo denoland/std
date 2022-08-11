@@ -281,8 +281,6 @@ deleteCookie(headers, "deno", { path: "/", domain: "deno.land" });
 
 ### getSetCookies
 
-### getCookies
-
 ```ts
 import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
