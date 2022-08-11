@@ -218,10 +218,6 @@ export function deleteCookie(
   });
 }
 
-/**
- * @param value
- * @returns
- */
 function parseSetCookie(value: string): Cookie | null {
   const attrs = value
     .split(";")
@@ -306,8 +302,8 @@ function parseSetCookie(value: string): Cookie | null {
 
 /**
  * Parse set-cookies of a header
- * @param {Headers} headers The headers instance to get set-cookies from
- * @return {Cookie[]} List of cookies
+ * @param headers The headers instance to get set-cookies from
+ * @return List of cookies
  */
 export function getSetCookies(headers: Headers): Cookie[] {
   if (!headers.has("set-cookie")) {
