@@ -4,7 +4,11 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects, assertThrows } from "../testing/asserts.ts";
+import {
+  assertEquals,
+  assertRejects,
+  assertThrows,
+} from "../testing/asserts.ts";
 import {
   Column,
   NEWLINE,
@@ -13,8 +17,6 @@ import {
   stringify,
   StringifyError,
 } from "./csv.ts";
-import { StringReader } from "../io/readers.ts";
-import { BufReader } from "../io/buffer.ts";
 
 Deno.test({
   name: "Simple",
