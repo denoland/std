@@ -34,6 +34,18 @@ Deno.test("assert diff formatting", () => {
 }`,
   );
 
+  // Wraps Object with getters
+  assertEquals(format(Object.defineProperty({}, 'a', {
+      enumerable: true,
+      get() {
+        return 1
+      }
+    })),
+    `{
+  a: 1,
+}`
+  );
+
   // Same for nested small objects.
   assertEquals(
     stripColor(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
@@ -64,4 +76,5 @@ Deno.test("assert diff formatting", () => {
   "i",
 ]`,
   );
+
 });

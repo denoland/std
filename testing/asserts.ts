@@ -158,8 +158,8 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
     return;
   }
   let message = "";
-  const actualString = format(actual, true);
-  const expectedString = format(expected, true);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
       (typeof expected === "string");

@@ -6,7 +6,7 @@
  * make tests less flaky
  * @param v Value to be formatted
  */
-export function format(v: unknown, getters?: boolean): string {
+export function format(v: unknown): string {
   // deno-lint-ignore no-explicit-any
   const { Deno } = globalThis as any;
   return typeof Deno?.inspect === "function"
@@ -17,7 +17,7 @@ export function format(v: unknown, getters?: boolean): string {
       compact: false,
       iterableLimit: Infinity,
       // getters should be true in assertEquals.
-      getters: getters,
+      getters: true,
     })
     : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
 }
