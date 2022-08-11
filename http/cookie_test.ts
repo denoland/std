@@ -415,16 +415,10 @@ Deno.test({
       maxAge: 0,
     }]);
 
-    let error = false;
     headers = new Headers({
       "set-cookie": "Space=Cat; Secure; HttpOnly; Max-Age=-1",
     });
-    try {
-      getSetCookies(headers);
-    } catch {
-      error = true;
-    }
-    assert(error);
+    assertEquals(getSetCookies(headers), []);
 
     headers = new Headers({
       "set-cookie": "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land",

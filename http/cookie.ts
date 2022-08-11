@@ -243,10 +243,12 @@ function parseSetCookie(value: string): Cookie | null {
         break;
       case "max-age":
         cookie.maxAge = Number(value);
-        assert(
-          cookie.maxAge >= 0,
-          "Max-Age must be an integer superior or equal to 0",
-        );
+        if (cookie.maxAge < 0) {
+          console.warn(
+            "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+          );
+          return null;
+        }
         break;
       case "domain":
         cookie.domain = value;
