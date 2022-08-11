@@ -4,7 +4,7 @@
  *
  * Run this example with:
  *
- * ```
+ * ```ignore
  * deno test ./testing/chai_example.ts
  * ```
  *
