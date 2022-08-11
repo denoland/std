@@ -1458,7 +1458,7 @@ Deno.test("serveTls - cert, key can be injected directly from memory rather than
       assertEquals(hostname, "0.0.0.0");
       assertNotEquals(port, 0);
       const caCert = await Deno.readTextFile(
-        join(testdataDir, "tls/RootCA.pem")
+        join(testdataDir, "tls/RootCA.pem"),
       );
       const client = Deno.createHttpClient({ caCerts: [caCert] });
       const responseText = await (
