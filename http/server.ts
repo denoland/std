@@ -615,7 +615,7 @@ export interface ServeTlsInit extends ServeInit {
 
 /** Serves HTTPS requests with the given handler.
  *
- * You must specify `keyFile` and `certFile` options.
+ * You must specify `key` or `keyFile` and `cert` or `certFile` options.
  *
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8443 on hostname "0.0.0.0".
@@ -624,6 +624,13 @@ export interface ServeTlsInit extends ServeInit {
  *
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
+ * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
+ * serveTls((_req) => new Response("Hello, world"), { cert, key });
+ *
+ * // Or
+ *
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
