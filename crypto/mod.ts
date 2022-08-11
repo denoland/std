@@ -1,16 +1,32 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Extensions to the
+ * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * supporting additional encryption APIs.
+ *
+ * Provides additional digest algorithms that are not part of the WebCrypto
+ * standard as well as a `subtle.digest` and `subtle.digestSync` methods. It
+ * also provide a `subtle.timingSafeEqual()` method to compare array buffers
+ * or data views in a way that isn't prone to timing based attacks.
+ *
+ * The "polyfill" delegates to `WebCrypto` where possible.
+ *
+ * @module
+ */
+
 import {
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
 } from "../_wasm_crypto/mod.ts";
+import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 import { fnv } from "./_fnv/index.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
- * @module
  */
 const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),
@@ -43,20 +59,49 @@ const bufferSourceBytes = (data: BufferSource | unknown) => {
   return bytes;
 };
 
+/** Extensions to the web standard `SubtleCrypto` interface. */
+export interface StdSubtleCrypto extends SubtleCrypto {
+  /**
+   * Returns a new `Promise` object that will digest `data` using the specified
+   * `AlgorithmIdentifier`.
+   */
+  digest(
+    algorithm: DigestAlgorithm,
+    data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
+  ): Promise<ArrayBuffer>;
+
+  /**
+   * Returns a ArrayBuffer with the result of digesting `data` using the
+   * specified `AlgorithmIdentifier`.
+   */
+  digestSync(
+    algorithm: DigestAlgorithm,
+    data: BufferSource | Iterable<BufferSource>,
+  ): ArrayBuffer;
+
+  /** Compare to array buffers or data views in a way that timing based attacks
+   * cannot gain information about the platform. */
+  timingSafeEqual(
+    a: ArrayBufferLike | DataView,
+    b: ArrayBufferLike | DataView,
+  ): boolean;
+}
+
+/** Extensions to the Web {@linkcode Crypto} interface. */
+export interface StdCrypto extends Crypto {
+  readonly subtle: StdSubtleCrypto;
+}
+
 /**
  * An wrapper for WebCrypto adding support for additional non-standard
  * algorithms, but delegating to the runtime WebCrypto implementation whenever
  * possible.
  */
-const stdCrypto = ((x) => x)({
+const stdCrypto: StdCrypto = ((x) => x)({
   ...webCrypto,
   subtle: {
     ...webCrypto.subtle,
 
-    /**
-     * Returns a new `Promise` object that will digest `data` using the specified
-     * `AlgorithmIdentifier`.
-     */
     async digest(
       algorithm: DigestAlgorithm,
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
@@ -118,10 +163,6 @@ const stdCrypto = ((x) => x)({
       }
     },
 
-    /**
-     * Returns a ArrayBuffer with the result of digesting `data` using the
-     * specified `AlgorithmIdentifier`.
-     */
     digestSync(
       algorithm: DigestAlgorithm,
       data: BufferSource | Iterable<BufferSource>,
@@ -154,6 +195,9 @@ const stdCrypto = ((x) => x)({
         );
       }
     },
+
+    // TODO(@kitsonk): rework when https://github.com/w3c/webcrypto/issues/270 resolved
+    timingSafeEqual,
   },
 });
 

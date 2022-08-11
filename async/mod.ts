@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /**
- * A collection of APIs to provide help with asynchronous tasks like
- * delays, debouncing, deferreds or pooling.
+ * Provide help with asynchronous tasks like delays, debouncing, deferring, or
+ * pooling.
  *
  * @module
  */
