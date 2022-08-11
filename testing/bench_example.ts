@@ -1,5 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// https://deno.land/std/testing/bench.ts
+
+/** **Deprecated**. Use `Deno.bench()` instead.
+ *
+ * @module
+ */
+
 import { bench, BenchmarkTimer, runBenchmarks } from "./bench.ts";
 
 // Basic

@@ -1,7 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 /**
+ * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
+ * stdout.
+ *
  * This implementation is inspired by POSIX and Golang but does not port
- * implementation code. */
+ * implementation code.
+ *
+ * @module
+ */
 
 enum State {
   PASSTHROUGH,

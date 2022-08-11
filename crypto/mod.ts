@@ -1,7 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Extensions to the web {@linkcode Crypto} interface.
+ * Extensions to the
+ * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * supporting additional encryption APIs.
  *
  * Provides additional digest algorithms that are not part of the WebCrypto
  * standard as well as a `subtle.digest` and `subtle.digestSync` methods. It
@@ -22,7 +24,11 @@ import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 import { fnv } from "./_fnv/index.ts";
 
-const webCrypto: Crypto = ((crypto) => ({
+/**
+ * A copy of the global WebCrypto interface, with methods bound so they're
+ * safe to re-export.
+ */
+const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),
   randomUUID: crypto.randomUUID?.bind(crypto),
   subtle: {

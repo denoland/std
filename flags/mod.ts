@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * CLI flag parser.
+ * Command line arguments parser based on
+ * [minimist](https://github.com/substack/minimist).
  *
  * This module is browser compatible.
  *
@@ -8,7 +9,7 @@
  */
 import { assert } from "../_util/assert.ts";
 
-/** Combines recursivly all intersaction types and returns a new single type. */
+/** Combines recursively all intersection types and returns a new single type. */
 type Id<T> = T extends Record<string, unknown>
   ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
   : T;

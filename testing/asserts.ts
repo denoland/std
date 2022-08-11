@@ -1,6 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible. Do not rely on good formatting of values
-// for AssertionError messages in browsers.
+
+/** A library of assertion functions.
+ *
+ * This module is browser compatible, but do not rely on good formatting of
+ * values for AssertionError messages in browsers.
+ *
+ * @module
+ */
 
 import { red, stripColor } from "../fmt/colors.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";

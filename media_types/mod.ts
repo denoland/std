@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Provides utility functions for media types.
+/** Utility functions for media types (MIME types).
  *
  * This API is inspired by the GoLang [`mime`](https://pkg.go.dev/mime) package
  * and [jshttp/mime-types](https://github.com/jshttp/mime-types).
