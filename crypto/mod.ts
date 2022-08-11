@@ -1,4 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Extensions to the
+ * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * supporting additional encryption APIs.
+ *
+ * The export of {@linkcode crypto} offloads to the built in Web Crypto APIs.
+ *
+ * @module
+ */
+
 import {
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
@@ -10,7 +21,6 @@ import { fnv } from "./_fnv/index.ts";
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
- * @module
  */
 const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),

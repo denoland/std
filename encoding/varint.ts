@@ -1,4 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Functions for encoding typed integers in array buffers.
+ *
+ * @module
+ */
+
 import { instantiate } from "../_wasm_varint/lib/deno_std_wasm_varint.generated.mjs";
 
 const U32MAX = 4_294_967_295;

@@ -1,9 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * High level API for dealing with OS signals.
+ * Higher level API for dealing with OS signals.
  *
  * @module
  */
+
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
 import { deferred } from "../async/deferred.ts";
 
