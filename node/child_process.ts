@@ -443,5 +443,9 @@ export function execFile(
   return child;
 }
 
-export default { fork, spawn, execFile, ChildProcess };
+export function execSync() {
+  throw new Error("execSync is currently not supported");
+}
+
+export default { fork, spawn, execFile, execSync, ChildProcess };
 export { ChildProcess };

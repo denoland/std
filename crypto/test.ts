@@ -1359,3 +1359,12 @@ const toHexString = (bytes: ArrayBuffer): string =>
     (str, byte) => str + byte.toString(16).padStart(2, "0"),
     "",
   );
+
+Deno.test({
+  name: "[crypto/subtle/timeSafeEqual] - is present",
+  fn() {
+    const a = new Uint8Array([212, 213]);
+    const b = new Uint8Array([212, 213]);
+    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
+  },
+});

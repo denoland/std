@@ -1,5 +1,10 @@
 # crypto
 
+Extensions to the WebCrypto interface, which provides additional encryption
+algorithms that are not part of the web standard, as well as a
+`subtle.digest()`, `subtle.digestSync()`, and `subtle.timingSafeEqual()` methods
+which provide additional functionality not covered by web crypto.
+
 ## Usage
 
 ```typescript
@@ -76,4 +81,56 @@ export const digestAlgorithms = [
   "MD5",
   "SHA-1",
 ] as const;
+```
+
+## Timing safe comparison
+
+When checking the values of cryptographic hashes are equal, default comparisons
+can be susceptible to timing based attacks, where attacker is able to find out
+information about the host system by repeatedly checking response times to to
+equality comparisons of values.
+
+It is likely some form of timing safe equality will make its way to the
+WebCrypto standard (see:
+[w3c/webcrypto#270](https://github.com/w3c/webcrypto/issues/270)), but until
+that time, `timingSafeEqual()` is provided:
+
+```ts
+import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const a = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("hello world"),
+);
+const b = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("hello world"),
+);
+const c = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("hello deno"),
+);
+
+assert(crypto.subtle.timingSafeEqual(a, b));
+assert(!crypto.subtle.timingSafeEqual(a, c));
+```
+
+In addition to the method being part of the `crypto.subtle` interface, it is
+also loadable directly:
+
+```ts
+import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
+import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const a = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("hello world"),
+);
+const b = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("hello world"),
+);
+
+assert(timingSafeEqual(a, b));
 ```

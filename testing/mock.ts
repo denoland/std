@@ -389,7 +389,7 @@ export function stub<
   property: keyof Self,
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
-  if (typeof self[property] !== "function") {
+  if (self[property] !== undefined && typeof self[property] !== "function") {
     throw new MockError("property is not an instance method");
   }
   if (isSpy(self[property])) {
