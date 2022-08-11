@@ -1,4 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** A snapshotting library.
+ *
+ * @module
+ */
+
 import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";

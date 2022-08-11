@@ -1,7 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 /**
  * Tests that run the fast-check property-based testing library in the Deno
- * runtime. See: https://github.com/dubzzz/fast-check
+ * runtime.
+ *
+ * See: https://github.com/dubzzz/fast-check
  *
  * This file contains all the 'simple' examples from the fast-check
  * repo (001-simple folder) using Deno.test for the test functions and
@@ -10,8 +13,14 @@
  *
  * Since the nested testing API is used, the tests need to be run with the
  * unstable flag as indicated in the command:
- * `deno test --unstable ./testing/fast_check_example.ts`
+ *
+ * ```ignore
+ * $ deno test --unstable ./testing/fast_check_example.ts
+ * ```
+ *
+ * @module
  */
+
 import fc from "https://cdn.skypack.dev/fast-check";
 import { groupBy } from "../collections/group_by.ts";
 import {

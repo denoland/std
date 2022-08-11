@@ -1,5 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-/** This module is browser compatible. */
+
+/** A mocking and spying library.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 import {
   assertEquals,
@@ -383,7 +389,7 @@ export function stub<
   property: keyof Self,
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
-  if (typeof self[property] !== "function") {
+  if (self[property] !== undefined && typeof self[property] !== "function") {
     throw new MockError("property is not an instance method");
   }
   if (isSpy(self[property])) {

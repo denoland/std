@@ -1,7 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// Implements the CSV spec at https://tools.ietf.org/html/rfc4180
 
-// This module is browser compatible.
+/**
+ * Provides {@linkcode stringify} to encode data following the
+ * [CSV specification](https://tools.ietf.org/html/rfc4180).
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 const QUOTE = '"';
 export const NEWLINE = "\r\n";

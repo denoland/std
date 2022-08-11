@@ -1,5 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-/** fs module is made to provide helpers to manipulate the filesystem.
+
+/** Helpers for working with the filesystem.
+ *
  * @module
  */
 

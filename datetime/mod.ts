@@ -1,8 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 /**
- * Utilities for dealing with `Date` objects.
+ * Utilities for dealing with {@linkcode Date} objects.
  *
  * This module is browser compatible.
+ *
  * @module
  */
 

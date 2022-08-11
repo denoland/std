@@ -1,9 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * HTTP server implementation and other utilities for working with cookies and
- * status codes.
+ * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
+ * and other utilities for creating HTTP servers and clients.
+ *
  * @module
  */
+
 export * from "./cookie.ts";
 export * from "./http_errors.ts";
 export * from "./http_status.ts";
