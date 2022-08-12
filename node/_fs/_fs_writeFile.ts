@@ -14,6 +14,7 @@ import {
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
 import { validateStringAfterArrayBufferView } from "../internal/fs/utils.mjs";
+import { promisify } from "../internal/util.mjs";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -80,6 +81,13 @@ export function writeFile(
     }
   })();
 }
+
+export const writeFilePromise = promisify(writeFile) as (
+  pathOrRid: string | number | URL,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
+  options?: Encodings | WriteFileOptions,
+) => Promise<void>;
 
 export function writeFileSync(
   pathOrRid: string | number | URL,
