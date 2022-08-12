@@ -683,9 +683,6 @@ export async function serveTls(
     throw new Error("TLS config is given, but 'cert' is missing.");
   }
 
-  const key = options.key || await Deno.readTextFile(options.keyFile!);
-  const cert = options.cert || await Deno.readTextFile(options.certFile!);
-
   let port = options.port ?? 8443;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
@@ -698,6 +695,10 @@ export async function serveTls(
   options?.signal?.addEventListener("abort", () => server.close(), {
     once: true,
   });
+
+  const key = options.key || await Deno.readTextFile(options.keyFile!);
+  const cert = options.cert || await Deno.readTextFile(options.certFile!);
+  if (server.closed) return;
 
   const listener = Deno.listenTls({
     port,
