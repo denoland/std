@@ -696,9 +696,8 @@ export async function serveTls(
     once: true,
   });
 
-  const key = options.key || await Deno.readTextFile(options.keyFile!);
-  const cert = options.cert || await Deno.readTextFile(options.certFile!);
-  if (server.closed) return;
+  const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  const cert = options.cert || Deno.readTextFileSync(options.certFile!);
 
   const listener = Deno.listenTls({
     port,
