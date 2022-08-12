@@ -24,7 +24,7 @@ export function link(
  * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
  * are implemented. See https://github.com/denoland/deno/issues/3403
  */
- export const linkPromise = promisify(link) as (
+export const linkPromise = promisify(link) as (
   existingPath: string | URL,
   newPath: string | URL,
 ) => Promise<void>;

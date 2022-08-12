@@ -25,7 +25,6 @@ export const chmodPromise = promisify(chmod) as (
   mode: string | number,
 ) => Promise<void>;
 
-
 export function chmodSync(path: string | URL, mode: string | number): void {
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
