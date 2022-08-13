@@ -105,7 +105,11 @@ export function debuglog(
 
 let debugEnv;
 try {
-  debugEnv = Deno.env.get("NODE_DEBUG") ?? "";
+  const status = await Deno.permissions.query({ name: "env" });
+  if (status.state === "granted") {
+    debugEnv = Deno.env.get("NODE_DEBUG");
+  }
+  debugEnv = debugEnv ?? "";
 } catch (error) {
   if (error instanceof Deno.errors.PermissionDenied) {
     debugEnv = "";
