@@ -68,9 +68,6 @@ export class AbortError extends Error {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-type GenericFunction = (...args: any[]) => any;
-
 let maxStack_ErrorName: string | undefined;
 let maxStack_ErrorMessage: string | undefined;
 /**
