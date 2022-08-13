@@ -278,3 +278,17 @@ deleteCookie(headers, "deno", { path: "/", domain: "deno.land" });
 ```
 
 > Note: At the moment multiple `Set-Cookie` in a `Response` is not handled.
+
+### getSetCookies
+
+```ts
+import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+
+const headers = new Headers([
+  ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
+  ["Set-Cookie", "booya=kasha; HttpOnly; Path=/"],
+]);
+
+const cookies = getSetCookies(headers);
+console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+```
