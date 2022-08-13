@@ -4,27 +4,25 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { parse, ParseError } from "./csv.ts";
-import { StringReader } from "../io/readers.ts";
-import { BufReader } from "../io/buffer.ts";
 
 Deno.test({
   name: "Simple",
-  async fn() {
+  fn() {
     const input = "a,b,c\n";
     assertEquals(
-      await parse(input),
+      parse(input),
       [["a", "b", "c"]],
     );
   },
 });
 Deno.test({
   name: "CRLF",
-  async fn() {
+  fn() {
     const input = "a,b\r\nc,d\r\n";
     assertEquals(
-      await parse(input),
+      parse(input),
       [
         ["a", "b"],
         ["c", "d"],
@@ -35,10 +33,10 @@ Deno.test({
 
 Deno.test({
   name: "BareCR",
-  async fn() {
+  fn() {
     const input = "a,b\rc,d\r\n";
     assertEquals(
-      await parse(input),
+      parse(input),
       [["a", "b\rc", "d"]],
     );
   },
@@ -46,11 +44,11 @@ Deno.test({
 
 Deno.test({
   name: "RFC4180test",
-  async fn() {
+  fn() {
     const input =
       '#field1,field2,field3\n"aaa","bbb","ccc"\n"a,a","bbb","ccc"\nzzz,yyy,xxx';
     assertEquals(
-      await parse(input),
+      parse(input),
       [
         ["#field1", "field2", "field3"],
         ["aaa", "bbb", "ccc"],
@@ -62,10 +60,10 @@ Deno.test({
 });
 Deno.test({
   name: "NoEOLTest",
-  async fn() {
+  fn() {
     const input = "a,b,c";
     assertEquals(
-      await parse(input),
+      parse(input),
       [["a", "b", "c"]],
     );
   },
@@ -73,10 +71,10 @@ Deno.test({
 
 Deno.test({
   name: "Semicolon",
-  async fn() {
+  fn() {
     const input = "a;b;c\n";
     assertEquals(
-      await parse(input, { separator: ";" }),
+      parse(input, { separator: ";" }),
       [["a", "b", "c"]],
     );
   },
@@ -84,10 +82,10 @@ Deno.test({
 
 Deno.test({
   name: "MultiLine",
-  async fn() {
+  fn() {
     const input = '"two\nline","one line","three\nline\nfield"';
     assertEquals(
-      await parse(input),
+      parse(input),
       [["two\nline", "one line", "three\nline\nfield"]],
     );
   },
@@ -95,10 +93,10 @@ Deno.test({
 
 Deno.test({
   name: "BlankLine",
-  async fn() {
+  fn() {
     const input = "a,b,c\n\nd,e,f\n\n";
     assertEquals(
-      await parse(input),
+      parse(input),
       [
         ["a", "b", "c"],
         ["d", "e", "f"],
@@ -109,10 +107,10 @@ Deno.test({
 
 Deno.test({
   name: "BlankLineFieldCount",
-  async fn() {
+  fn() {
     const input = "a,b,c\n\nd,e,f\n\n";
     assertEquals(
-      await parse(input, { fieldsPerRecord: 0 }),
+      parse(input, { fieldsPerRecord: 0 }),
       [
         ["a", "b", "c"],
         ["d", "e", "f"],
@@ -123,10 +121,10 @@ Deno.test({
 
 Deno.test({
   name: "TrimSpace",
-  async fn() {
+  fn() {
     const input = " a,  b,   c\n";
     assertEquals(
-      await parse(input, { trimLeadingSpace: true }),
+      parse(input, { trimLeadingSpace: true }),
       [["a", "b", "c"]],
     );
   },
@@ -134,61 +132,61 @@ Deno.test({
 
 Deno.test({
   name: "LeadingSpace",
-  async fn() {
+  fn() {
     const input = " a,  b,   c\n";
     const output = [[" a", "  b", "   c"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "Comment",
-  async fn() {
+  fn() {
     const input = "#1,2,3\na,b,c\n#comment";
     const output = [["a", "b", "c"]];
-    assertEquals(await parse(input, { comment: "#" }), output);
+    assertEquals(parse(input, { comment: "#" }), output);
   },
 });
 Deno.test({
   name: "NoComment",
-  async fn() {
+  fn() {
     const input = "#1,2,3\na,b,c";
     const output = [
       ["#1", "2", "3"],
       ["a", "b", "c"],
     ];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "LazyQuotes",
-  async fn() {
+  fn() {
     const input = `a "word","1"2",a","b`;
     const output = [[`a "word"`, `1"2`, `a"`, `b`]];
-    assertEquals(await parse(input, { lazyQuotes: true }), output);
+    assertEquals(parse(input, { lazyQuotes: true }), output);
   },
 });
 Deno.test({
   name: "BareQuotes",
-  async fn() {
+  fn() {
     const input = `a "word","1"2",a"`;
     const output = [[`a "word"`, `1"2`, `a"`]];
-    assertEquals(await parse(input, { lazyQuotes: true }), output);
+    assertEquals(parse(input, { lazyQuotes: true }), output);
   },
 });
 Deno.test({
   name: "BareDoubleQuotes",
-  async fn() {
+  fn() {
     const input = `a""b,c`;
     const output = [[`a""b`, `c`]];
-    assertEquals(await parse(input, { lazyQuotes: true }), output);
+    assertEquals(parse(input, { lazyQuotes: true }), output);
   },
 });
 Deno.test({
   name: "BadDoubleQuotes",
-  async fn() {
+  fn() {
     const input = `a""b,c`;
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       'parse error on line 1, column 1: bare " in non-quoted-field',
     );
@@ -196,18 +194,18 @@ Deno.test({
 });
 Deno.test({
   name: "TrimQuote",
-  async fn() {
+  fn() {
     const input = ` "a"," b",c`;
     const output = [["a", " b", "c"]];
-    assertEquals(await parse(input, { trimLeadingSpace: true }), output);
+    assertEquals(parse(input, { trimLeadingSpace: true }), output);
   },
 });
 Deno.test({
   name: "BadBareQuote",
-  async fn() {
+  fn() {
     const input = `a "word","b"`;
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       'parse error on line 1, column 2: bare " in non-quoted-field',
     );
@@ -215,10 +213,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadTrailingQuote",
-  async fn() {
+  fn() {
     const input = `"a word",b"`;
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       'parse error on line 1, column 10: bare " in non-quoted-field',
     );
@@ -226,10 +224,10 @@ Deno.test({
 });
 Deno.test({
   name: "ExtraneousQuote",
-  async fn() {
+  fn() {
     const input = `"a "word","b"`;
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       `parse error on line 1, column 3: extraneous or missing " in quoted-field`,
     );
@@ -237,10 +235,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadFieldCount",
-  async fn() {
+  fn() {
     const input = "a,b,c\nd,e";
-    await assertRejects(
-      async () => await parse(input, { fieldsPerRecord: 0 }),
+    assertThrows(
+      () => parse(input, { fieldsPerRecord: 0 }),
       ParseError,
       "record on line 2: wrong number of fields",
     );
@@ -248,10 +246,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadFieldCount1",
-  async fn() {
+  fn() {
     const input = `a,b,c`;
-    await assertRejects(
-      async () => await parse(input, { fieldsPerRecord: 2 }),
+    assertThrows(
+      () => parse(input, { fieldsPerRecord: 2 }),
       ParseError,
       "record on line 1: wrong number of fields",
     );
@@ -259,70 +257,70 @@ Deno.test({
 });
 Deno.test({
   name: "FieldCount",
-  async fn() {
+  fn() {
     const input = "a,b,c\nd,e";
     const output = [
       ["a", "b", "c"],
       ["d", "e"],
     ];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "TrailingCommaEOF",
-  async fn() {
+  fn() {
     const input = "a,b,c,";
     const output = [["a", "b", "c", ""]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "TrailingCommaEOL",
-  async fn() {
+  fn() {
     const input = "a,b,c,\n";
     const output = [["a", "b", "c", ""]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "TrailingCommaSpaceEOF",
-  async fn() {
+  fn() {
     const input = "a,b,c, ";
     const output = [["a", "b", "c", ""]];
-    assertEquals(await parse(input, { trimLeadingSpace: true }), output);
+    assertEquals(parse(input, { trimLeadingSpace: true }), output);
   },
 });
 Deno.test({
   name: "TrailingCommaSpaceEOL",
-  async fn() {
+  fn() {
     const input = "a,b,c, \n";
     const output = [["a", "b", "c", ""]];
-    assertEquals(await parse(input, { trimLeadingSpace: true }), output);
+    assertEquals(parse(input, { trimLeadingSpace: true }), output);
   },
 });
 Deno.test({
   name: "TrailingCommaLine3",
-  async fn() {
+  fn() {
     const input = "a,b,c\nd,e,f\ng,hi,";
     const output = [
       ["a", "b", "c"],
       ["d", "e", "f"],
       ["g", "hi", ""],
     ];
-    assertEquals(await parse(input, { trimLeadingSpace: true }), output);
+    assertEquals(parse(input, { trimLeadingSpace: true }), output);
   },
 });
 Deno.test({
   name: "NotTrailingComma3",
-  async fn() {
+  fn() {
     const input = "a,b,c, \n";
     const output = [["a", "b", "c", " "]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "CommaFieldTest",
-  async fn() {
+  fn() {
     const input =
       `x,y,z,w\nx,y,z,\nx,y,,\nx,,,\n,,,\n"x","y","z","w"\n"x","y","z",""\n"x","y","",""\n"x","","",""\n"","","",""\n`;
     const output = [
@@ -337,38 +335,38 @@ Deno.test({
       ["x", "", "", ""],
       ["", "", "", ""],
     ];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "TrailingCommaIneffective1",
-  async fn() {
+  fn() {
     const input = "a,b,\nc,d,e";
     const output = [
       ["a", "b", ""],
       ["c", "d", "e"],
     ];
-    assertEquals(await parse(input, { trimLeadingSpace: true }), output);
+    assertEquals(parse(input, { trimLeadingSpace: true }), output);
   },
 });
 Deno.test({
   name: "ReadAllReuseRecord",
-  async fn() {
+  fn() {
     const input = "a,b\nc,d";
     const output = [
       ["a", "b"],
       ["c", "d"],
     ];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
     // ReuseRecord: true,
   },
 });
 Deno.test({
   name: "StartLine1", // Issue 19019
-  async fn() {
+  fn() {
     const input = 'a,"b\nc"d,e';
-    await assertRejects(
-      async () => await parse(input, { fieldsPerRecord: 2 }),
+    assertThrows(
+      () => parse(input, { fieldsPerRecord: 2 }),
       ParseError,
       'record on line 1; parse error on line 2, column 1: extraneous or missing " in quoted-field',
     );
@@ -376,10 +374,10 @@ Deno.test({
 });
 Deno.test({
   name: "StartLine2",
-  async fn() {
+  fn() {
     const input = 'a,b\n"d\n\n,e';
-    await assertRejects(
-      async () => await parse(input, { fieldsPerRecord: 2 }),
+    assertThrows(
+      () => parse(input, { fieldsPerRecord: 2 }),
       ParseError,
       'record on line 2; parse error on line 5, column 0: extraneous or missing " in quoted-field',
     );
@@ -387,42 +385,42 @@ Deno.test({
 });
 Deno.test({
   name: "CRLFInQuotedField", // Issue 21201
-  async fn() {
+  fn() {
     const input = 'A,"Hello\r\nHi",B\r\n';
     const output = [["A", "Hello\nHi", "B"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "BinaryBlobField", // Issue 19410
-  async fn() {
+  fn() {
     const input = "x09\x41\xb4\x1c,aktau";
     const output = [["x09A\xb4\x1c", "aktau"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "TrailingCR",
-  async fn() {
+  fn() {
     const input = "field1,field2\r";
     const output = [["field1", "field2"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "QuotedTrailingCR",
-  async fn() {
+  fn() {
     const input = '"field"\r';
     const output = [["field"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "QuotedTrailingCRCR",
-  async fn() {
+  fn() {
     const input = '"field"\r\r';
-    await assertRejects(
-      async () => await parse(input, { fieldsPerRecord: 2 }),
+    assertThrows(
+      () => parse(input, { fieldsPerRecord: 2 }),
       ParseError,
       'parse error on line 1, column 6: extraneous or missing " in quoted-field',
     );
@@ -430,63 +428,63 @@ Deno.test({
 });
 Deno.test({
   name: "FieldCR",
-  async fn() {
+  fn() {
     const input = "field\rfield\r";
     const output = [["field\rfield"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "FieldCRCR",
-  async fn() {
+  fn() {
     const input = "field\r\rfield\r\r";
     const output = [["field\r\rfield\r"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "FieldCRCRLF",
-  async fn() {
+  fn() {
     const input = "field\r\r\nfield\r\r\n";
     const output = [["field\r"], ["field\r"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "FieldCRCRLFCR",
-  async fn() {
+  fn() {
     const input = "field\r\r\n\rfield\r\r\n\r";
     const output = [["field\r"], ["\rfield\r"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "FieldCRCRLFCRCR",
-  async fn() {
+  fn() {
     const input = "field\r\r\n\r\rfield\r\r\n\r\r";
     const output = [["field\r"], ["\r\rfield\r"], ["\r"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "MultiFieldCRCRLFCRCR",
-  async fn() {
+  fn() {
     const input = "field1,field2\r\r\n\r\rfield1,field2\r\r\n\r\r,";
     const output = [
       ["field1", "field2\r"],
       ["\r\rfield1", "field2\r"],
       ["\r\r", ""],
     ];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "NonASCIICommaAndComment",
-  async fn() {
+  fn() {
     const input = "a£b,c£ \td,e\n€ comment\n";
     const output = [["a", "b,c", "d,e"]];
     assertEquals(
-      await parse(input, {
+      parse(input, {
         trimLeadingSpace: true,
         separator: "£",
         comment: "€",
@@ -497,11 +495,11 @@ Deno.test({
 });
 Deno.test({
   name: "NonASCIICommaAndCommentWithQuotes",
-  async fn() {
+  fn() {
     const input = 'a€"  b,"€ c\nλ comment\n';
     const output = [["a", "  b,", " c"]];
     assertEquals(
-      await parse(input, { separator: "€", comment: "λ" }),
+      parse(input, { separator: "€", comment: "λ" }),
       output,
     );
   },
@@ -511,11 +509,11 @@ Deno.test(
     // λ and θ start with the same byte.
     // This tests that the parser doesn't confuse such characters.
     name: "NonASCIICommaConfusion",
-    async fn() {
+    fn() {
       const input = '"abθcd"λefθgh';
       const output = [["abθcd", "efθgh"]];
       assertEquals(
-        await parse(input, { separator: "λ", comment: "€" }),
+        parse(input, { separator: "λ", comment: "€" }),
         output,
       );
     },
@@ -523,26 +521,26 @@ Deno.test(
 );
 Deno.test({
   name: "NonASCIICommentConfusion",
-  async fn() {
+  fn() {
     const input = "λ\nλ\nθ\nλ\n";
     const output = [["λ"], ["λ"], ["λ"]];
-    assertEquals(await parse(input, { comment: "θ" }), output);
+    assertEquals(parse(input, { comment: "θ" }), output);
   },
 });
 Deno.test({
   name: "QuotedFieldMultipleLF",
-  async fn() {
+  fn() {
     const input = '"\n\n\n\n"';
     const output = [["\n\n\n\n"]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "MultipleCRLF",
-  async fn() {
+  fn() {
     const input = "\r\n\r\n\r\n\r\n";
     const output: string[][] = [];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
   /**
    * The implementation may read each line in several chunks if
@@ -552,20 +550,20 @@ Deno.test({
 } /* TODO(kt3k): Enable this test case)
  Deno.test({
     name: "HugeLines",
-    async fn() {
+    fn() {
     const input = "#ignore\n".repeat(10000) + "@".repeat(5000) + ","
       "*".repeat(5000),
     const output = [["@".repeat(5000), "*".repeat(5000)]]
-    assertEquals(await parse(input), output)
+    assertEquals(parse(input), output)
     Comment: "#",
   },
   }*/);
 Deno.test({
   name: "QuoteWithTrailingCRLF",
-  async fn() {
+  fn() {
     const input = '"foo"bar"\r\n';
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       `parse error on line 1, column 4: extraneous or missing " in quoted-field`,
     );
@@ -573,34 +571,34 @@ Deno.test({
 });
 Deno.test({
   name: "LazyQuoteWithTrailingCRLF",
-  async fn() {
+  fn() {
     const input = '"foo"bar"\r\n';
     const output = [[`foo"bar`]];
-    assertEquals(await parse(input, { lazyQuotes: true }), output);
+    assertEquals(parse(input, { lazyQuotes: true }), output);
   },
 });
 Deno.test({
   name: "DoubleQuoteWithTrailingCRLF",
-  async fn() {
+  fn() {
     const input = '"foo""bar"\r\n';
     const output = [[`foo"bar`]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "EvenQuotes",
-  async fn() {
+  fn() {
     const input = `""""""""`;
     const output = [[`"""`]];
-    assertEquals(await parse(input), output);
+    assertEquals(parse(input), output);
   },
 });
 Deno.test({
   name: "OddQuotes",
-  async fn() {
+  fn() {
     const input = `"""""""`;
-    await assertRejects(
-      async () => await parse(input),
+    assertThrows(
+      () => parse(input),
       ParseError,
       `parse error on line 1, column 7: extraneous or missing " in quoted-field`,
     );
@@ -608,18 +606,18 @@ Deno.test({
 });
 Deno.test({
   name: "LazyOddQuotes",
-  async fn() {
+  fn() {
     const input = `"""""""`;
     const output = [[`"""`]];
-    assertEquals(await parse(input, { lazyQuotes: true }), output);
+    assertEquals(parse(input, { lazyQuotes: true }), output);
   },
 });
 Deno.test({
   name: "BadComma1",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { separator: "\n" }),
+    assertThrows(
+      () => parse(input, { separator: "\n" }),
       Error,
       "Invalid Delimiter",
     );
@@ -627,10 +625,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadComma2",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { separator: "\r" }),
+    assertThrows(
+      () => parse(input, { separator: "\r" }),
       Error,
       "Invalid Delimiter",
     );
@@ -638,10 +636,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadComma3",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { separator: '"' }),
+    assertThrows(
+      () => parse(input, { separator: '"' }),
       Error,
       "Invalid Delimiter",
     );
@@ -649,10 +647,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadComment1",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { comment: "\n" }),
+    assertThrows(
+      () => parse(input, { comment: "\n" }),
       Error,
       "Invalid Delimiter",
     );
@@ -660,10 +658,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadComment2",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { comment: "\r" }),
+    assertThrows(
+      () => parse(input, { comment: "\r" }),
       Error,
       "Invalid Delimiter",
     );
@@ -671,10 +669,10 @@ Deno.test({
 });
 Deno.test({
   name: "BadCommaComment",
-  async fn() {
+  fn() {
     const input = "";
-    await assertRejects(
-      async () => await parse(input, { separator: "X", comment: "X" }),
+    assertThrows(
+      () => parse(input, { separator: "X", comment: "X" }),
       Error,
       "Invalid Delimiter",
     );
@@ -683,63 +681,63 @@ Deno.test({
 
 Deno.test({
   name: "simple",
-  async fn() {
+  fn() {
     const input = "a,b,c";
     const output = [["a", "b", "c"]];
-    assertEquals(await parse(input, { skipFirstRow: false }), output);
+    assertEquals(parse(input, { skipFirstRow: false }), output);
   },
 });
 Deno.test({
   name: "simple Bufreader",
-  async fn() {
-    const input = new BufReader(new StringReader("a,b,c"));
+  fn() {
+    const input = "a,b,c";
     const output = [["a", "b", "c"]];
-    assertEquals(await parse(input, { skipFirstRow: false }), output);
+    assertEquals(parse(input, { skipFirstRow: false }), output);
   },
 });
 Deno.test({
   name: "multiline",
-  async fn() {
+  fn() {
     const input = "a,b,c\ne,f,g\n";
     const output = [
       ["a", "b", "c"],
       ["e", "f", "g"],
     ];
-    assertEquals(await parse(input, { skipFirstRow: false }), output);
+    assertEquals(parse(input, { skipFirstRow: false }), output);
   },
 });
 Deno.test({
   name: "header mapping boolean",
-  async fn() {
+  fn() {
     const input = "a,b,c\ne,f,g\n";
     const output = [{ a: "e", b: "f", c: "g" }];
-    assertEquals(await parse(input, { skipFirstRow: true }), output);
+    assertEquals(parse(input, { skipFirstRow: true }), output);
   },
 });
 Deno.test({
   name: "header mapping array",
-  async fn() {
+  fn() {
     const input = "a,b,c\ne,f,g\n";
     const output = [
       { this: "a", is: "b", sparta: "c" },
       { this: "e", is: "f", sparta: "g" },
     ];
     assertEquals(
-      await parse(input, { columns: ["this", "is", "sparta"] }),
+      parse(input, { columns: ["this", "is", "sparta"] }),
       output,
     );
   },
 });
 Deno.test({
   name: "header mapping object",
-  async fn() {
+  fn() {
     const input = "a,b,c\ne,f,g\n";
     const output = [
       { this: "a", is: "b", sparta: "c" },
       { this: "e", is: "f", sparta: "g" },
     ];
     assertEquals(
-      await parse(input, {
+      parse(input, {
         columns: [{ name: "this" }, { name: "is" }, { name: "sparta" }],
       }),
       output,
@@ -748,14 +746,14 @@ Deno.test({
 });
 Deno.test({
   name: "provides both opts.skipFirstRow and opts.columns",
-  async fn() {
+  fn() {
     const input = "a,b,1\nc,d,2\ne,f,3";
     const output = [
       { foo: "c", bar: "d", baz: "2" },
       { foo: "e", bar: "f", baz: "3" },
     ];
     assertEquals(
-      await parse(input, {
+      parse(input, {
         skipFirstRow: true,
         columns: [{ name: "foo" }, { name: "bar" }, { name: "baz" }],
       }),
@@ -765,11 +763,11 @@ Deno.test({
 });
 Deno.test({
   name: "mismatching number of headers and fields",
-  async fn() {
+  fn() {
     const input = "a,b,c\nd,e";
-    await assertRejects(
-      async () =>
-        await parse(input, {
+    assertThrows(
+      () =>
+        parse(input, {
           skipFirstRow: true,
           columns: [{ name: "foo" }, { name: "bar" }, { name: "baz" }],
         }),
