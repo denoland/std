@@ -11,6 +11,11 @@ function swap<T>(array: T[], a: number, b: number) {
   array[b] = temp;
 }
 
+/** Returns the parent index for a child index. */
+function getParentIndex(index: number) {
+  return Math.floor((index + 1) / 2) - 1;
+}
+
 /**
  * A priority queue implemented with a binary heap. The heap is in decending order by default,
  * using JavaScript's built in comparison operators to sort the values.
@@ -87,18 +92,13 @@ export class BinaryHeap<T> implements Iterable<T> {
     let right: number = 2 * (parent + 1);
     let left: number = right - 1;
     while (left < size) {
-      if (
-        this.compare(this.#data[left], this.#data[parent]) < 0 &&
-        (right === size ||
-          this.compare(this.#data[left], this.#data[right]) < 0)
-      ) {
-        swap(this.#data, parent, left);
-        parent = left;
-      } else if (
-        right < size && this.compare(this.#data[right], this.#data[parent]) < 0
-      ) {
-        swap(this.#data, parent, right);
-        parent = right;
+      const greatestChild =
+        right === size || this.compare(this.#data[left], this.#data[right]) <= 0
+          ? left
+          : right;
+      if (this.compare(this.#data[greatestChild], this.#data[parent]) < 0) {
+        swap(this.#data, parent, greatestChild);
+        parent = greatestChild;
       } else {
         break;
       }
@@ -112,14 +112,14 @@ export class BinaryHeap<T> implements Iterable<T> {
   push(...values: T[]): number {
     for (const value of values) {
       let index: number = this.#data.length;
-      let parent: number = Math.floor(index / 2);
+      let parent: number = getParentIndex(index);
       this.#data.push(value);
       while (
         index !== 0 && this.compare(this.#data[index], this.#data[parent]) < 0
       ) {
         swap(this.#data, parent, index);
         index = parent;
-        parent = Math.floor(index / 2);
+        parent = getParentIndex(index);
       }
     }
     return this.#data.length;
