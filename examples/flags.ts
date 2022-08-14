@@ -1,4 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** Example of using `std/flags` to log arguments to the console.
+ *
+ * @module
+ */
+
 import { parse } from "../flags/mod.ts";
 
 if (import.meta.main) {

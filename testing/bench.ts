@@ -1,4 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * **Deprecated**. Use `Deno.bench()` instead.
+ *
+ * See: https://doc.deno.land/deno/unstable/~/Deno.bench for details.
+ *
+ * @deprecated Use `Deno.bench()` instead.
+ * @module
+ */
+
 import { assert } from "../_util/assert.ts";
 import { deepAssign } from "../_util/deep_assign.ts";
 
@@ -170,11 +180,12 @@ export function bench(
 }
 
 /**
- * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
- * for details.
- *
  * Clears benchmark candidates which name matches `only` and doesn't match `skip`.
- * Removes all candidates if options were not provided */
+ * Removes all candidates if options were not provided.
+ *
+ * @deprecated Use `Deno.bench()` instead. See: https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ */
 export function clearBenchmarks({
   only = /[^\s]/,
   skip = /$^/,

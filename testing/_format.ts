@@ -16,6 +16,8 @@ export function format(v: unknown): string {
       trailingComma: true,
       compact: false,
       iterableLimit: Infinity,
+      // getters should be true in assertEquals.
+      getters: true,
     })
     : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
 }

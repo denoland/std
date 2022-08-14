@@ -1,3 +1,11 @@
+### 0.152.0 / 2022.08.11
+
+- feat(crypto): add subtle.timingSafeEqual() (#2503)
+- feat(testing): allow for stubbing non existent instance methods (#2487)
+- node: add stub for child_process.execSync (#2513)
+- node: remove import to global.ts from module_esm.ts (#2501)
+- remove 'unhandledRejection' from list of unsupported events (#2500)
+
 ### 0.151.0 / 2022.08.04
 
 - fix(node): fs.existsSync never throws (#2495)

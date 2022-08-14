@@ -1,14 +1,21 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-/**
+
+/** **Deprecated**. Use
+ * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * or `std/crypto` instead.
+ *
  * This module is browser compatible.
+ *
+ * @deprecated Use Web Crypto API or std/crypto instead.
  * @module
  */
+
 import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";
 
-/** @deprecated */
+/** @deprecated Use Web Crypto API or std/crypto instead. */
 export type { Hasher } from "./hasher.ts";
-/** @deprecated */
+/** @deprecated Use Web Crypto API or std/crypto instead. */
 export const supportedAlgorithms = [
   "md2",
   "md4",
@@ -31,13 +38,13 @@ export const supportedAlgorithms = [
   "blake3",
   "tiger",
 ] as const;
-/** @deprecated */
+/** @deprecated Use Web Crypto API or std/crypto instead. */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];
 /**
  * Creates a new `Hash` instance.
  *
  * @param algorithm name of hash algorithm to use
- * @deprecated
+ * @deprecated Use Web Crypto API or std/crypto instead.
  */
 export function createHash(algorithm: SupportedAlgorithm): Hasher {
   return new Hash(algorithm as string);

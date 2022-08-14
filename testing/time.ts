@@ -1,6 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-/** This module is browser compatible. */
+/**
+ * Utilities for mocking time while testing.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 import { ascend, RBTree } from "../collections/rb_tree.ts";
 import { DelayOptions } from "../async/delay.ts";

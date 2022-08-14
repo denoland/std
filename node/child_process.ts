@@ -32,7 +32,7 @@ const denoCompatArgv = [
  * @param modulePath
  * @param args
  * @param option
- * @returns {ChildProcess}
+ * @returns
  */
 export function fork(
   modulePath: string, /* args?: string[], options?: ForkOptions*/

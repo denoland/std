@@ -1,6 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license.
-// https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js
+
+/**
+ * {@linkcode extract} and {@linkcode test} functions to handle many forms of
+ * front matter.
+ *
+ * Adapted from
+ * [jxson/front-matter](https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js).
+ *
+ * @module
+ */
 
 import { parse } from "./yaml.ts";
 
