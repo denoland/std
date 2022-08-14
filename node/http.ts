@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as DenoUnstable from "../_deno_unstable.ts";
-import { deferred, Deferred } from "../async/deferred.ts";
+import { Deferred, deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
@@ -235,7 +235,6 @@ export class ServerResponse extends NodeWritable {
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  // #reqEvent: Deno.RequestEvent;
   #promise: Deferred<Response>;
   #firstChunk: Chunk | null = null;
 
@@ -281,7 +280,6 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.#readable = readable;
-    // this.#reqEvent = reqEvent;
     this.#promise = promise;
   }
 
@@ -330,7 +328,7 @@ export class ServerResponse extends NodeWritable {
         headers: this.#headers,
         status: this.statusCode,
         statusText: this.statusMessage,
-      })
+      }),
     );
   }
 
@@ -431,33 +429,6 @@ class ServerImpl extends EventEmitter {
     }
   }
 
-  listen1(...args: unknown[]): this {
-    // TODO(bnoordhuis) Delegate to net.Server#listen().
-    const normalized = _normalizeArgs(args);
-    const options = normalized[0] as Partial<ListenOptions>;
-    const cb = normalized[1];
-
-    if (cb !== null) {
-      // @ts-ignore change EventEmitter's sig to use CallableFunction
-      this.once("listening", cb);
-    }
-
-    let port = 0;
-    if (typeof options.port === "number" || typeof options.port === "string") {
-      validatePort(options.port, "options.port");
-      port = options.port | 0;
-    }
-
-    // TODO(bnoordhuis) Node prefers [::] when host is omitted,
-    // we on the other hand default to 0.0.0.0.
-    const hostname = options.host ?? "";
-
-    // this.#listener = Deno.listen({ port, hostname });
-    nextTick(() => this.#listenLoop());
-
-    return this;
-  }
-
   listen(...args: unknown[]): this {
     // TODO(bnoordhuis) Delegate to net.Server#listen().
     const normalized = _normalizeArgs(args);
@@ -479,83 +450,23 @@ class ServerImpl extends EventEmitter {
     // we on the other hand default to 0.0.0.0.
     const hostname = options.host ?? "";
 
-    // this.#listener = Deno.listen({ port, hostname });
+    // TODO(bartlomieju): allow other addresses
     this.#addr = {
       hostname: "127.0.0.1",
-      port
+      port,
     } as Deno.NetAddr;
     nextTick(() => this.#serve());
 
     return this;
   }
 
-  async #listenLoop() {
-    const go = async (httpConn: Deno.HttpConn) => {
-      try {
-        for (;;) {
-          let reqEvent = null;
-          try {
-            // Note: httpConn.nextRequest() calls httpConn.close() on error.
-            reqEvent = await httpConn.nextRequest();
-          } catch {
-            // Connection closed.
-            // TODO(bnoordhuis) Emit "clientError" event on the http.Server
-            // instance? Node emits it when request parsing fails and expects
-            // the listener to send a raw 4xx HTTP response on the underlying
-            // net.Socket but we don't have one to pass to the listener.
-          }
-          if (reqEvent === null) {
-            break;
-          }
-          const req = new IncomingMessageForServer(reqEvent.request);
-          const res = new ServerResponse(reqEvent);
-          if (req.upgrade && this.listenerCount("upgrade") > 0) {
-            Deno.upgradeHttp(req._webRequest).then(([conn, head]) => {
-              const socket = new Socket({
-                handle: new TCP(constants.SERVER, conn),
-              });
-              this.emit("upgrade", req, socket, new Buffer(head));
-            }).catch((err) => {
-              console.error("upgrade errored", err);
-            });
-          } else {
-            this.emit("request", req, res);
-          }
-        }
-      } finally {
-        this.#httpConnections.delete(httpConn);
-      }
-    };
-
-    const listener = this.#listener;
-
-    if (listener !== undefined) {
-      this.emit("listening");
-
-      for await (const conn of listener) {
-        let httpConn: Deno.HttpConn;
-        try {
-          httpConn = Deno.serveHttp(conn);
-        } catch {
-          continue; /// Connection closed.
-        }
-
-        this.#httpConnections.add(httpConn);
-        go(httpConn);
-      }
-    }
-  }
-
   async #serve() {
     console.log("serving!", this.#addr);
     this.emit("listening");
-    
+
     Deno.serve(async (request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        // TODO(bartlomieju): calling these getters is required or else
-        // flash will panic, they should be consumed automatically on Deno.upgradeHttp
-        console.log("will be upgrading", request.method, request.url);
         const [conn, head] = Deno.upgradeHttp(request);
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
@@ -568,13 +479,11 @@ class ServerImpl extends EventEmitter {
         const response = await promise;
         return response;
       }
-      
     }, this.#addr);
   }
 
   get listening() {
     // FIXME(bartlomieju):
-    // return this.#listener !== undefined;
     return true;
   }
 
@@ -613,7 +522,6 @@ class ServerImpl extends EventEmitter {
 
   address() {
     const addr = this.#addr;
-    // const addr = this.#listener!.addr as Deno.NetAddr;
     return {
       port: addr.port,
       address: addr.hostname,
