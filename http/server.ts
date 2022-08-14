@@ -600,16 +600,22 @@ export async function serve(
 }
 
 export interface ServeTlsInit extends ServeInit {
+  /** Server private key in PEM format */
+  key?: string;
+
+  /** Cert chain in PEM format */
+  cert?: string;
+
   /** The path to the file containing the TLS private key. */
-  keyFile: string;
+  keyFile?: string;
 
   /** The path to the file containing the TLS certificate */
-  certFile: string;
+  certFile?: string;
 }
 
 /** Serves HTTPS requests with the given handler.
  *
- * You must specify `keyFile` and `certFile` options.
+ * You must specify `key` or `keyFile` and `cert` or `certFile` options.
  *
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8443 on hostname "0.0.0.0".
@@ -618,6 +624,13 @@ export interface ServeTlsInit extends ServeInit {
  *
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
+ * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
+ * serveTls((_req) => new Response("Hello, world"), { cert, key });
+ *
+ * // Or
+ *
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
@@ -662,12 +675,12 @@ export async function serveTls(
   handler: Handler,
   options: ServeTlsInit,
 ): Promise<void> {
-  if (!options.keyFile) {
-    throw new Error("TLS config is given, but 'keyFile' is missing.");
+  if (!options.key && !options.keyFile) {
+    throw new Error("TLS config is given, but 'key' is missing.");
   }
 
-  if (!options.certFile) {
-    throw new Error("TLS config is given, but 'certFile' is missing.");
+  if (!options.cert && !options.certFile) {
+    throw new Error("TLS config is given, but 'cert' is missing.");
   }
 
   let port = options.port ?? 8443;
@@ -683,7 +696,20 @@ export async function serveTls(
     once: true,
   });
 
-  const s = server.listenAndServeTls(options.certFile, options.keyFile);
+  const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  const cert = options.cert || Deno.readTextFileSync(options.certFile!);
+
+  const listener = Deno.listenTls({
+    port,
+    hostname,
+    cert,
+    key,
+    transport: "tcp",
+    // ALPN protocol support not yet stable.
+    // alpnProtocols: ["h2", "http/1.1"],
+  });
+
+  const s = server.serve(listener);
 
   port = (server.addrs[0] as Deno.NetAddr).port;
 
