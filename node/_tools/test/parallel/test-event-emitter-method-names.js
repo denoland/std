@@ -38,5 +38,9 @@ assert.strictEqual(E.off, E.removeListener);  // Same method.
 Object.getOwnPropertyNames(E).forEach(function(name) {
   if (name === 'constructor' || name === 'on' || name === 'off') return;
   if (typeof E[name] !== 'function') return;
+  if (name === 'listenerCount') {
+    assert.strictEqual(E[name].name, '_listenerCount');
+    return;
+  };
   assert.strictEqual(E[name].name, name);
 });
