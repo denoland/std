@@ -701,22 +701,6 @@ EventEmitter.prototype.rawListeners = function rawListeners(type) {
   return _listeners(this, type, false);
 };
 
-EventEmitter.prototype.listenerCount = _listenerCount;
-
-/**
- * Returns the number of listeners listening to the event name
- * specified as `type`.
- * @deprecated since v3.2.0
- * @param {EventEmitter} emitter
- * @param {string | symbol} type
- * @returns {number}
- */
-export function listenerCount(emitter, type) {
-  if (typeof emitter.listenerCount === "function") {
-    return emitter.listenerCount(type);
-  }
-  return _listenerCount.call(emitter, type);
-}
 /**
  * Returns the number of listeners listening to event name
  * specified as `type`.
@@ -738,6 +722,23 @@ const _listenerCount = function listenerCount(type) {
 
   return 0;
 };
+
+EventEmitter.prototype.listenerCount = _listenerCount;
+
+/**
+ * Returns the number of listeners listening to the event name
+ * specified as `type`.
+ * @deprecated since v3.2.0
+ * @param {EventEmitter} emitter
+ * @param {string | symbol} type
+ * @returns {number}
+ */
+export function listenerCount(emitter, type) {
+  if (typeof emitter.listenerCount === "function") {
+    return emitter.listenerCount(type);
+  }
+  return _listenerCount.call(emitter, type);
+}
 
 /**
  * Returns an array listing the events for which
