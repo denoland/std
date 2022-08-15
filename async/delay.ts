@@ -5,12 +5,12 @@ import { unrefTimer } from "../_deno_unstable.ts";
 export interface DelayOptions {
   signal?: AbortSignal;
   /** Indicates whether the process can exit before the timer ends. This is `false` by default. */
-  peristent?: boolean;
+  persistent?: boolean;
 }
 
 /* Resolves after the given number of milliseconds. */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
-  const { signal, peristent } = options;
+  const { signal, persistent } = options;
   if (signal?.aborted) {
     return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
   }
@@ -25,7 +25,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
     };
     const i = setTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
-    if (peristent ?? false) {
+    if (persistent ?? false) {
       unrefTimer(i);
     }
   });
