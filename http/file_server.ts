@@ -110,7 +110,7 @@ export interface ServeFileOptions {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body. Throws `Deno.errors.NotFound` if the requested file doesn't exist.
+ * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
  * @param options
@@ -123,145 +123,159 @@ export async function serveFile(
   filePath: string,
   { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
-  let file: Deno.FsFile;
-  if (fileInfo === undefined) {
-    [file, fileInfo] = await Promise.all([
-      Deno.open(filePath),
-      Deno.stat(filePath),
-    ]);
-  } else {
-    file = await Deno.open(filePath);
-  }
-  const headers = setBaseHeaders();
+  try {
+    let file: Deno.FsFile;
+    if (fileInfo === undefined) {
+      [file, fileInfo] = await Promise.all([
+        Deno.open(filePath),
+        Deno.stat(filePath),
+      ]);
+    } else {
+      file = await Deno.open(filePath);
+    }
+    const headers = setBaseHeaders();
 
-  // Set mime-type using the file extension in filePath
-  const contentTypeValue = contentType(extname(filePath));
-  if (contentTypeValue) {
-    headers.set("content-type", contentTypeValue);
-  }
+    // Set mime-type using the file extension in filePath
+    const contentTypeValue = contentType(extname(filePath));
+    if (contentTypeValue) {
+      headers.set("content-type", contentTypeValue);
+    }
 
-  // Set date header if access timestamp is available
-  if (fileInfo.atime instanceof Date) {
-    const date = new Date(fileInfo.atime);
-    headers.set("date", date.toUTCString());
-  }
+    // Set date header if access timestamp is available
+    if (fileInfo.atime instanceof Date) {
+      const date = new Date(fileInfo.atime);
+      headers.set("date", date.toUTCString());
+    }
 
-  // Set last modified header if last modification timestamp is available
-  if (fileInfo.mtime instanceof Date) {
-    const lastModified = new Date(fileInfo.mtime);
-    headers.set("last-modified", lastModified.toUTCString());
+    // Set last modified header if last modification timestamp is available
+    if (fileInfo.mtime instanceof Date) {
+      const lastModified = new Date(fileInfo.mtime);
+      headers.set("last-modified", lastModified.toUTCString());
 
-    // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
-      etagAlgorithm || "fnv1a",
-    );
-    headers.set("etag", simpleEtag);
+      // Create a simple etag that is an md5 of the last modified date and filesize concatenated
+      const simpleEtag = await createEtagHash(
+        `${lastModified.toJSON()}${fileInfo.size}`,
+        etagAlgorithm || "fnv1a",
+      );
+      headers.set("etag", simpleEtag);
 
-    // If a `if-none-match` header is present and the value matches the tag or
-    // if a `if-modified-since` header is present and the value is bigger than
-    // the access timestamp value, then return 304
-    const ifNoneMatch = req.headers.get("if-none-match");
-    const ifModifiedSince = req.headers.get("if-modified-since");
+      // If a `if-none-match` header is present and the value matches the tag or
+      // if a `if-modified-since` header is present and the value is bigger than
+      // the access timestamp value, then return 304
+      const ifNoneMatch = req.headers.get("if-none-match");
+      const ifModifiedSince = req.headers.get("if-modified-since");
+      if (
+        (ifNoneMatch && compareEtag(ifNoneMatch, simpleEtag)) ||
+        (ifNoneMatch === null &&
+          ifModifiedSince &&
+          fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
+      ) {
+        const status = Status.NotModified;
+        const statusText = STATUS_TEXT[status];
+
+        file.close();
+
+        return new Response(null, {
+          status,
+          statusText,
+          headers,
+        });
+      }
+    }
+
+    // Get and parse the "range" header
+    const range = req.headers.get("range") as string;
+    const rangeRe = /bytes=(\d+)-(\d+)?/;
+    const parsed = rangeRe.exec(range);
+
+    // Use the parsed value if available, fallback to the start and end of the entire file
+    const start = parsed && parsed[1] ? +parsed[1] : 0;
+    const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
+
+    // If there is a range, set the status to 206, and set the "Content-range" header.
+    if (range && parsed) {
+      headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
+    }
+
+    // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
+    const maxRange = fileInfo.size - 1;
+
     if (
-      (ifNoneMatch && compareEtag(ifNoneMatch, simpleEtag)) ||
-      (ifNoneMatch === null &&
-        ifModifiedSince &&
-        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
+      range &&
+      (!parsed ||
+        typeof start !== "number" ||
+        start > end ||
+        start > maxRange ||
+        end > maxRange)
     ) {
-      const status = Status.NotModified;
+      const status = Status.RequestedRangeNotSatisfiable;
       const statusText = STATUS_TEXT[status];
 
       file.close();
 
-      return new Response(null, {
+      return new Response(statusText, {
         status,
         statusText,
         headers,
       });
     }
-  }
 
-  // Get and parse the "range" header
-  const range = req.headers.get("range") as string;
-  const rangeRe = /bytes=(\d+)-(\d+)?/;
-  const parsed = rangeRe.exec(range);
+    // Set content length
+    const contentLength = end - start + 1;
+    headers.set("content-length", `${contentLength}`);
+    if (range && parsed) {
+      // Create a stream of the file instead of loading it into memory
+      let bytesSent = 0;
+      const body = new ReadableStream({
+        async start() {
+          if (start > 0) {
+            await file.seek(start, Deno.SeekMode.Start);
+          }
+        },
+        async pull(controller) {
+          const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
+          const bytesRead = await file.read(bytes);
+          if (bytesRead === null) {
+            file.close();
+            controller.close();
+            return;
+          }
+          controller.enqueue(
+            bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
+          );
+          bytesSent += bytesRead;
+          if (bytesSent > contentLength) {
+            file.close();
+            controller.close();
+          }
+        },
+      });
 
-  // Use the parsed value if available, fallback to the start and end of the entire file
-  const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
+      return new Response(body, {
+        status: Status.PartialContent,
+        statusText: STATUS_TEXT[Status.PartialContent],
+        headers,
+      });
+    }
 
-  // If there is a range, set the status to 206, and set the "Content-range" header.
-  if (range && parsed) {
-    headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
-  }
-
-  // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange = fileInfo.size - 1;
-
-  if (
-    range &&
-    (!parsed ||
-      typeof start !== "number" ||
-      start > end ||
-      start > maxRange ||
-      end > maxRange)
-  ) {
-    const status = Status.RequestedRangeNotSatisfiable;
-    const statusText = STATUS_TEXT[status];
-
-    file.close();
-
-    return new Response(statusText, {
-      status,
-      statusText,
+    return new Response(file.readable, {
+      status: Status.OK,
+      statusText: STATUS_TEXT[Status.OK],
       headers,
     });
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      await req.body?.cancel();
+      const status = Status.NotFound;
+      const statusText = STATUS_TEXT[status];
+      return new Response(statusText, {
+        status,
+        statusText,
+      });
+    } else {
+      throw error;
+    }
   }
-
-  // Set content length
-  const contentLength = end - start + 1;
-  headers.set("content-length", `${contentLength}`);
-  if (range && parsed) {
-    // Create a stream of the file instead of loading it into memory
-    let bytesSent = 0;
-    const body = new ReadableStream({
-      async start() {
-        if (start > 0) {
-          await file.seek(start, Deno.SeekMode.Start);
-        }
-      },
-      async pull(controller) {
-        const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
-        const bytesRead = await file.read(bytes);
-        if (bytesRead === null) {
-          file.close();
-          controller.close();
-          return;
-        }
-        controller.enqueue(
-          bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
-        );
-        bytesSent += bytesRead;
-        if (bytesSent > contentLength) {
-          file.close();
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(body, {
-      status: Status.PartialContent,
-      statusText: STATUS_TEXT[Status.PartialContent],
-      headers,
-    });
-  }
-
-  return new Response(file.readable, {
-    status: Status.OK,
-    statusText: STATUS_TEXT[Status.OK],
-    headers,
-  });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
