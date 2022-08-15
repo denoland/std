@@ -135,13 +135,13 @@ const result = await delayedPromise;
 // ...
 ```
 
-To prevent the delay from blocking the event loop:
+To allow the process to exit before the timer ends. Requires `--unstable` flag.
 
 ```typescript
 import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 // ...
-await delay(100, { unref: true });
+await delay(100, { persistent: true });
 // ...
 ```
 
