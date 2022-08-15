@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+import { unrefTimer } from "../_deno_unstable.ts";
 
 export interface DelayOptions {
   signal?: AbortSignal;
@@ -24,8 +25,8 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
     };
     const i = setTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
-    if (peristent ?? true) {
-      Deno.unrefTimer(i);
+    if (peristent ?? false) {
+      unrefTimer(i);
     }
   });
 }
