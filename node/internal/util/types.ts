@@ -25,7 +25,7 @@ import * as bindingTypes from "../../internal_binding/types.ts";
 export { isCryptoKey, isKeyObject } from "../crypto/_keys.ts";
 
 // https://tc39.es/ecma262/#sec-get-%typedarray%.prototype-@@tostringtag
-const _typedArrayGetToStringTag = Object.getOwnPropertyDescriptor(
+const _getTypedArrayToStringTag = Object.getOwnPropertyDescriptor(
   Object.getPrototypeOf(Uint8Array).prototype,
   Symbol.toStringTag,
 )!.get!;
@@ -35,51 +35,51 @@ export function isArrayBufferView(value: unknown): boolean {
 }
 
 export function isBigInt64Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "BigInt64Array";
+  return _getTypedArrayToStringTag.call(value) === "BigInt64Array";
 }
 
 export function isBigUint64Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "BigUint64Array";
+  return _getTypedArrayToStringTag.call(value) === "BigUint64Array";
 }
 
 export function isFloat32Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Float32Array";
+  return _getTypedArrayToStringTag.call(value) === "Float32Array";
 }
 
 export function isFloat64Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Float64Array";
+  return _getTypedArrayToStringTag.call(value) === "Float64Array";
 }
 
 export function isInt8Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Int8Array";
+  return _getTypedArrayToStringTag.call(value) === "Int8Array";
 }
 
 export function isInt16Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Int16Array";
+  return _getTypedArrayToStringTag.call(value) === "Int16Array";
 }
 
 export function isInt32Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Int32Array";
+  return _getTypedArrayToStringTag.call(value) === "Int32Array";
 }
 
 export function isTypedArray(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) !== undefined;
+  return _getTypedArrayToStringTag.call(value) !== undefined;
 }
 
 export function isUint8Array(value: unknown): value is Uint8Array {
-  return _typedArrayGetToStringTag.call(value) === "Uint8Array";
+  return _getTypedArrayToStringTag.call(value) === "Uint8Array";
 }
 
 export function isUint8ClampedArray(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Uint8ClampedArray";
+  return _getTypedArrayToStringTag.call(value) === "Uint8ClampedArray";
 }
 
 export function isUint16Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Uint16Array";
+  return _getTypedArrayToStringTag.call(value) === "Uint16Array";
 }
 
 export function isUint32Array(value: unknown): boolean {
-  return _typedArrayGetToStringTag.call(value) === "Uint32Array";
+  return _getTypedArrayToStringTag.call(value) === "Uint32Array";
 }
 
 export const {
