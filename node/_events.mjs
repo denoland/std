@@ -723,7 +723,7 @@ export function listenerCount(emitter, type) {
  * @param {string | symbol} type
  * @returns {number}
  */
-function _listenerCount(type) {
+const _listenerCount = function listenerCount(type) {
   const events = this._events;
 
   if (events !== undefined) {
@@ -737,7 +737,7 @@ function _listenerCount(type) {
   }
 
   return 0;
-}
+};
 
 /**
  * Returns an array listing the events for which
