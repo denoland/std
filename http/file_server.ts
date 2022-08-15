@@ -110,7 +110,7 @@ export interface ServeFileOptions {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body.
+ * Returns an HTTP Response with the requested file as the body. Throws `Deno.errors.NotFound` if the requested file doesn't exist.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
  * @param options
