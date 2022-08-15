@@ -14,7 +14,11 @@ const decoder = new TextDecoder("utf-8");
 Deno.test("Invalid encoding results in error()", async function testEncodingErrors() {
   await assertRejects(
     async () => {
-      await writeFile("some/path", "some data", "made-up-encoding");
+      await writeFile(
+        "some/path",
+        "some data",
+        "made-up-encoding" as TextEncodings,
+      );
     },
     Error,
     `The value "made-up-encoding" is invalid for option "encoding"`,
@@ -22,7 +26,7 @@ Deno.test("Invalid encoding results in error()", async function testEncodingErro
   await assertRejects(
     async () => {
       await writeFile("some/path", "some data", {
-        encoding: "made-up-encoding",
+        encoding: "made-up-encoding" as TextEncodings,
       });
     },
     Error,

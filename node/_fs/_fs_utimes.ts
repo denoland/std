@@ -2,6 +2,7 @@
 import * as DenoUnstable from "../../_deno_unstable.ts";
 import type { CallbackWithError } from "./_fs_common.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 function getValidTime(
   time: number | string | Date,
@@ -40,6 +41,12 @@ export function utimes(
 
   DenoUnstable.utime(path, atime, mtime).then(() => callback(null), callback);
 }
+
+export const utimesPromise = promisify(utimes) as (
+  path: string | URL,
+  atime: number | string | Date,
+  mtime: number | string | Date,
+) => Promise<void>;
 
 export function utimesSync(
   path: string | URL,

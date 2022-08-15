@@ -152,6 +152,23 @@ export function watch(
   return fsWatcher;
 }
 
+export const watchPromise = promisify(watch) as (
+  & ((
+    filename: string | URL,
+    options: watchOptions,
+    listener: watchListener,
+  ) => Promise<FSWatcher>)
+  & ((
+    filename: string | URL,
+    listener: watchListener,
+  ) => Promise<FSWatcher>)
+  & ((
+    filename: string | URL,
+    options: watchOptions,
+  ) => Promise<FSWatcher>)
+  & ((filename: string | URL) => Promise<FSWatcher>)
+);
+
 type WatchFileListener = (curr: Stats, prev: Stats) => void;
 type WatchFileOptions = {
   bigint?: boolean;
