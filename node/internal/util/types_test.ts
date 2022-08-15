@@ -142,7 +142,10 @@ Deno.test("Should return false for invalid BigInt64Array types", () => {
   assertStrictEquals(isBigInt64Array(new BigUint64Array()), false);
   assertStrictEquals(isBigInt64Array(new Float32Array()), false);
   assertStrictEquals(isBigInt64Array(new Int32Array()), false);
-  assertStrictEquals(isBigInt64Array({ [Symbol.toStringTag]: "BigInt64Array" }), false);
+  assertStrictEquals(
+    isBigInt64Array({ [Symbol.toStringTag]: "BigInt64Array" }),
+    false,
+  );
 });
 
 // isBigUint64Array
@@ -154,7 +157,10 @@ Deno.test("Should return false for invalid BigUint64Array types", () => {
   assertStrictEquals(isBigUint64Array(new BigInt64Array()), false);
   assertStrictEquals(isBigUint64Array(new Float32Array()), false);
   assertStrictEquals(isBigUint64Array(new Int32Array()), false);
-  assertStrictEquals(isBigUint64Array({ [Symbol.toStringTag]: "BigUint64Array" }), false);
+  assertStrictEquals(
+    isBigUint64Array({ [Symbol.toStringTag]: "BigUint64Array" }),
+    false,
+  );
 });
 
 // isBooleanObject
@@ -215,7 +221,10 @@ Deno.test("Should return true for valid Float32Array types", () => {
 Deno.test("Should return false for invalid Float32Array types", () => {
   assertStrictEquals(isFloat32Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isFloat32Array(new Float64Array(0)), false);
-  assertStrictEquals(isFloat32Array({ [Symbol.toStringTag]: "Float32Array" }), false);
+  assertStrictEquals(
+    isFloat32Array({ [Symbol.toStringTag]: "Float32Array" }),
+    false,
+  );
 });
 
 // isFloat64Array
@@ -226,7 +235,10 @@ Deno.test("Should return true for valid Float64Array types", () => {
 Deno.test("Should return false for invalid Float64Array types", () => {
   assertStrictEquals(isFloat64Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isFloat64Array(new Uint8Array(0)), false);
-  assertStrictEquals(isFloat64Array({ [Symbol.toStringTag]: "Float64Array" }), false);
+  assertStrictEquals(
+    isFloat64Array({ [Symbol.toStringTag]: "Float64Array" }),
+    false,
+  );
 });
 
 // isGeneratorFunction
@@ -276,7 +288,10 @@ Deno.test("Should return true for valid Int16Array types", () => {
 Deno.test("Should return false for invalid Int16Array type", () => {
   assertStrictEquals(isInt16Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isInt16Array(new Float64Array(0)), false);
-  assertStrictEquals(isInt16Array({ [Symbol.toStringTag]: "Int16Array" }), false);
+  assertStrictEquals(
+    isInt16Array({ [Symbol.toStringTag]: "Int16Array" }),
+    false,
+  );
 });
 
 // isInt32Array
@@ -287,7 +302,10 @@ Deno.test("Should return true for valid Int32Array types", () => {
 Deno.test("Should return false for invalid Int32Array type", () => {
   assertStrictEquals(isInt32Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isInt32Array(new Float64Array(0)), false);
-  assertStrictEquals(isInt32Array({ [Symbol.toStringTag]: "Int32Array" }), false);
+  assertStrictEquals(
+    isInt32Array({ [Symbol.toStringTag]: "Int32Array" }),
+    false,
+  );
 });
 
 // isStringObject
@@ -453,7 +471,10 @@ Deno.test("Should return true for valid TypedArray types", () => {
 
 Deno.test("Should return false for invalid TypedArray types", () => {
   assertStrictEquals(isTypedArray(new ArrayBuffer(0)), false);
-  assertStrictEquals(isTypedArray({ [Symbol.toStringTag]: "Uint8Array" }), false);
+  assertStrictEquals(
+    isTypedArray({ [Symbol.toStringTag]: "Uint8Array" }),
+    false,
+  );
 });
 
 // isUint8Array
@@ -464,7 +485,10 @@ Deno.test("Should return true for valid Uint8Array types", () => {
 Deno.test("Should return false for invalid Uint8Array types", () => {
   assertStrictEquals(isUint8Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isUint8Array(new Float64Array(0)), false);
-  assertStrictEquals(isUint8Array({ [Symbol.toStringTag]: "Uint8Array" }), false);
+  assertStrictEquals(
+    isUint8Array({ [Symbol.toStringTag]: "Uint8Array" }),
+    false,
+  );
 });
 
 // isUint8ClampedArray
@@ -475,7 +499,10 @@ Deno.test("Should return true for valid Uint8ClampedArray types", () => {
 Deno.test("Should return false for invalid Uint8ClampedArray types", () => {
   assertStrictEquals(isUint8ClampedArray(new ArrayBuffer(0)), false);
   assertStrictEquals(isUint8ClampedArray(new Float64Array(0)), false);
-  assertStrictEquals(isUint8ClampedArray({ [Symbol.toStringTag]: "Uint8ClampedArray" }), false);
+  assertStrictEquals(
+    isUint8ClampedArray({ [Symbol.toStringTag]: "Uint8ClampedArray" }),
+    false,
+  );
 });
 
 // isUint16Array
@@ -486,7 +513,10 @@ Deno.test("Should return true for valid Uint16Array types", () => {
 Deno.test("Should return false for invalid Uint16Array types", () => {
   assertStrictEquals(isUint16Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isUint16Array(new Float64Array(0)), false);
-  assertStrictEquals(isUint16Array({ [Symbol.toStringTag]: "Uint16Array" }), false);
+  assertStrictEquals(
+    isUint16Array({ [Symbol.toStringTag]: "Uint16Array" }),
+    false,
+  );
 });
 
 // isUint32Array
@@ -497,7 +527,10 @@ Deno.test("Should return true for valid Uint32Array types", () => {
 Deno.test("Should return false for invalid Uint32Array types", () => {
   assertStrictEquals(isUint32Array(new ArrayBuffer(0)), false);
   assertStrictEquals(isUint32Array(new Float64Array(0)), false);
-  assertStrictEquals(isUint32Array({ [Symbol.toStringTag]: "Uint32Array" }), false);
+  assertStrictEquals(
+    isUint32Array({ [Symbol.toStringTag]: "Uint32Array" }),
+    false,
+  );
 });
 
 // isWeakMap
