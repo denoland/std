@@ -3,11 +3,13 @@
 
 export interface DelayOptions {
   signal?: AbortSignal;
+  /** Defines if the timer should be non-blocking. This is `false` by default. */
+  unref?: boolean;
 }
 
 /* Resolves after the given number of milliseconds. */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
-  const { signal } = options;
+  const { signal, unref } = options;
   if (signal?.aborted) {
     return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
   }
@@ -22,5 +24,8 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
     };
     const i = setTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
+    if (unref) {
+      Deno.unrefTimer(i);
+    }
   });
 }

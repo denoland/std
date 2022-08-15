@@ -135,6 +135,16 @@ const result = await delayedPromise;
 // ...
 ```
 
+To prevent the delay from blocking the event loop:
+
+```typescript
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+
+// ...
+await delay(100, { unref: true });
+// ...
+```
+
 ## MuxAsyncIterator
 
 The MuxAsyncIterator class multiplexes multiple async iterators into a single
