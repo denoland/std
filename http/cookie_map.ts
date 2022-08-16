@@ -124,7 +124,7 @@ export interface Headered {
   headers: Headers;
 }
 
-export interface Mergable {
+export interface Mergeable {
   [cookieMapHeadersInitSymbol](): [string, string][];
 }
 
@@ -294,7 +294,7 @@ export const cookieMapHeadersInitSymbol = Symbol.for(
   "Deno.std.cookieMap.headersInit",
 );
 
-function isMergable(value: unknown): value is Mergable {
+function isMergeable(value: unknown): value is Mergeable {
   return value != null && typeof value === "object" &&
     cookieMapHeadersInitSymbol in value;
 }
@@ -307,7 +307,7 @@ function isMergable(value: unknown): value is Mergable {
  * will not ensure that there are no other `Set-Cookie` headers from other
  * sources, it will simply append the various headers together. */
 export function mergeHeaders(
-  ...sources: (Headered | HeadersInit | Mergable)[]
+  ...sources: (Headered | HeadersInit | Mergeable)[]
 ): Headers {
   const headers = new Headers();
   for (const source of sources) {
@@ -316,7 +316,7 @@ export function mergeHeaders(
       entries = source;
     } else if ("headers" in source && source.headers instanceof Headers) {
       entries = source.headers;
-    } else if (isMergable(source)) {
+    } else if (isMergeable(source)) {
       entries = source[cookieMapHeadersInitSymbol]();
     } else if (Array.isArray(source)) {
       entries = source as [string, string][];
@@ -339,7 +339,7 @@ export function mergeHeaders(
  * response can be provided. Alternatively the {@linkcode mergeHeaders}
  * function can be used to generate a final set of headers for sending in the
  * response. */
-export class CookieMap implements Mergable {
+export class CookieMap implements Mergeable {
   #keys?: string[];
   #requestHeaders: Headers;
   #responseHeaders: Headers;
@@ -554,7 +554,7 @@ export interface KeyRing {
  * On construction, the optional set of keys implementing the
  * {@linkcode KeyRing} interface. While it is optional, if you don't plan to use
  * keys, you might want to consider using just the {@linkcode CookieMap}. */
-export class SecureCookieMap implements Mergable {
+export class SecureCookieMap implements Mergeable {
   #keyRing?: KeyRing;
   #keys?: string[];
   #requestHeaders: Headers;
