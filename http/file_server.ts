@@ -124,14 +124,29 @@ export async function serveFile(
   { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
   let file: Deno.FsFile;
-  if (fileInfo === undefined) {
-    [file, fileInfo] = await Promise.all([
-      Deno.open(filePath),
-      Deno.stat(filePath),
-    ]);
-  } else {
-    file = await Deno.open(filePath);
+  try {
+    if (fileInfo === undefined) {
+      [file, fileInfo] = await Promise.all([
+        Deno.open(filePath),
+        Deno.stat(filePath),
+      ]);
+    } else {
+      file = await Deno.open(filePath);
+    }
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      await req.body?.cancel();
+      const status = Status.NotFound;
+      const statusText = STATUS_TEXT[status];
+      return new Response(statusText, {
+        status,
+        statusText,
+      });
+    } else {
+      throw error;
+    }
   }
+
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath

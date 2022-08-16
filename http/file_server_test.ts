@@ -932,6 +932,18 @@ Deno.test(
     assertEquals(await res.text(), localFile);
   },
 );
+
+Deno.test(
+  "file_server `serveFile` returns 404 due to file not found",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/non_existent.txt");
+    const testdataPath = join(testdataDir, "non_existent.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
 Deno.test(
   "file_server `serveFile` should return 416 due to a bad range request (500-200)",
   async () => {
@@ -942,6 +954,7 @@ Deno.test(
     assertEquals(res.status, 416);
   },
 );
+
 Deno.test(
   "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
   async () => {
