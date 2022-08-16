@@ -225,11 +225,10 @@ for (const [ value, _method ] of [
       bigInt64Array, stealthyBigInt64Array,
       bigUint64Array, stealthyBigUint64Array,
     ],
-    // TODO(wafuwafu13): Enable all
     isTypedArray: [
       buffer,
-      uint8Array, /** stealthyUint8Array, */
-      uint8ClampedArray, /** stealthyUint8ClampedArray, */
+      uint8Array, stealthyUint8Array,
+      uint8ClampedArray, stealthyUint8ClampedArray,
       uint16Array, stealthyUint16Array,
       uint32Array, stealthyUint32Array,
       int8Array, stealthyInt8Array,
@@ -237,16 +236,14 @@ for (const [ value, _method ] of [
       int32Array, stealthyInt32Array,
       float32Array, stealthyFloat32Array,
       float64Array, stealthyFloat64Array,
-      /** bigInt64Array, stealthyBigInt64Array,
-      bigUint64Array, stealthyBigUint64Array, */
+      bigInt64Array, stealthyBigInt64Array,
+      bigUint64Array, stealthyBigUint64Array,
     ],
-    // TODO(wafuwafu13): Enable all
     isUint8Array: [
-      buffer, uint8Array, /** stealthyUint8Array, */
+      buffer, uint8Array, stealthyUint8Array,
     ],
-    // TODO(wafuwafu13): Enable all
     isUint8ClampedArray: [
-      uint8ClampedArray, /** stealthyUint8ClampedArray, */
+      uint8ClampedArray, stealthyUint8ClampedArray,
     ],
     isUint16Array: [
       uint16Array, stealthyUint16Array,
