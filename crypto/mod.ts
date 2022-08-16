@@ -25,10 +25,9 @@ import {
   instantiateWasm,
 } from "../_wasm_crypto/mod.ts";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
-
 import { fnv } from "./_fnv/index.ts";
 
-export { type Data, type Key, type KeyRing, KeyStack } from "./keystack.ts";
+export { type Data, type Key, KeyStack } from "./keystack.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're

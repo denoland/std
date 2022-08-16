@@ -8,27 +8,14 @@
  * @module
  */
 
-import * as base64 from "../encoding/base64.ts";
+import { timingSafeEqual } from "./timing_safe_equal.ts";
+import * as base64url from "../encoding/base64url.ts";
 
 /** Types of data that can be signed cryptographically. */
 export type Data = string | number[] | ArrayBuffer | Uint8Array;
 
 /** Types of keys that can be used to sign data. */
 export type Key = string | number[] | ArrayBuffer | Uint8Array;
-
-/** An abstract interface for a keyring which handles signing of data based on
- * a string based digest. */
-export interface KeyRing {
-  /** Given a set of data and a digest, return the key index of the key used
-   * to sign the data. The index is 0 based. A non-negative number indices the
-   * digest is valid and a key was found. */
-  indexOf(data: Data, digest: string): Promise<number> | number;
-  /** Sign the data, returning a string based digest of the data. */
-  sign(data: Data): Promise<string> | string;
-  /** Verifies the digest matches the provided data, indicating the data was
-   * signed by the keyring and has not been tampered with. */
-  verify(data: Data, digest: string): Promise<boolean> | boolean;
-}
 
 const encoder = new TextEncoder();
 
@@ -59,19 +46,6 @@ function sign(data: Data, key: CryptoKey): Promise<ArrayBuffer> {
   return crypto.subtle.sign("HMAC", key, data);
 }
 
-function compareArrayBuffer(a: ArrayBuffer, b: ArrayBuffer): boolean {
-  assert(a.byteLength === b.byteLength, "ArrayBuffer lengths must match.");
-  const va = new DataView(a);
-  const vb = new DataView(b);
-  const length = va.byteLength;
-  let out = 0;
-  let i = -1;
-  while (++i < length) {
-    out |= va.getUint8(i) ^ vb.getUint8(i);
-  }
-  return out === 0;
-}
-
 /** Compare two strings, Uint8Arrays, ArrayBuffers, or arrays of numbers in a
  * way that avoids timing based attacks on the comparisons on the values.
  *
@@ -88,7 +62,7 @@ async function compare(a: Data, b: Data): Promise<boolean> {
   const cryptoKey = await importKey(key);
   const ah = await sign(a, cryptoKey);
   const bh = await sign(b, cryptoKey);
-  return compareArrayBuffer(ah, bh);
+  return timingSafeEqual(ah, bh);
 }
 
 /** A cryptographic key chain which allows signing of data to prevent tampering,
@@ -110,7 +84,7 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  * await rotatedStack.verify("some data", digest); // true
  * ```
  */
-export class KeyStack implements KeyRing {
+export class KeyStack {
   #cryptoKeys = new Map<Key, CryptoKey>();
   #keys: Key[];
 
@@ -145,7 +119,7 @@ export class KeyStack implements KeyRing {
    * URL safe base64 encoded string. */
   async sign(data: Data): Promise<string> {
     const key = await this.#toCryptoKey(this.#keys[0]);
-    return encodeBase64Safe(await sign(data, key));
+    return base64url.encode(await sign(data, key));
   }
 
   /** Given `data` and a `digest`, verify that one of the `keys` provided the
@@ -162,7 +136,7 @@ export class KeyStack implements KeyRing {
     for (let i = 0; i < this.#keys.length; i++) {
       const cryptoKey = await this.#toCryptoKey(this.#keys[i]);
       if (
-        await compare(digest, encodeBase64Safe(await sign(data, cryptoKey)))
+        await compare(digest, base64url.encode(await sign(data, cryptoKey)))
       ) {
         return i;
       }
