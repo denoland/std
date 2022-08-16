@@ -4,7 +4,7 @@ import { unrefTimer } from "../_deno_unstable.ts";
 
 export interface DelayOptions {
   signal?: AbortSignal;
-  /** Indicates whether the process can exit before the timer ends. This is `false` by default. */
+  /** Indicates whether the process should continue to run as long as the timer exists. This is `true` by default. */
   persistent?: boolean;
 }
 
@@ -25,7 +25,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
     };
     const i = setTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
-    if (persistent ?? false) {
+    if (persistent === false) {
       unrefTimer(i);
     }
   });

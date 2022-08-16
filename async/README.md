@@ -135,13 +135,14 @@ const result = await delayedPromise;
 // ...
 ```
 
-To allow the process to exit before the timer ends. Requires `--unstable` flag.
+To allow the process to continue to run as long as the timer exists. Requires
+`--unstable` flag.
 
 ```typescript
 import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 // ...
-await delay(100, { persistent: true });
+await delay(100, { persistent: false });
 // ...
 ```
 
