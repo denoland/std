@@ -5,9 +5,16 @@ algorithms that are not part of the web standard, as well as a
 `subtle.digest()`, `subtle.digestSync()`, and `subtle.timingSafeEqual()` methods
 which provide additional functionality not covered by web crypto.
 
-## Usage
+It also includes some utilities for key management.
 
-```typescript
+## `crypto` usage
+
+The `crypto` export provides an enhanced version of the built-in
+[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+providing additional cryptographic algorithms using the same interface as the
+Web Crypto API, but also delegating to the built in APIs when possible.
+
+```ts
 import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
 
 // This will delegate to the runtime's WebCrypto implementation.
@@ -31,7 +38,7 @@ console.log(
 );
 ```
 
-## Supported algorithms
+### Supported algorithms
 
 Here is a list of supported algorithms. If the algorithm name in WebCrypto and
 Wasm/Rust is the same, this library prefers to use algorithms that are supported
@@ -133,4 +140,19 @@ const b = await crypto.subtle.digest(
 );
 
 assert(timingSafeEqual(a, b));
+```
+
+## `KeyStack` usage
+
+The `KeyStack` export implements the `KeyRing` interface for managing rotatable
+keys for signing data to prevent tampering, like with HTTP cookies.
+
+```ts
+import { KeyStack } from "https://deno.land/std@$STD_VERSION/crypto/keystack.ts";
+
+const keyStack = new KeyStack(["hello", "world"]);
+const digest = await keyStack.sign("some data");
+
+const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
+await rotatedStack.verify("some data", digest); // true
 ```
