@@ -6,147 +6,14 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { encode } from "../encoding/base64url.ts";
+import { KeyStack } from "../crypto/keystack.ts";
 
 import {
   CookieMap,
   cookieMapHeadersInitSymbol,
-  type Data,
-  type KeyRing,
   mergeHeaders,
   SecureCookieMap,
 } from "./cookie_map.ts";
-
-export type Key = string | number[] | ArrayBuffer | Uint8Array;
-
-const encoder = new TextEncoder();
-
-function importKey(key: Key): Promise<CryptoKey> {
-  if (typeof key === "string") {
-    key = encoder.encode(key);
-  } else if (Array.isArray(key)) {
-    key = new Uint8Array(key);
-  }
-  return crypto.subtle.importKey(
-    "raw",
-    key,
-    {
-      name: "HMAC",
-      hash: { name: "SHA-256" },
-    },
-    true,
-    ["sign", "verify"],
-  );
-}
-
-function sign(data: Data, key: CryptoKey): Promise<ArrayBuffer> {
-  if (typeof data === "string") {
-    data = encoder.encode(data);
-  } else if (Array.isArray(data)) {
-    data = Uint8Array.from(data);
-  }
-  return crypto.subtle.sign("HMAC", key, data);
-}
-
-function compareArrayBuffer(a: ArrayBuffer, b: ArrayBuffer): boolean {
-  assert(a.byteLength === b.byteLength, "ArrayBuffer lengths must match.");
-  const va = new DataView(a);
-  const vb = new DataView(b);
-  const length = va.byteLength;
-  let out = 0;
-  let i = -1;
-  while (++i < length) {
-    out |= va.getUint8(i) ^ vb.getUint8(i);
-  }
-  return out === 0;
-}
-
-async function compare(a: Data, b: Data): Promise<boolean> {
-  const key = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(key);
-  const cryptoKey = await importKey(key);
-  const ah = await sign(a, cryptoKey);
-  const bh = await sign(b, cryptoKey);
-  return compareArrayBuffer(ah, bh);
-}
-
-export class KeyStack implements KeyRing {
-  #cryptoKeys = new Map<Key, CryptoKey>();
-  #keys: Key[];
-
-  async #toCryptoKey(key: Key): Promise<CryptoKey> {
-    if (!this.#cryptoKeys.has(key)) {
-      this.#cryptoKeys.set(key, await importKey(key));
-    }
-    return this.#cryptoKeys.get(key)!;
-  }
-
-  get length(): number {
-    return this.#keys.length;
-  }
-
-  constructor(keys: Iterable<Key>) {
-    const values = Array.isArray(keys) ? keys : [...keys];
-    if (!(values.length)) {
-      throw new TypeError("keys must contain at least one value");
-    }
-    this.#keys = values;
-  }
-
-  /** Take `data` and return a SHA256 HMAC digest that uses the current 0 index
-   * of the `keys` passed to the constructor.  This digest is in the form of a
-   * URL safe base64 encoded string. */
-  async sign(data: Data): Promise<string> {
-    const key = await this.#toCryptoKey(this.#keys[0]);
-    return encode(await sign(data, key));
-  }
-
-  /** Given `data` and a `digest`, verify that one of the `keys` provided the
-   * constructor was used to generate the `digest`.  Returns `true` if one of
-   * the keys was used, otherwise `false`. */
-  async verify(data: Data, digest: string): Promise<boolean> {
-    return (await this.indexOf(data, digest)) > -1;
-  }
-
-  /** Given `data` and a `digest`, return the current index of the key in the
-   * `keys` passed the constructor that was used to generate the digest.  If no
-   * key can be found, the method returns `-1`. */
-  async indexOf(data: Data, digest: string): Promise<number> {
-    for (let i = 0; i < this.#keys.length; i++) {
-      const cryptoKey = await this.#toCryptoKey(this.#keys[i]);
-      if (
-        await compare(digest, encode(await sign(data, cryptoKey)))
-      ) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  [Symbol.for("Deno.customInspect")](inspect: (value: unknown) => string) {
-    const { length } = this;
-    return `${this.constructor.name} ${inspect({ length })}`;
-  }
-
-  [Symbol.for("nodejs.util.inspect.custom")](
-    depth: number,
-    // deno-lint-ignore no-explicit-any
-    options: any,
-    inspect: (value: unknown, options?: unknown) => string,
-  ) {
-    if (depth < 0) {
-      return options.stylize(`[${this.constructor.name}]`, "special");
-    }
-
-    const newOptions = Object.assign({}, options, {
-      depth: options.depth === null ? null : options.depth - 1,
-    });
-    const { length } = this;
-    return `${options.stylize(this.constructor.name, "special")} ${
-      inspect({ length }, newOptions)
-    }`;
-  }
-}
 
 function isNode(): boolean {
   return "process" in globalThis && "global" in globalThis;

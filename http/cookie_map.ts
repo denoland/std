@@ -330,27 +330,26 @@ export function mergeHeaders(
   return headers;
 }
 
-/** Provides an way to manage cookies in a request and response on the server
- * as a single iterable collection.
- *
- * The methods and properties align to {@linkcode Map}. When constructing a
- * {@linkcode Request} or {@linkcode Headers} from the request need to be
- * provided, as well as optionally the {@linkcode Response} or `Headers` for the
- * response can be provided. Alternatively the {@linkcode mergeHeaders}
- * function can be used to generate a final set of headers for sending in the
- * response. */
-export class CookieMap implements Mergeable {
-  #keys?: string[];
-  #requestHeaders: Headers;
-  #responseHeaders: Headers;
-  #secure: boolean;
+const keys = Symbol("#keys");
+const requestHeaders = Symbol("#requestHeaders");
+const responseHeaders = Symbol("#responseHeaders");
+const isSecure = Symbol("#secure");
+const requestKeys = Symbol("#requestKeys");
 
-  #requestKeys(): string[] {
-    if (this.#keys) {
-      return this.#keys;
+/** An internal abstract class which provides common functionality for
+ * {@link CookieMap} and {@link SecureCookieMap}. */
+abstract class CookieMapBase implements Mergeable {
+  [keys]?: string[];
+  [requestHeaders]: Headers;
+  [responseHeaders]: Headers;
+  [isSecure]: boolean;
+
+  [requestKeys](): string[] {
+    if (this[keys]) {
+      return this[keys];
     }
-    const result = this.#keys = [] as string[];
-    const header = this.#requestHeaders.get("cookie");
+    const result = this[keys] = [] as string[];
+    const header = this[requestHeaders].get("cookie");
     if (!header) {
       return result;
     }
@@ -362,19 +361,65 @@ export class CookieMap implements Mergeable {
     return result;
   }
 
+  constructor(request: Headers | Headered, options: CookieMapOptions) {
+    this[requestHeaders] = "headers" in request ? request.headers : request;
+    const { secure = false, response = new Headers() } = options;
+    this[responseHeaders] = "headers" in response ? response.headers : response;
+    this[isSecure] = secure;
+  }
+
+  /** A method used by {@linkcode mergeHeaders} to be able to merge
+   * headers from various sources when forming a {@linkcode Response}. */
+  [cookieMapHeadersInitSymbol](): [string, string][] {
+    const init: [string, string][] = [];
+    for (const [key, value] of this[responseHeaders]) {
+      if (key === "set-cookie") {
+        init.push([key, value]);
+      }
+    }
+    return init;
+  }
+
+  [Symbol.for("Deno.customInspect")]() {
+    return `${this.constructor.name} []`;
+  }
+
+  [Symbol.for("nodejs.util.inspect.custom")](
+    depth: number,
+    // deno-lint-ignore no-explicit-any
+    options: any,
+    inspect: (value: unknown, options?: unknown) => string,
+  ) {
+    if (depth < 0) {
+      return options.stylize(`[${this.constructor.name}]`, "special");
+    }
+
+    const newOptions = Object.assign({}, options, {
+      depth: options.depth === null ? null : options.depth - 1,
+    });
+    return `${options.stylize(this.constructor.name, "special")} ${
+      inspect([], newOptions)
+    }`;
+  }
+}
+
+/** Provides an way to manage cookies in a request and response on the server
+ * as a single iterable collection.
+ *
+ * The methods and properties align to {@linkcode Map}. When constructing a
+ * {@linkcode Request} or {@linkcode Headers} from the request need to be
+ * provided, as well as optionally the {@linkcode Response} or `Headers` for the
+ * response can be provided. Alternatively the {@linkcode mergeHeaders}
+ * function can be used to generate a final set of headers for sending in the
+ * response. */
+export class CookieMap extends CookieMapBase {
   /** Contains the number of valid cookies in the request headers. */
   get size(): number {
     return [...this].length;
   }
 
-  constructor(
-    request: Headers | Headered,
-    options: CookieMapOptions = {},
-  ) {
-    this.#requestHeaders = "headers" in request ? request.headers : request;
-    const { secure = false, response = new Headers() } = options;
-    this.#responseHeaders = "headers" in response ? response.headers : response;
-    this.#secure = secure;
+  constructor(request: Headers | Headered, options: CookieMapOptions = {}) {
+    super(request, options);
   }
 
   /** Deletes all the cookies from the {@linkcode Request} in the response. */
@@ -396,7 +441,7 @@ export class CookieMap implements Mergeable {
   /** Return the value of a matching key present in the {@linkcode Request}. If
    * the key is not present `undefined` is returned. */
   get(key: string): string | undefined {
-    const headerValue = this.#requestHeaders.get("cookie");
+    const headerValue = this[requestHeaders].get("cookie");
     if (!headerValue) {
       return undefined;
     }
@@ -411,7 +456,7 @@ export class CookieMap implements Mergeable {
   /** Returns `true` if the matching key is present in the {@linkcode Request},
    * otherwise `false`. */
   has(key: string): boolean {
-    const headerValue = this.#requestHeaders.get("cookie");
+    const headerValue = this[requestHeaders].get("cookie");
     if (!headerValue) {
       return false;
     }
@@ -426,14 +471,14 @@ export class CookieMap implements Mergeable {
     value: string | null,
     options: CookieMapSetDeleteOptions = {},
   ): this {
-    const responseHeaders = this.#responseHeaders;
+    const resHeaders = this[responseHeaders];
     const values: string[] = [];
-    for (const [key, value] of responseHeaders) {
+    for (const [key, value] of resHeaders) {
       if (key === "set-cookie") {
         values.push(value);
       }
     }
-    const secure = this.#secure;
+    const secure = this[isSecure];
 
     if (!secure && options.secure && !options.ignoreInsecure) {
       throw new TypeError(
@@ -445,9 +490,9 @@ export class CookieMap implements Mergeable {
     cookie.secure = options.secure ?? secure;
     pushCookie(values, cookie);
 
-    responseHeaders.delete("set-cookie");
+    resHeaders.delete("set-cookie");
     for (const value of values) {
-      responseHeaders.append("set-cookie", value);
+      resHeaders.append("set-cookie", value);
     }
     return this;
   }
@@ -478,47 +523,13 @@ export class CookieMap implements Mergeable {
   /** Iterate over the cookie keys and values that are present in the
    * {@linkcode Request}. */
   *[Symbol.iterator](): IterableIterator<[string, string]> {
-    const keys = this.#requestKeys();
+    const keys = this[requestKeys]();
     for (const key of keys) {
       const value = this.get(key);
       if (value) {
         yield [key, value];
       }
     }
-  }
-
-  /** A method used by {@linkcode mergeHeaders} to be able to merge
-   * headers from various sources when forming a {@linkcode Response}. */
-  [cookieMapHeadersInitSymbol](): [string, string][] {
-    const init: [string, string][] = [];
-    for (const [key, value] of this.#responseHeaders) {
-      if (key === "set-cookie") {
-        init.push([key, value]);
-      }
-    }
-    return init;
-  }
-
-  [Symbol.for("Deno.customInspect")]() {
-    return `${this.constructor.name} []`;
-  }
-
-  [Symbol.for("nodejs.util.inspect.custom")](
-    depth: number,
-    // deno-lint-ignore no-explicit-any
-    options: any,
-    inspect: (value: unknown, options?: unknown) => string,
-  ) {
-    if (depth < 0) {
-      return options.stylize(`[${this.constructor.name}]`, "special");
-    }
-
-    const newOptions = Object.assign({}, options, {
-      depth: options.depth === null ? null : options.depth - 1,
-    });
-    return `${options.stylize(this.constructor.name, "special")} ${
-      inspect([], newOptions)
-    }`;
   }
 }
 
@@ -554,29 +565,8 @@ export interface KeyRing {
  * On construction, the optional set of keys implementing the
  * {@linkcode KeyRing} interface. While it is optional, if you don't plan to use
  * keys, you might want to consider using just the {@linkcode CookieMap}. */
-export class SecureCookieMap implements Mergeable {
+export class SecureCookieMap extends CookieMapBase {
   #keyRing?: KeyRing;
-  #keys?: string[];
-  #requestHeaders: Headers;
-  #responseHeaders: Headers;
-  #secure: boolean;
-
-  #requestKeys(): string[] {
-    if (this.#keys) {
-      return this.#keys;
-    }
-    const result = this.#keys = [] as string[];
-    const header = this.#requestHeaders.get("cookie");
-    if (!header) {
-      return result;
-    }
-    let matches: RegExpExecArray | null;
-    while ((matches = KEY_REGEXP.exec(header))) {
-      const [, key] = matches;
-      result.push(key);
-    }
-    return result;
-  }
 
   /** Is set to a promise which resolves with the number of cookies in the
    * {@linkcode Request}. */
@@ -594,11 +584,9 @@ export class SecureCookieMap implements Mergeable {
     request: Headers | Headered,
     options: SecureCookieMapOptions = {},
   ) {
-    this.#requestHeaders = "headers" in request ? request.headers : request;
-    const { keys, secure = false, response = new Headers() } = options;
+    super(request, options);
+    const { keys } = options;
     this.#keyRing = keys;
-    this.#responseHeaders = "headers" in response ? response.headers : response;
-    this.#secure = secure;
   }
 
   /** Sets all cookies in the {@linkcode Request} to be deleted in the
@@ -633,7 +621,7 @@ export class SecureCookieMap implements Mergeable {
     const signed = options.signed ?? !!this.#keyRing;
     const nameSig = `${key}.sig`;
 
-    const header = this.#requestHeaders.get("cookie");
+    const header = this[requestHeaders].get("cookie");
     if (!header) {
       return;
     }
@@ -680,7 +668,7 @@ export class SecureCookieMap implements Mergeable {
     const signed = options.signed ?? !!this.#keyRing;
     const nameSig = `${key}.sig`;
 
-    const header = this.#requestHeaders.get("cookie");
+    const header = this[requestHeaders].get("cookie");
     if (!header) {
       return false;
     }
@@ -725,14 +713,14 @@ export class SecureCookieMap implements Mergeable {
     value: string | null,
     options: SecureCookieMapSetDeleteOptions = {},
   ): Promise<this> {
-    const responseHeaders = this.#responseHeaders;
+    const resHeaders = this[responseHeaders];
     const headers: string[] = [];
-    for (const [key, value] of responseHeaders.entries()) {
+    for (const [key, value] of resHeaders.entries()) {
       if (key === "set-cookie") {
         headers.push(value);
       }
     }
-    const secure = this.#secure;
+    const secure = this[isSecure];
     const signed = options.signed ?? !!this.#keyRing;
 
     if (!secure && options.secure && !options.ignoreInsecure) {
@@ -754,9 +742,9 @@ export class SecureCookieMap implements Mergeable {
       pushCookie(headers, cookie);
     }
 
-    responseHeaders.delete("set-cookie");
+    resHeaders.delete("set-cookie");
     for (const header of headers) {
-      responseHeaders.append("set-cookie", header);
+      resHeaders.append("set-cookie", header);
     }
     return this;
   }
@@ -796,46 +784,12 @@ export class SecureCookieMap implements Mergeable {
    * If a key ring was provided, only properly signed cookie keys and values are
    * returned. */
   async *[Symbol.asyncIterator](): AsyncIterableIterator<[string, string]> {
-    const keys = this.#requestKeys();
+    const keys = this[requestKeys]();
     for (const key of keys) {
       const value = await this.get(key);
       if (value) {
         yield [key, value];
       }
     }
-  }
-
-  /** A method used by {@linkcode mergeHeaders} to be able to merge
-   * headers from various sources when forming a {@linkcode Response}. */
-  [cookieMapHeadersInitSymbol](): [string, string][] {
-    const init: [string, string][] = [];
-    for (const [key, value] of this.#responseHeaders) {
-      if (key === "set-cookie") {
-        init.push([key, value]);
-      }
-    }
-    return init;
-  }
-
-  [Symbol.for("Deno.customInspect")]() {
-    return `${this.constructor.name} []`;
-  }
-
-  [Symbol.for("nodejs.util.inspect.custom")](
-    depth: number,
-    // deno-lint-ignore no-explicit-any
-    options: any,
-    inspect: (value: unknown, options?: unknown) => string,
-  ) {
-    if (depth < 0) {
-      return options.stylize(`[${this.constructor.name}]`, "special");
-    }
-
-    const newOptions = Object.assign({}, options, {
-      depth: options.depth === null ? null : options.depth - 1,
-    });
-    return `${options.stylize(this.constructor.name, "special")} ${
-      inspect([], newOptions)
-    }`;
   }
 }
