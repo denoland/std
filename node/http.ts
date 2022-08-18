@@ -394,17 +394,6 @@ export class IncomingMessageForServer extends NodeReadable {
   get method() {
     return this.#req.method;
   }
-
-  get _webRequest() {
-    return this.#req;
-  }
-
-  get upgrade(): boolean {
-    return Boolean(
-      this.#req.headers.get("connection")?.toLowerCase().includes("upgrade") &&
-        this.#req.headers.get("upgrade"),
-    );
-  }
 }
 
 type ServerHandler = (
@@ -465,22 +454,11 @@ class ServerImpl extends EventEmitter {
     const ac = new AbortController();
     const handler = async (request: Request) => {
       const req = new IncomingMessageForServer(request);
-      if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = Deno.upgradeHttp(request) as [
-          Deno.Conn,
-          Uint8Array,
-        ];
-        const socket = new Socket({
-          handle: new TCP(constants.SERVER, conn),
-        });
-        this.emit("upgrade", req, socket, new Buffer(head));
-      } else {
-        const promise = deferred<Response>();
-        const res = new ServerResponse(promise);
-        this.emit("request", req, res);
-        const response = await promise;
-        return response;
-      }
+      const promise = deferred<Response>();
+      const res = new ServerResponse(promise);
+      this.emit("request", req, res);
+      const response = await promise;
+      return response;
     };
 
     if (this.#hasClosed) {
