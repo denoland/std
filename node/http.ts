@@ -417,9 +417,9 @@ export function Server(handler?: ServerHandler): ServerImpl {
 }
 
 class ServerImpl extends EventEmitter {
-  #httpConnections: Set<Deno.HttpConn> = new Set();
-  #listener?: Deno.Listener;
   #addr?: Deno.NetAddr;
+  #hasClosed = false;
+  #ac?: AbortController;
 
   constructor(handler?: ServerHandler) {
     super();
@@ -450,9 +450,8 @@ class ServerImpl extends EventEmitter {
     // we on the other hand default to 0.0.0.0.
     const hostname = options.host ?? "";
 
-    // TODO(bartlomieju): allow other addresses
     this.#addr = {
-      hostname: "127.0.0.1",
+      hostname,
       port,
     } as Deno.NetAddr;
     nextTick(() => this.#serve());
@@ -461,9 +460,9 @@ class ServerImpl extends EventEmitter {
   }
 
   async #serve() {
-    console.log("serving!", this.#addr);
     this.emit("listening");
 
+    const ac = new AbortController();
     const handler = async (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
@@ -483,12 +482,15 @@ class ServerImpl extends EventEmitter {
         return response;
       }
     };
-    DenoUnstable.serve(handler as DenoUnstable.ServeHandler, this.#addr);
+    this.#ac = ac;
+    DenoUnstable.serve(
+      handler as DenoUnstable.ServeHandler,
+      { ...this.#addr, signal: ac.signal },
+    );
   }
 
   get listening() {
-    // FIXME(bartlomieju):
-    return true;
+    return !this.#hasClosed;
   }
 
   close(cb?: (err?: Error) => void): this {
@@ -507,18 +509,8 @@ class ServerImpl extends EventEmitter {
     nextTick(() => this.emit("close"));
 
     if (listening) {
-      this.#listener!.close();
-      this.#listener = undefined;
-
-      for (const httpConn of this.#httpConnections) {
-        try {
-          httpConn.close();
-        } catch {
-          // Already closed.
-        }
-      }
-
-      this.#httpConnections.clear();
+      this.#ac!.abort();
+      this.#ac = undefined;
     }
 
     return this;
