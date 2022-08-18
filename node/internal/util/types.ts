@@ -24,86 +24,62 @@
 import * as bindingTypes from "../../internal_binding/types.ts";
 export { isCryptoKey, isKeyObject } from "../crypto/_keys.ts";
 
-const _toString = Object.prototype.toString;
-
-const _isObjectLike = (value: unknown): boolean =>
-  value !== null && typeof value === "object";
+// https://tc39.es/ecma262/#sec-get-%typedarray%.prototype-@@tostringtag
+const _getTypedArrayToStringTag = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Uint8Array).prototype,
+  Symbol.toStringTag,
+)!.get!;
 
 export function isArrayBufferView(value: unknown): boolean {
   return ArrayBuffer.isView(value);
 }
 
 export function isBigInt64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object BigInt64Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "BigInt64Array";
 }
 
 export function isBigUint64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object BigUint64Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "BigUint64Array";
 }
 
 export function isFloat32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Float32Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Float32Array";
 }
 
 export function isFloat64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Float64Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Float64Array";
 }
 
 export function isInt8Array(value: unknown): boolean {
-  return _isObjectLike(value) && _toString.call(value) === "[object Int8Array]";
+  return _getTypedArrayToStringTag.call(value) === "Int8Array";
 }
 
 export function isInt16Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Int16Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Int16Array";
 }
 
 export function isInt32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Int32Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Int32Array";
 }
 
-// Adapted from Lodash
 export function isTypedArray(value: unknown): boolean {
-  /** Used to match `toStringTag` values of typed arrays. */
-  const reTypedTag =
-    /^\[object (?:Float(?:32|64)|(?:Int|Uint)(?:8|16|32)|Uint8Clamped)Array\]$/;
-  return _isObjectLike(value) && reTypedTag.test(_toString.call(value));
+  return _getTypedArrayToStringTag.call(value) !== undefined;
 }
 
 export function isUint8Array(value: unknown): value is Uint8Array {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint8Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Uint8Array";
 }
 
 export function isUint8ClampedArray(value: unknown): boolean {
-  return (
-    _isObjectLike(value) &&
-    _toString.call(value) === "[object Uint8ClampedArray]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Uint8ClampedArray";
 }
 
 export function isUint16Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint16Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Uint16Array";
 }
 
 export function isUint32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint32Array]"
-  );
+  return _getTypedArrayToStringTag.call(value) === "Uint32Array";
 }
 
 export const {
