@@ -482,6 +482,10 @@ class ServerImpl extends EventEmitter {
         return response;
       }
     };
+
+    if (this.#hasClosed) {
+      return;
+    }
     this.#ac = ac;
     DenoUnstable.serve(
       handler as DenoUnstable.ServeHandler,
@@ -496,6 +500,7 @@ class ServerImpl extends EventEmitter {
   close(cb?: (err?: Error) => void): this {
     const listening = this.listening;
 
+    this.#hasClosed = true;
     if (typeof cb === "function") {
       if (listening) {
         this.once("close", cb);
@@ -509,7 +514,7 @@ class ServerImpl extends EventEmitter {
     nextTick(() => this.emit("close"));
 
     if (listening) {
-      this.#ac!.abort();
+      this.#ac?.abort();
       this.#ac = undefined;
     }
 
