@@ -464,22 +464,26 @@ class ServerImpl extends EventEmitter {
     console.log("serving!", this.#addr);
     this.emit("listening");
 
-    Deno.serve(async (request) => {
+    const handler = async (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = Deno.upgradeHttp(request);
+        const [conn, head] = Deno.upgradeHttp(request) as [
+          Deno.Conn,
+          Uint8Array,
+        ];
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
         });
         this.emit("upgrade", req, socket, new Buffer(head));
       } else {
-        const promise = deferred();
+        const promise = deferred<Response>();
         const res = new ServerResponse(promise);
         this.emit("request", req, res);
         const response = await promise;
         return response;
       }
-    }, this.#addr);
+    };
+    DenoUnstable.serve(handler as DenoUnstable.ServeHandler, this.#addr);
   }
 
   get listening() {
@@ -521,7 +525,7 @@ class ServerImpl extends EventEmitter {
   }
 
   address() {
-    const addr = this.#addr;
+    const addr = this.#addr!;
     return {
       port: addr.port,
       address: addr.hostname,
