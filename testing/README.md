@@ -23,6 +23,8 @@ pretty-printed diff of failing assertion.
   `expected`, according to a given `epsilon` _(defaults to `1e-7`)_
 - `assertInstanceOf()` - Make an assertion that `actual` is an instance of
   `expectedType`.
+- `assertNotInstanceOf()` - Make an assertion that `actual` is not an instance
+  of `expectedType`.
 - `assertStringIncludes()` - Make an assertion that `actual` includes
   `expected`.
 - `assertMatch()` - Make an assertion that `actual` match RegExp `expected`.

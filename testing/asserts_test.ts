@@ -11,6 +11,7 @@ import {
   assertIsError,
   assertMatch,
   assertNotEquals,
+  assertNotInstanceOf,
   assertNotMatch,
   assertNotStrictEquals,
   assertObjectMatch,
@@ -1421,6 +1422,15 @@ Deno.test({
       // @ts-expect-error: `x` is now `Number` rather than `number`, so this should still give a type error.
       x += 5;
     }
+  },
+});
+
+Deno.test({
+  name: "assertNotInstanceOf",
+  fn() {
+    assertNotInstanceOf("not a number", Number);
+    assertNotInstanceOf(42, String);
+    assertNotInstanceOf(new URL("http://example.com"), Boolean);
   },
 });
 
