@@ -459,7 +459,7 @@ class ServerImpl extends EventEmitter {
     return this;
   }
 
-  async #serve() {
+  #serve() {
     this.emit("listening");
 
     const ac = new AbortController();
