@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function rename(
   oldPath: string | URL,
@@ -13,6 +14,11 @@ export function rename(
 
   Deno.rename(oldPath, newPath).then((_) => callback(), callback);
 }
+
+export const renamePromise = promisify(rename) as (
+  oldPath: string | URL,
+  newPath: string | URL,
+) => Promise<void>;
 
 export function renameSync(oldPath: string | URL, newPath: string | URL) {
   oldPath = oldPath instanceof URL ? fromFileUrl(oldPath) : oldPath;

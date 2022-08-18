@@ -375,6 +375,18 @@ export function assertInstanceOf<T extends AnyConstructor>(
 }
 
 /**
+ * Make an assertion that `obj` is not an instance of `type`.
+ * If so, then throw.
+ */
+export function assertNotInstanceOf<T extends AnyConstructor>(
+  actual: unknown,
+  unexpectedType: T,
+  msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
+) {
+  assertFalse(actual instanceof unexpectedType, msg);
+}
+
+/**
  * Make an assertion that actual is not null or undefined.
  * If not then throw.
  */

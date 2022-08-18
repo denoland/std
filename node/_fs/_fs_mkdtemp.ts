@@ -6,6 +6,7 @@ import {
   ERR_INVALID_CALLBACK,
   ERR_INVALID_OPT_VALUE_ENCODING,
 } from "../internal/errors.ts";
+import { promisify } from "../internal/util.mjs";
 
 export type mkdtempCallback = (
   err: Error | null,
@@ -40,6 +41,11 @@ export function mkdtemp(
     },
   );
 }
+
+export const mkdtempPromise = promisify(mkdtemp) as (
+  prefix: string,
+  options?: { encoding: string } | string,
+) => Promise<string>;
 
 // https://nodejs.org/dist/latest-v15.x/docs/api/fs.html#fs_fs_mkdtempsync_prefix_options
 export function mkdtempSync(
