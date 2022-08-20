@@ -176,6 +176,8 @@ export function pbkdf2(
 }
 
 export default {
+  Hmac,
+  MAX_ALLOC,
   pbkdf2,
   pbkdf2Sync,
 };

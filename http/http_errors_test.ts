@@ -66,13 +66,15 @@ Deno.test({
         STATUS_TEXT[errorStatus],
         {
           expose: false,
+          headers: new Headers({ "WWW-Authenticate": "Bearer" }),
         },
       );
       assertInstanceOf(error, HttpError);
       assertInstanceOf(error, errors[Status[errorStatus] as ErrorStatusKeys]);
       assertEquals(error.name, `${Status[errorStatus]}Error`);
       assertEquals(error.message, STATUS_TEXT[errorStatus]);
-      assertEquals(error.status, errorStatus);
+      assertEquals(errorExpose.status, errorStatus);
+      assertEquals(errorExpose.headers?.get("WWW-Authenticate"), "Bearer");
       assert(error.expose);
       assert(!errorExpose.expose);
     }
@@ -98,6 +100,7 @@ Deno.test({
       assertEquals(error.status, errorStatus);
       assert(!error.expose);
       assert(errorExpose.expose);
+      assert(!error.headers);
     }
   },
 });

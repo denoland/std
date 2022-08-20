@@ -1,6 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible. Do not rely on good formatting of values
-// for AssertionError messages in browsers.
+
+/** A library of assertion functions.
+ *
+ * This module is browser compatible, but do not rely on good formatting of
+ * values for AssertionError messages in browsers.
+ *
+ * @module
+ */
 
 import { red, stripColor } from "../fmt/colors.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";
@@ -366,6 +372,18 @@ export function assertInstanceOf<T extends AnyConstructor>(
     }
   }
   assert(actual instanceof expectedType, msg);
+}
+
+/**
+ * Make an assertion that `obj` is not an instance of `type`.
+ * If so, then throw.
+ */
+export function assertNotInstanceOf<T extends AnyConstructor>(
+  actual: unknown,
+  unexpectedType: T,
+  msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
+) {
+  assertFalse(actual instanceof unexpectedType, msg);
 }
 
 /**

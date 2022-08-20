@@ -4,6 +4,8 @@
 /**
  * The semantic version parser.
  *
+ * Adapted directly from [semver](https://github.com/npm/node-semver).
+ *
  * This module is browser compatible.
  *
  * @module

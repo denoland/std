@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Configure environmental variables using `.env` files.
+ * Load environment variables from `.env` files.
  *
  * @module
  */

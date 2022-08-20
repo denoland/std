@@ -4,6 +4,7 @@ import { makeCallback } from "./_fs_common.ts";
 import { Buffer } from "../buffer.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
 import { fs, os } from "../internal_binding/constants.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function copyFile(
   src: string | Buffer | URL,
@@ -51,6 +52,12 @@ export function copyFile(
     Deno.copyFile(srcStr, destStr).then(() => cb(null), cb);
   }
 }
+
+export const copyFilePromise = promisify(copyFile) as (
+  src: string | Buffer | URL,
+  dest: string | Buffer | URL,
+  mode?: number,
+) => Promise<void>;
 
 export function copyFileSync(
   src: string | Buffer | URL,

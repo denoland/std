@@ -3,7 +3,7 @@
 
 import { notImplemented } from "./_utils.ts";
 
-class REPLServer {
+export class REPLServer {
   constructor() {
     notImplemented("REPLServer.prototype.constructor");
   }

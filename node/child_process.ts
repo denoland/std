@@ -32,7 +32,7 @@ const denoCompatArgv = [
  * @param modulePath
  * @param args
  * @param option
- * @returns {ChildProcess}
+ * @returns
  */
 export function fork(
   modulePath: string, /* args?: string[], options?: ForkOptions*/
@@ -443,4 +443,9 @@ export function execFile(
   return child;
 }
 
-export default { fork, spawn, execFile, ChildProcess };
+export function execSync() {
+  throw new Error("execSync is currently not supported");
+}
+
+export default { fork, spawn, execFile, execSync, ChildProcess };
+export { ChildProcess };

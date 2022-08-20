@@ -1,5 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [base64 URL safe](https://en.wikipedia.org/wiki/Base64#URL_applications) encoding.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 import * as base64 from "./base64.ts";
 

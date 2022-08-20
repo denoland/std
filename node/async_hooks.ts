@@ -143,7 +143,7 @@ export class AsyncResource {
   }
 }
 
-function executionAsyncId() {
+export function executionAsyncId() {
   return 1;
 }
 
@@ -155,7 +155,7 @@ class AsyncHook {
   }
 }
 
-function createHook() {
+export function createHook() {
   return new AsyncHook();
 }
 

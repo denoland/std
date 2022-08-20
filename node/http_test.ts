@@ -116,3 +116,25 @@ Deno.test("[node/http chunked response", async () => {
     await promise;
   }
 });
+
+Deno.test("[node/http] request default protocol", async () => {
+  const promise = deferred<void>();
+  const server = http.createServer((_, res) => {
+    res.end("ok");
+  });
+  server.listen(() => {
+    const req = http.request(
+      { host: "localhost", port: server.address().port },
+      (res) => {
+        res.on("data", () => {});
+        res.on("end", () => {
+          server.close();
+          promise.resolve();
+        });
+        assertEquals(res.statusCode, 200);
+      },
+    );
+    req.end();
+  });
+  await promise;
+});

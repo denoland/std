@@ -1,3 +1,28 @@
+### 0.152.0 / 2022.08.11
+
+- feat(crypto): add subtle.timingSafeEqual() (#2503)
+- feat(testing): allow for stubbing non existent instance methods (#2487)
+- node: add stub for child_process.execSync (#2513)
+- node: remove import to global.ts from module_esm.ts (#2501)
+- remove 'unhandledRejection' from list of unsupported events (#2500)
+
+### 0.151.0 / 2022.08.04
+
+- fix(node): fs.existsSync never throws (#2495)
+- fix(node/fs): add watchFile & unwatchFile (#2477)
+- fix(node/http,https): set the url protocol by default (#2480)
+
+### 0.150.0 / 2022.07.28
+
+- feat(http/http_errors): add headers property (#2462)
+- feat(node): support uncaughtException and uncaughtExceptionMonitor (#2460)
+- fix(io): StringWriter retaining references after write (#2456)
+- fix(node): correct import specifiers (#2474)
+- fix(node/fs): fix fs.watch (#2469)
+- fix(node/process.env) support built-in object methods for process.env (#2468)
+- node: ChildProcess.ref()/.unref() (#2395)
+- node: Use "Deno.spawnChild" API for "child_process" polyfill (#2450)
+
 ### 0.149.0 / 2022.07.20
 
 - feat(semver): add "semver" module (#2434)

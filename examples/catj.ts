@@ -1,10 +1,20 @@
 #!/usr/bin/env -S deno run --allow-read
-// Ported from: https://github.com/soheilpro/catj
 // Copyright (c) 2014 Soheil Rashidi
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-// Install using `deno install`
-// $ deno install --allow-read https://deno.land/std/examples/catj.ts
+/** An implementation of [catj](https://github.com/soheilpro/catj) which prints
+ * JSON files to the console.
+ *
+ * Ported from: https://github.com/soheilpro/catj
+ *
+ * Install using `deno install`:
+ *
+ * ```ignore
+ * $ deno install --allow-read https://deno.land/std/examples/catj.ts
+ * ```
+ *
+ * @module
+ */
 
 import { parse } from "../flags/mod.ts";
 import * as colors from "../fmt/colors.ts";

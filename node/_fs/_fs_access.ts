@@ -4,6 +4,7 @@ import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs, os } from "../internal_binding/constants.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
 import type { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function access(
   path: string | Buffer | URL,
@@ -58,6 +59,11 @@ export function access(
     }
   });
 }
+
+export const accessPromise = promisify(access) as (
+  path: string | Buffer | URL,
+  mode?: number,
+) => Promise<void>;
 
 export function accessSync(path: string | Buffer | URL, mode?: number): void {
   path = getValidatedPath(path).toString();

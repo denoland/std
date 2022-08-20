@@ -1382,7 +1382,10 @@ function isReadableStream(object) {
   return object instanceof ReadableStream;
 }
 
-Readable.fromWeb = function (readableStream, options = {}) {
+export const fromWeb = Readable.fromWeb = function (
+  readableStream,
+  options = {},
+) {
   if (!isReadableStream(readableStream)) {
     throw new ERR_INVALID_ARG_TYPE(
       "readableStream",

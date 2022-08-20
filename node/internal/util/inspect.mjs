@@ -2229,7 +2229,9 @@ export function stripVTControlCharacters(str) {
 }
 
 export default {
+  format,
   getStringWidth,
+  inspect,
   stripVTControlCharacters,
   formatWithOptions,
 };

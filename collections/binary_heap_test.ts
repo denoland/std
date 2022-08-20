@@ -258,6 +258,56 @@ Deno.test("[collections/BinaryHeap] from BinaryHeap with ascend comparator", () 
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
+Deno.test("[collections/BinaryHeap] edge case 1", () => {
+  const minHeap = new BinaryHeap<number>(ascend);
+  minHeap.push(4, 2, 8, 1, 10, 7, 3, 6, 5);
+  assertEquals(minHeap.pop(), 1);
+  minHeap.push(9);
+
+  const expected = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+  assertEquals([...minHeap], expected);
+});
+
+Deno.test("[collections/BinaryHeap] edge case 2", () => {
+  interface Point {
+    x: number;
+    y: number;
+  }
+  const minHeap = new BinaryHeap<Point>((a, b) => ascend(a.x, b.x));
+  minHeap.push({ x: 0, y: 1 }, { x: 0, y: 2 }, { x: 0, y: 3 });
+
+  const expected = [{ x: 0, y: 1 }, { x: 0, y: 3 }, { x: 0, y: 2 }];
+  assertEquals([...minHeap], expected);
+});
+
+Deno.test("[collections/BinaryHeap] edge case 3", () => {
+  interface Point {
+    x: number;
+    y: number;
+  }
+  const minHeap = new BinaryHeap<Point>((a, b) => ascend(a.x, b.x));
+  minHeap.push(
+    { x: 0, y: 1 },
+    { x: 1, y: 2 },
+    { x: 1, y: 3 },
+    { x: 2, y: 4 },
+    { x: 2, y: 5 },
+    { x: 2, y: 6 },
+    { x: 2, y: 7 },
+  );
+
+  const expected = [
+    { x: 0, y: 1 },
+    { x: 1, y: 2 },
+    { x: 1, y: 3 },
+    { x: 2, y: 5 },
+    { x: 2, y: 4 },
+    { x: 2, y: 6 },
+    { x: 2, y: 7 },
+  ];
+  assertEquals([...minHeap], expected);
+});
+
 Deno.test("[collections/BinaryHeap] README example", () => {
   const maxHeap = new BinaryHeap<number>();
   maxHeap.push(4, 1, 3, 5, 2);
