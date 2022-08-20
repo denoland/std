@@ -134,6 +134,7 @@ export async function serveFile(
       file = await Deno.open(filePath);
     }
     if (fileInfo.isDirectory) {
+      file.close();
       throw new Deno.errors.NotFound();
     }
 

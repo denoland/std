@@ -934,6 +934,17 @@ Deno.test(
 );
 
 Deno.test(
+  "file_server `serveFile` returns 404 due to file being a directory",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/non_existent.txt");
+    const testdataPath = join(testdataDir, "");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
+Deno.test(
   "file_server `serveFile` returns 404 due to file not found",
   async () => {
     const req = new Request("http://localhost:4507/testdata/non_existent.txt");
