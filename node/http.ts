@@ -466,8 +466,7 @@ class ServerImpl extends EventEmitter {
     }
     this.#ac = ac;
     DenoUnstable.serve(
-      handler as DenoUnstable.ServeHandler,
-      { ...this.#addr, signal: ac.signal },
+      { fetch: handler as DenoUnstable.ServeHandler, ...this.#addr, signal: ac.signal },
     );
   }
 
