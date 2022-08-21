@@ -3,7 +3,7 @@
 
 import parseKeys from "../parse_asn1/mod.js";
 import { randomBytes } from "../randombytes.ts";
-import { createHash } from "../../hash.ts";
+import { createHash } from "../../../internal/crypto/hash.ts";
 import mgf from "./mgf.js";
 import { xor } from "./xor.js";
 import { BN } from "../bn.js/bn.js";

@@ -11,18 +11,22 @@ import { isWindows } from "../../_util/os.ts";
 
 const decoder = new TextDecoder("utf-8");
 
-Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
-  assertRejects(
+Deno.test("Invalid encoding results in error()", async function testEncodingErrors() {
+  await assertRejects(
     async () => {
-      await writeFile("some/path", "some data", "made-up-encoding");
+      await writeFile(
+        "some/path",
+        "some data",
+        "made-up-encoding" as TextEncodings,
+      );
     },
     Error,
     `The value "made-up-encoding" is invalid for option "encoding"`,
   );
-  assertRejects(
+  await assertRejects(
     async () => {
       await writeFile("some/path", "some data", {
-        encoding: "made-up-encoding",
+        encoding: "made-up-encoding" as TextEncodings,
       });
     },
     Error,
@@ -32,8 +36,8 @@ Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
 
 Deno.test(
   "Unsupported encoding results in error()",
-  function testUnsupportedEncoding() {
-    assertRejects(
+  async function testUnsupportedEncoding() {
+    await assertRejects(
       async () => {
         await writeFile("some/path", "some data", "utf16le");
       },

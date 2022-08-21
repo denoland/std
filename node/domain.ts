@@ -4,11 +4,11 @@
 import { notImplemented } from "./_utils.ts";
 
 export function create() {
-  notImplemented();
+  notImplemented("domain.create");
 }
 export class Domain {
   constructor() {
-    notImplemented();
+    notImplemented("domain.Domain.prototype.constructor");
   }
 }
 export default {

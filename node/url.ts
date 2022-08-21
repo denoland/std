@@ -162,7 +162,7 @@ export class Url {
     this.href = null;
   }
 
-  private parseHost() {
+  #parseHost() {
     let host = this.host || "";
     let port: RegExpExecArray | null | string = portPattern.exec(host);
     if (port) {
@@ -752,7 +752,7 @@ export class Url {
       }
 
       // pull out port.
-      this.parseHost();
+      this.#parseHost();
 
       // We've indicated that there is a hostname,
       // so even if it's empty, it has to be present.
@@ -1362,7 +1362,7 @@ interface HttpOptions {
  * @returns HttpOptions.port Port of remote server.
  * @returns HttpOptions.auth Basic authentication i.e. `'user:password'` to compute an Authorization header.
  */
-function urlToHttpOptions(url: URL): HttpOptions {
+export function urlToHttpOptions(url: URL): HttpOptions {
   const options: HttpOptions = {
     protocol: url.protocol,
     hostname: typeof url.hostname === "string" && url.hostname.startsWith("[")
@@ -1386,6 +1386,9 @@ function urlToHttpOptions(url: URL): HttpOptions {
   }
   return options;
 }
+
+const URLSearchParams_ = URLSearchParams;
+export { URLSearchParams_ as URLSearchParams };
 
 export default {
   parse,

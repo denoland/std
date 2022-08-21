@@ -17,11 +17,11 @@ export class Agent extends HttpAgent {
 
 export class Server {
   constructor() {
-    notImplemented();
+    notImplemented("https.Server.prototype.constructor");
   }
 }
 export function createServer() {
-  notImplemented();
+  notImplemented("https.createServer");
 }
 
 interface HttpsRequestOptions extends RequestOptions {
@@ -57,6 +57,7 @@ export function get(...args: any[]) {
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
 class HttpsClientRequest extends ClientRequest {
+  override defaultProtocol = "https:";
   override async _createCustomClient(): Promise<
     DenoUnstable.HttpClient | undefined
   > {

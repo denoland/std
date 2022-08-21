@@ -5,7 +5,13 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { config, configSync, MissingEnvVarsError, parse } from "./mod.ts";
+import {
+  config,
+  configSync,
+  MissingEnvVarsError,
+  parse,
+  stringify,
+} from "./mod.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -118,6 +124,48 @@ Deno.test("parser", () => {
     "indented value",
     "accepts values that are indented with tabs",
   );
+
+  assertEquals(
+    config.PRIVATE_KEY_SINGLE_QUOTED,
+    "-----BEGIN RSA PRIVATE KEY-----\n...\nHkVN9...\n...\n-----END DSA PRIVATE KEY-----",
+    "Private Key Single Quoted",
+  );
+
+  assertEquals(
+    config.PRIVATE_KEY_DOUBLE_QUOTED,
+    "-----BEGIN RSA PRIVATE KEY-----\n...\nHkVN9...\n...\n-----END DSA PRIVATE KEY-----",
+    "Private Key Double Quoted",
+  );
+
+  assertEquals(
+    config.EXPORT_IS_IGNORED,
+    "export is ignored",
+    "export at the start of the key is ignored",
+  );
+});
+
+Deno.test("with comments", () => {
+  const testDotenv = Deno.readTextFileSync(
+    path.join(testdataDir, "./.env.comments"),
+  );
+
+  const config = parse(testDotenv);
+  assertEquals(config.FOO, "bar", "unquoted value with a simple comment");
+  assertEquals(
+    config.GREETING,
+    "hello world",
+    "double quoted value with a simple comment",
+  );
+  assertEquals(
+    config.SPECIAL_CHARACTERS_UNQUOTED,
+    "123",
+    "unquoted value with special characters in comment",
+  );
+  assertEquals(
+    config.SPECIAL_CHARACTERS_UNQUOTED_NO_SPACES,
+    "123",
+    "unquoted value with special characters in comment which is right after value",
+  );
 });
 
 Deno.test("configure", () => {
@@ -152,19 +200,6 @@ Deno.test("configure", () => {
     {},
     "returns empty object if file doesn't exist",
   );
-
-  const originalDenoReadFileSync = Deno.readFileSync;
-  try {
-    // @ts-ignore: for test
-    delete Deno.readFileSync;
-    assertEquals(
-      configSync(testOptions),
-      {},
-      "returns empty object if Deno.readFileSync is not a function",
-    );
-  } finally {
-    Deno.readFileSync = originalDenoReadFileSync;
-  }
 
   assertEquals(
     configSync({
@@ -210,8 +245,10 @@ Deno.test("configureSafe", () => {
     "accepts paths to fetch env and env example from",
   );
 
+  let error: MissingEnvVarsError;
+
   // Throws if not all required vars are there
-  assertThrows(() => {
+  error = assertThrows(() => {
     configSync({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
@@ -219,14 +256,18 @@ Deno.test("configureSafe", () => {
     });
   }, MissingEnvVarsError);
 
+  assertEquals(error.missing, ["ANOTHER"]);
+
   // Throws if any of the required vars is empty
-  assertThrows(() => {
+  error = assertThrows(() => {
     configSync({
       path: path.join(testdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
     });
   }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
   configSync({
@@ -348,8 +389,10 @@ Deno.test("configureSafe async", async () => {
     "accepts paths to fetch env and env example from",
   );
 
+  let error: MissingEnvVarsError;
+
   // Throws if not all required vars are there
-  assertRejects(async () => {
+  error = await assertRejects(async () => {
     await config({
       path: path.join(testdataDir, "./.env.safe.test"),
       safe: true,
@@ -357,14 +400,18 @@ Deno.test("configureSafe async", async () => {
     });
   }, MissingEnvVarsError);
 
+  assertEquals(error.missing, ["ANOTHER"]);
+
   // Throws if any of the required vars is empty
-  assertRejects(async () => {
+  error = await assertRejects(async () => {
     await config({
       path: path.join(testdataDir, "./.env.safe.empty.test"),
       safe: true,
       example: path.join(testdataDir, "./.env.example2.test"),
     });
   }, MissingEnvVarsError);
+
+  assertEquals(error.missing, ["ANOTHER"]);
 
   // Does not throw if required vars are provided by example
   await config({
@@ -411,24 +458,188 @@ Deno.test("configureSafe async", async () => {
 });
 
 Deno.test("config defaults", async () => {
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--allow-read",
       "--allow-env",
       path.join(testdataDir, "./app_defaults.ts"),
     ],
     cwd: testdataDir,
-    stdout: "piped",
   });
 
   const decoder = new TextDecoder();
-  const rawOutput = await p.output();
-  const conf = JSON.parse(decoder.decode(rawOutput).trim());
-  p.close();
+  const conf = JSON.parse(decoder.decode(stdout).trim());
 
   assertEquals(conf.GREETING, "hello world", "fetches .env by default");
 
   assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
+});
+
+Deno.test("expand variables", () => {
+  const testDotenv = Deno.readTextFileSync(
+    path.join(testdataDir, "./.env.expand.test"),
+  );
+
+  const config = parse(testDotenv);
+  assertEquals(
+    config.EXPAND_ESCAPED,
+    "\\$THE_ANSWER",
+    "variable is escaped not expanded",
+  );
+  assertEquals(config.EXPAND_VAR, "42", "variable is expanded");
+  assertEquals(
+    config.EXPAND_TWO_VARS,
+    "single quoted!==double quoted",
+    "two variables are expanded",
+  );
+  assertEquals(
+    config.EXPAND_RECURSIVE,
+    "single quoted!==double quoted",
+    "recursive variables expanded",
+  );
+  assertEquals(config.EXPAND_DEFAULT_TRUE, "default", "default expanded");
+  assertEquals(config.EXPAND_DEFAULT_FALSE, "42", "default not expanded");
+  assertEquals(config.EXPAND_DEFAULT_VAR, "42", "default var expanded");
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_RECURSIVE,
+    "single quoted!==double quoted",
+    "default recursive var expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_DEFAULT,
+    "default",
+    "default variable's default value is used",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_WITH_SPECIAL_CHARACTERS,
+    "/default/path",
+    "default with special characters expanded",
+  );
+  assertEquals(
+    config.EXPAND_VAR_IN_BRACKETS,
+    "42",
+    "variable in brackets is expanded",
+  );
+  assertEquals(
+    config.EXPAND_TWO_VARS_IN_BRACKETS,
+    "single quoted!==double quoted",
+    "two variables in brackets are expanded",
+  );
+  assertEquals(
+    config.EXPAND_RECURSIVE_VAR_IN_BRACKETS,
+    "single quoted!==double quoted",
+    "recursive variables in brackets expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_IN_BRACKETS_TRUE,
+    "default",
+    "default in brackets expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_IN_BRACKETS_FALSE,
+    "42",
+    "default in brackets not expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_IN_BRACKETS,
+    "42",
+    "default var in brackets expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_IN_BRACKETS_RECURSIVE,
+    "single quoted!==double quoted",
+    "default recursive var in brackets expanded",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_VAR_IN_BRACKETS_DEFAULT,
+    "default",
+    "default variable's default value in brackets is used",
+  );
+  assertEquals(
+    config.EXPAND_DEFAULT_IN_BRACKETS_WITH_SPECIAL_CHARACTERS,
+    "/default/path",
+    "default in brackets with special characters expanded",
+  );
+  assertEquals(
+    config.EXPAND_WITH_DIFFERENT_STYLES,
+    "single quoted!==double quoted",
+    "variables within and without brackets expanded",
+  );
+});
+Deno.test("stringify", async (t) => {
+  await t.step(
+    "basic",
+    () =>
+      assertEquals(
+        stringify({ "BASIC": "basic" }),
+        `BASIC=basic`,
+      ),
+  );
+  await t.step(
+    "comment",
+    () =>
+      assertEquals(
+        stringify({ "#COMMENT": "comment" }),
+        ``,
+      ),
+  );
+  await t.step(
+    "single quote",
+    () =>
+      assertEquals(
+        stringify({ "QUOTED_SINGLE": "single quoted" }),
+        `QUOTED_SINGLE='single quoted'`,
+      ),
+  );
+  await t.step(
+    "multiline",
+    () =>
+      assertEquals(
+        stringify({ "MULTILINE": "hello\nworld" }),
+        `MULTILINE="hello\\nworld"`,
+      ),
+  );
+  await t.step(
+    "whitespace",
+    () =>
+      assertEquals(
+        stringify({ "WHITESPACE": "    whitespace   " }),
+        `WHITESPACE='    whitespace   '`,
+      ),
+  );
+  await t.step(
+    "equals",
+    () =>
+      assertEquals(
+        stringify({ "EQUALS": "equ==als" }),
+        `EQUALS='equ==als'`,
+      ),
+  );
+  await t.step(
+    "number",
+    () =>
+      assertEquals(
+        stringify({ "THE_ANSWER": "42" }),
+        `THE_ANSWER=42`,
+      ),
+  );
+  await t.step(
+    "undefined",
+    () =>
+      assertEquals(
+        stringify(
+          { "UNDEFINED": undefined } as unknown as Record<string, string>,
+        ),
+        `UNDEFINED=`,
+      ),
+  );
+  await t.step(
+    "null",
+    () =>
+      assertEquals(
+        stringify({ "NULL": null } as unknown as Record<string, string>),
+        `NULL=`,
+      ),
+  );
 });

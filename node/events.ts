@@ -7,6 +7,8 @@ export {
   errorMonitor,
   EventEmitter,
   getEventListeners,
+  listenerCount,
   on,
   once,
+  setMaxListeners,
 } from "./_events.mjs";

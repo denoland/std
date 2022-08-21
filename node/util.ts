@@ -11,7 +11,7 @@ import {
 } from "./internal/util/inspect.mjs";
 import { codes } from "./internal/error_codes.ts";
 import { errorMap } from "./internal_binding/uv.ts";
-import types from "./util/types.mjs";
+import types from "./util/types.ts";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 
@@ -215,9 +215,11 @@ function timestamp(): string {
  * @deprecated
  */
 // deno-lint-ignore no-explicit-any
-function log(...args: any[]): void {
+export function log(...args: any[]): void {
   console.log("%s - %s", timestamp(), format(...args));
 }
+
+export { isDeepStrictEqual };
 
 export default {
   format,

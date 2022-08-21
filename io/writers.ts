@@ -7,14 +7,14 @@ const decoder = new TextDecoder();
 
 /** Writer utility for buffering string chunks */
 export class StringWriter implements Writer, WriterSync {
-  private chunks: Uint8Array[] = [];
-  private byteLength = 0;
-  private cache: string | undefined;
+  #chunks: Uint8Array[] = [];
+  #byteLength = 0;
+  #cache: string | undefined;
 
   constructor(private base: string = "") {
     const c = new TextEncoder().encode(base);
-    this.chunks.push(c);
-    this.byteLength += c.byteLength;
+    this.#chunks.push(c);
+    this.#byteLength += c.byteLength;
   }
 
   write(p: Uint8Array): Promise<number> {
@@ -22,23 +22,23 @@ export class StringWriter implements Writer, WriterSync {
   }
 
   writeSync(p: Uint8Array): number {
-    this.chunks.push(p);
-    this.byteLength += p.byteLength;
-    this.cache = undefined;
+    this.#chunks.push(new Uint8Array(p));
+    this.#byteLength += p.byteLength;
+    this.#cache = undefined;
     return p.byteLength;
   }
 
   toString(): string {
-    if (this.cache) {
-      return this.cache;
+    if (this.#cache) {
+      return this.#cache;
     }
-    const buf = new Uint8Array(this.byteLength);
+    const buf = new Uint8Array(this.#byteLength);
     let offs = 0;
-    for (const chunk of this.chunks) {
+    for (const chunk of this.#chunks) {
       buf.set(chunk, offs);
       offs += chunk.byteLength;
     }
-    this.cache = decoder.decode(buf);
-    return this.cache;
+    this.#cache = decoder.decode(buf);
+    return this.#cache;
   }
 }

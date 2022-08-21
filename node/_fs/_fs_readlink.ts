@@ -5,6 +5,7 @@ import {
   notImplemented,
 } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 type ReadlinkCallback = (
   err: MaybeEmpty<Error>,
@@ -40,7 +41,7 @@ function getEncoding(
       } else if (optOrCallback.encoding === "buffer") {
         return "buffer";
       } else {
-        notImplemented();
+        notImplemented(`fs.readlink encoding=${optOrCallback.encoding}`);
       }
     }
     return null;
@@ -70,6 +71,11 @@ export function readlink(
     path,
   );
 }
+
+export const readlinkPromise = promisify(readlink) as (
+  path: string | URL,
+  opt?: ReadlinkOptions,
+) => Promise<string | Uint8Array>;
 
 export function readlinkSync(
   path: string | URL,

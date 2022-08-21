@@ -166,8 +166,8 @@ function validateDomain(domain: string): void {
 
 /**
  * Parse cookies of a header
- * @param {Headers} headers The headers instance to get cookies from
- * @return {Object} Object with cookie names as keys
+ * @param headers The headers instance to get cookies from
+ * @return Object with cookie names as keys
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
@@ -187,11 +187,10 @@ export function getCookies(headers: Headers): Record<string, string> {
 
 /**
  * Set the cookie header properly in the headers
- * @param {Headers} headers The headers instance to set the cookie to
- * @param {Object} cookie Cookie to set
+ * @param headers The headers instance to set the cookie to
+ * @param cookie Cookie to set
  */
 export function setCookie(headers: Headers, cookie: Cookie): void {
-  // TODO(zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
   const v = toString(cookie);
@@ -202,9 +201,9 @@ export function setCookie(headers: Headers, cookie: Cookie): void {
 
 /**
  * Set the cookie header with empty value in the headers to delete it
- * @param {Headers} headers The headers instance to delete the cookie from
- * @param {string} name Name of cookie
- * @param {Object} attributes Additional cookie attributes
+ * @param headers The headers instance to delete the cookie from
+ * @param name Name of cookie
+ * @param attributes Additional cookie attributes
  */
 export function deleteCookie(
   headers: Headers,
@@ -217,4 +216,104 @@ export function deleteCookie(
     expires: new Date(0),
     ...attributes,
   });
+}
+
+function parseSetCookie(value: string): Cookie | null {
+  const attrs = value
+    .split(";")
+    .map((attr) =>
+      attr
+        .trim()
+        .split("=")
+        .map((keyOrValue) => keyOrValue.trim())
+    );
+  const cookie: Cookie = {
+    name: attrs[0][0],
+    value: attrs[0][1],
+  };
+
+  for (const [key, value] of attrs.slice(1)) {
+    switch (key.toLocaleLowerCase()) {
+      case "expires":
+        cookie.expires = new Date(value);
+        break;
+      case "max-age":
+        cookie.maxAge = Number(value);
+        if (cookie.maxAge < 0) {
+          console.warn(
+            "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+          );
+          return null;
+        }
+        break;
+      case "domain":
+        cookie.domain = value;
+        break;
+      case "path":
+        cookie.path = value;
+        break;
+      case "secure":
+        cookie.secure = true;
+        break;
+      case "httponly":
+        cookie.httpOnly = true;
+        break;
+      case "samesite":
+        cookie.sameSite = value as Cookie["sameSite"];
+        break;
+      default:
+        if (!Array.isArray(cookie.unparsed)) {
+          cookie.unparsed = [];
+        }
+        cookie.unparsed.push([key, value].join("="));
+    }
+  }
+  if (cookie.name.startsWith("__Secure-")) {
+    /** This requirement is mentioned in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie but not the RFC. */
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Secure-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
+  }
+  if (cookie.name.startsWith("__Host-")) {
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.domain !== undefined) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must not have a domain specified. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.path !== "/") {
+      console.warn(
+        "Cookies with names starting with `__Host-` must have path be `/`. Cookie has been ignored.",
+      );
+      return null;
+    }
+  }
+  return cookie;
+}
+
+/**
+ * Parse set-cookies of a header
+ * @param headers The headers instance to get set-cookies from
+ * @return List of cookies
+ */
+export function getSetCookies(headers: Headers): Cookie[] {
+  if (!headers.has("set-cookie")) {
+    return [];
+  }
+  return [...headers.entries()]
+    .filter(([key]) => key === "set-cookie")
+    .map(([_, value]) => value)
+    /** Parse each `set-cookie` header separately */
+    .map(parseSetCookie)
+    /** Skip empty cookies */
+    .filter(Boolean) as Cookie[];
 }

@@ -4,6 +4,7 @@ import { getValidatedPath } from "../internal/fs/utils.mjs";
 import * as pathModule from "../../path/mod.ts";
 import { parseFileMode } from "../internal/validators.mjs";
 import { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function chmod(
   path: string | Buffer | URL,
@@ -18,6 +19,11 @@ export function chmod(
     callback,
   );
 }
+
+export const chmodPromise = promisify(chmod) as (
+  path: string | Buffer | URL,
+  mode: string | number,
+) => Promise<void>;
 
 export function chmodSync(path: string | URL, mode: string | number): void {
   path = getValidatedPath(path).toString();

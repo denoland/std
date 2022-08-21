@@ -18,7 +18,7 @@ export type TextEncodings =
 
 export type Encodings = BinaryEncodings | TextEncodings;
 
-export function notImplemented(msg?: string): never {
+export function notImplemented(msg: string): never {
   const message = msg ? `Not implemented: ${msg}` : "Not implemented";
   throw new Error(message);
 }
@@ -174,10 +174,10 @@ export function once<T = undefined>(
 }
 
 /**
- * @param {number} [expectedExecutions = 1]
- * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
+ * @param [expectedExecutions = 1]
+ * @param [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
 export function mustCall<T extends unknown[]>(
-  fn: ((...args: T) => void) = () => {},
+  fn: (...args: T) => void = () => {},
   expectedExecutions = 1,
   timeout = 1000,
 ): [Promise<void>, (...args: T) => void] {

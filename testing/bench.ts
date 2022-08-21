@@ -1,4 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * **Deprecated**. Use `Deno.bench()` instead.
+ *
+ * See: https://doc.deno.land/deno/unstable/~/Deno.bench for details.
+ *
+ * @deprecated Use `Deno.bench()` instead.
+ * @module
+ */
+
 import { assert } from "../_util/assert.ts";
 import { deepAssign } from "../_util/deep_assign.ts";
 
@@ -147,7 +157,11 @@ function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
 
 const candidates: BenchmarkDefinition[] = [];
 
-/** Registers a benchmark as a candidate for the runBenchmarks executor. */
+/**
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ *
+ * Registers a benchmark as a candidate for the runBenchmarks executor. */
 export function bench(
   benchmark: BenchmarkDefinition | BenchmarkFunction,
 ): void {
@@ -165,8 +179,13 @@ export function bench(
   }
 }
 
-/** Clears benchmark candidates which name matches `only` and doesn't match `skip`.
- * Removes all candidates if options were not provided */
+/**
+ * Clears benchmark candidates which name matches `only` and doesn't match `skip`.
+ * Removes all candidates if options were not provided.
+ *
+ * @deprecated Use `Deno.bench()` instead. See: https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ */
 export function clearBenchmarks({
   only = /[^\s]/,
   skip = /$^/,
@@ -179,6 +198,9 @@ export function clearBenchmarks({
 }
 
 /**
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ *
  * Runs all registered and non-skipped benchmarks serially.
  *
  * @param [progressCb] provides the possibility to get updates of the current progress during the run of the benchmarking

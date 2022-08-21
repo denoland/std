@@ -30,6 +30,7 @@ export interface WorkerOptions {
 }
 
 const kHandle = Symbol("kHandle");
+const PRIVATE_WORKER_THREAD_NAME = "$DENO_STD_NODE_WORKER_THREAD";
 class _Worker extends EventEmitter {
   readonly threadId: number;
   readonly resourceLimits: Required<
@@ -54,11 +55,9 @@ class _Worker extends EventEmitter {
     const handle = this[kHandle] = new Worker(
       specifier,
       {
-        ...(options || {}),
+        name: PRIVATE_WORKER_THREAD_NAME,
         type: "module",
-        // unstable
-        deno: { namespace: true },
-      },
+      } as globalThis.WorkerOptions, // bypass unstable type error
     );
     handle.addEventListener(
       "error",
@@ -86,16 +85,15 @@ class _Worker extends EventEmitter {
     this.emit("exit", 0);
   }
 
-  readonly getHeapSnapshot = notImplemented;
+  readonly getHeapSnapshot = () =>
+    notImplemented("Worker.prototype.getHeapSnapshot");
   // fake performance
   readonly performance = globalThis.performance;
 }
 
 export const isMainThread =
   // deno-lint-ignore no-explicit-any
-  typeof (globalThis as any).DedicatedWorkerGlobalScope === "undefined" ||
-  // deno-lint-ignore no-explicit-any
-  self instanceof (globalThis as any).DedicatedWorkerGlobalScope === false;
+  (globalThis as any).name !== PRIVATE_WORKER_THREAD_NAME;
 
 // fake resourceLimits
 export const resourceLimits = isMainThread ? {} : {
@@ -132,6 +130,8 @@ type ParentPort = typeof self & NodeEventTarget;
 let parentPort: ParentPort = null as any;
 
 if (!isMainThread) {
+  // deno-lint-ignore no-explicit-any
+  delete (globalThis as any).name;
   // deno-lint-ignore no-explicit-any
   const listeners = new WeakMap<(...args: any[]) => void, (ev: any) => any>();
 
@@ -170,8 +170,9 @@ if (!isMainThread) {
   parentPort.eventNames = () => [""];
   parentPort.listenerCount = () => 0;
 
-  parentPort.emit = () => notImplemented();
-  parentPort.removeAllListeners = () => notImplemented();
+  parentPort.emit = () => notImplemented("parentPort.emit");
+  parentPort.removeAllListeners = () =>
+    notImplemented("parentPort.removeAllListeners");
 
   // Receive startup message
   [{ threadId, workerData, environmentData }] = await once(
@@ -204,22 +205,28 @@ const _MessageChannel: typeof MessageChannel =
   (globalThis as any).MessageChannel;
 export const BroadcastChannel = globalThis.BroadcastChannel;
 export const SHARE_ENV = Symbol.for("nodejs.worker_threads.SHARE_ENV");
+export function markAsUntransferable() {
+  notImplemented("markAsUntransferable");
+}
+export function moveMessagePortToContext() {
+  notImplemented("moveMessagePortToContext");
+}
+export function receiveMessageOnPort() {
+  notImplemented("receiveMessageOnPort");
+}
 export {
   _MessageChannel as MessageChannel,
   _MessagePort as MessagePort,
   _Worker as Worker,
-  notImplemented as markAsUntransferable,
-  notImplemented as moveMessagePortToContext,
-  notImplemented as receiveMessageOnPort,
   parentPort,
   threadId,
   workerData,
 };
 
 export default {
-  markAsUntransferable: notImplemented,
-  moveMessagePortToContext: notImplemented,
-  receiveMessageOnPort: notImplemented,
+  markAsUntransferable,
+  moveMessagePortToContext,
+  receiveMessageOnPort,
   MessagePort: _MessagePort,
   MessageChannel: _MessageChannel,
   BroadcastChannel,

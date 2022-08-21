@@ -1,6 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/**
+ * Provides helper functions to manipulate `Uint8Array` byte slices that are not
+ * included on the `Uint8Array` prototype.
+ *
+ * @module
+ */
+
 /** Returns the index of the first occurrence of the needle array in the source
  * array, or -1 if it is not present.
  *

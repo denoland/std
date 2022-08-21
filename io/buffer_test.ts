@@ -320,7 +320,7 @@ Deno.test("bufferReadFrom", async () => {
     const fub = new Uint8Array(testString.length);
     await empty(b, s, fub);
   }
-  assertRejects(async function () {
+  await assertRejects(async function () {
     await new Buffer().readFrom(null!);
   });
 });
@@ -647,7 +647,7 @@ Deno.test("bufioReadLineBadResource", async () => {
   const file = await Deno.open("README.md");
   const bufReader = new BufReader(file);
   file.close();
-  assertRejects(async () => {
+  await assertRejects(async () => {
     await bufReader.readLine();
   }, Deno.errors.BadResource);
 });

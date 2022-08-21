@@ -15,19 +15,19 @@ export class StringReader extends Buffer {
 
 /** Reader utility for combining multiple readers */
 export class MultiReader implements Deno.Reader {
-  private readonly readers: Deno.Reader[];
-  private currentIndex = 0;
+  readonly #readers: Deno.Reader[];
+  #currentIndex = 0;
 
-  constructor(...readers: Deno.Reader[]) {
-    this.readers = readers;
+  constructor(readers: Deno.Reader[]) {
+    this.#readers = [...readers];
   }
 
   async read(p: Uint8Array): Promise<number | null> {
-    const r = this.readers[this.currentIndex];
+    const r = this.#readers[this.#currentIndex];
     if (!r) return null;
     const result = await r.read(p);
     if (result === null) {
-      this.currentIndex++;
+      this.#currentIndex++;
       return 0;
     }
     return result;

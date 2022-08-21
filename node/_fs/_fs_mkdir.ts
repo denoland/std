@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 /**
  * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
@@ -47,6 +48,11 @@ export function mkdir(
       }
     });
 }
+
+export const mkdirPromise = promisify(mkdir) as (
+  path: string | URL,
+  options?: MkdirOptions,
+) => Promise<void>;
 
 export function mkdirSync(path: string | URL, options?: MkdirOptions): void {
   path = path instanceof URL ? fromFileUrl(path) : path;

@@ -29,7 +29,7 @@ Deno.test("ioStringReader", async function () {
 });
 
 Deno.test("ioMultiReader", async function () {
-  const r = new MultiReader(new StringReader("abc"), new StringReader("def"));
+  const r = new MultiReader([new StringReader("abc"), new StringReader("def")]);
   const w = new StringWriter();
   const n = await copyN(r, w, 4);
   assertEquals(n, 4);

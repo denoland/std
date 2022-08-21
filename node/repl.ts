@@ -3,9 +3,9 @@
 
 import { notImplemented } from "./_utils.ts";
 
-class REPLServer {
+export class REPLServer {
   constructor() {
-    notImplemented();
+    notImplemented("REPLServer.prototype.constructor");
   }
 }
 export const builtinModules = [
@@ -53,7 +53,7 @@ export const builtinModules = [
   "zlib",
 ];
 export function start() {
-  notImplemented();
+  notImplemented("repl.start");
 }
 export default {
   REPLServer,

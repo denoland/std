@@ -1,5 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+
+/**
+ * Utilities for dealing with {@linkcode Date} objects.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 import { DateTimeFormatter } from "./formatter.ts";
 

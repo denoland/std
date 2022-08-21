@@ -2,29 +2,16 @@
 `std/node/crypto`. Its interface may not be stable between releases and it
 should not be imported directly.
 
+## Overview
+
+This folder contains Rust code that we use via Wasm. It allows us to take
+advantage of existing Rust implementations of crypto algorithms such as SHA-1
+and use them here in deno_std.
+
 ## How to Build
 
-### Prerequisite
-
-Requires the wasm-bindgen CLI.
-
 ```sh
-# This must match the version of wasm-bindgen in Cargo.lock:
-cargo install -f wasm-bindgen-cli --version 0.2.78
+deno task build:crypto
 ```
 
-### Build
-
-```sh
-deno run --allow-all ./_build.ts
-```
-
-This will regenerate `./crypto.mjs` and `./crypto.wasm.mjs` from the Rust
-source.
-
-### CI
-
-If CI fails in `Verify WASM hasn't changed` step, you need to download built
-artifacts from that CI run and commit them back to the PR. Visit
-`https://github.com/denoland/deno_std/actions/runs/<CI_RUN_ID>#artifacts` and
-click on `Artifacts` at the top of the page.
+This will regenerate the files in the `./lib/` folder from the Rust source.

@@ -24,6 +24,9 @@ const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
+const darwinIgnorePaths = new Set(
+  getPathsFromTestSuites(config.darwinIgnore),
+);
 
 const decoder = new TextDecoder();
 
@@ -36,7 +39,9 @@ for await (const path of testPaths) {
   ) {
     continue;
   }
-  const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
+  const ignore =
+    (Deno.build.os === "windows" && windowsIgnorePaths.has(path)) ||
+    (Deno.build.os === "darwin" && darwinIgnorePaths.has(path));
   Deno.test({
     name: `Node.js compatibility "${path}"`,
     ignore,
@@ -50,8 +55,7 @@ for await (const path of testPaths) {
         v8Flags.push("--expose-externalize-string");
       }
 
-      const cmd = [
-        Deno.execPath(),
+      const args = [
         "run",
         "-A",
         "--quiet",
@@ -64,34 +68,25 @@ for await (const path of testPaths) {
 
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
-      const test = Deno.run({
-        cmd,
+      const { code, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+        args,
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
         },
         cwd,
-        stderr: "piped",
-        stdout: "piped",
       });
 
-      const [rawStderr, rawOutput, status] = await Promise.all([
-        test.stderrOutput(),
-        test.output(),
-        test.status(),
-      ]);
-      test.close();
+      const decodedStderr = decoder.decode(stderr);
+      if (stderr.length) console.error(decodedStderr);
+      if (stdout.length) console.log(decoder.decode(stdout));
 
-      const stderr = decoder.decode(rawStderr);
-      if (rawStderr.length) console.error(stderr);
-      if (rawOutput.length) console.log(decoder.decode(rawOutput));
-
-      if (status.code !== 0) {
+      if (code !== 0) {
         console.log(`Error: "${path}" failed`);
         console.log(
           "You can repeat only this test with the command:",
           magenta(`deno test -A node/_tools/test.ts -- ${path}`),
         );
-        fail(stderr);
+        fail(decodedStderr);
       }
     },
   });

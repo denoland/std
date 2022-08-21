@@ -6,6 +6,7 @@ import {
   assert,
   assertEquals,
   assertObjectMatch,
+  assertStrictEquals,
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
@@ -129,25 +130,18 @@ Deno.test({
 
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         "--unstable",
         "./testdata/process_exit.ts",
       ],
       cwd,
-      stdout: "piped",
     });
 
     const decoder = new TextDecoder();
-    const rawOutput = await p.output();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "1\n2",
-    );
-    p.close();
+    assertEquals(stripColor(decoder.decode(stdout).trim()), "1\n2");
   },
 });
 
@@ -264,6 +258,14 @@ Deno.test({
         "SURELY_NON_EXISTENT_VAR",
       ),
     );
+
+    // deno-lint-ignore no-prototype-builtins
+    assert(process.env.hasOwnProperty("HELLO"));
+    assert("HELLO" in process.env);
+    assert(Object.keys(process.env.valueOf()).includes("HELLO"));
+
+    assertEquals(process.env.toString(), "[object Object]");
+    assertEquals(process.env.toLocaleString(), "[object Object]");
   },
 });
 
@@ -288,6 +290,18 @@ Deno.test({
       `${process.stdout.getWindowSize()}`,
       `${consoleSize && [consoleSize.columns, consoleSize.rows]}`,
     );
+
+    if (isTTY) {
+      assertStrictEquals(process.stdout.cursorTo(1, 2, () => {}), true);
+      assertStrictEquals(process.stdout.moveCursor(3, 4, () => {}), true);
+      assertStrictEquals(process.stdout.clearLine(1, () => {}), true);
+      assertStrictEquals(process.stdout.clearScreenDown(() => {}), true);
+    } else {
+      assertStrictEquals(process.stdout.cursorTo, undefined);
+      assertStrictEquals(process.stdout.moveCursor, undefined);
+      assertStrictEquals(process.stdout.clearLine, undefined);
+      assertStrictEquals(process.stdout.clearScreenDown, undefined);
+    }
   },
 });
 
@@ -304,6 +318,18 @@ Deno.test({
       `${process.stderr.getWindowSize()}`,
       `${consoleSize && [consoleSize.columns, consoleSize.rows]}`,
     );
+
+    if (isTTY) {
+      assertStrictEquals(process.stderr.cursorTo(1, 2, () => {}), true);
+      assertStrictEquals(process.stderr.moveCursor(3, 4, () => {}), true);
+      assertStrictEquals(process.stderr.clearLine(1, () => {}), true);
+      assertStrictEquals(process.stderr.clearScreenDown(() => {}), true);
+    } else {
+      assertStrictEquals(process.stderr.cursorTo, undefined);
+      assertStrictEquals(process.stderr.moveCursor, undefined);
+      assertStrictEquals(process.stderr.clearLine, undefined);
+      assertStrictEquals(process.stderr.clearScreenDown, undefined);
+    }
   },
 });
 
@@ -405,7 +431,7 @@ Deno.test("process in worker", async () => {
 
   const worker = new Worker(
     new URL("./testdata/process_worker.ts", import.meta.url).href,
-    { type: "module", deno: true },
+    { type: "module" },
   );
   worker.addEventListener("message", (e) => {
     assertEquals(e.data, "hello");
@@ -441,24 +467,17 @@ Deno.test({
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         "--unstable",
         "./testdata/process_exit2.ts",
       ],
       cwd,
-      stdout: "piped",
     });
 
     const decoder = new TextDecoder();
-    const rawOutput = await p.output();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "exit",
-    );
-    p.close();
+    assertEquals(stripColor(decoder.decode(stdout).trim()), "exit");
   },
 });

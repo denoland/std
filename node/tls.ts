@@ -36,7 +36,7 @@ export class CryptoStream {}
 export class SecurePair {}
 export class Server {}
 export function createSecurePair() {
-  notImplemented();
+  notImplemented("tls.createSecurePair");
 }
 
 export default {
@@ -57,7 +57,9 @@ export default {
   DEFAULT_MIN_VERSION,
 };
 
-export const createSecureContext = _tls_common.createSecureContext;
-export const TLSSocket = _tls_wrap.TLSSocket;
-export const createServer = _tls_wrap.createServer;
+export const checkServerIdentity = _tls_wrap.checkServerIdentity;
 export const connect = _tls_wrap.connect;
+export const createSecureContext = _tls_common.createSecureContext;
+export const createServer = _tls_wrap.createServer;
+export const DEFAULT_CIPHERS = _tls_wrap.DEFAULT_CIPHERS;
+export const TLSSocket = _tls_wrap.TLSSocket;

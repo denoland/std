@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 export class Point {
   constructor(public x: number, public y: number) {}
   // deno-lint-ignore no-explicit-any
@@ -6,6 +7,9 @@ export class Point {
   }
   toString(): string {
     return [this.x, this.y].join(", ");
+  }
+  explicitTypes(_x: number, _y: string) {
+    return true;
   }
   *[Symbol.iterator](): IterableIterator<number> {
     yield this.x;
@@ -16,3 +20,7 @@ export class Point {
 export function stringifyPoint(point: Point) {
   return point.toString();
 }
+
+export type PointWithExtra = Point & {
+  nonExistent: () => number;
+};

@@ -1,8 +1,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// Based on https://github.com/golang/go/tree/master/src/net/textproto
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+/**
+ * A reader for dealing with low level text based protocols.
+ *
+ * Based on
+ * [net/textproto](https://github.com/golang/go/tree/master/src/net/textproto).
+ *
+ * @module
+ */
 
 import type { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { concat } from "../bytes/mod.ts";
