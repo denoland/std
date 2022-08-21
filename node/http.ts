@@ -18,6 +18,9 @@ import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
 import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
+const { core } = Deno;
+const { ops } = core;
+
 const METHODS = [
   "ACL",
   "BIND",
@@ -183,6 +186,70 @@ class ClientRequest extends NodeWritable {
   }
 }
 
+// Construct an HTTP response message.
+// All HTTP/1.1 messages consist of a start-line followed by a sequence
+// of octets.
+//
+//  HTTP-message = start-line
+//    *( header-field CRLF )
+//    CRLF
+//    [ message-body ]
+//
+function http1Response(method, status, headerList, body, earlyEnd = false) {
+  // HTTP uses a "<major>.<minor>" numbering scheme
+  //   HTTP-version  = HTTP-name "/" DIGIT "." DIGIT
+  //   HTTP-name     = %x48.54.54.50 ; "HTTP", case-sensitive
+  //
+  // status-line = HTTP-version SP status-code SP reason-phrase CRLF
+  // Date header: https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.2
+  let str = `HTTP/1.1 ${status} ${statusCodes[status]}\r\nDate: ${date}\r\n`;
+  for (const [name, value] of headerList) {
+    // header-field   = field-name ":" OWS field-value OWS
+    str += `${name}: ${value}\r\n`;
+  }
+
+  // https://datatracker.ietf.org/doc/html/rfc7231#section-6.3.6
+  if (status === 205 || status === 304) {
+    // MUST NOT generate a payload in a 205 response.
+    // indicate a zero-length body for the response by
+    // including a Content-Length header field with a value of 0.
+    str += "Content-Length: 0\r\n";
+    return str;
+  }
+
+  // MUST NOT send Content-Length or Transfer-Encoding if status code is 1xx or 204.
+  if (status == 204 && status <= 100) {
+    return str;
+  }
+
+  if (earlyEnd === true) {
+    return str;
+  }
+
+  // null body status is validated by inititalizeAResponse in ext/fetch
+  if (body !== null && body !== undefined) {
+    str += `Content-Length: ${body.length}\r\n\r\n`;
+  } else {
+    str += "Transfer-Encoding: chunked\r\n\r\n";
+    return str;
+  }
+
+  // A HEAD request.
+  if (method === 1) return str;
+
+  if (typeof body === "string") {
+    str += body ?? "";
+  } else {
+    const head = core.encode(str);
+    const response = new Uint8Array(head.byteLength + body.byteLength);
+    response.set(head, 0);
+    response.set(body, head.byteLength);
+    return response;
+  }
+
+  return str;
+}
+
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
@@ -229,16 +296,80 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 }
 
+const statusCodes = {
+  100: "Continue",
+  101: "Switching Protocols",
+  102: "Processing",
+  200: "OK",
+  201: "Created",
+  202: "Accepted",
+  203: "Non Authoritative Information",
+  204: "No Content",
+  205: "Reset Content",
+  206: "Partial Content",
+  207: "Multi-Status",
+  208: "Already Reported",
+  226: "IM Used",
+  300: "Multiple Choices",
+  301: "Moved Permanently",
+  302: "Found",
+  303: "See Other",
+  304: "Not Modified",
+  305: "Use Proxy",
+  307: "Temporary Redirect",
+  308: "Permanent Redirect",
+  400: "Bad Request",
+  401: "Unauthorized",
+  402: "Payment Required",
+  403: "Forbidden",
+  404: "Not Found",
+  405: "Method Not Allowed",
+  406: "Not Acceptable",
+  407: "Proxy Authentication Required",
+  408: "Request Timeout",
+  409: "Conflict",
+  410: "Gone",
+  411: "Length Required",
+  412: "Precondition Failed",
+  413: "Payload Too Large",
+  414: "URI Too Long",
+  415: "Unsupported Media Type",
+  416: "Range Not Satisfiable",
+  418: "I'm a teapot",
+  421: "Misdirected Request",
+  422: "Unprocessable Entity",
+  423: "Locked",
+  424: "Failed Dependency",
+  426: "Upgrade Required",
+  428: "Precondition Required",
+  429: "Too Many Requests",
+  431: "Request Header Fields Too Large",
+  451: "Unavailable For Legal Reasons",
+  500: "Internal Server Error",
+  501: "Not Implemented",
+  502: "Bad Gateway",
+  503: "Service Unavailable",
+  504: "Gateway Timeout",
+  505: "HTTP Version Not Supported",
+  506: "Variant Also Negotiates",
+  507: "Insufficient Storage",
+  508: "Loop Detected",
+  510: "Not Extended",
+  511: "Network Authentication Required",
+};
+let dateInterval;
+let date;
 export class ServerResponse extends NodeWritable {
   statusCode?: number = undefined;
   statusMessage?: string = undefined;
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  #promise: Deferred<Response>;
+  #req: number;
+  #fastOps: any;
   #firstChunk: Chunk | null = null;
 
-  constructor(promise: Deferred<Response>) {
+  constructor(req: number, fastOps: any) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
@@ -280,7 +411,8 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.#readable = readable;
-    this.#promise = promise;
+    this.#req = req;
+    this.#fastOps = fastOps;
   }
 
   setHeader(name: string, value: string) {
@@ -323,13 +455,41 @@ export class ServerResponse extends NodeWritable {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
-    this.#promise.resolve(
-      new Response(body, {
-        headers: this.#headers,
-        status: this.statusCode,
-        statusText: this.statusMessage,
-      }),
-    );
+
+    if (singleChunk) {
+      const responseStr = http1Response(
+        0,
+        this.statusCode ?? 200,
+        this.#headers,
+        singleChunk,
+      );
+
+      // TypedArray
+      if (typeof responseStr !== "string") {
+        this.#fastOps.respond(this.#req, responseStr, true);
+      } else {
+        // string
+        ops.op_flash_respond(
+          0,
+          this.#req,
+          responseStr,
+          null,
+          true,
+        );
+      }
+      return;
+    } else if (final) {
+      throw new Error("todo"); 
+    } else {
+      throw new Error("todo");
+    }
+    // this.#promise.resolve(
+    //   new Response(body, {
+    //     headers: this.#headers,
+    //     status: this.statusCode,
+    //     statusText: this.statusMessage,
+    //   }),
+    // );
   }
 
   // deno-lint-ignore no-explicit-any
@@ -346,14 +506,73 @@ export class ServerResponse extends NodeWritable {
   }
 }
 
-// TODO(@AaronO): optimize
-export class IncomingMessageForServer extends NodeReadable {
-  #req: Request;
-  url: string;
+const methods = {
+  0: "GET",
+  1: "HEAD",
+  2: "CONNECT",
+  3: "PUT",
+  4: "DELETE",
+  5: "OPTIONS",
+  6: "TRACE",
+  7: "POST",
+  8: "PATCH",
+};
 
-  constructor(req: Request) {
+export class IncomingMessageForServer extends NodeReadable {
+  #req: number;
+  #fastOps: any;
+  #method: number;
+
+  constructor(req: number, fastOps: any) {
+    const method = fastOps.getMethod(req);
+    
     // Check if no body (GET/HEAD/OPTIONS/...)
-    const reader = req.body?.getReader();
+    let hasBody = method > 2; // Not GET/HEAD/CONNECT
+    let reader = null;
+    if (hasBody) {
+      // The first packet is left over bytes after parsing the request
+      const firstRead = core.ops.op_flash_first_packet(
+        0,
+        req,
+      );
+      if (firstRead) {
+        let firstEnqueued = firstRead.byteLength == 0;
+        reader = new ReadableStream({
+          type: "bytes",
+          async pull(controller) {
+            try {
+              if (firstEnqueued === false) {
+                controller.enqueue(firstRead);
+                firstEnqueued = true;
+                return;
+              }
+              // This is the largest possible size for a single packet on a TLS
+              // stream.
+              const chunk = new Uint8Array(16 * 1024 + 256);
+              const read = await core.opAsync(
+                "op_flash_read_body",
+                0,
+                req,
+                chunk,
+              );
+              if (read > 0) {
+                // We read some data. Enqueue it onto the stream.
+                controller.enqueue(chunk.subarray(0, read));
+              } else {
+                // We have reached the end of the body, so we close the stream.
+                controller.close();
+              }
+            } catch (err) {
+              // There was an error while reading a chunk of the body, so we
+              // error.
+              controller.error(err);
+              controller.close();
+            }
+          },
+        });
+      }
+    }
+
     super({
       autoDestroy: true,
       emitClose: true,
@@ -374,10 +593,13 @@ export class IncomingMessageForServer extends NodeReadable {
         reader?.cancel().finally(() => cb(err));
       },
     });
+    this.#method = method;
     this.#req = req;
-    // TODO: consider more robust path extraction, e.g:
-    // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(this.#req.url.indexOf("/", 8));
+    this.#fastOps = fastOps;
+  }
+
+  get url() {
+    return ops.op_flash_path(0, this.#req);
   }
 
   get aborted() {
@@ -388,11 +610,11 @@ export class IncomingMessageForServer extends NodeReadable {
   }
 
   get headers() {
-    return Object.fromEntries(this.#req.headers.entries());
+    return Object.fromEntries(ops.op_flash_headers(0, this.#req));
   }
 
   get method() {
-    return this.#req.method;
+    return methods[this.#method];
   }
 }
 
@@ -448,27 +670,45 @@ class ServerImpl extends EventEmitter {
     return this;
   }
 
-  #serve() {
+  async #serve() {
     this.emit("listening");
-
-    const ac = new AbortController();
-    const handler = async (request: Request) => {
-      const req = new IncomingMessageForServer(request);
-      const promise = deferred<Response>();
-      const res = new ServerResponse(promise);
-      this.emit("request", req, res);
-      const response = await promise;
-      return response;
-    };
 
     if (this.#hasClosed) {
       return;
     }
+
+    const ac = new AbortController();
     this.#ac = ac;
-    DenoUnstable.serve(
-      handler as DenoUnstable.ServeHandler,
-      { ...this.#addr, signal: ac.signal },
-    );
+
+    const serverId = ops.op_flash_serve({ hostname: "127.0.0.1", port: this.#addr.port });
+    const serverPromise = core.opAsync("op_flash_drive_server", serverId);
+
+    const fastOps = ops.op_flash_make_request();
+    function nextRequest() {
+      return fastOps.nextRequest();
+    }
+    if (!dateInterval) {
+      date = new Date().toUTCString();
+      dateInterval = setInterval(() => {
+        date = new Date().toUTCString();
+      }, 1000);
+    }
+    let offset = 0;
+    while(true) {
+      let token = nextRequest();
+      if (token === 0) token = await core.opAsync("op_flash_next_async", serverId);
+
+      for (let i = offset; i < offset + token; i++) {
+        (async () => {
+          const req = new IncomingMessageForServer(i, fastOps);
+          const res = new ServerResponse(i, fastOps);  
+          this.emit("request", req, res);
+        })().catch(console.log);
+      }
+      offset += token;
+    }
+
+    await serverPromise;
   }
 
   get listening() {
