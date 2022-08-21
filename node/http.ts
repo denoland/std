@@ -437,7 +437,7 @@ class ServerImpl extends EventEmitter {
 
     // TODO(bnoordhuis) Node prefers [::] when host is omitted,
     // we on the other hand default to 0.0.0.0.
-    const hostname = options.host ?? "";
+    const hostname = options.host ?? "0.0.0.0";
 
     this.#addr = {
       hostname,
