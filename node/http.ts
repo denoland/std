@@ -234,10 +234,10 @@ export class ServerResponse extends NodeWritable {
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  #resolve: Deferred<Response>;
+  #resolve: (value: Response | PromiseLike<Response>) => void;
   #firstChunk: Chunk | null = null;
 
-  constructor(resolve: Deferred<Response>) {
+  constructor(resolve: (value: Response | PromiseLike<Response>) => void) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
