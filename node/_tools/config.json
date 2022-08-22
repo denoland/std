@@ -538,7 +538,6 @@
       "test-stream-writable-end-cb-error.js",
       "test-stream-writable-end-multiple.js",
       "test-stream-writable-ended-state.js",
-      "test-stream-writable-final-destroy.js",
       "test-stream-writable-finish-destroyed.js",
       "test-stream-writable-finished-state.js",
       "test-stream-writable-finished.js",
