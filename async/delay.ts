@@ -1,13 +1,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
+import { unrefTimer } from "../_deno_unstable.ts";
 
 export interface DelayOptions {
   signal?: AbortSignal;
+  /** Indicates whether the process should continue to run as long as the timer exists. This is `true` by default. */
+  persistent?: boolean;
 }
 
 /* Resolves after the given number of milliseconds. */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
-  const { signal } = options;
+  const { signal, persistent } = options;
   if (signal?.aborted) {
     return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
   }
@@ -22,5 +25,8 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
     };
     const i = setTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
+    if (persistent === false) {
+      unrefTimer(i);
+    }
   });
 }
