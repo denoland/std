@@ -334,11 +334,10 @@ export class ServerResponse extends NodeWritable {
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
     if (!chunk && this.#headers.has("transfer-encoding")) {
-      // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
-      // the trailing "0\r\n", but respondWith() just hangs when I try that.
-      this.#headers.set("content-length", "0");
       this.#headers.delete("transfer-encoding");
     }
+
+    this.#headers.delete("content-length");
 
     // @ts-expect-error The signature for cb is stricter than the one implemented here
     return super.end(chunk, encoding, cb);
