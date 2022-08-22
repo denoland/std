@@ -7,6 +7,7 @@
  */
 
 export * from "./cookie.ts";
+export * from "./cookie_map.ts";
 export * from "./http_errors.ts";
 export * from "./http_status.ts";
 export * from "./negotiation.ts";
