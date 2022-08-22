@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as DenoUnstable from "../_deno_unstable.ts";
-import { Deferred, deferred } from "../async/deferred.ts";
+import { deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
