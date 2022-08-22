@@ -409,9 +409,12 @@ class ServerImpl extends EventEmitter {
   #addr?: Deno.NetAddr;
   #hasClosed = false;
   #ac?: AbortController;
+  #servePromise = deferred();
+  listening = false;
 
   constructor(handler?: ServerHandler) {
     super();
+    this.#servePromise.then(() => this.emit("close"));
 
     if (handler !== undefined) {
       this.on("request", handler);
@@ -443,14 +446,13 @@ class ServerImpl extends EventEmitter {
       hostname,
       port,
     } as Deno.NetAddr;
+    this.listening = true;
     nextTick(() => this.#serve());
 
     return this;
   }
 
   #serve() {
-    this.emit("listening");
-
     const ac = new AbortController();
     const handler = async (request: Request) => {
       const req = new IncomingMessageForServer(request);
@@ -466,16 +468,21 @@ class ServerImpl extends EventEmitter {
     }
     this.#ac = ac;
     DenoUnstable.serve(
-      { fetch: handler as DenoUnstable.ServeHandler, ...this.#addr, signal: ac.signal },
-    );
-  }
-
-  get listening() {
-    return !this.#hasClosed;
+      {
+        fetch: handler as DenoUnstable.ServeHandler,
+        ...this.#addr,
+        signal: ac.signal,
+        onListen: ({ port }) => {
+          this.#addr!.port = port;
+          this.emit("listening");
+        },
+      },
+    ).then(() => this.#servePromise.resolve());
   }
 
   close(cb?: (err?: Error) => void): this {
     const listening = this.listening;
+    this.listening = false;
 
     this.#hasClosed = true;
     if (typeof cb === "function") {
@@ -488,11 +495,11 @@ class ServerImpl extends EventEmitter {
       }
     }
 
-    nextTick(() => this.emit("close"));
-
-    if (listening) {
-      this.#ac?.abort();
+    if (listening && this.#ac) {
+      this.#ac.abort();
       this.#ac = undefined;
+    } else {
+      this.#servePromise.resolve();
     }
 
     return this;

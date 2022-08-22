@@ -23,6 +23,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen(() => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
@@ -35,6 +37,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen().on("listening", () => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
@@ -47,6 +51,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen(port, () => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
