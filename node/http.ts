@@ -447,6 +447,10 @@ class ServerImpl extends EventEmitter {
   constructor(handler?: ServerHandler) {
     super();
     this.#isFlashServer = typeof Deno.serve == "function";
+    if (this.#isFlashServer) {
+      this.#servePromise = deferred();
+      this.#servePromise.then(() => this.emit("close"));
+    }
     if (handler !== undefined) {
       this.on("request", handler);
     }
@@ -478,8 +482,6 @@ class ServerImpl extends EventEmitter {
         port,
       } as Deno.NetAddr;
       this.listening = true;
-      this.#servePromise = deferred();
-      this.#servePromise.then(() => this.emit("close"));
       nextTick(() => this.#serve());
     } else {
       this.listening = true;
@@ -584,7 +586,7 @@ class ServerImpl extends EventEmitter {
         this.#ac.abort();
         this.#ac = undefined;
       } else {
-        this.#servePromise?.resolve();
+        this.#servePromise!.resolve();
       }
     } else {
       nextTick(() => this.emit("close"));
