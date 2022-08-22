@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as DenoUnstable from "../_deno_unstable.ts";
-import { deferred } from "../async/deferred.ts";
+import { type Deferred, deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
@@ -234,10 +234,17 @@ export class ServerResponse extends NodeWritable {
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  #resolve: (value: Response | PromiseLike<Response>) => void;
   #firstChunk: Chunk | null = null;
+  // Used if --unstable flag IS NOT present
+  #reqEvent?: Deno.RequestEvent;
+  // Used if --unstable flag IS present
+  #resolve?: (value: Response | PromiseLike<Response>) => void;
+  #isFlashRequest: boolean;
 
-  constructor(resolve: (value: Response | PromiseLike<Response>) => void) {
+  constructor(
+    reqEvent: undefined | Deno.RequestEvent,
+    resolve: undefined | ((value: Response | PromiseLike<Response>) => void),
+  ) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
@@ -280,6 +287,8 @@ export class ServerResponse extends NodeWritable {
     });
     this.#readable = readable;
     this.#resolve = resolve;
+    this.#reqEvent = reqEvent;
+    this.#isFlashRequest = typeof resolve !== "undefined";
   }
 
   setHeader(name: string, value: string) {
@@ -308,31 +317,57 @@ export class ServerResponse extends NodeWritable {
     return this;
   }
 
-  #ensureHeaders() {
+  #ensureHeaders(singleChunk?: Chunk) {
     if (this.statusCode === undefined) {
       this.statusCode = 200;
       this.statusMessage = "OK";
+    }
+    // Only taken if --unstable IS NOT present
+    if (
+      !this.#isFlashRequest && typeof singleChunk === "string" &&
+      !this.hasHeader("content-type")
+    ) {
+      this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
 
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
-    this.#ensureHeaders();
+    this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
-    this.#resolve(
-      new Response(Buffer.isBuffer(body) ? body.toString() : body, {
-        headers: this.#headers,
-        status: this.statusCode,
-        statusText: this.statusMessage,
-      }),
-    );
+    if (this.#isFlashRequest) {
+      this.#resolve!(
+        new Response(Buffer.isBuffer(body) ? body.toString() : body, {
+          headers: this.#headers,
+          status: this.statusCode,
+          statusText: this.statusMessage,
+        }),
+      );
+    } else {
+      this.#reqEvent!.respondWith(
+        new Response(body, {
+          headers: this.#headers,
+          status: this.statusCode,
+          statusText: this.statusMessage,
+        }),
+      ).catch(() => {
+        // ignore this error
+      });
+    }
   }
 
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
-    // Flash sets both of these headers.
-    this.#headers.delete("transfer-encoding");
-    this.#headers.delete("content-length");
+    if (this.#isFlashRequest) {
+      // Flash sets both of these headers.
+      this.#headers.delete("transfer-encoding");
+      this.#headers.delete("content-length");
+    } else if (!chunk && this.#headers.has("transfer-encoding")) {
+      // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
+      // the trailing "0\r\n", but respondWith() just hangs when I try that.
+      this.#headers.set("content-length", "0");
+      this.#headers.delete("transfer-encoding");
+    }
 
     // @ts-expect-error The signature for cb is stricter than the one implemented here
     return super.end(chunk, encoding, cb);
@@ -398,16 +433,20 @@ export function Server(handler?: ServerHandler): ServerImpl {
 }
 
 class ServerImpl extends EventEmitter {
+  #isFlashServer: boolean;
+
+  #httpConnections: Set<Deno.HttpConn> = new Set();
+  #listener?: Deno.Listener;
+
   #addr?: Deno.NetAddr;
   #hasClosed = false;
   #ac?: AbortController;
-  #servePromise = deferred();
+  #servePromise?: Deferred<void>;
   listening = false;
 
   constructor(handler?: ServerHandler) {
     super();
-    this.#servePromise.then(() => this.emit("close"));
-
+    this.#isFlashServer = typeof Deno.serve == "function";
     if (handler !== undefined) {
       this.on("request", handler);
     }
@@ -432,16 +471,70 @@ class ServerImpl extends EventEmitter {
 
     // TODO(bnoordhuis) Node prefers [::] when host is omitted,
     // we on the other hand default to 0.0.0.0.
-    const hostname = options.host ?? "0.0.0.0";
-
-    this.#addr = {
-      hostname,
-      port,
-    } as Deno.NetAddr;
-    this.listening = true;
-    nextTick(() => this.#serve());
+    if (this.#isFlashServer) {
+      const hostname = options.host ?? "0.0.0.0";
+      this.#addr = {
+        hostname,
+        port,
+      } as Deno.NetAddr;
+      this.listening = true;
+      this.#servePromise = deferred();
+      this.#servePromise.then(() => this.emit("close"));
+      nextTick(() => this.#serve());
+    } else {
+      this.listening = true;
+      const hostname = options.host ?? "";
+      this.#listener = Deno.listen({ port, hostname });
+      nextTick(() => this.#listenLoop());
+    }
 
     return this;
+  }
+
+  async #listenLoop() {
+    const go = async (httpConn: Deno.HttpConn) => {
+      try {
+        for (;;) {
+          let reqEvent = null;
+          try {
+            // Note: httpConn.nextRequest() calls httpConn.close() on error.
+            reqEvent = await httpConn.nextRequest();
+          } catch {
+            // Connection closed.
+            // TODO(bnoordhuis) Emit "clientError" event on the http.Server
+            // instance? Node emits it when request parsing fails and expects
+            // the listener to send a raw 4xx HTTP response on the underlying
+            // net.Socket but we don't have one to pass to the listener.
+          }
+          if (reqEvent === null) {
+            break;
+          }
+          const req = new IncomingMessageForServer(reqEvent.request);
+          const res = new ServerResponse(reqEvent, undefined);
+          this.emit("request", req, res);
+        }
+      } finally {
+        this.#httpConnections.delete(httpConn);
+      }
+    };
+
+    const listener = this.#listener;
+
+    if (listener !== undefined) {
+      this.emit("listening");
+
+      for await (const conn of listener) {
+        let httpConn: Deno.HttpConn;
+        try {
+          httpConn = Deno.serveHttp(conn);
+        } catch {
+          continue; /// Connection closed.
+        }
+
+        this.#httpConnections.add(httpConn);
+        go(httpConn);
+      }
+    }
   }
 
   #serve() {
@@ -449,7 +542,7 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       return new Promise<Response>((resolve): void => {
         const req = new IncomingMessageForServer(request);
-        const res = new ServerResponse(resolve);
+        const res = new ServerResponse(undefined, resolve);
         this.emit("request", req, res);
       });
     };
@@ -468,7 +561,7 @@ class ServerImpl extends EventEmitter {
           this.emit("listening");
         },
       },
-    ).then(() => this.#servePromise.resolve());
+    ).then(() => this.#servePromise!.resolve());
   }
 
   close(cb?: (err?: Error) => void): this {
@@ -486,18 +579,42 @@ class ServerImpl extends EventEmitter {
       }
     }
 
-    if (listening && this.#ac) {
-      this.#ac.abort();
-      this.#ac = undefined;
+    if (this.#isFlashServer) {
+      if (listening && this.#ac) {
+        this.#ac.abort();
+        this.#ac = undefined;
+      } else {
+        this.#servePromise?.resolve();
+      }
     } else {
-      this.#servePromise.resolve();
+      nextTick(() => this.emit("close"));
+
+      if (listening) {
+        this.#listener!.close();
+        this.#listener = undefined;
+
+        for (const httpConn of this.#httpConnections) {
+          try {
+            httpConn.close();
+          } catch {
+            // Already closed.
+          }
+        }
+
+        this.#httpConnections.clear();
+      }
     }
 
     return this;
   }
 
   address() {
-    const addr = this.#addr!;
+    let addr;
+    if (this.#isFlashServer) {
+      addr = this.#addr!;
+    } else {
+      addr = this.#listener!.addr as Deno.NetAddr;
+    }
     return {
       port: addr.port,
       address: addr.hostname,
