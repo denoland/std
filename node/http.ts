@@ -446,6 +446,7 @@ class ServerImpl extends EventEmitter {
 
   constructor(handler?: ServerHandler) {
     super();
+    // @ts-ignore Might be undefined without `--unstable` flag
     this.#isFlashServer = typeof Deno.serve == "function";
     if (this.#isFlashServer) {
       this.#servePromise = deferred();
@@ -558,6 +559,7 @@ class ServerImpl extends EventEmitter {
         fetch: handler as DenoUnstable.ServeHandler,
         ...this.#addr,
         signal: ac.signal,
+        // @ts-ignore Might be any without `--unstable` flag
         onListen: ({ port }) => {
           this.#addr!.port = port;
           this.emit("listening");
