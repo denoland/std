@@ -16,7 +16,6 @@ import {
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
-import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
 const METHODS = [
   "ACL",
