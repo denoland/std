@@ -455,18 +455,25 @@ export class ServerResponse extends NodeWritable {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
-
+    
+  //   this.#fastOps.respond(
+  //     this.#req,
+  //     Deno.core.encode("HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"),
+  //     true,
+  //   );
+  //  return;
+    //console.log(this.#headers.remove("content-length"));
     if (singleChunk) {
       const responseStr = http1Response(
         0,
         this.statusCode ?? 200,
         this.#headers,
-        singleChunk,
+        body,
       );
-
+      
       // TypedArray
       if (typeof responseStr !== "string") {
-        this.#fastOps.respond(this.#req, responseStr, true);
+        this.#fastOps.respond(this.#req, responseStr, final);
       } else {
         // string
         ops.op_flash_respond(
@@ -474,7 +481,7 @@ export class ServerResponse extends NodeWritable {
           this.#req,
           responseStr,
           null,
-          true,
+          final,
         );
       }
       return;
@@ -483,13 +490,6 @@ export class ServerResponse extends NodeWritable {
     } else {
       throw new Error("todo");
     }
-    // this.#promise.resolve(
-    //   new Response(body, {
-    //     headers: this.#headers,
-    //     status: this.statusCode,
-    //     statusText: this.statusMessage,
-    //   }),
-    // );
   }
 
   // deno-lint-ignore no-explicit-any
@@ -500,7 +500,7 @@ export class ServerResponse extends NodeWritable {
       this.#headers.set("content-length", "0");
       this.#headers.delete("transfer-encoding");
     }
-
+    this.#headers.delete("content-length");
     // @ts-expect-error The signature for cb is stricter than the one implemented here
     return super.end(chunk, encoding, cb);
   }
@@ -694,20 +694,20 @@ class ServerImpl extends EventEmitter {
       }, 1000);
     }
     let offset = 0;
+     (async () => {
     while(true) {
       let token = nextRequest();
       if (token === 0) token = await core.opAsync("op_flash_next_async", serverId);
 
       for (let i = offset; i < offset + token; i++) {
-        (async () => {
           const req = new IncomingMessageForServer(i, fastOps);
           const res = new ServerResponse(i, fastOps);  
           this.emit("request", req, res);
-        })().catch(console.log);
+         
       }
       offset += token;
     }
-
+      })().catch(console.log);
     await serverPromise;
   }
 
