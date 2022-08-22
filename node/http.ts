@@ -323,7 +323,7 @@ export class ServerResponse extends NodeWritable {
     this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
     this.#promise.resolve(
-      new Response(body, {
+      new Response(Buffer.isBuffer(body) ? body.toString() : body, {
         headers: this.#headers,
         status: this.statusCode,
         statusText: this.statusMessage,
@@ -459,6 +459,9 @@ class ServerImpl extends EventEmitter {
       const res = new ServerResponse(promise);
       this.emit("request", req, res);
       const response = await promise;
+      // Note: If we remove the line below
+      // the 3rd test case ("ok") of `[node/http chunked response` hangs.
+      response.body;
       return response;
     };
 
