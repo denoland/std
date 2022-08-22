@@ -234,10 +234,10 @@ export class ServerResponse extends NodeWritable {
   #headers = new Headers({});
   #readable: ReadableStream;
   headersSent = false;
-  #promise: Deferred<Response>;
+  #resolve: Deferred<Response>;
   #firstChunk: Chunk | null = null;
 
-  constructor(promise: Deferred<Response>) {
+  constructor(resolve: Deferred<Response>) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
@@ -279,7 +279,7 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.#readable = readable;
-    this.#promise = promise;
+    this.#resolve = resolve;
   }
 
   setHeader(name: string, value: string) {
@@ -308,21 +308,18 @@ export class ServerResponse extends NodeWritable {
     return this;
   }
 
-  #ensureHeaders(singleChunk?: Chunk) {
+  #ensureHeaders() {
     if (this.statusCode === undefined) {
       this.statusCode = 200;
       this.statusMessage = "OK";
-    }
-    if (typeof singleChunk === "string" && !this.hasHeader("content-type")) {
-      this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
 
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
-    this.#ensureHeaders(singleChunk);
+    this.#ensureHeaders();
     const body = singleChunk ?? (final ? null : this.#readable);
-    this.#promise.resolve(
+    this.#resolve(
       new Response(Buffer.isBuffer(body) ? body.toString() : body, {
         headers: this.#headers,
         status: this.statusCode,
@@ -333,10 +330,8 @@ export class ServerResponse extends NodeWritable {
 
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
-    if (!chunk && this.#headers.has("transfer-encoding")) {
-      this.#headers.delete("transfer-encoding");
-    }
-
+    // Flash sets both of these headers.
+    this.#headers.delete("transfer-encoding");
     this.#headers.delete("content-length");
 
     // @ts-expect-error The signature for cb is stricter than the one implemented here
@@ -348,6 +343,7 @@ export class ServerResponse extends NodeWritable {
 export class IncomingMessageForServer extends NodeReadable {
   #req: Request;
   url: string;
+  method: string;
 
   constructor(req: Request) {
     // Check if no body (GET/HEAD/OPTIONS/...)
@@ -372,25 +368,23 @@ export class IncomingMessageForServer extends NodeReadable {
         reader?.cancel().finally(() => cb(err));
       },
     });
-    this.#req = req;
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(this.#req.url.indexOf("/", 8));
+    this.url = req.url.slice(req.url.indexOf("/", 8));
+    this.method = req.method;
+    this.#req = req;
   }
 
   get aborted() {
     return false;
   }
+
   get httpVersion() {
     return "1.1";
   }
 
   get headers() {
     return Object.fromEntries(this.#req.headers.entries());
-  }
-
-  get method() {
-    return this.#req.method;
   }
 }
 
@@ -452,16 +446,12 @@ class ServerImpl extends EventEmitter {
 
   #serve() {
     const ac = new AbortController();
-    const handler = async (request: Request) => {
-      const req = new IncomingMessageForServer(request);
-      const promise = deferred<Response>();
-      const res = new ServerResponse(promise);
-      this.emit("request", req, res);
-      const response = await promise;
-      // Note: If we remove the line below
-      // the 3rd test case ("ok") of `[node/http chunked response` hangs.
-      response.body;
-      return response;
+    const handler = (request: Request) => {
+      return new Promise<Response>((resolve): void => {
+        const req = new IncomingMessageForServer(request);
+        const res = new ServerResponse(resolve);
+        this.emit("request", req, res);
+      });
     };
 
     if (this.#hasClosed) {
