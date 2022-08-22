@@ -26,7 +26,7 @@ export async function move(
     }
   } else {
     if (await exists(dest)) {
-      throw new Error("dest already exists.");
+      throw new Deno.errors.AlreadyExists(`dest already exists, '${dest}'.`);
     }
   }
 
@@ -55,7 +55,7 @@ export function moveSync(
     }
   } else {
     if (existsSync(dest)) {
-      throw new Error("dest already exists.");
+      throw new Deno.errors.AlreadyExists(`dest already exists, '${dest}'.`);
     }
   }
 

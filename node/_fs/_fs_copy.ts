@@ -71,7 +71,7 @@ export function copyFileSync(
   if ((modeNum & fs.COPYFILE_EXCL) === fs.COPYFILE_EXCL) {
     try {
       Deno.lstatSync(destStr);
-      throw new Error(`A file exists at the destination: ${destStr}`);
+      throw new Deno.errors.AlreadyExists(`A file exists at the destination: ${destStr}`);
     } catch (e) {
       if (e instanceof Deno.errors.NotFound) {
         Deno.copyFileSync(srcStr, destStr);
