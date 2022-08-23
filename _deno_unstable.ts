@@ -195,3 +195,13 @@ export function ListenerUnref(
     throw new TypeError("Requires --unstable");
   }
 }
+
+export function unrefTimer(
+  ...args: Parameters<typeof Deno.unrefTimer>
+): ReturnType<typeof Deno.unrefTimer> {
+  if (typeof Deno.unrefTimer == "function") {
+    return Deno.unrefTimer(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
