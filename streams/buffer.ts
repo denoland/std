@@ -89,7 +89,7 @@ export class Buffer {
   /** Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer. */
-  truncate(n: number): void {
+  truncate(n: number) {
     if (n === 0) {
       this.reset();
       return;
@@ -100,7 +100,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
-  reset(): void {
+  reset() {
     this.#reslice(0);
     this.#off = 0;
   }
@@ -158,7 +158,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
-  grow(n: number): void {
+  grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
     }

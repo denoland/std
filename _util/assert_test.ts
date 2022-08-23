@@ -4,14 +4,14 @@ import { assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
   name: "assert valid scenario",
-  fn(): void {
+  fn() {
     assert(true);
   },
 });
 
 Deno.test({
   name: "assert invalid scenario, no message",
-  fn(): void {
+  fn() {
     assertThrows(() => {
       assert(false);
     }, DenoStdInternalError);
@@ -19,7 +19,7 @@ Deno.test({
 });
 Deno.test({
   name: "assert invalid scenario, with message",
-  fn(): void {
+  fn() {
     assertThrows(
       () => {
         assert(false, "Oops! Should be true");

@@ -17,11 +17,11 @@ abstract class Fnv32Base<T> {
     this.#state = offset32;
   }
 
-  protected _updateState(newState: number): void {
+  protected _updateState(newState: number) {
     this.#state = newState;
   }
 
-  reset(): void {
+  reset() {
     this.#state = offset32;
   }
 

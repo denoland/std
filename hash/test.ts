@@ -562,7 +562,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
 
 Deno.test("[hash/double_digest] testDoubleDigest", () => {
   assertThrows(
-    (): void => {
+    () => {
       const hash = createHash("md5");
       hash.update("test");
       const h1 = hash.digest();

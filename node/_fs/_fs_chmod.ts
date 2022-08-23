@@ -10,7 +10,7 @@ export function chmod(
   path: string | Buffer | URL,
   mode: string | number,
   callback: CallbackWithError,
-): void {
+) {
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 
@@ -25,7 +25,7 @@ export const chmodPromise = promisify(chmod) as (
   mode: string | number,
 ) => Promise<void>;
 
-export function chmodSync(path: string | URL, mode: string | number): void {
+export function chmodSync(path: string | URL, mode: string | number) {
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 

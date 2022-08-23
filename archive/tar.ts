@@ -278,7 +278,7 @@ function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder(),
     buffer = clean(512);
   let offset = 0;
-  ustarStructure.forEach(function (value): void {
+  ustarStructure.forEach(function (value) {
     const entry = encoder.encode(data[value.field as keyof TarData] || "");
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
@@ -293,7 +293,7 @@ function formatHeader(data: TarData): Uint8Array {
 function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
   const data: { [key: string]: Uint8Array } = {};
   let offset = 0;
-  ustarStructure.forEach(function (value): void {
+  ustarStructure.forEach(function (value) {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -471,7 +471,7 @@ export class Tar {
     const encoder = new TextEncoder();
     Object.keys(tarData)
       .filter((key): boolean => ["filePath", "reader"].indexOf(key) < 0)
-      .forEach(function (key): void {
+      .forEach(function (key) {
         checksum += encoder
           .encode(tarData[key as keyof TarData])
           .reduce((p, c): number => p + c, 0);
@@ -486,7 +486,7 @@ export class Tar {
    */
   getReader(): Reader {
     const readers: Reader[] = [];
-    this.data.forEach((tarData): void => {
+    this.data.forEach((tarData) => {
       let { reader } = tarData;
       const { filePath } = tarData;
       const headerArr = formatHeader(tarData);
@@ -655,14 +655,14 @@ export class Untar {
       "mtime",
       "uid",
       "gid",
-    ]).forEach((key): void => {
+    ]).forEach((key) => {
       const arr = trim(header[key]);
       if (arr.byteLength > 0) {
         meta[key] = parseInt(decoder.decode(arr), 8);
       }
     });
     (["owner", "group", "type"] as ["owner", "group", "type"]).forEach(
-      (key): void => {
+      (key) => {
         const arr = trim(header[key]);
         if (arr.byteLength > 0) {
           meta[key] = decoder.decode(arr);

@@ -32,7 +32,7 @@ const values = [
   {},
   { key: "value" },
   Symbol("I am a symbol"),
-  function ok(): void {},
+  function ok() {},
   ["array", "with", 4, "values"],
   new Error("boo"),
 ];
@@ -50,7 +50,7 @@ class TestQueue {
     });
   }
 
-  enqueue(fn: (done: () => void) => void): void {
+  enqueue(fn: (done: () => void) => void) {
     this.#queueSize++;
     try {
       fn(() => {
@@ -69,7 +69,7 @@ class TestQueue {
     }
   }
 
-  waitForCompletion(): Promise<void> {
+  waitForCompletion() {
     return this.#waitingPromise;
   }
 }

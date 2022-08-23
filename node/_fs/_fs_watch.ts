@@ -215,7 +215,7 @@ export function watchFile(
 export function unwatchFile(
   filename: string | Buffer | URL,
   listener?: WatchFileListener,
-): void {
+) {
   const watchPath = getValidatedPath(filename).toString();
   const stat = statWatchers.get(watchPath);
 

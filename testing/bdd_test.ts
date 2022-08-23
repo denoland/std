@@ -170,7 +170,7 @@ Deno.test("global", async (t) => {
     async function assertOptions<T>(
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fn: Spy) => void,
-    ): Promise<void> {
+    ) {
       const test = stub(Deno, "test");
       const fn = spy();
       try {
@@ -211,7 +211,7 @@ Deno.test("global", async (t) => {
      */
     async function assertMinimumOptions(
       cb: (fn: Spy) => void,
-    ): Promise<void> {
+    ) {
       await assertOptions({}, cb);
     }
 
@@ -221,7 +221,7 @@ Deno.test("global", async (t) => {
      */
     async function assertAllOptions(
       cb: (fn: Spy) => void,
-    ): Promise<void> {
+    ) {
       await assertOptions(baseOptions, cb);
     }
 
@@ -358,7 +358,7 @@ Deno.test("global", async (t) => {
        */
       async function assertMinimumOptions(
         cb: (fn: Spy) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ only: true }, cb);
       }
 
@@ -368,7 +368,7 @@ Deno.test("global", async (t) => {
        */
       async function assertAllOptions(
         cb: (fn: Spy) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ...baseOptions, only: true }, cb);
       }
 
@@ -512,7 +512,7 @@ Deno.test("global", async (t) => {
        */
       async function assertMinimumOptions(
         cb: (fn: Spy) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ignore: true }, cb);
       }
 
@@ -522,7 +522,7 @@ Deno.test("global", async (t) => {
        */
       async function assertAllOptions(
         cb: (fn: Spy) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ...baseOptions, ignore: true }, cb);
       }
 
@@ -669,7 +669,7 @@ Deno.test("global", async (t) => {
     async function assertOptions(
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fns: Spy[]) => void,
-    ): Promise<void> {
+    ) {
       const test = stub(Deno, "test");
       const fns = [spy(), spy()];
       try {
@@ -723,7 +723,7 @@ Deno.test("global", async (t) => {
      */
     async function assertMinimumOptions(
       cb: (fns: Spy[]) => void,
-    ): Promise<void> {
+    ) {
       await assertOptions({}, cb);
     }
 
@@ -734,7 +734,7 @@ Deno.test("global", async (t) => {
      */
     async function assertAllOptions(
       cb: (fns: Spy[]) => void,
-    ): Promise<void> {
+    ) {
       await assertOptions({ ...baseOptions }, cb);
     }
 
@@ -908,7 +908,7 @@ Deno.test("global", async (t) => {
        */
       async function assertMinimumOptions(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ only: true }, cb);
       }
 
@@ -919,7 +919,7 @@ Deno.test("global", async (t) => {
        */
       async function assertAllOptions(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ...baseOptions, only: true }, cb);
       }
 
@@ -1109,7 +1109,7 @@ Deno.test("global", async (t) => {
        */
       async function assertMinimumOptions(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ignore: true }, cb);
       }
 
@@ -1120,7 +1120,7 @@ Deno.test("global", async (t) => {
        */
       async function assertAllOptions(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         await assertOptions({ ...baseOptions, ignore: true }, cb);
       }
 
@@ -1309,7 +1309,7 @@ Deno.test("global", async (t) => {
        */
       async function assertOnly(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         const test = stub(Deno, "test");
         const fns = [spy(), spy(), spy()];
         try {
@@ -1407,7 +1407,7 @@ Deno.test("global", async (t) => {
        */
       async function assertOnly(
         cb: (fns: Spy[]) => void,
-      ): Promise<void> {
+      ) {
         const test = stub(Deno, "test");
         const fns = [spy(), spy(), spy()];
         try {

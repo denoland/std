@@ -57,7 +57,7 @@ export default class Dir {
    * finished reading.
    */
   // deno-lint-ignore no-explicit-any
-  close(callback?: (...args: any[]) => void): Promise<void> {
+  close(callback?: (...args: any[]) => void) {
     return new Promise((resolve) => {
       if (callback) {
         callback(null);
@@ -71,7 +71,7 @@ export default class Dir {
    * directories, and therefore does not need to close directories when
    * finished reading
    */
-  closeSync(): void {
+  closeSync() {
     //No op
   }
 

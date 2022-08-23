@@ -41,7 +41,7 @@ export function checkPrime(
   _candidate: LargeNumberLike,
   _options?: CheckPrimeOptions | ((err: Error | null, result: boolean) => void),
   _callback?: (err: Error | null, result: boolean) => void,
-): void {
+) {
   notImplemented("crypto.checkPrime");
 }
 
@@ -93,7 +93,7 @@ export function generatePrime(
   _size: number,
   _options?: unknown,
   _callback?: unknown,
-): void {
+) {
   notImplemented("crypto.generatePrime");
 }
 

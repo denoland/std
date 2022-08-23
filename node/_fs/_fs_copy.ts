@@ -22,7 +22,7 @@ export function copyFile(
   dest: string | Buffer | URL,
   mode: number | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   if (typeof mode === "function") {
     callback = mode;
     mode = 0;
@@ -63,7 +63,7 @@ export function copyFileSync(
   src: string | Buffer | URL,
   dest: string | Buffer | URL,
   mode?: number,
-): void {
+) {
   const srcStr = getValidatedPath(src, "src").toString();
   const destStr = getValidatedPath(dest, "dest").toString();
   const modeNum = getValidMode(mode, "copyFile");

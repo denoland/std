@@ -30,7 +30,7 @@ class StreamLineReader implements LineReader {
     return Promise.resolve(this.#done);
   }
 
-  cancel(): void {
+  cancel() {
     this.#reader.cancel();
   }
 }

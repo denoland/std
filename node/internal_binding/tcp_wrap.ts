@@ -384,7 +384,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle backoff delays following an unsuccessful accept. */
-  async #acceptBackoff(): Promise<void> {
+  async #acceptBackoff() {
     // Backoff after transient errors to allow time for the system to
     // recover, and avoid blocking up the event loop with a continuously
     // running loop.

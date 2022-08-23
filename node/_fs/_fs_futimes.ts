@@ -27,7 +27,7 @@ export function futimes(
   atime: number | string | Date,
   mtime: number | string | Date,
   callback: CallbackWithError,
-): void {
+) {
   if (!callback) {
     throw new Deno.errors.InvalidData("No callback function supplied");
   }
@@ -42,7 +42,7 @@ export function futimesSync(
   fd: number,
   atime: number | string | Date,
   mtime: number | string | Date,
-): void {
+) {
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
