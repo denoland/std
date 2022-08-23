@@ -41,7 +41,7 @@
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/",
-    "test:browser": "git grep --name-only \"// This module is browser compatible.\" | grep -v \".github/workflows\" | xargs deno cache --config browser-compat.tsconfig.json",
+    "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | xargs deno cache --check --reload --config browser-compat.tsconfig.json",
     "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
