@@ -70,7 +70,7 @@ export function debuglog(
     enabled = testEnabled(set);
   }
 
-  let debug = (...args: unknown[]) => {
+  let debug = (...args: unknown[]): void => {
     init();
     // Only invokes debuglogImpl() when the debug function is
     // called for the first time.

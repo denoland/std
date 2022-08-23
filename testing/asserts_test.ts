@@ -1137,7 +1137,7 @@ Deno.test({
   name: "failed with date",
   fn() {
     assertThrows(
-      (): void =>
+      () =>
         assertEquals(
           new Date(2019, 0, 3, 4, 20, 1, 10),
           new Date(2019, 0, 3, 4, 20, 1, 20),
@@ -1152,7 +1152,7 @@ Deno.test({
       ].join("\n"),
     );
     assertThrows(
-      (): void =>
+      () =>
         assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [

@@ -57,7 +57,7 @@ export default class Dir {
    * finished reading.
    */
   // deno-lint-ignore no-explicit-any
-  close(callback?: (...args: any[]) => void) {
+  close(callback?: (...args: any[]) => void): Promise<void> {
     return new Promise((resolve) => {
       if (callback) {
         callback(null);
