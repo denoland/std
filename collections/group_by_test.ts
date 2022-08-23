@@ -13,7 +13,7 @@ function groupByTest<T>(
 }
 
 Deno.test({
-  name: "[collections/groupBy] no mutation",
+  name: "no mutation",
   fn() {
     const arrayA = [1.1, 4.2, 4.5];
     groupBy(arrayA, () => "test");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] empty input",
+  name: "empty input",
   fn() {
     groupByTest(
       [[], () => "a"],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] constant key",
+  name: "constant key",
   fn() {
     groupByTest(
       [[1, 3, 5, 6], () => "a"],
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] empty key",
+  name: "empty key",
   fn() {
     groupByTest(
       [
@@ -59,7 +59,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] groups",
+  name: "groups",
   fn() {
     groupByTest(
       [

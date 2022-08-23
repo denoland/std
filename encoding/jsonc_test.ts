@@ -32,7 +32,7 @@ function assertInvalidParse(
 }
 
 Deno.test({
-  name: "[jsonc] parse with single line comment",
+  name: "parse with single line comment",
   fn() {
     assertValidParse(`"aaa"//comment`, "aaa");
     assertValidParse(`["aaa"//comment\n,"aaa"]`, ["aaa", "aaa"]);
@@ -42,7 +42,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse with multi line comments",
+  name: "parse with multi line comments",
   fn() {
     assertValidParse(`"aaa"/*comment*/`, "aaa");
     assertValidParse(`100/*comment*/`, 100);
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse special character",
+  name: "parse special character",
   fn() {
     assertValidParse(`"👪"`, "👪");
     assertValidParse(`"🦕"`, "🦕");
@@ -70,7 +70,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] JSONCParser.#numberEndToken",
+  name: "JSONCParser.#numberEndToken",
   fn() {
     // Correctly parses the letters after the numbers (` \t\r\n[]{}:,/`)
     assertValidParse(`{"a":0}`, { a: 0 });
@@ -88,7 +88,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] error message",
+  name: "error message",
   fn() {
     assertInvalidParse(
       `:::::`,
@@ -114,7 +114,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] __proto__",
+  name: "__proto__",
   fn() {
     // The result of JSON.parse and the result of JSONC.parse should match
     const json = JSON.parse('{"__proto__": 100}');
@@ -131,7 +131,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] duplicate object key",
+  name: "duplicate object key",
   fn() {
     // The result of JSON.parse and the result of JSONC.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
@@ -142,7 +142,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse other than strings",
+  name: "parse other than strings",
   fn() {
     assertInvalidParse(
       // deno-lint-ignore no-explicit-any
@@ -156,7 +156,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] parse consecutive backslash",
+  name: "parse consecutive backslash",
   fn() {
     assertValidParse('"foo\\\\"', "foo\\");
 

@@ -105,7 +105,7 @@ Deno.test("readFileEncodeAsString", function () {
   assertEquals(data as string, "hello world");
 });
 
-Deno.test("[std/node/fs] readFile callback isn't called twice if error is thrown", async () => {
+Deno.test("readFile callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_readFile.ts", import.meta.url);
   await assertCallbackErrorUncaught({

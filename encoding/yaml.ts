@@ -7,6 +7,8 @@
  * Ported from
  * [js-yaml v3.13.1](https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da)
  *
+ * This module is browser compatible.
+ *
  * @module
  */
 

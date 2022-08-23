@@ -19,12 +19,12 @@ function setup() {
   return arr;
 }
 
-Deno.test("[bytes] BytesList.size", () => {
+Deno.test("size", () => {
   assertEquals(new BytesList().size(), 0);
   assertEquals(setup().size(), 10);
 });
 
-Deno.test("[bytes] BytesList.getChunkIndex", () => {
+Deno.test("getChunkIndex", () => {
   const arr = setup();
   assertEquals(arr.getChunkIndex(-1), -1);
   assertEquals(arr.getChunkIndex(0), 0);
@@ -40,7 +40,7 @@ Deno.test("[bytes] BytesList.getChunkIndex", () => {
   assertEquals(arr.getChunkIndex(10), -1);
 });
 
-Deno.test("[bytes] BytesList.get", () => {
+Deno.test("get", () => {
   const arr = setup();
   for (let i = 0; i < arr.size(); i++) {
     assertEquals(arr.get(i), i);
@@ -61,14 +61,14 @@ Deno.test("[bytes] BytesList.get", () => {
   );
 });
 
-Deno.test("[bytes] BytesList.add should ignore empty buf and range", () => {
+Deno.test("add should ignore empty buf and range", () => {
   const arr = new BytesList();
   const buf = new Uint8Array([0]);
   arr.add(new Uint8Array());
   arr.add(buf, 0, 0);
   assertEquals(arr.size(), 0);
 });
-Deno.test("[bytes] BytesList.add should throw if invalid range", () => {
+Deno.test("add should throw if invalid range", () => {
   const arr = new BytesList();
   const buf = new Uint8Array([0]);
   assertThrows(
@@ -100,7 +100,7 @@ Deno.test("[bytes] BytesList.add should throw if invalid range", () => {
     "invalid range",
   );
 });
-Deno.test("[bytes] BytesList.slice", () => {
+Deno.test("slice", () => {
   const arr = setup();
   assertEquals(
     bytes.equals(arr.slice(0, 4), new Uint8Array([0, 1, 2, 3])),
@@ -133,7 +133,7 @@ Deno.test("[bytes] BytesList.slice", () => {
     "invalid range",
   );
 });
-Deno.test("[bytes] BytesList.concat", () => {
+Deno.test("concat", () => {
   const arr = setup();
   assertEquals(
     bytes.equals(
@@ -143,7 +143,7 @@ Deno.test("[bytes] BytesList.concat", () => {
     true,
   );
 });
-Deno.test("[bytes] BytesList.shift", () => {
+Deno.test("shift", () => {
   const arr = setup();
   arr.shift(3);
   assertEquals(arr.size(), 7);
@@ -164,7 +164,7 @@ Deno.test("[bytes] BytesList.shift", () => {
     true,
   );
 });
-Deno.test("[bytes] BytesList.shift 2", () => {
+Deno.test("shift 2", () => {
   const arr = new BytesList();
   arr.add(new Uint8Array([0, 0, 0, 1, 2, 0]), 0, 5);
   arr.shift(2);
@@ -193,7 +193,7 @@ Deno.test("[bytes] BytesList.shift 2", () => {
   );
 });
 
-Deno.test("[bytes] BytesList.shift 3", () => {
+Deno.test("shift 3", () => {
   const arr = new BytesList();
   arr.add(new Uint8Array([0, 0, 0, 1, 2, 0]), 0, 5);
   arr.shift(100);
@@ -201,13 +201,16 @@ Deno.test("[bytes] BytesList.shift 3", () => {
   assertEquals(arr.concat().byteLength, 0);
 });
 
-Deno.test("[bytes] BytesList.iterator()", () => {
+Deno.test("iterator()", async (t) => {
   const arr = setup();
   assertEquals(Array.from(arr.iterator()), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   assertEquals(Array.from(arr.iterator(5)), [5, 6, 7, 8, 9]);
   assertEquals(Array.from(arr.iterator(-1)), []);
   assertEquals(Array.from(arr.iterator(100)), []);
+
+  await t.step("range", () => {
+  });
 });
 
-Deno.test("[bytes] ByteList.iterator() range", () => {
+Deno.test("iterator() range", () => {
 });

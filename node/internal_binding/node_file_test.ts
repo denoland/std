@@ -3,7 +3,7 @@ import { writeBuffer } from "./node_file.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
 
-Deno.test("[node/internal_binding/node_file] writeBuffer", async () => {
+Deno.test("writeBuffer", async () => {
   const tempfile = await Deno.makeTempFile();
   await Deno.writeTextFile(tempfile, "01234567890123456789");
 
@@ -29,7 +29,7 @@ Deno.test("[node/internal_binding/node_file] writeBuffer", async () => {
     await Deno.remove(tempfile);
   }
 });
-Deno.test("[node/internal_binding/node_file] writeBuffer", async () => {
+Deno.test("writeBuffer", async () => {
   const tempfile = await Deno.makeTempFile();
   await Deno.writeTextFile(tempfile, "01234567890123456789");
   const file = await Deno.open(tempfile, { read: true, write: false });

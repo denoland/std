@@ -76,7 +76,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] close callback isn't called twice if error is thrown", async () => {
+Deno.test("close callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_close.ts", import.meta.url);
   await assertCallbackErrorUncaught({

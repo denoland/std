@@ -4,7 +4,7 @@ import { assert } from "../testing/asserts.ts";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 Deno.test({
-  name: "[timingSafeEqual] - ArrayBuffer comparison - equal",
+  name: "ArrayBuffer comparison - equal",
   fn() {
     const a = new ArrayBuffer(2);
     const va = new DataView(a);
@@ -19,7 +19,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[timingSafeEqual] - ArrayBuffer comparison - not equal",
+  name: "ArrayBuffer comparison - not equal",
   fn() {
     const a = new ArrayBuffer(2);
     const va = new DataView(a);
@@ -34,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[timingSafeEqual] - Uint8Array comparison - equal",
+  name: "Uint8Array comparison - equal",
   fn() {
     const a = new Uint8Array([212, 213]);
     const b = new Uint8Array([212, 213]);
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[timingSafeEqual] - Uint8Array comparison - not equal",
+  name: "Uint8Array comparison - not equal",
   fn() {
     const a = new Uint8Array([212, 213]);
     const b = new Uint8Array([212, 212]);
@@ -52,7 +52,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[timingSafeEqual] - Uint8Array comparison - equal",
+  name: "Uint8Array comparison - equal",
   fn() {
     const encoder = new TextEncoder();
     const a = encoder.encode("hello deno");
@@ -62,7 +62,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[timingSafeEqual] - Uint8Array comparison - not equal",
+  name: "Uint8Array comparison - not equal",
   fn() {
     const encoder = new TextEncoder();
     const a = encoder.encode("hello deno");

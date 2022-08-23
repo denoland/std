@@ -65,8 +65,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[std/node/fs] Read only five bytes, so that the position moves to five",
+  name: "Read only five bytes, so that the position moves to five",
   async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
@@ -87,7 +86,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Specifies where to begin reading from in the file",
+  name: "Specifies where to begin reading from in the file",
   async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
@@ -110,7 +109,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Read fs.read(fd, options, cb) signature",
+  name: "Read fs.read(fd, options, cb) signature",
   async fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
@@ -138,7 +137,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Read fs.read(fd, cb) signature",
+  name: "Read fs.read(fd, cb) signature",
   async fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi deno");
@@ -172,7 +171,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Read only two bytes, so that the position moves to two",
+  name: "Read only two bytes, so that the position moves to two",
   fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
@@ -185,7 +184,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Read fs.readSync(fd, buffer[, options]) signature",
+  name: "Read fs.readSync(fd, buffer[, options]) signature",
   fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hello deno");

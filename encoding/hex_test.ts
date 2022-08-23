@@ -31,7 +31,7 @@ const errCases: [string, ErrorConstructor, string][] = [
   ["ffeed", RangeError, ""],
 ];
 
-Deno.test("[encoding.hex] encode", () => {
+Deno.test("encode", () => {
   {
     const srcStr = "abc";
     const src = new TextEncoder().encode(srcStr);
@@ -48,7 +48,7 @@ Deno.test("[encoding.hex] encode", () => {
   }
 });
 
-Deno.test("[encoding.hex] decode", () => {
+Deno.test("decode", () => {
   // Case for decoding uppercase hex characters, since
   // Encode always uses lowercase.
   const extraTestcase = [
@@ -64,7 +64,7 @@ Deno.test("[encoding.hex] decode", () => {
   }
 });
 
-Deno.test("[encoding.hex] decode error", () => {
+Deno.test("decode error", () => {
   for (const [input, expectedErr, msg] of errCases) {
     assertThrows(
       () => decode(new TextEncoder().encode(input)),

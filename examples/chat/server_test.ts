@@ -36,7 +36,7 @@ async function startServer(): Promise<
 }
 
 Deno.test({
-  name: "[examples/chat] GET / should serve html",
+  name: "GET / should serve html",
   async fn() {
     const server = await startServer();
     try {
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[examples/chat] GET /ws should upgrade conn to ws",
+  name: "GET /ws should upgrade conn to ws",
   async fn() {
     const server = await startServer();
     let ws: WebSocket;

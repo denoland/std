@@ -8,7 +8,7 @@ import {
 } from "./delimiter.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 
-Deno.test("[streams] LineStream", async () => {
+Deno.test("LineStream", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");
@@ -40,7 +40,7 @@ Deno.test("[streams] LineStream", async () => {
   assert(f.done);
 });
 
-Deno.test("[streams] TextLineStream", async () => {
+Deno.test("TextLineStream", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");
@@ -88,7 +88,7 @@ Deno.test("[streams] TextLineStream", async () => {
   ]);
 });
 
-Deno.test("[streams] TextLineStream - allowCR", async () => {
+Deno.test("TextLineStream - allowCR", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");
@@ -143,7 +143,7 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
   ]);
 });
 
-Deno.test("[streams] TextLineStream - large chunks", async () => {
+Deno.test("TextLineStream - large chunks", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("\n".repeat(10000));
@@ -160,7 +160,7 @@ Deno.test("[streams] TextLineStream - large chunks", async () => {
   assertEquals(lines, 20001);
 });
 
-Deno.test("[streams] DelimiterStream", async () => {
+Deno.test("DelimiterStream", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");
@@ -192,7 +192,7 @@ Deno.test("[streams] DelimiterStream", async () => {
   assert(f.done);
 });
 
-Deno.test("[streams] TextDelimiterStream", async () => {
+Deno.test("TextDelimiterStream", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");

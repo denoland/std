@@ -13,21 +13,21 @@ import * as util from "./util.ts";
 import "./internal/errors.ts";
 
 Deno.test({
-  name: "[util] format",
+  name: "format",
   fn() {
     assertEquals(util.format("%o", [10, 11]), "[ 10, 11, [length]: 2 ]");
   },
 });
 
 Deno.test({
-  name: "[util] inspect.custom",
+  name: "inspect.custom",
   fn() {
     assertEquals(util.inspect.custom, Symbol.for("nodejs.util.inspect.custom"));
   },
 });
 
 Deno.test({
-  name: "[util] inspect",
+  name: "inspect",
   fn() {
     assertEquals(stripColor(util.inspect({ foo: 123 })), "{ foo: 123 }");
     assertEquals(stripColor(util.inspect("foo")), "'foo'");
@@ -46,7 +46,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isBoolean",
+  name: "isBoolean",
   fn() {
     assert(util.isBoolean(true));
     assert(util.isBoolean(new Boolean()));
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isNull",
+  name: "isNull",
   fn() {
     let n;
     assert(util.isNull(null));
@@ -69,7 +69,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isNullOrUndefined",
+  name: "isNullOrUndefined",
   fn() {
     let n;
     assert(util.isNullOrUndefined(null));
@@ -80,7 +80,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isNumber",
+  name: "isNumber",
   fn() {
     assert(util.isNumber(666));
     assert(util.isNumber(new Number(666)));
@@ -90,7 +90,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isString",
+  name: "isString",
   fn() {
     assert(util.isString("deno"));
     assert(util.isString(new String("DIO")));
@@ -99,7 +99,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isSymbol",
+  name: "isSymbol",
   fn() {
     assert(util.isSymbol(Symbol()));
     assert(!util.isSymbol(123));
@@ -108,7 +108,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isUndefined",
+  name: "isUndefined",
   fn() {
     let t;
     assert(util.isUndefined(t));
@@ -118,7 +118,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isObject",
+  name: "isObject",
   fn() {
     const dio = { stand: "Za Warudo" };
     assert(util.isObject(dio));
@@ -128,7 +128,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isError",
+  name: "isError",
   fn() {
     const java = new Error();
     const nodejs = new TypeError();
@@ -140,7 +140,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isFunction",
+  name: "isFunction",
   fn() {
     const f = function (): void {};
     assert(util.isFunction(f));
@@ -150,7 +150,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isRegExp",
+  name: "isRegExp",
   fn() {
     assert(util.isRegExp(new RegExp(/f/)));
     assert(util.isRegExp(/fuManchu/));
@@ -160,7 +160,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isArray",
+  name: "isArray",
   fn() {
     assert(util.isArray([]));
     assert(!util.isArray({ yaNo: "array" }));
@@ -169,7 +169,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isPrimitive",
+  name: "isPrimitive",
   fn() {
     const stringType = "hasti";
     const booleanType = true;
@@ -193,7 +193,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] TextDecoder",
+  name: "TextDecoder",
   fn() {
     assert(util.TextDecoder === TextDecoder);
     const td: util.TextDecoder = new util.TextDecoder();
@@ -202,7 +202,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] TextEncoder",
+  name: "TextEncoder",
   fn() {
     assert(util.TextEncoder === TextEncoder);
     const te: util.TextEncoder = new util.TextEncoder();
@@ -211,7 +211,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] isDate",
+  name: "isDate",
   fn() {
     // Test verifies the method is exposed. See _util/_util_types_test for details
     assert(util.types.isDate(new Date()));
@@ -219,7 +219,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[util] getSystemErrorName()",
+  name: "getSystemErrorName()",
   fn() {
     type FnTestInvalidArg = (code?: unknown) => void;
 

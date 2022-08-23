@@ -119,7 +119,7 @@ const testCasesDelimiter: TestCases = {
 for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
-    name: `[encoding/ascii85] encode ${standard}`,
+    name: `encode ${standard}`,
     fn(): void {
       for (const [bin, b85] of tests) {
         assertEquals(
@@ -133,7 +133,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
   });
 
   Deno.test({
-    name: `[encoding/ascii85] decode ${standard}`,
+    name: `decode ${standard}`,
     fn(): void {
       for (const [bin, b85] of tests) {
         assertEquals(
@@ -147,7 +147,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
 for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
-    name: `[encoding/ascii85] encode ${standard} with delimiter`,
+    name: `encode ${standard} with delimiter`,
     fn(): void {
       for (const [bin, b85] of tests) {
         assertEquals(
@@ -162,7 +162,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
   });
 
   Deno.test({
-    name: `[encoding/ascii85] decode ${standard} with delimiter`,
+    name: `decode ${standard} with delimiter`,
     fn(): void {
       for (const [bin, b85] of tests) {
         assertEquals(

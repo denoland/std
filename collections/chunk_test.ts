@@ -15,7 +15,7 @@ function chunkTest<I>(
 const testArray = [1, 2, 3, 4, 5, 6];
 
 Deno.test({
-  name: "[collections/chunk] no mutation",
+  name: "no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     chunk(array, 2);
@@ -25,7 +25,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] throws on non naturals",
+  name: "throws on non naturals",
   fn() {
     assertThrows(() => chunk([], +.5));
     assertThrows(() => chunk([], -4.7));
@@ -36,7 +36,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] empty input",
+  name: "empty input",
   fn() {
     chunkTest(
       [[], 1],
@@ -46,7 +46,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] single element chunks",
+  name: "single element chunks",
   fn() {
     chunkTest(
       [testArray, 1],
@@ -60,7 +60,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] n chunks fitting",
+  name: "n chunks fitting",
   fn() {
     chunkTest(
       [testArray, 2],
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] n chunks not fitting",
+  name: "n chunks not fitting",
   fn() {
     chunkTest(
       [testArray, 4],
@@ -88,7 +88,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunk] chunks equal to length",
+  name: "chunks equal to length",
   fn() {
     chunkTest(
       [testArray, testArray.length],

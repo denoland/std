@@ -6,7 +6,7 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 Deno.test({
-  name: "[examples/curl] send a request to a specified url",
+  name: "send a request to a specified url",
   fn: async () => {
     const abortController = new AbortController();
     const serverPromise = listenAndServe(

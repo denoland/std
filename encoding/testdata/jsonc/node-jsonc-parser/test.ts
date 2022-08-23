@@ -29,7 +29,7 @@ function assertInvalidParse(
   );
 }
 
-Deno.test("[jsonc] parse node-jsonc-parser:literals", () => {
+Deno.test("parse node-jsonc-parser:literals", () => {
   assertValidParse("true", true);
   assertValidParse("false", false);
   assertValidParse("null", null);
@@ -48,7 +48,7 @@ Deno.test("[jsonc] parse node-jsonc-parser:literals", () => {
   assertValidParse("1.2E-3 // comment", 1.2E-3);
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:objects", () => {
+Deno.test("parse node-jsonc-parser:objects", () => {
   assertValidParse("{}", {});
   assertValidParse('{ "foo": true }', { foo: true });
   assertValidParse('{ "bar": 8, "xoo": "foo" }', { bar: 8, xoo: "foo" });
@@ -74,14 +74,14 @@ Deno.test("[jsonc] parse node-jsonc-parser:objects", () => {
   assertValidParse('{ "": true }', { "": true });
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:arrays", () => {
+Deno.test("parse node-jsonc-parser:arrays", () => {
   assertValidParse("[]", []);
   assertValidParse("[ [],  [ [] ]]", [[], [[]]]);
   assertValidParse("[ 1, 2, 3 ]", [1, 2, 3]);
   assertValidParse('[ { "a": null } ]', [{ a: null }]);
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:objects with errors", () => {
+Deno.test("parse node-jsonc-parser:objects with errors", () => {
   assertInvalidParse("{,}", SyntaxError);
   assertInvalidParse('{ "foo": true, }', SyntaxError, undefined, {
     allowTrailingComma: false,
@@ -93,19 +93,19 @@ Deno.test("[jsonc] parse node-jsonc-parser:objects with errors", () => {
   assertInvalidParse('{ 8, "foo": 9 }', SyntaxError);
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:array with errors", () => {
+Deno.test("parse node-jsonc-parser:array with errors", () => {
   assertInvalidParse("[,]", SyntaxError);
   assertInvalidParse("[ 1 2, 3 ]", SyntaxError);
   assertInvalidParse("[ ,1, 2, 3 ]", SyntaxError);
   assertInvalidParse("[ ,1, 2, 3, ]", SyntaxError);
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:errors", () => {
+Deno.test("parse node-jsonc-parser:errors", () => {
   assertInvalidParse("", SyntaxError);
   assertInvalidParse("1,1", SyntaxError);
 });
 
-Deno.test("[jsonc] parse node-jsonc-parser:trailing comma", () => {
+Deno.test("parse node-jsonc-parser:trailing comma", () => {
   const options = { allowTrailingComma: false };
   assertValidParse('{ "hello": [], }', { hello: [] });
   assertValidParse('{ "hello": [] }', { hello: [] });

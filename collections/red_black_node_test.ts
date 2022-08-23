@@ -2,7 +2,7 @@
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { RedBlackNode } from "./red_black_node.ts";
 
-Deno.test("[collections/RedBlackNode] constructor and from", () => {
+Deno.test("constructor and from", () => {
   const parent: RedBlackNode<number> = new RedBlackNode(null, 5);
   const child: RedBlackNode<number> = new RedBlackNode(parent, 7);
   parent.left = child;

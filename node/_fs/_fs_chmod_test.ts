@@ -45,7 +45,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] chmod callback isn't called twice if error is thrown",
+  name: "chmod callback isn't called twice if error is thrown",
   ignore: isWindows,
   async fn() {
     const tempFile = await Deno.makeTempFile();

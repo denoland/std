@@ -58,7 +58,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] lstat callback isn't called twice if error is thrown", async () => {
+Deno.test("lstat callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_lstat.ts", import.meta.url);
   await assertCallbackErrorUncaught({

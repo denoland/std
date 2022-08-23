@@ -4,7 +4,7 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
-Deno.test("[examples/colors] print a colored text", async () => {
+Deno.test("print a colored text", async () => {
   const decoder = new TextDecoder();
   const { stdout } = await Deno.spawn(Deno.execPath(), {
     args: ["run", "--quiet", "colors.ts"],

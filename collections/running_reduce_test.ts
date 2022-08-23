@@ -4,7 +4,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { runningReduce } from "./running_reduce.ts";
 
 Deno.test({
-  name: "[collections/runningReduce] no mutation",
+  name: "no mutation",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     runningReduce(numbers, (sum, current) => sum + current, 0);
@@ -14,7 +14,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] array of numbers initialValue 0",
+  name: "array of numbers initialValue 0",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(numbers, (sum, current) => sum + current, 0);
@@ -24,7 +24,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] array of numbers initialValue 5",
+  name: "array of numbers initialValue 5",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(numbers, (sum, current) => sum + current, 5);
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] empty array initialValue 0",
+  name: "empty array initialValue 0",
   fn() {
     const result = runningReduce([], (sum, current) => sum + current, 0);
 
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] empty array initialValue 5",
+  name: "empty array initialValue 5",
   fn() {
     const result = runningReduce([], (sum, current) => sum + current, 5);
 
@@ -76,7 +76,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] array of objects initialValue 0",
+  name: "array of objects initialValue 0",
   fn() {
     const medals = [
       { country: "USA", count: 113 },
@@ -112,7 +112,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] reduce array of numbers with currentIndex",
+  name: "reduce array of numbers with currentIndex",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] reduce array of strings with currentIndex",
+  name: "reduce array of strings with currentIndex",
   fn() {
     const strings = ["a", "b", "c", "d", "e"];
     const result = runningReduce(
@@ -140,7 +140,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] reduce array of objects with currentIndex",
+  name: "reduce array of objects with currentIndex",
   fn() {
     const medals = [
       { country: "USA", count: 113 },

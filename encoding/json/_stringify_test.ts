@@ -37,7 +37,7 @@ async function assertInvalidStringify(
 }
 
 Deno.test({
-  name: "[encoding/json/stream] JSONStringifyStream",
+  name: "JSONStringifyStream",
   async fn() {
     await assertValidStringify(
       JSONStringifyStream,
@@ -48,7 +48,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONStringifyStream: throws",
+  name: "JSONStringifyStream: throws",
   async fn() {
     const cyclic: Record<string, unknown> = {};
     cyclic.cyclic = cyclic;
@@ -63,7 +63,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONStringifyStream: prefix and suffix",
+  name: "JSONStringifyStream: prefix and suffix",
   async fn() {
     await assertValidStringify(
       JSONStringifyStream,

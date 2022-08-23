@@ -8,7 +8,7 @@ import { existsSync } from "./_fs_exists.ts";
 const destFile = "./destination.txt";
 
 Deno.test({
-  name: "[std/node/fs] copy file",
+  name: "copy file",
   fn: async () => {
     const sourceFile = Deno.makeTempFileSync();
     const err = await new Promise((resolve) => {
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] copy file sync",
+  name: "copy file sync",
   fn: () => {
     const sourceFile = Deno.makeTempFileSync();
     copyFileSync(sourceFile, destFile);
@@ -32,7 +32,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] copyFile callback isn't called twice if error is thrown", async () => {
+Deno.test("copyFile callback isn't called twice if error is thrown", async () => {
   // The correct behaviour is not to catch any errors thrown,
   // but that means there'll be an uncaught error and the test will fail.
   // So the only way to test this is to spawn a subprocess, and succeed if it has a non-zero exit code.

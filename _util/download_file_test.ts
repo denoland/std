@@ -7,7 +7,7 @@ import { listenAndServe } from "../http/server.ts";
 
 import { downloadFile } from "./download_file.ts";
 
-Deno.test("[node/_tools/setup] downloadFile", async () => {
+Deno.test("setup downloadFile", async () => {
   const tmpdir = await Deno.makeTempDir();
   try {
     const controller = new AbortController();

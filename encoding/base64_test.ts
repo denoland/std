@@ -19,25 +19,25 @@ const testsetBinary = testsetString.map(([str, b64]) => [
   b64,
 ]) as Array<[Uint8Array, string]>;
 
-Deno.test("[encoding/base64] testBase64EncodeString", () => {
+Deno.test("testBase64EncodeString", () => {
   for (const [input, output] of testsetString) {
     assertEquals(encode(input), output);
   }
 });
 
-Deno.test("[encoding/base64] testBase64EncodeBinary", () => {
+Deno.test("testBase64EncodeBinary", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(encode(input), output);
   }
 });
 
-Deno.test("[encoding/base64] testBase64EncodeBinaryBuffer", () => {
+Deno.test("testBase64EncodeBinaryBuffer", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(encode(input.buffer), output);
   }
 });
 
-Deno.test("[encoding/base64] testBase64DecodeBinary", () => {
+Deno.test("testBase64DecodeBinary", () => {
   for (const [input, output] of testsetBinary) {
     const outputBinary = decode(output);
     assertEquals(outputBinary, input);

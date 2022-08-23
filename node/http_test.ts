@@ -117,7 +117,7 @@ Deno.test("[node/http chunked response", async () => {
   }
 });
 
-Deno.test("[node/http] request default protocol", async () => {
+Deno.test("request default protocol", async () => {
   const promise = deferred<void>();
   const server = http.createServer((_, res) => {
     res.end("ok");

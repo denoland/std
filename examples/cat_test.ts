@@ -4,7 +4,7 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
-Deno.test("[examples/cat] print multiple files", async () => {
+Deno.test("print multiple files", async () => {
   const decoder = new TextDecoder();
   const { stdout } = await Deno.spawn(Deno.execPath(), {
     args: [

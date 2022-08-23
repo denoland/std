@@ -664,7 +664,7 @@ Deno.test("bufioReadLineBufferFullError", async () => {
   assertEquals(line, encoder.encode("@".repeat(4096)));
 });
 
-Deno.test("[io] readStringDelim basic", async () => {
+Deno.test("readStringDelim basic", async () => {
   const delim = "!#$%&()=~";
   const exp = [
     "",
@@ -687,7 +687,7 @@ Deno.test("[io] readStringDelim basic", async () => {
   assertEquals(arr, exp);
 });
 
-Deno.test("[io] readStringDelim bigger delim than buf size", async () => {
+Deno.test("readStringDelim bigger delim than buf size", async () => {
   // 0123456789...
   const delim = Array.from({ length: 1025 }).map((_, i) => i % 10).join("");
   const exp = ["", "a", "bc", "def", "01", "012345678", "123456789", "", ""];
@@ -699,7 +699,7 @@ Deno.test("[io] readStringDelim bigger delim than buf size", async () => {
   assertEquals(arr, exp);
 });
 
-Deno.test("[io] readStringDelim delim=1213", async () => {
+Deno.test("readStringDelim delim=1213", async () => {
   const delim = "1213";
   const exp = ["", "a", "bc", "def", "01", "012345678", "123456789", "", ""];
   const str = exp.join(delim);

@@ -38,7 +38,7 @@ Deno.test("realpathSync", function () {
   assertEquals(realPath, realSymLinkPath);
 });
 
-Deno.test("[std/node/fs] realpath callback isn't called twice if error is thrown", async () => {
+Deno.test("realpath callback isn't called twice if error is thrown", async () => {
   const tempDir = await Deno.makeTempDir();
   const tempFile = path.join(tempDir, "file.txt");
   const linkFile = path.join(tempDir, "link.txt");

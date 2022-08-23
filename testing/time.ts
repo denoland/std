@@ -3,6 +3,8 @@
 /**
  * Utilities for mocking time while testing.
  *
+ * This module is browser compatible.
+ *
  * @module
  */
 

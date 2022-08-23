@@ -26,7 +26,7 @@ export function testWalk(
       await Deno.remove(d, { recursive: true });
     }
   }
-  Deno.test({ ignore, name: `[walk] ${name}`, fn });
+  Deno.test({ ignore, name, fn });
 }
 
 function normalize({ path }: WalkEntry): string {

@@ -14,7 +14,7 @@ function reader(s: string): TextProtoReader {
 
 Deno.test({
   ignore: true,
-  name: "[textproto] Reader : DotBytes",
+  name: "Reader : DotBytes",
   fn() {
     const _input =
       "dotlines\r\n.foo\r\n..bar\n...baz\nquux\r\n\r\n.\r\nanot.her\r\n";
@@ -22,13 +22,13 @@ Deno.test({
   },
 });
 
-Deno.test("[textproto] ReadEmpty", async () => {
+Deno.test("ReadEmpty", async () => {
   const r = reader("");
   const m = await r.readMIMEHeader();
   assertEquals(m, null);
 });
 
-Deno.test("[textproto] Reader", async () => {
+Deno.test("Reader", async () => {
   const r = reader("line1\nline2\n");
   let s = await r.readLine();
   assertEquals(s, "line1");
@@ -41,7 +41,7 @@ Deno.test("[textproto] Reader", async () => {
 });
 
 Deno.test({
-  name: "[textproto] Reader : MIME Header",
+  name: "Reader : MIME Header",
   async fn() {
     const input =
       "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: " +
@@ -55,7 +55,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] Reader : MIME Header Single",
+  name: "Reader : MIME Header Single",
   async fn() {
     const input = "Foo: bar\n\n";
     const r = reader(input);
@@ -66,7 +66,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] Reader : MIME Header No Key",
+  name: "Reader : MIME Header No Key",
   async fn() {
     const input = ": bar\ntest-1: 1\n\n";
     const r = reader(input);
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] Reader : Large MIME Header",
+  name: "Reader : Large MIME Header",
   async fn() {
     const data: string[] = [];
     // Go test is 16*1024. But seems it can't handle more
@@ -95,7 +95,7 @@ Deno.test({
 // Test that we don't read MIME headers seen in the wild,
 // with spaces before colons, and spaces in keys.
 Deno.test({
-  name: "[textproto] Reader : MIME Header Non compliant",
+  name: "Reader : MIME Header Non compliant",
   async fn() {
     const input = "Foo: bar\r\n" +
       "Content-Language: en\r\n" +
@@ -118,7 +118,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] Reader : MIME Header Malformed",
+  name: "Reader : MIME Header Malformed",
   async fn() {
     const input = [
       "No colon first line\r\nFoo: foo\r\n\r\n",
@@ -141,7 +141,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] Reader : MIME Header Trim Continued",
+  name: "Reader : MIME Header Trim Continued",
   async fn() {
     const input = "a:\n" +
       " 0 \r\n" +
@@ -161,7 +161,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[textproto] #409 issue : multipart form boundary",
+  name: "#409 issue : multipart form boundary",
   async fn() {
     const input = [
       "Accept: */*\r\n",
@@ -179,7 +179,7 @@ Deno.test({
 
 /* TODO(kt3k): Enable this test
 Deno.test({
-  name: "[textproto] #4521 issue",
+  name: "#4521 issue",
   async fn() {
     const input = "abcdefghijklmnopqrstuvwxyz";
     const bufSize = 25;
@@ -193,7 +193,7 @@ Deno.test({
 */
 
 Deno.test({
-  name: "[textproto] PR #859",
+  name: "PR #859",
   async fn() {
     const TESTS: Array<string> = [
       "Hello, World!",

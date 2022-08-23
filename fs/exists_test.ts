@@ -6,7 +6,7 @@ import { exists, existsSync } from "./exists.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("[fs] existsFile", async function () {
+Deno.test("existsFile", async function () {
   assertEquals(
     await exists(path.join(testdataDir, "not_exist_file.ts")),
     false,
@@ -14,12 +14,12 @@ Deno.test("[fs] existsFile", async function () {
   assertEquals(await existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
-Deno.test("[fs] existsFileSync", function (): void {
+Deno.test("existsFileSync", function (): void {
   assertEquals(existsSync(path.join(testdataDir, "not_exist_file.ts")), false);
   assertEquals(existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
-Deno.test("[fs] existsDirectory", async function () {
+Deno.test("existsDirectory", async function () {
   assertEquals(
     await exists(path.join(testdataDir, "not_exist_directory")),
     false,
@@ -27,7 +27,7 @@ Deno.test("[fs] existsDirectory", async function () {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsDirectorySync", function (): void {
+Deno.test("existsDirectorySync", function (): void {
   assertEquals(
     existsSync(path.join(testdataDir, "not_exist_directory")),
     false,
@@ -35,13 +35,13 @@ Deno.test("[fs] existsDirectorySync", function (): void {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsLinkSync", function (): void {
+Deno.test("existsLinkSync", function (): void {
   // TODO(axetroy): generate link file use Deno api instead of set a link file
   // in repository
   assertEquals(existsSync(path.join(testdataDir, "0-link")), true);
 });
 
-Deno.test("[fs] existsLink", async function () {
+Deno.test("existsLink", async function () {
   // TODO(axetroy): generate link file use Deno api instead of set a link file
   // in repository
   assertEquals(await exists(path.join(testdataDir, "0-link")), true);
@@ -112,7 +112,7 @@ const scenes: Scenes[] = [
 for (const s of scenes) {
   let title = `test ${s.async ? "exists" : "existsSync"}("testdata/${s.file}")`;
   title += ` ${s.read ? "with" : "without"} --allow-read`;
-  Deno.test(`[fs] existsPermission ${title}`, async function () {
+  Deno.test(`existsPermission ${title}`, async function () {
     const args = ["run", "--quiet", "--no-prompt"];
 
     if (s.read) {

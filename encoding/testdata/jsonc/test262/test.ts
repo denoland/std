@@ -18,7 +18,7 @@ for await (
   }
   // Register a test case for each file.
   Deno.test({
-    name: `[jsonc] parse test262:${dirEntry.name}`,
+    name: `parse test262:${dirEntry.name}`,
     async fn() {
       // Run the test case to make sure there are no errors.
       // Check if the JSONC module passes the test case for JSON.parse.

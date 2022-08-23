@@ -11,7 +11,7 @@ const keyFile = join(tlsDataDir, "localhost.key");
 const certFile = join(tlsDataDir, "localhost.crt");
 const dec = new TextDecoder();
 
-Deno.test("[node/https] request makes https request", async () => {
+Deno.test("request makes https request", async () => {
   const controller = new AbortController();
   const signal = controller.signal;
 
@@ -38,7 +38,7 @@ Deno.test("[node/https] request makes https request", async () => {
   await serveFinish;
 });
 
-Deno.test("[node/https] get makes https GET request", async () => {
+Deno.test("get makes https GET request", async () => {
   const controller = new AbortController();
   const signal = controller.signal;
 

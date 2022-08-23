@@ -3,7 +3,7 @@ import * as fs from "../fs.ts";
 import { assertRejects } from "../../testing/asserts.ts";
 
 Deno.test(
-  "[node/fs.access] Uses the owner permission when the user is the owner",
+  "Uses the owner permission when the user is the owner",
   { ignore: Deno.build.os === "windows" },
   async () => {
     const file = await Deno.makeTempFile();

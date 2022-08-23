@@ -4,7 +4,7 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import { sample } from "./sample.ts";
 
 Deno.test({
-  name: "[collections/sample] no mutation",
+  name: "no mutation",
   fn() {
     const array = ["a", "abc", "ba"];
     sample(array);
@@ -14,7 +14,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sample] empty input",
+  name: "empty input",
   fn() {
     const actual = sample([]);
     assertEquals(actual, undefined);
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sample] array of number",
+  name: "array of number",
   fn() {
     const input = [1, 2, 3];
     const actual = sample([1, 2, 3]);
@@ -32,7 +32,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sample] array of objects",
+  name: "array of objects",
   fn() {
     const input = [
       {

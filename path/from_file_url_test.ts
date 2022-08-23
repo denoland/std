@@ -2,7 +2,7 @@
 import { posix, win32 } from "./mod.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
-Deno.test("[path] fromFileUrl", function () {
+Deno.test("fromFileUrl", function () {
   assertEquals(posix.fromFileUrl(new URL("file:///home/foo")), "/home/foo");
   assertEquals(posix.fromFileUrl("file:///"), "/");
   assertEquals(posix.fromFileUrl("file:///home/foo"), "/home/foo");
@@ -25,7 +25,7 @@ Deno.test("[path] fromFileUrl", function () {
   );
 });
 
-Deno.test("[path] fromFileUrl (win32)", function () {
+Deno.test("fromFileUrl (win32)", function () {
   assertEquals(win32.fromFileUrl(new URL("file:///home/foo")), "\\home\\foo");
   assertEquals(win32.fromFileUrl("file:///"), "\\");
   assertEquals(win32.fromFileUrl("file:///home/foo"), "\\home\\foo");

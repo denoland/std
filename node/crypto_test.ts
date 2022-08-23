@@ -4,7 +4,7 @@ import { Buffer } from "./buffer.ts";
 import { createHash, getHashes, randomUUID } from "./crypto.ts";
 import { Readable } from "./stream.ts";
 
-Deno.test("[node/crypto.Hash] basic usage - buffer output", () => {
+Deno.test("[Hash] basic usage - buffer output", () => {
   const d = createHash("sha1").update("abc").update("def").digest();
   assertEquals(
     d,
@@ -33,12 +33,12 @@ Deno.test("[node/crypto.Hash] basic usage - buffer output", () => {
   );
 });
 
-Deno.test("[node/crypto.Hash] basic usage - hex output", () => {
+Deno.test("[Hash] basic usage - hex output", () => {
   const d = createHash("sha1").update("abc").update("def").digest("hex");
   assertEquals(d, "1f8ac10f23c5b5bc1167bda84b833e5c057a77d2");
 });
 
-Deno.test("[node/crypto.Hash] streaming usage", async () => {
+Deno.test("[Hash] streaming usage", async () => {
   const source = Readable.from(["abc", "def"]);
   const hash = createHash("sha1");
   const dest = source.pipe(hash);
@@ -78,7 +78,7 @@ Deno.test("[node/crypto.Hash] streaming usage", async () => {
   );
 });
 
-Deno.test("[node/crypto.getHashes]", () => {
+Deno.test("[getHashes]", () => {
   for (const algorithm of getHashes()) {
     const d = createHash(algorithm).update("abc").digest();
     assert(d instanceof Buffer);
@@ -86,7 +86,7 @@ Deno.test("[node/crypto.getHashes]", () => {
   }
 });
 
-Deno.test("[node/crypto.getRandomUUID] works the same way as Web Crypto API", () => {
+Deno.test("[getRandomUUID] works the same way as Web Crypto API", () => {
   assertEquals(randomUUID().length, crypto.randomUUID().length);
   assertEquals(typeof randomUUID(), typeof crypto.randomUUID());
 });

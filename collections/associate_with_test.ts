@@ -13,7 +13,7 @@ function associateWithTest<T>(
 }
 
 Deno.test({
-  name: "[collections/associateWith] no mutation",
+  name: "no mutation",
   fn() {
     const arrayA = ["Foo", "Bar"];
     associateWith(arrayA, (it) => it.charAt(0));
@@ -23,14 +23,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/associateWith] empty input",
+  name: "empty input",
   fn() {
     associateWithTest([[], () => "abc"], {});
   },
 });
 
 Deno.test({
-  name: "[collections/associateWith] associates",
+  name: "associates",
   fn() {
     associateWithTest<number>(
       [
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/associateWith] duplicate keys",
+  name: "duplicate keys",
   fn() {
     associateWithTest(
       [

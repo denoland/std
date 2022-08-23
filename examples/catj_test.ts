@@ -4,7 +4,7 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
-Deno.test("[examples/catj] print an array", async () => {
+Deno.test("print an array", async () => {
   const decoder = new TextDecoder();
   const process = catj("testdata/catj/array.json");
 
@@ -22,7 +22,7 @@ Deno.test("[examples/catj] print an array", async () => {
   assertStrictEquals(actual, expected);
 });
 
-Deno.test("[examples/catj] print an object", async () => {
+Deno.test("print an object", async () => {
   const decoder = new TextDecoder();
   const process = catj("testdata/catj/object.json");
 
@@ -38,7 +38,7 @@ Deno.test("[examples/catj] print an object", async () => {
   assertStrictEquals(actual, expected);
 });
 
-Deno.test("[examples/catj] print multiple files", async () => {
+Deno.test("print multiple files", async () => {
   const decoder = new TextDecoder();
   const process = catj(
     "testdata/catj/simple-object.json",
@@ -53,7 +53,7 @@ Deno.test("[examples/catj] print multiple files", async () => {
   assertStrictEquals(actual, expected);
 });
 
-Deno.test("[examples/catj] read from stdin", async () => {
+Deno.test("read from stdin", async () => {
   const decoder = new TextDecoder();
   const process = catj("-");
   const input = `{ "foo": "bar" }`;

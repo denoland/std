@@ -87,7 +87,7 @@ const testCases = [
 ];
 
 Deno.test({
-  name: "[encoding.base32] encode",
+  name: "encode",
   fn(): void {
     for (const [bin, b32] of testCases) {
       assertEquals(encode(fromHexString(bin)), b32);
@@ -96,7 +96,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] decode",
+  name: "decode",
   fn(): void {
     for (const [bin, b32] of testCases) {
       assertEquals(toHexString(decode(b32)), bin);
@@ -105,7 +105,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] decode bad length",
+  name: "decode bad length",
   fn(): void {
     let errorCaught = false;
     try {
@@ -122,7 +122,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] decode bad padding",
+  name: "decode bad padding",
   fn(): void {
     let errorCaught = false;
     try {

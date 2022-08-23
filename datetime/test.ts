@@ -4,7 +4,7 @@ import { FakeTime } from "../testing/time.ts";
 import * as datetime from "./mod.ts";
 
 Deno.test({
-  name: "[std/datetime] parse",
+  name: "parse",
   fn: () => {
     assertEquals(
       datetime.parse("01-03-2019 16:30", "MM-dd-yyyy HH:mm"),
@@ -65,7 +65,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
+Deno.test("parse: The date is 2021-12-31", () => {
   const time = new FakeTime("2021-12-31");
   try {
     assertEquals(
@@ -135,7 +135,7 @@ Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
 });
 
 Deno.test({
-  name: "[std/datetime] invalidParseDateTimeFormatThrows",
+  name: "invalidParseDateTimeFormatThrows",
   fn: () => {
     assertThrows((): void => {
       // deno-lint-ignore no-explicit-any
@@ -149,7 +149,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] format",
+  name: "format",
   fn: () => {
     // 00 hours
     assertEquals(
@@ -216,7 +216,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] dayOfYear",
+  name: "dayOfYear",
   fn: () => {
     // from https://golang.org/src/time/time_test.go
     // Test YearDay in several different scenarios
@@ -400,7 +400,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] weekOfYear",
+  name: "weekOfYear",
   fn: () => {
     assertEquals(datetime.weekOfYear(new Date("2020-01-05T03:00:00.000Z")), 1);
     assertEquals(datetime.weekOfYear(new Date("2020-06-28T03:00:00.000Z")), 26);
@@ -462,7 +462,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] to IMF",
+  name: "to IMF",
   fn(): void {
     const actual = datetime.toIMF(new Date(Date.UTC(1994, 3, 5, 15, 32)));
     const expected = "Tue, 05 Apr 1994 15:32:00 GMT";
@@ -471,7 +471,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] to IMF 0",
+  name: "to IMF 0",
   fn(): void {
     const actual = datetime.toIMF(new Date(0));
     const expected = "Thu, 01 Jan 1970 00:00:00 GMT";
@@ -480,7 +480,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] isLeap",
+  name: "isLeap",
   fn(): void {
     assert(datetime.isLeap(1992));
     assert(datetime.isLeap(2000));
@@ -490,7 +490,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] difference",
+  name: "difference",
   fn(): void {
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");
@@ -514,7 +514,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] constants",
+  name: "constants",
   fn(): void {
     assertEquals(datetime.SECOND, 1e3);
     assertEquals(datetime.MINUTE, datetime.SECOND * 60);

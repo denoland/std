@@ -7,7 +7,7 @@ import {
 } from "./merge.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
-Deno.test("[streams] mergeReadableStreams", async () => {
+Deno.test("mergeReadableStreams", async () => {
   const textStream = new ReadableStream<string>({
     start(controller) {
       controller.enqueue("qwertzuiopasd");
@@ -41,7 +41,7 @@ Deno.test("[streams] mergeReadableStreams", async () => {
   ]);
 });
 
-Deno.test("[streams] zipReadableStreams", async () => {
+Deno.test("zipReadableStreams", async () => {
   const textStream = new ReadableStream<string>({
     start(controller) {
       controller.enqueue("qwertzuiopasd");
@@ -75,7 +75,7 @@ Deno.test("[streams] zipReadableStreams", async () => {
   ]);
 });
 
-Deno.test("[streams] earlyZipReadableStreams short first", async () => {
+Deno.test("earlyZipReadableStreams short first", async () => {
   const textStream = new ReadableStream<string>({
     start(controller) {
       controller.enqueue("1");
@@ -111,7 +111,7 @@ Deno.test("[streams] earlyZipReadableStreams short first", async () => {
   ]);
 });
 
-Deno.test("[streams] earlyZipReadableStreams long first", async () => {
+Deno.test("earlyZipReadableStreams long first", async () => {
   const textStream = new ReadableStream<string>({
     start(controller) {
       controller.enqueue("a");

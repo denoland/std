@@ -13,7 +13,7 @@ function mapNotNullishTest<T, O>(
 }
 
 Deno.test({
-  name: "[collections/mapNotNullish] no mutation",
+  name: "no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     mapNotNullish(array, (it) => it * 2);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapNotNullish] empty input",
+  name: "empty input",
   fn() {
     mapNotNullishTest(
       [[], (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapNotNullish] identity",
+  name: "identity",
   fn() {
     mapNotNullishTest(
       [
@@ -46,7 +46,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapNotNullish] mappers without nullish values",
+  name: "mappers without nullish values",
   fn() {
     mapNotNullishTest(
       [
@@ -66,7 +66,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapNotNullish] mappers with nullish values",
+  name: "mappers with nullish values",
   fn() {
     mapNotNullishTest(
       [

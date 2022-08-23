@@ -5,7 +5,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { assertSpyCall, assertSpyCalls, spy } from "../testing/mock.ts";
 
 Deno.test({
-  name: "[perf_hooks] performance",
+  name: "performance",
   fn() {
     assertEquals(perfHooks.performance.measure, performance.measure);
     assertEquals(perfHooks.performance.clearMarks, performance.clearMarks);
@@ -21,7 +21,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[perf_hooks] performance destructured",
+  name: "performance destructured",
   fn() {
     performance.measure("test");
     performance.mark("test");
@@ -32,14 +32,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[perf_hooks] PerformanceEntry",
+  name: "PerformanceEntry",
   fn() {
     assertEquals<unknown>(perfHooks.PerformanceEntry, PerformanceEntry);
   },
 });
 
 Deno.test({
-  name: "[perf_hooks] EventTarget methods",
+  name: "EventTarget methods",
   fn() {
     const handler = spy();
     performance.addEventListener("event", handler);

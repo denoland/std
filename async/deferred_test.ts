@@ -6,7 +6,7 @@ import {
 } from "../testing/asserts.ts";
 import { deferred } from "./deferred.ts";
 
-Deno.test("[async] deferred: resolve", async function () {
+Deno.test("resolve", async function () {
   const d = deferred<string>();
   assertEquals(d.state, "pending");
   d.resolve("🦕");
@@ -14,7 +14,7 @@ Deno.test("[async] deferred: resolve", async function () {
   assertEquals(d.state, "fulfilled");
 });
 
-Deno.test("[async] deferred: reject", async function () {
+Deno.test("reject", async function () {
   const d = deferred<number>();
   assertEquals(d.state, "pending");
   d.reject(new Error("A deno error 🦕"));
@@ -24,7 +24,7 @@ Deno.test("[async] deferred: reject", async function () {
   assertEquals(d.state, "rejected");
 });
 
-Deno.test("[async] deferred: state with promised value", async function () {
+Deno.test("state with promised value", async function () {
   const d = deferred<string>();
   const e = deferred<string>();
   assertEquals(d.state, "pending");
@@ -35,7 +35,7 @@ Deno.test("[async] deferred: state with promised value", async function () {
   assertEquals(d.state, "fulfilled");
 });
 
-Deno.test("[async] deferred: state is readonly", () => {
+Deno.test("state is readonly", () => {
   const d = deferred<string>();
   assertEquals(d.state, "pending");
   assertThrows(() => {

@@ -241,7 +241,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] appendFile callback isn't called twice if error is thrown", async () => {
+Deno.test("appendFile callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_appendFile.ts", import.meta.url);
   await assertCallbackErrorUncaught({

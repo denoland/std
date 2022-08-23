@@ -1603,7 +1603,7 @@ for (const method of methods) {
   }
 }
 
-Deno.test("[hash/sha256] test Uint8Array from Reader", async () => {
+Deno.test("test Uint8Array from Reader", async () => {
   const data = await Deno.readFile(join(testdataDir, "hashtest"));
 
   const hash = new Sha256().update(data).hex();

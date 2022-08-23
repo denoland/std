@@ -67,7 +67,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] readlink callback isn't called twice if error is thrown", async () => {
+Deno.test("readlink callback isn't called twice if error is thrown", async () => {
   const importUrl = new URL("./_fs_readlink.ts", import.meta.url);
   await assertCallbackErrorUncaught({
     prelude: `import { readlink } from ${JSON.stringify(importUrl)}`,

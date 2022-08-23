@@ -19,7 +19,7 @@ const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream should work with Deno.File",
+  name: "CSVStream should work with Deno.File",
   permissions: {
     read: [testdataDir],
   },
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream with invalid csv",
+  name: "CSVStream with invalid csv",
   fn: async () => {
     const readable = readableStreamFromIterable([
       encoder.encode("id,name\n"),
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream with various inputs",
+  name: "CSVStream with various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
@@ -311,8 +311,7 @@ export const MyTextDecoderStream = () => {
 };
 
 Deno.test({
-  name:
-    "[encoding/csv/stream] cancel CSVStream during iteration does not leak file",
+  name: "cancel CSVStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));

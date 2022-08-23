@@ -60,7 +60,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] link callback isn't called twice if error is thrown", async () => {
+Deno.test("link callback isn't called twice if error is thrown", async () => {
   const tempDir = await Deno.makeTempDir();
   const tempFile = path.join(tempDir, "file.txt");
   const linkFile = path.join(tempDir, "link.txt");

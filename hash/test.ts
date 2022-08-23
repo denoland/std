@@ -455,7 +455,7 @@ const testSetBase64: Record<string, string[][]> = {
   ],
 };
 
-Deno.test("[hash/all/hex] testAllHex", () => {
+Deno.test("all hex", () => {
   for (const algorithm in testSetHex) {
     for (const [input, output] of testSetHex[algorithm]) {
       const hash = createHash(algorithm as SupportedAlgorithm);
@@ -464,7 +464,7 @@ Deno.test("[hash/all/hex] testAllHex", () => {
   }
 });
 
-Deno.test("[hash/all/base64] testAllBase64", () => {
+Deno.test("all base64", () => {
   for (const algorithm in testSetBase64) {
     for (const [input, output] of testSetBase64[algorithm]) {
       const hash = createHash(algorithm as SupportedAlgorithm);
@@ -473,7 +473,7 @@ Deno.test("[hash/all/base64] testAllBase64", () => {
   }
 });
 
-Deno.test("[hash/memory_use] testMemoryUse", async () => {
+Deno.test("memory use", async () => {
   const process = Deno.spawnChild(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
@@ -560,7 +560,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   );
 });
 
-Deno.test("[hash/double_digest] testDoubleDigest", () => {
+Deno.test("doubleDdigest", () => {
   assertThrows(
     (): void => {
       const hash = createHash("md5");

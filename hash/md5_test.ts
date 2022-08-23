@@ -39,14 +39,14 @@ const testSetBase64 = [
   [millionAs, "dwfWrk4CfHDuoqk1wilvIQ=="],
 ];
 
-Deno.test("[hash/md5] testMd5Hex", () => {
+Deno.test("testMd5Hex", () => {
   for (const [input, output] of testSetHex) {
     const md5 = new Md5();
     assertEquals(md5.update(input).toString(), output);
   }
 });
 
-Deno.test("[hash/md5] testMd5Base64", () => {
+Deno.test("testMd5Base64", () => {
   for (const [input, output] of testSetBase64) {
     const md5 = new Md5();
     assertEquals(md5.update(input).toString("base64"), output);

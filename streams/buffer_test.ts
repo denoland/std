@@ -7,7 +7,7 @@ import {
   LimitedTransformStream,
 } from "./buffer.ts";
 
-Deno.test("[streams] Buffer Write & Read", async function () {
+Deno.test("Buffer Write & Read", async function () {
   const buf = new Buffer();
   const writer = buf.writable.getWriter();
   const reader = buf.readable.getReader({ mode: "byob" });
@@ -17,7 +17,7 @@ Deno.test("[streams] Buffer Write & Read", async function () {
   assertEquals(read.value, data);
 });
 
-Deno.test("[streams] Buffer Read empty", async function () {
+Deno.test("Buffer Read empty", async function () {
   const buf = new Buffer();
   const reader = buf.readable.getReader({ mode: "byob" });
   const read = await reader.read(new Uint8Array(5));
@@ -25,7 +25,7 @@ Deno.test("[streams] Buffer Read empty", async function () {
   assertEquals(read.value!.byteLength, 0);
 });
 
-Deno.test("[streams] Buffer Write & get bytes", async function () {
+Deno.test("Buffer Write & get bytes", async function () {
   const buf = new Buffer();
   const writer = buf.writable.getWriter();
   const data = new Uint8Array([4, 21, 45, 19]);
@@ -33,7 +33,7 @@ Deno.test("[streams] Buffer Write & get bytes", async function () {
   assertEquals(buf.bytes(), data);
 });
 
-Deno.test("[streams] Buffer truncate", async function () {
+Deno.test("Buffer truncate", async function () {
   const buf = new Buffer();
   const writer = buf.writable.getWriter();
   await writer.write(new Uint8Array([4, 21, 45, 19]));
@@ -41,7 +41,7 @@ Deno.test("[streams] Buffer truncate", async function () {
   assertEquals(buf.bytes(), new Uint8Array([4, 21, 45]));
 });
 
-Deno.test("[streams] LimitedBytesTransformStream", async function () {
+Deno.test("LimitedBytesTransformStream", async function () {
   const r = new ReadableStream({
     start(controller) {
       controller.enqueue(new Uint8Array([1, 2, 3]));
@@ -61,7 +61,7 @@ Deno.test("[streams] LimitedBytesTransformStream", async function () {
   assertEquals(chunks.length, 2);
 });
 
-Deno.test("[streams] LimitedBytesTransformStream error", async function () {
+Deno.test("LimitedBytesTransformStream error", async function () {
   const r = new ReadableStream({
     start(controller) {
       controller.enqueue(new Uint8Array([1, 2, 3]));
@@ -85,7 +85,7 @@ Deno.test("[streams] LimitedBytesTransformStream error", async function () {
   }, RangeError);
 });
 
-Deno.test("[streams] LimitedTransformStream", async function () {
+Deno.test("LimitedTransformStream", async function () {
   const r = new ReadableStream({
     start(controller) {
       controller.enqueue("foo");
@@ -105,7 +105,7 @@ Deno.test("[streams] LimitedTransformStream", async function () {
   assertEquals(chunks.length, 3);
 });
 
-Deno.test("[streams] LimitedTransformStream error", async function () {
+Deno.test("LimitedTransformStream error", async function () {
   const r = new ReadableStream({
     start(controller) {
       controller.enqueue("foo");

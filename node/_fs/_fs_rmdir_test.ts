@@ -88,7 +88,7 @@ Deno.test({
   ignore: isWindows,
 });
 
-Deno.test("[std/node/fs] rmdir callback isn't called twice if error is thrown", async () => {
+Deno.test("rmdir callback isn't called twice if error is thrown", async () => {
   // The correct behaviour is not to catch any errors thrown,
   // but that means there'll be an uncaught error and the test will fail.
   // So the only way to test this is to spawn a subprocess, and succeed if it has a non-zero exit code.

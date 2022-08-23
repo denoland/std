@@ -2,7 +2,7 @@
 import { delay } from "./delay.ts";
 import { assert, assertRejects } from "../testing/asserts.ts";
 
-Deno.test("[async] delay", async function () {
+Deno.test("delay", async function () {
   const start = new Date();
   const delayedPromise = delay(100);
   const result = await delayedPromise;
@@ -11,7 +11,7 @@ Deno.test("[async] delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with abort", async function () {
+Deno.test("delay with abort", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -27,7 +27,7 @@ Deno.test("[async] delay with abort", async function () {
   assert(diff < 100);
 });
 
-Deno.test("[async] delay with non-aborted signal", async function () {
+Deno.test("delay with non-aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -39,7 +39,7 @@ Deno.test("[async] delay with non-aborted signal", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with signal aborted after delay", async function () {
+Deno.test("delay with signal aborted after delay", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -51,7 +51,7 @@ Deno.test("[async] delay with signal aborted after delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with already aborted signal", async function () {
+Deno.test("delay with already aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   abort.abort();

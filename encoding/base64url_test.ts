@@ -27,25 +27,25 @@ const testsetInvalid = [
   "PDw/Pz8+Pg==",
 ];
 
-Deno.test("[encoding/base64url] testBase64urlEncodeString", () => {
+Deno.test("testBase64urlEncodeString", () => {
   for (const [input, output] of testsetString) {
     assertEquals(encode(input), output);
   }
 });
 
-Deno.test("[encoding/base64url] testBase64urlEncodeBinary", () => {
+Deno.test("testBase64urlEncodeBinary", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(encode(input), output);
   }
 });
 
-Deno.test("[decoding/base64url] testBase64urlDecodeBinary", () => {
+Deno.test("testBase64urlDecodeBinary", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(decode(output), input);
   }
 });
 
-Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () => {
+Deno.test("base64url.decode throws on invalid input", () => {
   for (const invalidb64url of testsetInvalid) {
     assertThrows(
       () => decode(invalidb64url),

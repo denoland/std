@@ -10,7 +10,7 @@ function beforeEach() {
   parent.right = child;
 }
 
-Deno.test("[collections/BinarySearchNode] constructor", () => {
+Deno.test("constructor", () => {
   beforeEach();
   assertStrictEquals(parent.parent, null);
   assertStrictEquals(parent.left, null);
@@ -23,7 +23,7 @@ Deno.test("[collections/BinarySearchNode] constructor", () => {
   assertStrictEquals(child.value, 7);
 });
 
-Deno.test("[collections/BinarySearchNode] from", () => {
+Deno.test("from", () => {
   beforeEach();
   const parentClone: BinarySearchNode<number> = BinarySearchNode.from(parent);
   const childClone: BinarySearchNode<number> = BinarySearchNode.from(child);
@@ -39,7 +39,7 @@ Deno.test("[collections/BinarySearchNode] from", () => {
   assertStrictEquals(childClone.value, 7);
 });
 
-Deno.test("[collections/BinarySearchNode] directionFromParent", () => {
+Deno.test("directionFromParent", () => {
   beforeEach();
   const child2 = new BinarySearchNode(parent, 3);
   assertEquals(child2.directionFromParent(), null);
@@ -49,7 +49,7 @@ Deno.test("[collections/BinarySearchNode] directionFromParent", () => {
   assertEquals(child.directionFromParent(), "right");
 });
 
-Deno.test("[collections/BinarySearchNode] findMinNode", () => {
+Deno.test("findMinNode", () => {
   beforeEach();
   assertStrictEquals(parent.findMinNode(), parent);
   const child2 = new BinarySearchNode(parent, 3);
@@ -63,7 +63,7 @@ Deno.test("[collections/BinarySearchNode] findMinNode", () => {
   assertStrictEquals(parent.findMinNode(), child4);
 });
 
-Deno.test("[collections/BinarySearchNode] findMaxNode", () => {
+Deno.test("findMaxNode", () => {
   beforeEach();
   assertStrictEquals(parent.findMaxNode(), child);
   const child2 = new BinarySearchNode(child, 6);
@@ -79,7 +79,7 @@ Deno.test("[collections/BinarySearchNode] findMaxNode", () => {
   assertStrictEquals(parent.findMaxNode(), parent);
 });
 
-Deno.test("[collections/BinarySearchNode] findSuccessorNode", () => {
+Deno.test("findSuccessorNode", () => {
   beforeEach();
   assertStrictEquals(parent.findSuccessorNode(), child);
   assertStrictEquals(child.findSuccessorNode(), null);

@@ -30,7 +30,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] unlink callback isn't called twice if error is thrown", async () => {
+Deno.test("unlink callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_unlink.ts", import.meta.url);
   await assertCallbackErrorUncaught({

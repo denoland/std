@@ -38,7 +38,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] rename callback isn't called twice if error is thrown", async () => {
+Deno.test("rename callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_rename.ts", import.meta.url);
   await assertCallbackErrorUncaught({

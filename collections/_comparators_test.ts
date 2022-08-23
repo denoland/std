@@ -2,7 +2,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { ascend, descend } from "./_comparators.ts";
 
-Deno.test("[collections/comparators] ascend", () => {
+Deno.test("ascend", () => {
   assertEquals(ascend(2, 2), 0);
   assertEquals(ascend(2, 3), -1);
   assertEquals(ascend(3, 2), 1);
@@ -25,7 +25,7 @@ Deno.test("[collections/comparators] ascend", () => {
   assertEquals(ascend<string | number>("-10", -9), -1);
 });
 
-Deno.test("[collections/comparators] descend", () => {
+Deno.test("descend", () => {
   assertEquals(descend(2, 2), 0);
   assertEquals(descend(2, 3), 1);
   assertEquals(descend(3, 2), -1);

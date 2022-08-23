@@ -167,7 +167,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] Dir.close callback isn't called twice if error is thrown", async () => {
+Deno.test("Dir.close callback isn't called twice if error is thrown", async () => {
   const tempDir = await Deno.makeTempDir();
   const importUrl = new URL("./_fs_dir.ts", import.meta.url);
   await assertCallbackErrorUncaught({
@@ -183,7 +183,7 @@ Deno.test("[std/node/fs] Dir.close callback isn't called twice if error is throw
   });
 });
 
-Deno.test("[std/node/fs] Dir.read callback isn't called twice if error is thrown", async () => {
+Deno.test("Dir.read callback isn't called twice if error is thrown", async () => {
   const tempDir = await Deno.makeTempDir();
   const importUrl = new URL("./_fs_dir.ts", import.meta.url);
   await assertCallbackErrorUncaught({

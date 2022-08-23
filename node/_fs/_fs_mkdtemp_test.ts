@@ -14,7 +14,7 @@ const badOptions = { encoding: "bogus" };
 const mkdtempP = promisify(mkdtemp);
 
 Deno.test({
-  name: "[node/fs] mkdtemp",
+  name: "mkdtemp",
   fn: async () => {
     const directory = await mkdtempP(prefix);
     assert(existsSync(directory));
@@ -23,14 +23,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[node/fs] mkdtemp (does not exists)",
+  name: "mkdtemp (does not exists)",
   fn: async () => {
     await assertRejects(() => mkdtempP(doesNotExists));
   },
 });
 
 Deno.test({
-  name: "[node/fs] mkdtemp (with options)",
+  name: "mkdtemp (with options)",
   fn: async () => {
     const directory = await mkdtempP(prefix, options);
     assert(existsSync(directory));
@@ -39,14 +39,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[node/fs] mkdtemp (with bad options)",
+  name: "mkdtemp (with bad options)",
   fn: async () => {
     await assertRejects(() => mkdtempP(prefix, badOptions));
   },
 });
 
 Deno.test({
-  name: "[node/fs] mkdtempSync",
+  name: "mkdtempSync",
   fn: () => {
     const directory = mkdtempSync(prefix);
     const dirExists = existsSync(directory);
@@ -56,14 +56,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[node/fs] mkdtempSync (does not exists)",
+  name: "mkdtempSync (does not exists)",
   fn: () => {
     assertThrows(() => mkdtempSync(doesNotExists));
   },
 });
 
 Deno.test({
-  name: "[node/fs] mkdtempSync (with options)",
+  name: "mkdtempSync (with options)",
   fn: () => {
     const directory = mkdtempSync(prefix, options);
     const dirExists = existsSync(directory);
@@ -73,7 +73,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[node/fs] mkdtempSync (with bad options)",
+  name: "mkdtempSync (with bad options)",
   fn: () => {
     assertThrows(() => mkdtempSync(prefix, badOptions));
   },

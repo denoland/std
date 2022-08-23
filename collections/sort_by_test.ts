@@ -4,7 +4,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
 
 Deno.test({
-  name: "[collections/sortBy] no mutation",
+  name: "no mutation",
   fn() {
     const array = ["a", "abc", "ba"];
     sortBy(array, (it) => it.length);
@@ -14,7 +14,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] calls the selector function once",
+  name: "calls the selector function once",
   fn() {
     let callCount = 0;
     const array = [0, 1, 2];
@@ -28,21 +28,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] empty input",
+  name: "empty input",
   fn() {
     assertEquals(sortBy([], () => 5), []);
   },
 });
 
 Deno.test({
-  name: "[collections/sortBy] identity selector",
+  name: "identity selector",
   fn() {
     assertEquals(sortBy([2, 3, 1], (it) => it), [1, 2, 3]);
   },
 });
 
 Deno.test({
-  name: "[collections/sortBy] stable sort",
+  name: "stable sort",
   fn() {
     assertEquals(
       sortBy([
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] special number values",
+  name: "special number values",
   fn() {
     assertEquals(
       sortBy([
@@ -147,7 +147,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] sortings",
+  name: "sortings",
   fn() {
     const testArray = [
       { name: "benchmark", stage: 3 },

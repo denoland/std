@@ -185,56 +185,58 @@ const scenes: Scenes[] = [
     output: "success",
   },
 ];
-for (const s of scenes) {
-  let title = `test ${s.async ? "emptyDir" : "emptyDirSync"}`;
-  title += `("testdata/testfolder") ${s.read ? "with" : "without"}`;
-  title += ` --allow-read & ${s.write ? "with" : "without"} --allow-write`;
-  Deno.test(`[fs] emptyDirPermission ${title}`, async function (): Promise<
-    void
-  > {
-    const testfolder = path.join(testdataDir, "testfolder");
-
-    try {
-      await Deno.mkdir(testfolder);
-
-      await Deno.writeFile(
-        path.join(testfolder, "child.txt"),
-        new TextEncoder().encode("hello world"),
-      );
+Deno.test("emptyDirPermission", async (t) => {
+  for (const s of scenes) {
+    let title = `test ${s.async ? "emptyDir" : "emptyDirSync"}`;
+    title += `("testdata/testfolder") ${s.read ? "with" : "without"}`;
+    title += ` --allow-read & ${s.write ? "with" : "without"} --allow-write`;
+    await t.step(title, async function (): Promise<
+      void
+    > {
+      const testfolder = path.join(testdataDir, "testfolder");
 
       try {
-        const args = ["run", "--quiet", "--no-prompt"];
+        await Deno.mkdir(testfolder);
 
-        if (s.read) {
-          args.push("--allow-read");
-        }
-
-        if (s.write) {
-          args.push("--allow-write");
-        }
-
-        args.push(
-          path.join(
-            testdataDir,
-            s.async ? "empty_dir.ts" : "empty_dir_sync.ts",
-          ),
+        await Deno.writeFile(
+          path.join(testfolder, "child.txt"),
+          new TextEncoder().encode("hello world"),
         );
-        args.push("testfolder");
 
-        const { stdout } = await Deno.spawn(Deno.execPath(), {
-          cwd: testdataDir,
-          args,
-        });
-        assertStringIncludes(new TextDecoder().decode(stdout), s.output);
-      } catch (err) {
+        try {
+          const args = ["run", "--quiet", "--no-prompt"];
+
+          if (s.read) {
+            args.push("--allow-read");
+          }
+
+          if (s.write) {
+            args.push("--allow-write");
+          }
+
+          args.push(
+            path.join(
+              testdataDir,
+              s.async ? "empty_dir.ts" : "empty_dir_sync.ts",
+            ),
+          );
+          args.push("testfolder");
+
+          const { stdout } = await Deno.spawn(Deno.execPath(), {
+            cwd: testdataDir,
+            args,
+          });
+          assertStringIncludes(new TextDecoder().decode(stdout), s.output);
+        } catch (err) {
+          await Deno.remove(testfolder, { recursive: true });
+          throw err;
+        }
+      } finally {
+        // Make the test rerunnable
+        // Otherwise it would throw an error due to mkdir fail.
         await Deno.remove(testfolder, { recursive: true });
-        throw err;
+        // done
       }
-    } finally {
-      // Make the test rerunnable
-      // Otherwise it would throw an error due to mkdir fail.
-      await Deno.remove(testfolder, { recursive: true });
-      // done
-    }
-  });
-}
+    });
+  }
+});

@@ -13,7 +13,7 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "[collections/mapValues] no mutation",
+  name: "no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapValues(object, (it) => it ?? "nothing");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] empty input",
+  name: "empty input",
   fn() {
     mapValuesTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] identity",
+  name: "identity",
   fn() {
     mapValuesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] falsy values",
+  name: "falsy values",
   fn() {
     mapValuesTest<number, null | undefined | string | boolean>(
       [
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] normal mappers",
+  name: "normal mappers",
   fn() {
     mapValuesTest(
       [

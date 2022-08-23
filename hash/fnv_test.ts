@@ -38,7 +38,7 @@ const golden64a = [
   ["deno", new Uint8Array([0xa5, 0xd9, 0xfb, 0x67, 0x42, 0x6e, 0x48, 0xb1])],
 ];
 
-Deno.test("[hash/fnv] testFnv32", () => {
+Deno.test("testFnv32", () => {
   for (const [input, output] of golden32) {
     const fnv = new Fnv32();
     fnv.write(new TextEncoder().encode(input as string));
@@ -46,7 +46,7 @@ Deno.test("[hash/fnv] testFnv32", () => {
   }
 });
 
-Deno.test("[hash/fnv] testFnv32a", () => {
+Deno.test("testFnv32a", () => {
   for (const [input, output] of golden32a) {
     const fnv = new Fnv32a();
     fnv.write(new TextEncoder().encode(input as string));
@@ -54,7 +54,7 @@ Deno.test("[hash/fnv] testFnv32a", () => {
   }
 });
 
-Deno.test("[hash/fnv] testFnv64", () => {
+Deno.test("testFnv64", () => {
   for (const [input, output] of golden64) {
     const fnv = new Fnv64();
     fnv.write(new TextEncoder().encode(input as string));
@@ -62,7 +62,7 @@ Deno.test("[hash/fnv] testFnv64", () => {
   }
 });
 
-Deno.test("[hash/fnv] testFnv64a", () => {
+Deno.test("testFnv64a", () => {
   for (const [input, output] of golden64a) {
     const fnv = new Fnv64a();
     fnv.write(new TextEncoder().encode(input as string));
@@ -70,7 +70,7 @@ Deno.test("[hash/fnv] testFnv64a", () => {
   }
 });
 
-Deno.test("[hash/fnv] testFnv32WriteChain", () => {
+Deno.test("testFnv32WriteChain", () => {
   const fnv = new Fnv32();
   fnv
     .write(new TextEncoder().encode("d"))
@@ -80,7 +80,7 @@ Deno.test("[hash/fnv] testFnv32WriteChain", () => {
   assertEquals(fnv.sum(), new Uint8Array([0x6e, 0xd5, 0xa7, 0xa9]));
 });
 
-Deno.test("[hash/fnv] testFnv32aWriteChain", () => {
+Deno.test("testFnv32aWriteChain", () => {
   const fnv = new Fnv32a();
   fnv
     .write(new TextEncoder().encode("d"))
@@ -90,7 +90,7 @@ Deno.test("[hash/fnv] testFnv32aWriteChain", () => {
   assertEquals(fnv.sum(), new Uint8Array([0x8e, 0xf6, 0x47, 0x11]));
 });
 
-Deno.test("[hash/fnv] testFnv64WriteChain", () => {
+Deno.test("testFnv64WriteChain", () => {
   const fnv = new Fnv64();
   fnv
     .write(new TextEncoder().encode("d"))
@@ -103,7 +103,7 @@ Deno.test("[hash/fnv] testFnv64WriteChain", () => {
   );
 });
 
-Deno.test("[hash/fnv] testFnv64aWriteChain", () => {
+Deno.test("testFnv64aWriteChain", () => {
   const fnv = new Fnv64a();
   fnv
     .write(new TextEncoder().encode("d"))

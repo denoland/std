@@ -209,7 +209,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] open callback isn't called twice if error is thrown", async () => {
+Deno.test("open callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_open.ts", import.meta.url);
   await assertCallbackErrorUncaught({

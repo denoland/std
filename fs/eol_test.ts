@@ -9,28 +9,28 @@ const LFinput = "deno\nis not\nnode";
 const NoNLinput = "deno is not node";
 
 Deno.test({
-  name: "[EOL] Detect CR LF",
+  name: "Detect CR LF",
   fn(): void {
     assertEquals(detect(CRLFinput), EOL.CRLF);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect LF",
+  name: "Detect LF",
   fn(): void {
     assertEquals(detect(LFinput), EOL.LF);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect No New Line",
+  name: "Detect No New Line",
   fn(): void {
     assertEquals(detect(NoNLinput), null);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect Mixed",
+  name: "Detect Mixed",
   fn(): void {
     assertEquals(detect(Mixedinput), EOL.CRLF);
     assertEquals(detect(Mixedinput2), EOL.CRLF);
@@ -38,7 +38,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[EOL] Format",
+  name: "Format",
   fn(): void {
     assertEquals(format(CRLFinput, EOL.LF), LFinput);
     assertEquals(format(LFinput, EOL.LF), LFinput);

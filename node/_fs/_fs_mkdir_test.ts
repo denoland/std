@@ -8,7 +8,7 @@ import { existsSync } from "./_fs_exists.ts";
 const tmpDir = "./tmpdir";
 
 Deno.test({
-  name: "[node/fs] mkdir",
+  name: "mkdir",
   fn: async () => {
     const result = await new Promise((resolve) => {
       mkdir(tmpDir, (err) => {
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[node/fs] mkdirSync",
+  name: "mkdirSync",
   fn: () => {
     mkdirSync(tmpDir);
     assert(existsSync(tmpDir));
@@ -30,7 +30,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] mkdir callback isn't called twice if error is thrown", async () => {
+Deno.test("mkdir callback isn't called twice if error is thrown", async () => {
   const tempDir = await Deno.makeTempDir();
   const subdir = path.join(tempDir, "subdir");
   const importUrl = new URL("./_fs_mkdir.ts", import.meta.url);

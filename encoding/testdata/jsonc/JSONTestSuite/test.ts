@@ -35,7 +35,7 @@ for await (
   }
   // Register a test case for each file.
   Deno.test({
-    name: `[jsonc] parse JSONTestSuite:${dirEntry.name}`,
+    name: `parse JSONTestSuite:${dirEntry.name}`,
     async fn() {
       const text = await Deno.readTextFile(dirEntry.path);
 

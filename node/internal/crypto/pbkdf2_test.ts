@@ -357,7 +357,7 @@ Deno.test("pbkdf2Sync hashes data correctly", () => {
   });
 });
 
-Deno.test("[std/node/crypto] pbkdf2 callback isn't called twice if error is thrown", async () => {
+Deno.test("pbkdf2 callback isn't called twice if error is thrown", async () => {
   const importUrl = new URL("./pbkdf2.ts", import.meta.url);
   await assertCallbackErrorUncaught({
     prelude: `import { pbkdf2 } from ${JSON.stringify(importUrl)}`,

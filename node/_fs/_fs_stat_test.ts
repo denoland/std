@@ -118,7 +118,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/node/fs] stat callback isn't called twice if error is thrown", async () => {
+Deno.test("stat callback isn't called twice if error is thrown", async () => {
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_stat.ts", import.meta.url);
   await assertCallbackErrorUncaught({
