@@ -11,7 +11,7 @@ export interface DotenvConfig {
   [key: string]: string;
 }
 
-type StringList = Array<string> | undefined
+type StringList = Array<string> | undefined;
 
 export interface ConfigOptions {
   path?: string;
@@ -118,7 +118,10 @@ export async function config(
   const conf = await parseFileAsync(o.path, o.restrictEnvAccessTo);
 
   if (o.defaults) {
-    const confDefaults = await parseFileAsync(o.defaults, o.restrictEnvAccessTo);
+    const confDefaults = await parseFileAsync(
+      o.defaults,
+      o.restrictEnvAccessTo,
+    );
     for (const key in confDefaults) {
       if (!(key in conf)) {
         conf[key] = confDefaults[key];
@@ -143,18 +146,24 @@ export async function config(
 
 function parseFile(filepath: string, restrictEnvAccessTo: StringList = []) {
   try {
-    return parse(new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)), restrictEnvAccessTo);
+    return parse(
+      new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)),
+      restrictEnvAccessTo,
+    );
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
   }
 }
 
-async function parseFileAsync(filepath: string, restrictEnvAccessTo: StringList = []) {
+async function parseFileAsync(
+  filepath: string,
+  restrictEnvAccessTo: StringList = [],
+) {
   try {
     return parse(
       new TextDecoder("utf-8").decode(await Deno.readFile(filepath)),
-      restrictEnvAccessTo
+      restrictEnvAccessTo,
     );
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
@@ -179,7 +188,7 @@ function assertSafe(
   conf: DotenvConfig,
   confExample: DotenvConfig,
   allowEmptyValues: boolean,
-  restrictEnvAccessTo: StringList = []
+  restrictEnvAccessTo: StringList = [],
 ) {
   const currentEnv = readEnv(restrictEnvAccessTo);
 
@@ -216,10 +225,12 @@ function assertSafe(
 // a guarded env access, that reads only a subset from the Deno.env object,
 // if `restrictEnvAccessTo` property is passed.
 function readEnv(
-  restrictEnvAccessTo: StringList
+  restrictEnvAccessTo: StringList,
 ) {
-
-  if (restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) && restrictEnvAccessTo.length > 0) {
+  if (
+    restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) &&
+    restrictEnvAccessTo.length > 0
+  ) {
     return restrictEnvAccessTo.reduce(
       (accessedEnvVars: DotenvConfig, envVarName: string): DotenvConfig => {
         if (Deno.env.get(envVarName)) {

@@ -3,8 +3,8 @@
 import {
   assertEquals,
   assertRejects,
+  assertStringIncludes,
   assertThrows,
-  assertStringIncludes
 } from "../testing/asserts.ts";
 import {
   config,
