@@ -529,14 +529,23 @@ class ServerImpl extends EventEmitter {
       }
     };
 
-    if (this.#hasClosed) {
-      return;
+    const listener = this.#listener;
+
+    if (listener !== undefined) {
+      this.emit("listening");
+
+      for await (const conn of listener) {
+        let httpConn: Deno.HttpConn;
+        try {
+          httpConn = Deno.serveHttp(conn);
+        } catch {
+          continue; /// Connection closed.
+        }
+
+        this.#httpConnections.add(httpConn);
+        go(httpConn);
+      }
     }
-    this.#ac = ac;
-    DenoUnstable.serve(
-      handler as DenoUnstable.ServeHandler,
-      { ...this.#addr, signal: ac.signal },
-    );
   }
 
   #serve() {
@@ -544,7 +553,7 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = Deno.upgradeHttp(request) as [
+        const [conn, head] = DenoUnstable.upgradeHttpRaw(request) as [
           Deno.Conn,
           Uint8Array,
         ];
