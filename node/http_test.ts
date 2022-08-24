@@ -23,6 +23,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen(() => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
@@ -35,6 +37,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen().on("listening", () => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
@@ -47,6 +51,8 @@ Deno.test("[node/http listen]", async () => {
 
     server.listen(port, () => {
       server.close();
+    });
+    server.on("close", () => {
       promise.resolve();
     });
 
@@ -93,8 +99,10 @@ Deno.test("[node/http close]", async () => {
   }
 });
 
-Deno.test("[node/http chunked response", async () => {
-  for (const body of [undefined, "", "ok"]) {
+Deno.test("[node/http] chunked response", async () => {
+  for (
+    const body of [undefined, "", "ok"]
+  ) {
     const expected = body ?? "";
     const promise = deferred<void>();
 
@@ -129,12 +137,14 @@ Deno.test("[node/http] request default protocol", async () => {
         res.on("data", () => {});
         res.on("end", () => {
           server.close();
-          promise.resolve();
         });
         assertEquals(res.statusCode, 200);
       },
     );
     req.end();
+  });
+  server.on("close", () => {
+    promise.resolve();
   });
   await promise;
 });

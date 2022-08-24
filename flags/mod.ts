@@ -469,10 +469,10 @@ export function parse<
     name: string,
     value: unknown,
     collect = true,
-  ): void {
+  ) {
     let o = obj;
     const keys = name.split(".");
-    keys.slice(0, -1).forEach(function (key): void {
+    keys.slice(0, -1).forEach(function (key) {
       if (get(o, key) === undefined) {
         o[key] = {};
       }
@@ -498,7 +498,7 @@ export function parse<
     val: unknown,
     arg: string | undefined = undefined,
     collect?: boolean,
-  ): void {
+  ) {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }

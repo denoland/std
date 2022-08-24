@@ -10,7 +10,7 @@ export function access(
   path: string | Buffer | URL,
   mode: number | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   if (typeof mode === "function") {
     callback = mode;
     mode = fs.F_OK;
@@ -65,7 +65,7 @@ export const accessPromise = promisify(access) as (
   mode?: number,
 ) => Promise<void>;
 
-export function accessSync(path: string | Buffer | URL, mode?: number): void {
+export function accessSync(path: string | Buffer | URL, mode?: number) {
   path = getValidatedPath(path).toString();
   mode = getValidMode(mode, "access");
   try {

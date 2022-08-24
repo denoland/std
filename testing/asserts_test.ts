@@ -38,7 +38,7 @@ Deno.test("EqualDifferentZero", () => {
   assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
 });
 
-Deno.test("Equal", function (): void {
+Deno.test("Equal", function () {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assertFalse(equal("hello", "world"));
@@ -294,7 +294,7 @@ Deno.test("EqualCircular", () => {
   assert(equal(mapA, mapB));
 });
 
-Deno.test("NotEquals", function (): void {
+Deno.test("NotEquals", function () {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
   assertNotEquals<unknown>(a, b);
@@ -315,7 +315,7 @@ Deno.test("NotEquals", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("AssertExists", function (): void {
+Deno.test("AssertExists", function () {
   assertExists("Denosaurus");
   assertExists(false);
   assertExists(0);
@@ -348,7 +348,7 @@ Deno.test("AssertExists", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("AssertStringContains", function (): void {
+Deno.test("AssertStringContains", function () {
   assertStringIncludes("Denosaurus", "saur");
   assertStringIncludes("Denosaurus", "Deno");
   assertStringIncludes("Denosaurus", "rus");
@@ -363,7 +363,7 @@ Deno.test("AssertStringContains", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("ArrayContains", function (): void {
+Deno.test("ArrayContains", function () {
   const fixture = ["deno", "iz", "luv"];
   const fixtureObject = [{ deno: "luv" }, { deno: "Js" }];
   assertArrayIncludes(fixture, ["deno"]);
@@ -373,7 +373,7 @@ Deno.test("ArrayContains", function (): void {
     Uint8Array.from([1, 2, 3]),
   );
   assertThrows(
-    (): void => assertArrayIncludes(fixtureObject, [{ deno: "node" }]),
+    () => assertArrayIncludes(fixtureObject, [{ deno: "node" }]),
     AssertionError,
     `actual: "[
   {
@@ -395,7 +395,7 @@ missing: [
   );
 });
 
-Deno.test("AssertStringContainsThrow", function (): void {
+Deno.test("AssertStringContainsThrow", function () {
   let didThrow = false;
   try {
     assertStringIncludes("Denosaurus from Jurassic", "Raptor");
@@ -410,11 +410,11 @@ Deno.test("AssertStringContainsThrow", function (): void {
   assert(didThrow);
 });
 
-Deno.test("AssertStringMatching", function (): void {
+Deno.test("AssertStringMatching", function () {
   assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-Deno.test("AssertStringMatchingThrows", function (): void {
+Deno.test("AssertStringMatchingThrows", function () {
   let didThrow = false;
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
@@ -429,11 +429,11 @@ Deno.test("AssertStringMatchingThrows", function (): void {
   assert(didThrow);
 });
 
-Deno.test("AssertStringNotMatching", function (): void {
+Deno.test("AssertStringNotMatching", function () {
   assertNotMatch("foobar.deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-Deno.test("AssertStringNotMatchingThrows", function (): void {
+Deno.test("AssertStringNotMatchingThrows", function () {
   let didThrow = false;
   try {
     assertNotMatch("Denosaurus from Jurassic", RegExp(/from/));
@@ -448,7 +448,7 @@ Deno.test("AssertStringNotMatchingThrows", function (): void {
   assert(didThrow);
 });
 
-Deno.test("AssertObjectMatching", function (): void {
+Deno.test("AssertObjectMatching", function () {
   const sym = Symbol("foo");
   const a = { foo: true, bar: false };
   const b = { ...a, baz: a };
@@ -745,7 +745,7 @@ Deno.test("AssertObjectMatching", function (): void {
   );
 });
 
-Deno.test("AssertsUnimplemented", function (): void {
+Deno.test("AssertsUnimplemented", function () {
   let didThrow = false;
   try {
     unimplemented();
@@ -757,7 +757,7 @@ Deno.test("AssertsUnimplemented", function (): void {
   assert(didThrow);
 });
 
-Deno.test("AssertsUnreachable", function (): void {
+Deno.test("AssertsUnreachable", function () {
   let didThrow = false;
   try {
     unreachable();
@@ -769,10 +769,10 @@ Deno.test("AssertsUnreachable", function (): void {
   assert(didThrow);
 });
 
-Deno.test("AssertFail", function (): void {
+Deno.test("AssertFail", function () {
   assertThrows(fail, AssertionError, "Failed assertion.");
   assertThrows(
-    (): void => {
+    () => {
       fail("foo");
     },
     AssertionError,
@@ -782,11 +782,11 @@ Deno.test("AssertFail", function (): void {
 
 Deno.test("assertThrows with wrong error class", () => {
   assertThrows(
-    (): void => {
+    () => {
       //This next assertThrows will throw an AssertionError due to the wrong
       //expected error class
       assertThrows(
-        (): void => {
+        () => {
           fail("foo");
         },
         TypeError,
@@ -1053,7 +1053,7 @@ const removed: (s: string) => string = (s: string): string =>
 
 Deno.test({
   name: "pass case",
-  fn(): void {
+  fn() {
     assertEquals({ a: 10 }, { a: 10 });
     assertEquals(true, true);
     assertEquals(10, 10);
@@ -1065,9 +1065,9 @@ Deno.test({
 
 Deno.test({
   name: "failed with number",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertEquals(1, 2),
+      () => assertEquals(1, 2),
       AssertionError,
       [
         "Values are not equal:",
@@ -1082,9 +1082,9 @@ Deno.test({
 
 Deno.test({
   name: "failed with number vs string",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertEquals<unknown>(1, "1"),
+      () => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
         "Values are not equal:",
@@ -1098,9 +1098,9 @@ Deno.test({
 
 Deno.test({
   name: "failed with array",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertEquals([1, "2", 3], ["1", "2", 3]),
+      () => assertEquals([1, "2", 3], ["1", "2", 3]),
       AssertionError,
       `
     [
@@ -1115,9 +1115,9 @@ Deno.test({
 
 Deno.test({
   name: "failed with object",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertEquals({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
+      () => assertEquals({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
       AssertionError,
       `
     {
@@ -1135,9 +1135,9 @@ Deno.test({
 
 Deno.test({
   name: "failed with date",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void =>
+      () =>
         assertEquals(
           new Date(2019, 0, 3, 4, 20, 1, 10),
           new Date(2019, 0, 3, 4, 20, 1, 20),
@@ -1152,7 +1152,7 @@ Deno.test({
       ].join("\n"),
     );
     assertThrows(
-      (): void =>
+      () =>
         assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
@@ -1168,7 +1168,7 @@ Deno.test({
 
 Deno.test({
   name: "strict types test",
-  fn(): void {
+  fn() {
     const x = { number: 2 };
 
     const y = x as Record<never, never>;
@@ -1192,7 +1192,7 @@ Deno.test({
 
 Deno.test({
   name: "strict pass case",
-  fn(): void {
+  fn() {
     assertStrictEquals(true, true);
     assertStrictEquals(10, 10);
     assertStrictEquals("abc", "abc");
@@ -1210,9 +1210,9 @@ Deno.test({
 
 Deno.test({
   name: "strict failed with structure diff",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertStrictEquals({ a: 1, b: 2 }, { a: 1, c: [3] }),
+      () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, c: [3] }),
       AssertionError,
       `
     {
@@ -1228,9 +1228,9 @@ Deno.test({
 
 Deno.test({
   name: "strict failed with reference diff",
-  fn(): void {
+  fn() {
     assertThrows(
-      (): void => assertStrictEquals({ a: 1, b: 2 }, { a: 1, b: 2 }),
+      () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, b: 2 }),
       AssertionError,
       `Values have the same structure but are not reference-equal:
 
@@ -1244,7 +1244,7 @@ Deno.test({
 
 Deno.test({
   name: "strictly unequal pass case",
-  fn(): void {
+  fn() {
     assertNotStrictEquals(true, false);
     assertNotStrictEquals(10, 11);
     assertNotStrictEquals("abc", "xyz");
@@ -1263,7 +1263,7 @@ Deno.test({
 
 Deno.test({
   name: "strictly unequal fail case",
-  fn(): void {
+  fn() {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
     assertThrows(() => assertNotStrictEquals(NaN, NaN), AssertionError);
   },
@@ -1312,7 +1312,7 @@ Deno.test("assert almost equals number", () => {
 
 Deno.test({
   name: "assertInstanceOf",
-  fn(): void {
+  fn() {
     class TestClass1 {}
     class TestClass2 {}
     class TestClass3 {}
@@ -1436,7 +1436,7 @@ Deno.test({
 
 Deno.test({
   name: "assert* functions with specified type parameter",
-  fn(): void {
+  fn() {
     assertEquals<string>("hello", "hello");
     assertNotEquals<number>(1, 2);
     assertArrayIncludes<boolean>([true, false], [true]);

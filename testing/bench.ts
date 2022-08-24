@@ -118,7 +118,7 @@ function verifyOr1Run(runs?: number): number {
   return runs && runs >= 1 && runs !== Infinity ? Math.floor(runs) : 1;
 }
 
-function assertTiming(clock: BenchmarkClock): void {
+function assertTiming(clock: BenchmarkClock) {
   // NaN indicates that a benchmark has not been timed properly
   if (!clock.stop) {
     throw new BenchmarkRunError(
@@ -140,10 +140,10 @@ function assertTiming(clock: BenchmarkClock): void {
 
 function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
   return {
-    start(): void {
+    start() {
       clock.start = performance.now();
     },
-    stop(): void {
+    stop() {
       if (isNaN(clock.start)) {
         throw new BenchmarkRunError(
           `Running benchmarks FAILED during benchmark named [${clock.for}]. The benchmark timer's start method must be called before its stop method`,
@@ -164,7 +164,7 @@ const candidates: BenchmarkDefinition[] = [];
  * Registers a benchmark as a candidate for the runBenchmarks executor. */
 export function bench(
   benchmark: BenchmarkDefinition | BenchmarkFunction,
-): void {
+) {
   if (!benchmark.name) {
     throw new Error("The benchmark function must not be anonymous");
   }
@@ -189,7 +189,7 @@ export function bench(
 export function clearBenchmarks({
   only = /[^\s]/,
   skip = /$^/,
-}: BenchmarkClearOptions = {}): void {
+}: BenchmarkClearOptions = {}) {
   const keep = candidates.filter(
     ({ name }): boolean => !only.test(name) || skip.test(name),
   );

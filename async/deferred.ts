@@ -27,7 +27,7 @@ export interface Deferred<T> extends Promise<T> {
 export function deferred<T>(): Deferred<T> {
   let methods;
   let state = "pending";
-  const promise = new Promise<T>((resolve, reject): void => {
+  const promise = new Promise<T>((resolve, reject) => {
     methods = {
       async resolve(value: T | PromiseLike<T>) {
         await value;

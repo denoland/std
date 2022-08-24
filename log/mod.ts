@@ -179,7 +179,7 @@ export async function setup(config: LogConfig) {
   };
 
   // tear down existing handlers
-  state.handlers.forEach((handler): void => {
+  state.handlers.forEach((handler) => {
     handler.destroy();
   });
   state.handlers.clear();
@@ -203,7 +203,7 @@ export async function setup(config: LogConfig) {
     const handlerNames = loggerConfig.handlers || [];
     const handlers: BaseHandler[] = [];
 
-    handlerNames.forEach((handlerName): void => {
+    handlerNames.forEach((handlerName) => {
       const handler = state.handlers.get(handlerName);
       if (handler) {
         handlers.push(handler);

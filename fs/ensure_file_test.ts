@@ -14,7 +14,7 @@ Deno.test("ensureFileIfItNotExist", async function () {
 
   await assertRejects(
     async () => {
-      await Deno.stat(testFile).then((): void => {
+      await Deno.stat(testFile).then(() => {
         throw new Error("test file should exists.");
       });
     },
@@ -23,13 +23,13 @@ Deno.test("ensureFileIfItNotExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureFileSyncIfItNotExist", function (): void {
+Deno.test("ensureFileSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "ensure_file_2");
   const testFile = path.join(testDir, "test.txt");
 
   ensureFileSync(testFile);
 
-  assertThrows((): void => {
+  assertThrows(() => {
     Deno.statSync(testFile);
     throw new Error("test file should exists.");
   });
@@ -48,7 +48,7 @@ Deno.test("ensureFileIfItExist", async function () {
 
   await assertRejects(
     async () => {
-      await Deno.stat(testFile).then((): void => {
+      await Deno.stat(testFile).then(() => {
         throw new Error("test file should exists.");
       });
     },
@@ -57,7 +57,7 @@ Deno.test("ensureFileIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureFileSyncIfItExist", function (): void {
+Deno.test("ensureFileSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "ensure_file_4");
   const testFile = path.join(testDir, "test.txt");
 
@@ -66,7 +66,7 @@ Deno.test("ensureFileSyncIfItExist", function (): void {
 
   ensureFileSync(testFile);
 
-  assertThrows((): void => {
+  assertThrows(() => {
     Deno.statSync(testFile);
     throw new Error("test file should exists.");
   });
@@ -90,13 +90,13 @@ Deno.test("ensureFileIfItExistAsDir", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureFileSyncIfItExistAsDir", function (): void {
+Deno.test("ensureFileSyncIfItExistAsDir", function () {
   const testDir = path.join(testdataDir, "ensure_file_6");
 
   Deno.mkdirSync(testDir, { recursive: true });
 
   assertThrows(
-    (): void => {
+    () => {
       ensureFileSync(testDir);
     },
     Error,

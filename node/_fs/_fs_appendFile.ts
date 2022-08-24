@@ -19,7 +19,7 @@ export function appendFile(
   data: string | Uint8Array,
   options: Encodings | WriteFileOptions | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   callback = maybeCallback(callback || options);
   options = getOptions(options, { encoding: "utf8", mode: 0o666, flag: "a" });
 
@@ -52,7 +52,7 @@ export function appendFileSync(
   path: string | number | URL,
   data: string | Uint8Array,
   options?: Encodings | WriteFileOptions,
-): void {
+) {
   options = getOptions(options, { encoding: "utf8", mode: 0o666, flag: "a" });
 
   // Don't make changes directly on options object

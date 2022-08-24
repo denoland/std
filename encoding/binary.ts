@@ -54,7 +54,7 @@ export function sizeof(dataType: DataType): number {
 export async function readExact(
   r: Deno.Reader,
   b: Uint8Array,
-): Promise<void> {
+) {
   let totalRead = 0;
   do {
     const tmp = new Uint8Array(b.length - totalRead);

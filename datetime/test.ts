@@ -137,11 +137,11 @@ Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
 Deno.test({
   name: "[std/datetime] invalidParseDateTimeFormatThrows",
   fn: () => {
-    assertThrows((): void => {
+    assertThrows(() => {
       // deno-lint-ignore no-explicit-any
       (datetime as any).parse("2019-01-01 00:00", "x-y-z");
     }, Error);
-    assertThrows((): void => {
+    assertThrows(() => {
       // deno-lint-ignore no-explicit-any
       (datetime as any).parse("2019-01-01", "x-y-z");
     }, Error);
@@ -463,7 +463,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] to IMF",
-  fn(): void {
+  fn() {
     const actual = datetime.toIMF(new Date(Date.UTC(1994, 3, 5, 15, 32)));
     const expected = "Tue, 05 Apr 1994 15:32:00 GMT";
     assertEquals(actual, expected);
@@ -472,7 +472,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] to IMF 0",
-  fn(): void {
+  fn() {
     const actual = datetime.toIMF(new Date(0));
     const expected = "Thu, 01 Jan 1970 00:00:00 GMT";
     assertEquals(actual, expected);
@@ -481,7 +481,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] isLeap",
-  fn(): void {
+  fn() {
     assert(datetime.isLeap(1992));
     assert(datetime.isLeap(2000));
     assert(!datetime.isLeap(2003));
@@ -491,7 +491,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] difference",
-  fn(): void {
+  fn() {
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");
     let difference = datetime.difference(denoReleaseV1, denoInit, {
@@ -515,7 +515,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] constants",
-  fn(): void {
+  fn() {
     assertEquals(datetime.SECOND, 1e3);
     assertEquals(datetime.MINUTE, datetime.SECOND * 60);
     assertEquals(datetime.HOUR, datetime.MINUTE * 60);
