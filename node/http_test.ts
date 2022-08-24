@@ -6,100 +6,113 @@ import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
 
-Deno.test("[node/http listen]", async () => {
-  {
-    const server = http.createServer();
-    assertEquals(0, EventEmitter.listenerCount(server, "request"));
-  }
+// FIXME(bartlomieju): reenable on Windows
+Deno.test(
+  "[node/http listen]",
+  { ignore: Deno.build.os === "windows" },
+  async () => {
+    {
+      const server = http.createServer();
+      assertEquals(0, EventEmitter.listenerCount(server, "request"));
+    }
 
-  {
-    const server = http.createServer(() => {});
-    assertEquals(1, EventEmitter.listenerCount(server, "request"));
-  }
+    {
+      const server = http.createServer(() => {});
+      assertEquals(1, EventEmitter.listenerCount(server, "request"));
+    }
 
-  {
-    const promise = deferred<void>();
-    const server = http.createServer();
+    {
+      const promise = deferred<void>();
+      const server = http.createServer();
 
-    server.listen(() => {
-      server.close();
-    });
-    server.on("close", () => {
-      promise.resolve();
-    });
+      server.listen(() => {
+        server.close();
+      });
+      server.on("close", () => {
+        promise.resolve();
+      });
 
-    await promise;
-  }
+      await promise;
+    }
 
-  {
-    const promise = deferred<void>();
-    const server = http.createServer();
+    {
+      const promise = deferred<void>();
+      const server = http.createServer();
 
-    server.listen().on("listening", () => {
-      server.close();
-    });
-    server.on("close", () => {
-      promise.resolve();
-    });
+      server.listen().on("listening", () => {
+        server.close();
+      });
+      server.on("close", () => {
+        promise.resolve();
+      });
 
-    await promise;
-  }
+      await promise;
+    }
 
-  for (const port of [0, -0, 0.0, "0", null, undefined]) {
-    const promise = deferred<void>();
-    const server = http.createServer();
+    for (const port of [0, -0, 0.0, "0", null, undefined]) {
+      const promise = deferred<void>();
+      const server = http.createServer();
 
-    server.listen(port, () => {
-      server.close();
-    });
-    server.on("close", () => {
-      promise.resolve();
-    });
+      server.listen(port, () => {
+        server.close();
+      });
+      server.on("close", () => {
+        promise.resolve();
+      });
 
-    await promise;
-  }
-});
+      await promise;
+    }
+  },
+);
 
-Deno.test("[node/http close]", async () => {
-  {
-    const promise1 = deferred<void>();
-    const promise2 = deferred<void>();
-    // Node quirk: callback gets exception object, event listener does not.
-    const server = http.createServer().close((err) => {
-      assert(err instanceof ERR_SERVER_NOT_RUNNING);
-      promise1.resolve();
-    });
-    server.on("close", (err) => {
-      assertEquals(err, undefined);
-      promise2.resolve();
-    });
-    server.on("listening", () => {
-      throw Error("unreachable");
-    });
-    await promise1;
-    await promise2;
-  }
+// FIXME(bartlomieju): reenable on Windows
+Deno.test(
+  "[node/http close]",
+  { ignore: Deno.build.os === "windows" },
+  async () => {
+    {
+      const promise1 = deferred<void>();
+      const promise2 = deferred<void>();
+      // Node quirk: callback gets exception object, event listener does not.
+      const server = http.createServer().close((err) => {
+        assert(err instanceof ERR_SERVER_NOT_RUNNING);
+        promise1.resolve();
+      });
+      server.on("close", (err) => {
+        assertEquals(err, undefined);
+        promise2.resolve();
+      });
+      server.on("listening", () => {
+        throw Error("unreachable");
+      });
+      await promise1;
+      await promise2;
+    }
 
-  {
-    const promise1 = deferred<void>();
-    const promise2 = deferred<void>();
-    const server = http.createServer().listen().close((err) => {
-      assertEquals(err, undefined);
-      promise1.resolve();
-    });
-    server.on("close", (err) => {
-      assertEquals(err, undefined);
-      promise2.resolve();
-    });
-    server.on("listening", () => {
-      throw Error("unreachable");
-    });
-    await promise1;
-    await promise2;
-  }
-});
+    {
+      const promise1 = deferred<void>();
+      const promise2 = deferred<void>();
+      const server = http.createServer().listen().close((err) => {
+        assertEquals(err, undefined);
+        promise1.resolve();
+      });
+      server.on("close", (err) => {
+        assertEquals(err, undefined);
+        promise2.resolve();
+      });
+      server.on("listening", () => {
+        throw Error("unreachable");
+      });
+      await promise1;
+      await promise2;
+    }
+  },
+);
 
-Deno.test("[node/http] chunked response", async () => {
+// FIXME(bartlomieju): reenable on Windows
+Deno.test("[node/http] chunked response", {
+  ignore: Deno.build.os === "windows",
+}, async () => {
   for (
     const body of [undefined, "", "ok"]
   ) {
@@ -125,7 +138,10 @@ Deno.test("[node/http] chunked response", async () => {
   }
 });
 
-Deno.test("[node/http] request default protocol", async () => {
+// FIXME(bartlomieju): reenable on Windows
+Deno.test("[node/http] request default protocol", {
+  ignore: Deno.build.os === "windows",
+}, async () => {
   const promise = deferred<void>();
   const server = http.createServer((_, res) => {
     res.end("ok");
