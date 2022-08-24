@@ -112,7 +112,7 @@ export class Logger {
       loggerName: this.loggerName,
     });
 
-    this.#handlers.forEach((handler): void => {
+    this.#handlers.forEach((handler) => {
       handler.handle(record);
     });
 

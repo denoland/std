@@ -33,7 +33,7 @@ export class Sponge {
   }
 
   /** Applies padding to internal state */
-  #pad(): void {
+  #pad() {
     this.#state[this.#rp] ^= this.#option.dsbyte;
     this.#state[this.#option.rate - 1] ^= 0x80;
   }

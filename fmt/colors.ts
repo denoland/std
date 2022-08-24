@@ -43,7 +43,7 @@ let enabled = !noColor;
  * Set changing text color to enabled or disabled
  * @param value
  */
-export function setColorEnabled(value: boolean): void {
+export function setColorEnabled(value: boolean) {
   if (noColor) {
     return;
   }

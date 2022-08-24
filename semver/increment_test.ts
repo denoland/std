@@ -4,7 +4,7 @@ import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 import type { Options, ReleaseType } from "./mod.ts";
 
-Deno.test("increment", function (): void {
+Deno.test("increment", function () {
   //  [version, inc, result, identifier]
   //  inc(version, inc) -> result
   const versions: [string, ReleaseType, string | null, Options?, string?][] = [

@@ -45,7 +45,7 @@ export const extensions = new Map<string, string[]>();
 export const types = new Map<string, KeyOfDb>();
 
 /** Internal function to populate the maps based on the Mime DB. */
-(function populateMaps(): void {
+(function populateMaps() {
   const preference = ["nginx", "apache", undefined, "iana"];
 
   for (const type of Object.keys(db) as KeyOfDb[]) {

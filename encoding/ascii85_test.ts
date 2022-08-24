@@ -120,7 +120,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
     name: `[encoding/ascii85] encode ${standard}`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
           encode(utf8encoder.encode(bin), {
@@ -134,7 +134,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
 
   Deno.test({
     name: `[encoding/ascii85] decode ${standard}`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
           decode(b85, { standard: standard as Ascii85Standard }),
@@ -148,7 +148,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
     name: `[encoding/ascii85] encode ${standard} with delimiter`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
           encode(utf8encoder.encode(bin), {
@@ -163,7 +163,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
 
   Deno.test({
     name: `[encoding/ascii85] decode ${standard} with delimiter`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
           decode(b85, {

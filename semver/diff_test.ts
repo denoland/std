@@ -3,7 +3,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("diff", function (): void {
+Deno.test("diff", function () {
   //  [version1, version2, result]
   //  diff(version1, version2) -> result
   const versions: [string, string, semver.ReleaseType | null][] = [

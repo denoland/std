@@ -417,7 +417,7 @@ export function buildMessage(
   );
   messages.push("");
   messages.push("");
-  diffResult.forEach((result: DiffResult<string>): void => {
+  diffResult.forEach((result: DiffResult<string>) => {
     const c = createColor(result.type);
     const line = result.details?.map((detail) =>
       detail.type !== DiffType.common

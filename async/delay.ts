@@ -14,7 +14,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   if (signal?.aborted) {
     return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
   }
-  return new Promise((resolve, reject): void => {
+  return new Promise((resolve, reject) => {
     const abort = () => {
       clearTimeout(i);
       reject(new DOMException("Delay was aborted.", "AbortError"));

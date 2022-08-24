@@ -58,7 +58,7 @@ const KECCAK_RC: number[] = [
 ];
 
 /** keccak1600 permutation function */
-export function keccakf(state: Uint8Array): void {
+export function keccakf(state: Uint8Array) {
   const s = new Uint32Array(state.buffer);
   let bc0 = 0;
   let bc1 = 0;

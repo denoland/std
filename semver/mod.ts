@@ -785,7 +785,7 @@ export class Comparator {
     }
   }
 
-  parse(comp: string): void {
+  parse(comp: string) {
     const r = re[COMPARATOR];
     const m = comp.match(r);
 

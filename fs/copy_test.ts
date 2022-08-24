@@ -19,7 +19,7 @@ function testCopy(
   name: string,
   cb: (tempDir: string) => Promise<void>,
   ignore = false,
-): void {
+) {
   Deno.test({
     name,
     async fn() {
@@ -33,10 +33,10 @@ function testCopy(
   });
 }
 
-function testCopySync(name: string, cb: (tempDir: string) => void): void {
+function testCopySync(name: string, cb: (tempDir: string) => void) {
   Deno.test({
     name,
-    fn: (): void => {
+    fn: () => {
       const tempDir = Deno.makeTempDirSync({
         prefix: "deno_std_copy_sync_test_",
       });
@@ -297,10 +297,10 @@ testCopy(
 
 testCopySync(
   "[fs] copy file synchronously if it does not exist",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1_sync.txt");
-    assertThrows((): void => {
+    assertThrows(() => {
       copySync(srcFile, destFile);
     });
   },
@@ -308,7 +308,7 @@ testCopySync(
 
 testCopySync(
   "[fs] copy synchronously with preserve timestamps",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
 
@@ -336,10 +336,10 @@ testCopySync(
 
 testCopySync(
   "[fs] copy synchronously if src and dest are the same paths",
-  (): void => {
+  () => {
     const srcFile = path.join(testdataDir, "copy_file_same_sync.txt");
     assertThrows(
-      (): void => {
+      () => {
         copySync(srcFile, srcFile);
       },
       Error,
@@ -348,7 +348,7 @@ testCopySync(
   },
 );
 
-testCopySync("[fs] copy file synchronously", (tempDir: string): void => {
+testCopySync("[fs] copy file synchronously", (tempDir: string) => {
   const srcFile = path.join(testdataDir, "copy_file.txt");
   const destFile = path.join(tempDir, "copy_file_copy_sync.txt");
 
@@ -368,7 +368,7 @@ testCopySync("[fs] copy file synchronously", (tempDir: string): void => {
 
   // Copy again without overwrite option and it should throw an error.
   assertThrows(
-    (): void => {
+    () => {
       copySync(srcFile, destFile);
     },
     Error,
@@ -392,14 +392,14 @@ testCopySync("[fs] copy file synchronously", (tempDir: string): void => {
 
 testCopySync(
   "[fs] copy directory synchronously to its subdirectory",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
 
     ensureDirSync(srcDir);
 
     assertThrows(
-      (): void => {
+      () => {
         copySync(srcDir, destDir);
       },
       Error,
@@ -411,7 +411,7 @@ testCopySync(
 testCopySync(
   "[fs] copy directory synchronously, and destination exist and not a " +
     "directory",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent_sync");
     const destDir = path.join(tempDir, "child.txt");
 
@@ -419,7 +419,7 @@ testCopySync(
     ensureFileSync(destDir);
 
     assertThrows(
-      (): void => {
+      () => {
         copySync(srcDir, destDir);
       },
       Error,
@@ -428,7 +428,7 @@ testCopySync(
   },
 );
 
-testCopySync("[fs] copy directory synchronously", (tempDir: string): void => {
+testCopySync("[fs] copy directory synchronously", (tempDir: string) => {
   const srcDir = path.join(testdataDir, "copy_dir");
   const destDir = path.join(tempDir, "copy_dir_copy_sync");
   const srcFile = path.join(srcDir, "0.txt");
@@ -453,7 +453,7 @@ testCopySync("[fs] copy directory synchronously", (tempDir: string): void => {
 
   // Copy again without overwrite option and it should throw an error.
   assertThrows(
-    (): void => {
+    () => {
       copySync(srcDir, destDir);
     },
     Error,
@@ -479,7 +479,7 @@ testCopySync("[fs] copy directory synchronously", (tempDir: string): void => {
 
 testCopySync(
   "[fs] copy symlink file synchronously",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt");
     const destLink = path.join(tempDir, "0_copy.txt");
@@ -499,7 +499,7 @@ testCopySync(
 
 testCopySync(
   "[fs] copy symlink directory synchronously",
-  (tempDir: string): void => {
+  (tempDir: string) => {
     const originDir = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(tempDir, "copy_dir_link");
     const destLink = path.join(tempDir, "copy_dir_link_copy");
