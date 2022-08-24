@@ -4,7 +4,12 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { assert } from "../_util/assert.ts";
 import { join, normalize } from "../path/mod.ts";
-import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
 function include(
   path: string,
@@ -72,7 +77,7 @@ export type { WalkEntry };
  * ```
  */
 export async function* walk(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -86,6 +91,7 @@ export async function* walk(
   if (maxDepth < 0) {
     return;
   }
+  root = toPathString(root);
   if (includeDirs && include(root, exts, match, skip)) {
     yield await createWalkEntry(root);
   }
@@ -129,7 +135,7 @@ export async function* walk(
 
 /** Same as walk() but uses synchronous ops */
 export function* walkSync(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -140,6 +146,7 @@ export function* walkSync(
     skip = undefined,
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
+  root = toPathString(root);
   if (maxDepth < 0) {
     return;
   }
