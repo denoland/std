@@ -556,7 +556,7 @@ class ServerImpl extends EventEmitter {
     this.#ac = ac;
     DenoUnstable.serve(
       {
-        fetch: handler as DenoUnstable.ServeHandler,
+        handler: handler as DenoUnstable.ServeHandler,
         ...this.#addr,
         signal: ac.signal,
         // @ts-ignore Might be any without `--unstable` flag
