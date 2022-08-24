@@ -193,7 +193,7 @@ function getPattern(name: string): RegExp {
   );
 }
 
-function pushCookie(values: string[], cookie: Cookie): void {
+function pushCookie(values: string[], cookie: Cookie) {
   if (cookie.overwrite) {
     for (let i = values.length - 1; i >= 0; i--) {
       if (values[i].indexOf(`${cookie.name}=`) === 0) {
@@ -207,7 +207,7 @@ function pushCookie(values: string[], cookie: Cookie): void {
 function validateCookieProperty(
   key: string,
   value: string | undefined | null,
-): void {
+) {
   if (value && !FIELD_CONTENT_REGEXP.test(value)) {
     throw new TypeError(`The "${key}" of the cookie (${value}) is invalid.`);
   }
@@ -423,7 +423,7 @@ export class CookieMap extends CookieMapBase {
   }
 
   /** Deletes all the cookies from the {@linkcode Request} in the response. */
-  clear(options: CookieMapSetDeleteOptions = {}): void {
+  clear(options: CookieMapSetDeleteOptions = {}) {
     for (const key of this.keys()) {
       this.set(key, null, options);
     }
@@ -591,7 +591,7 @@ export class SecureCookieMap extends CookieMapBase {
 
   /** Sets all cookies in the {@linkcode Request} to be deleted in the
    * response. */
-  async clear(options: SecureCookieMapSetDeleteOptions): Promise<void> {
+  async clear(options: SecureCookieMapSetDeleteOptions) {
     for await (const key of this.keys()) {
       await this.set(key, null, options);
     }

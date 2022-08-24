@@ -48,7 +48,7 @@ export function moveSync(
   src: string,
   dest: string,
   { overwrite = false }: MoveOptions = {},
-): void {
+) {
   const srcStat = Deno.statSync(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {

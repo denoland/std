@@ -47,16 +47,16 @@ export function debounce<T extends Array<any>>(
   let timeout: number | null = null;
   let flush: (() => void) | null = null;
 
-  const debounced: DebouncedFunction<T> = ((...args: T): void => {
+  const debounced: DebouncedFunction<T> = ((...args: T) => {
     debounced.clear();
-    flush = (): void => {
+    flush = () => {
       debounced.clear();
       fn.call(debounced, ...args);
     };
     timeout = setTimeout(flush, wait);
   }) as DebouncedFunction<T>;
 
-  debounced.clear = (): void => {
+  debounced.clear = () => {
     if (typeof timeout === "number") {
       clearTimeout(timeout);
       timeout = null;
@@ -64,7 +64,7 @@ export function debounce<T extends Array<any>>(
     }
   };
 
-  debounced.flush = (): void => {
+  debounced.flush = () => {
     flush?.();
   };
 

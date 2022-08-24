@@ -9,7 +9,7 @@ import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
   name: "Cookie parser",
-  fn(): void {
+  fn() {
     let headers = new Headers();
     assertEquals(getCookies(headers), {});
     headers = new Headers();
@@ -36,7 +36,7 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Name Validation",
-  fn(): void {
+  fn() {
     const tokens = [
       '"id"',
       "id\t",
@@ -51,7 +51,7 @@ Deno.test({
     const headers = new Headers();
     tokens.forEach((name) => {
       assertThrows(
-        (): void => {
+        () => {
           setCookie(headers, {
             name,
             value: "Cat",
@@ -69,7 +69,7 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Value Validation",
-  fn(): void {
+  fn() {
     const tokens = [
       "1f\tWa",
       "\t",
@@ -85,7 +85,7 @@ Deno.test({
     const headers = new Headers();
     tokens.forEach((value) => {
       assertThrows(
-        (): void => {
+        () => {
           setCookie(
             headers,
             {
@@ -106,11 +106,11 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Path Validation",
-  fn(): void {
+  fn() {
     const path = "/;domain=sub.domain.com";
     const headers = new Headers();
     assertThrows(
-      (): void => {
+      () => {
         setCookie(headers, {
           name: "Space",
           value: "Cat",
@@ -128,12 +128,12 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Domain Validation",
-  fn(): void {
+  fn() {
     const tokens = ["-domain.com", "domain.org.", "domain.org-"];
     const headers = new Headers();
     tokens.forEach((domain) => {
       assertThrows(
-        (): void => {
+        () => {
           setCookie(headers, {
             name: "Space",
             value: "Cat",
@@ -152,7 +152,7 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Delete",
-  fn(): void {
+  fn() {
     let headers = new Headers();
     deleteCookie(headers, "deno");
     assertEquals(
@@ -176,7 +176,7 @@ Deno.test({
 
 Deno.test({
   name: "Cookie Set",
-  fn(): void {
+  fn() {
     let headers = new Headers();
     setCookie(headers, { name: "Space", value: "Cat" });
     assertEquals(headers.get("Set-Cookie"), "Space=Cat");

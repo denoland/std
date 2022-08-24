@@ -4,7 +4,7 @@ import { Args, parse, ParseOptions } from "./mod.ts";
 import { assertType, IsExact } from "../_util/assert_type.ts";
 
 // flag boolean true (default all --args to boolean)
-Deno.test("flagBooleanTrue", function (): void {
+Deno.test("flagBooleanTrue", function () {
   const argv = parse(["moo", "--honk", "cow"], {
     boolean: true,
   });
@@ -18,7 +18,7 @@ Deno.test("flagBooleanTrue", function (): void {
 });
 
 // flag boolean true only affects double hyphen arguments without equals signs
-Deno.test("flagBooleanTrueOnlyAffectsDoubleDash", function (): void {
+Deno.test("flagBooleanTrueOnlyAffectsDoubleDash", function () {
   const argv = parse(["moo", "--honk", "cow", "-p", "55", "--tacos=good"], {
     boolean: true,
   });
@@ -33,7 +33,7 @@ Deno.test("flagBooleanTrueOnlyAffectsDoubleDash", function (): void {
   assertEquals(typeof argv.honk, "boolean");
 });
 
-Deno.test("flagBooleanDefaultFalse", function (): void {
+Deno.test("flagBooleanDefaultFalse", function () {
   const argv = parse(["moo"], {
     boolean: ["t", "verbose"],
     default: { verbose: false, t: false },
@@ -49,7 +49,7 @@ Deno.test("flagBooleanDefaultFalse", function (): void {
   assertEquals(typeof argv.t, "boolean");
 });
 
-Deno.test("booleanGroups", function (): void {
+Deno.test("booleanGroups", function () {
   const argv = parse(["-x", "-z", "one", "two", "three"], {
     boolean: ["x", "y", "z"],
   });
@@ -66,7 +66,7 @@ Deno.test("booleanGroups", function (): void {
   assertEquals(typeof argv.z, "boolean");
 });
 
-Deno.test("booleanAndAliasWithChainableApi", function (): void {
+Deno.test("booleanAndAliasWithChainableApi", function () {
   const aliased = ["-h", "derp"];
   const regular = ["--herp", "derp"];
   const aliasedArgv = parse(aliased, {
@@ -87,7 +87,7 @@ Deno.test("booleanAndAliasWithChainableApi", function (): void {
   assertEquals(propertyArgv, expected);
 });
 
-Deno.test("booleanAndAliasWithOptionsHash", function (): void {
+Deno.test("booleanAndAliasWithOptionsHash", function () {
   const aliased = ["-h", "derp"];
   const regular = ["--herp", "derp"];
   const opts = {
@@ -105,7 +105,7 @@ Deno.test("booleanAndAliasWithOptionsHash", function (): void {
   assertEquals(propertyArgv, expected);
 });
 
-Deno.test("booleanAndAliasArrayWithOptionsHash", function (): void {
+Deno.test("booleanAndAliasArrayWithOptionsHash", function () {
   const aliased = ["-h", "derp"];
   const regular = ["--herp", "derp"];
   const alt = ["--harp", "derp"];
@@ -127,7 +127,7 @@ Deno.test("booleanAndAliasArrayWithOptionsHash", function (): void {
   assertEquals(altPropertyArgv, expected);
 });
 
-Deno.test("booleanAndAliasUsingExplicitTrue", function (): void {
+Deno.test("booleanAndAliasUsingExplicitTrue", function () {
   const aliased = ["-h", "true"];
   const regular = ["--herp", "true"];
   const opts = {
@@ -148,7 +148,7 @@ Deno.test("booleanAndAliasUsingExplicitTrue", function (): void {
 
 // regression, see https://github.com/substack/node-optimist/issues/71
 // boolean and --x=true
-Deno.test("booleanAndNonBoolean", function (): void {
+Deno.test("booleanAndNonBoolean", function () {
   const parsed = parse(["--boool", "--other=true"], {
     boolean: "boool",
   });
@@ -164,7 +164,7 @@ Deno.test("booleanAndNonBoolean", function (): void {
   assertEquals(parsed2.other, "false");
 });
 
-Deno.test("booleanParsingTrue", function (): void {
+Deno.test("booleanParsingTrue", function () {
   const parsed = parse(["--boool=true"], {
     default: {
       boool: false,
@@ -175,7 +175,7 @@ Deno.test("booleanParsingTrue", function (): void {
   assertEquals(parsed.boool, true);
 });
 
-Deno.test("booleanParsingFalse", function (): void {
+Deno.test("booleanParsingFalse", function () {
   const parsed = parse(["--boool=false"], {
     default: {
       boool: true,
@@ -186,7 +186,7 @@ Deno.test("booleanParsingFalse", function (): void {
   assertEquals(parsed.boool, false);
 });
 
-Deno.test("booleanParsingTrueLike", function (): void {
+Deno.test("booleanParsingTrueLike", function () {
   const parsed = parse(["-t", "true123"], { boolean: ["t"] });
   assertEquals(parsed.t, true);
 
@@ -197,7 +197,7 @@ Deno.test("booleanParsingTrueLike", function (): void {
   assertEquals(parsed3.t, true);
 });
 
-Deno.test("booleanNegationAfterBoolean", function (): void {
+Deno.test("booleanNegationAfterBoolean", function () {
   const parsed = parse(["--foo", "--no-foo"], {
     boolean: ["foo"],
     negatable: ["foo"],
@@ -211,7 +211,7 @@ Deno.test("booleanNegationAfterBoolean", function (): void {
   assertEquals(parsed2.foo, false);
 });
 
-Deno.test("booleanAfterBooleanNegation", function (): void {
+Deno.test("booleanAfterBooleanNegation", function () {
   const parsed = parse(["--no-foo", "--foo"], {
     boolean: ["foo"],
     negatable: ["foo"],
@@ -225,7 +225,7 @@ Deno.test("booleanAfterBooleanNegation", function (): void {
   assertEquals(parsed2.foo, true);
 });
 
-Deno.test("latestFlagIsBooleanNegation", function (): void {
+Deno.test("latestFlagIsBooleanNegation", function () {
   const parsed = parse(["--no-foo", "--foo", "--no-foo"], {
     boolean: ["foo"],
     negatable: ["foo"],
@@ -239,7 +239,7 @@ Deno.test("latestFlagIsBooleanNegation", function (): void {
   assertEquals(parsed2.foo, false);
 });
 
-Deno.test("latestFlagIsBoolean", function (): void {
+Deno.test("latestFlagIsBoolean", function () {
   const parsed = parse(["--foo", "--no-foo", "--foo"], {
     boolean: ["foo"],
     negatable: ["foo"],
@@ -253,7 +253,7 @@ Deno.test("latestFlagIsBoolean", function (): void {
   assertEquals(parsed2.foo, true);
 });
 
-Deno.test("hyphen", function (): void {
+Deno.test("hyphen", function () {
   assertEquals(parse(["-n", "-"]), { n: "-", _: [] });
   assertEquals(parse(["-"]), { _: ["-"] });
   assertEquals(parse(["-f-"]), { f: "-", _: [] });
@@ -261,13 +261,13 @@ Deno.test("hyphen", function (): void {
   assertEquals(parse(["-s", "-"], { string: "s" }), { s: "-", _: [] });
 });
 
-Deno.test("doubleDash", function (): void {
+Deno.test("doubleDash", function () {
   assertEquals(parse(["-a", "--", "b"]), { a: true, _: ["b"] });
   assertEquals(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
   assertEquals(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
 });
 
-Deno.test("moveArgsAfterDoubleDashIntoOwnArray", function (): void {
+Deno.test("moveArgsAfterDoubleDashIntoOwnArray", function () {
   assertEquals(
     parse(["--name", "John", "before", "--", "after"], { "--": true }),
     {
@@ -278,7 +278,7 @@ Deno.test("moveArgsAfterDoubleDashIntoOwnArray", function (): void {
   );
 });
 
-Deno.test("booleanDefaultTrue", function (): void {
+Deno.test("booleanDefaultTrue", function () {
   const argv = parse([], {
     boolean: "sometrue",
     default: { sometrue: true },
@@ -286,7 +286,7 @@ Deno.test("booleanDefaultTrue", function (): void {
   assertEquals(argv.sometrue, true);
 });
 
-Deno.test("booleanDefaultFalse", function (): void {
+Deno.test("booleanDefaultFalse", function () {
   const argv = parse([], {
     boolean: "somefalse",
     default: { somefalse: false },
@@ -294,7 +294,7 @@ Deno.test("booleanDefaultFalse", function (): void {
   assertEquals(argv.somefalse, false);
 });
 
-Deno.test("booleanDefaultNull", function (): void {
+Deno.test("booleanDefaultNull", function () {
   const argv = parse([], {
     boolean: "maybe",
     default: { maybe: null },
@@ -307,7 +307,7 @@ Deno.test("booleanDefaultNull", function (): void {
   assertEquals(argv2.maybe, true);
 });
 
-Deno.test("dottedAlias", function (): void {
+Deno.test("dottedAlias", function () {
   const argv = parse(["--a.b", "22"], {
     default: { "a.b": 11 },
     alias: { "a.b": "aa.bb" },
@@ -316,28 +316,28 @@ Deno.test("dottedAlias", function (): void {
   assertEquals(argv.aa.bb, 22);
 });
 
-Deno.test("dottedDefault", function (): void {
+Deno.test("dottedDefault", function () {
   const argv = parse([], { default: { "a.b": 11 }, alias: { "a.b": "aa.bb" } });
   assertEquals(argv.a.b, 11);
   assertEquals(argv.aa.bb, 11);
 });
 
-Deno.test("dottedDefaultWithNoAlias", function (): void {
+Deno.test("dottedDefaultWithNoAlias", function () {
   const argv = parse([], { default: { "a.b": 11 } });
   assertEquals(argv.a.b, 11);
 });
 
-Deno.test("short", function (): void {
+Deno.test("short", function () {
   const argv = parse(["-b=123"]);
   assertEquals(argv, { b: 123, _: [] });
 });
 
-Deno.test("multiShort", function (): void {
+Deno.test("multiShort", function () {
   const argv = parse(["-a=whatever", "-b=robots"]);
   assertEquals(argv, { a: "whatever", b: "robots", _: [] });
 });
 
-Deno.test("longOpts", function (): void {
+Deno.test("longOpts", function () {
   assertEquals(parse(["--bool"]), { bool: true, _: [] });
   assertEquals(parse(["--pow", "xixxle"]), { pow: "xixxle", _: [] });
   assertEquals(parse(["--pow=xixxle"]), { pow: "xixxle", _: [] });
@@ -353,7 +353,7 @@ Deno.test("longOpts", function (): void {
   });
 });
 
-Deno.test("nums", function (): void {
+Deno.test("nums", function () {
   const argv = parse([
     "-x",
     "1234",
@@ -383,14 +383,14 @@ Deno.test("nums", function (): void {
   assertEquals(typeof argv._[0], "number");
 });
 
-Deno.test("alreadyNumber", function (): void {
+Deno.test("alreadyNumber", function () {
   const argv = parse(["-x", "1234", "789"]);
   assertEquals(argv, { x: 1234, _: [789] });
   assertEquals(typeof argv.x, "number");
   assertEquals(typeof argv._[0], "number");
 });
 
-Deno.test("parseArgs", function (): void {
+Deno.test("parseArgs", function () {
   assertEquals(parse(["--no-moo"]), { "no-moo": true, _: [] });
   assertEquals(parse(["-v", "a", "-v", "b", "-v", "c"]), {
     v: "c",
@@ -398,7 +398,7 @@ Deno.test("parseArgs", function (): void {
   });
 });
 
-Deno.test("comprehensive", function (): void {
+Deno.test("comprehensive", function () {
   assertEquals(
     parse([
       "--name=meowmers",
@@ -441,13 +441,13 @@ Deno.test("comprehensive", function (): void {
   );
 });
 
-Deno.test("flagBoolean", function (): void {
+Deno.test("flagBoolean", function () {
   const argv = parse(["-t", "moo"], { boolean: "t" });
   assertEquals(argv, { t: true, _: ["moo"] });
   assertEquals(typeof argv.t, "boolean");
 });
 
-Deno.test("flagBooleanValue", function (): void {
+Deno.test("flagBooleanValue", function () {
   const argv = parse(["--verbose", "false", "moo", "-t", "true"], {
     boolean: ["t", "verbose"],
     default: { verbose: true },
@@ -463,7 +463,7 @@ Deno.test("flagBooleanValue", function (): void {
   assertEquals(typeof argv.t, "boolean");
 });
 
-Deno.test("newlinesInParams", function (): void {
+Deno.test("newlinesInParams", function () {
   const args = parse(["-s", "X\nX"]);
   assertEquals(args, { _: [], s: "X\nX" });
 
@@ -475,7 +475,7 @@ Deno.test("newlinesInParams", function (): void {
   assertEquals(args2, { _: [], s: "X\nX" });
 });
 
-Deno.test("strings", function (): void {
+Deno.test("strings", function () {
   const s = parse(["-s", "0001234"], { string: "s" }).s;
   assertEquals(s, "0001234");
   assertEquals(typeof s, "string");
@@ -485,7 +485,7 @@ Deno.test("strings", function (): void {
   assertEquals(typeof x, "string");
 });
 
-Deno.test("stringArgs", function (): void {
+Deno.test("stringArgs", function () {
   const s = parse(["  ", "  "], { string: "_" })._;
   assertEquals(s.length, 2);
   assertEquals(typeof s[0], "string");
@@ -494,7 +494,7 @@ Deno.test("stringArgs", function (): void {
   assertEquals(s[1], "  ");
 });
 
-Deno.test("emptyStrings", function (): void {
+Deno.test("emptyStrings", function () {
   const s = parse(["-s"], { string: "s" }).s;
   assertEquals(s, "");
   assertEquals(typeof s, "string");
@@ -512,7 +512,7 @@ Deno.test("emptyStrings", function (): void {
   assertEquals(letters.t, "");
 });
 
-Deno.test("stringAndAlias", function (): void {
+Deno.test("stringAndAlias", function () {
   const x = parse(["--str", "000123"], {
     string: "s",
     alias: { s: "str" },
@@ -534,7 +534,7 @@ Deno.test("stringAndAlias", function (): void {
   assertEquals(typeof y.s, "string");
 });
 
-Deno.test("slashBreak", function (): void {
+Deno.test("slashBreak", function () {
   assertEquals(parse(["-I/foo/bar/baz"]), { I: "/foo/bar/baz", _: [] });
   assertEquals(parse(["-xyz/foo/bar/baz"]), {
     x: true,
@@ -544,7 +544,7 @@ Deno.test("slashBreak", function (): void {
   });
 });
 
-Deno.test("alias", function (): void {
+Deno.test("alias", function () {
   const argv = parse(["-f", "11", "--zoom", "55"], {
     alias: { z: "zoom" },
   });
@@ -553,7 +553,7 @@ Deno.test("alias", function (): void {
   assertEquals(argv.f, 11);
 });
 
-Deno.test("multiAlias", function (): void {
+Deno.test("multiAlias", function () {
   const argv = parse(["-f", "11", "--zoom", "55"], {
     alias: { z: ["zm", "zoom"] },
   });
@@ -563,7 +563,7 @@ Deno.test("multiAlias", function (): void {
   assertEquals(argv.f, 11);
 });
 
-Deno.test("nestedDottedObjects", function (): void {
+Deno.test("nestedDottedObjects", function () {
   const argv = parse([
     "--foo.bar",
     "3",
@@ -586,19 +586,19 @@ Deno.test("nestedDottedObjects", function (): void {
   assertEquals(argv.beep, { boop: true });
 });
 
-Deno.test("flagBuiltinProperty", function (): void {
+Deno.test("flagBuiltinProperty", function () {
   const argv = parse(["--toString", "--valueOf", "foo"]);
   assertEquals(argv, { toString: true, valueOf: "foo", _: [] });
   assertEquals(typeof argv.toString, "boolean");
   assertEquals(typeof argv.valueOf, "string");
 });
 
-Deno.test("numericShortArgs", function (): void {
+Deno.test("numericShortArgs", function () {
   assertEquals(parse(["-n123"]), { n: 123, _: [] });
   assertEquals(parse(["-123", "456"]), { 1: true, 2: true, 3: 456, _: [] });
 });
 
-Deno.test("short", function (): void {
+Deno.test("short", function () {
   assertEquals(parse(["-b"]), { b: true, _: [] });
   assertEquals(parse(["foo", "bar", "baz"]), { _: ["foo", "bar", "baz"] });
   assertEquals(parse(["-cats"]), { c: true, a: true, t: true, s: true, _: [] });
@@ -617,7 +617,7 @@ Deno.test("short", function (): void {
   });
 });
 
-Deno.test("mixedShortBoolAndCapture", function (): void {
+Deno.test("mixedShortBoolAndCapture", function () {
   assertEquals(parse(["-h", "localhost", "-fp", "555", "script.js"]), {
     f: true,
     p: 555,
@@ -626,7 +626,7 @@ Deno.test("mixedShortBoolAndCapture", function (): void {
   });
 });
 
-Deno.test("shortAndLong", function (): void {
+Deno.test("shortAndLong", function () {
   assertEquals(parse(["-h", "localhost", "-fp", "555", "script.js"]), {
     f: true,
     p: 555,
@@ -636,7 +636,7 @@ Deno.test("shortAndLong", function (): void {
 });
 
 // stops parsing on the first non-option when stopEarly is set
-Deno.test("stopParsing", function (): void {
+Deno.test("stopParsing", function () {
   const argv = parse(["--aaa", "bbb", "ccc", "--ddd"], {
     stopEarly: true,
   });
@@ -647,7 +647,7 @@ Deno.test("stopParsing", function (): void {
   });
 });
 
-Deno.test("booleanAndAliasIsNotUnknown", function (): void {
+Deno.test("booleanAndAliasIsNotUnknown", function () {
   const unknown: unknown[] = [];
   function unknownFn(arg: string, k?: string, v?: unknown): boolean {
     unknown.push({ arg, k, v });
@@ -671,7 +671,7 @@ Deno.test("booleanAndAliasIsNotUnknown", function (): void {
 
 Deno.test(
   "flagBooleanTrueAnyDoubleHyphenArgumentIsNotUnknown",
-  function (): void {
+  function () {
     const unknown: unknown[] = [];
     function unknownFn(arg: string, k?: string, v?: unknown): boolean {
       unknown.push({ arg, k, v });
@@ -693,7 +693,7 @@ Deno.test(
   },
 );
 
-Deno.test("stringAndAliasIsNotUnknown", function (): void {
+Deno.test("stringAndAliasIsNotUnknown", function () {
   const unknown: unknown[] = [];
   function unknownFn(arg: string, k?: string, v?: unknown): boolean {
     unknown.push({ arg, k, v });
@@ -715,7 +715,7 @@ Deno.test("stringAndAliasIsNotUnknown", function (): void {
   ]);
 });
 
-Deno.test("defaultAndAliasIsNotUnknown", function (): void {
+Deno.test("defaultAndAliasIsNotUnknown", function () {
   const unknown: unknown[] = [];
   function unknownFn(arg: string, k?: string, v?: unknown): boolean {
     unknown.push({ arg, k, v });
@@ -734,7 +734,7 @@ Deno.test("defaultAndAliasIsNotUnknown", function (): void {
   assertEquals(unknown, []);
 });
 
-Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function (): void {
+Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function () {
   const unknown: unknown[] = [];
   function unknownFn(arg: string, k?: string, v?: unknown): boolean {
     unknown.push({ arg, k, v });
@@ -754,11 +754,11 @@ Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function (): void {
   });
 });
 
-Deno.test("whitespaceShouldBeWhitespace", function (): void {
+Deno.test("whitespaceShouldBeWhitespace", function () {
   assertEquals(parse(["-x", "\t"]).x, "\t");
 });
 
-Deno.test("collectArgsDefaultBehaviour", function (): void {
+Deno.test("collectArgsDefaultBehaviour", function () {
   const argv = parse([
     "--foo",
     "bar",
@@ -778,7 +778,7 @@ Deno.test("collectArgsDefaultBehaviour", function (): void {
   });
 });
 
-Deno.test("collectUnknownArgs", function (): void {
+Deno.test("collectUnknownArgs", function () {
   const argv = parse([
     "--foo",
     "bar",
@@ -803,7 +803,7 @@ Deno.test("collectUnknownArgs", function (): void {
   });
 });
 
-Deno.test("collectArgs", function (): void {
+Deno.test("collectArgs", function () {
   const argv = parse([
     "--bool",
     "--bool",
@@ -839,7 +839,7 @@ Deno.test("collectArgs", function (): void {
   });
 });
 
-Deno.test("collectNegateableArgs", function (): void {
+Deno.test("collectNegateableArgs", function () {
   const argv = parse([
     "--foo",
     "123",
@@ -864,7 +864,7 @@ Deno.test("collectNegateableArgs", function (): void {
 
 /** ---------------------- TYPE TESTS ---------------------- */
 
-Deno.test("typesOfDefaultOptions", function (): void {
+Deno.test("typesOfDefaultOptions", function () {
   const argv = parse([]);
   assertType<
     IsExact<
@@ -878,7 +878,7 @@ Deno.test("typesOfDefaultOptions", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanDisabled", function (): void {
+Deno.test("typesOfAllBooleanDisabled", function () {
   const argv = parse([], {
     boolean: false,
   });
@@ -894,7 +894,7 @@ Deno.test("typesOfAllBooleanDisabled", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanDisabledWithDefaults", function (): void {
+Deno.test("typesOfAllBooleanDisabledWithDefaults", function () {
   const argv = parse([], {
     boolean: false,
     default: {
@@ -913,7 +913,7 @@ Deno.test("typesOfAllBooleanDisabledWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanDisabledAndStringArgs", function (): void {
+Deno.test("typesOfAllBooleanDisabledAndStringArgs", function () {
   const argv = parse([], {
     boolean: false,
     string: ["foo"],
@@ -930,7 +930,7 @@ Deno.test("typesOfAllBooleanDisabledAndStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function (): void {
+Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: false,
     string: ["foo"],
@@ -952,7 +952,7 @@ Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function (): voi
   >(true);
 });
 
-Deno.test("typesOfAllBoolean", function (): void {
+Deno.test("typesOfAllBoolean", function () {
   const argv = parse([], {
     boolean: true,
   });
@@ -967,7 +967,7 @@ Deno.test("typesOfAllBoolean", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanWithDefaults", function (): void {
+Deno.test("typesOfAllBooleanWithDefaults", function () {
   const argv = parse([], {
     boolean: true,
     default: {
@@ -988,7 +988,7 @@ Deno.test("typesOfAllBooleanWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
+Deno.test("typesOfAllBooleanAndStringArgs", function () {
   const argv = parse([], {
     boolean: true,
     string: ["foo", "bar", "foo-bar"],
@@ -1007,7 +1007,7 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
+Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: true,
     string: ["foo", "bar", "foo-bar"],
@@ -1031,7 +1031,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfBooleanArgs", function (): void {
+Deno.test("typesOfBooleanArgs", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "foo-bar"],
   });
@@ -1049,7 +1049,7 @@ Deno.test("typesOfBooleanArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
+Deno.test("typesOfBooleanArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "foo-bar"],
     default: {
@@ -1072,7 +1072,7 @@ Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfStringArgs", function (): void {
+Deno.test("typesOfStringArgs", function () {
   const argv = parse([], {
     string: ["foo", "bar", "foo-bar"],
   });
@@ -1090,7 +1090,7 @@ Deno.test("typesOfStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfStringArgsWithDefaults", function (): void {
+Deno.test("typesOfStringArgsWithDefaults", function () {
   const argv = parse([], {
     string: ["foo", "bar", "foo-bar"],
     default: {
@@ -1113,7 +1113,7 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfBooleanAndStringArgs", function (): void {
+Deno.test("typesOfBooleanAndStringArgs", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "foo-bar"],
     string: ["beep", "boop", "beep-boop"],
@@ -1135,7 +1135,7 @@ Deno.test("typesOfBooleanAndStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
+Deno.test("typesOfBooleanAndStringArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "foo-bar"],
     string: ["beep", "boop", "beep-boop"],
@@ -1165,7 +1165,7 @@ Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
 
 /** ------------------------ DOTTED OPTIONS ------------------------ */
 
-Deno.test("typesOfDottedBooleanArgs", function (): void {
+Deno.test("typesOfDottedBooleanArgs", function () {
   const argv = parse([], {
     boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
   });
@@ -1188,7 +1188,7 @@ Deno.test("typesOfDottedBooleanArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedBooleanArgsWithDefaults", function (): void {
+Deno.test("typesOfDottedBooleanArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
     default: {
@@ -1222,7 +1222,7 @@ Deno.test("typesOfDottedBooleanArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringArgs", function (): void {
+Deno.test("typesOfDottedStringArgs", function () {
   const argv = parse([], {
     string: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
   });
@@ -1245,7 +1245,7 @@ Deno.test("typesOfDottedStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
+Deno.test("typesOfDottedStringArgsWithDefaults", function () {
   const argv = parse([], {
     string: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
     default: {
@@ -1279,7 +1279,7 @@ Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
+Deno.test("typesOfDottedStringAndBooleanArgs", function () {
   const argv = parse([], {
     boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
     string: ["bla", "beep.boop", "beep.bib.bab", "foo.baz.buz"],
@@ -1311,7 +1311,7 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
+Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
     string: ["beep.boop", "beep.bib.bab", "foo.baz.buz"],
@@ -1359,7 +1359,7 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function (): void {
+Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function () {
   const argv = parse([], {
     boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
     string: ["beep.boop", "beep.bib.bab", "foo.baz.buz"],
@@ -1401,7 +1401,7 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function (): v
   >(true);
 });
 
-Deno.test("typesOfDottedArgsWithUnionDefaults", function (): void {
+Deno.test("typesOfDottedArgsWithUnionDefaults", function () {
   const argv = parse([], {
     string: ["foo.bar.baz"],
     boolean: ["beep.boop.bab"],
@@ -1431,7 +1431,7 @@ Deno.test("typesOfDottedArgsWithUnionDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
+Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function () {
   const argv = parse([], {
     string: ["foo.bar.baz"],
     boolean: ["beep.boop.bab"],
@@ -1461,7 +1461,7 @@ Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfArgsWithDottedDefaults", function (): void {
+Deno.test("typesOfArgsWithDottedDefaults", function () {
   const argv = parse([], {
     string: ["foo"],
     default: {
@@ -1484,7 +1484,7 @@ Deno.test("typesOfArgsWithDottedDefaults", function (): void {
 
 /** ------------------------ COLLECT OPTION -------------------------- */
 
-Deno.test("typesOfCollectUnknownArgs", function (): void {
+Deno.test("typesOfCollectUnknownArgs", function () {
   const argv = parse([], {
     collect: ["foo", "bar.baz"],
   });
@@ -1503,7 +1503,7 @@ Deno.test("typesOfCollectUnknownArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfCollectArgs", function (): void {
+Deno.test("typesOfCollectArgs", function () {
   const argv = parse([], {
     boolean: ["foo", "dotted.beep"],
     string: ["bar", "dotted.boop"],
@@ -1526,7 +1526,7 @@ Deno.test("typesOfCollectArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfCollectArgsWithDefaults", function (): void {
+Deno.test("typesOfCollectArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["foo", "dotted.beep"],
     string: ["bar", "dotted.boop"],
@@ -1559,7 +1559,7 @@ Deno.test("typesOfCollectArgsWithDefaults", function (): void {
 
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
 
-Deno.test("typesOfNegatableArgs", function (): void {
+Deno.test("typesOfNegatableArgs", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
     string: ["beep", "boop", "dotted.zig", "dotted.zag"],
@@ -1586,7 +1586,7 @@ Deno.test("typesOfNegatableArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
+Deno.test("typesOfCollectAllArgsWithDefaults", function () {
   const argv = parse([], {
     boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
     string: ["beep", "boop", "dotted.zig", "dotted.zag"],
@@ -1623,7 +1623,7 @@ Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
 
 /** ----------------------------- ALIAS OPTION ----------------------------- */
 
-Deno.test("typesOfAliasArgs", function (): void {
+Deno.test("typesOfAliasArgs", function () {
   const argv = parse([], {
     boolean: ["foo"],
     string: ["beep"],
@@ -1647,7 +1647,7 @@ Deno.test("typesOfAliasArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAliasArgsWithOptions", function (): void {
+Deno.test("typesOfAliasArgsWithOptions", function () {
   const argv = parse([], {
     boolean: ["foo", "biz"],
     string: ["beep", "bib"],
@@ -1682,7 +1682,7 @@ Deno.test("typesOfAliasArgsWithOptions", function (): void {
 
 /** ----------------------- OTHER TYPE TESTS ------------------------ */
 
-Deno.test("typesOfDoubleDashOption", function (): void {
+Deno.test("typesOfDoubleDashOption", function () {
   const argv = parse([], {
     boolean: true,
     string: ["foo"],
@@ -1701,7 +1701,7 @@ Deno.test("typesOfDoubleDashOption", function (): void {
   >(true);
 });
 
-Deno.test("typesOfNullishDefaults", function (): void {
+Deno.test("typesOfNullishDefaults", function () {
   const argv = parse([], {
     boolean: true,
     string: ["foo", "bar", "baz"],
@@ -1724,7 +1724,7 @@ Deno.test("typesOfNullishDefaults", function (): void {
   >(true);
 });
 
-Deno.test("typesOfParseGenerics", function (): void {
+Deno.test("typesOfParseGenerics", function () {
   const argv = parse<{ foo?: number } & { bar: string }, true>([]);
   assertType<
     IsExact<
@@ -1739,7 +1739,7 @@ Deno.test("typesOfParseGenerics", function (): void {
   >(true);
 });
 
-Deno.test("typesOfArgsGenerics", function (): void {
+Deno.test("typesOfArgsGenerics", function () {
   type ArgsResult = Args<{ foo?: number } & { bar: string }, true>;
   assertType<
     IsExact<
@@ -1754,7 +1754,7 @@ Deno.test("typesOfArgsGenerics", function (): void {
   >(true);
 });
 
-Deno.test("typesOfParseOptionsGenerics", function (): void {
+Deno.test("typesOfParseOptionsGenerics", function () {
   type Opts = ParseOptions<"foo", "bar" | "baz">;
   assertType<
     IsExact<
@@ -1785,7 +1785,7 @@ Deno.test("typesOfParseOptionsGenerics", function (): void {
   >(true);
 });
 
-Deno.test("typesOfParseOptionsGenericDefaults", function (): void {
+Deno.test("typesOfParseOptionsGenericDefaults", function () {
   const opts: ParseOptions = {
     boolean: ["foo"],
     string: ["bar"],

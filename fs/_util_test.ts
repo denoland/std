@@ -10,7 +10,7 @@ import { ensureDirSync } from "./ensure_dir.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("_isSubdir", function (): void {
+Deno.test("_isSubdir", function () {
   const pairs = [
     ["", "", false, path.posix.sep],
     ["/first/second", "/first", false, path.posix.sep],
@@ -22,7 +22,7 @@ Deno.test("_isSubdir", function (): void {
     ["c:\\first", "c:\\first\\second", true, path.win32.sep],
   ];
 
-  pairs.forEach(function (p): void {
+  pairs.forEach(function (p) {
     const src = p[0] as string;
     const dest = p[1] as string;
     const expected = p[2] as boolean;
@@ -35,13 +35,13 @@ Deno.test("_isSubdir", function (): void {
   });
 });
 
-Deno.test("_getFileInfoType", function (): void {
+Deno.test("_getFileInfoType", function () {
   const pairs = [
     [path.join(testdataDir, "file_type_1"), "file"],
     [path.join(testdataDir, "file_type_dir_1"), "dir"],
   ];
 
-  pairs.forEach(function (p): void {
+  pairs.forEach(function (p) {
     const filePath = p[0] as string;
     const type = p[1] as PathType;
     switch (type) {

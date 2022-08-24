@@ -126,7 +126,7 @@ export class BinaryHeap<T> implements Iterable<T> {
   }
 
   /** Removes all values from the binary heap. */
-  clear(): void {
+  clear() {
     this.#data = [];
   }
 

@@ -31,7 +31,7 @@ export async function ensureDir(dir: string) {
  * If the directory structure does not exist, it is created. Like mkdir -p.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function ensureDirSync(dir: string): void {
+export function ensureDirSync(dir: string) {
   try {
     const fileInfo = Deno.lstatSync(dir);
     if (!fileInfo.isDirectory) {

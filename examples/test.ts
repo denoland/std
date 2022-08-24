@@ -5,11 +5,11 @@ import { dirname, fromFileUrl, relative, resolve } from "../path/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 /** Example of how to do basic tests */
-Deno.test("t1", function (): void {
+Deno.test("t1", function () {
   assertEquals("hello", "hello");
 });
 
-Deno.test("t2", function (): void {
+Deno.test("t2", function () {
   assertEquals("world", "world");
 });
 

@@ -33,7 +33,7 @@ export async function ensureSymlink(src: string, dest: string) {
  * @param src the source file path
  * @param dest the destination link path
  */
-export function ensureSymlinkSync(src: string, dest: string): void {
+export function ensureSymlinkSync(src: string, dest: string) {
   const srcStatInfo = Deno.lstatSync(src);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
