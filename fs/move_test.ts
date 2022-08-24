@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
+  assert,
   assertEquals,
   assertRejects,
   assertThrows,
@@ -8,7 +9,7 @@ import * as path from "../path/mod.ts";
 import { move, moveSync } from "./move.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { exists, existsSync } from "./exists.ts";
+import { existsSync } from "./exists.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -117,7 +118,7 @@ Deno.test("moveFileIfDestExists", async function () {
     "should not throw error",
   );
 
-  assertEquals(await exists(srcFile), false);
+  await assertRejects(async () => await Deno.lstat(srcFile));
   assertEquals(new TextDecoder().decode(await Deno.readFile(destFile)), "src");
 
   // clean up
@@ -135,14 +136,14 @@ Deno.test("moveDirectory", async function () {
   const srcContent = new TextEncoder().encode("src");
 
   await Deno.mkdir(srcDir, { recursive: true });
-  assertEquals(await exists(srcDir), true);
+  assert(await Deno.lstat(srcDir));
   await Deno.writeFile(srcFile, srcContent);
 
   await move(srcDir, destDir);
 
-  assertEquals(await exists(srcDir), false);
-  assertEquals(await exists(destDir), true);
-  assertEquals(await exists(destFile), true);
+  await assertRejects(async () => await Deno.lstat(srcDir));
+  assert(await Deno.lstat(destDir));
+  assert(await Deno.lstat(destFile));
 
   const destFileContent = new TextDecoder().decode(
     await Deno.readFile(destFile),
@@ -166,8 +167,8 @@ Deno.test(
       Deno.mkdir(srcDir, { recursive: true }),
       Deno.mkdir(destDir, { recursive: true }),
     ]);
-    assertEquals(await exists(srcDir), true);
-    assertEquals(await exists(destDir), true);
+    assert(await Deno.lstat(srcDir));
+    assert(await Deno.lstat(destDir));
     await Promise.all([
       Deno.writeFile(srcFile, srcContent),
       Deno.writeFile(destFile, destContent),
@@ -175,9 +176,9 @@ Deno.test(
 
     await move(srcDir, destDir, { overwrite: true });
 
-    assertEquals(await exists(srcDir), false);
-    assertEquals(await exists(destDir), true);
-    assertEquals(await exists(destFile), true);
+    await assertRejects(async () => await Deno.lstat(srcDir));
+    assert(await Deno.lstat(destDir));
+    assert(await Deno.lstat(destFile));
 
     const destFileContent = new TextDecoder().decode(
       await Deno.readFile(destFile),

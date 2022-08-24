@@ -7,7 +7,7 @@ import {
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { copy, copySync } from "./copy.ts";
-import { exists, existsSync } from "./exists.ts";
+import { existsSync } from "./exists.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
@@ -82,25 +82,16 @@ testCopy(
 
     const srcContent = new TextDecoder().decode(await Deno.readFile(srcFile));
 
-    assertEquals(
-      await exists(srcFile),
-      true,
-      `source should exist before copy`,
-    );
-    assertEquals(
-      await exists(destFile),
-      false,
+    assert(await Deno.lstat(srcFile), "source should exist before copy");
+    await assertRejects(
+      async () => await Deno.lstat(destFile),
       "destination should not exist before copy",
     );
 
     await copy(srcFile, destFile);
 
-    assertEquals(await exists(srcFile), true, "source should exist after copy");
-    assertEquals(
-      await exists(destFile),
-      true,
-      "destination should exist before copy",
-    );
+    assert(await Deno.lstat(srcFile), "source should exist after copy");
+    assert(await Deno.lstat(destFile), "destination should exist after copy");
 
     const destContent = new TextDecoder().decode(await Deno.readFile(destFile));
 
@@ -213,8 +204,8 @@ testCopy(
 
     await copy(srcDir, destDir);
 
-    assertEquals(await exists(destFile), true);
-    assertEquals(await exists(destNestFile), true);
+    assert(await Deno.lstat(destFile));
+    assert(await Deno.lstat(destNestFile));
 
     // After copy. The source and destination should have the same content.
     assertEquals(
