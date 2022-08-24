@@ -126,7 +126,7 @@ Deno.test("Should return true for valid async function types", () => {
 });
 
 Deno.test("Should return false for invalid async function types", () => {
-  const syncFunction = (): void => {};
+  const syncFunction = () => {};
   assertStrictEquals(isAsyncFunction(syncFunction), false);
   assertStrictEquals(isAsyncFunction({}), false);
   assertStrictEquals(isAsyncFunction([]), false);

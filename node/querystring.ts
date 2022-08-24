@@ -84,7 +84,7 @@ function addKeyVal(
   keyEncoded: boolean,
   valEncoded: boolean,
   decode: (encodedURIComponent: string) => string,
-): void {
+) {
   if (key.length > 0 && keyEncoded) {
     key = decode(key);
   }

@@ -8,7 +8,7 @@ type ExistsCallback = (exists: boolean) => void;
  * are implemented. See https://github.com/denoland/deno/issues/3403
  * Deprecated in node api
  */
-export function exists(path: string | URL, callback: ExistsCallback): void {
+export function exists(path: string | URL, callback: ExistsCallback) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   Deno.lstat(path).then(() => callback(true), () => callback(false));
 }

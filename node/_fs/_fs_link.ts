@@ -11,7 +11,7 @@ export function link(
   existingPath: string | URL,
   newPath: string | URL,
   callback: CallbackWithError,
-): void {
+) {
   existingPath = existingPath instanceof URL
     ? fromFileUrl(existingPath)
     : existingPath;
@@ -36,7 +36,7 @@ export const linkPromise = promisify(link) as (
 export function linkSync(
   existingPath: string | URL,
   newPath: string | URL,
-): void {
+) {
   existingPath = existingPath instanceof URL
     ? fromFileUrl(existingPath)
     : existingPath;

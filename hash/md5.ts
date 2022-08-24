@@ -30,14 +30,14 @@ export class Md5 {
     this.#n1 = 0;
   }
 
-  #addLength(len: number): void {
+  #addLength(len: number) {
     let n0 = this.#n0;
     n0 += len;
     if (n0 > 0xffffffff) this.#n1 += 1;
     this.#n0 = n0 >>> 0;
   }
 
-  #hash(block: Uint8Array): void {
+  #hash(block: Uint8Array) {
     let a = this.#a;
     let b = this.#b;
     let c = this.#c;

@@ -228,15 +228,15 @@ export class ChildProcess extends EventEmitter {
     return this.killed;
   }
 
-  ref(): void {
+  ref() {
     this.#process.ref();
   }
 
-  unref(): void {
+  unref() {
     this.#process.unref();
   }
 
-  async #_waitForChildStreamsToClose(): Promise<void> {
+  async #_waitForChildStreamsToClose() {
     const promises = [] as Array<Promise<void>>;
     if (this.stdin && !this.stdin.destroyed) {
       assert(this.stdin);
@@ -252,13 +252,13 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  #_handleError(err: unknown): void {
+  #_handleError(err: unknown) {
     nextTick(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
   }
 
-  #closePipes(): void {
+  #closePipes() {
     if (this.stdin) {
       assert(this.stdin);
       this.stdin.destroy();
@@ -407,12 +407,12 @@ function normalizeStdioOption(
   }
 }
 
-function waitForReadableToClose(readable: Readable): Promise<void> {
+function waitForReadableToClose(readable: Readable) {
   readable.resume(); // Ensure buffered data will be consumed.
   return waitForStreamToClose(readable as unknown as Stream);
 }
 
-function waitForStreamToClose(stream: Stream): Promise<void> {
+function waitForStreamToClose(stream: Stream) {
   const promise = deferred<void>();
   const cleanup = () => {
     stream.removeListener("close", onClose);

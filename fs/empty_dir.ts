@@ -39,7 +39,7 @@ export async function emptyDir(dir: string) {
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function emptyDirSync(dir: string): void {
+export function emptyDirSync(dir: string) {
   try {
     const items = [...Deno.readDirSync(dir)];
 

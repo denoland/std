@@ -22,7 +22,7 @@ export function writeFile(
   data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
-): void {
+) {
   const callbackFn: CallbackWithError | undefined =
     optOrCallback instanceof Function ? optOrCallback : callback;
   const options: Encodings | WriteFileOptions | undefined =
@@ -94,7 +94,7 @@ export function writeFileSync(
   // deno-lint-ignore ban-types
   data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
-): void {
+) {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
 
   const flag: string | undefined = isFileOptions(options)

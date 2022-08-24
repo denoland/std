@@ -77,7 +77,7 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .split("")
     .reverse()
     .slice(0, 3)
-    .forEach((v): void => {
+    .forEach((v) => {
       output = `${modeMap[+v]} ${output}`;
     });
   output = `${isDir ? "d" : "-"} ${output}`;
@@ -363,7 +363,7 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
   );
 }
 
-function serverLog(req: Request, status: number): void {
+function serverLog(req: Request, status: number) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
@@ -651,7 +651,7 @@ function normalizeURL(url: string): string {
     : normalizedUrl;
 }
 
-function main(): void {
+function main() {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],

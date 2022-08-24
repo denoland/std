@@ -20,7 +20,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #throws: any[] = [];
   #signal: Deferred<void> = deferred();
 
-  add(iterable: AsyncIterable<T>): void {
+  add(iterable: AsyncIterable<T>) {
     ++this.#iteratorCount;
     this.#callIteratorNext(iterable[Symbol.asyncIterator]());
   }

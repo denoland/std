@@ -49,14 +49,14 @@ function constructYamlFloat(data: string): number {
     return NaN;
   }
   if (value.indexOf(":") >= 0) {
-    value.split(":").forEach((v): void => {
+    value.split(":").forEach((v) => {
       digits.unshift(parseFloat(v));
     });
 
     let valueNb = 0.0;
     let base = 1;
 
-    digits.forEach((d): void => {
+    digits.forEach((d) => {
       valueNb += d * base;
       base *= 60;
     });

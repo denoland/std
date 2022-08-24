@@ -14,7 +14,7 @@ Deno.test("ioStringWriter", async function () {
   assertEquals(w.toString(), "base0123456789");
 });
 
-Deno.test("ioStringWriterSync", function (): void {
+Deno.test("ioStringWriterSync", function () {
   const encoder = new TextEncoder();
   const w = new StringWriter("");
   w.writeSync(encoder.encode("deno"));
