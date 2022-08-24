@@ -8,6 +8,7 @@
 - feat(http/cookie): add set-cookie headers parser (#2475)
 - feat(http/file_server): return 404 response if file not found (#2529)
 - feat(node): add types to fs/promises (#2518)
+- feat(node): Handle "upgrade" event (#2457)
 - feat(node): use Deno.serve() API for Node http polyfill (#2537)
 - feat(testing/asserts): add assertNotInstanceOf (#2530)
 - fix(collections): edge cases for BinaryHeap (#2525)
@@ -15,7 +16,6 @@
 - fix(node/events): export static setMaxListeners, listenerCount (#2523)
 - fix(node/util.types): stricter checking of TypedArray (#2528)
 - fix(testing): better assertEqual diff for object getters (#2509)
-- node: Handle "upgrade" event (#2457)
 
 ### 0.152.0 / 2022.08.11
 
