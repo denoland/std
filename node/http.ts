@@ -16,6 +16,7 @@ import {
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
+import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
 const METHODS = [
   "ACL",
@@ -421,6 +422,13 @@ export class IncomingMessageForServer extends NodeReadable {
   get headers() {
     return Object.fromEntries(this.#req.headers.entries());
   }
+
+  get upgrade(): boolean {
+    return Boolean(
+      this.#req.headers.get("connection")?.toLowerCase().includes("upgrade") &&
+        this.#req.headers.get("upgrade"),
+    );
+  }
 }
 
 type ServerHandler = (
@@ -543,11 +551,22 @@ class ServerImpl extends EventEmitter {
   #serve() {
     const ac = new AbortController();
     const handler = (request: Request) => {
-      return new Promise<Response>((resolve): void => {
-        const req = new IncomingMessageForServer(request);
-        const res = new ServerResponse(undefined, resolve);
-        this.emit("request", req, res);
-      });
+      const req = new IncomingMessageForServer(request);
+      if (req.upgrade && this.listenerCount("upgrade") > 0) {
+        const [conn, head] = DenoUnstable.upgradeHttpRaw(request) as [
+          Deno.Conn,
+          Uint8Array,
+        ];
+        const socket = new Socket({
+          handle: new TCP(constants.SERVER, conn),
+        });
+        this.emit("upgrade", req, socket, new Buffer(head));
+      } else {
+        return new Promise<Response>((resolve): void => {
+          const res = new ServerResponse(undefined, resolve);
+          this.emit("request", req, res);
+        });
+      }
     };
 
     if (this.#hasClosed) {

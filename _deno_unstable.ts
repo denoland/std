@@ -17,6 +17,16 @@ export function serve(
   }
 }
 
+export function upgradeHttpRaw(
+  ...args: Parameters<typeof Deno.upgradeHttpRaw>
+): ReturnType<typeof Deno.upgradeHttpRaw> {
+  if (typeof Deno.upgradeHttpRaw == "function") {
+    return Deno.upgradeHttpRaw(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
 export function addSignalListener(
   ...args: Parameters<typeof Deno.addSignalListener>
 ): ReturnType<typeof Deno.addSignalListener> {
