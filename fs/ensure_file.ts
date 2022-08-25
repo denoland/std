@@ -42,7 +42,7 @@ export async function ensureFile(filePath: string) {
  * it is NOT MODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function ensureFileSync(filePath: string): void {
+export function ensureFileSync(filePath: string) {
   try {
     // if file exists
     const stat = Deno.lstatSync(filePath);

@@ -259,7 +259,7 @@ export class UDP extends HandleWrap {
     return 0;
   }
 
-  override ref(): void {
+  override ref() {
     notImplemented("udp.UDP.prototype.ref");
   }
 
@@ -301,7 +301,7 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.setTTL");
   }
 
-  override unref(): void {
+  override unref() {
     notImplemented("udp.UDP.prototype.unref");
   }
 
@@ -417,7 +417,7 @@ export class UDP extends HandleWrap {
     return 0;
   }
 
-  async #receive(): Promise<void> {
+  async #receive() {
     if (!this.#receiving) {
       return;
     }

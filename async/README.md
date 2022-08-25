@@ -135,6 +135,17 @@ const result = await delayedPromise;
 // ...
 ```
 
+To allow the process to continue to run as long as the timer exists. Requires
+`--unstable` flag.
+
+```typescript
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+
+// ...
+await delay(100, { persistent: false });
+// ...
+```
+
 ## MuxAsyncIterator
 
 The MuxAsyncIterator class multiplexes multiple async iterators into a single

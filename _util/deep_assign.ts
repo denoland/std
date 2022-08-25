@@ -27,7 +27,7 @@ object | undefined {
     if (!source || typeof source !== `object`) {
       return;
     }
-    Object.entries(source).forEach(([key, value]): void => {
+    Object.entries(source).forEach(([key, value]) => {
       if (value instanceof Date) {
         target[key] = new Date(value);
         return;

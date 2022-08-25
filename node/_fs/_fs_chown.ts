@@ -15,7 +15,7 @@ export function chown(
   uid: number,
   gid: number,
   callback: CallbackWithError,
-): void {
+) {
   callback = makeCallback(callback);
   path = getValidatedPath(path).toString();
   validateInteger(uid, "uid", -1, kMaxUserId);
@@ -41,7 +41,7 @@ export function chownSync(
   path: string | Buffer | URL,
   uid: number,
   gid: number,
-): void {
+) {
   path = getValidatedPath(path).toString();
   validateInteger(uid, "uid", -1, kMaxUserId);
   validateInteger(gid, "gid", -1, kMaxUserId);

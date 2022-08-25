@@ -160,7 +160,7 @@ export const Utils = {
     type: "Table" | "TableArray";
     key: string[];
     value: Record<string, unknown>;
-  }): void {
+  }) {
     if (table.key.length === 0) {
       throw new Error("Unexpected key length");
     }

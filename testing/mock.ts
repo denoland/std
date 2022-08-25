@@ -137,12 +137,12 @@ function getSession(): Set<Spy<any, any[], any>> {
   return sessions[sessions.length - 1];
 }
 // deno-lint-ignore no-explicit-any
-function registerMock(spy: Spy<any, any[], any>): void {
+function registerMock(spy: Spy<any, any[], any>) {
   const session = getSession();
   session.add(spy);
 }
 // deno-lint-ignore no-explicit-any
-function unregisterMock(spy: Spy<any, any[], any>): void {
+function unregisterMock(spy: Spy<any, any[], any>) {
   const session = getSession();
   session.delete(spy);
 }
@@ -205,7 +205,7 @@ export function mockSessionAsync<
  * Restores all mocks registered in the current session that have not already been restored.
  * If an id is provided, it will restore all mocks registered in the session associed with that id that have not already been restored.
  */
-export function restore(id?: number): void {
+export function restore(id?: number) {
   id ??= (sessions.length || 1) - 1;
   while (id < sessions.length) {
     const session = sessions.pop();

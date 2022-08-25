@@ -111,7 +111,7 @@ Deno.test({
     assertEquals(m.get("SID"), null);
     assertEquals(m.get("Privilege"), null);
     // Not legal http header
-    assertThrows((): void => {
+    assertThrows(() => {
       assertEquals(m.get("Audio Mode"), "None");
     });
   },

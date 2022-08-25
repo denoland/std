@@ -5,6 +5,27 @@ export type HttpClient = Deno.HttpClient;
 export type UnixConnectOptions = Deno.UnixConnectOptions;
 export type UnixListenOptions = Deno.UnixListenOptions;
 export type DatagramConn = Deno.DatagramConn;
+export type ServeHandler = Deno.ServeHandler;
+
+export function serve(
+  ...args: Parameters<typeof Deno.serve>
+): ReturnType<typeof Deno.serve> {
+  if (typeof Deno.serve == "function") {
+    return Deno.serve(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
+export function upgradeHttpRaw(
+  ...args: Parameters<typeof Deno.upgradeHttpRaw>
+): ReturnType<typeof Deno.upgradeHttpRaw> {
+  if (typeof Deno.upgradeHttpRaw == "function") {
+    return Deno.upgradeHttpRaw(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
 
 export function addSignalListener(
   ...args: Parameters<typeof Deno.addSignalListener>
@@ -191,6 +212,16 @@ export function ListenerUnref(
 ): ReturnType<Deno.Listener["unref"]> {
   if (typeof listener.unref == "function") {
     return listener.unref(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
+export function unrefTimer(
+  ...args: Parameters<typeof Deno.unrefTimer>
+): ReturnType<typeof Deno.unrefTimer> {
+  if (typeof Deno.unrefTimer == "function") {
+    return Deno.unrefTimer(...args);
   } else {
     throw new TypeError("Requires --unstable");
   }

@@ -49,7 +49,7 @@ export function readFile(
   path: string | URL,
   optOrCallback?: FileOptionsArgument | Callback | null | undefined,
   callback?: Callback,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   let cb: Callback | undefined;
   if (typeof optOrCallback === "function") {

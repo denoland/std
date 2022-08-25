@@ -507,7 +507,7 @@ Deno.test("stub types", () => {
 Deno.test("mockSession and mockSessionAsync", async () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[] = [];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   await mockSessionAsync(async () => {
@@ -545,7 +545,7 @@ Deno.test("mockSession and mockSessionAsync", async () => {
 Deno.test("mockSession and restore current session", () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   try {
@@ -599,7 +599,7 @@ Deno.test("mockSession and restore current session", () => {
 Deno.test("mockSession and restore multiple sessions", () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   try {

@@ -52,7 +52,7 @@ Deno.test("[streams] writerFromStreamWriter()", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const writableStream = new WritableStream({
-    write(chunk): void {
+    write(chunk) {
       const decoder = new TextDecoder();
       written.push(decoder.decode(chunk));
     },
@@ -75,7 +75,7 @@ Deno.test("[streams] readerFromStreamReader()", async function () {
   const expected = chunks.slice();
   const readChunks: Uint8Array[] = [];
   const readableStream = new ReadableStream({
-    pull(controller): void {
+    pull(controller) {
       const encoder = new TextEncoder();
       const chunk = chunks.shift();
       if (!chunk) return controller.close();
@@ -120,7 +120,7 @@ Deno.test("[streams] readerFromStreamReader() big chunks", async function () {
   ];
   const expected = chunks.slice();
   const readableStream = new ReadableStream({
-    pull(controller): void {
+    pull(controller) {
       const encoder = new TextEncoder();
       const chunk = chunks.shift();
       if (!chunk) return controller.close();
@@ -156,7 +156,7 @@ Deno.test("[streams] readerFromStreamReader() irregular chunks", async function 
       .flat(),
   );
   const readableStream = new ReadableStream({
-    pull(controller): void {
+    pull(controller) {
       const chunk = chunks.shift();
       if (!chunk) return controller.close();
 
@@ -647,7 +647,7 @@ Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () 
 const N = 100;
 let testBytes: Uint8Array | null;
 
-export function init(): void {
+export function init() {
   if (testBytes == null) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {

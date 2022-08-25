@@ -103,7 +103,7 @@ export class Schema implements SchemaDefinition {
     });
   }
 
-  public static create(): void {}
+  public static create() {}
 }
 
 export interface SchemaDefinition {

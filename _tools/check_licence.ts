@@ -22,7 +22,7 @@ const COPYRIGHT_REGEX =
 
 let shouldFail = false;
 
-function walk(dir: string): void {
+function walk(dir: string) {
   for (const x of Deno.readDirSync(dir)) {
     const filePath = `${dir}/${x.name}`;
 

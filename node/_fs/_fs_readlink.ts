@@ -52,7 +52,7 @@ export function readlink(
   path: string | URL,
   optOrCallback: ReadlinkCallback | ReadlinkOptions,
   callback?: ReadlinkCallback,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   let cb: ReadlinkCallback | undefined;

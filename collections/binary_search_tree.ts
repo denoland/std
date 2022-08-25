@@ -219,7 +219,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
   }
 
   /** Removes all values from the binary search tree. */
-  clear(): void {
+  clear() {
     this.root = null;
     this._size = 0;
   }

@@ -23,22 +23,22 @@ Deno.test("ensureSymlinkIfItNotExist", async function () {
 
   await assertRejects(
     async () => {
-      await Deno.stat(testFile).then((): void => {
+      await Deno.stat(testFile).then(() => {
         throw new Error("test file should exists.");
       });
     },
   );
 });
 
-Deno.test("ensureSymlinkSyncIfItNotExist", function (): void {
+Deno.test("ensureSymlinkSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "link_file_2");
   const testFile = path.join(testDir, "test.txt");
 
-  assertThrows((): void => {
+  assertThrows(() => {
     ensureSymlinkSync(testFile, path.join(testDir, "test1.txt"));
   });
 
-  assertThrows((): void => {
+  assertThrows(() => {
     Deno.statSync(testFile);
     throw new Error("test file should exists.");
   });
@@ -63,7 +63,7 @@ Deno.test("ensureSymlinkIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlinkSyncIfItExist", function (): void {
+Deno.test("ensureSymlinkSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "link_file_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -105,7 +105,7 @@ Deno.test("ensureSymlinkDirectoryIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlinkSyncDirectoryIfItExist", function (): void {
+Deno.test("ensureSymlinkSyncDirectoryIfItExist", function () {
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");
   const testFile = path.join(testDir, "test.txt");

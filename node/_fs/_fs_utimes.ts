@@ -29,7 +29,7 @@ export function utimes(
   atime: number | string | Date,
   mtime: number | string | Date,
   callback: CallbackWithError,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   if (!callback) {
@@ -52,7 +52,7 @@ export function utimesSync(
   path: string | URL,
   atime: number | string | Date,
   mtime: number | string | Date,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
