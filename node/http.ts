@@ -587,6 +587,10 @@ class ServerImpl extends EventEmitter {
     ).then(() => this.#servePromise!.resolve());
   }
 
+  setTimeout() {
+    console.error("Not implemented: Server.setTimeout()");
+  }
+
   close(cb?: (err?: Error) => void): this {
     const listening = this.listening;
     this.listening = false;
