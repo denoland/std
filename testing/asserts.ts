@@ -141,7 +141,8 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 }
 
 /** Make an assertion, error will be thrown if `expr` have truthy value. */
-export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+type Falsy = false | 0 | 0n | "" | null | undefined;
+export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {
     throw new AssertionError(msg);
   }
