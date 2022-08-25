@@ -378,11 +378,12 @@ export function assertInstanceOf<T extends AnyConstructor>(
  * Make an assertion that `obj` is not an instance of `type`.
  * If so, then throw.
  */
-export function assertNotInstanceOf<T extends AnyConstructor>(
-  actual: unknown,
-  unexpectedType: T,
+export function assertNotInstanceOf<A, T>(
+  actual: A,
+  // deno-lint-ignore no-explicit-any
+  unexpectedType: new (...args: any[]) => T,
   msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
-) {
+): asserts actual is Exclude<A, T> {
   assertFalse(actual instanceof unexpectedType, msg);
 }
 
