@@ -198,7 +198,7 @@ export const fromWeb = Duplex.fromWeb = function (pair, options) {
 
       writer.ready.then(
         () =>
-          Promise.All(
+          Promise.all(
             chunks.map((data) => writer.write(data.chunk)),
           ).then(done, done),
         done,
@@ -290,7 +290,7 @@ export const fromWeb = Duplex.fromWeb = function (pair, options) {
       }
 
       if (!writableClosed || !readableClosed) {
-        Promise.All([
+        Promise.all([
           closeWriter(),
           closeReader(),
         ]).then(done, done);
