@@ -4,7 +4,7 @@ import { toTransformStream } from "../../streams/conversion.ts";
 
 /** The type of the result of parsing JSON. */
 export type JSONValue =
-  | { [key: string]: JSONValue }
+  | { [key: string]: JSONValue | undefined }
   | JSONValue[]
   | string
   | number
