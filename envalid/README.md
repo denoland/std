@@ -85,7 +85,7 @@ const report = (error: string) => {
   //
 };
 
-const env = cleanEnv(Deno.env.toObject(), myValidators, {
+const env = cleanEnv(Deno.env.toObject(), {}, {
   reporter: ({ errors, env }) => {
     report("Invalid environment variables: " + Object.keys(errors));
   },
@@ -102,7 +102,7 @@ import {
   EnvMissingError,
 } from "https://deno.land/std@$STD_VERSION/envalid/mod.ts";
 
-const env = cleanEnv(Deno.env.toObject(), myValidators, {
+const env = cleanEnv(Deno.env.toObject(), {}, {
   reporter: ({ errors, env }) => {
     for (const [envVar, err] of Object.entries(errors)) {
       if (err instanceof EnvError) {
