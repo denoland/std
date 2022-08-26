@@ -934,7 +934,7 @@ export const fromWeb = Writable.fromWeb = function (
 
       writer.ready.then(
         () =>
-          Promise.All(
+          Promise.all(
             chunks.map((data) => writer.write(data.chunk)),
           ).then(done, done),
         done,
