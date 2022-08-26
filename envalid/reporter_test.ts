@@ -143,7 +143,7 @@ Deno.test("envalidErrorFormatter", async (t) => {
     const messages = new Array<string>();
     envalidErrorFormatter(
       { FOO: new EnvMissingError() },
-      (msg:string)=>messages.push(msg)
+      (msg: string) => messages.push(msg),
     );
 
     const output = messages[0];
