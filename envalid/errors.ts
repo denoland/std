@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Surprisingly involved error subclassing
 // See https://stackoverflow.com/questions/41102060/typescript-extending-error-class
 

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 import { blue, white, yellow } from "../fmt/colors.ts";
 import { EnvMissingError } from "./errors.ts";

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 type DefaultType<T> = T extends string ? string
   : T extends number ? number
   : T extends boolean ? boolean

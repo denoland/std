@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { CleanOptions, ValidatorSpec } from "./types.ts";
 import { getSanitizedEnv } from "./core.ts";
 import { applyDefaultMiddleware } from "./middleware.ts";

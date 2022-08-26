@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 import { EnvError, EnvMissingError } from "./errors.ts";
 import { CleanOptions, Spec, ValidatorSpec } from "./types.ts";

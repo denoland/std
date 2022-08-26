@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 export const strictProxyMiddleware = <T extends Record<never, never>>(
   envObj: T,
   rawEnv: unknown,
