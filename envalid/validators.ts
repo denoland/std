@@ -118,15 +118,7 @@ export function url<T extends string = string>(spec?: Spec<T>) {
 
 /**
  * It's recommended that you provide an explicit type parameter for json validation
- * if you're using TypeScript:
- *
- * ```
- * cleanEnv({
- *   MY_VAR: json<{ foo: number }>({ default: { foo: 123 } }),
- * })
- * ```
- *
- * Otherwise, the output will be typed as `any`.
+ * if you're using TypeScript. Otherwise, the output will be typed as `any`.
  */
 // deno-lint-ignore no-explicit-any
 export function json<T = any>(spec?: Spec<T>) {

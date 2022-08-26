@@ -79,6 +79,12 @@ will be displayed and the process exits with 1. You can override this behavior
 by using your own reporter:
 
 ```ts
+import { cleanEnv } from "https://deno.land/std@$STD_VERSION/envalid/mod.ts";
+
+const report = (error: string) => {
+  //
+};
+
 const env = cleanEnv(Deno.env.toObject(), myValidators, {
   reporter: ({ errors, env }) => {
     report("Invalid environment variables: " + Object.keys(errors));
@@ -90,12 +96,18 @@ The error classes `EnvError` and `EnvMissingError` can also be used to examine
 the errors:
 
 ```ts
+import {
+  cleanEnv,
+  EnvError,
+  EnvMissingError,
+} from "https://deno.land/std@$STD_VERSION/envalid/mod.ts";
+
 const env = cleanEnv(Deno.env.toObject(), myValidators, {
   reporter: ({ errors, env }) => {
     for (const [envVar, err] of Object.entries(errors)) {
-      if (err instanceof envalid.EnvError) {
+      if (err instanceof EnvError) {
         //
-      } else if (err instanceof envalid.EnvMissingError) {
+      } else if (err instanceof EnvMissingError) {
         //
       } else {
         //
