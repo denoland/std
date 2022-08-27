@@ -1,5 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+// deno-fmt-ignore
+const mapBase58: Record<string, number> = {
+  "1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7, "9": 8, A: 9,
+  B: 10, C: 11, D: 12, E: 13, F: 14, G: 15, H: 16, J: 17, K: 18, L: 19, M: 20,
+  N: 21, P: 22, Q: 23, R: 24, S: 25, T: 26, U: 27, V: 28, W: 29, X: 30, Y: 31,
+  Z: 32, a: 33, b: 34, c: 35, d: 36, e: 37, f: 38, g: 39, h: 40, i: 41, j: 42,
+  k: 43, m: 44, n: 45, o: 46, p: 47, q: 48, r: 49, s: 50, t: 51, u: 52, v: 53,
+  w: 54, x: 55, y: 56, z: 57
+};
+
 const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
@@ -33,7 +43,6 @@ export function encode(data: ArrayBuffer | string): string {
   const size = Math.round((uint8tData.length * 138) / 100 + 1);
   const b58Encoding: number[] = [];
 
-  // console.log(notZeroUint8Data)
   notZeroUint8Data.forEach((byte) => {
     let i = 0;
     let carry = byte;
@@ -91,10 +100,10 @@ export function decode(b58: string): Uint8Array {
   const output: number[] = [];
 
   notZeroData.forEach((char, idx) => {
-    let carry = base58alphabet.indexOf(char);
+    let carry = mapBase58[char];
     let i = 0;
 
-    if (carry === -1) {
+    if (carry === undefined) {
       throw new Error(`Invalid base58 char at index ${idx} with value ${char}`);
     }
 
@@ -114,9 +123,9 @@ export function decode(b58: string): Uint8Array {
   const validOutput = output.filter((item) => item ?? false);
 
   if (ones > 0) {
-    const zeroesResult = Array.from({ length: ones }).fill(0, 0, ones);
+    const onesResult = Array.from({ length: ones }).fill(0, 0, ones);
 
-    return new Uint8Array([...zeroesResult, ...validOutput] as number[]);
+    return new Uint8Array([...onesResult, ...validOutput] as number[]);
   }
 
   return new Uint8Array(validOutput);
