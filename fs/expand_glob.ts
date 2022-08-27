@@ -181,7 +181,7 @@ export async function* expandGlob(
  * ```
  */
 export function* expandGlobSync(
-  glob: string,
+  glob: string | URL,
   {
     root = Deno.cwd(),
     exclude = [],
@@ -200,7 +200,7 @@ export function* expandGlobSync(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
   const { segments, isAbsolute: isGlobAbsolute, hasTrailingSep, winRoot } =
-    split(glob);
+    split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
     ? (winRoot != undefined ? winRoot : "/")

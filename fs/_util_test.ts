@@ -3,7 +3,7 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
-import { getFileInfoType, isSubdir, PathType } from "./_util.ts";
+import { getFileInfoType, isSubdir, PathType, toPathString } from "./_util.ts";
 import { ensureFileSync } from "./ensure_file.ts";
 import { ensureDirSync } from "./ensure_dir.ts";
 
@@ -62,4 +62,13 @@ Deno.test("_getFileInfoType", function () {
 
     assertEquals(getFileInfoType(stat), type);
   });
+});
+
+Deno.test("_toPathString", () => {
+  const path = "file://path/to/file";
+  assertEquals(toPathString(path), path);
+  assertEquals(
+    toPathString(new URL(path)),
+    "/to/file",
+  );
 });
