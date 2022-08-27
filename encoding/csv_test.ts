@@ -742,22 +742,7 @@ Deno.test({
         );
       },
     });
-    await t.step({
-      name: "header mapping object",
-      fn() {
-        const input = "a,b,c\ne,f,g\n";
-        const output = [
-          { this: "a", is: "b", sparta: "c" },
-          { this: "e", is: "f", sparta: "g" },
-        ];
-        assertEquals(
-          parse(input, {
-            columns: [{ name: "this" }, { name: "is" }, { name: "sparta" }],
-          }),
-          output,
-        );
-      },
-    });
+
     await t.step({
       name: "provides both opts.skipFirstRow and opts.columns",
       fn() {
@@ -769,7 +754,7 @@ Deno.test({
         assertEquals(
           parse(input, {
             skipFirstRow: true,
-            columns: [{ name: "foo" }, { name: "bar" }, { name: "baz" }],
+            columns: ["foo", "bar", "baz"],
           }),
           output,
         );
@@ -783,7 +768,7 @@ Deno.test({
           () =>
             parse(input, {
               skipFirstRow: true,
-              columns: [{ name: "foo" }, { name: "bar" }, { name: "baz" }],
+              columns: ["foo", "bar", "baz"],
             }),
           Error,
           "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",

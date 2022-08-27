@@ -659,6 +659,7 @@
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",
+      "test-http-client-get-url.js",
       "test-http-client-reject-cr-no-lf.js",
       "test-net-better-error-messages-listen-path.js",
       "test-net-better-error-messages-path.js",

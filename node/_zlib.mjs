@@ -11,6 +11,7 @@ import util from "./util.ts";
 import { ok as assert } from "./assert.ts";
 import { kMaxLength } from "./_buffer.mjs";
 import { zlib as zlibConstants } from "./internal_binding/constants.ts";
+import { nextTick } from "./_next_tick.ts";
 
 var kRangeErrorMessage = "Cannot create final Buffer. It would be larger " +
   "than 0x" + kMaxLength.toString(16) + " bytes";
@@ -401,7 +402,7 @@ Zlib.prototype.params = function (level, strategy, callback) {
       }
     });
   } else {
-    process.nextTick(callback);
+    nextTick(callback);
   }
 };
 
@@ -427,7 +428,7 @@ Zlib.prototype.flush = function (kind, callback) {
   }
 
   if (ws.ended) {
-    if (callback) process.nextTick(callback);
+    if (callback) nextTick(callback);
   } else if (ws.ending) {
     if (callback) this.once("end", callback);
   } else if (ws.needDrain) {
@@ -444,11 +445,11 @@ Zlib.prototype.flush = function (kind, callback) {
 
 Zlib.prototype.close = function (callback) {
   _close(this, callback);
-  process.nextTick(emitCloseNT, this);
+  nextTick(emitCloseNT, this);
 };
 
 function _close(engine, callback) {
-  if (callback) process.nextTick(callback);
+  if (callback) nextTick(callback);
 
   // Caller may invoke .close after a zlib error (which will null _handle).
   if (!engine._handle) return;

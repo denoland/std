@@ -141,7 +141,8 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 }
 
 /** Make an assertion, error will be thrown if `expr` have truthy value. */
-export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+type Falsy = false | 0 | 0n | "" | null | undefined;
+export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {
     throw new AssertionError(msg);
   }
@@ -378,11 +379,12 @@ export function assertInstanceOf<T extends AnyConstructor>(
  * Make an assertion that `obj` is not an instance of `type`.
  * If so, then throw.
  */
-export function assertNotInstanceOf<T extends AnyConstructor>(
-  actual: unknown,
-  unexpectedType: T,
+export function assertNotInstanceOf<A, T>(
+  actual: A,
+  // deno-lint-ignore no-explicit-any
+  unexpectedType: new (...args: any[]) => T,
   msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
-) {
+): asserts actual is Exclude<A, T> {
   assertFalse(actual instanceof unexpectedType, msg);
 }
 
