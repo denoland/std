@@ -4,7 +4,7 @@ import { readableStreamFromReader } from "../../streams/conversion.ts";
 
 const clients = new Map<number, WebSocket>();
 let clientId = 0;
-function dispatch(msg: string): void {
+function dispatch(msg: string) {
   for (const client of clients.values()) {
     client.send(msg);
   }

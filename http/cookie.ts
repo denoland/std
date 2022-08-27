@@ -92,7 +92,7 @@ function toString(cookie: Cookie): string {
  * Validate Cookie Name.
  * @param name Cookie name.
  */
-function validateName(name: string | undefined | null): void {
+function validateName(name: string | undefined | null) {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
     throw new TypeError(`Invalid cookie name: "${name}".`);
   }
@@ -103,7 +103,7 @@ function validateName(name: string | undefined | null): void {
  * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
  * @param path Path value.
  */
-function validatePath(path: string | null): void {
+function validatePath(path: string | null) {
   if (path == null) {
     return;
   }
@@ -124,7 +124,7 @@ function validatePath(path: string | null): void {
  * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
  * @param value Cookie value.
  */
-function validateValue(name: string, value: string | null): void {
+function validateValue(name: string, value: string | null) {
   if (value == null || name == null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
@@ -151,7 +151,7 @@ function validateValue(name: string, value: string | null): void {
  * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
-function validateDomain(domain: string): void {
+function validateDomain(domain: string) {
   if (domain == null) {
     return;
   }
@@ -190,7 +190,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  * @param headers The headers instance to set the cookie to
  * @param cookie Cookie to set
  */
-export function setCookie(headers: Headers, cookie: Cookie): void {
+export function setCookie(headers: Headers, cookie: Cookie) {
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
   const v = toString(cookie);
@@ -209,7 +209,7 @@ export function deleteCookie(
   headers: Headers,
   name: string,
   attributes?: { path?: string; domain?: string },
-): void {
+) {
   setCookie(headers, {
     name: name,
     value: "",

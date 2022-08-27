@@ -44,7 +44,7 @@ export function read(
   length?: number,
   position?: number | null,
   callback?: Callback,
-): void {
+) {
   let cb: Callback | undefined;
   let offset = 0,
     buffer: Buffer | Uint8Array;

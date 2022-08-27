@@ -50,7 +50,7 @@ export function signal(
   });
 
   // Create dispose method for the muxer of signal streams.
-  const dispose = (): void => {
+  const dispose = () => {
     streams.forEach((stream) => {
       stream.dispose();
     });

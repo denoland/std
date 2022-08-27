@@ -67,7 +67,7 @@ export class Buffer {
   /** Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer. */
-  truncate(n: number): void {
+  truncate(n: number) {
     if (n === 0) {
       this.reset();
       return;
@@ -78,7 +78,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
-  reset(): void {
+  reset() {
     this.#reslice(0);
     this.#off = 0;
   }
@@ -178,7 +178,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
-  grow(n: number): void {
+  grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
     }
@@ -340,11 +340,11 @@ export class BufReader implements Reader {
   /** Discards any buffered data, resets all state, and switches
    * the buffered reader to read from r.
    */
-  reset(r: Reader): void {
+  reset(r: Reader) {
     this.#reset(this.#buf, r);
   }
 
-  #reset = (buf: Uint8Array, rd: Reader): void => {
+  #reset = (buf: Uint8Array, rd: Reader) => {
     this.#buf = buf;
     this.#rd = rd;
     this.#eof = false;
@@ -730,7 +730,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: Writer): void {
+  reset(w: Writer) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;
@@ -827,14 +827,14 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: WriterSync): void {
+  reset(w: WriterSync) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;
   }
 
   /** Flush writes any buffered data to the underlying io.WriterSync. */
-  flush(): void {
+  flush() {
     if (this.err !== null) throw this.err;
     if (this.usedBufferBytes === 0) return;
 

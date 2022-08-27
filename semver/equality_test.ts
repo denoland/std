@@ -3,7 +3,7 @@
 import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("equality", function (): void {
+Deno.test("equality", function () {
   // [version1, version2]
   // version1 should be equivalent to version2
   const versions: [string, string][] = [

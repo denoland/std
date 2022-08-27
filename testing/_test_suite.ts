@@ -175,7 +175,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   static active: symbol[] = [];
 
   /** This is used internally for testing this module. */
-  static reset(): void {
+  static reset() {
     TestSuiteInternal.runningCount = 0;
     TestSuiteInternal.started = false;
     TestSuiteInternal.current = null;
@@ -183,7 +183,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   }
 
   /** This is used internally to register tests. */
-  static registerTest(options: Deno.TestDefinition): void {
+  static registerTest(options: Deno.TestDefinition) {
     options = { ...options };
     optionalTestDefinitionKeys.forEach((key) => {
       if (typeof options[key] === "undefined") delete options[key];
@@ -215,7 +215,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   static addStep<T>(
     suite: TestSuiteInternal<T>,
     step: TestSuiteInternal<T> | ItDefinition<T>,
-  ): void {
+  ) {
     if (!suite.hasOnlyStep) {
       if (step instanceof TestSuiteInternal) {
         if (step.hasOnlyStep || step.describe.only) {
@@ -238,7 +238,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     suite: TestSuiteInternal<T>,
     name: HookNames,
     fn: (this: T) => void | Promise<void>,
-  ): void {
+  ) {
     if (suite.describe[name]) {
       if (typeof suite.describe[name] === "function") {
         suite.describe[name] = [
@@ -256,7 +256,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     suite: TestSuiteInternal<T>,
     context: T,
     t: Deno.TestContext,
-  ): Promise<void> {
+  ) {
     const hasOnly = suite.hasOnlyStep || suite.describe.only || false;
     for (const step of suite.steps) {
       if (

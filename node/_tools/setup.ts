@@ -154,7 +154,7 @@ function getRequestedFileSuite(
   }
 }
 
-async function copyTests(filePath: string): Promise<void> {
+async function copyTests(filePath: string) {
   console.log("Copying test files...");
   const path = join(
     fromFileUrl(new URL(filePath, import.meta.url)),

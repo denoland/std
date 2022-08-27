@@ -102,7 +102,7 @@ function copyFileSync(
   src: string,
   dest: string,
   options: InternalCopyOptions,
-): void {
+) {
   ensureValidCopySync(src, dest, options);
   Deno.copyFileSync(src, dest);
   if (options.preserveTimestamps) {
@@ -142,7 +142,7 @@ function copySymlinkSync(
   src: string,
   dest: string,
   options: InternalCopyOptions,
-): void {
+) {
   ensureValidCopySync(src, dest, options);
   const originSrcFilePath = Deno.readLinkSync(src);
   const type = getFileInfoType(Deno.lstatSync(src));
@@ -198,7 +198,7 @@ async function copyDir(
 }
 
 /* copy folder from src to dest synchronously */
-function copyDirSync(src: string, dest: string, options: CopyOptions): void {
+function copyDirSync(src: string, dest: string, options: CopyOptions) {
   const destStat = ensureValidCopySync(src, dest, {
     ...options,
     isFolder: true,
@@ -282,7 +282,7 @@ export function copySync(
   src: string,
   dest: string,
   options: CopyOptions = {},
-): void {
+) {
   src = path.resolve(src);
   dest = path.resolve(dest);
 

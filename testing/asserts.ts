@@ -141,7 +141,8 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 }
 
 /** Make an assertion, error will be thrown if `expr` have truthy value. */
-export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+type Falsy = false | 0 | 0n | "" | null | undefined;
+export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {
     throw new AssertionError(msg);
   }
@@ -159,7 +160,7 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
  * assertEquals<number>(1, 2)
  * ```
  */
-export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
+export function assertEquals<T>(actual: T, expected: T, msg?: string) {
   if (equal(actual, expected)) {
     return;
   }
@@ -195,7 +196,7 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
  * assertNotEquals<number>(1, 2)
  * ```
  */
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;
   }
@@ -285,7 +286,7 @@ export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void {
+) {
   if (!Object.is(actual, expected)) {
     return;
   }
@@ -378,11 +379,12 @@ export function assertInstanceOf<T extends AnyConstructor>(
  * Make an assertion that `obj` is not an instance of `type`.
  * If so, then throw.
  */
-export function assertNotInstanceOf<T extends AnyConstructor>(
-  actual: unknown,
-  unexpectedType: T,
+export function assertNotInstanceOf<A, T>(
+  actual: A,
+  // deno-lint-ignore no-explicit-any
+  unexpectedType: new (...args: any[]) => T,
   msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
-) {
+): asserts actual is Exclude<A, T> {
   assertFalse(actual instanceof unexpectedType, msg);
 }
 
@@ -410,7 +412,7 @@ export function assertStringIncludes(
   actual: string,
   expected: string,
   msg?: string,
-): void {
+) {
   if (!actual.includes(expected)) {
     if (!msg) {
       msg = `actual: "${actual}" expected to contain: "${expected}"`;
@@ -436,7 +438,7 @@ export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
   msg?: string,
-): void {
+) {
   const missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
     let found = false;
@@ -469,7 +471,7 @@ export function assertMatch(
   actual: string,
   expected: RegExp,
   msg?: string,
-): void {
+) {
   if (!expected.test(actual)) {
     if (!msg) {
       msg = `actual: "${actual}" expected to match: "${expected}"`;
@@ -486,7 +488,7 @@ export function assertNotMatch(
   actual: string,
   expected: RegExp,
   msg?: string,
-): void {
+) {
   if (expected.test(actual)) {
     if (!msg) {
       msg = `actual: "${actual}" expected to not match: "${expected}"`;
@@ -503,7 +505,7 @@ export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any
   actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
-): void {
+) {
   type loose = Record<PropertyKey, unknown>;
 
   function filter(a: loose, b: loose) {

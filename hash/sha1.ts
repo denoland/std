@@ -160,7 +160,7 @@ export class Sha1 {
     return this;
   }
 
-  protected finalize(): void {
+  protected finalize() {
     if (this.#finalized) {
       return;
     }
@@ -198,7 +198,7 @@ export class Sha1 {
     this.#hash();
   }
 
-  #hash(): void {
+  #hash() {
     let a = this.#h0;
     let b = this.#h1;
     let c = this.#h2;
@@ -492,7 +492,7 @@ export class HmacSha1 extends Sha1 {
     this.#inner = true;
     this.#sharedMemory = sharedMemory;
   }
-  protected override finalize(): void {
+  protected override finalize() {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

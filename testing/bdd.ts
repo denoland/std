@@ -139,7 +139,7 @@ export interface it {
 }
 
 /** Registers an individual test case. */
-export function it<T>(...args: ItArgs<T>): void {
+export function it<T>(...args: ItArgs<T>) {
   if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
       "cannot register new test cases after already registered test cases start running",
@@ -185,7 +185,7 @@ export function it<T>(...args: ItArgs<T>): void {
   }
 }
 
-it.only = function itOnly<T>(...args: ItArgs<T>): void {
+it.only = function itOnly<T>(...args: ItArgs<T>) {
   const options = itDefinition(...args);
   return it({
     ...options,
@@ -193,7 +193,7 @@ it.only = function itOnly<T>(...args: ItArgs<T>): void {
   });
 };
 
-it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
+it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
   const options = itDefinition(...args);
   return it({
     ...options,
@@ -204,7 +204,7 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
-): void {
+) {
   if (!TestSuiteInternal.current) {
     if (TestSuiteInternal.started) {
       throw new Error(
@@ -223,28 +223,28 @@ function addHook<T>(
 /** Run some shared setup before all of the tests in the suite. */
 export function beforeAll<T>(
   fn: (this: T) => void | Promise<void>,
-): void {
+) {
   addHook("beforeAll", fn);
 }
 
 /** Run some shared teardown after all of the tests in the suite. */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
-): void {
+) {
   addHook("afterAll", fn);
 }
 
 /** Run some shared setup before each test in the suite. */
 export function beforeEach<T>(
   fn: (this: T) => void | Promise<void>,
-): void {
+) {
   addHook("beforeEach", fn);
 }
 
 /** Run some shared teardown after each test in the suite. */
 export function afterEach<T>(
   fn: (this: T) => void | Promise<void>,
-): void {
+) {
   addHook("afterEach", fn);
 }
 

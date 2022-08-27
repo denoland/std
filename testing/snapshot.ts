@@ -377,7 +377,7 @@ export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,
   msgOrOpts?: string | SnapshotOptions<unknown>,
-): Promise<void> {
+) {
   const options = getOptions();
   const assertSnapshotContext = AssertSnapshotContext.fromOptions(
     context,
@@ -457,7 +457,7 @@ export function createAssertSnapshot<T>(
     context: Deno.TestContext,
     actual: T,
     messageOrOptions?: string | SnapshotOptions<T>,
-  ): Promise<void> {
+  ) {
     const mergedOptions: SnapshotOptions<T> = {
       ...options,
       ...(typeof messageOrOptions === "string"
