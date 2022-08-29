@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import Dir from "./_fs_dir.ts";
 import { Buffer } from "../buffer.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
