@@ -128,12 +128,10 @@ jobs:
         run: deno lint
 
       - name: Check circular dependencies
-        shell: bash
-        run: ./_tools/check_circular_deps.ts
+        run: "deno task lint:circular-deps"
 
       - name: Check License headers
-        shell: bash
-        run: ./_tools/check_licence.ts
+        run: "deno task lint:licence-headers"
 
   hash-wasm:
     name: "_wasm_crypto/"
