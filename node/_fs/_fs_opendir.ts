@@ -11,11 +11,6 @@ type Options = {
 };
 type Callback = (err?: Error | null, dir?: Dir) => void;
 
-const DEFAULT_OPTIONS = {
-  encoding: "utf8",
-  bufferSize: 32,
-};
-
 function _validateFunction(callback: unknown): asserts callback is Callback {
   validateFunction(callback, "callback");
 }
@@ -39,7 +34,10 @@ export function opendir(
   path = getValidatedPath(path).toString();
 
   options = typeof options === "object" ? options : {};
-  options = Object.assign(DEFAULT_OPTIONS, options);
+  options = Object.assign({
+    encoding: "utf8",
+    bufferSize: 32,
+  }, options);
 
   try {
     /** Throws if encoding is invalid */
@@ -63,11 +61,17 @@ export const opendirPromise = promisify(opendir) as (
 
 export function opendirSync(
   path: string | Buffer | URL,
-  options: Options = DEFAULT_OPTIONS,
+  options: Options = {
+    encoding: "utf8",
+    bufferSize: 32,
+  },
 ): Dir {
   path = getValidatedPath(path).toString();
 
-  options = Object.assign(DEFAULT_OPTIONS, options);
+  options = Object.assign({
+    encoding: "utf8",
+    bufferSize: 32,
+  }, options);
 
   try {
     /** Throws if encoding is invalid */

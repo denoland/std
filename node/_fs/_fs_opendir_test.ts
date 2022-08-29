@@ -94,12 +94,12 @@ Deno.test("[node/fs] opendirSync()", async (t) => {
   const path = await Deno.makeTempDir();
   const file = await Deno.makeTempFile();
 
-  /* await t.step("fails if encoding is invalid", () => {
+  await t.step("fails if encoding is invalid", () => {
     assertThrows(
       () => opendirSync(path, { encoding: "invalid-encoding" }),
       RangeError,
     );
-  }); */
+  });
 
   await t.step("fails if bufferSize is invalid", () => {
     assertThrows(
