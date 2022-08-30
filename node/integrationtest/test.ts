@@ -30,10 +30,10 @@ Deno.test("integration test of compat mode", {
         app.listen(3000, async () => {
           const text = await (await fetch("http://localhost:3000")).text();
           if (text === "hello") {
-            process.exit(0);
+            Deno.exit(0);
           } else {
-            console.error(\`Error: Response text is not 'hello': $\{text}\`);
-            process.exit(1);
+            console.error(\`Error: Response text is not 'hello': \${text}\`);
+            Deno.exit(1);
           }
         });
       `,
