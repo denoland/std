@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "16.13.0",
+  "nodeVersion": "18.8.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
     "fixtures": ["child-process-spawn-node.js", "empty.txt"],
