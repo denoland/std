@@ -6,7 +6,7 @@ import { getFileInfoType } from "./_util.ts";
  * If the directory structure does not exist, it is created. Like mkdir -p.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export async function ensureDir(dir: string) {
+export async function ensureDir(dir: string | URL) {
   try {
     const fileInfo = await Deno.lstat(dir);
     if (!fileInfo.isDirectory) {
@@ -31,7 +31,7 @@ export async function ensureDir(dir: string) {
  * If the directory structure does not exist, it is created. Like mkdir -p.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function ensureDirSync(dir: string) {
+export function ensureDirSync(dir: string | URL) {
   try {
     const fileInfo = Deno.lstatSync(dir);
     if (!fileInfo.isDirectory) {
