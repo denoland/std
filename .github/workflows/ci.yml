@@ -26,7 +26,7 @@ jobs:
           submodules: true
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
@@ -89,7 +89,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
@@ -119,7 +119,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
 
       - name: Format
         run: deno fmt --check
@@ -159,7 +159,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
@@ -199,7 +199,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
