@@ -1,4 +1,3 @@
-#!/usr/bin/env -S deno run --allow-read
 // Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
