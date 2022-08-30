@@ -4,7 +4,7 @@ import Dir from "./_fs_dir.ts";
 import { Buffer } from "../buffer.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
 import { denoErrorToNodeError } from "../internal/errors.ts";
-import { validateFunction } from "../internal/validators.mjs";
+import { validateEncoding, validateFunction } from "../internal/validators.mjs";
 import { promisify } from "../internal/util.mjs";
 
 type Options = {
@@ -42,8 +42,7 @@ export function opendir(
   }, options);
 
   try {
-    /** Throws if encoding is invalid */
-    new TextDecoder(options.encoding);
+    validateEncoding(path, options.encoding);
 
     checkBufferSize(options.bufferSize!, "options.bufferSize");
 
@@ -76,8 +75,7 @@ export function opendirSync(
   }, options);
 
   try {
-    /** Throws if encoding is invalid */
-    new TextDecoder(options.encoding);
+    validateEncoding(path, options.encoding);
 
     checkBufferSize(options.bufferSize!, "options.bufferSize");
 

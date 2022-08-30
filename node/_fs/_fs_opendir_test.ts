@@ -19,8 +19,8 @@ Deno.test("[node/fs] opendir()", async (t) => {
     () =>
       opendir(
         path,
-        { encoding: "invalid-encoding" },
-        (err) => assertInstanceOf(err, RangeError),
+        { encoding: "hex" },
+        (err) => assertInstanceOf(err, TypeError),
       ),
   );
 
@@ -98,8 +98,8 @@ Deno.test("[node/fs] opendirSync()", async (t) => {
 
   await t.step("fails if encoding is invalid", () => {
     assertThrows(
-      () => opendirSync(path, { encoding: "invalid-encoding" }),
-      RangeError,
+      () => opendirSync(path, { encoding: "hex" }),
+      TypeError,
     );
   });
 
