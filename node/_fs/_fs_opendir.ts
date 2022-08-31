@@ -44,16 +44,14 @@ export function opendir(
   path = getValidatedPath(path).toString();
 
   options = typeof options === "object" ? options : {};
-  options = Object.assign({
-    encoding: "utf8",
-    bufferSize: 32,
-  }, options);
+  const encoding = options?.encoding ?? "utf8";
+  const bufferSize = options?.bufferSize ?? 32;
 
   let err, dir;
   try {
-    assertEncoding(options.encoding);
+    assertEncoding(encoding);
 
-    checkBufferSize(options.bufferSize!, "options.bufferSize");
+    checkBufferSize(bufferSize, "options.bufferSize");
 
     /** Throws if path is invalid */
     Deno.readDirSync(path);
@@ -77,22 +75,17 @@ export const opendirPromise = promisify(opendir) as (
 
 export function opendirSync(
   path: string | Buffer | URL,
-  options: Options = {
-    encoding: "utf8",
-    bufferSize: 32,
-  },
+  options?: Options,
 ): Dir {
   path = getValidatedPath(path).toString();
 
-  options = Object.assign({
-    encoding: "utf8",
-    bufferSize: 32,
-  }, options);
+  const encoding = options?.encoding ?? "utf8";
+  const bufferSize = options?.bufferSize ?? 32;
 
   try {
-    assertEncoding(options.encoding);
+    assertEncoding(encoding);
 
-    checkBufferSize(options.bufferSize!, "options.bufferSize");
+    checkBufferSize(bufferSize, "options.bufferSize");
 
     /** Throws if path is invalid */
     Deno.readDirSync(path);
