@@ -49,7 +49,6 @@ import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.mjs";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
 import internalStreamsBufferList from "./internal/streams/buffer_list.mjs";
-import internalStreamsDuplexify from "./internal/streams/duplexify.mjs";
 import internalStreamsLazyTransform from "./internal/streams/lazy_transform.mjs";
 import internalStreamsState from "./internal/streams/state.mjs";
 import internalTestBinding from "./internal/test/binding.ts";
@@ -138,7 +137,6 @@ export default {
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsBufferList,
-  "internal/streams/duplexify": internalStreamsDuplexify,
   "internal/streams/lazy_transform": internalStreamsLazyTransform,
   "internal/streams/state": internalStreamsState,
   "internal/test/binding": internalTestBinding,

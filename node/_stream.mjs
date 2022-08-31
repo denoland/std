@@ -18,6 +18,7 @@ import {
   ERR_STREAM_PREMATURE_CLOSE,
 } from "./internal/errors.ts";
 import { destroy } from "./internal/streams/destroy.mjs";
+import { isReadableEnded, isWritableEnded } from "./internal/streams/utils.mjs";
 import { validateBoolean, validateObject } from "./internal/validators.mjs";
 
 let process = __Process$;
@@ -32,31 +33,6 @@ function isReadableStream(object) {
 
 function isWritableStream(object) {
   return object instanceof WritableStream;
-}
-
-function isReadableEnded(stream) {
-  if (stream.readableEnded) return true;
-  const rState = stream._readableState;
-  if (!rState || rState.errored) return false;
-  return rState.endEmitted || (rState.ended && rState.length === 0);
-}
-
-function isWritableNodeStream(obj) {
-  return !!(
-    obj &&
-    typeof obj.write === "function" &&
-    typeof obj.on === "function" &&
-    (!obj._readableState || obj._writableState?.writable !== false) // Duplex
-  );
-}
-
-function isWritableEnded(stream) {
-  if (!isWritableNodeStream(stream)) return null;
-  if (stream.writableEnded === true) return true;
-  const wState = stream._writableState;
-  if (wState?.errored) return false;
-  if (typeof wState?.ended !== "boolean") return null;
-  return wState.ended;
 }
 
 Readable.fromWeb = function (
