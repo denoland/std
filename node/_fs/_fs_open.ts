@@ -2,6 +2,7 @@
 import { existsSync } from "../../fs/exists.ts";
 import { fromFileUrl } from "../path.ts";
 import { getOpenOptions } from "./_fs_common.ts";
+import { promisify } from "../internal/util.mjs";
 
 export type openFlags =
   | "a"
@@ -84,6 +85,13 @@ export function open(
     );
   }
 }
+
+export const openPromise = promisify(open) as (
+  & ((path: string | URL) => Promise<number>)
+  & ((path: string | URL, flags: openFlags) => Promise<number>)
+  & ((path: string | URL, mode?: number) => Promise<number>)
+  & ((path: string | URL, flags?: openFlags, mode?: number) => Promise<number>)
+);
 
 export function openSync(path: string | URL): number;
 export function openSync(path: string | URL, flags?: openFlags): number;

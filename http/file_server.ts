@@ -77,7 +77,7 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .split("")
     .reverse()
     .slice(0, 3)
-    .forEach((v): void => {
+    .forEach((v) => {
       output = `${modeMap[+v]} ${output}`;
     });
   output = `${isDir ? "d" : "-"} ${output}`;
@@ -124,14 +124,29 @@ export async function serveFile(
   { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
   let file: Deno.FsFile;
-  if (fileInfo === undefined) {
-    [file, fileInfo] = await Promise.all([
-      Deno.open(filePath),
-      Deno.stat(filePath),
-    ]);
-  } else {
-    file = await Deno.open(filePath);
+  try {
+    if (fileInfo === undefined) {
+      [file, fileInfo] = await Promise.all([
+        Deno.open(filePath),
+        Deno.stat(filePath),
+      ]);
+    } else {
+      file = await Deno.open(filePath);
+    }
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      await req.body?.cancel();
+      const status = Status.NotFound;
+      const statusText = STATUS_TEXT[status];
+      return new Response(statusText, {
+        status,
+        statusText,
+      });
+    } else {
+      throw error;
+    }
   }
+
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
@@ -348,7 +363,7 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
   );
 }
 
-function serverLog(req: Request, status: number): void {
+function serverLog(req: Request, status: number) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
@@ -641,7 +656,7 @@ function normalizeURL(url: string): string {
     : normalizedUrl;
 }
 
-function main(): void {
+function main() {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "cache"],

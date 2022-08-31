@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Provides utility functions for media types.
+/** Utility functions for media types (MIME types).
  *
  * This API is inspired by the GoLang [`mime`](https://pkg.go.dev/mime) package
  * and [jshttp/mime-types](https://github.com/jshttp/mime-types).
@@ -45,7 +45,7 @@ export const extensions = new Map<string, string[]>();
 export const types = new Map<string, KeyOfDb>();
 
 /** Internal function to populate the maps based on the Mime DB. */
-(function populateMaps(): void {
+(function populateMaps() {
   const preference = ["nginx", "apache", undefined, "iana"];
 
   for (const type of Object.keys(db) as KeyOfDb[]) {

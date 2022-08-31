@@ -215,9 +215,11 @@ function timestamp(): string {
  * @deprecated
  */
 // deno-lint-ignore no-explicit-any
-function log(...args: any[]): void {
+export function log(...args: any[]) {
   console.log("%s - %s", timestamp(), format(...args));
 }
+
+export { isDeepStrictEqual };
 
 export default {
   format,

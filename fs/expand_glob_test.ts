@@ -119,7 +119,7 @@ Deno.test("expandGlobIncludeDirs", async function () {
 
 Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+  const { code, success, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
     args: [
       "run",
       "--quiet",
@@ -128,7 +128,8 @@ Deno.test("expandGlobPermError", async function () {
     ],
   });
   const decoder = new TextDecoder();
-  assertEquals(status, { code: 1, signal: null, success: false });
+  assert(!success);
+  assertEquals(code, 1);
   assertEquals(decoder.decode(stdout), "");
   assertStringIncludes(decoder.decode(stderr), "Uncaught PermissionDenied");
 });

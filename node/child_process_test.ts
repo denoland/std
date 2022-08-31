@@ -54,6 +54,8 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
     assertStrictEquals(childProcess.exitCode, exitCode);
   } finally {
     childProcess.kill();
+    childProcess.stdout?.destroy();
+    childProcess.stderr?.destroy();
   }
 });
 
@@ -240,6 +242,8 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
     await promise;
   } finally {
     doesNotExist.kill();
+    doesNotExist.stdout?.destroy();
+    doesNotExist.stderr?.destroy();
   }
 });
 
@@ -481,5 +485,25 @@ Deno.test({
     assert(childProcess.killed);
     assertEquals(childProcess.signalCode, "SIGKILL");
     assertExists(childProcess.exitCode);
+  },
+});
+
+Deno.test({
+  name: "[node/child_process] ChildProcess.unref()",
+  async fn() {
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "testdata",
+      "child_process_unref.js",
+    );
+    const childProcess = spawn(Deno.execPath(), [
+      "run",
+      "-A",
+      "--unstable",
+      script,
+    ]);
+    const p = deferred();
+    childProcess.on("exit", () => p.resolve());
+    await p;
   },
 });

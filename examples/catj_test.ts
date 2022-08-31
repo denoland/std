@@ -70,7 +70,7 @@ Deno.test("[examples/catj] read from stdin", async () => {
 
 function catj(
   ...files: string[]
-): Deno.Child<Deno.SpawnOptions & { stdin: "piped" }> {
+): Deno.Child {
   return Deno.spawnChild(Deno.execPath(), {
     args: [
       "run",

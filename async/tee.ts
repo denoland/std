@@ -31,7 +31,7 @@ class Queue<T> {
     this.done = false;
   }
 
-  async next(): Promise<void> {
+  async next() {
     const result = await this.#source.next();
     if (!result.done) {
       const nextNode: QueueNode<T> = {

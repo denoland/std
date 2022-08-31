@@ -123,7 +123,7 @@ export class Server {
    *
    * @param listener The listener to accept connections from.
    */
-  async serve(listener: Deno.Listener): Promise<void> {
+  async serve(listener: Deno.Listener) {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -173,7 +173,7 @@ export class Server {
    * await server.listenAndServe();
    * ```
    */
-  async listenAndServe(): Promise<void> {
+  async listenAndServe() {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -223,7 +223,7 @@ export class Server {
    * @param certFile The path to the file containing the TLS certificate.
    * @param keyFile The path to the file containing the TLS private key.
    */
-  async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
+  async listenAndServeTls(certFile: string, keyFile: string) {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -246,7 +246,7 @@ export class Server {
    *
    * Throws a server closed error if called after the server has been closed.
    */
-  close(): void {
+  close() {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -291,7 +291,7 @@ export class Server {
     requestEvent: Deno.RequestEvent,
     httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
-  ): Promise<void> {
+  ) {
     let response: Response;
     try {
       // Handle the request event, generating a response.
@@ -318,7 +318,7 @@ export class Server {
    * @param httpConn The HTTP connection to yield requests from.
    * @param connInfo Information about the underlying connection.
    */
-  async #serveHttp(httpConn: Deno.HttpConn, connInfo: ConnInfo): Promise<void> {
+  async #serveHttp(httpConn: Deno.HttpConn, connInfo: ConnInfo) {
     while (!this.#closed) {
       let requestEvent: Deno.RequestEvent | null;
 
@@ -348,7 +348,7 @@ export class Server {
    *
    * @param listener The listener to accept connections from.
    */
-  async #accept(listener: Deno.Listener): Promise<void> {
+  async #accept(listener: Deno.Listener) {
     let acceptBackoffDelay: number | undefined;
 
     while (!this.#closed) {
@@ -421,7 +421,7 @@ export class Server {
    *
    * @param httpConn The HTTP connection to close.
    */
-  #closeHttpConn(httpConn: Deno.HttpConn): void {
+  #closeHttpConn(httpConn: Deno.HttpConn) {
     this.#untrackHttpConnection(httpConn);
 
     try {
@@ -436,7 +436,7 @@ export class Server {
    *
    * @param listener Listener to track.
    */
-  #trackListener(listener: Deno.Listener): void {
+  #trackListener(listener: Deno.Listener) {
     this.#listeners.add(listener);
   }
 
@@ -445,7 +445,7 @@ export class Server {
    *
    * @param listener Listener to untrack.
    */
-  #untrackListener(listener: Deno.Listener): void {
+  #untrackListener(listener: Deno.Listener) {
     this.#listeners.delete(listener);
   }
 
@@ -454,7 +454,7 @@ export class Server {
    *
    * @param httpConn HTTP connection to track.
    */
-  #trackHttpConnection(httpConn: Deno.HttpConn): void {
+  #trackHttpConnection(httpConn: Deno.HttpConn) {
     this.#httpConnections.add(httpConn);
   }
 
@@ -463,7 +463,7 @@ export class Server {
    *
    * @param httpConn HTTP connection to untrack.
    */
-  #untrackHttpConnection(httpConn: Deno.HttpConn): void {
+  #untrackHttpConnection(httpConn: Deno.HttpConn) {
     this.#httpConnections.delete(httpConn);
   }
 }
@@ -508,7 +508,7 @@ export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
   options?: Omit<ServeInit, "port" | "hostname">,
-): Promise<void> {
+) {
   const server = new Server({ handler, onError: options?.onError });
 
   options?.signal?.addEventListener("abort", () => server.close(), {
@@ -572,7 +572,7 @@ function hostnameForDisplay(hostname: string) {
 export async function serve(
   handler: Handler,
   options: ServeInit = {},
-): Promise<void> {
+) {
   let port = options.port ?? 8000;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
@@ -600,16 +600,22 @@ export async function serve(
 }
 
 export interface ServeTlsInit extends ServeInit {
+  /** Server private key in PEM format */
+  key?: string;
+
+  /** Cert chain in PEM format */
+  cert?: string;
+
   /** The path to the file containing the TLS private key. */
-  keyFile: string;
+  keyFile?: string;
 
   /** The path to the file containing the TLS certificate */
-  certFile: string;
+  certFile?: string;
 }
 
 /** Serves HTTPS requests with the given handler.
  *
- * You must specify `keyFile` and `certFile` options.
+ * You must specify `key` or `keyFile` and `cert` or `certFile` options.
  *
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8443 on hostname "0.0.0.0".
@@ -618,6 +624,13 @@ export interface ServeTlsInit extends ServeInit {
  *
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
+ * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
+ * serveTls((_req) => new Response("Hello, world"), { cert, key });
+ *
+ * // Or
+ *
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
@@ -661,13 +674,13 @@ export interface ServeTlsInit extends ServeInit {
 export async function serveTls(
   handler: Handler,
   options: ServeTlsInit,
-): Promise<void> {
-  if (!options.keyFile) {
-    throw new Error("TLS config is given, but 'keyFile' is missing.");
+) {
+  if (!options.key && !options.keyFile) {
+    throw new Error("TLS config is given, but 'key' is missing.");
   }
 
-  if (!options.certFile) {
-    throw new Error("TLS config is given, but 'certFile' is missing.");
+  if (!options.cert && !options.certFile) {
+    throw new Error("TLS config is given, but 'cert' is missing.");
   }
 
   let port = options.port ?? 8443;
@@ -683,7 +696,20 @@ export async function serveTls(
     once: true,
   });
 
-  const s = server.listenAndServeTls(options.certFile, options.keyFile);
+  const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  const cert = options.cert || Deno.readTextFileSync(options.certFile!);
+
+  const listener = Deno.listenTls({
+    port,
+    hostname,
+    cert,
+    key,
+    transport: "tcp",
+    // ALPN protocol support not yet stable.
+    // alpnProtocols: ["h2", "http/1.1"],
+  });
+
+  const s = server.serve(listener);
 
   port = (server.addrs[0] as Deno.NetAddr).port;
 
@@ -734,7 +760,7 @@ export async function listenAndServe(
   config: Partial<Deno.ListenOptions>,
   handler: Handler,
   options?: ServeInit,
-): Promise<void> {
+) {
   const server = new Server({ ...config, handler });
 
   options?.signal?.addEventListener("abort", () => server.close(), {
@@ -786,7 +812,7 @@ export async function listenAndServeTls(
   keyFile: string,
   handler: Handler,
   options?: ServeInit,
-): Promise<void> {
+) {
   const server = new Server({ ...config, handler });
 
   options?.signal?.addEventListener("abort", () => server.close(), {

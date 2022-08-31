@@ -82,5 +82,6 @@ export default {
   setInterval,
   clearInterval,
   setImmediate,
+  setUnrefTimeout,
   clearImmediate,
 };

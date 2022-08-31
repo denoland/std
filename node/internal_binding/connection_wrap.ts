@@ -61,7 +61,7 @@ export class ConnectionWrap extends LibuvStreamWrap {
   >(
     req: T,
     status: number,
-  ): void {
+  ) {
     const isSuccessStatus = !status;
     const readable = isSuccessStatus;
     const writable = isSuccessStatus;

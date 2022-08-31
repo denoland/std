@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * CLI flag parser.
+ * Command line arguments parser based on
+ * [minimist](https://github.com/substack/minimist).
  *
  * This module is browser compatible.
  *
@@ -8,7 +9,7 @@
  */
 import { assert } from "../_util/assert.ts";
 
-/** Combines recursivly all intersaction types and returns a new single type. */
+/** Combines recursively all intersection types and returns a new single type. */
 type Id<T> = T extends Record<string, unknown>
   ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
   : T;
@@ -49,16 +50,16 @@ type Values<
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
 > = UseTypes<B, S, C> extends true ? 
-  & Record<string, unknown>
-  & AddAliases<
-    SpreadDefaults<
-      & CollectValues<S, string, C, N>
-      & RecursiveRequired<CollectValues<B, boolean, C>>
-      & CollectUnknownValues<B, S, C, N>,
-      DedotRecord<D>
-    >,
-    A
-  >
+    & Record<string, unknown>
+    & AddAliases<
+      SpreadDefaults<
+        & CollectValues<S, string, C, N>
+        & RecursiveRequired<CollectValues<B, boolean, C>>
+        & CollectUnknownValues<B, S, C, N>,
+        DedotRecord<D>
+      >,
+      A
+    >
   : // deno-lint-ignore no-explicit-any
   Record<string, any>;
 
@@ -89,14 +90,14 @@ type AliasName<
  */
 type SpreadDefaults<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
-    & Omit<A, keyof D>
-    & {
-      [K in keyof D]: K extends keyof A
-        ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
-          ? NonNullable<SpreadDefaults<A[K], D[K]>>
-        : D[K] | NonNullable<A[K]>
-        : unknown;
-    }
+      & Omit<A, keyof D>
+      & {
+        [K in keyof D]: K extends keyof A
+          ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
+            ? NonNullable<SpreadDefaults<A[K], D[K]>>
+          : D[K] | NonNullable<A[K]>
+          : unknown;
+      }
   : never;
 
 /**
@@ -120,8 +121,8 @@ type MapDefaults<T extends ArgType> = Partial<
 >;
 
 type RecursiveRequired<T> = T extends Record<string, unknown> ? {
-  [K in keyof T]-?: RecursiveRequired<T[K]>;
-}
+    [K in keyof T]-?: RecursiveRequired<T[K]>;
+  }
   : T;
 
 /** Same as `MapTypes` but also supports collectable options. */
@@ -132,10 +133,10 @@ type CollectValues<
   N extends Negatable = undefined,
 > = UnionToIntersection<
   C extends string ? 
-    & MapTypes<Exclude<T, C>, V, N>
-    & (T extends undefined ? Record<never, never> : RecursiveRequired<
-      MapTypes<Extract<C, T>, Array<V>, N>
-    >)
+      & MapTypes<Exclude<T, C>, V, N>
+      & (T extends undefined ? Record<never, never> : RecursiveRequired<
+        MapTypes<Extract<C, T>, Array<V>, N>
+      >)
     : MapTypes<T, V, N>
 >;
 
@@ -143,12 +144,12 @@ type CollectValues<
 type MapTypes<T extends ArgType, V, N extends Negatable = undefined> =
   undefined extends T ? Record<never, never>
     : T extends `${infer Name}.${infer Rest}` ? {
-      [K in Name]?: MapTypes<
-        Rest,
-        V,
-        N extends `${Name}.${infer Negate}` ? Negate : undefined
-      >;
-    }
+        [K in Name]?: MapTypes<
+          Rest,
+          V,
+          N extends `${Name}.${infer Negate}` ? Negate : undefined
+        >;
+      }
     : T extends string ? Partial<Record<T, N extends T ? V | false : V>>
     : Record<never, never>;
 
@@ -180,10 +181,10 @@ type CollectUnknownValues<
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<T> = Record<string, unknown> extends T ? T
   : T extends Record<string, unknown> ? UnionToIntersection<
-    ValueOf<
-      { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+      ValueOf<
+        { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+      >
     >
-  >
   : T;
 
 type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`
@@ -337,8 +338,8 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * ```ts
  * import { parse } from "./mod.ts";
- * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
+ * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  */
 export function parse<
@@ -468,10 +469,10 @@ export function parse<
     name: string,
     value: unknown,
     collect = true,
-  ): void {
+  ) {
     let o = obj;
     const keys = name.split(".");
-    keys.slice(0, -1).forEach(function (key): void {
+    keys.slice(0, -1).forEach(function (key) {
       if (get(o, key) === undefined) {
         o[key] = {};
       }
@@ -497,7 +498,7 @@ export function parse<
     val: unknown,
     arg: string | undefined = undefined,
     collect?: boolean,
-  ): void {
+  ) {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }

@@ -8,12 +8,12 @@ class TestHandler extends BaseHandler {
   public messages: string[] = [];
   public records: LogRecord[] = [];
 
-  override handle(record: LogRecord): void {
+  override handle(record: LogRecord) {
     this.records.push(record);
     super.handle(record);
   }
 
-  public override log(str: string): void {
+  public override log(str: string) {
     this.messages.push(str);
   }
 }
@@ -35,7 +35,7 @@ Deno.test({
   },
 });
 
-Deno.test("simpleLogger", function (): void {
+Deno.test("simpleLogger", function () {
   const handler = new TestHandler("DEBUG");
   let logger = new Logger("default", "DEBUG");
 
@@ -48,7 +48,7 @@ Deno.test("simpleLogger", function (): void {
   assertEquals(logger.handlers, [handler]);
 });
 
-Deno.test("customHandler", function (): void {
+Deno.test("customHandler", function () {
   const handler = new TestHandler("DEBUG");
   const logger = new Logger("default", "DEBUG", { handlers: [handler] });
 
@@ -64,7 +64,7 @@ Deno.test("customHandler", function (): void {
   assertEquals(inlineData!, "foo");
 });
 
-Deno.test("logFunctions", function (): void {
+Deno.test("logFunctions", function () {
   const doLog = (level: LevelName): TestHandler => {
     const handler = new TestHandler(level);
     const logger = new Logger("default", level, { handlers: [handler] });
@@ -116,7 +116,7 @@ Deno.test("logFunctions", function (): void {
 
 Deno.test(
   "String resolver fn will not execute if msg will not be logged",
-  function (): void {
+  function () {
     const handler = new TestHandler("ERROR");
     const logger = new Logger("default", "ERROR", { handlers: [handler] });
     let called = false;
@@ -136,7 +136,7 @@ Deno.test(
   },
 );
 
-Deno.test("String resolver fn resolves as expected", function (): void {
+Deno.test("String resolver fn resolves as expected", function () {
   const handler = new TestHandler("ERROR");
   const logger = new Logger("default", "ERROR", { handlers: [handler] });
   const expensiveFunction = (x: number): string => {
@@ -151,7 +151,7 @@ Deno.test("String resolver fn resolves as expected", function (): void {
 
 Deno.test(
   "All types map correctly to log strings and are returned as is",
-  function (): void {
+  function () {
     const handler = new TestHandler("DEBUG");
     const logger = new Logger("default", "DEBUG", { handlers: [handler] });
     const sym = Symbol();

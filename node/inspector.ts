@@ -39,7 +39,7 @@ class Session extends EventEmitter {
     _method: string,
     _params?: Record<string, unknown>,
     _callback?: (...args: unknown[]) => void,
-  ): void {
+  ) {
     notImplemented("inspector.Session.prototype.post");
   }
 
@@ -54,7 +54,7 @@ class Session extends EventEmitter {
 
 /** Activates inspector on host and port.
  * See https://nodejs.org/api/inspector.html#inspectoropenport-host-wait */
-function open(_port?: number, _host?: string, _wait?: boolean): void {
+function open(_port?: number, _host?: string, _wait?: boolean) {
   notImplemented("inspector.Session.prototype.open");
 }
 

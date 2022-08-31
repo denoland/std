@@ -1,3 +1,98 @@
+### 0.153.0 / 2022.08.24
+
+- feat(async/delay): add persistent option (#2527)
+- feat(crypto): add KeyStack for rotatable key data signing (#2303)
+- feat(encoding/csv): sync parse (#2491)
+- feat(http): add CookieMap and SecureCookieMap (#2502)
+- feat(http): support cert, key options in serveTls (#2508)
+- feat(http/cookie): add set-cookie headers parser (#2475)
+- feat(http/file_server): return 404 response if file not found (#2529)
+- feat(node): add types to fs/promises (#2518)
+- feat(node): Handle "upgrade" event (#2457)
+- feat(node): use Deno.serve() API for Node http polyfill (#2537)
+- feat(testing/asserts): add assertNotInstanceOf (#2530)
+- fix(collections): edge cases for BinaryHeap (#2525)
+- fix(node): zlib bindings should use nextTick import (#2560)
+- fix(node/events): export static setMaxListeners, listenerCount (#2523)
+- fix(node/util.types): stricter checking of TypedArray (#2528)
+- fix(testing): better assertEqual diff for object getters (#2509)
+
+### 0.152.0 / 2022.08.11
+
+- feat(crypto): add subtle.timingSafeEqual() (#2503)
+- feat(testing): allow for stubbing non existent instance methods (#2487)
+- node: add stub for child_process.execSync (#2513)
+- node: remove import to global.ts from module_esm.ts (#2501)
+- remove 'unhandledRejection' from list of unsupported events (#2500)
+
+### 0.151.0 / 2022.08.04
+
+- fix(node): fs.existsSync never throws (#2495)
+- fix(node/fs): add watchFile & unwatchFile (#2477)
+- fix(node/http,https): set the url protocol by default (#2480)
+
+### 0.150.0 / 2022.07.28
+
+- feat(http/http_errors): add headers property (#2462)
+- feat(node): support uncaughtException and uncaughtExceptionMonitor (#2460)
+- fix(io): StringWriter retaining references after write (#2456)
+- fix(node): correct import specifiers (#2474)
+- fix(node/fs): fix fs.watch (#2469)
+- fix(node/process.env) support built-in object methods for process.env (#2468)
+- node: ChildProcess.ref()/.unref() (#2395)
+- node: Use "Deno.spawnChild" API for "child_process" polyfill (#2450)
+
+### 0.149.0 / 2022.07.20
+
+- feat(semver): add "semver" module (#2434)
+- fix(node/module): improve error message of createRequire (#2440)
+- fix(testing): add support for `PromiseLike` in `assertRejects` (#2443)
+- node: process.on("beforeExit") (#2331)
+
+### 0.148.0 / 2022.07.12
+
+- fix(archive/tar): export TarEntry class (#2429)
+- fix(encoding/csv/stream): cancel lineReader if readable is canceled (#2401)
+- fix(node): add missing named zlib exports (#2435)
+- node: handle v8 flag passed to child_process.fork (#2424)
+
+### 0.147.0 / 2022.07.05
+
+- feat(dotenv): add expand feature, move parse logic to RegExp (#2387)
+- feat(dotenv): stringify (#2412)
+- feat(http): add HTTP errors (#2307)
+- feat(http): add content negotiation (#2302)
+- feat: add createAssertSnapshot (#2403)
+- fix(node/fs/exists): fix promisified exists (#2409)
+- node: process.argv[1] uses phony local module if executing remote module
+  (#2418)
+
+### 0.146.0 / 2022.06.30
+
+- BREAKING(collections): rename RBTree/BSTree to RedBlackTree/BinarySearchTree
+  (#2400)
+- feat(dotenv): include missing vars in MissingEnvVarsError (#2390)
+- fix(encoding/json): add `null` to JSONValue union (#2384)
+- fix(node): export createReadStream() from fs (#2393)
+- fix(node): use call() to call prototype methods in inspect() (#2392)
+- fix(node/zlib) zlib codes contains undefined values and keys (#2396)
+- fix(streams/delimiter): avoid recursion in TextLineStream (#2318)
+- fix(testing): break out of Set equality check on match (#2394)
+
+### 0.145.0 / 2022.06.23
+
+- fix(wasi): Fix WASI initialize() (#2372)
+- feat(encoding): add json/stream.ts (#2231)
+- feat(flags): infer argument types, names and defaults (#2180)
+- feat(media_types): Improve contentType type definition (#2357)
+- feat(node): add missing modules node/util/types.ts node/diagnostics_channel.ts
+  (#2369)
+- fix(encoding/csv/stream): properly handle CR characters (#2325)
+- fix(http): Disable `console.error` if `opts.quiet` is true (#2379)
+- fix(node): make performance object event target (#2371)
+- fix(testing/bdd): fix flat test grouping context (#2308)
+- node: improve error for unsupported import (#2380)
+
 ### 0.144.0 / 2022.06.15
 
 - Add warning on usage of collections/mod.ts (#2321, #2346)

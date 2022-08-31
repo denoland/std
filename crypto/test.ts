@@ -195,7 +195,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   const res = await process.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assertEquals(res.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -293,7 +293,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   const res = await process.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assert(res.success);
   const {
     heapBytesInitial,
     heapBytesFinal,
@@ -1359,3 +1359,12 @@ const toHexString = (bytes: ArrayBuffer): string =>
     (str, byte) => str + byte.toString(16).padStart(2, "0"),
     "",
   );
+
+Deno.test({
+  name: "[crypto/subtle/timeSafeEqual] - is present",
+  fn() {
+    const a = new Uint8Array([212, 213]);
+    const b = new Uint8Array([212, 213]);
+    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
+  },
+});

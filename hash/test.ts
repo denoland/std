@@ -518,10 +518,10 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   writer.releaseLock();
   await process.stdin.close();
 
-  const { status, stdout } = await process.output();
+  const { success, stdout } = await process.output();
   const processedStdout = new TextDecoder().decode(stdout);
 
-  assertEquals(status.success, true);
+  assert(success);
   const {
     heapBytesInitial,
     smallDigest,
@@ -562,7 +562,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
 
 Deno.test("[hash/double_digest] testDoubleDigest", () => {
   assertThrows(
-    (): void => {
+    () => {
       const hash = createHash("md5");
       hash.update("test");
       const h1 = hash.digest();

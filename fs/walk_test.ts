@@ -12,7 +12,7 @@ export function testWalk(
   setup: (arg0: string) => any | Promise<any>,
   t: (context: any) => void | Promise<void>,
   ignore = false,
-): void {
+) {
   const name = t.name;
   async function fn() {
     const origCwd = Deno.cwd();
@@ -53,7 +53,7 @@ export async function touch(path: string) {
   f.close();
 }
 
-function assertReady(expectedLength: number): void {
+function assertReady(expectedLength: number) {
   const arr = Array.from(walkSync("."), normalize);
 
   assertEquals(arr.length, expectedLength);

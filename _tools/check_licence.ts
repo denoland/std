@@ -1,4 +1,3 @@
-#!/usr/bin/env -S deno run --allow-read
 // Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
@@ -22,7 +21,7 @@ const COPYRIGHT_REGEX =
 
 let shouldFail = false;
 
-function walk(dir: string): void {
+function walk(dir: string) {
   for (const x of Deno.readDirSync(dir)) {
     const filePath = `${dir}/${x.name}`;
 

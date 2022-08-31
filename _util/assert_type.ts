@@ -12,11 +12,11 @@ export function assertType<T extends true | false>(_expectTrue: T) {}
  */
 export type IsExact<T, U> = TupleMatches<AnyToBrand<T>, AnyToBrand<U>> extends
   true ? TupleMatches<
-  DeepMakeRequiredForIsExact<T>,
-  DeepMakeRequiredForIsExact<U>
-> extends true // catch optional properties
-  ? true
-: false
+    DeepMakeRequiredForIsExact<T>,
+    DeepMakeRequiredForIsExact<U>
+  > extends true // catch optional properties
+    ? true
+  : false
   : false;
 
 type DeepMakeRequiredForIsExact<T> = {

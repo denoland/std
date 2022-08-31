@@ -1,8 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { exists, existsSync } from "./exists.ts";
-import { getFileInfoType } from "./_util.ts";
+import { getFileInfoType, toPathString } from "./_util.ts";
 import { isWindows } from "../_util/os.ts";
 
 /**
@@ -12,22 +11,11 @@ import { isWindows } from "../_util/os.ts";
  * @param src the source file path
  * @param dest the destination link path
  */
-export async function ensureSymlink(src: string, dest: string) {
+export async function ensureSymlink(src: string | URL, dest: string | URL) {
   const srcStatInfo = await Deno.lstat(src);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  if (await exists(dest)) {
-    const destStatInfo = await Deno.lstat(dest);
-    const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== "symlink") {
-      throw new Error(
-        `Ensure path exists, expected 'symlink', got '${destFilePathType}'`,
-      );
-    }
-    return;
-  }
-
-  await ensureDir(path.dirname(dest));
+  await ensureDir(path.dirname(toPathString(dest)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
@@ -45,22 +33,11 @@ export async function ensureSymlink(src: string, dest: string) {
  * @param src the source file path
  * @param dest the destination link path
  */
-export function ensureSymlinkSync(src: string, dest: string): void {
+export function ensureSymlinkSync(src: string | URL, dest: string | URL) {
   const srcStatInfo = Deno.lstatSync(src);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  if (existsSync(dest)) {
-    const destStatInfo = Deno.lstatSync(dest);
-    const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== "symlink") {
-      throw new Error(
-        `Ensure path exists, expected 'symlink', got '${destFilePathType}'`,
-      );
-    }
-    return;
-  }
-
-  ensureDirSync(path.dirname(dest));
+  ensureDirSync(path.dirname(toPathString(dest)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
