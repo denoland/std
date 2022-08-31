@@ -15,6 +15,7 @@ let fileServer: Deno.Child;
 interface FileServerCfg {
   port?: string;
   cors?: boolean;
+  cache?: boolean;
   "dir-listing"?: boolean;
   dotfiles?: boolean;
   host?: string;
@@ -32,6 +33,7 @@ async function startFileServer({
   port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
+  cache = true,
 }: FileServerCfg = {}) {
   fileServer = Deno.spawnChild(Deno.execPath(), {
     args: [
@@ -47,6 +49,7 @@ async function startFileServer({
       `${port}`,
       `${dirListing ? "" : "--no-dir-listing"}`,
       `${dotfiles ? "" : "--no-dotfiles"}`,
+      `${cache ? "" : "--no-cache"}`,
     ],
     cwd: moduleDir,
     stderr: "null",
@@ -501,6 +504,20 @@ Deno.test("file_server do not show dotfiles", async function () {
     await killFileServer();
   }
 });
+
+Deno.test(
+  "file_server includes `cache-control` response header if caching disabled",
+  async function () {
+    await startFileServer({ cache: false });
+    try {
+      const res = await fetch("http://localhost:4507");
+      assertEquals(res.headers.get("cache-control"), "no-store");
+      await res.text();
+    } finally {
+      await killFileServer();
+    }
+  },
+);
 
 Deno.test("file_server should show .. if it makes sense", async function (): Promise<
   void
