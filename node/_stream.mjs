@@ -491,3 +491,23 @@ Duplex.fromWeb = function (pair, options) {
 
   return duplex;
 };
+
+// readable-stream attaches these to Readable, but Node.js core does not.
+// Delete them here to better match Node.js core. These can be removed once
+// https://github.com/nodejs/readable-stream/issues/485 is resolved.
+delete Readable.Duplex;
+delete Readable.PassThrough;
+delete Readable.Readable;
+delete Readable.Stream;
+delete Readable.Transform;
+delete Readable.Writable;
+delete Readable._isUint8Array;
+delete Readable._uint8ArrayToBuffer;
+delete Readable.addAbortSignal;
+delete Readable.compose;
+delete Readable.destroy;
+delete Readable.finished;
+delete Readable.isDisturbed;
+delete Readable.isErrored;
+delete Readable.isReadable;
+delete Readable.pipeline;
