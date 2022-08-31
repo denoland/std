@@ -20,7 +20,7 @@ function _validateFunction(callback: unknown): asserts callback is Callback {
 /**
  * Required as `assertIntegerRange` from "../_utils.ts" throws `Error` instead of `RangeError`.
  * Node throws `RangeError` when this assertion fails.
- * */
+ */
 function checkBufferSize(value: number, name: string) {
   if (!Number.isInteger(value) || value < 1 || value > 4294967295) {
     throw new RangeError(
