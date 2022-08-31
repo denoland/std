@@ -638,6 +638,9 @@
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
     ],
+    "pseudo-tty": [
+      "stdin-setrawmode.js"
+    ],
     "pummel": [
       "test-net-bytes-per-incoming-chunk-overhead.js",
       "test-net-pingpong-delay.js",
