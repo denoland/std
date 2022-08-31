@@ -4,7 +4,7 @@ import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 import type { Options } from "./mod.ts";
 
-Deno.test("range", function (): void {
+Deno.test("range", function () {
   // [range, version, options]
   // version should be included by range
   const versions: [string, string, Options?][] = [
@@ -103,7 +103,7 @@ Deno.test("range", function (): void {
   });
 });
 
-Deno.test("negativeRange", function (): void {
+Deno.test("negativeRange", function () {
   // [range, version]
   // version should not be included by range
   const versions: [string, string, Options?][] = [
@@ -182,7 +182,7 @@ Deno.test("negativeRange", function (): void {
   });
 });
 
-Deno.test("unlockedPrereleaseRange", function (): void {
+Deno.test("unlockedPrereleaseRange", function () {
   // [range, version]
   // version should be included by range
   const versions: [string, string][] = [
@@ -205,7 +205,7 @@ Deno.test("unlockedPrereleaseRange", function (): void {
   });
 });
 
-Deno.test("negativeUnlockedPrereleaseRange", function (): void {
+Deno.test("negativeUnlockedPrereleaseRange", function () {
   // [range, version]
   // version should be included by range
   const versions: [string, string][] = [
@@ -222,7 +222,7 @@ Deno.test("negativeUnlockedPrereleaseRange", function (): void {
   });
 });
 
-Deno.test("validRange", function (): void {
+Deno.test("validRange", function () {
   // [range, result]
   // validRange(range) -> result
   // translate ranges into their canonical form
@@ -289,7 +289,7 @@ Deno.test("validRange", function (): void {
   });
 });
 
-Deno.test("missingRangeParameterInRangeIntersect", function (): void {
+Deno.test("missingRangeParameterInRangeIntersect", function () {
   assertThrows(
     function () {
       new semver.Range("1.0.0").intersects(undefined);
@@ -299,11 +299,11 @@ Deno.test("missingRangeParameterInRangeIntersect", function (): void {
   );
 });
 
-Deno.test("tostrings", function (): void {
+Deno.test("tostrings", function () {
   assertEquals(new semver.Range(">=v1.2.3").toString(), ">=1.2.3");
 });
 
-Deno.test("rangesIntersect", function (): void {
+Deno.test("rangesIntersect", function () {
   const versions: [string, string, boolean][] = [
     ["1.3.0 || <1.0.0 >2.0.0", "1.3.0 || <1.0.0 >2.0.0", true],
     ["<1.0.0 >2.0.0", ">0.0.0", false],

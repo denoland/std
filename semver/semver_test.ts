@@ -3,7 +3,7 @@
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("invalidVersion", function (): void {
+Deno.test("invalidVersion", function () {
   const versions = ["1.2.3.4", "NOT VALID", 1.2, null, "Infinity.NaN.Infinity"];
 
   versions.forEach(function (v) {
@@ -17,7 +17,7 @@ Deno.test("invalidVersion", function (): void {
   });
 });
 
-Deno.test("maxSatisfying", function (): void {
+Deno.test("maxSatisfying", function () {
   const versions: [string[], string, string][] = [
     [["1.2.3", "1.2.4"], "1.2", "1.2.4"],
     [["1.2.4", "1.2.3"], "1.2", "1.2.4"],
@@ -33,7 +33,7 @@ Deno.test("maxSatisfying", function (): void {
   });
 });
 
-Deno.test("minSatisfying", function (): void {
+Deno.test("minSatisfying", function () {
   const versions: [string[], string, string][] = [
     [["1.2.3", "1.2.4"], "1.2", "1.2.3"],
     [["1.2.4", "1.2.3"], "1.2", "1.2.3"],
@@ -49,7 +49,7 @@ Deno.test("minSatisfying", function (): void {
   });
 });
 
-Deno.test("sorting", function (): void {
+Deno.test("sorting", function () {
   const list = ["1.2.3+1", "1.2.3+0", "1.2.3", "5.9.6", "0.1.2"];
   const sorted = ["0.1.2", "1.2.3", "1.2.3+0", "1.2.3+1", "5.9.6"];
   const rsorted = ["5.9.6", "1.2.3+1", "1.2.3+0", "1.2.3", "0.1.2"];
@@ -57,13 +57,13 @@ Deno.test("sorting", function (): void {
   assertEquals(semver.rsort(list), rsorted);
 });
 
-Deno.test("badRangesInMaxOrMinSatisfying", function (): void {
+Deno.test("badRangesInMaxOrMinSatisfying", function () {
   const r = "some frogs and sneks-v2.5.6";
   assertEquals(semver.maxSatisfying([], r), null);
   assertEquals(semver.minSatisfying([], r), null);
 });
 
-Deno.test("bigNumericPrerelease", function (): void {
+Deno.test("bigNumericPrerelease", function () {
   const r = new semver.SemVer("1.2.3-beta." + Number.MAX_SAFE_INTEGER + "0");
   assertEquals(r.prerelease, ["beta", "90071992547409910"]);
 });

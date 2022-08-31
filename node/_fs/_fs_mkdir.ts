@@ -16,7 +16,7 @@ export function mkdir(
   path: string | URL,
   options?: MkdirOptions | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   let mode = 0o777;
@@ -54,7 +54,7 @@ export const mkdirPromise = promisify(mkdir) as (
   options?: MkdirOptions,
 ) => Promise<void>;
 
-export function mkdirSync(path: string | URL, options?: MkdirOptions): void {
+export function mkdirSync(path: string | URL, options?: MkdirOptions) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   let mode = 0o777;
   let recursive = false;

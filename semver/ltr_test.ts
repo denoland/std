@@ -3,7 +3,7 @@
 import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("ltr", function (): void {
+Deno.test("ltr", function () {
   // [range, version]
   // Version should be greater than range
   const versions: ReadonlyArray<[string, string]> = [
@@ -74,7 +74,7 @@ Deno.test("ltr", function (): void {
   });
 });
 
-Deno.test("ltrNegative", function (): void {
+Deno.test("ltrNegative", function () {
   // [range, version]
   // Version should be greater than range
   const versions: ReadonlyArray<[string, string]> = [

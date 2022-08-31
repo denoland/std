@@ -12,7 +12,7 @@ import { kHandle, kKeyObject } from "./constants.ts";
 
 let defaultEncoding = "buffer";
 
-export function setDefaultEncoding(val: string): void {
+export function setDefaultEncoding(val: string) {
   defaultEncoding = val;
 }
 
@@ -71,7 +71,7 @@ export function secureHeapUsed(): SecureHeapUsage {
   notImplemented("crypto.secureHeapUsed");
 }
 
-export function setEngine(_engine: string, _flags: typeof constants): void {
+export function setEngine(_engine: string, _flags: typeof constants) {
   notImplemented("crypto.setEngine");
 }
 

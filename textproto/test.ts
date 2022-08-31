@@ -24,7 +24,7 @@ Deno.test({
 
 Deno.test("[textproto] ReadEmpty", async () => {
   const r = reader("");
-  const m = await r.readMIMEHeader();
+  const m = await r.readMimeHeader();
   assertEquals(m, null);
 });
 
@@ -47,7 +47,7 @@ Deno.test({
       "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: " +
       "Value 2\r\n\n";
     const r = reader(input);
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("My-Key"), "Value 1, Value 2");
     assertEquals(m.get("Long-key"), "Even Longer Value");
@@ -59,7 +59,7 @@ Deno.test({
   async fn() {
     const input = "Foo: bar\n\n";
     const r = reader(input);
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("Foo"), "bar");
   },
@@ -70,7 +70,7 @@ Deno.test({
   async fn() {
     const input = ": bar\ntest-1: 1\n\n";
     const r = reader(input);
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("Test-1"), "1");
   },
@@ -86,7 +86,7 @@ Deno.test({
     }
     const sdata = data.join("");
     const r = reader(`Cookie: ${sdata}\r\n\r\n`);
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("Cookie"), sdata);
   },
@@ -103,7 +103,7 @@ Deno.test({
       "Audio Mode : None\r\n" +
       "Privilege : 127\r\n\r\n";
     const r = reader(input);
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("Foo"), "bar");
     assertEquals(m.get("Content-Language"), "en");
@@ -111,7 +111,7 @@ Deno.test({
     assertEquals(m.get("SID"), null);
     assertEquals(m.get("Privilege"), null);
     // Not legal http header
-    assertThrows((): void => {
+    assertThrows(() => {
       assertEquals(m.get("Audio Mode"), "None");
     });
   },
@@ -132,7 +132,7 @@ Deno.test({
 
     let err;
     try {
-      await r.readMIMEHeader();
+      await r.readMimeHeader();
     } catch (e) {
       err = e;
     }
@@ -152,7 +152,7 @@ Deno.test({
     const r = reader(input);
     let err;
     try {
-      await r.readMIMEHeader();
+      await r.readMimeHeader();
     } catch (e) {
       err = e;
     }
@@ -170,7 +170,7 @@ Deno.test({
       "------WebKitFormBoundaryimeZ2Le9LjohiUiG--\r\n\n",
     ];
     const r = reader(input.join(""));
-    const m = await r.readMIMEHeader();
+    const m = await r.readMimeHeader();
     assert(m !== null);
     assertEquals(m.get("Accept"), "*/*");
     assertEquals(m.get("Content-Disposition"), 'form-data; name="test"');

@@ -27,7 +27,7 @@ Deno.test("emptyDirIfItNotExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItNotExist", function (): void {
+Deno.test("emptyDirSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_2");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which does not exist, then it will a create new one.
@@ -86,7 +86,7 @@ Deno.test("emptyDirIfItExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItExist", function (): void {
+Deno.test("emptyDirSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_4");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
@@ -111,12 +111,12 @@ Deno.test("emptyDirSyncIfItExist", function (): void {
     assertEquals(stat.isDirectory, true);
 
     // nest directory have been removed
-    assertThrows((): void => {
+    assertThrows(() => {
       Deno.statSync(testNestDir);
     });
 
     // test file have been removed
-    assertThrows((): void => {
+    assertThrows(() => {
       Deno.statSync(testDirFile);
     });
   } finally {

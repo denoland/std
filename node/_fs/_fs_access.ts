@@ -10,7 +10,7 @@ export function access(
   path: string | Buffer | URL,
   mode: number | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   if (typeof mode === "function") {
     callback = mode;
     mode = fs.F_OK;
@@ -65,16 +65,20 @@ export const accessPromise = promisify(access) as (
   mode?: number,
 ) => Promise<void>;
 
-export function accessSync(path: string | Buffer | URL, mode?: number): void {
+export function accessSync(path: string | Buffer | URL, mode?: number) {
   path = getValidatedPath(path).toString();
   mode = getValidMode(mode, "access");
   try {
     const info = Deno.lstatSync(path.toString());
     const m = +mode! || 0;
-    const fileMode = +info.mode! || 0;
-    // FIXME(kt3k): use the last digit of file mode as its mode for now
-    // This is not correct if the user is the owner of the file
-    // or is a member of the owner group
+    let fileMode = +info.mode! || 0;
+    if (Deno.build.os !== "windows" && info.uid === DenoUnstable.getUid()) {
+      // If the user is the owner of the file, then use the owner bits of
+      // the file permission
+      fileMode >>= 6;
+    }
+    // TODO(kt3k): Also check the case when the user belong to the group
+    // of the file
     if ((m & fileMode) === m) {
       // all required flags exist
     } else {

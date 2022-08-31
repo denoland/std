@@ -205,7 +205,7 @@ function onresolve(
   err: number,
   records: Records,
   ttls?: number[],
-): void {
+) {
   if (err) {
     this.reject(dnsException(err, this.bindingName, this.hostname));
 
@@ -227,7 +227,7 @@ function createResolverPromise(
   bindingName: keyof ChannelWrapQuery,
   hostname: string,
   ttl: boolean,
-): Promise<void> {
+) {
   return new Promise((resolve, reject) => {
     const req = new QueryReqWrap();
 
@@ -251,7 +251,7 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     this: Resolver,
     name: string,
     options?: unknown,
-  ): Promise<void> {
+  ) {
     validateString(name, "name");
 
     const ttl = !!(options && (options as ResolveOptions).ttl);
@@ -290,7 +290,7 @@ function _resolve(
   this: Resolver,
   hostname: string,
   rrtype?: string,
-): Promise<void> {
+) {
   let resolver;
 
   if (typeof hostname !== "string") {
@@ -324,7 +324,7 @@ export function getServers(): string[] {
 
 export function resolveAny(
   hostname: string,
-): Promise<void> {
+) {
   return Resolver.prototype.resolveAny.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
@@ -341,7 +341,7 @@ export function resolve4(
   hostname: string,
   options: ResolveOptions,
 ): Promise<void>;
-export function resolve4(hostname: string, options?: unknown): Promise<void> {
+export function resolve4(hostname: string, options?: unknown) {
   return Resolver.prototype.resolve4.bind(getDefaultResolver() as Resolver)(
     hostname,
     options,
@@ -357,7 +357,7 @@ export function resolve6(
   hostname: string,
   options: ResolveOptions,
 ): Promise<void>;
-export function resolve6(hostname: string, options?: unknown): Promise<void> {
+export function resolve6(hostname: string, options?: unknown) {
   return Resolver.prototype.resolve6.bind(getDefaultResolver() as Resolver)(
     hostname,
     options,
@@ -366,7 +366,7 @@ export function resolve6(hostname: string, options?: unknown): Promise<void> {
 
 export function resolveCaa(
   hostname: string,
-): Promise<void> {
+) {
   return Resolver.prototype.resolveCaa.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
@@ -374,7 +374,7 @@ export function resolveCaa(
 
 export function resolveCname(
   hostname: string,
-): Promise<void> {
+) {
   return Resolver.prototype.resolveCname.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
@@ -382,49 +382,49 @@ export function resolveCname(
 
 export function resolveMx(
   hostname: string,
-): Promise<void> {
+) {
   return Resolver.prototype.resolveMx.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolveNs(hostname: string): Promise<void> {
+export function resolveNs(hostname: string) {
   return Resolver.prototype.resolveNs.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolveTxt(hostname: string): Promise<void> {
+export function resolveTxt(hostname: string) {
   return Resolver.prototype.resolveTxt.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolveSrv(hostname: string): Promise<void> {
+export function resolveSrv(hostname: string) {
   return Resolver.prototype.resolveSrv.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolvePtr(hostname: string): Promise<void> {
+export function resolvePtr(hostname: string) {
   return Resolver.prototype.resolvePtr.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolveNaptr(hostname: string): Promise<void> {
+export function resolveNaptr(hostname: string) {
   return Resolver.prototype.resolveNaptr.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function resolveSoa(hostname: string): Promise<void> {
+export function resolveSoa(hostname: string) {
   return Resolver.prototype.resolveSoa.bind(getDefaultResolver() as Resolver)(
     hostname,
   );
 }
 
-export function reverse(ip: string): Promise<void> {
+export function reverse(ip: string) {
   return Resolver.prototype.reverse.bind(getDefaultResolver() as Resolver)(
     ip,
   );
@@ -481,7 +481,7 @@ export function resolve(
   hostname: string,
   rrtype: string,
 ): Promise<void>;
-export function resolve(hostname: string, rrtype?: string): Promise<void> {
+export function resolve(hostname: string, rrtype?: string) {
   return Resolver.prototype.resolve.bind(getDefaultResolver() as Resolver)(
     hostname,
     rrtype,

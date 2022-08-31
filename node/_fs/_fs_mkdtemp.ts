@@ -24,7 +24,7 @@ export function mkdtemp(
   prefix: string,
   optionsOrCallback: { encoding: string } | string | mkdtempCallback,
   maybeCallback?: mkdtempCallback,
-): void {
+) {
   const callback: mkdtempCallback | undefined =
     typeof optionsOrCallback == "function" ? optionsOrCallback : maybeCallback;
   if (!callback) throw new ERR_INVALID_CALLBACK(callback);

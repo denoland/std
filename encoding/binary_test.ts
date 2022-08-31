@@ -70,7 +70,7 @@ Deno.test("testGetNBytesThrows", async function () {
   }, Deno.errors.UnexpectedEof);
 });
 
-Deno.test("testPutVarbig", function (): void {
+Deno.test("testPutVarbig", function () {
   const buff = new Uint8Array(8);
   putVarbig(buff, 0xffeeddccbbaa9988n);
   assertEquals(
@@ -79,7 +79,7 @@ Deno.test("testPutVarbig", function (): void {
   );
 });
 
-Deno.test("testPutVarbigLittleEndian", function (): void {
+Deno.test("testPutVarbigLittleEndian", function () {
   const buff = new Uint8Array(8);
   putVarbig(buff, 0x8899aabbccddeeffn, { endian: "little" });
   assertEquals(
@@ -88,13 +88,13 @@ Deno.test("testPutVarbigLittleEndian", function (): void {
   );
 });
 
-Deno.test("testPutVarnum", function (): void {
+Deno.test("testPutVarnum", function () {
   const buff = new Uint8Array(4);
   putVarnum(buff, 0xffeeddcc);
   assertEquals(buff, new Uint8Array([0xff, 0xee, 0xdd, 0xcc]));
 });
 
-Deno.test("testPutVarnumLittleEndian", function (): void {
+Deno.test("testPutVarnumLittleEndian", function () {
   const buff = new Uint8Array(4);
   putVarnum(buff, 0xccddeeff, { endian: "little" });
   assertEquals(buff, new Uint8Array([0xff, 0xee, 0xdd, 0xcc]));
@@ -128,7 +128,7 @@ Deno.test("testReadVarnumLittleEndian", async function () {
   assertEquals(rslt, 0x04030201);
 });
 
-Deno.test("testSizeof", function (): void {
+Deno.test("testSizeof", function () {
   assertEquals(1, sizeof("int8"));
   assertEquals(1, sizeof("uint8"));
   assertEquals(2, sizeof("int16"));
@@ -141,24 +141,24 @@ Deno.test("testSizeof", function (): void {
   assertEquals(8, sizeof("float64"));
 });
 
-Deno.test("testVarbig", function (): void {
+Deno.test("testVarbig", function () {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   const rslt = varbig(data);
   assertEquals(rslt, 0x0102030405060708n);
 });
 
-Deno.test("testVarbigLittleEndian", function (): void {
+Deno.test("testVarbigLittleEndian", function () {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   const rslt = varbig(data, { endian: "little" });
   assertEquals(rslt, 0x0807060504030201n);
 });
 
-Deno.test("testVarnum", function (): void {
+Deno.test("testVarnum", function () {
   const data = new Uint8Array([1, 2, 3, 4]);
   const rslt = varnum(data);
   assertEquals(rslt, 0x01020304);
 });
-Deno.test("testVarnumLittleEndian", function (): void {
+Deno.test("testVarnumLittleEndian", function () {
   const data = new Uint8Array([1, 2, 3, 4]);
   const rslt = varnum(data, { endian: "little" });
   assertEquals(rslt, 0x04030201);
@@ -202,7 +202,7 @@ Deno.test("testWriteVarnumLittleEndian", async function () {
   assertEquals(data, new Uint8Array([0x01, 0x02, 0x03, 0x04]));
 });
 
-Deno.test("testVarbigBytes", function (): void {
+Deno.test("testVarbigBytes", function () {
   const rslt = varbigBytes(0x0102030405060708n);
   assertEquals(
     rslt,
@@ -210,7 +210,7 @@ Deno.test("testVarbigBytes", function (): void {
   );
 });
 
-Deno.test("testVarbigBytesLittleEndian", function (): void {
+Deno.test("testVarbigBytesLittleEndian", function () {
   const rslt = varbigBytes(0x0807060504030201n, { endian: "little" });
   assertEquals(
     rslt,
@@ -218,17 +218,17 @@ Deno.test("testVarbigBytesLittleEndian", function (): void {
   );
 });
 
-Deno.test("testVarnumBytes", function (): void {
+Deno.test("testVarnumBytes", function () {
   const rslt = varnumBytes(0x01020304);
   assertEquals(rslt, new Uint8Array([0x01, 0x02, 0x03, 0x04]));
 });
 
-Deno.test("testVarnumBytesLittleEndian", function (): void {
+Deno.test("testVarnumBytesLittleEndian", function () {
   const rslt = varnumBytes(0x04030201, { endian: "little" });
   assertEquals(rslt, new Uint8Array([0x01, 0x02, 0x03, 0x04]));
 });
 
-Deno.test("testVarnumSubarray", function (): void {
+Deno.test("testVarnumSubarray", function () {
   const data = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
   const sub = data.subarray(2, 4);
   const rslt = varnum(sub, { dataType: "uint8" });

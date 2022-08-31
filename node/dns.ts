@@ -285,7 +285,7 @@ function onresolve(
   err: number,
   records: Records,
   ttls?: number[],
-): void {
+) {
   if (err) {
     this.callback(dnsException(err, this.bindingName, this.hostname));
 
@@ -426,7 +426,7 @@ function _resolve(
  *
  * @param servers array of `RFC 5952` formatted addresses
  */
-export function setServers(servers: ReadonlyArray<string>): void {
+export function setServers(servers: ReadonlyArray<string>) {
   const resolver = new Resolver();
 
   resolver.setServers(servers);

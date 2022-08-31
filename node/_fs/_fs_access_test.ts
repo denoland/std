@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import * as fs from "../fs.ts";
-import { assertRejects } from "../../testing/asserts.ts";
+import { assertRejects, assertThrows } from "../../testing/asserts.ts";
 
 Deno.test(
   "[node/fs.access] Uses the owner permission when the user is the owner",
@@ -16,6 +16,24 @@ Deno.test(
       });
     } finally {
       await Deno.remove(file);
+    }
+  },
+);
+
+Deno.test(
+  "[node/fs.accessSync] Uses the owner permission when the user is the owner",
+  { ignore: Deno.build.os === "windows" },
+  () => {
+    const file = Deno.makeTempFileSync();
+    try {
+      Deno.chmod(file, 0o600);
+      fs.accessSync(file, fs.constants.R_OK);
+      fs.accessSync(file, fs.constants.W_OK);
+      assertThrows(() => {
+        fs.accessSync(file, fs.constants.X_OK);
+      });
+    } finally {
+      Deno.remove(file);
     }
   },
 );
