@@ -7,6 +7,9 @@ import { denoErrorToNodeError } from "../internal/errors.ts";
 import { validateFunction } from "../internal/validators.mjs";
 import { promisify } from "../internal/util.mjs";
 
+/** These options aren't funcitonally used right now, as `Dir` doesn't yet support them.
+ * However, these values are still validated.
+ */
 type Options = {
   encoding?: string;
   bufferSize?: number;
