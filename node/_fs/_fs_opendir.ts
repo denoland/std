@@ -41,6 +41,7 @@ export function opendir(
     bufferSize: 32,
   }, options);
 
+  let err, dir;
   try {
     assertEncoding(options.encoding);
 
@@ -49,9 +50,14 @@ export function opendir(
     /** Throws if path is invalid */
     Deno.readDirSync(path);
 
-    callback(null, new Dir(path));
-  } catch (err) {
-    callback(denoErrorToNodeError(err as Error, { syscall: "opendir" }));
+    dir = new Dir(path);
+  } catch (error) {
+    err = denoErrorToNodeError(error as Error, { syscall: "opendir" });
+  }
+  if (err) {
+    callback(err);
+  } else {
+    callback(null, dir);
   }
 }
 

@@ -9,6 +9,7 @@ import {
 } from "../../testing/asserts.ts";
 import { opendir, opendirSync } from "./_fs_opendir.ts";
 import { Buffer } from "../buffer.ts";
+import { assertCallbackErrorUncaught } from "../_utils.ts";
 
 Deno.test("[node/fs] opendir()", async (t) => {
   const path = await Deno.makeTempDir();
@@ -87,6 +88,14 @@ Deno.test("[node/fs] opendir()", async (t) => {
         },
       ),
   );
+
+  await t.step("passes if callback isn't called twice", async () => {
+    const importUrl = new URL("./_fs_opendir.ts", import.meta.url);
+    await assertCallbackErrorUncaught({
+      prelude: `import { opendir } from "${importUrl}"`,
+      invocation: `opendir("${path}", `,
+    });
+  });
 
   await Deno.remove(path);
   await Deno.remove(file);
