@@ -92,8 +92,8 @@ Deno.test("[node/fs] opendir()", async (t) => {
   await t.step("passes if callback isn't called twice", async () => {
     const importUrl = new URL("./_fs_opendir.ts", import.meta.url);
     await assertCallbackErrorUncaught({
-      prelude: `import { opendir } from "${importUrl}"`,
-      invocation: `opendir("${path}", `,
+      prelude: `import { opendir } from ${JSON.stringify(importUrl)}`,
+      invocation: `opendir(${JSON.stringify(path)}, `,
     });
   });
 
