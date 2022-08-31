@@ -17,6 +17,10 @@ function _validateFunction(callback: unknown): asserts callback is Callback {
   validateFunction(callback, "callback");
 }
 
+/**
+ * Required as `assertIntegerRange` from "../_utils.ts" throws `Error` instead of `RangeError`.
+ * Node throws `RangeError` when this assertion fails.
+ * */
 function checkBufferSize(value: number, name: string) {
   if (!Number.isInteger(value) || value < 1 || value > 4294967295) {
     throw new RangeError(
@@ -25,6 +29,7 @@ function checkBufferSize(value: number, name: string) {
   }
 }
 
+/** @link https://nodejs.org/api/fs.html#fsopendirsyncpath-options */
 export function opendir(
   path: string | Buffer | URL,
   options: Options | Callback,
@@ -61,6 +66,7 @@ export function opendir(
   }
 }
 
+/** @link https://nodejs.org/api/fs.html#fspromisesopendirpath-options */
 export const opendirPromise = promisify(opendir) as (
   path: string | Buffer | URL,
   options?: Options,
