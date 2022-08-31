@@ -49,7 +49,7 @@ async function ensureValidCopy(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
@@ -76,7 +76,7 @@ function ensureValidCopySync(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;

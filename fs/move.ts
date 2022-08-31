@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { isSubdir } from "./_util.ts";
 
-const EXISTS_ERROR = new Error("dest already exists.");
+const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
 interface MoveOptions {
   overwrite?: boolean;
