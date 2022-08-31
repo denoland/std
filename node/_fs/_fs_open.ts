@@ -62,7 +62,7 @@ export function open(
   if (!callback) throw new Error("No callback function supplied");
 
   if (["ax", "ax+", "wx", "wx+"].includes(flags || "") && existsSync(path)) {
-    const err = new Deno.errors.AlreadyExists(`EEXIST: file already exists, open '${path}'`);
+    const err = new Error(`EEXIST: file already exists, open '${path}'`);
     (callback as (err: Error) => void)(err);
   } else {
     if (flags === "as" || flags === "as+") {
@@ -111,7 +111,7 @@ export function openSync(
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   if (["ax", "ax+", "wx", "wx+"].includes(flags || "") && existsSync(path)) {
-    throw new Deno.errors.AlreadyExists(`EEXIST: file already exists, open '${path}'`);
+    throw new Error(`EEXIST: file already exists, open '${path}'`);
   }
 
   return Deno.openSync(path, convertFlagAndModeToOptions(flags, mode)).rid;
