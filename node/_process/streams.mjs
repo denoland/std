@@ -131,6 +131,9 @@ stdin.fd = Deno.stdin?.rid ?? -1;
 Object.defineProperty(stdin, "isTTY", {
   enumerable: true,
   configurable: true,
+  // TODO(kt3k): This should be a getter property, but we use
+  // `value` for now to work around the below issue:
+  // https://github.com/denoland/deno/issues/15708
   value: Deno.isatty?.(Deno.stdin.rid),
 });
 stdin._isRawMode = false;
