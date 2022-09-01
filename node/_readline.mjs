@@ -32,6 +32,7 @@ import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.mjs";
 import { validateAbortSignal } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 import { AbortError } from "./internal/errors.ts";
+import { process } from "./process.ts";
 
 import {
   Interface as _Interface,
