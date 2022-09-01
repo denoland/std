@@ -191,7 +191,7 @@ export function loadavg(): number[] {
 export function networkInterfaces(): NetworkInterfaces {
   const interfaces: NetworkInterfaces = {};
   for (
-    const { name, address, netmask, family, mac, scopeid, cidr } of DenoUnstable
+    const { name, address, netmask, family, mac, scopeid, cidr } of Deno
       .networkInterfaces()
   ) {
     const addresses = interfaces[name] ||= [];
