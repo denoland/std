@@ -11,7 +11,12 @@ import {
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
-import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   root?: string;
@@ -68,7 +73,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * ```
  */
 export async function* expandGlob(
-  glob: string,
+  glob: string | URL,
   {
     root = Deno.cwd(),
     exclude = [],
@@ -87,7 +92,7 @@ export async function* expandGlob(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
   const { segments, isAbsolute: isGlobAbsolute, hasTrailingSep, winRoot } =
-    split(glob);
+    split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
     ? (winRoot != undefined ? winRoot : "/")
@@ -176,7 +181,7 @@ export async function* expandGlob(
  * ```
  */
 export function* expandGlobSync(
-  glob: string,
+  glob: string | URL,
   {
     root = Deno.cwd(),
     exclude = [],
@@ -195,7 +200,7 @@ export function* expandGlobSync(
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
   const { segments, isAbsolute: isGlobAbsolute, hasTrailingSep, winRoot } =
-    split(glob);
+    split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
     ? (winRoot != undefined ? winRoot : "/")
