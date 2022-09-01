@@ -2,7 +2,7 @@
 
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType, isSubdir } from "./_util.ts";
+import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 
@@ -28,8 +28,8 @@ interface InternalCopyOptions extends CopyOptions {
 }
 
 async function ensureValidCopy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Promise<Deno.FileInfo | undefined> {
   let destStat: Deno.FileInfo;
@@ -49,15 +49,15 @@ async function ensureValidCopy(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
 }
 
 function ensureValidCopySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Deno.FileInfo | undefined {
   let destStat: Deno.FileInfo;
@@ -76,7 +76,7 @@ function ensureValidCopySync(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
@@ -84,8 +84,8 @@ function ensureValidCopySync(
 
 /* copy file to dest */
 async function copyFile(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -99,8 +99,8 @@ async function copyFile(
 }
 /* copy file to dest synchronously */
 function copyFileSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   ensureValidCopySync(src, dest, options);
@@ -115,8 +115,8 @@ function copyFileSync(
 
 /* copy symlink to dest */
 async function copySymLink(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -139,8 +139,8 @@ async function copySymLink(
 
 /* copy symlink to dest synchronously */
 function copySymlinkSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   ensureValidCopySync(src, dest, options);
@@ -164,8 +164,8 @@ function copySymlinkSync(
 
 /* copy folder from src to dest. */
 async function copyDir(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions,
 ) {
   const destStat = await ensureValidCopy(src, dest, {
@@ -184,6 +184,9 @@ async function copyDir(
     await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
+  src = toPathString(src);
+  dest = toPathString(dest);
+
   for await (const entry of Deno.readDir(src)) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, path.basename(srcPath as string));
@@ -198,7 +201,11 @@ async function copyDir(
 }
 
 /* copy folder from src to dest synchronously */
-function copyDirSync(src: string, dest: string, options: CopyOptions) {
+function copyDirSync(
+  src: string | URL,
+  dest: string | URL,
+  options: CopyOptions,
+) {
   const destStat = ensureValidCopySync(src, dest, {
     ...options,
     isFolder: true,
@@ -214,6 +221,9 @@ function copyDirSync(src: string, dest: string, options: CopyOptions) {
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
     Deno.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
+
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   for (const entry of Deno.readDirSync(src)) {
     assert(entry.name != null, "file.name must be set");
@@ -240,12 +250,12 @@ function copyDirSync(src: string, dest: string, options: CopyOptions) {
  * @param options
  */
 export async function copy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+  src = path.resolve(toPathString(src));
+  dest = path.resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
@@ -279,12 +289,12 @@ export async function copy(
  * @param options
  */
 export function copySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+  src = path.resolve(toPathString(src));
+  dest = path.resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
