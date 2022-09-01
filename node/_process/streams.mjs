@@ -131,9 +131,7 @@ stdin.fd = Deno.stdin?.rid ?? -1;
 Object.defineProperty(stdin, "isTTY", {
   enumerable: true,
   configurable: true,
-  get() {
-    return Deno.isatty?.(Deno.stdin.rid);
-  },
+  value: Deno.isatty?.(Deno.stdin.rid),
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
