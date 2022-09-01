@@ -3,3 +3,4 @@
 
 export const utime = Deno.utime;
 export const utimeSync = Deno.utimeSync;
+export const unrefTimer = Deno.unrefTimer;
