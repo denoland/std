@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { isSubdir } from "./_util.ts";
 
-const EXISTS_ERROR = new Error("dest already exists.");
+const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
 interface MoveOptions {
   overwrite?: boolean;
@@ -9,8 +9,8 @@ interface MoveOptions {
 
 /** Moves a file or directory */
 export async function move(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   { overwrite = false }: MoveOptions = {},
 ) {
   const srcStat = await Deno.stat(src);
@@ -45,8 +45,8 @@ export async function move(
 
 /** Moves a file or directory synchronously */
 export function moveSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   { overwrite = false }: MoveOptions = {},
 ) {
   const srcStat = Deno.statSync(src);

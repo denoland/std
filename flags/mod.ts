@@ -338,8 +338,8 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * ```ts
  * import { parse } from "./mod.ts";
- * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
+ * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  */
 export function parse<

@@ -42,7 +42,7 @@ export class TextProtoReader {
     return s === null ? null : str(s);
   }
 
-  /** ReadMIMEHeader reads a MIME-style header from r.
+  /** ReadMimeHeader reads a MIME-style header from r.
    * The header is a sequence of possibly continued Key: Value lines
    * ending in a blank line.
    * The returned map m maps CanonicalMIMEHeaderKey(key) to a
@@ -62,7 +62,7 @@ export class TextProtoReader {
    * 		"Long-Key": {"Even Longer Value"},
    * 	}
    */
-  async readMIMEHeader(): Promise<Headers | null> {
+  async readMimeHeader(): Promise<Headers | null> {
     const m = new Headers();
     let line: Uint8Array | undefined;
 
@@ -129,6 +129,13 @@ export class TextProtoReader {
         // Pass
       }
     }
+  }
+
+  /** ReadMIMEHeader reads a MIME-style header from r.
+   *
+   * @deprecated Use readMimeHeader instead. */
+  readMIMEHeader(): Promise<Headers | null> {
+    return this.readMimeHeader();
   }
 
   async readLineSlice(): Promise<Uint8Array | null> {
