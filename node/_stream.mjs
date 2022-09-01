@@ -270,7 +270,7 @@ Writable.fromWeb = function (
   return writable;
 };
 
-Duplex.fromWeb = function (pair, options) {
+Duplex.fromWeb = function (pair, options = {}) {
   validateObject(pair, "pair");
   const {
     readable: readableStream,

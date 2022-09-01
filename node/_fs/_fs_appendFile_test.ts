@@ -14,7 +14,7 @@ Deno.test({
         appendFile("some/path", "some data", "utf8");
       },
       Error,
-      "Callback must be a function. Received 'utf8'",
+      "The \"cb\" argument must be of type function. Received type string ('utf8')",
     );
   },
 });

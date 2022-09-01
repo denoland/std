@@ -2,7 +2,7 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import {
-  validateCallback,
+  validateFunction,
   validateInteger,
   validateString,
 } from "../validators.mjs";
@@ -91,7 +91,7 @@ export function hkdf(
     length,
   ));
 
-  validateCallback(callback);
+  validateFunction(callback, "callback");
 
   notImplemented("crypto.hkdf");
 }

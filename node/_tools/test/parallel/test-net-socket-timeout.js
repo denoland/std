@@ -65,10 +65,8 @@ for (let i = 0; i < invalidCallbacks.length; i++) {
     assert.throws(
       () => s.setTimeout(mesc, invalidCallbacks[i]),
       {
-        code: 'ERR_INVALID_CALLBACK',
+        code: 'ERR_INVALID_ARG_TYPE',
         name: 'TypeError',
-        message: 'Callback must be a function. ' +
-                 `Received ${inspect(invalidCallbacks[i])}`
       }
     )
   );
