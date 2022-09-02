@@ -1,3 +1,22 @@
+### 0.154.0 / 2022.09.01
+
+- BREAKING(encoding/csv): remove ColumnOptions (#2536)
+- BREAKING: replace ALL CAPS acronyms in public API names (#2582)
+- feat(encoding): add base58 encoding/decoding feature (#2539)
+- feat(fs): support URL params (#2573)
+- feat(node): add Server.setTimeout() stub (#2564)
+- feat(node/fs): add `opendir` and `opendirSync` (#2576)
+- feat(testing): better assertFalse types (#2562)
+- feat(testing): better assertNotInstanceOf types (#2558)
+- fix(encoding/json): improve safety of `JSONValue` object type (#2565)
+- fix(encoding/jsonc): Improve safety of `JSONValue` object type in `jsonc.ts`
+  (#2568)
+- fix(fs): use Deno.errors.AlreadyExists where appropriate (#2547)
+- fix(node): change Promise.All to Promise.all (#2569)
+- fix(node/fs): fix accessSync permission handling (#2570)
+- fix(node/process): fix BadResource issue of stdin.isTTY (#2590)
+- fix(node/readline): fix Interface constructor (#2588)
+
 ### 0.153.0 / 2022.08.24
 
 - feat(async/delay): add persistent option (#2527)
