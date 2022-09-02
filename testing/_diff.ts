@@ -380,7 +380,7 @@ function createColor(
   // TODO(@littledivy): Remove this when we can detect
   // true color terminals.
   // https://github.com/denoland/deno_std/issues/2575
-  backround = false;
+  background = false;
   switch (diffType) {
     case DiffType.added:
       return (s: string): string =>
