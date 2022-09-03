@@ -13,6 +13,7 @@
 
 import { parse } from "./yaml.ts";
 
+const firstLinePattern = /(= yaml =|---)/;
 const pattern = "^(" +
   "\\ufeff?" + // Maybe byte order mark
   "(= yaml =|---)" +
@@ -68,5 +69,7 @@ export function extract<T = unknown>(str: string): Extract<T> {
  * ```
  */
 export function test(str: string): boolean {
-  return regex.test(str);
+  const [firstLine] = str.split(/(\r?\n)/);
+
+  return regex.test(str) && firstLinePattern.test(firstLine);
 }

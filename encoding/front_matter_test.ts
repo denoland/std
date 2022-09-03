@@ -3,6 +3,22 @@
 import { extract, test } from "./front_matter.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
+const invalidInput = `
+# Project title
+
+---
+
+This is a description of the project
+
+- **Author:** The DPM Authors
+- **Version:** 0.1.0
+- **License:** MIT
+
+---
+
+MIT License
+`;
+
 Deno.test("test valid input true", () => {
   [
     "---\nname: deno\n---\n",
@@ -21,6 +37,8 @@ Deno.test("test invalid input false", () => {
     "---\n",
     "= yaml =\n",
     "---\nasdasdasd",
+    "anything ----",
+    invalidInput,
   ].forEach((str) => {
     assert(!test(str));
   });
