@@ -1260,7 +1260,7 @@ Deno.test({
         async fn() {
           const columns = [0];
           const data = [[(n: number) => n]];
-          const output = `0${NEWLINE}(n) => n${NEWLINE}`;
+          const output = `0${NEWLINE}(n)=>n${NEWLINE}`;
           assertEquals(await stringify(data, { columns }), output);
         },
       },
