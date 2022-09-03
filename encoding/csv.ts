@@ -168,14 +168,8 @@ export type StringifyOptions = {
  */
 export async function stringify(
   data: DataItem[],
-  options: StringifyOptions = {},
+  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
 ): Promise<string> {
-  const columns = options.columns || [];
-  const { headers, separator: sep } = {
-    headers: true,
-    separator: ",",
-    ...options,
-  };
   if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
     const message = [
       "Separator cannot include the following strings:",
