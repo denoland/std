@@ -10,7 +10,6 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import {
-  Column,
   NEWLINE,
   parse,
   ParseError,
@@ -835,24 +834,7 @@ Deno.test({
         },
       },
     );
-    await t.step(
-      {
-        name: "Transform function",
-        async fn() {
-          const columns: Column[] = [
-            {
-              fn: (obj: string) => obj.toUpperCase(),
-              prop: "msg",
-            },
-          ];
-          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          await assertRejects(
-            async () => await stringify(data, columns),
-            TypeError,
-          );
-        },
-      },
-    );
+
     await t.step(
       {
         name: "No data, no columns",
@@ -1056,72 +1038,7 @@ Deno.test({
         },
       },
     );
-    await t.step(
-      {
-        name: "Transform function 1",
-        async fn() {
-          const columns = [
-            {
-              fn: (str: string) => str.toUpperCase(),
-              prop: ["msg", "value"],
-            },
-          ];
-          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
-        },
-      },
-    );
-    await t.step(
-      {
-        name: "Transform function 1 async",
-        async fn() {
-          const columns = [
-            {
-              fn: (str: string) => Promise.resolve(str.toUpperCase()),
-              prop: ["msg", "value"],
-            },
-          ];
-          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
-        },
-      },
-    );
 
-    await t.step(
-      {
-        name: "Transform function 2",
-        async fn() {
-          const columns = [
-            {
-              fn: (obj: { value: string }) => obj.value,
-              prop: "msg",
-            },
-          ];
-          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `msg${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
-        },
-      },
-    );
-    await t.step(
-      {
-        name: "Transform function 2, explicit header",
-        async fn() {
-          const columns = [
-            {
-              fn: (obj: { value: string }) => obj.value,
-              header: "Value",
-              prop: "msg",
-            },
-          ];
-          const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
-        },
-      },
-    );
     await t.step(
       {
         name: "Targeted value: object",
