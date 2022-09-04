@@ -602,6 +602,7 @@
       "test-timers-zero-timeout.js",
       "test-url-fileurltopath.js",
       "test-url-format-whatwg.js",
+      "test-url-format.js",
       "test-url-parse-format.js",
       "test-url-pathtofileurl.js",
       "test-url-relative.js",
