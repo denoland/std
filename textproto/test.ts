@@ -167,20 +167,16 @@ Deno.test({
   },
 });
 
-/* TODO(kt3k): Enable this test
 Deno.test({
   name: "[textproto] #4521 issue",
   async fn() {
-    const input = "abcdefghijklmnopqrstuvwxyz";
-    const bufSize = 25;
-    const tp = new TextProtoReader(
-      new BufReader(new StringReader(input), bufSize),
-    );
-    const line = await tp.readLine();
-    assertEquals(line, input);
+    const repeatCount = 5000;
+    const input = "@".repeat(repeatCount) + "," + "*".repeat(repeatCount);
+    const tpReader = reader(input);
+    const out = await tpReader.readLine();
+    assertEquals(out, input);
   },
 });
-*/
 
 Deno.test({
   name: "[textproto] PR #859",
