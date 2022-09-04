@@ -12,16 +12,6 @@ function reader(s: string): TextProtoReader {
   return new TextProtoReader(new BufReader(new StringReader(s)));
 }
 
-Deno.test({
-  ignore: true,
-  name: "[textproto] Reader : DotBytes",
-  fn() {
-    const _input =
-      "dotlines\r\n.foo\r\n..bar\n...baz\nquux\r\n\r\n.\r\nanot.her\r\n";
-    return Promise.resolve();
-  },
-});
-
 Deno.test("[textproto] ReadEmpty", async () => {
   const r = reader("");
   const m = await r.readMimeHeader();
