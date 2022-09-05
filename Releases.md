@@ -1,3 +1,41 @@
+### 0.154.0 / 2022.09.01
+
+- BREAKING(encoding/csv): remove ColumnOptions (#2536)
+- BREAKING: replace ALL CAPS acronyms in public API names (#2582)
+- feat(encoding): add base58 encoding/decoding feature (#2539)
+- feat(fs): support URL params (#2573)
+- feat(node): add Server.setTimeout() stub (#2564)
+- feat(node/fs): add `opendir` and `opendirSync` (#2576)
+- feat(testing): better assertFalse types (#2562)
+- feat(testing): better assertNotInstanceOf types (#2558)
+- fix(encoding/json): improve safety of `JSONValue` object type (#2565)
+- fix(encoding/jsonc): Improve safety of `JSONValue` object type in `jsonc.ts`
+  (#2568)
+- fix(fs): use Deno.errors.AlreadyExists where appropriate (#2547)
+- fix(node): change Promise.All to Promise.all (#2569)
+- fix(node/fs): fix accessSync permission handling (#2570)
+- fix(node/process): fix BadResource issue of stdin.isTTY (#2590)
+- fix(node/readline): fix Interface constructor (#2588)
+
+### 0.153.0 / 2022.08.24
+
+- feat(async/delay): add persistent option (#2527)
+- feat(crypto): add KeyStack for rotatable key data signing (#2303)
+- feat(encoding/csv): sync parse (#2491)
+- feat(http): add CookieMap and SecureCookieMap (#2502)
+- feat(http): support cert, key options in serveTls (#2508)
+- feat(http/cookie): add set-cookie headers parser (#2475)
+- feat(http/file_server): return 404 response if file not found (#2529)
+- feat(node): add types to fs/promises (#2518)
+- feat(node): Handle "upgrade" event (#2457)
+- feat(node): use Deno.serve() API for Node http polyfill (#2537)
+- feat(testing/asserts): add assertNotInstanceOf (#2530)
+- fix(collections): edge cases for BinaryHeap (#2525)
+- fix(node): zlib bindings should use nextTick import (#2560)
+- fix(node/events): export static setMaxListeners, listenerCount (#2523)
+- fix(node/util.types): stricter checking of TypedArray (#2528)
+- fix(testing): better assertEqual diff for object getters (#2509)
+
 ### 0.152.0 / 2022.08.11
 
 - feat(crypto): add subtle.timingSafeEqual() (#2503)

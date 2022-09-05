@@ -47,11 +47,11 @@ export class Hash extends Transform {
     _opts?: TransformOptions,
   ) {
     super({
-      transform(chunk: string, _encoding: string, callback: () => void): void {
+      transform(chunk: string, _encoding: string, callback: () => void) {
         context.update(coerceToBytes(chunk));
         callback();
       },
-      flush(callback: () => void): void {
+      flush(callback: () => void) {
         this.push(context.digest(undefined));
         callback();
       },

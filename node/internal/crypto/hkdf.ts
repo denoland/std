@@ -82,7 +82,7 @@ export function hkdf(
   info: BinaryLike,
   length: number,
   callback: (err: Error | null, derivedKey: ArrayBuffer) => void,
-): void {
+) {
   ({ hash, key, salt, info, length } = validateParameters(
     hash,
     key,

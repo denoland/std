@@ -243,7 +243,7 @@ export class Socket extends EventEmitter {
    * }
    * ```
    */
-  addMembership(multicastAddress: string, interfaceAddress?: string): void {
+  addMembership(multicastAddress: string, interfaceAddress?: string) {
     healthCheck(this);
 
     if (!multicastAddress) {
@@ -274,7 +274,7 @@ export class Socket extends EventEmitter {
     sourceAddress: string,
     groupAddress: string,
     interfaceAddress?: string,
-  ): void {
+  ) {
     healthCheck(this);
 
     validateString(sourceAddress, "sourceAddress");
@@ -548,7 +548,7 @@ export class Socket extends EventEmitter {
     callback?: (err?: ErrnoException) => void,
   ): void;
   connect(port: number, callback: (err?: ErrnoException) => void): void;
-  connect(port: number, address?: unknown, callback?: unknown): void {
+  connect(port: number, address?: unknown, callback?: unknown) {
     port = validatePort(port, "Port", false);
 
     if (typeof address === "function") {
@@ -595,7 +595,7 @@ export class Socket extends EventEmitter {
    * disconnected socket will result in an `ERR_SOCKET_DGRAM_NOT_CONNECTED`
    * exception.
    */
-  disconnect(): void {
+  disconnect() {
     const state = this[kStateSymbol];
 
     if (state.connectState !== CONNECT_STATE_CONNECTED) {
@@ -620,7 +620,7 @@ export class Socket extends EventEmitter {
    * If `multicastInterface` is not specified, the operating system will
    * attempt to drop membership on all valid interfaces.
    */
-  dropMembership(multicastAddress: string, interfaceAddress?: string): void {
+  dropMembership(multicastAddress: string, interfaceAddress?: string) {
     healthCheck(this);
 
     if (!multicastAddress) {
@@ -651,7 +651,7 @@ export class Socket extends EventEmitter {
     sourceAddress: string,
     groupAddress: string,
     interfaceAddress?: string,
-  ): void {
+  ) {
     healthCheck(this);
 
     validateString(sourceAddress, "sourceAddress");
@@ -876,7 +876,7 @@ export class Socket extends EventEmitter {
     port?: unknown,
     address?: unknown,
     callback?: unknown,
-  ): void {
+  ) {
     let list: MessageType[] | null;
 
     const state = this[kStateSymbol];
@@ -994,7 +994,7 @@ export class Socket extends EventEmitter {
    *
    * This method throws `EBADF` if called on an unbound socket.
    */
-  setBroadcast(arg: boolean): void {
+  setBroadcast(arg: boolean) {
     const err = this[kStateSymbol].handle!.setBroadcast(arg ? 1 : 0);
 
     if (err) {
@@ -1058,7 +1058,7 @@ export class Socket extends EventEmitter {
    * });
    * ```
    */
-  setMulticastInterface(interfaceAddress: string): void {
+  setMulticastInterface(interfaceAddress: string) {
     healthCheck(this);
     validateString(interfaceAddress, "interfaceAddress");
 
@@ -1116,7 +1116,7 @@ export class Socket extends EventEmitter {
    *
    * This method throws `ERR_SOCKET_BUFFER_SIZE` if called on an unbound socket.
    */
-  setRecvBufferSize(size: number): void {
+  setRecvBufferSize(size: number) {
     bufferSize(this, size, RECV_BUFFER);
   }
 
@@ -1126,7 +1126,7 @@ export class Socket extends EventEmitter {
    *
    * This method throws `ERR_SOCKET_BUFFER_SIZE` if called on an unbound socket.
    */
-  setSendBufferSize(size: number): void {
+  setSendBufferSize(size: number) {
     bufferSize(this, size, SEND_BUFFER);
   }
 
@@ -1218,7 +1218,7 @@ export function createSocket(
   return new Socket(type, listener);
 }
 
-function startListening(socket: Socket): void {
+function startListening(socket: Socket) {
   const state = socket[kStateSymbol];
 
   state.handle!.onmessage = onMessage;
@@ -1238,7 +1238,7 @@ function startListening(socket: Socket): void {
   socket.emit("listening");
 }
 
-function replaceHandle(self: Socket, newHandle: UDP): void {
+function replaceHandle(self: Socket, newHandle: UDP) {
   const state = self[kStateSymbol];
   const oldHandle = state.handle!;
 
@@ -1268,18 +1268,18 @@ function bufferSize(self: Socket, size: number, buffer: boolean): number {
   return ret;
 }
 
-function socketCloseNT(self: Socket): void {
+function socketCloseNT(self: Socket) {
   self.emit("close");
 }
 
-function healthCheck(socket: Socket): void {
+function healthCheck(socket: Socket) {
   if (!socket[kStateSymbol].handle) {
     // Error message from dgram_legacy.js.
     throw new ERR_SOCKET_DGRAM_NOT_RUNNING();
   }
 }
 
-function stopReceiving(socket: Socket): void {
+function stopReceiving(socket: Socket) {
   const state = socket[kStateSymbol];
 
   if (!state.receiving) {
@@ -1295,7 +1295,7 @@ function onMessage(
   handle: UDP,
   buf?: Buffer,
   rinfo?: RemoteInfo,
-): void {
+) {
   const self = handle[ownerSymbol] as Socket;
 
   if (nread < 0) {
@@ -1369,17 +1369,17 @@ function enqueue(self: Socket, toEnqueue: () => void) {
   state.queue.push(toEnqueue);
 }
 
-function onListenSuccess(this: Socket): void {
+function onListenSuccess(this: Socket) {
   this.removeListener(EventEmitter.errorMonitor, onListenError);
   clearQueue.call(this);
 }
 
-function onListenError(this: Socket): void {
+function onListenError(this: Socket) {
   this.removeListener("listening", onListenSuccess);
   this[kStateSymbol].queue = undefined;
 }
 
-function clearQueue(this: Socket): void {
+function clearQueue(this: Socket) {
   const state = this[kStateSymbol];
   const queue = state.queue;
   state.queue = undefined;

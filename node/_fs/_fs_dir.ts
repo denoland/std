@@ -71,7 +71,7 @@ export default class Dir {
    * directories, and therefore does not need to close directories when
    * finished reading
    */
-  closeSync(): void {
+  closeSync() {
     //No op
   }
 

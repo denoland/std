@@ -8,7 +8,7 @@
 import { bench, BenchmarkTimer, runBenchmarks } from "./bench.ts";
 
 // Basic
-bench(function forIncrementX1e9(b: BenchmarkTimer): void {
+bench(function forIncrementX1e9(b: BenchmarkTimer) {
   b.start();
   for (let i = 0; i < 1e9; i++);
   b.stop();
@@ -18,7 +18,7 @@ bench(function forIncrementX1e9(b: BenchmarkTimer): void {
 bench({
   name: "runs100ForIncrementX1e6",
   runs: 100,
-  func(b): void {
+  func(b) {
     b.start();
     for (let i = 0; i < 1e6; i++);
     b.stop();
@@ -26,7 +26,7 @@ bench({
 });
 
 // Itsabug
-bench(function throwing(b): void {
+bench(function throwing(b) {
   b.start();
   // Throws bc the timer's stop method is never called
 });

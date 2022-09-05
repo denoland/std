@@ -51,7 +51,7 @@ Deno.test("testReadLong2", async function () {
   assertEquals(long, 0x12345678);
 });
 
-Deno.test("testSliceLongToBytes", function (): void {
+Deno.test("testSliceLongToBytes", function () {
   const arr = sliceLongToBytes(0x1234567890abcdef);
   const actual = readLong(new BufReader(new BinaryReader(new Uint8Array(arr))));
   const expected = readLong(
@@ -64,7 +64,7 @@ Deno.test("testSliceLongToBytes", function (): void {
   assertEquals(actual, expected);
 });
 
-Deno.test("testSliceLongToBytes2", function (): void {
+Deno.test("testSliceLongToBytes2", function () {
   const arr = sliceLongToBytes(0x12345678);
   assertEquals(arr, [0, 0, 0, 0, 0x12, 0x34, 0x56, 0x78]);
 });

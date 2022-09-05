@@ -23,7 +23,7 @@ export function notImplemented(msg: string): never {
   throw new Error(message);
 }
 
-export function warnNotImplemented(msg?: string): void {
+export function warnNotImplemented(msg?: string) {
   const message = msg ? `Not implemented: ${msg}` : "Not implemented";
   console.warn(message);
 }
@@ -46,7 +46,7 @@ export function intoCallbackAPI<T>(
   cb: MaybeEmpty<(err: MaybeNull<Error>, value?: MaybeEmpty<T>) => void>,
   // deno-lint-ignore no-explicit-any
   ...args: any[]
-): void {
+) {
   func(...args).then(
     (value) => cb && cb(null, value),
     (err) => cb && cb(err),
@@ -60,14 +60,14 @@ export function intoCallbackAPIWithIntercept<T1, T2>(
   cb: MaybeEmpty<(err: MaybeNull<Error>, value?: MaybeEmpty<T2>) => void>,
   // deno-lint-ignore no-explicit-any
   ...args: any[]
-): void {
+) {
   func(...args).then(
     (value) => cb && cb(null, interceptor(value)),
     (err) => cb && cb(err),
   );
 }
 
-export function spliceOne(list: string[], index: number): void {
+export function spliceOne(list: string[], index: number) {
   for (; index + 1 < list.length; index++) list[index] = list[index + 1];
   list.pop();
 }
@@ -146,7 +146,7 @@ export function validateIntegerRange(
   name: string,
   min = -2147483648,
   max = 2147483647,
-): void {
+) {
   // The defaults for min and max correspond to the limits of 32-bit integers.
   if (!Number.isInteger(value)) {
     throw new Error(`${name} must be 'an integer' but was ${value}`);
@@ -251,7 +251,7 @@ export async function assertCallbackErrorUncaught(
   assertStringIncludes(stderr, "Error: success");
 }
 
-export function makeMethodsEnumerable(klass: { new (): unknown }): void {
+export function makeMethodsEnumerable(klass: { new (): unknown }) {
   const proto = klass.prototype;
   for (const key of Object.getOwnPropertyNames(proto)) {
     const value = proto[key];

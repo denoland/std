@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import type { CallbackWithError } from "./_fs_common.ts";
 
 function getValidTime(
@@ -27,7 +27,7 @@ export function futimes(
   atime: number | string | Date,
   mtime: number | string | Date,
   callback: CallbackWithError,
-): void {
+) {
   if (!callback) {
     throw new Deno.errors.InvalidData("No callback function supplied");
   }
@@ -35,16 +35,16 @@ export function futimes(
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  DenoUnstable.futime(fd, atime, mtime).then(() => callback(null), callback);
+  Deno.futime(fd, atime, mtime).then(() => callback(null), callback);
 }
 
 export function futimesSync(
   fd: number,
   atime: number | string | Date,
   mtime: number | string | Date,
-): void {
+) {
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  DenoUnstable.futimeSync(fd, atime, mtime);
+  Deno.futimeSync(fd, atime, mtime);
 }

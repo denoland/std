@@ -110,7 +110,7 @@ class Printf {
   }
 
   // %[<positional>]<flag>...<verb>
-  handleFormat(): void {
+  handleFormat() {
     this.flags = new Flags();
     const flags = this.flags;
     for (; this.i < this.format.length; ++this.i) {
@@ -181,7 +181,7 @@ class Printf {
    * Handle width or precision
    * @param wOrP
    */
-  handleWidthOrPrecisionRef(wOrP: WorP): void {
+  handleWidthOrPrecisionRef(wOrP: WorP) {
     if (this.argNum >= this.args.length) {
       // handle Positional should have already taken care of it...
       return;
@@ -207,7 +207,7 @@ class Printf {
    * Handle width and precision
    * @param flags
    */
-  handleWidthAndPrecision(flags: Flags): void {
+  handleWidthAndPrecision(flags: Flags) {
     const fmt = this.format;
     for (; this.i !== this.format.length; ++this.i) {
       const c = fmt[this.i];
@@ -262,7 +262,7 @@ class Printf {
   }
 
   /** Handle positional */
-  handlePositional(): void {
+  handlePositional() {
     if (this.format[this.i] !== "[") {
       // sanity only
       throw new Error("Can't happen? Bug.");
@@ -310,7 +310,7 @@ class Printf {
   }
 
   /** Handle verb */
-  handleVerb(): void {
+  handleVerb() {
     const verb = this.format[this.i];
     this.verb = verb;
     if (this.tmpError) {
@@ -778,7 +778,7 @@ export function sprintf(format: string, ...args: unknown[]): string {
  * @param format
  * @param args
  */
-export function printf(format: string, ...args: unknown[]): void {
+export function printf(format: string, ...args: unknown[]) {
   const s = sprintf(format, ...args);
   Deno.stdout.writeSync(new TextEncoder().encode(s));
 }

@@ -228,7 +228,7 @@ export class Sha512 {
     this.init(bits, sharedMemory);
   }
 
-  protected init(bits: number, sharedMemory: boolean): void {
+  protected init(bits: number, sharedMemory: boolean) {
     if (sharedMemory) {
       blocks[0] =
         blocks[1] =
@@ -477,7 +477,7 @@ export class Sha512 {
     return this;
   }
 
-  protected finalize(): void {
+  protected finalize() {
     if (this.#finalized) {
       return;
     }
@@ -531,7 +531,7 @@ export class Sha512 {
     this.hash();
   }
 
-  protected hash(): void {
+  protected hash() {
     const h0h = this.#h0h,
       h0l = this.#h0l,
       h1h = this.#h1h,
@@ -1221,7 +1221,7 @@ export class HmacSha512 extends Sha512 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected override finalize(): void {
+  protected override finalize() {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

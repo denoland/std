@@ -447,7 +447,7 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * console.log(writer.bytes().length);  // 11
  * ```
  */
-export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
+export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += w.writeSync(arr.subarray(nwritten));

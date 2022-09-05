@@ -6,6 +6,7 @@
 
 import assert from "./assert.ts";
 import { constants, zlib_deflate, zlib_inflate, Zstream } from "./_pako.mjs";
+import { nextTick } from "./_next_tick.ts";
 
 export const Z_NO_FLUSH = constants.Z_NO_FLUSH;
 export const Z_PARTIAL_FLUSH = constants.Z_PARTIAL_FLUSH;
@@ -187,7 +188,7 @@ Zlib.prototype._write = function (
 
   // async version
   var self = this;
-  process.nextTick(function () {
+  nextTick(function () {
     self._process();
     self._after();
   });

@@ -32,7 +32,7 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  close(cb: () => void = () => {}): void {
+  close(cb: () => void = () => {}) {
     this._onClose();
     cb();
   }

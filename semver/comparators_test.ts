@@ -5,7 +5,7 @@ import * as semver from "./mod.ts";
 
 type Version = string;
 
-Deno.test("comparators", function (): void {
+Deno.test("comparators", function () {
   // [range, comparators]
   // turn range into a set of individual comparators
   const versions: [Version, string[][]][] = [
@@ -96,14 +96,14 @@ Deno.test("comparators", function (): void {
   });
 });
 
-Deno.test("test", function (): void {
+Deno.test("test", function () {
   const c = new semver.Comparator(">=1.2.3");
   assert(c.test("1.2.4"));
   const c2 = new semver.Comparator(c);
   assert(c2.test("1.2.4"));
 });
 
-Deno.test("intersect", function (): void {
+Deno.test("intersect", function () {
   const versions: [string, string, boolean][] = [
     // One is a Version
     ["1.3.0", ">=1.3.0", true],
@@ -158,6 +158,6 @@ Deno.test("intersect", function (): void {
   });
 });
 
-Deno.test("tostrings", function (): void {
+Deno.test("tostrings", function () {
   assertEquals(new semver.Comparator(">= v1.2.3").toString(), ">=1.2.3");
 });

@@ -5,7 +5,7 @@ import * as semver from "./mod.ts";
 
 type PrereleaseParts = [string | number, (number | string)?];
 
-Deno.test("prerelease", function (): void {
+Deno.test("prerelease", function () {
   // [prereleaseParts, version]
   const versions: [PrereleaseParts | null, string][] = [
     [["alpha", 1], "1.2.2-alpha.1"],

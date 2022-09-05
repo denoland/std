@@ -70,7 +70,7 @@ Before opening a PR make sure to:
 - add tests that cover your changes.
 - `deno task test` passes.
 - `deno fmt --check` passes.
-- `deno lint` passes.
+- `deno task lint` passes.
 
 Give the PR a descriptive title.
 

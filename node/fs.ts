@@ -24,6 +24,7 @@ import { lstat, lstatPromise, lstatSync } from "./_fs/_fs_lstat.ts";
 import { mkdir, mkdirPromise, mkdirSync } from "./_fs/_fs_mkdir.ts";
 import { mkdtemp, mkdtempPromise, mkdtempSync } from "./_fs/_fs_mkdtemp.ts";
 import { open, openPromise, openSync } from "./_fs/_fs_open.ts";
+import { opendir, opendirPromise, opendirSync } from "./_fs/_fs_opendir.ts";
 import { read, readSync } from "./_fs/_fs_read.ts";
 import { readdir, readdirPromise, readdirSync } from "./_fs/_fs_readdir.ts";
 import { readFile, readFilePromise, readFileSync } from "./_fs/_fs_readFile.ts";
@@ -66,7 +67,7 @@ const promises = {
   access: accessPromise,
   copyFile: copyFilePromise,
   open: openPromise,
-  // opendir: promisify(opendir),
+  opendir: opendirPromise,
   rename: renamePromise,
   truncate: truncatePromise,
   rm: rmPromise,
@@ -134,6 +135,8 @@ export default {
   mkdtempSync,
   open,
   openSync,
+  opendir,
+  opendirSync,
   read,
   readSync,
   promises,
@@ -218,6 +221,8 @@ export {
   mkdtemp,
   mkdtempSync,
   open,
+  opendir,
+  opendirSync,
   openSync,
   promises,
   R_OK,

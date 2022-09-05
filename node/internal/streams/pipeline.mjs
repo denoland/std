@@ -147,17 +147,6 @@ async function pump(iterable, writable, finish) {
   }
 }
 
-function pipeline(...streams) {
-  const callback = once(popCallback(streams));
-
-  // stream.pipeline(streams, callback)
-  if (Array.isArray(streams[0]) && streams.length === 1) {
-    streams = streams[0];
-  }
-
-  return pipelineImpl(streams, callback);
-}
-
 function pipelineImpl(streams, callback, opts) {
   if (streams.length < 2) {
     throw new ERR_MISSING_ARGS("streams");
@@ -309,5 +298,5 @@ function pipelineImpl(streams, callback, opts) {
   return ret;
 }
 
-export default { pipeline, pipelineImpl };
-export { pipeline, pipelineImpl };
+export default { pipelineImpl };
+export { pipelineImpl };

@@ -18,13 +18,13 @@ Deno.test({
   name: "benching",
 
   fn: async function () {
-    bench(function forIncrementX1e3(b): void {
+    bench(function forIncrementX1e3(b) {
       b.start();
       for (let i = 0; i < 1e3; i++);
       b.stop();
     });
 
-    bench(function forDecrementX1e3(b): void {
+    bench(function forDecrementX1e3(b) {
       b.start();
       for (let i = 1e3; i > 0; i--);
       b.stop();
@@ -56,14 +56,14 @@ Deno.test({
     bench({
       name: "runs100ForIncrementX1e6",
       runs: 100,
-      func(b): void {
+      func(b) {
         b.start();
         for (let i = 0; i < 1e6; i++);
         b.stop();
       },
     });
 
-    bench(function throwing(b): void {
+    bench(function throwing(b) {
       b.start();
       // Throws bc the timer's stop method is never called
     });
@@ -105,7 +105,7 @@ Deno.test({
   name: "Bench without name should throw",
   fn() {
     assertThrows(
-      (): void => {
+      () => {
         bench(() => {});
       },
       Error,
@@ -119,7 +119,7 @@ Deno.test({
   fn: async function () {
     await assertRejects(
       async () => {
-        bench(function benchWithoutStop(b): void {
+        bench(function benchWithoutStop(b) {
           b.start();
           // Throws bc the timer's stop method is never called
         });
@@ -136,7 +136,7 @@ Deno.test({
   fn: async function () {
     await assertRejects(
       async () => {
-        bench(function benchWithoutStart(b): void {
+        bench(function benchWithoutStart(b) {
           b.stop();
           // Throws bc the timer's start method is never called
         });
@@ -153,7 +153,7 @@ Deno.test({
   fn: async function () {
     await assertRejects(
       async () => {
-        bench(function benchStopBeforeStart(b): void {
+        bench(function benchStopBeforeStart(b) {
           b.stop();
           b.start();
           // Throws bc the timer's stop is called before start
@@ -367,7 +367,7 @@ Deno.test({
   },
 });
 
-function dummyBench(name: string, runs = 1): void {
+function dummyBench(name: string, runs = 1) {
   bench({
     name,
     runs,

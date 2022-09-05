@@ -110,7 +110,7 @@ export class Sha256 {
     this.init(is224, sharedMemory);
   }
 
-  protected init(is224: boolean, sharedMemory: boolean): void {
+  protected init(is224: boolean, sharedMemory: boolean) {
     if (sharedMemory) {
       blocks[0] =
         blocks[16] =
@@ -255,7 +255,7 @@ export class Sha256 {
     return this;
   }
 
-  protected finalize(): void {
+  protected finalize() {
     if (this.#finalized) {
       return;
     }
@@ -293,7 +293,7 @@ export class Sha256 {
     this.hash();
   }
 
-  protected hash(): void {
+  protected hash() {
     let a = this.#h0;
     let b = this.#h1;
     let c = this.#h2;
@@ -633,7 +633,7 @@ export class HmacSha256 extends Sha256 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected override finalize(): void {
+  protected override finalize() {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;
