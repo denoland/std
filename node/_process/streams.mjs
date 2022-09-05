@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import { Buffer } from "../buffer.ts";
 import {
   clearLine,
@@ -138,7 +138,7 @@ Object.defineProperty(stdin, "isTTY", {
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
-  DenoUnstable.setRaw?.(Deno.stdin?.rid, enable);
+  Deno.setRaw?.(Deno.stdin?.rid, enable);
   stdin._isRawMode = enable;
   return stdin;
 };

@@ -878,9 +878,7 @@ export function format(
     return formatWhatwg(urlObject, options);
   }
 
-  if (typeof urlObject === "string") {
-    urlObject = parse(urlObject, true, false);
-  }
+  urlObject = parse(urlObject, true, false);
   return urlObject.format();
 }
 

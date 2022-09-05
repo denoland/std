@@ -39,7 +39,6 @@ import {
   INITIAL_ACCEPT_BACKOFF_DELAY,
   MAX_ACCEPT_BACKOFF_DELAY,
 } from "./_listen.ts";
-import * as DenoUnstable from "../../_deno_unstable.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -228,13 +227,13 @@ export class TCP extends ConnectionWrap {
 
   override ref() {
     if (this.#listener) {
-      DenoUnstable.ListenerRef(this.#listener);
+      this.#listener.ref();
     }
   }
 
   override unref() {
     if (this.#listener) {
-      DenoUnstable.ListenerUnref(this.#listener);
+      this.#listener.unref();
     }
   }
 
