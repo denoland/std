@@ -4,10 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import {
-  assertEquals,
-  assertThrows,
-} from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import {
   NEWLINE,
   parse,
