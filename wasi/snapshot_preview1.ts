@@ -27,7 +27,6 @@
  * @module
  */
 
-import * as DenoUnstable from "../_deno_unstable.ts";
 import { relative, resolve } from "../path/mod.ts";
 
 const CLOCKID_REALTIME = 0;
@@ -753,7 +752,7 @@ export default class Context {
           mtim = BigInt(Date.now() * 1e6);
         }
 
-        DenoUnstable.utimeSync(entry.path!, Number(atim), Number(mtim));
+        Deno.utimeSync(entry.path!, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),
@@ -1247,7 +1246,7 @@ export default class Context {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        DenoUnstable.utimeSync(path, Number(atim), Number(mtim));
+        Deno.utimeSync(path, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),

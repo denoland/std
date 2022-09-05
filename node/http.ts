@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { type Deferred, deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
@@ -152,7 +152,7 @@ class ClientRequest extends NodeWritable {
     this.destroy();
   }
 
-  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
 
@@ -553,7 +553,7 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = DenoUnstable.upgradeHttpRaw(request) as [
+        const [conn, head] = Deno.upgradeHttpRaw(request) as [
           Deno.Conn,
           Uint8Array,
         ];
@@ -573,9 +573,9 @@ class ServerImpl extends EventEmitter {
       return;
     }
     this.#ac = ac;
-    DenoUnstable.serve(
+    Deno.serve(
       {
-        handler: handler as DenoUnstable.ServeHandler,
+        handler: handler as Deno.ServeHandler,
         ...this.#addr,
         signal: ac.signal,
         // @ts-ignore Might be any without `--unstable` flag
