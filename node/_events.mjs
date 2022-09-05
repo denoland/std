@@ -728,7 +728,7 @@ EventEmitter.prototype.listenerCount = _listenerCount;
 /**
  * Returns the number of listeners listening to the event name
  * specified as `type`.
- * @deprecated since v3.2.0
+ * @deprecated (will be removed in 0.157.0) since v3.2.0
  * @param {EventEmitter} emitter
  * @param {string | symbol} type
  * @returns {number}

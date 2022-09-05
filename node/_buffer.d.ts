@@ -74,21 +74,21 @@ export class Buffer extends Uint8Array {
    *
    * @param str String to store in buffer.
    * @param encoding encoding to use, optional.  Default is 'utf8'
-   * @deprecated since v10.0.0 - Use `Buffer.from(string[, encoding])` instead.
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.from(string[, encoding])` instead.
    */
   constructor(str: string, encoding?: Encoding);
   /**
    * Allocates a new buffer of {size} octets.
    *
    * @param size count of octets to allocate.
-   * @deprecated since v10.0.0 - Use `Buffer.alloc()` instead (also see `Buffer.allocUnsafe()`).
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.alloc()` instead (also see `Buffer.allocUnsafe()`).
    */
   constructor(size: number);
   /**
    * Allocates a new buffer containing the given {array} of octets.
    *
    * @param array The octets to store.
-   * @deprecated since v10.0.0 - Use `Buffer.from(array)` instead.
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.from(array)` instead.
    */
   constructor(array: Uint8Array);
   /**
@@ -96,21 +96,21 @@ export class Buffer extends Uint8Array {
    * the given {ArrayBuffer}/{SharedArrayBuffer}.
    *
    * @param arrayBuffer The ArrayBuffer with which to share memory.
-   * @deprecated since v10.0.0 - Use `Buffer.from(arrayBuffer[, byteOffset[, length]])` instead.
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.from(arrayBuffer[, byteOffset[, length]])` instead.
    */
   constructor(arrayBuffer: ArrayBuffer | SharedArrayBuffer);
   /**
    * Allocates a new buffer containing the given {array} of octets.
    *
    * @param array The octets to store.
-   * @deprecated since v10.0.0 - Use `Buffer.from(array)` instead.
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.from(array)` instead.
    */
   constructor(array: ReadonlyArray<unknown>);
   /**
    * Copies the passed {buffer} data onto a new {Buffer} instance.
    *
    * @param buffer The buffer to copy.
-   * @deprecated since v10.0.0 - Use `Buffer.from(buffer)` instead.
+   * @deprecated (will be removed in 0.157.0) since v10.0.0 - Use `Buffer.from(buffer)` instead.
    */
   constructor(buffer: Buffer);
   /**
@@ -2045,7 +2045,7 @@ export class Buffer extends Uint8Array {
 }
 
 export const SlowBuffer: {
-  /** @deprecated since v6.0.0, use `Buffer.allocUnsafeSlow()` */
+  /** @deprecated (will be removed in 0.157.0) since v6.0.0, use `Buffer.allocUnsafeSlow()` */
   new (size: number): Buffer;
   prototype: Buffer;
 };

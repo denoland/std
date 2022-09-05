@@ -13,7 +13,7 @@ export type JsonValue =
 
 /** The type of the result of parsing JSON.
  *
- * @deprecated Use JsonValue instead. */
+ * @deprecated (will be removed in 0.157.0) Use JsonValue instead. */
 export type JSONValue = JsonValue;
 
 /** Optional object interface for `JSONParseStream` and `ConcatenatedJSONParseStream`. */
@@ -70,7 +70,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
 
 /** Parse each chunk as JSON.
  *
- * @deprecated Use JsonParseStream instead. */
+ * @deprecated (will be removed in 0.157.0) Use JsonParseStream instead. */
 export const JSONParseStream = JsonParseStream;
 
 const branks = /^[ \t\r\n]*$/;
@@ -201,7 +201,7 @@ export class ConcatenatedJsonParseStream
 
 /** stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
- * @deprecated Use ConcatenatedJsonParseStream instead. */
+ * @deprecated (will be removed in 0.157.0) Use ConcatenatedJsonParseStream instead. */
 export const ConcatenatedJSONParseStream = ConcatenatedJsonParseStream;
 
 const blank = new Set(" \t\r\n");
