@@ -8,6 +8,4 @@ package-lock.json
 **/cov/
 /_wasm_crypto/target
 /_wasm_varint/target
-# TODO(nayeemrmn): Remove (https://github.com/denoland/deno_std/pull/1819#issuecomment-1011136991).
-/_deno_unstable_checked.ts
 /hash/_wasm/target
