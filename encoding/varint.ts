@@ -6,4 +6,4 @@
  * @module
  */
 
-export { decodeU32, decodeU64, encodeU32, encodeU64 } from "./varint/mod.ts";
+export * from "./varint/mod.ts";
