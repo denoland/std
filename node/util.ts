@@ -29,84 +29,84 @@ export {
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
-/** @deprecated (will be removed in 0.157.0) - use `Array.isArray()` instead. */
+/** @deprecated - use `Array.isArray()` instead. */
 export function isArray(value: unknown): boolean {
   return Array.isArray(value);
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `typeof value === "boolean" || value instanceof Boolean` instead. */
+/** @deprecated - use `typeof value === "boolean" || value instanceof Boolean` instead. */
 export function isBoolean(value: unknown): boolean {
   return typeof value === "boolean" || value instanceof Boolean;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `value === null` instead. */
+/** @deprecated - use `value === null` instead. */
 export function isNull(value: unknown): boolean {
   return value === null;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `value === null || value === undefined` instead. */
+/** @deprecated - use `value === null || value === undefined` instead. */
 export function isNullOrUndefined(value: unknown): boolean {
   return value === null || value === undefined;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `typeof value === "number" || value instanceof Number` instead. */
+/** @deprecated - use `typeof value === "number" || value instanceof Number` instead. */
 export function isNumber(value: unknown): boolean {
   return typeof value === "number" || value instanceof Number;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `typeof value === "string" || value instanceof String` instead. */
+/** @deprecated - use `typeof value === "string" || value instanceof String` instead. */
 export function isString(value: unknown): boolean {
   return typeof value === "string" || value instanceof String;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `typeof value === "symbol"` instead. */
+/** @deprecated - use `typeof value === "symbol"` instead. */
 export function isSymbol(value: unknown): boolean {
   return typeof value === "symbol";
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `value === undefined` instead. */
+/** @deprecated - use `value === undefined` instead. */
 export function isUndefined(value: unknown): boolean {
   return value === undefined;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `value !== null && typeof value === "object"` instead. */
+/** @deprecated - use `value !== null && typeof value === "object"` instead. */
 export function isObject(value: unknown): boolean {
   return value !== null && typeof value === "object";
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `e instanceof Error` instead. */
+/** @deprecated - use `e instanceof Error` instead. */
 export function isError(e: unknown): boolean {
   return e instanceof Error;
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `typeof value === "function"` instead. */
+/** @deprecated - use `typeof value === "function"` instead. */
 export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated (will be removed in 0.157.0) Use util.types.RegExp() instead. */
+/** @deprecated Use util.types.RegExp() instead. */
 export function isRegExp(value: unknown): boolean {
   return types.isRegExp(value);
 }
 
-/** @deprecated (will be removed in 0.157.0) Use util.types.isDate() instead. */
+/** @deprecated Use util.types.isDate() instead. */
 export function isDate(value: unknown): boolean {
   return types.isDate(value);
 }
 
-/** @deprecated (will be removed in 0.157.0) - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
+/** @deprecated - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
 export function isPrimitive(value: unknown): boolean {
   return (
     value === null || (typeof value !== "object" && typeof value !== "function")
   );
 }
 
-/** @deprecated (will be removed in 0.157.0)  Use Buffer.isBuffer() instead. */
+/** @deprecated  Use Buffer.isBuffer() instead. */
 export function isBuffer(value: unknown): boolean {
   return Buffer.isBuffer(value);
 }
 
-/** @deprecated (will be removed in 0.157.0) Use Object.assign() instead. */
+/** @deprecated Use Object.assign() instead. */
 export function _extend(
   target: Record<string, unknown>,
   source: unknown,

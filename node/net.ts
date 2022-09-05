@@ -1138,7 +1138,7 @@ export class Socket extends Duplex {
    * Users who experience large or growing `bufferSize` should attempt to
    * "throttle" the data flows in their program with `socket.pause()` and `socket.resume()`.
    *
-   * @deprecated (will be removed in 0.157.0) Use `writableLength` instead.
+   * @deprecated Use `writableLength` instead.
    */
   get bufferSize(): number {
     if (this._handle) {

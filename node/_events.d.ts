@@ -245,7 +245,7 @@ export function setMaxListeners(n: number): EventEmitter;
  * // Prints: 2
  * ```
  * @since v0.9.12
- * @deprecated (will be removed in 0.157.0) Since v3.2.0 - Use `listenerCount` instead.
+ * @deprecated Since v3.2.0 - Use `listenerCount` instead.
  * @param emitter The emitter to query
  * @param eventName The event name
  */
@@ -788,7 +788,7 @@ export class EventEmitter {
    * // Prints: 2
    * ```
    * @since v0.9.12
-   * @deprecated (will be removed in 0.157.0) Since v3.2.0 - Use `listenerCount` instead.
+   * @deprecated Since v3.2.0 - Use `listenerCount` instead.
    * @param emitter The emitter to query
    * @param eventName The event name
    */
