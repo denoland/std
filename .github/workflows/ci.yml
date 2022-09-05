@@ -224,9 +224,10 @@ jobs:
 
       - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
+        id: deploy
         with:
           project: std-deploy-compat-test
           entrypoint: _tools/deploy.ts
 
       - name: Check deployment
-        run: curl --fail https://std-deploy-compat-test.deno.dev/
+        run: curl --fail ${{ steps.deploy.outputs.url }}
