@@ -6,7 +6,6 @@
 
 import {
   assertEquals,
-  assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
 import {
@@ -782,12 +781,12 @@ Deno.test({
   async fn(t) {
     await t.step({
       name: "Access array index using string",
-      async fn() {
+      fn() {
         const columns = ["a"];
         const data = [["foo"], ["bar"]];
         const errorMessage = 'Property accessor is not of type "number"';
-        await assertRejects(
-          async () => await stringify(data, columns),
+        assertThrows(
+          () => stringify(data, columns),
           StringifyError,
           errorMessage,
         );
@@ -797,7 +796,7 @@ Deno.test({
       {
         name: "Double quote in separator",
 
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
           const errorMessage = [
@@ -806,8 +805,8 @@ Deno.test({
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
           const options = { separator: '"' };
-          await assertRejects(
-            async () => await stringify(data, columns, options),
+          assertThrows(
+            () => stringify(data, columns, options),
             StringifyError,
             errorMessage,
           );
@@ -817,7 +816,7 @@ Deno.test({
     await t.step(
       {
         name: "CRLF in separator",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
           const errorMessage = [
@@ -826,8 +825,8 @@ Deno.test({
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
           const options = { separator: "\r\n" };
-          await assertRejects(
-            async () => await stringify(data, columns, options),
+          assertThrows(
+            () => stringify(data, columns, options),
             StringifyError,
             errorMessage,
           );
@@ -839,34 +838,34 @@ Deno.test({
       {
         name: "No data, no columns",
 
-        async fn() {
+        fn() {
           const columns: string[] = [];
           const data: string[][] = [];
           const output = NEWLINE;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "No data, no columns, no headers",
-        async fn() {
+        fn() {
           const columns: string[] = [];
           const data: string[][] = [];
           const output = ``;
           const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
     await t.step(
       {
         name: "No data, columns",
-        async fn() {
+        fn() {
           const columns = ["a"];
           const data: string[][] = [];
           const output = `a${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -874,35 +873,35 @@ Deno.test({
       {
         name: "No data, columns, no headers",
 
-        async fn() {
+        fn() {
           const columns = ["a"];
           const data: string[][] = [];
           const output = ``;
           const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
     await t.step(
       {
         name: "Data, no columns",
-        async fn() {
+        fn() {
           const columns: string[] = [];
           const data = [{ a: 1 }, { a: 2 }];
           const output = `${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Separator: CR",
-        async fn() {
+        fn() {
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\r1${NEWLINE}foo\rbar${NEWLINE}baz\rqux${NEWLINE}`;
           const options = { separator: "\r" };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
@@ -910,23 +909,23 @@ Deno.test({
       {
         name: "Separator: LF",
 
-        async fn() {
+        fn() {
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\n1${NEWLINE}foo\nbar${NEWLINE}baz\nqux${NEWLINE}`;
           const options = { separator: "\n" };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: number accessor",
-        async fn() {
+        fn() {
           const columns = [1];
           const data = [{ 1: 1 }, { 1: 2 }];
           const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -934,23 +933,23 @@ Deno.test({
       {
         name: "Explicit header value, no headers",
 
-        async fn() {
+        fn() {
           const columns = [{ header: "Value", prop: "value" }];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `foo${NEWLINE}bar${NEWLINE}`;
           const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: number accessor,const data = array",
-        async fn() {
+        fn() {
           const columns = [1];
           const data = [["key", "foo"], ["key", "bar"]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -958,22 +957,22 @@ Deno.test({
       {
         name: "Column: array number accessor",
 
-        async fn() {
+        fn() {
           const columns = [[1]];
           const data = [{ 1: 1 }, { 1: 2 }];
           const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: array number accessor,const data = array",
-        async fn() {
+        fn() {
           const columns = [[1]];
           const data = [["key", "foo"], ["key", "bar"]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -981,51 +980,51 @@ Deno.test({
       {
         name: "Column: array number accessor,const data = array",
 
-        async fn() {
+        fn() {
           const columns = [[1, 1]];
           const data = [["key", ["key", "foo"]], ["key", ["key", "bar"]]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: string accessor",
-        async fn() {
+        fn() {
           const columns = ["value"];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: array string accessor",
-        async fn() {
+        fn() {
           const columns = [["value"]];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Column: array string accessor",
-        async fn() {
+        fn() {
           const columns = [["msg", "value"]];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Explicit header",
-        async fn() {
+        fn() {
           const columns = [
             {
               header: "Value",
@@ -1034,7 +1033,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -1042,19 +1041,19 @@ Deno.test({
     await t.step(
       {
         name: "Targeted value: object",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[{ value: "foo" }], [{ value: "bar" }]];
           const output =
             `0${NEWLINE}"{""value"":""foo""}"${NEWLINE}"{""value"":""bar""}"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: arary of objects",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [
             [[{ value: "foo" }, { value: "bar" }]],
@@ -1062,19 +1061,19 @@ Deno.test({
           ];
           const output =
             `0${NEWLINE}"[{""value"":""foo""},{""value"":""bar""}]"${NEWLINE}"[{""value"":""baz""},{""value"":""qux""}]"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: array",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
             `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
@@ -1082,170 +1081,170 @@ Deno.test({
       {
         name: "Targeted value: array, separator: tab",
 
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
             `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
           const options = { separator: "\t" };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: undefined",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[], []];
           const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: null",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[null], [null]];
           const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: hex number",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[0xa], [0xb]];
           const output = `0${NEWLINE}10${NEWLINE}11${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: BigInt",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[BigInt("1")], [BigInt("2")]];
           const output = `0${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: boolean",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[true], [false]];
           const output = `0${NEWLINE}true${NEWLINE}false${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: string",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
           const output = `0${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: symbol",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[Symbol("foo")], [Symbol("bar")]];
           const output =
             `0${NEWLINE}Symbol(foo)${NEWLINE}Symbol(bar)${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Targeted value: function",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [[(n: number) => n]];
           const output = `0${NEWLINE}(n)=>n${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with double quote",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [['foo"']];
           const output = `0${NEWLINE}"foo"""${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with CRLF",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo\r\n"]];
           const output = `0${NEWLINE}"foo\r\n"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with CR",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo\r"]];
           const output = `0${NEWLINE}foo\r${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with LF",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo\n"]];
           const output = `0${NEWLINE}foo\n${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with comma",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo,"]];
           const output = `0${NEWLINE}"foo,"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(stringify(data, columns), output);
         },
       },
     );
     await t.step(
       {
         name: "Value with comma, tab separator",
-        async fn() {
+        fn() {
           const columns = [0];
           const data = [["foo,"]];
           const output = `0${NEWLINE}foo,${NEWLINE}`;
 
           const options = { separator: "\t" };
-          assertEquals(await stringify(data, columns, options), output);
+          assertEquals(stringify(data, columns, options), output);
         },
       },
     );
