@@ -5,7 +5,7 @@ import {
   DigestAlgorithm,
   DigestContext,
   instantiateWasm,
-} from "../../../_wasm_crypto/mod.ts";
+} from "../../../crypto/_wasm_crypto/mod.ts";
 import { Buffer } from "../../buffer.ts";
 import { Transform } from "../../stream.ts";
 import { encode as encodeToHex } from "../../../encoding/hex.ts";
