@@ -681,7 +681,7 @@ Deno.test("use restrictEnvAccessTo via configSync to restrict lookup of Env vari
   assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 });
 
-Deno.test("use of restrictEnvAccessTo for an Env var, without granting read permissions still fails", async () => {
+Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permissions still fails", async () => {
   const { stdout } = await Deno.spawn(Deno.execPath(), {
     args: [
       "run",
