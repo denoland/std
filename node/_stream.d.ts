@@ -36,7 +36,7 @@ interface StreamOptions<T extends Stream> extends Abortable {
   ): void;
   autoDestroy?: boolean | undefined;
 }
-interface ReadableOptions extends StreamOptions<Readable> {
+export interface ReadableOptions extends StreamOptions<Readable> {
   encoding?: BufferEncoding | undefined;
   read?(this: Readable, size: number): void;
 }
@@ -1184,7 +1184,7 @@ type PipelineDestinationPromiseFunction<T, P> = (
   source: AsyncIterable<T>,
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
-  PipelineTransformSource<infer ST> ? 
+  PipelineTransformSource<infer ST> ?
     | WritableStream
     | PipelineDestinationIterableFunction<ST>
     | PipelineDestinationPromiseFunction<ST, P>

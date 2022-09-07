@@ -3,14 +3,30 @@ import { notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
 import { Readable as NodeReadable } from "../stream.ts";
+import type { ReadableOptions } from "../_stream.d.ts";
 
-type ReadStreamOptions = Record<string, unknown>;
+interface ReadStreamOptions {
+  flags?: string;
+  encoding?: string | null;
+  fd?: number | null;
+  mode?: number;
+  autoClose?: boolean;
+  emitClose?: boolean;
+  start?: number;
+  end?: number;
+  highWaterMark?: number;
+  fs?: Record<string, unknown> | null;
+}
+
+interface ReadStream extends NodeReadable {
+  path: string;
+}
 
 export function ReadStream(
-  this: { path: string } & NodeReadable,
+  this: ReadStream,
   path: string | URL,
-  opts?: ReadStreamOptions,
-) {
+  opts?: ReadStreamOptions & ReadableOptions,
+): ReadStream {
   const hasBadOptions = opts && (
     opts.fd || opts.start || opts.end || opts.fs
   );
@@ -33,12 +49,12 @@ export function ReadStream(
   const buffer = new Uint8Array(16 * 1024);
 
   NodeReadable.call(this, {
-    highWaterMark: opts?.highWaterMark as number,
-    encoding: opts?.encoding as string,
-    objectMode: opts?.objectMode as boolean ?? false,
-    emitClose: opts?.emitClose as boolean ?? true,
-    autoDestroy: (opts?.autoClose ?? opts?.autoDestroy) as boolean ?? true,
-    signal: opts?.signal as AbortSignal,
+    highWaterMark: opts?.highWaterMark,
+    encoding: opts?.encoding,
+    objectMode: opts?.objectMode ?? false,
+    emitClose: opts?.emitClose ?? true,
+    autoDestroy: opts?.autoClose ?? opts?.autoDestroy ?? true,
+    signal: opts?.signal,
     read(_size) {
       try {
         const n = file.readSync(buffer);
@@ -57,6 +73,8 @@ export function ReadStream(
   });
 
   this.path = _path;
+
+  return this;
 }
 
 Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
@@ -64,7 +82,7 @@ Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
 export function createReadStream(
   path: string | URL,
   opts?: ReadStreamOptions,
-): typeof ReadStream {
+): ReadStream {
   // deno-lint-ignore ban-ts-comment
   // @ts-ignore
   return new ReadStream(path, opts);
