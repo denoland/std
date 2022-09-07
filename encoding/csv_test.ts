@@ -788,7 +788,7 @@ Deno.test({
         const data = [["foo"], ["bar"]];
         const errorMessage = 'Property accessor is not of type "number"';
         await assertRejects(
-          async () => await stringify(data, columns),
+          async () => await stringify(data, { columns }),
           StringifyError,
           errorMessage,
         );
@@ -806,9 +806,9 @@ Deno.test({
             '  - U+0022: Quotation mark (")',
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
-          const options = { separator: '"' };
+          const options = { separator: '"', columns };
           await assertRejects(
-            async () => await stringify(data, columns, options),
+            async () => await stringify(data, options),
             StringifyError,
             errorMessage,
           );
@@ -826,9 +826,9 @@ Deno.test({
             '  - U+0022: Quotation mark (")',
             "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
           ].join("\n");
-          const options = { separator: "\r\n" };
+          const options = { separator: "\r\n", columns };
           await assertRejects(
-            async () => await stringify(data, columns, options),
+            async () => await stringify(data, options),
             StringifyError,
             errorMessage,
           );
@@ -847,8 +847,21 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           await assertRejects(
-            async () => await stringify(data, columns),
+            async () => await stringify(data, { columns }),
             TypeError,
+          );
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "Invalid data, no columns",
+        async fn() {
+          const data = [{ a: 1 }, { a: 2 }];
+          await assertRejects(
+            async () => await stringify(data),
+            StringifyError,
+            "No property accessor function was provided for object",
           );
         },
       },
@@ -858,10 +871,9 @@ Deno.test({
         name: "No data, no columns",
 
         async fn() {
-          const columns: string[] = [];
           const data: string[][] = [];
           const output = NEWLINE;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data), output);
         },
       },
     );
@@ -872,8 +884,8 @@ Deno.test({
           const columns: string[] = [];
           const data: string[][] = [];
           const output = ``;
-          const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { headers: false, columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -884,7 +896,7 @@ Deno.test({
           const columns = ["a"];
           const data: string[][] = [];
           const output = `a${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -896,19 +908,8 @@ Deno.test({
           const columns = ["a"];
           const data: string[][] = [];
           const output = ``;
-          const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
-        },
-      },
-    );
-    await t.step(
-      {
-        name: "Data, no columns",
-        async fn() {
-          const columns: string[] = [];
-          const data = [{ a: 1 }, { a: 2 }];
-          const output = `${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          const options = { headers: false, columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -919,8 +920,8 @@ Deno.test({
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\r1${NEWLINE}foo\rbar${NEWLINE}baz\rqux${NEWLINE}`;
-          const options = { separator: "\r" };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { separator: "\r", columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -932,8 +933,8 @@ Deno.test({
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
           const output = `0\n1${NEWLINE}foo\nbar${NEWLINE}baz\nqux${NEWLINE}`;
-          const options = { separator: "\n" };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { separator: "\n", columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -944,7 +945,7 @@ Deno.test({
           const columns = [1];
           const data = [{ 1: 1 }, { 1: 2 }];
           const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -956,8 +957,8 @@ Deno.test({
           const columns = [{ header: "Value", prop: "value" }];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `foo${NEWLINE}bar${NEWLINE}`;
-          const options = { headers: false };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { headers: false, columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -968,7 +969,7 @@ Deno.test({
           const columns = [1];
           const data = [["key", "foo"], ["key", "bar"]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -980,7 +981,7 @@ Deno.test({
           const columns = [[1]];
           const data = [{ 1: 1 }, { 1: 2 }];
           const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -991,7 +992,7 @@ Deno.test({
           const columns = [[1]];
           const data = [["key", "foo"], ["key", "bar"]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1003,7 +1004,7 @@ Deno.test({
           const columns = [[1, 1]];
           const data = [["key", ["key", "foo"]], ["key", ["key", "bar"]]];
           const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1014,7 +1015,7 @@ Deno.test({
           const columns = ["value"];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1025,7 +1026,7 @@ Deno.test({
           const columns = [["value"]];
           const data = [{ value: "foo" }, { value: "bar" }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1036,7 +1037,7 @@ Deno.test({
           const columns = [["msg", "value"]];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1052,7 +1053,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1068,7 +1069,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1084,7 +1085,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1101,7 +1102,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `msg${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1118,7 +1119,7 @@ Deno.test({
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
           const output = `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1130,7 +1131,7 @@ Deno.test({
           const data = [[{ value: "foo" }], [{ value: "bar" }]];
           const output =
             `0${NEWLINE}"{""value"":""foo""}"${NEWLINE}"{""value"":""bar""}"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1145,7 +1146,7 @@ Deno.test({
           ];
           const output =
             `0${NEWLINE}"[{""value"":""foo""},{""value"":""bar""}]"${NEWLINE}"[{""value"":""baz""},{""value"":""qux""}]"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1157,7 +1158,7 @@ Deno.test({
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
             `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1170,8 +1171,8 @@ Deno.test({
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
             `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
-          const options = { separator: "\t" };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { separator: "\t", columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
@@ -1182,7 +1183,7 @@ Deno.test({
           const columns = [0];
           const data = [[], []];
           const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1193,7 +1194,7 @@ Deno.test({
           const columns = [0];
           const data = [[null], [null]];
           const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1204,7 +1205,7 @@ Deno.test({
           const columns = [0];
           const data = [[0xa], [0xb]];
           const output = `0${NEWLINE}10${NEWLINE}11${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1215,7 +1216,7 @@ Deno.test({
           const columns = [0];
           const data = [[BigInt("1")], [BigInt("2")]];
           const output = `0${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1226,7 +1227,7 @@ Deno.test({
           const columns = [0];
           const data = [[true], [false]];
           const output = `0${NEWLINE}true${NEWLINE}false${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1237,7 +1238,7 @@ Deno.test({
           const columns = [0];
           const data = [["foo"], ["bar"]];
           const output = `0${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1249,7 +1250,7 @@ Deno.test({
           const data = [[Symbol("foo")], [Symbol("bar")]];
           const output =
             `0${NEWLINE}Symbol(foo)${NEWLINE}Symbol(bar)${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1260,7 +1261,7 @@ Deno.test({
           const columns = [0];
           const data = [[(n: number) => n]];
           const output = `0${NEWLINE}(n)=>n${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1271,7 +1272,7 @@ Deno.test({
           const columns = [0];
           const data = [['foo"']];
           const output = `0${NEWLINE}"foo"""${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1282,7 +1283,7 @@ Deno.test({
           const columns = [0];
           const data = [["foo\r\n"]];
           const output = `0${NEWLINE}"foo\r\n"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1293,7 +1294,7 @@ Deno.test({
           const columns = [0];
           const data = [["foo\r"]];
           const output = `0${NEWLINE}foo\r${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1304,7 +1305,7 @@ Deno.test({
           const columns = [0];
           const data = [["foo\n"]];
           const output = `0${NEWLINE}foo\n${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1315,7 +1316,7 @@ Deno.test({
           const columns = [0];
           const data = [["foo,"]];
           const output = `0${NEWLINE}"foo,"${NEWLINE}`;
-          assertEquals(await stringify(data, columns), output);
+          assertEquals(await stringify(data, { columns }), output);
         },
       },
     );
@@ -1327,10 +1328,19 @@ Deno.test({
           const data = [["foo,"]];
           const output = `0${NEWLINE}foo,${NEWLINE}`;
 
-          const options = { separator: "\t" };
-          assertEquals(await stringify(data, columns, options), output);
+          const options = { separator: "\t", columns };
+          assertEquals(await stringify(data, options), output);
         },
       },
     );
+    await t.step({
+      name: "Valid data, no columns",
+      async fn() {
+        const data = [[1, 2, 3], [4, 5, 6]];
+        const output = `${NEWLINE}1,2,3${NEWLINE}4,5,6${NEWLINE}`;
+
+        assertEquals(await stringify(data), output);
+      },
+    });
   },
 });
