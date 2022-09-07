@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import { Buffer } from "../buffer.ts";
 import {
   clearLine,
@@ -131,14 +131,13 @@ stdin.fd = Deno.stdin?.rid ?? -1;
 Object.defineProperty(stdin, "isTTY", {
   enumerable: true,
   configurable: true,
-  // TODO(kt3k): This should be a getter property, but we use
-  // `value` for now to work around the below issue:
-  // https://github.com/denoland/deno/issues/15708
-  value: Deno.isatty?.(Deno.stdin.rid),
+  get() {
+    return Deno.isatty?.(Deno.stdin.rid);
+  },
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
-  DenoUnstable.setRaw?.(Deno.stdin?.rid, enable);
+  Deno.setRaw?.(Deno.stdin?.rid, enable);
   stdin._isRawMode = enable;
   return stdin;
 };
