@@ -7,6 +7,7 @@ import { open, type openFlags } from "../../_fs/_fs_open.ts";
 import { write } from "../../_fs/_fs_write.mjs";
 import { close } from "../../_fs/_fs_close.ts";
 import { Buffer } from "../../buffer.ts";
+import { notImplemented } from "../../_utils.ts";
 import type { WritableOptions } from "../../_stream.d.ts";
 
 const kFs = Symbol("kFs");
@@ -46,6 +47,17 @@ export function WriteStream(
   path: string | Buffer,
   opts?: WriteStreamOptions & WritableOptions,
 ): WriteStream {
+  const hasBadOptions = opts && (
+    opts.fd || opts.start
+  );
+  if (hasBadOptions) {
+    notImplemented(
+      `fs.WriteStream.prototype.constructor with unsupported options (${
+        JSON.stringify(opts)
+      })`,
+    );
+  }
+
   if (!(this instanceof WriteStream)) {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
