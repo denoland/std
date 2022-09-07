@@ -26,88 +26,109 @@ interface FS {
   close: typeof close;
 }
 
-export class WriteStreamClass extends Writable {
-  fd: number | null = null;
+interface WriteStream extends Writable {
+  fd: number | null;
   path: string | Buffer;
-  flags?: openFlags;
-  mode?: number;
-  bytesWritten = 0;
-  pos = 0;
-  [kFs] = { open, write };
-  [kIsPerformingIO] = false;
-  constructor(path: string | Buffer, opts: WriteStreamOptions = {}) {
-    super(opts);
-    this.path = toPathIfFileURL(path);
-    this.flags = opts.flags || "w";
-    this.mode = opts.mode || 0o666;
-    this[kFs] = opts.fs ?? { open, write, close };
+  flags: openFlags;
+  mode: number;
+  bytesWritten: number;
+  pos: number;
+  [kFs]: FS;
+  [kIsPerformingIO]: boolean;
+}
 
-    if (opts.encoding) {
-      this.setDefaultEncoding(opts.encoding);
-    }
+export function WriteStream(
+  this: WriteStream,
+  path: string | Buffer,
+  opts?: WriteStreamOptions,
+) {
+  if (!(this instanceof WriteStream)) {
+    // deno-lint-ignore ban-ts-comment
+    // @ts-ignore
+    return new WriteStream(path, opts);
   }
 
-  override _construct(callback: (err?: Error) => void) {
-    this[kFs].open(
-      this.path.toString(),
-      this.flags!,
-      this.mode!,
-      (err: Error | null, fd: number) => {
-        if (err) {
-          callback(err);
-          return;
-        }
+  Writable.call(this, opts);
 
-        this.fd = fd;
-        callback();
-        this.emit("open", this.fd);
-        this.emit("ready");
-      },
-    );
-  }
+  this.fd = null;
+  this.path = toPathIfFileURL(path);
+  this.flags = opts?.flags ?? "w";
+  this.mode = opts?.mode ?? 0o666;
+  this.bytesWritten = 0;
+  this.pos = 0;
+  this[kFs] = opts?.fs ?? { open, write, close };
+  this[kIsPerformingIO] = false;
 
-  override _write(
-    data: Buffer,
-    _encoding: string,
-    cb: (err?: Error | null) => void,
-  ) {
-    this[kIsPerformingIO] = true;
-    this[kFs].write(
-      this.fd!,
-      data,
-      0,
-      data.length,
-      this.pos,
-      (er: Error | null, bytes: number) => {
-        this[kIsPerformingIO] = false;
-        if (this.destroyed) {
-          // Tell ._destroy() that it's safe to close the fd now.
-          cb(er);
-          return this.emit(kIoDone, er);
-        }
-
-        if (er) {
-          return cb(er);
-        }
-
-        this.bytesWritten += bytes;
-        cb();
-      },
-    );
-
-    if (this.pos !== undefined) {
-      this.pos += data.length;
-    }
-  }
-
-  override _destroy(err: Error, cb: (err?: Error | null) => void) {
-    if (this[kIsPerformingIO]) {
-      this.once(kIoDone, (er) => closeStream(this, err || er, cb));
-    } else {
-      closeStream(this, err, cb);
-    }
+  if (opts?.encoding) {
+    this.setDefaultEncoding(opts?.encoding);
   }
 }
+
+Object.setPrototypeOf(WriteStream.prototype, Writable.prototype);
+
+WriteStream.prototype._construct = function (callback: (err?: Error) => void) {
+  this[kFs].open(
+    this.path.toString(),
+    this.flags!,
+    this.mode!,
+    (err: Error | null, fd: number) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      this.fd = fd;
+      callback();
+      this.emit("open", this.fd);
+      this.emit("ready");
+    },
+  );
+};
+
+WriteStream.prototype._write = function (
+  data: Buffer,
+  _encoding: string,
+  cb: (err?: Error | null) => void,
+) {
+  this[kIsPerformingIO] = true;
+  this[kFs].write(
+    this.fd!,
+    data,
+    0,
+    data.length,
+    this.pos,
+    (er: Error | null, bytes: number) => {
+      this[kIsPerformingIO] = false;
+      if (this.destroyed) {
+        // Tell ._destroy() that it's safe to close the fd now.
+        cb(er);
+        return this.emit(kIoDone, er);
+      }
+
+      if (er) {
+        return cb(er);
+      }
+
+      this.bytesWritten += bytes;
+      cb();
+    },
+  );
+
+  if (this.pos !== undefined) {
+    this.pos += data.length;
+  }
+};
+
+WriteStream.prototype._destroy = function (
+  err: Error,
+  cb: (err?: Error | null) => void,
+) {
+  if (this[kIsPerformingIO]) {
+    this.once(kIoDone, (er: Error) => closeStream(this, err || er, cb));
+  } else {
+    closeStream(this, err, cb);
+  }
+};
 
 function closeStream(
   // deno-lint-ignore no-explicit-any
@@ -125,18 +146,11 @@ function closeStream(
   }
 }
 
-export function WriteStream(
-  path: string | Buffer,
-  opts: WriteStreamOptions,
-): WriteStreamClass {
-  return new WriteStreamClass(path, opts);
-}
-
-WriteStream.prototype = WriteStreamClass.prototype;
-
 export function createWriteStream(
   path: string | Buffer,
-  opts: WriteStreamOptions,
-): WriteStreamClass {
-  return new WriteStreamClass(path, opts);
+  opts?: WriteStreamOptions,
+): WriteStream {
+  // deno-lint-ignore ban-ts-comment
+  // @ts-ignore
+  return new WriteStream(path, opts);
 }
