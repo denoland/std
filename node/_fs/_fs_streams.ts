@@ -36,15 +36,15 @@ export function ReadStream(
     autoDestroy: true,
     emitClose: true,
     objectMode: false,
-    read: async function (_size) {
+    read(_size) {
       try {
-        const n = await file.read(buffer);
+        const n = file.readSync(buffer);
         this.push(n ? Buffer.from(buffer.slice(0, n)) : null);
       } catch (err) {
         this.destroy(err as Error);
       }
     },
-    destroy: (err, cb) => {
+    destroy(err, cb) {
       try {
         file.close();
         // deno-lint-ignore no-empty
@@ -60,9 +60,9 @@ Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
 
 export function createReadStream(
   path: string | URL,
-  options?: ReadStreamOptions,
+  opts?: ReadStreamOptions,
 ): typeof ReadStream {
   // deno-lint-ignore ban-ts-comment
   // @ts-ignore
-  return new ReadStream(path, options);
+  return new ReadStream(path, opts);
 }
