@@ -33,9 +33,12 @@ export function ReadStream(
   const buffer = new Uint8Array(16 * 1024);
 
   NodeReadable.call(this, {
-    autoDestroy: true,
-    emitClose: true,
-    objectMode: false,
+    highWaterMark: opts?.highWaterMark as number,
+    encoding: opts?.encoding as string,
+    objectMode: opts?.objectMode as boolean ?? false,
+    emitClose: opts?.emitClose as boolean ?? true,
+    autoDestroy: (opts?.autoClose ?? opts?.autoDestroy) as boolean ?? true,
+    signal: opts?.signal as AbortSignal,
     read(_size) {
       try {
         const n = file.readSync(buffer);
