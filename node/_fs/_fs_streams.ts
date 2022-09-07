@@ -6,50 +6,63 @@ import { Readable as NodeReadable } from "../stream.ts";
 
 type ReadStreamOptions = Record<string, unknown>;
 
-export class ReadStream extends NodeReadable {
-  public path: string;
-
-  constructor(path: string | URL, opts?: ReadStreamOptions) {
-    path = path instanceof URL ? fromFileUrl(path) : path;
-    const hasBadOptions = opts && (
-      opts.fd || opts.start || opts.end || opts.fs
+export function ReadStream(
+  this: { path: string } & NodeReadable,
+  path: string | URL,
+  opts?: ReadStreamOptions,
+) {
+  const hasBadOptions = opts && (
+    opts.fd || opts.start || opts.end || opts.fs
+  );
+  if (hasBadOptions) {
+    notImplemented(
+      `fs.ReadStream.prototype.constructor with unsupported options (${
+        JSON.stringify(opts)
+      })`,
     );
-    if (hasBadOptions) {
-      notImplemented(
-        `fs.ReadStream.prototype.constructor with unsupported options (${
-          JSON.stringify(opts)
-        })`,
-      );
-    }
-    const file = Deno.openSync(path, { read: true });
-    const buffer = new Uint8Array(16 * 1024);
-    super({
-      autoDestroy: true,
-      emitClose: true,
-      objectMode: false,
-      read: async function (_size) {
-        try {
-          const n = await file.read(buffer);
-          this.push(n ? Buffer.from(buffer.slice(0, n)) : null);
-        } catch (err) {
-          this.destroy(err as Error);
-        }
-      },
-      destroy: (err, cb) => {
-        try {
-          file.close();
-          // deno-lint-ignore no-empty
-        } catch {}
-        cb(err);
-      },
-    });
-    this.path = path;
   }
+
+  if (!(this instanceof ReadStream)) {
+    // deno-lint-ignore ban-ts-comment
+    // @ts-ignore
+    return new ReadStream(path, opts);
+  }
+
+  const _path = path instanceof URL ? fromFileUrl(path) : path;
+  const file = Deno.openSync(_path, { read: true });
+  const buffer = new Uint8Array(16 * 1024);
+
+  NodeReadable.call(this, {
+    autoDestroy: true,
+    emitClose: true,
+    objectMode: false,
+    read: async function (_size) {
+      try {
+        const n = await file.read(buffer);
+        this.push(n ? Buffer.from(buffer.slice(0, n)) : null);
+      } catch (err) {
+        this.destroy(err as Error);
+      }
+    },
+    destroy: (err, cb) => {
+      try {
+        file.close();
+        // deno-lint-ignore no-empty
+      } catch {}
+      cb(err);
+    },
+  });
+
+  this.path = _path;
 }
+
+Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
 
 export function createReadStream(
   path: string | URL,
   options?: ReadStreamOptions,
-): ReadStream {
+): typeof ReadStream {
+  // deno-lint-ignore ban-ts-comment
+  // @ts-ignore
   return new ReadStream(path, options);
 }
