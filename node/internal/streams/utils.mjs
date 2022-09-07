@@ -44,14 +44,6 @@ function isNodeStream(obj) {
   );
 }
 
-function isIterable(obj, isAsync) {
-  if (obj == null) return false;
-  if (isAsync === true) return typeof obj[Symbol.asyncIterator] === "function";
-  if (isAsync === false) return typeof obj[Symbol.iterator] === "function";
-  return typeof obj[Symbol.asyncIterator] === "function" ||
-    typeof obj[Symbol.iterator] === "function";
-}
-
 function isDestroyed(stream) {
   if (!isNodeStream(stream)) return null;
   const wState = stream._writableState;
@@ -215,7 +207,6 @@ export default {
   isDestroyed,
   isDuplexNodeStream,
   isFinished,
-  isIterable,
   isReadable,
   isReadableNodeStream,
   isReadableEnded,
@@ -235,7 +226,6 @@ export {
   isDisturbed,
   isDuplexNodeStream,
   isFinished,
-  isIterable,
   isNodeStream,
   isReadable,
   isReadableEnded,
