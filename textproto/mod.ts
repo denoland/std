@@ -131,6 +131,13 @@ export class TextProtoReader {
     }
   }
 
+  /** ReadMIMEHeader reads a MIME-style header from r.
+   *
+   * @deprecated Use readMimeHeader instead. */
+  readMIMEHeader(): Promise<Headers | null> {
+    return this.readMimeHeader();
+  }
+
   async readLineSlice(): Promise<Uint8Array | null> {
     let line = new Uint8Array(0);
     let r: ReadLineResult | null = null;
