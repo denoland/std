@@ -33,7 +33,7 @@ Deno.test(
         fs.accessSync(file, fs.constants.X_OK);
       });
     } finally {
-      Deno.remove(file);
+      Deno.removeSync(file);
     }
   },
 );

@@ -641,6 +641,16 @@
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
     ],
+    "pseudo-tty": [
+      "console-dumb-tty.js",
+      "console_colors.js",
+      "no_dropped_stdio.js",
+      "no_interleaved_stdio.js",
+      "test-tty-color-support-warning-2.js",
+      "test-tty-color-support-warning.js",
+      "test-tty-stdin-end.js",
+      "test-tty-stdout-end.js"
+    ],
     "pummel": [
       "test-net-bytes-per-incoming-chunk-overhead.js",
       "test-net-pingpong-delay.js",

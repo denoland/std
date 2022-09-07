@@ -104,21 +104,35 @@ function getValuesFromItem(
 ): unknown[] {
   const values: unknown[] = [];
 
-  for (const column of normalizedColumns) {
-    let value: unknown = item;
+  if (normalizedColumns.length) {
+    for (const column of normalizedColumns) {
+      let value: unknown = item;
 
-    for (const prop of column.prop) {
-      if (typeof value !== "object" || value === null) continue;
-      if (Array.isArray(value)) {
-        if (typeof prop === "number") value = value[prop];
-        else {
-          throw new StringifyError('Property accessor is not of type "number"');
-        }
-      } // I think this assertion is safe. Confirm?
-      else value = (value as ObjectWithStringPropertyKeys)[prop];
+      for (const prop of column.prop) {
+        if (typeof value !== "object" || value === null) continue;
+        if (Array.isArray(value)) {
+          if (typeof prop === "number") value = value[prop];
+          else {
+            throw new StringifyError(
+              'Property accessor is not of type "number"',
+            );
+          }
+        } // I think this assertion is safe. Confirm?
+        else value = (value as ObjectWithStringPropertyKeys)[prop];
+      }
+
+      values.push(value);
     }
-
-    values.push(value);
+  } else {
+    if (Array.isArray(item)) {
+      values.push(...item);
+    } else if (typeof item === "object") {
+      throw new StringifyError(
+        "No property accessor function was provided for object",
+      );
+    } else {
+      values.push(item);
+    }
   }
 
   return values;
@@ -137,23 +151,17 @@ function getValuesFromItem(
 export type StringifyOptions = {
   headers?: boolean;
   separator?: string;
+  columns?: Column[];
 };
 
 /**
  * @param data The array of objects to encode
- * @param columns Array of values specifying which data to include in the output
  * @param options Output formatting options
  */
 export function stringify(
   data: DataItem[],
-  columns: Column[],
-  options: StringifyOptions = {},
+  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
 ): string {
-  const { headers, separator: sep } = {
-    headers: true,
-    separator: ",",
-    ...options,
-  };
   if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
     const message = [
       "Separator cannot include the following strings:",
