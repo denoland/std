@@ -7,6 +7,7 @@ import { open, type openFlags } from "../../_fs/_fs_open.ts";
 import { write } from "../../_fs/_fs_write.mjs";
 import { close } from "../../_fs/_fs_close.ts";
 import { Buffer } from "../../buffer.ts";
+import type { WritableOptions } from "../../_stream.d.ts";
 
 const kFs = Symbol("kFs");
 const kIsPerformingIO = Symbol("kIsPerformingIO");
@@ -14,10 +15,13 @@ const kIoDone = Symbol("kIoDone");
 
 interface WriteStreamOptions {
   flags?: openFlags;
-  mode?: number;
-  fs?: FS;
   encoding?: string;
-  highWaterMark?: number;
+  fd?: number | null;
+  mode?: number;
+  autoClose?: boolean;
+  emitClose?: boolean;
+  start?: number;
+  fs?: FS;
 }
 
 interface FS {
@@ -40,8 +44,8 @@ interface WriteStream extends Writable {
 export function WriteStream(
   this: WriteStream,
   path: string | Buffer,
-  opts?: WriteStreamOptions,
-) {
+  opts?: WriteStreamOptions & WritableOptions,
+): WriteStream {
   if (!(this instanceof WriteStream)) {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -62,6 +66,8 @@ export function WriteStream(
   if (opts?.encoding) {
     this.setDefaultEncoding(opts?.encoding);
   }
+
+  return this;
 }
 
 Object.setPrototypeOf(WriteStream.prototype, Writable.prototype);
