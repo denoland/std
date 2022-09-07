@@ -52,7 +52,15 @@ export function WriteStream(
     return new WriteStream(path, opts);
   }
 
-  Writable.call(this, opts);
+  Writable.call(this, {
+    highWaterMark: opts?.highWaterMark,
+    decodeStrings: opts?.decodeStrings,
+    defaultEncoding: opts?.defaultEncoding,
+    objectMode: opts?.objectMode,
+    emitClose: opts?.emitClose,
+    autoDestroy: opts?.autoClose ?? opts?.autoDestroy,
+    signal: opts?.signal,
+  });
 
   this.fd = null;
   this.path = toPathIfFileURL(path);
