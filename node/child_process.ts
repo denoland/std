@@ -157,18 +157,22 @@ interface SpawnSyncOutput {
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
-  // maybeOptions?: SpawnSyncOptions,
+  maybeOptions?: SpawnSyncOptions,
 ): SpawnSyncOutput {
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
-  /* const options = !Array.isArray(argsOrOptions) && argsOrOptions
+  const options = !Array.isArray(argsOrOptions) && argsOrOptions
     ? argsOrOptions
-    : maybeOptions; */
+    : maybeOptions;
 
   const output = Deno.spawnSync(command, { args });
   const signal = output.signal;
   const status = signal ? null : output.code;
-  const stdout = Buffer.from(output.stdout);
-  const stderr = Buffer.from(output.stderr);
+  const stdout = options?.encoding
+    ? Buffer.from(output.stdout)
+    : Buffer.from(output.stdout).toString(options?.encoding);
+  const stderr = options?.encoding
+    ? Buffer.from(output.stderr)
+    : Buffer.from(output.stderr).toString(options?.encoding);
 
   return {
     status,
