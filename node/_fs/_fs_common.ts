@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { validateCallback } from "../internal/validators.mjs";
+import { validateFunction } from "../internal/validators.mjs";
 import type { ErrnoException } from "../_global.d.ts";
 import {
   BinaryEncodings,
@@ -168,7 +168,7 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
 export { isUint32 as isFd } from "../internal/validators.mjs";
 
 export function maybeCallback(cb: unknown) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
 
   return cb as CallbackWithError;
 }
@@ -180,7 +180,7 @@ export function makeCallback(
   this: unknown,
   cb?: (err: Error | null, result?: unknown) => void,
 ) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
 
   return (...args: unknown[]) => Reflect.apply(cb!, this, args);
 }

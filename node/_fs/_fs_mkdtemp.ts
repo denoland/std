@@ -3,7 +3,7 @@
 import { existsSync } from "./_fs_exists.ts";
 import { mkdir, mkdirSync } from "./_fs_mkdir.ts";
 import {
-  ERR_INVALID_CALLBACK,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_OPT_VALUE_ENCODING,
 } from "../internal/errors.ts";
 import { promisify } from "../internal/util.mjs";
@@ -27,7 +27,9 @@ export function mkdtemp(
 ) {
   const callback: mkdtempCallback | undefined =
     typeof optionsOrCallback == "function" ? optionsOrCallback : maybeCallback;
-  if (!callback) throw new ERR_INVALID_CALLBACK(callback);
+  if (!callback) {
+    throw new ERR_INVALID_ARG_TYPE("callback", "function", callback);
+  }
 
   const encoding: string | undefined = parseEncoding(optionsOrCallback);
   const path = tempDirPath(prefix);

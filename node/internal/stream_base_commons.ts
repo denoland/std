@@ -33,7 +33,7 @@ import { isUint8Array } from "./util/types.ts";
 import { errnoException } from "./errors.ts";
 import { getTimerDuration, kTimeout } from "./timers.mjs";
 import { setUnrefTimeout } from "../timers.ts";
-import { validateCallback } from "./validators.mjs";
+import { validateFunction } from "./validators.mjs";
 import { codeMap } from "../internal_binding/uv.ts";
 import { Buffer } from "../buffer.ts";
 
@@ -332,7 +332,7 @@ export function setStreamTimeout(
 
   if (msecs === 0) {
     if (callback !== undefined) {
-      validateCallback(callback);
+      validateFunction(callback, "callback");
       this.removeListener("timeout", callback);
     }
   } else {
@@ -343,7 +343,7 @@ export function setStreamTimeout(
     }
 
     if (callback !== undefined) {
-      validateCallback(callback);
+      validateFunction(callback, "callback");
       this.once("timeout", callback);
     }
   }
