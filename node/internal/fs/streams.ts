@@ -64,7 +64,9 @@ export function WriteStream(
     return new WriteStream(path, options);
   }
 
-  Writable.call(this as WriteStream, {
+  const self = this as WriteStream;
+
+  Writable.call(self, {
     highWaterMark: options?.highWaterMark,
     decodeStrings: options?.decodeStrings,
     defaultEncoding: options?.defaultEncoding,
@@ -74,20 +76,20 @@ export function WriteStream(
     signal: options?.signal,
   });
 
-  (this as WriteStream).fd = null;
-  (this as WriteStream).path = toPathIfFileURL(path);
-  (this as WriteStream).flags = options?.flags ?? "w";
-  (this as WriteStream).mode = options?.mode ?? 0o666;
-  (this as WriteStream).bytesWritten = 0;
-  (this as WriteStream).pos = 0;
-  (this as WriteStream)[kFs] = options?.fs ?? { open, write, close };
-  (this as WriteStream)[kIsPerformingIO] = false;
+  self.fd = null;
+  self.path = toPathIfFileURL(path);
+  self.flags = options?.flags ?? "w";
+  self.mode = options?.mode ?? 0o666;
+  self.bytesWritten = 0;
+  self.pos = 0;
+  self[kFs] = options?.fs ?? { open, write, close };
+  self[kIsPerformingIO] = false;
 
   if (options?.encoding) {
-    (this as WriteStream).setDefaultEncoding(options?.encoding);
+    self.setDefaultEncoding(options?.encoding);
   }
 
-  return this as WriteStream;
+  return self;
 }
 
 Object.setPrototypeOf(WriteStream.prototype, Writable.prototype);

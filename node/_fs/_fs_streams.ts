@@ -44,11 +44,12 @@ export function ReadStream(
     return new ReadStream(path, options);
   }
 
+  const self = this as ReadStream;
   const _path = path instanceof URL ? fromFileUrl(path) : path;
   const file = Deno.openSync(_path, { read: true });
   const buffer = new Uint8Array(16 * 1024);
 
-  NodeReadable.call(this as ReadStream, {
+  NodeReadable.call(self, {
     highWaterMark: options?.highWaterMark,
     encoding: options?.encoding,
     objectMode: options?.objectMode ?? false,
@@ -72,9 +73,9 @@ export function ReadStream(
     },
   });
 
-  (this as ReadStream).path = _path;
+  self.path = _path;
 
-  return this as ReadStream;
+  return self;
 }
 
 Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
