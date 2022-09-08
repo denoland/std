@@ -16,17 +16,42 @@ import type { ReadOptions } from "./csv/_io.ts";
 import { Parser } from "./csv/_parser.ts";
 
 export {
+  /**
+   * @deprecated This export will be removed soon. Use `"bare \" in non-quoted-field"` instead.
+   */
   ERR_BARE_QUOTE,
+  /**
+   * @deprecated This export will be removed soon. Use `"wrong number of fields"` instead.
+   */
   ERR_FIELD_COUNT,
+  /**
+   * @deprecated This export will be removed soon. Use `"Invalid Delimiter"` instead.
+   */
   ERR_INVALID_DELIM,
+  /**
+   * @deprecated This export will be removed soon. Use `"extraneous or missing \" in quoted-field"` instead.
+   */
   ERR_QUOTE,
+  /**
+   * @deprecated This export will be removed soon. Use `Error` instead.
+   */
   ParseError,
 } from "./csv/_io.ts";
+
+/**
+ * @deprecated This export will be removed soon.
+ */
 export type { ReadOptions } from "./csv/_io.ts";
 
 const QUOTE = '"';
+/**
+ * @deprecated This export will be removed soon. Use `"\r\n"` instead.
+ */
 export const NEWLINE = "\r\n";
 
+/**
+ * @deprecated This export will be removed soon. Use `Error` instead.
+ */
 export class StringifyError extends Error {
   override readonly name = "StringifyError";
 }
@@ -85,13 +110,15 @@ function normalizeColumn(column: Column): NormalizedColumn {
     header = String(column);
     prop = [column];
   }
-
   return { header, prop };
 }
 
 type ObjectWithStringPropertyKeys = Record<string, unknown>;
 
-/** An object (plain or array) */
+/**
+ * An object (plain or array)
+ * @deprecated This export will be removed soon. use `Record<string, unknown> | unknown[]` instead.
+ */
 export type DataItem = ObjectWithStringPropertyKeys | unknown[];
 
 /**
