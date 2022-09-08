@@ -7,8 +7,6 @@ Deno.test({
   sanitizeOps: false,
   fn() {
     const tempFile: string = Deno.makeTempFileSync();
-    // deno-lint-ignore ban-ts-comment
-    // @ts-ignore
     const writable = WriteStream(tempFile);
 
     writable.write("hello world");

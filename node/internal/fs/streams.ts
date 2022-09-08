@@ -43,7 +43,7 @@ interface WriteStream extends Writable {
 }
 
 export function WriteStream(
-  this: WriteStream,
+  this: WriteStream | void,
   path: string | Buffer,
   opts?: WriteStreamOptions & WritableOptions,
 ): WriteStream {
@@ -64,7 +64,7 @@ export function WriteStream(
     return new WriteStream(path, opts);
   }
 
-  Writable.call(this, {
+  Writable.call(this as WriteStream, {
     highWaterMark: opts?.highWaterMark,
     decodeStrings: opts?.decodeStrings,
     defaultEncoding: opts?.defaultEncoding,
@@ -74,20 +74,20 @@ export function WriteStream(
     signal: opts?.signal,
   });
 
-  this.fd = null;
-  this.path = toPathIfFileURL(path);
-  this.flags = opts?.flags ?? "w";
-  this.mode = opts?.mode ?? 0o666;
-  this.bytesWritten = 0;
-  this.pos = 0;
-  this[kFs] = opts?.fs ?? { open, write, close };
-  this[kIsPerformingIO] = false;
+  (this as WriteStream).fd = null;
+  (this as WriteStream).path = toPathIfFileURL(path);
+  (this as WriteStream).flags = opts?.flags ?? "w";
+  (this as WriteStream).mode = opts?.mode ?? 0o666;
+  (this as WriteStream).bytesWritten = 0;
+  (this as WriteStream).pos = 0;
+  (this as WriteStream)[kFs] = opts?.fs ?? { open, write, close };
+  (this as WriteStream)[kIsPerformingIO] = false;
 
   if (opts?.encoding) {
-    this.setDefaultEncoding(opts?.encoding);
+    (this as WriteStream).setDefaultEncoding(opts?.encoding);
   }
 
-  return this;
+  return this as WriteStream;
 }
 
 Object.setPrototypeOf(WriteStream.prototype, Writable.prototype);

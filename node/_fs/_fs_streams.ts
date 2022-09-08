@@ -23,7 +23,7 @@ interface ReadStream extends NodeReadable {
 }
 
 export function ReadStream(
-  this: ReadStream,
+  this: ReadStream | void,
   path: string | URL,
   opts?: ReadStreamOptions & ReadableOptions,
 ): ReadStream {
@@ -48,7 +48,7 @@ export function ReadStream(
   const file = Deno.openSync(_path, { read: true });
   const buffer = new Uint8Array(16 * 1024);
 
-  NodeReadable.call(this, {
+  NodeReadable.call(this as ReadStream, {
     highWaterMark: opts?.highWaterMark,
     encoding: opts?.encoding,
     objectMode: opts?.objectMode ?? false,
@@ -72,9 +72,9 @@ export function ReadStream(
     },
   });
 
-  this.path = _path;
+  (this as ReadStream).path = _path;
 
-  return this;
+  return this as ReadStream;
 }
 
 Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);

@@ -9,8 +9,6 @@ const testData = path.resolve(moduleDir, "testdata", "hello.txt");
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'ReadStream()'",
   fn() {
-    // deno-lint-ignore ban-ts-comment
-    // @ts-ignore
     const readable = ReadStream(testData);
 
     let data: Uint8Array;
