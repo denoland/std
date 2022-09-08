@@ -177,7 +177,7 @@ class ClientRequest extends NodeWritable {
       path = "/" + path;
     }
     return `${protocol}//${auth ? `${auth}@` : ""}${host}${
-      port === 80 ? `:${port}` : ""
+      port === 80 ? "" : `:${port}`
     }${path}`;
   }
 }
