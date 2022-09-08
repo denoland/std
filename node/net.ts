@@ -1223,6 +1223,13 @@ export class Socket extends Duplex {
   }
 
   /**
+   * The string representation of the local IP family. `"IPv4"` or `"IPv6"`.
+   */
+  get localFamily(): string | undefined {
+    return this._getsockname().family;
+  }
+
+  /**
    * The string representation of the remote IP address. For example,`"74.125.127.100"` or `"2001:4860:a005::68"`. Value may be `undefined` if
    * the socket is destroyed (for example, if the client disconnected).
    */
@@ -1234,7 +1241,9 @@ export class Socket extends Duplex {
    * The string representation of the remote IP family. `"IPv4"` or `"IPv6"`.
    */
   get remoteFamily(): string | undefined {
-    return `IPv${this._getpeername().family}`;
+    const { family } = this._getpeername();
+
+    return family ? `IPv${family}` : family;
   }
 
   /**
@@ -1432,7 +1441,7 @@ export class Socket extends Duplex {
   }
 
   _getpeername(): AddressInfo | Record<string, never> {
-    if (!this._handle || !("getpeername" in this._handle)) {
+    if (!this._handle || !("getpeername" in this._handle) || this.connecting) {
       return this._peername || {};
     } else if (!this._peername) {
       this._peername = {};

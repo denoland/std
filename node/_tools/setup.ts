@@ -143,7 +143,7 @@ function getRequestedFileSuite(
   file: string,
   expectedSuite: string,
 ): string | undefined {
-  if (!config.tests[expectedSuite]) {
+  if (!Array.isArray(config.tests[expectedSuite])) {
     return;
   }
 

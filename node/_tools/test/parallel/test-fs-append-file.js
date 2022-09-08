@@ -199,4 +199,4 @@ const throwNextTick = (e) => { process.nextTick(() => { throw e; }); };
 
 assert.throws(
   () => fs.appendFile(join(tmpdir.path, 'append6.txt'), console.log),
-  { code: 'ERR_INVALID_CALLBACK' });
+  { code: 'ERR_INVALID_ARG_TYPE' });
