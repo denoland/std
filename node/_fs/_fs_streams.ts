@@ -23,7 +23,7 @@ interface ReadStream extends NodeReadable {
 }
 
 export function ReadStream(
-  this: ReadStream | void,
+  this: ReadStream | unknown,
   path: string | URL,
   opts?: ReadStreamOptions & ReadableOptions,
 ): ReadStream {

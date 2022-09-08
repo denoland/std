@@ -43,7 +43,7 @@ interface WriteStream extends Writable {
 }
 
 export function WriteStream(
-  this: WriteStream | void,
+  this: WriteStream | unknown,
   path: string | Buffer,
   opts?: WriteStreamOptions & WritableOptions,
 ): WriteStream {
