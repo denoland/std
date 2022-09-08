@@ -140,6 +140,38 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
+interface SpawnSyncResult {
+  // pid: number;
+  // output: any[];
+  stdout: Buffer | string;
+  stderr: Buffer | string;
+  status: number | null;
+  signal: string | null;
+  error?: Error;
+}
+
+export function spawnSync(
+  command: string,
+  argsOrOptions?: string[] | SpawnOptions,
+  maybeOptions?: SpawnOptions,
+) {
+  const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
+  const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
+    ? argsOrOptions
+    : maybeOptions;
+  
+  const child = Deno.spawnSync(command, {
+    args,
+  });
+
+  return {
+    stdout: Buffer.from(child.stdout),
+    stderr: Buffer.from(child.stderr),
+    status: child.code,
+    signal: child.signal,
+  }
+}
+
 interface ExecFileOptions extends ChildProcessOptions {
   encoding?: string;
   timeout?: number;
