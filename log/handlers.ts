@@ -25,7 +25,7 @@ export class BaseHandler {
     this.formatter = options.formatter || DEFAULT_FORMATTER;
   }
 
-  handle(logRecord: LogRecord): void {
+  handle(logRecord: LogRecord) {
     if (this.level > logRecord.level) return;
 
     const msg = this.format(logRecord);
@@ -49,7 +49,7 @@ export class BaseHandler {
     });
   }
 
-  log(_msg: string): void {}
+  log(_msg: string) {}
   setup() {}
   destroy() {}
 }
@@ -78,7 +78,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  override log(msg: string): void {
+  override log(msg: string) {
     console.log(msg);
   }
 }
@@ -128,7 +128,7 @@ export class FileHandler extends WriterHandler {
     addEventListener("unload", this.#unloadCallback);
   }
 
-  override handle(logRecord: LogRecord): void {
+  override handle(logRecord: LogRecord) {
     super.handle(logRecord);
 
     // Immediately flush if log level is higher than ERROR
@@ -137,14 +137,14 @@ export class FileHandler extends WriterHandler {
     }
   }
 
-  log(msg: string): void {
+  log(msg: string) {
     if (this._encoder.encode(msg).byteLength + 1 > this._buf.available()) {
       this.flush();
     }
     this._buf.writeSync(this._encoder.encode(msg + "\n"));
   }
 
-  flush(): void {
+  flush() {
     if (this._buf?.buffered() > 0) {
       this._buf.flush();
     }
@@ -208,7 +208,7 @@ export class RotatingFileHandler extends FileHandler {
     }
   }
 
-  override log(msg: string): void {
+  override log(msg: string) {
     const msgByteLength = this._encoder.encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
@@ -221,7 +221,7 @@ export class RotatingFileHandler extends FileHandler {
     this.#currentFileSize += msgByteLength;
   }
 
-  rotateLogFiles(): void {
+  rotateLogFiles() {
     this._buf.flush();
     Deno.close(this._file!.rid);
 

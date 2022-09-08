@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
@@ -56,7 +56,6 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "unhandledRejection",
   "worker",
 ];
 
@@ -385,7 +384,7 @@ class Process extends EventEmitter {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.on(event, listener);
@@ -409,7 +408,7 @@ class Process extends EventEmitter {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
       } else {
-        DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
+        Deno.removeSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.off(event, listener);
@@ -454,7 +453,7 @@ class Process extends EventEmitter {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.prependListener(event, listener);

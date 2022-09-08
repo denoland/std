@@ -3,7 +3,7 @@
 import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("minVersion", function (): void {
+Deno.test("minVersion", function () {
   // [range, version]
   const versions: [string, string | null][] = [
     // Stars

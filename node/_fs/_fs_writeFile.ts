@@ -14,6 +14,7 @@ import {
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
 import { validateStringAfterArrayBufferView } from "../internal/fs/utils.mjs";
+import { promisify } from "../internal/util.mjs";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -21,7 +22,7 @@ export function writeFile(
   data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
-): void {
+) {
   const callbackFn: CallbackWithError | undefined =
     optOrCallback instanceof Function ? optOrCallback : callback;
   const options: Encodings | WriteFileOptions | undefined =
@@ -81,12 +82,19 @@ export function writeFile(
   })();
 }
 
+export const writeFilePromise = promisify(writeFile) as (
+  pathOrRid: string | number | URL,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
+  options?: Encodings | WriteFileOptions,
+) => Promise<void>;
+
 export function writeFileSync(
   pathOrRid: string | number | URL,
   // deno-lint-ignore ban-types
   data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
-): void {
+) {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
 
   const flag: string | undefined = isFileOptions(options)

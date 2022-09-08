@@ -3,7 +3,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("major", function (): void {
+Deno.test("major", function () {
   // [range, version]
   // Version should be detectable despite extra characters
   const versions: [string, number][] = [

@@ -31,7 +31,7 @@ export interface StringifyStreamOptions {
  *   .then(() => console.log("write success"));
  * ```
  */
-export class JSONStringifyStream extends TransformStream<unknown, string> {
+export class JsonStringifyStream extends TransformStream<unknown, string> {
   /**
    * @param options
    * @param options.prefix Prefix to be added after stringify. The default is "".
@@ -56,3 +56,8 @@ export class JSONStringifyStream extends TransformStream<unknown, string> {
     );
   }
 }
+
+/** Convert each chunk to JSON string.
+ *
+ * @deprecated Use JsonStringifyStream instead. */
+export const JSONStringifyStream = JsonStringifyStream;

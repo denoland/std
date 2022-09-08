@@ -278,3 +278,141 @@ deleteCookie(headers, "deno", { path: "/", domain: "deno.land" });
 ```
 
 > Note: At the moment multiple `Set-Cookie` in a `Response` is not handled.
+
+### getSetCookies
+
+```ts
+import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+
+const headers = new Headers([
+  ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
+  ["Set-Cookie", "booya=kasha; HttpOnly; Path=/"],
+]);
+
+const cookies = getSetCookies(headers);
+console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+```
+
+## Cookie maps
+
+An alternative to `cookie.ts` is `cookie_map.ts` which provides `CookieMap`,
+`SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
+with the familiar `Map` interface.
+
+### CookieMap
+
+Provides methods that are aligned to the JavaScript `Map` interface to manage
+cookies:
+
+```ts
+import {
+  CookieMap,
+  mergeHeaders,
+} from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
+
+const request = new Request("https://localhost/", {
+  headers: { "cookie": "foo=bar; bar=baz;" },
+});
+
+const cookies = new CookieMap(request);
+console.log(cookies.get("foo")); // logs "bar"
+cookies.set("session", "1234567");
+cookies.delete("bar");
+
+const response = new Response("test", {
+  headers: mergeHeaders({
+    "content-type": "text/plain",
+  }, cookies),
+});
+```
+
+If the headers or the response are available at the time of the construction of
+the `CookieMap`, they can be passed to the constructor and will have the cookies
+set on them directly, thereby not requiring use of `mergeHeaders`:
+
+```ts
+import { CookieMap } from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
+
+const request = new Request("https://localhost/", {
+  headers: { "cookie": "foo=bar; bar=baz;" },
+});
+
+const headers = new Headers({ "content-type": "text/plain" });
+
+const cookies = new CookieMap(request, { response: headers });
+console.log(cookies.get("foo")); // logs "bar"
+cookies.set("session", "1234567");
+cookies.delete("bar");
+
+const response = new Response("test", { headers });
+```
+
+### SecureCookieMap
+
+Provides methods that are aligned to the JavaScript `Map` interface to manage
+cookies. The biggest difference is that `SecureCookieMap` supports the use of a
+key ring adhering to the `KeyRing` interface to sign and verify cookies. This
+helps prevent client side tampering of cookies.
+
+While passing keys is optional to `SecureCookieMap`, if you are not using keys,
+consider just using `CookieMap` as all methods are synchronous and therefore
+more straight forward to use.
+
+```ts
+import {
+  type KeyRing,
+  mergeHeaders,
+  SecureCookieMap,
+} from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
+
+const request = new Request("https://localhost/", {
+  headers: {
+    "cookie": "bar=foo; bar.sig=S7GhXzJF3n4j8JwTupr7H-h25qtt_vs0stdETXZb-Ro",
+  },
+});
+
+declare const keys: KeyRing;
+
+const cookies = new SecureCookieMap(request, { keys });
+console.log(await cookies.get("bar")); // logs "foo", with the signature being verified
+await cookies.set("session", "1234567"); // this will be automatically signed
+
+const response = new Response("test", {
+  headers: mergeHeaders({
+    "content-type": "text/plain",
+  }, cookies),
+});
+```
+
+```ts
+import {
+  type KeyRing,
+  SecureCookieMap,
+} from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
+
+const request = new Request("https://localhost/", {
+  headers: {
+    "cookie": "bar=foo; bar.sig=S7GhXzJF3n4j8JwTupr7H-h25qtt_vs0stdETXZb-Ro",
+  },
+});
+
+const headers = new Headers({ "content-type": "text/plain" });
+
+declare const keys: KeyRing;
+
+const cookies = new SecureCookieMap(request, { keys });
+console.log(await cookies.get("bar")); // logs "foo", with the signature being verified
+await cookies.set("session", "1234567"); // this will be automatically signed
+
+const response = new Response("test", { headers });
+```
+
+### mergeHeaders
+
+A function which takes various sources of headers and returns a single `Headers`
+instance. Intended to merge `CookieMap` and `SecureCookieMap` set cookie headers
+into a final response.
+
+Sources can be of type `HeadersInit`, `CookieMap`, `SecureCookieMap` or objects
+which have a `headers` property with a value of `Headers` (like a `Response`
+object).

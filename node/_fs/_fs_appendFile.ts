@@ -8,6 +8,7 @@ import {
 import { Encodings } from "../_utils.ts";
 import { copyObject, getOptions } from "../internal/fs/utils.mjs";
 import { writeFile, writeFileSync } from "./_fs_writeFile.ts";
+import { promisify } from "../internal/util.mjs";
 
 /**
  * TODO: Also accept 'data' parameter as a Node polyfill Buffer type once these
@@ -18,7 +19,7 @@ export function appendFile(
   data: string | Uint8Array,
   options: Encodings | WriteFileOptions | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   callback = maybeCallback(callback || options);
   options = getOptions(options, { encoding: "utf8", mode: 0o666, flag: "a" });
 
@@ -37,11 +38,21 @@ export function appendFile(
  * TODO: Also accept 'data' parameter as a Node polyfill Buffer type once these
  * are implemented. See https://github.com/denoland/deno/issues/3403
  */
+export const appendFilePromise = promisify(appendFile) as (
+  path: string | number | URL,
+  data: string | Uint8Array,
+  options?: Encodings | WriteFileOptions,
+) => Promise<void>;
+
+/**
+ * TODO: Also accept 'data' parameter as a Node polyfill Buffer type once these
+ * are implemented. See https://github.com/denoland/deno/issues/3403
+ */
 export function appendFileSync(
   path: string | number | URL,
   data: string | Uint8Array,
   options?: Encodings | WriteFileOptions,
-): void {
+) {
   options = getOptions(options, { encoding: "utf8", mode: 0o666, flag: "a" });
 
   // Don't make changes directly on options object

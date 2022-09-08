@@ -181,7 +181,7 @@ Deno.test("[bytes] repeat", () => {
   for (const [input, output, count, errMsg] of repeatTestCase) {
     if (errMsg) {
       assertThrows(
-        (): void => {
+        () => {
           repeat(new TextEncoder().encode(input as string), count as number);
         },
         Error,
@@ -243,7 +243,7 @@ Deno.test("[bytes] includesNeedle", () => {
   assert(!includesNeedle(source, pattern, -1));
 });
 
-Deno.test("[bytes] copy", function (): void {
+Deno.test("[bytes] copy", function () {
   const dst = new Uint8Array(4);
 
   dst.fill(0);

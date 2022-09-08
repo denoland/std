@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * CLI flag parser.
+ * Command line arguments parser based on
+ * [minimist](https://github.com/substack/minimist).
  *
  * This module is browser compatible.
  *
@@ -8,7 +9,7 @@
  */
 import { assert } from "../_util/assert.ts";
 
-/** Combines recursivly all intersaction types and returns a new single type. */
+/** Combines recursively all intersection types and returns a new single type. */
 type Id<T> = T extends Record<string, unknown>
   ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
   : T;
@@ -337,8 +338,8 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * ```ts
  * import { parse } from "./mod.ts";
- * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
+ * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  */
 export function parse<
@@ -468,10 +469,10 @@ export function parse<
     name: string,
     value: unknown,
     collect = true,
-  ): void {
+  ) {
     let o = obj;
     const keys = name.split(".");
-    keys.slice(0, -1).forEach(function (key): void {
+    keys.slice(0, -1).forEach(function (key) {
       if (get(o, key) === undefined) {
         o[key] = {};
       }
@@ -497,7 +498,7 @@ export function parse<
     val: unknown,
     arg: string | undefined = undefined,
     collect?: boolean,
-  ): void {
+  ) {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }

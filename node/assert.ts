@@ -103,7 +103,7 @@ function throws(
   fn: () => void,
   error?: RegExp | Function | Error,
   message?: string,
-): void {
+) {
   // Check arg types
   if (typeof fn !== "function") {
     throw new ERR_INVALID_ARG_TYPE("fn", "function", fn);
@@ -213,7 +213,7 @@ function doesNotThrow(
   fn: () => void,
   expected?: Function | RegExp | string,
   message?: string | Error,
-): void {
+) {
   // Check arg type
   if (typeof fn !== "function") {
     throw new ERR_INVALID_ARG_TYPE("fn", "function", fn);
@@ -237,7 +237,7 @@ function equal(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -272,7 +272,7 @@ function notEqual(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -311,7 +311,7 @@ function strictEqual(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -475,7 +475,7 @@ function rejects(
   asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | Error | string,
   message?: string,
-): Promise<void> {
+) {
   let promise: Promise<void>;
   if (typeof asyncFn === "function") {
     try {
@@ -502,7 +502,7 @@ function rejects(
     promise = asyncFn;
   }
 
-  function onFulfilled(): Promise<void> {
+  function onFulfilled() {
     let message = "Missing expected rejection";
     if (typeof error === "string") {
       message += `: ${error}`;
@@ -519,7 +519,7 @@ function rejects(
   }
 
   // deno-lint-ignore camelcase
-  function rejects_onRejected(e: Error): void { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
+  function rejects_onRejected(e: Error) { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
     if (
       validateThrownError(e, error, message, {
         operator: rejects,
@@ -551,7 +551,7 @@ function doesNotReject(
   asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | string,
   message?: string,
-): Promise<void> {
+) {
   // deno-lint-ignore no-explicit-any
   let promise: Promise<any>;
   if (typeof asyncFn === "function") {

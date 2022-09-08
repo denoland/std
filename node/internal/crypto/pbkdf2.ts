@@ -158,7 +158,7 @@ export function pbkdf2(
   keylen: number,
   digest: Algorithms = "sha1",
   callback: (err: Error | null, derivedKey?: Buffer) => void,
-): void {
+) {
   setTimeout(() => {
     let err = null,
       res;

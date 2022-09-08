@@ -8,6 +8,7 @@ import {
 import { Buffer } from "../buffer.ts";
 import { fromFileUrl } from "../path.ts";
 import { BinaryEncodings, Encodings, TextEncodings } from "../_utils.ts";
+import { promisify } from "../internal/util.mjs";
 
 function maybeDecode(data: Uint8Array, encoding: TextEncodings): string;
 function maybeDecode(
@@ -48,7 +49,7 @@ export function readFile(
   path: string | URL,
   optOrCallback?: FileOptionsArgument | Callback | null | undefined,
   callback?: Callback,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   let cb: Callback | undefined;
   if (typeof optOrCallback === "function") {
@@ -72,6 +73,12 @@ export function readFile(
     }, (err) => cb && cb(err));
   }
 }
+
+export const readFilePromise = promisify(readFile) as (
+  & ((path: string | URL, opt: TextOptionsArgument) => Promise<string>)
+  & ((path: string | URL, opt?: BinaryOptionsArgument) => Promise<Buffer>)
+  & ((path: string | URL, opt?: FileOptionsArgument) => Promise<Buffer>)
+);
 
 export function readFileSync(
   path: string | URL,

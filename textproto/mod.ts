@@ -1,11 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// Based on https://github.com/golang/go/tree/master/src/net/textproto
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 /**
- * A reader for dealing with text based protocols like HTTP.
+ * A reader for dealing with low level text based protocols.
+ *
+ * Based on
+ * [net/textproto](https://github.com/golang/go/tree/master/src/net/textproto).
+ *
  * @module
  */
 
@@ -39,7 +42,7 @@ export class TextProtoReader {
     return s === null ? null : str(s);
   }
 
-  /** ReadMIMEHeader reads a MIME-style header from r.
+  /** ReadMimeHeader reads a MIME-style header from r.
    * The header is a sequence of possibly continued Key: Value lines
    * ending in a blank line.
    * The returned map m maps CanonicalMIMEHeaderKey(key) to a
@@ -59,7 +62,7 @@ export class TextProtoReader {
    * 		"Long-Key": {"Even Longer Value"},
    * 	}
    */
-  async readMIMEHeader(): Promise<Headers | null> {
+  async readMimeHeader(): Promise<Headers | null> {
     const m = new Headers();
     let line: Uint8Array | undefined;
 
@@ -126,6 +129,13 @@ export class TextProtoReader {
         // Pass
       }
     }
+  }
+
+  /** ReadMIMEHeader reads a MIME-style header from r.
+   *
+   * @deprecated Use readMimeHeader instead. */
+  readMIMEHeader(): Promise<Headers | null> {
+    return this.readMimeHeader();
   }
 
   async readLineSlice(): Promise<Uint8Array | null> {

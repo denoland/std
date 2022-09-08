@@ -83,7 +83,7 @@ class MockListener implements Deno.Listener {
       : Promise.resolve(this.conn);
   }
 
-  close(): void {
+  close() {
     this.#closed = true;
   }
 
@@ -1440,6 +1440,30 @@ Deno.test("serveTls - onListen callback is called with ephemeral port", () => {
       const responseText =
         await (await fetch(`https://localhost:${port}/`, { client }))
           .text();
+      client.close();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
+Deno.test("serveTls - cert, key can be injected directly from memory rather than file system.", () => {
+  const abortController = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    port: 0,
+    cert: Deno.readTextFileSync(join(testdataDir, "tls/localhost.crt")),
+    key: Deno.readTextFileSync(join(testdataDir, "tls/localhost.key")),
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
+      );
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const responseText = await (
+        await fetch(`https://localhost:${port}/`, { client })
+      ).text();
       client.close();
       assertEquals(responseText, "hello");
       abortController.abort();

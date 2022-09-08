@@ -13,7 +13,7 @@ import { readRange, readRangeSync } from "./files.ts";
 const N = 100;
 let testBytes: Uint8Array | null;
 
-export function init(): void {
+export function init() {
   if (testBytes == null) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {

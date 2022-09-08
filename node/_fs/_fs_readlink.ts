@@ -5,6 +5,7 @@ import {
   notImplemented,
 } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 type ReadlinkCallback = (
   err: MaybeEmpty<Error>,
@@ -51,7 +52,7 @@ export function readlink(
   path: string | URL,
   optOrCallback: ReadlinkCallback | ReadlinkOptions,
   callback?: ReadlinkCallback,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   let cb: ReadlinkCallback | undefined;
@@ -70,6 +71,11 @@ export function readlink(
     path,
   );
 }
+
+export const readlinkPromise = promisify(readlink) as (
+  path: string | URL,
+  opt?: ReadlinkOptions,
+) => Promise<string | Uint8Array>;
 
 export function readlinkSync(
   path: string | URL,

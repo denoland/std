@@ -4,6 +4,8 @@ import {
   validateRmOptionsSync,
 } from "../internal/fs/utils.mjs";
 import { denoErrorToNodeError } from "../internal/errors.ts";
+import { promisify } from "../internal/util.mjs";
+
 type rmOptions = {
   force?: boolean;
   maxRetries?: number;
@@ -56,6 +58,11 @@ export function rm(
     },
   );
 }
+
+export const rmPromise = promisify(rm) as (
+  path: string | URL,
+  options?: rmOptions,
+) => Promise<void>;
 
 export function rmSync(path: string | URL, options?: rmOptions) {
   options = validateRmOptionsSync(path, options, false);

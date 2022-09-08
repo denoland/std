@@ -17,22 +17,16 @@ import {
 import { getSystemErrorName } from "./util.ts";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
+import { notImplemented } from "./_utils.ts";
 
 const MAX_BUFFER = 1024 * 1024;
 
-const denoCompatArgv = [
-  "run",
-  "--compat",
-  "--unstable",
-  "--no-check",
-  "--allow-all",
-];
 /**
- * Spawns a new Node.js process + fork.
+ * Spawns a new Node.js process + fork. Not implmeneted yet.
  * @param modulePath
  * @param args
  * @param option
- * @returns {ChildProcess}
+ * @returns
  */
 export function fork(
   modulePath: string, /* args?: string[], options?: ForkOptions*/
@@ -94,7 +88,8 @@ export function fork(
     stringifiedV8Flags.push("--v8-flags=" + v8Flags.join(","));
   }
   args = [
-    ...denoCompatArgv,
+    // TODO(kt3k): Find corrct args for `fork` execution
+    ...[],
     ...stringifiedV8Flags,
     ...execArgv,
     modulePath,
@@ -117,7 +112,7 @@ export function fork(
   options.execPath = options.execPath || Deno.execPath();
   options.shell = false;
 
-  return spawn(options.execPath, args, options);
+  notImplemented("child_process.fork");
 }
 
 // deno-lint-ignore no-empty-interface
@@ -443,5 +438,9 @@ export function execFile(
   return child;
 }
 
-export default { fork, spawn, execFile, ChildProcess };
+export function execSync() {
+  throw new Error("execSync is currently not supported");
+}
+
+export default { fork, spawn, execFile, execSync, ChildProcess };
 export { ChildProcess };

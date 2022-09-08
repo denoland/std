@@ -1,7 +1,32 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-unused-vars
 
-import * as DenoUnstable from "../_deno_unstable.ts";
+/**
+ * Provides an implementation of the
+ * [WebAssembly System Interface](https://wasi.dev/).
+ *
+ * ### Example
+ *
+ * ```ts
+ * import Context from "https://deno.land/std@$STD_VERSION/wasi/snapshot_preview1.ts";
+ *
+ * const context = new Context({
+ *   args: Deno.args,
+ *   env: Deno.env.toObject(),
+ * });
+ *
+ * const binary = await Deno.readFile("path/to/your/module.wasm");
+ * const module = await WebAssembly.compile(binary);
+ * const instance = await WebAssembly.instantiate(module, {
+ *   "wasi_snapshot_preview1": context.exports,
+ * });
+ *
+ * context.start(instance);
+ * ```
+ *
+ * @module
+ */
+
 import { relative, resolve } from "../path/mod.ts";
 
 const CLOCKID_REALTIME = 0;
@@ -727,7 +752,7 @@ export default class Context {
           mtim = BigInt(Date.now() * 1e6);
         }
 
-        DenoUnstable.utimeSync(entry.path!, Number(atim), Number(mtim));
+        Deno.utimeSync(entry.path!, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),
@@ -1221,7 +1246,7 @@ export default class Context {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        DenoUnstable.utimeSync(path, Number(atim), Number(mtim));
+        Deno.utimeSync(path, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),

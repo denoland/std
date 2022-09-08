@@ -26,7 +26,7 @@ jobs:
           submodules: true
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
@@ -83,23 +83,19 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
       - name: Type check node modules
         shell: bash
         run: deno task node:check-unstable-api
-
-      # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
-      # - name: Doctest node/
-      #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
 
       - name: Unit test node/
         run: deno task node:unit
@@ -113,13 +109,13 @@ jobs:
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: false
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
 
       - name: Format
         run: deno fmt --check
@@ -128,19 +124,17 @@ jobs:
         run: deno lint
 
       - name: Check circular dependencies
-        shell: bash
-        run: ./_tools/check_circular_deps.ts
+        run: "deno task lint:circular-deps"
 
       - name: Check License headers
-        shell: bash
-        run: ./_tools/check_licence.ts
+        run: "deno task lint:licence-headers"
 
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # required to check for changes
           fetch-depth: 2
@@ -159,7 +153,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
@@ -180,7 +174,7 @@ jobs:
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # required to check for changes
           fetch-depth: 2
@@ -199,7 +193,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust

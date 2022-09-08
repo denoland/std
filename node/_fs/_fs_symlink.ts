@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { CallbackWithError } from "./_fs_common.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 type SymlinkType = "file" | "dir";
 
@@ -25,6 +26,12 @@ export function symlink(
 
   Deno.symlink(target, path, { type }).then(() => callback(null), callback);
 }
+
+export const symlinkPromise = promisify(symlink) as (
+  target: string | URL,
+  path: string | URL,
+  type?: SymlinkType,
+) => Promise<void>;
 
 export function symlinkSync(
   target: string | URL,

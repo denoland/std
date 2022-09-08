@@ -19,7 +19,7 @@ for (let i = 0; i < nCases; i++) {
 
 bench({
   name: "bench old equals",
-  func(b): void {
+  func(b) {
     b.start();
     for (const [a, b] of testCases) {
       equalsNaive(a, b);
@@ -30,7 +30,7 @@ bench({
 
 bench({
   name: "bench simd equals",
-  func(b): void {
+  func(b) {
     b.start();
     for (const [a, b] of testCases) {
       equals32Bit(a, b);

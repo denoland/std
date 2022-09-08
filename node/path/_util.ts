@@ -14,7 +14,7 @@ import {
 } from "./_constants.ts";
 import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 
-export function assertPath(path: string): void {
+export function assertPath(path: string) {
   if (typeof path !== "string") {
     throw new ERR_INVALID_ARG_TYPE("path", ["string"], path);
   }

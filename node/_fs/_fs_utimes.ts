@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import type { CallbackWithError } from "./_fs_common.ts";
 import { fromFileUrl } from "../path.ts";
+import { promisify } from "../internal/util.mjs";
 
 function getValidTime(
   time: number | string | Date,
@@ -28,7 +29,7 @@ export function utimes(
   atime: number | string | Date,
   mtime: number | string | Date,
   callback: CallbackWithError,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
 
   if (!callback) {
@@ -38,17 +39,23 @@ export function utimes(
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  DenoUnstable.utime(path, atime, mtime).then(() => callback(null), callback);
+  Deno.utime(path, atime, mtime).then(() => callback(null), callback);
 }
+
+export const utimesPromise = promisify(utimes) as (
+  path: string | URL,
+  atime: number | string | Date,
+  mtime: number | string | Date,
+) => Promise<void>;
 
 export function utimesSync(
   path: string | URL,
   atime: number | string | Date,
   mtime: number | string | Date,
-): void {
+) {
   path = path instanceof URL ? fromFileUrl(path) : path;
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  DenoUnstable.utimeSync(path, atime, mtime);
+  Deno.utimeSync(path, atime, mtime);
 }

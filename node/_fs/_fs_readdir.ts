@@ -4,6 +4,7 @@ import Dirent from "./_fs_dirent.ts";
 import { denoErrorToNodeError } from "../internal/errors.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
 import { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 function toDirent(val: Deno.DirEntry): Dirent {
   return new Dirent(val);
@@ -86,6 +87,17 @@ function decode(str: string, encoding?: string): string {
     return decoder.decode(encoder.encode(str));
   }
 }
+
+export const readdirPromise = promisify(readdir) as (
+  & ((path: string | Buffer | URL, options: {
+    withFileTypes: true;
+    encoding?: string;
+  }) => Promise<Dirent[]>)
+  & ((path: string | Buffer | URL, options?: {
+    withFileTypes?: false;
+    encoding?: string;
+  }) => Promise<string[]>)
+);
 
 export function readdirSync(
   path: string | Buffer | URL,

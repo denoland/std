@@ -227,29 +227,10 @@ let columns: Column[] = [
   "age",
 ];
 
-console.log(await stringify(data, columns));
+console.log(stringify(data, { columns }));
 // first,age
 // Rick,70
 // Morty,14
-//
-
-columns = [
-  {
-    prop: "name",
-    fn: (name: Character["name"]) => `${name.first} ${name.last}`,
-  },
-  {
-    prop: "age",
-    header: "is_adult",
-    fn: (age: Character["age"]) => String(age >= 18),
-  },
-];
-
-console.log(await stringify(data, columns, { separator: "\t" }));
-// name	is_adult
-// Rick Sanchez	true
-// Morty Smith	false
-//
 ```
 
 ## TOML
@@ -522,13 +503,13 @@ supports the following formats:
 ### Basic usage
 
 If you want to parse JSON separated by a delimiter, use `TextLineStream` (or
-`TextDelimiterStream`) and `JSONParseStream`. `JSONParseStream` ignores chunks
+`TextDelimiterStream`) and `JsonParseStream`. `JsonParseStream` ignores chunks
 consisting of spaces, tab characters, or newline characters .
 
 ```ts
 // parse JSON lines or NDJSON
 import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
@@ -537,7 +518,7 @@ const { body } = await fetch(url);
 const readable = body!
   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
   .pipeThrough(new TextLineStream()) // transform into a stream where each chunk is divided by a newline
-  .pipeThrough(new JSONParseStream()); // parse each chunk as JSON
+  .pipeThrough(new JsonParseStream()); // parse each chunk as JSON
 
 for await (const data of readable) {
   console.log(data);
@@ -547,7 +528,7 @@ for await (const data of readable) {
 ```ts
 // parse JSON Text Sequences
 import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.json-seq";
@@ -557,7 +538,7 @@ const delimiter = "\x1E";
 const readable = body!
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextDelimiterStream(delimiter)) // transform into a stream where each chunk is divided by a delimiter
-  .pipeThrough(new JSONParseStream());
+  .pipeThrough(new JsonParseStream());
 
 for await (const data of readable) {
   console.log(data);
@@ -566,10 +547,10 @@ for await (const data of readable) {
 
 If you want to parse
 [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON),
-use `ConcatenatedJSONParseStream`.
+use `ConcatenatedJsonParseStream`.
 
 ```ts
-import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.concatenated-json";
@@ -577,28 +558,28 @@ const { body } = await fetch(url);
 
 const readable = body!
   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
-  .pipeThrough(new ConcatenatedJSONParseStream()); // parse Concatenated JSON
+  .pipeThrough(new ConcatenatedJsonParseStream()); // parse Concatenated JSON
 
 for await (const data of readable) {
   console.log(data);
 }
 ```
 
-Use `JSONStringifyStream` to transform streaming data to
+Use `JsonStringifyStream` to transform streaming data to
 [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/),
 [NDJSON](http://ndjson.org/) or
 [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
 
-By default, `JSONStringifyStream` adds "\n" as a suffix after each chunk.
+By default, `JsonStringifyStream` adds "\n" as a suffix after each chunk.
 
 ```ts
 import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
 
 readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
-  .pipeThrough(new JSONStringifyStream()) // convert to JSON lines (ndjson)
+  .pipeThrough(new JsonStringifyStream()) // convert to JSON lines (ndjson)
   .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
   .pipeTo(file.writable)
   .then(() => console.log("write success"));
@@ -611,12 +592,12 @@ prefix to the delimiter "\x1E" as options.
 
 ```ts
 import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
 
 readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
-  .pipeThrough(new JSONStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
+  .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
   .pipeThrough(new TextEncoderStream())
   .pipeTo(file.writable)
   .then(() => console.log("write success"));
@@ -626,7 +607,7 @@ If you want to stream [JSON lines](https://jsonlines.org/) from the server:
 
 ```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 // A server that streams one line of JSON every second
 serve(() => {
@@ -644,7 +625,7 @@ serve(() => {
   });
 
   const body = readable
-    .pipeThrough(new JSONStringifyStream()) // convert data to JSON lines
+    .pipeThrough(new JsonStringifyStream()) // convert data to JSON lines
     .pipeThrough(new TextEncoderStream()); // convert a string to a Uint8Array
 
   return new Response(body);

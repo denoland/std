@@ -3,7 +3,7 @@
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("comparison", function (): void {
+Deno.test("comparison", function () {
   // [version1, version2]
   // version1 should be greater than version2
   const versions: [string, string][] = [
@@ -57,7 +57,7 @@ Deno.test("comparison", function (): void {
   });
 });
 
-Deno.test("compareBuild", function (): void {
+Deno.test("compareBuild", function () {
   const noBuild = new semver.SemVer("1.0.0");
   const build0 = new semver.SemVer("1.0.0+0");
   const build1 = new semver.SemVer("1.0.0+1");
@@ -72,14 +72,14 @@ Deno.test("compareBuild", function (): void {
   assertEquals(build10.compareBuild(build1), 1);
 });
 
-Deno.test("rcompare", function (): void {
+Deno.test("rcompare", function () {
   assertEquals(semver.rcompare("1.0.0", "1.0.1"), 1);
   assertEquals(semver.rcompare("1.0.0", "1.0.0"), 0);
   assertEquals(semver.rcompare("1.0.0+0", "1.0.0"), 0);
   assertEquals(semver.rcompare("1.0.1", "1.0.0"), -1);
 });
 
-Deno.test("compareMainVsPre", function (): void {
+Deno.test("compareMainVsPre", function () {
   const s = new semver.SemVer("1.2.3");
   assertEquals(s.compareMain("2.3.4"), -1);
   assertEquals(s.compareMain("1.2.4"), -1);
@@ -94,7 +94,7 @@ Deno.test("compareMainVsPre", function (): void {
   assertEquals(p.comparePre("1.2.3-alpha.0.2"), 1);
 });
 
-Deno.test("compareIdentifierst", function (): void {
+Deno.test("compareIdentifierst", function () {
   const set = [
     ["1", "2"],
     ["alpha", "beta"],
@@ -110,7 +110,7 @@ Deno.test("compareIdentifierst", function (): void {
   assertEquals(semver.rcompareIdentifiers("0", "0"), 0);
 });
 
-Deno.test("invalidCmpUsage", function (): void {
+Deno.test("invalidCmpUsage", function () {
   assertThrows(
     function () {
       semver.cmp("1.2.3", "a frog" as semver.Operator, "4.5.6");

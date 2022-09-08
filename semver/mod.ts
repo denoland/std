@@ -4,6 +4,8 @@
 /**
  * The semantic version parser.
  *
+ * Adapted directly from [semver](https://github.com/npm/node-semver).
+ *
  * This module is browser compatible.
  *
  * @module
@@ -783,7 +785,7 @@ export class Comparator {
     }
   }
 
-  parse(comp: string): void {
+  parse(comp: string) {
     const r = re[COMPARATOR];
     const m = comp.match(r);
 

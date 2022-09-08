@@ -1,4 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** A snapshotting library.
+ *
+ * @module
+ */
+
 import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
@@ -371,7 +377,7 @@ export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,
   msgOrOpts?: string | SnapshotOptions<unknown>,
-): Promise<void> {
+) {
   const options = getOptions();
   const assertSnapshotContext = AssertSnapshotContext.fromOptions(
     context,
@@ -451,7 +457,7 @@ export function createAssertSnapshot<T>(
     context: Deno.TestContext,
     actual: T,
     messageOrOptions?: string | SnapshotOptions<T>,
-  ): Promise<void> {
+  ) {
     const mergedOptions: SnapshotOptions<T> = {
       ...options,
       ...(typeof messageOrOptions === "string"

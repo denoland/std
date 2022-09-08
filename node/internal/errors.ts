@@ -68,9 +68,6 @@ export class AbortError extends Error {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-type GenericFunction = (...args: any[]) => any;
-
 let maxStack_ErrorName: string | undefined;
 let maxStack_ErrorMessage: string | undefined;
 /**
@@ -2558,9 +2555,9 @@ codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
 /**
  * This creates a generic Node.js error.
  *
- * @param {string} message The error message.
- * @param {object} errorProperties Object with additional properties to be added to the error.
- * @returns {Error}
+ * @param message The error message.
+ * @param errorProperties Object with additional properties to be added to the error.
+ * @returns
  */
 const genericNodeError = hideStackFrames(
   function genericNodeError(message, errorProperties) {

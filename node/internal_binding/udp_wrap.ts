@@ -29,7 +29,7 @@ import { notImplemented } from "../_utils.ts";
 import { Buffer } from "../buffer.ts";
 import type { ErrnoException } from "../internal/errors.ts";
 import { isIP } from "../internal/net.ts";
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import { isLinux, isWindows } from "../../_util/os.ts";
 
 type MessageType = string | Uint8Array | Buffer | DataView;
@@ -63,7 +63,7 @@ export class UDP extends HandleWrap {
   #remoteFamily?: string;
   #remotePort?: number;
 
-  #listener?: DenoUnstable.DatagramConn;
+  #listener?: Deno.DatagramConn;
   #receiving = false;
 
   #recvBufferSize = UDP_DGRAM_MAXSIZE;
@@ -259,7 +259,7 @@ export class UDP extends HandleWrap {
     return 0;
   }
 
-  override ref(): void {
+  override ref() {
     notImplemented("udp.UDP.prototype.ref");
   }
 
@@ -301,7 +301,7 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.setTTL");
   }
 
-  override unref(): void {
+  override unref() {
     notImplemented("udp.UDP.prototype.unref");
   }
 
@@ -316,7 +316,7 @@ export class UDP extends HandleWrap {
     let listener;
 
     try {
-      listener = DenoUnstable.listenDatagram(listenOptions);
+      listener = Deno.listenDatagram(listenOptions);
     } catch (e) {
       if (e instanceof Deno.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
@@ -417,7 +417,7 @@ export class UDP extends HandleWrap {
     return 0;
   }
 
-  async #receive(): Promise<void> {
+  async #receive() {
     if (!this.#receiving) {
       return;
     }

@@ -152,6 +152,23 @@ export function watch(
   return fsWatcher;
 }
 
+export const watchPromise = promisify(watch) as (
+  & ((
+    filename: string | URL,
+    options: watchOptions,
+    listener: watchListener,
+  ) => Promise<FSWatcher>)
+  & ((
+    filename: string | URL,
+    listener: watchListener,
+  ) => Promise<FSWatcher>)
+  & ((
+    filename: string | URL,
+    options: watchOptions,
+  ) => Promise<FSWatcher>)
+  & ((filename: string | URL) => Promise<FSWatcher>)
+);
+
 type WatchFileListener = (curr: Stats, prev: Stats) => void;
 type WatchFileOptions = {
   bigint?: boolean;
@@ -198,7 +215,7 @@ export function watchFile(
 export function unwatchFile(
   filename: string | Buffer | URL,
   listener?: WatchFileListener,
-): void {
+) {
   const watchPath = getValidatedPath(filename).toString();
   const stat = statWatchers.get(watchPath);
 

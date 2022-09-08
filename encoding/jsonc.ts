@@ -1,5 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+
+/** {@linkcode parse} function for parsing
+ * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
+ * strings.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 import { assert } from "../_util/assert.ts";
 
@@ -35,7 +43,7 @@ export function parse(
 
 /** Valid types as a result of JSON parsing */
 export type JSONValue =
-  | { [key: string]: JSONValue }
+  | { [key: string]: JSONValue | undefined }
   | JSONValue[]
   | string
   | number

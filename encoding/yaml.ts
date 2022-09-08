@@ -1,7 +1,14 @@
-// Ported from js-yaml v3.13.1:
-// https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** {@linkcode parse} and {@linkcode stringify} for handling
+ * [YAML](https://yaml.org/) encoded data.
+ *
+ * Ported from
+ * [js-yaml v3.13.1](https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da)
+ *
+ * @module
+ */
 
 export type { ParseOptions } from "./_yaml/parse.ts";
 export { parse, parseAll } from "./_yaml/parse.ts";

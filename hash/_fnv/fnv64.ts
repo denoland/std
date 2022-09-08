@@ -21,12 +21,12 @@ abstract class Fnv64Base<T> {
     this.#stateLo = offset64Lo;
   }
 
-  protected _updateState([newStateHi, newStateLo]: [number, number]): void {
+  protected _updateState([newStateHi, newStateLo]: [number, number]) {
     this.#stateHi = newStateHi;
     this.#stateLo = newStateLo;
   }
 
-  reset(): void {
+  reset() {
     this.#stateHi = offset64Hi;
     this.#stateLo = offset64Lo;
   }
