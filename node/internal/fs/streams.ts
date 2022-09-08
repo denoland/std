@@ -45,15 +45,15 @@ interface WriteStream extends Writable {
 export function WriteStream(
   this: WriteStream | unknown,
   path: string | Buffer,
-  opts?: WriteStreamOptions & WritableOptions,
+  options?: WriteStreamOptions & WritableOptions,
 ): WriteStream {
-  const hasBadOptions = opts && (
-    opts.fd || opts.start
+  const hasBadOptions = options && (
+    options.fd || options.start
   );
   if (hasBadOptions) {
     notImplemented(
       `fs.WriteStream.prototype.constructor with unsupported options (${
-        JSON.stringify(opts)
+        JSON.stringify(options)
       })`,
     );
   }
@@ -61,30 +61,30 @@ export function WriteStream(
   if (!(this instanceof WriteStream)) {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
-    return new WriteStream(path, opts);
+    return new WriteStream(path, options);
   }
 
   Writable.call(this as WriteStream, {
-    highWaterMark: opts?.highWaterMark,
-    decodeStrings: opts?.decodeStrings,
-    defaultEncoding: opts?.defaultEncoding,
-    objectMode: opts?.objectMode,
-    emitClose: opts?.emitClose,
-    autoDestroy: opts?.autoClose ?? opts?.autoDestroy,
-    signal: opts?.signal,
+    highWaterMark: options?.highWaterMark,
+    decodeStrings: options?.decodeStrings,
+    defaultEncoding: options?.defaultEncoding,
+    objectMode: options?.objectMode,
+    emitClose: options?.emitClose,
+    autoDestroy: options?.autoClose ?? options?.autoDestroy,
+    signal: options?.signal,
   });
 
   (this as WriteStream).fd = null;
   (this as WriteStream).path = toPathIfFileURL(path);
-  (this as WriteStream).flags = opts?.flags ?? "w";
-  (this as WriteStream).mode = opts?.mode ?? 0o666;
+  (this as WriteStream).flags = options?.flags ?? "w";
+  (this as WriteStream).mode = options?.mode ?? 0o666;
   (this as WriteStream).bytesWritten = 0;
   (this as WriteStream).pos = 0;
-  (this as WriteStream)[kFs] = opts?.fs ?? { open, write, close };
+  (this as WriteStream)[kFs] = options?.fs ?? { open, write, close };
   (this as WriteStream)[kIsPerformingIO] = false;
 
-  if (opts?.encoding) {
-    (this as WriteStream).setDefaultEncoding(opts?.encoding);
+  if (options?.encoding) {
+    (this as WriteStream).setDefaultEncoding(options?.encoding);
   }
 
   return this as WriteStream;
@@ -174,9 +174,9 @@ function closeStream(
 
 export function createWriteStream(
   path: string | Buffer,
-  opts?: WriteStreamOptions,
+  options?: WriteStreamOptions,
 ): WriteStream {
   // deno-lint-ignore ban-ts-comment
   // @ts-ignore
-  return new WriteStream(path, opts);
+  return new WriteStream(path, options);
 }

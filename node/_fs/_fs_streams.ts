@@ -25,15 +25,15 @@ interface ReadStream extends NodeReadable {
 export function ReadStream(
   this: ReadStream | unknown,
   path: string | URL,
-  opts?: ReadStreamOptions & ReadableOptions,
+  options?: ReadStreamOptions & ReadableOptions,
 ): ReadStream {
-  const hasBadOptions = opts && (
-    opts.fd || opts.start || opts.end || opts.fs
+  const hasBadOptions = options && (
+    options.fd || options.start || options.end || options.fs
   );
   if (hasBadOptions) {
     notImplemented(
       `fs.ReadStream.prototype.constructor with unsupported options (${
-        JSON.stringify(opts)
+        JSON.stringify(options)
       })`,
     );
   }
@@ -41,7 +41,7 @@ export function ReadStream(
   if (!(this instanceof ReadStream)) {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
-    return new ReadStream(path, opts);
+    return new ReadStream(path, options);
   }
 
   const _path = path instanceof URL ? fromFileUrl(path) : path;
@@ -49,12 +49,12 @@ export function ReadStream(
   const buffer = new Uint8Array(16 * 1024);
 
   NodeReadable.call(this as ReadStream, {
-    highWaterMark: opts?.highWaterMark,
-    encoding: opts?.encoding,
-    objectMode: opts?.objectMode ?? false,
-    emitClose: opts?.emitClose ?? true,
-    autoDestroy: opts?.autoClose ?? opts?.autoDestroy ?? true,
-    signal: opts?.signal,
+    highWaterMark: options?.highWaterMark,
+    encoding: options?.encoding,
+    objectMode: options?.objectMode ?? false,
+    emitClose: options?.emitClose ?? true,
+    autoDestroy: options?.autoClose ?? options?.autoDestroy ?? true,
+    signal: options?.signal,
     read(_size) {
       try {
         const n = file.readSync(buffer);
@@ -81,9 +81,9 @@ Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
 
 export function createReadStream(
   path: string | URL,
-  opts?: ReadStreamOptions,
+  options?: ReadStreamOptions,
 ): ReadStream {
   // deno-lint-ignore ban-ts-comment
   // @ts-ignore
-  return new ReadStream(path, opts);
+  return new ReadStream(path, options);
 }
