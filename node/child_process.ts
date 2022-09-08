@@ -140,36 +140,43 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-interface SpawnSyncResult {
-  // pid: number;
-  // output: any[];
+interface SpawnSyncOptions extends SpawnOptions {
+  encoding?: string;
+}
+
+/** Note: pid property is not supported with `Deno.spawnSync()` */
+interface SpawnSyncOutput {
+  // deno-lint-ignore no-explicit-any
+  output: any;
   stdout: Buffer | string;
   stderr: Buffer | string;
   status: number | null;
   signal: string | null;
-  error?: Error;
 }
 
 export function spawnSync(
   command: string,
-  argsOrOptions?: string[] | SpawnOptions,
-  maybeOptions?: SpawnOptions,
-) {
+  argsOrOptions?: string[] | SpawnSyncOptions,
+  // maybeOptions?: SpawnSyncOptions,
+): SpawnSyncOutput {
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
-  const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
+  /* const options = !Array.isArray(argsOrOptions) && argsOrOptions
     ? argsOrOptions
-    : maybeOptions;
-  
-  const child = Deno.spawnSync(command, {
-    args,
-  });
+    : maybeOptions; */
+
+  const output = Deno.spawnSync(command, { args });
+  const signal = output.signal;
+  const status = signal ? null : output.code;
+  const stdout = Buffer.from(output.stdout);
+  const stderr = Buffer.from(output.stderr);
 
   return {
-    stdout: Buffer.from(child.stdout),
-    stderr: Buffer.from(child.stderr),
-    status: child.code,
-    signal: child.signal,
-  }
+    status,
+    signal,
+    output: [signal, stdout, stderr],
+    stdout,
+    stderr,
+  };
 }
 
 interface ExecFileOptions extends ChildProcessOptions {
@@ -474,5 +481,5 @@ export function execSync() {
   throw new Error("execSync is currently not supported");
 }
 
-export default { fork, spawn, execFile, execSync, ChildProcess };
+export default { fork, spawn, execFile, execSync, ChildProcess, spawnSync };
 export { ChildProcess };
