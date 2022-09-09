@@ -7,6 +7,22 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testData = path.resolve(moduleDir, "testdata", "hello.txt");
 
 Deno.test({
+  name: "[node/fs.ReadStream] Read a chunk of data using 'ReadStream()'",
+  fn() {
+    const readable = ReadStream(testData);
+
+    let data: Uint8Array;
+    readable.on("data", (chunk: Uint8Array) => {
+      data = chunk;
+    });
+
+    readable.on("close", () => {
+      assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
+    });
+  },
+});
+
+Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'new ReadStream()'",
   fn() {
     // deno-lint-ignore ban-ts-comment

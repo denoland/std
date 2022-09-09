@@ -3,6 +3,24 @@ import { createWriteStream, WriteStream } from "./streams.ts";
 import { assertEquals } from "../../../testing/asserts.ts";
 
 Deno.test({
+  name: "[node/fs.WriteStream] Write data using 'WriteStream()'",
+  sanitizeOps: false,
+  fn() {
+    const tempFile: string = Deno.makeTempFileSync();
+    const writable = WriteStream(tempFile);
+
+    writable.write("hello world");
+    writable.end("\n");
+
+    writable.on("close", () => {
+      const data = Deno.readFileSync(tempFile);
+      Deno.removeSync(tempFile);
+      assertEquals(new TextDecoder("utf-8").decode(data), "hello world\n");
+    });
+  },
+});
+
+Deno.test({
   name: "[node/fs.WriteStream] Write data using 'new WriteStream()'",
   sanitizeOps: false,
   fn() {
