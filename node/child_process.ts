@@ -184,7 +184,8 @@ interface SpawnSyncOptions {
   /** TODO: specify array type */
   // deno-lint-ignore no-explicit-any
   stdio?: string | any[];
-  env?: Record<string, string | number | boolean>;
+  /** TODO: support number and boolean values */
+  env?: Record<string, string>;
   uid?: number;
   gid?: number;
   timeout?: number;
@@ -235,7 +236,11 @@ export function spawnSync(
 
   let output;
   try {
-    output = Deno.spawnSync(command, { args, cwd: options.cwd });
+    output = Deno.spawnSync(command, {
+      args,
+      cwd: options.cwd,
+      env: options.env,
+    });
   } catch (err) {
     const errorNo = err instanceof Deno.errors.NotFound ? os.errno.ENOENT : 0;
     const error = errnoException(
