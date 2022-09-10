@@ -165,6 +165,7 @@
       "test-buffer-zero-fill.js",
       "test-child-process-kill.js",
       "test-child-process-spawnsync-args.js",
+      "test-child-process-spawnsync-env.js",
       "test-child-process-spawnsync.js",
       "test-client-request-destroy.js",
       "test-console-async-write-error.js",
