@@ -11,6 +11,7 @@ import { validateString } from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
 } from "./internal/errors.ts";
@@ -18,6 +19,10 @@ import { getSystemErrorName } from "./util.ts";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
 import { notImplemented } from "./_utils.ts";
+import { convertToValidSignal } from "./internal/util.mjs";
+import { errnoException } from "./internal/errors.ts";
+import { os } from "./internal_binding/constants.ts";
+import { mapSysErrnoToUvErrno } from "./internal_binding/uv.ts";
 
 const MAX_BUFFER = 1024 * 1024;
 
@@ -140,46 +145,123 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-interface SpawnSyncOptions extends SpawnOptions {
+function validateTimeout(timeout?: number) {
+  if (timeout !== undefined && !(Number.isInteger(timeout) && timeout >= 0)) {
+    throw new ERR_OUT_OF_RANGE("timeout", "an unsigned integer", timeout);
+  }
+}
+
+function validateMaxBuffer(maxBuffer?: number) {
+  if (
+    maxBuffer !== undefined &&
+    !(typeof maxBuffer === "number" && maxBuffer >= 0)
+  ) {
+    throw new ERR_OUT_OF_RANGE(
+      "options.maxBuffer",
+      "a positive number",
+      maxBuffer,
+    );
+  }
+}
+
+function sanitizeKillSignal(killSignal?: Deno.Signal | number) {
+  if (typeof killSignal === "string" || typeof killSignal === "number") {
+    return convertToValidSignal(killSignal);
+  } else if (killSignal !== undefined) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "options.killSignal",
+      ["string", "number"],
+      killSignal,
+    );
+  }
+}
+
+interface SpawnSyncOptions {
+  cwd?: string | URL;
+  /** TODO: add TypedArray */
+  input?: string | Buffer | DataView;
+  argv0?: string;
+  /** TODO: specify array type */
+  // deno-lint-ignore no-explicit-any
+  stdio?: string | any[];
+  env?: Record<string, string | number | boolean>;
+  uid?: number;
+  gid?: number;
+  timeout?: number;
+  killSignal?: Deno.Signal | number;
+  maxBuffer?: number;
   encoding?: string;
+  shell?: boolean | string;
+  windowsVerbatimArguments?: boolean;
+  windowsHide?: boolean;
 }
 
 /** Note: pid property is not supported with `Deno.spawnSync()` */
-interface SpawnSyncOutput {
+interface SpawnSyncResult {
   // deno-lint-ignore no-explicit-any
-  output: any;
-  stdout: Buffer | string;
-  stderr: Buffer | string;
-  status: number | null;
-  signal: string | null;
+  output?: any;
+  stdout?: Buffer | string;
+  stderr?: Buffer | string;
+  status?: number | null;
+  signal?: string | null;
+  // deno-lint-ignore no-explicit-any
+  error?: any;
 }
 
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
   maybeOptions?: SpawnSyncOptions,
-): SpawnSyncOutput {
+): SpawnSyncResult {
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
-  const options = !Array.isArray(argsOrOptions) && argsOrOptions
+  let options = !Array.isArray(argsOrOptions) && argsOrOptions
     ? argsOrOptions
     : maybeOptions;
 
-  const output = Deno.spawnSync(command, { args });
+  options = {
+    maxBuffer: MAX_BUFFER,
+    ...options,
+  };
+
+  // Validate the timeout, if present.
+  validateTimeout(options.timeout);
+
+  // Validate maxBuffer, if present.
+  validateMaxBuffer(options.maxBuffer);
+
+  options.killSignal = sanitizeKillSignal(options.killSignal);
+
+  /** TODO: implement getValidStdio() */
+
+  let output;
+  try {
+    output = Deno.spawnSync(command, { args, cwd: options.cwd });
+  } catch (err) {
+    const errorNo = err instanceof Deno.errors.NotFound ? os.errno.ENOENT : 0;
+    const error = errnoException(
+      mapSysErrnoToUvErrno(errorNo),
+      "spawnSync " + command,
+    );
+    error.path = command;
+    error.spawnargs = args;
+    return { error };
+  }
+
   const signal = output.signal;
-  const status = signal ? null : output.code;
-  const stdout = options?.encoding
-    ? Buffer.from(output.stdout)
-    : Buffer.from(output.stdout).toString(options?.encoding);
-  const stderr = options?.encoding
-    ? Buffer.from(output.stderr)
-    : Buffer.from(output.stderr).toString(options?.encoding);
+  const status = signal ? null : output?.code;
+  let stdout: Buffer | string = Buffer.from(output.stdout);
+  let stderr: Buffer | string = Buffer.from(output.stderr);
+  if (options.encoding && options.encoding !== "buffer") {
+    stdout = stdout.toString(options.encoding);
+    stderr = stderr.toString(options.encoding);
+  }
 
   return {
     status,
     signal,
-    output: [signal, stdout, stderr],
     stdout,
     stderr,
+    output: [signal, stdout, stderr],
   };
 }
 

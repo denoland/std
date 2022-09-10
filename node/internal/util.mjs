@@ -141,9 +141,23 @@ export function promisify(
   );
 }
 
+export function convertToValidSignal(signal) {
+  if (typeof signal === "number" && getSignalsToNamesMapping()[signal]) {
+    return signal;
+  }
+
+  if (typeof signal === "string") {
+    const signalName = signals[StringPrototypeToUpperCase(signal)];
+    if (signalName) return signalName;
+  }
+
+  throw new ERR_UNKNOWN_SIGNAL(signal);
+}
+
 promisify.custom = kCustomPromisifiedSymbol;
 
 export default {
+  convertToValidSignal,
   createDeferredPromise,
   customInspectSymbol,
   customPromisifyArgs,

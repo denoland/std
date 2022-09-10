@@ -118,6 +118,7 @@ export interface ErrnoException extends Error {
   code?: string;
   path?: string;
   syscall?: string;
+  spawnargs?: string[];
 }
 
 /**

@@ -5,7 +5,6 @@ import {
   assertEquals,
   assertExists,
   assertNotStrictEquals,
-  assertObjectMatch,
   assertStrictEquals,
 } from "../testing/asserts.ts";
 import CP from "./child_process.ts";
@@ -15,7 +14,7 @@ import * as path from "../path/mod.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_CHILD_PROCESS_STDIO_MAXBUFFER } from "./internal/errors.ts";
 
-const { spawn, execFile, ChildProcess, spawnSync } = CP;
+const { spawn, execFile, ChildProcess } = CP;
 
 function withTimeout<T>(timeoutInMS: number): Deferred<T> {
   const promise = deferred<T>();
@@ -507,92 +506,4 @@ Deno.test({
     childProcess.on("exit", () => p.resolve());
     await p;
   },
-});
-
-Deno.test("[node/child_process] spawnSync()", async (t) => {
-  const command = Deno.execPath();
-
-  await t.step("passes with basic arguments", () => {
-    const message = "Hello, world!";
-    const output = spawnSync(command, ["eval", `console.log("${message}");`]);
-
-    const signal = null;
-    const stdout = Buffer.from(message + "\n");
-    const stderr = Buffer.from([]);
-    assertObjectMatch(output, {
-      status: 0,
-      signal,
-      stdout,
-      stderr,
-      output: [signal, stdout, stderr],
-    });
-  });
-
-  await t.step("passes with correct exit code", () => {
-    const code = 1;
-    const output = spawnSync(command, ["eval", `Deno.exit(${code});`]);
-
-    const signal = null;
-    const stdout = Buffer.from([]);
-    const stderr = Buffer.from([]);
-    assertObjectMatch(output, {
-      status: code,
-      signal,
-      stdout,
-      stderr,
-      output: [signal, stdout, stderr],
-    });
-  });
-
-  await t.step("passes with correct error", () => {
-    const output = spawnSync(command, ["eval", "throw new Error();"]);
-
-    const signal = null;
-    const stdout = Buffer.from([]);
-
-    assertObjectMatch(output, {
-      status: 1,
-      signal: null,
-      stdout: Buffer.from([]),
-    });
-    assertEquals(output.output[0], signal);
-    assertEquals(output.output[1], stdout);
-    assert(output.output[2].length > 1);
-    assert(output.stderr.length > 1);
-  });
-
-  await t.step("passes with correct signal", () => {
-    const signal = "SIGINT";
-
-    const output = spawnSync(command, [
-      "eval",
-      `Deno.kill(Deno.pid, "${signal}");`,
-    ]);
-
-    assertObjectMatch(output, {
-      status: null,
-      signal,
-      output: [signal, Buffer.from([]), Buffer.from([])],
-      stdout: Buffer.from([]),
-      stderr: Buffer.from([]),
-    });
-  });
-
-  /* await t.step("passes with correct encoding", () => {
-    const message = "Hello, world!";
-    const output = spawnSync(command, ["eval", `console.log("${message}");`], {
-      encoding: "utf8",
-    });
-
-    const signal = null;
-    const stdout = message + "\n";
-    const stderr = "";
-    assertObjectMatch(output, {
-      status: 0,
-      signal,
-      stdout,
-      stderr,
-      output: [signal, stdout, stderr],
-    });
-  }); */
 });
