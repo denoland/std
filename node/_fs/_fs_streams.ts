@@ -56,9 +56,9 @@ export function ReadStream(
     emitClose: options?.emitClose ?? true,
     autoDestroy: options?.autoClose ?? options?.autoDestroy ?? true,
     signal: options?.signal,
-    read(_size) {
+    async read(_size) {
       try {
-        const n = file.readSync(buffer);
+        const n = await file.read(buffer);
         this.push(n ? Buffer.from(buffer.slice(0, n)) : null);
       } catch (err) {
         this.destroy(err as Error);

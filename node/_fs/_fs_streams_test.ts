@@ -8,6 +8,8 @@ const testData = path.resolve(moduleDir, "testdata", "hello.txt");
 
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'ReadStream()'",
+  sanitizeOps: false,
+  sanitizeResources: false,
   fn() {
     const readable = ReadStream(testData);
 
@@ -24,6 +26,8 @@ Deno.test({
 
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'new ReadStream()'",
+  sanitizeOps: false,
+  sanitizeResources: false,
   fn() {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -43,6 +47,8 @@ Deno.test({
 Deno.test({
   name:
     "[node/fs.createReadStream] Read a chunk of data using 'new createReadStream()'",
+  sanitizeOps: false,
+  sanitizeResources: false,
   fn() {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -61,6 +67,8 @@ Deno.test({
 
 Deno.test({
   name: "[node/fs.createReadStream] Read given amount of data",
+  sanitizeOps: false,
+  sanitizeResources: false,
   fn() {
     const readable = createReadStream(testData);
 
@@ -80,6 +88,8 @@ Deno.test({
 
 Deno.test({
   name: "[node/fs.createReadStream] Destroy the stream with an error",
+  sanitizeOps: false,
+  sanitizeResources: false,
   fn() {
     const readable = createReadStream(testData);
 
