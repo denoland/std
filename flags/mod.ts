@@ -60,8 +60,8 @@ type Values<
       >,
       A
     >
-  : // deno-lint-ignore no-explicit-any
-  Record<string, any>;
+  // deno-lint-ignore no-explicit-any
+  : Record<string, any>;
 
 type Aliases<T = string, V extends string = string> = Partial<
   Record<Extract<T, string>, V | ReadonlyArray<V>>

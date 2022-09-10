@@ -145,7 +145,7 @@ export class Url {
   public pathname: string | null;
   public path: string | null;
   public href: string | null;
-  [key: string]: unknown
+  [key: string]: unknown;
 
   constructor() {
     this.protocol = null;
