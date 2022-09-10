@@ -18,7 +18,7 @@ interface ReadStreamOptions {
   fs?: Record<string, unknown> | null;
 }
 
-interface ReadStream extends NodeReadable {
+export interface ReadStream extends NodeReadable {
   path: string;
 }
 

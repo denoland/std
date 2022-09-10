@@ -2,10 +2,18 @@
 import { createWriteStream, WriteStream } from "./streams.ts";
 import { assertEquals } from "../../../testing/asserts.ts";
 
+// Need to wait for file processing to complete within each test to prevent false negatives.
+async function waiter(writable: WriteStream, interval = 100, maxCount = 50) {
+  for (let i = maxCount; i > 0; i--) {
+    await new Promise((resolve) => setTimeout(resolve, interval));
+    if (writable.destroyed) return true;
+  }
+  return false;
+}
+
 Deno.test({
   name: "[node/fs.WriteStream] Write data using 'WriteStream()'",
-  sanitizeOps: false,
-  fn() {
+  async fn() {
     const tempFile: string = Deno.makeTempFileSync();
     const writable = WriteStream(tempFile);
 
@@ -17,13 +25,14 @@ Deno.test({
       Deno.removeSync(tempFile);
       assertEquals(new TextDecoder("utf-8").decode(data), "hello world\n");
     });
+
+    assertEquals(await waiter(writable), true);
   },
 });
 
 Deno.test({
   name: "[node/fs.WriteStream] Write data using 'new WriteStream()'",
-  sanitizeOps: false,
-  fn() {
+  async fn() {
     const tempFile: string = Deno.makeTempFileSync();
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -37,14 +46,15 @@ Deno.test({
       Deno.removeSync(tempFile);
       assertEquals(new TextDecoder("utf-8").decode(data), "hello world\n");
     });
+
+    assertEquals(await waiter(writable), true);
   },
 });
 
 Deno.test({
   name:
     "[node/fs.createWriteStream] Write data using 'new createWriteStream()'",
-  sanitizeOps: false,
-  fn() {
+  async fn() {
     const tempFile: string = Deno.makeTempFileSync();
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -58,13 +68,14 @@ Deno.test({
       Deno.removeSync(tempFile);
       assertEquals(new TextDecoder("utf-8").decode(data), "hello world\n");
     });
+
+    assertEquals(await waiter(writable), true);
   },
 });
 
 Deno.test({
   name: "[node/fs.createWriteStream] Destroy the stream with an error",
-  sanitizeOps: false,
-  fn() {
+  async fn() {
     const tempFile: string = Deno.makeTempFileSync();
     const writable = createWriteStream(tempFile);
 
@@ -80,5 +91,7 @@ Deno.test({
       assertEquals(err.name, "Error");
       assertEquals(err.message, "destroy has been called.");
     });
+
+    assertEquals(await waiter(writable), true);
   },
 });

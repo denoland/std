@@ -31,7 +31,7 @@ interface FS {
   close: typeof close;
 }
 
-interface WriteStream extends Writable {
+export interface WriteStream extends Writable {
   fd: number | null;
   path: string | Buffer;
   flags: openFlags;

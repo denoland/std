@@ -6,11 +6,18 @@ import { assertEquals } from "../../testing/asserts.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testData = path.resolve(moduleDir, "testdata", "hello.txt");
 
+// Need to wait for file processing to complete within each test to prevent false negatives.
+async function waiter(readable: ReadStream, interval = 100, maxCount = 50) {
+  for (let i = maxCount; i > 0; i--) {
+    await new Promise((resolve) => setTimeout(resolve, interval));
+    if (readable.destroyed) return true;
+  }
+  return false;
+}
+
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'ReadStream()'",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn() {
+  async fn() {
     const readable = ReadStream(testData);
 
     let data: Uint8Array;
@@ -21,14 +28,14 @@ Deno.test({
     readable.on("close", () => {
       assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
     });
+
+    assertEquals(await waiter(readable), true);
   },
 });
 
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'new ReadStream()'",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn() {
+  async fn() {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
     const readable = new ReadStream(testData);
@@ -41,15 +48,15 @@ Deno.test({
     readable.on("close", () => {
       assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
     });
+
+    assertEquals(await waiter(readable), true);
   },
 });
 
 Deno.test({
   name:
     "[node/fs.createReadStream] Read a chunk of data using 'new createReadStream()'",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn() {
+  async fn() {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
     const readable = new createReadStream(testData);
@@ -62,14 +69,14 @@ Deno.test({
     readable.on("close", () => {
       assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
     });
+
+    assertEquals(await waiter(readable), true);
   },
 });
 
 Deno.test({
   name: "[node/fs.createReadStream] Read given amount of data",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn() {
+  async fn() {
     const readable = createReadStream(testData);
 
     const data: (Uint8Array | null)[] = [];
@@ -83,14 +90,14 @@ Deno.test({
       assertEquals(new TextDecoder().decode(data[1] as Uint8Array), " world");
       assertEquals(data[2], null);
     });
+
+    assertEquals(await waiter(readable), true);
   },
 });
 
 Deno.test({
   name: "[node/fs.createReadStream] Destroy the stream with an error",
-  sanitizeOps: false,
-  sanitizeResources: false,
-  fn() {
+  async fn() {
     const readable = createReadStream(testData);
 
     const data: (Uint8Array | null)[] = [];
@@ -108,5 +115,7 @@ Deno.test({
       assertEquals(err.name, "Error");
       assertEquals(err.message, "destroy has been called.");
     });
+
+    assertEquals(await waiter(readable), true);
   },
 });
