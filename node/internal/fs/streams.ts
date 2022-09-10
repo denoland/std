@@ -94,11 +94,14 @@ export function WriteStream(
 
 Object.setPrototypeOf(WriteStream.prototype, Writable.prototype);
 
-WriteStream.prototype._construct = function (callback: (err?: Error) => void) {
+WriteStream.prototype._construct = function (
+  this: WriteStream,
+  callback: (err?: Error) => void,
+) {
   this[kFs].open(
     this.path.toString(),
-    this.flags!,
-    this.mode!,
+    this.flags,
+    this.mode,
     (err: Error | null, fd: number) => {
       if (err) {
         callback(err);
@@ -114,6 +117,7 @@ WriteStream.prototype._construct = function (callback: (err?: Error) => void) {
 };
 
 WriteStream.prototype._write = function (
+  this: WriteStream,
   data: Buffer,
   _encoding: string,
   cb: (err?: Error | null) => void,
@@ -148,6 +152,7 @@ WriteStream.prototype._write = function (
 };
 
 WriteStream.prototype._destroy = function (
+  this: WriteStream,
   err: Error,
   cb: (err?: Error | null) => void,
 ) {
@@ -159,8 +164,7 @@ WriteStream.prototype._destroy = function (
 };
 
 function closeStream(
-  // deno-lint-ignore no-explicit-any
-  stream: any,
+  stream: WriteStream,
   err: Error,
   cb: (err?: Error | null) => void,
 ) {
