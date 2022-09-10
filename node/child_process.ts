@@ -253,7 +253,7 @@ export function spawnSync(
   }
 
   const signal = output.signal;
-  const status = signal ? null : output?.code;
+  const status = signal ? null : output.code;
   let stdout: Buffer | string = Buffer.from(output.stdout);
   let stderr: Buffer | string = Buffer.from(output.stderr);
   if (options.encoding && options.encoding !== "buffer") {

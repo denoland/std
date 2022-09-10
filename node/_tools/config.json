@@ -17,6 +17,7 @@
       "test-buffer-from.js",
       "test-buffer-includes.js",
       "test-buffer-indexof.js",
+      "test-child-process-spawnsync-input.js",
       "test-console-instance.js",
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
