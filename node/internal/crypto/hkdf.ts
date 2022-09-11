@@ -14,7 +14,7 @@ import {
 import { toBuf, validateByteSource } from "./util.ts";
 import { createSecretKey, isKeyObject, KeyObject } from "./keys.ts";
 import type { BinaryLike } from "./types.ts";
-import { kMaxLength } from "../../_buffer.mjs";
+import { kMaxLength } from "../buffer.mjs";
 import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
 import { notImplemented } from "../../_utils.ts";
 
