@@ -404,5 +404,5 @@ export type DeepMerge<
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U, Options>
-    : // Handle primitives
-    T | U;
+    // Handle primitives
+    : T | U;
