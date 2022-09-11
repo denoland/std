@@ -209,6 +209,7 @@ interface SpawnSyncResult {
   error?: any;
 }
 
+/** TODO: support shell and args on windows */
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
