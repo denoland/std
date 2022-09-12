@@ -103,21 +103,21 @@ export function sliceLongToBytes(
   return dest;
 }
 
-/** @deprecated (will be removed in 0.157.0) Use readAll from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use readAll from https://deno.land/std/streams/conversion.ts instead. */
 export const readAll = streams.readAll;
-/** @deprecated (will be removed in 0.157.0) Use readAllSync from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use readAllSync from https://deno.land/std/streams/conversion.ts instead. */
 export const readAllSync = streams.readAllSync;
-/** @deprecated (will be removed in 0.157.0) Use writeAll from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use writeAll from https://deno.land/std/streams/conversion.ts instead. */
 export const writeAll = streams.writeAll;
-/** @deprecated (will be removed in 0.157.0) Use writeAllSync from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use writeAllSync from https://deno.land/std/streams/conversion.ts instead. */
 export const writeAllSync = streams.writeAllSync;
-/** @deprecated (will be removed in 0.157.0) Use iterateReader from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use iterateReader from https://deno.land/std/streams/conversion.ts instead. */
 export const iter = streams.iterateReader;
-/** @deprecated (will be removed in 0.157.0) Use iterateReaderSync from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use iterateReaderSync from https://deno.land/std/streams/conversion.ts instead. */
 export const iterSync = streams.iterateReaderSync;
-/** @deprecated (will be removed in 0.157.0) Use copy from https://deno.land/std/streams/conversion.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use copy from https://deno.land/std/streams/conversion.ts instead. */
 export const copy = streams.copy;
-/** @deprecated (will be removed in 0.157.0) Use readRange from https://deno.land/std/io/files.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use readRange from https://deno.land/std/io/files.ts instead. */
 export const readRange = files.readRange;
-/** @deprecated (will be removed in 0.157.0) Use readRangeSync from https://deno.land/std/io/files.ts instead. */
+/** @deprecated (will be removed after 0.157.0) Use readRangeSync from https://deno.land/std/io/files.ts instead. */
 export const readRangeSync = files.readRangeSync;

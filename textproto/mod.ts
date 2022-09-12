@@ -133,7 +133,7 @@ export class TextProtoReader {
 
   /** ReadMIMEHeader reads a MIME-style header from r.
    *
-   * @deprecated (will be removed in 0.157.0)  Use readMimeHeader instead. */
+   * @deprecated (will be removed after 0.157.0)  Use readMimeHeader instead. */
   readMIMEHeader(): Promise<Headers | null> {
     return this.readMimeHeader();
   }
