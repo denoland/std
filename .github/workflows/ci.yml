@@ -146,7 +146,7 @@ jobs:
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
+          declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
           echo "Wasm crypto source modified in this commit? $modified"
@@ -186,7 +186,7 @@ jobs:
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_varint)"
+          declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm_varint)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
           echo "Wasm varint source modified in this commit? $modified"
