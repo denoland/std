@@ -65,7 +65,7 @@ export function validate(uuid: string): boolean {
  */
 export function version(uuid: string): number {
   if (!validate(uuid)) {
-    throw TypeError("Invalid UUID");
+    throw new TypeError("Invalid UUID");
   }
 
   return parseInt(uuid[14], 16);
