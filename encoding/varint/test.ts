@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { decodeU32, decodeU64, encodeU32, encodeU64 } from "./varint.ts";
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { decodeU32, decodeU64, encodeU32, encodeU64 } from "./mod.ts";
+import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 
 const U32MAX = 4_294_967_295;
 const U64MAX = 18_446_744_073_709_551_615n;
