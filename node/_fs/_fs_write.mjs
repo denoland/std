@@ -4,6 +4,7 @@ import { Buffer } from "../buffer.ts";
 import { validateEncoding, validateInteger } from "../internal/validators.mjs";
 import {
   getValidatedFd,
+  showStringCoercionDeprecation,
   validateOffsetLengthWrite,
   validateStringAfterArrayBufferView,
 } from "../internal/fs/utils.mjs";
@@ -104,6 +105,9 @@ export function write(fd, buffer, offset, length, position, callback) {
   // `fs.write(fd, string[, position[, encoding]], callback)`
 
   validateStringAfterArrayBufferView(buffer, "buffer");
+  if (typeof buffer !== "string") {
+    showStringCoercionDeprecation();
+  }
 
   if (typeof position !== "function") {
     if (typeof offset === "function") {

@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "16.13.0",
+  "nodeVersion": "18.8.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
     "fixtures": ["child-process-spawn-node.js", "empty.txt"],
@@ -29,6 +29,7 @@
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
       "test-event-emitter-prepend.js",
+      "test-events-once.js",
       "test-fs-append-file.js",
       "test-fs-chmod-mask.js",
       "test-fs-chmod.js",
@@ -50,13 +51,7 @@
       "test-path.js",
       "test-querystring.js",
       "test-readline-interface.js",
-      "test-stream-duplex-destroy.js",
-      "test-stream-readable-with-unimplemented-_read.js",
-      "test-stream-transform-destroy.js",
       "test-stream-writable-change-default-encoding.js",
-      "test-stream-writable-destroy.js",
-      "test-stream-writable-end-cb-error.js",
-      "test-stream-write-destroy.js",
       "test-url-urltooptions.js",
       "test-util-format.js",
       "test-util-inspect-namespace.js",
@@ -66,6 +61,7 @@
       "test-util-promisify.js",
       "test-util-types.js",
       "test-util.js",
+      "test-webcrypto-sign-verify.js",
       "test-whatwg-url-properties.js",
       "test-zlib-convenience-methods.js",
       "test-zlib-empty-buffer.js",
@@ -641,6 +637,16 @@
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
     ],
+    "pseudo-tty": [
+      "console-dumb-tty.js",
+      "console_colors.js",
+      "no_dropped_stdio.js",
+      "no_interleaved_stdio.js",
+      "test-tty-color-support-warning-2.js",
+      "test-tty-color-support-warning.js",
+      "test-tty-stdin-end.js",
+      "test-tty-stdout-end.js"
+    ],
     "pummel": [
       "test-net-bytes-per-incoming-chunk-overhead.js",
       "test-net-pingpong-delay.js",
@@ -656,6 +662,7 @@
       "test-console-sync-write-error.js",
       "test-fs-access.js",
       "test-fs-readdir-stack-overflow.js",
+      "test-fs-rm.js",
       "test-fs-watchfile.js",
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",

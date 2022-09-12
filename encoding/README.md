@@ -227,29 +227,10 @@ let columns: Column[] = [
   "age",
 ];
 
-console.log(await stringify(data, columns));
+console.log(stringify(data, { columns }));
 // first,age
 // Rick,70
 // Morty,14
-//
-
-columns = [
-  {
-    prop: "name",
-    fn: (name: Character["name"]) => `${name.first} ${name.last}`,
-  },
-  {
-    prop: "age",
-    header: "is_adult",
-    fn: (age: Character["age"]) => String(age >= 18),
-  },
-];
-
-console.log(await stringify(data, columns, { separator: "\t" }));
-// name	is_adult
-// Rick Sanchez	true
-// Morty Smith	false
-//
 ```
 
 ## TOML

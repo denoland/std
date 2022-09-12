@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
-import { validateCallback } from "./internal/validators.mjs";
+import { validateFunction } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
@@ -12,7 +12,7 @@ export function setTimeout(
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }
@@ -49,7 +49,7 @@ export function setInterval(
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }

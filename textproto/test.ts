@@ -12,16 +12,6 @@ function reader(s: string): TextProtoReader {
   return new TextProtoReader(new BufReader(new StringReader(s)));
 }
 
-Deno.test({
-  ignore: true,
-  name: "[textproto] Reader : DotBytes",
-  fn() {
-    const _input =
-      "dotlines\r\n.foo\r\n..bar\n...baz\nquux\r\n\r\n.\r\nanot.her\r\n";
-    return Promise.resolve();
-  },
-});
-
 Deno.test("[textproto] ReadEmpty", async () => {
   const r = reader("");
   const m = await r.readMimeHeader();
@@ -177,20 +167,16 @@ Deno.test({
   },
 });
 
-/* TODO(kt3k): Enable this test
 Deno.test({
   name: "[textproto] #4521 issue",
   async fn() {
-    const input = "abcdefghijklmnopqrstuvwxyz";
-    const bufSize = 25;
-    const tp = new TextProtoReader(
-      new BufReader(new StringReader(input), bufSize),
-    );
-    const line = await tp.readLine();
-    assertEquals(line, input);
+    const repeatCount = 5000;
+    const input = "@".repeat(repeatCount) + "," + "*".repeat(repeatCount);
+    const tpReader = reader(input);
+    const out = await tpReader.readLine();
+    assertEquals(out, input);
   },
 });
-*/
 
 Deno.test({
   name: "[textproto] PR #859",

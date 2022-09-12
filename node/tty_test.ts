@@ -16,7 +16,10 @@ Deno.test("[node/tty isatty] returns true when fd is a tty, false otherwise", ()
 Deno.test("[node/tty isatty] returns false for irrelevant values", () => {
   // invalid numeric fd
   assert(!isatty(1234567));
-  assert(!isatty(-1));
+
+  // TODO(kt3k): Enable this test when the below issue resolved
+  // https://github.com/denoland/deno/issues/14398
+  // assert(!isatty(-1));
 
   // invalid type fd
   assert(!isatty("abc" as any));
