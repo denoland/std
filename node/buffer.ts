@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// @deno-types="./_buffer.d.ts"
+// @deno-types="./internal/buffer.d.ts"
 export {
   atob,
   Blob,
@@ -10,4 +10,4 @@ export {
   kMaxLength,
   kStringMaxLength,
   SlowBuffer,
-} from "./_buffer.mjs";
+} from "./internal/buffer.mjs";
