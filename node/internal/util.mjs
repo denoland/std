@@ -7,6 +7,8 @@ export const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 export const kEnumerableProperty = Object.create(null);
 kEnumerableProperty.enumerable = true;
 
+export const kEmptyObject = Object.freeze(Object.create(null));
+
 export function once(callback) {
   let called = false;
   return function (...args) {
@@ -147,6 +149,7 @@ export default {
   createDeferredPromise,
   customInspectSymbol,
   customPromisifyArgs,
+  kEmptyObject,
   kEnumerableProperty,
   normalizeEncoding,
   once,

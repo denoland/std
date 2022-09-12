@@ -50,8 +50,8 @@ export class BaseHandler {
   }
 
   log(_msg: string) {}
-  async setup() {}
-  async destroy() {}
+  setup() {}
+  destroy() {}
 }
 
 export class ConsoleHandler extends BaseHandler {
@@ -120,8 +120,8 @@ export class FileHandler extends WriterHandler {
     };
   }
 
-  override async setup() {
-    this._file = await Deno.open(this._filename, this._openOptions);
+  override setup() {
+    this._file = Deno.openSync(this._filename, this._openOptions);
     this._writer = this._file;
     this._buf = new BufWriterSync(this._file);
 
@@ -155,7 +155,6 @@ export class FileHandler extends WriterHandler {
     this._file?.close();
     this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
-    return Promise.resolve();
   }
 }
 

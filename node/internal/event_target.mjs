@@ -11,7 +11,11 @@ import { validateObject, validateString } from "./validators.mjs";
 import { emitWarning } from "../process.ts";
 import { nextTick } from "../_next_tick.ts";
 
-import { customInspectSymbol, kEnumerableProperty } from "./util.mjs";
+import {
+  customInspectSymbol,
+  kEmptyObject,
+  kEnumerableProperty,
+} from "./util.mjs";
 import { inspect } from "../util.ts";
 
 const kIsEventTarget = Symbol.for("nodejs.event_target");
@@ -38,6 +42,7 @@ const kIsNodeStyleListener = Symbol("kIsNodeStyleListener");
 const kTrustEvent = Symbol("kTrustEvent");
 
 const kType = Symbol("type");
+const kDetail = Symbol("detail");
 const kDefaultPrevented = Symbol("defaultPrevented");
 const kCancelable = Symbol("cancelable");
 const kTimestamp = Symbol("timestamp");
@@ -302,6 +307,51 @@ Object.defineProperties(
     stopPropagation: kEnumerableProperty,
   },
 );
+
+function isCustomEvent(value) {
+  return isEvent(value) && (value?.[kDetail] !== undefined);
+}
+
+class CustomEvent extends Event {
+  /**
+   * @constructor
+   * @param {string} type
+   * @param {{
+   *   bubbles?: boolean,
+   *   cancelable?: boolean,
+   *   composed?: boolean,
+   *   detail?: any,
+   * }} [options]
+   */
+  constructor(type, options = kEmptyObject) {
+    if (arguments.length === 0) {
+      throw new ERR_MISSING_ARGS("type");
+    }
+    super(type, options);
+    this[kDetail] = options?.detail ?? null;
+  }
+
+  /**
+   * @type {any}
+   */
+  get detail() {
+    if (!isCustomEvent(this)) {
+      throw new ERR_INVALID_THIS("CustomEvent");
+    }
+    return this[kDetail];
+  }
+}
+
+Object.defineProperties(CustomEvent.prototype, {
+  [Symbol.toStringTag]: {
+    __proto__: null,
+    writable: false,
+    enumerable: false,
+    configurable: true,
+    value: "CustomEvent",
+  },
+  detail: kEnumerableProperty,
+});
 
 class NodeCustomEvent extends Event {
   constructor(type, options) {
@@ -1024,6 +1074,7 @@ const EventEmitterMixin = (Superclass) => {
 };
 
 export {
+  CustomEvent,
   defineEventHandler,
   Event,
   EventEmitterMixin,
@@ -1041,6 +1092,7 @@ export {
 };
 
 export default {
+  CustomEvent,
   Event,
   EventEmitterMixin,
   EventTarget,

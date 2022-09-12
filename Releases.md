@@ -1,3 +1,17 @@
+### 0.155.0 / 2022.09.09
+
+- BREAKING(encoding/csv): make column argument optional (#2168)
+- BREAKING(encoding/csv): sync stringify function (#2611)
+- feat(dotenv): allow to restrict env lookup to specific Env variables (#2544)
+- fix(async): restore `delay` browser compatibility (#2625)
+- fix(log): make setup and destroy sync (#2532)
+- fix(node): bump node version to latest stable (#2610)
+- fix(node): use readable-stream from stream/promises (#2630)
+- fix(node): vendor readable-stream from esm.sh (#2584)
+- fix(node/process): revert workaround for stdin.isTTY (#2590) (#2614)
+- fix(node/url): `urlObject.format` is not a function for object input (#2607)
+- fix(testing/asserts): temporarily disable background colors in diff (#2601)
+
 ### 0.154.0 / 2022.09.01
 
 - BREAKING(encoding/csv): remove ColumnOptions (#2536)

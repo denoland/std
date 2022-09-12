@@ -163,23 +163,22 @@ class ClientRequest extends NodeWritable {
     return new Socket({});
   }
 
-  // deno-lint-ignore no-explicit-any
-  _createUrlStrFromOptions(opts: any) {
+  _createUrlStrFromOptions(opts: RequestOptions): string {
     if (opts.href) {
       return opts.href;
-    } else {
-      const {
-        auth,
-        protocol,
-        host,
-        hostname,
-        path,
-        port,
-      } = opts;
-      return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${
-        host ?? hostname
-      }${port ? `:${port}` : ""}${path || ""}`;
     }
+    const protocol = opts.protocol ?? this.defaultProtocol;
+    const auth = opts.auth;
+    const host = opts.host ?? opts.hostname ?? "localhost";
+    const defaultPort = opts.agent?.defaultPort;
+    const port = opts.port ?? defaultPort ?? 80;
+    let path = opts.path ?? "/";
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+    return `${protocol}//${auth ? `${auth}@` : ""}${host}${
+      port === 80 ? "" : `:${port}`
+    }${path}`;
   }
 }
 
