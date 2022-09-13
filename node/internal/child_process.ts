@@ -498,8 +498,8 @@ export interface SpawnSyncOptions {
   uid?: number;
   gid?: number;
   timeout?: number;
-  maxBuffer: number;
-  encoding: string;
+  maxBuffer?: number;
+  encoding?: string;
   shell?: boolean | string;
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
@@ -516,9 +516,6 @@ export interface SpawnSyncResult {
 }
 /**
  * TODO:
- * - support timeout
- * - support killSignal
- * - support maxBuffer
  * - support stdin
  */
 export function spawnSync(
@@ -556,7 +553,7 @@ export function spawnSync(
     let stdout = Buffer.from(output.stdout) as string | Buffer;
     let stderr = Buffer.from(output.stderr) as string | Buffer;
 
-    if (stdout.length > maxBuffer || stderr.length > maxBuffer) {
+    if (stdout.length > maxBuffer! || stderr.length > maxBuffer!) {
       result.error = _createSpawnSyncError(os.errno.ENOBUFS, command, args);
     }
 

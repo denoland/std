@@ -162,10 +162,6 @@ function validateMaxBuffer(maxBuffer?: number) {
   }
 }
 
-/**
- * TODO:
- * - support killSignal and sanitizeKillSignal()
- */
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
@@ -179,7 +175,7 @@ export function spawnSync(
   options = {
     maxBuffer: MAX_BUFFER,
     ...options,
-  };
+  }
 
   // Validate the timeout, if present.
   validateTimeout(options.timeout);
