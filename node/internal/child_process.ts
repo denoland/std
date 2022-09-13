@@ -19,6 +19,7 @@ import { mapValues } from "../../collections/map_values.ts";
 import { Buffer } from "../buffer.ts";
 import { errnoException } from "./errors.ts";
 import { mapSysErrnoToUvErrno } from "../internal_binding/uv.ts";
+import { ErrnoException } from "../_global.d.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -474,6 +475,20 @@ function buildCommand(
   return [file, args];
 }
 
+function _createSpawnSyncError(
+  errorNo: number,
+  command: string,
+  args: string[] = [],
+): ErrnoException {
+  const error = errnoException(
+    mapSysErrnoToUvErrno(errorNo),
+    "spawnSync " + command,
+  );
+  error.path = command;
+  error.spawnargs = args;
+  return error;
+}
+
 export interface SpawnSyncOptions {
   cwd?: string | URL;
   input?: string | Buffer | DataView;
@@ -483,7 +498,7 @@ export interface SpawnSyncOptions {
   uid?: number;
   gid?: number;
   timeout?: number;
-  maxBuffer?: number;
+  maxBuffer: number;
   encoding: string;
   shell?: boolean | string;
   windowsVerbatimArguments?: boolean;
@@ -519,10 +534,12 @@ export function spawnSync(
     encoding,
     uid,
     gid,
+    maxBuffer,
   } = options;
   const normalisezedStdio = normalizeStdioOption(stdio);
   [command, args] = buildCommand(command, args ?? [], shell);
 
+  const result: SpawnSyncResult = {};
   try {
     const output = Deno.spawnSync(command, {
       args,
@@ -539,26 +556,23 @@ export function spawnSync(
     let stdout = Buffer.from(output.stdout) as string | Buffer;
     let stderr = Buffer.from(output.stderr) as string | Buffer;
 
+    if (stdout.length > maxBuffer || stderr.length > maxBuffer) {
+      result.error = _createSpawnSyncError(os.errno.ENOBUFS, command, args);
+    }
+
     if (encoding && encoding !== "buffer") {
       stdout = stdout.toString(encoding);
       stderr = stderr.toString(encoding);
     }
 
-    return {
-      status,
-      signal,
-      stdout,
-      stderr,
-      output: [signal, stdout, stderr],
-    };
+    result.status = status;
+    result.signal = signal;
+    result.stdout = stdout;
+    result.stderr = stderr;
+    result.output = [signal, stdout, stderr];
   } catch (err) {
     const errorNo = err instanceof Deno.errors.NotFound ? os.errno.ENOENT : 0;
-    const error = errnoException(
-      mapSysErrnoToUvErrno(errorNo),
-      "spawnSync " + command,
-    );
-    error.path = command;
-    error.spawnargs = args;
-    return { error };
+    result.error = _createSpawnSyncError(errorNo, command, args);
   }
+  return result;
 }
