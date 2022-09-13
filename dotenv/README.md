@@ -21,7 +21,7 @@ console.log(await config());
 Then run your app.
 
 ```
-> deno run --allow-read app.ts
+> deno run --allow-env --allow-read app.ts
 { GREETING: "hello world" }
 ```
 
