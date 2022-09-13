@@ -16,6 +16,9 @@ import {
   ERR_UNKNOWN_SIGNAL,
 } from "./errors.ts";
 import { mapValues } from "../../collections/map_values.ts";
+import { Buffer } from "../buffer.ts";
+import { errnoException } from "./errors.ts";
+import { mapSysErrnoToUvErrno } from "../internal_binding/uv.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -469,4 +472,93 @@ function buildCommand(
     }
   }
   return [file, args];
+}
+
+export interface SpawnSyncOptions {
+  cwd?: string | URL;
+  input?: string | Buffer | DataView;
+  argv0?: string;
+  stdio?: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio;
+  env?: Record<string, string>;
+  uid?: number;
+  gid?: number;
+  timeout?: number;
+  maxBuffer?: number;
+  encoding: string;
+  shell?: boolean | string;
+  windowsVerbatimArguments?: boolean;
+  windowsHide?: boolean;
+}
+
+export interface SpawnSyncResult {
+  pid?: number;
+  output?: [string | null, string | Buffer, string | Buffer];
+  stdout?: Buffer | string;
+  stderr?: Buffer | string;
+  status?: number | null;
+  signal?: string | null;
+  error?: Error;
+}
+/**
+ * TODO:
+ * - support timeout
+ * - support killSignal
+ * - support maxBuffer
+ * - support stdin
+ */
+export function spawnSync(
+  command: string,
+  args: string[],
+  options: SpawnSyncOptions,
+): SpawnSyncResult {
+  const {
+    env = Deno.env.toObject(),
+    stdio = ["pipe", "pipe", "pipe"],
+    shell = false,
+    cwd,
+    encoding,
+    uid,
+    gid,
+  } = options;
+  const normalisezedStdio = normalizeStdioOption(stdio);
+  [command, args] = buildCommand(command, args ?? [], shell);
+
+  try {
+    const output = Deno.spawnSync(command, {
+      args,
+      cwd,
+      env,
+      stdout: toDenoStdio(normalisezedStdio[1] as NodeStdio | number),
+      stderr: toDenoStdio(normalisezedStdio[2] as NodeStdio | number),
+      uid,
+      gid,
+    });
+
+    const { signal } = output;
+    const status = signal ? null : 0;
+    let stdout = Buffer.from(output.stdout) as string | Buffer;
+    let stderr = Buffer.from(output.stderr) as string | Buffer;
+
+    if (encoding && encoding !== "buffer") {
+      stdout = stdout.toString(encoding);
+      stderr = stderr.toString(encoding);
+    }
+
+    return {
+      status,
+      signal,
+      stdout,
+      stderr,
+      output: [signal, stdout, stderr],
+    };
+  } catch (err) {
+    const errorNo = err instanceof Deno.errors.NotFound ? os.errno.ENOENT : 0;
+    const error = errnoException(
+      mapSysErrnoToUvErrno(errorNo),
+      "spawnSync " + command,
+    );
+    error.path = command;
+    error.spawnargs = args;
+    return { error };
+  }
 }

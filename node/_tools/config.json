@@ -20,7 +20,6 @@
       "test-child-process-spawnsync-env.js",
       "test-child-process-spawnsync-input.js",
       "test-child-process-spawnsync-kill-signal.js",
-      "test-child-process-spawnsync-maxbuf.js",
       "test-console-instance.js",
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
@@ -668,7 +667,6 @@
   "windowsIgnore": {
     "parallel": [
       "test-child-process-kill.js",
-      "test-child-process-spawnsync-input.js",
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",

@@ -37,7 +37,6 @@ if (Deno.args[0] === 'child') {
 
   const expected = 'bar';
   const __filename = Deno.cwd() + "/test/parallel/test-child-process-spawnsync-env.js";
-  console.log(__filename);
   const child = cp.spawnSync(Deno.execPath(), ["run", "-A", "--unstable", __filename, 'child'], {
     env: Object.assign(Deno.env.toObject(), { foo: expected })
   });

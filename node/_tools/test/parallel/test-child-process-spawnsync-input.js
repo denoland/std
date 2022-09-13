@@ -47,7 +47,6 @@ const args = [
 
 let ret;
 
-
 function checkSpawnSyncRet(ret) {
   assert.strictEqual(ret.status, 0);
   assert.strictEqual(ret.error, undefined);
@@ -60,7 +59,8 @@ function verifyBufOutput(ret) {
 }
 
 if (Deno.args.includes('spawnchild')) {
-  switch (Deno.args[3]) {
+  console.log(Deno.args);
+  switch (Deno.args[1]) {
     case '1':
       ret = spawnSync(Deno.execPath(), args, { stdio: 'inherit' });
       checkSpawnSyncRet(ret);
@@ -76,8 +76,8 @@ if (Deno.args.includes('spawnchild')) {
   return;
 }
 
-verifyBufOutput(spawnSync(Deno.execPath(), [__filename, 'spawnchild', 1]));
-verifyBufOutput(spawnSync(Deno.execPath(), [__filename, 'spawnchild', 2]));
+verifyBufOutput(spawnSync(Deno.execPath(), ["run", "-A", "--unstable", __filename, 'spawnchild', 1]));
+verifyBufOutput(spawnSync(Deno.execPath(), ["run", "-A", "--unstable", __filename, 'spawnchild', 2]));
 
 let options = {
   input: 1234
