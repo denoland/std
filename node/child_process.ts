@@ -175,7 +175,7 @@ export function spawnSync(
   options = {
     maxBuffer: MAX_BUFFER,
     ...options,
-  }
+  };
 
   // Validate the timeout, if present.
   validateTimeout(options.timeout);
