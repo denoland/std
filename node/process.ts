@@ -277,6 +277,8 @@ function uncaughtExceptionHandler(err: any, origin: string) {
   process.emit("uncaughtException", err, origin);
 }
 
+let execPath: string | null = null;
+
 class Process extends EventEmitter {
   constructor() {
     super();
@@ -575,7 +577,15 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processexecpath */
   get execPath() {
-    return argv[0];
+    if (execPath) {
+      return execPath;
+    }
+    execPath = Deno.execPath();
+    return execPath;
+  }
+
+  set execPath(path: string) {
+    execPath = path
   }
 
   #startTime = Date.now();
