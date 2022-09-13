@@ -18,8 +18,8 @@ import {
 import { mapValues } from "../../collections/map_values.ts";
 import { Buffer } from "../buffer.ts";
 import { errnoException } from "./errors.ts";
-import { mapSysErrnoToUvErrno } from "../internal_binding/uv.ts";
 import { ErrnoException } from "../_global.d.ts";
+import { codeMap } from "../internal_binding/uv.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -476,12 +476,12 @@ function buildCommand(
 }
 
 function _createSpawnSyncError(
-  errorNo: number,
+  status: string,
   command: string,
   args: string[] = [],
 ): ErrnoException {
   const error = errnoException(
-    mapSysErrnoToUvErrno(errorNo),
+    codeMap.get(status),
     "spawnSync " + command,
   );
   error.path = command;
@@ -554,7 +554,7 @@ export function spawnSync(
     let stderr = Buffer.from(output.stderr) as string | Buffer;
 
     if (stdout.length > maxBuffer! || stderr.length > maxBuffer!) {
-      result.error = _createSpawnSyncError(os.errno.ENOBUFS, command, args);
+      result.error = _createSpawnSyncError("ENOBUFS", command, args);
     }
 
     if (encoding && encoding !== "buffer") {
@@ -568,8 +568,9 @@ export function spawnSync(
     result.stderr = stderr;
     result.output = [signal, stdout, stderr];
   } catch (err) {
-    const errorNo = err instanceof Deno.errors.NotFound ? os.errno.ENOENT : 0;
-    result.error = _createSpawnSyncError(errorNo, command, args);
+    if (err instanceof Deno.errors.NotFound) {
+      result.error = _createSpawnSyncError("ENOENT", command, args);
+    }
   }
   return result;
 }
