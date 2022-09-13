@@ -36,7 +36,7 @@ interface StreamOptions<T extends Stream> extends Abortable {
   ): void;
   autoDestroy?: boolean | undefined;
 }
-interface ReadableOptions extends StreamOptions<Readable> {
+export interface ReadableOptions extends StreamOptions<Readable> {
   encoding?: BufferEncoding | undefined;
   read?(this: Readable, size: number): void;
 }
