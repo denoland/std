@@ -514,10 +514,7 @@ export interface SpawnSyncResult {
   signal?: string | null;
   error?: Error;
 }
-/**
- * TODO:
- * - support stdin
- */
+
 export function spawnSync(
   command: string,
   args: string[],
