@@ -1,12 +1,39 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { notImplemented } from "../_utils.ts";
-import { fromFileUrl } from "../path.ts";
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
+import {
+  ERR_INVALID_ARG_TYPE,
+  // ERR_METHOD_NOT_IMPLEMENTED,
+  ERR_OUT_OF_RANGE,
+} from "../internal/errors.ts";
+import { deprecate, kEmptyObject } from "../internal/util.mjs";
+import { validateFunction, validateInteger } from "../internal/validators.mjs";
+import { errorOrDestroy } from "../internal/streams/destroy.mjs";
+import fs from "../fs.ts";
+import type { openFlags } from "./_fs_open.ts";
+
+// TODO(PolarETech): missing implementation
+// import { kRef, kUnref, FileHandle } from "../internal/fs/promises.mjs";
+
 import { Buffer } from "../buffer.ts";
-import { Readable as NodeReadable } from "../stream.ts";
-import type { ReadableOptions } from "../_stream.d.ts";
+
+import {
+  copyObject,
+  getOptions,
+  getValidatedFd,
+  validatePath,
+} from "../internal/fs/utils.mjs";
+import { finished, Readable } from "../stream.ts";
+import { ReadableOptions } from "../_stream.d.ts";
+import { toPathIfFileURL } from "../internal/url.ts";
+const kFs = Symbol("kFs");
+const kIsPerformingIO = Symbol("kIsPerformingIO");
+
+const kIoDone = Symbol("kIoDone");
+// const kHandle = Symbol("kHandle");
 
 interface ReadStreamOptions {
-  flags?: string;
+  flags?: openFlags;
   encoding?: string | null;
   fd?: number | null;
   mode?: number;
@@ -15,11 +42,139 @@ interface ReadStreamOptions {
   start?: number;
   end?: number;
   highWaterMark?: number;
-  fs?: Record<string, unknown> | null;
+  fs?: typeof fs;
 }
 
-export interface ReadStream extends NodeReadable {
-  path: string;
+export interface ReadStream extends Readable {
+  fd: number | null;
+  [kFs]: typeof fs;
+  path?: string | Buffer;
+  flags: openFlags;
+  mode: number;
+  start?: number;
+  end?: number;
+  pos?: number;
+  bytesRead: number;
+  [kIsPerformingIO]: boolean;
+}
+
+function _construct(this: ReadStream, callback: (err?: Error) => void) {
+  const stream = this as ReadStream;
+  if (typeof stream.fd === "number") {
+    callback();
+    return;
+  }
+
+  // TODO(PolarETech): need to resolve type errors
+  // if (stream.open !== openReadFs) {
+  //   // Backwards compat for monkey patching open().
+  //   const orgEmit = stream.emit;
+  //   stream.emit = function (...args) {
+  //     if (args[0] === "open") {
+  //       this.emit = orgEmit;
+  //       callback();
+  //       Reflect.apply(orgEmit, this, args);
+  //     } else if (args[0] === "error") {
+  //       this.emit = orgEmit;
+  //       callback(args[1]);
+  //     } else {
+  //       Reflect.apply(orgEmit, this, args);
+  //     }
+  //   };
+  //   stream.open();
+  // } else {
+  if (typeof stream.path !== "string") {
+    // TODO(PolarETech): fs.open does not support Buffer currently
+    const er = new ERR_INVALID_ARG_TYPE(
+      "stream.path",
+      ["string", "URL"],
+      stream.path,
+    );
+    callback(er);
+    return;
+  }
+  stream[kFs].open(stream.path, stream.flags, stream.mode, (er, fd) => {
+    if (er) {
+      callback(er);
+    } else {
+      stream.fd = fd;
+      callback();
+      stream.emit("open", stream.fd);
+      stream.emit("ready");
+    }
+  });
+  // }
+}
+
+// TODO(PolarETech): missing FileHandle implementation
+// This generates an fs operations structure for a FileHandle
+// const FileHandleOperations = (handle: FileHandle) => {
+//   return {
+//     open: (path, flags, mode, cb) => {
+//       throw new ERR_METHOD_NOT_IMPLEMENTED("open()");
+//     },
+//     close: (fd, cb) => {
+//       handle[kUnref]();
+//       Promise.prototype.then(handle.close(), () => cb(), cb);
+//     },
+//     read: (fd, buf, offset, length, pos, cb) => {
+//       Promise.prototype.then(
+//         handle.read(buf, offset, length, pos),
+//         (r) => cb(null, r.bytesRead, r.buffer),
+//         (err) => cb(err, 0, buf),
+//       );
+//     },
+//   };
+// };
+
+function close(stream: ReadStream, err: Error, cb: (err?: Error) => void) {
+  if (!stream.fd) {
+    cb(err);
+  } else {
+    stream[kFs].close(stream.fd, (er) => {
+      cb(er || err);
+    });
+    stream.fd = null;
+  }
+}
+
+function importFd(
+  stream: ReadStream,
+  options: ReadStreamOptions & ReadableOptions,
+) {
+  if (typeof options.fd === "number") {
+    // When fd is a raw descriptor, we must keep our fingers crossed
+    // that the descriptor won't get closed, or worse, replaced with
+    // another one
+    // https://github.com/nodejs/node/issues/35862
+    stream[kFs] = options.fs || fs;
+    return options.fd;
+  }
+
+  // TODO(PolarETech): missing FileHandle implementation
+  // else if (
+  //   typeof options.fd === "object" &&
+  //   options.fd instanceof FileHandle
+  // ) {
+  //   // When fd is a FileHandle we can listen for 'close' events
+  //   if (options.fs) {
+  //     // FileHandle is not supported with custom fs operations
+  //     throw new ERR_METHOD_NOT_IMPLEMENTED("FileHandle with fs");
+  //   }
+  //   stream[kHandle] = options.fd;
+  //   stream[kFs] = FileHandleOperations(stream[kHandle]);
+  //   stream[kHandle][kRef]();
+  //   options.fd.on("close", Function.prototype.bind(stream.close, stream));
+  //   return options.fd.fd;
+  // }
+
+  // throw new ERR_INVALID_ARG_TYPE(
+  //   "options.fd",
+  //   ["number", "FileHandle"],
+  //   options.fd,
+  // );
+
+  throw new ERR_INVALID_ARG_TYPE("options.fd", ["number"], options.fd);
 }
 
 export function ReadStream(
@@ -27,17 +182,6 @@ export function ReadStream(
   path: string | URL,
   options?: ReadStreamOptions & ReadableOptions,
 ): ReadStream {
-  const hasBadOptions = options && (
-    options.fd || options.start || options.end || options.fs
-  );
-  if (hasBadOptions) {
-    notImplemented(
-      `fs.ReadStream.prototype.constructor with unsupported options (${
-        JSON.stringify(options)
-      })`,
-    );
-  }
-
   if (!(this instanceof ReadStream)) {
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
@@ -45,40 +189,179 @@ export function ReadStream(
   }
 
   const self = this as ReadStream;
-  const _path = path instanceof URL ? fromFileUrl(path) : path;
-  const file = Deno.openSync(_path, { read: true });
-  const buffer = new Uint8Array(16 * 1024);
 
-  NodeReadable.call(self, {
-    highWaterMark: options?.highWaterMark,
-    encoding: options?.encoding,
-    objectMode: options?.objectMode ?? false,
-    emitClose: options?.emitClose ?? true,
-    autoDestroy: options?.autoClose ?? options?.autoDestroy ?? true,
-    signal: options?.signal,
-    async read(_size) {
-      try {
-        const n = await file.read(buffer);
-        this.push(n ? Buffer.from(buffer.slice(0, n)) : null);
-      } catch (err) {
-        this.destroy(err as Error);
-      }
-    },
-    destroy(err, cb) {
-      try {
-        file.close();
-        // deno-lint-ignore no-empty
-      } catch {}
-      cb(err);
-    },
-  });
+  // A little bit bigger buffer and water marks by default
+  options = copyObject(getOptions(options, kEmptyObject));
+  if (options.highWaterMark === undefined) {
+    options.highWaterMark = 64 * 1024;
+  }
 
-  self.path = _path;
+  if (options.autoDestroy === undefined) {
+    options.autoDestroy = false;
+  }
+
+  if (options.fd == null) {
+    self.fd = null;
+    self[kFs] = options.fs || fs;
+    validateFunction(self[kFs].open, "options.fs.open");
+
+    // Path will be ignored when fd is specified, so it can be falsy
+    self.path = toPathIfFileURL(path);
+    self.flags = options.flags === undefined ? "r" : options.flags;
+    self.mode = options.mode === undefined ? 0o666 : options.mode;
+
+    validatePath(self.path);
+  } else {
+    self.fd = getValidatedFd(importFd(self, options));
+  }
+
+  options.autoDestroy = options.autoClose === undefined
+    ? true
+    : options.autoClose;
+
+  validateFunction(self[kFs].read, "options.fs.read");
+
+  if (options.autoDestroy) {
+    validateFunction(self[kFs].close, "options.fs.close");
+  }
+
+  self.start = options.start;
+  self.end = options.end;
+  self.pos = undefined;
+  self.bytesRead = 0;
+  self[kIsPerformingIO] = false;
+
+  if (self.start !== undefined) {
+    validateInteger(self.start, "start", 0);
+
+    self.pos = self.start;
+  }
+
+  if (self.end === undefined) {
+    self.end = Infinity;
+  } else if (self.end !== Infinity) {
+    validateInteger(self.end, "end", 0);
+
+    if (self.start !== undefined && self.start > self.end) {
+      throw new ERR_OUT_OF_RANGE(
+        "start",
+        `<= "end" (here: ${self.end})`,
+        self.start,
+      );
+    }
+  }
+
+  Reflect.apply(Readable, self, [options]);
 
   return self;
 }
 
-Object.setPrototypeOf(ReadStream.prototype, NodeReadable.prototype);
+Object.setPrototypeOf(ReadStream.prototype, Readable.prototype);
+Object.setPrototypeOf(ReadStream, Readable);
+
+Object.defineProperty(ReadStream.prototype, "autoClose", {
+  get() {
+    return this._readableState.autoDestroy;
+  },
+  set(val) {
+    this._readableState.autoDestroy = val;
+  },
+});
+
+const openReadFs = deprecate(
+  function () {
+    // Noop.
+  },
+  "ReadStream.prototype.open() is deprecated",
+  "DEP0135",
+);
+ReadStream.prototype.open = openReadFs;
+
+ReadStream.prototype._construct = _construct;
+
+ReadStream.prototype._read = function (n: number) {
+  n = this.pos !== undefined
+    ? Math.min(this.end - this.pos + 1, n)
+    : Math.min(this.end - this.bytesRead + 1, n);
+
+  if (n <= 0) {
+    this.push(null);
+    return;
+  }
+
+  const buf = Buffer.allocUnsafeSlow(n);
+
+  this[kIsPerformingIO] = true;
+  this[kFs]
+    .read(
+      this.fd,
+      buf,
+      0,
+      n,
+      this.pos,
+      (er: Error, bytesRead: number, buf: Buffer) => {
+        this[kIsPerformingIO] = false;
+
+        // Tell ._destroy() that it's safe to close the fd now.
+        if (this.destroyed) {
+          this.emit(kIoDone, er);
+          return;
+        }
+
+        if (er) {
+          errorOrDestroy(this, er);
+        } else if (bytesRead > 0) {
+          if (this.pos !== undefined) {
+            this.pos += bytesRead;
+          }
+
+          this.bytesRead += bytesRead;
+
+          if (bytesRead !== buf.length) {
+            // Slow path. Shrink to fit.
+            // Copy instead of slice so that we don't retain
+            // large backing buffer for small reads.
+            const dst = Buffer.allocUnsafeSlow(bytesRead);
+            buf.copy(dst, 0, 0, bytesRead);
+            buf = dst;
+          }
+
+          this.push(buf);
+        } else {
+          this.push(null);
+        }
+      },
+    );
+};
+
+ReadStream.prototype._destroy = function (
+  err: Error,
+  cb: (err?: Error) => void,
+) {
+  // Usually for async IO it is safe to close a file descriptor
+  // even when there are pending operations. However, due to platform
+  // differences file IO is implemented using synchronous operations
+  // running in a thread pool. Therefore, file descriptors are not safe
+  // to close while used in a pending read or write operation. Wait for
+  // any pending IO (kIsPerformingIO) to complete (kIoDone).
+  if (this[kIsPerformingIO]) {
+    this.once(kIoDone, (er?: Error) => close(this, err || er, cb));
+  } else {
+    close(this, err, cb);
+  }
+};
+
+ReadStream.prototype.close = function (cb: (err?: Error | null) => void) {
+  if (typeof cb === "function") finished(this, cb);
+  this.destroy();
+};
+
+Object.defineProperty(ReadStream.prototype, "pending", {
+  get() {
+    return this.fd === null;
+  },
+  configurable: true,
+});
 
 export function createReadStream(
   path: string | URL,
