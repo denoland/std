@@ -9,8 +9,9 @@ import {
 import { deprecate, kEmptyObject } from "../internal/util.mjs";
 import { validateFunction, validateInteger } from "../internal/validators.mjs";
 import { errorOrDestroy } from "../internal/streams/destroy.mjs";
-import fs from "../fs.ts";
-import type { openFlags } from "./_fs_open.ts";
+import { open as fsOpen, type openFlags } from "./_fs_open.ts";
+import { read as fsRead } from "./_fs_read.ts";
+import { close as fsClose } from "./_fs_close.ts";
 
 // TODO(PolarETech): missing implementation
 // import { kRef, kUnref, FileHandle } from "../internal/fs/promises.mjs";
@@ -32,6 +33,12 @@ const kIsPerformingIO = Symbol("kIsPerformingIO");
 const kIoDone = Symbol("kIoDone");
 // const kHandle = Symbol("kHandle");
 
+interface FS {
+  open: typeof fsOpen;
+  read: typeof fsRead;
+  close: typeof fsClose;
+}
+
 interface ReadStreamOptions {
   flags?: openFlags;
   encoding?: string | null;
@@ -42,12 +49,12 @@ interface ReadStreamOptions {
   start?: number;
   end?: number;
   highWaterMark?: number;
-  fs?: typeof fs;
+  fs?: FS;
 }
 
 export interface ReadStream extends Readable {
   fd: number | null;
-  [kFs]: typeof fs;
+  [kFs]: FS;
   path?: string | Buffer;
   flags: openFlags;
   mode: number;
@@ -147,7 +154,7 @@ function importFd(
     // that the descriptor won't get closed, or worse, replaced with
     // another one
     // https://github.com/nodejs/node/issues/35862
-    stream[kFs] = options.fs || fs;
+    stream[kFs] = options.fs || { open: fsOpen, read: fsRead, close: fsClose };
     return options.fd;
   }
 
@@ -202,7 +209,7 @@ export function ReadStream(
 
   if (options.fd == null) {
     self.fd = null;
-    self[kFs] = options.fs || fs;
+    self[kFs] = options.fs || { open: fsOpen, read: fsRead, close: fsClose };
     validateFunction(self[kFs].open, "options.fs.open");
 
     // Path will be ignored when fd is specified, so it can be falsy
