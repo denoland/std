@@ -2,7 +2,11 @@
   "nodeVersion": "18.8.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
-    "fixtures": ["child-process-spawn-node.js", "empty.txt"],
+    "fixtures": [
+      "child-process-spawn-node.js",
+      "empty.txt",
+      "x.txt"
+    ],
     "internet": [
       "test-dns-any.js",
       "test-dns-ipv4.js",
@@ -91,7 +95,8 @@
       "echo.js",
       "empty.txt",
       "exit.js",
-      "loop.js"
+      "loop.js",
+      "x.txt"
     ],
     "internet": [
       "test-dgram-connect.js",
@@ -267,8 +272,14 @@
       "test-fs-chmod.js",
       "test-fs-chown-type-check.js",
       "test-fs-copyfile.js",
+      "test-fs-empty-readStream.js",
       "test-fs-read-stream-autoClose.js",
       "test-fs-read-stream-concurrent-reads.js",
+      "test-fs-read-stream-double-close.js",
+      "test-fs-read-stream-encoding.js",
+      "test-fs-read-stream-fd.js",
+      "test-fs-read-stream-resume.js",
+      "test-fs-read-stream-throw-type-error.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-readdir.js",
       "test-fs-readfile-empty.js",
