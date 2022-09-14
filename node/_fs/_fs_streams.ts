@@ -27,6 +27,7 @@ import {
 import { finished, Readable } from "../stream.ts";
 import { ReadableOptions } from "../_stream.d.ts";
 import { toPathIfFileURL } from "../internal/url.ts";
+import { BufferEncoding } from "../_global.d.ts";
 const kFs = Symbol("kFs");
 const kIsPerformingIO = Symbol("kIsPerformingIO");
 
@@ -41,7 +42,7 @@ interface FS {
 
 interface ReadStreamOptions {
   flags?: openFlags;
-  encoding?: string | null;
+  encoding?: BufferEncoding | null;
   fd?: number | null;
   mode?: number;
   autoClose?: boolean;
@@ -59,7 +60,7 @@ export interface ReadStream extends Readable {
   flags: openFlags;
   mode: number;
   start?: number;
-  end?: number;
+  end: number;
   pos?: number;
   bytesRead: number;
   [kIsPerformingIO]: boolean;
@@ -233,7 +234,7 @@ export function ReadStream(
   }
 
   self.start = options.start;
-  self.end = options.end;
+  self.end = options.end ?? Infinity;
   self.pos = undefined;
   self.bytesRead = 0;
   self[kIsPerformingIO] = false;
@@ -244,9 +245,7 @@ export function ReadStream(
     self.pos = self.start;
   }
 
-  if (self.end === undefined) {
-    self.end = Infinity;
-  } else if (self.end !== Infinity) {
+  if (self.end !== Infinity) {
     validateInteger(self.end, "end", 0);
 
     if (self.start !== undefined && self.start > self.end) {
@@ -286,7 +285,7 @@ ReadStream.prototype.open = openReadFs;
 
 ReadStream.prototype._construct = _construct;
 
-ReadStream.prototype._read = function (n: number) {
+ReadStream.prototype._read = function (this: ReadStream, n: number) {
   n = this.pos !== undefined
     ? Math.min(this.end - this.pos + 1, n)
     : Math.min(this.end - this.bytesRead + 1, n);
@@ -301,12 +300,12 @@ ReadStream.prototype._read = function (n: number) {
   this[kIsPerformingIO] = true;
   this[kFs]
     .read(
-      this.fd,
+      this.fd!,
       buf,
       0,
       n,
-      this.pos,
-      (er: Error, bytesRead: number, buf: Buffer) => {
+      this.pos ?? null,
+      (er, bytesRead, buf) => {
         this[kIsPerformingIO] = false;
 
         // Tell ._destroy() that it's safe to close the fd now.
@@ -317,7 +316,10 @@ ReadStream.prototype._read = function (n: number) {
 
         if (er) {
           errorOrDestroy(this, er);
-        } else if (bytesRead > 0) {
+        } else if (
+          typeof bytesRead === "number" && typeof buf !== "undefined" &&
+          bytesRead > 0
+        ) {
           if (this.pos !== undefined) {
             this.pos += bytesRead;
           }
@@ -342,6 +344,7 @@ ReadStream.prototype._read = function (n: number) {
 };
 
 ReadStream.prototype._destroy = function (
+  this: ReadStream,
   err: Error,
   cb: (err?: Error) => void,
 ) {
@@ -358,7 +361,10 @@ ReadStream.prototype._destroy = function (
   }
 };
 
-ReadStream.prototype.close = function (cb: (err?: Error | null) => void) {
+ReadStream.prototype.close = function (
+  this: ReadStream,
+  cb: (err?: Error | null) => void,
+) {
   if (typeof cb === "function") finished(this, cb);
   this.destroy();
 };
