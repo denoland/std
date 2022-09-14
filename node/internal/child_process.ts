@@ -530,7 +530,7 @@ export function spawnSync(
     gid,
     maxBuffer,
   } = options;
-  const normalisezedStdio = normalizeStdioOption(stdio);
+  const normalizedStdio = normalizeStdioOption(stdio);
   [command, args] = buildCommand(command, args ?? [], shell);
 
   const result: SpawnSyncResult = {};
@@ -539,8 +539,8 @@ export function spawnSync(
       args,
       cwd,
       env,
-      stdout: toDenoStdio(normalisezedStdio[1] as NodeStdio | number),
-      stderr: toDenoStdio(normalisezedStdio[2] as NodeStdio | number),
+      stdout: toDenoStdio(normalizedStdio[1] as NodeStdio | number),
+      stderr: toDenoStdio(normalizedStdio[2] as NodeStdio | number),
       uid,
       gid,
     });
