@@ -30,13 +30,12 @@ import { getSystemErrorName, promisify } from "./util.ts";
 import { createDeferredPromise } from "./internal/util.mjs";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
-import { notImplemented } from "./_utils.ts";
 import { convertToValidSignal } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
 /**
- * Spawns a new Node.js process + fork. Not implmeneted yet.
+ * Spawns a new Node.js process + fork.
  * @param modulePath
  * @param args
  * @param option
@@ -102,8 +101,10 @@ export function fork(
     stringifiedV8Flags.push("--v8-flags=" + v8Flags.join(","));
   }
   args = [
-    // TODO(kt3k): Find corrct args for `fork` execution
-    ...[],
+    "run",
+    "--unstable", // TODO(kt3k): Remove when npm: is stable
+    "--node-modules-dir",
+    "-A",
     ...stringifiedV8Flags,
     ...execArgv,
     modulePath,
@@ -126,7 +127,13 @@ export function fork(
   options.execPath = options.execPath || Deno.execPath();
   options.shell = false;
 
-  notImplemented("child_process.fork");
+  Object.assign(options.env ??= {}, {
+    // deno-lint-ignore no-explicit-any
+    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (Deno as any).core.ops
+      .op_child_process_fork_state(),
+  });
+
+  return spawn(options.execPath, args, options);
 }
 
 // deno-lint-ignore no-empty-interface
