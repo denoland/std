@@ -285,7 +285,7 @@ ReadStream.prototype.open = openReadFs;
 
 ReadStream.prototype._construct = _construct;
 
-ReadStream.prototype._read = function (this: ReadStream, n: number) {
+ReadStream.prototype._read = async function (this: ReadStream, n: number) {
   n = this.pos !== undefined
     ? Math.min(this.end - this.pos + 1, n)
     : Math.min(this.end - this.bytesRead + 1, n);
@@ -297,50 +297,63 @@ ReadStream.prototype._read = function (this: ReadStream, n: number) {
 
   const buf = Buffer.allocUnsafeSlow(n);
 
+  let error: Error | null = null;
+  let bytesRead: number | null = null;
+  let buffer: Buffer | undefined = undefined;
+
   this[kIsPerformingIO] = true;
-  this[kFs]
-    .read(
-      this.fd!,
-      buf,
-      0,
-      n,
-      this.pos ?? null,
-      (er, bytesRead, buf) => {
-        this[kIsPerformingIO] = false;
 
-        // Tell ._destroy() that it's safe to close the fd now.
-        if (this.destroyed) {
-          this.emit(kIoDone, er);
-          return;
-        }
+  await new Promise((resolve) => {
+    this[kFs]
+      .read(
+        this.fd!,
+        buf,
+        0,
+        n,
+        this.pos ?? null,
+        (_er, _bytesRead, _buf) => {
+          error = _er;
+          bytesRead = _bytesRead;
+          buffer = _buf;
+        },
+      );
 
-        if (er) {
-          errorOrDestroy(this, er);
-        } else if (
-          typeof bytesRead === "number" && typeof buf !== "undefined" &&
-          bytesRead > 0
-        ) {
-          if (this.pos !== undefined) {
-            this.pos += bytesRead;
-          }
+    return resolve(true);
+  });
 
-          this.bytesRead += bytesRead;
+  this[kIsPerformingIO] = false;
 
-          if (bytesRead !== buf.length) {
-            // Slow path. Shrink to fit.
-            // Copy instead of slice so that we don't retain
-            // large backing buffer for small reads.
-            const dst = Buffer.allocUnsafeSlow(bytesRead);
-            buf.copy(dst, 0, 0, bytesRead);
-            buf = dst;
-          }
+  // Tell ._destroy() that it's safe to close the fd now.
+  if (this.destroyed) {
+    this.emit(kIoDone, error);
+    return;
+  }
 
-          this.push(buf);
-        } else {
-          this.push(null);
-        }
-      },
-    );
+  if (error) {
+    errorOrDestroy(this, error);
+  } else if (
+    typeof bytesRead === "number" &&
+    bytesRead > 0
+  ) {
+    if (this.pos !== undefined) {
+      this.pos += bytesRead;
+    }
+
+    this.bytesRead += bytesRead;
+
+    if (bytesRead !== buffer!.length) {
+      // Slow path. Shrink to fit.
+      // Copy instead of slice so that we don't retain
+      // large backing buffer for small reads.
+      const dst = Buffer.allocUnsafeSlow(bytesRead);
+      buffer!.copy(dst, 0, 0, bytesRead);
+      buffer = dst;
+    }
+
+    this.push(buffer);
+  } else {
+    this.push(null);
+  }
 };
 
 ReadStream.prototype._destroy = function (
