@@ -144,7 +144,7 @@ export function spawn(
 }
 
 function validateTimeout(timeout?: number) {
-  if (timeout !== undefined && !(Number.isInteger(timeout) && timeout >= 0)) {
+  if (timeout != null && !(Number.isInteger(timeout) && timeout >= 0)) {
     throw new ERR_OUT_OF_RANGE("timeout", "an unsigned integer", timeout);
   }
 }
