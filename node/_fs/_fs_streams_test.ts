@@ -96,6 +96,34 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[node/fs.createReadStream] Handling of read position",
+  async fn() {
+    const readable = createReadStream(testData, {
+      highWaterMark: 3,
+      start: 1,
+      end: 9,
+    });
+
+    const data: (Uint8Array | null)[] = [];
+    readable.on("readable", function () {
+      data.push(readable.read(4));
+      data.push(readable.read(1));
+    });
+
+    readable.on("close", () => {
+      assertEquals(data[0], null);
+      assertEquals(new TextDecoder().decode(data[1] as Uint8Array), "e");
+      assertEquals(new TextDecoder().decode(data[2] as Uint8Array), "llo ");
+      assertEquals(new TextDecoder().decode(data[3] as Uint8Array), "w");
+      assertEquals(new TextDecoder().decode(data[4] as Uint8Array), "orl");
+      assertEquals(data[5], null);
+    });
+
+    assertEquals(await waiter(readable), true);
+  },
+});
+
+Deno.test({
   name: "[node/fs.createReadStream] Destroy the stream with an error",
   async fn() {
     const readable = createReadStream(testData);
