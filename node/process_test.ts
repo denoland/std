@@ -462,6 +462,18 @@ Deno.test("process.execPath", () => {
   assertEquals(process.execPath, process.argv[0]);
 });
 
+Deno.test("process.execPath is writable", () => {
+  // pnpm writes to process.execPath
+  // https://github.com/pnpm/pnpm/blob/67d8b65d2e8da1df3725034b8c5b1fcf3af4ad81/packages/config/src/index.ts#L175
+  const originalExecPath = process.execPath;
+  try {
+    process.execPath = "/path/to/node";
+    assertEquals(process.execPath, "/path/to/node");
+  } finally {
+    process.execPath = originalExecPath;
+  }
+});
+
 Deno.test({
   name: "process.exit",
   async fn() {
