@@ -585,7 +585,7 @@ class Process extends EventEmitter {
   }
 
   set execPath(path: string) {
-    execPath = path
+    execPath = path;
   }
 
   #startTime = Date.now();
