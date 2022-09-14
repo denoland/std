@@ -16,19 +16,28 @@ const __Process$ = { nextTick, stdio };import { Buffer as __Buffer$ } from "./bu
 // issue is resolved: https://github.com/nodejs/readable-stream/issues/482
 
 import {
+  AbortError,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_STREAM_PREMATURE_CLOSE,
 } from "./internal/errors.ts";
 import { destroy } from "./internal/streams/destroy.mjs";
-import { isReadableEnded, isWritableEnded } from "./internal/streams/utils.mjs";
+import finished from "./internal/streams/end-of-stream.mjs";
+import {
+  isDestroyed,
+  isReadable,
+  isReadableEnded,
+  isWritable,
+  isWritableEnded,
+} from "./internal/streams/utils.mjs";
+import { createDeferredPromise, kEmptyObject } from "./internal/util.mjs";
 import { validateBoolean, validateObject } from "./internal/validators.mjs";
 
-let process = __Process$;
-let Buffer = __Buffer$;
-let Readable = rs;
-let Writable = is;
-let Duplex = os;
+const process = __Process$;
+const Buffer = __Buffer$;
+const Readable = rs;
+const Writable = is;
+const Duplex = os;
 
 function isReadableStream(object) {
   return object instanceof ReadableStream;
@@ -40,7 +49,7 @@ function isWritableStream(object) {
 
 Readable.fromWeb = function (
   readableStream,
-  options = {},
+  options = kEmptyObject,
 ) {
   if (!isReadableStream(readableStream)) {
     throw new ERR_INVALID_ARG_TYPE(
@@ -128,7 +137,7 @@ Readable.fromWeb = function (
 
 Writable.fromWeb = function (
   writableStream,
-  options = {},
+  options = kEmptyObject,
 ) {
   if (!isWritableStream(writableStream)) {
     throw new ERR_INVALID_ARG_TYPE(
@@ -270,7 +279,7 @@ Writable.fromWeb = function (
   return writable;
 };
 
-Duplex.fromWeb = function (pair, options) {
+Duplex.fromWeb = function (pair, options = kEmptyObject) {
   validateObject(pair, "pair");
   const {
     readable: readableStream,
@@ -490,3 +499,248 @@ delete Readable.isDisturbed;
 delete Readable.isErrored;
 delete Readable.isReadable;
 delete Readable.pipeline;
+
+// The following code implements Readable.toWeb(), Writable.toWeb(), and
+// Duplex.toWeb(). These functions are not properly implemented in the
+// readable-stream module yet. This can be removed once the following upstream
+// issue is resolved: https://github.com/nodejs/readable-stream/issues/482
+function newReadableStreamFromStreamReadable(
+  streamReadable,
+  options = kEmptyObject,
+) {
+  // Not using the internal/streams/utils isReadableNodeStream utility
+  // here because it will return false if streamReadable is a Duplex
+  // whose readable option is false. For a Duplex that is not readable,
+  // we want it to pass this check but return a closed ReadableStream.
+  if (typeof streamReadable?._readableState !== "object") {
+    throw new ERR_INVALID_ARG_TYPE(
+      "streamReadable",
+      "stream.Readable",
+      streamReadable,
+    );
+  }
+
+  if (isDestroyed(streamReadable) || !isReadable(streamReadable)) {
+    const readable = new ReadableStream();
+    readable.cancel();
+    return readable;
+  }
+
+  const objectMode = streamReadable.readableObjectMode;
+  const highWaterMark = streamReadable.readableHighWaterMark;
+
+  const evaluateStrategyOrFallback = (strategy) => {
+    // If there is a strategy available, use it
+    if (strategy) {
+      return strategy;
+    }
+
+    if (objectMode) {
+      // When running in objectMode explicitly but no strategy, we just fall
+      // back to CountQueuingStrategy
+      return new CountQueuingStrategy({ highWaterMark });
+    }
+
+    // When not running in objectMode explicitly, we just fall
+    // back to a minimal strategy that just specifies the highWaterMark
+    // and no size algorithm. Using a ByteLengthQueuingStrategy here
+    // is unnecessary.
+    return { highWaterMark };
+  };
+
+  const strategy = evaluateStrategyOrFallback(options?.strategy);
+
+  let controller;
+
+  function onData(chunk) {
+    // Copy the Buffer to detach it from the pool.
+    if (Buffer.isBuffer(chunk) && !objectMode) {
+      chunk = new Uint8Array(chunk);
+    }
+    controller.enqueue(chunk);
+    if (controller.desiredSize <= 0) {
+      streamReadable.pause();
+    }
+  }
+
+  streamReadable.pause();
+
+  const cleanup = finished(streamReadable, (error) => {
+    if (error?.code === "ERR_STREAM_PREMATURE_CLOSE") {
+      const err = new AbortError(undefined, { cause: error });
+      error = err;
+    }
+
+    cleanup();
+    // This is a protection against non-standard, legacy streams
+    // that happen to emit an error event again after finished is called.
+    streamReadable.on("error", () => {});
+    if (error) {
+      return controller.error(error);
+    }
+    controller.close();
+  });
+
+  streamReadable.on("data", onData);
+
+  return new ReadableStream({
+    start(c) {
+      controller = c;
+    },
+
+    pull() {
+      streamReadable.resume();
+    },
+
+    cancel(reason) {
+      destroy(streamReadable, reason);
+    },
+  }, strategy);
+}
+
+function newWritableStreamFromStreamWritable(streamWritable) {
+  // Not using the internal/streams/utils isWritableNodeStream utility
+  // here because it will return false if streamWritable is a Duplex
+  // whose writable option is false. For a Duplex that is not writable,
+  // we want it to pass this check but return a closed WritableStream.
+  if (typeof streamWritable?._writableState !== "object") {
+    throw new ERR_INVALID_ARG_TYPE(
+      "streamWritable",
+      "stream.Writable",
+      streamWritable,
+    );
+  }
+
+  if (isDestroyed(streamWritable) || !isWritable(streamWritable)) {
+    const writable = new WritableStream();
+    writable.close();
+    return writable;
+  }
+
+  const highWaterMark = streamWritable.writableHighWaterMark;
+  const strategy = streamWritable.writableObjectMode
+    ? new CountQueuingStrategy({ highWaterMark })
+    : { highWaterMark };
+
+  let controller;
+  let backpressurePromise;
+  let closed;
+
+  function onDrain() {
+    if (backpressurePromise !== undefined) {
+      backpressurePromise.resolve();
+    }
+  }
+
+  const cleanup = finished(streamWritable, (error) => {
+    if (error?.code === "ERR_STREAM_PREMATURE_CLOSE") {
+      const err = new AbortError(undefined, { cause: error });
+      error = err;
+    }
+
+    cleanup();
+    // This is a protection against non-standard, legacy streams
+    // that happen to emit an error event again after finished is called.
+    streamWritable.on("error", () => {});
+    if (error != null) {
+      if (backpressurePromise !== undefined) {
+        backpressurePromise.reject(error);
+      }
+      // If closed is not undefined, the error is happening
+      // after the WritableStream close has already started.
+      // We need to reject it here.
+      if (closed !== undefined) {
+        closed.reject(error);
+        closed = undefined;
+      }
+      controller.error(error);
+      controller = undefined;
+      return;
+    }
+
+    if (closed !== undefined) {
+      closed.resolve();
+      closed = undefined;
+      return;
+    }
+    controller.error(new AbortError());
+    controller = undefined;
+  });
+
+  streamWritable.on("drain", onDrain);
+
+  return new WritableStream({
+    start(c) {
+      controller = c;
+    },
+
+    async write(chunk) {
+      if (streamWritable.writableNeedDrain || !streamWritable.write(chunk)) {
+        backpressurePromise = createDeferredPromise();
+        return backpressurePromise.promise.finally(() => {
+          backpressurePromise = undefined;
+        });
+      }
+    },
+
+    abort(reason) {
+      destroy(streamWritable, reason);
+    },
+
+    close() {
+      if (closed === undefined && !isWritableEnded(streamWritable)) {
+        closed = createDeferredPromise();
+        streamWritable.end();
+        return closed.promise;
+      }
+
+      controller = undefined;
+      return Promise.resolve();
+    },
+  }, strategy);
+}
+
+function newReadableWritablePairFromDuplex(duplex) {
+  // Not using the internal/streams/utils isWritableNodeStream and
+  // isReadableNodestream utilities here because they will return false
+  // if the duplex was created with writable or readable options set to
+  // false. Instead, we'll check the readable and writable state after
+  // and return closed WritableStream or closed ReadableStream as
+  // necessary.
+  if (
+    typeof duplex?._writableState !== "object" ||
+    typeof duplex?._readableState !== "object"
+  ) {
+    throw new ERR_INVALID_ARG_TYPE("duplex", "stream.Duplex", duplex);
+  }
+
+  if (isDestroyed(duplex)) {
+    const writable = new WritableStream();
+    const readable = new ReadableStream();
+    writable.close();
+    readable.cancel();
+    return { readable, writable };
+  }
+
+  const writable = isWritable(duplex)
+    ? newWritableStreamFromStreamWritable(duplex)
+    : new WritableStream();
+
+  if (!isWritable(duplex)) {
+    writable.close();
+  }
+
+  const readable = isReadable(duplex)
+    ? newReadableStreamFromStreamReadable(duplex)
+    : new ReadableStream();
+
+  if (!isReadable(duplex)) {
+    readable.cancel();
+  }
+
+  return { writable, readable };
+}
+
+Readable.toWeb = newReadableStreamFromStreamReadable;
+Writable.toWeb = newWritableStreamFromStreamWritable;
+Duplex.toWeb = newReadableWritablePairFromDuplex;

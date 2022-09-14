@@ -501,11 +501,13 @@ export class AssertionError extends Error {
 
     this.generatedMessage = !message;
     ObjectDefineProperty(this, "name", {
+      __proto__: null,
       value: "AssertionError [ERR_ASSERTION]",
       enumerable: false,
       writable: true,
       configurable: true,
-    });
+      // deno-lint-ignore no-explicit-any
+    } as any);
     this.code = "ERR_ASSERTION";
 
     if (details) {

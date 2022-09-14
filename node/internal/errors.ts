@@ -1430,14 +1430,6 @@ export class ERR_INVALID_BUFFER_SIZE extends NodeRangeError {
     super("ERR_INVALID_BUFFER_SIZE", `Buffer size must be a multiple of ${x}`);
   }
 }
-export class ERR_INVALID_CALLBACK extends NodeTypeError {
-  constructor(object: unknown) {
-    super(
-      "ERR_INVALID_CALLBACK",
-      `Callback must be a function. Received ${inspect(object)}`,
-    );
-  }
-}
 export class ERR_INVALID_CURSOR_POS extends NodeTypeError {
   constructor() {
     super(
@@ -2336,7 +2328,7 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
     super(
       "ERR_INVALID_RETURN_VALUE",
       `Expected ${input} to be returned from the "${name}" function but got ${
-        buildReturnPropertyType(
+        determineSpecificType(
           value,
         )
       }.`,
@@ -2546,7 +2538,6 @@ export function aggregateTwoErrors(
 codes.ERR_IPC_CHANNEL_CLOSED = ERR_IPC_CHANNEL_CLOSED;
 codes.ERR_INVALID_ARG_TYPE = ERR_INVALID_ARG_TYPE;
 codes.ERR_INVALID_ARG_VALUE = ERR_INVALID_ARG_VALUE;
-codes.ERR_INVALID_CALLBACK = ERR_INVALID_CALLBACK;
 codes.ERR_OUT_OF_RANGE = ERR_OUT_OF_RANGE;
 codes.ERR_SOCKET_BAD_PORT = ERR_SOCKET_BAD_PORT;
 codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
@@ -2569,6 +2560,31 @@ const genericNodeError = hideStackFrames(
     return err;
   },
 );
+
+/**
+ * Determine the specific type of a value for type-mismatch errors.
+ * @param {*} value
+ * @returns {string}
+ */
+// deno-lint-ignore no-explicit-any
+function determineSpecificType(value: any) {
+  if (value == null) {
+    return "" + value;
+  }
+  if (typeof value === "function" && value.name) {
+    return `function ${value.name}`;
+  }
+  if (typeof value === "object") {
+    if (value.constructor?.name) {
+      return `an instance of ${value.constructor.name}`;
+    }
+    return `${inspect(value, { depth: -1 })}`;
+  }
+  let inspected = inspect(value, { colors: false });
+  if (inspected.length > 28) inspected = `${inspected.slice(0, 25)}...`;
+
+  return `type ${typeof value} (${inspected})`;
+}
 
 export { codes, genericNodeError, hideStackFrames };
 
@@ -2687,7 +2703,6 @@ export default {
   ERR_INVALID_ARG_VALUE_RANGE,
   ERR_INVALID_ASYNC_ID,
   ERR_INVALID_BUFFER_SIZE,
-  ERR_INVALID_CALLBACK,
   ERR_INVALID_CHAR,
   ERR_INVALID_CURSOR_POS,
   ERR_INVALID_FD,
