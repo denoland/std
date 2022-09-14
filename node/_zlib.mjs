@@ -4,12 +4,11 @@
 
 // deno-lint-ignore-file
 
-import { Buffer } from "./buffer.ts";
+import { Buffer, kMaxLength } from "./buffer.ts";
 import { Transform } from "./stream.ts";
 import * as binding from "./_zlib_binding.mjs";
 import util from "./util.ts";
 import { ok as assert } from "./assert.ts";
-import { kMaxLength } from "./_buffer.mjs";
 import { zlib as zlibConstants } from "./internal_binding/constants.ts";
 import { nextTick } from "./_next_tick.ts";
 
