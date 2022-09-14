@@ -151,7 +151,7 @@ function validateTimeout(timeout?: number) {
 
 function validateMaxBuffer(maxBuffer?: number) {
   if (
-    maxBuffer !== undefined &&
+    maxBuffer != null &&
     !(typeof maxBuffer === "number" && maxBuffer >= 0)
   ) {
     throw new ERR_OUT_OF_RANGE(
