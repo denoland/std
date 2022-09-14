@@ -37,7 +37,7 @@ if (Deno.args[0] === 'child') {
   const cp = require('child_process');
 
   const expected = 'bar';
-  const child = cp.spawnSync(process.execPath, ["run", "-A", "--unstable", __filename, 'child'], {
+  const child = cp.spawnSync(process.execPath, ["run", "-A", __filename, 'child'], {
     env: Object.assign(process.env, { foo: expected })
   });
 
