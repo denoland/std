@@ -13,7 +13,7 @@ export function writev(fd, buffers, position, callback) {
       if (Buffer.isBuffer(buffers[i])) {
         chunks.push(buffers[i]);
       } else {
-        chunks.push(new Buffer(buffers[i]));
+        chunks.push(Buffer.from(buffers[i]));
       }
     }
     if (typeof position === "number") {
@@ -54,7 +54,7 @@ export function writevSync(fd, buffers, position) {
       if (Buffer.isBuffer(buffers[i])) {
         chunks.push(buffers[i]);
       } else {
-        chunks.push(new Buffer(buffers[i]));
+        chunks.push(Buffer.from(buffers[i]));
       }
     }
     if (typeof position === "number") {
