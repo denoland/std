@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 /**
- * Generates sliding views of the given array of the given size and returns a new
- * array containing all of them.
+ * Generates sliding views of the given array of the given size and returns a
+ * new array containing all of them.
  *
  * If step is set, each window will start that many elements after the last
  * window's start. (Default: 1)
@@ -12,8 +12,7 @@
  * collection, resulting in some undefined values if size is greater than 1.
  * (Default: false)
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/sliding_windows.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

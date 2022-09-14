@@ -5,12 +5,11 @@
  * Returns the first element having the largest value according to the provided
  * comparator or undefined if there are no elements.
  *
- * The comparator is expected to work exactly like one passed to `Array.sort`, which means
- * that `comparator(a, b)` should return a negative number if `a < b`, a positive number if `a > b`
- * and `0` if `a == b`.
+ * The comparator is expected to work exactly like one passed to `Array.sort`,
+ * which means that `comparator(a, b)` should return a negative number if `a < b`,
+ * a positive number if `a > b` and `0` if `a == b`.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/max_with.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

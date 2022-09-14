@@ -12,7 +12,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
   clear(): void;
   /** Clears the debounce timeout and calls the debounced function immediately. */
   flush(): void;
-  /** Returns a boolean wether a debounce call is pending or not. */
+  /** Returns a boolean whether a debounce call is pending or not. */
   readonly pending: boolean;
 }
 
@@ -22,6 +22,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * again before the timeout expires, the previous call will be
  * aborted.
  *
+ * @example
  * ```
  * import { debounce } from "./debounce.ts";
  *
@@ -31,9 +32,11 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  *   200,
  * );
  *
- * for await (const event of Deno.watchFs("./")) {
- *   log(event);
- * }
+ * p("foo");
+ * p("bar");
+ * p("baz");
+ * // wait 200ms ...
+ * // output: Function debounced after 200ms with baz
  * ```
  *
  * @param fn    The function to debounce.
