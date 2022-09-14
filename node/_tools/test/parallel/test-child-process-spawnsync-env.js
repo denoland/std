@@ -27,17 +27,16 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
+require('../common');
+const assert = require('assert');
+const cp = require('child_process');
 
-if (Deno.args[0] === 'child') {
-  console.log(Deno.env.get("foo"));
+if (process.argv[2] === 'child') {
+  console.log(process.env.foo);
 } else {
-  require('../common');
-  const assert = require('assert');
-  const cp = require('child_process');
-
   const expected = 'bar';
-  const child = cp.spawnSync(Deno.execPath(), ["run", "-A", "--unstable", __filename, 'child'], {
-    env: Object.assign(Deno.env.toObject(), { foo: expected })
+  const child = cp.spawnSync(process.execPath, [__filename, 'child'], {
+    env: Object.assign(process.env, { foo: expected })
   });
 
   assert.strictEqual(child.stdout.toString().trim(), expected);

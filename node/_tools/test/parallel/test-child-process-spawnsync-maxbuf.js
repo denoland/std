@@ -24,7 +24,7 @@ const args = [
 
 // Verify that an error is returned if maxBuffer is surpassed.
 {
-  const ret = spawnSync(Deno.execPath(), args, { maxBuffer: 1 });
+  const ret = spawnSync(process.execPath, args, { maxBuffer: 1 });
 
   assert.ok(ret.error, 'maxBuffer should error');
   assert.strictEqual(ret.error.code, 'ENOBUFS');
@@ -36,7 +36,7 @@ const args = [
 
 // Verify that a maxBuffer size of Infinity works.
 {
-  const ret = spawnSync(Deno.execPath(), args, { maxBuffer: Infinity });
+  const ret = spawnSync(process.execPath, args, { maxBuffer: Infinity });
 
   assert.ifError(ret.error);
   assert.deepStrictEqual(ret.stdout, msgOutBuf);
@@ -45,7 +45,7 @@ const args = [
 // Default maxBuffer size is 1024 * 1024.
 {
   const args = ['eval', "console.log('a'.repeat(1024 * 1024))"];
-  const ret = spawnSync(Deno.execPath(), args);
+  const ret = spawnSync(process.execPath, args);
 
   assert.ok(ret.error, 'maxBuffer should error');
   assert.strictEqual(ret.error.code, 'ENOBUFS');
@@ -55,7 +55,7 @@ const args = [
 // Default maxBuffer size is 1024 * 1024.
 {
   const args = ['eval', "console.log('a'.repeat(1024 * 1024 - 1))"];
-  const ret = spawnSync(Deno.execPath(), args);
+  const ret = spawnSync(process.execPath, args);
 
   assert.ifError(ret.error);
   assert.deepStrictEqual(

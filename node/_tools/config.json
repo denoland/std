@@ -17,7 +17,6 @@
       "test-buffer-from.js",
       "test-buffer-includes.js",
       "test-buffer-indexof.js",
-      "test-child-process-spawnsync-env.js",
       "test-child-process-spawnsync-maxbuf.js",
       "test-console-instance.js",
       "test-dgram-custom-lookup.js",
