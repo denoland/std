@@ -40,7 +40,7 @@
  * console.log(Deno.env.get("GREETING"));
  * ```
  *
- * ```
+ * ```sh
  * > deno run --allow-env --allow-read app.ts
  * hello world
  * ```
