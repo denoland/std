@@ -307,9 +307,9 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
     // TODO(PolarETech):
     // Handling of "position" option in fs.read differs from Node.
     // The following steps are tentative patches.
-    if (this.fd && !this.bytesRead && this.pos) {
+    if (this.fd && !this.bytesRead) {
       try {
-        Deno.seekSync(this.fd, this.pos, Deno.SeekMode.Start);
+        Deno.seekSync(this.fd, this.pos ?? 0, Deno.SeekMode.Start);
       } catch (err) {
         error = err as Error;
         return resolve(false);
