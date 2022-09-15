@@ -4,10 +4,10 @@
 import { Direction } from "./bs_node.ts";
 import { RedBlackNode } from "./red_black_node.ts";
 
-/** @deprecated use Direction instead */
+/** @deprecated (will be removed after 0.157.0) use Direction instead */
 export type { Direction as direction };
 
 export type { Direction };
 
-/** @deprecated use RedBlackNode instead */
+/** @deprecated (will be removed after 0.157.0) use RedBlackNode instead */
 export { RedBlackNode as RBNode };
