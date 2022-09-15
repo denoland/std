@@ -281,7 +281,6 @@
       "test-fs-read-stream-encoding.js",
       "test-fs-read-stream-fd.js",
       "test-fs-read-stream-inherit.js",
-      "test-fs-read-stream-pos.js",
       "test-fs-read-stream-resume.js",
       "test-fs-read-stream-throw-type-error.js",
       "test-fs-readdir-stack-overflow.js",
