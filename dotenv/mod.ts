@@ -61,8 +61,7 @@
  *   becomes
  *
  * ```
- * { MULTILINE: "new
- * line" }
+ * { MULTILINE: "new\nline" }
  * ```
  *
  * - inner quotes are maintained (think JSON) (`JSON={"foo": "bar"}` becomes
