@@ -7,6 +7,7 @@ const UUID_RE =
 /**
  * Validate that the passed UUID is an RFC4122 v4 UUID.
  *
+ * @example
  * ```ts
  * import { validate } from "./v4.ts";
  * import { generate as generateV1 } from "./v1.ts";

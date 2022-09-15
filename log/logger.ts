@@ -13,6 +13,10 @@ export interface LogRecordOptions {
   loggerName: string;
 }
 
+/**
+ * An object that encapsulates provided message and arguments as well some
+ * metadata that can be later used when formatting a message.
+ */
 export class LogRecord {
   readonly msg: string;
   #args: unknown[];

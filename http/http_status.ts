@@ -6,8 +6,7 @@
  * codes and provides several type guards for handling status codes with type
  * safety.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import {
  *   Status,
