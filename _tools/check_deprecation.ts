@@ -5,7 +5,7 @@ import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
 import { doc } from "https://deno.land/x/deno_doc/mod.ts";
 
-const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
+const EXTENSIONS = [".mjs", ".js", ".ts"];
 const EXCLUDED_PATHS = [
   ".git",
   "node/",
