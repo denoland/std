@@ -30,6 +30,8 @@ export interface ParseStreamOptions {
  * This can be used to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
+ * @example
+ * parse JSON lines or NDJSON
  * ```ts
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
  * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
@@ -38,8 +40,29 @@ export interface ParseStreamOptions {
  * const { body } = await fetch(url);
  *
  * const readable = body!
+ *   .pipeThrough(new TextDecoderStream())  // convert Uint8Array to string
+ *   .pipeThrough(new TextLineStream()) // transform into a stream where each chunk is divided by a newline
+ *   .pipeThrough(new JsonParseStream()); // parse each chunk as JSON
+ *
+ * for await (const data of readable) {
+ *   console.log(data);
+ * }
+ * ```
+ *
+ * @example
+ * parse JSON Text Sequences
+ * ```ts
+ * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ *
+ * const url =
+ *   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.json-seq";
+ * const { body } = await fetch(url);
+ *
+ * const delimiter = "\x1E";
+ * const readable = body!
  *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextLineStream()) // or `new TextDelimiterStream(delimiter)`
+ *   .pipeThrough(new TextDelimiterStream(delimiter)) // transform into a stream where each chunk is divided by a delimiter
  *   .pipeThrough(new JsonParseStream());
  *
  * for await (const data of readable) {
@@ -81,6 +104,7 @@ function isBrankString(str: string) {
 /**
  * stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
+ * @example
  * ```ts
  * import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
@@ -88,8 +112,8 @@ function isBrankString(str: string) {
  * const { body } = await fetch(url);
  *
  * const readable = body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new ConcatenatedJSONParseStream());
+ *   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
+ *   .pipeThrough(new ConcatenatedJSONParseStream()); // parse Concatenated JSON
  *
  * for await (const data of readable) {
  *   console.log(data);

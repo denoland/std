@@ -5,8 +5,32 @@
 /** Pretty print bytes.
  *
  * Based on [pretty-bytes](https://github.com/sindresorhus/pretty-bytes).
+ * A utility for displaying file sizes for humans.
  *
  * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+ *
+ * prettyBytes(1337);
+ * //=> '1.34 kB'
+ *
+ * prettyBytes(100);
+ * //=> '100 B'
+ *
+ * // Display with units of bits
+ * prettyBytes(1337, { bits: true });
+ * //=> '1.34 kbit'
+ *
+ * // Display file size differences
+ * prettyBytes(42, { signed: true });
+ * //=> '+42 B'
+ *
+ * // Localized output using German locale
+ * prettyBytes(1337, { locale: "de" });
+ * //=> '1,34 kB'
+ * ```
  *
  * @module
  */
@@ -35,7 +59,7 @@ export interface PrettyBytesOptions {
 }
 
 /**
- * Convert bytes to a human readable string: 1337 → 1.34 kB
+ * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
  * @param num The number to format
  * @param options The options

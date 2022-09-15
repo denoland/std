@@ -7,7 +7,16 @@ interface MoveOptions {
   overwrite?: boolean;
 }
 
-/** Moves a file or directory */
+/**
+ * Moves a file or directory.
+ *
+ * @example
+ * ```ts
+ * import { move } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * move("./foo", "./bar"); // returns a promise
+ * ```
+ */
 export async function move(
   src: string | URL,
   dest: string | URL,
@@ -43,7 +52,15 @@ export async function move(
   return;
 }
 
-/** Moves a file or directory synchronously */
+/**
+ * Moves a file or directory synchronously.
+ * @example
+ * ```ts
+ * import { moveSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * moveSync("./foo", "./bar"); // void
+ * ```
+ */
 export function moveSync(
   src: string | URL,
   dest: string | URL,

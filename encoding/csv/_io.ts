@@ -5,21 +5,22 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../../_util/assert.ts";
 
-/**
- * @property separator - Character which separates values. Default: ','
- * @property comment - Character to start a comment. Default: '#'
- * @property trimLeadingSpace - Flag to trim the leading space of the value.
- *           Default: 'false'
- * @property lazyQuotes - Allow unquoted quote in a quoted field or non double
- *           quoted quotes in quoted field. Default: 'false'
- * @property fieldsPerRecord - Enabling the check of fields for each row.
- *           If == 0, first row is used as referral for the number of fields.
- */
 export interface ReadOptions {
+  /** Character which separates values. Default: `","`. */
   separator?: string;
+  /** Character to start a comment. Default: `"#"`. */
   comment?: string;
+  /** Flag to trim the leading space of the value. Default: `false`. */
   trimLeadingSpace?: boolean;
+  /**
+   * Allow unquoted quote in a quoted field or non-double-quoted quotes in
+   * quoted field. Default: `false`.
+   */
   lazyQuotes?: boolean;
+  /**
+   * Enabling the check of fields for each row. If == 0, first row is used as
+   * referral for the number of fields.
+   */
   fieldsPerRecord?: number;
 }
 

@@ -42,9 +42,13 @@ function wrapErrorWithRootPath(err: unknown, root: string) {
 }
 
 export interface WalkOptions {
+  /** Default: Infinity */
   maxDepth?: number;
+  /** Default: true */
   includeFiles?: boolean;
+  /** Default: true */
   includeDirs?: boolean;
+  /** Default: false */
   followSymlinks?: boolean;
   exts?: string[];
   match?: RegExp[];
@@ -52,28 +56,21 @@ export interface WalkOptions {
 }
 export type { WalkEntry };
 
-/** Walks the file tree rooted at root, yielding each file or directory in the
+/**
+ * Walks the file tree rooted at root, yielding each file or directory in the
  * tree filtered according to the given options. The files are walked in lexical
  * order, which makes the output deterministic but means that for very large
  * directories walk() can be inefficient.
  *
- * Options:
- * - maxDepth?: number = Infinity;
- * - includeFiles?: boolean = true;
- * - includeDirs?: boolean = true;
- * - followSymlinks?: boolean = false;
- * - exts?: string[];
- * - match?: RegExp[];
- * - skip?: RegExp[];
- *
+ * @example
  * ```ts
- *       import { walk } from "./walk.ts";
- *       import { assert } from "../testing/asserts.ts";
+ * import { walk } from "./walk.ts";
+ * import { assert } from "../testing/asserts.ts";
  *
- *       for await (const entry of walk(".")) {
- *         console.log(entry.path);
- *         assert(entry.isFile);
- *       }
+ * for await (const entry of walk(".")) {
+ *   console.log(entry.path);
+ *   assert(entry.isFile);
+ * }
  * ```
  */
 export async function* walk(

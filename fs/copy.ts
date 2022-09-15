@@ -8,9 +8,7 @@ import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 
 export interface CopyOptions {
-  /**
-   * overwrite existing file or directory. Default is `false`
-   */
+  /** overwrite existing file or directory. Default is `false` */
   overwrite?: boolean;
   /**
    * When `true`, will set last modification and access times to the ones of the
@@ -22,9 +20,7 @@ export interface CopyOptions {
 }
 
 interface InternalCopyOptions extends CopyOptions {
-  /**
-   * default is `false`
-   */
+  /** default is `false */
   isFolder?: boolean;
 }
 
@@ -243,6 +239,13 @@ function copyDirSync(
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * copy("./foo", "./bar"); // returns a promise
+ * ```
+ *
  * @param src the file/directory path.
  *            Note that if `src` is a directory it will copy everything inside
  *            of this directory, not the entire directory itself
@@ -282,6 +285,12 @@ export async function copy(
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { copySync } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * copySync("./foo", "./bar"); // void
+ * ```
  * @param src the file/directory path.
  *            Note that if `src` is a directory it will copy everything inside
  *            of this directory, not the entire directory itself

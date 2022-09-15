@@ -9,6 +9,23 @@
  *
  * This module is browser compatible.
  *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * const b32Repr = "RC2E6GA=";
+ *
+ * const binaryData = decode(b32Repr);
+ * console.log(binaryData);
+ * // => Uint8Array [ 136, 180, 79, 24 ]
+ *
+ * console.log(encode(binaryData));
+ * // => RC2E6GA=
+ * ```
+ *
  * @module
  */
 

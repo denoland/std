@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-/** Helpers for working with the filesystem.
+/**
+ * Helpers for working with the filesystem.
  *
  * @module
  */

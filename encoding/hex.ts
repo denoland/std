@@ -8,6 +8,22 @@
  *
  * This module is browser compatible.
  *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ *
+ * const binary = new TextEncoder().encode("abc");
+ * const encoded = encode(binary);
+ * console.log(encoded);
+ * // => Uint8Array(6) [ 54, 49, 54, 50, 54, 51 ]
+ *
+ * console.log(decode(encoded));
+ * // => Uint8Array(3) [ 97, 98, 99 ]
+ * ```
+ *
  * @module
  */
 
