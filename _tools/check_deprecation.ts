@@ -53,7 +53,7 @@ async function walk(dir: string) {
     const filePath = `${dir}/${x.name}`;
 
     if (x.isDirectory) {
-      walk(filePath);
+      await walk(filePath);
       continue;
     }
 
