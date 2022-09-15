@@ -32,9 +32,9 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  *   200,
  * );
  *
- * p("foo");
- * p("bar");
- * p("baz");
+ * for await (const event of Deno.watchFs("./")) {
+ *   log(event);
+ * }
  * // wait 200ms ...
  * // output: Function debounced after 200ms with baz
  * ```

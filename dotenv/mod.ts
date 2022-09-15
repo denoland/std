@@ -18,7 +18,7 @@
  *
  * Then run your app.
  *
- * ```
+ * ```sh
  * > deno run --allow-env --allow-read app.ts
  * { GREETING: "hello world" }
  * ```

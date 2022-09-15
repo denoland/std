@@ -16,7 +16,7 @@ export class DeadlineError extends Error {
  * @example
  * ```typescript
  * import { deadline } from "./deadline.ts";
- * import { delay } from "./deadline.ts";
+ * import { delay } from "./delay.ts";
  *
  * const delayedPromise = delay(1000);
  * // Below throws `DeadlineError` after 10 ms
