@@ -67,51 +67,50 @@ export interface ReadStream extends Readable {
 }
 
 function _construct(this: ReadStream, callback: (err?: Error) => void) {
-  const stream = this as ReadStream;
+  const stream = this as ReadStream & { open: () => void };
   if (typeof stream.fd === "number") {
     callback();
     return;
   }
 
-  // TODO(PolarETech): need to resolve type errors
-  // if (stream.open !== openReadFs) {
-  //   // Backwards compat for monkey patching open().
-  //   const orgEmit = stream.emit;
-  //   stream.emit = function (...args) {
-  //     if (args[0] === "open") {
-  //       this.emit = orgEmit;
-  //       callback();
-  //       Reflect.apply(orgEmit, this, args);
-  //     } else if (args[0] === "error") {
-  //       this.emit = orgEmit;
-  //       callback(args[1]);
-  //     } else {
-  //       Reflect.apply(orgEmit, this, args);
-  //     }
-  //   };
-  //   stream.open();
-  // } else {
-  if (typeof stream.path !== "string") {
-    // TODO(PolarETech): fs.open does not support Buffer currently
-    const er = new ERR_INVALID_ARG_TYPE(
-      "stream.path",
-      ["string", "URL"],
-      stream.path,
-    );
-    callback(er);
-    return;
-  }
-  stream[kFs].open(stream.path, stream.flags, stream.mode, (er, fd) => {
-    if (er) {
+  if (stream.open !== openReadFs) {
+    // Backwards compat for monkey patching open().
+    const orgEmit = stream.emit;
+    stream.emit = function (this: ReadStream, ...args) {
+      if (args[0] === "open") {
+        this.emit = orgEmit;
+        callback();
+        Reflect.apply(orgEmit, this, args);
+      } else if (args[0] === "error") {
+        this.emit = orgEmit;
+        callback(args[1]);
+      } else {
+        Reflect.apply(orgEmit, this, args);
+      }
+    } as typeof orgEmit;
+    stream.open();
+  } else {
+    if (typeof stream.path !== "string") {
+      // TODO(PolarETech): fs.open does not support Buffer currently
+      const er = new ERR_INVALID_ARG_TYPE(
+        "stream.path",
+        ["string", "URL"],
+        stream.path,
+      );
       callback(er);
-    } else {
-      stream.fd = fd;
-      callback();
-      stream.emit("open", stream.fd);
-      stream.emit("ready");
+      return;
     }
-  });
-  // }
+    stream[kFs].open(stream.path, stream.flags, stream.mode, (er, fd) => {
+      if (er) {
+        callback(er);
+      } else {
+        stream.fd = fd;
+        callback();
+        stream.emit("open", stream.fd);
+        stream.emit("ready");
+      }
+    });
+  }
 }
 
 // TODO(PolarETech): missing FileHandle implementation
