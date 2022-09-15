@@ -12,9 +12,7 @@ import { encode as encodeToHex } from "../../../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
-import { notImplemented } from "../../_utils.ts";
-import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
-import { KeyObject } from "./keys.ts";
+import type { BinaryToTextEncoding, Encoding } from "./types.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -124,28 +122,62 @@ export class Hash extends Transform {
 }
 
 export class Hmac extends Transform {
+  #ipad: Uint8Array = new Uint8Array();
+  #opad: Uint8Array = new Uint8Array();
+  #ZEROES = Buffer.alloc(128);
+  #algorithm: string;
+  #hash: Hash;
+
   constructor(
     hmac: string,
-    _key: BinaryLike | KeyObject,
-    _options?: TransformOptions,
+    key: string | ArrayBuffer,
+    options?: TransformOptions,
   ) {
     validateString(hmac, "hmac");
 
     super();
 
-    notImplemented("crypto.Hmac");
+    const uint8TKey = typeof key === "string"
+      ? new TextEncoder().encode(key)
+      : key instanceof Uint8Array
+      ? key
+      : new Uint8Array(key);
+
+    this.#hash = new Hash(hmac, options);
+    this.#algorithm = hmac;
+
+    const blockSize =
+      (hmac.toLowerCase() === "sha512" || hmac.toLowerCase() === "sha384")
+        ? 128
+        : 64;
+    const keySize = uint8TKey.length;
+
+    if (keySize > blockSize) {
+      key = this.#hash.update(uint8TKey).digest();
+    }
+
+    if (keySize < blockSize) {
+      key = Buffer.concat([uint8TKey, this.#ZEROES], blockSize);
+    }
+
+    for (let i = 0; i < blockSize; i++) {
+      this.#ipad[i] = uint8TKey[i] ^ 0x36;
+      this.#opad[i] = uint8TKey[i] ^ 0x5C;
+    }
+
+    this.#hash.update(this.#ipad);
   }
 
-  digest(): Buffer;
-  digest(encoding: BinaryToTextEncoding): string;
-  digest(_encoding?: BinaryToTextEncoding): Buffer | string {
-    notImplemented("crypto.Hmac.prototype.digest");
+  digest(encoding?: BinaryToTextEncoding): Buffer | string {
+    const result = this.#hash.digest();
+
+    return new Hash(this.#algorithm).update(this.#opad).update(result).digest(
+      encoding,
+    );
   }
 
-  update(data: BinaryLike): this;
-  update(data: string, inputEncoding: Encoding): this;
-  update(_data: BinaryLike, _inputEncoding?: Encoding): this {
-    notImplemented("crypto.Hmac.prototype.update");
+  update(data: string | ArrayBuffer, inputEncoding?: Encoding): void {
+    this.#hash.update(data, inputEncoding);
   }
 }
 
