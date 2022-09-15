@@ -90,7 +90,8 @@
       "child-process-spawn-node.js",
       "echo.js",
       "empty.txt",
-      "exit.js"
+      "exit.js",
+      "loop.js"
     ],
     "internet": [
       "test-dgram-connect.js",
@@ -258,6 +259,7 @@
       "test-exception-handler2.js",
       "test-file-write-stream.js",
       "test-file-write-stream2.js",
+      "test-file-write-stream4.js",
       "test-fs-access.js",
       "test-fs-append-file-sync.js",
       "test-fs-append-file.js",
@@ -265,6 +267,8 @@
       "test-fs-chmod.js",
       "test-fs-chown-type-check.js",
       "test-fs-copyfile.js",
+      "test-fs-read-stream-autoClose.js",
+      "test-fs-read-stream-concurrent-reads.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-readdir.js",
       "test-fs-readfile-empty.js",
@@ -286,6 +290,7 @@
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",
       "test-fs-write-no-fd.js",
+      "test-fs-write-stream-end.js",
       "test-fs-write-stream.js",
       "test-fs-write-sync.js",
       "test-fs-write.js",

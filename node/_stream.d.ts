@@ -3,7 +3,7 @@
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
 
-import { Buffer } from "./_buffer.d.ts";
+import { Buffer } from "./buffer.ts";
 import { Abortable, EventEmitter } from "./_events.d.ts";
 import {
   Buffered,
@@ -36,7 +36,7 @@ interface StreamOptions<T extends Stream> extends Abortable {
   ): void;
   autoDestroy?: boolean | undefined;
 }
-interface ReadableOptions extends StreamOptions<Readable> {
+export interface ReadableOptions extends StreamOptions<Readable> {
   encoding?: BufferEncoding | undefined;
   read?(this: Readable, size: number): void;
 }

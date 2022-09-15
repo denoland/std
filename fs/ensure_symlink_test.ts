@@ -53,6 +53,7 @@ Deno.test("ensureSymlinkIfItExist", async function () {
   await Deno.writeFile(testFile, new Uint8Array());
 
   await ensureSymlink(testFile, linkFile);
+  await ensureSymlink(testFile, linkFile);
 
   const srcStat = await Deno.lstat(testFile);
   const linkStat = await Deno.lstat(linkFile);
@@ -72,9 +73,9 @@ Deno.test("ensureSymlinkSyncIfItExist", function () {
   Deno.writeFileSync(testFile, new Uint8Array());
 
   ensureSymlinkSync(testFile, linkFile);
+  ensureSymlinkSync(testFile, linkFile);
 
   const srcStat = Deno.lstatSync(testFile);
-
   const linkStat = Deno.lstatSync(linkFile);
 
   assertEquals(srcStat.isFile, true);
@@ -91,6 +92,7 @@ Deno.test("ensureSymlinkDirectoryIfItExist", async function () {
   await Deno.mkdir(testDir, { recursive: true });
   await Deno.writeFile(testFile, new Uint8Array());
 
+  await ensureSymlink(testDir, linkDir);
   await ensureSymlink(testDir, linkDir);
 
   const testDirStat = await Deno.lstat(testDir);
@@ -113,6 +115,7 @@ Deno.test("ensureSymlinkSyncDirectoryIfItExist", function () {
   Deno.mkdirSync(testDir, { recursive: true });
   Deno.writeFileSync(testFile, new Uint8Array());
 
+  ensureSymlinkSync(testDir, linkDir);
   ensureSymlinkSync(testDir, linkDir);
 
   const testDirStat = Deno.lstatSync(testDir);
