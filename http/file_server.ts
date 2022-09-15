@@ -147,6 +147,14 @@ export async function serveFile(
     }
   }
 
+  if (fileInfo.isDirectory) {
+    file.close();
+    await req.body?.cancel();
+    const status = Status.NotFound;
+    const statusText = STATUS_TEXT[status];
+    return new Response(statusText, { status, statusText });
+  }
+
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
