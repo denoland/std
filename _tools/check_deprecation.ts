@@ -78,7 +78,6 @@ async function walk(dir: string) {
           switch (tag.kind) {
             case "deprecated": {
               const message = tag.doc;
-              console.log(message);
               if (!message) {
                 console.error(
                   colors.red("Error"),
