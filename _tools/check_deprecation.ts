@@ -3,8 +3,9 @@
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
+import { doc } from "https://deno.land/x/deno_doc/mod.ts";
 
-const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
+const EXTENSIONS = [".mjs", ".js", ".ts"];
 const EXCLUDED_PATHS = [
   ".git",
   "node/",
@@ -22,9 +23,9 @@ console.warn(
 EXCLUDED_PATHS.push("fs/exists.ts");
 
 const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);
+
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
-const DEPRECATED_REGEX = /\*\s+@deprecated\s+(?<text>.+)/;
 const DEPRECATION_IN_FORMAT_REGEX =
   /^\(will be removed in (?<version>\d+\.\d+\.\d+)\)/;
 const DEPRECATION_AFTER_FORMAT_REGEX =
@@ -47,12 +48,12 @@ const DEFAULT_DEPRECATED_VERSION = semver.inc(
 const DEPRECATION_IN_FORMAT =
   `(will be removed in ${DEFAULT_DEPRECATED_VERSION})`;
 
-function walk(dir: string) {
+async function walk(dir: string) {
   for (const x of Deno.readDirSync(dir)) {
     const filePath = `${dir}/${x.name}`;
 
     if (x.isDirectory) {
-      walk(filePath);
+      await walk(filePath);
       continue;
     }
 
@@ -66,69 +67,75 @@ function walk(dir: string) {
       continue;
     }
 
-    const content = Deno.readTextFileSync(filePath);
-    const lines = content.split("\n");
-    let lineIndex = 1;
-    for (const line of lines) {
-      const match = DEPRECATED_REGEX.exec(line);
-      if (match) {
-        const text = match.groups?.text;
-        if (!text) {
-          console.error(
-            colors.red("Error"),
-            `${
-              colors.bold("@deprecated")
-            } tag must have a version: ${filePath}:${lineIndex}`,
-          );
-          shouldFail = true;
-          if (FAIL_FAST) Deno.exit(1);
-          continue;
-        }
-        const { version: afterVersion } =
-          DEPRECATION_AFTER_FORMAT_REGEX.exec(text)?.groups || {};
+    // deno_doc only takes urls.
+    const url = new URL(filePath, "file://");
+    const docs = await doc(url.href);
 
-        if (afterVersion) {
-          if (semver.lt(afterVersion, VERSION)) {
-            console.warn(
-              colors.yellow("Warn"),
-              `${
-                colors.bold("@deprecated")
-              } tag is expired and export should be removed: ${filePath}:${lineIndex}`,
-            );
+    for (const d of docs) {
+      const tags = d.jsDoc?.tags;
+      if (tags) {
+        for (const tag of tags) {
+          switch (tag.kind) {
+            case "deprecated": {
+              const message = tag.doc;
+              if (!message) {
+                console.error(
+                  colors.red("Error"),
+                  `${
+                    colors.bold("@deprecated")
+                  } tag must have a version: ${filePath}:${d.location.line}`,
+                );
+                shouldFail = true;
+                if (FAIL_FAST) Deno.exit(1);
+                continue;
+              }
+              const { version: afterVersion } =
+                DEPRECATION_AFTER_FORMAT_REGEX.exec(message)?.groups || {};
+
+              if (afterVersion) {
+                if (semver.lt(afterVersion, VERSION)) {
+                  console.warn(
+                    colors.yellow("Warn"),
+                    `${
+                      colors.bold("@deprecated")
+                    } tag is expired and export should be removed: ${filePath}:${d.location.line}`,
+                  );
+                }
+                continue;
+              }
+
+              const { version: inVersion } =
+                DEPRECATION_IN_FORMAT_REGEX.exec(message)?.groups || {};
+              if (!inVersion) {
+                console.error(
+                  colors.red("Error"),
+                  `${
+                    colors.bold("@deprecated")
+                  } tag version is missing. Append '${DEPRECATION_IN_FORMAT}' after @deprecated tag: ${filePath}:${d.location.line}`,
+                );
+                shouldFail = true;
+                if (FAIL_FAST) Deno.exit(1);
+                continue;
+              }
+
+              if (!semver.gt(inVersion, VERSION)) {
+                console.error(
+                  colors.red("Error"),
+                  `${
+                    colors.bold("@deprecated")
+                  } tag is expired and export must be removed: ${filePath}:${d.location.line}`,
+                );
+                if (FAIL_FAST) Deno.exit(1);
+                shouldFail = true;
+                continue;
+              }
+            }
           }
-          continue;
-        }
-
-        const { version: inVersion } =
-          DEPRECATION_IN_FORMAT_REGEX.exec(text)?.groups || {};
-        if (!inVersion) {
-          console.error(
-            colors.red("Error"),
-            `${
-              colors.bold("@deprecated")
-            } tag version is missing. Append '${DEPRECATION_IN_FORMAT}' after @deprecated tag: ${filePath}:${lineIndex}`,
-          );
-          shouldFail = true;
-          if (FAIL_FAST) Deno.exit(1);
-          continue;
-        }
-
-        if (!semver.gt(inVersion, VERSION)) {
-          console.error(
-            colors.red("Error"),
-            `${
-              colors.bold("@deprecated")
-            } tag is expired and export must be removed: ${filePath}:${lineIndex}`,
-          );
-          if (FAIL_FAST) Deno.exit(1);
-          shouldFail = true;
-          continue;
         }
       }
-      lineIndex += 1;
     }
   }
 }
 
-walk(ROOT);
+await walk(ROOT);
 if (shouldFail) Deno.exit(1);
