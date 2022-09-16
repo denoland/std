@@ -22,11 +22,13 @@ const file = path.join(tmpdir.path, '/read_stream_pos_test.txt');
 fs.writeFileSync(file, '');
 
 let counter = 0;
+let appended = false;
 
 const writeInterval = setInterval(() => {
   counter = counter + 1;
   const line = `hello at ${counter}\n`;
   fs.writeFileSync(file, line, { flag: 'a' });
+  appended = true;
 }, 1);
 
 const hwm = 10;
@@ -37,6 +39,7 @@ let stream;
 
 const readInterval = setInterval(() => {
   if (stream) return;
+  if (!appended) return;
 
   stream = fs.createReadStream(file, {
     highWaterMark: hwm,
@@ -67,6 +70,7 @@ const readInterval = setInterval(() => {
     stream = null;
     isLow = false;
     bufs = [];
+    appended = false;
   });
 }, 10);
 
@@ -79,12 +83,17 @@ const exitTest = () => {
   clearInterval(readInterval);
   clearInterval(writeInterval);
   clearTimeout(endTimer);
-  if (stream && !stream.destroyed) {
-    stream.on('close', () => {
+
+  setTimeout(() => {
+    if (stream && !stream.destroyed) {
+      stream.on('close', () => {
+        assert(cur);
+        process.exit();
+      });
+      stream.destroy();
+    } else {
+      assert(cur);
       process.exit();
-    });
-    stream.destroy();
-  } else {
-    process.exit();
-  }
+    }
+  }, 20);
 };
