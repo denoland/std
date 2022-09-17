@@ -725,7 +725,7 @@ export async function serveTls(
 }
 
 /**
- * @deprecated Use `serve` instead.
+ * @deprecated (will be removed after 0.157.0) Use `serve` instead.
  *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, and handles requests on these connections with the
@@ -771,7 +771,7 @@ export async function listenAndServe(
 }
 
 /**
- * @deprecated Use `serveTls` instead.
+ * @deprecated (will be removed after 0.157.0) Use `serveTls` instead.
  *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, upgrades them to TLS, and handles requests on these

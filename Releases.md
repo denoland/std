@@ -1,3 +1,15 @@
+### 0.156.0 / 2022.09.15
+
+- fix(fs): `ensureSymlink` works when symlink already exists (#2642)
+- fix(http/file_server): serveFile returns 404 when the path is directory
+  (#2659)
+- fix(node): set proper default streams export (#2657)
+- fix(node/fs): make ReadStream and WriteStream callable with or without new
+  (#2634)
+- fix(node/http): `_createUrlStrFromOptions` optimizations (#2635)
+- fix(node/process): make execPath writable (#2647)
+- fix(node/process): reduce required env permission range (#2654)
+
 ### 0.155.0 / 2022.09.09
 
 - BREAKING(encoding/csv): make column argument optional (#2168)

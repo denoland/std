@@ -57,21 +57,20 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
     },
     ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
     getOwnPropertyDescriptor: (_target, name) => {
-      const e = Deno.env.toObject();
-      if (name in Deno.env.toObject()) {
-        const o = { enumerable: true, configurable: true };
-        if (typeof name === "string") {
-          // @ts-ignore we do want to set it only when name is of type string
-          o.value = e[name];
-        }
-        return o;
+      const value = Deno.env.get(String(name));
+      if (value) {
+        return {
+          enumerable: true,
+          configurable: true,
+          value: Deno.env.get(String(name)),
+        };
       }
     },
     set(_target, prop, value) {
       Deno.env.set(String(prop), String(value));
       return value;
     },
-    has: (_target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
+    has: (_target, prop) => typeof Deno.env.get(String(prop)) === "string",
   });
 
 /** https://nodejs.org/api/process.html#process_process_pid */

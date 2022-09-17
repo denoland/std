@@ -5,7 +5,7 @@ import { BinarySearchNode, Direction } from "./binary_search_node.ts";
 export type { Direction };
 
 /**
- * @deprecated use Direction instead
+ * @deprecated (will be removed after 0.157.0) use Direction instead
  */
 export type { Direction as direction };
 
