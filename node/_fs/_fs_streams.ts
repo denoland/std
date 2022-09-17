@@ -35,9 +35,9 @@ const kIoDone = Symbol("kIoDone");
 // const kHandle = Symbol("kHandle");
 
 interface FS {
-  open: typeof fsOpen;
+  open?: typeof fsOpen;
   read: typeof fsRead;
-  close: typeof fsClose;
+  close?: typeof fsClose;
 }
 
 interface ReadStreamOptions {
@@ -100,7 +100,7 @@ function _construct(this: ReadStream, callback: (err?: Error) => void) {
       callback(er);
       return;
     }
-    stream[kFs].open(stream.path, stream.flags, stream.mode, (er, fd) => {
+    stream[kFs].open!(stream.path, stream.flags, stream.mode, (er, fd) => {
       if (er) {
         callback(er);
       } else {
@@ -138,7 +138,7 @@ function close(stream: ReadStream, err: Error, cb: (err?: Error) => void) {
   if (!stream.fd) {
     cb(err);
   } else {
-    stream[kFs].close(stream.fd, (er) => {
+    stream[kFs].close!(stream.fd, (er) => {
       cb(er || err);
     });
     stream.fd = null;
@@ -154,7 +154,7 @@ function importFd(
     // that the descriptor won't get closed, or worse, replaced with
     // another one
     // https://github.com/nodejs/node/issues/35862
-    stream[kFs] = options.fs || { open: fsOpen, read: fsRead, close: fsClose };
+    stream[kFs] = options.fs || { read: fsRead, close: fsClose };
     return options.fd;
   }
 
@@ -306,9 +306,9 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
     // TODO(PolarETech):
     // Handling of "position" option in fs.read differs from Node.
     // The following steps are tentative patches.
-    if (this.fd && !this.bytesRead) {
+    if (this.fd && typeof this.pos === "number") {
       try {
-        Deno.seekSync(this.fd, this.pos ?? 0, Deno.SeekMode.Start);
+        Deno.seekSync(this.fd, 0, Deno.SeekMode.Start);
       } catch (err) {
         error = err as Error;
         return resolve(false);
@@ -321,7 +321,7 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
         buf,
         0,
         n,
-        null,
+        this.pos ?? null,
         (_er, _bytesRead, _buf) => {
           error = _er;
           bytesRead = _bytesRead;
