@@ -98,14 +98,20 @@ export function read(
   let err: Error | null = null,
     numberOfBytesRead: number | null = null;
 
-  if (position) {
-    Deno.seekSync(fd, position, Deno.SeekMode.Current);
+  let currentPosition = 0;
+  if (typeof position === "number" && position >= 0) {
+    currentPosition = Deno.seekSync(fd, 0, Deno.SeekMode.Current);
+    Deno.seekSync(fd, position, Deno.SeekMode.Start);
   }
 
   try {
     numberOfBytesRead = Deno.readSync(fd, buffer);
   } catch (error) {
     err = error instanceof Error ? error : new Error("[non-error thrown]");
+  }
+
+  if (typeof position === "number" && position >= 0) {
+    Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
   }
 
   if (err) {
@@ -168,11 +174,17 @@ export function readSync(
     }`,
   );
 
-  if (position) {
-    Deno.seekSync(fd, position, Deno.SeekMode.Current);
+  let currentPosition = 0;
+  if (typeof position === "number" && position >= 0) {
+    currentPosition = Deno.seekSync(fd, 0, Deno.SeekMode.Current);
+    Deno.seekSync(fd, position, Deno.SeekMode.Start);
   }
 
   const numberOfBytesRead = Deno.readSync(fd, buffer);
+
+  if (typeof position === "number" && position >= 0) {
+    Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
+  }
 
   return numberOfBytesRead ?? 0;
 }
