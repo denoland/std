@@ -8,7 +8,7 @@ export interface CsvStreamOptions {
   comment?: string;
 }
 
-/** @deprecated Use CsvStreamOptions instead. */
+/** @deprecated (will be removed after 0.157.0) Use CsvStreamOptions instead. */
 export type CSVStreamOptions = CsvStreamOptions;
 
 class StreamLineReader implements LineReader {
@@ -108,5 +108,5 @@ export class CsvStream implements TransformStream<string, Array<string>> {
   }
 }
 
-/** @deprecated Use CsvStream instead. */
+/** @deprecated (will be removed after 0.157.0) Use CsvStream instead. */
 export const CSVStream = CsvStream;
