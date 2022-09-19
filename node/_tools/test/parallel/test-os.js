@@ -139,6 +139,7 @@ if (!common.isSunOS) {
 }
 
 const interfaces = os.networkInterfaces();
+console.log(interfaces);
 switch (platform) {
   case 'linux': {
     const filter = (e) =>
