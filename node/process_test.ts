@@ -270,6 +270,22 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.env requires scoped env permission",
+  permissions: { env: ["FOO"] },
+  fn() {
+    Deno.env.set("FOO", "1");
+    assert("FOO" in process.env);
+    assertThrows(() => {
+      "BAR" in process.env;
+    });
+    assert(Object.hasOwn(process.env, "FOO"));
+    assertThrows(() => {
+      Object.hasOwn(process.env, "BAR");
+    });
+  },
+});
+
+Deno.test({
   name: "process.stdin",
   fn() {
     assertEquals(process.stdin.fd, Deno.stdin.rid);

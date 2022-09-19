@@ -23,7 +23,13 @@ export async function ensureSymlink(src: string | URL, dest: string | URL) {
     }
     : undefined;
 
-  await Deno.symlink(src, dest, options);
+  try {
+    await Deno.symlink(src, dest, options);
+  } catch (error) {
+    if (!(error instanceof Deno.errors.AlreadyExists)) {
+      throw error;
+    }
+  }
 }
 
 /**
@@ -45,5 +51,11 @@ export function ensureSymlinkSync(src: string | URL, dest: string | URL) {
     }
     : undefined;
 
-  Deno.symlinkSync(src, dest, options);
+  try {
+    Deno.symlinkSync(src, dest, options);
+  } catch (error) {
+    if (!(error instanceof Deno.errors.AlreadyExists)) {
+      throw error;
+    }
+  }
 }
