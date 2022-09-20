@@ -1,7 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
 import { assert } from "../../testing/asserts.ts";
-import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+} from "../internal/errors.ts";
 
 type readOptions = {
   buffer: Buffer | Uint8Array;
@@ -39,7 +42,7 @@ export function read(
 ): void;
 export function read(
   fd: number,
-  optOrBuffer?: Buffer | Uint8Array | readOptions | Callback,
+  optOrBufferOrCb?: Buffer | Uint8Array | readOptions | Callback,
   offsetOrCallback?: number | Callback,
   length?: number,
   position?: number | null,
@@ -49,30 +52,36 @@ export function read(
   let offset = 0,
     buffer: Buffer | Uint8Array;
 
+  if (typeof fd !== "number") {
+    throw new ERR_INVALID_ARG_TYPE("fd", "number", fd);
+  }
+
   if (length == null) {
     length = 0;
   }
 
   if (typeof offsetOrCallback === "function") {
     cb = offsetOrCallback;
-  } else if (typeof optOrBuffer === "function") {
-    cb = optOrBuffer;
+  } else if (typeof optOrBufferOrCb === "function") {
+    cb = optOrBufferOrCb;
   } else {
     offset = offsetOrCallback as number;
     cb = callback;
   }
 
-  if (!cb) throw new Error("No callback function supplied");
+  if (!cb) throw new ERR_INVALID_ARG_TYPE("cb", "Callback", cb);
 
-  if (optOrBuffer instanceof Buffer || optOrBuffer instanceof Uint8Array) {
-    buffer = optOrBuffer;
-  } else if (typeof optOrBuffer === "function") {
+  if (
+    optOrBufferOrCb instanceof Buffer || optOrBufferOrCb instanceof Uint8Array
+  ) {
+    buffer = optOrBufferOrCb;
+  } else if (typeof optOrBufferOrCb === "function") {
     offset = 0;
     buffer = Buffer.alloc(16384);
     length = buffer.byteLength;
     position = null;
   } else {
-    const opt = optOrBuffer as readOptions;
+    const opt = optOrBufferOrCb as readOptions;
     offset = opt.offset ?? 0;
     buffer = opt.buffer ?? Buffer.alloc(16384);
     length = opt.length ?? buffer.byteLength;
@@ -118,7 +127,7 @@ export function read(
     (callback as (err: Error) => void)(err);
   } else {
     const data = Buffer.from(buffer.buffer, offset, length);
-    cb(null, numberOfBytesRead, data);
+    cb(null, numberOfBytesRead ?? 0, data);
   }
 
   return;
