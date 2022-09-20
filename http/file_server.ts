@@ -311,7 +311,8 @@ async function serveDirIndex(
       continue;
     }
     const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
+    const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
+      .replaceAll("%2F", "/");
     const fileInfo = await Deno.stat(filePath);
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
@@ -633,7 +634,7 @@ function normalizeURL(url: string): string {
   }
 
   try {
-    normalizedUrl = decodeURI(normalizedUrl);
+    normalizedUrl = decodeURIComponent(normalizedUrl);
   } catch (e) {
     if (!(e instanceof URIError)) {
       throw e;
