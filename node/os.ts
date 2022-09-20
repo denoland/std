@@ -167,6 +167,7 @@ export function homedir(): string | null {
       return Deno.env.get("USERPROFILE") || null;
     case "linux":
     case "darwin":
+    case "freebsd":
       return Deno.env.get("HOME") || null;
     default:
       throw Error("unreachable");
@@ -278,13 +279,15 @@ export function totalmem(): number {
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
 export function type(): string {
-  switch (Deno.build.os) {
+  switch (Deno.build.os as string) {
     case "windows":
       return "Windows_NT";
     case "linux":
       return "Linux";
     case "darwin":
       return "Darwin";
+    case "freebsd":
+      return "FreeBSD";
     default:
       throw Error("unreachable");
   }
