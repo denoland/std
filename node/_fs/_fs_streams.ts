@@ -303,18 +303,6 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
   this[kIsPerformingIO] = true;
 
   await new Promise((resolve) => {
-    // TODO(PolarETech):
-    // Handling of "position" option in fs.read differs from Node.
-    // The following steps are tentative patches.
-    if (this.fd && typeof this.pos === "number") {
-      try {
-        Deno.seekSync(this.fd, 0, Deno.SeekMode.Start);
-      } catch (err) {
-        error = err as Error;
-        return resolve(false);
-      }
-    }
-
     this[kFs]
       .read(
         this.fd!,
@@ -326,10 +314,9 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
           error = _er;
           bytesRead = _bytesRead;
           buffer = _buf;
+          return resolve(true);
         },
       );
-
-    return resolve(true);
   });
 
   this[kIsPerformingIO] = false;
