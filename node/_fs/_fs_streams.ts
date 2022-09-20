@@ -91,7 +91,6 @@ function _construct(this: ReadStream, callback: (err?: Error) => void) {
     stream.open();
   } else {
     if (typeof stream.path !== "string") {
-      // TODO(PolarETech): fs.open does not support Buffer currently
       const er = new ERR_INVALID_ARG_TYPE(
         "stream.path",
         ["string", "URL"],
@@ -186,7 +185,7 @@ function importFd(
 
 export function ReadStream(
   this: ReadStream | unknown,
-  path: string | URL,
+  path: string | Buffer | URL,
   options?: ReadStreamOptions & ReadableOptions,
 ): ReadStream {
   if (!(this instanceof ReadStream)) {
@@ -213,7 +212,13 @@ export function ReadStream(
     validateFunction(self[kFs].open, "options.fs.open");
 
     // Path will be ignored when fd is specified, so it can be falsy
-    self.path = toPathIfFileURL(path);
+    self.path = (() => {
+      if (path instanceof Buffer) {
+        return path.toString();
+      } else {
+        return toPathIfFileURL(path);
+      }
+    })();
     self.flags = options.flags === undefined ? "r" : options.flags;
     self.mode = options.mode === undefined ? 0o666 : options.mode;
 
@@ -388,7 +393,7 @@ Object.defineProperty(ReadStream.prototype, "pending", {
 });
 
 export function createReadStream(
-  path: string | URL,
+  path: string | Buffer | URL,
   options?: ReadStreamOptions,
 ): ReadStream {
   // deno-lint-ignore ban-ts-comment
