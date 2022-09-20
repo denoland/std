@@ -186,11 +186,84 @@ export function spawnSync(
   return _spawnSync(command, args, options);
 }
 
+interface ExecOptions extends
+  Pick<
+    ChildProcessOptions,
+    | "cwd"
+    | "env"
+    | "signal"
+    | "uid"
+    | "gid"
+    | "windowsHide"
+  > {
+  encoding?: string;
+  /**
+   * Shell to execute the command with.
+   */
+  shell?: string;
+  timeout?: number;
+  /**
+   * Largest amount of data in bytes allowed on stdout or stderr. If exceeded, the child process is terminated and any output is truncated.
+   */
+  maxBuffer?: number;
+  killSignal?: string | number;
+}
+type ExecException = ChildProcessError;
+type ExecCallback = (
+  error: ExecException | null,
+  stdout?: string | Buffer,
+  stderr?: string | Buffer,
+) => void;
+
+function normalizeExecArgs(
+  command: string,
+  optionsOrCallback?: ExecOptions | ExecCallback,
+  maybeCallback?: ExecCallback,
+) {
+  let options: ExecFileOptions | undefined = undefined;
+  let callback: ExecFileCallback | undefined = maybeCallback;
+
+  if (typeof optionsOrCallback === "function") {
+    callback = optionsOrCallback;
+    optionsOrCallback = undefined;
+  }
+
+  // Make a shallow copy so we don't clobber the user's options object.
+  options = { ...optionsOrCallback };
+  options.shell = typeof options.shell === "string" ? options.shell : true;
+
+  return {
+    file: command,
+    options: options!,
+    callback: callback!,
+  };
+}
+
+/**
+ * Spawns a shell executing the given command.
+ */
+export function exec(command: string): ChildProcess;
+export function exec(command: string, options: ExecOptions): ChildProcess;
+export function exec(command: string, callback: ExecCallback): ChildProcess;
+export function exec(
+  command: string,
+  options: ExecOptions,
+  callback: ExecCallback,
+): ChildProcess;
+export function exec(
+  command: string,
+  optionsOrCallback?: ExecOptions | ExecCallback,
+  maybeCallback?: ExecCallback,
+): ChildProcess {
+  const opts = normalizeExecArgs(command, optionsOrCallback, maybeCallback);
+  return execFile(opts.file, opts.options, opts.callback);
+}
+
 interface ExecFileOptions extends ChildProcessOptions {
   encoding?: string;
   timeout?: number;
   maxBuffer?: number;
-  killSignal?: string;
+  killSignal?: string | number;
 }
 interface ChildProcessError extends Error {
   code?: string | number;
@@ -488,5 +561,13 @@ export function execSync() {
   throw new Error("execSync is currently not supported");
 }
 
-export default { fork, spawn, execFile, execSync, ChildProcess, spawnSync };
+export default {
+  fork,
+  spawn,
+  exec,
+  execFile,
+  execSync,
+  ChildProcess,
+  spawnSync,
+};
 export { ChildProcess };
