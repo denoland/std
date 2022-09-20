@@ -1,23 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-import {
-  ERR_INVALID_ARG_TYPE,
-  // ERR_METHOD_NOT_IMPLEMENTED,
-  ERR_OUT_OF_RANGE,
-} from "../internal/errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "../internal/errors.ts";
 import { deprecate, kEmptyObject } from "../internal/util.mjs";
 import { validateFunction, validateInteger } from "../internal/validators.mjs";
 import { errorOrDestroy } from "../internal/streams/destroy.mjs";
 import { open as fsOpen, type openFlags } from "./_fs_open.ts";
 import { read as fsRead } from "./_fs_read.ts";
 import { close as fsClose } from "./_fs_close.ts";
-
-// TODO(PolarETech): missing implementation
-// import { kRef, kUnref, FileHandle } from "../internal/fs/promises.mjs";
-
 import { Buffer } from "../buffer.ts";
-
 import {
   copyObject,
   getOptions,
@@ -28,11 +19,10 @@ import { finished, Readable } from "../stream.ts";
 import { ReadableOptions } from "../_stream.d.ts";
 import { toPathIfFileURL } from "../internal/url.ts";
 import { BufferEncoding } from "../_global.d.ts";
-const kFs = Symbol("kFs");
+const kIoDone = Symbol("kIoDone");
 const kIsPerformingIO = Symbol("kIsPerformingIO");
 
-const kIoDone = Symbol("kIoDone");
-// const kHandle = Symbol("kHandle");
+const kFs = Symbol("kFs");
 
 interface FS {
   open?: typeof fsOpen;
@@ -112,27 +102,6 @@ function _construct(this: ReadStream, callback: (err?: Error) => void) {
   }
 }
 
-// TODO(PolarETech): missing FileHandle implementation
-// This generates an fs operations structure for a FileHandle
-// const FileHandleOperations = (handle: FileHandle) => {
-//   return {
-//     open: (path, flags, mode, cb) => {
-//       throw new ERR_METHOD_NOT_IMPLEMENTED("open()");
-//     },
-//     close: (fd, cb) => {
-//       handle[kUnref]();
-//       Promise.prototype.then(handle.close(), () => cb(), cb);
-//     },
-//     read: (fd, buf, offset, length, pos, cb) => {
-//       Promise.prototype.then(
-//         handle.read(buf, offset, length, pos),
-//         (r) => cb(null, r.bytesRead, r.buffer),
-//         (err) => cb(err, 0, buf),
-//       );
-//     },
-//   };
-// };
-
 function close(stream: ReadStream, err: Error, cb: (err?: Error) => void) {
   if (!stream.fd) {
     cb(err);
@@ -156,29 +125,6 @@ function importFd(
     stream[kFs] = options.fs || { read: fsRead, close: fsClose };
     return options.fd;
   }
-
-  // TODO(PolarETech): missing FileHandle implementation
-  // else if (
-  //   typeof options.fd === "object" &&
-  //   options.fd instanceof FileHandle
-  // ) {
-  //   // When fd is a FileHandle we can listen for 'close' events
-  //   if (options.fs) {
-  //     // FileHandle is not supported with custom fs operations
-  //     throw new ERR_METHOD_NOT_IMPLEMENTED("FileHandle with fs");
-  //   }
-  //   stream[kHandle] = options.fd;
-  //   stream[kFs] = FileHandleOperations(stream[kHandle]);
-  //   stream[kHandle][kRef]();
-  //   options.fd.on("close", Function.prototype.bind(stream.close, stream));
-  //   return options.fd.fd;
-  // }
-
-  // throw new ERR_INVALID_ARG_TYPE(
-  //   "options.fd",
-  //   ["number", "FileHandle"],
-  //   options.fd,
-  // );
 
   throw new ERR_INVALID_ARG_TYPE("options.fd", ["number"], options.fd);
 }
