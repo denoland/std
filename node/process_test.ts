@@ -5,6 +5,7 @@ import "./global.ts";
 import {
   assert,
   assertEquals,
+  assertFalse,
   assertObjectMatch,
   assertStrictEquals,
   assertThrows,
@@ -282,6 +283,21 @@ Deno.test({
     assertThrows(() => {
       Object.hasOwn(process.env, "BAR");
     });
+  },
+});
+
+Deno.test({
+  name: "process.env doesn't throw with invalid env var names",
+  fn() {
+    assertEquals(process.env[""], undefined);
+    assertEquals(process.env["\0"], undefined);
+    assertEquals(process.env["=c:"], undefined);
+    assertFalse(Object.hasOwn(process.env, ""));
+    assertFalse(Object.hasOwn(process.env, "\0"));
+    assertFalse(Object.hasOwn(process.env, "=c:"));
+    assertFalse("" in process.env);
+    assertFalse("\0" in process.env);
+    assertFalse("=c:" in process.env);
   },
 });
 
