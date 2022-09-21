@@ -444,8 +444,9 @@ function buildCommand(
   args: string[],
   shell: string | boolean,
 ): [string, string[]] {
-  const command = [file, ...args].join(" ");
   if (shell) {
+    const command = [file, ...args].join(" ");
+
     // Set the shell, switches, and commands.
     if (isWindows) {
       // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
