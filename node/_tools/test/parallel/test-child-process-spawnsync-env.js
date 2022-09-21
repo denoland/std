@@ -26,18 +26,20 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(cjihrig): The process.argv[3] check should be argv[2], and the
+// arguments array passed to spawnSync() should not need to include "run",
+// "-A", "--unstable", and "require.ts".
+
 'use strict';
+require('../common');
+const assert = require('assert');
+const cp = require('child_process');
 
-
-if (Deno.args[0] === 'child') {
-  console.log(Deno.env.get("foo"));
+if (process.argv[3] === 'child') {
+  console.log(process.env.foo);
 } else {
-  require('../common');
-  const assert = require('assert');
-  const cp = require('child_process');
-
   const expected = 'bar';
-  const child = cp.spawnSync(process.execPath, ["run", "-A", __filename, 'child'], {
+  const child = cp.spawnSync(process.execPath, ["run", "-A", "--unstable", "require.ts", __filename, 'child'], {
     env: Object.assign(process.env, { foo: expected })
   });
 
