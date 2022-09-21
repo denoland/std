@@ -80,25 +80,21 @@ function _construct(this: ReadStream, callback: (err?: Error) => void) {
     } as typeof orgEmit;
     stream.open();
   } else {
-    if (typeof stream.path !== "string") {
-      const er = new ERR_INVALID_ARG_TYPE(
-        "stream.path",
-        ["string", "URL"],
-        stream.path,
-      );
-      callback(er);
-      return;
-    }
-    stream[kFs].open!(stream.path, stream.flags, stream.mode, (er, fd) => {
-      if (er) {
-        callback(er);
-      } else {
-        stream.fd = fd;
-        callback();
-        stream.emit("open", stream.fd);
-        stream.emit("ready");
-      }
-    });
+    stream[kFs].open!(
+      stream.path as string,
+      stream.flags,
+      stream.mode,
+      (er, fd) => {
+        if (er) {
+          callback(er);
+        } else {
+          stream.fd = fd;
+          callback();
+          stream.emit("open", stream.fd);
+          stream.emit("ready");
+        }
+      },
+    );
   }
 }
 
