@@ -5,6 +5,9 @@
 import {
   ChildProcess,
   ChildProcessOptions,
+  spawnSync as _spawnSync,
+  type SpawnSyncOptions,
+  type SpawnSyncResult,
   stdioStringToArray,
 } from "./internal/child_process.ts";
 import { validateString } from "./internal/validators.mjs";
@@ -138,6 +141,49 @@ export function spawn(
     ? argsOrOptions
     : maybeOptions;
   return new ChildProcess(command, args, options);
+}
+
+function validateTimeout(timeout?: number) {
+  if (timeout != null && !(Number.isInteger(timeout) && timeout >= 0)) {
+    throw new ERR_OUT_OF_RANGE("timeout", "an unsigned integer", timeout);
+  }
+}
+
+function validateMaxBuffer(maxBuffer?: number) {
+  if (
+    maxBuffer != null &&
+    !(typeof maxBuffer === "number" && maxBuffer >= 0)
+  ) {
+    throw new ERR_OUT_OF_RANGE(
+      "options.maxBuffer",
+      "a positive number",
+      maxBuffer,
+    );
+  }
+}
+
+export function spawnSync(
+  command: string,
+  argsOrOptions?: string[] | SpawnSyncOptions,
+  maybeOptions?: SpawnSyncOptions,
+): SpawnSyncResult {
+  const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
+  let options = !Array.isArray(argsOrOptions) && argsOrOptions
+    ? argsOrOptions
+    : maybeOptions as SpawnSyncOptions;
+
+  options = {
+    maxBuffer: MAX_BUFFER,
+    ...options,
+  };
+
+  // Validate the timeout, if present.
+  validateTimeout(options.timeout);
+
+  // Validate maxBuffer, if present.
+  validateMaxBuffer(options.maxBuffer);
+
+  return _spawnSync(command, args, options);
 }
 
 interface ExecFileOptions extends ChildProcessOptions {
@@ -442,5 +488,5 @@ export function execSync() {
   throw new Error("execSync is currently not supported");
 }
 
-export default { fork, spawn, execFile, execSync, ChildProcess };
+export default { fork, spawn, execFile, execSync, ChildProcess, spawnSync };
 export { ChildProcess };

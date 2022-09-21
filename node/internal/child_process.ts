@@ -16,6 +16,10 @@ import {
   ERR_UNKNOWN_SIGNAL,
 } from "./errors.ts";
 import { mapValues } from "../../collections/map_values.ts";
+import { Buffer } from "../buffer.ts";
+import { errnoException } from "./errors.ts";
+import { ErrnoException } from "../_global.d.ts";
+import { codeMap } from "../internal_binding/uv.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -469,4 +473,101 @@ function buildCommand(
     }
   }
   return [file, args];
+}
+
+function _createSpawnSyncError(
+  status: string,
+  command: string,
+  args: string[] = [],
+): ErrnoException {
+  const error = errnoException(
+    codeMap.get(status),
+    "spawnSync " + command,
+  );
+  error.path = command;
+  error.spawnargs = args;
+  return error;
+}
+
+export interface SpawnSyncOptions {
+  cwd?: string | URL;
+  input?: string | Buffer | DataView;
+  argv0?: string;
+  stdio?: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio;
+  env?: Record<string, string>;
+  uid?: number;
+  gid?: number;
+  timeout?: number;
+  maxBuffer?: number;
+  encoding?: string;
+  shell?: boolean | string;
+  windowsVerbatimArguments?: boolean;
+  windowsHide?: boolean;
+}
+
+export interface SpawnSyncResult {
+  pid?: number;
+  output?: [string | null, string | Buffer, string | Buffer];
+  stdout?: Buffer | string;
+  stderr?: Buffer | string;
+  status?: number | null;
+  signal?: string | null;
+  error?: Error;
+}
+
+export function spawnSync(
+  command: string,
+  args: string[],
+  options: SpawnSyncOptions,
+): SpawnSyncResult {
+  const {
+    env = Deno.env.toObject(),
+    stdio = ["pipe", "pipe", "pipe"],
+    shell = false,
+    cwd,
+    encoding,
+    uid,
+    gid,
+    maxBuffer,
+  } = options;
+  const normalizedStdio = normalizeStdioOption(stdio);
+  [command, args] = buildCommand(command, args ?? [], shell);
+
+  const result: SpawnSyncResult = {};
+  try {
+    const output = Deno.spawnSync(command, {
+      args,
+      cwd,
+      env,
+      stdout: toDenoStdio(normalizedStdio[1] as NodeStdio | number),
+      stderr: toDenoStdio(normalizedStdio[2] as NodeStdio | number),
+      uid,
+      gid,
+    });
+
+    const { signal } = output;
+    const status = signal ? null : 0;
+    let stdout = Buffer.from(output.stdout) as string | Buffer;
+    let stderr = Buffer.from(output.stderr) as string | Buffer;
+
+    if (stdout.length > maxBuffer! || stderr.length > maxBuffer!) {
+      result.error = _createSpawnSyncError("ENOBUFS", command, args);
+    }
+
+    if (encoding && encoding !== "buffer") {
+      stdout = stdout.toString(encoding);
+      stderr = stderr.toString(encoding);
+    }
+
+    result.status = status;
+    result.signal = signal;
+    result.stdout = stdout;
+    result.stderr = stderr;
+    result.output = [signal, stdout, stderr];
+  } catch (err) {
+    if (err instanceof Deno.errors.NotFound) {
+      result.error = _createSpawnSyncError("ENOENT", command, args);
+    }
+  }
+  return result;
 }
