@@ -572,3 +572,9 @@ export function spawnSync(
   }
   return result;
 }
+
+export default {
+  ChildProcess,
+  stdioStringToArray,
+  spawnSync,
+};
