@@ -1,3 +1,19 @@
+### 0.157.0 / 2022.09.22
+
+- feat(node/child_process): `spawnSync` (#2637)
+- fix(collections): deepMerge ignoring 'replace' options for nested properties
+  (#2681)
+- fix(node): use `Buffer.from()` and `Buffer.alloc()` instead of `new Buffer()`
+  (#2655)
+- fix(node/fs): Enable `test-fs-read.js` (#2672)
+- fix(node/fs): improve compatibility of fs.ReadStream (#2653)
+- fix(node/fs): position option of fs.read and fs.readSync works the same as
+  Node (#2669)
+- fix(node/net): fix socket events order (#2676)
+- fix(node/process): does not throw with invalid env var names (#2671)
+- fix(node/process): ignore SIGTERM on windows (#2686)
+- node: add FreeBSD support (#2467)
+
 ### 0.156.0 / 2022.09.15
 
 - fix(fs): `ensureSymlink` works when symlink already exists (#2642)

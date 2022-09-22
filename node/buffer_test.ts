@@ -60,14 +60,14 @@ Deno.test({
   name: "alloc filled correctly with integer",
   fn() {
     const buffer: Buffer = Buffer.alloc(3, 5);
-    assertEquals(buffer, new Buffer([5, 5, 5]));
+    assertEquals(buffer, Buffer.from([5, 5, 5]));
   },
 });
 
 Deno.test({
   name: "alloc filled correctly with single character",
   fn() {
-    assertEquals(Buffer.alloc(5, "a"), new Buffer([97, 97, 97, 97, 97]));
+    assertEquals(Buffer.alloc(5, "a"), Buffer.from([97, 97, 97, 97, 97]));
   },
 });
 
@@ -76,7 +76,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(11, "aGVsbG8gd29ybGQ=", "base64"),
-      new Buffer([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
+      Buffer.from([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
     );
   },
 });
@@ -86,7 +86,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(4, "64656e6f", "hex"),
-      new Buffer([100, 101, 110, 111]),
+      Buffer.from([100, 101, 110, 111]),
     );
   },
 });
@@ -106,11 +106,11 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(7, new Uint8Array([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101, 100]),
+      Buffer.from([100, 101, 100, 101, 100, 101, 100]),
     );
     assertEquals(
       Buffer.alloc(6, new Uint8Array([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101]),
+      Buffer.from([100, 101, 100, 101, 100, 101]),
     );
   },
 });
@@ -120,7 +120,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(1, new Uint8Array([100, 101])),
-      new Buffer([100]),
+      Buffer.from([100]),
     );
   },
 });
@@ -129,12 +129,12 @@ Deno.test({
   name: "alloc filled correctly with Buffer",
   fn() {
     assertEquals(
-      Buffer.alloc(6, new Buffer([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101]),
+      Buffer.alloc(6, Buffer.from([100, 101])),
+      Buffer.from([100, 101, 100, 101, 100, 101]),
     );
     assertEquals(
-      Buffer.alloc(7, new Buffer([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101, 100]),
+      Buffer.alloc(7, Buffer.from([100, 101])),
+      Buffer.from([100, 101, 100, 101, 100, 101, 100]),
     );
   },
 });
@@ -350,7 +350,7 @@ Deno.test({
     buffer2.copy(buffer1);
 
     assertEquals(
-      new Buffer(data1),
+      Buffer.from(data1),
       buffer1,
     );
   },
