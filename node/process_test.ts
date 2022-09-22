@@ -506,23 +506,19 @@ Deno.test("process.execPath is writable", () => {
   }
 });
 
-Deno.test("process.getuid", () => {
+Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
-    // @ts-ignore: temporary
-    assertEquals(process.getuid, undefined);
+    assertEquals(process.getgid, undefined);
   } else {
-    // @ts-ignore: temporary
-    assertEquals(process.getuid(), Deno.getUid());
+    assertEquals(process.getgid?.(), Deno.getGid());
   }
 });
 
-Deno.test("process.getgid", () => {
+Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
-    // @ts-ignore: temporary
-    assertEquals(process.getgid, undefined);
+    assertEquals(process.getuid, undefined);
   } else {
-    // @ts-ignore: temporary
-    assertEquals(process.getgid(), Deno.getGid());
+    assertEquals(process.getuid?.(), Deno.getUid());
   }
 });
 

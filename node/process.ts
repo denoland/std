@@ -560,6 +560,16 @@ class Process extends EventEmitter {
     return 0o22;
   }
 
+  /** This method is removed on Windows */
+  getgid?(): number {
+    return Deno.getGid()!;
+  }
+
+  /** This method is removed on Windows */
+  getuid?(): number {
+    return Deno.getUid()!;
+  }
+
   // TODO(kt3k): Implement this when we added -e option to node compat mode
   _eval: string | undefined = undefined;
 
@@ -591,27 +601,13 @@ class Process extends EventEmitter {
   features = { inspector: false };
 }
 
+if (Deno.build.os === "windows") {
+  delete Process.prototype.getgid;
+  delete Process.prototype.getuid;
+}
+
 /** https://nodejs.org/api/process.html#process_process */
 const process = new Process();
-
-if (Deno.build.os !== "windows") {
-  Object.defineProperties(process, {
-    /** https://nodejs.org/api/process.html#processgetuid */
-    getuid: {
-      enumerable: false,
-      writable: false,
-      configurable: false,
-      value: (): number => Deno.getUid()!,
-    },
-    /** https://nodejs.org/api/process.html#processgetgid */
-    getgid: {
-      enumerable: false,
-      writable: false,
-      configurable: false,
-      value: (): number => Deno.getGid()!,
-    },
-  });
-}
 
 Object.defineProperty(process, Symbol.toStringTag, {
   enumerable: false,
