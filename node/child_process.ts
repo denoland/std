@@ -17,9 +17,14 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
 } from "./internal/errors.ts";
+import {
+  ArrayPrototypePush,
+  StringPrototypeSlice,
+} from "./internal/primordials.mjs";
 import { getSystemErrorName } from "./util.ts";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
+import { BufferEncoding } from "./_global.d.ts";
 import { notImplemented } from "./_utils.ts";
 
 const MAX_BUFFER = 1024 * 1024;
@@ -196,7 +201,7 @@ interface ExecOptions extends
     | "gid"
     | "windowsHide"
   > {
-  encoding?: string;
+  encoding?: BufferEncoding;
   /**
    * Shell to execute the command with.
    */
@@ -260,7 +265,7 @@ export function exec(
 }
 
 interface ExecFileOptions extends ChildProcessOptions {
-  encoding?: string;
+  encoding?: BufferEncoding;
   timeout?: number;
   maxBuffer?: number;
   killSignal?: string | number;
@@ -362,8 +367,8 @@ export function execFile(
   const child = spawn(file, args, spawnOptions);
 
   let encoding: string | null;
-  const _stdout: Uint8Array[] = [];
-  const _stderr: Uint8Array[] = [];
+  const _stdout: (string | Uint8Array)[] = [];
+  const _stderr: (string | Uint8Array)[] = [];
   if (
     execOptions.encoding !== "buffer" && Buffer.isEncoding(execOptions.encoding)
   ) {
@@ -403,7 +408,7 @@ export function execFile(
     ) {
       stdout = _stdout.join("");
     } else {
-      stdout = Buffer.concat(_stdout);
+      stdout = Buffer.concat(_stdout as Buffer[]);
     }
     if (
       encoding ||
@@ -414,7 +419,7 @@ export function execFile(
     ) {
       stderr = _stderr.join("");
     } else {
-      stderr = Buffer.concat(_stderr);
+      stderr = Buffer.concat(_stderr as Buffer[]);
     }
 
     if (!ex && code === 0 && signal === null) {
@@ -485,32 +490,29 @@ export function execFile(
     }
 
     child.stdout.on("data", function onChildStdout(chunk: string | Buffer) {
-      const encoding = child.stdout?.readableEncoding;
-
-      let chunkBuffer: Buffer;
-      if (Buffer.isBuffer(chunk)) {
-        chunkBuffer = chunk;
-      } else {
-        if (encoding) {
-          chunkBuffer = Buffer.from(chunk as string, encoding);
-        } else {
-          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
-          chunkBuffer = Buffer.from("");
-        }
+      // Do not need to count the length
+      if (execOptions.maxBuffer === Infinity) {
+        ArrayPrototypePush(_stdout, chunk);
+        return;
       }
 
-      const length = chunkBuffer.length;
+      const encoding = child.stdout?.readableEncoding;
+      const length = encoding
+        ? Buffer.byteLength(chunk, encoding)
+        : chunk.length;
+      const slice = encoding
+        ? StringPrototypeSlice
+        : (buf: string | Buffer, ...args: number[]) => buf.slice(...args);
       stdoutLen += length;
 
       if (stdoutLen > execOptions.maxBuffer) {
         const truncatedLen = execOptions.maxBuffer - (stdoutLen - length);
-        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
-        _stdout.push(truncatedSlice);
+        ArrayPrototypePush(_stdout, slice(chunk, 0, truncatedLen));
 
         ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stdout");
         kill();
       } else {
-        _stdout.push(chunkBuffer.valueOf());
+        ArrayPrototypePush(_stdout, chunk);
       }
     });
   }
@@ -521,32 +523,29 @@ export function execFile(
     }
 
     child.stderr.on("data", function onChildStderr(chunk: string | Buffer) {
-      const encoding = child.stderr?.readableEncoding;
-
-      let chunkBuffer: Buffer;
-      if (Buffer.isBuffer(chunk)) {
-        chunkBuffer = chunk;
-      } else {
-        if (encoding) {
-          chunkBuffer = Buffer.from(chunk as string, encoding);
-        } else {
-          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
-          chunkBuffer = Buffer.from("");
-        }
+      // Do not need to count the length
+      if (execOptions.maxBuffer === Infinity) {
+        ArrayPrototypePush(_stderr, chunk);
+        return;
       }
 
-      const length = chunkBuffer.length;
+      const encoding = child.stderr?.readableEncoding;
+      const length = encoding
+        ? Buffer.byteLength(chunk, encoding)
+        : chunk.length;
+      const slice = encoding
+        ? StringPrototypeSlice
+        : (buf: string | Buffer, ...args: number[]) => buf.slice(...args);
       stderrLen += length;
 
       if (stderrLen > execOptions.maxBuffer) {
         const truncatedLen = execOptions.maxBuffer - (stderrLen - length);
-        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
-        _stderr.push(truncatedSlice);
+        ArrayPrototypePush(_stderr, slice(chunk, 0, truncatedLen));
 
         ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stderr");
         kill();
       } else {
-        _stderr.push(chunkBuffer.valueOf());
+        ArrayPrototypePush(_stderr, chunk);
       }
     });
   }
