@@ -23,6 +23,7 @@
       "test-buffer-includes.js",
       "test-buffer-indexof.js",
       "test-child-process-exec-encoding.js",
+      "test-child-process-exec-maxbuf.js",
       "test-child-process-exec-std-encoding.js",
       "test-child-process-spawnsync-env.js",
       "test-child-process-spawnsync-maxbuf.js",
