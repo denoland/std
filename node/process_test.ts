@@ -148,6 +148,7 @@ Deno.test({
 
 Deno.test({
   name: "process.on signal",
+  ignore: Deno.build.os == "windows",
   async fn() {
     const promise = deferred();
     let c = 0;
@@ -172,6 +173,7 @@ Deno.test({
 
 Deno.test({
   name: "process.off signal",
+  ignore: Deno.build.os == "windows",
   async fn() {
     const promise = deferred();
     let c = 0;
