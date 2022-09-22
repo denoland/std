@@ -341,6 +341,7 @@ export function execFile(
     timeout: 0,
     maxBuffer: MAX_BUFFER,
     killSignal: "SIGTERM",
+    shell: false,
     ...options,
   };
   if (!Number.isInteger(execOptions.timeout) || execOptions.timeout < 0) {
@@ -359,9 +360,15 @@ export function execFile(
       execOptions.maxBuffer,
     );
   }
-  const spawnOptions = {
-    shell: false,
-    ...options,
+  const spawnOptions: ChildProcessOptions = {
+    cwd: execOptions.cwd,
+    env: execOptions.env,
+    gid: execOptions.gid,
+    shell: execOptions.shell,
+    signal: execOptions.signal,
+    uid: execOptions.uid,
+    windowsHide: !!execOptions.windowsHide,
+    windowsVerbatimArguments: !!execOptions.windowsVerbatimArguments,
   };
 
   const child = spawn(file, args, spawnOptions);
