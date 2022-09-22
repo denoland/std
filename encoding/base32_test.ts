@@ -1,6 +1,6 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { decode, encode } from "./base32.ts";
 
@@ -88,7 +88,7 @@ const testCases = [
 
 Deno.test({
   name: "[encoding.base32] encode",
-  fn(): void {
+  fn() {
     for (const [bin, b32] of testCases) {
       assertEquals(encode(fromHexString(bin)), b32);
     }
@@ -97,7 +97,7 @@ Deno.test({
 
 Deno.test({
   name: "[encoding.base32] decode",
-  fn(): void {
+  fn() {
     for (const [bin, b32] of testCases) {
       assertEquals(toHexString(decode(b32)), bin);
     }
@@ -106,7 +106,7 @@ Deno.test({
 
 Deno.test({
   name: "[encoding.base32] decode bad length",
-  fn(): void {
+  fn() {
     let errorCaught = false;
     try {
       decode("OOOO==");
@@ -123,7 +123,7 @@ Deno.test({
 
 Deno.test({
   name: "[encoding.base32] decode bad padding",
-  fn(): void {
+  fn() {
     let errorCaught = false;
     try {
       decode("OOOOOO==");

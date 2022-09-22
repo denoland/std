@@ -1,7 +1,16 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [Ascii85/base85](https://en.wikipedia.org/wiki/Ascii85) encoding.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
+
 /**
  * encoding/decoding options
  * @property standard - characterset and delimiter (if supported and used). Defaults to Adobe

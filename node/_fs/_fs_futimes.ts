@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import type { CallbackWithError } from "./_fs_common.ts";
 
 function getValidTime(
@@ -26,7 +27,7 @@ export function futimes(
   atime: number | string | Date,
   mtime: number | string | Date,
   callback: CallbackWithError,
-): void {
+) {
   if (!callback) {
     throw new Deno.errors.InvalidData("No callback function supplied");
   }
@@ -41,7 +42,7 @@ export function futimesSync(
   fd: number,
   atime: number | string | Date,
   mtime: number | string | Date,
-): void {
+) {
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 

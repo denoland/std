@@ -1,5 +1,31 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-unused-vars
+
+/**
+ * Provides an implementation of the
+ * [WebAssembly System Interface](https://wasi.dev/).
+ *
+ * ### Example
+ *
+ * ```ts
+ * import Context from "https://deno.land/std@$STD_VERSION/wasi/snapshot_preview1.ts";
+ *
+ * const context = new Context({
+ *   args: Deno.args,
+ *   env: Deno.env.toObject(),
+ * });
+ *
+ * const binary = await Deno.readFile("path/to/your/module.wasm");
+ * const module = await WebAssembly.compile(binary);
+ * const instance = await WebAssembly.instantiate(module, {
+ *   "wasi_snapshot_preview1": context.exports,
+ * });
+ *
+ * context.start(instance);
+ * ```
+ *
+ * @module
+ */
 
 import { relative, resolve } from "../path/mod.ts";
 
@@ -345,7 +371,7 @@ export default class Context {
 
   exports: Record<string, WebAssembly.ImportValue>;
 
-  constructor(options: ContextOptions) {
+  constructor(options: ContextOptions = {}) {
     this.#args = options.args ?? [];
     this.#env = options.env ?? {};
     this.#exitOnReturn = options.exitOnReturn ?? true;
@@ -1732,12 +1758,11 @@ export default class Context {
       );
     }
 
-    if (typeof _initialize != "function") {
+    if (_initialize && typeof _initialize != "function") {
       throw new TypeError(
-        "WebAsembly.instance export _initialize must be a function",
+        "WebAssembly.Instance export _initialize must be a function or not be defined",
       );
     }
-
-    _initialize();
+    _initialize?.();
   }
 }

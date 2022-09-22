@@ -1,4 +1,12 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Logging library with the support for terminal and file outputs. Also provides
+ * interfaces for building custom loggers.
+ *
+ * @module
+ */
+
 import { Logger } from "./logger.ts";
 import type { GenericFunction } from "./logger.ts";
 import {
@@ -164,14 +172,14 @@ export function critical<T>(
 }
 
 /** Setup logger config. */
-export async function setup(config: LogConfig) {
+export function setup(config: LogConfig) {
   state.config = {
     handlers: { ...DEFAULT_CONFIG.handlers, ...config.handlers },
     loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },
   };
 
   // tear down existing handlers
-  state.handlers.forEach((handler): void => {
+  state.handlers.forEach((handler) => {
     handler.destroy();
   });
   state.handlers.clear();
@@ -181,7 +189,7 @@ export async function setup(config: LogConfig) {
 
   for (const handlerName in handlers) {
     const handler = handlers[handlerName];
-    await handler.setup();
+    handler.setup();
     state.handlers.set(handlerName, handler);
   }
 
@@ -195,7 +203,7 @@ export async function setup(config: LogConfig) {
     const handlerNames = loggerConfig.handlers || [];
     const handlers: BaseHandler[] = [];
 
-    handlerNames.forEach((handlerName): void => {
+    handlerNames.forEach((handlerName) => {
       const handler = state.handlers.get(handlerName);
       if (handler) {
         handlers.push(handler);
@@ -208,4 +216,4 @@ export async function setup(config: LogConfig) {
   }
 }
 
-await setup(DEFAULT_CONFIG);
+setup(DEFAULT_CONFIG);

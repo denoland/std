@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { assert } from "./assert.ts";
 
 export function deepAssign<T, U>(target: T, source: U): T & U;
@@ -25,7 +27,7 @@ object | undefined {
     if (!source || typeof source !== `object`) {
       return;
     }
-    Object.entries(source).forEach(([key, value]): void => {
+    Object.entries(source).forEach(([key, value]) => {
       if (value instanceof Date) {
         target[key] = new Date(value);
         return;

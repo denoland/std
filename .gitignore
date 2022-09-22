@@ -6,4 +6,6 @@ package.json
 package-lock.json
 .vscode/settings.json
 **/cov/
-/_wasm_crypto/target
+/crypto/_wasm_crypto/target
+/encoding/varint/_wasm_varint/target
+/hash/_wasm/target

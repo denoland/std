@@ -1,9 +1,15 @@
-// Ported from Go
-// https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go
 // Copyright 2009 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// https://github.com/golang/go/blob/master/LICENSE
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** Port of the Go
+ * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
+ * library.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 

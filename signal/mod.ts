@@ -1,4 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+/**
+ * Higher level API for dealing with OS signals.
+ *
+ * @module
+ */
+
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
 import { deferred } from "../async/deferred.ts";
 
@@ -44,7 +50,7 @@ export function signal(
   });
 
   // Create dispose method for the muxer of signal streams.
-  const dispose = (): void => {
+  const dispose = () => {
     streams.forEach((stream) => {
       stream.dispose();
     });

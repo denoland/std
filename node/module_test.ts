@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -131,32 +131,28 @@ Deno.test("EventEmitter is exported correctly", () => {
 Deno.test("Require .mjs", () => {
   assertThrows(
     () => require("./testdata/inspect.mjs"),
-    undefined,
-    "Importing ESM module",
+    Error,
+    "Importing ESM module:",
   );
 });
 
 Deno.test("requireErrorInEval", async function () {
   const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--unstable",
       "--allow-read",
       "./_module/cjs/test_cjs_import.js",
     ],
     cwd,
-    stdout: "piped",
-    stderr: "piped",
   });
 
   const decoder = new TextDecoder();
-  const output = await p.output();
-  const outputError = decoder.decode(await p.stderrOutput());
+  const outputError = decoder.decode(stderr);
 
-  assert(!output.length);
+  assert(!stdout.length);
   assert(
     outputError.includes(
       'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
@@ -167,7 +163,6 @@ Deno.test("requireErrorInEval", async function () {
       "SyntaxError: Cannot use import statement outside a module",
     ),
   );
-  p.close();
 });
 
 Deno.test("requireCjsWithDynamicImport", function () {
@@ -196,4 +191,42 @@ Deno.test("module has proper members", function () {
   assert(module.globalPaths);
   assert(module.Module === Module);
   assert(typeof module.wrap == "function");
+});
+
+Deno.test("a module can have its own timers declarations", function () {
+  require("./_module/cjs/cjs_declare_timers");
+});
+
+Deno.test("require in a web worker", async () => {
+  const code = `\
+    import { createRequire } from "${new URL("module.ts", import.meta.url)}";
+    const require = createRequire("${import.meta.url}");
+    const result = require("./_module/cjs/cjs_a.js");
+    if (result.helloA() != "A") {
+      throw new Error("assertion failed in worker");
+    }
+    postMessage(null);
+  `;
+  const worker = new Worker(
+    `data:application/javascript;base64,${btoa(code)}`,
+    { type: "module" },
+  );
+  await new Promise((resolve, reject) => {
+    worker.addEventListener("message", resolve);
+    worker.addEventListener("error", reject);
+  });
+  worker.terminate();
+});
+
+Deno.test("createRequire with http(s):// URL  throws with correct error message", () => {
+  assertThrows(
+    () => createRequire("http://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'http://example.com/foo.js'",
+  );
+  assertThrows(
+    () => createRequire("https://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'https://example.com/foo.js'",
+  );
 });

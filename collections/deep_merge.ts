@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // deno-lint-ignore-file ban-types
@@ -18,7 +18,7 @@ const { hasOwn } = Object;
  * Example:
  *
  * ```ts
- * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const a = {foo: true}
@@ -58,6 +58,23 @@ export function deepMerge<
   other: Readonly<U>,
   options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
+  return deepMergeInternal(record, other, new Set(), options);
+}
+
+function deepMergeInternal<
+  T extends Record<PropertyKey, unknown>,
+  U extends Record<PropertyKey, unknown>,
+  Options extends DeepMergeOptions = {
+    arrays: "merge";
+    sets: "merge";
+    maps: "merge";
+  },
+>(
+  record: Readonly<T>,
+  other: Readonly<U>,
+  seen: Set<NonNullable<object>>,
+  options?: Readonly<Options>,
+) {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
   type Result = DeepMerge<T, U, Options>;
@@ -87,8 +104,12 @@ export function deepMerge<
 
     const b = other[key] as ResultMember;
 
-    if (isNonNullObject(a) && isNonNullObject(b)) {
-      result[key] = mergeObjects(a, b, options) as ResultMember;
+    if (
+      isNonNullObject(a) && isNonNullObject(b) && !seen.has(a) && !seen.has(b)
+    ) {
+      seen.add(a);
+      seen.add(b);
+      result[key] = mergeObjects(a, b, seen, options) as ResultMember;
 
       continue;
     }
@@ -103,6 +124,7 @@ export function deepMerge<
 function mergeObjects(
   left: Readonly<NonNullable<object>>,
   right: Readonly<NonNullable<object>>,
+  seen: Set<NonNullable<object>>,
   options: Readonly<DeepMergeOptions> = {
     arrays: "merge",
     sets: "merge",
@@ -111,7 +133,7 @@ function mergeObjects(
 ): Readonly<NonNullable<object>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
-    return deepMerge(left, right);
+    return deepMergeInternal(left, right, seen, options);
   }
 
   if (isIterable(left) && isIterable(right)) {
@@ -382,5 +404,5 @@ export type DeepMerge<
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U, Options>
-    : // Handle primitives
-    T | U;
+    // Handle primitives
+    : T | U;

@@ -1,26 +1,26 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { notImplemented } from "./_utils.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import {
+  Agent as HttpAgent,
   ClientRequest,
   IncomingMessageForClient as IncomingMessage,
   type RequestOptions,
 } from "./http.ts";
+import type { Socket } from "./net.ts";
 
-export class Agent {
-  constructor() {
-    notImplemented();
-  }
+export class Agent extends HttpAgent {
 }
+
 export class Server {
   constructor() {
-    notImplemented();
+    notImplemented("https.Server.prototype.constructor");
   }
 }
 export function createServer() {
-  notImplemented();
+  notImplemented("https.createServer");
 }
 
 interface HttpsRequestOptions extends RequestOptions {
@@ -56,7 +56,10 @@ export function get(...args: any[]) {
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
 class HttpsClientRequest extends ClientRequest {
-  async _createCustomClient(): Promise<Deno.HttpClient | undefined> {
+  override defaultProtocol = "https:";
+  override async _createCustomClient(): Promise<
+    Deno.HttpClient | undefined
+  > {
     if (caCerts === null) {
       return undefined;
     }
@@ -79,6 +82,11 @@ class HttpsClientRequest extends ClientRequest {
     const caCert = await Deno.readTextFile(certFilename);
     caCerts = [caCert];
     return Deno.createHttpClient({ caCerts });
+  }
+
+  override _createSocket(): Socket {
+    // deno-lint-ignore no-explicit-any
+    return { authorized: true } as any;
   }
 }
 

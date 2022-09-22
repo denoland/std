@@ -1,4 +1,6 @@
-import { denoErrorToNodeError } from "../_errors.ts";
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { denoErrorToNodeError } from "../internal/errors.ts";
+import { promisify } from "../internal/util.mjs";
 
 export type statOptions = {
   bigint: boolean;
@@ -236,10 +238,7 @@ export function CFISBIS(fileInfo: Deno.FileInfo, bigInt: boolean) {
   return convertFileInfoToStats(fileInfo);
 }
 
-export type statCallbackBigInt = (
-  err: Error | null,
-  stat: BigIntStats,
-) => void;
+export type statCallbackBigInt = (err: Error | null, stat: BigIntStats) => void;
 
 export type statCallback = (err: Error | null, stat: Stats) => void;
 
@@ -277,6 +276,12 @@ export function stat(
   );
 }
 
+export const statPromise = promisify(stat) as (
+  & ((path: string | URL) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: false }) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: true }) => Promise<BigIntStats>)
+);
+
 export function statSync(path: string | URL): Stats;
 export function statSync(
   path: string | URL,
@@ -293,9 +298,10 @@ export function statSync(
   try {
     const origin = Deno.statSync(path);
     return CFISBIS(origin, options.bigint);
-  } catch (err: unknown) {
+  } catch (err) {
     if (
-      options?.throwIfNoEntry === false && err instanceof Deno.errors.NotFound
+      options?.throwIfNoEntry === false &&
+      err instanceof Deno.errors.NotFound
     ) {
       return;
     }

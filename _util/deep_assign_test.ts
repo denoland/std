@@ -1,8 +1,8 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deepAssign } from "./deep_assign.ts";
 
-Deno.test("deepAssignTest", function (): void {
+Deno.test("deepAssignTest", function () {
   const date = new Date("1979-05-27T07:32:00Z");
   const reg = RegExp(/DENOWOWO/);
   const obj1 = { deno: { bar: { deno: ["is", "not", "node"] } } };

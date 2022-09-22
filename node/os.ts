@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,6 +19,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
@@ -165,6 +167,7 @@ export function homedir(): string | null {
       return Deno.env.get("USERPROFILE") || null;
     case "linux":
     case "darwin":
+    case "freebsd":
       return Deno.env.get("HOME") || null;
     default:
       throw Error("unreachable");
@@ -184,10 +187,40 @@ export function loadavg(): number[] {
   return Deno.loadavg();
 }
 
-/** Not yet implemented */
+/** Returns an object containing network interfaces that have been assigned a network address.
+ * Each key on the returned object identifies a network interface. The associated value is an array of objects that each describe an assigned network address. */
 export function networkInterfaces(): NetworkInterfaces {
-  notImplemented(SEE_GITHUB_ISSUE);
+  const interfaces: NetworkInterfaces = {};
+  for (
+    const { name, address, netmask, family, mac, scopeid, cidr } of Deno
+      .networkInterfaces()
+  ) {
+    const addresses = interfaces[name] ||= [];
+    const networkAddress: NetworkAddress = {
+      address,
+      netmask,
+      family,
+      mac,
+      internal: (family === "IPv4" && isIPv4LoopbackAddr(address)) ||
+        (family === "IPv6" && isIPv6LoopbackAddr(address)),
+      cidr,
+    };
+    if (family === "IPv6") {
+      networkAddress.scopeid = scopeid!;
+    }
+    addresses.push(networkAddress);
+  }
+  return interfaces;
 }
+
+function isIPv4LoopbackAddr(addr: string) {
+  return addr.startsWith("127");
+}
+
+function isIPv6LoopbackAddr(addr: string) {
+  return addr === "::1" || addr === "fe80::1";
+}
+
 /** Returns the a string identifying the operating system platform. The value is set at compile time. Possible values are 'darwin', 'linux', and 'win32'. */
 export function platform(): string {
   return process.platform;
@@ -199,7 +232,7 @@ export function release(): string {
 }
 
 /** Not yet implemented */
-export function setPriority(pid: number, priority?: number): void {
+export function setPriority(pid: number, priority?: number) {
   /* The node API has the 'pid' as the first parameter and as optional.
        This makes for a problematic implementation in Typescript. */
   if (priority === undefined) {
@@ -246,13 +279,15 @@ export function totalmem(): number {
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
 export function type(): string {
-  switch (Deno.build.os) {
+  switch (Deno.build.os as string) {
     case "windows":
       return "Windows_NT";
     case "linux":
       return "Linux";
     case "darwin":
       return "Darwin";
+    case "freebsd":
+      return "FreeBSD";
     default:
       throw Error("unreachable");
   }
@@ -283,6 +318,7 @@ export const constants = {
   signals: {
     "SIGABRT": "SIGABRT",
     "SIGALRM": "SIGALRM",
+    "SIGBREAK": "SIGBREAK",
     "SIGBUS": "SIGBUS",
     "SIGCHLD": "SIGCHLD",
     "SIGCONT": "SIGCONT",

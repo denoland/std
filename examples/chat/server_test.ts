@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
 import { TextProtoReader } from "../../textproto/mod.ts";
 import { BufReader } from "../../io/buffer.ts";
@@ -63,12 +63,17 @@ Deno.test({
       await new Promise<void>((resolve) => {
         ws.onmessage = (message) => {
           assertEquals(message.data, "Connected: [1]");
+
           ws.onmessage = (message) => {
             assertEquals(message.data, "[1]: Hello");
             ws.close();
-            resolve();
           };
+
           ws.send("Hello");
+        };
+
+        ws.onclose = () => {
+          resolve();
         };
       });
     } catch (err) {

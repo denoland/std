@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   critical,
@@ -17,7 +17,7 @@ import { BaseHandler } from "./handlers.ts";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string) {
     this.messages.push(str);
   }
 }
@@ -31,11 +31,11 @@ try {
   // Pass
 }
 
-Deno.test("logger is initialized", function (): void {
+Deno.test("logger is initialized", function () {
   assert(logger instanceof Logger);
 });
 
-Deno.test("default loggers work as expected", function (): void {
+Deno.test("default loggers work as expected", function () {
   const sym = Symbol("a");
   const debugData: string = debug("foo");
   const debugResolver: string | undefined = debug(() => "foo");

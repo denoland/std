@@ -1,10 +1,12 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { existsSync } from "./_fs_exists.ts";
 import { mkdir, mkdirSync } from "./_fs_mkdir.ts";
 import {
-  ERR_INVALID_CALLBACK,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_OPT_VALUE_ENCODING,
-} from "../_errors.ts";
+} from "../internal/errors.ts";
+import { promisify } from "../internal/util.mjs";
 
 export type mkdtempCallback = (
   err: Error | null,
@@ -22,10 +24,12 @@ export function mkdtemp(
   prefix: string,
   optionsOrCallback: { encoding: string } | string | mkdtempCallback,
   maybeCallback?: mkdtempCallback,
-): void {
+) {
   const callback: mkdtempCallback | undefined =
     typeof optionsOrCallback == "function" ? optionsOrCallback : maybeCallback;
-  if (!callback) throw new ERR_INVALID_CALLBACK(callback);
+  if (!callback) {
+    throw new ERR_INVALID_ARG_TYPE("callback", "function", callback);
+  }
 
   const encoding: string | undefined = parseEncoding(optionsOrCallback);
   const path = tempDirPath(prefix);
@@ -39,6 +43,11 @@ export function mkdtemp(
     },
   );
 }
+
+export const mkdtempPromise = promisify(mkdtemp) as (
+  prefix: string,
+  options?: { encoding: string } | string,
+) => Promise<string>;
 
 // https://nodejs.org/dist/latest-v15.x/docs/api/fs.html#fs_fs_mkdtempsync_prefix_options
 export function mkdtempSync(

@@ -1,6 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { mergeReadableStreams, zipReadableStreams } from "./merge.ts";
+import {
+  earlyZipReadableStreams,
+  mergeReadableStreams,
+  zipReadableStreams,
+} from "./merge.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
 Deno.test("[streams] mergeReadableStreams", async () => {
@@ -68,5 +72,78 @@ Deno.test("[streams] zipReadableStreams", async () => {
     "apoiuztrewq0987654321",
     "apoiuztrewq0987321",
     "qwertzuiopasq123d",
+  ]);
+});
+
+Deno.test("[streams] earlyZipReadableStreams short first", async () => {
+  const textStream = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("1");
+      controller.enqueue("2");
+      controller.enqueue("3");
+      controller.close();
+    },
+  });
+
+  const textStream2 = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("a");
+      controller.enqueue("b");
+      controller.enqueue("c");
+      controller.enqueue("d");
+      controller.enqueue("e");
+      controller.close();
+    },
+  });
+
+  const buf = [];
+  for await (const s of earlyZipReadableStreams(textStream, textStream2)) {
+    buf.push(s);
+  }
+
+  assertEquals(buf, [
+    "1",
+    "a",
+    "2",
+    "b",
+    "3",
+    "c",
+  ]);
+});
+
+Deno.test("[streams] earlyZipReadableStreams long first", async () => {
+  const textStream = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("a");
+      controller.enqueue("b");
+      controller.enqueue("c");
+      controller.enqueue("d");
+      controller.enqueue("e");
+      controller.close();
+    },
+  });
+
+  const textStream2 = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("1");
+      controller.enqueue("2");
+      controller.enqueue("3");
+      controller.close();
+    },
+  });
+
+  const buf = [];
+  for await (const s of earlyZipReadableStreams(textStream, textStream2)) {
+    buf.push(s);
+  }
+
+  assertEquals(buf, [
+    "a",
+    "1",
+    "b",
+    "2",
+    "c",
+    "3",
+    "d",
   ]);
 });

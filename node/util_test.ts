@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import {
   assert,
@@ -8,6 +8,9 @@ import {
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
 import * as util from "./util.ts";
+
+// Note: Need to import this to lazily initialize error classes
+import "./internal/errors.ts";
 
 Deno.test({
   name: "[util] format",
@@ -31,6 +34,13 @@ Deno.test({
     assertEquals(
       stripColor(util.inspect("Deno's logo is so cute.")),
       `"Deno's logo is so cute."`,
+    );
+    assertEquals(
+      stripColor(util.inspect([1, 2, 3, 4, 5, 6, 7])),
+      `[
+  1, 2, 3, 4,
+  5, 6, 7
+]`,
     );
   },
 });
@@ -132,7 +142,7 @@ Deno.test({
 Deno.test({
   name: "[util] isFunction",
   fn() {
-    const f = function (): void {};
+    const f = function () {};
     assert(util.isFunction(f));
     assert(!util.isFunction({}));
     assert(!util.isFunction(new RegExp(/f/)));
@@ -166,7 +176,7 @@ Deno.test({
     const integerType = 2;
     const symbolType = Symbol("anything");
 
-    const functionType = function doBest(): void {};
+    const functionType = function doBest() {};
     const objectType = { name: "ali" };
     const arrayType = [1, 2, 3];
 

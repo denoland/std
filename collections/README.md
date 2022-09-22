@@ -20,7 +20,7 @@ Applies the given aggregator to each group in the given grouping, returning the
 results together with the respective group keys
 
 ```ts
-import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/aggregate_groups.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const foodProperties = {
@@ -51,7 +51,7 @@ using the given selector. If the selector produces the same key for multiple
 elements, the latest one will be used (overriding the ones before it).
 
 ```ts
-import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/associate_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const users = [
@@ -75,7 +75,7 @@ key using the given selector. If any of two pairs would have the same value the
 latest on will be used (overriding the ones before it).
 
 ```ts
-import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/associate_with.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const names = ["Kim", "Lara", "Jonathan"];
@@ -93,7 +93,7 @@ assertEquals(namesToLength, {
 Splits the given array into chunks of the given size and returns them.
 
 ```ts
-import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { chunk } from "https://deno.land/std@$STD_VERSION/collections/chunk.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const words = [
@@ -127,7 +127,7 @@ For arrays, maps and sets, a merging strategy can be specified to either
 include non enumerable properties too.
 
 ```ts
-import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const a = { foo: true };
@@ -142,7 +142,7 @@ Returns all elements in the given array that produce a distinct value using the
 given selector, preserving order by first occurrence.
 
 ```ts
-import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const names = ["Anna", "Kim", "Arnold", "Kate"];
@@ -157,7 +157,7 @@ Returns all distinct elements in the given array, preserving order by first
 occurrence.
 
 ```ts
-import { distinct } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { distinct } from "https://deno.land/std@$STD_VERSION/collections/distinct.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [3, 2, 5, 2, 5];
@@ -172,7 +172,7 @@ Returns a new array that drops all elements in the given collection until the
 first element that does not match the given predicate.
 
 ```ts
-import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/drop_while.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [3, 2, 5, 2, 5];
@@ -189,7 +189,7 @@ last element that does not match the given predicate
 Example:
 
 ```ts
-import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/drop_last_while.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [22, 30, 44];
@@ -208,7 +208,7 @@ Returns a new record with all entries of the given record except the ones that
 do not match the given predicate.
 
 ```ts
-import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/filter_entries.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const menu = {
@@ -235,7 +235,7 @@ Returns a new record with all entries of the given record except the ones that
 have a key that does not match the given predicate.
 
 ```ts
-import { filterKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { filterKeys } from "https://deno.land/std@$STD_VERSION/collections/filter_keys.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const menu = {
@@ -260,7 +260,7 @@ Returns a new record with all entries of the given record except the ones that
 have a value that does not match the given predicate.
 
 ```ts
-import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/filter_values.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = {
@@ -285,7 +285,7 @@ Returns an element if and only if that element is the only one matching the
 given condition. Returns `undefined` otherwise.
 
 ```ts
-import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/find_single.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const bookings = [
@@ -307,7 +307,7 @@ produced that is neither `null` nor `undefined` and returns that value. Returns
 `undefined` if no such value is produced
 
 ```ts
-import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/first_not_nullish_of.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const tables = [
@@ -327,7 +327,7 @@ Record containing the results as keys and all values that produced that key as
 values.
 
 ```ts
-import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -353,7 +353,7 @@ returns false. Doesn't work with non-primitive values: includesValue({x: {}},
 {}) returns false.
 
 ```ts
-import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/includes_value.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const input = {
@@ -370,7 +370,7 @@ Returns all distinct elements that appear at least once in each of the given
 arrays.
 
 ```ts
-import { intersect } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const lisaInterests = ["Cooking", "Music", "Hiking"];
@@ -390,7 +390,7 @@ first `limit` elements will be appended, followed by the `truncated` string.
 Returns the resulting string.
 
 ```ts
-import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/join_to_string.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const users = [
@@ -416,7 +416,7 @@ Applies the given transformer to all entries in the given record and returns a
 new record containing the results.
 
 ```ts
-import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/map_entries.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const usersById = {
@@ -445,7 +445,7 @@ If the transformed entries contain the same key multiple times, only the last
 one will appear in the returned record.
 
 ```ts
-import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/map_keys.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const counts = { a: 5, b: 3, c: 8 };
@@ -467,7 +467,7 @@ using the given transformer, except the ones that were transformed to `null` or
 `undefined`.
 
 ```ts
-import { mapNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { mapNotNullish } from "https://deno.land/std@$STD_VERSION/collections/map_not_nullish.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -488,7 +488,7 @@ new record containing the resulting keys associated to the last value that
 produced them.
 
 ```ts
-import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/map_values.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const usersById = {
@@ -512,7 +512,7 @@ Returns the first element that is the largest value of the given function or
 undefined if there are no elements.
 
 ```ts
-import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -533,7 +533,7 @@ returns the max value of all elements. If an empty array is provided the
 function will return undefined
 
 ```ts
-import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/max_of.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const inventory = [
@@ -553,7 +553,7 @@ Returns the first element having the largest value according to the provided
 comparator or undefined if there are no elements
 
 ```ts
-import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/max_with.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = ["Kim", "Anna", "John", "Arthur"];
@@ -568,7 +568,7 @@ Returns the first element that is the smallest value of the given function or
 undefined if there are no elements
 
 ```ts
-import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -589,7 +589,7 @@ the min value of all elements. If an empty array is provided the function will
 return undefined
 
 ```ts
-import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const inventory = [
@@ -608,7 +608,7 @@ Returns the first element having the smallest value according to the provided
 comparator or undefined if there are no elements
 
 ```ts
-import { minWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { minWith } from "https://deno.land/std@$STD_VERSION/collections/min_with.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = ["Kim", "Anna", "John"];
@@ -624,7 +624,7 @@ given array that match the given predicate and the second one containing all
 that do not.
 
 ```ts
-import { partition } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { partition } from "https://deno.land/std@$STD_VERSION/collections/partition.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [5, 6, 7, 8, 9];
@@ -641,7 +641,7 @@ of elements, meaning this will always return the same number of permutations for
 a given length of input.
 
 ```ts
-import { permutations } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { permutations } from "https://deno.land/std@$STD_VERSION/collections/permutations.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2];
@@ -662,7 +662,7 @@ Applies the given reducer to each group in the given Grouping, returning the
 results together with the respective group keys
 
 ```ts
-import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/reduce_groups.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const votes = {
@@ -687,7 +687,7 @@ initialValue. Returns all intermediate accumulator results.
 Example:
 
 ```ts
-import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/running_reduce.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2, 3, 4, 5];
@@ -702,7 +702,7 @@ Applies the given selector to all elements in the given collection and
 calculates the sum of the results.
 
 ```ts
-import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/sum_of.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -720,7 +720,7 @@ assertEquals(totalAge, 99);
 Returns a random element from the given array
 
 ```ts
-import { sample } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { sample } from "https://deno.land/std@$STD_VERSION/collections/sample.ts";
 import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2, 3, 4];
@@ -742,7 +742,7 @@ collection, resulting in some undefined values if size is greater than 1.
 (Default: false)
 
 ```ts
-import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/sliding_windows.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 const numbers = [1, 2, 3, 4, 5];
 
@@ -775,7 +775,7 @@ Returns all elements in the given collection, sorted by their result using the
 given selector. The selector function is called only once for each element.
 
 ```ts
-import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
@@ -800,7 +800,7 @@ match the given predicate.
 Example:
 
 ```ts
-import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/take_last_while.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const arr = [1, 2, 3, 4, 5, 6];
@@ -817,7 +817,7 @@ Returns all elements in the given collection until the first element that does
 not match the given predicate.
 
 ```ts
-import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/take_while.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const arr = [1, 2, 3, 4, 5, 6];
@@ -833,7 +833,7 @@ assertEquals(
 Returns all distinct elements that appear in any of the given arrays
 
 ```ts
-import { union } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { union } from "https://deno.land/std@$STD_VERSION/collections/union.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const soupIngredients = ["Pepper", "Carrots", "Leek"];
@@ -850,7 +850,7 @@ returned array holding all first tuple elements and the second one holding all
 the second elements
 
 ```ts
-import { unzip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { unzip } from "https://deno.land/std@$STD_VERSION/collections/unzip.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const parents = [
@@ -870,7 +870,7 @@ assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
 Returns an array excluding all given values
 
 ```ts
-import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/without_all.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
@@ -884,7 +884,7 @@ Builds N-tuples of elements from the given N arrays with matching indices,
 stopping when the smallest array's end is reached
 
 ```ts
-import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { zip } from "https://deno.land/std@$STD_VERSION/collections/zip.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2, 3, 4];
@@ -900,4 +900,208 @@ assertEquals(
     [4, "d"],
   ],
 );
+```
+
+### BinaryHeap
+
+A priority queue implemented with a binary heap. The heap is in decending order
+by default, using JavaScript's built in comparison operators to sort the values.
+
+| Method      | Average Case | Worst Case |
+| ----------- | ------------ | ---------- |
+| peek()      | O(1)         | O(1)       |
+| pop()       | O(log n)     | O(log n)   |
+| push(value) | O(1)         | O(log n)   |
+
+```ts
+import {
+  ascend,
+  BinaryHeap,
+  descend,
+} from "https://deno.land/std@$STD_VERSION/collections/binary_heap.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const maxHeap = new BinaryHeap<number>();
+maxHeap.push(4, 1, 3, 5, 2);
+assertEquals(maxHeap.peek(), 5);
+assertEquals(maxHeap.pop(), 5);
+assertEquals([...maxHeap], [4, 3, 2, 1]);
+assertEquals([...maxHeap], []);
+
+const minHeap = new BinaryHeap<number>(ascend);
+minHeap.push(4, 1, 3, 5, 2);
+assertEquals(minHeap.peek(), 1);
+assertEquals(minHeap.pop(), 1);
+assertEquals([...minHeap], [2, 3, 4, 5]);
+assertEquals([...minHeap], []);
+
+const words = new BinaryHeap<string>((a, b) => descend(a.length, b.length));
+words.push("truck", "car", "helicopter", "tank");
+assertEquals(words.peek(), "helicopter");
+assertEquals(words.pop(), "helicopter");
+assertEquals([...words], ["truck", "tank", "car"]);
+assertEquals([...words], []);
+```
+
+### BinarySearchTree
+
+An unbalanced binary search tree. The values are in ascending order by default,
+using JavaScript's built in comparison operators to sort the values.
+
+For performance, it's recommended that you use a self balancing binary search
+tree instead of this one unless you are extending this to create a self
+balancing tree. See RedBlackTree for an example of how BinarySearchTree can be
+extended to create a self balancing binary search tree.
+
+| Method        | Average Case | Worst Case |
+| ------------- | ------------ | ---------- |
+| find(value)   | O(log n)     | O(n)       |
+| insert(value) | O(log n)     | O(n)       |
+| remove(value) | O(log n)     | O(n)       |
+| min()         | O(log n)     | O(n)       |
+| max()         | O(log n)     | O(n)       |
+
+```ts
+import {
+  ascend,
+  BinarySearchTree,
+  descend,
+} from "https://deno.land/std@$STD_VERSION/collections/binary_search_tree.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = [3, 10, 13, 4, 6, 7, 1, 14];
+const tree = new BinarySearchTree<number>();
+values.forEach((value) => tree.insert(value));
+assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+assertEquals(tree.min(), 1);
+assertEquals(tree.max(), 14);
+assertEquals(tree.find(42), null);
+assertEquals(tree.find(7), 7);
+assertEquals(tree.remove(42), false);
+assertEquals(tree.remove(7), true);
+assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+
+const invertedTree = new BinarySearchTree<number>(descend);
+values.forEach((value) => invertedTree.insert(value));
+assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+assertEquals(invertedTree.min(), 14);
+assertEquals(invertedTree.max(), 1);
+assertEquals(invertedTree.find(42), null);
+assertEquals(invertedTree.find(7), 7);
+assertEquals(invertedTree.remove(42), false);
+assertEquals(invertedTree.remove(7), true);
+assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+
+const words = new BinarySearchTree<string>((a, b) =>
+  ascend(a.length, b.length) || ascend(a, b)
+);
+["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+  .forEach((value) => words.insert(value));
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "tank",
+  "train",
+  "truck",
+  "helicopter",
+]);
+assertEquals(words.min(), "car");
+assertEquals(words.max(), "helicopter");
+assertEquals(words.find("scooter"), null);
+assertEquals(words.find("tank"), "tank");
+assertEquals(words.remove("scooter"), false);
+assertEquals(words.remove("tank"), true);
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "train",
+  "truck",
+  "helicopter",
+]);
+```
+
+### RedBlackTree
+
+A red-black tree. This is a kind of self-balancing binary search tree. The
+values are in ascending order by default, using JavaScript's built in comparison
+operators to sort the values.
+
+Red-Black Trees require fewer rotations than AVL Trees, so they can provide
+faster insertions and removal operations. If you need faster lookups, you should
+use an AVL Tree instead. AVL Trees are more strictly balanced than Red-Black
+Trees, so they can provide faster lookups.
+
+| Method        | Average Case | Worst Case |
+| ------------- | ------------ | ---------- |
+| find(value)   | O(log n)     | O(log n)   |
+| insert(value) | O(log n)     | O(log n)   |
+| remove(value) | O(log n)     | O(log n)   |
+| min()         | O(log n)     | O(log n)   |
+| max()         | O(log n)     | O(log n)   |
+
+```ts
+import {
+  ascend,
+  descend,
+  RedBlackTree,
+} from "https://deno.land/std@$STD_VERSION/collections/red_black_tree.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = [3, 10, 13, 4, 6, 7, 1, 14];
+const tree = new RedBlackTree<number>();
+values.forEach((value) => tree.insert(value));
+assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+assertEquals(tree.min(), 1);
+assertEquals(tree.max(), 14);
+assertEquals(tree.find(42), null);
+assertEquals(tree.find(7), 7);
+assertEquals(tree.remove(42), false);
+assertEquals(tree.remove(7), true);
+assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+
+const invertedTree = new RedBlackTree<number>(descend);
+values.forEach((value) => invertedTree.insert(value));
+assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+assertEquals(invertedTree.min(), 14);
+assertEquals(invertedTree.max(), 1);
+assertEquals(invertedTree.find(42), null);
+assertEquals(invertedTree.find(7), 7);
+assertEquals(invertedTree.remove(42), false);
+assertEquals(invertedTree.remove(7), true);
+assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+
+const words = new RedBlackTree<string>((a, b) =>
+  ascend(a.length, b.length) || ascend(a, b)
+);
+["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+  .forEach((value) => words.insert(value));
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "tank",
+  "train",
+  "truck",
+  "helicopter",
+]);
+assertEquals(words.min(), "car");
+assertEquals(words.max(), "helicopter");
+assertEquals(words.find("scooter"), null);
+assertEquals(words.find("tank"), "tank");
+assertEquals(words.remove("scooter"), false);
+assertEquals(words.remove("tank"), true);
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "train",
+  "truck",
+  "helicopter",
+]);
 ```

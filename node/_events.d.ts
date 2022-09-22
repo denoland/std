@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/9b9cd671114a2a5178809798d8e7f4d8ca6c2671/types/node/events.d.ts
@@ -201,6 +202,57 @@ export function once(
   eventName: string,
   options?: StaticEventEmitterOptions,
 ): Promise<any[]>;
+
+/**
+ * `n` {number} A non-negative number. The maximum number of listeners per `EventTarget` event.
+ * `...eventsTargets` {EventTarget\[]|EventEmitter\[]} Zero or more {EventTarget}
+ * or {EventEmitter} instances. If none are specified, `n` is set as the default
+ * max for all newly created {EventTarget} and {EventEmitter} objects.
+ *
+ * ```mjs
+ * import { setMaxListeners, EventEmitter } from 'node:events';
+ *
+ * const target = new EventTarget();
+ * const emitter = new EventEmitter();
+ *
+ * setMaxListeners(5, target, emitter);
+ * ```
+ *
+ * ```cjs
+ * const {
+ *   setMaxListeners,
+ *   EventEmitter
+ * } = require('node:events');
+ *
+ * const target = new EventTarget();
+ * const emitter = new EventEmitter();
+ *
+ * setMaxListeners(5, target, emitter);
+ * ```
+ * @since v15.4.0
+ */
+export function setMaxListeners(n: number): EventEmitter;
+
+/**
+ * A class method that returns the number of listeners for the given `eventName`registered on the given `emitter`.
+ *
+ * ```js
+ * const { EventEmitter, listenerCount } = require('events');
+ * const myEmitter = new EventEmitter();
+ * myEmitter.on('event', () => {});
+ * myEmitter.on('event', () => {});
+ * console.log(listenerCount(myEmitter, 'event'));
+ * // Prints: 2
+ * ```
+ * @since v0.9.12
+ * @deprecated Since v3.2.0 - Use `listenerCount` instead.
+ * @param emitter The emitter to query
+ * @param eventName The event name
+ */
+export function listenerCount(
+  emitter: EventEmitter,
+  eventName: string | symbol,
+): number;
 
 interface EventEmitterOptions {
   /**

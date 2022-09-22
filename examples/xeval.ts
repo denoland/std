@@ -1,4 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** Run a script for each new-line or otherwise delimited chunk of standard input.
+ *
+ * @module
+ */
+
 import { parse } from "../flags/mod.ts";
 import { readStringDelim } from "../io/buffer.ts";
 

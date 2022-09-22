@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -7,7 +7,7 @@
  * Example:
  *
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts"
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
@@ -26,19 +26,19 @@
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => number),
+  selector: (el: T) => number,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => string),
+  selector: (el: T) => string,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => bigint),
+  selector: (el: T) => bigint,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => Date),
+  selector: (el: T) => Date,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],

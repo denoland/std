@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // @deno-types="./_events.d.ts"
 export {
   captureRejectionSymbol,
@@ -6,6 +7,8 @@ export {
   errorMonitor,
   EventEmitter,
   getEventListeners,
+  listenerCount,
   on,
   once,
-} from "./_events.js";
+  setMaxListeners,
+} from "./_events.mjs";

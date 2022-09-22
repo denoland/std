@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { deepAssign } from "../../_util/deep_assign.ts";
 
 // ---------------------------
@@ -158,7 +160,7 @@ export const Utils = {
     type: "Table" | "TableArray";
     key: string[];
     value: Record<string, unknown>;
-  }): void {
+  }) {
     if (table.key.length === 0) {
       throw new Error("Unexpected key length");
     }

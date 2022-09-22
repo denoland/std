@@ -1,4 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** A simple echo server which listens on port `:8080`.
+ *
+ * @module
+ */
+
 import { copy } from "../streams/conversion.ts";
 
 const hostname = "0.0.0.0";

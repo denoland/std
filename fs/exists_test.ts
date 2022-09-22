@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
@@ -14,7 +14,7 @@ Deno.test("[fs] existsFile", async function () {
   assertEquals(await existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
-Deno.test("[fs] existsFileSync", function (): void {
+Deno.test("[fs] existsFileSync", function () {
   assertEquals(existsSync(path.join(testdataDir, "not_exist_file.ts")), false);
   assertEquals(existsSync(path.join(testdataDir, "0.ts")), true);
 });
@@ -27,7 +27,7 @@ Deno.test("[fs] existsDirectory", async function () {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsDirectorySync", function (): void {
+Deno.test("[fs] existsDirectorySync", function () {
   assertEquals(
     existsSync(path.join(testdataDir, "not_exist_directory")),
     false,
@@ -35,7 +35,7 @@ Deno.test("[fs] existsDirectorySync", function (): void {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsLinkSync", function (): void {
+Deno.test("[fs] existsLinkSync", function () {
   // TODO(axetroy): generate link file use Deno api instead of set a link file
   // in repository
   assertEquals(existsSync(path.join(testdataDir, "0-link")), true);
@@ -113,7 +113,7 @@ for (const s of scenes) {
   let title = `test ${s.async ? "exists" : "existsSync"}("testdata/${s.file}")`;
   title += ` ${s.read ? "with" : "without"} --allow-read`;
   Deno.test(`[fs] existsPermission ${title}`, async function () {
-    const args = [Deno.execPath(), "run", "--quiet"];
+    const args = ["run", "--quiet", "--no-prompt"];
 
     if (s.read) {
       args.push("--allow-read");
@@ -122,15 +122,12 @@ for (const s of scenes) {
     args.push(path.join(testdataDir, s.async ? "exists.ts" : "exists_sync.ts"));
     args.push(s.file);
 
-    const p = Deno.run({
-      stdout: "piped",
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
       cwd: testdataDir,
-      cmd: args,
+      args,
     });
 
-    const output = await p.output();
-    p.close();
-    assertStringIncludes(new TextDecoder().decode(output), s.output);
+    assertStringIncludes(new TextDecoder().decode(stdout), s.output);
   });
   // done
 }

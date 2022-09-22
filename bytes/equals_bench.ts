@@ -1,5 +1,6 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { bench, runBenchmarks } from "../testing/bench.ts";
-import { equalsNaive, equalsSimd } from "./equals.ts";
+import { equals32Bit, equalsNaive } from "./equals.ts";
 
 console.log("generating benchmarks...");
 const testCases: [Uint8Array, Uint8Array][] = [];
@@ -18,7 +19,7 @@ for (let i = 0; i < nCases; i++) {
 
 bench({
   name: "bench old equals",
-  func(b): void {
+  func(b) {
     b.start();
     for (const [a, b] of testCases) {
       equalsNaive(a, b);
@@ -29,10 +30,10 @@ bench({
 
 bench({
   name: "bench simd equals",
-  func(b): void {
+  func(b) {
     b.start();
     for (const [a, b] of testCases) {
-      equalsSimd(a, b);
+      equals32Bit(a, b);
     }
     b.stop();
   },

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import { createHash, SupportedAlgorithm } from "./mod.ts";
 import { Message } from "./hasher.ts";
@@ -474,19 +474,19 @@ Deno.test("[hash/all/base64] testAllBase64", () => {
 });
 
 Deno.test("[hash/memory_use] testMemoryUse", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { createHash } from "./mod.ts";
-      import { _wasm } from "./_wasm/wasm.js";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 
@@ -515,13 +515,13 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const { success, stdout } = await process.output();
+  const processedStdout = new TextDecoder().decode(stdout);
 
-  assertEquals(status.success, true);
+  assert(success);
   const {
     heapBytesInitial,
     smallDigest,
@@ -534,7 +534,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
     heapBytesAfterSmall: number;
     largeDigest: string;
     heapBytesAfterLarge: number;
-  } = JSON.parse(stdout);
+  } = JSON.parse(processedStdout);
 
   assertEquals(smallDigest, "3b5d3c7d207e37dceeedd301e35e2e58");
   assertEquals(largeDigest, "e78585b8bfda6036cfd818710a210f23");
@@ -542,19 +542,19 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   // Heap should stay under 2MB even though we provided a 64MB input.
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterSmall < 2_000_000,
-    `WASM heap was too large after small input: ${
+    `Wasm heap was too large after small input: ${
       (heapBytesAfterSmall / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterLarge < 2_000_000,
-    `WASM heap was too large after large input: ${
+    `Wasm heap was too large after large input: ${
       (heapBytesAfterLarge / 1_000_000).toFixed(1)
     } MB`,
   );
@@ -562,7 +562,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
 
 Deno.test("[hash/double_digest] testDoubleDigest", () => {
   assertThrows(
-    (): void => {
+    () => {
       const hash = createHash("md5");
       hash.update("test");
       const h1 = hash.digest();

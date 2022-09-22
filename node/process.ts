@@ -1,14 +1,14 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { validateString } from "./internal/validators.js";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
-import { getOptionValue } from "./_options.ts";
+import { validateString } from "./internal/validators.mjs";
+import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
+import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/assert.ts";
-import { fromFileUrl } from "../path/mod.ts";
+import { fromFileUrl, join } from "../path/mod.ts";
 import {
-  _exiting,
   arch,
   chdir,
   cwd,
@@ -19,6 +19,7 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
@@ -30,20 +31,32 @@ export {
   version,
   versions,
 };
-import { stderr, stdin, stdout } from "./_process/streams.ts";
+import {
+  stderr as stderr_,
+  stdin as stdin_,
+  stdout as stdout_,
+} from "./_process/streams.mjs";
+import { core } from "./_core.ts";
+import { processTicksAndRejections } from "./_next_tick.ts";
+
+// TODO(kt3k): Give better types to stdio objects
+// deno-lint-ignore no-explicit-any
+const stderr = stderr_ as any;
+// deno-lint-ignore no-explicit-any
+const stdin = stdin_ as any;
+// deno-lint-ignore no-explicit-any
+const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
+import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 const notImplementedEvents = [
-  "beforeExit",
   "disconnect",
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "uncaughtException",
-  "uncaughtExceptionMonitor",
-  "unhandledRejection",
+  "worker",
 ];
 
 // The first 2 items are placeholders.
@@ -52,16 +65,32 @@ const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
-Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+Object.defineProperty(argv, "1", {
+  get: () => {
+    if (Deno.mainModule.startsWith("file:")) {
+      return fromFileUrl(Deno.mainModule);
+    } else {
+      return join(Deno.cwd(), "$deno$node.js");
+    }
+  },
+});
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-export const exit = (code?: number) => {
+export const exit = (code?: number | string) => {
   if (code || code === 0) {
-    process.exitCode = code;
+    if (typeof code === "string") {
+      const parsedCode = parseInt(code);
+      process.exitCode = isNaN(parsedCode) ? undefined : parsedCode;
+    } else {
+      process.exitCode = code;
+    }
   }
 
   if (!process._exiting) {
     process._exiting = true;
+    // FIXME(bartlomieju): this is wrong, we won't be using syscall to exit
+    // and thus the `unload` event will not be emitted to properly trigger "emit"
+    // event on `process`.
     process.emit("exit", process.exitCode || 0);
   }
 
@@ -214,9 +243,79 @@ memoryUsage.rss = function (): number {
   return memoryUsage().rss;
 };
 
+export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
+  if (pid != (pid | 0)) {
+    throw new ERR_INVALID_ARG_TYPE("pid", "number", pid);
+  }
+
+  if (typeof sig === "string") {
+    try {
+      Deno.kill(pid, sig);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        throw new ERR_UNKNOWN_SIGNAL(sig);
+      }
+      throw e;
+    }
+  } else {
+    throw new ERR_UNKNOWN_SIGNAL(sig.toString());
+  }
+
+  return true;
+}
+
+// deno-lint-ignore no-explicit-any
+function uncaughtExceptionHandler(err: any, origin: string) {
+  // The origin parameter can be 'unhandledRejection' or 'uncaughtException'
+  // depending on how the uncaught exception was created. In Node.js,
+  // exceptions thrown from the top level of a CommonJS module are reported as
+  // 'uncaughtException', while exceptions thrown from the top level of an ESM
+  // module are reported as 'unhandledRejection'. Deno does not have a true
+  // CommonJS implementation, so all exceptions thrown from the top level are
+  // reported as 'uncaughtException'.
+  process.emit("uncaughtExceptionMonitor", err, origin);
+  process.emit("uncaughtException", err, origin);
+}
+
+let execPath: string | null = null;
+
 class Process extends EventEmitter {
   constructor() {
     super();
+
+    globalThis.addEventListener("unhandledrejection", (event) => {
+      if (process.listenerCount("unhandledRejection") === 0) {
+        // The Node.js default behavior is to raise an uncaught exception if
+        // an unhandled rejection occurs and there are no unhandledRejection
+        // listeners.
+        if (process.listenerCount("uncaughtException") === 0) {
+          throw event.reason;
+        }
+
+        event.preventDefault();
+        uncaughtExceptionHandler(event.reason, "unhandledRejection");
+        return;
+      }
+
+      event.preventDefault();
+      process.emit("unhandledRejection", event.reason, event.promise);
+    });
+
+    globalThis.addEventListener("error", (event) => {
+      if (process.listenerCount("uncaughtException") > 0) {
+        event.preventDefault();
+      }
+
+      uncaughtExceptionHandler(event.error, "uncaughtException");
+    });
+
+    globalThis.addEventListener("beforeunload", (e) => {
+      super.emit("beforeExit", process.exitCode || 0);
+      processTicksAndRejections();
+      if (core.eventLoopHasMoreWork()) {
+        e.preventDefault();
+      }
+    });
 
     globalThis.addEventListener("unload", () => {
       if (!process._exiting) {
@@ -272,17 +371,23 @@ class Process extends EventEmitter {
   nextTick = _nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  on(event: "exit", listener: (code: number) => void): this;
+  override on(event: "exit", listener: (code: number) => void): this;
+  override on(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
   // deno-lint-ignore no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): this;
-  // deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): this;
-  // deno-lint-ignore no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
+      super.on(event, listener);
     } else if (event.startsWith("SIG")) {
-      Deno.addSignalListener(event as Deno.Signal, listener);
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        Deno.addSignalListener(event as Deno.Signal, listener);
+      }
     } else {
       super.on(event, listener);
     }
@@ -290,19 +395,70 @@ class Process extends EventEmitter {
     return this;
   }
 
-  off(event: "exit", listener: (code: number) => void): this;
+  override off(event: "exit", listener: (code: number) => void): this;
+  override off(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
   // deno-lint-ignore no-explicit-any
-  off(event: string, listener: (...args: any[]) => void): this;
-  // deno-lint-ignore ban-types
-  off(event: typeof notImplementedEvents[number], listener: Function): this;
-  // deno-lint-ignore no-explicit-any
-  off(event: string, listener: (...args: any[]) => void): this {
+  override off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
+      super.off(event, listener);
     } else if (event.startsWith("SIG")) {
-      Deno.removeSignalListener(event as Deno.Signal, listener);
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        Deno.removeSignalListener(event as Deno.Signal, listener);
+      }
     } else {
       super.off(event, listener);
+    }
+
+    return this;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  override emit(event: string, ...args: any[]): boolean {
+    if (event.startsWith("SIG")) {
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        Deno.kill(Deno.pid, event as Deno.Signal);
+      }
+    } else {
+      return super.emit(event, ...args);
+    }
+
+    return true;
+  }
+
+  override prependListener(
+    event: "exit",
+    listener: (code: number) => void,
+  ): this;
+  override prependListener(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
+  override prependListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
+    if (notImplementedEvents.includes(event)) {
+      warnNotImplemented(`process.prependListener("${event}")`);
+      super.prependListener(event, listener);
+    } else if (event.startsWith("SIG")) {
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        Deno.addSignalListener(event as Deno.Signal, listener);
+      }
+    } else {
+      super.prependListener(event, listener);
     }
 
     return this;
@@ -314,31 +470,43 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
-  removeAllListeners(eventName?: string | symbol): this {
-    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
-    return super.removeAllListeners(eventName);
-  }
-
-  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
-  removeListener(
+  override addListener(event: "exit", listener: (code: number) => void): this;
+  override addListener(
     event: typeof notImplementedEvents[number],
-    //deno-lint-ignore ban-types
+    // deno-lint-ignore ban-types
     listener: Function,
   ): this;
-  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
-  removeListener(event: "exit", listener: (code: number) => void): this;
-  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
-  //deno-lint-ignore no-explicit-any
-  removeListener(event: string, listener: (...args: any[]) => void): this {
+  override addListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
     if (notImplementedEvents.includes(event)) {
-      warnNotImplemented(`process.removeListener("${event}")`);
-      return this;
+      warnNotImplemented(`process.addListener("${event}")`);
     }
 
-    super.removeListener("exit", listener);
+    return this.on(event, listener);
+  }
 
-    return this;
+  override removeListener(
+    event: "exit",
+    listener: (code: number) => void,
+  ): this;
+  override removeListener(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
+  override removeListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
+    if (notImplementedEvents.includes(event)) {
+      warnNotImplemented(`process.removeListener("${event}")`);
+    }
+
+    return this.off(event, listener);
   }
 
   /**
@@ -355,6 +523,9 @@ class Process extends EventEmitter {
    * https://nodejs.org/api/process.html#process_process_hrtime_time
    */
   hrtime = hrtime;
+
+  /** https://nodejs.org/api/process.html#processkillpid-signal */
+  kill = kill;
 
   memoryUsage = memoryUsage;
 
@@ -381,7 +552,13 @@ class Process extends EventEmitter {
   }
 
   /** https://nodejs.org/api/process.html#processumaskmask */
-  umask = Deno.umask;
+  umask() {
+    // Always return the system default umask value.
+    // We don't use Deno.umask here because it has a race
+    // condition bug.
+    // See https://github.com/denoland/deno_std/issues/1893#issuecomment-1032897779
+    return 0o22;
+  }
 
   /** https://nodejs.org/api/process.html#processgetuid */
   getuid(): number {
@@ -400,8 +577,30 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processexecpath */
   get execPath() {
-    return argv[0];
+    if (execPath) {
+      return execPath;
+    }
+    execPath = Deno.execPath();
+    return execPath;
   }
+
+  set execPath(path: string) {
+    execPath = path;
+  }
+
+  #startTime = Date.now();
+  /** https://nodejs.org/api/process.html#processuptime */
+  uptime() {
+    return (Date.now() - this.#startTime) / 1000;
+  }
+
+  #allowedFlags = buildAllowedFlags();
+  /** https://nodejs.org/api/process.html#processallowednodeenvironmentflags */
+  get allowedNodeEnvironmentFlags() {
+    return this.#allowedFlags;
+  }
+
+  features = { inspector: false };
 }
 
 /** https://nodejs.org/api/process.html#process_process */

@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * A debounced function that will be delayed by a given `wait`
@@ -46,16 +47,16 @@ export function debounce<T extends Array<any>>(
   let timeout: number | null = null;
   let flush: (() => void) | null = null;
 
-  const debounced: DebouncedFunction<T> = ((...args: T): void => {
+  const debounced: DebouncedFunction<T> = ((...args: T) => {
     debounced.clear();
-    flush = (): void => {
+    flush = () => {
       debounced.clear();
       fn.call(debounced, ...args);
     };
     timeout = setTimeout(flush, wait);
   }) as DebouncedFunction<T>;
 
-  debounced.clear = (): void => {
+  debounced.clear = () => {
     if (typeof timeout === "number") {
       clearTimeout(timeout);
       timeout = null;
@@ -63,7 +64,7 @@ export function debounce<T extends Array<any>>(
     }
   };
 
-  debounced.flush = (): void => {
+  debounced.flush = () => {
     flush?.();
   };
 

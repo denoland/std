@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -6,7 +6,7 @@
  * Example:
  *
  * ```ts
- * import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { zip } from "https://deno.land/std@$STD_VERSION/collections/zip.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 1, 2, 3, 4 ];
@@ -27,8 +27,7 @@ import { minOf } from "./min_of.ts";
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: T[K][] }
 ): T[] {
-  let minLength = minOf(arrays, (it) => it.length);
-  if (minLength === undefined) minLength = 0;
+  const minLength = minOf(arrays, (it) => it.length) ?? 0;
 
   const ret: T[] = new Array(minLength);
 

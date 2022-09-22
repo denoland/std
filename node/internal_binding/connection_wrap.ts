@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -60,7 +61,7 @@ export class ConnectionWrap extends LibuvStreamWrap {
   >(
     req: T,
     status: number,
-  ): void {
+  ) {
     const isSuccessStatus = !status;
     const readable = isSuccessStatus;
     const writable = isSuccessStatus;

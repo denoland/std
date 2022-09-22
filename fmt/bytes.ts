@@ -1,6 +1,15 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** Pretty print bytes.
+ *
+ * Based on [pretty-bytes](https://github.com/sindresorhus/pretty-bytes).
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 type LocaleOptions = {
   minimumFractionDigits?: number;

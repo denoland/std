@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { strict } from "../assert.ts";
 
 export {
@@ -9,7 +10,7 @@ export {
   doesNotThrow,
   equal,
   fail,
-  // ifError,
+  ifError,
   match,
   notDeepEqual,
   notDeepStrictEqual,
@@ -19,7 +20,6 @@ export {
   rejects,
   strictEqual,
   throws,
-  // CallTracker
 } from "../assert.ts";
 
 export { strict };

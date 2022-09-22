@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "../io/buffer.ts";
 
@@ -14,7 +14,7 @@ function isCloser(value: unknown): value is Deno.Closer {
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable } from "./conversion.ts";
+ *      import { readerFromIterable, copy } from "./conversion.ts";
  *
  *      const file = await Deno.open("metrics.txt", { write: true });
  *      const reader = readerFromIterable((async function* () {
@@ -24,7 +24,7 @@ function isCloser(value: unknown): value is Deno.Closer {
  *          yield new TextEncoder().encode(message);
  *        }
  *      })());
- *      await Deno.copy(reader, file);
+ *      await copy(reader, file);
  * ```
  */
 export function readerFromIterable(
@@ -196,6 +196,78 @@ export function readableStreamFromIterable<T>(
   });
 }
 
+/**
+ * Convert the generator function into a TransformStream.
+ *
+ * ```ts
+ * import { readableStreamFromIterable, toTransformStream } from "./conversion.ts";
+ *
+ * const readable = readableStreamFromIterable([0, 1, 2])
+ *   .pipeThrough(toTransformStream(async function* (src) {
+ *     for await (const chunk of src) {
+ *       yield chunk * 100;
+ *     }
+ *   }));
+ *
+ * for await (const chunk of readable) {
+ *   console.log(chunk);
+ * }
+ * // output: 0, 100, 200
+ * ```
+ *
+ * @param transformer A function to transform.
+ * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
+ * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
+ */
+export function toTransformStream<I, O>(
+  transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,
+  writableStrategy?: QueuingStrategy<I>,
+  readableStrategy?: QueuingStrategy<O>,
+): TransformStream<I, O> {
+  const {
+    writable,
+    readable,
+  } = new TransformStream<I, I>(undefined, writableStrategy);
+
+  const iterable = transformer(readable);
+  const iterator: Iterator<O> | AsyncIterator<O> =
+    (iterable as AsyncIterable<O>)[Symbol.asyncIterator]?.() ??
+      (iterable as Iterable<O>)[Symbol.iterator]?.();
+  return {
+    writable,
+    readable: new ReadableStream<O>({
+      async pull(controller) {
+        let result: IteratorResult<O>;
+        try {
+          result = await iterator.next();
+        } catch (error) {
+          // Propagate error to stream from iterator
+          // If the stream status is "errored", it will be thrown, but ignore.
+          await readable.cancel(error).catch(() => {});
+          controller.error(error);
+          return;
+        }
+        if (result.done) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(result.value);
+      },
+      async cancel(reason) {
+        // Propagate cancellation to readable and iterator
+        if (typeof iterator.throw == "function") {
+          try {
+            await iterator.throw(reason);
+          } catch {
+            /* `iterator.throw()` always throws on site. We catch it. */
+          }
+        }
+        await readable.cancel(reason);
+      },
+    }, readableStrategy),
+  };
+}
+
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Deno.Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -218,7 +290,7 @@ export interface ReadableStreamFromReaderOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a `Deno.Closer`).
  *
- * An example converting a `Deno.File` into a readable stream:
+ * An example converting a `Deno.FsFile` into a readable stream:
  *
  * ```ts
  * import { readableStreamFromReader } from "./mod.ts";
@@ -375,7 +447,7 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * console.log(writer.bytes().length);  // 11
  * ```
  */
-export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
+export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += w.writeSync(arr.subarray(nwritten));

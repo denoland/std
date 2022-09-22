@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * Converts the byte array to a UUID string
  * @param bytes Used to convert Byte to Hex

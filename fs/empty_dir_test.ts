@@ -1,6 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  assert,
   assertEquals,
   assertRejects,
   assertStringIncludes,
@@ -28,7 +27,7 @@ Deno.test("emptyDirIfItNotExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItNotExist", function (): void {
+Deno.test("emptyDirSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_2");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which does not exist, then it will a create new one.
@@ -87,7 +86,7 @@ Deno.test("emptyDirIfItExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItExist", function (): void {
+Deno.test("emptyDirSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_4");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
@@ -112,12 +111,12 @@ Deno.test("emptyDirSyncIfItExist", function (): void {
     assertEquals(stat.isDirectory, true);
 
     // nest directory have been removed
-    assertThrows((): void => {
+    assertThrows(() => {
       Deno.statSync(testNestDir);
     });
 
     // test file have been removed
-    assertThrows((): void => {
+    assertThrows(() => {
       Deno.statSync(testDirFile);
     });
   } finally {
@@ -204,7 +203,7 @@ for (const s of scenes) {
       );
 
       try {
-        const args = [Deno.execPath(), "run", "--quiet"];
+        const args = ["run", "--quiet", "--no-prompt"];
 
         if (s.read) {
           args.push("--allow-read");
@@ -222,16 +221,11 @@ for (const s of scenes) {
         );
         args.push("testfolder");
 
-        const p = Deno.run({
-          stdout: "piped",
+        const { stdout } = await Deno.spawn(Deno.execPath(), {
           cwd: testdataDir,
-          cmd: args,
+          args,
         });
-
-        assert(p.stdout);
-        const output = await p.output();
-        p.close();
-        assertStringIncludes(new TextDecoder().decode(output), s.output);
+        assertStringIncludes(new TextDecoder().decode(stdout), s.output);
       } catch (err) {
         await Deno.remove(testfolder, { recursive: true });
         throw err;

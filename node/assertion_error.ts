@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 
@@ -21,16 +21,16 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// TODO(schwarzkopfb): change this when `Deno.consoleSize()` will be stable
-interface DenoUnstable {
-  consoleSize?(rid: number): { columns: number };
-}
-function getConsoleWidth(): number {
-  return (Deno as DenoUnstable).consoleSize?.(Deno.stderr.rid).columns ?? 80;
-}
-
 import { inspect } from "./util.ts";
 import { stripColor as removeColors } from "../fmt/colors.ts";
+
+function getConsoleWidth(): number {
+  try {
+    return Deno.consoleSize(Deno.stderr.rid).columns;
+  } catch {
+    return 80;
+  }
+}
 
 // TODO(schwarzkopfb): we should implement Node's concept of "primordials"
 // Ref: https://github.com/denoland/deno/issues/6040#issuecomment-637305828
@@ -44,7 +44,7 @@ const {
   keys: ObjectKeys,
 } = Object;
 
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 
 let blue = "";
 let green = "";
@@ -374,7 +374,7 @@ interface ErrorWithStackTraceLimit extends ErrorConstructor {
 }
 
 export class AssertionError extends Error {
-  [key: string]: unknown
+  [key: string]: unknown;
 
   // deno-lint-ignore constructor-super
   constructor(options: AssertionErrorConstructorOptions) {
@@ -501,11 +501,13 @@ export class AssertionError extends Error {
 
     this.generatedMessage = !message;
     ObjectDefineProperty(this, "name", {
+      __proto__: null,
       value: "AssertionError [ERR_ASSERTION]",
       enumerable: false,
       writable: true,
       configurable: true,
-    });
+      // deno-lint-ignore no-explicit-any
+    } as any);
     this.code = "ERR_ASSERTION";
 
     if (details) {
@@ -534,7 +536,7 @@ export class AssertionError extends Error {
     this.name = "AssertionError";
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 

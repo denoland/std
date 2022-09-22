@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
@@ -86,7 +87,7 @@ const unixSpecialCaseFormatTests: FormatTestCase[] = [
 function checkParseFormat(
   path: typeof win32 | typeof posix,
   testCases: Array<[string, string]>,
-): void {
+) {
   testCases.forEach(([element, root]) => {
     const output = path.parse(element);
     assertEquals(typeof output.root, "string");
@@ -105,7 +106,7 @@ function checkParseFormat(
 function checkSpecialCaseParseFormat(
   path: typeof win32 | typeof posix,
   testCases: ParseTestCase[],
-): void {
+) {
   testCases.forEach(([element, expect]) => {
     assertEquals(path.parse(element), expect);
   });
@@ -114,7 +115,7 @@ function checkSpecialCaseParseFormat(
 function checkFormat(
   path: typeof win32 | typeof posix,
   testCases: FormatTestCase[],
-): void {
+) {
   testCases.forEach((testCase) => {
     assertEquals(path.format(testCase[0]), testCase[1]);
   });

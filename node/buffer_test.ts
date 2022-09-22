@@ -1,5 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import "./internal/errors.ts";
 import { Buffer } from "./buffer.ts";
 
 Deno.test({
@@ -17,24 +18,6 @@ Deno.test({
         TypeError,
         '"size" argument must be of type number',
         "should throw on non-number size",
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "alloc(>0) fails if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertThrows(
-        () => {
-          Buffer.alloc(1, value);
-        },
-        TypeError,
-        'The value "" is invalid for argument "value"',
-        "should throw for empty Buffer/Uint8Array",
       );
     }
   },
@@ -77,14 +60,14 @@ Deno.test({
   name: "alloc filled correctly with integer",
   fn() {
     const buffer: Buffer = Buffer.alloc(3, 5);
-    assertEquals(buffer, new Buffer([5, 5, 5]));
+    assertEquals(buffer, Buffer.from([5, 5, 5]));
   },
 });
 
 Deno.test({
   name: "alloc filled correctly with single character",
   fn() {
-    assertEquals(Buffer.alloc(5, "a"), new Buffer([97, 97, 97, 97, 97]));
+    assertEquals(Buffer.alloc(5, "a"), Buffer.from([97, 97, 97, 97, 97]));
   },
 });
 
@@ -93,7 +76,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(11, "aGVsbG8gd29ybGQ=", "base64"),
-      new Buffer([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
+      Buffer.from([104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]),
     );
   },
 });
@@ -103,7 +86,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(4, "64656e6f", "hex"),
-      new Buffer([100, 101, 110, 111]),
+      Buffer.from([100, 101, 110, 111]),
     );
   },
 });
@@ -123,11 +106,11 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(7, new Uint8Array([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101, 100]),
+      Buffer.from([100, 101, 100, 101, 100, 101, 100]),
     );
     assertEquals(
       Buffer.alloc(6, new Uint8Array([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101]),
+      Buffer.from([100, 101, 100, 101, 100, 101]),
     );
   },
 });
@@ -137,7 +120,7 @@ Deno.test({
   fn() {
     assertEquals(
       Buffer.alloc(1, new Uint8Array([100, 101])),
-      new Buffer([100]),
+      Buffer.from([100]),
     );
   },
 });
@@ -146,12 +129,12 @@ Deno.test({
   name: "alloc filled correctly with Buffer",
   fn() {
     assertEquals(
-      Buffer.alloc(6, new Buffer([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101]),
+      Buffer.alloc(6, Buffer.from([100, 101])),
+      Buffer.from([100, 101, 100, 101, 100, 101]),
     );
     assertEquals(
-      Buffer.alloc(7, new Buffer([100, 101])),
-      new Buffer([100, 101, 100, 101, 100, 101, 100]),
+      Buffer.alloc(7, Buffer.from([100, 101])),
+      Buffer.from([100, 101, 100, 101, 100, 101, 100]),
     );
   },
 });
@@ -367,7 +350,7 @@ Deno.test({
     buffer2.copy(buffer1);
 
     assertEquals(
-      new Buffer(data1),
+      Buffer.from(data1),
       buffer1,
     );
   },
@@ -619,5 +602,16 @@ Deno.test({
       // @ts-expect-error This deliberately ignores the type constraint
       assertEquals(Buffer.isEncoding(enc), false);
     });
+  },
+});
+
+Deno.test({
+  name:
+    "utf8Write handle missing optional length argument (https://github.com/denoland/deno_std/issues/2046)",
+  fn() {
+    const buf = Buffer.alloc(8);
+    // @ts-expect-error Buffer.prototype.utf8Write is an undocumented API
+    assertEquals(buf.utf8Write("abc", 0), 3);
+    assertEquals([...buf], [0x61, 0x62, 0x63, 0, 0, 0, 0, 0]);
   },
 });

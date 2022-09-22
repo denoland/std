@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
@@ -20,7 +20,7 @@ export interface Reader {
    *
    * Implementations should not retain a reference to `p`.
    *
-   * Use iter() from https://deno.land/std/io/util.ts to turn a Reader into an
+   * Use iterateReader() from https://deno.land/std/streams/conversion.ts to turn a Reader into an
    * AsyncIterator.
    */
   read(p: Uint8Array): Promise<number | null>;
@@ -45,7 +45,7 @@ export interface ReaderSync {
    *
    * Implementations should not retain a reference to `p`.
    *
-   * Use iterSync() from https://deno.land/std/io/util.ts to turn a ReaderSync
+   * Use iterateReaderSync() from https://deno.land/std/streams/conversion.ts to turn a ReaderSync
    * into an Iterator.
    */
   readSync(p: Uint8Array): number | null;

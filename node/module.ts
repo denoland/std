@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -33,7 +34,7 @@ import {
   ERR_INVALID_MODULE_SPECIFIER,
   ERR_MODULE_NOT_FOUND,
   NodeError,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import type { PackageConfig } from "./module_esm.ts";
 import {
   encodedSepRegEx,
@@ -83,7 +84,7 @@ function updateChildren(
   parent: Module | null,
   child: Module,
   scan: boolean,
-): void {
+) {
   const children = parent && parent.children;
   if (children && !(scan && children.includes(child))) {
     children.push(child);
@@ -209,10 +210,9 @@ class Module {
   static wrapper = [
     // We provide non standard timer APIs in the CommonJS wrapper
     // to avoid exposing them in global namespace.
-    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { ",
-    "\n});",
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { (function (exports, require, module, __filename, __dirname) {",
+    "\n}).call(this, exports, require, module, __filename, __dirname); })",
   ];
-
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
   // deno-lint-ignore no-explicit-any
@@ -229,7 +229,7 @@ class Module {
   }
 
   // Given a file name, pass it to the proper extension handler.
-  load(filename: string): void {
+  load(filename: string) {
     assert(!this.loaded);
     this.filename = filename;
     this.paths = Module._nodeModulePaths(path.dirname(filename));
@@ -511,6 +511,11 @@ class Module {
       }
     }
 
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(request, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
+
     const filename = Module._resolveFilename(request, parent, isMain);
     if (filename.startsWith("node:")) {
       // Slice 'node:' prefix
@@ -533,11 +538,6 @@ class Module {
     // Native module polyfills
     const mod = loadNativeModule(filename, request);
     if (mod) return mod.exports;
-
-    // NOTE(@bartlomieju): this is a temporary solution. We provide some
-    // npm modules with fixes in inconsistencies between Deno and Node.js.
-    const upstreamMod = loadUpstreamModule(filename, parent, request);
-    if (upstreamMod) return upstreamMod.exports;
 
     // Don't call updateChildren(), Module constructor already does.
     const module = new Module(filename, parent);
@@ -684,13 +684,11 @@ class Module {
       try {
         filepath = fileURLToPath(filename);
       } catch (err) {
-        if (
-          err instanceof Deno.errors.InvalidData &&
-          err.message.includes("invalid url scheme")
-        ) {
+        // deno-lint-ignore no-explicit-any
+        if ((err as any).code === "ERR_INVALID_URL_SCHEME") {
           // Provide a descriptive error when url scheme is invalid.
           throw new Error(
-            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter. Received '${filename}'`,
           );
         } else {
           throw err;
@@ -704,7 +702,7 @@ class Module {
     return createRequireFromPath(filepath);
   }
 
-  static _initPaths(): void {
+  static _initPaths() {
     const homeDir = Deno.env.get("HOME");
     const nodePath = Deno.env.get("NODE_PATH");
 
@@ -732,7 +730,7 @@ class Module {
     Module.globalPaths = modulePaths.slice(0);
   }
 
-  static _preloadModules(requests: string[]): void {
+  static _preloadModules(requests: string[]) {
     if (!Array.isArray(requests)) {
       return;
     }
@@ -766,10 +764,7 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-// Set polyfills defined in ./module_all.ts
-for (const key of Object.keys(nodeMods)) {
-  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
-}
+
 const m = {
   _cache: Module._cache,
   _extensions: Module._extensions,
@@ -787,25 +782,30 @@ const m = {
   Module,
   wrap: Module.wrap,
 };
+
 Object.setPrototypeOf(m, Module);
-nativeModulePolyfill.set(
-  "module",
-  createNativeModule("module", m),
-);
+nodeMods.module = m;
 
 function loadNativeModule(
   _filename: string,
   request: string,
 ): Module | undefined {
-  return nativeModulePolyfill.get(request);
+  if (nativeModulePolyfill.has(request)) {
+    return nativeModulePolyfill.get(request);
+  }
+  const mod = nodeMods[request];
+  if (mod) {
+    const nodeMod = createNativeModule(request, mod);
+    nativeModulePolyfill.set(request, nodeMod);
+    return nodeMod;
+  }
+  return undefined;
 }
 function nativeModuleCanBeRequiredByUsers(request: string): boolean {
-  return nativeModulePolyfill.has(request);
+  return hasOwn(nodeMods, request);
 }
 // Populate with polyfill names
-for (const id of nativeModulePolyfill.keys()) {
-  Module.builtinModules.push(id);
-}
+Module.builtinModules.push(...Object.keys(nodeMods));
 
 // NOTE(@bartlomieju): temporary solution, to smooth out inconsistencies between
 // Deno and Node.js.
@@ -1223,7 +1223,7 @@ const nmChars = [115, 101, 108, 117, 100, 111, 109, 95, 101, 100, 111, 110];
 const nmLen = nmChars.length;
 
 // deno-lint-ignore no-explicit-any
-function emitCircularRequireWarning(prop: any): void {
+function emitCircularRequireWarning(prop: any) {
   console.error(
     `Accessing non-existent property '${
       String(prop)
@@ -1321,11 +1321,11 @@ function wrapSafe(
 }
 
 // Native extension for .js
-Module._extensions[".js"] = (module: Module, filename: string): void => {
+Module._extensions[".js"] = (module: Module, filename: string) => {
   if (filename.endsWith(".js")) {
     const pkg = readPackageScope(filename);
     if (pkg !== false && pkg.data && pkg.data.type === "module") {
-      throw new Error("Importing ESM module");
+      throw new Error(`Importing ESM module: ${filename}.`);
     }
   }
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
@@ -1333,12 +1333,12 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
 };
 
 // Native extension for .mjs
-Module._extensions[".mjs"] = (): void => {
-  throw new Error("Importing ESM module");
+Module._extensions[".mjs"] = (_module: Module, filename: string) => {
+  throw new Error(`Importing ESM module: ${filename}.`);
 };
 
 // Native extension for .json
-Module._extensions[".json"] = (module: Module, filename: string): void => {
+Module._extensions[".json"] = (module: Module, filename: string) => {
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
   // manifest code removed
   try {

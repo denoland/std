@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { notImplemented } from "./_utils.ts";
 import { zlib as constants } from "./internal_binding/constants.ts";
 import {
@@ -31,50 +31,50 @@ import {
   Unzip,
   unzip,
   unzipSync,
-} from "./_zlib.js";
+} from "./_zlib.mjs";
 export class Options {
   constructor() {
-    notImplemented();
+    notImplemented("Options.prototype.constructor");
   }
 }
 export class BrotliOptions {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliOptions.prototype.constructor");
   }
 }
 export class BrotliCompress {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliCompress.prototype.constructor");
   }
 }
 export class BrotliDecompress {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliDecompress.prototype.constructor");
   }
 }
 export class ZlibBase {
   constructor() {
-    notImplemented();
+    notImplemented("ZlibBase.prototype.constructor");
   }
 }
 export { constants };
 export function createBrotliCompress() {
-  notImplemented();
+  notImplemented("createBrotliCompress");
 }
 export function createBrotliDecompress() {
-  notImplemented();
+  notImplemented("createBrotliDecompress");
 }
 export function brotliCompress() {
-  notImplemented();
+  notImplemented("brotliCompress");
 }
 export function brotliCompressSync() {
-  notImplemented();
+  notImplemented("brotliCompressSync");
 }
 export function brotliDecompress() {
-  notImplemented();
+  notImplemented("brotliDecompress");
 }
 export function brotliDecompressSync() {
-  notImplemented();
+  notImplemented("brotliDecompressSync");
 }
 
 export default {
@@ -117,6 +117,38 @@ export default {
   inflateSync,
   inflateRaw,
   inflateRawSync,
+  unzip,
+  unzipSync,
+};
+
+export {
+  codes,
+  createDeflate,
+  createDeflateRaw,
+  createGunzip,
+  createGzip,
+  createInflate,
+  createInflateRaw,
+  createUnzip,
+  Deflate,
+  deflate,
+  DeflateRaw,
+  deflateRaw,
+  deflateRawSync,
+  deflateSync,
+  Gunzip,
+  gunzip,
+  gunzipSync,
+  Gzip,
+  gzip,
+  gzipSync,
+  Inflate,
+  inflate,
+  InflateRaw,
+  inflateRaw,
+  inflateRawSync,
+  inflateSync,
+  Unzip,
   unzip,
   unzipSync,
 };

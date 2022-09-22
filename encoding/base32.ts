@@ -1,5 +1,16 @@
-// Modified from https://github.com/beatgammit/base64-js
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) 2014 Jameson Little. MIT License.
+
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [base32](https://en.wikipedia.org/wiki/Base32) encoding.
+ *
+ * Modified from https://github.com/beatgammit/base64-js
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 const lookup: string[] = [];
 const revLookup: number[] = [];

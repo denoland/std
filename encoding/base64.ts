@@ -1,4 +1,13 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [base64](https://en.wikipedia.org/wiki/Base64) encoding.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
 
 const base64abc = [
   "A",

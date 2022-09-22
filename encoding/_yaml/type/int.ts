@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { Type } from "../type.ts";
 import { Any, isNegativeZero } from "../utils.ts";
@@ -129,14 +129,14 @@ function constructYamlInteger(data: string): number {
   }
 
   if (value.indexOf(":") !== -1) {
-    value.split(":").forEach((v): void => {
+    value.split(":").forEach((v) => {
       digits.unshift(parseInt(v, 10));
     });
 
     let valueInt = 0;
     let base = 1;
 
-    digits.forEach((d): void => {
+    digits.forEach((d) => {
       valueInt += d * base;
       base *= 60;
     });

@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { YAMLError } from "./error.ts";
 import type { KindType, Type } from "./type.ts";
@@ -103,7 +103,7 @@ export class Schema implements SchemaDefinition {
     });
   }
 
-  public static create(): void {}
+  public static create() {}
 }
 
 export interface SchemaDefinition {

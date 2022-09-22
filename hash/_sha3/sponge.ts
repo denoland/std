@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import * as hex from "../../encoding/hex.ts";
 
@@ -32,7 +33,7 @@ export class Sponge {
   }
 
   /** Applies padding to internal state */
-  private pad(): void {
+  #pad() {
     this.#state[this.#rp] ^= this.#option.dsbyte;
     this.#state[this.#option.rate - 1] ^= 0x80;
   }
@@ -43,7 +44,7 @@ export class Sponge {
       throw new Error("sha3: length cannot be negative");
     }
 
-    this.pad();
+    this.#pad();
 
     const hash = new Uint8Array(length);
     let pos = 0;

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -21,12 +21,12 @@ const LOG_FILE = "./test_log.file";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string) {
     this.messages.push(str);
   }
 }
 
-Deno.test("simpleHandler", function (): void {
+Deno.test("simpleHandler", function () {
   const cases = new Map<number, string[]>([
     [
       LogLevels.DEBUG,
@@ -77,7 +77,7 @@ Deno.test("simpleHandler", function (): void {
   }
 });
 
-Deno.test("testFormatterAsString", function (): void {
+Deno.test("testFormatterAsString", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: "test {levelName} {msg}",
   });
@@ -92,6 +92,23 @@ Deno.test("testFormatterAsString", function (): void {
   );
 
   assertEquals(handler.messages, ["test DEBUG Hello, world!"]);
+});
+
+Deno.test("testFormatterAsStringWithoutSpace", function () {
+  const handler = new TestHandler("DEBUG", {
+    formatter: "test:{levelName}:{msg}",
+  });
+
+  handler.handle(
+    new LogRecord({
+      msg: "Hello, world!",
+      args: [],
+      level: LogLevels.DEBUG,
+      loggerName: "default",
+    }),
+  );
+
+  assertEquals(handler.messages, ["test:DEBUG:Hello, world!"]);
 });
 
 Deno.test("testFormatterWithEmptyMsg", function () {
@@ -111,7 +128,7 @@ Deno.test("testFormatterWithEmptyMsg", function () {
   assertEquals(handler.messages, ["test DEBUG "]);
 });
 
-Deno.test("testFormatterAsFunction", function (): void {
+Deno.test("testFormatterAsFunction", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: (logRecord): string =>
       `fn formatter ${logRecord.levelName} ${logRecord.msg}`,
@@ -133,7 +150,7 @@ Deno.test({
   name: "FileHandler Shouldn't Have Broken line",
   async fn() {
     class TestFileHandler extends FileHandler {
-      flush() {
+      override flush() {
         super.flush();
         const decoder = new TextDecoder("utf-8");
         const data = Deno.readFileSync(LOG_FILE);
@@ -141,7 +158,7 @@ Deno.test({
         assertEquals(text.slice(-1), "\n");
       }
 
-      async destroy() {
+      override async destroy() {
         await super.destroy();
         await Deno.remove(LOG_FILE);
       }

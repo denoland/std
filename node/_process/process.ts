@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 // The following are all the process APIs that don't depend on the stream module
@@ -6,9 +6,7 @@
 
 import { isWindows } from "../../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
-
-// deno-lint-ignore prefer-const
-export let _exiting = false;
+import { _exiting } from "./exiting.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {
@@ -33,31 +31,60 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
+/** Wrapper of Deno.env.get, which doesn't throw type error when
+ * the env name has "=" or "\0" in it. */
+function denoEnvGet(name: string) {
+  try {
+    return Deno.env.get(name);
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return undefined;
+    }
+    throw e;
+  }
+}
+
+const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
  */
-export const env: Record<string, string> = new Proxy({}, {
-  get(_target, prop) {
-    return Deno.env.get(String(prop));
-  },
-  ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
-  getOwnPropertyDescriptor: (_target, name) => {
-    const e = Deno.env.toObject();
-    if (name in Deno.env.toObject()) {
-      const o = { enumerable: true, configurable: true };
-      if (typeof name === "string") {
-        // @ts-ignore we do want to set it only when name is of type string
-        o.value = e[name];
+export const env: InstanceType<ObjectConstructor> & Record<string, string> =
+  new Proxy(Object(), {
+    get: (target, prop) => {
+      if (typeof prop === "symbol") {
+        return target[prop];
       }
-      return o;
-    }
-  },
-  set(_target, prop, value) {
-    Deno.env.set(String(prop), String(value));
-    return value;
-  },
-});
+
+      const envValue = denoEnvGet(prop);
+
+      if (envValue) {
+        return envValue;
+      }
+
+      if (OBJECT_PROTO_PROP_NAMES.includes(prop)) {
+        return target[prop];
+      }
+
+      return envValue;
+    },
+    ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
+    getOwnPropertyDescriptor: (_target, name) => {
+      const value = denoEnvGet(String(name));
+      if (value) {
+        return {
+          enumerable: true,
+          configurable: true,
+          value,
+        };
+      }
+    },
+    set(_target, prop, value) {
+      Deno.env.set(String(prop), String(value));
+      return value;
+    },
+    has: (_target, prop) => typeof denoEnvGet(String(prop)) === "string",
+  });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
 export const pid = Deno.pid;
@@ -73,7 +100,7 @@ export const platform = isWindows ? "win32" : Deno.build.os;
  * it pointed to Deno version, but that led to incompability
  * with some packages.
  */
-export const version = "v16.11.1";
+export const version = "v16.17.0";
 
 /**
  * https://nodejs.org/api/process.html#process_process_versions
@@ -84,52 +111,19 @@ export const version = "v16.11.1";
  * with some packages. Value of `v8` field is still taken from `Deno.version`.
  */
 export const versions = {
-  node: "16.11.1",
-  uv: "1.42.0",
+  node: "16.17.0",
+  uv: "1.43.0",
   zlib: "1.2.11",
   brotli: "1.0.9",
-  ares: "1.17.2",
+  ares: "1.18.1",
   modules: "93",
-  nghttp2: "1.45.1",
+  nghttp2: "1.47.0",
   napi: "8",
-  llhttp: "6.0.4",
-  openssl: "1.1.1l",
-  cldr: "39.0",
-  icu: "69.1",
-  tz: "2021a",
-  unicode: "13.0",
+  llhttp: "6.0.7",
+  openssl: "1.1.1q+quic",
+  cldr: "41.0",
+  icu: "71.1",
+  tz: "2022a",
+  unicode: "14.0",
   ...Deno.version,
-};
-
-function hrtime(time?: [number, number]): [number, number] {
-  const milli = performance.now();
-  const sec = Math.floor(milli / 1000);
-  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-  if (!time) {
-    return [sec, nano];
-  }
-  const [prevSec, prevNano] = time;
-  return [sec - prevSec, nano - prevNano];
-}
-
-hrtime.bigint = function (): BigInt {
-  const [sec, nano] = hrtime();
-  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
-};
-
-function memoryUsage(): {
-  rss: number;
-  heapTotal: number;
-  heapUsed: number;
-  external: number;
-  arrayBuffers: number;
-} {
-  return {
-    ...Deno.memoryUsage(),
-    arrayBuffers: 0,
-  };
-}
-
-memoryUsage.rss = function (): number {
-  return memoryUsage().rss;
 };

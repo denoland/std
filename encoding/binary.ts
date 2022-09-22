@@ -1,4 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Functions for encoding binary data in array buffers.
+ *
+ * @module
+ */
 
 type RawBaseType = "int8" | "int16" | "int32" | "uint8" | "uint16" | "uint32";
 type RawNumberType = RawBaseType | "float32" | "float64";
@@ -48,7 +54,7 @@ export function sizeof(dataType: DataType): number {
 export async function readExact(
   r: Deno.Reader,
   b: Uint8Array,
-): Promise<void> {
+) {
   let totalRead = 0;
   do {
     const tmp = new Uint8Array(b.length - totalRead);

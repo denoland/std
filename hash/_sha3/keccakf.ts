@@ -2,7 +2,8 @@
 // https://github.com/golang/crypto/blob/master/sha3/keccakf.go
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 const KECCAK_ROUNDS = 24;
 const KECCAK_RC: number[] = [
@@ -57,7 +58,7 @@ const KECCAK_RC: number[] = [
 ];
 
 /** keccak1600 permutation function */
-export function keccakf(state: Uint8Array): void {
+export function keccakf(state: Uint8Array) {
   const s = new Uint32Array(state.buffer);
   let bc0 = 0;
   let bc1 = 0;

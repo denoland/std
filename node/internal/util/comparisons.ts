@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 // deno-lint-ignore-file
@@ -20,7 +21,7 @@ import {
   isTypedArray,
 } from "./types.ts";
 
-import { Buffer } from "../../_buffer.js";
+import { Buffer } from "../../buffer.ts";
 import {
   getOwnNonIndexProperties,
   ONLY_ENUMERABLE,
@@ -44,7 +45,7 @@ let memo: Memo;
 export function isDeepStrictEqual(val1: unknown, val2: unknown): boolean {
   return innerDeepEqual(val1, val2, true);
 }
-function isDeepEqual(val1: unknown, val2: unknown): boolean {
+export function isDeepEqual(val1: unknown, val2: unknown): boolean {
   return innerDeepEqual(val1, val2, false);
 }
 

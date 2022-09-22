@@ -1,18 +1,18 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { Timeout, TIMEOUT_MAX } from "./internal/timers.js";
-import { validateCallback } from "./internal/validators.js";
+import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
+import { validateFunction } from "./internal/validators.mjs";
+import { promisify } from "./internal/util.mjs";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;
 const clearInterval_ = globalThis.clearInterval;
-type TimerParams = Parameters<typeof globalThis.setTimeout>;
 export function setTimeout(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }
@@ -25,9 +25,15 @@ export function setTimeout(
   ));
   return timer;
 }
+Object.defineProperty(setTimeout, promisify.custom, {
+  value: (timeout: number, ...args: unknown[]) => {
+    return new Promise((cb) => setTimeout(cb, timeout, ...args));
+  },
+  enumerable: true,
+});
 export function setUnrefTimeout(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
   setTimeout(cb, timeout, ...args).unref();
@@ -39,11 +45,11 @@ export function clearTimeout(timeout?: Timeout | number) {
   clearTimeout_(+timeout);
 }
 export function setInterval(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
-  validateCallback(cb);
+  validateFunction(cb, "cb");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }
@@ -76,5 +82,6 @@ export default {
   setInterval,
   clearInterval,
   setImmediate,
+  setUnrefTimeout,
   clearImmediate,
 };

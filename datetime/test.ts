@@ -1,5 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { FakeTime } from "../testing/time.ts";
 import * as datetime from "./mod.ts";
 
 Deno.test({
@@ -64,14 +65,83 @@ Deno.test({
   },
 });
 
+Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
+  const time = new FakeTime("2021-12-31");
+  try {
+    assertEquals(
+      datetime.parse("01-01", "MM-dd"),
+      new Date(2021, 0, 1),
+    );
+    assertEquals(
+      datetime.parse("02-01", "MM-dd"),
+      new Date(2021, 1, 1),
+    );
+    assertEquals(
+      datetime.parse("03-01", "MM-dd"),
+      new Date(2021, 2, 1),
+    );
+    assertEquals(
+      datetime.parse("04-01", "MM-dd"),
+      new Date(2021, 3, 1),
+    );
+    assertEquals(
+      datetime.parse("05-01", "MM-dd"),
+      new Date(2021, 4, 1),
+    );
+    assertEquals(
+      datetime.parse("06-01", "MM-dd"),
+      new Date(2021, 5, 1),
+    );
+    assertEquals(
+      datetime.parse("07-01", "MM-dd"),
+      new Date(2021, 6, 1),
+    );
+    assertEquals(
+      datetime.parse("08-01", "MM-dd"),
+      new Date(2021, 7, 1),
+    );
+    assertEquals(
+      datetime.parse("09-01", "MM-dd"),
+      new Date(2021, 8, 1),
+    );
+    assertEquals(
+      datetime.parse("10-01", "MM-dd"),
+      new Date(2021, 9, 1),
+    );
+    assertEquals(
+      datetime.parse("11-01", "MM-dd"),
+      new Date(2021, 10, 1),
+    );
+    assertEquals(
+      datetime.parse("12-01", "MM-dd"),
+      new Date(2021, 11, 1),
+    );
+
+    assertEquals(
+      datetime.parse("01", "dd"),
+      new Date(2021, 11, 1),
+    );
+    assertEquals(
+      datetime.parse("15", "dd"),
+      new Date(2021, 11, 15),
+    );
+    assertEquals(
+      datetime.parse("31", "dd"),
+      new Date(2021, 11, 31),
+    );
+  } finally {
+    time.restore();
+  }
+});
+
 Deno.test({
   name: "[std/datetime] invalidParseDateTimeFormatThrows",
   fn: () => {
-    assertThrows((): void => {
+    assertThrows(() => {
       // deno-lint-ignore no-explicit-any
       (datetime as any).parse("2019-01-01 00:00", "x-y-z");
     }, Error);
-    assertThrows((): void => {
+    assertThrows(() => {
       // deno-lint-ignore no-explicit-any
       (datetime as any).parse("2019-01-01", "x-y-z");
     }, Error);
@@ -393,7 +463,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] to IMF",
-  fn(): void {
+  fn() {
     const actual = datetime.toIMF(new Date(Date.UTC(1994, 3, 5, 15, 32)));
     const expected = "Tue, 05 Apr 1994 15:32:00 GMT";
     assertEquals(actual, expected);
@@ -402,7 +472,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] to IMF 0",
-  fn(): void {
+  fn() {
     const actual = datetime.toIMF(new Date(0));
     const expected = "Thu, 01 Jan 1970 00:00:00 GMT";
     assertEquals(actual, expected);
@@ -411,7 +481,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] isLeap",
-  fn(): void {
+  fn() {
     assert(datetime.isLeap(1992));
     assert(datetime.isLeap(2000));
     assert(!datetime.isLeap(2003));
@@ -421,7 +491,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] difference",
-  fn(): void {
+  fn() {
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");
     let difference = datetime.difference(denoReleaseV1, denoInit, {
@@ -445,7 +515,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/datetime] constants",
-  fn(): void {
+  fn() {
     assertEquals(datetime.SECOND, 1e3);
     assertEquals(datetime.MINUTE, datetime.SECOND * 60);
     assertEquals(datetime.HOUR, datetime.MINUTE * 60);

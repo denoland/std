@@ -1,13 +1,18 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   emitRecursiveRmdirWarning,
   getValidatedPath,
   validateRmdirOptions,
   validateRmOptions,
   validateRmOptionsSync,
-} from "../internal/fs/utils.js";
+} from "../internal/fs/utils.mjs";
 import { toNamespacedPath } from "../path.ts";
-import { denoErrorToNodeError, ERR_FS_RMDIR_ENOTDIR } from "../_errors.ts";
+import {
+  denoErrorToNodeError,
+  ERR_FS_RMDIR_ENOTDIR,
+} from "../internal/errors.ts";
 import { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 type rmdirOptions = {
   maxRetries?: number;
@@ -69,6 +74,11 @@ export function rmdir(
       });
   }
 }
+
+export const rmdirPromise = promisify(rmdir) as (
+  path: string | Buffer | URL,
+  options?: rmdirOptions,
+) => Promise<void>;
 
 export function rmdirSync(path: string | Buffer | URL, options?: rmdirOptions) {
   path = getValidatedPath(path);

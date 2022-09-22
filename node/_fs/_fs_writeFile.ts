@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
@@ -12,8 +12,12 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError, denoErrorToNodeError } from "../_errors.ts";
-import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
+import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
+import {
+  showStringCoercionDeprecation,
+  validateStringAfterArrayBufferView,
+} from "../internal/fs/utils.mjs";
+import { promisify } from "../internal/util.mjs";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -21,7 +25,7 @@ export function writeFile(
   data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
-): void {
+) {
   const callbackFn: CallbackWithError | undefined =
     optOrCallback instanceof Function ? optOrCallback : callback;
   const options: Encodings | WriteFileOptions | undefined =
@@ -46,6 +50,9 @@ export function writeFile(
 
   if (!ArrayBuffer.isView(data)) {
     validateStringAfterArrayBufferView(data, "data");
+    if (typeof data !== "string") {
+      showStringCoercionDeprecation();
+    }
     data = Buffer.from(String(data), encoding);
   }
 
@@ -56,7 +63,7 @@ export function writeFile(
   (async () => {
     try {
       file = isRid
-        ? new Deno.File(pathOrRid as number)
+        ? new Deno.FsFile(pathOrRid as number)
         : await Deno.open(pathOrRid as string, openOptions);
 
       // ignore mode because it's not supported on windows
@@ -81,12 +88,19 @@ export function writeFile(
   })();
 }
 
+export const writeFilePromise = promisify(writeFile) as (
+  pathOrRid: string | number | URL,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
+  options?: Encodings | WriteFileOptions,
+) => Promise<void>;
+
 export function writeFileSync(
   pathOrRid: string | number | URL,
   // deno-lint-ignore ban-types
   data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
-): void {
+) {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
 
   const flag: string | undefined = isFileOptions(options)
@@ -102,6 +116,9 @@ export function writeFileSync(
 
   if (!ArrayBuffer.isView(data)) {
     validateStringAfterArrayBufferView(data, "data");
+    if (typeof data !== "string") {
+      showStringCoercionDeprecation();
+    }
     data = Buffer.from(String(data), encoding);
   }
 
@@ -111,7 +128,7 @@ export function writeFileSync(
   let error: Error | null = null;
   try {
     file = isRid
-      ? new Deno.File(pathOrRid as number)
+      ? new Deno.FsFile(pathOrRid as number)
       : Deno.openSync(pathOrRid as string, openOptions);
 
     // ignore mode because it's not supported on windows

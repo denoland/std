@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
@@ -34,7 +34,7 @@ let testString: string | null;
 
 const ignoreMaxSizeTests = true;
 
-function init(): void {
+function init() {
   if (testBytes == null) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
@@ -45,7 +45,7 @@ function init(): void {
   }
 }
 
-function check(buf: Buffer, s: string): void {
+function check(buf: Buffer, s: string) {
   const bytes = buf.bytes();
   assertEquals(buf.length, bytes.byteLength);
   const decoder = new TextDecoder();
@@ -320,7 +320,7 @@ Deno.test("bufferReadFrom", async () => {
     const fub = new Uint8Array(testString.length);
     await empty(b, s, fub);
   }
-  assertRejects(async function () {
+  await assertRejects(async function () {
     await new Buffer().readFrom(null!);
   });
 });
@@ -647,7 +647,7 @@ Deno.test("bufioReadLineBadResource", async () => {
   const file = await Deno.open("README.md");
   const bufReader = new BufReader(file);
   file.close();
-  assertRejects(async () => {
+  await assertRejects(async () => {
     await bufReader.readLine();
   }, Deno.errors.BadResource);
 });
@@ -827,7 +827,7 @@ Deno.test("bufioWriter", async function () {
   }
 });
 
-Deno.test("bufioWriterSync", function (): void {
+Deno.test("bufioWriterSync", function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
@@ -1001,7 +1001,7 @@ Deno.test({
 
 Deno.test({
   name: "Reset buffer after flush sync",
-  fn(): void {
+  fn() {
     const stringWriter = new StringWriter();
     const bufWriter = new BufWriterSync(stringWriter);
     const encoder = new TextEncoder();
@@ -1044,7 +1044,7 @@ Deno.test({
 
 Deno.test({
   name: "BufWriterSync.flush should write all bytes",
-  fn(): void {
+  fn() {
     const bufSize = 16 * 1024;
     const data = new Uint8Array(bufSize);
     data.fill("a".charCodeAt(0));

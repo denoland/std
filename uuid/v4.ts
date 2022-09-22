@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -20,7 +21,7 @@ export function validate(id: string): boolean {
 }
 
 /**
- * @deprecated v4 UUID generation is deprecated and will be removed in a future
+ * @deprecated (will be removed after 0.157.0) v4 UUID generation is deprecated and will be removed in a future
  * std/uuid release. Use the web standard `globalThis.crypto.randomUUID()`
  * function instead.
  *

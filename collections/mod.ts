@@ -1,4 +1,30 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** Functions for specific common tasks around collection types like `Array` and
+ * `Record`.
+ *
+ * This module re-exports several modules, and importing this module directly
+ * will likely include a lot of code that you might not use.
+ *
+ * Consider importing the function directly.  For example to import
+ * {@linkcode groupBy} import the module using the snake cased version of the
+ * module:
+ *
+ * ```ts
+ * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
+ * ```
+ *
+ * @module
+ */
+
+// Not sure what's causing this warning? Run `deno info <entry-point-path>` to
+// analyze the module graph. It's not recommended to import directly from
+// mod.ts here because it adds a lot of bloat.
+console.warn(
+  "%c[WARN] deno_std: prefer importing collections/<function_name_in_snake_case>.ts " +
+    "instead of collections/mod.ts",
+  "color: yellow;",
+);
 
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
@@ -42,3 +68,6 @@ export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
+export * from "./binary_heap.ts";
+export * from "./bs_tree.ts";
+export * from "./rb_tree.ts";

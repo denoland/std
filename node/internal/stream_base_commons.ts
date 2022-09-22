@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,7 +20,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { ownerSymbol } from "../_async_hooks.ts";
+import { ownerSymbol } from "./async_hooks.ts";
 import {
   kArrayBufferOffset,
   kBytesWritten,
@@ -29,10 +30,10 @@ import {
   WriteWrap,
 } from "../internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./util/types.ts";
-import { errnoException } from "../_errors.ts";
-import { getTimerDuration, kTimeout } from "./timers.js";
+import { errnoException } from "./errors.ts";
+import { getTimerDuration, kTimeout } from "./timers.mjs";
 import { setUnrefTimeout } from "../timers.ts";
-import { validateCallback } from "./validators.js";
+import { validateFunction } from "./validators.mjs";
 import { codeMap } from "../internal_binding/uv.ts";
 import { Buffer } from "../buffer.ts";
 
@@ -331,7 +332,7 @@ export function setStreamTimeout(
 
   if (msecs === 0) {
     if (callback !== undefined) {
-      validateCallback(callback);
+      validateFunction(callback, "callback");
       this.removeListener("timeout", callback);
     }
   } else {
@@ -342,7 +343,7 @@ export function setStreamTimeout(
     }
 
     if (callback !== undefined) {
-      validateCallback(callback);
+      validateFunction(callback, "callback");
       this.once("timeout", callback);
     }
   }

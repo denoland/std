@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as path from "../../path/mod.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/assert.ts";
 import { BytesList } from "../bytes/bytes_list.ts";
 import { concat, copy } from "../bytes/mod.ts";
@@ -67,7 +67,7 @@ export class Buffer {
   /** Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer. */
-  truncate(n: number): void {
+  truncate(n: number) {
     if (n === 0) {
       this.reset();
       return;
@@ -78,7 +78,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
-  reset(): void {
+  reset() {
     this.#reslice(0);
     this.#off = 0;
   }
@@ -178,7 +178,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
-  grow(n: number): void {
+  grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
     }
@@ -254,14 +254,14 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 export class BufferFullError extends Error {
-  name = "BufferFullError";
+  override name = "BufferFullError";
   constructor(public partial: Uint8Array) {
     super("Buffer full");
   }
 }
 
 export class PartialReadError extends Error {
-  name = "PartialReadError";
+  override name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
     super("Encountered UnexpectedEof, data only partially read");
@@ -340,11 +340,11 @@ export class BufReader implements Reader {
   /** Discards any buffered data, resets all state, and switches
    * the buffered reader to read from r.
    */
-  reset(r: Reader): void {
+  reset(r: Reader) {
     this.#reset(this.#buf, r);
   }
 
-  #reset = (buf: Uint8Array, rd: Reader): void => {
+  #reset = (buf: Uint8Array, rd: Reader) => {
     this.#buf = buf;
     this.#rd = rd;
     this.#eof = false;
@@ -496,9 +496,6 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
-      if (err instanceof Deno.errors.BadResource) {
-        throw err;
-      }
       let partial;
       if (err instanceof PartialReadError) {
         partial = err.partial;
@@ -723,18 +720,14 @@ export class BufWriter extends AbstractBufBase implements Writer {
   }
 
   constructor(writer: Writer, size: number = DEFAULT_BUF_SIZE) {
-    if (size <= 0) {
-      size = DEFAULT_BUF_SIZE;
-    }
-    const buf = new Uint8Array(size);
-    super(buf);
+    super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
 
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: Writer): void {
+  reset(w: Writer) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;
@@ -824,25 +817,21 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   }
 
   constructor(writer: WriterSync, size: number = DEFAULT_BUF_SIZE) {
-    if (size <= 0) {
-      size = DEFAULT_BUF_SIZE;
-    }
-    const buf = new Uint8Array(size);
-    super(buf);
+    super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
 
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: WriterSync): void {
+  reset(w: WriterSync) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;
   }
 
   /** Flush writes any buffered data to the underlying io.WriterSync. */
-  flush(): void {
+  flush() {
     if (this.err !== null) throw this.err;
     if (this.usedBufferBytes === 0) return;
 

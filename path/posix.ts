@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -215,8 +216,8 @@ export function toNamespacedPath(path: string): string {
 }
 
 /**
- * Return the directory name of a `path`.
- * @param path to determine name for
+ * Return the directory path of a `path`.
+ * @param path to determine the directory path for
  */
 export function dirname(path: string): string {
   assertPath(path);
@@ -321,8 +322,9 @@ export function basename(path: string, ext = ""): string {
 }
 
 /**
- * Return the extension of the `path`.
+ * Return the extension of the `path` with leading period.
  * @param path with extension
+ * @returns extension (ex. for `file.ts` returns `.ts`)
  */
 export function extname(path: string): string {
   assertPath(path);

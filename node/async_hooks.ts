@@ -1,8 +1,8 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./_errors.ts";
-import { validateFunction, validateString } from "./internal/validators.js";
+import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
+import { validateFunction, validateString } from "./internal/validators.mjs";
 import {
   // deno-lint-ignore camelcase
   async_id_symbol,
@@ -28,7 +28,7 @@ type AsyncResourceOptions = number | {
 export class AsyncResource {
   [async_id_symbol]: number;
   [trigger_async_id_symbol]: number;
-  [destroyedSymbol]: { destroyed: boolean };
+  [destroyedSymbol]!: { destroyed: boolean };
 
   constructor(type: string, opts: AsyncResourceOptions = {}) {
     validateString(type, "type");
@@ -143,7 +143,7 @@ export class AsyncResource {
   }
 }
 
-function executionAsyncId() {
+export function executionAsyncId() {
   return 1;
 }
 
@@ -155,7 +155,7 @@ class AsyncHook {
   }
 }
 
-function createHook() {
+export function createHook() {
   return new AsyncHook();
 }
 

@@ -1,7 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export type OSType = "windows" | "linux" | "darwin";
+export type OSType = "windows" | "linux" | "darwin" | "freebsd";
 
 export const osType: OSType = (() => {
   // deno-lint-ignore no-explicit-any
@@ -12,7 +12,7 @@ export const osType: OSType = (() => {
 
   // deno-lint-ignore no-explicit-any
   const { navigator } = globalThis as any;
-  if (navigator?.appVersion?.includes?.("Win") ?? false) {
+  if (navigator?.appVersion?.includes?.("Win")) {
     return "windows";
   }
 
@@ -20,3 +20,4 @@ export const osType: OSType = (() => {
 })();
 
 export const isWindows = osType === "windows";
+export const isLinux = osType === "linux";

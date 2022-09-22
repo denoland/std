@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -8,7 +8,7 @@
  *
  * Example:
  * ```ts
- * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/includes_value.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const input = {
@@ -17,6 +17,7 @@
  * };
  *
  * assertEquals(includesValue(input, 34), true);
+ * ```
  */
 
 export function includesValue<T>(

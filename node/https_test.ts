@@ -1,8 +1,9 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { serveTls } from "../http/server.ts";
 import { dirname, fromFileUrl, join } from "../path/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
+import { Agent } from "./https.ts";
 
 const stdRoot = dirname(dirname(fromFileUrl(import.meta.url)));
 const tlsDataDir = join(stdRoot, "http", "testdata", "tls");
@@ -18,9 +19,8 @@ Deno.test("[node/https] request makes https request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--unstable",
@@ -28,19 +28,12 @@ Deno.test("[node/https] request makes https request", async () => {
       "--no-check",
       "node/testdata/https_request.ts",
     ],
-    stdout: "piped",
-    stderr: "piped",
     env: {
       NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
     },
   });
-  const [output, stderrOutput] = await Promise.all([
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  assertEquals(dec.decode(stderrOutput), "");
-  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
-  p.close();
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
   controller.abort();
   await serveFinish;
 });
@@ -53,9 +46,8 @@ Deno.test("[node/https] get makes https GET request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--unstable",
@@ -69,13 +61,12 @@ Deno.test("[node/https] get makes https GET request", async () => {
       NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
     },
   });
-  const [output, stderrOutput] = await Promise.all([
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  assertEquals(dec.decode(stderrOutput), "");
-  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
-  p.close();
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
   controller.abort();
   await serveFinish;
+});
+
+Deno.test("new Agent doesn't throw", () => {
+  new Agent();
 });

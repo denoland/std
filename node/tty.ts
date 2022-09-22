@@ -1,7 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-// This module implements 'tty' module of Node.JS API.
-// ref: https://nodejs.org/api/tty.html
+import { Socket } from "./net.ts";
 
 // Returns true when the given numeric fd is associated with a TTY and false otherwise.
 function isatty(fd: number) {
@@ -16,7 +15,11 @@ function isatty(fd: number) {
 }
 
 // TODO(kt3k): Implement tty.ReadStream class
+export class ReadStream extends Socket {
+}
 // TODO(kt3k): Implement tty.WriteStream class
+export class WriteStream extends Socket {
+}
 
 export { isatty };
-export default { isatty };
+export default { isatty, WriteStream, ReadStream };

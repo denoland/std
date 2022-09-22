@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 // Utility for representing n-tuple
 type Tuple<T, N extends number> = N extends N
@@ -30,7 +31,7 @@ class Queue<T> {
     this.done = false;
   }
 
-  async next(): Promise<void> {
+  async next() {
     const result = await this.#source.next();
     if (!result.done) {
       const nextNode: QueueNode<T> = {
@@ -61,17 +62,13 @@ class Queue<T> {
  *
  *     const [branch1, branch2] = tee(gen());
  *
- *     (async () => {
- *       for await (const n of branch1) {
- *         console.log(n); // => 1, 2, 3
- *       }
- *     })();
+ *     for await (const n of branch1) {
+ *       console.log(n); // => 1, 2, 3
+ *     }
  *
- *     (async () => {
- *       for await (const n of branch2) {
- *         console.log(n); // => 1, 2, 3
- *       }
- *     })();
+ *     for await (const n of branch2) {
+ *       console.log(n); // => 1, 2, 3
+ *     }
  * ```
  */
 export function tee<T, N extends number = 2>(

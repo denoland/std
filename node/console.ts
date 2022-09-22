@@ -1,5 +1,10 @@
-export default console;
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { Console } from "./internal/console/constructor.mjs";
+
+export default Object.assign({}, console, { Console });
+
+export { Console };
 export const {
   assert,
   clear,
@@ -21,3 +26,5 @@ export const {
   trace,
   warn,
 } = console;
+// deno-lint-ignore no-explicit-any
+export const indentLevel = (console as any)?.indentLevel;

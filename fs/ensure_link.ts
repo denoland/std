@@ -1,8 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { exists, existsSync } from "./exists.ts";
-import { getFileInfoType } from "./_util.ts";
+import { toPathString } from "./_util.ts";
 
 /**
  * Ensures that the hard link exists.
@@ -11,21 +10,11 @@ import { getFileInfoType } from "./_util.ts";
  * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
-export async function ensureLink(src: string, dest: string) {
-  if (await exists(dest)) {
-    const destStatInfo = await Deno.lstat(dest);
-    const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== "file") {
-      throw new Error(
-        `Ensure path exists, expected 'file', got '${destFilePathType}'`,
-      );
-    }
-    return;
-  }
-
+export async function ensureLink(src: string | URL, dest: string | URL) {
+  dest = toPathString(dest);
   await ensureDir(path.dirname(dest));
 
-  await Deno.link(src, dest);
+  await Deno.link(toPathString(src), dest);
 }
 
 /**
@@ -35,19 +24,9 @@ export async function ensureLink(src: string, dest: string) {
  * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
-export function ensureLinkSync(src: string, dest: string): void {
-  if (existsSync(dest)) {
-    const destStatInfo = Deno.lstatSync(dest);
-    const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== "file") {
-      throw new Error(
-        `Ensure path exists, expected 'file', got '${destFilePathType}'`,
-      );
-    }
-    return;
-  }
-
+export function ensureLinkSync(src: string | URL, dest: string | URL) {
+  dest = toPathString(dest);
   ensureDirSync(path.dirname(dest));
 
-  Deno.linkSync(src, dest);
+  Deno.linkSync(toPathString(src), dest);
 }
