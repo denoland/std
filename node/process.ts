@@ -564,16 +564,14 @@ class Process extends EventEmitter {
     return 0o22;
   }
 
-  /** https://nodejs.org/api/process.html#processgetuid */
-  getuid(): number {
-    // TODO(kt3k): return user id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getgid?(): number {
+    return Deno.getGid()!;
   }
 
-  /** https://nodejs.org/api/process.html#processgetgid */
-  getgid(): number {
-    // TODO(kt3k): return group id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getuid?(): number {
+    return Deno.getUid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
@@ -605,6 +603,11 @@ class Process extends EventEmitter {
   }
 
   features = { inspector: false };
+}
+
+if (Deno.build.os === "windows") {
+  delete Process.prototype.getgid;
+  delete Process.prototype.getuid;
 }
 
 /** https://nodejs.org/api/process.html#process_process */
