@@ -343,14 +343,13 @@ testWalk(
 );
 
 testWalk(
-  (d: string) => {
-    return Deno.run({cmd:['mkfifo', `${d}/mkfifo`]});
+  async (d: string) => {
+    await Deno.spawn("mkfifo", { args: [d + '/fifo'] });
   },
-  async function fifoSocket(listener: Deno.Process) {
-    assertReady(1);
+  async function fifo() {
+    assertReady(2);
     const files = await walkArray(".", { followSymlinks: true });
-    assertEquals(files, [".", "mkfifo"]);
-    listener.close();
+    assertEquals(files, [".", "fifo"]);
   },
   Deno.build.os === "windows",
 );
