@@ -560,18 +560,6 @@ class Process extends EventEmitter {
     return 0o22;
   }
 
-  /** https://nodejs.org/api/process.html#processgetuid */
-  getuid(): number {
-    // TODO(kt3k): return user id in mac and linux
-    return NaN;
-  }
-
-  /** https://nodejs.org/api/process.html#processgetgid */
-  getgid(): number {
-    // TODO(kt3k): return group id in mac and linux
-    return NaN;
-  }
-
   // TODO(kt3k): Implement this when we added -e option to node compat mode
   _eval: string | undefined = undefined;
 
@@ -605,6 +593,25 @@ class Process extends EventEmitter {
 
 /** https://nodejs.org/api/process.html#process_process */
 const process = new Process();
+
+if (Deno.build.os !== "windows") {
+  Object.defineProperties(process, {
+    /** https://nodejs.org/api/process.html#processgetuid */
+    getuid: {
+      enumerable: false,
+      writable: false,
+      configurable: false,
+      value: (): number => Deno.getUid()!,
+    },
+    /** https://nodejs.org/api/process.html#processgetgid */
+    getgid: {
+      enumerable: false,
+      writable: false,
+      configurable: false,
+      value: (): number => Deno.getGid()!,
+    },
+  });
+}
 
 Object.defineProperty(process, Symbol.toStringTag, {
   enumerable: false,
