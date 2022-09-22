@@ -378,6 +378,7 @@ export function execFile(
   }
   let stdoutLen = 0;
   let stderrLen = 0;
+  let killed = false;
   let exited = false;
   let timeoutId: number | null;
 
@@ -436,7 +437,7 @@ export function execFile(
         "Command failed: " + cmd + "\n" + stderr,
       );
       ex.code = code < 0 ? getSystemErrorName(code) : code;
-      ex.killed = child.killed;
+      ex.killed = child.killed || killed;
       ex.signal = signal;
     }
 
@@ -467,8 +468,9 @@ export function execFile(
       child.stderr.destroy();
     }
 
+    killed = true;
     try {
-      child.kill(/** TODO use execOptions.killSignal */);
+      child.kill(execOptions.killSignal);
     } catch (e) {
       if (e) {
         ex = e as ChildProcessError;
