@@ -34,7 +34,7 @@ export class HandleWrap extends AsyncWrap {
 
   close(cb: () => void = () => {}) {
     this._onClose();
-    cb();
+    queueMicrotask(cb);
   }
 
   ref() {

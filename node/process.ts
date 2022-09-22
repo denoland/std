@@ -385,6 +385,8 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
         Deno.addSignalListener(event as Deno.Signal, listener);
       }
@@ -409,6 +411,8 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
         Deno.removeSignalListener(event as Deno.Signal, listener);
       }

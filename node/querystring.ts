@@ -433,7 +433,7 @@ const unhexTable = new Int8Array([
  * A safe fast alternative to decodeURIComponent
  */
 export function unescapeBuffer(s: string, decodeSpaces = false): Buffer {
-  const out = new Buffer(s.length);
+  const out = Buffer.alloc(s.length);
   let index = 0;
   let outIndex = 0;
   let currentChar;

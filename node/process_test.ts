@@ -198,11 +198,20 @@ Deno.test({
 
 Deno.test({
   name: "process.on SIGBREAK doesn't throw",
-  ignore: Deno.build.os == "windows",
   fn() {
     const listener = () => {};
     process.on("SIGBREAK", listener);
     process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
+  name: "process.on SIGTERM doesn't throw on windows",
+  ignore: Deno.build.os !== "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGTERM", listener);
+    process.off("SIGTERM", listener);
   },
 });
 
