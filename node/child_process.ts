@@ -16,9 +16,12 @@ import {
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
+  genericNodeError,
 } from "./internal/errors.ts";
 import {
+  ArrayPrototypeJoin,
   ArrayPrototypePush,
+  ObjectAssign,
   StringPrototypeSlice,
 } from "./internal/primordials.mjs";
 import { getSystemErrorName, promisify } from "./util.ts";
@@ -603,8 +606,39 @@ export function execFile(
   return child;
 }
 
-export function execSync() {
-  throw new Error("execSync is currently not supported");
+function checkExecSyncError(ret, args, cmd) {
+  let err;
+  if (ret.error) {
+    err = ret.error;
+    ObjectAssign(err, ret);
+  } else if (ret.status !== 0) {
+    let msg = "Command failed: ";
+    msg += cmd || ArrayPrototypeJoin(args, " ");
+    if (ret.stderr && ret.stderr.length > 0) {
+      msg += `\n${ret.stderr.toString()}`;
+    }
+    err = genericNodeError(msg, ret);
+  }
+  return err;
+}
+
+export function execSync(command: string, options) {
+  const opts = normalizeExecArgs(command, options);
+  const inheritStderr = !opts.options.stdio;
+
+  const ret = spawnSync(opts.file, opts.options);
+
+  if (inheritStderr && ret.stderr) {
+    process.stderr.write(ret.stderr);
+  }
+
+  const err = checkExecSyncError(ret, opts.args, command);
+
+  if (err) {
+    throw err;
+  }
+
+  return ret.stdout;
 }
 
 export default {
