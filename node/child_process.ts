@@ -24,7 +24,6 @@ import {
 import { getSystemErrorName } from "./util.ts";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
-import { BufferEncoding } from "./_global.d.ts";
 import { notImplemented } from "./_utils.ts";
 
 const MAX_BUFFER = 1024 * 1024;
@@ -201,7 +200,7 @@ interface ExecOptions extends
     | "gid"
     | "windowsHide"
   > {
-  encoding?: BufferEncoding;
+  encoding?: string;
   /**
    * Shell to execute the command with.
    */
@@ -265,7 +264,7 @@ export function exec(
 }
 
 interface ExecFileOptions extends ChildProcessOptions {
-  encoding?: BufferEncoding;
+  encoding?: string;
   timeout?: number;
   maxBuffer?: number;
   killSignal?: string | number;
