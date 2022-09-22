@@ -700,6 +700,8 @@
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",
+      "test-dns.js",
+      "test-dns-resolveany.js",
       "test-fs-access.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-rm.js",
