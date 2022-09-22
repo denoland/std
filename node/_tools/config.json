@@ -31,7 +31,6 @@
       "test-child-process-execfilesync-maxbuf.js",
       "test-child-process-execsync-maxbuf.js",
       "test-child-process-spawnsync-env.js",
-      "test-child-process-spawnsync-maxbuf.js",
       "test-console-instance.js",
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
