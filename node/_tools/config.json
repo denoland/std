@@ -171,6 +171,7 @@
       "test-child-process-exec-encoding.js",
       "test-child-process-exec-env.js",
       "test-child-process-exec-error.js",
+      "test-child-process-exec-maxbuf.js",
       "test-child-process-exec-std-encoding.js",
       "test-child-process-exec-stdout-stderr-data-string.js",
       "test-child-process-kill.js",
