@@ -1,10 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
-import { assert } from "../../testing/asserts.ts";
-import {
-  ERR_INVALID_ARG_TYPE,
-  ERR_INVALID_ARG_VALUE,
-} from "../internal/errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "../internal/errors.ts";
+import { validateOffsetLengthRead, validatePosition } from "./_fs_util.ts";
+import { validateBuffer } from "../internal/validators.mjs";
 
 type readOptions = {
   buffer: Buffer | Uint8Array;
@@ -66,10 +64,11 @@ export function read(
     cb = optOrBufferOrCb;
   } else {
     offset = offsetOrCallback as number;
+    if (Number.isNaN(offset)) {
+      throw new ERR_OUT_OF_RANGE("offset", "an integer", offset);
+    }
     cb = callback;
   }
-
-  if (!cb) throw new ERR_INVALID_ARG_TYPE("cb", "Callback", cb);
 
   if (
     optOrBufferOrCb instanceof Buffer || optOrBufferOrCb instanceof Uint8Array
@@ -82,19 +81,22 @@ export function read(
     position = null;
   } else {
     const opt = optOrBufferOrCb as readOptions;
-    offset = opt.offset ?? 0;
-    buffer = opt.buffer ?? Buffer.alloc(16384);
-    length = opt.length ?? buffer.byteLength;
-    position = opt.position ?? null;
+    if (opt.buffer instanceof Buffer || opt.buffer instanceof Uint8Array) {
+      offset = opt.offset ?? 0;
+      buffer = opt.buffer ?? Buffer.alloc(16384);
+      length = opt.length ?? buffer.byteLength;
+      position = opt.position ?? null;
+    } else {
+      throw new ERR_INVALID_ARG_TYPE("buffer", [
+        "Buffer",
+        "TypedArray",
+        "DataView",
+      ], optOrBufferOrCb);
+    }
   }
 
-  assert(offset >= 0, "offset should be greater or equal to 0");
-  assert(
-    offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
-      offset + length
-    }`,
-  );
+  validatePosition(position);
+  validateOffsetLengthRead(offset, length, buffer.byteLength);
 
   let err: Error | null = null,
     numberOfBytesRead: number | null = null;
@@ -114,6 +116,8 @@ export function read(
   } catch (error) {
     err = error instanceof Error ? error : new Error("[non-error thrown]");
   }
+
+  if (!cb) throw new ERR_INVALID_ARG_TYPE("cb", "Callback", cb);
 
   if (err) {
     (callback as (err: Error) => void)(err);
@@ -146,12 +150,21 @@ export function readSync(
 ): number {
   let offset = 0;
 
+  if (typeof fd !== "number") {
+    throw new ERR_INVALID_ARG_TYPE("fd", "number", fd);
+  }
+
+  validateBuffer(buffer);
+
   if (length == null) {
     length = 0;
   }
 
   if (typeof offsetOrOpt === "number") {
     offset = offsetOrOpt;
+    if (Number.isNaN(offsetOrOpt)) {
+      throw new ERR_OUT_OF_RANGE("offset", "an integer", offset);
+    }
   } else {
     const opt = offsetOrOpt as readSyncOptions;
     offset = opt.offset ?? 0;
@@ -159,13 +172,8 @@ export function readSync(
     position = opt.position ?? null;
   }
 
-  assert(offset >= 0, "offset should be greater or equal to 0");
-  assert(
-    offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
-      offset + length
-    }`,
-  );
+  validatePosition(position);
+  validateOffsetLengthRead(offset, length, buffer.byteLength);
 
   let currentPosition = 0;
   if (typeof position === "number" && position >= 0) {
