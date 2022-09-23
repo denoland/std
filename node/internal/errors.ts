@@ -13,7 +13,6 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  */
 
-import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
@@ -163,6 +162,17 @@ export const uvExceptionWithHostPort = hideStackFrames(
     return captureLargerStackTrace(ex);
   },
 );
+
+/** Copied from `../util.ts` to avoid a circular dependency. */
+function getSystemErrorName(code: number): string | undefined {
+  if (typeof code !== "number") {
+    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
+  }
+  if (code >= 0 || !Number.isSafeInteger(code)) {
+    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
+  }
+  return errorMap.get(code)?.[0];
+}
 
 /**
  * This used to be `util._errnoException()`.
