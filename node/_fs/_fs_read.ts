@@ -95,6 +95,10 @@ export function read(
     }
   }
 
+  if (position == null) {
+    position = -1;
+  }
+
   validatePosition(position);
   validateOffsetLengthRead(offset, length, buffer.byteLength);
 
@@ -170,6 +174,10 @@ export function readSync(
     offset = opt.offset ?? 0;
     length = opt.length ?? buffer.byteLength;
     position = opt.position ?? null;
+  }
+
+  if (position == null) {
+    position = -1;
   }
 
   validatePosition(position);
