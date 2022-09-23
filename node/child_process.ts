@@ -10,7 +10,7 @@ import {
   type SpawnSyncResult,
   stdioStringToArray,
 } from "./internal/child_process.ts";
-import { validateString } from "./internal/validators.mjs";
+import { validateAbortSignal, validateString } from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
@@ -144,6 +144,7 @@ export function spawn(
   const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
     ? argsOrOptions
     : maybeOptions;
+  validateAbortSignal(options?.signal, "options.signal");
   return new ChildProcess(command, args, options);
 }
 
@@ -272,7 +273,7 @@ interface ExecFileOptions extends ChildProcessOptions {
 interface ChildProcessError extends Error {
   code?: string | number;
   killed?: boolean;
-  signal?: string;
+  signal?: AbortSignal;
   cmd?: string;
 }
 class ExecFileError extends Error implements ChildProcessError {
@@ -359,7 +360,7 @@ export function execFile(
       execOptions.maxBuffer,
     );
   }
-  const spawnOptions: ChildProcessOptions = {
+  const spawnOptions: SpawnOptions = {
     cwd: execOptions.cwd,
     env: execOptions.env,
     gid: execOptions.gid,
@@ -392,7 +393,7 @@ export function execFile(
 
   let cmd = file;
 
-  function exithandler(code = 0, signal?: string) {
+  function exithandler(code = 0, signal?: AbortSignal) {
     if (exited) return;
     exited = true;
 
