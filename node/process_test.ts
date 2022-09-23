@@ -515,6 +515,22 @@ Deno.test("process.execPath is writable", () => {
   }
 });
 
+Deno.test("process.getgid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getgid, undefined);
+  } else {
+    assertEquals(process.getgid?.(), Deno.getGid());
+  }
+});
+
+Deno.test("process.getuid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getuid, undefined);
+  } else {
+    assertEquals(process.getuid?.(), Deno.getUid());
+  }
+});
+
 Deno.test({
   name: "process.exit",
   async fn() {
