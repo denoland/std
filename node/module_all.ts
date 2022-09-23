@@ -27,6 +27,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalCp from "./internal/child_process.ts";
 import internalCryptoCertificate from "./internal/crypto/certificate.ts";
 import internalCryptoCipher from "./internal/crypto/cipher.ts";
 import internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
@@ -115,6 +116,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/child_process": internalCp,
   "internal/crypto/certificate": internalCryptoCertificate,
   "internal/crypto/cipher": internalCryptoCipher,
   "internal/crypto/diffiehellman": internalCryptoDiffiehellman,
