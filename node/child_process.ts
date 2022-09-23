@@ -21,7 +21,8 @@ import {
   ArrayPrototypePush,
   StringPrototypeSlice,
 } from "./internal/primordials.mjs";
-import { getSystemErrorName } from "./util.ts";
+import { getSystemErrorName, promisify } from "./util.ts";
+import { createDeferredPromise } from "./internal/util.mjs";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
 import { notImplemented } from "./_utils.ts";
@@ -263,6 +264,43 @@ export function exec(
   const opts = normalizeExecArgs(command, optionsOrCallback, maybeCallback);
   return execFile(opts.file, opts.options, opts.callback);
 }
+
+interface PromiseWithChild<T> extends Promise<T> {
+  child: ChildProcess;
+}
+type ExecOutputForPromisify = {
+  stdout?: string | Buffer;
+  stderr?: string | Buffer;
+};
+type ExecExceptionForPromisify = ExecException & ExecOutputForPromisify;
+
+const customPromiseExecFunction = (orig: typeof exec) => {
+  return (...args: [command: string, options: ExecOptions]) => {
+    const { promise, resolve, reject } = createDeferredPromise() as unknown as {
+      promise: PromiseWithChild<ExecOutputForPromisify>;
+      resolve?: (value: ExecOutputForPromisify) => void;
+      reject?: (reason?: ExecExceptionForPromisify) => void;
+    };
+
+    promise.child = orig(...args, (err, stdout, stderr) => {
+      if (err !== null) {
+        const _err: ExecExceptionForPromisify = err;
+        _err.stdout = stdout;
+        _err.stderr = stderr;
+        reject && reject(_err);
+      } else {
+        resolve && resolve({ stdout, stderr });
+      }
+    });
+
+    return promise;
+  };
+};
+
+Object.defineProperty(exec, promisify.custom, {
+  enumerable: false,
+  value: customPromiseExecFunction(exec),
+});
 
 interface ExecFileOptions extends ChildProcessOptions {
   encoding?: string;
