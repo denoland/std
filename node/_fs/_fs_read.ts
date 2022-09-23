@@ -96,14 +96,6 @@ export function read(
     }`,
   );
 
-  if (buffer.byteLength == 0) {
-    throw new ERR_INVALID_ARG_VALUE(
-      "buffer",
-      buffer,
-      "is empty and cannot be written",
-    );
-  }
-
   let err: Error | null = null,
     numberOfBytesRead: number | null = null;
 
@@ -156,14 +148,6 @@ export function readSync(
 
   if (length == null) {
     length = 0;
-  }
-
-  if (buffer.byteLength == 0) {
-    throw new ERR_INVALID_ARG_VALUE(
-      "buffer",
-      buffer,
-      "is empty and cannot be written",
-    );
   }
 
   if (typeof offsetOrOpt === "number") {
