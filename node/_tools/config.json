@@ -713,6 +713,7 @@
       "test-dns-resolveany.js",
       "test-fs-access.js",
       "test-fs-readdir-stack-overflow.js",
+      "test-fs-rm.js",
       "test-fs-watchfile.js",
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",
