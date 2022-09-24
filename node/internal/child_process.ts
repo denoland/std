@@ -545,7 +545,7 @@ export function normalizeSpawnArguments(
         args = ["-c", command];
       }
     } else {
-      /** Condition for Android platform is ignore in Deno */
+      /** TODO: add Android condition */
       if (typeof options.shell === "string") {
         file = options.shell;
       } else {
@@ -568,7 +568,7 @@ export function normalizeSpawnArguments(
   // collect coverage for programs that spawn with white-listed environment.
   copyProcessEnvToEnv(env, "NODE_V8_COVERAGE", options.env);
 
-  /** `isZOS` condition is ignored in Deno. */
+  /** TODO: add `isZOS` condition */
 
   let envKeys: string[] = [];
   // Prototype values are intentionally included.
@@ -606,6 +606,7 @@ export function normalizeSpawnArguments(
     ...options,
     args,
     cwd,
+    detached: !!options.detached,
     envPairs,
     file,
     windowsHide: !!options.windowsHide,
