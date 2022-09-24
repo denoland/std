@@ -1,7 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
 import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
-import { validateOffsetLengthRead, validatePosition } from "./_fs_util.ts";
+import {
+  validateOffsetLengthRead,
+  validatePosition,
+} from "../internal/fs/utils.mjs";
 import { validateBuffer, validateInteger } from "../internal/validators.mjs";
 
 type readOptions = {
