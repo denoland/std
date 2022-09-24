@@ -137,6 +137,7 @@ export class ChildProcess extends EventEmitter {
     const {
       env = {},
       stdio = ["pipe", "pipe", "pipe"],
+      cwd,
       shell = false,
       signal,
     } = options || {};
@@ -159,6 +160,7 @@ export class ChildProcess extends EventEmitter {
     try {
       this.#process = Deno.spawnChild(cmd, {
         args: cmdArgs,
+        cwd,
         env: stringEnv,
         stdin: toDenoStdio(stdin as NodeStdio | number),
         stdout: toDenoStdio(stdout as NodeStdio | number),
@@ -778,3 +780,9 @@ export function spawnSync(
   }
   return result;
 }
+
+export default {
+  ChildProcess,
+  stdioStringToArray,
+  spawnSync,
+};
