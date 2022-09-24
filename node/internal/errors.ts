@@ -27,6 +27,7 @@ const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
 import { hideStackFrames } from "./hide_stack_frames.ts";
+import { getSystemErrorName } from "../_utils.ts";
 
 export { errorMap };
 
@@ -176,7 +177,7 @@ export const errnoException = hideStackFrames(function errnoException(
   syscall,
   original?,
 ): ErrnoException {
-  const [code] = uvErrmapGet(err)!;
+  const code = getSystemErrorName(err);
   const message = original
     ? `${syscall} ${code} ${original}`
     : `${syscall} ${code}`;
@@ -264,7 +265,7 @@ export const exceptionWithHostPort = hideStackFrames(
     port: number,
     additional?: string,
   ) {
-    const [code] = uvErrmapGet(err)!;
+    const code = getSystemErrorName(err);
     let details = "";
 
     if (port && port > 0) {
@@ -312,7 +313,7 @@ export const dnsException = hideStackFrames(function (code, syscall, hostname) {
     ) {
       code = "ENOTFOUND"; // Fabricated error name.
     } else {
-      [code] = uvErrmapGet(code)!;
+      code = getSystemErrorName(code);
     }
   }
 
