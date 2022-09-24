@@ -84,12 +84,11 @@ assert.throws(
   }
 );
 
-// don't have to pass because throwing ERR_INVALID_ARG_TYPE.
-// assert.throws(
-//   () => fs.read(fd, { buffer: null }, common.mustNotCall()),
-//   /TypeError: Cannot read properties of null \(reading 'byteLength'\)/,
-//   'throws when options.buffer is null'
-// );
+assert.throws(
+  () => fs.read(fd, { buffer: null }, common.mustNotCall()),
+  /TypeError: Cannot read properties of null \(reading 'byteLength'\)/,
+  'throws when options.buffer is null'
+);
 
 assert.throws(
   () => fs.readSync(fd, { buffer: null }),

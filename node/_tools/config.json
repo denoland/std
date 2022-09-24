@@ -40,7 +40,6 @@
       "test-fs-append-file.js",
       "test-fs-chmod-mask.js",
       "test-fs-chmod.js",
-      "test-fs-read.js",
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-fs-write.js",
