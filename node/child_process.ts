@@ -16,9 +16,12 @@ import {
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
+  genericNodeError,
 } from "./internal/errors.ts";
 import {
+  ArrayPrototypeJoin,
   ArrayPrototypePush,
+  ObjectAssign,
   StringPrototypeSlice,
 } from "./internal/primordials.mjs";
 import { getSystemErrorName, promisify } from "./util.ts";
@@ -195,13 +198,13 @@ export function spawnSync(
 interface ExecOptions extends
   Pick<
     ChildProcessOptions,
-    | "cwd"
     | "env"
     | "signal"
     | "uid"
     | "gid"
     | "windowsHide"
   > {
+  cwd?: string | URL;
   encoding?: string;
   /**
    * Shell to execute the command with.
@@ -220,13 +223,12 @@ type ExecCallback = (
   stdout?: string | Buffer,
   stderr?: string | Buffer,
 ) => void;
-
+type ExecSyncOptions = SpawnSyncOptions;
 function normalizeExecArgs(
   command: string,
-  optionsOrCallback?: ExecOptions | ExecCallback,
+  optionsOrCallback?: ExecOptions | ExecSyncOptions | ExecCallback,
   maybeCallback?: ExecCallback,
 ) {
-  let options: ExecFileOptions | undefined = undefined;
   let callback: ExecFileCallback | undefined = maybeCallback;
 
   if (typeof optionsOrCallback === "function") {
@@ -235,7 +237,7 @@ function normalizeExecArgs(
   }
 
   // Make a shallow copy so we don't clobber the user's options object.
-  options = { ...optionsOrCallback };
+  const options: ExecOptions | ExecSyncOptions = { ...optionsOrCallback };
   options.shell = typeof options.shell === "string" ? options.shell : true;
 
   return {
@@ -262,7 +264,7 @@ export function exec(
   maybeCallback?: ExecCallback,
 ): ChildProcess {
   const opts = normalizeExecArgs(command, optionsOrCallback, maybeCallback);
-  return execFile(opts.file, opts.options, opts.callback);
+  return execFile(opts.file, opts.options as ExecFileOptions, opts.callback);
 }
 
 interface PromiseWithChild<T> extends Promise<T> {
@@ -603,8 +605,39 @@ export function execFile(
   return child;
 }
 
-export function execSync() {
-  throw new Error("execSync is currently not supported");
+function checkExecSyncError(ret: SpawnSyncResult, args: string[], cmd: string) {
+  let err;
+  if (ret.error) {
+    err = ret.error;
+    ObjectAssign(err, ret);
+  } else if (ret.status !== 0) {
+    let msg = "Command failed: ";
+    msg += cmd || ArrayPrototypeJoin(args, " ");
+    if (ret.stderr && ret.stderr.length > 0) {
+      msg += `\n${ret.stderr.toString()}`;
+    }
+    err = genericNodeError(msg, ret);
+  }
+  return err;
+}
+
+export function execSync(command: string, options: ExecSyncOptions) {
+  const opts = normalizeExecArgs(command, options);
+  const inheritStderr = !(opts.options as ExecSyncOptions).stdio;
+
+  const ret = spawnSync(opts.file, opts.options as SpawnSyncOptions);
+
+  if (inheritStderr && ret.stderr) {
+    process.stderr.write(ret.stderr);
+  }
+
+  const err = checkExecSyncError(ret, [], command);
+
+  if (err) {
+    throw err;
+  }
+
+  return ret.stdout;
 }
 
 export default {
