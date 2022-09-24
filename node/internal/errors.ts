@@ -163,17 +163,6 @@ export const uvExceptionWithHostPort = hideStackFrames(
   },
 );
 
-/** Copied from `../util.ts` to avoid a circular dependency. */
-function getSystemErrorName(code: number): string | undefined {
-  if (typeof code !== "number") {
-    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
-  }
-  if (code >= 0 || !Number.isSafeInteger(code)) {
-    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
-  }
-  return errorMap.get(code)?.[0];
-}
-
 /**
  * This used to be `util._errnoException()`.
  *
@@ -187,7 +176,7 @@ export const errnoException = hideStackFrames(function errnoException(
   syscall,
   original?,
 ): ErrnoException {
-  const code = getSystemErrorName(err);
+  const [code] = uvErrmapGet(err)!;
   const message = original
     ? `${syscall} ${code} ${original}`
     : `${syscall} ${code}`;
@@ -275,7 +264,7 @@ export const exceptionWithHostPort = hideStackFrames(
     port: number,
     additional?: string,
   ) {
-    const code = getSystemErrorName(err);
+    const [code] = uvErrmapGet(err)!;
     let details = "";
 
     if (port && port > 0) {
@@ -323,7 +312,7 @@ export const dnsException = hideStackFrames(function (code, syscall, hostname) {
     ) {
       code = "ENOTFOUND"; // Fabricated error name.
     } else {
-      code = getSystemErrorName(code);
+      [code] = uvErrmapGet(code)!;
     }
   }
 
