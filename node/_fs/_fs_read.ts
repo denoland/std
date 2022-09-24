@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
-import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "../internal/errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 import { validateOffsetLengthRead, validatePosition } from "./_fs_util.ts";
-import { validateBuffer } from "../internal/validators.mjs";
+import { validateBuffer, validateInteger } from "../internal/validators.mjs";
 
 type readOptions = {
   buffer: Buffer | Uint8Array;
@@ -64,9 +64,7 @@ export function read(
     cb = optOrBufferOrCb;
   } else {
     offset = offsetOrCallback as number;
-    if (Number.isNaN(offset)) {
-      throw new ERR_OUT_OF_RANGE("offset", "an integer", offset);
-    }
+    validateInteger(offset, "offset", 0);
     cb = callback;
   }
 
@@ -166,9 +164,7 @@ export function readSync(
 
   if (typeof offsetOrOpt === "number") {
     offset = offsetOrOpt;
-    if (Number.isNaN(offsetOrOpt)) {
-      throw new ERR_OUT_OF_RANGE("offset", "an integer", offset);
-    }
+    validateInteger(offset, "offset", 0);
   } else {
     const opt = offsetOrOpt as readSyncOptions;
     offset = opt.offset ?? 0;
