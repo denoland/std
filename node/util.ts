@@ -202,7 +202,7 @@ export function log(...args: any[]) {
   console.log("%s - %s", timestamp(), format(...args));
 }
 
-export { isDeepStrictEqual, getSystemErrorName };
+export { getSystemErrorName, isDeepStrictEqual };
 
 export default {
   format,
