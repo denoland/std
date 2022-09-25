@@ -5,22 +5,33 @@
 import {
   ChildProcess,
   ChildProcessOptions,
+  normalizeSpawnArguments,
   spawnSync as _spawnSync,
   type SpawnSyncOptions,
   type SpawnSyncResult,
   stdioStringToArray,
 } from "./internal/child_process.ts";
-import { validateString } from "./internal/validators.mjs";
+import { validateAbortSignal, validateString } from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
+  genericNodeError,
 } from "./internal/errors.ts";
-import { getSystemErrorName } from "./util.ts";
+import {
+  ArrayPrototypeJoin,
+  ArrayPrototypePush,
+  ObjectAssign,
+  StringPrototypeSlice,
+} from "./internal/primordials.mjs";
+import { getSystemErrorName, promisify } from "./util.ts";
+import { createDeferredPromise } from "./internal/util.mjs";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
 import { notImplemented } from "./_utils.ts";
+import { convertToValidSignal } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
@@ -140,6 +151,7 @@ export function spawn(
   const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
     ? argsOrOptions
     : maybeOptions;
+  validateAbortSignal(options?.signal, "options.signal");
   return new ChildProcess(command, args, options);
 }
 
@@ -162,6 +174,18 @@ function validateMaxBuffer(maxBuffer?: number) {
   }
 }
 
+function sanitizeKillSignal(killSignal?: string | number) {
+  if (typeof killSignal === "string" || typeof killSignal === "number") {
+    return convertToValidSignal(killSignal);
+  } else if (killSignal != null) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "options.killSignal",
+      ["string", "number"],
+      killSignal,
+    );
+  }
+}
+
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
@@ -174,7 +198,7 @@ export function spawnSync(
 
   options = {
     maxBuffer: MAX_BUFFER,
-    ...options,
+    ...normalizeSpawnArguments(command, args, options),
   };
 
   // Validate the timeout, if present.
@@ -183,19 +207,131 @@ export function spawnSync(
   // Validate maxBuffer, if present.
   validateMaxBuffer(options.maxBuffer);
 
+  // Validate and translate the kill signal, if present.
+  sanitizeKillSignal(options.killSignal);
+
   return _spawnSync(command, args, options);
 }
+
+interface ExecOptions extends
+  Pick<
+    ChildProcessOptions,
+    | "env"
+    | "signal"
+    | "uid"
+    | "gid"
+    | "windowsHide"
+  > {
+  cwd?: string | URL;
+  encoding?: string;
+  /**
+   * Shell to execute the command with.
+   */
+  shell?: string;
+  timeout?: number;
+  /**
+   * Largest amount of data in bytes allowed on stdout or stderr. If exceeded, the child process is terminated and any output is truncated.
+   */
+  maxBuffer?: number;
+  killSignal?: string | number;
+}
+type ExecException = ChildProcessError;
+type ExecCallback = (
+  error: ExecException | null,
+  stdout?: string | Buffer,
+  stderr?: string | Buffer,
+) => void;
+type ExecSyncOptions = SpawnSyncOptions;
+function normalizeExecArgs(
+  command: string,
+  optionsOrCallback?: ExecOptions | ExecSyncOptions | ExecCallback,
+  maybeCallback?: ExecCallback,
+) {
+  let callback: ExecFileCallback | undefined = maybeCallback;
+
+  if (typeof optionsOrCallback === "function") {
+    callback = optionsOrCallback;
+    optionsOrCallback = undefined;
+  }
+
+  // Make a shallow copy so we don't clobber the user's options object.
+  const options: ExecOptions | ExecSyncOptions = { ...optionsOrCallback };
+  options.shell = typeof options.shell === "string" ? options.shell : true;
+
+  return {
+    file: command,
+    options: options!,
+    callback: callback!,
+  };
+}
+
+/**
+ * Spawns a shell executing the given command.
+ */
+export function exec(command: string): ChildProcess;
+export function exec(command: string, options: ExecOptions): ChildProcess;
+export function exec(command: string, callback: ExecCallback): ChildProcess;
+export function exec(
+  command: string,
+  options: ExecOptions,
+  callback: ExecCallback,
+): ChildProcess;
+export function exec(
+  command: string,
+  optionsOrCallback?: ExecOptions | ExecCallback,
+  maybeCallback?: ExecCallback,
+): ChildProcess {
+  const opts = normalizeExecArgs(command, optionsOrCallback, maybeCallback);
+  return execFile(opts.file, opts.options as ExecFileOptions, opts.callback);
+}
+
+interface PromiseWithChild<T> extends Promise<T> {
+  child: ChildProcess;
+}
+type ExecOutputForPromisify = {
+  stdout?: string | Buffer;
+  stderr?: string | Buffer;
+};
+type ExecExceptionForPromisify = ExecException & ExecOutputForPromisify;
+
+const customPromiseExecFunction = (orig: typeof exec) => {
+  return (...args: [command: string, options: ExecOptions]) => {
+    const { promise, resolve, reject } = createDeferredPromise() as unknown as {
+      promise: PromiseWithChild<ExecOutputForPromisify>;
+      resolve?: (value: ExecOutputForPromisify) => void;
+      reject?: (reason?: ExecExceptionForPromisify) => void;
+    };
+
+    promise.child = orig(...args, (err, stdout, stderr) => {
+      if (err !== null) {
+        const _err: ExecExceptionForPromisify = err;
+        _err.stdout = stdout;
+        _err.stderr = stderr;
+        reject && reject(_err);
+      } else {
+        resolve && resolve({ stdout, stderr });
+      }
+    });
+
+    return promise;
+  };
+};
+
+Object.defineProperty(exec, promisify.custom, {
+  enumerable: false,
+  value: customPromiseExecFunction(exec),
+});
 
 interface ExecFileOptions extends ChildProcessOptions {
   encoding?: string;
   timeout?: number;
   maxBuffer?: number;
-  killSignal?: string;
+  killSignal?: string | number;
 }
 interface ChildProcessError extends Error {
   code?: string | number;
   killed?: boolean;
-  signal?: string;
+  signal?: AbortSignal;
   cmd?: string;
 }
 class ExecFileError extends Error implements ChildProcessError {
@@ -263,6 +399,7 @@ export function execFile(
     timeout: 0,
     maxBuffer: MAX_BUFFER,
     killSignal: "SIGTERM",
+    shell: false,
     ...options,
   };
   if (!Number.isInteger(execOptions.timeout) || execOptions.timeout < 0) {
@@ -281,16 +418,22 @@ export function execFile(
       execOptions.maxBuffer,
     );
   }
-  const spawnOptions = {
-    shell: false,
-    ...options,
+  const spawnOptions: SpawnOptions = {
+    cwd: execOptions.cwd,
+    env: execOptions.env,
+    gid: execOptions.gid,
+    shell: execOptions.shell,
+    signal: execOptions.signal,
+    uid: execOptions.uid,
+    windowsHide: !!execOptions.windowsHide,
+    windowsVerbatimArguments: !!execOptions.windowsVerbatimArguments,
   };
 
   const child = spawn(file, args, spawnOptions);
 
   let encoding: string | null;
-  const _stdout: Uint8Array[] = [];
-  const _stderr: Uint8Array[] = [];
+  const _stdout: (string | Uint8Array)[] = [];
+  const _stderr: (string | Uint8Array)[] = [];
   if (
     execOptions.encoding !== "buffer" && Buffer.isEncoding(execOptions.encoding)
   ) {
@@ -300,6 +443,7 @@ export function execFile(
   }
   let stdoutLen = 0;
   let stderrLen = 0;
+  let killed = false;
   let exited = false;
   let timeoutId: number | null;
 
@@ -307,7 +451,7 @@ export function execFile(
 
   let cmd = file;
 
-  function exithandler(code = 0, signal?: string) {
+  function exithandler(code = 0, signal?: AbortSignal) {
     if (exited) return;
     exited = true;
 
@@ -330,7 +474,7 @@ export function execFile(
     ) {
       stdout = _stdout.join("");
     } else {
-      stdout = Buffer.concat(_stdout);
+      stdout = Buffer.concat(_stdout as Buffer[]);
     }
     if (
       encoding ||
@@ -341,7 +485,7 @@ export function execFile(
     ) {
       stderr = _stderr.join("");
     } else {
-      stderr = Buffer.concat(_stderr);
+      stderr = Buffer.concat(_stderr as Buffer[]);
     }
 
     if (!ex && code === 0 && signal === null) {
@@ -358,7 +502,7 @@ export function execFile(
         "Command failed: " + cmd + "\n" + stderr,
       );
       ex.code = code < 0 ? getSystemErrorName(code) : code;
-      ex.killed = child.killed;
+      ex.killed = child.killed || killed;
       ex.signal = signal;
     }
 
@@ -389,8 +533,9 @@ export function execFile(
       child.stderr.destroy();
     }
 
+    killed = true;
     try {
-      child.kill(/** TODO use execOptions.killSignal */);
+      child.kill(execOptions.killSignal);
     } catch (e) {
       if (e) {
         ex = e as ChildProcessError;
@@ -412,32 +557,29 @@ export function execFile(
     }
 
     child.stdout.on("data", function onChildStdout(chunk: string | Buffer) {
-      const encoding = child.stdout?.readableEncoding;
-
-      let chunkBuffer: Buffer;
-      if (Buffer.isBuffer(chunk)) {
-        chunkBuffer = chunk;
-      } else {
-        if (encoding) {
-          chunkBuffer = Buffer.from(chunk as string, encoding);
-        } else {
-          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
-          chunkBuffer = Buffer.from("");
-        }
+      // Do not need to count the length
+      if (execOptions.maxBuffer === Infinity) {
+        ArrayPrototypePush(_stdout, chunk);
+        return;
       }
 
-      const length = chunkBuffer.length;
+      const encoding = child.stdout?.readableEncoding;
+      const length = encoding
+        ? Buffer.byteLength(chunk, encoding)
+        : chunk.length;
+      const slice = encoding
+        ? StringPrototypeSlice
+        : (buf: string | Buffer, ...args: number[]) => buf.slice(...args);
       stdoutLen += length;
 
       if (stdoutLen > execOptions.maxBuffer) {
         const truncatedLen = execOptions.maxBuffer - (stdoutLen - length);
-        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
-        _stdout.push(truncatedSlice);
+        ArrayPrototypePush(_stdout, slice(chunk, 0, truncatedLen));
 
         ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stdout");
         kill();
       } else {
-        _stdout.push(chunkBuffer.valueOf());
+        ArrayPrototypePush(_stdout, chunk);
       }
     });
   }
@@ -448,32 +590,29 @@ export function execFile(
     }
 
     child.stderr.on("data", function onChildStderr(chunk: string | Buffer) {
-      const encoding = child.stderr?.readableEncoding;
-
-      let chunkBuffer: Buffer;
-      if (Buffer.isBuffer(chunk)) {
-        chunkBuffer = chunk;
-      } else {
-        if (encoding) {
-          chunkBuffer = Buffer.from(chunk as string, encoding);
-        } else {
-          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
-          chunkBuffer = Buffer.from("");
-        }
+      // Do not need to count the length
+      if (execOptions.maxBuffer === Infinity) {
+        ArrayPrototypePush(_stderr, chunk);
+        return;
       }
 
-      const length = chunkBuffer.length;
+      const encoding = child.stderr?.readableEncoding;
+      const length = encoding
+        ? Buffer.byteLength(chunk, encoding)
+        : chunk.length;
+      const slice = encoding
+        ? StringPrototypeSlice
+        : (buf: string | Buffer, ...args: number[]) => buf.slice(...args);
       stderrLen += length;
 
       if (stderrLen > execOptions.maxBuffer) {
         const truncatedLen = execOptions.maxBuffer - (stderrLen - length);
-        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
-        _stderr.push(truncatedSlice);
+        ArrayPrototypePush(_stderr, slice(chunk, 0, truncatedLen));
 
         ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stderr");
         kill();
       } else {
-        _stderr.push(chunkBuffer.valueOf());
+        ArrayPrototypePush(_stderr, chunk);
       }
     });
   }
@@ -484,9 +623,48 @@ export function execFile(
   return child;
 }
 
-export function execSync() {
-  throw new Error("execSync is currently not supported");
+function checkExecSyncError(ret: SpawnSyncResult, args: string[], cmd: string) {
+  let err;
+  if (ret.error) {
+    err = ret.error;
+    ObjectAssign(err, ret);
+  } else if (ret.status !== 0) {
+    let msg = "Command failed: ";
+    msg += cmd || ArrayPrototypeJoin(args, " ");
+    if (ret.stderr && ret.stderr.length > 0) {
+      msg += `\n${ret.stderr.toString()}`;
+    }
+    err = genericNodeError(msg, ret);
+  }
+  return err;
 }
 
-export default { fork, spawn, execFile, execSync, ChildProcess, spawnSync };
+export function execSync(command: string, options: ExecSyncOptions) {
+  const opts = normalizeExecArgs(command, options);
+  const inheritStderr = !(opts.options as ExecSyncOptions).stdio;
+
+  const ret = spawnSync(opts.file, opts.options as SpawnSyncOptions);
+
+  if (inheritStderr && ret.stderr) {
+    process.stderr.write(ret.stderr);
+  }
+
+  const err = checkExecSyncError(ret, [], command);
+
+  if (err) {
+    throw err;
+  }
+
+  return ret.stdout;
+}
+
+export default {
+  fork,
+  spawn,
+  exec,
+  execFile,
+  execSync,
+  ChildProcess,
+  spawnSync,
+};
 export { ChildProcess };
