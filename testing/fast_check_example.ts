@@ -14,7 +14,7 @@
  * Since the nested testing API is used, the tests need to be run with the
  * unstable flag as indicated in the command:
  *
- * ```ignore
+ * ```shellsession
  * $ deno test --unstable ./testing/fast_check_example.ts
  * ```
  *
