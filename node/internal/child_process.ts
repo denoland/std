@@ -12,6 +12,7 @@ import { isWindows } from "../../_util/os.ts";
 import { nextTick } from "../_next_tick.ts";
 import {
   AbortError,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_UNKNOWN_SIGNAL,
 } from "./errors.ts";
@@ -20,6 +21,26 @@ import { Buffer } from "../buffer.ts";
 import { errnoException } from "./errors.ts";
 import { ErrnoException } from "../_global.d.ts";
 import { codeMap } from "../internal_binding/uv.ts";
+import {
+  isInt32,
+  validateBoolean,
+  validateObject,
+  validateString,
+} from "./validators.mjs";
+import {
+  ArrayIsArray,
+  ArrayPrototypeFilter,
+  ArrayPrototypeJoin,
+  ArrayPrototypePush,
+  ArrayPrototypeSlice,
+  ArrayPrototypeSort,
+  ArrayPrototypeUnshift,
+  ObjectPrototypeHasOwnProperty,
+  StringPrototypeToUpperCase,
+} from "./primordials.mjs";
+import { kEmptyObject } from "./util.mjs";
+import { getValidatedPath } from "./fs/utils.mjs";
+import process from "../process.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -384,6 +405,20 @@ export interface ChildProcessOptions {
   windowsHide?: boolean;
 }
 
+function copyProcessEnvToEnv(
+  env: Record<string, string | undefined>,
+  name: string,
+  optionEnv?: Record<string, string>,
+) {
+  if (
+    Deno.env.get(name) &&
+    (!optionEnv ||
+      !ObjectPrototypeHasOwnProperty(optionEnv, name))
+  ) {
+    env[name] = Deno.env.get(name);
+  }
+}
+
 function normalizeStdioOption(
   stdio: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio = [
     "pipe",
@@ -411,6 +446,174 @@ function normalizeStdioOption(
         notImplemented(`normalizeStdioOption stdio=${typeof stdio} (${stdio})`);
     }
   }
+}
+
+export function normalizeSpawnArguments(
+  file: string,
+  args: string[],
+  options: SpawnSyncOptions,
+) {
+  validateString(file, "file");
+
+  if (file.length === 0) {
+    throw new ERR_INVALID_ARG_VALUE("file", file, "cannot be empty");
+  }
+
+  if (ArrayIsArray(args)) {
+    args = ArrayPrototypeSlice(args);
+  } else if (args == null) {
+    args = [];
+  } else if (typeof args !== "object") {
+    throw new ERR_INVALID_ARG_TYPE("args", "object", args);
+  } else {
+    options = args;
+    args = [];
+  }
+
+  if (options === undefined) {
+    options = kEmptyObject;
+  } else {
+    validateObject(options, "options");
+  }
+
+  let cwd = options.cwd;
+
+  // Validate the cwd, if present.
+  if (cwd != null) {
+    cwd = getValidatedPath(cwd, "options.cwd") as string;
+  }
+
+  // Validate detached, if present.
+  if (options.detached != null) {
+    validateBoolean(options.detached, "options.detached");
+  }
+
+  // Validate the uid, if present.
+  if (options.uid != null && !isInt32(options.uid)) {
+    throw new ERR_INVALID_ARG_TYPE("options.uid", "int32", options.uid);
+  }
+
+  // Validate the gid, if present.
+  if (options.gid != null && !isInt32(options.gid)) {
+    throw new ERR_INVALID_ARG_TYPE("options.gid", "int32", options.gid);
+  }
+
+  // Validate the shell, if present.
+  if (
+    options.shell != null &&
+    typeof options.shell !== "boolean" &&
+    typeof options.shell !== "string"
+  ) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "options.shell",
+      ["boolean", "string"],
+      options.shell,
+    );
+  }
+
+  // Validate argv0, if present.
+  if (options.argv0 != null) {
+    validateString(options.argv0, "options.argv0");
+  }
+
+  // Validate windowsHide, if present.
+  if (options.windowsHide != null) {
+    validateBoolean(options.windowsHide, "options.windowsHide");
+  }
+
+  // Validate windowsVerbatimArguments, if present.
+  let { windowsVerbatimArguments } = options;
+  if (windowsVerbatimArguments != null) {
+    validateBoolean(
+      windowsVerbatimArguments,
+      "options.windowsVerbatimArguments",
+    );
+  }
+
+  if (options.shell) {
+    const command = ArrayPrototypeJoin([file, ...args], " ");
+    // Set the shell, switches, and commands.
+    if (process.platform === "win32") {
+      if (typeof options.shell === "string") {
+        file = options.shell;
+      } else {
+        file = Deno.env.get("comspec") || "cmd.exe";
+      }
+      // '/d /s /c' is used only for cmd.exe.
+      if (/^(?:.*\\)?cmd(?:\.exe)?$/i.exec(file) !== null) {
+        args = ["/d", "/s", "/c", `"${command}"`];
+        windowsVerbatimArguments = true;
+      } else {
+        args = ["-c", command];
+      }
+    } else {
+      /** TODO: add Android condition */
+      if (typeof options.shell === "string") {
+        file = options.shell;
+      } else {
+        file = "/bin/sh";
+      }
+      args = ["-c", command];
+    }
+  }
+
+  if (typeof options.argv0 === "string") {
+    ArrayPrototypeUnshift(args, options.argv0);
+  } else {
+    ArrayPrototypeUnshift(args, file);
+  }
+
+  const env = options.env || Deno.env.toObject();
+  const envPairs: string[][] = [];
+
+  // process.env.NODE_V8_COVERAGE always propagates, making it possible to
+  // collect coverage for programs that spawn with white-listed environment.
+  copyProcessEnvToEnv(env, "NODE_V8_COVERAGE", options.env);
+
+  /** TODO: add `isZOS` condition */
+
+  let envKeys: string[] = [];
+  // Prototype values are intentionally included.
+  for (const key in env) {
+    ArrayPrototypePush(envKeys, key);
+  }
+
+  if (process.platform === "win32") {
+    // On Windows env keys are case insensitive. Filter out duplicates,
+    // keeping only the first one (in lexicographic order)
+    /** TODO: implement SafeSet and makeSafe */
+    const sawKey = new Set();
+    envKeys = ArrayPrototypeFilter(
+      ArrayPrototypeSort(envKeys),
+      (key: string) => {
+        const uppercaseKey = StringPrototypeToUpperCase(key);
+        if (sawKey.has(uppercaseKey)) {
+          return false;
+        }
+        sawKey.add(uppercaseKey);
+        return true;
+      },
+    );
+  }
+
+  for (const key of envKeys) {
+    const value = env[key];
+    if (value !== undefined) {
+      ArrayPrototypePush(envPairs, `${key}=${value}`);
+    }
+  }
+
+  return {
+    // Make a shallow copy so we don't clobber the user's options object.
+    ...options,
+    args,
+    cwd,
+    detached: !!options.detached,
+    envPairs,
+    file,
+    windowsHide: !!options.windowsHide,
+    windowsVerbatimArguments: !!windowsVerbatimArguments,
+  };
 }
 
 function waitForReadableToClose(readable: Readable) {
@@ -506,6 +709,9 @@ export interface SpawnSyncOptions {
   shell?: boolean | string;
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
+  /** The below options aren't currently supported. However, they're here for validation checks. */
+  killSignal?: string;
+  detached?: boolean;
 }
 
 export interface SpawnSyncResult {

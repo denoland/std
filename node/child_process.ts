@@ -5,6 +5,7 @@
 import {
   ChildProcess,
   ChildProcessOptions,
+  normalizeSpawnArguments,
   spawnSync as _spawnSync,
   type SpawnSyncOptions,
   type SpawnSyncResult,
@@ -14,6 +15,7 @@ import { validateAbortSignal, validateString } from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
+  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
   genericNodeError,
@@ -29,6 +31,7 @@ import { createDeferredPromise } from "./internal/util.mjs";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
 import { notImplemented } from "./_utils.ts";
+import { convertToValidSignal } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
@@ -171,6 +174,18 @@ function validateMaxBuffer(maxBuffer?: number) {
   }
 }
 
+function sanitizeKillSignal(killSignal?: string | number) {
+  if (typeof killSignal === "string" || typeof killSignal === "number") {
+    return convertToValidSignal(killSignal);
+  } else if (killSignal != null) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "options.killSignal",
+      ["string", "number"],
+      killSignal,
+    );
+  }
+}
+
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
@@ -183,7 +198,7 @@ export function spawnSync(
 
   options = {
     maxBuffer: MAX_BUFFER,
-    ...options,
+    ...normalizeSpawnArguments(command, args, options),
   };
 
   // Validate the timeout, if present.
@@ -191,6 +206,9 @@ export function spawnSync(
 
   // Validate maxBuffer, if present.
   validateMaxBuffer(options.maxBuffer);
+
+  // Validate and translate the kill signal, if present.
+  sanitizeKillSignal(options.killSignal);
 
   return _spawnSync(command, args, options);
 }

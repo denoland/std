@@ -186,6 +186,7 @@
       "test-child-process-spawnsync-args.js",
       "test-child-process-spawnsync-env.js",
       "test-child-process-spawnsync-maxbuf.js",
+      "test-child-process-spawnsync-validation-errors.js",
       "test-child-process-spawnsync.js",
       "test-client-request-destroy.js",
       "test-console-async-write-error.js",
