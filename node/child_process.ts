@@ -171,6 +171,18 @@ function validateMaxBuffer(maxBuffer?: number) {
   }
 }
 
+function sanitizeKillSignal(killSignal?: string | number) {
+  if (typeof killSignal === "string" || typeof killSignal === "number") {
+    return convertToValidSignal(killSignal);
+  } else if (killSignal != null) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "options.killSignal",
+      ["string", "number"],
+      killSignal,
+    );
+  }
+}
+
 export function spawnSync(
   command: string,
   argsOrOptions?: string[] | SpawnSyncOptions,
@@ -607,18 +619,6 @@ export function execFile(
   child.addListener("error", errorhandler);
 
   return child;
-}
-
-function sanitizeKillSignal(killSignal?: string | number) {
-  if (typeof killSignal === "string" || typeof killSignal === "number") {
-    return convertToValidSignal(killSignal);
-  } else if (killSignal != null) {
-    throw new ERR_INVALID_ARG_TYPE(
-      "options.killSignal",
-      ["string", "number"],
-      killSignal,
-    );
-  }
 }
 
 export function execSync() {
