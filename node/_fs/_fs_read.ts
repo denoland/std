@@ -82,8 +82,19 @@ export function read(
     position = null;
   } else {
     const opt = optOrBufferOrCb as readOptions;
+    if (!(opt.buffer instanceof Buffer) && !(opt.buffer instanceof Uint8Array)) {
+      if (opt.buffer === null) {
+        // @ts-ignore: Intentionally create TypeError for passing test-fs-read.js#L87
+        length = opt.buffer.byteLength;
+      }
+      throw new ERR_INVALID_ARG_TYPE("buffer", [
+        "Buffer",
+        "TypedArray",
+        "DataView",
+      ], optOrBufferOrCb);
+    } 
     offset = opt.offset ?? 0;
-    buffer = opt.buffer;
+    buffer = opt.buffer ?? Buffer.alloc(16384);
     length = opt.length ?? buffer.byteLength;
     position = opt.position ?? null;
   }
