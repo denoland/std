@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { createWriteStream, WriteStream } from "./streams.ts";
 import { assertEquals } from "../../../testing/asserts.ts";
+import { Buffer } from "../../buffer.ts";
 
 // Need to wait for file processing to complete within each test to prevent false negatives.
 async function waiter(writable: WriteStream, interval = 100, maxCount = 50) {
@@ -59,6 +60,25 @@ Deno.test({
     // deno-lint-ignore ban-ts-comment
     // @ts-ignore
     const writable = new createWriteStream(tempFile);
+
+    writable.write("hello world");
+    writable.end("\n");
+
+    writable.on("close", () => {
+      const data = Deno.readFileSync(tempFile);
+      Deno.removeSync(tempFile);
+      assertEquals(new TextDecoder("utf-8").decode(data), "hello world\n");
+    });
+
+    assertEquals(await waiter(writable), true);
+  },
+});
+
+Deno.test({
+  name: "[node/fs.createWriteStream] Specify the path as a Buffer",
+  async fn() {
+    const tempFile: string = Deno.makeTempFileSync();
+    const writable = createWriteStream(Buffer.from(tempFile));
 
     writable.write("hello world");
     writable.end("\n");
