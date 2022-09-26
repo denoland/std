@@ -36,20 +36,20 @@ interface FS {
 interface WriteStreamOptions {
   flags?: openFlags;
   encoding?: BufferEncoding;
-  fd?: number | null;
+  fd?: number;
   mode?: number;
   autoClose?: boolean;
   emitClose?: boolean;
   start?: number;
-  fs?: FS;
+  fs?: FS | null;
 }
 
 export interface WriteStream extends Writable {
   fd: number | null;
   [kFs]: FS;
   path?: string | Buffer;
-  flags: openFlags;
-  mode: number;
+  flags?: openFlags;
+  mode?: number;
   start?: number;
   pos?: number;
   bytesWritten: number;
@@ -57,7 +57,7 @@ export interface WriteStream extends Writable {
   autoClose: boolean;
 }
 
-function _construct(this: WriteStream, callback: (err?: Error) => void) {
+function _construct(this: WriteStream, callback: (err?: Error | null) => void) {
   const stream = this as WriteStream & { open: () => void };
   if (typeof stream.fd === "number") {
     callback();
@@ -83,8 +83,8 @@ function _construct(this: WriteStream, callback: (err?: Error) => void) {
   } else {
     stream[kFs].open!(
       stream.path!.toString(),
-      stream.flags,
-      stream.mode,
+      stream.flags!,
+      stream.mode!,
       (er, fd) => {
         if (er) {
           callback(er);
@@ -99,7 +99,11 @@ function _construct(this: WriteStream, callback: (err?: Error) => void) {
   }
 }
 
-function close(stream: WriteStream, err: Error, cb: (err?: Error) => void) {
+function close(
+  stream: WriteStream,
+  err: Error | null,
+  cb: (err?: Error | null) => void,
+) {
   if (!stream.fd) {
     cb(err);
   } else {
@@ -130,7 +134,7 @@ function importFd(
 export function WriteStream(
   this: WriteStream | unknown,
   path: string | Buffer | URL,
-  options?: WriteStreamOptions & WritableOptions,
+  options?: BufferEncoding | (WriteStreamOptions & WritableOptions),
 ): WriteStream {
   if (!(this instanceof WriteStream)) {
     // deno-lint-ignore ban-ts-comment
@@ -321,8 +325,8 @@ WriteStream.prototype._writev = function (
 
 WriteStream.prototype._destroy = function (
   this: WriteStream,
-  err: Error,
-  cb: (err?: Error) => void,
+  err: Error | null,
+  cb: (err?: Error | null) => void,
 ) {
   // Usually for async IO it is safe to close a file descriptor
   // even when there are pending operations. However, due to platform
@@ -372,7 +376,7 @@ Object.defineProperty(WriteStream.prototype, "pending", {
 
 export function createWriteStream(
   path: string | Buffer | URL,
-  options?: WriteStreamOptions,
+  options?: BufferEncoding | WriteStreamOptions,
 ): WriteStream {
   // deno-lint-ignore ban-ts-comment
   // @ts-ignore
