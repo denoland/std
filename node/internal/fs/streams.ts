@@ -294,15 +294,7 @@ WriteStream.prototype._writev = function (
   }
 
   this[kIsPerformingIO] = true;
-  // TODO(PolarETech): Reduce @ts-ignore as much as possible.
-  // This @ts-ignore is for "this.pos".
-  // The option could be undefined, but only number is allowd
-  // in the type declaration of fs.writev.
-  // https://github.com/denoland/deno_std/blob/main/node/_fs/_fs_writev.d.ts#L37
-  // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/fs.d.ts#L3690
-  // deno-lint-ignore ban-ts-comment
-  // @ts-ignore
-  this[kFs].writev!(this.fd!, chunks, this.pos, (er, bytes) => {
+  this[kFs].writev!(this.fd!, chunks, this.pos ?? null, (er, bytes) => {
     this[kIsPerformingIO] = false;
     if (this.destroyed) {
       // Tell ._destroy() that it's safe to close the fd now.
