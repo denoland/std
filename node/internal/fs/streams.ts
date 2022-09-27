@@ -64,6 +64,8 @@ interface Stream {
   pos?: number;
   [kIsPerformingIO]: boolean;
   autoClose: boolean;
+  close(callback?: (err?: Error | null) => void): void;
+  pending: boolean;
 }
 export interface ReadStream extends Readable, Stream {
   end: number;
