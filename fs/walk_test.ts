@@ -341,3 +341,15 @@ testWalk(
   // TODO(kt3k): Enable this test
   true,
 );
+
+testWalk(
+  async (d: string) => {
+    await Deno.spawn("mkfifo", { args: [d + "/fifo"] });
+  },
+  async function fifo() {
+    assertReady(2);
+    const files = await walkArray(".", { followSymlinks: true });
+    assertEquals(files, [".", "fifo"]);
+  },
+  Deno.build.os === "windows",
+);

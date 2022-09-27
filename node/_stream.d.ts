@@ -589,6 +589,11 @@ export class Writable extends Stream implements WritableStream {
    * @since v8.0.0
    */
   destroyed: boolean;
+  /**
+   * Is true after 'close' has been emitted.
+   * @since v8.0.0
+   */
+  readonly closed: boolean;
   constructor(opts?: WritableOptions);
   _write(
     chunk: any,
@@ -894,6 +899,7 @@ export class Duplex extends Readable implements Writable {
   readonly writableLength: number;
   readonly writableObjectMode: boolean;
   readonly writableCorked: number;
+  readonly closed: boolean;
   /**
    * If `false` then the stream will automatically end the writable side when the
    * readable side ends. Set initially by the `allowHalfOpen` constructor option,
