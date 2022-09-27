@@ -8,7 +8,6 @@ import {
 import { chmod, chmodPromise, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownPromise, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
-import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFilePromise, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -54,7 +53,12 @@ import {
   writeFileSync,
 } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
-import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
+import {
+  createReadStream,
+  createWriteStream,
+  ReadStream,
+  WriteStream,
+} from "./internal/fs/streams.ts";
 
 const {
   F_OK,
