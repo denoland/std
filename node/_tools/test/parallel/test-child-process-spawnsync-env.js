@@ -27,8 +27,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // TODO(cjihrig): The process.argv[3] check should be argv[2], and the
-// arguments array passed to spawnSync() should not need to include "run",
-// "-A", "--unstable", and "require.ts".
+// arguments array passed to spawnSync() should not need to include
+// "require.ts".
 
 'use strict';
 require('../common');
@@ -39,7 +39,7 @@ if (process.argv[3] === 'child') {
   console.log(process.env.foo);
 } else {
   const expected = 'bar';
-  const child = cp.spawnSync(process.execPath, ["run", "-A", "--unstable", "require.ts", __filename, 'child'], {
+  const child = cp.spawnSync(process.execPath, ["require.ts", __filename, 'child'], {
     env: Object.assign(process.env, { foo: expected })
   });
 
