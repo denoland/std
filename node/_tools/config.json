@@ -28,7 +28,6 @@
       "test-child-process-exec-maxbuf.js",
       "test-child-process-exec-std-encoding.js",
       "test-child-process-execfile.js",
-      "test-child-process-execfilesync-maxbuf.js",
       "test-child-process-execsync-maxbuf.js",
       "test-child-process-spawnsync-env.js",
       "test-console-instance.js",

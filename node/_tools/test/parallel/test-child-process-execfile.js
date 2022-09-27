@@ -56,7 +56,7 @@ const execOpts = { encoding: 'utf8', shell: true };
 
 {
   // Verify the shell option works properly
-  execFile(process.execPath, ['run', '-A', '--unstable', 'require.ts', fixture, 0], execOpts, common.mustSucceed());
+  execFile(process.execPath, ['require.ts', fixture, 0], execOpts, common.mustSucceed());
 }
 
 {
@@ -110,7 +110,7 @@ const execOpts = { encoding: 'utf8', shell: true };
     // assert.strictEqual(getEventListeners(ac.signal).length, 0);
     assert.strictEqual(err, null);
   });
-  execFile(process.execPath, ['run', '-A', '--unstable', 'require.ts', fixture, 0], { signal }, callback);
+  execFile(process.execPath, ['require.ts', fixture, 0], { signal }, callback);
 }
 
 // Verify the execFile() stdout is the same as execFileSync().
