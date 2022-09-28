@@ -109,7 +109,7 @@ async function decompressTests(archivePath: string) {
     { read: true },
   );
 
-  const buffer = Buffer.from(gunzip(await readAll(compressedFile)));
+  const buffer = new Buffer(gunzip(await readAll(compressedFile)));
   Deno.close(compressedFile.rid);
 
   const tar = new Untar(buffer);
