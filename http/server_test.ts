@@ -411,6 +411,36 @@ Deno.test(
   },
 );
 
+Deno.test(`Server.serve should response with internal server error if response body is already consumed`, async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+  const body = "Internal Server Error";
+  const status = 500;
+
+  async function handler() {
+    const response = new Response("Hello, world!");
+    await response.text();
+    return response;
+  }
+
+  const server = new Server({ handler });
+  const servePromise = server.serve(listener);
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), body);
+    assertEquals(response.status, status);
+  } finally {
+    server.close();
+    await servePromise;
+  }
+});
+
 Deno.test(`Server.serve should handle requests`, async () => {
   const listenOptions = {
     hostname: "localhost",
