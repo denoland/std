@@ -29,13 +29,19 @@ const kIsPerformingIO = Symbol("kIsPerformingIO");
 
 const kFs = Symbol("kFs");
 
-interface FS {
+type OneRequired<T, U extends keyof T> = U extends keyof T
+  ? { [K in U]: NonNullable<T[K]> } & T
+  : never;
+
+type FS = {
   open?: typeof fsOpen;
   read?: typeof fsRead;
   write?: typeof fsWrite;
   writev?: typeof fsWritev;
   close?: typeof fsClose;
-}
+};
+type ReadFS = OneRequired<FS, "read">;
+type WriteFS = OneRequired<FS, "write" | "writev">;
 
 interface StreamOptions {
   flags?: openFlags;
@@ -45,18 +51,18 @@ interface StreamOptions {
   autoClose?: boolean;
   emitClose?: boolean;
   start?: number;
-  fs?: FS | null;
 }
 interface ReadStreamOptions extends StreamOptions {
   end?: number;
   highWaterMark?: number;
+  fs?: ReadFS | null;
 }
-// deno-lint-ignore no-empty-interface
-interface WriteStreamOptions extends StreamOptions {}
+interface WriteStreamOptions extends StreamOptions {
+  fs?: WriteFS | null;
+}
 
 interface Stream {
   fd: number | null;
-  [kFs]: FS;
   path?: string | Buffer;
   flags?: openFlags;
   mode?: number;
@@ -68,10 +74,12 @@ interface Stream {
   pending: boolean;
 }
 export interface ReadStream extends Readable, Stream {
+  [kFs]: ReadFS;
   end: number;
   bytesRead: number;
 }
 export interface WriteStream extends Writable, Stream {
+  [kFs]: WriteFS;
   bytesWritten: number;
 }
 type EitherStream = ReadStream | WriteStream;
@@ -138,7 +146,7 @@ function close(
 
 function importFd(
   stream: EitherStream,
-  options: StreamOptions,
+  options: ReadStreamOptions | WriteStreamOptions,
 ) {
   if (typeof options.fd === "number") {
     // When fd is a raw descriptor, we must keep our fingers crossed
@@ -278,7 +286,7 @@ ReadStream.prototype._read = async function (this: ReadStream, n: number) {
 
   await new Promise((resolve) => {
     this[kFs]
-      .read!(
+      .read(
         this.fd!,
         buf,
         0,
