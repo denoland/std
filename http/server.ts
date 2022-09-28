@@ -296,6 +296,10 @@ export class Server {
     try {
       // Handle the request event, generating a response.
       response = await this.#handler(requestEvent.request, connInfo);
+
+      if (response.bodyUsed && response.body !== null) {
+        throw new TypeError("Response body already consumed.");
+      }
     } catch (error: unknown) {
       // Invoke onError handler when request handler throws.
       response = await this.#onError(error);

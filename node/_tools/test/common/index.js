@@ -24,6 +24,7 @@ let localhostIPv4 = null;
 let knownGlobals = [
   atob,
   btoa,
+  caches,
   clearImmediate,
   global.clearInterval,
   global.clearTimeout,

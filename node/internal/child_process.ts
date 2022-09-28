@@ -649,6 +649,11 @@ function buildCommand(
   args: string[],
   shell: string | boolean,
 ): [string, string[]] {
+  if (file === Deno.execPath()) {
+    // The user is trying to spawn another Deno process as Node.js.
+    args = toDenoArgs(args);
+  }
+
   if (shell) {
     const command = [file, ...args].join(" ");
 
@@ -779,6 +784,180 @@ export function spawnSync(
     }
   }
   return result;
+}
+
+// These are Node.js CLI flags that expect a value. It's necessary to
+// understand these flags in order to properly replace flags passed to the
+// child process. For example, -e is a Node flag for eval mode if it is part
+// of process.execArgv. However, -e could also be an application flag if it is
+// part of process.execv instead. We only want to process execArgv flags.
+const kLongArgType = 1;
+const kShortArgType = 2;
+const kLongArg = { type: kLongArgType };
+const kShortArg = { type: kShortArgType };
+const kNodeFlagsMap = new Map([
+  ["--build-snapshot", kLongArg],
+  ["-c", kShortArg],
+  ["--check", kLongArg],
+  ["-C", kShortArg],
+  ["--conditions", kLongArg],
+  ["--cpu-prof-dir", kLongArg],
+  ["--cpu-prof-interval", kLongArg],
+  ["--cpu-prof-name", kLongArg],
+  ["--diagnostic-dir", kLongArg],
+  ["--disable-proto", kLongArg],
+  ["--dns-result-order", kLongArg],
+  ["-e", kShortArg],
+  ["--eval", kLongArg],
+  ["--experimental-loader", kLongArg],
+  ["--experimental-policy", kLongArg],
+  ["--experimental-specifier-resolution", kLongArg],
+  ["--heapsnapshot-near-heap-limit", kLongArg],
+  ["--heapsnapshot-signal", kLongArg],
+  ["--heap-prof-dir", kLongArg],
+  ["--heap-prof-interval", kLongArg],
+  ["--heap-prof-name", kLongArg],
+  ["--icu-data-dir", kLongArg],
+  ["--input-type", kLongArg],
+  ["--inspect-publish-uid", kLongArg],
+  ["--max-http-header-size", kLongArg],
+  ["--openssl-config", kLongArg],
+  ["-p", kShortArg],
+  ["--print", kLongArg],
+  ["--policy-integrity", kLongArg],
+  ["--prof-process", kLongArg],
+  ["-r", kShortArg],
+  ["--require", kLongArg],
+  ["--redirect-warnings", kLongArg],
+  ["--report-dir", kLongArg],
+  ["--report-directory", kLongArg],
+  ["--report-filename", kLongArg],
+  ["--report-signal", kLongArg],
+  ["--secure-heap", kLongArg],
+  ["--secure-heap-min", kLongArg],
+  ["--snapshot-blob", kLongArg],
+  ["--title", kLongArg],
+  ["--tls-cipher-list", kLongArg],
+  ["--tls-keylog", kLongArg],
+  ["--unhandled-rejections", kLongArg],
+  ["--use-largepages", kLongArg],
+  ["--v8-pool-size", kLongArg],
+]);
+const kDenoSubcommands = new Set([
+  "bench",
+  "bundle",
+  "cache",
+  "check",
+  "compile",
+  "completions",
+  "coverage",
+  "doc",
+  "eval",
+  "fmt",
+  "help",
+  "info",
+  "init",
+  "install",
+  "lint",
+  "lsp",
+  "repl",
+  "run",
+  "tasks",
+  "test",
+  "types",
+  "uninstall",
+  "upgrade",
+  "vendor",
+]);
+
+function toDenoArgs(args: string[]): string[] {
+  if (args.length === 0) {
+    return args;
+  }
+
+  // Update this logic as more CLI arguments are mapped from Node to Deno.
+  const denoArgs: string[] = [];
+  let useRunArgs = true;
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg.charAt(0) !== "-" || arg === "--") {
+      // Not a flag or no more arguments.
+
+      // If the arg is a Deno subcommand, then the child process is being
+      // spawned as Deno, not Deno in Node compat mode. In this case, bail out
+      // and return the original args.
+      if (kDenoSubcommands.has(arg)) {
+        return args;
+      }
+
+      // Copy of the rest of the arguments to the output.
+      for (let j = i; j < args.length; j++) {
+        denoArgs.push(args[j]);
+      }
+
+      break;
+    }
+
+    // Something that looks like a flag was passed.
+    let flag = arg;
+    let flagInfo = kNodeFlagsMap.get(arg);
+    let isLongWithValue = false;
+    let flagValue;
+
+    if (flagInfo === undefined) {
+      // If the flag was not found, it's either not a known flag or it's a long
+      // flag containing an '='.
+      const splitAt = arg.indexOf("=");
+
+      if (splitAt !== -1) {
+        flag = arg.slice(0, splitAt);
+        flagInfo = kNodeFlagsMap.get(flag);
+        flagValue = arg.slice(splitAt + 1);
+        isLongWithValue = true;
+      }
+    }
+
+    if (flagInfo === undefined) {
+      // Not a known flag that expects a value. Just copy it to the output.
+      denoArgs.push(arg);
+      continue;
+    }
+
+    // This is a flag with a value. Get the value if we don't already have it.
+    if (flagValue === undefined) {
+      i++;
+
+      if (i >= args.length) {
+        // There was user error. There should be another arg for the value, but
+        // there isn't one. Just copy the arg to the output. It's not going
+        // to work anyway.
+        denoArgs.push(arg);
+        continue;
+      }
+
+      flagValue = args[i];
+    }
+
+    // Remap Node's eval flags to Deno.
+    if (flag === "-e" || flag === "--eval") {
+      denoArgs.push("eval", flagValue);
+      useRunArgs = false;
+    } else if (isLongWithValue) {
+      denoArgs.push(arg);
+    } else {
+      denoArgs.push(flag, flagValue);
+    }
+  }
+
+  if (useRunArgs) {
+    // -A is not ideal, but needed to propagate permissions.
+    // --unstable is needed for Node compat.
+    denoArgs.unshift("run", "-A", "--unstable");
+  }
+
+  return denoArgs;
 }
 
 export default {

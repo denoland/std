@@ -1,3 +1,18 @@
+### 0.158.0 / 2022.09.28
+
+- feat(node): add child_process.exec() (#2684)
+- feat(node): add child_process.execFileSync() (#2699)
+- feat(node): add child_process.execSync() (#2689)
+- feat(node/process): `process.getuid()` and `process.getgid()` (#2680)
+- fix(http): `serve` swallows errors when `Response.body` has already been
+  consumed (#2702)
+- fix(node): `test-child-process-spawnsync-validation-errors.js` (#2690)
+- fix(node): support mapping Node flags to Deno (#2688)
+- fix(node/fs): Enable `test-fs-read-zero-length.js` and `test-fs-read-type.js`
+  (#2692)
+- fix(node/fs): improve compatibility of fs.WriteStream (#2696)
+- fix: testing example pages failing to load (#2693)
+
 ### 0.157.0 / 2022.09.22
 
 - feat(node/child_process): `spawnSync` (#2637)
