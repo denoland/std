@@ -44,9 +44,15 @@ type LocaleOptions = {
  * The options for pretty printing the byte numbers.
  */
 export interface PrettyBytesOptions {
-  /** Uses bits representation. Default is false. */
+  /** Uses bits representation.
+   *
+   * @default {false}
+   */
   bits?: boolean;
-  /** Uses binary bytes (e.g. kibibyte). Default is false. */
+  /** Uses binary bytes (e.g. kibibyte).
+   *
+   * @default {false}
+   */
   binary?: boolean;
   /** Include plus sign for positive numbers. */
   signed?: boolean;

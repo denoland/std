@@ -44,7 +44,10 @@ export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
 
 /** encoding/decoding options */
 export interface Ascii85Options {
-  /** characterset and delimiter (if supported and used). Defaults to Adobe */
+  /** characterset and delimiter (if supported and used).
+   *
+   * @default {"Adobe"}
+   */
   standard?: Ascii85Standard;
   /** whether to use a delimiter (if supported) - "<~" and "~>" by default */
   delimiter?: boolean;

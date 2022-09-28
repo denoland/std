@@ -12,7 +12,10 @@
 import { assert } from "../_util/assert.ts";
 
 export interface ParseOptions {
-  /** Allow trailing commas at the end of arrays and objects. (default: `true`) */
+  /** Allow trailing commas at the end of arrays and objects.
+   *
+   * @default {true}
+   */
   allowTrailingComma?: boolean;
 }
 
@@ -33,8 +36,6 @@ export interface ParseOptions {
  * ```
  *
  * @param text A valid JSONC string.
- * @param options
- * @param options.allowTrailingComma Allow trailing commas at the end of arrays and objects. (default: `true`)
  */
 export function parse(
   text: string,

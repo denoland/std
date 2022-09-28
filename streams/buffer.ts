@@ -60,10 +60,9 @@ export class Buffer {
    *
    * The slice is valid for use only until the next buffer modification (that
    * is, only until the next call to a method like `read()`, `write()`,
-   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases the buffer content at
-   * least until the next buffer modification, so immediate changes to the
-   * slice will affect the result of future reads.
-   * @param options Defaults to `{ copy: true }`
+   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases
+   * the buffer content at least until the next buffer modification, so
+   * immediate changes to the slice will affect the result of future reads.
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);

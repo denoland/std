@@ -136,7 +136,8 @@ export interface WritableStreamFromWriterOptions {
    * If the `writer` is also a `Deno.Closer`, automatically close the `writer`
    * when the stream is closed, aborted, or a write error occurs.
    *
-   * Defaults to `true`. */
+   * @default {true}
+   */
   autoClose?: boolean;
 }
 
@@ -308,7 +309,8 @@ export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Deno.Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
    *
-   * Defaults to `true`. */
+   * @default {true}
+   */
   autoClose?: boolean;
 
   /** The size of chunks to allocate to read, the default is ~16KiB, which is

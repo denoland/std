@@ -47,13 +47,16 @@ export function slidingWindows<T>(
   { step = 1, partial = false }: {
     /**
      * If step is set, each window will start that many elements after the last
-     * window's start. (Default: 1)
+     * window's start.
+     *
+     * @default {1}
      */
     step?: number;
     /**
      * If partial is set, windows will be generated for the last elements of the
      * collection, resulting in some undefined values if size is greater than 1.
-     * (Default: false)
+     *
+     * @default {false}
      */
     partial?: boolean;
   } = {},

@@ -273,7 +273,7 @@ export const handlers = {
   RotatingFileHandler,
 };
 
-/** Get a logger instance. If not specified `name`, get the default logger.  */
+/** Get a logger instance. If not specified `name`, get the default logger. */
 export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");

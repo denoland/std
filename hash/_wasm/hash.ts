@@ -69,7 +69,7 @@ export class Hash implements Hasher {
 
   /**
    * Returns hash as a string of given format
-   * @param format format of output string (hex or base64). Default is hex
+   * @param format format of output string (hex or base64).
    */
   toString(format: OutputFormat = "hex"): string {
     const finalized = new Uint8Array(this.digest());

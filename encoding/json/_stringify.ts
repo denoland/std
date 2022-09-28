@@ -2,9 +2,15 @@
 
 /** Optional object interface for `JSONStringifyStream`. */
 export interface StringifyStreamOptions {
-  /** Prefix to be added after stringify. The default is "". */
+  /** Prefix to be added after stringify.
+   *
+   * @default {""}
+   */
   readonly prefix?: string;
-  /** Suffix to be added after stringify. The default is "\n". */
+  /** Suffix to be added after stringify.
+   *
+   * @default {"\n"}
+   */
   readonly suffix?: string;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<unknown>;

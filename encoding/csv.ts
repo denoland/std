@@ -209,14 +209,19 @@ function getValuesFromItem(
 }
 
 export type StringifyOptions = {
-  /** Whether to include the row of headers or not. Default: `true`. */
+  /** Whether to include the row of headers or not.
+   *
+   * @default {true}
+   */
   headers?: boolean;
   /**
    * Delimiter used to separate values. Examples:
-   *  - `","` _comma_ (Default)
+   *  - `","` _comma_
    *  - `"\t"` _tab_
    *  - `"|"` _pipe_
    *  - etc.
+   *
+   *  @default {","}
    */
   separator?: string;
   /**

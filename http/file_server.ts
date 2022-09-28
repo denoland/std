@@ -103,7 +103,10 @@ function fileLenToString(len: number): string {
 
 /** Interface for serveFile options. */
 export interface ServeFileOptions {
-  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
+  /** The algorithm to use for generating the ETag.
+   *
+   * @default {"fnv1a"}
+   */
   etagAlgorithm?: EtagAlgorithm;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
@@ -113,10 +116,6 @@ export interface ServeFileOptions {
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
- * @param options
- * @param options.etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
- * @param options.fileInfo An optional FileInfo object returned by Deno.stat. It is used
- * for optimization purposes.
  */
 export async function serveFile(
   req: Request,
@@ -509,15 +508,30 @@ export interface ServeDirOptions {
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname. */
   urlRoot?: string;
-  /** Enable directory listing. Defaults to false. */
+  /** Enable directory listing.
+   *
+   * @default {false}
+   */
   showDirListing?: boolean;
-  /** Serves dotfiles. Defaults to false. */
+  /** Serves dotfiles.
+   *
+   * @default {false}
+   */
   showDotfiles?: boolean;
-  /** Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false. */
+  /** Enable CORS via the "Access-Control-Allow-Origin" header.
+   *
+   * @default {false}
+   */
   enableCors?: boolean;
-  /** Do not print request level logs. Defaults to false. Defaults to false. */
+  /** Do not print request level logs. Defaults to false.
+   *
+   * @default {false}
+   */
   quiet?: boolean;
-  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
+  /** The algorithm to use for generating the ETag.
+   *
+   * @default {"fnv1a"}
+   */
   etagAlgorithm?: EtagAlgorithm;
 }
 
@@ -555,14 +569,6 @@ export interface ServeDirOptions {
  * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
  * @param req The request to handle
- * @param opts
- * @param opts.fsRoot Serves the files under the given directory root. Defaults to your current directory.
- * @param opts.urlRoot Specified that part is stripped from the beginning of the requested pathname.
- * @param opts.showDirListing Enable directory listing. Defaults to false.
- * @param opts.showDotfiles Serves dotfiles. Defaults to false.
- * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false.
- * @param opts.quiet Do not print request level logs. Defaults to false.
- * @param opts.etagAlgorithm Etag The algorithm to use for generating the ETag. Defaults to "fnv1a".
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   let response: Response;

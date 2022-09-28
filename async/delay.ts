@@ -4,7 +4,10 @@
 export interface DelayOptions {
   /** Signal used to abort the delay. */
   signal?: AbortSignal;
-  /** Indicates whether the process should continue to run as long as the timer exists. This is `true` by default. */
+  /** Indicates whether the process should continue to run as long as the timer exists.
+   *
+   * @default {true}
+   */
   persistent?: boolean;
 }
 

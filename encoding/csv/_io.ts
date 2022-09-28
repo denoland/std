@@ -6,15 +6,26 @@
 import { assert } from "../../_util/assert.ts";
 
 export interface ReadOptions {
-  /** Character which separates values. Default: `","`. */
+  /** Character which separates values.
+   *
+   * @default {","}
+   */
   separator?: string;
-  /** Character to start a comment. Default: `"#"`. */
+  /** Character to start a comment.
+   *
+   * @default {"#"}
+   */
   comment?: string;
-  /** Flag to trim the leading space of the value. Default: `false`. */
+  /** Flag to trim the leading space of the value.
+   *
+   * @default {false}
+   */
   trimLeadingSpace?: boolean;
   /**
    * Allow unquoted quote in a quoted field or non-double-quoted quotes in
-   * quoted field. Default: `false`.
+   * quoted field.
+   *
+   * @default {false}
    */
   lazyQuotes?: boolean;
   /**

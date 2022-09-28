@@ -228,7 +228,7 @@ export class Md5 {
 
   /**
    * Returns hash as a string of given format
-   * @param format format of output string (hex or base64). Default is hex
+   * @param format format of output string (hex or base64).
    */
   toString(format: "hex" | "base64" = "hex"): string {
     const hash = this.digest();

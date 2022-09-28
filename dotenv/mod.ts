@@ -97,12 +97,16 @@ export interface DotenvConfig {
 type StringList = Array<string> | undefined;
 
 export interface ConfigOptions {
-  /** Optional path to `.env` file. Defaults to `./.env`. */
+  /** Optional path to `.env` file.
+   *
+   * @default {"./.env"}
+   */
   path?: string;
   /**
    * Set to `true` to export all `.env` variables to the current processes
    * environment. Variables are then accessable via `Deno.env.get(<key>)`.
-   * Defaults to `false`.
+   *
+   * @default {false}
    */
   export?: boolean;
   /**
@@ -120,22 +124,28 @@ export interface ConfigOptions {
    * ```
    */
   safe?: boolean;
-  /** Optional path to `.env.example` file. Defaults to `./.env.example`. */
+  /** Optional path to `.env.example` file.
+   *
+   * @default {"./.env.example"}
+   */
   example?: string;
   /**
    * Set to `true` to allow required env variables to be empty. Otherwise, it
-   * will throw an error if any variable is empty. Defaults to `false`.
+   * will throw an error if any variable is empty.
+   *
+   * @default {false}
    */
   allowEmptyValues?: boolean;
   /**
    * Path to `.env.defaults` file which is used to define default values.
-   * Defaults to `./.env.defaults`.
    *
    * ```sh
    * # .env.defaults
    * # Will not be set if GREETING is set in base .env file
    * GREETING="a secret to everybody"
    * ```
+   *
+   * @default {"./.env.defaults"}
    */
   defaults?: string;
   /**

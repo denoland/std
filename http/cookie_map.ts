@@ -93,7 +93,10 @@ export interface CookieMapOptions {
    */
   response?: Headered | Headers;
   /** A flag that indicates if the request and response are being handled over
-   * a secure (e.g. HTTPS/TLS) connection. Defaults to `false`. */
+   * a secure (e.g. HTTPS/TLS) connection.
+   *
+   * @default {false}
+   */
   secure?: boolean;
 }
 
@@ -144,7 +147,10 @@ export interface SecureCookieMapOptions {
   response?: Headered | Headers;
 
   /** A flag that indicates if the request and response are being handled over
-   * a secure (e.g. HTTPS/TLS) connection. Defaults to `false`. */
+   * a secure (e.g. HTTPS/TLS) connection.
+   *
+   * @default {false}
+   */
   secure?: boolean;
 }
 

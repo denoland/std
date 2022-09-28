@@ -14,13 +14,14 @@ export interface CopyOptions {
    * When `true`, will set last modification and access times to the ones of the
    * original source files.
    * When `false`, timestamp behavior is OS-dependent.
-   * Default is `false`.
+   *
+   * @default {false}
    */
   preserveTimestamps?: boolean;
 }
 
 interface InternalCopyOptions extends CopyOptions {
-  /** default is `false */
+  /** @default {false} */
   isFolder?: boolean;
 }
 

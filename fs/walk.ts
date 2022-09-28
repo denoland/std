@@ -42,13 +42,13 @@ function wrapErrorWithRootPath(err: unknown, root: string) {
 }
 
 export interface WalkOptions {
-  /** Default: Infinity */
+  /** @default {Infinity} */
   maxDepth?: number;
-  /** Default: true */
+  /** @default {true} */
   includeFiles?: boolean;
-  /** Default: true */
+  /** @default {true} */
   includeDirs?: boolean;
-  /** Default: false */
+  /** @default {false} */
   followSymlinks?: boolean;
   exts?: string[];
   match?: RegExp[];
