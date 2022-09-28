@@ -32,6 +32,9 @@ const kFs = Symbol("kFs");
 type OneRequired<T, U extends keyof T> = U extends keyof T
   ? { [K in U]: NonNullable<T[K]> } & T
   : never;
+type SomeNullable<T, U extends keyof T> = {
+  [K in keyof T]: (K extends U ? T[K] | null : T[K]);
+};
 
 type FS = {
   open?: typeof fsOpen;
@@ -78,7 +81,8 @@ export interface ReadStream extends Readable, Stream {
   end: number;
   bytesRead: number;
 }
-export interface WriteStream extends Writable, Stream {
+export interface WriteStream
+  extends SomeNullable<Writable, "_write" | "_writev">, Stream {
   [kFs]: WriteFS;
   bytesWritten: number;
 }
@@ -429,15 +433,9 @@ export function WriteStream(
 
   // It's enough to override either, in which case only one will be used.
   if (!self[kFs].write) {
-    // TODO(PolarETech): Reduce @ts-ignore as much as possible.
-    // deno-lint-ignore ban-ts-comment
-    // @ts-ignore
     self._write = null;
   }
   if (!self[kFs].writev) {
-    // TODO(PolarETech): Reduce @ts-ignore as much as possible.
-    // deno-lint-ignore ban-ts-comment
-    // @ts-ignore
     self._writev = null;
   }
 
