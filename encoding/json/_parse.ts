@@ -11,12 +11,7 @@ export type JsonValue =
   | boolean
   | null;
 
-/** The type of the result of parsing JSON.
- *
- * @deprecated (will be removed after 0.157.0) Use JsonValue instead. */
-export type JSONValue = JsonValue;
-
-/** Optional object interface for `JSONParseStream` and `ConcatenatedJSONParseStream`. */
+/** Optional object interface for `JSONParseStream` and `ConcatenatedJsonParseStream`. */
 export interface ParseStreamOptions {
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<string>;
@@ -68,11 +63,6 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
   }
 }
 
-/** Parse each chunk as JSON.
- *
- * @deprecated (will be removed after 0.157.0) Use JsonParseStream instead. */
-export const JSONParseStream = JsonParseStream;
-
 const branks = /^[ \t\r\n]*$/;
 function isBrankString(str: string) {
   return branks.test(str);
@@ -82,14 +72,14 @@ function isBrankString(str: string) {
  * stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
  * ```ts
- * import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.concatenated-json";
  * const { body } = await fetch(url);
  *
  * const readable = body!
  *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new ConcatenatedJSONParseStream());
+ *   .pipeThrough(new ConcatenatedJsonParseStream());
  *
  * for await (const data of readable) {
  *   console.log(data);
@@ -198,11 +188,6 @@ export class ConcatenatedJsonParseStream
     }
   }
 }
-
-/** stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
- *
- * @deprecated (will be removed after 0.157.0) Use ConcatenatedJsonParseStream instead. */
-export const ConcatenatedJSONParseStream = ConcatenatedJsonParseStream;
 
 const blank = new Set(" \t\r\n");
 function isBrankChar(char: string) {

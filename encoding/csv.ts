@@ -27,10 +27,6 @@ export type { ReadOptions } from "./csv/_io.ts";
 const QUOTE = '"';
 export const NEWLINE = "\r\n";
 
-export class StringifyError extends Error {
-  override readonly name = "StringifyError";
-}
-
 function getEscapedString(value: unknown, sep: string): string {
   if (value === undefined || value === null) return "";
   let str = "";
@@ -113,7 +109,7 @@ function getValuesFromItem(
         if (Array.isArray(value)) {
           if (typeof prop === "number") value = value[prop];
           else {
-            throw new StringifyError(
+            throw new Error(
               'Property accessor is not of type "number"',
             );
           }
@@ -127,7 +123,7 @@ function getValuesFromItem(
     if (Array.isArray(item)) {
       values.push(...item);
     } else if (typeof item === "object") {
-      throw new StringifyError(
+      throw new Error(
         "No property accessor function was provided for object",
       );
     } else {
@@ -168,7 +164,7 @@ export function stringify(
       '  - U+0022: Quotation mark (")',
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n");
-    throw new StringifyError(message);
+    throw new Error(message);
   }
 
   const normalizedColumns = columns.map(normalizeColumn);

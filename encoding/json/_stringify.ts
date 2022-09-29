@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-/** Optional object interface for `JSONStringifyStream`. */
+/** Optional object interface for `JsonStringifyStream`. */
 export interface StringifyStreamOptions {
   /** Prefix to be added after stringify. The default is "". */
   readonly prefix?: string;
@@ -20,12 +20,12 @@ export interface StringifyStreamOptions {
  *
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
- * import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
  * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
- *   .pipeThrough(new JSONStringifyStream())
+ *   .pipeThrough(new JsonStringifyStream())
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeTo(file.writable)
  *   .then(() => console.log("write success"));
@@ -56,8 +56,3 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
     );
   }
 }
-
-/** Convert each chunk to JSON string.
- *
- * @deprecated (will be removed after 0.157.0) Use JsonStringifyStream instead. */
-export const JSONStringifyStream = JsonStringifyStream;
