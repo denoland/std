@@ -137,7 +137,7 @@ Object.defineProperty(stdin, "isTTY", {
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
-  Deno.setRaw?.(Deno.stdin?.rid, enable);
+  Deno.stdin?.setRaw?.(enable);
   stdin._isRawMode = enable;
   return stdin;
 };
