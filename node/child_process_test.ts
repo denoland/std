@@ -522,12 +522,12 @@ Deno.test({
       "index.js",
     );
     const p = deferred();
-    const cp = CP.fork(script, [], { cwd: testdataDir, stdio: "pipe" });
+    const cp = CP.fork(script, [], { cwd: testdataDir, stdio: ["pipe", "pipe", "inherit"] });
     let output = "";
+    cp.on("exit", () => p.resolve());
     cp.stdout?.on("data", (data) => {
       output += data;
     });
-    cp.stdout?.on("close", () => p.resolve());
     await p;
     assertEquals(output, "foo\ntrue\ntrue\ntrue\n");
   },
