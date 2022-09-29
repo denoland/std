@@ -507,3 +507,28 @@ Deno.test({
     await p;
   },
 });
+
+Deno.test({
+  name: "[node/child_process] child_process.fork",
+  async fn() {
+    const testdataDir = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "testdata",
+    );
+    const script = path.join(
+      testdataDir,
+      "node_modules",
+      "foo",
+      "index.js",
+    );
+    const p = deferred();
+    const cp = CP.fork(script, [], { cwd: testdataDir, stdio: "pipe" });
+    let output = "";
+    cp.on("exit", () => p.resolve());
+    cp.stdout?.on("data", (data) => {
+      output += data;
+    });
+    await p;
+    assertEquals(output, "foo\ntrue\ntrue\ntrue\n");
+  },
+});
