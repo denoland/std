@@ -11,7 +11,12 @@ import {
   type SpawnSyncResult,
   stdioStringToArray,
 } from "./internal/child_process.ts";
-import { validateAbortSignal, validateString } from "./internal/validators.mjs";
+import {
+  validateAbortSignal,
+  validateFunction,
+  validateObject,
+  validateString,
+} from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
@@ -21,8 +26,10 @@ import {
   genericNodeError,
 } from "./internal/errors.ts";
 import {
+  ArrayIsArray,
   ArrayPrototypeJoin,
   ArrayPrototypePush,
+  ArrayPrototypeSlice,
   ObjectAssign,
   StringPrototypeSlice,
 } from "./internal/primordials.mjs";
@@ -30,7 +37,7 @@ import { getSystemErrorName, promisify } from "./util.ts";
 import { createDeferredPromise } from "./internal/util.mjs";
 import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
-import { convertToValidSignal } from "./internal/util.mjs";
+import { convertToValidSignal, kEmptyObject } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
@@ -253,6 +260,7 @@ type ExecCallback = (
   stderr?: string | Buffer,
 ) => void;
 type ExecSyncOptions = SpawnSyncOptions;
+type ExecFileSyncOptions = SpawnSyncOptions;
 function normalizeExecArgs(
   command: string,
   optionsOrCallback?: ExecOptions | ExecSyncOptions | ExecCallback,
@@ -634,7 +642,11 @@ export function execFile(
   return child;
 }
 
-function checkExecSyncError(ret: SpawnSyncResult, args: string[], cmd: string) {
+function checkExecSyncError(
+  ret: SpawnSyncResult,
+  args: string[],
+  cmd?: string,
+) {
   let err;
   if (ret.error) {
     err = ret.error;
@@ -669,11 +681,99 @@ export function execSync(command: string, options: ExecSyncOptions) {
   return ret.stdout;
 }
 
+function normalizeExecFileArgs(
+  file: string,
+  args?: string[] | null | ExecFileSyncOptions | ExecFileCallback,
+  options?: ExecFileSyncOptions | null | ExecFileCallback,
+  callback?: ExecFileCallback,
+): {
+  file: string;
+  args: string[];
+  options: ExecFileSyncOptions;
+  callback?: ExecFileCallback;
+} {
+  if (ArrayIsArray(args)) {
+    args = ArrayPrototypeSlice(args);
+  } else if (args != null && typeof args === "object") {
+    callback = options as ExecFileCallback;
+    options = args as ExecFileSyncOptions;
+    args = null;
+  } else if (typeof args === "function") {
+    callback = args;
+    options = null;
+    args = null;
+  }
+
+  if (args == null) {
+    args = [];
+  }
+
+  if (typeof options === "function") {
+    callback = options as ExecFileCallback;
+  } else if (options != null) {
+    validateObject(options, "options");
+  }
+
+  if (options == null) {
+    options = kEmptyObject;
+  }
+
+  args = args as string[];
+  options = options as ExecFileSyncOptions;
+
+  if (callback != null) {
+    validateFunction(callback, "callback");
+  }
+
+  // Validate argv0, if present.
+  if (options.argv0 != null) {
+    validateString(options.argv0, "options.argv0");
+  }
+
+  return { file, args, options, callback };
+}
+
+export function execFileSync(file: string): string | Buffer;
+export function execFileSync(file: string, args: string[]): string | Buffer;
+export function execFileSync(
+  file: string,
+  options: ExecFileSyncOptions,
+): string | Buffer;
+export function execFileSync(
+  file: string,
+  args: string[],
+  options: ExecFileSyncOptions,
+): string | Buffer;
+export function execFileSync(
+  file: string,
+  args?: string[] | ExecFileSyncOptions,
+  options?: ExecFileSyncOptions,
+): string | Buffer {
+  ({ file, args, options } = normalizeExecFileArgs(file, args, options));
+
+  const inheritStderr = !options.stdio;
+  const ret = spawnSync(file, args, options);
+
+  if (inheritStderr && ret.stderr) {
+    process.stderr.write(ret.stderr);
+  }
+
+  const errArgs: string[] = [options.argv0 || file, ...(args as string[])];
+  const err = checkExecSyncError(ret, errArgs);
+
+  if (err) {
+    throw err;
+  }
+
+  return ret.stdout as string | Buffer;
+}
+
 export default {
   fork,
   spawn,
   exec,
   execFile,
+  execFileSync,
   execSync,
   ChildProcess,
   spawnSync,

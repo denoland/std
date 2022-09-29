@@ -18,7 +18,7 @@ const msgOut = 'this is stdout';
 const msgOutBuf = Buffer.from(`${msgOut}\n`);
 
 const args = [
-  'eval',
+  '-e',
   `console.log("${msgOut}");`,
 ];
 
@@ -44,7 +44,7 @@ const args = [
 
 // Default maxBuffer size is 1024 * 1024.
 {
-  const args = ['eval', "console.log('a'.repeat(1024 * 1024))"];
+  const args = ['-e', "console.log('a'.repeat(1024 * 1024))"];
   const ret = spawnSync(process.execPath, args);
 
   assert.ok(ret.error, 'maxBuffer should error');
@@ -54,7 +54,7 @@ const args = [
 
 // Default maxBuffer size is 1024 * 1024.
 {
-  const args = ['eval', "console.log('a'.repeat(1024 * 1024 - 1))"];
+  const args = ['-e', "console.log('a'.repeat(1024 * 1024 - 1))"];
   const ret = spawnSync(process.execPath, args);
 
   assert.ifError(ret.error);
