@@ -194,6 +194,27 @@ Deno.test(
   },
 );
 
+Deno.test(
+  "file_server serveFile with filename including hash symbol",
+  async () => {
+    await startFileServer({ target: "./testdata" });
+    try {
+      const res = await fetch("http://localhost:4507/file%232.txt");
+      assertEquals(
+        res.headers.get("content-type"),
+        "text/plain; charset=UTF-8",
+      );
+      const downloadedFile = await res.text();
+      const localFile = new TextDecoder().decode(
+        await Deno.readFile(join(testdataDir, "file#2.txt")),
+      );
+      assertEquals(downloadedFile, localFile);
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
 Deno.test("serveDirIndex", async function () {
   await startFileServer();
   try {
@@ -214,12 +235,24 @@ Deno.test("serveDirIndex", async function () {
     await killFileServer();
   }
 });
+
 Deno.test("serveDirIndex with filename including percent symbol", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/testdata/");
     const page = await res.text();
     assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
+
+Deno.test("serveDirIndex with filename including hash symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "/testdata/file%232.txt");
   } finally {
     await killFileServer();
   }
@@ -284,8 +317,8 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
       "http://localhost:4507/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
     );
 
-    assertEquals(res.status, 404);
-    const _ = await res.text();
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "README.md");
   } finally {
     await killFileServer();
   }
