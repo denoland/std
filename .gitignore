@@ -1,8 +1,5 @@
 .DS_Store
 .idea
-deno.d.ts
-/node_modules
-package-lock.json
 .vscode/settings.json
 **/cov/
 /crypto/_wasm_crypto/target
