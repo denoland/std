@@ -19,14 +19,3 @@ const UUID_RE =
 export function validate(id: string): boolean {
   return UUID_RE.test(id);
 }
-
-/**
- * @deprecated (will be removed after 0.157.0) v4 UUID generation is deprecated and will be removed in a future
- * std/uuid release. Use the web standard `globalThis.crypto.randomUUID()`
- * function instead.
- *
- * Generate a RFC4122 v4 UUID (pseudo-random).
- */
-export function generate(): string {
-  return crypto.randomUUID();
-}
