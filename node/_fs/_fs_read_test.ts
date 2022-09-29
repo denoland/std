@@ -87,25 +87,43 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/node/fs] Specifies where to begin reading from in the file",
+  name:
+    "[std/node/fs] position option of fs.read() specifies where to begin reading from in the file",
   async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
-    const buf = Buffer.alloc(11);
-    await readTest(
-      testData,
-      buf,
-      buf.byteOffset,
-      buf.byteLength,
-      6,
-      (_fd, bytesRead, data) => {
-        assertStrictEquals(bytesRead, 5);
-        assertEquals(
-          data,
-          Buffer.from([119, 111, 114, 108, 100, 0, 0, 0, 0, 0, 0]),
+    const fd = openSync(testData);
+    const buf = Buffer.alloc(5);
+    const positions = [6, 0, -1, null];
+    const expected = [
+      [119, 111, 114, 108, 100],
+      [104, 101, 108, 108, 111],
+      [104, 101, 108, 108, 111],
+      [32, 119, 111, 114, 108],
+    ];
+    for (const [i, position] of positions.entries()) {
+      await new Promise((resolve) => {
+        read(
+          fd,
+          {
+            buffer: buf,
+            offset: buf.byteOffset,
+            length: buf.byteLength,
+            position,
+          },
+          (err, bytesRead, data) => {
+            assertEquals(err, null);
+            assertStrictEquals(bytesRead, 5);
+            assertEquals(
+              data,
+              Buffer.from(expected[i]),
+            );
+            return resolve(true);
+          },
         );
-      },
-    );
+      });
+    }
+    closeSync(fd);
   },
 });
 
@@ -180,6 +198,39 @@ Deno.test({
     const fd = openSync(testData);
     const bytesRead = readSync(fd, buffer, buffer.byteOffset, 2, null);
     assertStrictEquals(bytesRead, 2);
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name:
+    "[std/node/fs] position option of fs.readSync() specifies where to begin reading from in the file",
+  fn() {
+    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const testData = path.resolve(moduleDir, "testdata", "hello.txt");
+    const fd = openSync(testData);
+    const buf = Buffer.alloc(5);
+    const positions = [6, 0, -1, null];
+    const expected = [
+      [119, 111, 114, 108, 100],
+      [104, 101, 108, 108, 111],
+      [104, 101, 108, 108, 111],
+      [32, 119, 111, 114, 108],
+    ];
+    for (const [i, position] of positions.entries()) {
+      const bytesRead = readSync(
+        fd,
+        buf,
+        buf.byteOffset,
+        buf.byteLength,
+        position,
+      );
+      assertStrictEquals(bytesRead, 5);
+      assertEquals(
+        buf,
+        Buffer.from(expected[i]),
+      );
+    }
     closeSync(fd);
   },
 });

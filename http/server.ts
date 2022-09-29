@@ -296,6 +296,10 @@ export class Server {
     try {
       // Handle the request event, generating a response.
       response = await this.#handler(requestEvent.request, connInfo);
+
+      if (response.bodyUsed && response.body !== null) {
+        throw new TypeError("Response body already consumed.");
+      }
     } catch (error: unknown) {
       // Invoke onError handler when request handler throws.
       response = await this.#onError(error);
@@ -725,7 +729,7 @@ export async function serveTls(
 }
 
 /**
- * @deprecated Use `serve` instead.
+ * @deprecated (will be removed after 0.157.0) Use `serve` instead.
  *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, and handles requests on these connections with the
@@ -771,7 +775,7 @@ export async function listenAndServe(
 }
 
 /**
- * @deprecated Use `serveTls` instead.
+ * @deprecated (will be removed after 0.157.0) Use `serveTls` instead.
  *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, upgrades them to TLS, and handles requests on these

@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import Dirent from "./_fs_dirent.ts";
 import { assert } from "../../_util/assert.ts";
+import { ERR_MISSING_ARGS } from "../internal/errors.ts";
 
 export default class Dir {
   #dirPath: string | Uint8Array;
@@ -8,6 +9,9 @@ export default class Dir {
   #asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
 
   constructor(path: string | Uint8Array) {
+    if (!path) {
+      throw new ERR_MISSING_ARGS("path");
+    }
     this.#dirPath = path;
   }
 

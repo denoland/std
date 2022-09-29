@@ -2,6 +2,8 @@
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
+import { errorMap } from "./internal_binding/uv.ts";
+import { codes } from "./internal/error_codes.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -263,4 +265,20 @@ export function makeMethodsEnumerable(klass: { new (): unknown }) {
       }
     }
   }
+}
+
+const NumberIsSafeInteger = Number.isSafeInteger;
+
+/**
+ * Returns a system error name from an error code number.
+ * @param code error code number
+ */
+export function getSystemErrorName(code: number): string | undefined {
+  if (typeof code !== "number") {
+    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
+  }
+  if (code >= 0 || !NumberIsSafeInteger(code)) {
+    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
+  }
+  return errorMap.get(code)?.[0];
 }

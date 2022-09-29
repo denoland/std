@@ -559,7 +559,7 @@ class ServerImpl extends EventEmitter {
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
         });
-        this.emit("upgrade", req, socket, new Buffer(head));
+        this.emit("upgrade", req, socket, Buffer.from(head));
       } else {
         return new Promise<Response>((resolve): void => {
           const res = new ServerResponse(undefined, resolve);

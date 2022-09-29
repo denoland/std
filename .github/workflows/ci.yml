@@ -129,6 +129,9 @@ jobs:
       - name: Check License headers
         run: "deno task lint:licence-headers"
 
+      - name: Check Deprecations
+        run: "deno task lint:deprecations"
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}

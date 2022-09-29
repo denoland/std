@@ -22,7 +22,7 @@ export function validate(id: string): boolean {
 }
 
 /**
- * @deprecated v4 UUID generation is deprecated and will be removed in a future
+ * @deprecated (will be removed after 0.157.0) v4 UUID generation is deprecated and will be removed in a future
  * std/uuid release. Use the web standard `globalThis.crypto.randomUUID()`
  * function instead.
  *

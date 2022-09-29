@@ -1420,11 +1420,10 @@ export class Socket extends Duplex {
         this._handle = null;
         this._sockname = undefined;
 
-        cb(exception);
-
         debug("emit close");
         this.emit("close", isException);
       });
+      cb(exception);
     } else {
       cb(exception);
       nextTick(_emitCloseNT, this);

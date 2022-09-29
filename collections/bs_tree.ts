@@ -4,5 +4,5 @@
 import { BinarySearchTree } from "./binary_search_tree.ts";
 export * from "./_comparators.ts";
 
-/** @deprecated use BinarySearchTree instead */
+/** @deprecated (will be removed after 0.157.0) use BinarySearchTree instead */
 export { BinarySearchTree as BSTree };

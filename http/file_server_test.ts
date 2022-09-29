@@ -945,6 +945,16 @@ Deno.test(
 );
 
 Deno.test(
+  "file_server `serveFile` returns 404 when the given path is a directory",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/");
+    const res = await serveFile(req, testdataDir);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
+Deno.test(
   "file_server `serveFile` should return 416 due to a bad range request (500-200)",
   async () => {
     const req = new Request("http://localhost:4507/testdata/test file.txt");

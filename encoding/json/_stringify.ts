@@ -104,5 +104,5 @@ export class JsonStringifyStream extends TransformStream<unknown, string> {
 
 /** Convert each chunk to JSON string.
  *
- * @deprecated Use JsonStringifyStream instead. */
+ * @deprecated (will be removed after 0.157.0) Use JsonStringifyStream instead. */
 export const JSONStringifyStream = JsonStringifyStream;

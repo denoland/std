@@ -122,16 +122,8 @@ export async function serveFile(
   filePath: string,
   { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
-  let file: Deno.FsFile;
   try {
-    if (fileInfo === undefined) {
-      [file, fileInfo] = await Promise.all([
-        Deno.open(filePath),
-        Deno.stat(filePath),
-      ]);
-    } else {
-      file = await Deno.open(filePath);
-    }
+    fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
@@ -145,6 +137,15 @@ export async function serveFile(
       throw error;
     }
   }
+
+  if (fileInfo.isDirectory) {
+    await req.body?.cancel();
+    const status = Status.NotFound;
+    const statusText = STATUS_TEXT[status];
+    return new Response(statusText, { status, statusText });
+  }
+
+  const file = await Deno.open(filePath);
 
   const headers = setBaseHeaders();
 

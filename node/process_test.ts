@@ -5,6 +5,7 @@ import "./global.ts";
 import {
   assert,
   assertEquals,
+  assertFalse,
   assertObjectMatch,
   assertStrictEquals,
   assertThrows,
@@ -197,11 +198,20 @@ Deno.test({
 
 Deno.test({
   name: "process.on SIGBREAK doesn't throw",
-  ignore: Deno.build.os == "windows",
   fn() {
     const listener = () => {};
     process.on("SIGBREAK", listener);
     process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
+  name: "process.on SIGTERM doesn't throw on windows",
+  ignore: Deno.build.os !== "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGTERM", listener);
+    process.off("SIGTERM", listener);
   },
 });
 
@@ -282,6 +292,21 @@ Deno.test({
     assertThrows(() => {
       Object.hasOwn(process.env, "BAR");
     });
+  },
+});
+
+Deno.test({
+  name: "process.env doesn't throw with invalid env var names",
+  fn() {
+    assertEquals(process.env[""], undefined);
+    assertEquals(process.env["\0"], undefined);
+    assertEquals(process.env["=c:"], undefined);
+    assertFalse(Object.hasOwn(process.env, ""));
+    assertFalse(Object.hasOwn(process.env, "\0"));
+    assertFalse(Object.hasOwn(process.env, "=c:"));
+    assertFalse("" in process.env);
+    assertFalse("\0" in process.env);
+    assertFalse("=c:" in process.env);
   },
 });
 
@@ -487,6 +512,22 @@ Deno.test("process.execPath is writable", () => {
     assertEquals(process.execPath, "/path/to/node");
   } finally {
     process.execPath = originalExecPath;
+  }
+});
+
+Deno.test("process.getgid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getgid, undefined);
+  } else {
+    assertEquals(process.getgid?.(), Deno.getGid());
+  }
+});
+
+Deno.test("process.getuid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getuid, undefined);
+  } else {
+    assertEquals(process.getuid?.(), Deno.getUid());
   }
 });
 

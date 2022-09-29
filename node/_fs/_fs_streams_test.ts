@@ -2,6 +2,7 @@
 import { createReadStream, ReadStream } from "./_fs_streams.ts";
 import * as path from "../../path/mod.ts";
 import { assertEquals } from "../../testing/asserts.ts";
+import { Buffer } from "../buffer.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testData = path.resolve(moduleDir, "testdata", "hello.txt");
@@ -14,24 +15,6 @@ async function waiter(readable: ReadStream, interval = 100, maxCount = 50) {
   }
   return false;
 }
-
-Deno.test({
-  name: "[node/fs.ReadStream] Read a chunk of data using 'ReadStream()'",
-  async fn() {
-    const readable = ReadStream(testData);
-
-    let data: Uint8Array;
-    readable.on("data", (chunk: Uint8Array) => {
-      data = chunk;
-    });
-
-    readable.on("close", () => {
-      assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
-    });
-
-    assertEquals(await waiter(readable), true);
-  },
-});
 
 Deno.test({
   name: "[node/fs.ReadStream] Read a chunk of data using 'new ReadStream()'",
@@ -89,6 +72,52 @@ Deno.test({
       assertEquals(new TextDecoder().decode(data[0] as Uint8Array), "hello");
       assertEquals(new TextDecoder().decode(data[1] as Uint8Array), " world");
       assertEquals(data[2], null);
+    });
+
+    assertEquals(await waiter(readable), true);
+  },
+});
+
+Deno.test({
+  name: "[node/fs.createReadStream] Handling of read position",
+  async fn() {
+    const readable = createReadStream(testData, {
+      highWaterMark: 3,
+      start: 1,
+      end: 9,
+    });
+
+    const data: (Uint8Array | null)[] = [];
+    readable.on("readable", function () {
+      data.push(readable.read(4));
+      data.push(readable.read(1));
+    });
+
+    readable.on("close", () => {
+      assertEquals(data[0], null);
+      assertEquals(new TextDecoder().decode(data[1] as Uint8Array), "e");
+      assertEquals(new TextDecoder().decode(data[2] as Uint8Array), "llo ");
+      assertEquals(new TextDecoder().decode(data[3] as Uint8Array), "w");
+      assertEquals(new TextDecoder().decode(data[4] as Uint8Array), "orl");
+      assertEquals(data[5], null);
+    });
+
+    assertEquals(await waiter(readable), true);
+  },
+});
+
+Deno.test({
+  name: "[node/fs.createReadStream] Specify the path as a Buffer",
+  async fn() {
+    const readable = createReadStream(Buffer.from(testData));
+
+    let data: Uint8Array;
+    readable.on("data", (chunk: Uint8Array) => {
+      data = chunk;
+    });
+
+    readable.on("close", () => {
+      assertEquals(new TextDecoder().decode(data as Uint8Array), "hello world");
     });
 
     assertEquals(await waiter(readable), true);

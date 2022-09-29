@@ -5,7 +5,7 @@
  *
  * See: https://doc.deno.land/deno/unstable/~/Deno.bench for details.
  *
- * @deprecated Use `Deno.bench()` instead.
+ * @deprecated (will be removed after 0.157.0) Use `Deno.bench()` instead.
  * @module
  */
 
@@ -158,7 +158,7 @@ function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
 const candidates: BenchmarkDefinition[] = [];
 
 /**
- * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated (will be removed after 0.157.0) Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  *
  * Registers a benchmark as a candidate for the runBenchmarks executor. */
@@ -183,7 +183,7 @@ export function bench(
  * Clears benchmark candidates which name matches `only` and doesn't match `skip`.
  * Removes all candidates if options were not provided.
  *
- * @deprecated Use `Deno.bench()` instead. See: https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated (will be removed after 0.157.0) Use `Deno.bench()` instead. See: https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  */
 export function clearBenchmarks({
@@ -198,7 +198,7 @@ export function clearBenchmarks({
 }
 
 /**
- * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated (will be removed after 0.157.0) Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  *
  * Runs all registered and non-skipped benchmarks serially.

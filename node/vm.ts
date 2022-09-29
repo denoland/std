@@ -40,7 +40,7 @@ export function runInContext(
   _contextifiedObject: any,
   _options: any,
 ) {
-  notImplemented("unInContext");
+  notImplemented("runInContext");
 }
 
 export function runInNewContext(

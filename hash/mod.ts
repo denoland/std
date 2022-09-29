@@ -6,16 +6,16 @@
  *
  * This module is browser compatible.
  *
- * @deprecated Use Web Crypto API or std/crypto instead.
+ * @deprecated (will be removed after 0.157.0) Use Web Crypto API or std/crypto instead.
  * @module
  */
 
 import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";
 
-/** @deprecated Use Web Crypto API or std/crypto instead. */
+/** @deprecated (will be removed after 0.157.0) Use Web Crypto API or std/crypto instead. */
 export type { Hasher } from "./hasher.ts";
-/** @deprecated Use Web Crypto API or std/crypto instead. */
+/** @deprecated (will be removed after 0.157.0) Use Web Crypto API or std/crypto instead. */
 export const supportedAlgorithms = [
   "md2",
   "md4",
@@ -38,13 +38,13 @@ export const supportedAlgorithms = [
   "blake3",
   "tiger",
 ] as const;
-/** @deprecated Use Web Crypto API or std/crypto instead. */
+/** @deprecated (will be removed after 0.157.0) Use Web Crypto API or std/crypto instead. */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];
 /**
  * Creates a new `Hash` instance.
  *
  * @param algorithm name of hash algorithm to use
- * @deprecated Use Web Crypto API or std/crypto instead.
+ * @deprecated (will be removed after 0.157.0) Use Web Crypto API or std/crypto instead.
  */
 export function createHash(algorithm: SupportedAlgorithm): Hasher {
   return new Hash(algorithm as string);

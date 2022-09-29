@@ -13,7 +13,6 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  */
 
-import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
@@ -28,6 +27,7 @@ const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
 import { hideStackFrames } from "./hide_stack_frames.ts";
+import { getSystemErrorName } from "../_utils.ts";
 
 export { errorMap };
 
@@ -118,6 +118,7 @@ export interface ErrnoException extends Error {
   code?: string;
   path?: string;
   syscall?: string;
+  spawnargs?: string[];
 }
 
 /**

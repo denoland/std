@@ -17,33 +17,33 @@ import {
   writerFromStreamWriter as writerFromStreamWriter2,
 } from "../streams/conversion.ts";
 
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readerFromIterable = readerFromIterable2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const writerFromStreamWriter = writerFromStreamWriter2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readerFromStreamReader = readerFromStreamReader2;
-/** @deprecated This interface has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This interface has been moved to `/streams/conversion.ts`. */
 export type WritableStreamFromWriterOptions = WritableStreamFromWriterOptions2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const writableStreamFromWriter = writableStreamFromWriter2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readableStreamFromIterable = readableStreamFromIterable2;
-/** @deprecated This interface has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This interface has been moved to `/streams/conversion.ts`. */
 export type ReadableStreamFromReaderOptions = ReadableStreamFromReaderOptions2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readableStreamFromReader = readableStreamFromReader2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readAll = readAll2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const readAllSync = readAllSync2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const writeAll = writeAll2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const writeAllSync = writeAllSync2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const iterateReader = iterateReader2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const iterateReaderSync = iterateReaderSync2;
-/** @deprecated This function has been moved to `/streams/conversion.ts`. */
+/** @deprecated (will be removed after 0.157.0) This function has been moved to `/streams/conversion.ts`. */
 export const copy = copy2;

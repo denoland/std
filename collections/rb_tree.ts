@@ -4,5 +4,5 @@
 import { RedBlackTree } from "./red_black_tree.ts";
 export * from "./_comparators.ts";
 
-/** @deprecated use RedBlackTree instead */
+/** @deprecated (will be removed after 0.157.0) use RedBlackTree instead */
 export { RedBlackTree as RBTree };

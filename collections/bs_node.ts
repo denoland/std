@@ -3,10 +3,10 @@
 
 import { BinarySearchNode, Direction } from "./binary_search_node.ts";
 
-/** @deprecated use Direction instead */
+/** @deprecated (will be removed after 0.157.0) use Direction instead */
 export type { Direction as direction };
 
 export type { Direction };
 
-/** @deprecated use BinarySearchNode instead */
+/** @deprecated (will be removed after 0.157.0) use BinarySearchNode instead */
 export { BinarySearchNode as BSNode };

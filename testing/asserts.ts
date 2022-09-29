@@ -631,7 +631,7 @@ export function assertThrows<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): E;
-/** @deprecated Use assertThrows(fn, msg) instead, which now returns thrown
+/** @deprecated (will be removed after 0.157.0) Use assertThrows(fn, msg) instead, which now returns thrown
  * value and you can assert on it. */
 export function assertThrows(
   fn: () => unknown,
@@ -714,7 +714,7 @@ export function assertRejects<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
-/** @deprecated Use assertRejects(fn, msg) instead, which now returns rejected value
+/** @deprecated (will be removed after 0.157.0) Use assertRejects(fn, msg) instead, which now returns rejected value
  * and you can assert on it. */
 export function assertRejects(
   fn: () => PromiseLike<unknown>,
