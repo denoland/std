@@ -276,6 +276,12 @@ Deno.test({
 
     assertEquals(process.env.toString(), "[object Object]");
     assertEquals(process.env.toLocaleString(), "[object Object]");
+
+    // should not error when assigning false to an env var
+    process.env.HELLO = false as unknown as string;
+    assertEquals(process.env.HELLO, "false");
+    process.env.HELLO = "WORLD";
+    assertEquals(process.env.HELLO, "WORLD");
   },
 });
 
