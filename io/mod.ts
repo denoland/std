@@ -11,7 +11,6 @@
 
 export * from "./buffer.ts";
 export * from "./readers.ts";
-export * from "./streams.ts";
 export {
   copyN,
   readInt,
