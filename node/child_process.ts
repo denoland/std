@@ -34,6 +34,8 @@ import { convertToValidSignal } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
+type ForkOptions = ChildProcessOptions;
+
 /**
  * Spawns a new Node.js process + fork.
  * @param modulePath
@@ -42,7 +44,9 @@ const MAX_BUFFER = 1024 * 1024;
  * @returns
  */
 export function fork(
-  modulePath: string, /* args?: string[], options?: ForkOptions*/
+  modulePath: string,
+  _args?: string[],
+  _options?: ForkOptions,
 ) {
   validateString(modulePath, "modulePath");
 
