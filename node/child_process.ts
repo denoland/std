@@ -130,7 +130,7 @@ export function fork(
   Object.assign(options.env ??= {}, {
     // deno-lint-ignore no-explicit-any
     DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (Deno as any).core.ops
-      .op_child_process_fork_state(),
+      .op_npm_process_state(),
   });
 
   return spawn(options.execPath, args, options);
