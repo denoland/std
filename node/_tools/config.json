@@ -97,6 +97,7 @@
       "dns.js",
       "duplexpair.js",
       "fixtures.js",
+      "fixtures.mjs",
       "hijackstdio",
       "index.mjs",
       "internet.js"
