@@ -631,13 +631,6 @@ export function assertThrows<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): E;
-/** @deprecated (will be removed after 0.157.0) Use assertThrows(fn, msg) instead, which now returns thrown
- * value and you can assert on it. */
-export function assertThrows(
-  fn: () => unknown,
-  errorCallback: (e: Error) => unknown,
-  msg?: string,
-): Error;
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   errorClassOrCallbackOrMsg?:
@@ -714,13 +707,6 @@ export function assertRejects<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
-/** @deprecated (will be removed after 0.157.0) Use assertRejects(fn, msg) instead, which now returns rejected value
- * and you can assert on it. */
-export function assertRejects(
-  fn: () => PromiseLike<unknown>,
-  errorCallback: (e: Error) => unknown,
-  msg?: string,
-): Promise<Error>;
 export async function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
   errorClassOrCallbackOrMsg?:
