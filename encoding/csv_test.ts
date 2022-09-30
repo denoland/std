@@ -5,7 +5,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { NEWLINE, parse, ParseError, stringify } from "./csv.ts";
+import {
+  NEWLINE,
+  parse,
+  ParseError,
+  stringify,
+  StringifyError,
+} from "./csv.ts";
 
 Deno.test({
   name: "parse",
@@ -778,7 +784,7 @@ Deno.test({
         const errorMessage = 'Property accessor is not of type "number"';
         assertThrows(
           () => stringify(data, { columns }),
-          Error,
+          StringifyError,
           errorMessage,
         );
       },
@@ -798,7 +804,7 @@ Deno.test({
           const options = { separator: '"', columns };
           assertThrows(
             () => stringify(data, options),
-            Error,
+            StringifyError,
             errorMessage,
           );
         },
@@ -818,7 +824,7 @@ Deno.test({
           const options = { separator: "\r\n", columns };
           assertThrows(
             () => stringify(data, options),
-            Error,
+            StringifyError,
             errorMessage,
           );
         },
@@ -832,7 +838,7 @@ Deno.test({
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
             () => stringify(data),
-            Error,
+            StringifyError,
             "No property accessor function was provided for object",
           );
         },
@@ -845,7 +851,7 @@ Deno.test({
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
             () => stringify(data),
-            Error,
+            StringifyError,
             "No property accessor function was provided for object",
           );
         },
