@@ -13,7 +13,9 @@ import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
 import { encode as encodeToBase64Url } from "../../../encoding/base64url.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
-import type { BinaryToTextEncoding, Encoding } from "./types.ts";
+import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
+import { KeyObject } from "./keys.ts";
+import { notImplemented } from "../../_utils.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -125,52 +127,58 @@ export class Hash extends Transform {
 }
 
 export class Hmac extends Transform {
-  #ipad: Uint8Array = new Uint8Array();
-  #opad: Uint8Array = new Uint8Array();
+  #ipad: Uint8Array
+  #opad: Uint8Array
   #ZEROES = Buffer.alloc(128);
   #algorithm: string;
   #hash: Hash;
 
   constructor(
     hmac: string,
-    key: string | ArrayBuffer,
+    key: BinaryLike | KeyObject,
     options?: TransformOptions,
   ) {
+    super();
+    if (key instanceof KeyObject) {
+      notImplemented("Hmac: KeyObject key is not implemented");
+    }
+
     validateString(hmac, "hmac");
 
-    super();
-
-    const uint8TKey = typeof key === "string"
+    const u8Key = typeof key === "string"
       ? new TextEncoder().encode(key)
       : key instanceof Uint8Array
       ? key
-      : new Uint8Array(key);
+      : new Uint8Array(key.buffer);
 
-    this.#hash = new Hash(hmac, options);
-    this.#algorithm = hmac;
+    const alg = hmac.toLowerCase();
+    this.#hash = new Hash(alg, options);
+    this.#algorithm = alg;
+    const blockSize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
+    const keySize = u8Key.length;
 
-    const blockSize =
-      (hmac.toLowerCase() === "sha512" || hmac.toLowerCase() === "sha384")
-        ? 128
-        : 64;
-    const keySize = uint8TKey.length;
+    let bufKey: Buffer;
 
     if (keySize > blockSize) {
-      key = this.#hash.update(uint8TKey).digest();
+      bufKey = this.#hash.update(u8Key).digest() as Buffer;
+    } else {
+      bufKey = Buffer.concat([u8Key, this.#ZEROES], blockSize);
     }
 
-    if (keySize < blockSize) {
-      key = Buffer.concat([uint8TKey, this.#ZEROES], blockSize);
-    }
+    this.#ipad = Buffer.allocUnsafe(blockSize);
+    this.#opad = Buffer.allocUnsafe(blockSize);
 
     for (let i = 0; i < blockSize; i++) {
-      this.#ipad[i] = uint8TKey[i] ^ 0x36;
-      this.#opad[i] = uint8TKey[i] ^ 0x5C;
+      this.#ipad[i] = bufKey[i] ^ 0x36;
+      this.#opad[i] = bufKey[i] ^ 0x5C;
     }
 
+    this.#hash = new Hash(alg)
     this.#hash.update(this.#ipad);
   }
 
+  digest(): Buffer;
+  digest(encoding: BinaryToTextEncoding): string;
   digest(encoding?: BinaryToTextEncoding): Buffer | string {
     const result = this.#hash.digest();
 
@@ -179,8 +187,9 @@ export class Hmac extends Transform {
     );
   }
 
-  update(data: string | ArrayBuffer, inputEncoding?: Encoding): void {
+  update(data: string | ArrayBuffer, inputEncoding?: Encoding): this {
     this.#hash.update(data, inputEncoding);
+    return this;
   }
 }
 
