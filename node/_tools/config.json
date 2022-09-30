@@ -1,7 +1,7 @@
 {
   "nodeVersion": "18.8.0",
   "ignore": {
-    "common": ["fixtures.mjs", "index.js", "tmpdir.js"],
+    "common": ["index.js", "tmpdir.js"],
     "fixtures": [
       "child-process-spawn-node.js",
       "elipses.txt",
@@ -97,7 +97,6 @@
       "dns.js",
       "duplexpair.js",
       "fixtures.js",
-      "fixtures.mjs",
       "hijackstdio",
       "index.mjs",
       "internet.js"
@@ -319,7 +318,6 @@
       "test-fs-read-type.js",
       "test-fs-read-zero-length.js",
       "test-fs-read.js",
-      "test-fs-readSync-position-validation.mjs",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-readdir.js",
       "test-fs-readfile-empty.js",
