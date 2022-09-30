@@ -8,9 +8,6 @@ export interface CsvStreamOptions {
   comment?: string;
 }
 
-/** @deprecated (will be removed after 0.157.0) Use CsvStreamOptions instead. */
-export type CSVStreamOptions = CsvStreamOptions;
-
 class StreamLineReader implements LineReader {
   #reader: ReadableStreamDefaultReader<string>;
   #done = false;
@@ -49,7 +46,7 @@ export class CsvStream implements TransformStream<string, Array<string>> {
   readonly #lines: TextDelimiterStream;
   #lineIndex = 0;
 
-  constructor(options: CSVStreamOptions = defaultReadOptions) {
+  constructor(options: CsvStreamOptions = defaultReadOptions) {
     this.#options = {
       ...defaultReadOptions,
       ...options,
@@ -107,6 +104,3 @@ export class CsvStream implements TransformStream<string, Array<string>> {
     return this.#lines.writable;
   }
 }
-
-/** @deprecated (will be removed after 0.157.0) Use CsvStream instead. */
-export const CSVStream = CsvStream;
