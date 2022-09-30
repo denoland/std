@@ -3,7 +3,7 @@
 /**
  * Test whether or not the given path exists by checking with the file system.
  *
- * Note: do not use this function if performing a check before another operation on that file. Doing so may cause a race condition. Instead, perform the actual operation directly.
+ * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts
@@ -43,7 +43,7 @@ export async function exists(filePath: string | URL): Promise<boolean> {
 /**
  * Test whether or not the given path exists by checking with the file system.
  *
- * Note: do not use this function if performing a check before another operation on that file. Doing so may cause a race condition. Instead, perform the actual operation directly.
+ * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts

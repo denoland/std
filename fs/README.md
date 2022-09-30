@@ -108,7 +108,7 @@ existsSync("./foo.txt"); // returns a boolean
 ```
 
 **Note: do not use this function if performing a check before another operation
-on that file. Doing so may cause a race condition. Instead, perform the actual
+on that file. Doing so causes a race condition. Instead, perform the actual file
 operation directly.**
 
 Bad:
