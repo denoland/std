@@ -894,11 +894,7 @@ Deno.test("Server should not reject when the socket is closed", async () => {
 });
 
 Deno.test(
-  {
-    name:
-      "Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
-    ignore: true,
-  },
+  "Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
   async () => {
     // acceptDelay(n) = 5 * 2^n for n=0...7 capped at 1000 afterwards.
     const expectedBackoffDelays = [
