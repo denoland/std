@@ -53,6 +53,6 @@
     "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
     "build:hash": "deno task --cwd hash/_wasm wasmbuild",
     "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
-    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.6.0/main.ts --js-ext mjs --sync"
+    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
   }
 }
