@@ -98,6 +98,7 @@
       "duplexpair.js",
       "fixtures.js",
       "hijackstdio",
+      "index.mjs",
       "internet.js"
     ],
     "fixtures": [
