@@ -118,7 +118,7 @@ class MockListener implements Deno.Listener {
 
 Deno.test(
   "Server.addrs should expose the addresses the server is listening on",
-  async () => {
+  () => {
     const listenerOneOptions = {
       hostname: "127.0.0.1",
       port: 4505,
@@ -139,9 +139,9 @@ Deno.test(
       hostname: addrHostname,
       handler,
     });
-    const servePromiseOne = server.serve(listenerOne);
-    const servePromiseTwo = server.serve(listenerTwo);
-    const servePromiseThree = server.listenAndServe();
+    server.serve(listenerOne);
+    server.serve(listenerTwo);
+    server.listenAndServe();
 
     try {
       assertEquals(server.addrs.length, 3);
@@ -168,9 +168,6 @@ Deno.test(
       assertEquals((server.addrs[2] as Deno.NetAddr).port, addrPort);
     } finally {
       server.close();
-      await servePromiseOne;
-      await servePromiseTwo;
-      await servePromiseThree;
     }
   },
 );
@@ -429,7 +426,7 @@ Deno.test(`Server.serve should response with internal server error if response b
   }
 
   const server = new Server({ handler });
-  const servePromise = server.serve(listener);
+  server.serve(listener);
 
   try {
     const response = await fetch(url);
@@ -437,7 +434,6 @@ Deno.test(`Server.serve should response with internal server error if response b
     assertEquals(response.status, status);
   } finally {
     server.close();
-    await servePromise;
   }
 });
 
@@ -456,7 +452,7 @@ Deno.test(`Server.serve should handle requests`, async () => {
   const handler = () => new Response(body, { status });
 
   const server = new Server({ handler });
-  const servePromise = server.serve(listener);
+  server.serve(listener);
 
   try {
     const response = await fetch(url, { method });
@@ -464,7 +460,6 @@ Deno.test(`Server.serve should handle requests`, async () => {
     assertEquals(response.status, status);
   } finally {
     server.close();
-    await servePromise;
   }
 });
 
@@ -479,7 +474,7 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
   const handler = () => new Response(body, { status });
 
   const server = new Server({ hostname, port, handler });
-  const servePromise = server.listenAndServe();
+  server.listenAndServe();
 
   try {
     const response = await fetch(url, { method });
@@ -487,7 +482,6 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
     assertEquals(response.status, status);
   } finally {
     server.close();
-    await servePromise;
   }
 });
 
@@ -506,7 +500,7 @@ Deno.test({
     const handler = () => new Response(body, { status });
 
     const server = new Server({ hostname: addr, handler });
-    const servePromise = server.listenAndServe();
+    server.listenAndServe();
 
     try {
       const response = await fetch(url, { method });
@@ -514,7 +508,6 @@ Deno.test({
       assertEquals(response.status, status);
     } finally {
       server.close();
-      await servePromise;
     }
   },
 });
@@ -533,7 +526,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   const handler = () => new Response(body, { status });
 
   const server = new Server({ hostname, port, handler });
-  const servePromise = server.listenAndServeTls(certFile, keyFile);
+  server.listenAndServeTls(certFile, keyFile);
 
   try {
     // Invalid certificate, connection should throw on first read or write
@@ -573,7 +566,6 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     assert(response.includes(body), "Response body not correct");
   } finally {
     server.close();
-    await servePromise;
   }
 });
 
@@ -597,7 +589,7 @@ Deno.test({
     const handler = () => new Response(body, { status });
 
     const server = new Server({ hostname, port, handler });
-    const servePromise = server.listenAndServeTls(certFile, keyFile);
+    server.listenAndServeTls(certFile, keyFile);
 
     try {
       // Invalid certificate, connection should throw on first read or write
@@ -640,7 +632,6 @@ Deno.test({
       assert(response.includes(body), "Response body not correct");
     } finally {
       server.close();
-      await servePromise;
     }
   },
 });
@@ -660,7 +651,7 @@ Deno.test(`serve should handle requests`, async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serveListener(listener, handler, {
+  serveListener(listener, handler, {
     signal: abortController.signal,
   });
 
@@ -670,7 +661,6 @@ Deno.test(`serve should handle requests`, async () => {
     assertEquals(response.status, status);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -685,7 +675,7 @@ Deno.test(`serve should handle requests`, async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  serve(handler, {
     hostname,
     port,
     signal: abortController.signal,
@@ -697,7 +687,6 @@ Deno.test(`serve should handle requests`, async () => {
     assertEquals(response.status, status);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -708,17 +697,15 @@ Deno.test(`serve listens on the port 8000 by default`, async () => {
   const handler = () => new Response(body);
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  serve(handler, {
     signal: abortController.signal,
   });
-  servePromise.catch(() => {});
 
   try {
     const response = await fetch(url);
     assertEquals(await response.text(), body);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -730,7 +717,7 @@ Deno.test(`serve should handle websocket requests`, async () => {
 
   const abortController = new AbortController();
 
-  const servePromise = serve(
+  serve(
     (request) => {
       const { socket, response } = Deno.upgradeWebSocket(request);
       // Return the received message as it is
@@ -754,7 +741,6 @@ Deno.test(`serve should handle websocket requests`, async () => {
   } finally {
     ws.close();
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -772,7 +758,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serveTls(handler, {
+  serveTls(handler, {
     hostname,
     port,
     certFile,
@@ -818,12 +804,11 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     assert(response.includes(body), "Response body not correct");
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
 Deno.test(
-  "Server should not reject when the listener is closed (though the server will continually try and fail to accept connections on the listener until it is closed)",
+  "Server should not reject when the listener is closed",
   async () => {
     const listener = Deno.listen({ port: 4505 });
     const handler = () => new Response();
@@ -909,7 +894,11 @@ Deno.test("Server should not reject when the socket is closed", async () => {
 });
 
 Deno.test(
-  "Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
+  {
+    name:
+      "Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again",
+    ignore: true,
+  },
   async () => {
     // acceptDelay(n) = 5 * 2^n for n=0...7 capped at 1000 afterwards.
     const expectedBackoffDelays = [
@@ -1102,7 +1091,7 @@ Deno.test("Server should be able to parse IPV6 addresses", async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  serve(handler, {
     hostname,
     port,
     signal: abortController.signal,
@@ -1114,7 +1103,6 @@ Deno.test("Server should be able to parse IPV6 addresses", async () => {
     assertEquals(response.status, status);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -1143,8 +1131,8 @@ Deno.test("Server.serve can be called multiple times", async () => {
   };
 
   const server = new Server({ handler });
-  const servePromiseOne = server.serve(listenerOne);
-  const servePromiseTwo = server.serve(listenerTwo);
+  server.serve(listenerOne);
+  server.serve(listenerTwo);
 
   try {
     const responseOne = await fetch(
@@ -1158,8 +1146,6 @@ Deno.test("Server.serve can be called multiple times", async () => {
     assertEquals(await responseTwo.text(), "Hello listener two!");
   } finally {
     server.close();
-    await servePromiseOne;
-    await servePromiseTwo;
   }
 });
 
@@ -1169,13 +1155,12 @@ Deno.test(
     const handler = () => unreachable();
 
     const server = new Server({ port: 4505, handler });
-    const servePromise = server.listenAndServe();
+    server.listenAndServe();
 
     try {
       await assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
     } finally {
       server.close();
-      await servePromise;
     }
   },
 );
@@ -1189,7 +1174,7 @@ Deno.test(
     const keyFile = join(testdataDir, "tls/localhost.key");
 
     const server = new Server({ port: 4505, handler });
-    const servePromise = server.listenAndServeTls(certFile, keyFile);
+    server.listenAndServeTls(certFile, keyFile);
 
     try {
       await assertRejects(
@@ -1198,7 +1183,6 @@ Deno.test(
       );
     } finally {
       server.close();
-      await servePromise;
     }
   },
 );
@@ -1221,7 +1205,7 @@ Deno.test(
     };
 
     const server = new Server({ hostname, port, handler });
-    const servePromise = server.listenAndServe();
+    server.listenAndServe();
 
     const url = `http://${addr}/`;
 
@@ -1243,7 +1227,6 @@ Deno.test(
       );
     } finally {
       server.close();
-      await servePromise;
     }
   },
 );
@@ -1257,7 +1240,7 @@ Deno.test("Default onError is called when Handler throws", async () => {
   };
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  serve(handler, {
     hostname,
     port,
     signal: abortController.signal,
@@ -1269,7 +1252,6 @@ Deno.test("Default onError is called when Handler throws", async () => {
     assertEquals(response.status, 500);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -1285,7 +1267,7 @@ Deno.test("Custom onError is called when Handler throws", async () => {
   };
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  serve(handler, {
     hostname,
     port,
     onError,
@@ -1298,7 +1280,6 @@ Deno.test("Custom onError is called when Handler throws", async () => {
     assertEquals(response.status, 500);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -1318,7 +1299,7 @@ Deno.test("Custom onError is called when Handler throws", async () => {
   };
   const abortController = new AbortController();
 
-  const servePromise = serveListener(listener, handler, {
+  serveListener(listener, handler, {
     onError,
     signal: abortController.signal,
   });
@@ -1329,7 +1310,6 @@ Deno.test("Custom onError is called when Handler throws", async () => {
     assertEquals(response.status, 500);
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 
@@ -1348,7 +1328,7 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
   const onError = (_error: unknown) => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serveTls(handler, {
+  serveTls(handler, {
     hostname,
     port,
     certFile,
@@ -1385,7 +1365,6 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
     );
   } finally {
     abortController.abort();
-    await servePromise;
   }
 });
 

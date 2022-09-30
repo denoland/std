@@ -362,6 +362,9 @@ export class Server {
         // Wait for a new connection.
         conn = await listener.accept();
       } catch (error) {
+        if (this.#closed) {
+          break;
+        }
         if (
           // The listener is closed.
           error instanceof Deno.errors.BadResource ||
