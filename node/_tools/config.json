@@ -98,6 +98,7 @@
       "duplexpair.js",
       "fixtures.js",
       "hijackstdio",
+      "index.mjs",
       "internet.js"
     ],
     "fixtures": [
@@ -498,6 +499,7 @@
       "test-stdin-from-file-spawn.js",
       "test-stream-add-abort-signal.js",
       "test-stream-aliases-legacy.js",
+      "test-stream-asIndexedPairs.mjs",
       "test-stream-auto-destroy.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
       "test-stream-backpressure.js",
@@ -574,6 +576,7 @@
       "test-stream-readable-unshift.js",
       "test-stream-readable-with-unimplemented-_read.js",
       "test-stream-readableListening-state.js",
+      "test-stream-some-find-every.mjs",
       "test-stream-transform-callback-twice.js",
       "test-stream-transform-constructor-set-methods.js",
       "test-stream-transform-destroy.js",
