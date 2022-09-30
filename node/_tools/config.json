@@ -1,7 +1,7 @@
 {
   "nodeVersion": "18.8.0",
   "ignore": {
-    "common": ["index.js", "tmpdir.js"],
+    "common": ["fixtures.mjs", "index.js", "tmpdir.js"],
     "fixtures": [
       "child-process-spawn-node.js",
       "elipses.txt",
