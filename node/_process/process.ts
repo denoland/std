@@ -81,7 +81,7 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
     },
     set(_target, prop, value) {
       Deno.env.set(String(prop), String(value));
-      return value;
+      return true; // success
     },
     has: (_target, prop) => typeof denoEnvGet(String(prop)) === "string",
   });

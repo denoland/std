@@ -44,7 +44,7 @@ jobs:
          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         if: |
           !startsWith(matrix.os, 'ubuntu')
         with:
@@ -203,8 +203,10 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in _wasm_varint/rust-toolchain.toml:
-          rust-version: 1.57.0
+          # This must match the versions in:
+          # 1. crypto/_wasm_crypto/rust-toolchain.toml
+          # 2. encoding/_wasm_varint/rust-toolchain.toml
+          rust-version: 1.64.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
