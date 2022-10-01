@@ -991,6 +991,16 @@ Deno.test(
   },
 );
 
+Deno.test("Server should not leak async ops when closed", () => {
+  const hostname = "127.0.0.1";
+  const port = 4505;
+  const handler = () => new Response();
+  const server = new Server({ port, hostname, handler });
+  server.listenAndServe();
+  server.close();
+  // Otherwise, the test would fail with: AssertionError: Test case is leaking async ops.
+});
+
 Deno.test("Server should reject if the listener throws an unexpected error accepting a connection", async () => {
   const conn = createMockConn();
   const rejectionError = new Error("test-unexpected-error");
