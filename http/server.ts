@@ -57,6 +57,7 @@ export class Server {
   #handler: Handler;
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
+  #acceptBackoffDelayAbortController = new AbortController();
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #onError: (error: unknown) => Response | Promise<Response>;
 
@@ -253,6 +254,8 @@ export class Server {
 
     this.#closed = true;
 
+    this.#acceptBackoffDelayAbortController.abort();
+
     for (const listener of this.#listeners) {
       try {
         listener.close();
@@ -385,7 +388,16 @@ export class Server {
               acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
             }
 
-            await delay(acceptBackoffDelay);
+            await delay(acceptBackoffDelay, {
+              signal: this.#acceptBackoffDelayAbortController.signal,
+            }).catch((err: unknown) => {
+              // The backoff delay timer is aborted when closing the server.
+              if (err instanceof DOMException && err.name === "AbortError") {
+                return;
+              }
+
+              throw err;
+            });
           }
 
           continue;
