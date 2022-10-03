@@ -388,16 +388,16 @@ export class Server {
               acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
             }
 
-            await delay(acceptBackoffDelay, {
-              signal: this.#acceptBackoffDelayAbortController.signal,
-            }).catch((err: unknown) => {
+            try {
+              await delay(acceptBackoffDelay, {
+                signal: this.#acceptBackoffDelayAbortController.signal,
+              });
+            } catch (err: unknown) {
               // The backoff delay timer is aborted when closing the server.
-              if (err instanceof DOMException && err.name === "AbortError") {
-                return;
+              if (!(err instanceof DOMException && err.name === "AbortError")) {
+                throw err;
               }
-
-              throw err;
-            });
+            }
           }
 
           continue;
