@@ -254,8 +254,6 @@ export class Server {
 
     this.#closed = true;
 
-    this.#acceptBackoffDelayAbortController.abort();
-
     for (const listener of this.#listeners) {
       try {
         listener.close();
@@ -265,6 +263,8 @@ export class Server {
     }
 
     this.#listeners.clear();
+
+    this.#acceptBackoffDelayAbortController.abort();
 
     for (const httpConn of this.#httpConnections) {
       this.#closeHttpConn(httpConn);
