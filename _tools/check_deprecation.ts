@@ -14,6 +14,14 @@ const EXCLUDED_PATHS = [
   "http/testdata",
 ];
 
+console.warn(
+  colors.yellow("Warning"),
+  `ignore ${
+    colors.green(`"fs/exists.ts"`)
+  } until issue is resolved: https://github.com/denoland/deno_std/issues/2594`,
+);
+EXCLUDED_PATHS.push("fs/exists.ts");
+
 const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);
 
 const FAIL_FAST = Deno.args.includes("--fail-fast");

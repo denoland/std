@@ -27,6 +27,7 @@
  * }
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
+ * @deprecated (will be removed after 0.157.0) Checking the state of a file before using it causes a race condition. Perform the actual operation directly instead.
  */
 export async function exists(filePath: string | URL): Promise<boolean> {
   try {
@@ -67,6 +68,7 @@ export async function exists(filePath: string | URL): Promise<boolean> {
  * }
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
+ * @deprecated (will be removed after 0.157.0) Checking the state of a file before using it causes a race condition. Perform the actual operation directly instead.
  */
 export function existsSync(filePath: string | URL): boolean {
   try {
