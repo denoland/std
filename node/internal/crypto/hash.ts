@@ -101,7 +101,7 @@ export class Hash extends Transform {
    *
    * If encoding is provided a string will be returned; otherwise a Buffer is returned.
    *
-   * Supported encoding is currently 'hex', 'binary', 'base64'.
+   * Supported encodings are currently 'hex', 'binary', 'base64', 'base64url'.
    */
   digest(encoding?: string): Buffer | string {
     const digest = this.#context.digest(undefined);
