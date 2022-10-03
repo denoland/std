@@ -534,5 +534,5 @@ Deno.test({
 });
 
 Deno.test("[node/child_process execFileSync] 'inherit' stdout and stderr", () => {
-  execFileSync(process.execPath, ["--help"], { stdio: "inherit" });
+  execFileSync(Deno.execPath(), ["--help"], { stdio: "inherit" });
 });
