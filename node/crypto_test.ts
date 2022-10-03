@@ -44,7 +44,7 @@ Deno.test("[node/crypto.Hash] basic usage - base64 output", () => {
 });
 
 Deno.test("[node/crypto.Hash] basic usage - base64url output", () => {
-  const d = createHash("sha1").update("abc").update("def").digest("base64");
+  const d = createHash("sha1").update("abc").update("def").digest("base64url");
   assertEquals(d, "H4rBDyPFtbwRZ72oS4M-XAV6d9I");
 });
 
