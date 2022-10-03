@@ -63,7 +63,7 @@ function debuglogImpl(
 // be accessed.
 export function debuglog(
   set: string,
-  cb: (debug: (...args: unknown[]) => void) => void,
+  cb?: (debug: (...args: unknown[]) => void) => void,
 ) {
   function init() {
     set = set.toUpperCase();
