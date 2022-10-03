@@ -258,7 +258,7 @@ function createECDH(curve: string): ECDH {
 
 function createHmac(
   hmac: string,
-  key: BinaryLike | KeyObject,
+  key: string | ArrayBuffer,
   options?: TransformOptions,
 ): Hmac {
   return new Hmac(hmac, key, options);
