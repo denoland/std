@@ -10,6 +10,7 @@ import { Buffer } from "../../buffer.ts";
 import { Transform } from "../../stream.ts";
 import { encode as encodeToHex } from "../../../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
+import { encode as encodeToBase64Url } from "../../../encoding/base64url.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
 import { notImplemented } from "../../_utils.ts";
@@ -115,6 +116,8 @@ export class Hash extends Transform {
         return String.fromCharCode(...digest);
       case "base64":
         return encodeToBase64(digest);
+      case "base64url":
+        return encodeToBase64Url(digest);
       default:
         throw new Error(
           `The output encoding for hash digest is not implemented: ${encoding}`,
