@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
+import { delay } from "../async/delay.ts";
 import {
   copy,
   iterateReader,
@@ -737,6 +738,17 @@ Deno.test("iterateReader", async () => {
   assertEquals(totalSize, 12);
 });
 
+Deno.test("iterateReader works with slow consumer", async () => {
+  const a = new Uint8Array([97]);
+  const b = new Uint8Array([98]);
+  const iter = iterateReader(readerFromIterable([a, b]));
+  const promises = [];
+  for await (const bytes of iter) {
+    promises.push(delay(10).then(() => bytes));
+  }
+  assertEquals([a, b], await Promise.all(promises));
+});
+
 Deno.test("iterateReaderSync", () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
@@ -770,4 +782,26 @@ Deno.test("iterateReaderSync", () => {
   }
 
   assertEquals(totalSize, 12);
+});
+
+Deno.test("iterateReaderSync works with slow consumer", async () => {
+  const a = new Uint8Array([97]);
+  const b = new Uint8Array([98]);
+  const data = [a, b];
+  const readerSync = {
+    readSync(u8: Uint8Array) {
+      const bytes = data.shift();
+      if (bytes) {
+        u8.set(bytes);
+        return bytes.length;
+      }
+      return null;
+    },
+  };
+  const iter = iterateReaderSync(readerSync);
+  const promises = [];
+  for (const bytes of iter) {
+    promises.push(delay(10).then(() => bytes));
+  }
+  assertEquals([a, b], await Promise.all(promises));
 });

@@ -494,8 +494,8 @@ export async function* iterateReader(
   },
 ): AsyncIterableIterator<Uint8Array> {
   const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
-  const b = new Uint8Array(bufSize);
   while (true) {
+    const b = new Uint8Array(bufSize);
     const result = await r.read(b);
     if (result === null) {
       break;
@@ -545,8 +545,8 @@ export function* iterateReaderSync(
   },
 ): IterableIterator<Uint8Array> {
   const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
-  const b = new Uint8Array(bufSize);
   while (true) {
+    const b = new Uint8Array(bufSize);
     const result = r.readSync(b);
     if (result === null) {
       break;
