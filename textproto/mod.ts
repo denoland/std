@@ -33,6 +33,9 @@ function str(buf: Uint8Array | null | undefined): string {
   return !buf ? "" : decoder.decode(buf);
 }
 
+/**
+ * @deprecated (will be removed after 0.159.0) Use `TextLineStream` from `std/steams` for line-by-line text reading instead.
+ */
 export class TextProtoReader {
   constructor(readonly r: BufReader) {}
 
