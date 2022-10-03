@@ -282,12 +282,10 @@ export async function serveFile(
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
 async function serveDirIndex(
-  req: Request,
   dirPath: string,
   options: {
     dotfiles: boolean;
     target: string;
-    etagAlgorithm?: EtagAlgorithm;
   },
 ): Promise<Response> {
   const showDotfiles = options.dotfiles;
@@ -314,13 +312,6 @@ async function serveDirIndex(
     const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
     const fileInfo = await Deno.stat(filePath);
-    if (entry.name === "index.html" && entry.isFile) {
-      // in case index.html as dir...
-      return serveFile(req, filePath, {
-        etagAlgorithm: options.etagAlgorithm,
-        fileInfo,
-      });
-    }
     listEntry.push({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
@@ -515,6 +506,8 @@ export interface ServeDirOptions {
   showDirListing?: boolean;
   /** Serves dotfiles. Defaults to false. */
   showDotfiles?: boolean;
+  /** Serves index.html as the index file of the directory. */
+  showIndex?: boolean;
   /** Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false. */
   enableCors?: boolean;
   /** Do not print request level logs. Defaults to false. Defaults to false. */
@@ -562,14 +555,16 @@ export interface ServeDirOptions {
  * @param opts.urlRoot Specified that part is stripped from the beginning of the requested pathname.
  * @param opts.showDirListing Enable directory listing. Defaults to false.
  * @param opts.showDotfiles Serves dotfiles. Defaults to false.
+ * @param opts.showIndex Serves index.html as the index file of the directory.
  * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false.
  * @param opts.quiet Do not print request level logs. Defaults to false.
  * @param opts.etagAlgorithm Etag The algorithm to use for generating the ETag. Defaults to "fnv1a".
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
-  let response: Response;
+  let response: Response | undefined = undefined;
   const target = opts.fsRoot || ".";
   const urlRoot = opts.urlRoot;
+  const showIndex = opts.showIndex ?? true;
 
   try {
     let normalizedPath = normalizeURL(req.url);
@@ -585,12 +580,30 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     const fileInfo = await Deno.stat(fsPath);
 
     if (fileInfo.isDirectory) {
-      if (opts.showDirListing) {
-        response = await serveDirIndex(req, fsPath, {
+      if (showIndex) {
+        try {
+          const path = posix.join(fsPath, "index.html");
+          const indexFileInfo = await Deno.lstat(path);
+          if (indexFileInfo.isFile) {
+            response = await serveFile(req, path, {
+              etagAlgorithm: opts.etagAlgorithm,
+              fileInfo: indexFileInfo,
+            });
+          }
+        } catch (e) {
+          if (!(e instanceof Deno.errors.NotFound)) {
+            throw e;
+          }
+          // pass
+        }
+      }
+      if (!response && opts.showDirListing) {
+        response = await serveDirIndex(fsPath, {
           dotfiles: opts.showDotfiles || false,
           target,
         });
-      } else {
+      }
+      if (!response) {
         throw new Deno.errors.NotFound();
       }
     } else {
