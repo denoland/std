@@ -14,7 +14,7 @@ import * as path from "../path/mod.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_CHILD_PROCESS_STDIO_MAXBUFFER } from "./internal/errors.ts";
 
-const { spawn, execFile, ChildProcess } = CP;
+const { spawn, execFile, execFileSync, ChildProcess } = CP;
 
 function withTimeout<T>(timeoutInMS: number): Deferred<T> {
   const promise = deferred<T>();
@@ -531,4 +531,8 @@ Deno.test({
     await p;
     assertEquals(output, "foo\ntrue\ntrue\ntrue\n");
   },
+});
+
+Deno.test("[node/child_process execFileSync] 'inherit' stdout and stderr", () => {
+  execFileSync(Deno.execPath(), ["--help"], { stdio: "inherit" });
 });
