@@ -374,29 +374,27 @@ export class Server {
           error instanceof Deno.errors.ConnectionReset ||
           error instanceof Deno.errors.NotConnected
         ) {
-          if (!this.#closed) {
-            // Backoff after transient errors to allow time for the system to
-            // recover, and avoid blocking up the event loop with a continuously
-            // running loop.
-            if (!acceptBackoffDelay) {
-              acceptBackoffDelay = INITIAL_ACCEPT_BACKOFF_DELAY;
-            } else {
-              acceptBackoffDelay *= 2;
-            }
+          // Backoff after transient errors to allow time for the system to
+          // recover, and avoid blocking up the event loop with a continuously
+          // running loop.
+          if (!acceptBackoffDelay) {
+            acceptBackoffDelay = INITIAL_ACCEPT_BACKOFF_DELAY;
+          } else {
+            acceptBackoffDelay *= 2;
+          }
 
-            if (acceptBackoffDelay >= MAX_ACCEPT_BACKOFF_DELAY) {
-              acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
-            }
+          if (acceptBackoffDelay >= MAX_ACCEPT_BACKOFF_DELAY) {
+            acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
+          }
 
-            try {
-              await delay(acceptBackoffDelay, {
-                signal: this.#acceptBackoffDelayAbortController.signal,
-              });
-            } catch (err: unknown) {
-              // The backoff delay timer is aborted when closing the server.
-              if (!(err instanceof DOMException && err.name === "AbortError")) {
-                throw err;
-              }
+          try {
+            await delay(acceptBackoffDelay, {
+              signal: this.#acceptBackoffDelayAbortController.signal,
+            });
+          } catch (err: unknown) {
+            // The backoff delay timer is aborted when closing the server.
+            if (!(err instanceof DOMException && err.name === "AbortError")) {
+              throw err;
             }
           }
 
