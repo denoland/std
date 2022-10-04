@@ -71,7 +71,7 @@ import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 import querystring from "./querystring.ts";
-import type { ParsedUrlQuery } from "./querystring.ts";
+import type { ParsedUrlQuery, ParsedUrlQueryInput } from "./querystring.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -904,8 +904,22 @@ export class Url {
   }
 }
 
+interface UrlObject {
+  auth?: string | null | undefined;
+  hash?: string | null | undefined;
+  host?: string | null | undefined;
+  hostname?: string | null | undefined;
+  href?: string | null | undefined;
+  pathname?: string | null | undefined;
+  protocol?: string | null | undefined;
+  search?: string | null | undefined;
+  slashes?: boolean | null | undefined;
+  port?: string | number | null | undefined;
+  query?: string | null | ParsedUrlQueryInput | undefined;
+}
+
 export function format(
-  urlObject: string | URL | Url,
+  urlObject: string | URL | Url | UrlObject,
   options?: {
     auth: boolean;
     fragment: boolean;
@@ -915,10 +929,7 @@ export function format(
 ): string {
   if (typeof urlObject === "string") {
     urlObject = parse(urlObject, true, false);
-  } else if (
-    typeof urlObject !== "object" ||
-    urlObject === null
-  ) {
+  } else if (typeof urlObject !== "object" || urlObject === null) {
     throw new ERR_INVALID_ARG_TYPE(
       "urlObject",
       ["Object", "string"],
@@ -931,7 +942,7 @@ export function format(
     return Url.prototype.format.call(urlObject);
   }
 
-  return urlObject.format();
+  return (urlObject as Url).format();
 }
 
 /**
