@@ -494,14 +494,14 @@ export async function* iterateReader(
   },
 ): AsyncIterableIterator<Uint8Array> {
   const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
   while (true) {
-    const b = new Uint8Array(bufSize);
     const result = await r.read(b);
     if (result === null) {
       break;
     }
 
-    yield b.subarray(0, result);
+    yield b.slice(0, result);
   }
 }
 
@@ -545,14 +545,14 @@ export function* iterateReaderSync(
   },
 ): IterableIterator<Uint8Array> {
   const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
   while (true) {
-    const b = new Uint8Array(bufSize);
     const result = r.readSync(b);
     if (result === null) {
       break;
     }
 
-    yield b.subarray(0, result);
+    yield b.slice(0, result);
   }
 }
 
