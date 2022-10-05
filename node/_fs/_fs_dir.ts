@@ -52,9 +52,9 @@ export default class Dir {
 
     const iteratorResult = this.#syncIterator.next();
     if (iteratorResult.done) {
-      return null
+      return null;
     } else {
-      return new Dirent(iteratorResult.value)
+      return new Dirent(iteratorResult.value);
     }
   }
 
