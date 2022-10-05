@@ -138,7 +138,6 @@ async function doPromiseTest() {
     // TODO(wafuwafu13): enable this
     // assertDirent(dirent);
   }
-  console.log(entries)
 
   assert.deepStrictEqual(files, entries.sort());
 
