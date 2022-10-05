@@ -50,9 +50,12 @@ export default class Dir {
       this.#syncIterator = Deno.readDirSync(this.path)![Symbol.iterator]();
     }
 
-    const file: Deno.DirEntry = this.#syncIterator.next().value;
-
-    return file ? new Dirent(file) : null;
+    const iteratorResult = this.#syncIterator.next();
+    if (iteratorResult.done) {
+      return null
+    } else {
+      return new Dirent(iteratorResult.value)
+    }
   }
 
   /**
