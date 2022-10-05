@@ -7,6 +7,7 @@ import { fromFileUrl, join } from "./path.ts";
 import { serveTls } from "../http/server.ts";
 import * as tls from "./tls.ts";
 import * as net from "./net.ts";
+import * as stream from "./stream.ts";
 
 const tlsTestdataDir = fromFileUrl(
   new URL("../http/testdata/tls", import.meta.url),
@@ -92,4 +93,8 @@ Deno.test("tls.createServer creates a TLS server", async () => {
     p.resolve();
   });
   await p;
+});
+
+Deno.test("TLSSocket can construct without options", () => {
+  new tls.TLSSocket(new stream.PassThrough());
 });

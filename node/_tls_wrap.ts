@@ -63,7 +63,7 @@ export class TLSSocket extends net.Socket {
   [kConnectOptions]: any;
   ssl: any;
   _start: any;
-  constructor(socket: any, opts: any) {
+  constructor(socket: any, opts: any = {}) {
     const tlsOptions = { ...opts };
 
     let hostname = tlsOptions?.secureContext?.servername;
