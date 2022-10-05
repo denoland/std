@@ -3,12 +3,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-/**
+/** **Deprecated**. Use `TextLineStream` from `std/steams` for line-by-line text reading instead.
+ *
  * A reader for dealing with low level text based protocols.
  *
  * Based on
  * [net/textproto](https://github.com/golang/go/tree/master/src/net/textproto).
  *
+ * @deprecated (will be removed after 0.159.0) Use `TextLineStream` from `std/steams` for line-by-line text reading instead.
  * @module
  */
 
@@ -31,6 +33,9 @@ function str(buf: Uint8Array | null | undefined): string {
   return !buf ? "" : decoder.decode(buf);
 }
 
+/**
+ * @deprecated (will be removed after 0.159.0) Use `TextLineStream` from `std/steams` for line-by-line text reading instead.
+ */
 export class TextProtoReader {
   constructor(readonly r: BufReader) {}
 

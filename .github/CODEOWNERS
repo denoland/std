@@ -4,7 +4,6 @@
 
 # deno std
 _util/        @bartlomieju @kt3k
-_wasm_crypto/ @bartlomieju @kt3k
 archive/      @bartlomieju @kt3k
 async/        @bartlomieju @kt3k
 bytes/        @bartlomieju @kt3k
@@ -20,13 +19,11 @@ hash/         @bartlomieju @kt3k
 http/         @bartlomieju @kt3k
 io/           @bartlomieju @kt3k
 log/          @bartlomieju @kt3k
-mime/         @bartlomieju @kt3k
 node/         @bartlomieju @kt3k
 path/         @bartlomieju @kt3k
 permissions/  @bartlomieju @kt3k
 signal/       @bartlomieju @kt3k
 streams/      @bartlomieju @kt3k
 testing/      @bartlomieju @kt3k
-textproto/    @bartlomieju @kt3k
 uuid/         @bartlomieju @kt3k
 wasi/         @bartlomieju @kt3k
