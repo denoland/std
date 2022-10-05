@@ -5,7 +5,7 @@ import { ERR_MISSING_ARGS } from "../internal/errors.ts";
 
 export default class Dir {
   #dirPath: string | Uint8Array;
-  #syncIterator!: Iterator<Deno.DirEntry> | null;
+  #syncIterator!: Iterator<Deno.DirEntry, undefined> | null;
   #asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
 
   constructor(path: string | Uint8Array) {
