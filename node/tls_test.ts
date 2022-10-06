@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertInstanceOf } from "../testing/asserts.ts";
 import { delay } from "../async/delay.ts";
 import { deferred } from "../async/deferred.ts";
 import { fromFileUrl, join } from "./path.ts";
@@ -97,4 +97,14 @@ Deno.test("tls.createServer creates a TLS server", async () => {
 
 Deno.test("TLSSocket can construct without options", () => {
   new tls.TLSSocket(new stream.PassThrough());
+});
+
+Deno.test("tlssocket._handle._parentWrap is set", () => {
+  // Note: This feature is used in popular 'http2-wrapper' module
+  // https://github.com/szmarczak/http2-wrapper/blob/51eeaf59ff9344fb192b092241bfda8506983620/source/utils/js-stream-socket.js#L6
+  const parentWrap =
+    // deno-lint-ignore no-explicit-any
+    (new tls.TLSSocket(new stream.PassThrough(), {})._handle as any)!
+      ._parentWrap;
+  assertInstanceOf(parentWrap, stream.PassThrough);
 });
