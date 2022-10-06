@@ -6,7 +6,7 @@ import { ERR_MISSING_ARGS } from "../internal/errors.ts";
 export default class Dir {
   #dirPath: string | Uint8Array;
   #syncIterator!: Iterator<Deno.DirEntry, undefined> | null;
-  #asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
+  #asyncIterator!: AsyncIterator<Deno.DirEntry, undefined> | null;
 
   constructor(path: string | Uint8Array) {
     if (!path) {
@@ -31,10 +31,10 @@ export default class Dir {
       assert(this.#asyncIterator);
       this.#asyncIterator
         .next()
-        .then(({ value }) => {
-          resolve(value ? value : null);
+        .then(iteratorResult => {
+          resolve(iteratorResult.done ? null : new Dirent(iteratorResult.value));
           if (callback) {
-            callback(null, value ? value : null);
+            callback(null, iteratorResult.done ? null : new Dirent(iteratorResult.value));
           }
         }, (err) => {
           if (callback) {

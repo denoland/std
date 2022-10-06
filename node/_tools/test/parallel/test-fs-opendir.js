@@ -79,10 +79,9 @@ fs.opendir(testDir, common.mustSucceed((dir) => {
   dir.read(common.mustSucceed((dirent) => {
     assert(!sync);
 
-    // TODO(wafuwafu13): enable this
     // Order is operating / file system dependent
-    // assert(files.includes(dirent.name), `'files' should include ${dirent}`);
-    // assertDirent(dirent);
+    assert(files.includes(dirent.name), `'files' should include ${dirent}`);
+    assertDirent(dirent);
 
     let syncInner = true;
     dir.read(common.mustSucceed((dirent) => {
@@ -135,8 +134,7 @@ async function doPromiseTest() {
   while (i--) {
     const dirent = await dir.read();
     entries.push(dirent.name);
-    // TODO(wafuwafu13): enable this
-    // assertDirent(dirent);
+    assertDirent(dirent);
   }
 
   assert.deepStrictEqual(files, entries.sort());
@@ -153,8 +151,7 @@ async function doAsyncIterTest() {
   const entries = [];
   for await (const dirent of await fs.promises.opendir(testDir)) {
     entries.push(dirent.name);
-    // TODO(wafwuafu13): enable this
-    // assertDirent(dirent);
+    assertDirent(dirent);
   }
 
   assert.deepStrictEqual(files, entries.sort());
