@@ -1,6 +1,7 @@
 // Copyright 2018-2022 Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
+
 import {
   ObjectAssign,
   StringPrototypeReplace,
@@ -18,6 +19,8 @@ import {
   Pipe,
 } from "./internal_binding/pipe_wrap.ts";
 import { EventEmitter } from "./events.ts";
+import { kEmptyObject } from "./internal/util.mjs";
+
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
@@ -63,7 +66,7 @@ export class TLSSocket extends net.Socket {
   [kConnectOptions]: any;
   ssl: any;
   _start: any;
-  constructor(socket: any, opts: any = {}) {
+  constructor(socket: any, opts: any = kEmptyObject) {
     const tlsOptions = { ...opts };
 
     let hostname = tlsOptions?.secureContext?.servername;
