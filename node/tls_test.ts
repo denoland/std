@@ -95,6 +95,10 @@ Deno.test("tls.createServer creates a TLS server", async () => {
   await p;
 });
 
+Deno.test("TLSSocket can construct without options", () => {
+  new tls.TLSSocket(new stream.PassThrough());
+});
+
 Deno.test("tlssocket._handle._parentWrap is set", () => {
   // Note: This feature is used in popular 'http2-wrapper' module
   // https://github.com/szmarczak/http2-wrapper/blob/51eeaf59ff9344fb192b092241bfda8506983620/source/utils/js-stream-socket.js#L6
