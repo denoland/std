@@ -151,24 +151,17 @@ Deno.test("[node/http] request default protocol", async () => {
 
 Deno.test("[node/http] send request with non-chunked body", async () => {
   const promise = deferred<void>();
+  let requestHeaders: Record<string, string> = {};
+  const requestBody: string[] = [];
+
   const server = http.createServer((req, res) => {
-    const responseBody: string[] = [];
     req.on("data", (chunk) => {
-      responseBody.push(chunk.toString());
+      requestBody.push(chunk.toString());
     });
-    req.on("close", () => {
-      const headers = Object.fromEntries(
+    req.on("end", () => {
+      requestHeaders = Object.fromEntries(
         Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
       );
-      if (
-        responseBody[0] === "hello world" &&
-        headers["content-length"] === "11" &&
-        /(?:^|\W)chunked(?:$|\W)/i.test(headers["transfer-encoding"]) === false
-      ) {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-      } else {
-        res.writeHead(400, { "Content-Type": "text/plain" });
-      }
       res.end("ok");
     });
   });
@@ -188,6 +181,12 @@ Deno.test("[node/http] send request with non-chunked body", async () => {
         server.close();
       });
       assertEquals(res.statusCode, 200);
+      assertEquals(requestHeaders["content-length"], "11");
+      assertEquals(
+        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
+        false,
+      );
+      assertEquals(requestBody[0], "hello world");
     });
     req.write("hello ");
     req.write("world");
@@ -201,25 +200,67 @@ Deno.test("[node/http] send request with non-chunked body", async () => {
 
 Deno.test("[node/http] send request with chunked body", async () => {
   const promise = deferred<void>();
+  let requestHeaders: Record<string, string> = {};
+  const requestBody: string[] = [];
+
   const server = http.createServer((req, res) => {
-    const responseBody: string[] = [];
     req.on("data", (chunk) => {
-      responseBody.push(chunk.toString());
+      requestBody.push(chunk.toString());
     });
-    req.on("close", () => {
-      const headers = Object.fromEntries(
+    req.on("end", () => {
+      requestHeaders = Object.fromEntries(
         Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
       );
-      if (
-        responseBody[0] === "hello " &&
-        responseBody[1] === "world" &&
-        headers["content-length"] === undefined &&
-        /(?:^|\W)chunked(?:$|\W)/i.test(headers["transfer-encoding"])
-      ) {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-      } else {
-        res.writeHead(400, { "Content-Type": "text/plain" });
-      }
+      res.end("ok");
+    });
+  });
+  server.listen(() => {
+    const opts: RequestOptions = {
+      host: "localhost",
+      port: server.address().port,
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Length": "11",
+        "Transfer-Encoding": "chunked",
+      },
+    };
+    const req = http.request(opts, (res) => {
+      res.on("data", () => {});
+      res.on("end", () => {
+        server.close();
+      });
+      assertEquals(res.statusCode, 200);
+      assertEquals(requestHeaders["content-length"], undefined);
+      assertEquals(
+        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
+        true,
+      );
+      assertEquals(requestBody.join(""), "hello world");
+    });
+    req.write("hello ");
+    req.write("world");
+    req.end();
+  });
+  server.on("close", () => {
+    promise.resolve();
+  });
+  await promise;
+});
+
+Deno.test("[node/http] send request with chunked body as default", async () => {
+  const promise = deferred<void>();
+  let requestHeaders: Record<string, string> = {};
+  const requestBody: string[] = [];
+
+  const server = http.createServer((req, res) => {
+    req.on("data", (chunk) => {
+      requestBody.push(chunk.toString());
+    });
+    req.on("end", () => {
+      requestHeaders = Object.fromEntries(
+        Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
+      );
       res.end("ok");
     });
   });
@@ -238,6 +279,12 @@ Deno.test("[node/http] send request with chunked body", async () => {
         server.close();
       });
       assertEquals(res.statusCode, 200);
+      assertEquals(requestHeaders["content-length"], undefined);
+      assertEquals(
+        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
+        true,
+      );
+      assertEquals(requestBody.join(""), "hello world");
     });
     req.write("hello ");
     req.write("world");
