@@ -15,6 +15,7 @@ import {
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
+import { chunkExpression as RE_TE_CHUNKED } from "./_http_common.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
@@ -125,7 +126,39 @@ class ClientRequest extends NodeWritable {
     }
 
     const client = await this._createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
+
+    const requestBody = await (async () => {
+      if (!this.body) return null;
+
+      const isChunked = (opts: RequestOptions) => {
+        if (!opts.headers) return true;
+        const headers = Object.fromEntries(
+          Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+        );
+        if (RE_TE_CHUNKED.test(headers["transfar-encoding"])) return true;
+        if (!Number.isNaN(parseInt(headers["content-length"]))) return false;
+        return true;
+      };
+
+      if (isChunked(this.opts)) return this.body;
+
+      const reader = this.body.getReader();
+      const bufferList: Buffer[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          return Buffer.concat(bufferList);
+        }
+        bufferList.push(value);
+      }
+    })();
+
+    const opts = {
+      body: requestBody,
+      method: this.opts.method,
+      client,
+    };
+
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
