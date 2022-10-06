@@ -1,12 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertInstanceOf } from "../testing/asserts.ts";
 import { delay } from "../async/delay.ts";
 import { deferred } from "../async/deferred.ts";
 import { fromFileUrl, join } from "./path.ts";
 import { serveTls } from "../http/server.ts";
 import * as tls from "./tls.ts";
 import * as net from "./net.ts";
+import * as stream from "./stream.ts";
 
 const tlsTestdataDir = fromFileUrl(
   new URL("../http/testdata/tls", import.meta.url),
@@ -92,4 +93,14 @@ Deno.test("tls.createServer creates a TLS server", async () => {
     p.resolve();
   });
   await p;
+});
+
+Deno.test("tlssocket._handle._parentWrap is set", () => {
+  // Note: This feature is used in popular 'http2-wrapper' module
+  // https://github.com/szmarczak/http2-wrapper/blob/51eeaf59ff9344fb192b092241bfda8506983620/source/utils/js-stream-socket.js#L6
+  const parentWrap =
+    // deno-lint-ignore no-explicit-any
+    (new tls.TLSSocket(new stream.PassThrough(), {})._handle as any)!
+      ._parentWrap;
+  assertInstanceOf(parentWrap, stream.PassThrough);
 });
