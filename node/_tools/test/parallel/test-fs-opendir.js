@@ -37,10 +37,12 @@ function assertDirent(dirent) {
   assert.strictEqual(dirent.isSymbolicLink(), false);
 }
 
+// NOTE: this error doesn't occur in Deno
 const dirclosedError = {
   code: 'ERR_DIR_CLOSED'
 };
 
+// NOTE: this error doesn't occur in Deno
 const dirconcurrentError = {
   code: 'ERR_DIR_CONCURRENT_OPERATION'
 };
@@ -66,8 +68,7 @@ const invalidCallbackObj = {
   // check .path
   assert.strictEqual(dir.path, testDir);
 
-  // closeSync is No op in Deno.
-  // dir.closeSync();
+  dir.closeSync();
 
   // assert.throws(() => dir.readSync(), dirclosedError);
   // assert.throws(() => dir.closeSync(), dirclosedError);
@@ -160,47 +161,47 @@ async function doAsyncIterTest() {
 }
 doAsyncIterTest().then(common.mustCall());
 
-// TODO(wafuwafu13): enable more tests
-// // Async iterators should do automatic cleanup
+// Async iterators should do automatic cleanup
 
-// async function doAsyncIterBreakTest() {
-//   const dir = await fs.promises.opendir(testDir);
-//   for await (const dirent of dir) { // eslint-disable-line no-unused-vars
-//     break;
-//   }
+async function doAsyncIterBreakTest() {
+  const dir = await fs.promises.opendir(testDir);
+  for await (const dirent of dir) { // eslint-disable-line no-unused-vars
+    break;
+  }
 
-//   await assert.rejects(async () => dir.read(), dirclosedError);
-// }
-// doAsyncIterBreakTest().then(common.mustCall());
+  // await assert.rejects(async () => dir.read(), dirclosedError);
+}
+doAsyncIterBreakTest().then(common.mustCall());
 
-// async function doAsyncIterReturnTest() {
-//   const dir = await fs.promises.opendir(testDir);
-//   await (async function() {
-//     for await (const dirent of dir) {
-//       return;
-//     }
-//   })();
+async function doAsyncIterReturnTest() {
+  const dir = await fs.promises.opendir(testDir);
+  await (async function() {
+    for await (const dirent of dir) {
+      return;
+    }
+  })();
 
-//   await assert.rejects(async () => dir.read(), dirclosedError);
-// }
-// doAsyncIterReturnTest().then(common.mustCall());
+  // await assert.rejects(async () => dir.read(), dirclosedError);
+}
+doAsyncIterReturnTest().then(common.mustCall());
 
-// async function doAsyncIterThrowTest() {
-//   const dir = await fs.promises.opendir(testDir);
-//   try {
-//     for await (const dirent of dir) { // eslint-disable-line no-unused-vars
-//       throw new Error('oh no');
-//     }
-//   } catch (err) {
-//     if (err.message !== 'oh no') {
-//       throw err;
-//     }
-//   }
+async function doAsyncIterThrowTest() {
+  const dir = await fs.promises.opendir(testDir);
+  try {
+    for await (const dirent of dir) { // eslint-disable-line no-unused-vars
+      throw new Error('oh no');
+    }
+  } catch (err) {
+    if (err.message !== 'oh no') {
+      throw err;
+    }
+  }
 
-//   await assert.rejects(async () => dir.read(), dirclosedError);
-// }
-// doAsyncIterThrowTest().then(common.mustCall());
+  // await assert.rejects(async () => dir.read(), dirclosedError);
+}
+doAsyncIterThrowTest().then(common.mustCall());
 
+// TODO(wafuwafu13): enable this
 // // Check error thrown on invalid values of bufferSize
 // for (const bufferSize of [-1, 0, 0.5, 1.5, Infinity, NaN]) {
 //   assert.throws(
@@ -224,6 +225,7 @@ doAsyncIterTest().then(common.mustCall());
   dir.close();
 }
 
+// TODO(wafuwafu13): enable this
 // // Check that when passing a string instead of function - throw an exception
 // async function doAsyncIterInvalidCallbackTest() {
 //   const dir = await fs.promises.opendir(testDir);
@@ -231,68 +233,69 @@ doAsyncIterTest().then(common.mustCall());
 // }
 // doAsyncIterInvalidCallbackTest().then(common.mustCall());
 
-// // Check first call to close() - should not report an error.
-// async function doAsyncIterDirClosedTest() {
-//   const dir = await fs.promises.opendir(testDir);
-//   await dir.close();
-//   await assert.rejects(() => dir.close(), dirclosedError);
-// }
-// doAsyncIterDirClosedTest().then(common.mustCall());
+// Check first call to close() - should not report an error.
+async function doAsyncIterDirClosedTest() {
+  const dir = await fs.promises.opendir(testDir);
+  await dir.close();
+  // await assert.rejects(() => dir.close(), dirclosedError);
+}
+doAsyncIterDirClosedTest().then(common.mustCall());
 
-// // Check that readSync() and closeSync() during read() throw exceptions
-// async function doConcurrentAsyncAndSyncOps() {
-//   const dir = await fs.promises.opendir(testDir);
-//   const promise = dir.read();
+// Check that readSync() and closeSync() during read() throw exceptions
+async function doConcurrentAsyncAndSyncOps() {
+  const dir = await fs.promises.opendir(testDir);
+  const promise = dir.read();
 
-//   assert.throws(() => dir.closeSync(), dirconcurrentError);
-//   assert.throws(() => dir.readSync(), dirconcurrentError);
+  // assert.throws(() => dir.closeSync(), dirconcurrentError);
+  // assert.throws(() => dir.readSync(), dirconcurrentError);
 
-//   await promise;
-//   dir.closeSync();
-// }
-// doConcurrentAsyncAndSyncOps().then(common.mustCall());
+  await promise;
+  dir.closeSync();
+}
+doConcurrentAsyncAndSyncOps().then(common.mustCall());
 
+// TODO(wafuwafu13): enable this
 // // Check read throw exceptions on invalid callback
 // {
 //   const dir = fs.opendirSync(testDir);
 //   assert.throws(() => dir.read('INVALID_CALLBACK'), /ERR_INVALID_ARG_TYPE/);
 // }
 
-// // Check that concurrent read() operations don't do weird things.
-// async function doConcurrentAsyncOps() {
-//   const dir = await fs.promises.opendir(testDir);
-//   const promise1 = dir.read();
-//   const promise2 = dir.read();
+// Check that concurrent read() operations don't do weird things.
+async function doConcurrentAsyncOps() {
+  const dir = await fs.promises.opendir(testDir);
+  const promise1 = dir.read();
+  const promise2 = dir.read();
 
-//   assertDirent(await promise1);
-//   assertDirent(await promise2);
-//   dir.closeSync();
-// }
-// doConcurrentAsyncOps().then(common.mustCall());
+  assertDirent(await promise1);
+  assertDirent(await promise2);
+  dir.closeSync();
+}
+doConcurrentAsyncOps().then(common.mustCall());
 
-// // Check that concurrent read() + close() operations don't do weird things.
-// async function doConcurrentAsyncMixedOps() {
-//   const dir = await fs.promises.opendir(testDir);
-//   const promise1 = dir.read();
-//   const promise2 = dir.close();
+// Check that concurrent read() + close() operations don't do weird things.
+async function doConcurrentAsyncMixedOps() {
+  const dir = await fs.promises.opendir(testDir);
+  const promise1 = dir.read();
+  const promise2 = dir.close();
 
-//   assertDirent(await promise1);
-//   await promise2;
-// }
-// doConcurrentAsyncMixedOps().then(common.mustCall());
+  assertDirent(await promise1);
+  await promise2;
+}
+doConcurrentAsyncMixedOps().then(common.mustCall());
 
-// // Check if directory already closed - the callback should pass an error.
-// {
-//   const dir = fs.opendirSync(testDir);
-//   dir.closeSync();
-//   dir.close(common.mustCall((error) => {
-//     assert.strictEqual(error.code, dirclosedError.code);
-//   }));
-// }
+// Check if directory already closed - the callback should pass an error.
+{
+  const dir = fs.opendirSync(testDir);
+  dir.closeSync();
+  dir.close(common.mustCall((error) => {
+    // assert.strictEqual(error.code, dirclosedError.code);
+  }));
+}
 
-// // Check if directory already closed - throw an promise exception.
-// {
-//   const dir = fs.opendirSync(testDir);
-//   dir.closeSync();
-//   assert.rejects(dir.close(), dirclosedError).then(common.mustCall());
-// }
+// Check if directory already closed - throw an promise exception.
+{
+  const dir = fs.opendirSync(testDir);
+  dir.closeSync();
+  // assert.rejects(dir.close(), dirclosedError).then(common.mustCall());
+}
