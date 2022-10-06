@@ -135,7 +135,7 @@ class ClientRequest extends NodeWritable {
         const headers = Object.fromEntries(
           Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
         );
-        if (RE_TE_CHUNKED.test(headers["transfar-encoding"])) return true;
+        if (RE_TE_CHUNKED.test(headers["transfer-encoding"])) return true;
         if (!Number.isNaN(parseInt(headers["content-length"]))) return false;
         return true;
       };
