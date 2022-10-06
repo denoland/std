@@ -31,10 +31,15 @@ export default class Dir {
       assert(this.#asyncIterator);
       this.#asyncIterator
         .next()
-        .then(iteratorResult => {
-          resolve(iteratorResult.done ? null : new Dirent(iteratorResult.value));
+        .then((iteratorResult) => {
+          resolve(
+            iteratorResult.done ? null : new Dirent(iteratorResult.value),
+          );
           if (callback) {
-            callback(null, iteratorResult.done ? null : new Dirent(iteratorResult.value));
+            callback(
+              null,
+              iteratorResult.done ? null : new Dirent(iteratorResult.value),
+            );
           }
         }, (err) => {
           if (callback) {
