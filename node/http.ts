@@ -125,40 +125,9 @@ class ClientRequest extends NodeWritable {
       this.controller.close();
     }
 
+    const body = await this._createBody(this.body, this.opts);
     const client = await this._createCustomClient();
-
-    const requestBody = await (async () => {
-      if (!this.body) return null;
-
-      const isChunked = (opts: RequestOptions) => {
-        if (!opts.headers) return true;
-        const headers = Object.fromEntries(
-          Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
-        );
-        if (RE_TE_CHUNKED.test(headers["transfer-encoding"])) return true;
-        if (!Number.isNaN(parseInt(headers["content-length"]))) return false;
-        return true;
-      };
-
-      if (isChunked(this.opts)) return this.body;
-
-      const reader = this.body.getReader();
-      const bufferList: Buffer[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          return Buffer.concat(bufferList);
-        }
-        bufferList.push(value);
-      }
-    })();
-
-    const opts = {
-      body: requestBody,
-      method: this.opts.method,
-      client,
-    };
-
+    const opts = { body, method: this.opts.method, client };
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
@@ -183,6 +152,35 @@ class ClientRequest extends NodeWritable {
 
   abort() {
     this.destroy();
+  }
+
+  async _createBody(
+    body: ReadableStream | null,
+    opts: RequestOptions,
+  ): Promise<Buffer | ReadableStream | null> {
+    if (!body) return null;
+
+    const isChunked = (opts: RequestOptions) => {
+      if (!opts.headers) return true;
+      const headers = Object.fromEntries(
+        Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+      );
+      if (RE_TE_CHUNKED.test(headers["transfer-encoding"])) return true;
+      if (!Number.isNaN(parseInt(headers["content-length"]))) return false;
+      return true;
+    };
+
+    if (isChunked(opts)) return body;
+
+    const reader = body.getReader();
+    const bufferList: Buffer[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        return Buffer.concat(bufferList);
+      }
+      bufferList.push(value);
+    }
   }
 
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
