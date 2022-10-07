@@ -58,6 +58,7 @@ import {
   kOnLine,
   kPreviousKey,
   kPrompt,
+  kQuestion,
   kQuestionCallback,
   kQuestionCancel,
   kRefreshLine,
@@ -107,8 +108,6 @@ function Interface(input, output, completer, terminal) {
 Object.setPrototypeOf(Interface.prototype, _Interface.prototype);
 Object.setPrototypeOf(Interface, _Interface);
 
-const superQuestion = _Interface.prototype.question;
-
 /**
  * Displays `query` by writing it to the `output`.
  * @param {string} query
@@ -116,7 +115,7 @@ const superQuestion = _Interface.prototype.question;
  * @param {Function} cb
  * @returns {void}
  */
-Interface.prototype.question = function (query, options, cb) {
+Interface.prototype.question = function question(query, options, cb) {
   cb = typeof options === "function" ? options : cb;
   options = typeof options === "object" && options !== null ? options : {};
 
@@ -142,10 +141,13 @@ Interface.prototype.question = function (query, options, cb) {
   }
 
   if (typeof cb === "function") {
-    superQuestion.call(this, query, cb);
+    this[kQuestion](query, cb);
   }
 };
-Interface.prototype.question[promisify.custom] = function (query, options) {
+Interface.prototype.question[promisify.custom] = function question(
+  query,
+  options,
+) {
   options = typeof options === "object" && options !== null ? options : {};
 
   if (options.signal && options.signal.aborted) {
