@@ -151,7 +151,9 @@ Interface.prototype.question[promisify.custom] = function question(
   options = typeof options === "object" && options !== null ? options : {};
 
   if (options.signal && options.signal.aborted) {
-    return Promise.reject(new AbortError());
+    return Promise.reject(
+      new AbortError(undefined, { cause: options.signal.reason }),
+    );
   }
 
   return new Promise((resolve, reject) => {
@@ -159,7 +161,7 @@ Interface.prototype.question[promisify.custom] = function question(
 
     if (options.signal) {
       const onAbort = () => {
-        reject(new AbortError());
+        reject(new AbortError(undefined, { cause: options.signal.reason }));
       };
       options.signal.addEventListener("abort", onAbort, { once: true });
       cb = (answer) => {
