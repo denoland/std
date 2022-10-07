@@ -15,8 +15,6 @@ import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag } from "./util.ts";
 
-const DEFAULT_CHUNK_SIZE = 16_640;
-
 interface EntryInfo {
   mode: string;
   size: string;
@@ -239,32 +237,16 @@ export async function serveFile(
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
-    // Create a stream of the file instead of loading it into memory
-    let bytesSent = 0;
-    const body = new ReadableStream({
-      async start() {
-        if (start > 0) {
-          await file.seek(start, Deno.SeekMode.Start);
-        }
-      },
-      async pull(controller) {
-        const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
-        const bytesRead = await file.read(bytes);
-        if (bytesRead === null) {
-          file.close();
-          controller.close();
-          return;
-        }
-        controller.enqueue(
-          bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
-        );
-        bytesSent += bytesRead;
-        if (bytesSent > contentLength) {
-          file.close();
-          controller.close();
-        }
-      },
-    });
+    const body = file.readable
+      .pipeThrough(
+        new TransformStream({
+          async start() {
+            if (start > 0) {
+              await file.seek(start, Deno.SeekMode.Start);
+            }
+          },
+        }),
+      );
 
     return new Response(body, {
       status: Status.PartialContent,
