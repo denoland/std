@@ -1,15 +1,23 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-// Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/cd61f5b4d3d143108569ec3f88adc0eb34b961c4/types/node/readline/promises.d.ts
+import { Readline } from "../internal/readline/promises.mjs";
 
 import {
+  Interface as _Interface,
+  kQuestion,
+  kQuestionCancel,
+} from "../internal/readline/interface.mjs";
+import { AbortError } from "../internal/errors.ts";
+import { validateAbortSignal } from "../internal/validators.mjs";
+
+import { kEmptyObject } from "../internal/util.mjs";
+import type { Abortable } from "../_events.d.ts";
+import type {
   AsyncCompleter,
   Completer,
-  Direction,
-  Interface as _Interface,
   ReadLineOptions,
 } from "../_readline.d.ts";
-import { Abortable } from "../_events.d.ts";
 
 /**
  * The `readline/promise` module provides an API for reading lines of input from a Readable stream one line at a time.
@@ -18,6 +26,14 @@ import { Abortable } from "../_events.d.ts";
  * @since v17.0.0
  */
 export class Interface extends _Interface {
+  constructor(
+    input: ReadableStream | ReadLineOptions,
+    output?: WritableStream,
+    completer?: Completer | AsyncCompleter,
+    terminal?: boolean,
+  ) {
+    super(input, output, completer, terminal);
+  }
   /**
    * The rl.question() method displays the query by writing it to the output, waits for user input to be provided on input,
    * then invokes the callback function passing the provided input as the first argument.
@@ -51,43 +67,38 @@ export class Interface extends _Interface {
    * @since v17.0.0
    * @param query A statement or query to write to output, prepended to the prompt.
    */
-  question(query: string): Promise<string>;
-  question(query: string, options: Abortable): Promise<string>;
-}
+  question(query: string, options: Abortable = kEmptyObject): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let cb = resolve;
 
-export class Readline {
-  /**
-   * @param stream A TTY stream.
-   */
-  constructor(stream: WritableStream, options?: { autoCommit?: boolean });
-  /**
-   * The `rl.clearLine()` method adds to the internal list of pending action an action that clears current line of the associated `stream` in a specified direction identified by `dir`.
-   * Call `rl.commit()` to see the effect of this method, unless `autoCommit: true` was passed to the constructor.
-   */
-  clearLine(dir: Direction): this;
-  /**
-   * The `rl.clearScreenDown()` method adds to the internal list of pending action an action that clears the associated `stream` from the current position of the cursor down.
-   * Call `rl.commit()` to see the effect of this method, unless `autoCommit: true` was passed to the constructor.
-   */
-  clearScreenDown(): this;
-  /**
-   * The `rl.commit()` method sends all the pending actions to the associated `stream` and clears the internal list of pending actions.
-   */
-  commit(): Promise<void>;
-  /**
-   * The `rl.cursorTo()` method adds to the internal list of pending action an action that moves cursor to the specified position in the associated `stream`.
-   * Call `rl.commit()` to see the effect of this method, unless `autoCommit: true` was passed to the constructor.
-   */
-  cursorTo(x: number, y?: number): this;
-  /**
-   * The `rl.moveCursor()` method adds to the internal list of pending action an action that moves the cursor relative to its current position in the associated `stream`.
-   * Call `rl.commit()` to see the effect of this method, unless autoCommit: true was passed to the constructor.
-   */
-  moveCursor(dx: number, dy: number): this;
-  /**
-   * The `rl.rollback()` method clears the internal list of pending actions without sending it to the associated `stream`.
-   */
-  rollback(): this;
+      if (options?.signal) {
+        validateAbortSignal(options.signal, "options.signal");
+        if (options.signal.aborted) {
+          return reject(
+            new AbortError(undefined, { cause: options.signal.reason }),
+          );
+        }
+
+        const onAbort = () => {
+          // TODO(PolarETech): Resolve type error
+          // deno-lint-ignore ban-ts-comment
+          // @ts-ignore
+          this[kQuestionCancel]();
+          reject(new AbortError(undefined, { cause: options!.signal!.reason }));
+        };
+        options.signal.addEventListener("abort", onAbort, { once: true });
+        cb = (answer) => {
+          options!.signal!.removeEventListener("abort", onAbort);
+          resolve(answer);
+        };
+      }
+
+      // TODO(PolarETech): Resolve type error
+      // deno-lint-ignore ban-ts-comment
+      // @ts-ignore
+      this[kQuestion](query, cb);
+    });
+  }
 }
 
 /**
@@ -139,18 +150,26 @@ export class Readline {
  * }
  * ```
  */
+export function createInterface(options: ReadLineOptions): Interface;
 export function createInterface(
   input: ReadableStream,
   output?: WritableStream,
   completer?: Completer | AsyncCompleter,
   terminal?: boolean,
 ): Interface;
-export function createInterface(options: ReadLineOptions): Interface;
+export function createInterface(
+  inputOrOptions: ReadableStream | ReadLineOptions,
+  output?: WritableStream,
+  completer?: Completer | AsyncCompleter,
+  terminal?: boolean,
+): Interface {
+  return new Interface(inputOrOptions, output, completer, terminal);
+}
 
-declare const exports: {
-  Interface: Interface;
-  Readline: Readline;
-  createInterface: typeof createInterface;
+export { Readline };
+
+export default {
+  Interface,
+  Readline,
+  createInterface,
 };
-
-export default exports;

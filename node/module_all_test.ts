@@ -68,7 +68,7 @@ import * as perfHooks from "./perf_hooks.ts";
 import * as punycode from "./punycode.ts";
 import * as querystring from "./querystring.ts";
 import * as readline from "./readline.ts";
-import * as readlinePromises from "./readline/promises.mjs";
+import * as readlinePromises from "./readline/promises.ts";
 import * as repl from "./repl.ts";
 // TODO(kt3k): enable this
 // import * as stream from "./stream.ts";

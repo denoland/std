@@ -29,7 +29,7 @@ import {
   moveCursor,
 } from "./internal/readline/callbacks.mjs";
 import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.mjs";
-import promises from "./readline/promises.mjs";
+import promises from "./readline/promises.ts";
 import { validateAbortSignal } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 import { AbortError } from "./internal/errors.ts";

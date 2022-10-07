@@ -4,7 +4,7 @@
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/cd61f5b4d3d143108569ec3f88adc0eb34b961c4/types/node/readline.d.ts
 
 import { Abortable, EventEmitter } from "./_events.d.ts";
-import * as promises from "./readline/promises.d.ts";
+import * as promises from "./readline/promises.ts";
 import { ReadableStream, WritableStream } from "./_global.d.ts";
 import { Buffer } from "./buffer.ts";
 
