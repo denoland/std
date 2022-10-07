@@ -1,32 +1,19 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-'use strict';
+import { Readline } from "../internal/readline/promises.mjs";
 
-const {
-  Promise,
-} = primordials;
-
-const {
-  Readline,
-} = require('internal/readline/promises');
-
-const {
-  Interface: _Interface,
+import {
+  Interface as _Interface,
   kQuestion,
   kQuestionCancel,
-} = require('internal/readline/interface');
+} from "../internal/readline/interface.mjs";
+import { AbortError } from "../internal/errors.ts";
+import { validateAbortSignal } from "../internal/validators.mjs";
 
-const {
-  AbortError,
-} = require('internal/errors');
-const { validateAbortSignal } = require('internal/validators');
+import { kEmptyObject } from "../internal/util.mjs";
 
-const {
-  kEmptyObject,
-} = require('internal/util');
-
-class Interface extends _Interface {
+export class Interface extends _Interface {
   // eslint-disable-next-line no-useless-constructor
   constructor(input, output, completer, terminal) {
     super(input, output, completer, terminal);
@@ -36,19 +23,20 @@ class Interface extends _Interface {
       let cb = resolve;
 
       if (options?.signal) {
-        validateAbortSignal(options.signal, 'options.signal');
+        validateAbortSignal(options.signal, "options.signal");
         if (options.signal.aborted) {
           return reject(
-            new AbortError(undefined, { cause: options.signal.reason }));
+            new AbortError(undefined, { cause: options.signal.reason }),
+          );
         }
 
         const onAbort = () => {
           this[kQuestionCancel]();
           reject(new AbortError(undefined, { cause: options.signal.reason }));
         };
-        options.signal.addEventListener('abort', onAbort, { once: true });
+        options.signal.addEventListener("abort", onAbort, { once: true });
         cb = (answer) => {
-          options.signal.removeEventListener('abort', onAbort);
+          options.signal.removeEventListener("abort", onAbort);
           resolve(answer);
         };
       }
@@ -58,11 +46,13 @@ class Interface extends _Interface {
   }
 }
 
-function createInterface(input, output, completer, terminal) {
+export function createInterface(input, output, completer, terminal) {
   return new Interface(input, output, completer, terminal);
 }
 
-module.exports = {
+export { Readline };
+
+export default {
   Interface,
   Readline,
   createInterface,
