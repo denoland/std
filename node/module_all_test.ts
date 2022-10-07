@@ -68,6 +68,7 @@ import * as perfHooks from "./perf_hooks.ts";
 import * as punycode from "./punycode.ts";
 import * as querystring from "./querystring.ts";
 import * as readline from "./readline.ts";
+import * as readlinePromises from "./readline/promises.mjs";
 import * as repl from "./repl.ts";
 // TODO(kt3k): enable this
 // import * as stream from "./stream.ts";
@@ -220,6 +221,7 @@ Deno.test("modules", () => {
   assertEquals(keys(moduleAll.punycode), keys(punycode));
   assertEquals(keys(moduleAll.querystring), keys(querystring));
   assertEquals(keys(moduleAll.readline), keys(readline));
+  assertEquals(keys(moduleAll["readline/promises"]), keys(readlinePromises));
   assertEquals(keys(moduleAll.repl), keys(repl));
   // TODO(kt3k): enable this check
   // assertEquals(keys(moduleAll.stream), keys(stream));
