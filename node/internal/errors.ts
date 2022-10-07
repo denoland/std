@@ -61,7 +61,7 @@ const kTypes = [
 export class AbortError extends Error {
   code: string;
 
-  constructor(message = "The operation was aborted", options = undefined) {
+  constructor(message = "The operation was aborted", options?: ErrorOptions) {
     if (options !== undefined && typeof options !== "object") {
       throw new codes.ERR_INVALID_ARG_TYPE("options", "Object", options);
     }
