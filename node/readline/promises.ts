@@ -13,11 +13,32 @@ import { validateAbortSignal } from "../internal/validators.mjs";
 
 import { kEmptyObject } from "../internal/util.mjs";
 import type { Abortable } from "../_events.d.ts";
-import type {
-  AsyncCompleter,
-  Completer,
-  ReadLineOptions,
-} from "../_readline.d.ts";
+
+// NOTE: These type redefinitions are intended to avoid circular dependencies.
+// import type {
+//   AsyncCompleter,
+//   Completer,
+//   ReadLineOptions,
+// } from "../_readline.d.ts";
+type Completer = (line: string) => CompleterResult;
+type AsyncCompleter = (
+  line: string,
+  callback: (err?: null | Error, result?: CompleterResult) => void,
+) => void;
+type CompleterResult = [string[], string];
+interface ReadLineOptions {
+  input: ReadableStream;
+  output?: WritableStream | undefined;
+  completer?: Completer | AsyncCompleter | undefined;
+  terminal?: boolean | undefined;
+  history?: string[] | undefined;
+  historySize?: number | undefined;
+  prompt?: string | undefined;
+  crlfDelay?: number | undefined;
+  removeHistoryDuplicates?: boolean | undefined;
+  escapeCodeTimeout?: number | undefined;
+  tabSize?: number | undefined;
+}
 
 /**
  * The `readline/promise` module provides an API for reading lines of input from a Readable stream one line at a time.
