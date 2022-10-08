@@ -25,15 +25,7 @@ import type {
  * @see [source](https://github.com/nodejs/node/blob/v18.0.0/lib/readline/promises.js)
  * @since v17.0.0
  */
-export class Interface extends _Interface {
-  constructor(
-    input: ReadableStream | ReadLineOptions,
-    output?: WritableStream,
-    completer?: Completer | AsyncCompleter,
-    terminal?: boolean,
-  ) {
-    super(input, output, completer, terminal);
-  }
+export interface Interface extends _Interface {
   /**
    * The rl.question() method displays the query by writing it to the output, waits for user input to be provided on input,
    * then invokes the callback function passing the provided input as the first argument.
@@ -67,6 +59,18 @@ export class Interface extends _Interface {
    * @since v17.0.0
    * @param query A statement or query to write to output, prepended to the prompt.
    */
+  question(query: string, options?: Abortable): Promise<string>;
+}
+
+export class Interface extends _Interface {
+  constructor(
+    input: ReadableStream | ReadLineOptions,
+    output?: WritableStream,
+    completer?: Completer | AsyncCompleter,
+    terminal?: boolean,
+  ) {
+    super(input, output, completer, terminal);
+  }
   question(query: string, options: Abortable = kEmptyObject): Promise<string> {
     return new Promise((resolve, reject) => {
       let cb = resolve;
@@ -80,9 +84,6 @@ export class Interface extends _Interface {
         }
 
         const onAbort = () => {
-          // TODO(PolarETech): Resolve type error
-          // deno-lint-ignore ban-ts-comment
-          // @ts-ignore
           this[kQuestionCancel]();
           reject(new AbortError(undefined, { cause: options!.signal!.reason }));
         };
@@ -93,9 +94,6 @@ export class Interface extends _Interface {
         };
       }
 
-      // TODO(PolarETech): Resolve type error
-      // deno-lint-ignore ban-ts-comment
-      // @ts-ignore
       this[kQuestion](query, cb);
     });
   }
