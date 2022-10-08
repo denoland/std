@@ -19,6 +19,8 @@ import type {
   ReadLineOptions,
 } from "../_readline_2.d.ts";
 
+import type { ReadableStream, WritableStream } from "../_global.d.ts";
+
 /**
  * The `readline/promise` module provides an API for reading lines of input from a Readable stream one line at a time.
  *
