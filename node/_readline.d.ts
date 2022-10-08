@@ -7,6 +7,12 @@ import { Abortable, EventEmitter } from "./_events.d.ts";
 import * as promises from "./readline/promises.ts";
 import { ReadableStream, WritableStream } from "./_global.d.ts";
 import { Buffer } from "./buffer.ts";
+import type {
+  AsyncCompleter,
+  Completer,
+  CompleterResult,
+  ReadLineOptions,
+} from "./_readline_2.d.ts";
 
 /**
  * The `readline` module provides an interface for reading data from a `Readable` stream (such as `process.stdin`) one line at a time.
@@ -340,37 +346,7 @@ export class Interface extends EventEmitter {
   [Symbol.asyncIterator](): AsyncIterableIterator<string>;
 }
 export type ReadLine = Interface; // type forwarded for backwards compatibility
-export type Completer = (line: string) => CompleterResult;
-export type AsyncCompleter = (
-  line: string,
-  callback: (err?: null | Error, result?: CompleterResult) => void,
-) => void;
-export type CompleterResult = [string[], string];
-export interface ReadLineOptions {
-  input: ReadableStream;
-  output?: WritableStream | undefined;
-  completer?: Completer | AsyncCompleter | undefined;
-  terminal?: boolean | undefined;
-  /**
-   *  Initial list of history lines. This option makes sense
-   * only if `terminal` is set to `true` by the user or by an internal `output`
-   * check, otherwise the history caching mechanism is not initialized at all.
-   * @default []
-   */
-  history?: string[] | undefined;
-  historySize?: number | undefined;
-  prompt?: string | undefined;
-  crlfDelay?: number | undefined;
-  /**
-   * If `true`, when a new input line added
-   * to the history list duplicates an older one, this removes the older line
-   * from the list.
-   * @default false
-   */
-  removeHistoryDuplicates?: boolean | undefined;
-  escapeCodeTimeout?: number | undefined;
-  tabSize?: number | undefined;
-}
+export { AsyncCompleter, Completer, CompleterResult, ReadLineOptions };
 /**
  * The `readline.createInterface()` method creates a new `readline.Interface`instance.
  *
