@@ -155,7 +155,7 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
  * ```ts
- * import { assertEquals } from "./asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertEquals<number>(1, 2)
  * ```
@@ -191,7 +191,7 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string) {
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
  * ```ts
- * import { assertNotEquals } from "./asserts.ts";
+ * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertNotEquals<number>(1, 2)
  * ```
@@ -223,7 +223,7 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
  * not then throw.
  *
  * ```ts
- * import { assertStrictEquals } from "./asserts.ts";
+ * import { assertStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertStrictEquals(1, 2)
  * ```
@@ -277,7 +277,7 @@ export function assertStrictEquals<T>(
  * If the values are strictly equal then throw.
  *
  * ```ts
- * import { assertNotStrictEquals } from "./asserts.ts";
+ * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertNotStrictEquals(1, 1)
  * ```
@@ -303,7 +303,7 @@ export function assertNotStrictEquals<T>(
  * If the values are not almost equal then throw.
  *
  * ```ts
- * import { assertAlmostEquals, assertThrows } from "./asserts.ts";
+ * import { assertAlmostEquals, assertThrows } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertAlmostEquals(0.1, 0.2);
  *
@@ -429,7 +429,7 @@ export function assertStringIncludes(
  * For example:
  *
  * ```ts
- * import { assertArrayIncludes } from "./asserts.ts";
+ * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertArrayIncludes<number>([1, 2], [2])
  * ```
