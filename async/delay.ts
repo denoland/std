@@ -7,7 +7,7 @@ export interface DelayOptions {
   persistent?: boolean;
 }
 
-/** Resolves after the given number of milliseconds. */
+/* Resolves after the given number of milliseconds. */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   const { signal, persistent } = options;
   if (signal?.aborted) {

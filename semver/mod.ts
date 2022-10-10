@@ -190,7 +190,6 @@ for (let i = 0; i < R; i++) {
   }
 }
 
-/** Attempt to parse a string as a semantic version. */
 export function parse(
   version: string | SemVer | null,
   options?: Options,
@@ -225,7 +224,6 @@ export function parse(
   }
 }
 
-/** Return the parsed version, or `null` if invalid. */
 export function valid(
   version: string | SemVer | null,
   options?: Options,
@@ -235,7 +233,6 @@ export function valid(
   return v ? v.version : null;
 }
 
-/** Wrapper class for the parsed details of the semantic version string. */
 export class SemVer {
   raw!: string;
   options!: Options;
@@ -323,12 +320,6 @@ export class SemVer {
     return this.version;
   }
 
-  /**
-   * Compares this `SemVer` object to another semantic version, taking into
-   * account both the main component (i.e., major, minor, and patch version)
-   * and the pre-release component. Sorts in ascending order if passed to
-   * the `Array#sort` method.
-   */
   compare(other: string | SemVer): 1 | 0 | -1 {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
@@ -337,11 +328,6 @@ export class SemVer {
     return this.compareMain(other) || this.comparePre(other);
   }
 
-  /**
-   * Compare this `SemVer` object to another semantic version, only taking into
-   * account the main component (i.e., major, minor, and patch version). Sorts
-   * in ascending order if passed to the `Array#sort` method.
-   */
   compareMain(other: string | SemVer): 1 | 0 | -1 {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
@@ -354,11 +340,6 @@ export class SemVer {
     );
   }
 
-  /**
-   * Compare this `SemVer` object to another semantic version, only taking into
-   * account the pre-release component. Sorts in ascending order if passed to
-   * the `Array#sort` method.
-   */
   comparePre(other: string | SemVer): 1 | 0 | -1 {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
@@ -392,11 +373,6 @@ export class SemVer {
     return 1;
   }
 
-  /**
-   * Compare this `SemVer` object to another semantic version, only taking into
-   * account the build component. Sorts in ascending order if passed to the
-   * `Array#sort` method.
-   */
   compareBuild(other: string | SemVer): 1 | 0 | -1 {
     if (!(other instanceof SemVer)) {
       other = new SemVer(other, this.options);
@@ -421,10 +397,6 @@ export class SemVer {
     return 1;
   }
 
-  /**
-   * Increment this `SemVer` object with respect to a {@link ReleaseType} and an
-   * optional pre-release `identifier`.
-   */
   inc(release: ReleaseType, identifier?: string): SemVer {
     switch (release) {
       case "premajor":
