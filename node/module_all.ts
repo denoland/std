@@ -66,6 +66,7 @@ import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
+import readlinePromises from "./readline/promises.ts";
 import repl from "./repl.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.mjs";
@@ -163,6 +164,7 @@ export default {
   },
   querystring,
   readline,
+  "readline/promises": readlinePromises,
   repl,
   stream,
   "stream/consumers": streamConsumers,

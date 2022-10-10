@@ -497,6 +497,8 @@
       "test-readline-interface.js",
       "test-readline-keys.js",
       "test-readline-position.js",
+      "test-readline-promises-csi.mjs",
+      "test-readline-promises-interface.js",
       "test-readline-reopen.js",
       "test-readline-set-raw-mode.js",
       "test-readline-undefined-columns.js",
