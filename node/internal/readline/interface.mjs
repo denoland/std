@@ -22,7 +22,7 @@
 
 // deno-lint-ignore-file camelcase no-inner-declarations no-this-alias
 
-import { ERR_INVALID_ARG_VALUE } from "../errors.ts";
+import { ERR_INVALID_ARG_VALUE, ERR_USE_AFTER_CLOSE } from "../errors.ts";
 import {
   validateAbortSignal,
   validateArray,
@@ -87,6 +87,7 @@ const lineEnding = /\r?\n|\r(?!\n)/;
 
 const kLineObjectStream = Symbol("line object stream");
 export const kQuestionCancel = Symbol("kQuestionCancel");
+export const kQuestion = Symbol("kQuestion");
 
 // GNU readline library - keyseq-timeout is 500ms (default)
 const ESCAPE_CODE_TIMEOUT = 500;
@@ -381,7 +382,10 @@ export class Interface extends InterfaceConstructor {
     }
   }
 
-  question(query, cb) {
+  [kQuestion](query, cb) {
+    if (this.closed) {
+      throw new ERR_USE_AFTER_CLOSE("readline");
+    }
     if (this[kQuestionCallback]) {
       this.prompt();
     } else {
