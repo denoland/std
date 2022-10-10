@@ -17,7 +17,7 @@
  * The complexity of this function is O(source.lenth * needle.length).
  *
  * ```ts
- * import { indexOfNeedle } from "./mod.ts";
+ * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * console.log(indexOfNeedle(source, needle)); // 1
@@ -64,7 +64,7 @@ export function indexOfNeedle(
  * The complexity of this function is O(source.lenth * needle.length).
  *
  * ```ts
- * import { lastIndexOfNeedle } from "./mod.ts";
+ * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * console.log(lastIndexOfNeedle(source, needle)); // 5
@@ -108,7 +108,7 @@ export function lastIndexOfNeedle(
  * The complexity of this function is O(prefix.length).
  *
  * ```ts
- * import { startsWith } from "./mod.ts";
+ * import { startsWith } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const prefix = new Uint8Array([0, 1, 2]);
  * console.log(startsWith(source, prefix)); // true
@@ -127,7 +127,7 @@ export function startsWith(source: Uint8Array, prefix: Uint8Array): boolean {
  * The complexity of this function is O(suffix.length).
  *
  * ```ts
- * import { endsWith } from "./mod.ts";
+ * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);
  * console.log(endsWith(source, suffix)); // true
@@ -150,7 +150,7 @@ export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
  * If `count` is negative, a `RangeError` is thrown.
  *
  * ```ts
- * import { repeat } from "./mod.ts";
+ * import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2]);
  * console.log(repeat(source, 3)); // [0, 1, 2, 0, 1, 2, 0, 1, 2]
  * console.log(repeat(source, 0)); // []
@@ -188,7 +188,7 @@ export function repeat(source: Uint8Array, count: number): Uint8Array {
 /** Concatenate the given arrays into a new Uint8Array.
  *
  * ```ts
- * import { concat } from "./mod.ts";
+ * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
  * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]
@@ -217,7 +217,7 @@ export function concat(...buf: Uint8Array[]): Uint8Array {
  * The complexity of this function is O(source.length * needle.length).
  *
  * ```ts
- * import { includesNeedle } from "./mod.ts";
+ * import { includesNeedle } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * console.log(includesNeedle(source, needle)); // true
@@ -243,7 +243,7 @@ export function includesNeedle(
  * the array.
  *
  * ```ts
- * import { copy } from "./mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
  * console.log(copy(src, dst)); // 3
@@ -251,7 +251,7 @@ export function includesNeedle(
  * ```
  *
  * ```ts
- * import { copy } from "./mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
  * const src = new Uint8Array([1, 1, 1, 1]);
  * const dst = new Uint8Array([0, 0, 0, 0]);
  * console.log(copy(src, dst, 1)); // 3
