@@ -1,22 +1,33 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { xeval } from "./xeval.ts";
-import { StringReader } from "../io/readers.ts";
 import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
+function createReadableStream(str: string) {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(str));
+      controller.close();
+    },
+  });
+}
+
 Deno.test("xevalSuccess", async function () {
   const chunks: string[] = [];
-  await xeval(new StringReader("a\nb\nc"), ($): number => chunks.push($));
+  await xeval(
+    createReadableStream("a\nb\nc"),
+    ($) => Promise.resolve(chunks.push($)),
+  );
   assertEquals(chunks, ["a", "b", "c"]);
 });
 
 Deno.test("xevalDelimiter", async function () {
   const chunks: string[] = [];
   await xeval(
-    new StringReader("!MADMADAMADAM!"),
-    ($): number => chunks.push($),
+    createReadableStream("!MADMADAMADAM!"),
+    ($) => Promise.resolve(chunks.push($)),
     {
       delimiter: "MADAM",
     },
