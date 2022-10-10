@@ -16,7 +16,10 @@ function createReadableStream(str: string) {
 
 Deno.test("xevalSuccess", async function () {
   const chunks: string[] = [];
-  await xeval(createReadableStream("a\nb\nc"), ($): number => chunks.push($));
+  await xeval(
+    createReadableStream("a\nb\nc"),
+    ($) => Promise.resolve(chunks.push($)),
+  );
   assertEquals(chunks, ["a", "b", "c"]);
 });
 
@@ -24,7 +27,7 @@ Deno.test("xevalDelimiter", async function () {
   const chunks: string[] = [];
   await xeval(
     createReadableStream("!MADMADAMADAM!"),
-    ($): number => chunks.push($),
+    ($) => Promise.resolve(chunks.push($)),
     {
       delimiter: "MADAM",
     },

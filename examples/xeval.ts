@@ -33,7 +33,7 @@ OPTIONS:
 ARGS:
   <code>`;
 
-export type XevalFunc = (v: string) => unknown | Promise<unknown>;
+export type XevalFunc = (v: string) => Promise<unknown>;
 
 export interface XevalOptions {
   delimiter?: string;
