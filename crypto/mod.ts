@@ -217,15 +217,15 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
-type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
+export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
-type DigestAlgorithmObject = {
+export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
-type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
+export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
   ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {

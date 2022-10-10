@@ -1,3 +1,27 @@
+### 0.159.0 / 2022.10.06
+
+- BREAKING: deprecate `std/textproto` (#2737)
+- feat(collections): improve types of `partition` module (#2744)
+- feat(http/file_server): add `showIndex` option to serveDir (#2738)
+- feat(node): new child_process.fork (#2700)
+- feat(node/crypto): add base64url encoding to hash.digest() (#2740)
+- feat(node/fs): Support more File system flags (#2725)
+- fix(http): remove unnecessary delay when closing server (#2732)
+- fix(http/file_server): handles path with reserved char (#2675)
+- fix(node): debuglog callback should be optional (#2734)
+- fix(node): handle inherited output in spawnSync() (#2743)
+- fix(node/fs): Enable `test-fs-open.js` (#2715)
+- fix(node/process): Deno 1.26 replaced Deno.setRaw with Deno.stdin.setRaw
+  (#2710)
+- fix(node/process): do not error assigning `false` to `process.env[VAR_NAME]`
+  (#2716)
+- fix(node/tls): fix TLSSocket constructor (#2749)
+- fix(node/tls): set tlssocket._handle._parentWrap (#2750)
+- fix(node/url): enable url.format function to handle a url object (#2747)
+- fix(streams): don't use shared buffer for iterateReader outputs (#2735)
+- perf(streams): memory optimizations by avoiding large buffer allocation in a
+  loop (#2748)
+
 ### 0.158.0 / 2022.09.28
 
 - feat(node): add child_process.exec() (#2684)
