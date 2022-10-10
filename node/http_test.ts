@@ -152,11 +152,12 @@ Deno.test("[node/http] request default protocol", async () => {
 Deno.test("[node/http] send request with non-chunked body", async () => {
   const promise = deferred<void>();
   let requestHeaders: Record<string, string> = {};
-  const requestBody: string[] = [];
+  let requestBody = "";
 
   const server = http.createServer((req, res) => {
+    req.setEncoding("utf8");
     req.on("data", (chunk) => {
-      requestBody.push(chunk.toString());
+      requestBody += chunk;
     });
     req.on("end", () => {
       requestHeaders = Object.fromEntries(
@@ -186,7 +187,7 @@ Deno.test("[node/http] send request with non-chunked body", async () => {
         /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
         false,
       );
-      assertEquals(requestBody[0], "hello world");
+      assertEquals(requestBody, "hello world");
     });
     req.write("hello ");
     req.write("world");
@@ -201,11 +202,12 @@ Deno.test("[node/http] send request with non-chunked body", async () => {
 Deno.test("[node/http] send request with chunked body", async () => {
   const promise = deferred<void>();
   let requestHeaders: Record<string, string> = {};
-  const requestBody: string[] = [];
+  let requestBody = "";
 
   const server = http.createServer((req, res) => {
+    req.setEncoding("utf8");
     req.on("data", (chunk) => {
-      requestBody.push(chunk.toString());
+      requestBody += chunk;
     });
     req.on("end", () => {
       requestHeaders = Object.fromEntries(
@@ -236,7 +238,7 @@ Deno.test("[node/http] send request with chunked body", async () => {
         /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
         true,
       );
-      assertEquals(requestBody.join(""), "hello world");
+      assertEquals(requestBody, "hello world");
     });
     req.write("hello ");
     req.write("world");
@@ -251,11 +253,12 @@ Deno.test("[node/http] send request with chunked body", async () => {
 Deno.test("[node/http] send request with chunked body as default", async () => {
   const promise = deferred<void>();
   let requestHeaders: Record<string, string> = {};
-  const requestBody: string[] = [];
+  let requestBody = "";
 
   const server = http.createServer((req, res) => {
+    req.setEncoding("utf8");
     req.on("data", (chunk) => {
-      requestBody.push(chunk.toString());
+      requestBody += chunk;
     });
     req.on("end", () => {
       requestHeaders = Object.fromEntries(
@@ -284,7 +287,7 @@ Deno.test("[node/http] send request with chunked body as default", async () => {
         /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
         true,
       );
-      assertEquals(requestBody.join(""), "hello world");
+      assertEquals(requestBody, "hello world");
     });
     req.write("hello ");
     req.write("world");
