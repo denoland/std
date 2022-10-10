@@ -17,7 +17,7 @@ import type {
   AsyncCompleter,
   Completer,
   ReadLineOptions,
-} from "../_readline_2.d.ts";
+} from "../_readline_shared_types.d.ts";
 
 import type { ReadableStream, WritableStream } from "../_global.d.ts";
 
