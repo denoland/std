@@ -13,10 +13,10 @@ const decoder = new TextDecoder();
  * const hash = await crypto.subtle.digest("SHA-384", new TextEncoder().encode("You hear that Mr. Anderson?"));
  *
  * // Hex encoding by default
- * const hashString = toHashString(hash);
+ * console.log(toHashString(hash));
  *
  * // Or with base64 encoding
- * const hashString = toHashString(hash, "base64");
+ * console.log(toHashString(hash, "base64"));
  * ```
  */
 export function toHashString(
