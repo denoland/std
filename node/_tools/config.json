@@ -745,6 +745,7 @@
       "test-dns.js",
       "test-dns-resolveany.js",
       "test-fs-access.js",
+      "test-fs-mkdir.js",
       "test-fs-open-mode-mask.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-rm.js",
