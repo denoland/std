@@ -6,7 +6,7 @@
  */
 
 import { parse } from "../flags/mod.ts";
-import { readStringDelim } from "../io/buffer.ts";
+import { TextDelimiterStream } from "../streams/delimiter.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.
 const AsyncFunction = Object.getPrototypeOf(async function () {})
@@ -33,7 +33,7 @@ OPTIONS:
 ARGS:
   <code>`;
 
-export type XevalFunc = (v: string) => void;
+export type XevalFunc = (v: string) => unknown | Promise<unknown>;
 
 export interface XevalOptions {
   delimiter?: string;
@@ -42,11 +42,14 @@ export interface XevalOptions {
 const DEFAULT_DELIMITER = "\n";
 
 export async function xeval(
-  reader: Deno.Reader,
+  readable: ReadableStream<Uint8Array>,
   xevalFunc: XevalFunc,
   { delimiter = DEFAULT_DELIMITER }: XevalOptions = {},
 ) {
-  for await (const chunk of readStringDelim(reader, delimiter)) {
+  const chunks = readable
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextDelimiterStream(delimiter));
+  for await (const chunk of chunks) {
     // Ignore empty chunks.
     if (chunk.length > 0) {
       await xevalFunc(chunk);
@@ -89,7 +92,7 @@ async function main() {
 
   const xEvalFunc = new AsyncFunction(replVar, code);
 
-  await xeval(Deno.stdin, xEvalFunc, { delimiter });
+  await xeval(Deno.stdin.readable, xEvalFunc, { delimiter });
 }
 
 if (import.meta.main) {

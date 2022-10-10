@@ -6,16 +6,25 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
+function createReadableStream(str: string) {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(str));
+      controller.close();
+    },
+  });
+}
+
 Deno.test("xevalSuccess", async function () {
   const chunks: string[] = [];
-  await xeval(new StringReader("a\nb\nc"), ($): number => chunks.push($));
+  await xeval(createReadableStream("a\nb\nc"), ($): number => chunks.push($));
   assertEquals(chunks, ["a", "b", "c"]);
 });
 
 Deno.test("xevalDelimiter", async function () {
   const chunks: string[] = [];
   await xeval(
-    new StringReader("!MADMADAMADAM!"),
+    createReadableStream("!MADMADAMADAM!"),
     ($): number => chunks.push($),
     {
       delimiter: "MADAM",
