@@ -171,8 +171,8 @@ const hash = await crypto.subtle.digest(
 );
 
 // Hex encoding by default
-const hashString = toHashString(hash);
+console.log(toHashString(hash));
 
 // Or with base64 encoding
-const hashString = toHashString(hash, "base64");
+console.log(toHashString(hash, "base64"));
 ```
