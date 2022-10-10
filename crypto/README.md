@@ -156,3 +156,23 @@ const digest = await keyStack.sign("some data");
 const rotatedStack = new KeyStack(["deno", "says", "hello", "world"]);
 await rotatedStack.verify("some data", digest); // true
 ```
+
+## Convert hash to a string
+
+```ts
+import {
+  crypto,
+  toHashString,
+} from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+
+const hash = await crypto.subtle.digest(
+  "SHA-384",
+  new TextEncoder().encode("You hear that Mr. Anderson?"),
+);
+
+// Hex encoding by default
+const hashString = toHashString(hash);
+
+// Or with base64 encoding
+const hashString = toHashString(hash, "base64");
+```
