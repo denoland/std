@@ -28,6 +28,7 @@ import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/index.ts";
 
 export { type Data, type Key, KeyStack } from "./keystack.ts";
+export { toHashString } from "./util.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
