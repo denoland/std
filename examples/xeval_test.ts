@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { xeval } from "./xeval.ts";
-import { StringReader } from "../io/readers.ts";
 import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
