@@ -524,7 +524,7 @@ Deno.test({
     const p = deferred();
     const cp = CP.fork(script, [], { cwd: testdataDir, stdio: "pipe" });
     let output = "";
-    cp.on("exit", () => p.resolve());
+    cp.on("close", () => p.resolve());
     cp.stdout?.on("data", (data) => {
       output += data;
     });
