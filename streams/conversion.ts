@@ -350,7 +350,7 @@ export function readableStreamFromReader(
  * // Example from file
  * const file = await Deno.open("my_file.txt", {read: true});
  * const myFileContent = await readAll(file);
- * Deno.close(file.rid);
+ * file.close();
  *
  * // Example from buffer
  * const myData = new Uint8Array(100);
@@ -378,7 +378,7 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
  * // Example from file
  * const file = Deno.openSync("my_file.txt", {read: true});
  * const myFileContent = readAllSync(file);
- * Deno.close(file.rid);
+ * file.close();
  *
  * // Example from buffer
  * const myData = new Uint8Array(100);
@@ -407,7 +407,7 @@ export function readAllSync(r: Deno.ReaderSync): Uint8Array {
  * contentBytes = new TextEncoder().encode("Hello World");
  * const file = await Deno.open('test.file', {write: true});
  * await writeAll(file, contentBytes);
- * Deno.close(file.rid);
+ * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");
@@ -438,7 +438,7 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * contentBytes = new TextEncoder().encode("Hello World");
  * const file = Deno.openSync('test.file', {write: true});
  * writeAllSync(file, contentBytes);
- * Deno.close(file.rid);
+ * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");

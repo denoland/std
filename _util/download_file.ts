@@ -20,8 +20,5 @@ export async function downloadFile(url: string, fileUrl: URL) {
 
   await ensureFile(fromFileUrl(fileUrl));
   const file = await Deno.open(fileUrl, { truncate: true, write: true });
-  for await (const chunk of response.body) {
-    Deno.writeSync(file.rid, chunk);
-  }
-  file.close();
+  await response.body.pipeTo(file.writable);
 }
