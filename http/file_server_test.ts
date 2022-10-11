@@ -150,7 +150,7 @@ async function fetchExactPath(
     });
   } finally {
     if (conn) {
-      Deno.close(conn.rid);
+      conn.close();
     }
   }
 }
@@ -327,7 +327,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    let res = await fetch("http://localhost:4507/testdata/%");
+    let res = await fetch("http://localhost:4507/testdata/%25");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 200);
@@ -1043,6 +1043,35 @@ Deno.test(
     });
     assertEquals(res.status, 200);
     assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir serves index.html when showIndex is true",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const expectedText = "This is subdir-with-index/index.html";
+    {
+      const res = await serveDir(new Request(url), { showIndex: true });
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+
+    {
+      // showIndex is true by default
+      const res = await serveDir(new Request(url));
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+  },
+);
+
+Deno.test(
+  "serveDir doesn't serve index.html when showIndex is false",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const res = await serveDir(new Request(url), { showIndex: false });
+    assertEquals(res.status, 404);
   },
 );
 

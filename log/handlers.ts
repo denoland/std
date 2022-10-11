@@ -189,8 +189,12 @@ export class RotatingFileHandler extends FileHandler {
       // Remove old backups too as it doesn't make sense to start with a clean
       // log file, but old backups
       for (let i = 1; i <= this.#maxBackupCount; i++) {
-        if (await exists(this._filename + "." + i)) {
+        try {
           await Deno.remove(this._filename + "." + i);
+        } catch (error) {
+          if (!(error instanceof Deno.errors.NotFound)) {
+            throw error;
+          }
         }
       }
     } else if (this._mode === "x") {
@@ -223,7 +227,7 @@ export class RotatingFileHandler extends FileHandler {
 
   rotateLogFiles() {
     this._buf.flush();
-    Deno.close(this._file!.rid);
+    this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
       const source = this._filename + (i === 0 ? "" : "." + i);

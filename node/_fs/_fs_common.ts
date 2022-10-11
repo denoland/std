@@ -97,8 +97,9 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
       openOptions = { create: true, append: true };
       break;
     }
-    case "ax": {
-      // 'ax': Like 'a' but fails if the path exists.
+    case "ax":
+    case "xa": {
+      // 'ax', 'xa': Like 'a' but fails if the path exists.
       openOptions = { createNew: true, write: true, append: true };
       break;
     }
@@ -107,8 +108,9 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
       openOptions = { read: true, create: true, append: true };
       break;
     }
-    case "ax+": {
-      // 'ax+': Like 'a+' but fails if the path exists.
+    case "ax+":
+    case "xa+": {
+      // 'ax+', 'xa+': Like 'a+' but fails if the path exists.
       openOptions = { read: true, createNew: true, append: true };
       break;
     }
@@ -127,8 +129,9 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
       openOptions = { create: true, write: true, truncate: true };
       break;
     }
-    case "wx": {
-      // 'wx': Like 'w' but fails if the path exists.
+    case "wx":
+    case "xw": {
+      // 'wx', 'xw': Like 'w' but fails if the path exists.
       openOptions = { createNew: true, write: true };
       break;
     }
@@ -137,23 +140,27 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
       openOptions = { create: true, write: true, truncate: true, read: true };
       break;
     }
-    case "wx+": {
-      // 'wx+': Like 'w+' but fails if the path exists.
+    case "wx+":
+    case "xw+": {
+      // 'wx+', 'xw+': Like 'w+' but fails if the path exists.
       openOptions = { createNew: true, write: true, read: true };
       break;
     }
-    case "as": {
-      // 'as': Open file for appending in synchronous mode. The file is created if it does not exist.
+    case "as":
+    case "sa": {
+      // 'as', 'sa': Open file for appending in synchronous mode. The file is created if it does not exist.
       openOptions = { create: true, append: true };
       break;
     }
-    case "as+": {
-      // 'as+': Open file for reading and appending in synchronous mode. The file is created if it does not exist.
+    case "as+":
+    case "sa+": {
+      // 'as+', 'sa+': Open file for reading and appending in synchronous mode. The file is created if it does not exist.
       openOptions = { create: true, read: true, append: true };
       break;
     }
-    case "rs+": {
-      // 'rs+': Open file for reading and writing in synchronous mode. Instructs the operating system to bypass the local file system cache.
+    case "rs+":
+    case "sr+": {
+      // 'rs+', 'sr+': Open file for reading and writing in synchronous mode. Instructs the operating system to bypass the local file system cache.
       openOptions = { create: true, read: true, write: true };
       break;
     }

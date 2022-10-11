@@ -1,6 +1,7 @@
 // Copyright 2018-2022 Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
+
 import {
   ObjectAssign,
   StringPrototypeReplace,
@@ -18,6 +19,8 @@ import {
   Pipe,
 } from "./internal_binding/pipe_wrap.ts";
 import { EventEmitter } from "./events.ts";
+import { kEmptyObject } from "./internal/util.mjs";
+
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
@@ -63,7 +66,7 @@ export class TLSSocket extends net.Socket {
   [kConnectOptions]: any;
   ssl: any;
   _start: any;
-  constructor(socket: any, opts: any) {
+  constructor(socket: any, opts: any = kEmptyObject) {
     const tlsOptions = { ...opts };
 
     let hostname = tlsOptions?.secureContext?.servername;
@@ -142,6 +145,11 @@ export class TLSSocket extends net.Socket {
       (handle as any).verifyError = function () {
         return null; // Never fails, rejectUnauthorized is always true in Deno.
       };
+      // Pretends `handle` is `tls_wrap.wrap(handle, ...)` to make some npm modules happy
+      // An example usage of `_parentWrap` in npm module:
+      // https://github.com/szmarczak/http2-wrapper/blob/51eeaf59ff9344fb192b092241bfda8506983620/source/utils/js-stream-socket.js#L6
+      handle._parent = handle;
+      handle._parentWrap = wrap;
 
       return handle;
     }

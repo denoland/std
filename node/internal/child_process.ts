@@ -721,12 +721,25 @@ export interface SpawnSyncOptions {
 
 export interface SpawnSyncResult {
   pid?: number;
-  output?: [string | null, string | Buffer, string | Buffer];
-  stdout?: Buffer | string;
-  stderr?: Buffer | string;
+  output?: [string | null, string | Buffer | null, string | Buffer | null];
+  stdout?: Buffer | string | null;
+  stderr?: Buffer | string | null;
   status?: number | null;
   signal?: string | null;
   error?: Error;
+}
+
+function parseSpawnSyncOutputStreams(
+  output: Deno.SpawnOutput,
+  name: "stdout" | "stderr",
+): string | Buffer | null {
+  // Deno.spawnSync() returns getters for stdout and stderr that throw when set
+  // to 'inherit'.
+  try {
+    return Buffer.from(output[name]) as string | Buffer;
+  } catch {
+    return null;
+  }
 }
 
 export function spawnSync(
@@ -761,16 +774,19 @@ export function spawnSync(
 
     const { signal } = output;
     const status = signal ? null : 0;
-    let stdout = Buffer.from(output.stdout) as string | Buffer;
-    let stderr = Buffer.from(output.stderr) as string | Buffer;
+    let stdout = parseSpawnSyncOutputStreams(output, "stdout");
+    let stderr = parseSpawnSyncOutputStreams(output, "stderr");
 
-    if (stdout.length > maxBuffer! || stderr.length > maxBuffer!) {
+    if (
+      (stdout && stdout.length > maxBuffer!) ||
+      (stderr && stderr.length > maxBuffer!)
+    ) {
       result.error = _createSpawnSyncError("ENOBUFS", command, args);
     }
 
     if (encoding && encoding !== "buffer") {
-      stdout = stdout.toString(encoding);
-      stderr = stderr.toString(encoding);
+      stdout = stdout && stdout.toString(encoding);
+      stderr = stderr && stderr.toString(encoding);
     }
 
     result.status = status;
