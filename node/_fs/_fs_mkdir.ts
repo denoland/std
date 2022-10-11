@@ -1,10 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
 import { promisify } from "../internal/util.mjs";
-import {
-  denoErrorToNodeError,
-  ERR_INVALID_ARG_TYPE,
-} from "../internal/errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
 import { validateBoolean } from "../internal/validators.mjs";
 
@@ -23,10 +20,6 @@ export function mkdir(
   callback?: CallbackWithError,
 ) {
   path = getValidatedPath(path) as string;
-
-  if (typeof path !== "string") {
-    throw new ERR_INVALID_ARG_TYPE("path", "string", path);
-  }
 
   let mode = 0o777;
   let recursive = false;
