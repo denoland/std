@@ -7,13 +7,10 @@
 
 const TWO_PI = Math.PI * 2;
 
-/**
- * @property min Lower limit of range.
- * @property max Upper limit of range.
- * @property inclusive Whether the range is inclusive.
- */
 export interface RangeOptions {
+  /** Lower limit of range. */
   min: number;
+  /** Upper limit of range. */
   max: number;
 }
 
@@ -24,10 +21,7 @@ const BASE_RANGE_OPTIONS: RangeOptions = {
 
 /**
  * Get a range of n evenly distributed numbers in ascending order.
- * @param n Number of numbers to generate.
- * @param options Options to consider
- * @returns Array of n evenly distributed numbers.
- * @example ```ts
+ * ```ts
  * import { uniformRange } from "https://deno.land/std/math/distributions.ts";
  *
  * const range = uniformRange(100, {
@@ -53,12 +47,7 @@ export function uniformRange(
   return res;
 }
 
-/**
- * Generate one element in a normal distribution.
- * @param mean Mean of the distribution μ.
- * @param stddev Standard deviation of the distribution σ.
- * @returns One element in the gaussian distribution.
- */
+/** Generate one element in a normal distribution. */
 function getNormalPoint(
   mean: number,
   stddev: number,
@@ -73,11 +62,12 @@ function getNormalPoint(
 }
 
 /**
- * Generate a normally distributed array.
- * @param mean Mean of the distribution μ.
- * @param variance Variance of the distribution σ^2.
- * @returns A normal (Gaussian) distribution.
- * @example ```ts
+ * Generate a normally distributed array using mean μ
+ * and variance σ^2.
+ * 
+ * This snippet generates a distribution of 100 normally
+ * distributed numbers with μ = 16 and σ^2 = 0.003.
+ * ```ts
  * import { normalDistribution } from "https://deno.land/std/math/distributions.ts";
  *
  * const distribution = normalDistribution(100, 16, 0.003)
