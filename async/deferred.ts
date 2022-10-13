@@ -17,7 +17,7 @@ export interface Deferred<T> extends Promise<T> {
  * placed as methods on the promise object itself. It allows you to do:
  *
  * ```ts
- *     import { deferred } from "./deferred.ts";
+ *     import { deferred } from "https://deno.land/std@$STD_VERSION/async/deferred.ts";
  *
  *     const p = deferred<number>();
  *     // ...

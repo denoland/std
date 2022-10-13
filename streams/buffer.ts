@@ -175,7 +175,7 @@ export class Buffer {
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedBytesTransformStream } from "./buffer.ts";
+ * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
@@ -208,7 +208,7 @@ export class LimitedBytesTransformStream
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedTransformStream } from "./buffer.ts";
+ * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```

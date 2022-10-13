@@ -941,7 +941,7 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
     lines_.push(l);
   }
 
-  Deno.close(file_.rid);
+  file_.close();
 
   assertEquals(lines_.length, 12);
   assertEquals(lines_, [

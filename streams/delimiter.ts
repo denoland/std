@@ -12,7 +12,7 @@ interface TextLineStreamOptions {
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * ```ts
- * import { TextLineStream } from "./delimiter.ts";
+ * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())
@@ -70,7 +70,7 @@ export class TextLineStream extends TransformStream<string, string> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { DelimiterStream } from "./delimiter.ts";
+ * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo")))
@@ -136,7 +136,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { TextDelimiterStream } from "./delimiter.ts";
+ * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

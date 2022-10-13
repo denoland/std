@@ -20,6 +20,7 @@
       "perf_hooks": "../perf_hooks.ts",
       "node:process": "../process.ts",
       "node:readline": "../readline.ts",
+      "readline/promises": "../readline/promises.ts",
       "stream": "../stream.ts",
       "node:stream": "../stream.ts",
       "stream/web": "../stream/web.ts",

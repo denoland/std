@@ -227,7 +227,7 @@ export class RotatingFileHandler extends FileHandler {
 
   rotateLogFiles() {
     this._buf.flush();
-    Deno.close(this._file!.rid);
+    this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
       const source = this._filename + (i === 0 ? "" : "." + i);
