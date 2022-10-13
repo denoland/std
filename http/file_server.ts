@@ -13,7 +13,7 @@ import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
-import { commonResponse, compareEtag } from "./util.ts";
+import { createCommonResponse, compareEtag } from "./util.ts";
 
 interface EntryInfo {
   mode: string;
