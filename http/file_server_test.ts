@@ -150,7 +150,7 @@ async function fetchExactPath(
     });
   } finally {
     if (conn) {
-      Deno.close(conn.rid);
+      conn.close();
     }
   }
 }

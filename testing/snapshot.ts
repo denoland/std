@@ -356,7 +356,7 @@ class AssertSnapshotContext {
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
  * ```ts
- * import { assertSnapshot } from "./snapshot.ts";
+ * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
  *
  * Deno.test("snapshot", async (test) => {
  *  await assertSnapshot<number>(test, 2);

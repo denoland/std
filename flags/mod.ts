@@ -234,7 +234,7 @@ export interface ParseOptions<
    *
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "./mod.ts";
+   * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
    * console.dir(parse(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parse(Deno.args, { "--": true }));
@@ -332,12 +332,12 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * available in the `_` property of the returned object.
  *
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
