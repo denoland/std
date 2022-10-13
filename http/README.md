@@ -38,24 +38,6 @@ console.log(Status.NotFound); //=> 404
 console.log(STATUS_TEXT[Status.NotFound]); //=> "Not Found"
 ```
 
-## Common Response
-
-Small utility for returning a standardized response, automatically defining the
-body, status code and status text, according to the response type.
-
-```ts
-import {
-  commonResponse,
-  Status,
-} from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-
-const response = commonResponse(Status.NotFound);
-
-console.log(await response.text()); // "Not Found"
-console.log(response.status); // 404
-console.log(response.statusText); // "Not Found"
-```
-
 ## HTTP errors
 
 Provides error classes for each HTTP error status code as well as utility

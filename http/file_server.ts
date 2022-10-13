@@ -126,7 +126,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      return commonResponse(Status.NotFound);
+      return createCommonResponse(Status.NotFound);
     } else {
       throw error;
     }
@@ -134,7 +134,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    return commonResponse(Status.NotFound);
+    return createCommonResponse(Status.NotFound);
   }
 
   const file = await Deno.open(filePath);
@@ -178,7 +178,7 @@ export async function serveFile(
     ) {
       file.close();
 
-      return commonResponse(Status.NotModified, null, { headers });
+      return createCommonResponse(Status.NotModified, null, { headers });
     }
   }
 
@@ -209,9 +209,13 @@ export async function serveFile(
   ) {
     file.close();
 
-    return commonResponse(Status.RequestedRangeNotSatisfiable, undefined, {
-      headers,
-    });
+    return createCommonResponse(
+      Status.RequestedRangeNotSatisfiable,
+      undefined,
+      {
+        headers,
+      },
+    );
   }
 
   // Set content length
@@ -229,10 +233,10 @@ export async function serveFile(
         }),
       );
 
-    return commonResponse(Status.PartialContent, body, { headers });
+    return createCommonResponse(Status.PartialContent, body, { headers });
   }
 
-  return commonResponse(Status.OK, file.readable, { headers });
+  return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
@@ -283,17 +287,17 @@ async function serveDirIndex(
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
 
-  return commonResponse(Status.OK, page, { headers });
+  return createCommonResponse(Status.OK, page, { headers });
 }
 
 function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
-    return Promise.resolve(commonResponse(Status.BadRequest));
+    return Promise.resolve(createCommonResponse(Status.BadRequest));
   } else if (e instanceof Deno.errors.NotFound) {
-    return Promise.resolve(commonResponse(Status.NotFound));
+    return Promise.resolve(createCommonResponse(Status.NotFound));
   }
 
-  return Promise.resolve(commonResponse(Status.InternalServerError));
+  return Promise.resolve(createCommonResponse(Status.InternalServerError));
 }
 
 function serverLog(req: Request, status: number) {
