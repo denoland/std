@@ -21,8 +21,14 @@ export function access(
   const cb = makeCallback(callback);
 
   Deno.lstat(path).then((info) => {
+    if (info.mode === null) {
+      // If the file mode is unavailable, we pretend it has
+      // the permission
+      cb(null);
+      return;
+    }
     const m = +mode || 0;
-    let fileMode = +info.mode! || 0;
+    let fileMode = +info.mode || 0;
     if (Deno.build.os !== "windows" && info.uid === Deno.getUid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
@@ -70,6 +76,11 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
   mode = getValidMode(mode, "access");
   try {
     const info = Deno.lstatSync(path.toString());
+    if (info.mode === null) {
+      // If the file mode is unavailable, we pretend it has
+      // the permission
+      return;
+    }
     const m = +mode! || 0;
     let fileMode = +info.mode! || 0;
     if (Deno.build.os !== "windows" && info.uid === Deno.getUid()) {
