@@ -59,6 +59,24 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
   }
 });
 
+Deno.test("[node/child_process disconnect] the method exists", async () => {
+  const promise = withTimeout(1000);
+  const childProcess = spawn(Deno.execPath(), ["--help"], {
+    env: { NO_COLOR: "true" },
+  });
+  try {
+    childProcess.disconnect();
+    childProcess.on("exit", () => {
+      promise.resolve();
+    });
+    await promise;
+  } finally {
+    childProcess.kill();
+    childProcess.stdout?.destroy();
+    childProcess.stderr?.destroy();
+  }
+});
+
 Deno.test({
   name: "[node/child_process spawn] Verify that stdin and stdout work",
   fn: async () => {

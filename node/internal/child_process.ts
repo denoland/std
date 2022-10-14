@@ -5,7 +5,7 @@
 import { assert } from "../../_util/assert.ts";
 import { EventEmitter } from "../events.ts";
 import { os } from "../internal_binding/constants.ts";
-import { notImplemented } from "../_utils.ts";
+import { notImplemented, warnNotImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
 import { deferred } from "../../async/deferred.ts";
 import { isWindows } from "../../_util/os.ts";
@@ -261,6 +261,10 @@ export class ChildProcess extends EventEmitter {
 
   unref() {
     this.#process.unref();
+  }
+
+  disconnect() {
+    warnNotImplemented("ChildProcess.prototype.disconnect");
   }
 
   async #_waitForChildStreamsToClose() {
