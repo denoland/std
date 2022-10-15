@@ -19,7 +19,7 @@ import {
 
 async function expandGlobArray(
   globString: string,
-  options: ExpandGlobOptions
+  options: ExpandGlobOptions,
 ): Promise<string[]> {
   const paths: string[] = [];
   for await (const { path } of expandGlob(globString, options)) {
@@ -27,7 +27,7 @@ async function expandGlobArray(
   }
   paths.sort();
   const pathsSync = [...expandGlobSync(globString, options)].map(
-    ({ path }): string => path
+    ({ path }): string => path,
   );
   pathsSync.sort();
   assertEquals(paths, pathsSync);
@@ -36,7 +36,7 @@ async function expandGlobArray(
     assert(path.startsWith(root));
   }
   const relativePaths = paths.map(
-    (path: string): string => relative(root, path) || "."
+    (path: string): string => relative(root, path) || ".",
   );
   relativePaths.sort();
   return relativePaths;
@@ -100,7 +100,7 @@ Deno.test("expandGlobGlobstar", async function () {
   const options = { ...EG_OPTIONS, globstar: true };
   assertEquals(
     await expandGlobArray(joinGlobs(["**", "abc"], options), options),
-    ["abc", join("subdir", "abc")]
+    ["abc", join("subdir", "abc")],
   );
 });
 
@@ -108,7 +108,7 @@ Deno.test("expandGlobGlobstarParent", async function () {
   const options = { ...EG_OPTIONS, globstar: true };
   assertEquals(
     await expandGlobArray(joinGlobs(["subdir", "**", ".."], options), options),
-    ["."]
+    ["."],
   );
 });
 
