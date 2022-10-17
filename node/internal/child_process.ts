@@ -5,7 +5,7 @@
 import { assert } from "../../_util/assert.ts";
 import { EventEmitter } from "../events.ts";
 import { os } from "../internal_binding/constants.ts";
-import { notImplemented } from "../_utils.ts";
+import { notImplemented, warnNotImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
 import { deferred } from "../../async/deferred.ts";
 import { isWindows } from "../../_util/os.ts";
@@ -140,6 +140,7 @@ export class ChildProcess extends EventEmitter {
       cwd,
       shell = false,
       signal,
+      windowsVerbatimArguments = false,
     } = options || {};
     const [
       stdin = "pipe",
@@ -165,6 +166,7 @@ export class ChildProcess extends EventEmitter {
         stdin: toDenoStdio(stdin as NodeStdio | number),
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
+        windowsRawArguments: windowsVerbatimArguments,
       });
       this.pid = this.#process.pid;
 
@@ -261,6 +263,10 @@ export class ChildProcess extends EventEmitter {
 
   unref() {
     this.#process.unref();
+  }
+
+  disconnect() {
+    warnNotImplemented("ChildProcess.prototype.disconnect");
   }
 
   async #_waitForChildStreamsToClose() {
@@ -391,12 +397,8 @@ export interface ChildProcessOptions {
    */
   serialization?: "json" | "advanced";
 
-  /**
-   * NOTE: This option is not yet implemented.
-   *
-   * @see https://github.com/rust-lang/rust/issues/29494
-   * @see https://github.com/denoland/deno/issues/8852
-   */
+  /** No quoting or escaping of arguments is done on Windows. Ignored on Unix.
+   * Default: false. */
   windowsVerbatimArguments?: boolean;
 
   /**
@@ -659,10 +661,6 @@ function buildCommand(
 
     // Set the shell, switches, and commands.
     if (isWindows) {
-      // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
-      // For more details, see the following issues:
-      // * https://github.com/rust-lang/rust/issues/29494
-      // * https://github.com/denoland/deno/issues/8852
       if (typeof shell === "string") {
         file = shell;
       } else {
@@ -712,6 +710,8 @@ export interface SpawnSyncOptions {
   maxBuffer?: number;
   encoding?: string;
   shell?: boolean | string;
+  /** No quoting or escaping of arguments is done on Windows. Ignored on Unix.
+   * Default: false. */
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
   /** The below options aren't currently supported. However, they're here for validation checks. */
@@ -756,6 +756,7 @@ export function spawnSync(
     uid,
     gid,
     maxBuffer,
+    windowsVerbatimArguments = false,
   } = options;
   const normalizedStdio = normalizeStdioOption(stdio);
   [command, args] = buildCommand(command, args ?? [], shell);
@@ -770,6 +771,7 @@ export function spawnSync(
       stderr: toDenoStdio(normalizedStdio[2] as NodeStdio | number),
       uid,
       gid,
+      windowsRawArguments: windowsVerbatimArguments,
     });
 
     const { signal } = output;
