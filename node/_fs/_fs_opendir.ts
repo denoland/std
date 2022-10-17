@@ -4,7 +4,7 @@ import Dir from "./_fs_dir.ts";
 import { Buffer } from "../buffer.ts";
 import { assertEncoding, getValidatedPath } from "../internal/fs/utils.mjs";
 import { denoErrorToNodeError } from "../internal/errors.ts";
-import { validateFunction } from "../internal/validators.mjs";
+import { validateFunction, validateUint32 } from "../internal/validators.mjs";
 import { promisify } from "../internal/util.mjs";
 
 /** These options aren't funcitonally used right now, as `Dir` doesn't yet support them.
@@ -79,8 +79,16 @@ export function opendirSync(
 ): Dir {
   path = getValidatedPath(path).toString();
 
-  const encoding = options?.encoding ?? "utf8";
-  const bufferSize = options?.bufferSize ?? 32;
+  let encoding: string;
+  let bufferSize: number;
+  if (options) {
+    ({ encoding = "utf8", bufferSize = 32 } = options);
+  } else {
+    encoding = "utf8";
+    bufferSize = 32;
+  }
+
+  validateUint32(bufferSize, "bufferSize", true);
 
   try {
     assertEncoding(encoding);
