@@ -1,3 +1,13 @@
+### 0.160.0 / 2022.10.17
+
+- feat(crypto): export algorithm types (#2759)
+- feat(node): add readline/promises (#2760)
+- fix(node/child_process): add support of windowsVerbatimArguments option
+  (#2781)
+- fix(node/child_process): mock childProcess.disconnect method (#2776)
+- fix(node/fs): make fs.access resolve on windows (#2775)
+- fix(node/fs): resolve `Dirent` instead of Object (#2753)
+
 ### 0.159.0 / 2022.10.06
 
 - BREAKING: deprecate `std/textproto` (#2737)
