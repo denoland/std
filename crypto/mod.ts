@@ -113,11 +113,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
      */
     async digest(
       algorithm: DigestAlgorithm,
-      data:
-        | BufferSource
-        | AsyncIterable<BufferSource>
-        | Iterable<BufferSource>
-        | ReadableStream<BufferSource>,
+      data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
       const bytes = bufferSourceBytes(data);
