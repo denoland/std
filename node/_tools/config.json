@@ -740,7 +740,6 @@
       "test-child-process-execfile.js",
       "test-child-process-execsync-maxbuf.js",
       "test-child-process-kill.js",
-      "test-child-process-spawnsync-args.js",
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",
