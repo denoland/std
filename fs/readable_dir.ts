@@ -46,18 +46,18 @@ export async function readableDir(dirPath: string | URL): Promise<boolean> {
  *
  * Bad:
  * ```ts
- * import { readableDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { readableDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (await readableDir("./foo")) {
- *   await Deno.remove("./foo");
+ * if (readableDirSync("./foo")) {
+ *   Deno.removeSync("./foo");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readableDir
+ * // Notice no use of readableDirSync
  * try {
- *   await Deno.remove("./foo", { recursive: true });
+ *   Deno.removeSync("./foo", { recursive: true });
  * } catch (error) {
  *   if (!(error instanceof Deno.errors.NotFound)) {
  *     throw error;

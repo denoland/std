@@ -46,18 +46,18 @@ export async function readableFile(filePath: string | URL): Promise<boolean> {
  *
  * Bad:
  * ```ts
- * import { readableFile } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { readableFileSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (await readableFile("./foo.txt")) {
- *   await Deno.remove("./foo.txt");
+ * if (readableFileSync("./foo.txt")) {
+ *   Deno.removeSync("./foo.txt");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readableFile
+ * // Notice no use of readableFileSync
  * try {
- *   await Deno.remove("./foo.txt");
+ *   Deno.removeSync("./foo.txt");
  * } catch (error) {
  *   if (!(error instanceof Deno.errors.NotFound)) {
  *     throw error;
