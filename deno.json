@@ -50,10 +50,10 @@
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
+    "node:list-remaining-tests": "deno run --allow-net --allow-write --allow-read _tools/node_list_remaining_tests.ts",
     "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
     "build:hash": "deno task --cwd hash/_wasm wasmbuild",
     "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
-    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync",
-    "measure-compat": "deno run -A _tools/measure_compat.ts"
+    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
   }
 }

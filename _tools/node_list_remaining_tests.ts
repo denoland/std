@@ -49,9 +49,11 @@ async function getMissingTests(): Promise<string[]> {
 }
 
 async function main() {
-  const file = await Deno.open(new URL("../node/TODO.md", import.meta.url), { write: true });
+  const file = await Deno.open(new URL("../node/TODO.md", import.meta.url), {
+    write: true,
+  });
 
-  await file.write(encoder.encode("# Remaining Node Tests\n"));
+  await file.write(encoder.encode("# Remaining Node Tests\n\n"));
 
   for await (const test of await getMissingTests()) {
     await file.write(encoder.encode(`- [ ] ${test}\n`));

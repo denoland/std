@@ -105,6 +105,9 @@ jobs:
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
+      - name: List remaining Node tests
+        run: deno task node:list-remaining-tests
+
   lint:
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
