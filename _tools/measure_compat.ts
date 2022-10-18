@@ -1,10 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
 import { withoutAll } from "../collections/without_all.ts";
-import { intersect } from "../collections/intersect.ts";
 
 // deno-lint-ignore no-explicit-any
 type Object = Record<string, any>;
+
+const encoder = new TextEncoder();
 
 const NODE_BASE_URL = "https://api.github.com/repos/nodejs/node";
 
@@ -38,20 +39,25 @@ async function getDenoTests(): Promise<string[]> {
     .map((file: string) => file.replace(denoTestDir.pathname + "/", ""));
 }
 
-async function getTestsOverview(): Promise<Record<string, string[]>> {
+async function getMissingTests(): Promise<string[]> {
   const nodeTestDirSHA = await getNodeTestDirSHA();
   const nodeTests = await getNodeTests(nodeTestDirSHA);
 
   const denoTests = await getDenoTests();
 
-  return {
-    passing: intersect(nodeTests, denoTests),
-    remaining: withoutAll(nodeTests, denoTests),
-  };
+  return withoutAll(nodeTests, denoTests);
 }
 
 async function main() {
-  console.log(await getTestsOverview());
+  const file = await Deno.open(new URL("../node/TODO.md", import.meta.url), { write: true });
+
+  await file.write(encoder.encode("# Remaining Node Tests\n"));
+
+  for await (const test of await getMissingTests()) {
+    await file.write(encoder.encode(`- [ ] ${test}\n`));
+  }
+
+  file.close();
 }
 
 if (import.meta.main) {
