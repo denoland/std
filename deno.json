@@ -8,8 +8,8 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm_crypto/target",
+        "encoding/varint/_wasm_varint/target",
         "cov",
         "encoding/testdata/jsonc",
         "hash/_wasm/target",
@@ -25,8 +25,8 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm_crypto/target",
+        "encoding/varint/_wasm_varint/target",
         "encoding/testdata/jsonc",
         "cov",
         "hash/_wasm/target",
