@@ -1,22 +1,22 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Test whether or not the given path is readable directory by checking with the file system.
+ * Test whether or not the given path is readable by checking with the file system. To check simultaneously if the path is either a file or a directory please use `isReadableFile` or `isReadableDir` instead.
  *
  * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts
- * import { readableDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { isReadable } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (await readableDir("./foo")) {
+ * if (await isReadable("./foo")) {
  *   await Deno.remove("./foo");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readableDir
+ * // Notice no use of isReadable
  * try {
  *   await Deno.remove("./foo", { recursive: true });
  * } catch (error) {
@@ -28,9 +28,10 @@
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
  */
-export async function readableDir(dirPath: string | URL): Promise<boolean> {
+export async function isReadable(path: string | URL): Promise<boolean> {
   try {
-    return (await Deno.stat(dirPath)).isDirectory;
+    await Deno.stat(path);
+    return true;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
@@ -40,22 +41,22 @@ export async function readableDir(dirPath: string | URL): Promise<boolean> {
 }
 
 /**
- * Test whether or not the given path is readable directory by checking with the file system.
+ * Test whether or not the given path is readable by checking with the file system. To check simultaneously if the path is either a file or a directory please use `isReadableFile` or `isReadableDir` instead.
  *
  * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts
- * import { readableDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { isReadableSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (readableDirSync("./foo")) {
+ * if (isReadableSync("./foo")) {
  *   Deno.removeSync("./foo");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readableDirSync
+ * // Notice no use of isReadableSync
  * try {
  *   Deno.removeSync("./foo", { recursive: true });
  * } catch (error) {
@@ -67,9 +68,10 @@ export async function readableDir(dirPath: string | URL): Promise<boolean> {
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
  */
-export function readableDirSync(dirPath: string | URL): boolean {
+export function isReadableSync(path: string | URL): boolean {
   try {
-    return Deno.statSync(dirPath).isDirectory;
+    Deno.statSync(path);
+    return true;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;

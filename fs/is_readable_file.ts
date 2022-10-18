@@ -1,24 +1,24 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Test whether or not the given path is readable by checking with the file system. To check simultaneously if the path is either a file or a directory please use `readableFile` or `readableDir` instead.
+ * Test whether or not the given path is a readable file by checking with the file system.
  *
  * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts
- * import { readable } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { isReadableFile } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (await readable("./foo")) {
- *   await Deno.remove("./foo");
+ * if (await isReadableFile("./foo.txt")) {
+ *   await Deno.remove("./foo.txt");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readable
+ * // Notice no use of isReadableFile
  * try {
- *   await Deno.remove("./foo", { recursive: true });
+ *   await Deno.remove("./foo.txt");
  * } catch (error) {
  *   if (!(error instanceof Deno.errors.NotFound)) {
  *     throw error;
@@ -28,10 +28,9 @@
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
  */
-export async function readable(path: string | URL): Promise<boolean> {
+export async function isReadableFile(filePath: string | URL): Promise<boolean> {
   try {
-    await Deno.stat(path);
-    return true;
+    return (await Deno.stat(filePath)).isFile;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
@@ -41,24 +40,24 @@ export async function readable(path: string | URL): Promise<boolean> {
 }
 
 /**
- * Test whether or not the given path is readable by checking with the file system. To check simultaneously if the path is either a file or a directory please use `readableFile` or `readableDir` instead.
+ * Test whether or not the given path is a readable file by checking with the file system.
  *
  * Note: do not use this function if performing a check before another operation on that file. Doing so creates a race condition. Instead, perform the actual file operation directly.
  *
  * Bad:
  * ```ts
- * import { readableSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { isReadableFileSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
- * if (readableSync("./foo")) {
- *   Deno.removeSync("./foo");
+ * if (isReadableFileSync("./foo.txt")) {
+ *   Deno.removeSync("./foo.txt");
  * }
  * ```
  *
  * Good:
  * ```ts
- * // Notice no use of readableSync
+ * // Notice no use of isReadableFileSync
  * try {
- *   Deno.removeSync("./foo", { recursive: true });
+ *   Deno.removeSync("./foo.txt");
  * } catch (error) {
  *   if (!(error instanceof Deno.errors.NotFound)) {
  *     throw error;
@@ -68,10 +67,9 @@ export async function readable(path: string | URL): Promise<boolean> {
  * ```
  * @see https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
  */
-export function readableSync(path: string | URL): boolean {
+export function isReadableFileSync(filePath: string | URL): boolean {
   try {
-    Deno.statSync(path);
-    return true;
+    return Deno.statSync(filePath).isFile;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
