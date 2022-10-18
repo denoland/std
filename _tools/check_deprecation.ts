@@ -12,6 +12,9 @@ const EXCLUDED_PATHS = [
   "dotenv/testdata",
   "fs/testdata",
   "http/testdata",
+  "crypto/_wasm_crypto/target",
+  "encoding/varint/_wasm_varint/target",
+  "hash/_wasm/target",
 ];
 
 console.warn(
