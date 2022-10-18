@@ -2489,6 +2489,7 @@ export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
 
 interface UvExceptionContext {
   syscall: string;
+  path?: string;
 }
 export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
   const errno = extractOsErrorNumberFromErrorMessage(e);

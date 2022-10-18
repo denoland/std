@@ -26,7 +26,9 @@ export function notImplemented(msg: string): never {
 }
 
 export function warnNotImplemented(msg?: string) {
-  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+  const message = msg
+    ? `Warning: Not implemented: ${msg}`
+    : "Warning: Not implemented";
   console.warn(message);
 }
 

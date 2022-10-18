@@ -21,6 +21,20 @@ Deno.test(
 );
 
 Deno.test(
+  "[node/fs.access] doesn't reject on windows",
+  { ignore: Deno.build.os !== "windows" },
+  async () => {
+    const file = await Deno.makeTempFile();
+    try {
+      await fs.promises.access(file, fs.constants.R_OK);
+      await fs.promises.access(file, fs.constants.W_OK);
+    } finally {
+      await Deno.remove(file);
+    }
+  },
+);
+
+Deno.test(
   "[node/fs.accessSync] Uses the owner permission when the user is the owner",
   { ignore: Deno.build.os === "windows" },
   () => {
@@ -32,6 +46,20 @@ Deno.test(
       assertThrows(() => {
         fs.accessSync(file, fs.constants.X_OK);
       });
+    } finally {
+      Deno.removeSync(file);
+    }
+  },
+);
+
+Deno.test(
+  "[node/fs.accessSync] doesn't throw on windows",
+  { ignore: Deno.build.os !== "windows" },
+  () => {
+    const file = Deno.makeTempFileSync();
+    try {
+      fs.accessSync(file, fs.constants.R_OK);
+      fs.accessSync(file, fs.constants.W_OK);
     } finally {
       Deno.removeSync(file);
     }
