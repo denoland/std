@@ -5,6 +5,7 @@ import {
   Buffer,
   LimitedBytesTransformStream,
   LimitedTransformStream,
+  RangedByteTransformStream,
 } from "./buffer.ts";
 
 Deno.test("[streams] Buffer Write & Read", async function () {
@@ -127,4 +128,29 @@ Deno.test("[streams] LimitedTransformStream error", async function () {
       // needed to read
     }
   }, RangeError);
+});
+
+Deno.test("[streams] RangedByteTransformStream", async function () {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array([1, 2, 3]));
+      controller.enqueue(new Uint8Array([4, 5, 6]));
+      controller.enqueue(new Uint8Array([7, 8, 9]));
+      controller.enqueue(new Uint8Array([10, 11, 12]));
+      controller.enqueue(new Uint8Array([13, 14, 15]));
+      controller.enqueue(new Uint8Array([16, 17, 18]));
+      controller.close();
+    },
+  }).pipeThrough(new RangedByteTransformStream(2, 11));
+
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  assertEquals(chunks, [
+    new Uint8Array([3]),
+    new Uint8Array([4, 5, 6]),
+    new Uint8Array([7, 8, 9]),
+    new Uint8Array([10, 11]),
+  ]);
 });

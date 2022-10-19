@@ -233,16 +233,27 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
   }
 }
 
+/**
+ * Similar to `Array.prototype.slice()`, a transform stream that only transforms from the zero-indexed `start` byte to the zero-indexed `end` byte (`end` byte not included).
+ *
+ * @example
+ * ```ts
+ * import { RangedByteTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+ * const response = await fetch("https://example.com");
+ * const rangedStream = response.body!
+ *   .pipeThrough(new RangedByteTransformStream(3, 8));
+ * ```
+ */
 export class RangedByteTransformStream
   extends TransformStream<Uint8Array, Uint8Array> {
   #offset = 0;
 
-  constructor(start = 0, end = Infinity) {
+  constructor(start: number, end = Infinity) {
     super({
       transform: (chunk, controller) => {
         this.#offset += chunk.byteLength;
-        if (this.#offset >= start) {
-          if (start - (this.#offset - chunk.byteLength) > 0) {
+        if (this.#offset >= start + 1) {
+          if (start - (this.#offset - chunk.byteLength) >= 0) {
             chunk = chunk.slice(start - (this.#offset - chunk.byteLength));
           }
 
