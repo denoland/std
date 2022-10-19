@@ -30,11 +30,22 @@
  */
 export async function isReadable(path: string | URL): Promise<boolean> {
   try {
-    await Deno.stat(path);
-    return true;
+    const stat: Deno.FileInfo = await Deno.stat(path);
+    if (stat.mode == null) {
+      return true; // Non POSIX exclusive
+    }
+    if (Deno.getUid() == stat.uid) {
+      return (stat.mode & 0o400) == 0o400;
+    } else if (Deno.getGid() == stat.gid) {
+      return (stat.mode & 0o040) == 0o040;
+    }
+    return (stat.mode & 0o004) == 0o004;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
+    }
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return false; // Windows exclusive
     }
     throw error;
   }
@@ -70,11 +81,22 @@ export async function isReadable(path: string | URL): Promise<boolean> {
  */
 export function isReadableSync(path: string | URL): boolean {
   try {
-    Deno.statSync(path);
-    return true;
+    const stat: Deno.FileInfo = Deno.statSync(path);
+    if (stat.mode == null) {
+      return true; // Non POSIX exclusive
+    }
+    if (Deno.getUid() == stat.uid) {
+      return (stat.mode & 0o400) == 0o400;
+    } else if (Deno.getGid() == stat.gid) {
+      return (stat.mode & 0o040) == 0o040;
+    }
+    return (stat.mode & 0o004) == 0o004;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
+    }
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return false; // Windows exclusive
     }
     throw error;
   }

@@ -30,10 +30,25 @@
  */
 export async function isReadableDir(dirPath: string | URL): Promise<boolean> {
   try {
-    return (await Deno.stat(dirPath)).isDirectory;
+    const stat: Deno.FileInfo = await Deno.stat(dirPath);
+    if (!stat.isDirectory) {
+      return false;
+    }
+    if (stat.mode == null) {
+      return true; // Non POSIX exclusive
+    }
+    if (Deno.getUid() == stat.uid) {
+      return (stat.mode & 0o400) == 0o400;
+    } else if (Deno.getGid() == stat.gid) {
+      return (stat.mode & 0o040) == 0o040;
+    }
+    return (stat.mode & 0o004) == 0o004;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
+    }
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return false; // Windows exclusive
     }
     throw error;
   }
@@ -69,10 +84,25 @@ export async function isReadableDir(dirPath: string | URL): Promise<boolean> {
  */
 export function isReadableDirSync(dirPath: string | URL): boolean {
   try {
-    return Deno.statSync(dirPath).isDirectory;
+    const stat: Deno.FileInfo = Deno.statSync(dirPath);
+    if (!stat.isDirectory) {
+      return false;
+    }
+    if (stat.mode == null) {
+      return true; // Non POSIX exclusive
+    }
+    if (Deno.getUid() == stat.uid) {
+      return (stat.mode & 0o400) == 0o400;
+    } else if (Deno.getGid() == stat.gid) {
+      return (stat.mode & 0o040) == 0o040;
+    }
+    return (stat.mode & 0o004) == 0o004;
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return false;
+    }
+    if (error instanceof Deno.errors.PermissionDenied) {
+      return false; // Windows exclusive
     }
     throw error;
   }

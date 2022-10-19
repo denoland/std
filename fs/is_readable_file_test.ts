@@ -3,67 +3,164 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { isReadableFile, isReadableFileSync } from "./is_readable_file.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata");
+Deno.test("[fs] isReadableNotExist", async function () {
+  const tempDirPath: string = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await isReadableFile(path.join(tempDirPath, "not_exists")),
+      false,
+    );
+  } catch (error) {
+    throw error;
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("[fs] isReadableNotExistSync", function () {
+  const tempDirPath: string = Deno.makeTempDirSync();
+  try {
+    assertEquals(
+      isReadableFileSync(path.join(tempDirPath, "not_exists")),
+      false,
+    );
+  } catch (error) {
+    throw error;
+  } finally {
+    Deno.removeSync(tempDirPath, { recursive: true });
+  }
+});
 
 Deno.test("[fs] isReadableFile", async function () {
-  assertEquals(
-    await isReadableFile(path.join(testdataDir, "not_exist_file.ts")),
-    false,
-  );
-  assertEquals(await isReadableFile(path.join(testdataDir, "0.ts")), true);
+  const tempDirPath: string = await Deno.makeTempDir();
+  const tempFilePath: string = path.join(tempDirPath, "0.ts");
+  const tempFile: Deno.FsFile = await Deno.create(tempFilePath);
+  try {
+    assertEquals(await isReadableFile(tempFilePath), true);
+    if (Deno.build.os != "windows") {
+      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      await Deno.chmod(tempFilePath, 0o000);
+      assertEquals(await isReadableFile(tempFilePath), false);
+    }
+  } catch (error) {
+    throw error;
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableFileSync", function () {
-  assertEquals(
-    isReadableFileSync(path.join(testdataDir, "not_exist_file.ts")),
-    false,
-  );
-  assertEquals(isReadableFileSync(path.join(testdataDir, "0.ts")), true);
+  const tempDirPath: string = Deno.makeTempDirSync();
+  const tempFilePath: string = path.join(tempDirPath, "0.ts");
+  const tempFile: Deno.FsFile = Deno.createSync(tempFilePath);
+  try {
+    assertEquals(isReadableFileSync(tempFilePath), true);
+    if (Deno.build.os != "windows") {
+      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      Deno.chmodSync(tempFilePath, 0o000);
+      assertEquals(isReadableFileSync(tempFilePath), false);
+    }
+  } catch (error) {
+    throw error;
+  } finally {
+    tempFile.close();
+    Deno.removeSync(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableDir", async function () {
-  assertEquals(
-    await isReadableFile(path.join(testdataDir, "not_exist_directory")),
-    false,
-  );
-  assertEquals(await isReadableFile(testdataDir), false);
+  const tempDirPath: string = await Deno.makeTempDir();
+  try {
+    assertEquals(isReadableFileSync(tempDirPath), false);
+  } catch (error) {
+    throw error;
+  } finally {
+    await Deno.chmod(tempDirPath, 0o755);
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableDirSync", function () {
-  assertEquals(
-    isReadableFileSync(path.join(testdataDir, "not_exist_directory")),
-    false,
-  );
-  assertEquals(isReadableFileSync(testdataDir), false);
+  const tempDirPath = Deno.makeTempDirSync();
+  try {
+    assertEquals(isReadableFileSync(tempDirPath), false);
+  } catch (error) {
+    throw error;
+  } finally {
+    Deno.chmodSync(tempDirPath, 0o755);
+    Deno.removeSync(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableFileLink", async function () {
-  // TODO(axetroy): generate link file use Deno api instead of set a link file
-  // in repository
-  assertEquals(await isReadableFile(path.join(testdataDir, "0-link")), true);
+  const tempDirPath = await Deno.makeTempDir();
+  const tempFilePath = path.join(tempDirPath, "0.ts");
+  const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
+  const tempFile: Deno.FsFile = await Deno.create(tempFilePath);
+  try {
+    await Deno.symlink(tempFilePath, tempLinkFilePath);
+    assertEquals(await isReadableFile(tempLinkFilePath), true);
+    if (Deno.build.os != "windows") {
+      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      await Deno.chmod(tempFilePath, 0o000);
+      assertEquals(await isReadableFile(tempLinkFilePath), false);
+      // TODO(martin-braun): test with missing read permission on link when Rust/Deno supports it
+    }
+  } catch (error) {
+    throw error;
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableFileLinkSync", function () {
-  // TODO(axetroy): generate link file use Deno api instead of set a link file
-  // in repository
-  assertEquals(isReadableFileSync(path.join(testdataDir, "0-link")), true);
+  const tempDirPath: string = Deno.makeTempDirSync();
+  const tempFilePath: string = path.join(tempDirPath, "0.ts");
+  const tempLinkFilePath: string = path.join(tempDirPath, "0-link.ts");
+  const tempFile: Deno.FsFile = Deno.createSync(tempFilePath);
+  try {
+    Deno.symlinkSync(tempFilePath, tempLinkFilePath);
+    assertEquals(isReadableFileSync(tempLinkFilePath), true);
+    if (Deno.build.os != "windows") {
+      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      Deno.chmodSync(tempFilePath, 0o000);
+      assertEquals(isReadableFileSync(tempLinkFilePath), false);
+      // TODO(martin-braun): test with missing read permission on link when Rust/Deno supports it
+    }
+  } catch (error) {
+    throw error;
+  } finally {
+    tempFile.close();
+    Deno.removeSync(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableDirLink", async function () {
-  // TODO(axetroy): generate link file use Deno api instead of set a link file
-  // in repository
-  assertEquals(
-    await isReadableFile(path.join(testdataDir, "testdata-link")),
-    false,
-  );
+  const tempDirPath = await Deno.makeTempDir();
+  const tempLinkDirPath = path.join(tempDirPath, "temp-link");
+  try {
+    await Deno.symlink(tempDirPath, tempLinkDirPath);
+    assertEquals(await isReadableFile(tempLinkDirPath), false);
+  } catch (error) {
+    throw error;
+  } finally {
+    await Deno.chmod(tempDirPath, 0o755);
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
 });
 
 Deno.test("[fs] isReadableDirLinkSync", function () {
-  // TODO(axetroy): generate link file use Deno api instead of set a link file
-  // in repository
-  assertEquals(
-    isReadableFileSync(path.join(testdataDir, "testdata-link")),
-    false,
-  );
+  const tempDirPath: string = Deno.makeTempDirSync();
+  const tempLinkDirPath: string = path.join(tempDirPath, "temp-link");
+  try {
+    Deno.symlinkSync(tempDirPath, tempLinkDirPath);
+    assertEquals(isReadableFileSync(tempLinkDirPath), false);
+  } catch (error) {
+    throw error;
+  } finally {
+    Deno.chmodSync(tempDirPath, 0o755);
+    Deno.removeSync(tempDirPath, { recursive: true });
+  }
 });
