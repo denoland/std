@@ -141,7 +141,7 @@ Deno.test("[streams] RangedByteTransformStream", async function () {
       controller.enqueue(new Uint8Array([16, 17, 18]));
       controller.close();
     },
-  }).pipeThrough(new RangedByteTransformStream(2, 11));
+  }).pipeThrough(new RangedByteTransformStream(2, 10));
 
   const chunks = [];
   for await (const chunk of stream) {

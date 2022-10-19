@@ -234,7 +234,7 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
 }
 
 /**
- * Similar to `Array.prototype.slice()`, a transform stream that only transforms from the zero-indexed `start` byte to the zero-indexed `end` byte (`end` byte not included).
+ * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
  *
  * @example
  * ```ts
@@ -250,6 +250,9 @@ export class RangedByteTransformStream
 
   constructor(start: number, end = Infinity) {
     super({
+      start: () => {
+        end += 1;
+      },
       transform: (chunk, controller) => {
         this.#offset += chunk.byteLength;
         if (this.#offset >= start + 1) {
