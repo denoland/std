@@ -2414,10 +2414,14 @@ export class Server extends EventEmitter {
       return;
     }
 
+    // We use setTimeout instead of nextTick here to avoid EADDRINUSE error
+    // when the same port listened immediately after the 'close' event.
+    // ref: https://github.com/denoland/deno_std/issues/2788
     defaultTriggerAsyncIdScope(
       this[asyncIdSymbol],
-      nextTick,
+      setTimeout,
       _emitCloseNT,
+      0,
       this,
     );
   }
