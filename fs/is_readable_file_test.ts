@@ -105,7 +105,6 @@ Deno.test("[fs] isReadableFileLink", async function () {
       // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempFilePath, 0o000);
       assertEquals(await isReadableFile(tempLinkFilePath), false);
-      // TODO(martin-braun): test with missing read permission on link when Rust/Deno supports it
     }
   } catch (error) {
     throw error;
@@ -127,7 +126,6 @@ Deno.test("[fs] isReadableFileLinkSync", function () {
       // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempFilePath, 0o000);
       assertEquals(isReadableFileSync(tempLinkFilePath), false);
-      // TODO(martin-braun): test with missing read permission on link when Rust/Deno supports it
     }
   } catch (error) {
     throw error;
