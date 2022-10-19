@@ -232,3 +232,29 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
     });
   }
 }
+
+export class RangedByteTransformStream
+  extends TransformStream<Uint8Array, Uint8Array> {
+  #offset = 0;
+
+  constructor(start = 0, end = Infinity) {
+    super({
+      transform: (chunk, controller) => {
+        this.#offset += chunk.byteLength;
+        if (this.#offset >= start) {
+          if (start - (this.#offset - chunk.byteLength) > 0) {
+            chunk = chunk.slice(start - (this.#offset - chunk.byteLength));
+          }
+
+          if (end <= this.#offset) {
+            chunk = chunk.slice(0, chunk.byteLength - (this.#offset - end));
+            controller.enqueue(chunk);
+            controller.terminate();
+          }
+
+          controller.enqueue(chunk);
+        }
+      },
+    });
+  }
+}
