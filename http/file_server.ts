@@ -222,18 +222,10 @@ export async function serveFile(
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
-    const body = file.readable
-      .pipeThrough(
-        new TransformStream({
-          async start() {
-            if (start > 0) {
-              await file.seek(start, Deno.SeekMode.Start);
-            }
-          },
-        }),
-      );
-
-    return createCommonResponse(Status.PartialContent, body, { headers });
+    await file.seek(start, Deno.SeekMode.Start);
+    return createCommonResponse(Status.PartialContent, file.readable, {
+      headers,
+    });
   }
 
   return createCommonResponse(Status.OK, file.readable, { headers });
