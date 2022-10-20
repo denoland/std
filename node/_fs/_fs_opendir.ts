@@ -2,11 +2,7 @@
 
 import Dir from "./_fs_dir.ts";
 import { Buffer } from "../buffer.ts";
-import {
-  assertEncoding,
-  getOptions,
-  getValidatedPath,
-} from "../internal/fs/utils.mjs";
+import { getOptions, getValidatedPath } from "../internal/fs/utils.mjs";
 import { denoErrorToNodeError } from "../internal/errors.ts";
 import { validateFunction, validateInteger } from "../internal/validators.mjs";
 import { promisify } from "../internal/util.mjs";
