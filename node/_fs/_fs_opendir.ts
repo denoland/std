@@ -35,16 +35,13 @@ export function opendir(
 
   path = getValidatedPath(path).toString();
 
-  const { bufferSize, encoding } = getOptions(options, {
-    encoding: "utf8",
-    bufferSize: 32,
-  });
-
-  validateInteger(bufferSize, "options.bufferSize", 1, 4294967295);
-
   let err, dir;
   try {
-    assertEncoding(encoding);
+    const { _encoding, bufferSize } = getOptions(options, {
+      encoding: "utf8",
+      bufferSize: 32,
+    });
+    validateInteger(bufferSize, "options.bufferSize", 1, 4294967295);
 
     /** Throws if path is invalid */
     Deno.readDirSync(path);
@@ -72,7 +69,7 @@ export function opendirSync(
 ): Dir {
   path = getValidatedPath(path).toString();
 
-  const { bufferSize, encoding } = getOptions(options, {
+  const { _encoding, bufferSize } = getOptions(options, {
     encoding: "utf8",
     bufferSize: 32,
   });
@@ -80,8 +77,6 @@ export function opendirSync(
   validateInteger(bufferSize, "options.bufferSize", 1, 4294967295);
 
   try {
-    assertEncoding(encoding);
-
     /** Throws if path is invalid */
     Deno.readDirSync(path);
 
