@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { walk } from "../fs/walk.ts";
-import { withoutAll } from "../collections/without_all.ts";
+import { walk } from "../../fs/walk.ts";
+import { withoutAll } from "../../collections/without_all.ts";
 
 // deno-lint-ignore no-explicit-any
 type Object = Record<string, any>;
@@ -51,7 +51,7 @@ async function getNodeTests(sha: string): Promise<string[]> {
 
 async function getDenoTests(): Promise<string[]> {
   const files: string[] = [];
-  const denoTestDir = new URL("../node/_tools/test", import.meta.url);
+  const denoTestDir = new URL("./test", import.meta.url);
 
   for await (const { path } of walk(denoTestDir, { exts: [".js"] })) {
     files.push(path.replace(denoTestDir.pathname + "/", ""));
@@ -70,7 +70,7 @@ async function getMissingTests(): Promise<string[]> {
 }
 
 async function main() {
-  const file = await Deno.open(new URL("../node/TODO.md", import.meta.url), {
+  const file = await Deno.open(new URL("../TODO.md", import.meta.url), {
     write: true,
   });
 
