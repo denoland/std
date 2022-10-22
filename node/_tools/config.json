@@ -68,7 +68,6 @@
       "test-querystring.js",
       "test-readline-interface.js",
       "test-stdin-from-file-spawn.js",
-      "test-stream-writable-change-default-encoding.js",
       "test-url-urltooptions.js",
       "test-util-format.js",
       "test-util-inspect-namespace.js",
