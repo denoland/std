@@ -33,7 +33,7 @@ export function opendir(
 
   let err, dir;
   try {
-    const { _encoding, bufferSize } = getOptions(options, {
+    const { bufferSize } = getOptions(options, {
       encoding: "utf8",
       bufferSize: 32,
     });
@@ -65,7 +65,7 @@ export function opendirSync(
 ): Dir {
   path = getValidatedPath(path).toString();
 
-  const { _encoding, bufferSize } = getOptions(options, {
+  const { bufferSize } = getOptions(options, {
     encoding: "utf8",
     bufferSize: 32,
   });
