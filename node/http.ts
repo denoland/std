@@ -159,28 +159,29 @@ class ClientRequest extends NodeWritable {
     opts: RequestOptions,
   ): Promise<Buffer | ReadableStream | null> {
     if (!body) return null;
+    if (!opts.headers) return body;
 
-    const isChunked = (opts: RequestOptions) => {
-      if (!opts.headers) return true;
-      const headers = Object.fromEntries(
-        Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
-      );
-      if (RE_TE_CHUNKED.test(headers["transfer-encoding"])) return true;
-      if (!Number.isNaN(parseInt(headers["content-length"]))) return false;
-      return true;
-    };
+    const headers = Object.fromEntries(
+      Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+    );
 
-    if (isChunked(opts)) return body;
-
-    const reader = body.getReader();
-    const bufferList: Buffer[] = [];
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        return Buffer.concat(bufferList);
+    if (
+      !RE_TE_CHUNKED.test(headers["transfer-encoding"]) &&
+      !Number.isNaN(parseInt(headers["content-length"]))
+    ) {
+      const reader = body.getReader();
+      const bufferList: Buffer[] = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          reader.releaseLock();
+          return Buffer.concat(bufferList);
+        }
+        bufferList.push(value);
       }
-      bufferList.push(value);
     }
+
+    return body;
   }
 
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
