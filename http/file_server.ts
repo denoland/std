@@ -9,11 +9,11 @@ import { extname, posix } from "../path/mod.ts";
 import { encode } from "../encoding/hex.ts";
 import { contentType } from "../media_types/mod.ts";
 import { serve, serveTls } from "./server.ts";
-import { Status, STATUS_TEXT } from "./http_status.ts";
+import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
-import { compareEtag } from "./util.ts";
+import { compareEtag, createCommonResponse } from "./util.ts";
 
 interface EntryInfo {
   mode: string;
@@ -126,12 +126,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      const status = Status.NotFound;
-      const statusText = STATUS_TEXT[status];
-      return new Response(statusText, {
-        status,
-        statusText,
-      });
+      return createCommonResponse(Status.NotFound);
     } else {
       throw error;
     }
@@ -139,9 +134,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    const status = Status.NotFound;
-    const statusText = STATUS_TEXT[status];
-    return new Response(statusText, { status, statusText });
+    return createCommonResponse(Status.NotFound);
   }
 
   const file = await Deno.open(filePath);
@@ -183,16 +176,9 @@ export async function serveFile(
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
-      const status = Status.NotModified;
-      const statusText = STATUS_TEXT[status];
-
       file.close();
 
-      return new Response(null, {
-        status,
-        statusText,
-        headers,
-      });
+      return createCommonResponse(Status.NotModified, null, { headers });
     }
   }
 
@@ -221,45 +207,28 @@ export async function serveFile(
       start > maxRange ||
       end > maxRange)
   ) {
-    const status = Status.RequestedRangeNotSatisfiable;
-    const statusText = STATUS_TEXT[status];
-
     file.close();
 
-    return new Response(statusText, {
-      status,
-      statusText,
-      headers,
-    });
+    return createCommonResponse(
+      Status.RequestedRangeNotSatisfiable,
+      undefined,
+      {
+        headers,
+      },
+    );
   }
 
   // Set content length
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
-    const body = file.readable
-      .pipeThrough(
-        new TransformStream({
-          async start() {
-            if (start > 0) {
-              await file.seek(start, Deno.SeekMode.Start);
-            }
-          },
-        }),
-      );
-
-    return new Response(body, {
-      status: Status.PartialContent,
-      statusText: STATUS_TEXT[Status.PartialContent],
+    await file.seek(start, Deno.SeekMode.Start);
+    return createCommonResponse(Status.PartialContent, file.readable, {
       headers,
     });
   }
 
-  return new Response(file.readable, {
-    status: Status.OK,
-    statusText: STATUS_TEXT[Status.OK],
-    headers,
-  });
+  return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
@@ -310,32 +279,17 @@ async function serveDirIndex(
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
 
-  return new Response(page, { status: Status.OK, headers });
+  return createCommonResponse(Status.OK, page, { headers });
 }
 
 function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
-    return Promise.resolve(
-      new Response(STATUS_TEXT[Status.BadRequest], {
-        status: Status.BadRequest,
-        statusText: STATUS_TEXT[Status.BadRequest],
-      }),
-    );
+    return Promise.resolve(createCommonResponse(Status.BadRequest));
   } else if (e instanceof Deno.errors.NotFound) {
-    return Promise.resolve(
-      new Response(STATUS_TEXT[Status.NotFound], {
-        status: Status.NotFound,
-        statusText: STATUS_TEXT[Status.NotFound],
-      }),
-    );
+    return Promise.resolve(createCommonResponse(Status.NotFound));
   }
 
-  return Promise.resolve(
-    new Response(STATUS_TEXT[Status.InternalServerError], {
-      status: Status.InternalServerError,
-      statusText: STATUS_TEXT[Status.InternalServerError],
-    }),
-  );
+  return Promise.resolve(createCommonResponse(Status.InternalServerError));
 }
 
 function serverLog(req: Request, status: number) {

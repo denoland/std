@@ -1,9 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** EndOfLine character enum */
+/** Platform-specific conventions for the line ending format (i.e., the "end-of-line"). */
 export enum EOL {
+  /** Line Feed. Typically used in Unix (and Unix-like) systems. */
   LF = "\n",
+  /** Carriage Return + Line Feed. Historically used in Windows and early DOS systems. */
   CRLF = "\r\n",
 }
 

@@ -28,6 +28,7 @@ import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/index.ts";
 
 export { type Data, type Key, KeyStack } from "./keystack.ts";
+export { toHashString } from "./util.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -107,6 +108,10 @@ const stdCrypto: StdCrypto = ((x) => x)({
   subtle: {
     ...webCrypto.subtle,
 
+    /**
+     * Polyfills stream support until the Web Crypto API does so:
+     * @see {@link https://github.com/wintercg/proposal-webcrypto-streams}
+     */
     async digest(
       algorithm: DigestAlgorithm,
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,

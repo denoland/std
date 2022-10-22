@@ -1,5 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
+
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {
   "1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7, "9": 8, A: 9,
