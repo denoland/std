@@ -169,16 +169,11 @@ class ClientRequest extends NodeWritable {
       !RE_TE_CHUNKED.test(headers["transfer-encoding"]) &&
       !Number.isNaN(parseInt(headers["content-length"]))
     ) {
-      const reader = body.getReader();
       const bufferList: Buffer[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          reader.releaseLock();
-          return Buffer.concat(bufferList);
-        }
-        bufferList.push(value);
+      for await (const chunk of body) {
+        bufferList.push(chunk);
       }
+      return Buffer.concat(bufferList);
     }
 
     return body;
