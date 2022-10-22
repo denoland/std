@@ -34,7 +34,7 @@ import { createDeferredPromise, kEmptyObject } from "./internal/util.mjs";
 import { validateBoolean, validateObject } from "./internal/validators.mjs";
 
 const process = __process$;
-const Buffer = __buffer$;
+const { Buffer } = __buffer$;
 const Readable = Au;
 const Writable = mu;
 const Duplex = Tu;
