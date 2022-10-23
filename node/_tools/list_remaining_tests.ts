@@ -7,7 +7,8 @@ type Object = Record<string, any>;
 
 const encoder = new TextEncoder();
 
-const NODE_BASE_URL = "https://api.github.com/repos/nodejs/node";
+const NODE_API_BASE_URL = "https://api.github.com/repos/nodejs/node";
+const NODE_BASE_URL = "https://github.com/nodejs/node";
 const NODE_IGNORED_TEST_DIRS = [
   "addons",
   "async-hooks",
@@ -29,7 +30,7 @@ const NODE_IGNORED_TEST_DIRS = [
 ];
 
 async function getNodeTestDirSHA(): Promise<string> {
-  const response = await fetch(NODE_BASE_URL + "/contents");
+  const response = await fetch(NODE_API_BASE_URL + "/contents");
   const body = await response.json();
   return body
     .find(({ name }: Object) => name === "test")
@@ -37,7 +38,7 @@ async function getNodeTestDirSHA(): Promise<string> {
 }
 
 async function getNodeTests(sha: string): Promise<string[]> {
-  const url = NODE_BASE_URL + "/git/trees/" + sha + "?recursive=1";
+  const url = NODE_API_BASE_URL + "/git/trees/" + sha + "?recursive=1";
   const response = await fetch(url);
   const body = await response.json();
 
@@ -78,7 +79,12 @@ async function main() {
 
   const missingTests = await getMissingTests();
   for (let i = 0; i < missingTests.length; i++) {
-    await file.write(encoder.encode(`${i + 1}. ${missingTests[i]}\n`));
+    const test = missingTests[i];
+    await file.write(
+      encoder.encode(
+        `${i + 1}. [${test}](${NODE_BASE_URL + "/tree/main/test/" + test})\n`,
+      ),
+    );
   }
 
   file.close();
