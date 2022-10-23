@@ -11,17 +11,20 @@
  * @module
  */
 
-import { parse } from "./yaml.ts";
+import { parse as parseYAML } from "./yaml.ts";
 
-const pattern = "^(" +
-  "\\ufeff?" + // Maybe byte order mark
-  "(= yaml =|---)" +
-  "$([\\s\\S]*?)" +
-  "^(?:\\2|\\.\\.\\.)\\s*" +
-  "$" +
-  (Deno.build.os === "windows" ? "\\r?" : "") +
-  "(?:\\n)?)";
-const regex = new RegExp(pattern, "m");
+const { isArray } = Array;
+const [RX_RECOGNIZE_YAML, RX_YAML] = createRegExp(
+  ["---yaml", "---"],
+  "= yaml =",
+  "---",
+);
+const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
+  ["---json", "---"],
+  "= json =",
+);
+
+type Delimiter = string | [string, string];
 
 export type Extract<T> = {
   frontMatter: string;
@@ -29,35 +32,72 @@ export type Extract<T> = {
   attrs: T;
 };
 
+function getBeginToken(delimiter: Delimiter): string {
+  return isArray(delimiter) ? delimiter[0] : delimiter;
+}
+
+function getEndToken(delimiter: Delimiter): string {
+  return isArray(delimiter) ? delimiter[1] : delimiter;
+}
+
+function createRegExp(...d: Delimiter[]): [RegExp, RegExp] {
+  const beginPattern = "(" + d.map(getBeginToken).join("|") + ")";
+  const pattern = "^(" +
+    "\\ufeff?" + // Maybe byte order mark
+    beginPattern +
+    "$([\\s\\S]+?)" +
+    "^(?:" + d.map(getEndToken).join("|") + ")\\s*" +
+    "$" +
+    (Deno.build.os === "windows" ? "\\r?" : "") +
+    "(?:\\n)?)";
+
+  return [new RegExp(beginPattern + "$", "im"), new RegExp(pattern, "im")];
+}
+
+function _extract<T = unknown>(
+  str: string,
+  rx: RegExp,
+  parse: (str: string) => T,
+): Extract<T> {
+  const match = rx.exec(str);
+  if (!match) throw new TypeError("Unexpected end of input");
+  const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
+  const attrs = parse(frontMatter) as T;
+  const body = str.replace(match[0], "");
+  return { frontMatter, body, attrs };
+}
+
 /**
- * Extracts front matter from a string.
+ * Extracts front matter from a string. Supports YAML and JSON.
  * @param str String to extract from.
  *
  * ```ts
  * import { extract } from "https://deno.land/std@$STD_VERSION/encoding/front_matter.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const { attrs, body, frontMatter } = extract<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\n");
+ * let { attrs, body, frontMatter } = extract<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\n");
  * assertEquals(attrs.title, "Three dashes marks the spot");
  * assertEquals(body, "");
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
+ * 
+ * ({ attrs, body, frontMatter } = extract<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
+ * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
+ * assertEquals(body, "");
+ * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
  * ```
  */
 export function extract<T = unknown>(str: string): Extract<T> {
   const lines = str.split(/(\r?\n)/);
-  if (/= yaml =|---/.test(lines[0])) {
-    const match = regex.exec(str);
-    if (!match) throw new TypeError("Unexpected end of input");
-    const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
-    const attrs = parse(frontMatter) as T;
-    const body = str.replace(match[0], "");
-    return { frontMatter, body, attrs };
+  if (RX_RECOGNIZE_YAML.test(lines[0])) {
+    return _extract<T>(str, RX_YAML, parseYAML as (str: string) => T);
+  } else if (RX_RECOGNIZE_JSON.test(lines[0])) {
+    return _extract<T>(str, RX_JSON, JSON.parse);
   }
   throw new TypeError("Failed to extract front matter");
 }
 
 /**
- * Tests if a string has valid front matter.
+ * Tests if a string has valid front matter. Supports YAML and JSON.
  * @param str String to test.
  *
  * ```ts
@@ -65,8 +105,9 @@ export function extract<T = unknown>(str: string): Extract<T> {
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
+ * assert(test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
  * ```
  */
 export function test(str: string): boolean {
-  return regex.test(str);
+  return [RX_YAML, RX_JSON].some((rx) => rx.test(str));
 }
