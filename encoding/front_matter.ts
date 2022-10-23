@@ -98,13 +98,13 @@ function _extract<T = unknown>(
  * ```
  */
 export function extract<T = unknown>(str: string): Extract<T> {
-  const lines = str.split(/(\r?\n)/);
+  const [firstLine] = str.split(/(\r?\n)/);
 
-  if (RX_RECOGNIZE_YAML.test(lines[0])) {
+  if (RX_RECOGNIZE_YAML.test(firstLine)) {
     return _extract<T>(str, RX_YAML, parseYAML as Parser<T>);
-  } else if (RX_RECOGNIZE_TOML.test(lines[0])) {
+  } else if (RX_RECOGNIZE_TOML.test(firstLine)) {
     return _extract<T>(str, RX_TOML, parseTOML as Parser<T>);
-  } else if (RX_RECOGNIZE_JSON.test(lines[0])) {
+  } else if (RX_RECOGNIZE_JSON.test(firstLine)) {
     return _extract<T>(str, RX_JSON, JSON.parse);
   }
 
