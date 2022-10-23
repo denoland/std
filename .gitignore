@@ -5,4 +5,3 @@
 **/cov/
 /crypto/_wasm_crypto/target
 /encoding/varint/_wasm_varint/target
-/hash/_wasm/target

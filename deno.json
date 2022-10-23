@@ -12,7 +12,6 @@
         "encoding/varint/_wasm_varint/target",
         "cov",
         "encoding/testdata/jsonc",
-        "hash/_wasm/target",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -29,7 +28,6 @@
         "encoding/varint/_wasm_varint/target",
         "encoding/testdata/jsonc",
         "cov",
-        "hash/_wasm/target",
         "node/vendor",
         "node/_module/node_modules/",
         "node/_tools/versions",
@@ -51,7 +49,6 @@
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
     "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
-    "build:hash": "deno task --cwd hash/_wasm wasmbuild",
     "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
   }
