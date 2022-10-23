@@ -70,14 +70,15 @@ async function getMissingTests(): Promise<string[]> {
 }
 
 async function main() {
-  const file = await Deno.open(new URL("../TODO.md", import.meta.url), {
+  const file = await Deno.open(new URL("./TODO.md", import.meta.url), {
     write: true,
   });
 
   await file.write(encoder.encode("# Remaining Node Tests\n\n"));
 
-  for await (const test of await getMissingTests()) {
-    await file.write(encoder.encode(`- [ ] ${test}\n`));
+  const missingTests = await getMissingTests();
+  for (let i = 0; i < missingTests.length; i++) {
+    await file.write(encoder.encode(`${i + 1}. ${missingTests[i]}\n`));
   }
 
   file.close();
