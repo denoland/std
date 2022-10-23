@@ -90,7 +90,7 @@ function _extract<T = unknown>(
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "");
  * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot");
- * 
+ *
  * ({ attrs, body, frontMatter } = extract<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "goat");
