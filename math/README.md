@@ -14,7 +14,7 @@ parameters:
 This implementation makes use of the popular Box-Muller transform.
 
 ```ts
-import { normalDistribution } from "https://deno.land/std/math/distributions.ts";
+import { normalDistribution } from "https://deno.land/std@$STD_VERSION/math/distributions.ts";
 
 const distribution = normalDistribution(100, 16, 0.003)
 ```
