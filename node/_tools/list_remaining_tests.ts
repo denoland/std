@@ -44,7 +44,7 @@ async function getNodeTests(sha: string): Promise<string[]> {
 
   return body.tree
     .filter(({ path }: Object) =>
-      path.includes("test") && path.endsWith(".js") &&
+      path.includes("/test-") && path.endsWith(".js") &&
       !NODE_IGNORED_TEST_DIRS.some((dir) => path.startsWith(dir))
     )
     .map(({ path }: Object) => path);
