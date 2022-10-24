@@ -230,3 +230,19 @@ Deno.test("createRequire with http(s):// URL  throws with correct error message"
     "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'https://example.com/foo.js'",
   );
 });
+
+Deno.test("require Node-API module", () => {
+  const require = createRequire(import.meta.url);
+  if (Deno.build.os === "windows") {
+    // TODO(kt3k): Add lib binary for windows from 1_hello_world example of
+    // https://github.com/nodejs/node-addon-examples
+  }
+  if (Deno.build.os === "linux") {
+    // TODO(kt3k): Add lib binary for linux from 1_hello_world example of
+    // https://github.com/nodejs/node-addon-examples
+  }
+  if (Deno.build.os === "darwin") {
+    const str = require("./testdata/libhello_darwin.node").hello();
+    assertEquals(str, "world");
+  }
+});
