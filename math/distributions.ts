@@ -34,7 +34,15 @@ export function uniformRange(
   n: number,
   options: RangeOptions = BASE_RANGE_OPTIONS,
 ): number[] {
-  if (typeof n !== "number" || n <= 0 || !Number.isInteger(n)) return [];
+  if (typeof n !== "number" || n <= 0 || !Number.isInteger(n)) {
+    throw new TypeError(
+      `Length of the range (n) must be a natural number. Got ${
+        typeof n !== "number"
+          ? typeof n
+          : `a non-natural number ${n}`
+      }.`,
+    );
+  }
   const step = (options.min < options.max)
     ? (options.max - options.min) / (n - 1)
     : (options.max - options.min) / (1 - n);
@@ -64,7 +72,7 @@ function getNormalPoint(
 /**
  * Generate a normally distributed array using mean μ
  * and variance σ^2.
- * 
+ *
  * This snippet generates a distribution of 100 normally
  * distributed numbers with μ = 16 and σ^2 = 0.003.
  * ```ts
