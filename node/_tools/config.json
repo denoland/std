@@ -711,6 +711,7 @@
       "test-whatwg-url-custom-setters.js",
       "test-whatwg-url-custom-tostringtag.js",
       "test-whatwg-url-override-hostname.js",
+      "test-whatwg-url-properties.js",
       "test-whatwg-url-toascii.js",
       "test-zlib-close-after-error.js",
       "test-zlib-close-after-write.js",
