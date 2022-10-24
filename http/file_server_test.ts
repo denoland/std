@@ -9,6 +9,7 @@ import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
+import { crypto, toHashString } from "../crypto/mod.ts";
 
 let fileServer: Deno.Child;
 
@@ -26,6 +27,7 @@ interface FileServerCfg {
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
+const encoder = new TextEncoder();
 
 async function startFileServer({
   target = ".",
@@ -635,17 +637,9 @@ const getTestFileLastModified = async () => {
   }
 };
 
-function createEtagHash(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
+async function createEtagHash(buf: string): Promise<string> {
+  const hash = await crypto.subtle.digest("FNV32A", encoder.encode(buf));
+  return toHashString(hash);
 }
 
 Deno.test(
