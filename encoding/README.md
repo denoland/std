@@ -8,6 +8,7 @@ Helper module for dealing with external data structures.
 - [`base64url`](#base64url)
 - [`binary`](#binary)
 - [`csv`](#csv)
+- [`front matter`](#front-matter)
 - [`JSON streaming`](#json-streaming)
 - [`jsonc`](#jsonc)
 - [`toml`](#toml)
@@ -815,4 +816,125 @@ console.log(encoded);
 
 console.log(decode(encoded));
 // => Uint8Array(3) [ 97, 98, 99 ]
+```
+
+## Front Matter
+
+Extracts [front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/) from strings.
+
+Supported formats:
+  - [`YAML`](./front_matter/yaml.ts)
+  - [`TOML`](./front_matter/toml.ts)
+  - [`JSON`](./front_matter/json.ts)
+
+### Basic usage
+
+example.md
+```
+---
+module: front_matter
+tags:
+  - yaml
+  - toml
+  - json
+---
+
+deno is awesome
+```
+
+example.ts
+```ts
+import { extract, test } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/any.ts";
+
+const str = await Deno.readTextFile("./example.md");
+
+if (test(str)) {
+  console.log(extract(str));
+} else {
+  console.log("document doesn't contain front matter");
+}
+```
+
+```
+$ deno run ./example.ts
+{
+  frontMatter: "module: front_matter\ntags:\n  - yaml\n  - toml\n  - json",
+  body: "deno is awesome",
+  attrs: { module: "front_matter", tags: [ "yaml", "toml", "json" ] }
+}
+```
+
+The above example recognizes any of the supported formats, extracts metadata
+and parses accordingly. Please note that in this case both the [YAML](#yaml) 
+and [TOML](#toml) parsers will be imported as dependencies.
+
+If you need only one specific format then you can import the file named respectively from [here](./front_matter).
+
+### Advanced usage
+
+```ts
+import { createExtractor, test as _test, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
+
+const extract = createExtractor({
+  [Format.TOML]: parse as Parser,
+  [Format.JSON]: JSON.parse as Parser,
+});
+
+export function test(str: string): boolean {
+  return _test(str, [Format.TOML, Format.JSON]);
+}
+
+export function recognize(str: string): Format {
+  return _recognize(str, [Format.TOML, Format.JSON]);
+}
+```
+
+These function will work with TOML and JSON and only. This way the 
+YAML parser is not loaded if not needed.
+
+### Delimiters
+
+#### YAML
+```
+---
+these: are
+---
+```
+```
+---yaml
+all: recognized
+---
+```
+```
+= yaml =
+as: yaml
+= yaml =
+```
+
+#### TOML
+```
+---toml
+this = 'is'
+---
+```
+```
+= toml =
+parsed = 'as'
+toml = 'data'
+= toml =
+```
+
+#### JSON
+```
+---json
+{
+  "and": "this"
+}
+---
+```
+```
+{
+  "is": "JSON"
+}
 ```
