@@ -8,11 +8,10 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm_crypto/target",
+        "encoding/varint/_wasm_varint/target",
         "cov",
         "encoding/testdata/jsonc",
-        "hash/_wasm/target",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -25,11 +24,10 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm_crypto/target",
+        "encoding/varint/_wasm_varint/target",
         "encoding/testdata/jsonc",
         "cov",
-        "hash/_wasm/target",
         "node/vendor",
         "node/_module/node_modules/",
         "node/_tools/versions",
@@ -48,10 +46,10 @@
     "lint": "deno lint && deno task lint:circular-deps && deno task lint:licence-headers && deno task lint:deprecations",
     "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
-    "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
+    "node:list-remaining-tests": "deno run --allow-net --allow-write --allow-read node/_tools/list_remaining_tests.ts",
+    "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts && deno task node:list-remaining-tests",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
     "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
-    "build:hash": "deno task --cwd hash/_wasm wasmbuild",
     "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
   }

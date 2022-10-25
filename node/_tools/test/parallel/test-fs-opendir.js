@@ -201,22 +201,21 @@ async function doAsyncIterThrowTest() {
 }
 doAsyncIterThrowTest().then(common.mustCall());
 
-// TODO(wafuwafu13): enable this
-// // Check error thrown on invalid values of bufferSize
-// for (const bufferSize of [-1, 0, 0.5, 1.5, Infinity, NaN]) {
-//   assert.throws(
-//     () => fs.opendirSync(testDir, common.mustNotMutateObjectDeep({ bufferSize })),
-//     {
-//       code: 'ERR_OUT_OF_RANGE'
-//     });
-// }
-// for (const bufferSize of ['', '1', null]) {
-//   assert.throws(
-//     () => fs.opendirSync(testDir, common.mustNotMutateObjectDeep({ bufferSize })),
-//     {
-//       code: 'ERR_INVALID_ARG_TYPE'
-//     });
-// }
+// Check error thrown on invalid values of bufferSize
+for (const bufferSize of [-1, 0, 0.5, 1.5, Infinity, NaN]) {
+  assert.throws(
+    () => fs.opendirSync(testDir, common.mustNotMutateObjectDeep({ bufferSize })),
+    {
+      code: 'ERR_OUT_OF_RANGE'
+    });
+}
+for (const bufferSize of ['', '1', null]) {
+  assert.throws(
+    () => fs.opendirSync(testDir, common.mustNotMutateObjectDeep({ bufferSize })),
+    {
+      code: 'ERR_INVALID_ARG_TYPE'
+    });
+}
 
 // Check that passing a positive integer as bufferSize works
 {
