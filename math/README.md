@@ -24,7 +24,7 @@ const distribution = normalDistribution(100, 16, 0.003)
 Generate an array of numbers uniformly spread across a range.
 
 ```ts
-import { uniformRange } from "https://deno.land/std/math/distributions.ts";
+import { uniformRange } from "https://deno.land/std@$STD_VERSION/math/distributions.ts";
 
 const range = uniformRange(10, {
   min: 1,
