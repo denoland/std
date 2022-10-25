@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [canary]
+        deno: [873a5ce2eddb65cdfea7fc8bbcae3e8dfef5dfb9]
         os:
           - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
           - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
