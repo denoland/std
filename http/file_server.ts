@@ -6,7 +6,6 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import { encode } from "../encoding/hex.ts";
 import { contentType } from "../media_types/mod.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status } from "./http_status.ts";
@@ -14,6 +13,7 @@ import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
+import { crypto, DigestAlgorithm, toHashString } from "../crypto/mod.ts";
 
 interface EntryInfo {
   mode: string;
@@ -23,42 +23,6 @@ interface EntryInfo {
 }
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-// The fnv-1a hash function.
-function fnv1a(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
-}
-
-/** Algorithm used to determine etag */
-export type EtagAlgorithm =
-  | "fnv1a"
-  | "sha-1"
-  | "sha-256"
-  | "sha-384"
-  | "sha-512";
-
-// Generates a hash for the provided string
-async function createEtagHash(
-  message: string,
-  algorithm: EtagAlgorithm = "fnv1a",
-): Promise<string> {
-  if (algorithm === "fnv1a") {
-    return fnv1a(message);
-  }
-  const msgUint8 = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest(algorithm, msgUint8);
-  return decoder.decode(encode(new Uint8Array(hashBuffer)));
-}
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
@@ -102,7 +66,7 @@ function fileLenToString(len: number): string {
 /** Interface for serveFile options. */
 export interface ServeFileOptions {
   /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
-  etagAlgorithm?: EtagAlgorithm;
+  etagAlgorithm?: DigestAlgorithm;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
 }
@@ -159,11 +123,12 @@ export async function serveFile(
     headers.set("last-modified", lastModified.toUTCString());
 
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
-      etagAlgorithm || "fnv1a",
+    const etagHash = await crypto.subtle.digest(
+      etagAlgorithm ?? "FNV32A",
+      encoder.encode(`${lastModified.toJSON()}${fileInfo.size}`),
     );
-    headers.set("etag", simpleEtag);
+    const etag = toHashString(etagHash);
+    headers.set("etag", etag);
 
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
@@ -171,7 +136,7 @@ export async function serveFile(
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch && compareEtag(ifNoneMatch, simpleEtag)) ||
+      (ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
       (ifNoneMatch === null &&
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
@@ -222,18 +187,10 @@ export async function serveFile(
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
-    const body = file.readable
-      .pipeThrough(
-        new TransformStream({
-          async start() {
-            if (start > 0) {
-              await file.seek(start, Deno.SeekMode.Start);
-            }
-          },
-        }),
-      );
-
-    return createCommonResponse(Status.PartialContent, body, { headers });
+    await file.seek(start, Deno.SeekMode.Start);
+    return createCommonResponse(Status.PartialContent, file.readable, {
+      headers,
+    });
   }
 
   return createCommonResponse(Status.OK, file.readable, { headers });
@@ -457,7 +414,7 @@ export interface ServeDirOptions {
   /** Do not print request level logs. Defaults to false. Defaults to false. */
   quiet?: boolean;
   /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
-  etagAlgorithm?: EtagAlgorithm;
+  etagAlgorithm?: DigestAlgorithm;
 }
 
 /**

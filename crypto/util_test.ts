@@ -1,16 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
-import { createHash, SupportedAlgorithm } from "./mod.ts";
-import { Message } from "./hasher.ts";
-import * as bytes from "../bytes/mod.ts";
-import { dirname, fromFileUrl } from "../path/mod.ts";
+import { crypto, type DigestAlgorithm } from "./mod.ts";
+import { toHashString } from "./util.ts";
+import { repeat } from "../bytes/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
 
-const moduleDir = dirname(fromFileUrl(import.meta.url));
+const encoder = new TextEncoder();
 
 const millionAs = "a".repeat(1000000);
 
 // Simple periodic data, but the periods shouldn't line up with any block sizes.
-const aboutAMeg = bytes.repeat(
+const aboutAMeg = repeat(
   new Uint8Array(1237).fill(0).map((_, i) => i % 251),
   839,
 );
@@ -20,8 +19,8 @@ const slicedView = new Int16Array(aboutAMeg.buffer, 226, 494443);
 const slicedCopy = new Uint8Array(aboutAMeg.slice(226, 226 + 16 / 8 * 494443));
 const bufferCopy = slicedCopy.buffer;
 
-const testSetHex: Record<string, [Message, string][]> = {
-  md5: [
+const testSetHex: Record<string, [string | BufferSource, string][]> = {
+  MD5: [
     ["", "d41d8cd98f00b204e9800998ecf8427e"],
     ["abc", "900150983cd24fb0d6963f7d28e17f72"],
     ["deno", "c8772b401bc911da102a5291cc4ec83b"],
@@ -43,7 +42,7 @@ const testSetHex: Record<string, [Message, string][]> = {
     [slicedCopy, "81f7e24f254ca2af692188d17b5103d8"],
     [bufferCopy, "81f7e24f254ca2af692188d17b5103d8"],
   ],
-  sha1: [
+  "SHA-1": [
     ["", "da39a3ee5e6b4b0d3255bfef95601890afd80709"],
     ["abc", "a9993e364706816aba3e25717850c26c9cd0d89d"],
     ["deno", "bb3d8e712d9e7ad4af08d4a38f3f52d9683d58eb"],
@@ -65,7 +64,7 @@ const testSetHex: Record<string, [Message, string][]> = {
     [slicedCopy, "b0161602fcdd324d2d0222b5c8d2873ff1f6452e"],
     [bufferCopy, "b0161602fcdd324d2d0222b5c8d2873ff1f6452e"],
   ],
-  sha256: [
+  "SHA-256": [
     ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
     ["abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
     [
@@ -105,7 +104,7 @@ const testSetHex: Record<string, [Message, string][]> = {
       "38fa97da941ae64bc1ec0d28fa14023e8041fd31857053d387d97e0ea1498203",
     ],
   ],
-  sha512: [
+  "SHA-512": [
     [
       "",
       "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
@@ -151,7 +150,7 @@ const testSetHex: Record<string, [Message, string][]> = {
       "b7e29c5e61c67f5332740e01a1932be71aee0baf8e6d3156027585948cd58abbcf302de41978b0de26a0fb768708351963c6c01c1198e0dae7deaee448632445",
     ],
   ],
-  "sha3-256": [
+  "SHA3-256": [
     ["", "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a"],
     ["abc", "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532"],
     [
@@ -191,7 +190,7 @@ const testSetHex: Record<string, [Message, string][]> = {
       "ec3e5fb22a6a7e2f404cb10fca361a3edc3a6f7eaaeb83a4142adf3f89e5b1d5",
     ],
   ],
-  "sha3-512": [
+  "SHA3-512": [
     [
       "",
       "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
@@ -237,7 +236,7 @@ const testSetHex: Record<string, [Message, string][]> = {
       "8b43aec6757a768580ed9bb74e373040a25692054d5097cf0ab8f9b565c266ab6964aa02b1d54388b10bc80461f83dbc8cf9e59c8321124315b8058b1a057b2a",
     ],
   ],
-  blake3: [
+  BLAKE3: [
     ["", "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"],
     ["abc", "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"],
     [
@@ -277,7 +276,7 @@ const testSetHex: Record<string, [Message, string][]> = {
       "8549694280dea254adb1b856779d2d4f09256004e7536bbf544a1859e66b5f9c",
     ],
   ],
-  tiger: [
+  TIGER: [
     ["", "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3"],
     ["a", "77befbef2e7ef8ab2ec8f93bf587a7fc613e247f5f247809"],
     ["abc", "2aab1484e8c158f2bfb8c5ff41b57a525129131c957b5f93"],
@@ -294,7 +293,7 @@ const testSetHex: Record<string, [Message, string][]> = {
 };
 
 const testSetBase64: Record<string, string[][]> = {
-  md5: [
+  MD5: [
     ["", "1B2M2Y8AsgTpgAmY7PhCfg=="],
     ["abc", "kAFQmDzST7DWlj99KOF/cg=="],
     ["deno", "yHcrQBvJEdoQKlKRzE7IOw=="],
@@ -309,7 +308,7 @@ const testSetBase64: Record<string, string[][]> = {
     ],
     [millionAs, "dwfWrk4CfHDuoqk1wilvIQ=="],
   ],
-  sha1: [
+  "SHA-1": [
     ["", "2jmj7l5rSw0yVb/vlWAYkK/YBwk="],
     ["abc", "qZk+NkcGgWq6PiVxeFDCbJzQ2J0="],
     ["deno", "uz2OcS2eetSvCNSjjz9S2Wg9WOs="],
@@ -327,7 +326,7 @@ const testSetBase64: Record<string, string[][]> = {
     ],
     [millionAs, "NKqXPNTE2qT2Husr260nMWU0AW8="],
   ],
-  sha256: [
+  "SHA-256": [
     ["", "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="],
     ["abc", "ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="],
     ["deno", "6HLnvSrmq88TpMg0Apo0LIgsEWLr93tnIJaLIAAxL/s="],
@@ -345,7 +344,7 @@ const testSetBase64: Record<string, string[][]> = {
     ],
     [millionAs, "zcduXJkU+5KBocfihNc+Z/GAmkiklyAOBG05zMcRLNA="],
   ],
-  sha512: [
+  "SHA-512": [
     [
       "",
       "z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==",
@@ -375,7 +374,7 @@ const testSetBase64: Record<string, string[][]> = {
       "5xhIPQznaWROLkLHvBW0Y44fmLE7IEQoVjKoA6+pc+veD/JEh36mCkywQyzld8Mb6wCcXCxJqi5OrbIXrYzAmw==",
     ],
   ],
-  "sha3-256": [
+  "SHA3-256": [
     ["", "p//G+L8e12ZRwUdWoGHWYvWA/03kO0n6gtgKS4D4Q0o="],
     ["abc", "Ophdp0/iJbIEXBcta9OQvYVfCG4+nVJbRr/iRRFDFTI="],
     ["deno", "dKYoavkPh3XXQID4ZM+AsR7s9vFNMlxe+Mn3zMgFVRc="],
@@ -393,7 +392,7 @@ const testSetBase64: Record<string, string[][]> = {
     ],
     [millionAs, "XIh1rkdKNjS6T9VeyFv/1mHzKsp1xtaZ0M3LbBFYkcE="],
   ],
-  "sha3-512": [
+  "SHA3-512": [
     [
       "",
       "pp9zzKI6msXItWfcGFp1bpfJghZP4lhZ4NHcwUdcgKYVshI68fX5TBHj6UAsOsVY9QAZnZW20+MBdYWGKB3NJg==",
@@ -423,7 +422,7 @@ const testSetBase64: Record<string, string[][]> = {
       "PDqHbaFANKtgYnwHe7mPfhIKKlNwIS3/szhaGNTziFntMR0KnVFBzpzFxm7mibJmqKoYrOgoKg4NtZbJCwp7hw==",
     ],
   ],
-  blake3: [
+  BLAKE3: [
     [
       "",
       "rxNJufX5oaagQE3qNtzJSZvLJcmtwRK3zJqTyuQfMmI=",
@@ -455,121 +454,28 @@ const testSetBase64: Record<string, string[][]> = {
   ],
 };
 
-Deno.test("[hash/all/hex] testAllHex", () => {
+Deno.test("[crypto/util/hex] testAllHex", async () => {
   for (const algorithm in testSetHex) {
     for (const [input, output] of testSetHex[algorithm]) {
-      const hash = createHash(algorithm as SupportedAlgorithm);
-      assertEquals(hash.update(input).toString(), output);
+      const data = typeof input === "string" ? encoder.encode(input) : input;
+      const hash = await crypto.subtle.digest(
+        algorithm as DigestAlgorithm,
+        data,
+      );
+      assertEquals(toHashString(hash), output);
     }
   }
 });
 
-Deno.test("[hash/all/base64] testAllBase64", () => {
+Deno.test("[crypto/util/base64] testAllBase64", async () => {
   for (const algorithm in testSetBase64) {
     for (const [input, output] of testSetBase64[algorithm]) {
-      const hash = createHash(algorithm as SupportedAlgorithm);
-      assertEquals(hash.update(input).toString("base64"), output);
+      const data = typeof input === "string" ? encoder.encode(input) : input;
+      const hash = await crypto.subtle.digest(
+        algorithm as DigestAlgorithm,
+        data,
+      );
+      assertEquals(toHashString(hash, "base64"), output);
     }
   }
-});
-
-Deno.test("[hash/memory_use] testMemoryUse", async () => {
-  const process = Deno.spawnChild(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
-    cwd: moduleDir,
-    stdin: "piped",
-  });
-
-  const writer = process.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { createHash } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.mjs";
-
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      const smallData = new Uint8Array(64);
-      const smallHasher = createHash("md5");
-      smallHasher.update(smallData);
-      const smallDigest = smallHasher.toString();
-      const heapBytesAfterSmall = memory.buffer.byteLength;
-
-      const largeData = new Uint8Array(64_000_000);
-      const largeHasher = createHash("md5");
-      largeHasher.update(largeData);
-      const largeDigest = largeHasher.toString();
-      const heapBytesAfterLarge = memory.buffer.byteLength;
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          smallDigest,
-          heapBytesAfterSmall,
-          largeDigest,
-          heapBytesAfterLarge,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await process.stdin.close();
-
-  const { success, stdout } = await process.output();
-  const processedStdout = new TextDecoder().decode(stdout);
-
-  assert(success);
-  const {
-    heapBytesInitial,
-    smallDigest,
-    heapBytesAfterSmall,
-    largeDigest,
-    heapBytesAfterLarge,
-  }: {
-    heapBytesInitial: number;
-    smallDigest: string;
-    heapBytesAfterSmall: number;
-    largeDigest: string;
-    heapBytesAfterLarge: number;
-  } = JSON.parse(processedStdout);
-
-  assertEquals(smallDigest, "3b5d3c7d207e37dceeedd301e35e2e58");
-  assertEquals(largeDigest, "e78585b8bfda6036cfd818710a210f23");
-
-  // Heap should stay under 2MB even though we provided a 64MB input.
-  assert(
-    heapBytesInitial < 2_000_000,
-    `Wasm heap was too large initially: ${
-      (heapBytesInitial / 1_000_000).toFixed(1)
-    } MB`,
-  );
-  assert(
-    heapBytesAfterSmall < 2_000_000,
-    `Wasm heap was too large after small input: ${
-      (heapBytesAfterSmall / 1_000_000).toFixed(1)
-    } MB`,
-  );
-  assert(
-    heapBytesAfterLarge < 2_000_000,
-    `Wasm heap was too large after large input: ${
-      (heapBytesAfterLarge / 1_000_000).toFixed(1)
-    } MB`,
-  );
-});
-
-Deno.test("[hash/double_digest] testDoubleDigest", () => {
-  assertThrows(
-    () => {
-      const hash = createHash("md5");
-      hash.update("test");
-      const h1 = hash.digest();
-      const h2 = hash.digest();
-      assertEquals(h1, h2);
-    },
-    Error,
-    "hash: already digested",
-  );
 });

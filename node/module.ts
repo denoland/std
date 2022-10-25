@@ -1350,7 +1350,9 @@ Module._extensions[".json"] = (module: Module, filename: string) => {
   }
 };
 
-// .node extension is not supported
+Module._extensions[".node"] = (module: Module, filename: string) => {
+  module.exports = core.ops.op_napi_open(filename);
+};
 
 function createRequireFromPath(filename: string): RequireFunction {
   // Allow a directory to be passed as the filename

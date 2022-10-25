@@ -11,6 +11,8 @@ const EXCLUDED_PATHS = [
   "node/_module/node_modules",
   "node/_tools",
   "node/testdata",
+  "crypto/_wasm_crypto/target",
+  "encoding/varint/_wasm_varint/target",
 ];
 
 const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);

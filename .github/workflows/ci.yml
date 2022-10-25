@@ -41,7 +41,7 @@ jobs:
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -151,7 +151,7 @@ jobs:
           shopt -s inherit_errexit
           declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
           echo "Wasm crypto source modified in this commit? $modified"
           echo "$modifications"
 
@@ -191,7 +191,7 @@ jobs:
           shopt -s inherit_errexit
           declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm_varint)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
           echo "Wasm varint source modified in this commit? $modified"
           echo "$modifications"
 
