@@ -1,11 +1,37 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { extract, test } from "./front_matter.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../../testing/asserts.ts";
+import extract, { Format, recognize, test } from "./any.ts";
+
+Deno.test("[ANY] recognize", () => {
+  Object.entries({
+    [Format.YAML]: [
+      "---\ntitle: Three dashes marks the spot\n---\n",
+      "---yaml\ntitle: Three dashes followed by format name marks the spot\n---\n",
+      "= yaml =\ntitle: Format name between equal signs also marks the spot\n= yaml =\n",
+    ],
+    [Format.TOML]: [
+      "---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n",
+      "= toml =\ntitle = 'Format name between equal signs also marks the spot'\n= toml =\n",
+    ],
+    [Format.JSON]: [
+      '---json\n{"title": "Three dashes followed by format marks the spot"}\n---\n',
+      '= json =\n{"title": "Format name between equal signs also marks the spot"}\n= json =\n',
+    ],
+    [Format.UNKNOWN]: [
+      "---xml\n<title>Three dashes marks the spot</title>\n---\n",
+      "= xml =\n<title>Format name between equal signs also marks the spot</title>\n= xml =\n",
+    ],
+  }).forEach(([format, strs]) => {
+    strs.forEach((str) => {
+      assertEquals(recognize(str), format);
+    });
+  });
+});
 
 // YAML //
 
-Deno.test("[YAML] test valid input true", () => {
+Deno.test("[ANY/YAML] test valid input true", () => {
   [
     "---\nname: deno\n---\n",
     "---yaml\nname: deno\n---\n",
@@ -16,7 +42,7 @@ Deno.test("[YAML] test valid input true", () => {
   });
 });
 
-Deno.test("[YAML] test invalid input false", () => {
+Deno.test("[ANY/YAML] test invalid input false", () => {
   [
     "",
     "---",
@@ -31,7 +57,7 @@ Deno.test("[YAML] test invalid input false", () => {
   });
 });
 
-Deno.test("[YAML] extract type error on invalid input", () => {
+Deno.test("[ANY/YAML] extract type error on invalid input", () => {
   [
     "",
     "---",
@@ -46,7 +72,7 @@ Deno.test("[YAML] extract type error on invalid input", () => {
   });
 });
 
-Deno.test("[YAML] parse yaml delineate by `---`", () => {
+Deno.test("[ANY/YAML] parse yaml delineate by `---`", () => {
   const content = extract<
     { title: string; tags: string[]; "expanded-description": string }
   >(`---
@@ -83,7 +109,7 @@ expanded-description: with some --- crazy stuff in it`,
   );
 });
 
-Deno.test("[YAML] parse yaml delineate by `---yaml`", () => {
+Deno.test("[ANY/YAML] parse yaml delineate by `---yaml`", () => {
   const content = extract<
     { title: string; tags: string[]; "expanded-description": string }
   >(`---yaml
@@ -122,7 +148,7 @@ expanded-description: with some --- crazy stuff in it`,
 
 // JSON //
 
-Deno.test("[JSON] test valid input true", () => {
+Deno.test("[ANY/JSON] test valid input true", () => {
   [
     '---json\n{\n  "name": "deno"\n}\n---\n',
     '= json =\n{\n  "name": "deno"\n}\n= json =\n',
@@ -132,7 +158,7 @@ Deno.test("[JSON] test valid input true", () => {
   });
 });
 
-Deno.test("[JSON] test invalid input false", () => {
+Deno.test("[ANY/JSON] test invalid input false", () => {
   [
     "",
     "---json",
@@ -145,7 +171,7 @@ Deno.test("[JSON] test invalid input false", () => {
   });
 });
 
-Deno.test("[JSON] extract type error on invalid input", () => {
+Deno.test("[ANY/JSON] extract type error on invalid input", () => {
   [
     "",
     "---json",
@@ -158,7 +184,7 @@ Deno.test("[JSON] extract type error on invalid input", () => {
   });
 });
 
-Deno.test("[JSON] parse json delineate by ---json", () => {
+Deno.test("[ANY/JSON] parse json delineate by ---json", () => {
   const content = extract<
     { title: string; tags: string[]; "expanded-description": string }
   >(`---json
@@ -204,7 +230,7 @@ don't break
 
 // TOML //
 
-Deno.test("[TOML] test valid input true", () => {
+Deno.test("[ANY/TOML] test valid input true", () => {
   [
     "---toml\nname = 'deno'\n---\n",
     "= toml =\nname = 'deno'\n= toml =\n",
@@ -214,7 +240,7 @@ Deno.test("[TOML] test valid input true", () => {
   });
 });
 
-Deno.test("[TOML] test invalid input false", () => {
+Deno.test("[ANY/TOML] test invalid input false", () => {
   [
     "",
     "---toml",
@@ -227,7 +253,7 @@ Deno.test("[TOML] test invalid input false", () => {
   });
 });
 
-Deno.test("[TOML] extract type error on invalid input", () => {
+Deno.test("[ANY/TOML] extract type error on invalid input", () => {
   [
     "",
     "---toml",
@@ -240,7 +266,7 @@ Deno.test("[TOML] extract type error on invalid input", () => {
   });
 });
 
-Deno.test("[TOML] parse json delineate by ---toml", () => {
+Deno.test("[ANY/TOML] parse toml delineate by ---toml", () => {
   const content = extract<
     { title: string; tags: string[]; "expanded-description": string }
   >(`---toml
