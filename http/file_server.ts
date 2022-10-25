@@ -13,7 +13,8 @@ import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
-import { createHash, DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
 
 interface EntryInfo {
   mode: string;
