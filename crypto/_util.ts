@@ -17,7 +17,7 @@ const encoder = new TextEncoder();
  *
  * @example <caption>After:</caption>
  * ```ts
- * import { createHash } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { createHash } from "https://deno.land/std@$STD_VERSION/crypto/_util.ts";
  *
  * const hash = await createHash("SHA-1", "Hello, world!");
  * ```
