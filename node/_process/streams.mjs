@@ -42,6 +42,8 @@ function createWritableStdioStream(writer, name) {
       configurable: true,
       get: () =>
         Deno.isatty?.(writer?.rid)
+          // TODO(bartlomieju):
+          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
           ? Deno.consoleSize?.(writer?.rid).columns
           : undefined,
     },
@@ -50,6 +52,8 @@ function createWritableStdioStream(writer, name) {
       configurable: true,
       get: () =>
         Deno.isatty?.(writer?.rid)
+          // TODO(bartlomieju):
+          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
           ? Deno.consoleSize?.(writer?.rid).rows
           : undefined,
     },
@@ -63,6 +67,8 @@ function createWritableStdioStream(writer, name) {
       configurable: true,
       value: () =>
         Deno.isatty?.(writer?.rid)
+          // TODO(bartlomieju):
+          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
           ? Object.values(Deno.consoleSize?.(writer?.rid))
           : undefined,
     },
