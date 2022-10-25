@@ -22,7 +22,7 @@ const BASE_RANGE_OPTIONS: RangeOptions = {
 /**
  * Get a range of n evenly distributed numbers in ascending order.
  * ```ts
- * import { uniformRange } from "https://deno.land/std/math/distributions.ts";
+ * import { uniformRange } from "https://deno.land/std@$STD_VERSION/math/distributions.ts";
  *
  * const range = uniformRange(100, {
  *   min: 0,
@@ -37,9 +37,7 @@ export function uniformRange(
   if (typeof n !== "number" || n <= 0 || !Number.isInteger(n)) {
     throw new TypeError(
       `Length of the range (n) must be a natural number. Got ${
-        typeof n !== "number"
-          ? typeof n
-          : `a non-natural number ${n}`
+        typeof n !== "number" ? typeof n : `a non-natural number ${n}`
       }.`,
     );
   }
@@ -76,7 +74,7 @@ function getNormalPoint(
  * This snippet generates a distribution of 100 normally
  * distributed numbers with μ = 16 and σ^2 = 0.003.
  * ```ts
- * import { normalDistribution } from "https://deno.land/std/math/distributions.ts";
+ * import { normalDistribution } from "https://deno.land/std@$STD_VERSION/math/distributions.ts";
  *
  * const distribution = normalDistribution(100, 16, 0.003)
  * ```
