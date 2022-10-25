@@ -172,7 +172,7 @@ export function createExtractor(
  * assert(test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
  * assert(test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
  *
- * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [ Format.YAML ]));
+ * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
  * ```
  */
 export function test(str: string, formats?: Format[]): boolean {
@@ -184,7 +184,7 @@ export function test(str: string, formats?: Format[]): boolean {
 
   for (const format of formats) {
     if (format === Format.UNKNOWN) {
-      throw new TypeError(`Unable to test for unknown front matter format`);
+      throw new TypeError("Unable to test for unknown front matter format");
     }
 
     if (formatToExtractorRx[format].test(str)) {
@@ -210,7 +210,7 @@ export function test(str: string, formats?: Format[]): boolean {
  * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), Format.JSON);
  * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), Format.UNKNOWN);
  *
- * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", [ Format.YAML ]), Format.UNKNOWN);
+ * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", [Format.YAML]), Format.UNKNOWN);
  */
 export function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {

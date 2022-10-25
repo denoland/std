@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { assertThrows } from "../../testing/asserts.ts";
 import { createExtractor, Format, Parser, recognize, test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
 import { parse as parseTOML } from "../toml.ts";
@@ -31,6 +32,14 @@ const extractAny = createExtractor({
 
 Deno.test("[ANY] recognize", () => {
   runRecognizeTests(recognize, [Format.JSON, Format.TOML, Format.YAML]);
+});
+
+Deno.test("[ANY] try to test for unknown format", () => {
+  assertThrows(
+    () => test("foo", [Format.UNKNOWN]),
+    TypeError,
+    "Unable to test for unknown front matter format",
+  );
 });
 
 // YAML //
