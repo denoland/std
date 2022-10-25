@@ -9,7 +9,8 @@ import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
-import { crypto, toHashString } from "../crypto/mod.ts";
+import { toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
 
 let fileServer: Deno.Child;
 
@@ -27,7 +28,6 @@ interface FileServerCfg {
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
-const encoder = new TextEncoder();
 
 async function startFileServer({
   target = ".",
@@ -618,8 +618,8 @@ const getTestFileEtag = async () => {
 
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
+    const simpleEtag = toHashString(
+      await createHash("FNV32A", lastModified.toJSON() + fileInfo.size),
     );
     return simpleEtag;
   } else {
@@ -636,11 +636,6 @@ const getTestFileLastModified = async () => {
     return "";
   }
 };
-
-async function createEtagHash(buf: string): Promise<string> {
-  const hash = await crypto.subtle.digest("FNV32A", encoder.encode(buf));
-  return toHashString(hash);
-}
 
 Deno.test(
   "file_server returns 206 for range request responses",

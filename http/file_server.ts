@@ -13,7 +13,8 @@ import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
-import { crypto, DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
 
 interface EntryInfo {
   mode: string;
@@ -123,11 +124,12 @@ export async function serveFile(
     headers.set("last-modified", lastModified.toUTCString());
 
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const etagHash = await crypto.subtle.digest(
-      etagAlgorithm ?? "FNV32A",
-      encoder.encode(`${lastModified.toJSON()}${fileInfo.size}`),
+    const etag = toHashString(
+      await createHash(
+        etagAlgorithm ?? "FNV32A",
+        `${lastModified.toJSON()}${fileInfo.size}`,
+      ),
     );
-    const etag = toHashString(etagHash);
     headers.set("etag", etag);
 
     // If a `if-none-match` header is present and the value matches the tag or
