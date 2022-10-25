@@ -481,11 +481,6 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array) {
  * }
  * f.close();
  * ```
- *
- * Iterator uses an internal buffer of fixed size for efficiency; it returns
- * a view on that buffer on each iteration. It is therefore caller's
- * responsibility to copy contents of the buffer if needed; otherwise the
- * next iteration will overwrite contents of previously returned chunk.
  */
 export async function* iterateReader(
   r: Deno.Reader,
