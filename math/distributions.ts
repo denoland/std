@@ -54,7 +54,7 @@ export function uniformRange(
 }
 
 /** Generate one element in a normal distribution. */
-function getNormalPoint(
+export function getNormalPoint(
   mean: number,
   stddev: number,
 ): number {
