@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { crypto, type DigestAlgorithm } from "./mod.ts";
 
 const encoder = new TextEncoder();
