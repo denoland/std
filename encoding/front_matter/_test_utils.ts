@@ -6,6 +6,7 @@ import { Format } from "./mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
+
 type ExtractTestData = {
   title: string;
   tags: string[];

@@ -44,16 +44,20 @@ const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
   ["---json", "---"],
   "= json =",
 );
-const formatToRecognizerRx: Omit<Record<Format, RegExp>, Format.UNKNOWN> = {
+const MAP_FORMAT_TO_RECOGNIZER_RX: Omit<
+  Record<Format, RegExp>,
+  Format.UNKNOWN
+> = {
   [Format.YAML]: RX_RECOGNIZE_YAML,
   [Format.TOML]: RX_RECOGNIZE_TOML,
   [Format.JSON]: RX_RECOGNIZE_JSON,
 };
-const formatToExtractorRx: Omit<Record<Format, RegExp>, Format.UNKNOWN> = {
-  [Format.YAML]: RX_YAML,
-  [Format.TOML]: RX_TOML,
-  [Format.JSON]: RX_JSON,
-};
+const MAP_FORMAT_TO_EXTRACTOR_RX: Omit<Record<Format, RegExp>, Format.UNKNOWN> =
+  {
+    [Format.YAML]: RX_YAML,
+    [Format.TOML]: RX_TOML,
+    [Format.JSON]: RX_JSON,
+  };
 
 function getBeginToken(delimiter: Delimiter): string {
   return isArray(delimiter) ? delimiter[0] : delimiter;
@@ -144,15 +148,17 @@ function _extract<T>(
 export function createExtractor(
   formats: Partial<Record<Format, Parser>>,
 ): Extractor {
+  const formatKeys = Object.keys(formats) as Format[];
+
   return function extract<T>(str: string): Extract<T> {
-    const format = recognize(str, Object.keys(formats) as Format[]);
+    const format = recognize(str, formatKeys);
     const parser = formats[format];
 
     if (format === Format.UNKNOWN || !parser) {
       throw new TypeError(`Unsupported front matter format`);
     }
 
-    return _extract(str, formatToExtractorRx[format], parser);
+    return _extract(str, MAP_FORMAT_TO_EXTRACTOR_RX[format], parser);
   };
 }
 
@@ -175,7 +181,7 @@ export function createExtractor(
  */
 export function test(str: string, formats?: Format[]): boolean {
   if (!formats) {
-    formats = Object.keys(formatToExtractorRx) as Format[];
+    formats = Object.keys(MAP_FORMAT_TO_EXTRACTOR_RX) as Format[];
   }
 
   for (const format of formats) {
@@ -183,7 +189,7 @@ export function test(str: string, formats?: Format[]): boolean {
       throw new TypeError("Unable to test for unknown front matter format");
     }
 
-    const match = formatToExtractorRx[format].exec(str);
+    const match = MAP_FORMAT_TO_EXTRACTOR_RX[format].exec(str);
     if (match?.index === 0) {
       return true;
     }
@@ -211,7 +217,7 @@ export function test(str: string, formats?: Format[]): boolean {
  */
 export function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
-    formats = Object.keys(formatToRecognizerRx) as Format[];
+    formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
   }
 
   const [firstLine] = str.split(/(\r?\n)/);
@@ -221,7 +227,7 @@ export function recognize(str: string, formats?: Format[]): Format {
       continue;
     }
 
-    if (formatToRecognizerRx[format].test(firstLine)) {
+    if (MAP_FORMAT_TO_RECOGNIZER_RX[format].test(firstLine)) {
       return format;
     }
   }
