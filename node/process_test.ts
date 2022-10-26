@@ -527,7 +527,7 @@ Deno.test("process.getgid", () => {
   } else {
     // TODO(cjihrig):
     // @ts-ignore Deno.getGid() is being renamed.
-    assertEquals(process.getgid?.(), Deno.gid?.() && Deno.getGid?.());
+    assertEquals(process.getgid?.(), Deno.gid?.() ?? Deno.getGid?.());
   }
 });
 
@@ -537,7 +537,7 @@ Deno.test("process.getuid", () => {
   } else {
     // TODO(cjihrig):
     // @ts-ignore Deno.getUid() is being renamed.
-    assertEquals(process.getuid?.(), Deno.uid?.() && Deno.getUid?.());
+    assertEquals(process.getuid?.(), Deno.uid?.() ?? Deno.getUid?.());
   }
 });
 
