@@ -29,7 +29,7 @@ export function access(
     }
     const m = +mode || 0;
     let fileMode = +info.mode || 0;
-    if (Deno.build.os !== "windows" && info.uid === Deno.uid?.()) {
+    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;
@@ -83,7 +83,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
     }
     const m = +mode! || 0;
     let fileMode = +info.mode! || 0;
-    if (Deno.build.os !== "windows" && info.uid === Deno.uid?.()) {
+    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;

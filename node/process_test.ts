@@ -525,7 +525,7 @@ Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getgid, undefined);
   } else {
-    assertEquals(process.getgid?.(), Deno.gid?.());
+    assertEquals(process.getgid?.(), Deno.gid());
   }
 });
 
@@ -533,7 +533,7 @@ Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getuid, undefined);
   } else {
-    assertEquals(process.getuid?.(), Deno.uid?.());
+    assertEquals(process.getuid?.(), Deno.uid());
   }
 });
 
