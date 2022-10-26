@@ -25,6 +25,6 @@ Deno.test("[TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extract);
 });
 
-Deno.test("[TOML] parse toml delineate by ---toml", () => {
-  runExtractTOMLTests(extract);
+Deno.test("[TOML] parse toml delineate by ---toml", async () => {
+  await runExtractTOMLTests(extract);
 });

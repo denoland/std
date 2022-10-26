@@ -113,23 +113,12 @@ export function runExtractTypeErrorTests(
   });
 }
 
-export function runExtractJSONTests(
+export async function runExtractJSONTests(
   extractFn: ExtractFn,
 ) {
-  const content = extractFn(`---json
-{
-  "title": "Three dashes followed by the format marks the spot",
-  "tags": [
-    "json",
-    "front-matter"
-  ],
-  "expanded-description": "with some ---json 🙃 crazy stuff in it"
-}
----
-don't break
----
-{Also: "---json this shouldn't be a problem"}
-`);
+  const str = await Deno.readTextFile("./testdata/json.md");
+  const content = extractFn(str);
+
   assert(content !== undefined);
   assertEquals(
     content.frontMatter,
@@ -157,21 +146,12 @@ don't break
   );
 }
 
-export function runExtractYAMLTests1(
+export async function runExtractYAMLTests1(
   extractFn: ExtractFn,
 ) {
-  const content = extractFn(`---
-title: Three dashes marks the spot
-tags:
-  - yaml
-  - front-matter
-  - dashes
-expanded-description: with some --- crazy stuff in it
----
-don't break
----
-Also this shouldn't be a problem
-`);
+  const str = await Deno.readTextFile("./testdata/yaml1.md");
+  const content = extractFn(str);
+
   assert(content !== undefined);
   assertEquals(
     content.frontMatter,
@@ -194,21 +174,12 @@ expanded-description: with some --- crazy stuff in it`,
   );
 }
 
-export function runExtractYAMLTests2(
+export async function runExtractYAMLTests2(
   extractFn: ExtractFn,
 ) {
-  const content = extractFn(`---yaml
-title: Three dashes marks the spot
-tags:
-  - yaml
-  - front-matter
-  - dashes
-expanded-description: with some --- crazy stuff in it
----
-don't break
----
-Also this shouldn't be a problem
-`);
+  const str = await Deno.readTextFile("./testdata/yaml2.md");
+  const content = extractFn(str);
+
   assert(content !== undefined);
   assertEquals(
     content.frontMatter,
@@ -231,18 +202,12 @@ expanded-description: with some --- crazy stuff in it`,
   );
 }
 
-export function runExtractTOMLTests(
+export async function runExtractTOMLTests(
   extractFn: ExtractFn,
 ) {
-  const content = extractFn(`---toml
-title = 'Three dashes followed by the format marks the spot'
-tags = ['toml', 'front-matter']
-'expanded-description' = 'with some ---toml 👌 crazy stuff in it'
----
-don't break
----
-Also = '---toml this shouldn't be a problem'
-`);
+  const str = await Deno.readTextFile("./testdata/toml.md");
+  const content = extractFn(str);
+
   assert(content !== undefined);
   assertEquals(
     content.frontMatter,

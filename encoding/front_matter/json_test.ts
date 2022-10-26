@@ -25,6 +25,6 @@ Deno.test("[JSON] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.JSON, extract);
 });
 
-Deno.test("[JSON] parse json delineate by ---json", () => {
-  runExtractJSONTests(extract);
+Deno.test("[JSON] parse json delineate by ---json", async () => {
+  await runExtractJSONTests(extract);
 });

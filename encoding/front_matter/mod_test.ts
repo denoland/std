@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertThrows } from "../../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { createExtractor, Format, Parser, recognize, test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
 import { parse as parseTOML } from "../toml.ts";
@@ -56,12 +56,28 @@ Deno.test("[YAML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.YAML, extractYAML);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---`", () => {
-  runExtractYAMLTests1(extractYAML);
+Deno.test("[YAML] parse yaml delineate by `---`", async () => {
+  await runExtractYAMLTests1(extractYAML);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---yaml`", () => {
-  runExtractYAMLTests2(extractYAML);
+Deno.test("[YAML] parse yaml delineate by `---yaml`", async () => {
+  await runExtractYAMLTests2(extractYAML);
+});
+
+Deno.test({
+  name: "[YAML] text between horizontal rules should not be recognized",
+  async fn() {
+    const str = await Deno.readTextFile("./testdata/horizontal_rules.md");
+    assert(!test(str));
+    assertEquals(recognize(str), Format.UNKNOWN);
+    assertThrows(
+      () => {
+        extractAny(str);
+      },
+      TypeError,
+      "Unsupported front matter format",
+    );
+  },
 });
 
 // JSON //
@@ -78,8 +94,8 @@ Deno.test("[JSON] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.JSON, extractJSON);
 });
 
-Deno.test("[JSON] parse json delineate by ---json", () => {
-  runExtractJSONTests(extractJSON);
+Deno.test("[JSON] parse json delineate by ---json", async () => {
+  await runExtractJSONTests(extractJSON);
 });
 
 // TOML //
@@ -96,21 +112,21 @@ Deno.test("[TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extractTOML);
 });
 
-Deno.test("[TOML] parse toml delineate by ---toml", () => {
-  runExtractTOMLTests(extractTOML);
+Deno.test("[TOML] parse toml delineate by ---toml", async () => {
+  await runExtractTOMLTests(extractTOML);
 });
 
 // MULTIPLE FORMATS //
 
-Deno.test("[YAML or JSON] parse input", () => {
-  runExtractYAMLTests1(extractYAMLOrJSON);
-  runExtractYAMLTests2(extractYAMLOrJSON);
-  runExtractJSONTests(extractYAMLOrJSON);
+Deno.test("[YAML or JSON] parse input", async () => {
+  await runExtractYAMLTests1(extractYAMLOrJSON);
+  await runExtractYAMLTests2(extractYAMLOrJSON);
+  await runExtractJSONTests(extractYAMLOrJSON);
 });
 
-Deno.test("[ANY] parse input", () => {
-  runExtractYAMLTests1(extractAny);
-  runExtractYAMLTests2(extractAny);
-  runExtractJSONTests(extractAny);
-  runExtractTOMLTests(extractAny);
+Deno.test("[ANY] parse input", async () => {
+  await runExtractYAMLTests1(extractAny);
+  await runExtractYAMLTests2(extractAny);
+  await runExtractJSONTests(extractAny);
+  await runExtractTOMLTests(extractAny);
 });

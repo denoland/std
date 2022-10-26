@@ -30,12 +30,12 @@ Deno.test("[ANY/YAML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.YAML, extract);
 });
 
-Deno.test("[ANY/YAML] parse yaml delineate by `---`", () => {
-  runExtractYAMLTests1(extract);
+Deno.test("[ANY/YAML] parse yaml delineate by `---`", async () => {
+  await runExtractYAMLTests1(extract);
 });
 
-Deno.test("[ANY/YAML] parse yaml delineate by `---yaml`", () => {
-  runExtractYAMLTests2(extract);
+Deno.test("[ANY/YAML] parse yaml delineate by `---yaml`", async () => {
+  await runExtractYAMLTests2(extract);
 });
 
 // JSON //
@@ -52,8 +52,8 @@ Deno.test("[ANY/JSON] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.JSON, extract);
 });
 
-Deno.test("[ANY/JSON] parse json delineate by ---json", () => {
-  runExtractJSONTests(extract);
+Deno.test("[ANY/JSON] parse json delineate by ---json", async () => {
+  await runExtractJSONTests(extract);
 });
 
 // TOML //
@@ -70,6 +70,6 @@ Deno.test("[ANY/TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extract);
 });
 
-Deno.test("[ANY/TOML] parse toml delineate by ---toml", () => {
-  runExtractTOMLTests(extract);
+Deno.test("[ANY/TOML] parse toml delineate by ---toml", async () => {
+  await runExtractTOMLTests(extract);
 });

@@ -26,10 +26,10 @@ Deno.test("[YAML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.YAML, extract);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---`", () => {
-  runExtractYAMLTests1(extract);
+Deno.test("[YAML] parse yaml delineate by `---`", async () => {
+  await runExtractYAMLTests1(extract);
 });
 
-Deno.test("[YAML] parse yaml delineate by `---yaml`", () => {
-  runExtractYAMLTests2(extract);
+Deno.test("[YAML] parse yaml delineate by `---yaml`", async () => {
+  await runExtractYAMLTests2(extract);
 });

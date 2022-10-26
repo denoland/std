@@ -74,7 +74,10 @@ function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
     (Deno.build.os === "windows" ? "\\r?" : "") +
     "(?:\\n)?)";
 
-  return [new RegExp(beginPattern + "$", "im"), new RegExp(pattern, "im")];
+  return [
+    new RegExp("^" + beginPattern + "$", "im"),
+    new RegExp(pattern, "im"),
+  ];
 }
 
 function _extract<T>(
@@ -83,7 +86,9 @@ function _extract<T>(
   parse: Parser,
 ): Extract<T> {
   const match = rx.exec(str);
-  if (!match) throw new TypeError("Unexpected end of input");
+  if (!match || match.index !== 0) {
+    throw new TypeError("Unexpected end of input");
+  }
   const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
   const attrs = parse(frontMatter) as T;
   const body = str.replace(match[0], "");
@@ -147,14 +152,7 @@ export function createExtractor(
       throw new TypeError(`Unsupported front matter format`);
     }
 
-    switch (format) {
-      case Format.YAML:
-        return _extract(str, RX_YAML, parser);
-      case Format.TOML:
-        return _extract(str, RX_TOML, parser);
-      case Format.JSON:
-        return _extract(str, RX_JSON, parser);
-    }
+    return _extract(str, formatToExtractorRx[format], parser);
   };
 }
 
@@ -177,9 +175,7 @@ export function createExtractor(
  */
 export function test(str: string, formats?: Format[]): boolean {
   if (!formats) {
-    formats = Object.values(Format).filter((f) =>
-      f !== Format.UNKNOWN
-    ) as Format[];
+    formats = Object.keys(formatToExtractorRx) as Format[];
   }
 
   for (const format of formats) {
@@ -187,7 +183,8 @@ export function test(str: string, formats?: Format[]): boolean {
       throw new TypeError("Unable to test for unknown front matter format");
     }
 
-    if (formatToExtractorRx[format].test(str)) {
+    const match = formatToExtractorRx[format].exec(str);
+    if (match?.index === 0) {
       return true;
     }
   }
@@ -214,7 +211,7 @@ export function test(str: string, formats?: Format[]): boolean {
  */
 export function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
-    formats = Object.values(Format);
+    formats = Object.keys(formatToRecognizerRx) as Format[];
   }
 
   const [firstLine] = str.split(/(\r?\n)/);
