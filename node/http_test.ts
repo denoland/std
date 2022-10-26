@@ -5,6 +5,7 @@ import http, { type RequestOptions } from "./http.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
+import { serve } from "../http/server.ts";
 
 Deno.test("[node/http listen]", async () => {
   {
@@ -150,151 +151,145 @@ Deno.test("[node/http] request default protocol", async () => {
 });
 
 Deno.test("[node/http] send request with non-chunked body", async () => {
-  const promise = deferred<void>();
-  let requestHeaders: Record<string, string> = {};
+  let requestHeaders: Headers;
   let requestBody = "";
 
-  const server = http.createServer((req, res) => {
-    req.setEncoding("utf8");
-    req.on("data", (chunk) => {
-      requestBody += chunk;
-    });
-    req.on("end", () => {
-      requestHeaders = Object.fromEntries(
-        Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
-      );
-      res.end("ok");
-    });
+  const hostname = "localhost";
+  const port = 4505;
+
+  // NOTE: Instead of node/http.createServer(), serve() in std/http/server.ts is used.
+  // https://github.com/denoland/deno_std/pull/2755#discussion_r1005592634
+  const handler = async (req: Request) => {
+    requestHeaders = req.headers;
+    requestBody = await req.text();
+    return new Response("ok");
+  };
+  const abortController = new AbortController();
+  const servePromise = serve(handler, {
+    hostname,
+    port,
+    signal: abortController.signal,
+    onListen: undefined,
   });
-  server.listen(() => {
-    const opts: RequestOptions = {
-      host: "localhost",
-      port: server.address().port,
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Content-Length": "11",
-      },
-    };
-    const req = http.request(opts, (res) => {
-      res.on("data", () => {});
-      res.on("end", () => {
-        server.close();
-      });
-      assertEquals(res.statusCode, 200);
-      assertEquals(requestHeaders["content-length"], "11");
-      assertEquals(
-        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
-        false,
-      );
-      assertEquals(requestBody, "hello world");
+
+  const opts: RequestOptions = {
+    host: hostname,
+    port,
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Content-Length": "11",
+    },
+  };
+  const req = http.request(opts, (res) => {
+    res.on("data", () => {});
+    res.on("end", () => {
+      abortController.abort();
     });
-    req.write("hello ");
-    req.write("world");
-    req.end();
+    assertEquals(res.statusCode, 200);
+    assertEquals(requestHeaders.get("content-length"), "11");
+    assertEquals(requestHeaders.has("transfer-encoding"), false);
+    assertEquals(requestBody, "hello world");
   });
-  server.on("close", () => {
-    promise.resolve();
-  });
-  await promise;
+  req.write("hello ");
+  req.write("world");
+  req.end();
+
+  await servePromise;
 });
 
 Deno.test("[node/http] send request with chunked body", async () => {
-  const promise = deferred<void>();
-  let requestHeaders: Record<string, string> = {};
+  let requestHeaders: Headers;
   let requestBody = "";
 
-  const server = http.createServer((req, res) => {
-    req.setEncoding("utf8");
-    req.on("data", (chunk) => {
-      requestBody += chunk;
-    });
-    req.on("end", () => {
-      requestHeaders = Object.fromEntries(
-        Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
-      );
-      res.end("ok");
-    });
+  const hostname = "localhost";
+  const port = 4505;
+
+  // NOTE: Instead of node/http.createServer(), serve() in std/http/server.ts is used.
+  // https://github.com/denoland/deno_std/pull/2755#discussion_r1005592634
+  const handler = async (req: Request) => {
+    requestHeaders = req.headers;
+    requestBody = await req.text();
+    return new Response("ok");
+  };
+  const abortController = new AbortController();
+  const servePromise = serve(handler, {
+    hostname,
+    port,
+    signal: abortController.signal,
+    onListen: undefined,
   });
-  server.listen(() => {
-    const opts: RequestOptions = {
-      host: "localhost",
-      port: server.address().port,
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Content-Length": "11",
-        "Transfer-Encoding": "chunked",
-      },
-    };
-    const req = http.request(opts, (res) => {
-      res.on("data", () => {});
-      res.on("end", () => {
-        server.close();
-      });
-      assertEquals(res.statusCode, 200);
-      assertEquals(requestHeaders["content-length"], undefined);
-      assertEquals(
-        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
-        true,
-      );
-      assertEquals(requestBody, "hello world");
+
+  const opts: RequestOptions = {
+    host: hostname,
+    port,
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Content-Length": "11",
+      "Transfer-Encoding": "chunked",
+    },
+  };
+  const req = http.request(opts, (res) => {
+    res.on("data", () => {});
+    res.on("end", () => {
+      abortController.abort();
     });
-    req.write("hello ");
-    req.write("world");
-    req.end();
+    assertEquals(res.statusCode, 200);
+    assertEquals(requestHeaders.has("content-length"), false);
+    assertEquals(requestHeaders.get("transfer-encoding"), "chunked");
+    assertEquals(requestBody, "hello world");
   });
-  server.on("close", () => {
-    promise.resolve();
-  });
-  await promise;
+  req.write("hello ");
+  req.write("world");
+  req.end();
+
+  await servePromise;
 });
 
 Deno.test("[node/http] send request with chunked body as default", async () => {
-  const promise = deferred<void>();
-  let requestHeaders: Record<string, string> = {};
+  let requestHeaders: Headers;
   let requestBody = "";
 
-  const server = http.createServer((req, res) => {
-    req.setEncoding("utf8");
-    req.on("data", (chunk) => {
-      requestBody += chunk;
-    });
-    req.on("end", () => {
-      requestHeaders = Object.fromEntries(
-        Object.entries(req.headers).map(([k, v]) => [k.toLowerCase(), v]),
-      );
-      res.end("ok");
-    });
+  const hostname = "localhost";
+  const port = 4505;
+
+  // NOTE: Instead of node/http.createServer(), serve() in std/http/server.ts is used.
+  // https://github.com/denoland/deno_std/pull/2755#discussion_r1005592634
+  const handler = async (req: Request) => {
+    requestHeaders = req.headers;
+    requestBody = await req.text();
+    return new Response("ok");
+  };
+  const abortController = new AbortController();
+  const servePromise = serve(handler, {
+    hostname,
+    port,
+    signal: abortController.signal,
+    onListen: undefined,
   });
-  server.listen(() => {
-    const opts: RequestOptions = {
-      host: "localhost",
-      port: server.address().port,
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    };
-    const req = http.request(opts, (res) => {
-      res.on("data", () => {});
-      res.on("end", () => {
-        server.close();
-      });
-      assertEquals(res.statusCode, 200);
-      assertEquals(requestHeaders["content-length"], undefined);
-      assertEquals(
-        /(?:^|\W)chunked(?:$|\W)/i.test(requestHeaders["transfer-encoding"]),
-        true,
-      );
-      assertEquals(requestBody, "hello world");
+
+  const opts: RequestOptions = {
+    host: hostname,
+    port,
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+    },
+  };
+  const req = http.request(opts, (res) => {
+    res.on("data", () => {});
+    res.on("end", () => {
+      abortController.abort();
     });
-    req.write("hello ");
-    req.write("world");
-    req.end();
+    assertEquals(res.statusCode, 200);
+    assertEquals(requestHeaders.has("content-length"), false);
+    assertEquals(requestHeaders.get("transfer-encoding"), "chunked");
+    assertEquals(requestBody, "hello world");
   });
-  server.on("close", () => {
-    promise.resolve();
-  });
-  await promise;
+  req.write("hello ");
+  req.write("world");
+  req.end();
+
+  await servePromise;
 });
