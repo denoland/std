@@ -1,3 +1,15 @@
+### 0.161.0 / 2022.10.26
+
+- BREAKING: remove deprecated `std/hash` module (#2786)
+- feat(crypto): `createHash` utility (#2805)
+- feat(crypto): `toHashString` utility (#2767)
+- feat(node): add support of .node module (#2804)
+- feat(node): list remaining Node tests in documentation (#2787)
+- fix(fs/expandGlob): globstar false does not take effect (#2571) (#2779)
+- fix(node/fs): enable to check error thrown on invalid values of bufferSize
+  (#2782)
+- fix(node/net): modify close event timing (#2793)
+
 ### 0.160.0 / 2022.10.17
 
 - feat(crypto): export algorithm types (#2759)
