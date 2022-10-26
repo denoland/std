@@ -566,12 +566,12 @@ class Process extends EventEmitter {
 
   /** This method is removed on Windows */
   getgid?(): number {
-    return Deno.getGid()!;
+    return Deno.gid()!;
   }
 
   /** This method is removed on Windows */
   getuid?(): number {
-    return Deno.getUid()!;
+    return Deno.uid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
