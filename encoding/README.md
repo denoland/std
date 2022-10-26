@@ -820,16 +820,20 @@ console.log(decode(encoded));
 
 ## Front Matter
 
-Extracts [front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/) from strings.
+Extracts
+[front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
+from strings.
 
 Supported formats:
-  - [`YAML`](./front_matter/yaml.ts)
-  - [`TOML`](./front_matter/toml.ts)
-  - [`JSON`](./front_matter/json.ts)
+
+- [`YAML`](./front_matter/yaml.ts)
+- [`TOML`](./front_matter/toml.ts)
+- [`JSON`](./front_matter/json.ts)
 
 ### Basic usage
 
 example.md
+
 ```
 ---
 module: front_matter
@@ -843,8 +847,12 @@ deno is awesome
 ```
 
 example.ts
+
 ```ts
-import { extract, test } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/any.ts";
+import {
+  extract,
+  test,
+} from "https://deno.land/std@$STD_VERSION/encoding/front_matter/any.ts";
 
 const str = await Deno.readTextFile("./example.md");
 
@@ -864,16 +872,23 @@ $ deno run ./example.ts
 }
 ```
 
-The above example recognizes any of the supported formats, extracts metadata
-and parses accordingly. Please note that in this case both the [YAML](#yaml) 
-and [TOML](#toml) parsers will be imported as dependencies.
+The above example recognizes any of the supported formats, extracts metadata and
+parses accordingly. Please note that in this case both the [YAML](#yaml) and
+[TOML](#toml) parsers will be imported as dependencies.
 
-If you need only one specific format then you can import the file named respectively from [here](./front_matter).
+If you need only one specific format then you can import the file named
+respectively from [here](./front_matter).
 
 ### Advanced usage
 
 ```ts
-import { createExtractor, test as _test, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+import {
+  createExtractor,
+  Format,
+  Parser,
+  recognize as _recognize,
+  test as _test,
+} from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
 import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
 
 const extract = createExtractor({
@@ -890,22 +905,25 @@ export function recognize(str: string): Format {
 }
 ```
 
-These function will work with TOML and JSON and only. This way the 
-YAML parser is not loaded if not needed.
+These function will work with TOML and JSON and only. This way the YAML parser
+is not loaded if not needed.
 
 ### Delimiters
 
 #### YAML
+
 ```
 ---
 these: are
 ---
 ```
+
 ```
 ---yaml
 all: recognized
 ---
 ```
+
 ```
 = yaml =
 as: yaml
@@ -913,11 +931,13 @@ as: yaml
 ```
 
 #### TOML
+
 ```
 ---toml
 this = 'is'
 ---
 ```
+
 ```
 = toml =
 parsed = 'as'
@@ -926,6 +946,7 @@ toml = 'data'
 ```
 
 #### JSON
+
 ```
 ---json
 {
@@ -933,6 +954,7 @@ toml = 'data'
 }
 ---
 ```
+
 ```
 {
   "is": "JSON"
