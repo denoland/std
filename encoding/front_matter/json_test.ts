@@ -1,17 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, recognize, test } from "./json.ts";
+import extract, { Format, test } from "./json.ts";
 import {
   runExtractJSONTests,
   runExtractTypeErrorTests,
-  runRecognizeTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-
-Deno.test("[JSON] recognize", () => {
-  runRecognizeTests(recognize, [Format.JSON]);
-});
 
 Deno.test("[JSON] test valid input true", () => {
   runTestValidInputTests(Format.JSON, test);

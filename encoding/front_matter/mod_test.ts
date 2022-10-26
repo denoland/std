@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertThrows } from "../../testing/asserts.ts";
-import { createExtractor, Format, Parser, recognize, test } from "./mod.ts";
+import { assert, assertThrows } from "../../testing/asserts.ts";
+import { createExtractor, Format, Parser, test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
 import { parse as parseTOML } from "../toml.ts";
 import {
@@ -11,7 +11,6 @@ import {
   runExtractTypeErrorTests,
   runExtractYAMLTests1,
   runExtractYAMLTests2,
-  runRecognizeTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
@@ -30,10 +29,6 @@ const extractAny = createExtractor({
 });
 
 // GENERAL TESTS //
-
-Deno.test("[ANY] recognize", () => {
-  runRecognizeTests(recognize, [Format.JSON, Format.TOML, Format.YAML]);
-});
 
 Deno.test("[ANY] try to test for unknown format", () => {
   assertThrows(
@@ -73,7 +68,6 @@ Deno.test({
     );
 
     assert(!test(str));
-    assertEquals(recognize(str), Format.UNKNOWN);
     assertThrows(
       () => {
         extractAny(str);

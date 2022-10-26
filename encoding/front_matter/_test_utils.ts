@@ -22,49 +22,6 @@ export function resolveTestDataPath(filename: string): string {
   return join(testdataDir, filename);
 }
 
-export function runRecognizeTests(
-  recognizeFn: (str: string) => Format,
-  expectedToBeRecognized: Format[],
-) {
-  const testdata = new Map<Format, string[]>();
-  testdata.set(Format.UNKNOWN, [
-    "---xml\n<title>Three dashes marks the spot</title>\n---\n",
-    "= xml =\n<title>Format name between equal signs also marks the spot</title>\n= xml =\n",
-  ]);
-
-  expectedToBeRecognized.forEach((format) => {
-    switch (format) {
-      case Format.YAML:
-        testdata.set(format, [
-          "---\ntitle: Three dashes marks the spot\n---\n",
-          "---yaml\ntitle: Three dashes followed by format name marks the spot\n---\n",
-          "= yaml =\ntitle: Format name between equal signs also marks the spot\n= yaml =\n",
-        ]);
-        break;
-
-      case Format.TOML:
-        testdata.set(format, [
-          "---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n",
-          "= toml =\ntitle = 'Format name between equal signs also marks the spot'\n= toml =\n",
-        ]);
-        break;
-
-      case Format.JSON:
-        testdata.set(format, [
-          '---json\n{"title": "Three dashes followed by format marks the spot"}\n---\n',
-          '= json =\n{"title": "Format name between equal signs also marks the spot"}\n= json =\n',
-        ]);
-        break;
-    }
-  });
-
-  for (const [format, strs] of testdata) {
-    strs.forEach((str) => {
-      assertEquals(recognizeFn(str), format);
-    });
-  }
-}
-
 export function runTestValidInputTests(
   format: Format,
   testFn: (str: string) => boolean,

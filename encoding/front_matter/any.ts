@@ -1,16 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import {
-  createExtractor,
-  Format,
-  Parser,
-  recognize as _recognize,
-  test as _test,
-} from "./mod.ts";
+import { createExtractor, Format, Parser, test as _test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
 import { parse as parseTOML } from "../toml.ts";
 
-export { Format, recognize, test } from "./mod.ts";
+export { Format, test } from "./mod.ts";
 export const extract = createExtractor({
   [Format.YAML]: parseYAML as Parser,
   [Format.TOML]: parseTOML as Parser,

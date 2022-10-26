@@ -1,20 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, recognize, test } from "./any.ts";
+import extract, { Format, test } from "./any.ts";
 import {
   runExtractJSONTests,
   runExtractTOMLTests,
   runExtractTypeErrorTests,
   runExtractYAMLTests1,
   runExtractYAMLTests2,
-  runRecognizeTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-
-Deno.test("[ANY] recognize", () => {
-  runRecognizeTests(recognize, [Format.JSON, Format.TOML, Format.YAML]);
-});
 
 // YAML //
 

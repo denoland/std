@@ -1,17 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, recognize, test } from "./toml.ts";
+import extract, { Format, test } from "./toml.ts";
 import {
   runExtractTOMLTests,
   runExtractTypeErrorTests,
-  runRecognizeTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-
-Deno.test("[TOML] recognize", () => {
-  runRecognizeTests(recognize, [Format.TOML]);
-});
 
 Deno.test("[TOML] test valid input true", () => {
   runTestValidInputTests(Format.TOML, test);

@@ -215,7 +215,7 @@ export function test(str: string, formats?: Format[]): boolean {
  *
  * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", [Format.YAML]), Format.UNKNOWN);
  */
-export function recognize(str: string, formats?: Format[]): Format {
+function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
     formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
   }

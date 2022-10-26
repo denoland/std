@@ -886,7 +886,6 @@ import {
   createExtractor,
   Format,
   Parser,
-  recognize as _recognize,
   test as _test,
 } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
 import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
@@ -899,14 +898,11 @@ const extract = createExtractor({
 export function test(str: string): boolean {
   return _test(str, [Format.TOML, Format.JSON]);
 }
-
-export function recognize(str: string): Format {
-  return _recognize(str, [Format.TOML, Format.JSON]);
-}
 ```
 
-These function will work with TOML and JSON and only. This way the YAML parser
-is not loaded if not needed.
+In this setup `extract()` and `test()` will work with TOML and JSON and only. This way the YAML parser
+is not loaded if not needed. You can cherry-pick which combination of formats are you supporting based
+on your needs.
 
 ### Delimiters
 
