@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "18.8.0",
+  "nodeVersion": "18.12.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
     "fixtures": [
@@ -599,7 +599,6 @@
       "test-stream-unpipe-event.js",
       "test-stream-unshift-empty-chunk.js",
       "test-stream-unshift-read-race.js",
-      "test-stream-writable-callback-twice.js",
       "test-stream-writable-change-default-encoding.js",
       "test-stream-writable-clear-buffer.js",
       "test-stream-writable-constructor-set-methods.js",
