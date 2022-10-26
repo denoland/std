@@ -31,8 +31,8 @@ export function access(
     let fileMode = +info.mode || 0;
     if (
       Deno.build.os !== "windows" &&
-    // TODO(cjihrig):
-    // @ts-ignore Deno.getUid() is being renamed.
+      // TODO(cjihrig):
+      // @ts-ignore Deno.getUid() is being renamed.
       info.uid === (Deno.uid?.() ?? Deno.getUid?.())
     ) {
       // If the user is the owner of the file, then use the owner bits of
@@ -90,8 +90,8 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
     let fileMode = +info.mode! || 0;
     if (
       Deno.build.os !== "windows" &&
-    // TODO(cjihrig):
-    // @ts-ignore Deno.getUid() is being renamed.
+      // TODO(cjihrig):
+      // @ts-ignore Deno.getUid() is being renamed.
       info.uid === (Deno.uid?.() ?? Deno.getUid?.())
     ) {
       // If the user is the owner of the file, then use the owner bits of
