@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "18.8.0",
+  "nodeVersion": "18.12.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
     "fixtures": [
