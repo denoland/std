@@ -525,7 +525,9 @@ Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getgid, undefined);
   } else {
-    assertEquals(process.getgid?.(), Deno.getGid());
+    // TODO(cjihrig):
+    // @ts-ignore Deno.getGid() is being renamed.
+    assertEquals(process.getgid?.(), Deno.gid?.() ?? Deno.getGid?.());
   }
 });
 
@@ -533,7 +535,9 @@ Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getuid, undefined);
   } else {
-    assertEquals(process.getuid?.(), Deno.getUid());
+    // TODO(cjihrig):
+    // @ts-ignore Deno.getUid() is being renamed.
+    assertEquals(process.getuid?.(), Deno.uid?.() ?? Deno.getUid?.());
   }
 });
 
