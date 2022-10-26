@@ -900,9 +900,9 @@ export function test(str: string): boolean {
 }
 ```
 
-In this setup `extract()` and `test()` will work with TOML and JSON and only. This way the YAML parser
-is not loaded if not needed. You can cherry-pick which combination of formats are you supporting based
-on your needs.
+In this setup `extract()` and `test()` will work with TOML and JSON and only.
+This way the YAML parser is not loaded if not needed. You can cherry-pick which
+combination of formats are you supporting based on your needs.
 
 ### Delimiters
 
