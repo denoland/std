@@ -26,9 +26,7 @@ import { stripColor as removeColors } from "../fmt/colors.ts";
 
 function getConsoleWidth(): number {
   try {
-    // TODO(bartlomieju):
-    // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-    return Deno.consoleSize(Deno.stderr.rid).columns;
+    return Deno.consoleSize().columns;
   } catch {
     return 80;
   }

@@ -41,21 +41,13 @@ function createWritableStdioStream(writer, name) {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty?.(writer?.rid)
-          // TODO(bartlomieju):
-          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-          ? Deno.consoleSize?.(writer?.rid).columns
-          : undefined,
+        Deno.isatty?.(writer?.rid) ? Deno.consoleSize?.().columns : undefined,
     },
     rows: {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty?.(writer?.rid)
-          // TODO(bartlomieju):
-          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-          ? Deno.consoleSize?.(writer?.rid).rows
-          : undefined,
+        Deno.isatty?.(writer?.rid) ? Deno.consoleSize?.().rows : undefined,
     },
     isTTY: {
       enumerable: true,
@@ -67,9 +59,7 @@ function createWritableStdioStream(writer, name) {
       configurable: true,
       value: () =>
         Deno.isatty?.(writer?.rid)
-          // TODO(bartlomieju):
-          // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-          ? Object.values(Deno.consoleSize?.(writer?.rid))
+          ? Object.values(Deno.consoleSize?.())
           : undefined,
     },
   });
