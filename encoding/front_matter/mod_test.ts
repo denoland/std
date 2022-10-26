@@ -5,6 +5,7 @@ import { createExtractor, Format, Parser, recognize, test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
 import { parse as parseTOML } from "../toml.ts";
 import {
+  resolveTestDataPath,
   runExtractJSONTests,
   runExtractTOMLTests,
   runExtractTypeErrorTests,
@@ -67,7 +68,10 @@ Deno.test("[YAML] parse yaml delineate by `---yaml`", async () => {
 Deno.test({
   name: "[YAML] text between horizontal rules should not be recognized",
   async fn() {
-    const str = await Deno.readTextFile("./testdata/horizontal_rules.md");
+    const str = await Deno.readTextFile(
+      resolveTestDataPath("./horizontal_rules.md"),
+    );
+
     assert(!test(str));
     assertEquals(recognize(str), Format.UNKNOWN);
     assertThrows(

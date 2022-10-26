@@ -1,8 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertThrows } from "../../testing/asserts.ts";
+import { dirname, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { Format } from "./mod.ts";
 
+const moduleDir = dirname(fromFileUrl(import.meta.url));
+const testdataDir = resolve(moduleDir, "testdata");
 type ExtractTestData = {
   title: string;
   tags: string[];
@@ -13,6 +16,10 @@ type ExtractFn = (str: string) => {
   body: string;
   frontMatter: string;
 };
+
+export function resolveTestDataPath(filename: string): string {
+  return join(testdataDir, filename);
+}
 
 export function runRecognizeTests(
   recognizeFn: (str: string) => Format,
@@ -116,7 +123,7 @@ export function runExtractTypeErrorTests(
 export async function runExtractJSONTests(
   extractFn: ExtractFn,
 ) {
-  const str = await Deno.readTextFile("./testdata/json.md");
+  const str = await Deno.readTextFile(resolveTestDataPath("json.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
@@ -149,7 +156,7 @@ export async function runExtractJSONTests(
 export async function runExtractYAMLTests1(
   extractFn: ExtractFn,
 ) {
-  const str = await Deno.readTextFile("./testdata/yaml1.md");
+  const str = await Deno.readTextFile(resolveTestDataPath("yaml1.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
@@ -177,7 +184,7 @@ expanded-description: with some --- crazy stuff in it`,
 export async function runExtractYAMLTests2(
   extractFn: ExtractFn,
 ) {
-  const str = await Deno.readTextFile("./testdata/yaml2.md");
+  const str = await Deno.readTextFile(resolveTestDataPath("yaml2.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
@@ -205,7 +212,7 @@ expanded-description: with some --- crazy stuff in it`,
 export async function runExtractTOMLTests(
   extractFn: ExtractFn,
 ) {
-  const str = await Deno.readTextFile("./testdata/toml.md");
+  const str = await Deno.readTextFile(resolveTestDataPath("toml.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
