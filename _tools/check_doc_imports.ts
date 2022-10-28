@@ -38,15 +38,17 @@ function checkImportStatements(
         importStatementMatch[0].split("\n").length - 2;
 
       console.log(
-        colors.red(
-          `${filePath.replace(ROOT + "/", "")}:${
-            lineNumber + lineNumberWithinStr
-          }: `,
-        ) + (isRelative
-          ? "relative import path"
-          : "external or incorrectly versioned dependency") +
+        colors.yellow("Warn ") +
+          (isRelative
+            ? "relative import path"
+            : "external or incorrectly versioned dependency") +
           ": " +
-          colors.yellow(`"${importPath}"`),
+          colors.red(`"${importPath}"`) + " at " +
+          colors.blue(
+            `${filePath.replace(ROOT + "/", "")}:${
+              lineNumber + lineNumberWithinStr
+            }`,
+          ),
       );
 
       if (FAIL_FAST) {
