@@ -133,7 +133,7 @@ jobs:
         run: "deno task lint:deprecations"
 
       - name: Check Import paths in Docs
-        run: "deno task lint:deprecations"
+        run: "deno task lint:lint:doc-imports"
 
   hash-wasm:
     name: "_wasm_crypto/"
