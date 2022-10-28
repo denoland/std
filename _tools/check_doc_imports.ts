@@ -69,7 +69,7 @@ for await (
     skip: EXCLUDED_PATHS.map((p) => new RegExp(`(${p})$`)),
   })
 ) {
-  const content = Deno.readTextFileSync(path);
+  const content = await Deno.readTextFile(path);
   countChecked++;
 
   if (path.endsWith(".md")) {
