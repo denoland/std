@@ -1,6 +1,7 @@
 // Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
 import * as colors from "../fmt/colors.ts";
+import { walk } from "../fs/walk.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".md"];
 const EXCLUDED_PATHS = [
@@ -45,7 +46,7 @@ function checkImportStatements(
           ": " +
           colors.red(`"${importPath}"`) + " at " +
           colors.blue(
-            `${filePath.replace(ROOT + "/", "")}:${
+            `${filePath.substring(ROOT.length + 1)}:${
               lineNumber + lineNumberWithinStr
             }`,
           ),
@@ -59,41 +60,31 @@ function checkImportStatements(
   }
 }
 
-function walk(dir: string) {
-  for (const x of Deno.readDirSync(dir)) {
-    const filePath = `${dir}/${x.name}`;
+for await (const x of walk(ROOT, { exts: EXTENSIONS })) {
+  const filePath = x.path;
+  const isExcluded = EXCLUDED_PATHS
+    .map((x) => filePath.includes(x))
+    .some((x) => x);
 
-    if (x.isDirectory) {
-      walk(filePath);
-      continue;
-    }
+  if (
+    x.isDirectory || isExcluded
+  ) {
+    continue;
+  }
 
-    const isExcluded = EXCLUDED_PATHS
-      .map((x) => filePath.includes(x))
-      .some((x) => x);
-    if (
-      isExcluded ||
-      !EXTENSIONS.map((x) => filePath.endsWith(x)).some((x) => x)
-    ) {
-      continue;
-    }
+  const content = Deno.readTextFileSync(filePath);
+  countChecked++;
 
-    const content = Deno.readTextFileSync(filePath);
-    countChecked++;
+  if (filePath.endsWith(".md")) {
+    checkImportStatements(content, filePath);
+  } else {
+    for (const jsdocMatch of content.matchAll(JSDOC_COMMENT_REGEX)) {
+      const lineNumber = content.slice(0, jsdocMatch.index).split("\n").length;
 
-    if (filePath.endsWith(".md")) {
-      checkImportStatements(content, filePath);
-    } else {
-      for (const jsdocMatch of content.matchAll(JSDOC_COMMENT_REGEX)) {
-        const lineNumber =
-          content.slice(0, jsdocMatch.index).split("\n").length;
-
-        checkImportStatements(jsdocMatch[0], filePath, lineNumber);
-      }
+      checkImportStatements(jsdocMatch[0], filePath, lineNumber);
     }
   }
 }
 
-walk(ROOT);
 console.log(`Checked ${countChecked} files`);
 if (shouldFail) Deno.exit(1);
