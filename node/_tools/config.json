@@ -167,6 +167,7 @@
       "test-console-sync-write-error.js",
       "test-console-table.js",
       "test-console-tty-colors.js",
+      "test-crypto-hmac.js",
       "test-dgram-address.js",
       "test-dgram-bind-default-address.js",
       "test-dgram-bind.js",
