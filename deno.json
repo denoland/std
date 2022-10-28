@@ -43,6 +43,7 @@
     "lint:circular-deps": "deno run --allow-read --allow-net=deno.land ./_tools/check_circular_deps.ts",
     "lint:licence-headers": "deno run --allow-read ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
+    "lint:doc-imports": "deno run --allow-read ./_tools/check_doc_imports.ts",
     "lint": "deno lint && deno task lint:circular-deps && deno task lint:licence-headers && deno task lint:deprecations",
     "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
