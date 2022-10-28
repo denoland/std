@@ -6,10 +6,12 @@ import { walk } from "../fs/walk.ts";
 const EXTENSIONS = [".mjs", ".js", ".ts", ".md"];
 const EXCLUDED_PATHS = [
   ".git",
+  ".github",
   "node",
 ];
 
-const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);
+const ROOT = new URL("../", import.meta.url);
+const ROOT_LENGTH = ROOT.pathname.slice(0, -1).length;
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 const JSDOC_COMMENT_REGEX = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/mg;
@@ -46,7 +48,7 @@ function checkImportStatements(
           ": " +
           colors.red(`"${importPath}"`) + " at " +
           colors.blue(
-            `${filePath.substring(ROOT.length + 1)}:${
+            `${filePath.substring(ROOT_LENGTH + 1)}:${
               lineNumber + lineNumberWithinStr
             }`,
           ),
@@ -60,28 +62,23 @@ function checkImportStatements(
   }
 }
 
-for await (const x of walk(ROOT, { exts: EXTENSIONS })) {
-  const filePath = x.path;
-  const isExcluded = EXCLUDED_PATHS
-    .map((x) => filePath.includes(x))
-    .some((x) => x);
-
-  if (
-    x.isDirectory || isExcluded
-  ) {
-    continue;
-  }
-
-  const content = Deno.readTextFileSync(filePath);
+for await (
+  const { path } of walk(ROOT, {
+    exts: EXTENSIONS,
+    includeDirs: false,
+    skip: EXCLUDED_PATHS.map((p) => new RegExp(`(${p})$`)),
+  })
+) {
+  const content = Deno.readTextFileSync(path);
   countChecked++;
 
-  if (filePath.endsWith(".md")) {
-    checkImportStatements(content, filePath);
+  if (path.endsWith(".md")) {
+    checkImportStatements(content, path);
   } else {
     for (const jsdocMatch of content.matchAll(JSDOC_COMMENT_REGEX)) {
       const lineNumber = content.slice(0, jsdocMatch.index).split("\n").length;
 
-      checkImportStatements(jsdocMatch[0], filePath, lineNumber);
+      checkImportStatements(jsdocMatch[0], path, lineNumber);
     }
   }
 }
