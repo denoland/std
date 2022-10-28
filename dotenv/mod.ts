@@ -57,7 +57,7 @@ export function parse(
 
     env[key] = notInterpolated
       ? notInterpolated
-      : interpolated
+      : interpolated || interpolated === ""
       ? expandCharacters(interpolated)
       : unquoted.trim();
   }
