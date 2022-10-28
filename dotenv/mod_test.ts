@@ -47,9 +47,15 @@ Deno.test("parser", () => {
   );
 
   assertEquals(
-    config.EMPTY_QUOTED,
+    config.EMPTY_SINGLE,
     "",
-    "handles empty quotes",
+    "handles empty single quotes",
+  );
+
+  assertEquals(
+    config.EMPTY_DOUBLE,
+    "",
+    "handles empty double quotes",
   );
 
   assertEquals(
