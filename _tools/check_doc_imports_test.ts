@@ -33,5 +33,8 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
   const expected = await Deno.readFile(
     join(ROOT, "testdata", "import_check_test_expected_output.txt"),
   );
-  assertEquals(stdout, expected);
+  assertEquals(
+    new TextDecoder().decode(stdout),
+    new TextDecoder().decode(expected),
+  );
 });
