@@ -238,35 +238,36 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
  *
  * @example
  * ```ts
- * import { RangedByteTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+ * import { SliceBytesStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const response = await fetch("https://example.com");
  * const rangedStream = response.body!
- *   .pipeThrough(new RangedByteTransformStream(3, 8));
+ *   .pipeThrough(new SliceBytesStream(3, 8));
  * ```
  */
-export class RangedByteTransformStream
-  extends TransformStream<Uint8Array, Uint8Array> {
-  #offset = 0;
+export class SliceBytesStream extends TransformStream<Uint8Array, Uint8Array> {
+  #offsetStart = 0;
+  #offsetEnd = 0;
 
-  constructor(start: number, end = Infinity) {
+  constructor(start = 0, end = Infinity) {
     super({
       start: () => {
+        assert(start >= 0, "`start` must be greater than 0");
         end += 1;
       },
       transform: (chunk, controller) => {
-        this.#offset += chunk.byteLength;
-        if (this.#offset >= start + 1) {
-          if (start - (this.#offset - chunk.byteLength) >= 0) {
-            chunk = chunk.slice(start - (this.#offset - chunk.byteLength));
+        this.#offsetStart = this.#offsetEnd;
+        this.#offsetEnd += chunk.byteLength;
+        if (this.#offsetEnd > start) {
+          if (this.#offsetStart < start) {
+            chunk = chunk.slice(start - this.#offsetStart);
           }
-
-          if (end <= this.#offset) {
-            chunk = chunk.slice(0, chunk.byteLength - (this.#offset - end));
+          if (this.#offsetEnd >= end) {
+            chunk = chunk.slice(0, chunk.byteLength - this.#offsetEnd + end);
             controller.enqueue(chunk);
             controller.terminate();
+          } else {
+            controller.enqueue(chunk);
           }
-
-          controller.enqueue(chunk);
         }
       },
     });
