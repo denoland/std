@@ -367,6 +367,7 @@ export function parse<
     unknown = (i: string): unknown => i,
   }: ParseOptions<B, S, C, N, D, A, DD> = {},
 ): Args<V, DD> {
+  const aliases: Record<string, string[]> = {};
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -375,6 +376,20 @@ export function parse<
     collect: {},
     negatable: {},
   };
+
+  if (alias !== undefined) {
+    for (const key in alias) {
+      const val = getForce(alias, key);
+      if (typeof val === "string") {
+        aliases[key] = [val];
+      } else {
+        aliases[key] = val as Array<string>;
+      }
+      for (const alias of getForce(aliases, key)) {
+        aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
+      }
+    }
+  }
 
   if (boolean !== undefined) {
     if (typeof boolean === "boolean") {
@@ -386,21 +401,12 @@ export function parse<
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
-      }
-    }
-  }
-
-  const aliases: Record<string, string[]> = {};
-  if (alias !== undefined) {
-    for (const key in alias) {
-      const val = getForce(alias, key);
-      if (typeof val === "string") {
-        aliases[key] = [val];
-      } else {
-        aliases[key] = val as Array<string>;
-      }
-      for (const alias of getForce(aliases, key)) {
-        aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
+        const alias = get(aliases, key);
+        if (alias) {
+          for (const al of alias) {
+            flags.bools[al] = true;
+          }
+        }
       }
     }
   }
