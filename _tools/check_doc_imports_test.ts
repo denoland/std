@@ -7,6 +7,9 @@ const ROOT = new URL(".", import.meta.url).pathname;
 
 Deno.test("doc import checker process should exit with code 1 and print warnings", async () => {
   const proc = await Deno.run({
+    env: {
+      NO_COLOR: "true",
+    },
     cmd: [
       "deno",
       "run",
@@ -30,8 +33,5 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
   const expected = await Deno.readFile(
     join(ROOT, "testdata", "import_check_test_expected_output.txt"),
   );
-  assertEquals(
-    new TextDecoder().decode(stdout),
-    new TextDecoder().decode(expected),
-  );
+  assertEquals(stdout, expected);
 });
