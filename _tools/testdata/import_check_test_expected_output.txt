@@ -1,0 +1,27 @@
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"file://a/b/c.ts"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:4[39m
+[33mWarn [39mrelative import path: [31m"../../goat.ts"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:5[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://esm.sh/cat"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:6[39m
+[33mWarn [39mrelative import path: [31m"../cat.js"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:7[39m
+[33mWarn [39mrelative import path: [31m"./dog.mjs"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:8[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://cdn.skypack.dev/noise/mod.mjs"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:9[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://something.somewhere"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:10[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://deno.land/std/dotenv/mod.ts"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:11[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://deno.land/std@1.2.3/testing/asserts.ts"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:12[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://example.com/xyz.ts"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:14[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"land"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:20[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"npm:@generators/mock-code"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:28[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"again"[39m at [34m_tools/testdata/invalid_imports.md[39m[33m:42[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"file://a/b/c.ts"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:7[39m
+[33mWarn [39mrelative import path: [31m"../../goat.ts"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:9[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://esm.sh/cat"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:10[39m
+[33mWarn [39mrelative import path: [31m"../cat.js"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:11[39m
+[33mWarn [39mrelative import path: [31m"./dog.mjs"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:12[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://cdn.skypack.dev/noise/mod.mjs"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:14[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://something.somewhere"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:15[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://deno.land/std/dotenv/mod.ts"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:16[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://deno.land/std@1.2.3/testing/asserts.ts"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:17[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"https://example.com/xyz.ts"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:24[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"land"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:30[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"npm:@generators/mock-code"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:42[39m
+[33mWarn [39mexternal or incorrectly versioned dependency: [31m"again"[39m at [34m_tools/testdata/invalid_imports.ts[39m[33m:59[39m
+Checked 2 files
