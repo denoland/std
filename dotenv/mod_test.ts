@@ -47,6 +47,18 @@ Deno.test("parser", () => {
   );
 
   assertEquals(
+    config.EMPTY_SINGLE,
+    "",
+    "handles empty single quotes",
+  );
+
+  assertEquals(
+    config.EMPTY_DOUBLE,
+    "",
+    "handles empty double quotes",
+  );
+
+  assertEquals(
     config.MULTILINE,
     "hello\nworld",
     "new lines are expanded in double quotes",

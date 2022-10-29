@@ -330,9 +330,7 @@ Deno.test({
     assertEquals(process.stdout.fd, Deno.stdout.rid);
     const isTTY = Deno.isatty(Deno.stdout.rid);
     assertEquals(process.stdout.isTTY, isTTY);
-    // TODO(bartlomieju):
-    // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stdout.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stdout.columns, consoleSize?.columns);
     assertEquals(process.stdout.rows, consoleSize?.rows);
     assertEquals(
@@ -360,9 +358,7 @@ Deno.test({
     assertEquals(process.stderr.fd, Deno.stderr.rid);
     const isTTY = Deno.isatty(Deno.stderr.rid);
     assertEquals(process.stderr.isTTY, isTTY);
-    // TODO(bartlomieju):
-    // @ts-ignore Deno.consoleSize is getting stabilized and its signature changes
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stderr.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stderr.columns, consoleSize?.columns);
     assertEquals(process.stderr.rows, consoleSize?.rows);
     assertEquals(
@@ -529,7 +525,7 @@ Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getgid, undefined);
   } else {
-    assertEquals(process.getgid?.(), Deno.getGid());
+    assertEquals(process.getgid?.(), Deno.gid());
   }
 });
 
@@ -537,7 +533,7 @@ Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getuid, undefined);
   } else {
-    assertEquals(process.getuid?.(), Deno.getUid());
+    assertEquals(process.getuid?.(), Deno.uid());
   }
 });
 
