@@ -1,9 +1,8 @@
 // Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
-import { join } from "../path/mod.ts";
 
-const ROOT = new URL(".", import.meta.url).pathname;
+const ROOT = new URL(".", import.meta.url);
 
 Deno.test("doc import checker process should exit with code 1 and print warnings", async () => {
   const proc = await Deno.run({
@@ -15,7 +14,7 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
       "run",
       "--allow-env",
       "--allow-read",
-      join(ROOT, "check_doc_imports.ts"),
+      new URL("./check_doc_imports.ts", ROOT).toString(),
       "--test-mode",
     ],
     stdout: "piped",
@@ -31,7 +30,7 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
 
   assertEquals(status.code, 1);
   const expected = await Deno.readFile(
-    join(ROOT, "testdata", "import_check_test_expected_output.txt"),
+    new URL("./testdata/import_check_test_expected_output.txt", ROOT),
   );
   assertEquals(
     new TextDecoder().decode(stdout),
