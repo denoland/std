@@ -37,7 +37,9 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
   assertEquals(code, 1);
   assertEquals(new TextDecoder().decode(stderr), "");
   assertEquals(
-    new TextDecoder().decode(stdout),
+    // slice to ignore Deno-specific output
+    // (e.g. `Download https://esm.sh/typescript` when running on a fresh cache)
+    new TextDecoder().decode(stdout).slice(-expected.length),
     new TextDecoder().decode(expected),
   );
 });
