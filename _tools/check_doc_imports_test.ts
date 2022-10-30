@@ -13,13 +13,14 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
     cmd: [
       "deno",
       "run",
+      "--reload",
       "--allow-env",
       "--allow-read",
       new URL("./check_doc_imports.ts", ROOT).toString(),
       "--test-mode",
     ],
     stdout: "piped",
-    stderr: "piped",
+    stderr: "null",
   });
   const expected = await Deno.readFile(
     new URL(
@@ -27,19 +28,15 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
       ROOT,
     ),
   );
-  const [{ code }, stdout, stderr] = await Promise.all([
+  const [{ code }, stdout] = await Promise.all([
     proc.status(),
     proc.output(),
-    proc.stderrOutput(),
   ]);
   proc.close();
 
   assertEquals(code, 1);
-  assertEquals(new TextDecoder().decode(stderr), "");
   assertEquals(
-    // slice to ignore Deno-specific output
-    // (e.g. `Download https://esm.sh/typescript` when running on a fresh cache)
-    new TextDecoder().decode(stdout).slice(-expected.length),
+    new TextDecoder().decode(stdout),
     new TextDecoder().decode(expected),
   );
 });
