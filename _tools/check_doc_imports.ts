@@ -38,10 +38,9 @@ function checkImportStatements(
   lineNumber: number,
 ): void {
   const sourceFile = createSourceFile(
-    "doc-import-checker$",
+    "doc-imports-checker$",
     codeBlock,
     ScriptTarget.Latest,
-    true,
   );
   const importDeclarations = sourceFile.statements.filter((s) =>
     s.kind === SyntaxKind.ImportDeclaration
@@ -54,8 +53,9 @@ function checkImportStatements(
     const isInternal = importPath.startsWith(
       "https://deno.land/std@$STD_VERSION/",
     );
-    const line = lineNumber +
-      sourceFile.getLineAndCharacterOfPosition(moduleSpecifier.pos).line;
+    const { line } = sourceFile.getLineAndCharacterOfPosition(
+      moduleSpecifier.pos,
+    );
 
     if (isRelative || !isInternal) {
       console.log(
@@ -67,7 +67,7 @@ function checkImportStatements(
           red(`"${importPath}"`) + " at " +
           blue(
             filePath.substring(ROOT_LENGTH + 1),
-          ) + yellow(":" + line),
+          ) + yellow(":" + (lineNumber + line)),
       );
 
       if (FAIL_FAST) {
@@ -78,28 +78,61 @@ function checkImportStatements(
   }
 }
 
+function checkCodeBlocks(
+  content: string,
+  filePath: string,
+  lineNumber = 1,
+): void {
+  for (const codeBlockMatch of content.matchAll(RX_CODE_BLOCK)) {
+    const [, language, codeBlock] = codeBlockMatch;
+    const shortFilePath = filePath.substring(ROOT_LENGTH + 1);
+    const codeBlockLineNumber =
+      content.slice(0, codeBlockMatch.index).split("\n").length;
+
+    switch (language.toLowerCase()) {
+      case "ts":
+      case "js":
+      case "typescript":
+      case "javascript":
+      case "":
+        if (language === "") {
+          console.log(
+            yellow("Warn") + " codeblock with no language specified at " +
+              blue(shortFilePath) + yellow(":" + codeBlockLineNumber),
+          );
+        }
+
+        checkImportStatements(
+          codeBlock,
+          filePath,
+          lineNumber + codeBlockLineNumber,
+        );
+        break;
+
+      default:
+        console.log(
+          yellow("Warn") + " skipping code block with language " +
+            blue(language) + " at " +
+            blue(shortFilePath) +
+            yellow(":" + codeBlockLineNumber),
+        );
+        break;
+    }
+  }
+}
+
 for await (
   const { path } of walk(root, {
     exts: EXTENSIONS,
     includeDirs: false,
-    skip: EXCLUDED_PATHS.map((p) => new RegExp(`(${p})$`)),
+    skip: EXCLUDED_PATHS.map((p) => new RegExp(p + "$")),
   })
 ) {
   const content = await Deno.readTextFile(path);
   countChecked++;
 
   if (path.endsWith(".md")) {
-    for (const codeBlockMatch of content.matchAll(RX_CODE_BLOCK)) {
-      const [, , codeBlock] = codeBlockMatch;
-      const codeBlockLineNumber =
-        content.slice(0, codeBlockMatch.index).split("\n").length + 1;
-
-      checkImportStatements(
-        codeBlock,
-        path,
-        codeBlockLineNumber,
-      );
-    }
+    checkCodeBlocks(content, path);
   } else {
     for (const jsdocMatch of content.matchAll(RX_JSDOC_COMMENT)) {
       const comment = jsdocMatch[0].replaceAll(
@@ -109,17 +142,7 @@ for await (
       const commentLineNumber =
         content.slice(0, jsdocMatch.index).split("\n").length;
 
-      for (const codeBlockMatch of comment.matchAll(RX_CODE_BLOCK)) {
-        const [, , codeBlock] = codeBlockMatch;
-        const codeBlockLineNumber =
-          comment.slice(0, codeBlockMatch.index).split("\n").length;
-
-        checkImportStatements(
-          codeBlock,
-          path,
-          commentLineNumber + codeBlockLineNumber,
-        );
-      }
+      checkCodeBlocks(comment, path, commentLineNumber);
     }
   }
 }
