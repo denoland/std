@@ -1,5 +1,4 @@
-
-[//]: # Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
+Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
 # Test data for the program that checks imports in documentation.
 
