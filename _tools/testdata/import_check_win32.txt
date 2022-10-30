@@ -1,21 +1,21 @@
-Warn external or incorrectly versioned dependency: "file://a/b/c.ts" at tools\testdata\01_invalid_imports.md:4\n
-Warn relative import path: "../../goat.ts" at tools\testdata\01_invalid_imports.md:5\n
-Warn external or incorrectly versioned dependency: "https://esm.sh/cat" at tools\testdata\01_invalid_imports.md:6\n
-Warn relative import path: "../cat.js" at tools\testdata\01_invalid_imports.md:7\n
-Warn relative import path: "./dog.mjs" at tools\testdata\01_invalid_imports.md:8\n
-Warn external or incorrectly versioned dependency: "https://cdn.skypack.dev/noise/mod.mjs" at tools\testdata\01_invalid_imports.md:9\n
-Warn external or incorrectly versioned dependency: "https://something.somewhere" at tools\testdata\01_invalid_imports.md:10\n
-Warn external or incorrectly versioned dependency: "https://deno.land/std/dotenv/mod.ts" at tools\testdata\01_invalid_imports.md:11\n
-Warn external or incorrectly versioned dependency: "https://deno.land/std@1.2.3/testing/asserts.ts" at tools\testdata\01_invalid_imports.md:12\n
-Warn external or incorrectly versioned dependency: "https://example.com/xyz.ts" at tools\testdata\01_invalid_imports.md:14\n
-Warn external or incorrectly versioned dependency: "land" at tools\testdata\01_invalid_imports.md:20\n
-Warn external or incorrectly versioned dependency: "npm:@generators/mock-code" at tools\testdata\01_invalid_imports.md:28\n
-Warn external or incorrectly versioned dependency: "somewhere" at tools\testdata\01_invalid_imports.md:42\n
-Warn external or incorrectly versioned dependency: "https://favourite.cafe" at tools\testdata\01_invalid_imports.md:48\n
-Warn external or incorrectly versioned dependency: "https://craft.beer" at tools\testdata\01_invalid_imports.md:52\n
-Warn codeblock with no language specified at tools\testdata\01_invalid_imports.md:57\n
-Warn external or incorrectly versioned dependency: "https://deno.land/x/fresh/lemon.ts" at tools\testdata\01_invalid_imports.md:58\n
-Warn skipping code block with language jsfuck at tools\testdata\01_invalid_imports.md:63\n
+Warn external or incorrectly versioned dependency: "file://a/b/c.ts" at tools\testdata\01_invalid_imports.md:6
+Warn relative import path: "../../goat.ts" at tools\testdata\01_invalid_imports.md:7
+Warn external or incorrectly versioned dependency: "https://esm.sh/cat" at tools\testdata\01_invalid_imports.md:8
+Warn relative import path: "../cat.js" at tools\testdata\01_invalid_imports.md:9
+Warn relative import path: "./dog.mjs" at tools\testdata\01_invalid_imports.md:10
+Warn external or incorrectly versioned dependency: "https://cdn.skypack.dev/noise/mod.mjs" at tools\testdata\01_invalid_imports.md:11
+Warn external or incorrectly versioned dependency: "https://something.somewhere" at tools\testdata\01_invalid_imports.md:12
+Warn external or incorrectly versioned dependency: "https://deno.land/std/dotenv/mod.ts" at tools\testdata\01_invalid_imports.md:13
+Warn external or incorrectly versioned dependency: "https://deno.land/std@1.2.3/testing/asserts.ts" at tools\testdata\01_invalid_imports.md:14
+Warn external or incorrectly versioned dependency: "https://example.com/xyz.ts" at tools\testdata\01_invalid_imports.md:16
+Warn external or incorrectly versioned dependency: "land" at tools\testdata\01_invalid_imports.md:22
+Warn external or incorrectly versioned dependency: "npm:@generators/mock-code" at tools\testdata\01_invalid_imports.md:30
+Warn external or incorrectly versioned dependency: "somewhere" at tools\testdata\01_invalid_imports.md:44
+Warn external or incorrectly versioned dependency: "https://favourite.cafe" at tools\testdata\01_invalid_imports.md:50
+Warn external or incorrectly versioned dependency: "https://craft.beer" at tools\testdata\01_invalid_imports.md:54
+Warn codeblock with no language specified at tools\testdata\01_invalid_imports.md:59
+Warn external or incorrectly versioned dependency: "https://deno.land/x/fresh/lemon.ts" at tools\testdata\01_invalid_imports.md:60
+Warn skipping code block with language jsfuck at tools\testdata\01_invalid_imports.md:65
 Warn external or incorrectly versioned dependency: "file://a/b/c.ts" at tools\testdata\02_invalid_imports.ts:7
 Warn relative import path: "../../goat.ts" at tools\testdata\02_invalid_imports.ts:8
 Warn external or incorrectly versioned dependency: "https://esm.sh/cat" at tools\testdata\02_invalid_imports.ts:9
