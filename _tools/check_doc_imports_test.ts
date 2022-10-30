@@ -6,20 +6,17 @@ import { isWindows } from "../_util/os.ts";
 const ROOT = new URL(import.meta.url);
 
 Deno.test("doc import checker process should exit with code 1 and print warnings", async () => {
-  const proc = await Deno.run({
+  const { code, stdout } = await Deno.spawn(Deno.execPath(), {
     env: {
       NO_COLOR: "true",
     },
-    cmd: [
-      "deno",
+    args: [
       "run",
-      "--reload",
       "--allow-env",
       "--allow-read",
       new URL("./check_doc_imports.ts", ROOT).toString(),
       "--test-mode",
     ],
-    stdout: "piped",
     stderr: "null",
   });
   const expected = await Deno.readFile(
@@ -28,11 +25,6 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
       ROOT,
     ),
   );
-  const [{ code }, stdout] = await Promise.all([
-    proc.status(),
-    proc.output(),
-  ]);
-  proc.close();
 
   assertEquals(code, 1);
   assertEquals(
