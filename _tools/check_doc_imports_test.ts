@@ -3,7 +3,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 
-const ROOT = new URL(".", import.meta.url);
+const ROOT = new URL(import.meta.url);
 
 Deno.test("doc import checker process should exit with code 1 and print warnings", async () => {
   const proc = await Deno.run({
@@ -21,21 +21,21 @@ Deno.test("doc import checker process should exit with code 1 and print warnings
     stdout: "piped",
     stderr: "piped",
   });
-
-  const [status, stdout] = await Promise.all([
-    proc.status(),
-    proc.output(),
-    proc.stderrOutput(),
-  ]);
-  proc.close();
-
-  assertEquals(status.code, 1);
   const expected = await Deno.readFile(
     new URL(
       `./testdata/import_check_${isWindows ? "win32" : "posix"}.txt`,
       ROOT,
     ),
   );
+  const [{ code }, stdout, stderr] = await Promise.all([
+    proc.status(),
+    proc.output(),
+    proc.stderrOutput(),
+  ]);
+  proc.close();
+
+  assertEquals(code, 1);
+  assertEquals(new TextDecoder().decode(stderr), "");
   assertEquals(
     new TextDecoder().decode(stdout),
     new TextDecoder().decode(expected),
