@@ -10,7 +10,7 @@ import {
   Buffer,
   LimitedBytesTransformStream,
   LimitedTransformStream,
-  SliceBytesStream,
+  ByteSliceStream,
 } from "./buffer.ts";
 
 Deno.test("[streams] Buffer Write & Read", async function () {
@@ -143,7 +143,7 @@ Deno.test("[streams] SliceBytesStream", async function () {
         controller.enqueue(new Uint8Array([2, 3]));
         controller.close();
       },
-    }).pipeThrough(new SliceBytesStream(start, end));
+    }).pipeThrough(new ByteSliceStream(start, end));
   }
 
   let chunks = [];

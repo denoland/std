@@ -238,13 +238,13 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
  *
  * @example
  * ```ts
- * import { SliceBytesStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+ * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const response = await fetch("https://example.com");
  * const rangedStream = response.body!
- *   .pipeThrough(new SliceBytesStream(3, 8));
+ *   .pipeThrough(new ByteSliceStream(3, 8));
  * ```
  */
-export class SliceBytesStream extends TransformStream<Uint8Array, Uint8Array> {
+export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
   #offsetStart = 0;
   #offsetEnd = 0;
 
