@@ -135,7 +135,7 @@ Deno.test("[streams] LimitedTransformStream error", async function () {
   }, RangeError);
 });
 
-Deno.test("[streams] SliceBytesStream", async function () {
+Deno.test("[streams] ByteSliceStream", async function () {
   function createStream(start = 0, end = Infinity) {
     return new ReadableStream({
       start(controller) {
