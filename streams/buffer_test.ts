@@ -8,9 +8,9 @@ import {
 } from "../testing/asserts.ts";
 import {
   Buffer,
+  ByteSliceStream,
   LimitedBytesTransformStream,
   LimitedTransformStream,
-  ByteSliceStream,
 } from "./buffer.ts";
 
 Deno.test("[streams] Buffer Write & Read", async function () {
