@@ -1,4 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import {
+  O_APPEND,
+  O_CREAT,
+  O_EXCL,
+  O_RDWR,
+  O_TRUNC,
+  O_WRONLY,
+} from "./_fs_constants.ts";
 import { existsSync } from "../../fs/exists.ts";
 import { getOpenOptions } from "./_fs_common.ts";
 import { promisify } from "../internal/util.mjs";
@@ -6,6 +14,11 @@ import { parseFileMode } from "../internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
 import type { Buffer } from "../buffer.ts";
+
+const FLAGS_AX = O_APPEND | O_CREAT | O_WRONLY | O_EXCL;
+const FLAGS_AX_PLUS = O_APPEND | O_CREAT | O_RDWR | O_EXCL;
+const FLAGS_WX = O_TRUNC | O_CREAT | O_WRONLY | O_EXCL;
+const FLAGS_WX_PLUS = O_TRUNC | O_CREAT | O_RDWR | O_EXCL;
 
 export type openFlags =
   | "a"
@@ -20,7 +33,8 @@ export type openFlags =
   | "w"
   | "wx"
   | "w+"
-  | "wx+";
+  | "wx+"
+  | number;
 
 type openCallback = (err: Error | null, fd: number) => void;
 
@@ -47,28 +61,29 @@ export function open(
 ): void;
 export function open(
   path: string | Buffer | URL,
-  flagsOrCallback: openCallback | openFlags,
-  callbackOrMode?: openCallback | number,
-  maybeCallback?: openCallback,
+  flags: openCallback | openFlags,
+  mode?: openCallback | number,
+  callback?: openCallback,
 ) {
-  if (flagsOrCallback === undefined) {
+  if (flags === undefined) {
     throw new ERR_INVALID_ARG_TYPE(
       "flags or callback",
       ["string", "function"],
-      flagsOrCallback,
+      flags,
     );
   }
-  let flags = typeof flagsOrCallback === "string" ? flagsOrCallback : undefined;
-  const callback = typeof flagsOrCallback === "function"
-    ? flagsOrCallback
-    : typeof callbackOrMode === "function"
-    ? callbackOrMode
-    : maybeCallback;
-  const mode = typeof callbackOrMode === "function"
-    ? parseFileMode(null, "mode", 0o666)
-    : parseFileMode(callbackOrMode, "mode", 0o666);
-
   path = getValidatedPath(path);
+  if (arguments.length < 3) {
+    // deno-lint-ignore no-explicit-any
+    callback = flags as any;
+    flags = "r";
+    mode = 0o666;
+  } else if (typeof mode === "function") {
+    callback = mode;
+    mode = 0o666;
+  } else {
+    mode = parseFileMode(mode, "mode", 0o666);
+  }
 
   if (typeof callback !== "function") {
     throw new ERR_INVALID_ARG_TYPE(
@@ -83,7 +98,7 @@ export function open(
   }
 
   if (
-    ["ax", "ax+", "wx", "wx+"].includes(flags || "") &&
+    existenceCheckRequired(flags as openFlags) &&
     existsSync(path as string)
   ) {
     const err = new Error(`EEXIST: file already exists, open '${path}'`);
@@ -103,8 +118,11 @@ export function open(
       }
       return;
     }
-    Deno.open(path as string, convertFlagAndModeToOptions(flags, mode)).then(
-      (file) => callback(null, file.rid),
+    Deno.open(
+      path as string,
+      convertFlagAndModeToOptions(flags as openFlags, mode),
+    ).then(
+      (file) => callback!(null, file.rid),
       (err) => (callback as (err: Error) => void)(err),
     );
   }
@@ -134,16 +152,10 @@ export function openSync(
 ): number;
 export function openSync(
   path: string | Buffer | URL,
-  flagsOrMode?: openFlags | number,
+  flags?: openFlags,
   maybeMode?: number,
 ) {
-  let flags = typeof flagsOrMode === "string" ? flagsOrMode : undefined;
-  let mode = typeof flagsOrMode === "string"
-    ? parseFileMode(null, "mode", 0o666)
-    : parseFileMode(flagsOrMode, "mode", 0o666);
-  if (maybeMode !== undefined) {
-    mode = parseFileMode(maybeMode, "mode", 0o666);
-  }
+  const mode = parseFileMode(maybeMode, "mode", 0o666);
   path = getValidatedPath(path);
 
   if (flags === undefined) {
@@ -151,7 +163,7 @@ export function openSync(
   }
 
   if (
-    ["ax", "ax+", "wx", "wx+"].includes(flags || "") &&
+    existenceCheckRequired(flags) &&
     existsSync(path as string)
   ) {
     throw new Error(`EEXIST: file already exists, open '${path}'`);
@@ -159,4 +171,17 @@ export function openSync(
 
   return Deno.openSync(path as string, convertFlagAndModeToOptions(flags, mode))
     .rid;
+}
+
+function existenceCheckRequired(flags: openFlags | number) {
+  return (
+    (typeof flags === "string" &&
+      ["ax", "ax+", "wx", "wx+"].includes(flags)) ||
+    (typeof flags === "number" && (
+      ((flags & FLAGS_AX) === FLAGS_AX) ||
+      ((flags & FLAGS_AX_PLUS) === FLAGS_AX_PLUS) ||
+      ((flags & FLAGS_WX) === FLAGS_WX) ||
+      ((flags & FLAGS_WX_PLUS) === FLAGS_WX_PLUS)
+    ))
+  );
 }

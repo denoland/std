@@ -1,5 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
+  O_APPEND,
+  O_CREAT,
+  O_EXCL,
+  O_RDONLY,
+  O_RDWR,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
+} from "./_fs_constants.ts";
+import {
   assert,
   assertEquals,
   assertThrows,
@@ -43,7 +53,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'a'",
+  name: "open with string flag 'a'",
   fn() {
     const file = join(tempDir, "some_random_file");
     const fd = openSync(file, "a");
@@ -55,7 +65,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'ax'",
+  name: "open with string flag 'ax'",
   fn() {
     const file = Deno.makeTempFileSync();
     assertThrows(
@@ -70,7 +80,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'a+'",
+  name: "open with string flag 'a+'",
   fn() {
     const file = join(tempDir, "some_random_file2");
     const fd = openSync(file, "a+");
@@ -81,7 +91,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'ax+'",
+  name: "open with string flag 'ax+'",
   fn() {
     const file = Deno.makeTempFileSync();
     assertThrows(
@@ -96,7 +106,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'as'",
+  name: "open with string flag 'as'",
   fn() {
     const file = join(tempDir, "some_random_file10");
     const fd = openSync(file, "as");
@@ -107,7 +117,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'as+'",
+  name: "open with string flag 'as+'",
   fn() {
     const file = join(tempDir, "some_random_file10");
     const fd = openSync(file, "as+");
@@ -118,7 +128,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'r'",
+  name: "open with string flag 'r'",
   fn() {
     const file = join(tempDir, "some_random_file3");
     assertThrows(() => {
@@ -128,7 +138,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'r+'",
+  name: "open with string flag 'r+'",
   fn() {
     const file = join(tempDir, "some_random_file4");
     assertThrows(() => {
@@ -138,7 +148,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'w'",
+  name: "open with string flag 'w'",
   fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
@@ -156,7 +166,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'wx'",
+  name: "open with string flag 'wx'",
   fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
@@ -177,7 +187,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'w+'",
+  name: "open with string flag 'w+'",
   fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
@@ -195,12 +205,179 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with flag 'wx+'",
+  name: "open with string flag 'wx+'",
   fn() {
     const file = Deno.makeTempFileSync();
     assertThrows(
       () => {
         openSync(file, "wx+");
+      },
+      Error,
+      `EEXIST: file already exists, open '${file}'`,
+    );
+    Deno.removeSync(file);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY` ('a')",
+  fn() {
+    const file = join(tempDir, "some_random_file");
+    const fd = openSync(file, O_APPEND | O_CREAT | O_WRONLY);
+    assertEquals(typeof fd, "number");
+    assertEquals(existsSync(file), true);
+    assert(Deno.resources()[fd]);
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_EXCL` ('ax')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    assertThrows(
+      () => {
+        openSync(file, O_APPEND | O_CREAT | O_WRONLY | O_EXCL);
+      },
+      Error,
+      `EEXIST: file already exists, open '${file}'`,
+    );
+    Deno.removeSync(file);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_RDWR` ('a+')",
+  fn() {
+    const file = join(tempDir, "some_random_file2");
+    const fd = openSync(file, O_APPEND | O_CREAT | O_RDWR);
+    assertEquals(typeof fd, "number");
+    assertEquals(existsSync(file), true);
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_RDWR | O_EXCL` ('ax+')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    assertThrows(
+      () => {
+        openSync(file, O_APPEND | O_CREAT | O_RDWR | O_EXCL);
+      },
+      Error,
+      `EEXIST: file already exists, open '${file}'`,
+    );
+    Deno.removeSync(file);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_SYNC` ('as')",
+  fn() {
+    const file = join(tempDir, "some_random_file10");
+    const fd = openSync(file, O_APPEND | O_CREAT | O_WRONLY | O_SYNC);
+    assertEquals(existsSync(file), true);
+    assertEquals(typeof fd, "number");
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_APPEND | O_CREAT | O_RDWR | O_SYNC` ('as+')",
+  fn() {
+    const file = join(tempDir, "some_random_file10");
+    const fd = openSync(file, O_APPEND | O_CREAT | O_RDWR | O_SYNC);
+    assertEquals(existsSync(file), true);
+    assertEquals(typeof fd, "number");
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_RDONLY` ('r')",
+  fn() {
+    const file = join(tempDir, "some_random_file3");
+    assertThrows(() => {
+      openSync(file, O_RDONLY);
+    }, Error);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_RDWR` ('r+')",
+  fn() {
+    const file = join(tempDir, "some_random_file4");
+    assertThrows(() => {
+      openSync(file, O_RDWR);
+    }, Error);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_TRUNC | O_CREAT | O_WRONLY` ('w')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hi there");
+    const fd = openSync(file, O_TRUNC | O_CREAT | O_WRONLY);
+    assertEquals(typeof fd, "number");
+    assertEquals(Deno.readTextFileSync(file), "");
+    closeSync(fd);
+
+    const file2 = join(tempDir, "some_random_file5");
+    const fd2 = openSync(file2, O_TRUNC | O_CREAT | O_WRONLY);
+    assertEquals(typeof fd2, "number");
+    assertEquals(existsSync(file2), true);
+    closeSync(fd2);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_TRUNC | O_CREAT | O_WRONLY | O_EXCL` ('wx')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hi there");
+    const fd = openSync(file, "w");
+    assertEquals(typeof fd, "number");
+    assertEquals(Deno.readTextFileSync(file), "");
+    closeSync(fd);
+
+    const file2 = Deno.makeTempFileSync();
+    assertThrows(
+      () => {
+        openSync(file2, O_TRUNC | O_CREAT | O_WRONLY | O_EXCL);
+      },
+      Error,
+      `EEXIST: file already exists, open '${file2}'`,
+    );
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_TRUNC | O_CREAT | O_RDWR` ('w+')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hi there");
+    const fd = openSync(file, O_TRUNC | O_CREAT | O_RDWR);
+    assertEquals(typeof fd, "number");
+    assertEquals(Deno.readTextFileSync(file), "");
+    closeSync(fd);
+
+    const file2 = join(tempDir, "some_random_file6");
+    const fd2 = openSync(file2, O_TRUNC | O_CREAT | O_RDWR);
+    assertEquals(typeof fd2, "number");
+    assertEquals(existsSync(file2), true);
+    closeSync(fd2);
+  },
+});
+
+Deno.test({
+  name: "open with numeric flag `O_TRUNC | O_CREAT | O_RDWR | O_EXCL` ('wx+')",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    assertThrows(
+      () => {
+        openSync(file, O_TRUNC | O_CREAT | O_RDWR | O_EXCL);
       },
       Error,
       `EEXIST: file already exists, open '${file}'`,
