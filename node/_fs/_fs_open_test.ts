@@ -232,7 +232,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_EXCL` ('ax')",
+  name:
+    "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_EXCL` ('ax')",
   fn() {
     const file = Deno.makeTempFileSync();
     assertThrows(
@@ -273,7 +274,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_SYNC` ('as')",
+  name:
+    "open with numeric flag `O_APPEND | O_CREAT | O_WRONLY | O_SYNC` ('as')",
   fn() {
     const file = join(tempDir, "some_random_file10");
     const fd = openSync(file, O_APPEND | O_CREAT | O_WRONLY | O_SYNC);
