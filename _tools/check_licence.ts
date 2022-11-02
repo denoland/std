@@ -17,7 +17,10 @@ const EXCLUDED_DIRS = [
 const ROOT = new URL("../", import.meta.url);
 const FIRST_YEAR = 2018;
 const CURRENT_YEAR = new Date().getFullYear();
-const COPYRIGHT = `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
+const COPYRIGHT =
+  `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
+
+let failed = false;
 
 for await (
   const { path } of walk(ROOT, {
@@ -28,6 +31,14 @@ for await (
 ) {
   const content = await Deno.readTextFile(path);
   if (!content.includes(COPYRIGHT)) {
-    console.error(`Missing copyright notice: ${path}`);
+    console.error(`Missing/incorrect copyright header: ${path}`);
+    if (!failed) {
+      failed = true;
+    }
   }
+}
+
+if (failed) {
+  console.info(`Copyright header should be "${COPYRIGHT}"`);
+  Deno.exit(1);
 }
