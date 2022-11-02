@@ -132,6 +132,9 @@ jobs:
       - name: Check Deprecations
         run: "deno task lint:deprecations"
 
+      - name: Check Import paths in Docs
+        run: "deno task lint:doc-imports"
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
