@@ -87,6 +87,7 @@ is.string(endianness);
 assert.match(endianness, /[BL]E/);
 
 const hostname = os.hostname();
+console.log("hostname", Deno.inspect(hostname));
 is.string(hostname);
 assert.ok(hostname.length > 0);
 
