@@ -184,7 +184,7 @@ import { parse } from "https://deno.land/std@$STD_VERSION/encoding/csv.ts";
 const string = "a,b,c\nd,e,f";
 
 console.log(
-  await parse(string, {
+  parse(string, {
     skipFirstRow: false,
   }),
 );

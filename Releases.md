@@ -1,3 +1,14 @@
+### 0.162.0 / 2022.11.03
+
+- feat(encoding/front_matter): add support for different formats of front matter
+  (#2801)
+- feat(streams): add ByteSliceStream (#2795)
+- feat(tools): add import path check in docs (#2820)
+- fix(dotenv): Empty string crashing parsing (#2819)
+- fix(flags): set boolean aliases to false by default (#2824)
+- fix(node): `node:setup` task honours `-y` flag (#2825)
+- fix(node/fs): add support for numeric flags in `fs.open()` (#2828)
+
 ### 0.161.0 / 2022.10.26
 
 - BREAKING: remove deprecated `std/hash` module (#2786)
