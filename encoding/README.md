@@ -132,7 +132,7 @@ function is as follows:
     | :--: | :------: |
     | deno | denoland |
 
-  - If a different column header is desired, then a `ColumnDetails` object type 
+  - If a different column header is desired, then a `ColumnDetails` object type
     can be used for each column:
 
     - **`header?: string`** is the optional value to use for the column header
