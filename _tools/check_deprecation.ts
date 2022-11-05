@@ -64,8 +64,6 @@ for await (
     skip: EXCLUDED_PATHS.map((path) => new RegExp(path + "$")),
   })
 ) {
-  console.log(path);
-
   // deno_doc only takes urls.
   const url = new URL(path, "file://");
   const docs = await doc(url.href);
