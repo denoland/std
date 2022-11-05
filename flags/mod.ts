@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Command line arguments parser based on
- * [minimist](https://github.com/substack/minimist).
+ * [minimist](https://github.com/minimistjs/minimist).
  *
  * This module is browser compatible.
  *
