@@ -1,4 +1,4 @@
-// Copyright 2018-2022 Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 const isWindows = Deno.build.os === "windows";

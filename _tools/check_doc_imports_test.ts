@@ -1,4 +1,4 @@
-// Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { isWindows } from "../_util/os.ts";
