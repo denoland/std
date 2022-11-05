@@ -45,6 +45,11 @@ import process from "../process.ts";
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
 
+const DenoSpawnChild = Deno[Deno.internal]?.nodeUnstable?.spawnChild ||
+  Deno.spawnChild;
+const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
+  Deno.spawnSync;
+
 export function stdioStringToArray(
   stdio: NodeStdio,
   channel: NodeStdio | number,
@@ -159,7 +164,7 @@ export class ChildProcess extends EventEmitter {
     const stringEnv = mapValues(env, (value) => value.toString());
 
     try {
-      this.#process = Deno.spawnChild(cmd, {
+      this.#process = DenoSpawnChild(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
@@ -763,7 +768,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const output = Deno.spawnSync(command, {
+    const output = DenoSpawnSync(command, {
       args,
       cwd,
       env,
