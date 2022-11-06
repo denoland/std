@@ -5,7 +5,7 @@ export {
 } from "./lib/deno_std_wasm_crypto.generated.mjs";
 
 /**
- * All cryptographic hash/digest algorithms supported by std/_wasm_crypto.
+ * All cryptographic hash/digest algorithms supported by std/crypto/_wasm.
  *
  * For algorithms that are supported by WebCrypto, the name here must match the
  * one used by WebCrypto. Otherwise we should prefer the formatting used in the
@@ -41,5 +41,5 @@ export const digestAlgorithms = [
   "SHA-1",
 ] as const;
 
-/** An algorithm name supported by std/_wasm_crypto. */
+/** An algorithm name supported by std/crypto/_wasm. */
 export type DigestAlgorithm = typeof digestAlgorithms[number];
