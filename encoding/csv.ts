@@ -11,7 +11,7 @@
  * @module
  */
 
-import { assert } from "../_util/assert.ts";
+import { assert } from "../testing/asserts.ts";
 import type { ReadOptions } from "./csv/_io.ts";
 import { Parser } from "./csv/_parser.ts";
 

@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import Dirent from "./_fs_dirent.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../testing/asserts.ts";
 import { ERR_MISSING_ARGS } from "../internal/errors.ts";
 
 export default class Dir {

@@ -3,7 +3,7 @@
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/mod.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../testing/asserts.ts";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

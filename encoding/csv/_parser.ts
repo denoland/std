@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../testing/asserts.ts";
 import {
   ERR_BARE_QUOTE,
   ERR_FIELD_COUNT,

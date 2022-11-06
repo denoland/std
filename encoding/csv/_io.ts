@@ -3,7 +3,7 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../testing/asserts.ts";
 
 /**
  * @property separator - Character which separates values. Default: ','

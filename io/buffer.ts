@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/assert.ts";
+import { assert } from "../testing/asserts.ts";
 import { BytesList } from "../bytes/bytes_list.ts";
 import { concat, copy } from "../bytes/mod.ts";
 import type { Reader, ReaderSync, Writer, WriterSync } from "./types.d.ts";

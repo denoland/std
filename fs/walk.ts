@@ -2,7 +2,7 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../_util/assert.ts";
+import { assert } from "../testing/asserts.ts";
 import { join, normalize } from "../path/mod.ts";
 import {
   createWalkEntry,

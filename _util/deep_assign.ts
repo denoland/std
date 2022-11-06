@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "./assert.ts";
+import { assert } from "../testing/asserts.ts";
 
 export function deepAssign<T, U>(target: T, source: U): T & U;
 export function deepAssign<T, U, V>(
