@@ -13,7 +13,7 @@ const EXCLUDED_PATHS = [
   "fs/testdata",
   "http/testdata",
   "crypto/_wasm_crypto/target",
-  "encoding/varint/_wasm_varint/target",
+  "encoding/varint/_wasm/target",
   "hash/_wasm/target",
 ];
 
