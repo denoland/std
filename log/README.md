@@ -368,7 +368,7 @@ export function mult(a: number, b: number) {
 
 The user of the module can then display the internal logs with:
 
-```ts
+```ts, ignore
 import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 import { sum } from "<the-awesome-module>/mod.ts";
 
