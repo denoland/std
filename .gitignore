@@ -3,5 +3,5 @@
 .vscode/settings.json
 .vim
 **/cov/
-/crypto/_wasm_crypto/target
+/crypto/_wasm/target
 /encoding/varint/_wasm/target

@@ -23,7 +23,7 @@ import {
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
-} from "./_wasm_crypto/mod.ts";
+} from "./_wasm/mod.ts";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/index.ts";
 
