@@ -167,7 +167,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in crypto/_wasm/rust-toolchain.toml
-          rust-version: 1.64.0
+          rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
@@ -207,7 +207,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the versions in encoding/varint/_wasm/rust-toolchain.toml
-          rust-version: 1.64.0
+          rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
