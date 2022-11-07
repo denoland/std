@@ -1,25 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Check whether binary arrays are equal to each other using 8-bit comparisons.
- * @private
+/** Check whether binary arrays are equal to each other.
  * @param a first array to check equality
  * @param b second array to check equality
  */
-export function equalsNaive(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < b.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
-/** Check whether binary arrays are equal to each other using 32-bit comparisons.
- * @private
- * @param a first array to check equality
- * @param b second array to check equality
- */
-export function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
+export function equals(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
   const len = a.length;
   const compressable = Math.floor(len / 4);
@@ -32,13 +18,4 @@ export function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
     if (compressedA[i] !== compressedB[i]) return false;
   }
   return true;
-}
-
-/** Check whether binary arrays are equal to each other.
- * @param a first array to check equality
- * @param b second array to check equality
- */
-export function equals(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length < 1000) return equalsNaive(a, b);
-  return equals32Bit(a, b);
 }
