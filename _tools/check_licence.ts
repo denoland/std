@@ -11,7 +11,7 @@ const EXCLUDED_DIRS = [
   "http/testdata",
   "node/testdata",
   "crypto/_wasm/target",
-  "encoding/varint/_wasm_varint/target",
+  "encoding/varint/_wasm/target",
   "_tools/testdata",
 ];
 

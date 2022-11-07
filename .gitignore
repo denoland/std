@@ -4,4 +4,4 @@
 .vim
 **/cov/
 /crypto/_wasm/target
-/encoding/varint/_wasm_varint/target
+/encoding/varint/_wasm/target
