@@ -85,11 +85,11 @@ that do range matching.
 
 #### Prerelease Identifiers
 
-The method `.inc` takes an additional `identifier` string argument that will
-append the value of the string as a prerelease identifier:
+The method `.increment` takes an additional `identifier` string argument that
+will append the value of the string as a prerelease identifier:
 
 ```javascript
-semver.inc("1.2.3", "prerelease", "beta");
+semver.increment("1.2.3", "prerelease", "beta");
 // "1.2.4-beta.0"
 ```
 
@@ -229,7 +229,7 @@ Strict-mode Comparators and Ranges will be strict about the SemVer strings that
 they parse.
 
 - `valid(v)`: Return the parsed version, or null if it"s not valid.
-- `inc(v, release)`: Return the version incremented by the release type
+- `increment(v, release)`: Return the version incremented by the release type
   (`major`, `premajor`, `minor`, `preminor`, `patch`, `prepatch`, or
   `prerelease`), or null if it"s not valid
   - `premajor` in one call will bump the version up to the next major version
@@ -268,8 +268,8 @@ they parse.
 - `compareBuild(v1, v2)`: The same as `compare` but considers `build` when two
   versions are equal. Sorts in ascending order if passed to `Array.sort()`. `v2`
   is greater. Sorts in ascending order if passed to `Array.sort()`.
-- `diff(v1, v2)`: Returns difference between two versions by the release type
-  (`major`, `premajor`, `minor`, `preminor`, `patch`, `prepatch`, or
+- `difference(v1, v2)`: Returns difference between two versions by the release
+  type (`major`, `premajor`, `minor`, `preminor`, `patch`, `prepatch`, or
   `prerelease`), or null if the versions are the same.
 
 ### Comparators

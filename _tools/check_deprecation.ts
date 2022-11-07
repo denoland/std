@@ -43,9 +43,9 @@ const DEPRECATION_AFTER_FORMAT_REGEX =
 let shouldFail = false;
 
 // add three minor version to current version
-const DEFAULT_DEPRECATED_VERSION = semver.inc(
-  semver.inc(
-    semver.inc(
+const DEFAULT_DEPRECATED_VERSION = semver.increment(
+  semver.increment(
+    semver.increment(
       VERSION,
       "minor",
     )!,
