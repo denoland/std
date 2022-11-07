@@ -345,7 +345,8 @@ console.log(data); // undefined
 
 ### For module authors
 
-The authors of public modules can let the users display the internal logs of the module by using a custom logger:
+The authors of public modules can let the users display the internal logs of the
+module by using a custom logger:
 
 ```ts
 import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
@@ -387,7 +388,8 @@ await log.setup({
 sum(1, 2); // prints "running 1 + 2" to the console
 ```
 
-Please note that, due to the order of initialization of the loggers, the following won't work:
+Please note that, due to the order of initialization of the loggers, the
+following won't work:
 
 ```ts
 import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
@@ -399,4 +401,3 @@ export function sum(a: number, b: number) {
   return a + b;
 }
 ```
-
