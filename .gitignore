@@ -5,3 +5,4 @@
 **/cov/
 /crypto/_wasm_crypto/target
 /encoding/varint/_wasm/target
+deno.lock
