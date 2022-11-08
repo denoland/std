@@ -1,6 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/**
+ * These assertions exist to create a separation of concerns between internal and testing assertions.
+ * All non-testing code within the codebase must use these assertions.
+ */
 import * as asserts from "../testing/asserts.ts";
 
 export class DenoStdInternalError extends Error {
