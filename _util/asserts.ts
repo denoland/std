@@ -15,7 +15,7 @@ export function assert(expr: unknown, msg = ""): asserts expr {
   try {
     asserts.assert(expr, msg);
   } catch (error) {
-    throw new DenoStdInternalError(error as string);
+    throw new DenoStdInternalError((error as asserts.AssertionError).message);
   }
 }
 
@@ -27,7 +27,7 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string) {
   try {
     asserts.assertEquals(actual, expected, msg);
   } catch (error) {
-    throw new DenoStdInternalError(error as string);
+    throw new DenoStdInternalError((error as asserts.AssertionError).message);
   }
 }
 
@@ -43,7 +43,7 @@ export function assertStringIncludes(
   try {
     asserts.assertStringIncludes(actual, expected, msg);
   } catch (error) {
-    throw new DenoStdInternalError(error as string);
+    throw new DenoStdInternalError((error as asserts.AssertionError).message);
   }
 }
 
@@ -52,7 +52,7 @@ export function fail(msg?: string): never {
   try {
     asserts.fail(msg);
   } catch (error) {
-    throw new DenoStdInternalError(error as string);
+    throw new DenoStdInternalError((error as asserts.AssertionError).message);
   }
 }
 
@@ -61,6 +61,6 @@ export function unreachable(): never {
   try {
     asserts.unreachable();
   } catch (error) {
-    throw new DenoStdInternalError(error as string);
+    throw new DenoStdInternalError((error as asserts.AssertionError).message);
   }
 }
