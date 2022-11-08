@@ -3,7 +3,7 @@
 
 import { Reporter } from "./reporter.js";
 import { DecoderBuffer, EncoderBuffer } from "./buffer.js";
-import { assert, assertEquals } from "../../../../../testing/asserts.ts";
+import { assert, assertEquals } from "../../../../../_util/asserts.ts";
 
 // Supported tags
 const tags = [

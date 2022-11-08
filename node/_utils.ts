@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
-import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+import { assert, assertStringIncludes, fail } from "../_util/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
 import { errorMap } from "./internal_binding/uv.ts";
 import { codes } from "./internal/error_codes.ts";
