@@ -1,6 +1,17 @@
 ### 0.163.0 / 2022.11.08
 
-- Revert "refactor(bytes): remove `equalsNaive` (#2852)" (#2854)
+- chore: upgrade rust to 0.165.0 and wasmbuild to 0.10.2 (#2850)
+- chore(semver): rename inc and diff (#2826)
+- docs(encoding): remove `await` (#2831)
+- docs(encoding): remove `ColumnDetails["fn"]` (#2840)
+- docs(flags): fix broken link to minimist (#2842)
+- docs(fs): remove misleading docs from fs.walk (#2836)
+- docs(log): add note for module authors (#2843)
+- refactor: cleanup check licence headers tool (#2830)
+- refactor(_tools): use `fs/walk` in deprecations check (#2837)
+- refactor(_util): remove `deepAssign` (#2847)
+- refactor(crypto): move `crypto/_wasm_crypto/` to `crypto/_wasm/` (#2845)
+- refactor(encoding): move `varint/_wasm_varint/` to `varint/_wasm/` (#2844)
 
 ### 0.162.0 / 2022.11.03
 
