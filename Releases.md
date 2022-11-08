@@ -1,3 +1,7 @@
+### 0.163.0 / 2022.11.08
+
+- Revert "refactor(bytes): remove `equalsNaive` (#2852)" (#2854)
+
 ### 0.162.0 / 2022.11.03
 
 - feat(encoding/front_matter): add support for different formats of front matter
