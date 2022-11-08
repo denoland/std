@@ -441,6 +441,7 @@ class Module {
       trailingSlash = /(?:^|\/)\.?\.$/.test(request);
     }
 
+    console.log("paths!!!", request, paths);
     // For each path
     for (let i = 0; i < paths.length; i++) {
       // Don't search further if path doesn't exist
