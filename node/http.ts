@@ -453,8 +453,12 @@ class ServerImpl extends EventEmitter {
 
   constructor(handler?: ServerHandler) {
     super();
+    // TODO(kt3k): Temporarily disables flash. Enable when
+    // denoland/deno#16567 resolved.
+    // @see https://github.com/denoland/deno/issues/16567
     // @ts-ignore Might be undefined without `--unstable` flag
-    this.#isFlashServer = typeof Deno.serve == "function";
+    // this.#isFlashServer = typeof Deno.serve == "function";
+    this.#isFlashServer = false;
     if (this.#isFlashServer) {
       this.#servePromise = deferred();
       this.#servePromise.then(() => this.emit("close"));

@@ -5,6 +5,7 @@ import http from "./http.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
+import fs from "./fs.ts";
 
 Deno.test("[node/http listen]", async () => {
   {
@@ -147,4 +148,28 @@ Deno.test("[node/http] request default protocol", async () => {
     promise.resolve();
   });
   await promise;
+});
+
+Deno.test("[node/http] streaming large file", async () => {
+  const promise = deferred<void>();
+  const file = await Deno.makeTempFile();
+
+  await fs.promises.writeFile(file, "a".repeat(2_000_000));
+
+  const server = http.createServer((_, res) => {
+    fs.createReadStream(file).pipe(res);
+  });
+  server.listen(async () => {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/`);
+    const length = (await res.arrayBuffer()).byteLength;
+    assertEquals(res.status, 200);
+    assertEquals(length, 2_000_000);
+    server.close();
+  });
+  server.on("close", () => {
+    promise.resolve();
+  });
+  await promise;
+
+  await Deno.remove(file);
 });
