@@ -351,7 +351,7 @@ export class Resolver extends CallbackResolver {
   }
 
   // deno-lint-ignore no-explicit-any
-  [resolveMethod: string]: any
+  [resolveMethod: string]: any;
 }
 
 Resolver.prototype.resolveAny = resolveMap.ANY = resolver("queryAny");
