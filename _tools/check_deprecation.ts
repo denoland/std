@@ -3,7 +3,7 @@
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { doc } from "https://deno.land/x/deno_doc@0.46.0/mod.ts";
+import { doc } from "https://deno.land/x/deno_doc@0.48.0/mod.ts";
 import { walk } from "../fs/walk.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts"];
