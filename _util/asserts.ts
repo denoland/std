@@ -2,8 +2,7 @@
 // This module is browser compatible.
 
 /**
- * These assertions exist to create a separation of concerns between internal and testing assertions.
- * All non-testing code within the codebase must use these assertions.
+ * All internal non-test code, that is files that do not have `test` or `bench` in the name, must use the assertion functions within `_utils/asserts.ts` and not `testing/asserts.ts`. This is to create a separation of concerns between internal and testing assertions.
  */
 
 export class DenoStdInternalError extends Error {
