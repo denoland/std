@@ -12,7 +12,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "bond",
+  name: "pads the start of a number",
   fn() {
     assertEquals("007", addZero(7, 3));
   },
