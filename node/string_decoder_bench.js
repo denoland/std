@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import { StringDecoder } from "./string_decoder.ts";
 
 const stringDecoder = new StringDecoder();
