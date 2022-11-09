@@ -3,7 +3,7 @@
 
 import { Reporter } from "./reporter.js";
 import { DecoderBuffer, EncoderBuffer } from "./buffer.js";
-import { assert, assertEquals } from "../../../../../_util/asserts.ts";
+import { assert } from "../../../../../_util/asserts.ts";
 
 // Supported tags
 const tags = [
@@ -156,7 +156,7 @@ Node.prototype._init = function init(body) {
   state.children = state.children.filter(function (child) {
     return child._baseState.parent === this;
   }, this);
-  assertEquals(state.children.length, 1, "Root node can have only one child");
+  assert(state.children.length === 1, "Root node can have only one child");
 };
 
 Node.prototype._useArgs = function useArgs(args) {
