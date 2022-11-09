@@ -21,6 +21,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { Buffer } from "./buffer.ts";
+import { core } from "./_core.ts";
 import { normalizeEncoding as castEncoding, notImplemented } from "./_utils.ts";
 
 enum NotImplemented {
@@ -227,6 +228,16 @@ function simpleWrite(
   return buf.toString(this.encoding);
 }
 
+function simpleUtf8Write(
+  this: StringDecoderBase,
+  buf: Buffer | string,
+): string {
+  if (typeof buf === "string") {
+    return buf;
+  }
+  return core.decode(buf);
+}
+
 function simpleEnd(this: GenericDecoder, buf?: Buffer): string {
   return buf && buf.length ? this.write(buf) : "";
 }
@@ -259,6 +270,9 @@ class GenericDecoder extends StringDecoderBase {
 
   constructor(encoding?: string) {
     super(normalizeEncoding(encoding), 4);
+    if (this.encoding === "utf8") {
+      this.write = simpleUtf8Write;
+    }
   }
 }
 
