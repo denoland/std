@@ -155,19 +155,19 @@ Deno.test("increment", function () {
     const wanted = v[2];
     const options = v[3];
     const id = v[4];
-    const found = semver.inc(pre, what, options, id);
+    const found = semver.increment(pre, what, options, id);
     const cmd = "inc(" + pre + ", " + what + ", " + id + ")";
     assertEquals(found, wanted, cmd + " === " + wanted);
 
     const parsed = semver.parse(pre, options);
     if (wanted && parsed) {
       //todo ?
-      parsed.inc(what, id);
+      parsed.increment(what, id);
       assertEquals(parsed.version, wanted, cmd + " object version updated");
       assertEquals(parsed.raw, wanted, cmd + " object raw field updated");
     } else if (parsed) {
       assertThrows(function () {
-        parsed.inc(what, id);
+        parsed.increment(what, id);
       });
     } else {
       assertEquals(parsed, null);

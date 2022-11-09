@@ -13,7 +13,7 @@ const fixtures = [
 ];
 
 fixtures.forEach(function (fixture, i) {
-  const key = new Buffer(fixture, "hex");
+  const key = Buffer.from(fixture, "hex");
   const priv = parseKey(key);
 
   for (let j1 = 1; j1 < 31; ++j1) {

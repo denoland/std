@@ -2,22 +2,16 @@
 
 import { fromFileUrl, join } from "../../path/mod.ts";
 import { delay } from "../../async/delay.ts";
-import { assert } from "../../testing/asserts.ts";
 
 const env = {
   DENO_NODE_COMPAT_URL: new URL("../../", import.meta.url).href,
 };
-const yarnUrl = new URL("./yarn.js", import.meta.url).href;
 
 Deno.test("integration test of compat mode", {
   ignore: Deno.build.os === "windows",
 }, async (t) => {
   const tempDir = await Deno.makeTempDir();
   const opts = { env, cwd: tempDir };
-  const npmPath = join(tempDir, "node_modules", "npm");
-  const yargsPath = join(tempDir, "node_modules", "yargs");
-  const mysql2Path = join(tempDir, "node_modules", "mysql2");
-  const expressPath = join(tempDir, "node_modules", "express");
   let hasDocker;
   try {
     await exec("docker help");
@@ -26,40 +20,25 @@ Deno.test("integration test of compat mode", {
     hasDocker = false;
   }
 
-  await t.step("Runs `yarn add <mod>`", async () => {
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add npm`, opts);
-    assert((await Deno.lstat(join(npmPath, "package.json"))).isFile);
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add express`, opts);
-    assert((await Deno.lstat(join(expressPath, "package.json"))).isFile);
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add mysql2`, opts);
-    assert((await Deno.lstat(join(mysql2Path, "package.json"))).isFile);
-  });
-
-  await t.step("Runs `npm install <mod>`", async () => {
-    const npmCli = join(npmPath, "index.js");
-    await exec(`deno run --compat --unstable -A ${npmCli} install yargs`, opts);
-    const stat = await Deno.lstat(join(yargsPath, "package.json"));
-    assert(stat.isFile);
-  });
-
   await t.step("run express example app", async () => {
     await Deno.writeTextFile(
       join(tempDir, "app.js"),
       `
-    require("express")()
-      .get("/", (req, res) => res.send("hello"))
-      .listen(3000, async () => {
-        const text = await (await fetch("http://localhost:3000")).text();
-        if (text === "hello") {
-          process.exit(0);
-        } else {
-          console.error(\`Error: Response text is not 'hello': $\{text}\`);
-          process.exit(1);
-        }
-      });
-    `,
+        import express from "npm:express";
+        const app = express();
+        app.get("/", (req, res) => res.send("hello"));
+        app.listen(3000, async () => {
+          const text = await (await fetch("http://localhost:3000")).text();
+          if (text === "hello") {
+            Deno.exit(0);
+          } else {
+            console.error(\`Error: Response text is not 'hello': \${text}\`);
+            Deno.exit(1);
+          }
+        });
+      `,
     );
-    await exec(`deno run --compat --unstable -A app.js`, opts);
+    await exec(`deno run --unstable -A app.js`, opts);
   });
 
   // Runs test only when docker command is available
@@ -77,7 +56,7 @@ Deno.test("integration test of compat mode", {
       // FIXME(kt3k): This is racy. Find a more reliable way to wait for
       // mysql being ready
       await delay(15000);
-      await exec(`deno run --compat --unstable -A mysql2-example.js`, opts);
+      await exec(`deno run --unstable -A mysql2-example.js`, opts);
     });
     await exec("docker rm -f mysql-test");
   }

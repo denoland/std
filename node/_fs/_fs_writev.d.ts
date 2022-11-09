@@ -34,7 +34,7 @@ export function writev(
 export function writev(
   fd: number,
   buffers: ReadonlyArray<ArrayBufferView>,
-  position: number,
+  position: number | null,
   cb: (
     err: ErrnoException | null,
     bytesWritten: number,

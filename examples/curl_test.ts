@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { listenAndServe } from "../http/server.ts";
+import { serve } from "../http/server.ts";
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
@@ -9,10 +9,9 @@ Deno.test({
   name: "[examples/curl] send a request to a specified url",
   fn: async () => {
     const abortController = new AbortController();
-    const serverPromise = listenAndServe(
-      { port: 8081 },
+    const serverPromise = serve(
       () => new Response("Hello world"),
-      { signal: abortController.signal },
+      { signal: abortController.signal, port: 8081 },
     );
     const decoder = new TextDecoder();
     const { stdout } = await Deno.spawn(Deno.execPath(), {

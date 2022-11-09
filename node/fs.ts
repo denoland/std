@@ -8,7 +8,6 @@ import {
 import { chmod, chmodPromise, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownPromise, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
-import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFilePromise, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -24,6 +23,7 @@ import { lstat, lstatPromise, lstatSync } from "./_fs/_fs_lstat.ts";
 import { mkdir, mkdirPromise, mkdirSync } from "./_fs/_fs_mkdir.ts";
 import { mkdtemp, mkdtempPromise, mkdtempSync } from "./_fs/_fs_mkdtemp.ts";
 import { open, openPromise, openSync } from "./_fs/_fs_open.ts";
+import { opendir, opendirPromise, opendirSync } from "./_fs/_fs_opendir.ts";
 import { read, readSync } from "./_fs/_fs_read.ts";
 import { readdir, readdirPromise, readdirSync } from "./_fs/_fs_readdir.ts";
 import { readFile, readFilePromise, readFileSync } from "./_fs/_fs_readFile.ts";
@@ -53,20 +53,39 @@ import {
   writeFileSync,
 } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
-import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
+import {
+  createReadStream,
+  createWriteStream,
+  ReadStream,
+  WriteStream,
+} from "./internal/fs/streams.ts";
 
 const {
   F_OK,
   R_OK,
   W_OK,
   X_OK,
+  O_RDONLY,
+  O_WRONLY,
+  O_RDWR,
+  O_NOCTTY,
+  O_TRUNC,
+  O_APPEND,
+  O_DIRECTORY,
+  O_NOFOLLOW,
+  O_SYNC,
+  O_DSYNC,
+  O_SYMLINK,
+  O_NONBLOCK,
+  O_CREAT,
+  O_EXCL,
 } = constants;
 
 const promises = {
   access: accessPromise,
   copyFile: copyFilePromise,
   open: openPromise,
-  // opendir: promisify(opendir),
+  opendir: opendirPromise,
   rename: renamePromise,
   truncate: truncatePromise,
   rm: rmPromise,
@@ -132,8 +151,24 @@ export default {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
   openSync,
+  opendir,
+  opendirSync,
   read,
   readSync,
   promises,
@@ -217,7 +252,23 @@ export {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
+  opendir,
+  opendirSync,
   openSync,
   promises,
   R_OK,

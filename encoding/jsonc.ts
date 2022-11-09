@@ -43,7 +43,7 @@ export function parse(
 
 /** Valid types as a result of JSON parsing */
 export type JSONValue =
-  | { [key: string]: JSONValue }
+  | { [key: string]: JSONValue | undefined }
   | JSONValue[]
   | string
   | number

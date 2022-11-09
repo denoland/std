@@ -1,7 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
-import { assert } from "../../testing/asserts.ts";
-import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
+import {
+  validateOffsetLengthRead,
+  validatePosition,
+} from "../internal/fs/utils.mjs";
+import { validateBuffer, validateInteger } from "../internal/validators.mjs";
 
 type readOptions = {
   buffer: Buffer | Uint8Array;
@@ -39,7 +43,7 @@ export function read(
 ): void;
 export function read(
   fd: number,
-  optOrBuffer?: Buffer | Uint8Array | readOptions | Callback,
+  optOrBufferOrCb?: Buffer | Uint8Array | readOptions | Callback,
   offsetOrCallback?: number | Callback,
   length?: number,
   position?: number | null,
@@ -49,70 +53,87 @@ export function read(
   let offset = 0,
     buffer: Buffer | Uint8Array;
 
+  if (typeof fd !== "number") {
+    throw new ERR_INVALID_ARG_TYPE("fd", "number", fd);
+  }
+
   if (length == null) {
     length = 0;
   }
 
   if (typeof offsetOrCallback === "function") {
     cb = offsetOrCallback;
-  } else if (typeof optOrBuffer === "function") {
-    cb = optOrBuffer;
+  } else if (typeof optOrBufferOrCb === "function") {
+    cb = optOrBufferOrCb;
   } else {
     offset = offsetOrCallback as number;
+    validateInteger(offset, "offset", 0);
     cb = callback;
   }
 
-  if (!cb) throw new Error("No callback function supplied");
-
-  if (optOrBuffer instanceof Buffer || optOrBuffer instanceof Uint8Array) {
-    buffer = optOrBuffer;
-  } else if (typeof optOrBuffer === "function") {
+  if (
+    optOrBufferOrCb instanceof Buffer || optOrBufferOrCb instanceof Uint8Array
+  ) {
+    buffer = optOrBufferOrCb;
+  } else if (typeof optOrBufferOrCb === "function") {
     offset = 0;
     buffer = Buffer.alloc(16384);
     length = buffer.byteLength;
     position = null;
   } else {
-    const opt = optOrBuffer as readOptions;
+    const opt = optOrBufferOrCb as readOptions;
+    if (
+      !(opt.buffer instanceof Buffer) && !(opt.buffer instanceof Uint8Array)
+    ) {
+      if (opt.buffer === null) {
+        // @ts-ignore: Intentionally create TypeError for passing test-fs-read.js#L87
+        length = opt.buffer.byteLength;
+      }
+      throw new ERR_INVALID_ARG_TYPE("buffer", [
+        "Buffer",
+        "TypedArray",
+        "DataView",
+      ], optOrBufferOrCb);
+    }
     offset = opt.offset ?? 0;
     buffer = opt.buffer ?? Buffer.alloc(16384);
     length = opt.length ?? buffer.byteLength;
     position = opt.position ?? null;
   }
 
-  assert(offset >= 0, "offset should be greater or equal to 0");
-  assert(
-    offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
-      offset + length
-    }`,
-  );
-
-  if (buffer.byteLength == 0) {
-    throw new ERR_INVALID_ARG_VALUE(
-      "buffer",
-      buffer,
-      "is empty and cannot be written",
-    );
+  if (position == null) {
+    position = -1;
   }
+
+  validatePosition(position);
+  validateOffsetLengthRead(offset, length, buffer.byteLength);
 
   let err: Error | null = null,
     numberOfBytesRead: number | null = null;
 
-  if (position) {
-    Deno.seekSync(fd, position, Deno.SeekMode.Current);
-  }
-
   try {
+    let currentPosition = 0;
+    if (typeof position === "number" && position >= 0) {
+      currentPosition = Deno.seekSync(fd, 0, Deno.SeekMode.Current);
+      Deno.seekSync(fd, position, Deno.SeekMode.Start);
+    }
+
     numberOfBytesRead = Deno.readSync(fd, buffer);
+
+    if (typeof position === "number" && position >= 0) {
+      Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
+    }
   } catch (error) {
     err = error instanceof Error ? error : new Error("[non-error thrown]");
   }
+
+  if (!cb) throw new ERR_INVALID_ARG_TYPE("cb", "Callback", cb);
 
   if (err) {
     (callback as (err: Error) => void)(err);
   } else {
     const data = Buffer.from(buffer.buffer, offset, length);
-    cb(null, numberOfBytesRead, data);
+    cb(null, numberOfBytesRead ?? 0, data);
   }
 
   return;
@@ -139,20 +160,19 @@ export function readSync(
 ): number {
   let offset = 0;
 
+  if (typeof fd !== "number") {
+    throw new ERR_INVALID_ARG_TYPE("fd", "number", fd);
+  }
+
+  validateBuffer(buffer);
+
   if (length == null) {
     length = 0;
   }
 
-  if (buffer.byteLength == 0) {
-    throw new ERR_INVALID_ARG_VALUE(
-      "buffer",
-      buffer,
-      "is empty and cannot be written",
-    );
-  }
-
   if (typeof offsetOrOpt === "number") {
     offset = offsetOrOpt;
+    validateInteger(offset, "offset", 0);
   } else {
     const opt = offsetOrOpt as readSyncOptions;
     offset = opt.offset ?? 0;
@@ -160,19 +180,24 @@ export function readSync(
     position = opt.position ?? null;
   }
 
-  assert(offset >= 0, "offset should be greater or equal to 0");
-  assert(
-    offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
-      offset + length
-    }`,
-  );
+  if (position == null) {
+    position = -1;
+  }
 
-  if (position) {
-    Deno.seekSync(fd, position, Deno.SeekMode.Current);
+  validatePosition(position);
+  validateOffsetLengthRead(offset, length, buffer.byteLength);
+
+  let currentPosition = 0;
+  if (typeof position === "number" && position >= 0) {
+    currentPosition = Deno.seekSync(fd, 0, Deno.SeekMode.Current);
+    Deno.seekSync(fd, position, Deno.SeekMode.Start);
   }
 
   const numberOfBytesRead = Deno.readSync(fd, buffer);
+
+  if (typeof position === "number" && position >= 0) {
+    Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
+  }
 
   return numberOfBytesRead ?? 0;
 }

@@ -21,7 +21,7 @@ import {
   isTypedArray,
 } from "./types.ts";
 
-import { Buffer } from "../../_buffer.mjs";
+import { Buffer } from "../../buffer.ts";
 import {
   getOwnNonIndexProperties,
   ONLY_ENUMERABLE,

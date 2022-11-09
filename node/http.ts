@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { type Deferred, deferred } from "../async/deferred.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
@@ -152,7 +152,7 @@ class ClientRequest extends NodeWritable {
     this.destroy();
   }
 
-  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
 
@@ -163,23 +163,22 @@ class ClientRequest extends NodeWritable {
     return new Socket({});
   }
 
-  // deno-lint-ignore no-explicit-any
-  _createUrlStrFromOptions(opts: any) {
+  _createUrlStrFromOptions(opts: RequestOptions): string {
     if (opts.href) {
       return opts.href;
-    } else {
-      const {
-        auth,
-        protocol,
-        host,
-        hostname,
-        path,
-        port,
-      } = opts;
-      return `${protocol ?? this.defaultProtocol}//${auth ? `${auth}@` : ""}${
-        host ?? hostname
-      }${port ? `:${port}` : ""}${path || ""}`;
     }
+    const protocol = opts.protocol ?? this.defaultProtocol;
+    const auth = opts.auth;
+    const host = opts.host ?? opts.hostname ?? "localhost";
+    const defaultPort = opts.agent?.defaultPort;
+    const port = opts.port ?? defaultPort ?? 80;
+    let path = opts.path ?? "/";
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+    return `${protocol}//${auth ? `${auth}@` : ""}${host}${
+      port === 80 ? "" : `:${port}`
+    }${path}`;
   }
 }
 
@@ -553,14 +552,14 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = DenoUnstable.upgradeHttpRaw(request) as [
+        const [conn, head] = Deno.upgradeHttpRaw(request) as [
           Deno.Conn,
           Uint8Array,
         ];
         const socket = new Socket({
           handle: new TCP(constants.SERVER, conn),
         });
-        this.emit("upgrade", req, socket, new Buffer(head));
+        this.emit("upgrade", req, socket, Buffer.from(head));
       } else {
         return new Promise<Response>((resolve): void => {
           const res = new ServerResponse(undefined, resolve);
@@ -573,9 +572,9 @@ class ServerImpl extends EventEmitter {
       return;
     }
     this.#ac = ac;
-    DenoUnstable.serve(
+    Deno.serve(
       {
-        handler: handler as DenoUnstable.ServeHandler,
+        handler: handler as Deno.ServeHandler,
         ...this.#addr,
         signal: ac.signal,
         // @ts-ignore Might be any without `--unstable` flag
@@ -585,6 +584,10 @@ class ServerImpl extends EventEmitter {
         },
       },
     ).then(() => this.#servePromise!.resolve());
+  }
+
+  setTimeout() {
+    console.error("Not implemented: Server.setTimeout()");
   }
 
   close(cb?: (err?: Error) => void): this {

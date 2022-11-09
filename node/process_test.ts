@@ -5,6 +5,7 @@ import "./global.ts";
 import {
   assert,
   assertEquals,
+  assertFalse,
   assertObjectMatch,
   assertStrictEquals,
   assertThrows,
@@ -197,11 +198,20 @@ Deno.test({
 
 Deno.test({
   name: "process.on SIGBREAK doesn't throw",
-  ignore: Deno.build.os == "windows",
   fn() {
     const listener = () => {};
     process.on("SIGBREAK", listener);
     process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
+  name: "process.on SIGTERM doesn't throw on windows",
+  ignore: Deno.build.os !== "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGTERM", listener);
+    process.off("SIGTERM", listener);
   },
 });
 
@@ -266,6 +276,43 @@ Deno.test({
 
     assertEquals(process.env.toString(), "[object Object]");
     assertEquals(process.env.toLocaleString(), "[object Object]");
+
+    // should not error when assigning false to an env var
+    process.env.HELLO = false as unknown as string;
+    assertEquals(process.env.HELLO, "false");
+    process.env.HELLO = "WORLD";
+    assertEquals(process.env.HELLO, "WORLD");
+  },
+});
+
+Deno.test({
+  name: "process.env requires scoped env permission",
+  permissions: { env: ["FOO"] },
+  fn() {
+    Deno.env.set("FOO", "1");
+    assert("FOO" in process.env);
+    assertThrows(() => {
+      "BAR" in process.env;
+    });
+    assert(Object.hasOwn(process.env, "FOO"));
+    assertThrows(() => {
+      Object.hasOwn(process.env, "BAR");
+    });
+  },
+});
+
+Deno.test({
+  name: "process.env doesn't throw with invalid env var names",
+  fn() {
+    assertEquals(process.env[""], undefined);
+    assertEquals(process.env["\0"], undefined);
+    assertEquals(process.env["=c:"], undefined);
+    assertFalse(Object.hasOwn(process.env, ""));
+    assertFalse(Object.hasOwn(process.env, "\0"));
+    assertFalse(Object.hasOwn(process.env, "=c:"));
+    assertFalse("" in process.env);
+    assertFalse("\0" in process.env);
+    assertFalse("=c:" in process.env);
   },
 });
 
@@ -283,7 +330,7 @@ Deno.test({
     assertEquals(process.stdout.fd, Deno.stdout.rid);
     const isTTY = Deno.isatty(Deno.stdout.rid);
     assertEquals(process.stdout.isTTY, isTTY);
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stdout.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stdout.columns, consoleSize?.columns);
     assertEquals(process.stdout.rows, consoleSize?.rows);
     assertEquals(
@@ -311,7 +358,7 @@ Deno.test({
     assertEquals(process.stderr.fd, Deno.stderr.rid);
     const isTTY = Deno.isatty(Deno.stderr.rid);
     assertEquals(process.stderr.isTTY, isTTY);
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stderr.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stderr.columns, consoleSize?.columns);
     assertEquals(process.stderr.rows, consoleSize?.rows);
     assertEquals(
@@ -460,6 +507,34 @@ Deno.test("process._exiting", () => {
 
 Deno.test("process.execPath", () => {
   assertEquals(process.execPath, process.argv[0]);
+});
+
+Deno.test("process.execPath is writable", () => {
+  // pnpm writes to process.execPath
+  // https://github.com/pnpm/pnpm/blob/67d8b65d2e8da1df3725034b8c5b1fcf3af4ad81/packages/config/src/index.ts#L175
+  const originalExecPath = process.execPath;
+  try {
+    process.execPath = "/path/to/node";
+    assertEquals(process.execPath, "/path/to/node");
+  } finally {
+    process.execPath = originalExecPath;
+  }
+});
+
+Deno.test("process.getgid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getgid, undefined);
+  } else {
+    assertEquals(process.getgid?.(), Deno.gid());
+  }
+});
+
+Deno.test("process.getuid", () => {
+  if (Deno.build.os === "windows") {
+    assertEquals(process.getuid, undefined);
+  } else {
+    assertEquals(process.getuid?.(), Deno.uid());
+  }
 });
 
 Deno.test({

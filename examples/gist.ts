@@ -6,7 +6,7 @@
  *
  * Use the following to install it:
  *
- * ```ignore
+ * ```shellsession
  * $ deno install -f --allow-env --allow-read --allow-net=api.github.com https://deno.land/std/examples/gist.ts
  * ```
  *

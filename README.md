@@ -70,7 +70,7 @@ Before opening a PR make sure to:
 - add tests that cover your changes.
 - `deno task test` passes.
 - `deno fmt --check` passes.
-- `deno lint` passes.
+- `deno task lint` passes.
 
 Give the PR a descriptive title.
 
@@ -105,11 +105,6 @@ accepted.
 - lint
 - wasm crypto check
 - CLA
-
-_Typechecking code in Markdown files_:
-
-If you want to run `deno test --doc x.md` you will need to specify the flag
-`--import-map=test_import_map.json`, this import map is in the root of deno_std.
 
 _For maintainers_:
 

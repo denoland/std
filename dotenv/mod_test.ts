@@ -3,6 +3,7 @@
 import {
   assertEquals,
   assertRejects,
+  assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
 import {
@@ -43,6 +44,18 @@ Deno.test("parser", () => {
     config.QUOTED_DOUBLE,
     "double quoted",
     "double quotes are escaped",
+  );
+
+  assertEquals(
+    config.EMPTY_SINGLE,
+    "",
+    "handles empty single quotes",
+  );
+
+  assertEquals(
+    config.EMPTY_DOUBLE,
+    "",
+    "handles empty double quotes",
   );
 
   assertEquals(
@@ -642,4 +655,56 @@ Deno.test("stringify", async (t) => {
         `NULL=`,
       ),
   );
+});
+
+Deno.test("use restrictEnvAccessTo to restrict lookup of Env variables to certain vars. Those vars can be granted read permissions now separately.", async () => {
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--allow-read",
+      "--allow-env=GREETING",
+      path.join(testdataDir, "./app_with_restricted_env_access.ts"),
+    ],
+    cwd: testdataDir,
+  });
+
+  const decoder = new TextDecoder();
+  const conf = JSON.parse(decoder.decode(stdout).trim());
+
+  assertEquals(conf.GREETING, "hello world", "fetches .env by default");
+  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
+});
+
+Deno.test("use restrictEnvAccessTo via configSync to restrict lookup of Env variables to certain vars.", async () => {
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--allow-read",
+      "--allow-env=GREETING",
+      path.join(testdataDir, "./app_with_restricted_env_access_sync.ts"),
+    ],
+    cwd: testdataDir,
+  });
+
+  const decoder = new TextDecoder();
+  const conf = JSON.parse(decoder.decode(stdout).trim());
+
+  assertEquals(conf.GREETING, "hello world", "fetches .env by default");
+  assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
+});
+
+Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permissions still fails", async () => {
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--allow-read",
+      path.join(testdataDir, "./app_with_restricted_env_access.ts"),
+    ],
+    cwd: testdataDir,
+  });
+
+  const decoder = new TextDecoder();
+  const error = decoder.decode(stdout).trim();
+
+  assertStringIncludes(error, 'Requires env access to "GREETING"');
 });

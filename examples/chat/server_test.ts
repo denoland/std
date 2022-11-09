@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
-import { TextProtoReader } from "../../textproto/mod.ts";
 import { BufReader } from "../../io/buffer.ts";
 import { delay } from "../../async/delay.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
@@ -24,9 +23,12 @@ async function startServer(): Promise<
   });
   try {
     assert(server.stdout != null);
-    const r = new TextProtoReader(new BufReader(server.stdout));
+    const r = new BufReader(server.stdout);
     const s = await r.readLine();
-    assert(s !== null && s.includes("chat server starting"));
+    assert(
+      s !== null &&
+        new TextDecoder().decode(s.line).includes("chat server starting"),
+    );
   } catch {
     server.stdout.close();
     server.close();

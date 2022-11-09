@@ -11,6 +11,8 @@ export interface DotenvConfig {
   [key: string]: string;
 }
 
+type StringList = Array<string> | undefined;
+
 export interface ConfigOptions {
   path?: string;
   export?: boolean;
@@ -18,6 +20,7 @@ export interface ConfigOptions {
   example?: string;
   allowEmptyValues?: boolean;
   defaults?: string;
+  restrictEnvAccessTo?: StringList;
 }
 
 type LineParseResult = {
@@ -35,8 +38,12 @@ const RE_KeyValue =
 const RE_ExpandValue =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
-export function parse(rawDotenv: string): DotenvConfig {
+export function parse(
+  rawDotenv: string,
+  restrictEnvAccessTo: StringList = [],
+): DotenvConfig {
   const env: DotenvConfig = {};
+
   let match;
   const keysForExpandCheck = [];
 
@@ -48,15 +55,15 @@ export function parse(rawDotenv: string): DotenvConfig {
       keysForExpandCheck.push(key);
     }
 
-    env[key] = notInterpolated
+    env[key] = typeof notInterpolated === "string"
       ? notInterpolated
-      : interpolated
+      : typeof interpolated === "string"
       ? expandCharacters(interpolated)
       : unquoted.trim();
   }
 
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
-  const variablesMap = { ...env, ...Deno.env.toObject() };
+  const variablesMap = { ...env, ...readEnv(restrictEnvAccessTo) };
   keysForExpandCheck.forEach((key) => {
     env[key] = expand(env[key], variablesMap);
   });
@@ -71,15 +78,16 @@ const defaultConfigOptions = {
   example: `.env.example`,
   allowEmptyValues: false,
   defaults: `.env.defaults`,
+  restrictEnvAccessTo: [],
 };
 
 export function configSync(options: ConfigOptions = {}): DotenvConfig {
   const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
 
-  const conf = parseFile(o.path);
+  const conf = parseFile(o.path, o.restrictEnvAccessTo);
 
   if (o.defaults) {
-    const confDefaults = parseFile(o.defaults);
+    const confDefaults = parseFile(o.defaults, o.restrictEnvAccessTo);
     for (const key in confDefaults) {
       if (!(key in conf)) {
         conf[key] = confDefaults[key];
@@ -88,8 +96,8 @@ export function configSync(options: ConfigOptions = {}): DotenvConfig {
   }
 
   if (o.safe) {
-    const confExample = parseFile(o.example);
-    assertSafe(conf, confExample, o.allowEmptyValues);
+    const confExample = parseFile(o.example, o.restrictEnvAccessTo);
+    assertSafe(conf, confExample, o.allowEmptyValues, o.restrictEnvAccessTo);
   }
 
   if (o.export) {
@@ -107,10 +115,13 @@ export async function config(
 ): Promise<DotenvConfig> {
   const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
 
-  const conf = await parseFileAsync(o.path);
+  const conf = await parseFileAsync(o.path, o.restrictEnvAccessTo);
 
   if (o.defaults) {
-    const confDefaults = await parseFileAsync(o.defaults);
+    const confDefaults = await parseFileAsync(
+      o.defaults,
+      o.restrictEnvAccessTo,
+    );
     for (const key in confDefaults) {
       if (!(key in conf)) {
         conf[key] = confDefaults[key];
@@ -119,8 +130,8 @@ export async function config(
   }
 
   if (o.safe) {
-    const confExample = await parseFileAsync(o.example);
-    assertSafe(conf, confExample, o.allowEmptyValues);
+    const confExample = await parseFileAsync(o.example, o.restrictEnvAccessTo);
+    assertSafe(conf, confExample, o.allowEmptyValues, o.restrictEnvAccessTo);
   }
 
   if (o.export) {
@@ -133,19 +144,26 @@ export async function config(
   return conf;
 }
 
-function parseFile(filepath: string) {
+function parseFile(filepath: string, restrictEnvAccessTo: StringList = []) {
   try {
-    return parse(new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)));
+    return parse(
+      new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)),
+      restrictEnvAccessTo,
+    );
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
   }
 }
 
-async function parseFileAsync(filepath: string) {
+async function parseFileAsync(
+  filepath: string,
+  restrictEnvAccessTo: StringList = [],
+) {
   try {
     return parse(
       new TextDecoder("utf-8").decode(await Deno.readFile(filepath)),
+      restrictEnvAccessTo,
     );
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
@@ -170,8 +188,9 @@ function assertSafe(
   conf: DotenvConfig,
   confExample: DotenvConfig,
   allowEmptyValues: boolean,
+  restrictEnvAccessTo: StringList = [],
 ) {
-  const currentEnv = Deno.env.toObject();
+  const currentEnv = readEnv(restrictEnvAccessTo);
 
   // Not all the variables have to be defined in .env, they can be supplied externally
   const confWithEnv = Object.assign({}, currentEnv, conf);
@@ -201,6 +220,29 @@ function assertSafe(
       missing,
     );
   }
+}
+
+// a guarded env access, that reads only a subset from the Deno.env object,
+// if `restrictEnvAccessTo` property is passed.
+function readEnv(
+  restrictEnvAccessTo: StringList,
+) {
+  if (
+    restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) &&
+    restrictEnvAccessTo.length > 0
+  ) {
+    return restrictEnvAccessTo.reduce(
+      (accessedEnvVars: DotenvConfig, envVarName: string): DotenvConfig => {
+        if (Deno.env.get(envVarName)) {
+          accessedEnvVars[envVarName] = Deno.env.get(envVarName) as string;
+        }
+        return accessedEnvVars;
+      },
+      {},
+    );
+  }
+
+  return Deno.env.toObject();
 }
 
 export class MissingEnvVarsError extends Error {

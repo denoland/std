@@ -2,10 +2,17 @@
 import { validateFunction, validateString } from "./validators.mjs";
 import { normalizeEncoding, slowCases } from "./normalize_encoding.mjs";
 export { normalizeEncoding, slowCases };
+import { ObjectCreate, StringPrototypeToUpperCase } from "./primordials.mjs";
+import { ERR_UNKNOWN_SIGNAL } from "./errors.ts";
+import { os } from "../internal_binding/constants.ts";
+
+const { signals } = os;
 
 export const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 export const kEnumerableProperty = Object.create(null);
 kEnumerableProperty.enumerable = true;
+
+export const kEmptyObject = Object.freeze(Object.create(null));
 
 export function once(callback) {
   let called = false;
@@ -141,12 +148,41 @@ export function promisify(
   );
 }
 
+let signalsToNamesMapping;
+function getSignalsToNamesMapping() {
+  if (signalsToNamesMapping !== undefined) {
+    return signalsToNamesMapping;
+  }
+
+  signalsToNamesMapping = ObjectCreate(null);
+  for (const key in signals) {
+    signalsToNamesMapping[signals[key]] = key;
+  }
+
+  return signalsToNamesMapping;
+}
+
+export function convertToValidSignal(signal) {
+  if (typeof signal === "number" && getSignalsToNamesMapping()[signal]) {
+    return signal;
+  }
+
+  if (typeof signal === "string") {
+    const signalName = signals[StringPrototypeToUpperCase(signal)];
+    if (signalName) return signalName;
+  }
+
+  throw new ERR_UNKNOWN_SIGNAL(signal);
+}
+
 promisify.custom = kCustomPromisifiedSymbol;
 
 export default {
+  convertToValidSignal,
   createDeferredPromise,
   customInspectSymbol,
   customPromisifyArgs,
+  kEmptyObject,
   kEnumerableProperty,
   normalizeEncoding,
   once,

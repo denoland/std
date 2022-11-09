@@ -9,7 +9,7 @@
  *
  * Install using `deno install`:
  *
- * ```ignore
+ * ```shellsession
  * $ deno install --allow-read https://deno.land/std/examples/catj.ts
  * ```
  *

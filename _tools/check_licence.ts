@@ -1,60 +1,45 @@
-#!/usr/bin/env -S deno run --allow-read
-// Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { walk } from "../fs/walk.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
-const EXCLUDED_PATHS = [
-  ".git",
+const EXCLUDED_DIRS = [
   "node/_module",
+  "node/_tools/test",
+  "node/_tools/versions",
   "dotenv/testdata",
   "fs/testdata",
   "http/testdata",
-  "node/_module/cjs",
-  "node/_module/node_modules",
-  "node/_tools",
   "node/testdata",
+  "crypto/_wasm/target",
+  "encoding/varint/_wasm/target",
+  "_tools/testdata",
 ];
 
-const ROOT = new URL("../", import.meta.url).pathname.slice(0, -1);
-const FAIL_FAST = Deno.args.includes("--fail-fast");
+const ROOT = new URL("../", import.meta.url);
+const FIRST_YEAR = 2018;
+const CURRENT_YEAR = new Date().getFullYear();
+const COPYRIGHT =
+  `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
-const COPYRIGHT_REGEX =
-  /\/\/ Copyright \d{4}-\d{4} (the )?Deno authors. All rights reserved. MIT license./;
+let failed = false;
 
-let shouldFail = false;
-
-function walk(dir: string) {
-  for (const x of Deno.readDirSync(dir)) {
-    const filePath = `${dir}/${x.name}`;
-
-    if (x.isDirectory) {
-      walk(filePath);
-      continue;
-    }
-
-    const isExcluded = EXCLUDED_PATHS
-      .map((x) => filePath.includes(x))
-      .some((x) => x);
-    if (
-      isExcluded ||
-      !EXTENSIONS.map((x) => filePath.endsWith(x)).some((x) => x)
-    ) {
-      continue;
-    }
-
-    const content = Deno.readTextFileSync(filePath);
-    const hasNotice = content
-      .split("\n")
-      .filter((_, i) => i < 10)
-      .map((x) => COPYRIGHT_REGEX.test(x))
-      .some((x) => x);
-
-    if (!hasNotice) {
-      console.error(`Missing Copyright Notice: ${filePath}`);
-      if (FAIL_FAST) Deno.exit(1);
-      shouldFail = true;
+for await (
+  const { path } of walk(ROOT, {
+    exts: EXTENSIONS,
+    skip: EXCLUDED_DIRS.map((path) => new RegExp(path + "$")),
+    includeDirs: false,
+  })
+) {
+  const content = await Deno.readTextFile(path);
+  if (!content.includes(COPYRIGHT)) {
+    console.error(`Missing/incorrect copyright header: ${path}`);
+    if (!failed) {
+      failed = true;
     }
   }
 }
 
-walk(ROOT);
-if (shouldFail) Deno.exit(1);
+if (failed) {
+  console.info(`Copyright header should be "${COPYRIGHT}"`);
+  Deno.exit(1);
+}

@@ -3,20 +3,20 @@
 import { toTransformStream } from "../../streams/conversion.ts";
 
 /** The type of the result of parsing JSON. */
-export type JSONValue =
-  | { [key: string]: JSONValue }
-  | JSONValue[]
+export type JsonValue =
+  | { [key: string]: JsonValue | undefined }
+  | JsonValue[]
   | string
   | number
   | boolean
   | null;
 
-/** Optional object interface for `JSONParseStream` and `ConcatenatedJSONParseStream`. */
+/** Optional object interface for `JSONParseStream` and `ConcatenatedJsonParseStream`. */
 export interface ParseStreamOptions {
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<string>;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
-  readonly readableStrategy?: QueuingStrategy<JSONValue>;
+  readonly readableStrategy?: QueuingStrategy<JsonValue>;
 }
 
 /**
@@ -27,7 +27,7 @@ export interface ParseStreamOptions {
  *
  * ```ts
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
- * import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
  * const { body } = await fetch(url);
@@ -35,14 +35,14 @@ export interface ParseStreamOptions {
  * const readable = body!
  *   .pipeThrough(new TextDecoderStream())
  *   .pipeThrough(new TextLineStream()) // or `new TextDelimiterStream(delimiter)`
- *   .pipeThrough(new JSONParseStream());
+ *   .pipeThrough(new JsonParseStream());
  *
  * for await (const data of readable) {
  *   console.log(data);
  * }
  * ```
  */
-export class JSONParseStream extends TransformStream<string, JSONValue> {
+export class JsonParseStream extends TransformStream<string, JsonValue> {
   /**
    * @param options
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
@@ -72,24 +72,24 @@ function isBrankString(str: string) {
  * stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
  * ```ts
- * import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.concatenated-json";
  * const { body } = await fetch(url);
  *
  * const readable = body!
  *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new ConcatenatedJSONParseStream());
+ *   .pipeThrough(new ConcatenatedJsonParseStream());
  *
  * for await (const data of readable) {
  *   console.log(data);
  * }
  * ```
  */
-export class ConcatenatedJSONParseStream
-  implements TransformStream<string, JSONValue> {
+export class ConcatenatedJsonParseStream
+  implements TransformStream<string, JsonValue> {
   readonly writable: WritableStream<string>;
-  readonly readable: ReadableStream<JSONValue>;
+  readonly readable: ReadableStream<JsonValue>;
   /**
    * @param options
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
@@ -195,7 +195,7 @@ function isBrankChar(char: string) {
 }
 
 /** JSON.parse with detailed error message. */
-function parse(text: string): JSONValue {
+function parse(text: string): JsonValue {
   try {
     return JSON.parse(text);
   } catch (error: unknown) {

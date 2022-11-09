@@ -31,6 +31,19 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
+/** Wrapper of Deno.env.get, which doesn't throw type error when
+ * the env name has "=" or "\0" in it. */
+function denoEnvGet(name: string) {
+  try {
+    return Deno.env.get(name);
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return undefined;
+    }
+    throw e;
+  }
+}
+
 const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
 /**
  * https://nodejs.org/api/process.html#process_process_env
@@ -43,7 +56,7 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
         return target[prop];
       }
 
-      const envValue = Deno.env.get(prop);
+      const envValue = denoEnvGet(prop);
 
       if (envValue) {
         return envValue;
@@ -57,21 +70,20 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
     },
     ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
     getOwnPropertyDescriptor: (_target, name) => {
-      const e = Deno.env.toObject();
-      if (name in Deno.env.toObject()) {
-        const o = { enumerable: true, configurable: true };
-        if (typeof name === "string") {
-          // @ts-ignore we do want to set it only when name is of type string
-          o.value = e[name];
-        }
-        return o;
+      const value = denoEnvGet(String(name));
+      if (value) {
+        return {
+          enumerable: true,
+          configurable: true,
+          value,
+        };
       }
     },
     set(_target, prop, value) {
       Deno.env.set(String(prop), String(value));
-      return value;
+      return true; // success
     },
-    has: (_target, prop) => Reflect.ownKeys(Deno.env.toObject()).includes(prop),
+    has: (_target, prop) => typeof denoEnvGet(String(prop)) === "string",
   });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
@@ -88,7 +100,7 @@ export const platform = isWindows ? "win32" : Deno.build.os;
  * it pointed to Deno version, but that led to incompability
  * with some packages.
  */
-export const version = "v16.11.1";
+export const version = "v16.17.0";
 
 /**
  * https://nodejs.org/api/process.html#process_process_versions
@@ -99,19 +111,19 @@ export const version = "v16.11.1";
  * with some packages. Value of `v8` field is still taken from `Deno.version`.
  */
 export const versions = {
-  node: "16.11.1",
-  uv: "1.42.0",
+  node: "16.17.0",
+  uv: "1.43.0",
   zlib: "1.2.11",
   brotli: "1.0.9",
-  ares: "1.17.2",
+  ares: "1.18.1",
   modules: "93",
-  nghttp2: "1.45.1",
+  nghttp2: "1.47.0",
   napi: "8",
-  llhttp: "6.0.4",
-  openssl: "1.1.1l",
-  cldr: "39.0",
-  icu: "69.1",
-  tz: "2021a",
-  unicode: "13.0",
+  llhttp: "6.0.7",
+  openssl: "1.1.1q+quic",
+  cldr: "41.0",
+  icu: "71.1",
+  tz: "2022a",
+  unicode: "14.0",
   ...Deno.version,
 };

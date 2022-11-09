@@ -5,7 +5,7 @@ export class User {
 
   constructor(public name: string) {
     if (User.users.has(name)) {
-      throw new Error(`User ${name} already exists`);
+      throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
     }
     User.users.set(name, this);
   }

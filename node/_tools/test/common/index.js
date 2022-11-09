@@ -5,7 +5,7 @@
 
 /**
  * This file is meant as a replacement for the original common/index.js
- * 
+ *
  * That file has a lot of node functionality not currently supported, so this is a lite
  * version of that file, which most tests should be able to use
  */
@@ -24,6 +24,7 @@ let localhostIPv4 = null;
 let knownGlobals = [
   atob,
   btoa,
+  caches,
   clearImmediate,
   global.clearInterval,
   global.clearTimeout,
@@ -187,8 +188,8 @@ function expectsError(validator, exact) {
 const noop = () => {};
 
 /**
- * @param {Function} fn 
- * @param {number} exact 
+ * @param {Function} fn
+ * @param {number} exact
  */
 function mustCall(fn, exact) {
   return _mustCallInner(fn, exact, "exact");
@@ -208,7 +209,7 @@ function mustSucceed(fn, exact) {
 
 const mustCallChecks = [];
 /**
- * @param {number} exitCode 
+ * @param {number} exitCode
  */
 function runCallChecks(exitCode) {
   if (exitCode !== 0) return;
@@ -301,6 +302,52 @@ function mustNotCall(msg) {
   };
 }
 
+const _mustNotMutateObjectDeepProxies = new WeakMap();
+
+function mustNotMutateObjectDeep(original) {
+  // Return primitives and functions directly. Primitives are immutable, and
+  // proxied functions are impossible to compare against originals, e.g. with
+  // `assert.deepEqual()`.
+  if (original === null || typeof original !== 'object') {
+    return original;
+  }
+
+  const cachedProxy = _mustNotMutateObjectDeepProxies.get(original);
+  if (cachedProxy) {
+    return cachedProxy;
+  }
+
+  const _mustNotMutateObjectDeepHandler = {
+    __proto__: null,
+    defineProperty(target, property, descriptor) {
+      assert.fail(`Expected no side effects, got ${inspect(property)} ` +
+                  'defined');
+    },
+    deleteProperty(target, property) {
+      assert.fail(`Expected no side effects, got ${inspect(property)} ` +
+                  'deleted');
+    },
+    get(target, prop, receiver) {
+      return mustNotMutateObjectDeep(Reflect.get(target, prop, receiver));
+    },
+    preventExtensions(target) {
+      assert.fail('Expected no side effects, got extensions prevented on ' +
+                  inspect(target));
+    },
+    set(target, property, value, receiver) {
+      assert.fail(`Expected no side effects, got ${inspect(value)} ` +
+                  `assigned to ${inspect(property)}`);
+    },
+    setPrototypeOf(target, prototype) {
+      assert.fail(`Expected no side effects, got set prototype to ${prototype}`);
+    }
+  };
+
+  const proxy = new Proxy(original, _mustNotMutateObjectDeepHandler);
+  _mustNotMutateObjectDeepProxies.set(original, proxy);
+  return proxy;
+}
+
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
 function invalidArgTypeHelper(input) {
   if (input == null) {
@@ -385,6 +432,10 @@ function getBufferSources(buf) {
   return [...getArrayBufferViews(buf), new Uint8Array(buf).buffer];
 }
 
+const pwdCommand = isWindows ?
+  ['cmd.exe', ['/d', '/c', 'cd']] :
+  ['pwd', []];
+
 module.exports = {
   allowGlobals,
   expectsError,
@@ -396,10 +447,12 @@ module.exports = {
   mustCall,
   mustCallAtLeast,
   mustNotCall,
+  mustNotMutateObjectDeep,
   mustSucceed,
   PIPE,
   platformTimeout,
   printSkipMessage,
+  pwdCommand,
   skipIfDumbTerminal,
   isDumbTerminal,
   isWindows,

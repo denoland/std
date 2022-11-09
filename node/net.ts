@@ -1223,6 +1223,13 @@ export class Socket extends Duplex {
   }
 
   /**
+   * The string representation of the local IP family. `"IPv4"` or `"IPv6"`.
+   */
+  get localFamily(): string | undefined {
+    return this._getsockname().family;
+  }
+
+  /**
    * The string representation of the remote IP address. For example,`"74.125.127.100"` or `"2001:4860:a005::68"`. Value may be `undefined` if
    * the socket is destroyed (for example, if the client disconnected).
    */
@@ -1234,7 +1241,9 @@ export class Socket extends Duplex {
    * The string representation of the remote IP family. `"IPv4"` or `"IPv6"`.
    */
   get remoteFamily(): string | undefined {
-    return `IPv${this._getpeername().family}`;
+    const { family } = this._getpeername();
+
+    return family ? `IPv${family}` : family;
   }
 
   /**
@@ -1411,11 +1420,10 @@ export class Socket extends Duplex {
         this._handle = null;
         this._sockname = undefined;
 
-        cb(exception);
-
         debug("emit close");
         this.emit("close", isException);
       });
+      cb(exception);
     } else {
       cb(exception);
       nextTick(_emitCloseNT, this);
@@ -1432,7 +1440,7 @@ export class Socket extends Duplex {
   }
 
   _getpeername(): AddressInfo | Record<string, never> {
-    if (!this._handle || !("getpeername" in this._handle)) {
+    if (!this._handle || !("getpeername" in this._handle) || this.connecting) {
       return this._peername || {};
     } else if (!this._peername) {
       this._peername = {};
@@ -2406,10 +2414,14 @@ export class Server extends EventEmitter {
       return;
     }
 
+    // We use setTimeout instead of nextTick here to avoid EADDRINUSE error
+    // when the same port listened immediately after the 'close' event.
+    // ref: https://github.com/denoland/deno_std/issues/2788
     defaultTriggerAsyncIdScope(
       this[asyncIdSymbol],
-      nextTick,
+      setTimeout,
       _emitCloseNT,
+      0,
       this,
     );
   }

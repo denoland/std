@@ -133,7 +133,7 @@ function mergeObjects(
 ): Readonly<NonNullable<object>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
-    return deepMergeInternal(left, right, seen);
+    return deepMergeInternal(left, right, seen, options);
   }
 
   if (isIterable(left) && isIterable(right)) {
@@ -404,5 +404,5 @@ export type DeepMerge<
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U, Options>
-    : // Handle primitives
-    T | U;
+    // Handle primitives
+    : T | U;

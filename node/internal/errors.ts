@@ -13,7 +13,6 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  */
 
-import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
@@ -28,6 +27,7 @@ const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
 import { hideStackFrames } from "./hide_stack_frames.ts";
+import { getSystemErrorName } from "../_utils.ts";
 
 export { errorMap };
 
@@ -61,8 +61,11 @@ const kTypes = [
 export class AbortError extends Error {
   code: string;
 
-  constructor() {
-    super("The operation was aborted");
+  constructor(message = "The operation was aborted", options?: ErrorOptions) {
+    if (options !== undefined && typeof options !== "object") {
+      throw new codes.ERR_INVALID_ARG_TYPE("options", "Object", options);
+    }
+    super(message, options);
     this.code = "ABORT_ERR";
     this.name = "AbortError";
   }
@@ -118,6 +121,7 @@ export interface ErrnoException extends Error {
   code?: string;
   path?: string;
   syscall?: string;
+  spawnargs?: string[];
 }
 
 /**
@@ -1429,14 +1433,6 @@ export class ERR_INVALID_BUFFER_SIZE extends NodeRangeError {
     super("ERR_INVALID_BUFFER_SIZE", `Buffer size must be a multiple of ${x}`);
   }
 }
-export class ERR_INVALID_CALLBACK extends NodeTypeError {
-  constructor(object: unknown) {
-    super(
-      "ERR_INVALID_CALLBACK",
-      `Callback must be a function. Received ${inspect(object)}`,
-    );
-  }
-}
 export class ERR_INVALID_CURSOR_POS extends NodeTypeError {
   constructor() {
     super(
@@ -2109,6 +2105,14 @@ export class ERR_UNSUPPORTED_ESM_URL_SCHEME extends NodeError {
     );
   }
 }
+export class ERR_USE_AFTER_CLOSE extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_USE_AFTER_CLOSE",
+      `${x} was closed`,
+    );
+  }
+}
 export class ERR_V8BREAKITERATOR extends NodeError {
   constructor() {
     super(
@@ -2335,7 +2339,7 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
     super(
       "ERR_INVALID_RETURN_VALUE",
       `Expected ${input} to be returned from the "${name}" function but got ${
-        buildReturnPropertyType(
+        determineSpecificType(
           value,
         )
       }.`,
@@ -2485,6 +2489,7 @@ export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
 
 interface UvExceptionContext {
   syscall: string;
+  path?: string;
 }
 export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
   const errno = extractOsErrorNumberFromErrorMessage(e);
@@ -2545,7 +2550,6 @@ export function aggregateTwoErrors(
 codes.ERR_IPC_CHANNEL_CLOSED = ERR_IPC_CHANNEL_CLOSED;
 codes.ERR_INVALID_ARG_TYPE = ERR_INVALID_ARG_TYPE;
 codes.ERR_INVALID_ARG_VALUE = ERR_INVALID_ARG_VALUE;
-codes.ERR_INVALID_CALLBACK = ERR_INVALID_CALLBACK;
 codes.ERR_OUT_OF_RANGE = ERR_OUT_OF_RANGE;
 codes.ERR_SOCKET_BAD_PORT = ERR_SOCKET_BAD_PORT;
 codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
@@ -2568,6 +2572,31 @@ const genericNodeError = hideStackFrames(
     return err;
   },
 );
+
+/**
+ * Determine the specific type of a value for type-mismatch errors.
+ * @param {*} value
+ * @returns {string}
+ */
+// deno-lint-ignore no-explicit-any
+function determineSpecificType(value: any) {
+  if (value == null) {
+    return "" + value;
+  }
+  if (typeof value === "function" && value.name) {
+    return `function ${value.name}`;
+  }
+  if (typeof value === "object") {
+    if (value.constructor?.name) {
+      return `an instance of ${value.constructor.name}`;
+    }
+    return `${inspect(value, { depth: -1 })}`;
+  }
+  let inspected = inspect(value, { colors: false });
+  if (inspected.length > 28) inspected = `${inspected.slice(0, 25)}...`;
+
+  return `type ${typeof value} (${inspected})`;
+}
 
 export { codes, genericNodeError, hideStackFrames };
 
@@ -2686,7 +2715,6 @@ export default {
   ERR_INVALID_ARG_VALUE_RANGE,
   ERR_INVALID_ASYNC_ID,
   ERR_INVALID_BUFFER_SIZE,
-  ERR_INVALID_CALLBACK,
   ERR_INVALID_CHAR,
   ERR_INVALID_CURSOR_POS,
   ERR_INVALID_FD,
@@ -2799,6 +2827,7 @@ export default {
   ERR_UNKNOWN_SIGNAL,
   ERR_UNSUPPORTED_DIR_IMPORT,
   ERR_UNSUPPORTED_ESM_URL_SCHEME,
+  ERR_USE_AFTER_CLOSE,
   ERR_V8BREAKITERATOR,
   ERR_VALID_PERFORMANCE_ENTRY_TYPE,
   ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING,

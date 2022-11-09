@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { CSVStream } from "./stream.ts";
-import type { CSVStreamOptions } from "./stream.ts";
+import { CsvStream } from "./stream.ts";
+import type { CsvStreamOptions } from "./stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
 import {
   readableStreamFromIterable,
@@ -19,7 +19,7 @@ const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream should work with Deno.File",
+  name: "[encoding/csv/stream] CsvStream should work with Deno.File",
   permissions: {
     read: [testdataDir],
   },
@@ -27,7 +27,7 @@ Deno.test({
     const file = await Deno.open(join(testdataDir, "simple.csv"));
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new CSVStream());
+      .pipeThrough(new CsvStream());
     const records = [] as Array<Array<string>>;
     for await (const record of readable) {
       records.push(record);
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream with invalid csv",
+  name: "[encoding/csv/stream] CsvStream with invalid csv",
   fn: async () => {
     const readable = readableStreamFromIterable([
       encoder.encode("id,name\n"),
@@ -49,7 +49,7 @@ Deno.test({
       encoder.encode("1,foo\n"),
       encoder.encode('2,"baz\n'),
     ]).pipeThrough(new TextDecoderStream()).pipeThrough(
-      new CSVStream(),
+      new CsvStream(),
     );
     const reader = readable.getReader();
     assertEquals(await reader.read(), { done: false, value: ["id", "name"] });
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CSVStream with various inputs",
+  name: "[encoding/csv/stream] CsvStream with various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
@@ -271,7 +271,7 @@ x,,,
     ];
     for (const testCase of testCases) {
       await t.step(testCase.name, async () => {
-        const options: CSVStreamOptions = {};
+        const options: CsvStreamOptions = {};
         if (testCase.separator) {
           options.separator = testCase.separator;
         }
@@ -279,7 +279,7 @@ x,,,
           options.comment = testCase.comment;
         }
         const readable = createReadableStreamFromString(testCase.input)
-          .pipeThrough(new CSVStream(options));
+          .pipeThrough(new CsvStream(options));
         const actual = [] as Array<Array<string>>;
         for await (const record of readable) {
           actual.push(record);
@@ -312,12 +312,12 @@ export const MyTextDecoderStream = () => {
 
 Deno.test({
   name:
-    "[encoding/csv/stream] cancel CSVStream during iteration does not leak file",
+    "[encoding/csv/stream] cancel CsvStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
     const readable = file.readable.pipeThrough(MyTextDecoderStream())
-      .pipeThrough(new CSVStream());
+      .pipeThrough(new CsvStream());
     for await (const _record of readable) {
       break;
     }

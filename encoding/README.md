@@ -8,6 +8,7 @@ Helper module for dealing with external data structures.
 - [`base64url`](#base64url)
 - [`binary`](#binary)
 - [`csv`](#csv)
+- [`front matter`](#front-matter)
 - [`JSON streaming`](#json-streaming)
 - [`jsonc`](#jsonc)
 - [`toml`](#toml)
@@ -131,12 +132,8 @@ function is as follows:
     | :--: | :------: |
     | deno | denoland |
 
-  - If the data is not already in the required output format, or a different
-    column header is desired, then a `ColumnDetails` object type can be used for
-    each column:
-
-    - **`fn?: (value: any) => string | Promise<string>`** is an optional
-      function to transform the targeted data into the desired format
+  - If a different column header is desired, then a `ColumnDetails` object type
+    can be used for each column:
 
     - **`header?: string`** is the optional value to use for the column header
       name
@@ -151,19 +148,17 @@ function is as follows:
       {
         prop: ["runsOn", 0],
         header: "language 1",
-        fn: (str: string) => str.toLowerCase(),
       },
       {
         prop: ["runsOn", 1],
         header: "language 2",
-        fn: (str: string) => str.toLowerCase(),
       },
     ];
     ```
 
     | name | language 1 | language 2 |
     | :--: | :--------: | :--------: |
-    | Deno |    rust    | typescript |
+    | Deno |    Rust    | TypeScript |
 
 - **`options`** are options for the delimiter-separated output.
 
@@ -183,7 +178,7 @@ import { parse } from "https://deno.land/std@$STD_VERSION/encoding/csv.ts";
 const string = "a,b,c\nd,e,f";
 
 console.log(
-  await parse(string, {
+  parse(string, {
     skipFirstRow: false,
   }),
 );
@@ -227,29 +222,10 @@ let columns: Column[] = [
   "age",
 ];
 
-console.log(await stringify(data, columns));
+console.log(stringify(data, { columns }));
 // first,age
 // Rick,70
 // Morty,14
-//
-
-columns = [
-  {
-    prop: "name",
-    fn: (name: Character["name"]) => `${name.first} ${name.last}`,
-  },
-  {
-    prop: "age",
-    header: "is_adult",
-    fn: (age: Character["age"]) => String(age >= 18),
-  },
-];
-
-console.log(await stringify(data, columns, { separator: "\t" }));
-// name	is_adult
-// Rick Sanchez	true
-// Morty Smith	false
-//
 ```
 
 ## TOML
@@ -522,13 +498,13 @@ supports the following formats:
 ### Basic usage
 
 If you want to parse JSON separated by a delimiter, use `TextLineStream` (or
-`TextDelimiterStream`) and `JSONParseStream`. `JSONParseStream` ignores chunks
+`TextDelimiterStream`) and `JsonParseStream`. `JsonParseStream` ignores chunks
 consisting of spaces, tab characters, or newline characters .
 
 ```ts
 // parse JSON lines or NDJSON
 import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
@@ -537,7 +513,7 @@ const { body } = await fetch(url);
 const readable = body!
   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
   .pipeThrough(new TextLineStream()) // transform into a stream where each chunk is divided by a newline
-  .pipeThrough(new JSONParseStream()); // parse each chunk as JSON
+  .pipeThrough(new JsonParseStream()); // parse each chunk as JSON
 
 for await (const data of readable) {
   console.log(data);
@@ -547,7 +523,7 @@ for await (const data of readable) {
 ```ts
 // parse JSON Text Sequences
 import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.json-seq";
@@ -557,7 +533,7 @@ const delimiter = "\x1E";
 const readable = body!
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextDelimiterStream(delimiter)) // transform into a stream where each chunk is divided by a delimiter
-  .pipeThrough(new JSONParseStream());
+  .pipeThrough(new JsonParseStream());
 
 for await (const data of readable) {
   console.log(data);
@@ -566,10 +542,10 @@ for await (const data of readable) {
 
 If you want to parse
 [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON),
-use `ConcatenatedJSONParseStream`.
+use `ConcatenatedJsonParseStream`.
 
 ```ts
-import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const url =
   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.concatenated-json";
@@ -577,28 +553,28 @@ const { body } = await fetch(url);
 
 const readable = body!
   .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
-  .pipeThrough(new ConcatenatedJSONParseStream()); // parse Concatenated JSON
+  .pipeThrough(new ConcatenatedJsonParseStream()); // parse Concatenated JSON
 
 for await (const data of readable) {
   console.log(data);
 }
 ```
 
-Use `JSONStringifyStream` to transform streaming data to
+Use `JsonStringifyStream` to transform streaming data to
 [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/),
 [NDJSON](http://ndjson.org/) or
 [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
 
-By default, `JSONStringifyStream` adds "\n" as a suffix after each chunk.
+By default, `JsonStringifyStream` adds "\n" as a suffix after each chunk.
 
 ```ts
 import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
 
 readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
-  .pipeThrough(new JSONStringifyStream()) // convert to JSON lines (ndjson)
+  .pipeThrough(new JsonStringifyStream()) // convert to JSON lines (ndjson)
   .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
   .pipeTo(file.writable)
   .then(() => console.log("write success"));
@@ -611,12 +587,12 @@ prefix to the delimiter "\x1E" as options.
 
 ```ts
 import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
 
 readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
-  .pipeThrough(new JSONStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
+  .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
   .pipeThrough(new TextEncoderStream())
   .pipeTo(file.writable)
   .then(() => console.log("write success"));
@@ -626,7 +602,7 @@ If you want to stream [JSON lines](https://jsonlines.org/) from the server:
 
 ```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
-import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 // A server that streams one line of JSON every second
 serve(() => {
@@ -644,7 +620,7 @@ serve(() => {
   });
 
   const body = readable
-    .pipeThrough(new JSONStringifyStream()) // convert data to JSON lines
+    .pipeThrough(new JsonStringifyStream()) // convert data to JSON lines
     .pipeThrough(new TextEncoderStream()); // convert a string to a Uint8Array
 
   return new Response(body);
@@ -834,4 +810,143 @@ console.log(encoded);
 
 console.log(decode(encoded));
 // => Uint8Array(3) [ 97, 98, 99 ]
+```
+
+## Front Matter
+
+Extracts
+[front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
+from strings.
+
+Supported formats:
+
+- [`YAML`](./front_matter/yaml.ts)
+- [`TOML`](./front_matter/toml.ts)
+- [`JSON`](./front_matter/json.ts)
+
+### Basic usage
+
+example.md
+
+```
+---
+module: front_matter
+tags:
+  - yaml
+  - toml
+  - json
+---
+
+deno is awesome
+```
+
+example.ts
+
+```ts
+import {
+  extract,
+  test,
+} from "https://deno.land/std@$STD_VERSION/encoding/front_matter/any.ts";
+
+const str = await Deno.readTextFile("./example.md");
+
+if (test(str)) {
+  console.log(extract(str));
+} else {
+  console.log("document doesn't contain front matter");
+}
+```
+
+```
+$ deno run ./example.ts
+{
+  frontMatter: "module: front_matter\ntags:\n  - yaml\n  - toml\n  - json",
+  body: "deno is awesome",
+  attrs: { module: "front_matter", tags: [ "yaml", "toml", "json" ] }
+}
+```
+
+The above example recognizes any of the supported formats, extracts metadata and
+parses accordingly. Please note that in this case both the [YAML](#yaml) and
+[TOML](#toml) parsers will be imported as dependencies.
+
+If you need only one specific format then you can import the file named
+respectively from [here](./front_matter).
+
+### Advanced usage
+
+```ts
+import {
+  createExtractor,
+  Format,
+  Parser,
+  test as _test,
+} from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
+
+const extract = createExtractor({
+  [Format.TOML]: parse as Parser,
+  [Format.JSON]: JSON.parse as Parser,
+});
+
+export function test(str: string): boolean {
+  return _test(str, [Format.TOML, Format.JSON]);
+}
+```
+
+In this setup `extract()` and `test()` will work with TOML and JSON and only.
+This way the YAML parser is not loaded if not needed. You can cherry-pick which
+combination of formats are you supporting based on your needs.
+
+### Delimiters
+
+#### YAML
+
+```
+---
+these: are
+---
+```
+
+```
+---yaml
+all: recognized
+---
+```
+
+```
+= yaml =
+as: yaml
+= yaml =
+```
+
+#### TOML
+
+```
+---toml
+this = 'is'
+---
+```
+
+```
+= toml =
+parsed = 'as'
+toml = 'data'
+= toml =
+```
+
+#### JSON
+
+```
+---json
+{
+  "and": "this"
+}
+---
+```
+
+```
+{
+  "is": "JSON"
+}
 ```

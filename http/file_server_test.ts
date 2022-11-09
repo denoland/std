@@ -9,6 +9,8 @@ import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
+import { toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
 
 let fileServer: Deno.Child;
 
@@ -150,7 +152,7 @@ async function fetchExactPath(
     });
   } finally {
     if (conn) {
-      Deno.close(conn.rid);
+      conn.close();
     }
   }
 }
@@ -194,6 +196,27 @@ Deno.test(
   },
 );
 
+Deno.test(
+  "file_server serveFile with filename including hash symbol",
+  async () => {
+    await startFileServer({ target: "./testdata" });
+    try {
+      const res = await fetch("http://localhost:4507/file%232.txt");
+      assertEquals(
+        res.headers.get("content-type"),
+        "text/plain; charset=UTF-8",
+      );
+      const downloadedFile = await res.text();
+      const localFile = new TextDecoder().decode(
+        await Deno.readFile(join(testdataDir, "file#2.txt")),
+      );
+      assertEquals(downloadedFile, localFile);
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
 Deno.test("serveDirIndex", async function () {
   await startFileServer();
   try {
@@ -214,12 +237,24 @@ Deno.test("serveDirIndex", async function () {
     await killFileServer();
   }
 });
+
 Deno.test("serveDirIndex with filename including percent symbol", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/testdata/");
     const page = await res.text();
     assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
+
+Deno.test("serveDirIndex with filename including hash symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "/testdata/file%232.txt");
   } finally {
     await killFileServer();
   }
@@ -284,8 +319,8 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
       "http://localhost:4507/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
     );
 
-    assertEquals(res.status, 404);
-    const _ = await res.text();
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "README.md");
   } finally {
     await killFileServer();
   }
@@ -294,7 +329,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    let res = await fetch("http://localhost:4507/testdata/%");
+    let res = await fetch("http://localhost:4507/testdata/%25");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 200);
@@ -583,8 +618,8 @@ const getTestFileEtag = async () => {
 
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
+    const simpleEtag = toHashString(
+      await createHash("FNV32A", lastModified.toJSON() + fileInfo.size),
     );
     return simpleEtag;
   } else {
@@ -601,19 +636,6 @@ const getTestFileLastModified = async () => {
     return "";
   }
 };
-
-function createEtagHash(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
-}
 
 Deno.test(
   "file_server returns 206 for range request responses",
@@ -945,6 +967,16 @@ Deno.test(
 );
 
 Deno.test(
+  "file_server `serveFile` returns 404 when the given path is a directory",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/");
+    const res = await serveFile(req, testdataDir);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
+Deno.test(
   "file_server `serveFile` should return 416 due to a bad range request (500-200)",
   async () => {
     const req = new Request("http://localhost:4507/testdata/test file.txt");
@@ -1000,6 +1032,35 @@ Deno.test(
     });
     assertEquals(res.status, 200);
     assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir serves index.html when showIndex is true",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const expectedText = "This is subdir-with-index/index.html";
+    {
+      const res = await serveDir(new Request(url), { showIndex: true });
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+
+    {
+      // showIndex is true by default
+      const res = await serveDir(new Request(url));
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+  },
+);
+
+Deno.test(
+  "serveDir doesn't serve index.html when showIndex is false",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const res = await serveDir(new Request(url), { showIndex: false });
+    assertEquals(res.status, 404);
   },
 );
 

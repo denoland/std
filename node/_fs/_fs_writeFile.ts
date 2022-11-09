@@ -13,7 +13,10 @@ import {
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
-import { validateStringAfterArrayBufferView } from "../internal/fs/utils.mjs";
+import {
+  showStringCoercionDeprecation,
+  validateStringAfterArrayBufferView,
+} from "../internal/fs/utils.mjs";
 import { promisify } from "../internal/util.mjs";
 
 export function writeFile(
@@ -47,6 +50,9 @@ export function writeFile(
 
   if (!ArrayBuffer.isView(data)) {
     validateStringAfterArrayBufferView(data, "data");
+    if (typeof data !== "string") {
+      showStringCoercionDeprecation();
+    }
     data = Buffer.from(String(data), encoding);
   }
 
@@ -110,6 +116,9 @@ export function writeFileSync(
 
   if (!ArrayBuffer.isView(data)) {
     validateStringAfterArrayBufferView(data, "data");
+    if (typeof data !== "string") {
+      showStringCoercionDeprecation();
+    }
     data = Buffer.from(String(data), encoding);
   }
 

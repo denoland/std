@@ -1,0 +1,34 @@
+{
+  "scopes": {
+    "test/common/": {
+      "module": "../module.ts"
+    },
+    "test/parallel/": {
+      "assert": "../assert.ts",
+      "node:assert": "../assert.ts",
+      "child_process": "../child_process.ts",
+      "events": "../events.ts",
+      "fs": "../fs.ts",
+      "node:fs": "../fs.ts",
+      "node:fs/promises": "../fs/promises.ts",
+      "http": "../http.ts",
+      "internal/errors": "../internal/errors.ts",
+      "internal/readline/utils": "../internal/readline/utils.mjs",
+      "net": "../net.ts",
+      "path": "../path.ts",
+      "node:path": "../path.ts",
+      "perf_hooks": "../perf_hooks.ts",
+      "node:process": "../process.ts",
+      "node:readline": "../readline.ts",
+      "readline/promises": "../readline/promises.ts",
+      "stream": "../stream.ts",
+      "node:stream": "../stream.ts",
+      "stream/web": "../stream/web.ts",
+      "node:timers": "../timers.ts",
+      "timers/promises": "../timers/promises.ts",
+      "url": "../url.ts",
+      "node:util": "../util.ts",
+      "worker_threads": "../worker_threads.ts"
+    }
+  }
+}

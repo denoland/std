@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType } from "./_util.ts";
+import { getFileInfoType, toPathString } from "./_util.ts";
 
 /**
  * Ensures that the file exists.
@@ -11,7 +11,7 @@ import { getFileInfoType } from "./_util.ts";
  * it is NOTMODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export async function ensureFile(filePath: string) {
+export async function ensureFile(filePath: string | URL) {
   try {
     // if file exists
     const stat = await Deno.lstat(filePath);
@@ -24,7 +24,7 @@ export async function ensureFile(filePath: string) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      await ensureDir(path.dirname(filePath));
+      await ensureDir(path.dirname(toPathString(filePath)));
       // create file
       await Deno.writeFile(filePath, new Uint8Array());
       return;
@@ -42,7 +42,7 @@ export async function ensureFile(filePath: string) {
  * it is NOT MODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function ensureFileSync(filePath: string) {
+export function ensureFileSync(filePath: string | URL) {
   try {
     // if file exists
     const stat = Deno.lstatSync(filePath);
@@ -55,7 +55,7 @@ export function ensureFileSync(filePath: string) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      ensureDirSync(path.dirname(filePath));
+      ensureDirSync(path.dirname(toPathString(filePath)));
       // create file
       Deno.writeFileSync(filePath, new Uint8Array());
       return;

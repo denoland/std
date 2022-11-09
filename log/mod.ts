@@ -172,7 +172,7 @@ export function critical<T>(
 }
 
 /** Setup logger config. */
-export async function setup(config: LogConfig) {
+export function setup(config: LogConfig) {
   state.config = {
     handlers: { ...DEFAULT_CONFIG.handlers, ...config.handlers },
     loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },
@@ -189,7 +189,7 @@ export async function setup(config: LogConfig) {
 
   for (const handlerName in handlers) {
     const handler = handlers[handlerName];
-    await handler.setup();
+    handler.setup();
     state.handlers.set(handlerName, handler);
   }
 
@@ -216,4 +216,4 @@ export async function setup(config: LogConfig) {
   }
 }
 
-await setup(DEFAULT_CONFIG);
+setup(DEFAULT_CONFIG);

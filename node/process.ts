@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
@@ -277,6 +277,8 @@ function uncaughtExceptionHandler(err: any, origin: string) {
   process.emit("uncaughtException", err, origin);
 }
 
+let execPath: string | null = null;
+
 class Process extends EventEmitter {
   constructor() {
     super();
@@ -383,8 +385,10 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.on(event, listener);
@@ -407,8 +411,10 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
-        DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
+        Deno.removeSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.off(event, listener);
@@ -453,7 +459,7 @@ class Process extends EventEmitter {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.prependListener(event, listener);
@@ -558,16 +564,14 @@ class Process extends EventEmitter {
     return 0o22;
   }
 
-  /** https://nodejs.org/api/process.html#processgetuid */
-  getuid(): number {
-    // TODO(kt3k): return user id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getgid?(): number {
+    return Deno.gid()!;
   }
 
-  /** https://nodejs.org/api/process.html#processgetgid */
-  getgid(): number {
-    // TODO(kt3k): return group id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getuid?(): number {
+    return Deno.uid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
@@ -575,7 +579,15 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processexecpath */
   get execPath() {
-    return argv[0];
+    if (execPath) {
+      return execPath;
+    }
+    execPath = Deno.execPath();
+    return execPath;
+  }
+
+  set execPath(path: string) {
+    execPath = path;
   }
 
   #startTime = Date.now();
@@ -591,6 +603,11 @@ class Process extends EventEmitter {
   }
 
   features = { inspector: false };
+}
+
+if (Deno.build.os === "windows") {
+  delete Process.prototype.getgid;
+  delete Process.prototype.getuid;
 }
 
 /** https://nodejs.org/api/process.html#process_process */

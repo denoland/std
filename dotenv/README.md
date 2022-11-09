@@ -21,7 +21,7 @@ console.log(await config());
 Then run your app.
 
 ```
-> deno run --allow-read app.ts
+> deno run --allow-env --allow-read app.ts
 { GREETING: "hello world" }
 ```
 
@@ -41,6 +41,9 @@ Then run your app.
   to `false`.
 - `defaults?: string`: Optional path to `.env.defaults` file which defaults to
   `./.env.defaults`.
+- `restrictEnvAccessTo?: Array<string>`: Optional list of Env variables to read
+  from process. Alternatively the complete Env is looked up. This allows to
+  permit access to only specific Env variables with `--allow-env=ENV_VAR_NAME`.
 
 ### Auto loading
 

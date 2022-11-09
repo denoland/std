@@ -18,7 +18,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.mjs";
+import { deprecate, once } from "../util.mjs";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
@@ -1005,6 +1005,12 @@ export const constants = {
   kWriteFileMaxChunkSize,
 };
 
+export const showStringCoercionDeprecation = deprecate(
+  () => {},
+  "Implicit coercion of objects with own toString property is deprecated.",
+  "DEP0162",
+);
+
 export default {
   constants,
   assertEncoding,
@@ -1024,6 +1030,7 @@ export default {
   preprocessSymlinkDestination,
   realpathCacheKey,
   getStatsFromBinding,
+  showStringCoercionDeprecation,
   stringToFlags,
   stringToSymlinkType,
   Stats,

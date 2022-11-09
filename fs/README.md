@@ -95,7 +95,65 @@ format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
 
 ### exists
 
-This function is now deprecated.
+Test whether or not the given path exists by checking with the file system.
+
+```ts
+import {
+  exists,
+  existsSync,
+} from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+
+exists("./foo.txt"); // resolves a boolean
+existsSync("./foo.txt"); // returns a boolean
+```
+
+**Note: do not use this function if performing a check before another operation
+on that file. Doing so causes a race condition. Instead, perform the actual file
+operation directly.**
+
+Bad:
+
+```ts
+import {
+  exists,
+  existsSync,
+} from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+
+if (await exists("./foo.txt")) {
+  await Deno.remove("./foo.txt");
+}
+
+// OR
+
+if (existsSync("./foo.txt")) {
+  Deno.removeSync("./foo.txt");
+}
+```
+
+Good:
+
+```ts
+// Notice no use of exists or existsSync
+try {
+  await Deno.remove("./foo.txt");
+} catch (error) {
+  if (!(error instanceof Deno.errors.NotFound)) {
+    throw error;
+  }
+  // Do nothing...
+}
+
+// OR
+
+try {
+  Deno.removeSync("./foo.txt");
+} catch (error) {
+  if (!(error instanceof Deno.errors.NotFound)) {
+    throw error;
+  }
+  // Do nothing...
+}
+```
 
 ### move
 

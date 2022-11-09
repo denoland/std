@@ -28,5 +28,12 @@ if (Deno?.core) {
     eventLoopHasMoreWork(): boolean {
       return false;
     },
+    ops: {
+      op_napi_open(_filename: string) {
+        throw new Error(
+          "Node API is not supported in this environment",
+        );
+      },
+    },
   };
 }

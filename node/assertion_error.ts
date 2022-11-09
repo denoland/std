@@ -21,13 +21,12 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import * as DenoUnstable from "../_deno_unstable.ts";
 import { inspect } from "./util.ts";
 import { stripColor as removeColors } from "../fmt/colors.ts";
 
 function getConsoleWidth(): number {
   try {
-    return DenoUnstable.consoleSize(Deno.stderr.rid).columns;
+    return Deno.consoleSize().columns;
   } catch {
     return 80;
   }
@@ -502,11 +501,13 @@ export class AssertionError extends Error {
 
     this.generatedMessage = !message;
     ObjectDefineProperty(this, "name", {
+      __proto__: null,
       value: "AssertionError [ERR_ASSERTION]",
       enumerable: false,
       writable: true,
       configurable: true,
-    });
+      // deno-lint-ignore no-explicit-any
+    } as any);
     this.code = "ERR_ASSERTION";
 
     if (details) {

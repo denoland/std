@@ -7,13 +7,13 @@ import {
   TextLineStream,
 } from "../../streams/mod.ts";
 import {
-  ConcatenatedJSONParseStream,
-  JSONParseStream,
+  ConcatenatedJsonParseStream,
+  JsonParseStream,
   ParseStreamOptions,
 } from "./_parse.ts";
 
 async function assertValidParse(
-  transform: typeof ConcatenatedJSONParseStream | typeof JSONParseStream,
+  transform: typeof ConcatenatedJsonParseStream | typeof JsonParseStream,
   chunks: string[],
   expect: unknown[],
   options?: ParseStreamOptions,
@@ -27,7 +27,7 @@ async function assertValidParse(
 }
 
 async function assertInvalidParse(
-  transform: typeof ConcatenatedJSONParseStream | typeof JSONParseStream,
+  transform: typeof ConcatenatedJsonParseStream | typeof JsonParseStream,
   chunks: string[],
   options: ParseStreamOptions,
   // deno-lint-ignore no-explicit-any
@@ -45,35 +45,35 @@ async function assertInvalidParse(
 }
 
 Deno.test({
-  name: "[encoding/json/stream] ConcatenatedJSONParseStream",
+  name: "[encoding/json/stream] ConcatenatedJsonParseStream",
   async fn() {
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"}'],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"} '],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       [' {"foo": "bar"}'],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['[{"foo": "bar"}]'],
       [[{ foo: "bar" }]],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"}{"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"} {"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
@@ -81,129 +81,129 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] ConcatenatedJSONParseStream: primitive",
+  name: "[encoding/json/stream] ConcatenatedJsonParseStream: primitive",
   async fn() {
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["0"],
       [0],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["100"],
       [100],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['100 200"foo"'],
       [100, 200, "foo"],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['100 200{"foo": "bar"}'],
       [100, 200, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['100 200["foo"]'],
       [100, 200, ["foo"]],
     );
 
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['"foo"'],
       ["foo"],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['"foo""bar"{"foo": "bar"}'],
       ["foo", "bar", { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['"foo""bar"["foo"]'],
       ["foo", "bar", ["foo"]],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['"foo""bar"0'],
       ["foo", "bar", 0],
     );
 
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["null"],
       [null],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['null null{"foo": "bar"}'],
       [null, null, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['null null["foo"]'],
       [null, null, ["foo"]],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["null null 0"],
       [null, null, 0],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['null null"foo"'],
       [null, null, "foo"],
     );
 
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["true"],
       [true],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['true true{"foo": "bar"}'],
       [true, true, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['true true["foo"]'],
       [true, true, ["foo"]],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["true true 0"],
       [true, true, 0],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['true true"foo"'],
       [true, true, "foo"],
     );
 
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["false"],
       [false],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['false false{"foo": "bar"}'],
       [false, false, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['false false["foo"]'],
       [false, false, ["foo"]],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["false false 0"],
       [false, false, 0],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['false false"foo"'],
       [false, false, "foo"],
     );
@@ -211,45 +211,45 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] ConcatenatedJSONParseStream: chunk",
+  name: "[encoding/json/stream] ConcatenatedJsonParseStream: chunk",
   async fn() {
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["", '{"foo": "bar"}'],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ["{", '"foo": "bar"}'],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "b', 'ar"}'],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"', "}"],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"}', ""],
       [{ foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"}', '{"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"', '}{"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"}{', '"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
@@ -257,10 +257,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] ConcatenatedJSONParseStream: surrogate pair",
+  name: "[encoding/json/stream] ConcatenatedJsonParseStream: surrogate pair",
   async fn() {
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "👪"}{"foo": "👪"}'],
       [{ foo: "👪" }, { foo: "👪" }],
     );
@@ -269,10 +269,10 @@ Deno.test({
 
 Deno.test({
   name:
-    "[encoding/json/stream] ConcatenatedJSONParseStream: symbol between double quotes",
+    "[encoding/json/stream] ConcatenatedJsonParseStream: symbol between double quotes",
   async fn() {
     await assertValidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['"[], {}"'],
       ["[], {}"],
     );
@@ -280,10 +280,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] ConcatenatedJSONParseStream: halfway chunk",
+  name: "[encoding/json/stream] ConcatenatedJsonParseStream: halfway chunk",
   async fn() {
     await assertInvalidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       ['{"foo": "bar"} {"foo": '],
       {},
       SyntaxError,
@@ -294,10 +294,10 @@ Deno.test({
 
 Deno.test({
   name:
-    "[encoding/json/stream] ConcatenatedJSONParseStream: truncate error message",
+    "[encoding/json/stream] ConcatenatedJsonParseStream: truncate error message",
   async fn() {
     await assertInvalidParse(
-      ConcatenatedJSONParseStream,
+      ConcatenatedJsonParseStream,
       [`{${"foo".repeat(100)}}`],
       {},
       SyntaxError,
@@ -307,10 +307,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONParseStream",
+  name: "[encoding/json/stream] JsonParseStream",
   async fn() {
     await assertValidParse(
-      JSONParseStream,
+      JsonParseStream,
       ['{"foo": "bar"}', '["foo"]', '"foo"', "0", "null", "true", "false"],
       [{ foo: "bar" }, ["foo"], "foo", 0, null, true, false],
     );
@@ -318,10 +318,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONParseStream: empty line",
+  name: "[encoding/json/stream] JsonParseStream: empty line",
   async fn() {
     await assertValidParse(
-      JSONParseStream,
+      JsonParseStream,
       [" \t\r\n", ""],
       [],
     );
@@ -329,10 +329,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONParseStream: special character",
+  name: "[encoding/json/stream] JsonParseStream: special character",
   async fn() {
     await assertValidParse(
-      JSONParseStream,
+      JsonParseStream,
       ['"👪"', '"🦕"', '"\u3053\u3093\u306b\u3061\u306f"'],
       ["👪", "🦕", "\u3053\u3093\u306b\u3061\u306f"],
     );
@@ -340,10 +340,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] JSONParseStream: expect error",
+  name: "[encoding/json/stream] JsonParseStream: expect error",
   async fn() {
     await assertInvalidParse(
-      JSONParseStream,
+      JsonParseStream,
       ['{"foo": "bar"}', '{"foo": '],
       {},
       SyntaxError,
@@ -361,7 +361,7 @@ Deno.test({
     const readable = body!
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextLineStream())
-      .pipeThrough(new JSONParseStream());
+      .pipeThrough(new JsonParseStream());
 
     const result = [];
     for await (const data of readable) {
@@ -385,7 +385,7 @@ Deno.test({
     const readable = body!
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextLineStream())
-      .pipeThrough(new JSONParseStream());
+      .pipeThrough(new JsonParseStream());
 
     const result = [];
     for await (const data of readable) {
@@ -411,7 +411,7 @@ Deno.test({
     const readable = body!
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextDelimiterStream(recordSeparator))
-      .pipeThrough(new JSONParseStream());
+      .pipeThrough(new JsonParseStream());
 
     const result = [];
     for await (const data of readable) {
@@ -434,7 +434,7 @@ Deno.test({
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new ConcatenatedJSONParseStream());
+      .pipeThrough(new ConcatenatedJsonParseStream());
 
     const result = [];
     for await (const data of readable) {

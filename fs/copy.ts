@@ -1,8 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
+// @ts-nocheck Bypass static errors for missing --unstable.
+
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType, isSubdir } from "./_util.ts";
+import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 
@@ -28,8 +29,8 @@ interface InternalCopyOptions extends CopyOptions {
 }
 
 async function ensureValidCopy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Promise<Deno.FileInfo | undefined> {
   let destStat: Deno.FileInfo;
@@ -49,15 +50,15 @@ async function ensureValidCopy(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
 }
 
 function ensureValidCopySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Deno.FileInfo | undefined {
   let destStat: Deno.FileInfo;
@@ -76,7 +77,7 @@ function ensureValidCopySync(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
@@ -84,8 +85,8 @@ function ensureValidCopySync(
 
 /* copy file to dest */
 async function copyFile(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -94,13 +95,13 @@ async function copyFile(
     const statInfo = await Deno.stat(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await DenoUnstable.utime(dest, statInfo.atime, statInfo.mtime);
+    await Deno.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
 /* copy file to dest synchronously */
 function copyFileSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   ensureValidCopySync(src, dest, options);
@@ -109,14 +110,14 @@ function copyFileSync(
     const statInfo = Deno.statSync(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    DenoUnstable.utimeSync(dest, statInfo.atime, statInfo.mtime);
+    Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
 /* copy symlink to dest */
 async function copySymLink(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -133,14 +134,14 @@ async function copySymLink(
     const statInfo = await Deno.lstat(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await DenoUnstable.utime(dest, statInfo.atime, statInfo.mtime);
+    await Deno.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
 /* copy symlink to dest synchronously */
 function copySymlinkSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   ensureValidCopySync(src, dest, options);
@@ -158,14 +159,14 @@ function copySymlinkSync(
     const statInfo = Deno.lstatSync(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    DenoUnstable.utimeSync(dest, statInfo.atime, statInfo.mtime);
+    Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
 /* copy folder from src to dest. */
 async function copyDir(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions,
 ) {
   const destStat = await ensureValidCopy(src, dest, {
@@ -181,8 +182,11 @@ async function copyDir(
     const srcStatInfo = await Deno.stat(src);
     assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await DenoUnstable.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
+    await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
+
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   for await (const entry of Deno.readDir(src)) {
     const srcPath = path.join(src, entry.name);
@@ -198,7 +202,11 @@ async function copyDir(
 }
 
 /* copy folder from src to dest synchronously */
-function copyDirSync(src: string, dest: string, options: CopyOptions) {
+function copyDirSync(
+  src: string | URL,
+  dest: string | URL,
+  options: CopyOptions,
+) {
   const destStat = ensureValidCopySync(src, dest, {
     ...options,
     isFolder: true,
@@ -212,8 +220,11 @@ function copyDirSync(src: string, dest: string, options: CopyOptions) {
     const srcStatInfo = Deno.statSync(src);
     assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    DenoUnstable.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
+    Deno.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
+
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   for (const entry of Deno.readDirSync(src)) {
     assert(entry.name != null, "file.name must be set");
@@ -240,12 +251,12 @@ function copyDirSync(src: string, dest: string, options: CopyOptions) {
  * @param options
  */
 export async function copy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+  src = path.resolve(toPathString(src));
+  dest = path.resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
@@ -279,12 +290,12 @@ export async function copy(
  * @param options
  */
 export function copySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+  src = path.resolve(toPathString(src));
+  dest = path.resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");

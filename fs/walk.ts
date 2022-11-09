@@ -4,7 +4,12 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { assert } from "../_util/assert.ts";
 import { join, normalize } from "../path/mod.ts";
-import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
 function include(
   path: string,
@@ -48,9 +53,7 @@ export interface WalkOptions {
 export type { WalkEntry };
 
 /** Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options. The files are walked in lexical
- * order, which makes the output deterministic but means that for very large
- * directories walk() can be inefficient.
+ * tree filtered according to the given options.
  *
  * Options:
  * - maxDepth?: number = Infinity;
@@ -62,8 +65,8 @@ export type { WalkEntry };
  * - skip?: RegExp[];
  *
  * ```ts
- *       import { walk } from "./walk.ts";
- *       import { assert } from "../testing/asserts.ts";
+ *       import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
+ *       import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  *       for await (const entry of walk(".")) {
  *         console.log(entry.path);
@@ -72,7 +75,7 @@ export type { WalkEntry };
  * ```
  */
 export async function* walk(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -86,6 +89,7 @@ export async function* walk(
   if (maxDepth < 0) {
     return;
   }
+  root = toPathString(root);
   if (includeDirs && include(root, exts, match, skip)) {
     yield await createWalkEntry(root);
   }
@@ -129,7 +133,7 @@ export async function* walk(
 
 /** Same as walk() but uses synchronous ops */
 export function* walkSync(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -140,6 +144,7 @@ export function* walkSync(
     skip = undefined,
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
+  root = toPathString(root);
   if (maxDepth < 0) {
     return;
   }

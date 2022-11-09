@@ -3,7 +3,7 @@ import { defaultReadOptions, parseRecord } from "./_io.ts";
 import type { LineReader } from "./_io.ts";
 import { TextDelimiterStream } from "../../streams/delimiter.ts";
 
-export interface CSVStreamOptions {
+export interface CsvStreamOptions {
   separator?: string;
   comment?: string;
 }
@@ -39,14 +39,14 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
-export class CSVStream implements TransformStream<string, Array<string>> {
+export class CsvStream implements TransformStream<string, Array<string>> {
   readonly #readable: ReadableStream<Array<string>>;
-  readonly #options: CSVStreamOptions;
+  readonly #options: CsvStreamOptions;
   readonly #lineReader: StreamLineReader;
   readonly #lines: TextDelimiterStream;
   #lineIndex = 0;
 
-  constructor(options: CSVStreamOptions = defaultReadOptions) {
+  constructor(options: CsvStreamOptions = defaultReadOptions) {
     this.#options = {
       ...defaultReadOptions,
       ...options,

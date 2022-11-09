@@ -167,7 +167,7 @@ export type DifferenceOptions = {
  * example :
  *
  * ```typescript
- * import * as datetime from "./mod.ts";
+ * import * as datetime from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
  *
  * datetime.difference(new Date("2020/1/1"),new Date("2020/2/2"),{ units : ["days","months"] })
  * ```

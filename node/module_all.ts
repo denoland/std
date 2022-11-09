@@ -27,6 +27,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalCp from "./internal/child_process.ts";
 import internalCryptoCertificate from "./internal/crypto/certificate.ts";
 import internalCryptoCipher from "./internal/crypto/cipher.ts";
 import internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
@@ -49,7 +50,6 @@ import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.mjs";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
 import internalStreamsBufferList from "./internal/streams/buffer_list.mjs";
-import internalStreamsDuplexify from "./internal/streams/duplexify.mjs";
 import internalStreamsLazyTransform from "./internal/streams/lazy_transform.mjs";
 import internalStreamsState from "./internal/streams/state.mjs";
 import internalTestBinding from "./internal/test/binding.ts";
@@ -66,6 +66,7 @@ import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
+import readlinePromises from "./readline/promises.ts";
 import repl from "./repl.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.mjs";
@@ -116,6 +117,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/child_process": internalCp,
   "internal/crypto/certificate": internalCryptoCertificate,
   "internal/crypto/cipher": internalCryptoCipher,
   "internal/crypto/diffiehellman": internalCryptoDiffiehellman,
@@ -138,7 +140,6 @@ export default {
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsBufferList,
-  "internal/streams/duplexify": internalStreamsDuplexify,
   "internal/streams/lazy_transform": internalStreamsLazyTransform,
   "internal/streams/state": internalStreamsState,
   "internal/test/binding": internalTestBinding,
@@ -163,6 +164,7 @@ export default {
   },
   querystring,
   readline,
+  "readline/promises": readlinePromises,
   repl,
   stream,
   "stream/consumers": streamConsumers,

@@ -53,7 +53,6 @@ import * as internalHttp from "./internal/http.ts";
 import * as internalReadlineUtils from "./internal/readline/utils.mjs";
 import * as internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
 import * as internalStreamsBufferList from "./internal/streams/buffer_list.mjs";
-import * as internalStreamsDuplexify from "./internal/streams/duplexify.mjs";
 import * as internalStreamsLazyTransform from "./internal/streams/lazy_transform.mjs";
 import * as internalStreamsState from "./internal/streams/state.mjs";
 import * as internalTestBinding from "./internal/test/binding.ts";
@@ -69,6 +68,7 @@ import * as perfHooks from "./perf_hooks.ts";
 import * as punycode from "./punycode.ts";
 import * as querystring from "./querystring.ts";
 import * as readline from "./readline.ts";
+import * as readlinePromises from "./readline/promises.ts";
 import * as repl from "./repl.ts";
 // TODO(kt3k): enable this
 // import * as stream from "./stream.ts";
@@ -194,10 +194,6 @@ Deno.test("modules", () => {
     keys(internalStreamsBufferList),
   );
   assertEquals(
-    keys(moduleAll["internal/streams/duplexify"]),
-    keys(internalStreamsDuplexify),
-  );
-  assertEquals(
     keys(moduleAll["internal/streams/lazy_transform"]),
     keys(internalStreamsLazyTransform),
   );
@@ -225,6 +221,7 @@ Deno.test("modules", () => {
   assertEquals(keys(moduleAll.punycode), keys(punycode));
   assertEquals(keys(moduleAll.querystring), keys(querystring));
   assertEquals(keys(moduleAll.readline), keys(readline));
+  assertEquals(keys(moduleAll["readline/promises"]), keys(readlinePromises));
   assertEquals(keys(moduleAll.repl), keys(repl));
   // TODO(kt3k): enable this check
   // assertEquals(keys(moduleAll.stream), keys(stream));

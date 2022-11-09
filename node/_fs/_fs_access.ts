@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../../_deno_unstable.ts";
+
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs, os } from "../internal_binding/constants.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
@@ -21,9 +21,15 @@ export function access(
   const cb = makeCallback(callback);
 
   Deno.lstat(path).then((info) => {
+    if (info.mode === null) {
+      // If the file mode is unavailable, we pretend it has
+      // the permission
+      cb(null);
+      return;
+    }
     const m = +mode || 0;
-    let fileMode = +info.mode! || 0;
-    if (Deno.build.os !== "windows" && info.uid === DenoUnstable.getUid()) {
+    let fileMode = +info.mode || 0;
+    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;
@@ -70,11 +76,20 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
   mode = getValidMode(mode, "access");
   try {
     const info = Deno.lstatSync(path.toString());
+    if (info.mode === null) {
+      // If the file mode is unavailable, we pretend it has
+      // the permission
+      return;
+    }
     const m = +mode! || 0;
-    const fileMode = +info.mode! || 0;
-    // FIXME(kt3k): use the last digit of file mode as its mode for now
-    // This is not correct if the user is the owner of the file
-    // or is a member of the owner group
+    let fileMode = +info.mode! || 0;
+    if (Deno.build.os !== "windows" && info.uid === Deno.uid()) {
+      // If the user is the owner of the file, then use the owner bits of
+      // the file permission
+      fileMode >>= 6;
+    }
+    // TODO(kt3k): Also check the case when the user belong to the group
+    // of the file
     if ((m & fileMode) === m) {
       // all required flags exist
     } else {

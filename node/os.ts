@@ -19,7 +19,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
@@ -148,7 +148,7 @@ export function endianness(): "BE" | "LE" {
 
 /** Return free memory amount */
 export function freemem(): number {
-  return DenoUnstable.systemMemoryInfo().free;
+  return Deno.systemMemoryInfo().free;
 }
 
 /** Not yet implemented */
@@ -167,6 +167,7 @@ export function homedir(): string | null {
       return Deno.env.get("USERPROFILE") || null;
     case "linux":
     case "darwin":
+    case "freebsd":
       return Deno.env.get("HOME") || null;
     default:
       throw Error("unreachable");
@@ -175,7 +176,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  return DenoUnstable.hostname();
+  return Deno.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
@@ -183,7 +184,7 @@ export function loadavg(): number[] {
   if (isWindows) {
     return [0, 0, 0];
   }
-  return DenoUnstable.loadavg();
+  return Deno.loadavg();
 }
 
 /** Returns an object containing network interfaces that have been assigned a network address.
@@ -191,7 +192,7 @@ export function loadavg(): number[] {
 export function networkInterfaces(): NetworkInterfaces {
   const interfaces: NetworkInterfaces = {};
   for (
-    const { name, address, netmask, family, mac, scopeid, cidr } of DenoUnstable
+    const { name, address, netmask, family, mac, scopeid, cidr } of Deno
       .networkInterfaces()
   ) {
     const addresses = interfaces[name] ||= [];
@@ -227,7 +228,7 @@ export function platform(): string {
 
 /** Returns the operating system as a string */
 export function release(): string {
-  return DenoUnstable.osRelease();
+  return Deno.osRelease();
 }
 
 /** Not yet implemented */
@@ -273,18 +274,20 @@ export function tmpdir(): string | null {
 
 /** Return total physical memory amount */
 export function totalmem(): number {
-  return DenoUnstable.systemMemoryInfo().total;
+  return Deno.systemMemoryInfo().total;
 }
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
 export function type(): string {
-  switch (Deno.build.os) {
+  switch (Deno.build.os as string) {
     case "windows":
       return "Windows_NT";
     case "linux":
       return "Linux";
     case "darwin":
       return "Darwin";
+    case "freebsd":
+      return "FreeBSD";
     default:
       throw Error("unreachable");
   }

@@ -50,17 +50,12 @@ function getEscapedString(value: unknown, sep: string): string {
 type PropertyAccessor = number | string;
 
 /**
- * @param fn Optional callback for transforming the value
- *
  * @param header Explicit column header name. If omitted,
  * the (final) property accessor is used for this value.
  *
  * @param prop Property accessor(s) used to access the value on the object
  */
 export type ColumnDetails = {
-  // "unknown" is more type-safe, but inconvenient for user. How to resolve?
-  // deno-lint-ignore no-explicit-any
-  fn?: (value: any) => string | Promise<string>;
   header?: string;
   prop: PropertyAccessor | PropertyAccessor[];
 };
@@ -73,8 +68,7 @@ type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
-  let fn: NormalizedColumn["fn"],
-    header: NormalizedColumn["header"],
+  let header: NormalizedColumn["header"],
     prop: NormalizedColumn["prop"];
 
   if (typeof column === "object") {
@@ -82,7 +76,6 @@ function normalizeColumn(column: Column): NormalizedColumn {
       header = String(column[column.length - 1]);
       prop = column;
     } else {
-      ({ fn } = column);
       prop = Array.isArray(column.prop) ? column.prop : [column.prop];
       header = typeof column.header === "string"
         ? column.header
@@ -93,7 +86,7 @@ function normalizeColumn(column: Column): NormalizedColumn {
     prop = [column];
   }
 
-  return { fn, header, prop };
+  return { header, prop };
 }
 
 type ObjectWithStringPropertyKeys = Record<string, unknown>;
@@ -105,28 +98,41 @@ export type DataItem = ObjectWithStringPropertyKeys | unknown[];
  * Returns an array of values from an object using the property accessors
  * (and optional transform function) in each column
  */
-async function getValuesFromItem(
+function getValuesFromItem(
   item: DataItem,
   normalizedColumns: NormalizedColumn[],
-): Promise<unknown[]> {
+): unknown[] {
   const values: unknown[] = [];
 
-  for (const column of normalizedColumns) {
-    let value: unknown = item;
+  if (normalizedColumns.length) {
+    for (const column of normalizedColumns) {
+      let value: unknown = item;
 
-    for (const prop of column.prop) {
-      if (typeof value !== "object" || value === null) continue;
-      if (Array.isArray(value)) {
-        if (typeof prop === "number") value = value[prop];
-        else {
-          throw new StringifyError('Property accessor is not of type "number"');
-        }
-      } // I think this assertion is safe. Confirm?
-      else value = (value as ObjectWithStringPropertyKeys)[prop];
+      for (const prop of column.prop) {
+        if (typeof value !== "object" || value === null) continue;
+        if (Array.isArray(value)) {
+          if (typeof prop === "number") value = value[prop];
+          else {
+            throw new StringifyError(
+              'Property accessor is not of type "number"',
+            );
+          }
+        } // I think this assertion is safe. Confirm?
+        else value = (value as ObjectWithStringPropertyKeys)[prop];
+      }
+
+      values.push(value);
     }
-
-    if (typeof column.fn === "function") value = await column.fn(value);
-    values.push(value);
+  } else {
+    if (Array.isArray(item)) {
+      values.push(...item);
+    } else if (typeof item === "object") {
+      throw new StringifyError(
+        "No property accessor function was provided for object",
+      );
+    } else {
+      values.push(item);
+    }
   }
 
   return values;
@@ -145,23 +151,17 @@ async function getValuesFromItem(
 export type StringifyOptions = {
   headers?: boolean;
   separator?: string;
+  columns?: Column[];
 };
 
 /**
  * @param data The array of objects to encode
- * @param columns Array of values specifying which data to include in the output
  * @param options Output formatting options
  */
-export async function stringify(
+export function stringify(
   data: DataItem[],
-  columns: Column[],
-  options: StringifyOptions = {},
-): Promise<string> {
-  const { headers, separator: sep } = {
-    headers: true,
-    separator: ",",
-    ...options,
-  };
+  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
+): string {
   if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
     const message = [
       "Separator cannot include the following strings:",
@@ -182,7 +182,7 @@ export async function stringify(
   }
 
   for (const item of data) {
-    const values = await getValuesFromItem(item, normalizedColumns);
+    const values = getValuesFromItem(item, normalizedColumns);
     output += values
       .map((value) => getEscapedString(value, sep))
       .join(sep);
@@ -190,20 +190,6 @@ export async function stringify(
   }
 
   return output;
-}
-
-/**
- * Parse the CSV string/buffer with the options provided.
- *
- * ColumnOptions provides the column definition
- * and the parse function for each entry of the
- * column.
- */
-export interface ColumnOptions {
-  /**
-   * Name of the column to be used as property
-   */
-  name: string;
 }
 
 export interface ParseOptions extends ReadOptions {
@@ -216,7 +202,7 @@ export interface ParseOptions extends ReadOptions {
   /**
    * If you provide `string[]` or `ColumnOptions[]`, those names will be used for header definition.
    */
-  columns?: string[] | ColumnOptions[];
+  columns?: string[];
 }
 
 /**
@@ -237,7 +223,7 @@ export function parse(
 export function parse(
   input: string,
   opt: Omit<ParseOptions, "columns"> & {
-    columns: string[] | ColumnOptions[];
+    columns: string[];
   },
 ): Record<string, unknown>[];
 export function parse(
@@ -260,35 +246,18 @@ export function parse(
   const r = parser.parse(input);
 
   if (opt.skipFirstRow || opt.columns) {
-    let headers: ColumnOptions[] = [];
+    let headers: string[] = [];
     let i = 0;
 
     if (opt.skipFirstRow) {
       const head = r.shift();
       assert(head != null);
-      headers = head.map(
-        (e): ColumnOptions => {
-          return {
-            name: e,
-          };
-        },
-      );
+      headers = head;
       i++;
     }
 
     if (opt.columns) {
-      if (typeof opt.columns[0] !== "string") {
-        headers = opt.columns as ColumnOptions[];
-      } else {
-        const h = opt.columns as string[];
-        headers = h.map(
-          (e): ColumnOptions => {
-            return {
-              name: e,
-            };
-          },
-        );
-      }
+      headers = opt.columns;
     }
 
     return r.map((e) => {
@@ -300,7 +269,7 @@ export function parse(
       i++;
       const out: Record<string, unknown> = {};
       for (let j = 0; j < e.length; j++) {
-        out[headers[j].name] = e[j];
+        out[headers[j]] = e[j];
       }
       return out;
     });

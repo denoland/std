@@ -46,7 +46,7 @@ export interface CipherOCBOptions extends TransformOptions {
   authTagLength: number;
 }
 
-export interface Cipher extends Transform {
+export interface Cipher extends ReturnType<typeof Transform> {
   update(data: BinaryLike): Buffer;
   update(data: string, inputEncoding: Encoding): Buffer;
   update(

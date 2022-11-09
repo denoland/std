@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { join } from "../path/mod.ts";
+import { toPathString } from "./_util.ts";
 
 /**
  * Ensures that a directory is empty.
@@ -8,7 +9,7 @@ import { join } from "../path/mod.ts";
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export async function emptyDir(dir: string) {
+export async function emptyDir(dir: string | URL) {
   try {
     const items = [];
     for await (const dirEntry of Deno.readDir(dir)) {
@@ -18,7 +19,7 @@ export async function emptyDir(dir: string) {
     while (items.length) {
       const item = items.shift();
       if (item && item.name) {
-        const filepath = join(dir, item.name);
+        const filepath = join(toPathString(dir), item.name);
         await Deno.remove(filepath, { recursive: true });
       }
     }
@@ -39,7 +40,7 @@ export async function emptyDir(dir: string) {
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export function emptyDirSync(dir: string) {
+export function emptyDirSync(dir: string | URL) {
   try {
     const items = [...Deno.readDirSync(dir)];
 
@@ -47,7 +48,7 @@ export function emptyDirSync(dir: string) {
     while (items.length) {
       const item = items.shift();
       if (item && item.name) {
-        const filepath = join(dir, item.name);
+        const filepath = join(toPathString(dir), item.name);
         Deno.removeSync(filepath, { recursive: true });
       }
     }
