@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // A module to get formatted time duration from milliseconds.
 
-import { addZero } from "./numbers.ts";
+const addZero = (num: number, digits: number) =>
+  String(num).padStart(digits, "0");
 
 interface DurationObj {
   d: number;
@@ -9,7 +10,7 @@ interface DurationObj {
   m: number;
   s: number;
   ms: number;
-  µs: number;
+  us: number;
   ns: number;
 }
 
@@ -19,7 +20,7 @@ const keyList: Record<keyof DurationObj, string> = {
   m: "minutes",
   s: "seconds",
   ms: "milliseconds",
-  µs: "microseconds",
+  us: "microseconds",
   ns: "nanoseconds",
 };
 
@@ -33,7 +34,7 @@ function parseDuration(ms: number): DurationObj {
     m: Math.trunc(absolute_ms / 60000) % 60,
     s: Math.trunc(absolute_ms / 1000) % 60,
     ms: Math.trunc(absolute_ms) % 1000,
-    µs: Math.trunc(absolute_ms * 1000) % 1000,
+    us: Math.trunc(absolute_ms * 1000) % 1000,
     ns: Math.trunc(absolute_ms * 1000000) % 1000,
   };
 }
@@ -47,7 +48,7 @@ function durationArray(
     { type: "m", value: duration.m },
     { type: "s", value: duration.s },
     { type: "ms", value: duration.ms },
-    { type: "µs", value: duration.µs },
+    { type: "us", value: duration.us },
     { type: "ns", value: duration.ns },
   ];
 }
@@ -81,11 +82,16 @@ export function prettyDuration(
     case "short": {
       if (opt.ignoreZero) {
         return `${
-          durationArr.filter((x) => x.value).map((x) => `${x.value}${x.type}`)
+          durationArr.filter((x) => x.value).map((x) =>
+            `${x.value}${x.type === "us" ? "µs" : x.type}`
+          )
             .join(" ")
         }`;
       }
-      return `${durationArr.map((x) => `${x.value}${x.type}`).join(" ")}`;
+      return `${
+        durationArr.map((x) => `${x.value}${x.type === "us" ? "µs" : x.type}`)
+          .join(" ")
+      }`;
     }
     case "full": {
       if (opt.ignoreZero) {
