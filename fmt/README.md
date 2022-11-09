@@ -268,6 +268,27 @@ prettyBytes(1337, { locale: "de" });
 //=> '1,34 kB'
 ```
 
+# Pretty Duration
+
+Get formatted time duration from milliseconds.
+
+```ts
+import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+
+// "00:00:01:39:674:000:000"
+prettyDuration(99674, { formatType: "time" }),
+
+// "0d 0h 1m 39s 674ms 0µs 0ns"
+prettyDuration(99674);
+
+// "1m 39s 674ms"
+prettyDuration(99674, { ignoreZero: true });
+
+// "1 minutes, 39 seconds, 674 milliseconds"
+prettyDuration(99674, { formatType: "full", ignoreZero: true }),
+```
+
+
 [1]: https://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html
 [2]: https://golang.org/pkg/fmt/
 [3]: https://console.spec.whatwg.org/#object-formats
