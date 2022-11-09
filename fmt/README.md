@@ -273,7 +273,7 @@ prettyBytes(1337, { locale: "de" });
 Get formatted time duration from milliseconds.
 
 ```ts
-import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+import { prettyDuration } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
 
 // "00:00:01:39:674:000:000"
 prettyDuration(99674, { formatType: "time" });
