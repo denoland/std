@@ -884,3 +884,78 @@ Deno.test("secondInterval calls callback every second and stops after being clea
   }
 });
 ```
+
+## Conditional Type Checks
+
+As TypeScript's type system becomes more complex it's useful to be able to write
+tests for what a type should be.
+
+The `testing/types.ts` module offers reusable conditional types to do these
+checks.
+
+### Type Checks
+
+These will resolve to the type `true` when they match and `false` otherwise.
+
+- `Has<T, U>` - Checks if `T` has `U`.
+- `NotHas<T, U>` - Checks if `T` does not have `U`.
+- `IsNullable<T>` - Checks if `T` is possibly `null` or `undefined`.
+- `IsExact<T, U>` - Checks if `T` exactly matches `U`.
+- `IsAny<T>` - Checks if `T` is the `any` type.
+- `IsNever<T>` - Checks if `T` is the `never` type.
+- `IsUnknown<T>` - Checks if `T` is the `unknown` type.
+
+### Ways to Test
+
+Use what you prefer:
+
+1. The `AssertTrue`, `AssertFalse`, or `Assert` types.
+2. The `assert` function.
+
+### Use with `AssertTrue`, `AssertFalse`, and `Assert`
+
+Doing a test:
+
+```ts
+import {
+  AssertFalse,
+  AssertTrue,
+  Has,
+  IsNever,
+  IsNullable,
+} from "https://deno.land/x/conditional_type_checks/mod.ts";
+
+const result = someFunction(someArg);
+
+type doTest =
+  | AssertTrue<Has<typeof result, string> | IsNullable<typeof result>>
+  | AssertFalse<IsNever<typeof result>>
+  | Assert<Has<typeof result, number>, true>;
+```
+
+**Warning:** Do not use an intersection type between checks (ex.
+`Has<string | number, string> & IsNever<never>`) because it will cause
+everything to pass if only one of the checks passes.
+
+### Use with `assert`
+
+Doing a test:
+
+```ts
+import {
+  assert,
+  IsExact,
+} from "https://deno.land/x/conditional_type_checks/mod.ts";
+
+const result = someFunction(someArg);
+
+// compile error if the type of `result` is not exactly `string | number`
+assert<IsExact<typeof result, string | number>>(true);
+```
+
+Failure:
+
+```ts
+// causes a compile error that `true` is not assignable to `false`
+assert<IsNullable<string>>(true); // string is not nullable
+```
