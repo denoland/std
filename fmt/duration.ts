@@ -107,9 +107,9 @@ export function prettyDuration(
       );
       if (opt.ignoreZero) {
         let cont = true;
-        while(cont) {
-            if(!Number(arr[arr.length - 1])) arr.pop();
-            else cont = false;
+        while (cont) {
+          if (!Number(arr[arr.length - 1])) arr.pop();
+          else cont = false;
         }
       }
       return arr.join(":");
