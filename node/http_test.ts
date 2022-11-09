@@ -5,6 +5,8 @@ import http from "./http.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
+import { gzip } from "./zlib.ts";
+import { Buffer } from "./buffer.ts";
 
 Deno.test("[node/http listen]", async () => {
   {
@@ -142,6 +144,35 @@ Deno.test("[node/http] request default protocol", async () => {
       },
     );
     req.end();
+  });
+  server.on("close", () => {
+    promise.resolve();
+  });
+  await promise;
+});
+
+Deno.test("[node/http] non-string buffer response", async () => {
+  const promise = deferred<void>();
+  const server = http.createServer((_, res) => {
+    gzip(
+      Buffer.from("a".repeat(100), "utf8"),
+      {},
+      (_err: Error, data: Buffer) => {
+        res.setHeader("Content-Encoding", "gzip");
+        res.end(data);
+      },
+    );
+  });
+  server.listen(async () => {
+    const res = await fetch(`http://localhost:${server.address().port}`);
+    try {
+      const text = await res.text();
+      assertEquals(text, "a".repeat(100));
+    } catch (e) {
+      server.emit("error", e);
+    } finally {
+      server.close();
+    }
   });
   server.on("close", () => {
     promise.resolve();

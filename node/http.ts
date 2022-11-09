@@ -337,7 +337,7 @@ export class ServerResponse extends NodeWritable {
     const body = singleChunk ?? (final ? null : this.#readable);
     if (this.#isFlashRequest) {
       this.#resolve!(
-        new Response(Buffer.isBuffer(body) ? body.toString() : body, {
+        new Response(body, {
           headers: this.#headers,
           status: this.statusCode,
           statusText: this.statusMessage,
