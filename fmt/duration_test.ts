@@ -85,29 +85,43 @@ Deno.test({
 Deno.test({
   name: "parse full duration ignore zero",
   fn() {
-    assertEquals(
-      parse("1 minutes, 39 seconds, 674 milliseconds"),
-      99674,
-    );
+    assertEquals(parse("1 minutes, 39 seconds, 674 milliseconds"), 99674);
   },
 });
 
 Deno.test({
   name: "parse digital duration",
   fn() {
-    assertEquals(
-      parse("00:00:01:39:674:000:000"),
-      99674,
-    );
+    assertEquals(parse("00:00:01:39:674:000:000"), 99674);
   },
 });
 
 Deno.test({
   name: "parse negative duration",
   fn() {
+    assertEquals(parse("-1 minutes, -39 seconds, -674 milliseconds"), 99674);
+  },
+});
+
+Deno.test({
+  name: "parse formatted duration",
+  fn() {
+    const value = 99674;
+    assertEquals(parse(format(value, { style: "digital" })), value);
+    assertEquals(parse(format(value, { style: "narrow" })), value);
+    assertEquals(parse(format(value, { style: "full" })), value);
+    assertEquals(parse(format(value, { ignoreZero: true })), value);
     assertEquals(
-      parse("-1 minutes, -39 seconds, -674 milliseconds"),
-      99674,
+      parse(format(value, { style: "digital", ignoreZero: true })),
+      value,
+    );
+    assertEquals(
+      parse(format(value, { style: "narrow", ignoreZero: true })),
+      value,
+    );
+    assertEquals(
+      parse(format(value, { style: "full", ignoreZero: true })),
+      value,
     );
   },
 });

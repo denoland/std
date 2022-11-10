@@ -88,7 +88,7 @@ export function format(
     { style: "narrow", ignoreZero: false },
     options,
   );
-  const duration = millisecondsToObject(ms);
+  const duration = millisecondsToDurationObject(ms);
   const durationArr = durationArray(duration);
   switch (opt.style) {
     case "narrow": {
@@ -139,15 +139,17 @@ export function format(
 }
 
 const digitalRegex =
-  /^((?<d>\d{2})\:(?<h>\d{2})\:(?<m>\d{2})\:(?<s>\d{2})\:(?<ms>\d{3})\:(?<us>\d{3})\:(?<ns>\d{3}))$/;
+  /^(?<d>\d{2})\:(?<h>\d{2})\:(?<m>\d{2})\:(?<s>\d{2})\:(?<ms>\d{3})(\:(?<us>\d{3}))?(\:(?<ns>\d{3}))?$/;
 export function parse(value: string) {
   const digitalMatch = digitalRegex.exec(value);
   if (digitalMatch) {
     const groups = digitalMatch.groups;
     const object = Object.fromEntries(
-      Object.entries(groups!).map(([name, value]) => [name, parseInt(value)]),
+      Object.entries(groups!).map((
+        [name, value],
+      ) => [name, value != null ? parseInt(value) : 0]),
     ) as unknown as DurationObject;
-    return objectToMilliseconds(object);
+    return durationObjectToMilliseconds(object);
   }
 
   const object = {
@@ -203,5 +205,5 @@ export function parse(value: string) {
       }
     }
   }
-  return objectToMilliseconds(object);
+  return durationObjectToMilliseconds(object);
 }
