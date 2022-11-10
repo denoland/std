@@ -45,8 +45,10 @@ import process from "../process.ts";
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
 const DenoSpawnChild = Deno[Deno.internal]?.nodeUnstable?.spawnChild ||
   Deno.spawnChild;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
 const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
   Deno.spawnSync;
 

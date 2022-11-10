@@ -57,7 +57,9 @@ const METHODS = [
 
 type Chunk = string | Buffer | Uint8Array;
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
 const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
 const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
   Deno.upgradeHttpRaw;
 

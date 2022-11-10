@@ -32,6 +32,7 @@ import { isIP } from "../internal/net.ts";
 
 import { isLinux, isWindows } from "../../_util/os.ts";
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
 const DenoListenDatagram = Deno[Deno.internal]?.nodeUnstable?.listenDatagram ||
   Deno.listenDatagram;
 
