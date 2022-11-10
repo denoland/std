@@ -164,7 +164,7 @@ export function parse(value: string) {
   while ((match = valueRegex.exec(value)) !== null) {
     const groups = match.groups!;
     const name = groups.name;
-    const value = parseInt(groups.value);
+    const value = Number.parseInt(groups.value, 10);
     switch (name) {
       case keyList["d"]:
       case "d": {
