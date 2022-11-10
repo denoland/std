@@ -57,6 +57,12 @@ const METHODS = [
 
 type Chunk = string | Buffer | Uint8Array;
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
+  Deno.upgradeHttpRaw;
+
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
     return core.encode(chunk);
@@ -454,7 +460,7 @@ class ServerImpl extends EventEmitter {
   constructor(handler?: ServerHandler) {
     super();
     // @ts-ignore Might be undefined without `--unstable` flag
-    this.#isFlashServer = typeof Deno.serve == "function";
+    this.#isFlashServer = typeof DenoServe == "function";
     if (this.#isFlashServer) {
       this.#servePromise = deferred();
       this.#servePromise.then(() => this.emit("close"));
@@ -552,7 +558,7 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = Deno.upgradeHttpRaw(request) as [
+        const [conn, head] = DenoUpgradeHttpRaw(request) as [
           Deno.Conn,
           Uint8Array,
         ];
@@ -572,7 +578,7 @@ class ServerImpl extends EventEmitter {
       return;
     }
     this.#ac = ac;
-    Deno.serve(
+    DenoServe(
       {
         handler: handler as Deno.ServeHandler,
         ...this.#addr,
