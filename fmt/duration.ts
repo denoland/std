@@ -53,7 +53,7 @@ function durationArray(
   ];
 }
 
-function objectToMilliseconds(object: DurationObject) {
+function durationObjectToMilliseconds(object: DurationObject) {
   let result = 0;
   result += object.d * 86400000;
   result += object.h * 3600000;
