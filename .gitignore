@@ -3,5 +3,6 @@
 .vscode/settings.json
 .vim
 **/cov/
-/crypto/_wasm_crypto/target
-/encoding/varint/_wasm_varint/target
+/crypto/_wasm/target
+/encoding/varint/_wasm/target
+deno.lock

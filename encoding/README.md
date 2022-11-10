@@ -132,12 +132,8 @@ function is as follows:
     | :--: | :------: |
     | deno | denoland |
 
-  - If the data is not already in the required output format, or a different
-    column header is desired, then a `ColumnDetails` object type can be used for
-    each column:
-
-    - **`fn?: (value: any) => string | Promise<string>`** is an optional
-      function to transform the targeted data into the desired format
+  - If a different column header is desired, then a `ColumnDetails` object type
+    can be used for each column:
 
     - **`header?: string`** is the optional value to use for the column header
       name
@@ -152,19 +148,17 @@ function is as follows:
       {
         prop: ["runsOn", 0],
         header: "language 1",
-        fn: (str: string) => str.toLowerCase(),
       },
       {
         prop: ["runsOn", 1],
         header: "language 2",
-        fn: (str: string) => str.toLowerCase(),
       },
     ];
     ```
 
     | name | language 1 | language 2 |
     | :--: | :--------: | :--------: |
-    | Deno |    rust    | typescript |
+    | Deno |    Rust    | TypeScript |
 
 - **`options`** are options for the delimiter-separated output.
 

@@ -5,7 +5,7 @@ import * as semver from "./mod.ts";
 
 Deno.test("diff", function () {
   //  [version1, version2, result]
-  //  diff(version1, version2) -> result
+  //  difference(version1, version2) -> result
   const versions: [string, string, semver.ReleaseType | null][] = [
     ["1.2.3", "0.2.3", "major"],
     ["1.4.5", "0.2.3", "major"],
@@ -25,8 +25,8 @@ Deno.test("diff", function () {
     const version1 = v[0];
     const version2 = v[1];
     const wanted = v[2];
-    const found = semver.diff(version1, version2);
-    const cmd = "diff(" + version1 + ", " + version2 + ")";
+    const found = semver.difference(version1, version2);
+    const cmd = "difference(" + version1 + ", " + version2 + ")";
     assertEquals(found, wanted, cmd + " === " + wanted);
   });
 });

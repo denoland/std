@@ -8,8 +8,8 @@
     "files": {
       "exclude": [
         ".git",
-        "crypto/_wasm_crypto/target",
-        "encoding/varint/_wasm_varint/target",
+        "crypto/_wasm/target",
+        "encoding/varint/_wasm/target",
         "cov",
         "encoding/testdata/jsonc",
         "encoding/front_matter/testdata",
@@ -25,8 +25,8 @@
     "files": {
       "exclude": [
         ".git",
-        "crypto/_wasm_crypto/target",
-        "encoding/varint/_wasm_varint/target",
+        "crypto/_wasm/target",
+        "encoding/varint/_wasm/target",
         "encoding/testdata/jsonc",
         "encoding/front_matter/testdata",
         "cov",
@@ -52,8 +52,8 @@
     "node:list-remaining-tests": "deno run --allow-net --allow-write --allow-read node/_tools/list_remaining_tests.ts",
     "node:setup": "deno task node:list-remaining-tests && deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
-    "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
-    "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
-    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
+    "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
+    "build:varint": "deno task --cwd encoding/varint/_wasm wasmbuild",
+    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.2/main.ts --js-ext mjs --sync"
   }
 }

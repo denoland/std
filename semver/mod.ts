@@ -397,36 +397,43 @@ export class SemVer {
     return 1;
   }
 
+  /**
+   * @deprecated (will be removed after 0.165.0) use `increment` instead
+   */
   inc(release: ReleaseType, identifier?: string): SemVer {
+    return this.increment(release, identifier);
+  }
+
+  increment(release: ReleaseType, identifier?: string): SemVer {
     switch (release) {
       case "premajor":
         this.prerelease.length = 0;
         this.patch = 0;
         this.minor = 0;
         this.major++;
-        this.inc("pre", identifier);
+        this.increment("pre", identifier);
         break;
       case "preminor":
         this.prerelease.length = 0;
         this.patch = 0;
         this.minor++;
-        this.inc("pre", identifier);
+        this.increment("pre", identifier);
         break;
       case "prepatch":
         // If this is already a prerelease, it will bump to the next version
         // drop any prereleases that might already exist, since they are not
         // relevant at this point.
         this.prerelease.length = 0;
-        this.inc("patch", identifier);
-        this.inc("pre", identifier);
+        this.increment("patch", identifier);
+        this.increment("pre", identifier);
         break;
       // If the input is a non-prerelease version, this acts the same as
       // prepatch.
       case "prerelease":
         if (this.prerelease.length === 0) {
-          this.inc("patch", identifier);
+          this.increment("patch", identifier);
         }
-        this.inc("pre", identifier);
+        this.increment("pre", identifier);
         break;
 
       case "major":
@@ -512,9 +519,21 @@ export class SemVer {
 }
 
 /**
- * Return the version incremented by the release type (major, minor, patch, or prerelease), or null if it's not valid.
+ * @deprecated (will be removed after 0.165.0) use `increment` instead
  */
 export function inc(
+  version: string | SemVer,
+  release: ReleaseType,
+  options?: Options,
+  identifier?: string,
+): string | null {
+  return increment(version, release, options, identifier);
+}
+
+/**
+ * Return the version incremented by the release type (major, minor, patch, or prerelease), or null if it's not valid.
+ */
+export function increment(
   version: string | SemVer,
   release: ReleaseType,
   options?: Options,
@@ -525,13 +544,24 @@ export function inc(
     options = undefined;
   }
   try {
-    return new SemVer(version, options).inc(release, identifier).version;
+    return new SemVer(version, options).increment(release, identifier).version;
   } catch {
     return null;
   }
 }
 
+/**
+ * @deprecated (will be removed after 0.165.0) use `difference` instead
+ */
 export function diff(
+  version1: string | SemVer,
+  version2: string | SemVer,
+  options?: Options,
+): string | null {
+  return difference(version1, version2, options);
+}
+
+export function difference(
   version1: string | SemVer,
   version2: string | SemVer,
   options?: Options,

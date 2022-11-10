@@ -53,9 +53,7 @@ export interface WalkOptions {
 export type { WalkEntry };
 
 /** Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options. The files are walked in lexical
- * order, which makes the output deterministic but means that for very large
- * directories walk() can be inefficient.
+ * tree filtered according to the given options.
  *
  * Options:
  * - maxDepth?: number = Infinity;
