@@ -5,7 +5,7 @@ import {
   pbkdf2Sync,
 } from "./pbkdf2.ts";
 import { assert, assertEquals } from "../../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../../_utils.ts";
+import { assertCallbackErrorUncaught } from "../../_test_utils.ts";
 
 type Pbkdf2Fixture = {
   key: string | Float64Array | Int32Array | Uint8Array;

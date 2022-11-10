@@ -15,7 +15,7 @@ import {
   assertThrows,
   fail,
 } from "../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 import { open, openSync } from "./_fs_open.ts";
 import { join, parse } from "../../path/mod.ts";
 import { existsSync } from "../../fs/exists.ts";
