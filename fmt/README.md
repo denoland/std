@@ -288,7 +288,7 @@ format(99674, { ignoreZero: true });
 format(99674, { style: "full", ignoreZero: true });
 ```
 
-parse time duration to milliseconds.
+Parse time duration to milliseconds.
 
 ```ts
 import { parse } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
