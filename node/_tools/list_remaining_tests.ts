@@ -70,14 +70,17 @@ async function main() {
     write: true,
   });
 
-  await file.write(encoder.encode("# Remaining Node Tests\n\n"));
-
   const missingTests = await getMissingTests();
-  for (let i = 0; i < missingTests.length; i++) {
-    const test = missingTests[i];
+
+  await file.write(encoder.encode("# Remaining Node Tests\n"));
+  await file.write(
+    encoder.encode(`Total: ${missingTests.length}\n`),
+  );
+
+  for (const test of missingTests) {
     await file.write(
       encoder.encode(
-        `${i + 1}. [${test}](${NODE_BASE_URL + "/tree/main/test/" + test})\n`,
+        `* [${test}](${NODE_BASE_URL + "/tree/main/test/" + test})\n`,
       ),
     );
   }
