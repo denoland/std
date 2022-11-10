@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
 import { appendFile, appendFileSync } from "./_fs_appendFile.ts";
 import { fromFileUrl } from "../path.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 
 const decoder = new TextDecoder("utf-8");
 

@@ -4,7 +4,7 @@ import { rmdir, rmdirSync } from "./_fs_rmdir.ts";
 import { closeSync } from "./_fs_close.ts";
 import { existsSync } from "../../fs/exists.ts";
 import { join } from "../../path/mod.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 import { isWindows } from "../../_util/os.ts";
 
 Deno.test({
