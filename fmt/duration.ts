@@ -1,10 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// A module to get formatted time duration from milliseconds.
+// A module to get formatted digital duration from milliseconds.
 
 const addZero = (num: number, digits: number) =>
   String(num).padStart(digits, "0");
 
-interface DurationObj {
+interface DurationObject {
   d: number;
   h: number;
   m: number;
@@ -14,7 +14,7 @@ interface DurationObj {
   ns: number;
 }
 
-const keyList: Record<keyof DurationObj, string> = {
+const keyList: Record<keyof DurationObject, string> = {
   d: "days",
   h: "hours",
   m: "minutes",
@@ -25,7 +25,7 @@ const keyList: Record<keyof DurationObj, string> = {
 };
 
 /** Parse milleseconds into a duration. */
-function parseDuration(ms: number): DurationObj {
+function millisecondsToObject(ms: number): DurationObject {
   // Duration cannot be negative
   const absolute_ms = Math.abs(ms);
   return {
@@ -40,8 +40,8 @@ function parseDuration(ms: number): DurationObj {
 }
 
 function durationArray(
-  duration: DurationObj,
-): { type: keyof DurationObj; value: number }[] {
+  duration: DurationObject,
+): { type: keyof DurationObject; value: number }[] {
   return [
     { type: "d", value: duration.d },
     { type: "h", value: duration.h },
@@ -53,33 +53,45 @@ function durationArray(
   ];
 }
 
+function objectToMilliseconds(object: DurationObject) {
+  let result = 0;
+  result += object.d * 86400000;
+  result += object.h * 3600000;
+  result += object.m * 60000;
+  result += object.s * 1000;
+  result += object.ms;
+  result += object.us / 1000;
+  result += object.ns / 1000000;
+  return result;
+}
+
 export interface PrettyDurationOptions {
   /**
-   * "short" for "0d 0h 0m 0s 0ms..."
-   * "time" for "00:00:00:00:000..."
+   * "narrow" for "0d 0h 0m 0s 0ms..."
+   * "digital" for "00:00:00:00:000..."
    * "full" for "0 days, 0 hours, 0 minutes,..."
    */
-  formatType: "short" | "time" | "full";
+  style: "narrow" | "digital" | "full";
   /**
    * Whether to ignore zero values.
-   * With formatType="short" | "full", all zero values are ignored.
-   * With formatType="time", only values in the ends are ignored.
+   * With style="narrow" | "full", all zero values are ignored.
+   * With style="digital", only values in the ends are ignored.
    */
   ignoreZero: boolean;
 }
 
-export function prettyDuration(
+export function format(
   ms: number,
   options: Partial<PrettyDurationOptions> = {},
 ): string {
   const opt = Object.assign(
-    { formatType: "short", ignoreZero: false },
+    { style: "narrow", ignoreZero: false },
     options,
   );
-  const duration = parseDuration(ms);
+  const duration = millisecondsToObject(ms);
   const durationArr = durationArray(duration);
-  switch (opt.formatType) {
-    case "short": {
+  switch (opt.style) {
+    case "narrow": {
       if (opt.ignoreZero) {
         return `${
           durationArr.filter((x) => x.value).map((x) =>
@@ -105,7 +117,7 @@ export function prettyDuration(
         durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ")
       }`;
     }
-    case "time": {
+    case "digital": {
       const arr = durationArr.map((x) =>
         ["ms", "us", "ns"].includes(x.type)
           ? addZero(x.value, 3)
@@ -121,7 +133,75 @@ export function prettyDuration(
       return arr.join(":");
     }
     default: {
-      throw new TypeError(`formatType must be "short", "full", or "time"!`);
+      throw new TypeError(`style must be "narrow", "full", or "digital"!`);
     }
   }
+}
+
+const digitalRegex =
+  /^((?<d>\d{2})\:(?<h>\d{2})\:(?<m>\d{2})\:(?<s>\d{2})\:(?<ms>\d{3})\:(?<us>\d{3})\:(?<ns>\d{3}))$/;
+export function parse(value: string) {
+  const digitalMatch = digitalRegex.exec(value);
+  if (digitalMatch) {
+    const groups = digitalMatch.groups;
+    const object = Object.fromEntries(
+      Object.entries(groups!).map(([name, value]) => [name, parseInt(value)]),
+    ) as unknown as DurationObject;
+    return objectToMilliseconds(object);
+  }
+
+  const object = {
+    d: 0,
+    h: 0,
+    m: 0,
+    s: 0,
+    ms: 0,
+    us: 0,
+    ns: 0,
+  };
+  let match;
+  const valueRegex = /(?<value>\d+)\s*(?<name>[\µa-z]+)/g;
+  while ((match = valueRegex.exec(value)) !== null) {
+    const groups = match.groups!;
+    const name = groups.name;
+    const value = parseInt(groups.value);
+    switch (name) {
+      case keyList["d"]:
+      case "d": {
+        object.d += value;
+        break;
+      }
+      case keyList["h"]:
+      case "h": {
+        object.h += value;
+        break;
+      }
+      case keyList["m"]:
+      case "m": {
+        object.m += value;
+        break;
+      }
+      case keyList["s"]:
+      case "s": {
+        object.s += value;
+        break;
+      }
+      case keyList["ms"]:
+      case "ms": {
+        object.ms += value;
+        break;
+      }
+      case keyList["us"]:
+      case "µs": {
+        object.us += value;
+        break;
+      }
+      case keyList["ns"]:
+      case "ns": {
+        object.ns += value;
+        break;
+      }
+    }
+  }
+  return objectToMilliseconds(object);
 }
