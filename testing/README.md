@@ -885,15 +885,13 @@ Deno.test("secondInterval calls callback every second and stops after being clea
 });
 ```
 
-## Conditional Type Checks
+## Type Checks
 
 As TypeScript's type system becomes more complex it's useful to be able to write
 tests for what a type should be.
 
 The `testing/types.ts` module offers reusable conditional types to do these
 checks.
-
-### Type Checks
 
 These will resolve to the type `true` when they match and `false` otherwise.
 
@@ -910,7 +908,7 @@ These will resolve to the type `true` when they match and `false` otherwise.
 Use what you prefer:
 
 1. The `AssertTrue`, `AssertFalse`, or `Assert` types.
-2. The `assert` function.
+2. The `assertType` function.
 
 ### Use with `AssertTrue`, `AssertFalse`, and `Assert`
 
@@ -923,7 +921,7 @@ import {
   Has,
   IsNever,
   IsNullable,
-} from "https://deno.land/x/conditional_type_checks/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/testing/types.ts";
 
 const result = someFunction(someArg);
 
@@ -937,25 +935,25 @@ type doTest =
 `Has<string | number, string> & IsNever<never>`) because it will cause
 everything to pass if only one of the checks passes.
 
-### Use with `assert`
+### Use with `assertType`
 
 Doing a test:
 
 ```ts
 import {
-  assert,
+  assertType,
   IsExact,
-} from "https://deno.land/x/conditional_type_checks/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/testing/types.ts";
 
 const result = someFunction(someArg);
 
 // compile error if the type of `result` is not exactly `string | number`
-assert<IsExact<typeof result, string | number>>(true);
+assertType<IsExact<typeof result, string | number>>(true);
 ```
 
 Failure:
 
 ```ts
 // causes a compile error that `true` is not assignable to `false`
-assert<IsNullable<string>>(true); // string is not nullable
+assertType<IsNullable<string>>(true); // string is not nullable
 ```
