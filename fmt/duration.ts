@@ -25,7 +25,7 @@ const keyList: Record<keyof DurationObject, string> = {
 };
 
 /** Parse milleseconds into a duration. */
-function millisecondsToObject(ms: number): DurationObject {
+function millisecondsToDurationObject(ms: number): DurationObject {
   // Duration cannot be negative
   const absolute_ms = Math.abs(ms);
   return {
