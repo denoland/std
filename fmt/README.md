@@ -270,7 +270,7 @@ prettyBytes(1337, { locale: "de" });
 
 # Pretty Duration
 
-format milliseconds to time duration.
+Format milliseconds to time duration.
 
 ```ts
 import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
