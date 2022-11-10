@@ -15,7 +15,7 @@ import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
 import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
-
+import { VERSION } from "../version.ts";
 interface EntryInfo {
   mode: string;
   size: string;
@@ -542,13 +542,14 @@ function normalizeURL(url: string): string {
 function main() {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
       verbose: false,
+      version: false,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -560,6 +561,7 @@ function main() {
       k: "key",
       h: "help",
       v: "verbose",
+      V: "version",
     },
   });
   const port = Number(serverArgs.port);
@@ -569,6 +571,11 @@ function main() {
 
   if (serverArgs.help) {
     printUsage();
+    Deno.exit();
+  }
+
+  if (serverArgs.version) {
+    console.log(`Deno File Server ${VERSION}`);
     Deno.exit();
   }
 
@@ -608,7 +615,7 @@ function main() {
 }
 
 function printUsage() {
-  console.log(`Deno File Server
+  console.log(`Deno File Server ${VERSION}
   Serves a local directory in HTTP.
 
 INSTALL:
@@ -628,6 +635,7 @@ OPTIONS:
   --no-dotfiles       Do not show dotfiles
   --no-cors           Disable cross-origin resource sharing
   -v, --verbose       Print request level logs
+  -V, --version       Print version information
 
   All TLS options are required when one is provided.`);
 }

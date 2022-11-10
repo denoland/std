@@ -11,6 +11,7 @@ import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
 import { toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
+import { VERSION } from "../version.ts";
 
 let fileServer: Deno.Child;
 
@@ -375,7 +376,22 @@ Deno.test("printHelp", async function () {
     cwd: moduleDir,
   });
   const stdout = new TextDecoder().decode(helpProcess.stdout);
-  assert(stdout.includes("Deno File Server"));
+  assert(stdout.includes(`Deno File Server ${VERSION}`));
+});
+
+Deno.test("printVersion", async function () {
+  const versionProcess = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-check",
+      "--quiet",
+      "file_server.ts",
+      "--version",
+    ],
+    cwd: moduleDir,
+  });
+  const stdout = new TextDecoder().decode(versionProcess.stdout);
+  assert(stdout.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("contentType", async () => {
