@@ -68,6 +68,7 @@ async function getMissingTests(): Promise<string[]> {
 async function main() {
   const file = await Deno.open(new URL("./TODO.md", import.meta.url), {
     write: true,
+    create: true,
   });
 
   const missingTests = await getMissingTests();
