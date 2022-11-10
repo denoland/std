@@ -20,7 +20,7 @@ import {
   errorMap,
   mapSysErrnoToUvErrno,
 } from "../internal_binding/uv.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
 import { os as osConstants } from "../internal_binding/constants.ts";
 const {

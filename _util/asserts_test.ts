@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, DenoStdInternalError } from "./assert.ts";
+import { assert, DenoStdInternalError, unreachable } from "./asserts.ts";
 import { assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
@@ -28,4 +28,16 @@ Deno.test({
       "Oops! Should be true",
     );
   },
+});
+
+Deno.test("assert unreachable", function () {
+  let didThrow = false;
+  try {
+    unreachable();
+  } catch (e) {
+    assert(e instanceof DenoStdInternalError);
+    assert(e.message === "unreachable");
+    didThrow = true;
+  }
+  assert(didThrow);
 });

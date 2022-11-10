@@ -2,7 +2,7 @@
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 import { EventEmitter } from "../events.ts";
 import { os } from "../internal_binding/constants.ts";
 import { notImplemented, warnNotImplemented } from "../_utils.ts";

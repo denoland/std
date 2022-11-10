@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { deferred } from "../async/mod.ts";
-import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+// import { deferred } from "../async/mod.ts";
+import { assert } from "../_util/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
 import { errorMap } from "./internal_binding/uv.ts";
 import { codes } from "./internal/error_codes.ts";
@@ -177,43 +177,6 @@ export function once<T = undefined>(
   };
 }
 
-/**
- * @param [expectedExecutions = 1]
- * @param [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
-export function mustCall<T extends unknown[]>(
-  fn: (...args: T) => void = () => {},
-  expectedExecutions = 1,
-  timeout = 1000,
-): [Promise<void>, (...args: T) => void] {
-  if (expectedExecutions < 1) {
-    throw new Error("Expected executions can't be lower than 1");
-  }
-  let timesExecuted = 0;
-  const completed = deferred();
-
-  const abort = setTimeout(() => completed.reject(), timeout);
-
-  function callback(this: unknown, ...args: T) {
-    timesExecuted++;
-    if (timesExecuted === expectedExecutions) {
-      completed.resolve();
-    }
-    fn.apply(this, args);
-  }
-
-  const result = completed
-    .then(() => clearTimeout(abort))
-    .catch(() =>
-      fail(
-        `Async operation not completed: Expected ${expectedExecutions}, executed ${timesExecuted}`,
-      )
-    );
-
-  return [
-    result,
-    callback,
-  ];
-}
 /** Asserts that an error thrown in a callback will not be wrongly caught. */
 export async function assertCallbackErrorUncaught(
   { prelude, invocation, cleanup }: {
@@ -252,7 +215,7 @@ export async function assertCallbackErrorUncaught(
   p.stderr.close();
   await cleanup?.();
   assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
+  assert(stderr.includes("Error: success"));
 }
 
 export function makeMethodsEnumerable(klass: { new (): unknown }) {

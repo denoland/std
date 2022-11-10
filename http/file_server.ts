@@ -10,7 +10,7 @@ import { contentType } from "../media_types/mod.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
 import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
