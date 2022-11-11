@@ -186,6 +186,10 @@ class ClientRequest extends NodeWritable {
       port === 80 ? "" : `:${port}`
     }${path}`;
   }
+
+  setTimeout() {
+    console.log("not implemented: ClientRequest.setTimeout");
+  }
 }
 
 /** IncomingMessage for http(s) client */
