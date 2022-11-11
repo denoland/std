@@ -239,6 +239,9 @@ export class ServerResponse extends NodeWritable {
   statusMessage?: string = undefined;
   #headers = new Headers({});
   #readable: ReadableStream;
+  override writable = true;
+  // used by `npm:on-finished`
+  finished = false;
   headersSent = false;
   #firstChunk: Chunk | null = null;
   // Used if --unstable flag IS NOT present
@@ -364,6 +367,7 @@ export class ServerResponse extends NodeWritable {
 
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
+    this.finished = true;
     if (this.#isFlashRequest) {
       // Flash sets both of these headers.
       this.#headers.delete("transfer-encoding");

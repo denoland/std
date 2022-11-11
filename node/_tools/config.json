@@ -364,6 +364,7 @@
       "test-http-client-read-in-error.js",
       "test-http-outgoing-buffer.js",
       "test-http-outgoing-destroy.js",
+      "test-http-outgoing-finish-writable.js",
       "test-http-outgoing-internal-headernames-getter.js",
       "test-http-outgoing-internal-headernames-setter.js",
       "test-http-outgoing-internal-headers.js",
