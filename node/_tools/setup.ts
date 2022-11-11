@@ -17,6 +17,7 @@ import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
 import { copy, readAll, writeAll } from "../../streams/conversion.ts";
 import { downloadFile } from "../../_util/download_file.ts";
+import { updateToDo } from "./list_remaining_tests.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -196,6 +197,7 @@ async function copyTests(filePath: string) {
   }
 }
 
+// main
 let shouldDownload = false;
 if (CACHE_MODE === "prompt") {
   let testArchiveExists = false;
@@ -277,3 +279,4 @@ if (shouldDecompress) {
 
 await clearTests();
 await copyTests(decompressedSourcePath);
+await updateToDo();
