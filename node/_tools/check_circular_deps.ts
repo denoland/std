@@ -3,7 +3,8 @@ import {
   createGraph,
   ModuleGraph,
 } from "https://deno.land/x/deno_graph@0.37.1/mod.ts";
-const root = `${new URL("../node/module_all.ts", import.meta.url)}`;
+
+const root = `${new URL("../module_all.ts", import.meta.url)}`;
 const seen = new Set<string>();
 /** Returns the circular dependency from the given module graph and
  * specifier if exists, returns undefined otherwise. */
