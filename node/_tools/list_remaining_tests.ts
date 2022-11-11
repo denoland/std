@@ -1,18 +1,17 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { withoutAll } from "../../collections/without_all.ts";
+import { walk } from "../../fs/walk.ts";
+import { relative } from "../path/posix.ts";
 import config from "./config.json" assert { type: "json" };
-
-// deno-lint-ignore no-explicit-any
-type Object = Record<string, any>;
 
 const encoder = new TextEncoder();
 
-const NODE_API_BASE_URL = "https://api.github.com/repos/nodejs/node";
 const NODE_BASE_URL = "https://github.com/nodejs/node";
 const NODE_IGNORED_TEST_DIRS = [
   "addons",
   "async-hooks",
   "cctest",
+  "common",
   "doctool",
   "embedding",
   "fixtures",
@@ -29,25 +28,21 @@ const NODE_IGNORED_TEST_DIRS = [
   "wpt",
 ];
 
-async function getNodeTestDirSHA(): Promise<string> {
-  const response = await fetch(NODE_API_BASE_URL + "/contents");
-  const body = await response.json();
-  return body
-    .find(({ name }: Object) => name === "test")
-    .sha;
-}
+async function getNodeTests(): Promise<string[]> {
+  const paths: string[] = [];
+  const root = new URL(
+    `versions/node-v${config.nodeVersion}/test`,
+    import.meta.url,
+  );
+  const rootPath = root.href.slice(7);
+  for await (const item of walk(root, { includeDirs: false, exts: [".js"] })) {
+    const path = relative(rootPath, item.path);
+    if (NODE_IGNORED_TEST_DIRS.every((dir) => !path.startsWith(dir))) {
+      paths.push(path);
+    }
+  }
 
-async function getNodeTests(sha: string): Promise<string[]> {
-  const url = NODE_API_BASE_URL + "/git/trees/" + sha + "?recursive=1";
-  const response = await fetch(url);
-  const body = await response.json();
-
-  return body.tree
-    .filter(({ path }: Object) =>
-      path.includes("/test-") && path.endsWith(".js") &&
-      !NODE_IGNORED_TEST_DIRS.some((dir) => path.startsWith(dir))
-    )
-    .map(({ path }: Object) => path);
+  return paths.sort();
 }
 
 function getDenoTests(): string[] {
@@ -57,31 +52,33 @@ function getDenoTests(): string[] {
 }
 
 async function getMissingTests(): Promise<string[]> {
-  const nodeTestDirSHA = await getNodeTestDirSHA();
-  const nodeTests = await getNodeTests(nodeTestDirSHA);
+  const nodeTests = await getNodeTests();
 
   const denoTests = await getDenoTests();
 
   return withoutAll(nodeTests, denoTests);
 }
 
-async function main() {
+export async function updateToDo() {
   const file = await Deno.open(new URL("./TODO.md", import.meta.url), {
     write: true,
     create: true,
+    truncate: true,
   });
 
   const missingTests = await getMissingTests();
 
-  await file.write(encoder.encode("# Remaining Node Tests\n"));
+  await file.write(encoder.encode("# Remaining Node Tests\n\n"));
   await file.write(
-    encoder.encode(`Total: ${missingTests.length}\n`),
+    encoder.encode(`Total: ${missingTests.length}\n\n`),
   );
 
   for (const test of missingTests) {
     await file.write(
       encoder.encode(
-        `* [${test}](${NODE_BASE_URL + "/tree/main/test/" + test})\n`,
+        `- [${test}](${
+          NODE_BASE_URL + `/tree/v${config.nodeVersion}/test/` + test
+        })\n`,
       ),
     );
   }
@@ -90,5 +87,5 @@ async function main() {
 }
 
 if (import.meta.main) {
-  await main();
+  await updateToDo();
 }
