@@ -115,8 +115,8 @@ export function read(
       let nread: number | null;
       if (typeof position === "number" && position >= 0) {
         const currentPosition = await Deno.seek(fd, 0, Deno.SeekMode.Current);
-        // The following seek/read/seek calls need to be sync
-        // because those need to happen atomically
+        // We use sync calls below to avoid being affected by others during
+        // these calls.
         Deno.seekSync(fd, position, Deno.SeekMode.Start);
         nread = Deno.readSync(fd, buffer);
         Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
