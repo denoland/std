@@ -1,6 +1,6 @@
 # Remaining Node Tests
 
-Total: 2828
+Total: 2827
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -1044,7 +1044,6 @@ Total: 2828
 - [parallel/test-http-outgoing-end-cork.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-end-cork.js)
 - [parallel/test-http-outgoing-end-multiple.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-end-multiple.js)
 - [parallel/test-http-outgoing-end-types.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-end-types.js)
-- [parallel/test-http-outgoing-finish-writable.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-finish-writable.js)
 - [parallel/test-http-outgoing-finish.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-finish.js)
 - [parallel/test-http-outgoing-finished.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-finished.js)
 - [parallel/test-http-outgoing-first-chunk-singlebyte-encoding.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-http-outgoing-first-chunk-singlebyte-encoding.js)
