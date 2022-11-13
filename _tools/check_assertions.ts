@@ -7,7 +7,7 @@ import { walk } from "../fs/walk.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const EXTS = [".mjs", ".ts"];
-const SKIP = [/(test|bench|testdata|node\/)/];
+const SKIP = [/(test|bench|node\/)/];
 const BAD_IMPORT = new URL("../testing/asserts.ts", import.meta.url);
 const EXCEPTION = new URL("../node/assert.ts", import.meta.url);
 
