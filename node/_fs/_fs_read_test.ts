@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
+  assertFalse,
   assertMatch,
   assertStrictEquals,
 } from "../../testing/asserts.ts";
@@ -9,6 +10,7 @@ import { open, openSync } from "./_fs_open.ts";
 import { Buffer } from "../buffer.ts";
 import * as path from "../../path/mod.ts";
 import { closeSync } from "./_fs_close.ts";
+import { deferred } from "../../async/deferred.ts";
 
 async function readTest(
   testData: string,
@@ -249,5 +251,42 @@ Deno.test({
     });
     assertStrictEquals(bytesRead, 10);
     closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "[std/node/fs] fs.read is async",
+  async fn(t) {
+    const file = await Deno.makeTempFile();
+    await Deno.writeTextFile(file, "abc");
+
+    await t.step("without position option", async () => {
+      const promise = deferred<void>();
+      let called = false;
+      const fd = openSync(file);
+      read(fd, () => {
+        called = true;
+        closeSync(fd);
+        promise.resolve();
+      });
+      assertFalse(called);
+      await promise;
+    });
+
+    await t.step("with position option", async () => {
+      const promise = deferred<void>();
+      let called = false;
+      const buffer = Buffer.alloc(2);
+      const fd = openSync(file);
+      read(fd, { position: 1, buffer, offset: 0, length: 2 }, () => {
+        called = true;
+        closeSync(fd);
+        promise.resolve();
+      });
+      assertFalse(called);
+      await promise;
+    });
+
+    await Deno.remove(file);
   },
 });
