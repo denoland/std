@@ -471,7 +471,7 @@ Deno.test("configureSafe async", async () => {
 });
 
 Deno.test("config defaults", async () => {
-  const { stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--allow-read",
@@ -480,6 +480,7 @@ Deno.test("config defaults", async () => {
     ],
     cwd: testdataDir,
   });
+  const { stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const conf = JSON.parse(decoder.decode(stdout).trim());
@@ -658,7 +659,7 @@ Deno.test("stringify", async (t) => {
 });
 
 Deno.test("use restrictEnvAccessTo to restrict lookup of Env variables to certain vars. Those vars can be granted read permissions now separately.", async () => {
-  const { stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--allow-read",
@@ -667,6 +668,7 @@ Deno.test("use restrictEnvAccessTo to restrict lookup of Env variables to certai
     ],
     cwd: testdataDir,
   });
+  const { stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const conf = JSON.parse(decoder.decode(stdout).trim());
@@ -676,7 +678,7 @@ Deno.test("use restrictEnvAccessTo to restrict lookup of Env variables to certai
 });
 
 Deno.test("use restrictEnvAccessTo via configSync to restrict lookup of Env variables to certain vars.", async () => {
-  const { stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--allow-read",
@@ -685,6 +687,7 @@ Deno.test("use restrictEnvAccessTo via configSync to restrict lookup of Env vari
     ],
     cwd: testdataDir,
   });
+  const { stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const conf = JSON.parse(decoder.decode(stdout).trim());
@@ -694,7 +697,7 @@ Deno.test("use restrictEnvAccessTo via configSync to restrict lookup of Env vari
 });
 
 Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permissions still fails", async () => {
-  const { stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--allow-read",
@@ -702,6 +705,7 @@ Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permi
     ],
     cwd: testdataDir,
   });
+  const { stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const error = decoder.decode(stdout).trim();

@@ -131,9 +131,10 @@ Deno.test("expandGlobIncludeDirs", async function () {
 
 Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const { code, success, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "--unstable", exampleUrl.toString()],
   });
+  const { code, success, stdout, stderr } = await command.output();
   const decoder = new TextDecoder();
   assert(!success);
   assertEquals(code, 1);

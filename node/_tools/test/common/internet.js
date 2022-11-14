@@ -32,10 +32,7 @@ const addresses = {
   // record not found. Use this to guarantee record not found.
   NOT_FOUND: 'come.on.fhqwhgads.test',
   // A host with SRV records registered
-  // TODO(kt3k): Temporarily use _caldav._tcp.google.com instead of
-  // _jabber._tcp.google.com, which currently doesn't respond
-  // SRV_HOST: '_jabber._tcp.google.com',
-  SRV_HOST: '_caldav._tcp.google.com',
+  SRV_HOST: '_jabber._tcp.google.com',
   // A host with PTR records registered
   PTR_HOST: '8.8.8.8.in-addr.arpa',
   // A host with NAPTR records registered

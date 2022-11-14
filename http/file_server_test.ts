@@ -365,7 +365,7 @@ Deno.test("CORS support", async function () {
 });
 
 Deno.test("printHelp", async function () {
-  const helpProcess = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -375,12 +375,13 @@ Deno.test("printHelp", async function () {
     ],
     cwd: moduleDir,
   });
-  const stdout = new TextDecoder().decode(helpProcess.stdout);
-  assert(stdout.includes(`Deno File Server ${VERSION}`));
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("printVersion", async function () {
-  const versionProcess = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -390,8 +391,9 @@ Deno.test("printVersion", async function () {
     ],
     cwd: moduleDir,
   });
-  const stdout = new TextDecoder().decode(versionProcess.stdout);
-  assert(stdout.includes(`Deno File Server ${VERSION}`));
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("contentType", async () => {
