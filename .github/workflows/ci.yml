@@ -135,6 +135,9 @@ jobs:
       - name: Check Import paths in Docs
         run: "deno task lint:doc-imports"
 
+      - name: Check non-test assertions
+        run: deno task lint:check-assertions
+
   crypto-wasm:
     name: "crypto/_wasm"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
