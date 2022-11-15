@@ -276,7 +276,10 @@ function readEnv(
     restrictEnvAccessTo.length > 0
   ) {
     return restrictEnvAccessTo.reduce(
-      (accessedEnvVars: Record<string, string>, envVarName: string): Record<string, string> => {
+      (
+        accessedEnvVars: Record<string, string>,
+        envVarName: string,
+      ): Record<string, string> => {
         if (Deno.env.get(envVarName)) {
           accessedEnvVars[envVarName] = Deno.env.get(envVarName) as string;
         }
