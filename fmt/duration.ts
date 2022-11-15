@@ -53,18 +53,6 @@ function durationArray(
   ];
 }
 
-function durationObjectToMilliseconds(object: DurationObject) {
-  let result = 0;
-  result += object.d * 86400000;
-  result += object.h * 3600000;
-  result += object.m * 60000;
-  result += object.s * 1000;
-  result += object.ms;
-  result += object.us / 1000;
-  result += object.ns / 1000000;
-  return result;
-}
-
 export interface PrettyDurationOptions {
   /**
    * "narrow" for "0d 0h 0m 0s 0ms..."
@@ -136,74 +124,4 @@ export function format(
       throw new TypeError(`style must be "narrow", "full", or "digital"!`);
     }
   }
-}
-
-const digitalRegex =
-  /^(?<d>\d{2})\:(?<h>\d{2})\:(?<m>\d{2})\:(?<s>\d{2})\:(?<ms>\d{3})(\:(?<us>\d{3}))?(\:(?<ns>\d{3}))?$/;
-export function parse(value: string) {
-  const digitalMatch = digitalRegex.exec(value);
-  if (digitalMatch) {
-    const groups = digitalMatch.groups;
-    const object = Object.fromEntries(
-      Object.entries(groups!).map((
-        [name, value],
-      ) => [name, value != null ? parseInt(value) : 0]),
-    ) as unknown as DurationObject;
-    return durationObjectToMilliseconds(object);
-  }
-
-  const object = {
-    d: 0,
-    h: 0,
-    m: 0,
-    s: 0,
-    ms: 0,
-    us: 0,
-    ns: 0,
-  };
-  let match;
-  const valueRegex = /(?<value>\d+)\s*(?<name>[\µa-z]+)/g;
-  while ((match = valueRegex.exec(value)) !== null) {
-    const groups = match.groups!;
-    const name = groups.name;
-    const value = Number.parseInt(groups.value, 10);
-    switch (name) {
-      case keyList["d"]:
-      case "d": {
-        object.d += value;
-        break;
-      }
-      case keyList["h"]:
-      case "h": {
-        object.h += value;
-        break;
-      }
-      case keyList["m"]:
-      case "m": {
-        object.m += value;
-        break;
-      }
-      case keyList["s"]:
-      case "s": {
-        object.s += value;
-        break;
-      }
-      case keyList["ms"]:
-      case "ms": {
-        object.ms += value;
-        break;
-      }
-      case keyList["us"]:
-      case "µs": {
-        object.us += value;
-        break;
-      }
-      case keyList["ns"]:
-      case "ns": {
-        object.ns += value;
-        break;
-      }
-    }
-  }
-  return durationObjectToMilliseconds(object);
 }

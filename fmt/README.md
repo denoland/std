@@ -288,24 +288,6 @@ format(99674, { ignoreZero: true });
 format(99674, { style: "full", ignoreZero: true });
 ```
 
-Parse time duration to milliseconds.
-
-```ts
-import { parse } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
-
-// 99674
-parse("00:00:01:39:674:000:000");
-
-// 99674
-parse("0d 0h 1m 39s 674ms 0µs 0ns");
-
-// 99674
-parse("1m 39s 674ms");
-
-// 99674
-parse("1 minutes, 39 seconds, 674 milliseconds");
-```
-
 [1]: https://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html
 [2]: https://golang.org/pkg/fmt/
 [3]: https://console.spec.whatwg.org/#object-formats
