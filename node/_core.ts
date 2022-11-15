@@ -7,6 +7,9 @@
 // deno-lint-ignore no-explicit-any
 export let core: any;
 
+// deno-lint-ignore no-explicit-any
+const { Deno } = globalThis as any;
+
 // @ts-ignore Deno.core is not defined in types
 if (Deno?.core) {
   // @ts-ignore Deno.core is not defined in types
