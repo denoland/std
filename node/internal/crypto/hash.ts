@@ -5,7 +5,7 @@ import {
   DigestAlgorithm,
   DigestContext,
   instantiateWasm,
-} from "../../../crypto/_wasm_crypto/mod.ts";
+} from "../../../crypto/_wasm/mod.ts";
 import { Buffer } from "../../buffer.ts";
 import { Transform } from "../../stream.ts";
 import { encode as encodeToHex } from "../../../encoding/hex.ts";
@@ -156,6 +156,8 @@ export class Hmac extends Transform {
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
  */
 const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
+  BLAKE2B256: "BLAKE2B-256",
+  BLAKE2B384: "BLAKE2B-384",
   BLAKE2B512: "BLAKE2B",
   BLAKE2S256: "BLAKE2S",
   RIPEMD160: "RIPEMD-160",

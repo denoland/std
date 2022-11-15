@@ -14,7 +14,7 @@ Deno.test({
       { signal: abortController.signal, port: 8081 },
     );
     const decoder = new TextDecoder();
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -24,6 +24,7 @@ Deno.test({
       ],
       cwd: moduleDir,
     });
+    const { stdout } = await command.output();
 
     try {
       const actual = decoder.decode(stdout).trim();

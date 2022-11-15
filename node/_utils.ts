@@ -1,7 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { deferred } from "../async/mod.ts";
-import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
-import { readAll } from "../streams/conversion.ts";
+
 import { errorMap } from "./internal_binding/uv.ts";
 import { codes } from "./internal/error_codes.ts";
 
@@ -26,7 +24,9 @@ export function notImplemented(msg: string): never {
 }
 
 export function warnNotImplemented(msg?: string) {
-  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+  const message = msg
+    ? `Warning: Not implemented: ${msg}`
+    : "Warning: Not implemented";
   console.warn(message);
 }
 
@@ -173,84 +173,6 @@ export function once<T = undefined>(
     called = true;
     callback.apply(this, args);
   };
-}
-
-/**
- * @param [expectedExecutions = 1]
- * @param [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
-export function mustCall<T extends unknown[]>(
-  fn: (...args: T) => void = () => {},
-  expectedExecutions = 1,
-  timeout = 1000,
-): [Promise<void>, (...args: T) => void] {
-  if (expectedExecutions < 1) {
-    throw new Error("Expected executions can't be lower than 1");
-  }
-  let timesExecuted = 0;
-  const completed = deferred();
-
-  const abort = setTimeout(() => completed.reject(), timeout);
-
-  function callback(this: unknown, ...args: T) {
-    timesExecuted++;
-    if (timesExecuted === expectedExecutions) {
-      completed.resolve();
-    }
-    fn.apply(this, args);
-  }
-
-  const result = completed
-    .then(() => clearTimeout(abort))
-    .catch(() =>
-      fail(
-        `Async operation not completed: Expected ${expectedExecutions}, executed ${timesExecuted}`,
-      )
-    );
-
-  return [
-    result,
-    callback,
-  ];
-}
-/** Asserts that an error thrown in a callback will not be wrongly caught. */
-export async function assertCallbackErrorUncaught(
-  { prelude, invocation, cleanup }: {
-    /** Any code which needs to run before the actual invocation (notably, any import statements). */
-    prelude?: string;
-    /**
-     * The start of the invocation of the function, e.g. `open("foo.txt", `.
-     * The callback will be added after it.
-     */
-    invocation: string;
-    /** Called after the subprocess is finished but before running the assertions, e.g. to clean up created files. */
-    cleanup?: () => Promise<void> | void;
-  },
-) {
-  // Since the error has to be uncaught, and that will kill the Deno process,
-  // the only way to test this is to spawn a subprocess.
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
-      "eval",
-      "--no-check", // Running TSC for every one of these tests would take way too long
-      "--unstable",
-      `${prelude ?? ""}
-
-      ${invocation}(err) => {
-        // If the bug is present and the callback is called again with an error,
-        // don't throw another error, so if the subprocess fails we know it had the correct behaviour.
-        if (!err) throw new Error("success");
-      });`,
-    ],
-    stderr: "piped",
-  });
-  const status = await p.status();
-  const stderr = new TextDecoder().decode(await readAll(p.stderr));
-  p.close();
-  p.stderr.close();
-  await cleanup?.();
-  assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
 }
 
 export function makeMethodsEnumerable(klass: { new (): unknown }) {

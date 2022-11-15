@@ -1,3 +1,61 @@
+### 0.164.0 / 2022.11.13
+
+- feat(fmt): add `prettyDuration` (#2861)
+- feat(http/file_server): add -v, --version option (#2868)
+- fix(node/fs): improve fs.read compatibility (#2880)
+- fix(node/http): add .finished property to ServerResponse (#2878)
+- fix(node/http): fix non-string buffer response (#2863)
+- node: mock ClientRequest.setTimeout (#2875)
+- perf(node/string_decoder): use native decoder for GenericDecoder (#2858)
+
+### 0.163.0 / 2022.11.08
+
+- chore: upgrade rust to 0.165.0 and wasmbuild to 0.10.2 (#2850)
+- chore(semver): rename inc and diff (#2826)
+- docs(encoding): remove `await` (#2831)
+- docs(encoding): remove `ColumnDetails["fn"]` (#2840)
+- docs(flags): fix broken link to minimist (#2842)
+- docs(fs): remove misleading docs from fs.walk (#2836)
+- docs(log): add note for module authors (#2843)
+- refactor: cleanup check licence headers tool (#2830)
+- refactor(_tools): use `fs/walk` in deprecations check (#2837)
+- refactor(_util): remove `deepAssign` (#2847)
+- refactor(crypto): move `crypto/_wasm_crypto/` to `crypto/_wasm/` (#2845)
+- refactor(encoding): move `varint/_wasm_varint/` to `varint/_wasm/` (#2844)
+
+### 0.162.0 / 2022.11.03
+
+- feat(encoding/front_matter): add support for different formats of front matter
+  (#2801)
+- feat(streams): add ByteSliceStream (#2795)
+- feat(tools): add import path check in docs (#2820)
+- fix(dotenv): Empty string crashing parsing (#2819)
+- fix(flags): set boolean aliases to false by default (#2824)
+- fix(node): `node:setup` task honours `-y` flag (#2825)
+- fix(node/fs): add support for numeric flags in `fs.open()` (#2828)
+
+### 0.161.0 / 2022.10.26
+
+- BREAKING: remove deprecated `std/hash` module (#2786)
+- feat(crypto): `createHash` utility (#2805)
+- feat(crypto): `toHashString` utility (#2767)
+- feat(node): add support of .node module (#2804)
+- feat(node): list remaining Node tests in documentation (#2787)
+- fix(fs/expandGlob): globstar false does not take effect (#2571) (#2779)
+- fix(node/fs): enable to check error thrown on invalid values of bufferSize
+  (#2782)
+- fix(node/net): modify close event timing (#2793)
+
+### 0.160.0 / 2022.10.17
+
+- feat(crypto): export algorithm types (#2759)
+- feat(node): add readline/promises (#2760)
+- fix(node/child_process): add support of windowsVerbatimArguments option
+  (#2781)
+- fix(node/child_process): mock childProcess.disconnect method (#2776)
+- fix(node/fs): make fs.access resolve on windows (#2775)
+- fix(node/fs): resolve `Dirent` instead of Object (#2753)
+
 ### 0.159.0 / 2022.10.06
 
 - BREAKING: deprecate `std/textproto` (#2737)

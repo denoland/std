@@ -112,6 +112,18 @@ Deno.test("expandGlobGlobstarParent", async function () {
   );
 });
 
+Deno.test("expandGlobGlobstarFalseWithGlob", async function () {
+  const options = { ...EG_OPTIONS, globstar: false };
+  assertEquals(await expandGlobArray("**", options), [
+    ".",
+    "a[b]c",
+    "abc",
+    "abcdef",
+    "abcdefghi",
+    "subdir",
+  ]);
+});
+
 Deno.test("expandGlobIncludeDirs", async function () {
   const options = { ...EG_OPTIONS, includeDirs: false };
   assertEquals(await expandGlobArray("subdir", options), []);
@@ -119,14 +131,10 @@ Deno.test("expandGlobIncludeDirs", async function () {
 
 Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const { code, success, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
-    args: [
-      "run",
-      "--quiet",
-      "--unstable",
-      exampleUrl.toString(),
-    ],
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["run", "--quiet", "--unstable", exampleUrl.toString()],
   });
+  const { code, success, stdout, stderr } = await command.output();
   const decoder = new TextDecoder();
   assert(!success);
   assertEquals(code, 1);

@@ -2,7 +2,7 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { join, normalize } from "../path/mod.ts";
 import {
   createWalkEntry,
@@ -53,9 +53,7 @@ export interface WalkOptions {
 export type { WalkEntry };
 
 /** Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options. The files are walked in lexical
- * order, which makes the output deterministic but means that for very large
- * directories walk() can be inefficient.
+ * tree filtered according to the given options.
  *
  * Options:
  * - maxDepth?: number = Infinity;

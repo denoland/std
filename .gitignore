@@ -1,7 +1,8 @@
 .DS_Store
 .idea
 .vscode/settings.json
+.vim
 **/cov/
-/crypto/_wasm_crypto/target
-/encoding/varint/_wasm_varint/target
-/hash/_wasm/target
+/crypto/_wasm/target
+/encoding/varint/_wasm/target
+deno.lock

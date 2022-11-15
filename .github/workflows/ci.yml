@@ -41,7 +41,7 @@ jobs:
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -124,7 +124,7 @@ jobs:
         run: deno lint
 
       - name: Check circular dependencies
-        run: "deno task lint:circular-deps"
+        run: "deno task node:lint-circular-deps"
 
       - name: Check License headers
         run: "deno task lint:licence-headers"
@@ -132,8 +132,14 @@ jobs:
       - name: Check Deprecations
         run: "deno task lint:deprecations"
 
-  hash-wasm:
-    name: "_wasm_crypto/"
+      - name: Check Import paths in Docs
+        run: "deno task lint:doc-imports"
+
+      - name: Check non-test assertions
+        run: deno task lint:check-assertions
+
+  crypto-wasm:
+    name: "crypto/_wasm"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
@@ -144,14 +150,14 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to _wasm_crypto/
+      - name: Check for changes to crypto/_wasm
         id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm_crypto)"
+          declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
           echo "Wasm crypto source modified in this commit? $modified"
           echo "$modifications"
 
@@ -163,8 +169,8 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in crypto/_wasm_crypto/rust-toolchain.toml
-          rust-version: 1.64.0
+          # This must match the version in crypto/_wasm/rust-toolchain.toml
+          rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
@@ -173,7 +179,7 @@ jobs:
         run: deno task build:crypto --check
 
   varint-wasm:
-    name: "_wasm_varint/"
+    name: "varint/_wasm"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
@@ -184,14 +190,14 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to _wasm_varint/
+      - name: Check for changes to varint/_wasm
         id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm_varint)"
+          declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
           echo "Wasm varint source modified in this commit? $modified"
           echo "$modifications"
 
@@ -203,8 +209,8 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the versions in encoding/_wasm_varint/rust-toolchain.toml
-          rust-version: 1.64.0
+          # This must match the versions in encoding/varint/_wasm/rust-toolchain.toml
+          rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

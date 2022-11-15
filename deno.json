@@ -8,11 +8,11 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm/target",
+        "encoding/varint/_wasm/target",
         "cov",
         "encoding/testdata/jsonc",
-        "hash/_wasm/target",
+        "encoding/front_matter/testdata",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -25,11 +25,11 @@
     "files": {
       "exclude": [
         ".git",
-        "_wasm_crypto/target",
-        "_wasm_varint/target",
+        "crypto/_wasm/target",
+        "encoding/varint/_wasm/target",
         "encoding/testdata/jsonc",
+        "encoding/front_matter/testdata",
         "cov",
-        "hash/_wasm/target",
         "node/vendor",
         "node/_module/node_modules/",
         "node/_tools/versions",
@@ -40,19 +40,20 @@
     }
   },
   "tasks": {
-    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/",
+    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/,_tools/testdata",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | xargs deno cache --check --reload --config browser-compat.tsconfig.json",
-    "lint:circular-deps": "deno run --allow-read --allow-net=deno.land ./_tools/check_circular_deps.ts",
     "lint:licence-headers": "deno run --allow-read ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
-    "lint": "deno lint && deno task lint:circular-deps && deno task lint:licence-headers && deno task lint:deprecations",
+    "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",
+    "lint:check-assertions": "deno run --allow-read --allow-net ./_tools/check_assertions.ts",
+    "lint": "deno lint && deno task node:lint-circular-deps && deno task lint:licence-headers && deno task lint:deprecations && deno task lint:doc-imports && deno task lint:check-assertions",
+    "node:lint-circular-deps": "deno run --allow-read --allow-net=deno.land ./node/_tools/check_circular_deps.ts",
     "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
-    "build:crypto": "deno task --cwd crypto/_wasm_crypto wasmbuild",
-    "build:hash": "deno task --cwd hash/_wasm wasmbuild",
-    "build:varint": "deno task --cwd encoding/varint/_wasm_varint wasmbuild",
-    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.0/main.ts --js-ext mjs --sync"
+    "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
+    "build:varint": "deno task --cwd encoding/varint/_wasm wasmbuild",
+    "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.2/main.ts --js-ext mjs --sync"
   }
 }

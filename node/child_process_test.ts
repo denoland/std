@@ -6,6 +6,7 @@ import {
   assertExists,
   assertNotStrictEquals,
   assertStrictEquals,
+  assertStringIncludes,
 } from "../testing/asserts.ts";
 import CP from "./child_process.ts";
 import { Deferred, deferred } from "../async/deferred.ts";
@@ -554,3 +555,24 @@ Deno.test({
 Deno.test("[node/child_process execFileSync] 'inherit' stdout and stderr", () => {
   execFileSync(Deno.execPath(), ["--help"], { stdio: "inherit" });
 });
+
+Deno.test(
+  "[node/child_process spawn] supports windowsVerbatimArguments option",
+  { ignore: Deno.build.os !== "windows" },
+  async () => {
+    const cmdFinished = deferred();
+    let output = "";
+    const cp = spawn("cmd", ["/d", "/s", "/c", '"deno ^"--version^""'], {
+      stdio: "pipe",
+      windowsVerbatimArguments: true,
+    });
+    cp.on("close", () => cmdFinished.resolve());
+    cp.stdout?.on("data", (data) => {
+      output += data;
+    });
+    await cmdFinished;
+    assertStringIncludes(output, "deno");
+    assertStringIncludes(output, "v8");
+    assertStringIncludes(output, "typescript");
+  },
+);

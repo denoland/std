@@ -6,11 +6,13 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 Deno.test("[examples/welcome] print a welcome message", async () => {
   const decoder = new TextDecoder();
-  const { stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "welcome.ts"],
     cwd: moduleDir,
     stdout: "piped",
   });
+  const { stdout } = await command.output();
+
   try {
     const actual = decoder.decode(stdout).trim();
     const expected = "Welcome to Deno!";

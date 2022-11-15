@@ -9,6 +9,9 @@ import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
+import { toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
+import { VERSION } from "../version.ts";
 
 let fileServer: Deno.Child;
 
@@ -362,7 +365,7 @@ Deno.test("CORS support", async function () {
 });
 
 Deno.test("printHelp", async function () {
-  const helpProcess = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -372,8 +375,25 @@ Deno.test("printHelp", async function () {
     ],
     cwd: moduleDir,
   });
-  const stdout = new TextDecoder().decode(helpProcess.stdout);
-  assert(stdout.includes("Deno File Server"));
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
+});
+
+Deno.test("printVersion", async function () {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-check",
+      "--quiet",
+      "file_server.ts",
+      "--version",
+    ],
+    cwd: moduleDir,
+  });
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("contentType", async () => {
@@ -616,8 +636,8 @@ const getTestFileEtag = async () => {
 
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
+    const simpleEtag = toHashString(
+      await createHash("FNV32A", lastModified.toJSON() + fileInfo.size),
     );
     return simpleEtag;
   } else {
@@ -634,19 +654,6 @@ const getTestFileLastModified = async () => {
     return "";
   }
 };
-
-function createEtagHash(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
-}
 
 Deno.test(
   "file_server returns 206 for range request responses",

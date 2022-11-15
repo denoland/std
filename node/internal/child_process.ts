@@ -2,7 +2,7 @@
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 import { EventEmitter } from "../events.ts";
 import { os } from "../internal_binding/constants.ts";
 import { notImplemented, warnNotImplemented } from "../_utils.ts";
@@ -44,6 +44,13 @@ import process from "../process.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
+
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoSpawnChild = Deno[Deno.internal]?.nodeUnstable?.spawnChild ||
+  Deno.spawnChild;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
+  Deno.spawnSync;
 
 export function stdioStringToArray(
   stdio: NodeStdio,
@@ -140,6 +147,7 @@ export class ChildProcess extends EventEmitter {
       cwd,
       shell = false,
       signal,
+      windowsVerbatimArguments = false,
     } = options || {};
     const [
       stdin = "pipe",
@@ -158,13 +166,14 @@ export class ChildProcess extends EventEmitter {
     const stringEnv = mapValues(env, (value) => value.toString());
 
     try {
-      this.#process = Deno.spawnChild(cmd, {
+      this.#process = DenoSpawnChild(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
         stdin: toDenoStdio(stdin as NodeStdio | number),
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
+        windowsRawArguments: windowsVerbatimArguments,
       });
       this.pid = this.#process.pid;
 
@@ -395,12 +404,8 @@ export interface ChildProcessOptions {
    */
   serialization?: "json" | "advanced";
 
-  /**
-   * NOTE: This option is not yet implemented.
-   *
-   * @see https://github.com/rust-lang/rust/issues/29494
-   * @see https://github.com/denoland/deno/issues/8852
-   */
+  /** No quoting or escaping of arguments is done on Windows. Ignored on Unix.
+   * Default: false. */
   windowsVerbatimArguments?: boolean;
 
   /**
@@ -663,10 +668,6 @@ function buildCommand(
 
     // Set the shell, switches, and commands.
     if (isWindows) {
-      // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
-      // For more details, see the following issues:
-      // * https://github.com/rust-lang/rust/issues/29494
-      // * https://github.com/denoland/deno/issues/8852
       if (typeof shell === "string") {
         file = shell;
       } else {
@@ -716,6 +717,8 @@ export interface SpawnSyncOptions {
   maxBuffer?: number;
   encoding?: string;
   shell?: boolean | string;
+  /** No quoting or escaping of arguments is done on Windows. Ignored on Unix.
+   * Default: false. */
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
   /** The below options aren't currently supported. However, they're here for validation checks. */
@@ -760,13 +763,14 @@ export function spawnSync(
     uid,
     gid,
     maxBuffer,
+    windowsVerbatimArguments = false,
   } = options;
   const normalizedStdio = normalizeStdioOption(stdio);
   [command, args] = buildCommand(command, args ?? [], shell);
 
   const result: SpawnSyncResult = {};
   try {
-    const output = Deno.spawnSync(command, {
+    const output = DenoSpawnSync(command, {
       args,
       cwd,
       env,
@@ -774,6 +778,7 @@ export function spawnSync(
       stderr: toDenoStdio(normalizedStdio[2] as NodeStdio | number),
       uid,
       gid,
+      windowsRawArguments: windowsVerbatimArguments,
     });
 
     const { signal } = output;
