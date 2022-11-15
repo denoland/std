@@ -9,13 +9,13 @@ Setup a `.env` file in the root of your project.
 GREETING=hello world
 ```
 
-Then import the configuration using the `config` function.
+Then import the configuration using the `load` function.
 
 ```ts
 // app.ts
-import { config } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 
-console.log(await config());
+console.log(await load());
 ```
 
 Then run your app.
@@ -27,20 +27,17 @@ Then run your app.
 
 ### Options
 
-- `path?: string`: Optional path to `.env` file. Defaults to `./.env`.
+- `envPath?: string`: Optional path to `.env` file. Defaults to `./.env`.
+- `examplePath?: string`: Optional path to `.env.example` file. Defaults to
+  `./.env.example`.
+- `defaultsPath?: string`: Optional path to `.env.defaults` file which defaults
+  to `./.env.defaults`.
 - `export?: boolean`: Set to `true` to export all `.env` variables to the
   current processes environment. Variables are then accessable via
   `Deno.env.get(<key>)`. Defaults to `false`.
-- `safe?: boolean`: Set to `true` to ensure that all necessary environment
-  variables are defined after reading from `.env`. It will read `.env.example`
-  to get the list of needed variables.
-- `example?: string`: Optional path to `.env.example` file. Defaults to
-  `./.env.example`.
 - `allowEmptyValues?: boolean`: Set to `true` to allow required env variables to
   be empty. Otherwise it will throw an error if any variable is empty. Defaults
   to `false`.
-- `defaults?: string`: Optional path to `.env.defaults` file which defaults to
-  `./.env.defaults`.
 - `restrictEnvAccessTo?: Array<string>`: Optional list of Env variables to read
   from process. Alternatively the complete Env is looked up. This allows to
   permit access to only specific Env variables with `--allow-env=ENV_VAR_NAME`.
@@ -67,22 +64,11 @@ console.log(Deno.env.get("GREETING"));
 hello world
 ```
 
-### Safe Mode
-
-To enable safe mode, create a `.env.example` file in the root of the project.
-
-```sh
-# .env.example
-GREETING=
-```
-
-Then import the configuration with `safe` option set to `true`.
-
 ```ts
 // app.ts
-import { config } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 
-console.log(await config({ safe: true }));
+console.log(await load());
 ```
 
 If any of the defined variables is not in `.env`, an error will occur. This
