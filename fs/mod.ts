@@ -11,8 +11,6 @@ export * from "./ensure_file.ts";
 export * from "./ensure_link.ts";
 export * from "./ensure_symlink.ts";
 export * from "./is_readable.ts";
-export * from "./is_readable_dir.ts";
-export * from "./is_readable_file.ts";
 export * from "./exists.ts";
 export * from "./expand_glob.ts";
 export * from "./move.ts";
