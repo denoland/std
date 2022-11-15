@@ -69,14 +69,13 @@ function exec(cmd: string, opts: Opts = {}) {
   const [command, ...args] = cmd.split(" ");
   return execCmd(command, args, opts);
 }
-async function execCmd(command: string, args: string[], opts: Opts) {
+async function execCmd(cmd: string, args: string[], opts: Opts) {
   console.log(`Executing the command: "${args.join(" ")}"`);
-  const { code, stdout, stderr } = await Deno.spawn(command, {
+  const command = new Deno.Command(cmd, {
     args,
-    stdout: "piped",
-    stderr: "piped",
     ...opts,
   });
+  const { code, stderr, stdout } = await command.output();
   if (code !== 0) {
     console.log(new TextDecoder().decode(stdout));
     console.log(new TextDecoder().decode(stderr));

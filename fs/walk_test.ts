@@ -344,7 +344,8 @@ testWalk(
 
 testWalk(
   async (d: string) => {
-    await Deno.spawn("mkfifo", { args: [d + "/fifo"] });
+    const command = new Deno.Command("mkfifo", { args: [d + "/fifo"] });
+    await command.output();
   },
   async function fifo() {
     assertReady(2);
