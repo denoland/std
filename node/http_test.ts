@@ -179,3 +179,15 @@ Deno.test("[node/http] non-string buffer response", async () => {
   });
   await promise;
 });
+
+Deno.test("[node/http] http.IncomingMessage can be created without url", async () => {
+  const message = new http.IncomingMessage({
+    encrypted: true,
+    readable: false,
+    remoteAddress: "foo",
+    address: () => ({ port: 443 }),
+    end: Function.prototype,
+    destroy: Function.prototype
+  })
+  message.url = "https://example.com"
+});
