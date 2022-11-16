@@ -52,9 +52,9 @@ export interface FormatOptions {
 }
 
 /**
- * @depreacted (will be removed after 0.170.0) use `FormatOptions` instead
+ * @depreacted (will be removed after 0.170.0) use `format` instead
  */
-export function pretty(num: number, options: FormatOptions = {}) {
+export function prettyBytes(num: number, options: FormatOptions = {}) {
   return format(num, options);
 }
 
