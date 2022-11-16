@@ -187,7 +187,7 @@ Deno.test("[node/http] http.IncomingMessage can be created without url", async (
     remoteAddress: "foo",
     address: () => ({ port: 443 }),
     end: Function.prototype,
-    destroy: Function.prototype
-  })
-  message.url = "https://example.com"
+    destroy: Function.prototype,
+  });
+  message.url = "https://example.com";
 });
