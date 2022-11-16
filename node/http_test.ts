@@ -151,6 +151,35 @@ Deno.test("[node/http] request default protocol", async () => {
   await promise;
 });
 
+Deno.test("[node/http] request with headers", async () => {
+  const promise = deferred<void>();
+  const server = http.createServer((req, res) => {
+    assertEquals(req.headers["x-foo"], "bar");
+    res.end("ok");
+  });
+  server.listen(() => {
+    const req = http.request(
+      {
+        host: "localhost",
+        port: server.address().port,
+        headers: { "x-foo": "bar" },
+      },
+      (res) => {
+        res.on("data", () => {});
+        res.on("end", () => {
+          server.close();
+        });
+        assertEquals(res.statusCode, 200);
+      },
+    );
+    req.end();
+  });
+  server.on("close", () => {
+    promise.resolve();
+  });
+  await promise;
+});
+
 Deno.test("[node/http] non-string buffer response", async () => {
   const promise = deferred<void>();
   const server = http.createServer((_, res) => {
