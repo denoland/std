@@ -17,7 +17,7 @@ type LocaleOptions = {
 };
 
 /**
- * @depreacted (will be removed after 0.170.0) use `FormatOptions` instead
+ * @deprecated (will be removed after 0.170.0) use `FormatOptions` instead
  */
 export interface PrettyBytesOptions {
   /** Uses bits representation. Default is false. */
@@ -52,7 +52,7 @@ export interface FormatOptions {
 }
 
 /**
- * @depreacted (will be removed after 0.170.0) use `format` instead
+ * @deprecated (will be removed after 0.170.0) use `format` instead
  */
 export function prettyBytes(num: number, options: FormatOptions = {}) {
   return format(num, options);
