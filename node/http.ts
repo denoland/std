@@ -419,7 +419,7 @@ export class IncomingMessageForServer extends NodeReadable {
     });
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(req.url.indexOf("/", 8));
+    this.url = req.url?.slice(req.url.indexOf("/", 8));
     this.method = req.method;
     this.#req = req;
   }
