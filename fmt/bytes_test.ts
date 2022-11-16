@@ -5,6 +5,10 @@
 import { prettyBytes } from "./bytes.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
+const parts = new Intl.NumberFormat().formatToParts(1000.1);
+const decimal = parts.find(({ type }) => type === "decimal")!.value;
+const group = parts.find(({ type }) => type === "group")!.value;
+
 Deno.test("throws on invalid input", () => {
   // deno-lint-ignore no-explicit-any
   assertThrows(() => prettyBytes("" as any));
@@ -68,11 +72,14 @@ Deno.test("locale option", () => {
     "1.000.000 YB",
   );
 
-  assertEquals(prettyBytes(-0.4, { locale: true }), "-0.4 B");
-  assertEquals(prettyBytes(0.4, { locale: true }), "0.4 B");
+  assertEquals(prettyBytes(-0.4, { locale: true }), `-0${decimal}4 B`);
+  assertEquals(prettyBytes(0.4, { locale: true }), `0${decimal}4 B`);
   assertEquals(prettyBytes(1001, { locale: true }), "1 kB");
-  assertEquals(prettyBytes(10.1, { locale: true }), "10.1 B");
-  assertEquals(prettyBytes(1e30, { locale: true }), "1,000,000 YB");
+  assertEquals(prettyBytes(10.1, { locale: true }), `10${decimal}1 B`);
+  assertEquals(
+    prettyBytes(1e30, { locale: true }),
+    `1${group}000${group}000 YB`,
+  );
 
   assertEquals(prettyBytes(-0.4, { locale: false }), "-0.4 B");
   assertEquals(prettyBytes(0.4, { locale: false }), "0.4 B");
@@ -128,31 +135,49 @@ Deno.test("bits and binary option", () => {
 });
 
 Deno.test("fractional digits options", () => {
-  assertEquals(prettyBytes(1900, { maximumFractionDigits: 1 }), "1.9 kB");
-  assertEquals(prettyBytes(1900, { minimumFractionDigits: 3 }), "1.900 kB");
-  assertEquals(prettyBytes(1911, { maximumFractionDigits: 1 }), "1.9 kB");
-  assertEquals(prettyBytes(1111, { maximumFractionDigits: 2 }), "1.11 kB");
-  assertEquals(prettyBytes(1019, { maximumFractionDigits: 3 }), "1.019 kB");
-  assertEquals(prettyBytes(1001, { maximumFractionDigits: 3 }), "1.001 kB");
+  assertEquals(
+    prettyBytes(1900, { maximumFractionDigits: 1 }),
+    `1${decimal}9 kB`,
+  );
+  assertEquals(
+    prettyBytes(1900, { minimumFractionDigits: 3 }),
+    `1${decimal}900 kB`,
+  );
+  assertEquals(
+    prettyBytes(1911, { maximumFractionDigits: 1 }),
+    `1${decimal}9 kB`,
+  );
+  assertEquals(
+    prettyBytes(1111, { maximumFractionDigits: 2 }),
+    `1${decimal}11 kB`,
+  );
+  assertEquals(
+    prettyBytes(1019, { maximumFractionDigits: 3 }),
+    `1${decimal}019 kB`,
+  );
+  assertEquals(
+    prettyBytes(1001, { maximumFractionDigits: 3 }),
+    `1${decimal}001 kB`,
+  );
   assertEquals(
     prettyBytes(1000, { minimumFractionDigits: 1, maximumFractionDigits: 3 }),
-    "1.0 kB",
+    `1${decimal}0 kB`,
   );
   assertEquals(
     prettyBytes(3942, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
-    "3.94 kB",
+    `3${decimal}94 kB`,
   );
   assertEquals(
     prettyBytes(4001, { maximumFractionDigits: 3, binary: true }),
-    "3.907 kiB",
+    `3${decimal}907 kiB`,
   );
   assertEquals(
     prettyBytes(18717, { maximumFractionDigits: 2, binary: true }),
-    "18.28 kiB",
+    `18${decimal}28 kiB`,
   );
   assertEquals(
     prettyBytes(18717, { maximumFractionDigits: 4, binary: true }),
-    "18.2783 kiB",
+    `18${decimal}2783 kiB`,
   );
   assertEquals(
     prettyBytes(32768, {
@@ -160,7 +185,7 @@ Deno.test("fractional digits options", () => {
       maximumFractionDigits: 3,
       binary: true,
     }),
-    "32.00 kiB",
+    `32${decimal}00 kiB`,
   );
   assertEquals(
     prettyBytes(65536, {
@@ -168,6 +193,6 @@ Deno.test("fractional digits options", () => {
       maximumFractionDigits: 3,
       binary: true,
     }),
-    "64.0 kiB",
+    `64${decimal}0 kiB`,
   );
 });
