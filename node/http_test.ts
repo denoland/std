@@ -181,13 +181,16 @@ Deno.test("[node/http] non-string buffer response", async () => {
 });
 
 Deno.test("[node/http] http.IncomingMessage can be created without url", async () => {
-  const message = new http.IncomingMessage({
-    encrypted: true,
-    readable: false,
-    remoteAddress: "foo",
-    address: () => ({ port: 443 }),
-    end: Function.prototype,
-    destroy: Function.prototype,
-  });
+  const message = new http.IncomingMessage(
+    // adapted from https://github.com/dougmoscrop/serverless-http/blob/80bfb3e940057d694874a8b0bc12ad96d2abe7ab/lib/request.js#L7
+    {
+      encrypted: true,
+      readable: false,
+      remoteAddress: "foo",
+      address: () => ({ port: 443 }),
+      end: Function.prototype,
+      destroy: Function.prototype,
+    } as any,
+  );
   message.url = "https://example.com";
 });
