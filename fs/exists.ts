@@ -63,7 +63,10 @@ export async function exists(
 ): Promise<boolean> {
   try {
     const stat: Deno.FileInfo = await Deno.stat(path);
-    if (options && (options.isReadable || options.isDirectory || options.isFile)) {
+    if (
+      options &&
+      (options.isReadable || options.isDirectory || options.isFile)
+    ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
           "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together."
@@ -145,7 +148,10 @@ export function existsSync(
 ): boolean {
   try {
     const stat: Deno.FileInfo = Deno.statSync(path);
-    if (options && (options.isReadable || options.isDirectory || options.isFile)) {
+    if (
+      options &&
+      (options.isReadable || options.isDirectory || options.isFile)
+    ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
           "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together."
