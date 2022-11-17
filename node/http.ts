@@ -201,6 +201,7 @@ class ClientRequest extends NodeWritable {
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
+  #statusMessage = "";
   constructor(public response: Response | undefined, public socket: Socket) {
     super();
     this.reader = response?.body?.getReader();
@@ -240,7 +241,11 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get statusMessage() {
-    return this.response?.statusText || "";
+    return this.#statusMessage || this.response?.statusText || "";
+  }
+  
+  set statusMessage(v: string) {
+    this.#statusMessage = v;
   }
 }
 
