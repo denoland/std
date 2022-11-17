@@ -202,7 +202,11 @@ function utf8Write(
   } else {
     i = 0;
   }
-  if (i < buf.length) return r ? r + this.text(normalizedBuffer, i) : this.text(normalizedBuffer, i);
+  if (i < buf.length) {
+    return r 
+      ? r + this.text(normalizedBuffer, i) 
+      : this.text(normalizedBuffer, i);
+  }
   return r || "";
 }
 
