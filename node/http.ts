@@ -96,6 +96,7 @@ export interface RequestOptions {
   href?: string;
 }
 
+// TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
   defaultProtocol = "http:";
@@ -131,7 +132,12 @@ class ClientRequest extends NodeWritable {
     }
 
     const client = await this._createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
+    const opts = {
+      body: this.body,
+      method: this.opts.method,
+      client,
+      headers: this.opts.headers,
+    };
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
@@ -419,7 +425,7 @@ export class IncomingMessageForServer extends NodeReadable {
     });
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(req.url.indexOf("/", 8));
+    this.url = req.url?.slice(req.url.indexOf("/", 8));
     this.method = req.method;
     this.#req = req;
   }

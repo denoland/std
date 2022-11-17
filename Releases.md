@@ -1,3 +1,9 @@
+### 0.165.0 / 2022.11.16
+
+- fix(node): improve crypto.getHashes compatibility (#2890)
+- fix(node): issues with browser (#2892)
+- fix: allow creating http.IncomingRequest without url being set (#2893)
+
 ### 0.164.0 / 2022.11.13
 
 - feat(fmt): add `prettyDuration` (#2861)
