@@ -4,9 +4,9 @@
 
 import {
   Assert,
-  assertType,
   AssertFalse,
   AssertTrue,
+  assertType,
   Has,
   IsAny,
   IsExact,
@@ -41,7 +41,9 @@ import {
   assertType<IsExact<never, never>>(true);
   assertType<IsExact<{}, {}>>(true);
   assertType<IsExact<{ prop: string }, { prop: string }>>(true);
-  assertType<IsExact<{ prop: { prop: string } }, { prop: { prop: string } }>>(true);
+  assertType<IsExact<{ prop: { prop: string } }, { prop: { prop: string } }>>(
+    true,
+  );
   assertType<IsExact<{ prop: never }, { prop: never }>>(true);
   assertType<IsExact<{ prop: any }, { prop: any }>>(true);
   assertType<IsExact<{ prop: unknown }, { prop: unknown }>>(true);
@@ -70,13 +72,19 @@ import {
   assertType<IsExact<{ prop: any }, { prop: unknown }>>(false);
   assertType<IsExact<{ prop: any }, { prop: never }>>(false);
   assertType<IsExact<{ prop: unknown }, { prop: never }>>(false);
-  assertType<IsExact<{ prop: { prop: unknown } }, { prop: { prop: any } }>>(false);
+  assertType<IsExact<{ prop: { prop: unknown } }, { prop: { prop: any } }>>(
+    false,
+  );
   assertType<IsExact<{ prop: { prop: unknown } }, { prop: { prop: never } }>>(
     false,
   );
-  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: never } }>>(false);
+  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: never } }>>(
+    false,
+  );
   assertType<IsExact<{ prop: string }, { prop: never }>>(false);
-  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: string } }>>(false);
+  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: string } }>>(
+    false,
+  );
   assertType<
     IsExact<
       { prop: any } | { prop: string },

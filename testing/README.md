@@ -916,6 +916,7 @@ Doing a test:
 
 ```ts
 import {
+  Assert,
   AssertFalse,
   AssertTrue,
   Has,
@@ -923,10 +924,13 @@ import {
   IsNullable,
 } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
 
-const result = someFunction(someArg);
+const result = 1 as string | number | null;
 
 type doTest =
-  | AssertTrue<Has<typeof result, string> | IsNullable<typeof result>>
+  | AssertTrue<
+    | Has<typeof result, string>
+    | IsNullable<typeof result>
+  >
   | AssertFalse<IsNever<typeof result>>
   | Assert<Has<typeof result, number>, true>;
 ```
@@ -945,7 +949,7 @@ import {
   IsExact,
 } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
 
-const result = someFunction(someArg);
+const result = "some result" as string | number;
 
 // compile error if the type of `result` is not exactly `string | number`
 assertType<IsExact<typeof result, string | number>>(true);
@@ -953,7 +957,12 @@ assertType<IsExact<typeof result, string | number>>(true);
 
 Failure:
 
-```ts
+```ts, ignore
+import {
+  assertType,
+  IsNullable,
+} from "https://deno.land/std@$STD_VERSION/testing/types.ts";
+
 // causes a compile error that `true` is not assignable to `false`
 assertType<IsNullable<string>>(true); // string is not nullable
 ```
