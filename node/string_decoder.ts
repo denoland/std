@@ -203,8 +203,8 @@ function utf8Write(
     i = 0;
   }
   if (i < buf.length) {
-    return r 
-      ? r + this.text(normalizedBuffer, i) 
+    return r
+      ? r + this.text(normalizedBuffer, i)
       : this.text(normalizedBuffer, i);
   }
   return r || "";
