@@ -1,9 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright @dsherret and dsherret/conditional-type-checks contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-explicit-any ban-types
 
 import {
   Assert,
-  assert,
+  assertType,
   AssertFalse,
   AssertTrue,
   Has,
@@ -18,139 +19,139 @@ import {
 // IsNullable
 {
   // matching
-  assert<IsNullable<string | null>>(true);
-  assert<IsNullable<string | undefined>>(true);
-  assert<IsNullable<null | undefined>>(true); // maybe this shouldn't be true?
+  assertType<IsNullable<string | null>>(true);
+  assertType<IsNullable<string | undefined>>(true);
+  assertType<IsNullable<null | undefined>>(true); // maybe this shouldn't be true?
 
   // not matching
-  assert<IsNullable<string>>(false);
-  assert<IsNullable<any>>(false);
-  assert<IsNullable<never>>(false);
-  assert<IsNullable<unknown>>(false);
+  assertType<IsNullable<string>>(false);
+  assertType<IsNullable<any>>(false);
+  assertType<IsNullable<never>>(false);
+  assertType<IsNullable<unknown>>(false);
 }
 
 // IsExact
 {
   // matching
-  assert<IsExact<string | number, string | number>>(true);
-  assert<IsExact<string | number | Date, string | number | Date>>(true);
-  assert<IsExact<string | undefined, string | undefined>>(true);
-  assert<IsExact<any, any>>(true); // ok to have any for both
-  assert<IsExact<unknown, unknown>>(true);
-  assert<IsExact<never, never>>(true);
-  assert<IsExact<{}, {}>>(true);
-  assert<IsExact<{ prop: string }, { prop: string }>>(true);
-  assert<IsExact<{ prop: { prop: string } }, { prop: { prop: string } }>>(true);
-  assert<IsExact<{ prop: never }, { prop: never }>>(true);
-  assert<IsExact<{ prop: any }, { prop: any }>>(true);
-  assert<IsExact<{ prop: unknown }, { prop: unknown }>>(true);
-  assert<IsExact<typeof globalThis, typeof globalThis>>(true);
+  assertType<IsExact<string | number, string | number>>(true);
+  assertType<IsExact<string | number | Date, string | number | Date>>(true);
+  assertType<IsExact<string | undefined, string | undefined>>(true);
+  assertType<IsExact<any, any>>(true); // ok to have any for both
+  assertType<IsExact<unknown, unknown>>(true);
+  assertType<IsExact<never, never>>(true);
+  assertType<IsExact<{}, {}>>(true);
+  assertType<IsExact<{ prop: string }, { prop: string }>>(true);
+  assertType<IsExact<{ prop: { prop: string } }, { prop: { prop: string } }>>(true);
+  assertType<IsExact<{ prop: never }, { prop: never }>>(true);
+  assertType<IsExact<{ prop: any }, { prop: any }>>(true);
+  assertType<IsExact<{ prop: unknown }, { prop: unknown }>>(true);
+  assertType<IsExact<typeof globalThis, typeof globalThis>>(true);
 
   // not matching
-  assert<IsExact<string | number | Date, string | number>>(false);
-  assert<IsExact<string, string | number>>(false);
-  assert<IsExact<string | undefined, string>>(false);
-  assert<IsExact<string | undefined, any | string>>(false);
-  assert<IsExact<any | string | undefined, string>>(false);
-  assert<IsExact<string, any>>(false);
-  assert<IsExact<string, unknown>>(false);
-  assert<IsExact<string, never>>(false);
-  assert<IsExact<never, never | string>>(false);
-  assert<IsExact<unknown, any>>(false);
-  assert<IsExact<never, any>>(false);
-  assert<IsExact<Date | typeof globalThis, Date>>(false);
-  assert<IsExact<{ name: string; other?: Date }, { name: string }>>(false);
-  assert<IsExact<{ prop: Date }, { prop: string }>>(false);
-  assert<IsExact<{ other?: Date }, { prop?: string }>>(false);
-  assert<IsExact<{ prop: { prop?: string } }, { prop: { prop: string } }>>(
+  assertType<IsExact<string | number | Date, string | number>>(false);
+  assertType<IsExact<string, string | number>>(false);
+  assertType<IsExact<string | undefined, string>>(false);
+  assertType<IsExact<string | undefined, any | string>>(false);
+  assertType<IsExact<any | string | undefined, string>>(false);
+  assertType<IsExact<string, any>>(false);
+  assertType<IsExact<string, unknown>>(false);
+  assertType<IsExact<string, never>>(false);
+  assertType<IsExact<never, never | string>>(false);
+  assertType<IsExact<unknown, any>>(false);
+  assertType<IsExact<never, any>>(false);
+  assertType<IsExact<Date | typeof globalThis, Date>>(false);
+  assertType<IsExact<{ name: string; other?: Date }, { name: string }>>(false);
+  assertType<IsExact<{ prop: Date }, { prop: string }>>(false);
+  assertType<IsExact<{ other?: Date }, { prop?: string }>>(false);
+  assertType<IsExact<{ prop: { prop?: string } }, { prop: { prop: string } }>>(
     false,
   );
-  assert<IsExact<{ prop: any }, { prop: string }>>(false);
-  assert<IsExact<{ prop: any }, { prop: unknown }>>(false);
-  assert<IsExact<{ prop: any }, { prop: never }>>(false);
-  assert<IsExact<{ prop: unknown }, { prop: never }>>(false);
-  assert<IsExact<{ prop: { prop: unknown } }, { prop: { prop: any } }>>(false);
-  assert<IsExact<{ prop: { prop: unknown } }, { prop: { prop: never } }>>(
+  assertType<IsExact<{ prop: any }, { prop: string }>>(false);
+  assertType<IsExact<{ prop: any }, { prop: unknown }>>(false);
+  assertType<IsExact<{ prop: any }, { prop: never }>>(false);
+  assertType<IsExact<{ prop: unknown }, { prop: never }>>(false);
+  assertType<IsExact<{ prop: { prop: unknown } }, { prop: { prop: any } }>>(false);
+  assertType<IsExact<{ prop: { prop: unknown } }, { prop: { prop: never } }>>(
     false,
   );
-  assert<IsExact<{ prop: { prop: any } }, { prop: { prop: never } }>>(false);
-  assert<IsExact<{ prop: string }, { prop: never }>>(false);
-  assert<IsExact<{ prop: { prop: any } }, { prop: { prop: string } }>>(false);
-  assert<
+  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: never } }>>(false);
+  assertType<IsExact<{ prop: string }, { prop: never }>>(false);
+  assertType<IsExact<{ prop: { prop: any } }, { prop: { prop: string } }>>(false);
+  assertType<
     IsExact<
       { prop: any } | { prop: string },
       { prop: number } | { prop: string }
     >
   >(false);
-  assert<IsExact<{ prop: string | undefined }, { prop?: string }>>(false); // these are different
+  assertType<IsExact<{ prop: string | undefined }, { prop?: string }>>(false); // these are different
 }
 
 // Has
 {
   // matching
-  assert<Has<string | number, string>>(true);
-  assert<Has<number, number>>(true);
-  assert<Has<string | number, Date | string>>(true); // maybe?
-  assert<Has<any, number>>(true);
-  assert<Has<any, any>>(true);
-  assert<Has<any, unknown>>(true);
-  assert<Has<any, never>>(true);
+  assertType<Has<string | number, string>>(true);
+  assertType<Has<number, number>>(true);
+  assertType<Has<string | number, Date | string>>(true); // maybe?
+  assertType<Has<any, number>>(true);
+  assertType<Has<any, any>>(true);
+  assertType<Has<any, unknown>>(true);
+  assertType<Has<any, never>>(true);
 
   // not matching
-  assert<Has<string | number, Date>>(false);
-  assert<Has<string, number>>(false);
-  assert<Has<number, any>>(false);
-  assert<Has<unknown, any>>(false);
-  assert<Has<never, any>>(false);
+  assertType<Has<string | number, Date>>(false);
+  assertType<Has<string, number>>(false);
+  assertType<Has<number, any>>(false);
+  assertType<Has<unknown, any>>(false);
+  assertType<Has<never, any>>(false);
 }
 
 // NotHas
 {
   // matching
-  assert<NotHas<string | number, Date>>(true);
-  assert<NotHas<string, number>>(true);
+  assertType<NotHas<string | number, Date>>(true);
+  assertType<NotHas<string, number>>(true);
 
   // not matching
-  assert<NotHas<string | number, string>>(false);
-  assert<NotHas<number, number>>(false);
-  assert<NotHas<string | number, Date | string>>(false); // should be true?
+  assertType<NotHas<string | number, string>>(false);
+  assertType<NotHas<number, number>>(false);
+  assertType<NotHas<string | number, Date | string>>(false); // should be true?
 }
 
 // IsAny
 {
   // matching
-  assert<IsAny<any>>(true);
+  assertType<IsAny<any>>(true);
 
   // not matching
-  assert<IsAny<string>>(false);
-  assert<IsAny<unknown>>(false);
-  assert<IsAny<never>>(false);
+  assertType<IsAny<string>>(false);
+  assertType<IsAny<unknown>>(false);
+  assertType<IsAny<never>>(false);
 
   // tests for issue #3 (IsAny resolving to boolean)
-  assert<IsExact<IsAny<string>, false>>(true);
-  assert<IsExact<IsAny<5>, false>>(true);
+  assertType<IsExact<IsAny<string>, false>>(true);
+  assertType<IsExact<IsAny<5>, false>>(true);
 }
 
 // IsNever
 {
   // matching
-  assert<IsNever<never>>(true);
+  assertType<IsNever<never>>(true);
 
   // not matching
-  assert<IsNever<string>>(false);
-  assert<IsNever<any>>(false);
-  assert<IsNever<unknown>>(false);
+  assertType<IsNever<string>>(false);
+  assertType<IsNever<any>>(false);
+  assertType<IsNever<unknown>>(false);
 }
 
 // IsUnknown
 {
   // matching
-  assert<IsUnknown<unknown>>(true);
+  assertType<IsUnknown<unknown>>(true);
 
   // not matching
-  assert<IsUnknown<string>>(false);
-  assert<IsUnknown<any>>(false);
-  assert<IsUnknown<never>>(false);
+  assertType<IsUnknown<string>>(false);
+  assertType<IsUnknown<any>>(false);
+  assertType<IsUnknown<never>>(false);
 }
 
 // AssertTrue
@@ -173,7 +174,7 @@ import {
 // Recursive types
 {
   type RecursiveType1 = string | number | Date | RecursiveType1[];
-  assert<IsExact<RecursiveType1, RecursiveType1>>(true);
+  assertType<IsExact<RecursiveType1, RecursiveType1>>(true);
   type RecursiveType2 = {
     a: string;
     prop: RecursiveType2;
@@ -182,6 +183,6 @@ import {
       other: RecursiveType1;
     };
   };
-  assert<IsExact<RecursiveType2, RecursiveType2>>(true);
-  assert<IsExact<RecursiveType1, RecursiveType2>>(false);
+  assertType<IsExact<RecursiveType2, RecursiveType2>>(true);
+  assertType<IsExact<RecursiveType1, RecursiveType2>>(false);
 }
