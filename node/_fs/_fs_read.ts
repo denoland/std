@@ -108,35 +108,26 @@ export function read(
   validatePosition(position);
   validateOffsetLengthRead(offset, length, buffer.byteLength);
 
-  let err: Error | null = null,
-    numberOfBytesRead: number | null = null;
-
-  try {
-    let currentPosition = 0;
-    if (typeof position === "number" && position >= 0) {
-      currentPosition = Deno.seekSync(fd, 0, Deno.SeekMode.Current);
-      Deno.seekSync(fd, position, Deno.SeekMode.Start);
-    }
-
-    numberOfBytesRead = Deno.readSync(fd, buffer);
-
-    if (typeof position === "number" && position >= 0) {
-      Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
-    }
-  } catch (error) {
-    err = error instanceof Error ? error : new Error("[non-error thrown]");
-  }
-
   if (!cb) throw new ERR_INVALID_ARG_TYPE("cb", "Callback", cb);
 
-  if (err) {
-    (callback as (err: Error) => void)(err);
-  } else {
-    const data = Buffer.from(buffer.buffer, offset, length);
-    cb(null, numberOfBytesRead ?? 0, data);
-  }
-
-  return;
+  (async () => {
+    try {
+      let nread: number | null;
+      if (typeof position === "number" && position >= 0) {
+        const currentPosition = await Deno.seek(fd, 0, Deno.SeekMode.Current);
+        // We use sync calls below to avoid being affected by others during
+        // these calls.
+        Deno.seekSync(fd, position, Deno.SeekMode.Start);
+        nread = Deno.readSync(fd, buffer);
+        Deno.seekSync(fd, currentPosition, Deno.SeekMode.Start);
+      } else {
+        nread = await Deno.read(fd, buffer);
+      }
+      cb(null, nread ?? 0, Buffer.from(buffer.buffer, offset, length));
+    } catch (error) {
+      cb(error as Error, null);
+    }
+  })();
 }
 
 export function readSync(

@@ -124,7 +124,7 @@ jobs:
         run: deno lint
 
       - name: Check circular dependencies
-        run: "deno task lint:circular-deps"
+        run: "deno task node:lint-circular-deps"
 
       - name: Check License headers
         run: "deno task lint:licence-headers"
@@ -134,6 +134,9 @@ jobs:
 
       - name: Check Import paths in Docs
         run: "deno task lint:doc-imports"
+
+      - name: Check non-test assertions
+        run: deno task lint:check-assertions
 
   crypto-wasm:
     name: "crypto/_wasm"

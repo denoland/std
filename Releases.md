@@ -1,3 +1,19 @@
+### 0.165.0 / 2022.11.16
+
+- fix(node): improve crypto.getHashes compatibility (#2890)
+- fix(node): issues with browser (#2892)
+- fix: allow creating http.IncomingRequest without url being set (#2893)
+
+### 0.164.0 / 2022.11.13
+
+- feat(fmt): add `prettyDuration` (#2861)
+- feat(http/file_server): add -v, --version option (#2868)
+- fix(node/fs): improve fs.read compatibility (#2880)
+- fix(node/http): add .finished property to ServerResponse (#2878)
+- fix(node/http): fix non-string buffer response (#2863)
+- node: mock ClientRequest.setTimeout (#2875)
+- perf(node/string_decoder): use native decoder for GenericDecoder (#2858)
+
 ### 0.163.0 / 2022.11.08
 
 - chore: upgrade rust to 0.165.0 and wasmbuild to 0.10.2 (#2850)

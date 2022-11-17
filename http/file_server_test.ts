@@ -11,6 +11,7 @@ import { isWindows } from "../_util/os.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
 import { toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
+import { VERSION } from "../version.ts";
 
 let fileServer: Deno.Child;
 
@@ -364,7 +365,7 @@ Deno.test("CORS support", async function () {
 });
 
 Deno.test("printHelp", async function () {
-  const helpProcess = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -374,8 +375,25 @@ Deno.test("printHelp", async function () {
     ],
     cwd: moduleDir,
   });
-  const stdout = new TextDecoder().decode(helpProcess.stdout);
-  assert(stdout.includes("Deno File Server"));
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
+});
+
+Deno.test("printVersion", async function () {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-check",
+      "--quiet",
+      "file_server.ts",
+      "--version",
+    ],
+    cwd: moduleDir,
+  });
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("contentType", async () => {

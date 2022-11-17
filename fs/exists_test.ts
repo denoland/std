@@ -122,10 +122,11 @@ for (const s of scenes) {
     args.push(path.join(testdataDir, s.async ? "exists.ts" : "exists_sync.ts"));
     args.push(s.file);
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       cwd: testdataDir,
       args,
     });
+    const { stdout } = await command.output();
 
     assertStringIncludes(new TextDecoder().decode(stdout), s.output);
   });
