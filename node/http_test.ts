@@ -151,6 +151,35 @@ Deno.test("[node/http] request default protocol", async () => {
   await promise;
 });
 
+Deno.test("[node/http] request with headers", async () => {
+  const promise = deferred<void>();
+  const server = http.createServer((req, res) => {
+    assertEquals(req.headers["x-foo"], "bar");
+    res.end("ok");
+  });
+  server.listen(() => {
+    const req = http.request(
+      {
+        host: "localhost",
+        port: server.address().port,
+        headers: { "x-foo": "bar" },
+      },
+      (res) => {
+        res.on("data", () => {});
+        res.on("end", () => {
+          server.close();
+        });
+        assertEquals(res.statusCode, 200);
+      },
+    );
+    req.end();
+  });
+  server.on("close", () => {
+    promise.resolve();
+  });
+  await promise;
+});
+
 Deno.test("[node/http] non-string buffer response", async () => {
   const promise = deferred<void>();
   const server = http.createServer((_, res) => {
@@ -178,4 +207,20 @@ Deno.test("[node/http] non-string buffer response", async () => {
     promise.resolve();
   });
   await promise;
+});
+
+Deno.test("[node/http] http.IncomingMessage can be created without url", () => {
+  const message = new http.IncomingMessage(
+    // adapted from https://github.com/dougmoscrop/serverless-http/blob/80bfb3e940057d694874a8b0bc12ad96d2abe7ab/lib/request.js#L7
+    {
+      // @ts-expect-error - non-request properties will also be passed in, e.g. by serverless-http
+      encrypted: true,
+      readable: false,
+      remoteAddress: "foo",
+      address: () => ({ port: 443 }),
+      end: Function.prototype,
+      destroy: Function.prototype,
+    },
+  );
+  message.url = "https://example.com";
 });

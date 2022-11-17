@@ -139,7 +139,7 @@ Deno.test("Require .mjs", () => {
 Deno.test("requireErrorInEval", async function () {
   const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--unstable",
@@ -148,6 +148,7 @@ Deno.test("requireErrorInEval", async function () {
     ],
     cwd,
   });
+  const { stderr, stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const outputError = decoder.decode(stderr);

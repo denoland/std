@@ -221,10 +221,11 @@ for (const s of scenes) {
         );
         args.push("testfolder");
 
-        const { stdout } = await Deno.spawn(Deno.execPath(), {
+        const command = new Deno.Command(Deno.execPath(), {
           cwd: testdataDir,
           args,
         });
+        const { stdout } = await command.output();
         assertStringIncludes(new TextDecoder().decode(stdout), s.output);
       } catch (err) {
         await Deno.remove(testfolder, { recursive: true });

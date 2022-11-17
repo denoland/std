@@ -57,6 +57,12 @@ const METHODS = [
 
 type Chunk = string | Buffer | Uint8Array;
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
+  Deno.upgradeHttpRaw;
+
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
     return core.encode(chunk);
@@ -90,6 +96,7 @@ export interface RequestOptions {
   href?: string;
 }
 
+// TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
   defaultProtocol = "http:";
@@ -125,7 +132,12 @@ class ClientRequest extends NodeWritable {
     }
 
     const client = await this._createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
+    const opts = {
+      body: this.body,
+      method: this.opts.method,
+      client,
+      headers: this.opts.headers,
+    };
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
@@ -180,6 +192,10 @@ class ClientRequest extends NodeWritable {
       port === 80 ? "" : `:${port}`
     }${path}`;
   }
+
+  setTimeout() {
+    console.log("not implemented: ClientRequest.setTimeout");
+  }
 }
 
 /** IncomingMessage for http(s) client */
@@ -233,6 +249,9 @@ export class ServerResponse extends NodeWritable {
   statusMessage?: string = undefined;
   #headers = new Headers({});
   #readable: ReadableStream;
+  override writable = true;
+  // used by `npm:on-finished`
+  finished = false;
   headersSent = false;
   #firstChunk: Chunk | null = null;
   // Used if --unstable flag IS NOT present
@@ -358,6 +377,7 @@ export class ServerResponse extends NodeWritable {
 
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
+    this.finished = true;
     if (this.#isFlashRequest) {
       // Flash sets both of these headers.
       this.#headers.delete("transfer-encoding");
@@ -405,7 +425,7 @@ export class IncomingMessageForServer extends NodeReadable {
     });
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(req.url.indexOf("/", 8));
+    this.url = req.url?.slice(req.url.indexOf("/", 8));
     this.method = req.method;
     this.#req = req;
   }
@@ -454,7 +474,7 @@ class ServerImpl extends EventEmitter {
   constructor(handler?: ServerHandler) {
     super();
     // @ts-ignore Might be undefined without `--unstable` flag
-    this.#isFlashServer = typeof Deno.serve == "function";
+    this.#isFlashServer = typeof DenoServe == "function";
     if (this.#isFlashServer) {
       this.#servePromise = deferred();
       this.#servePromise.then(() => this.emit("close"));
@@ -552,7 +572,7 @@ class ServerImpl extends EventEmitter {
     const handler = (request: Request) => {
       const req = new IncomingMessageForServer(request);
       if (req.upgrade && this.listenerCount("upgrade") > 0) {
-        const [conn, head] = Deno.upgradeHttpRaw(request) as [
+        const [conn, head] = DenoUpgradeHttpRaw(request) as [
           Deno.Conn,
           Uint8Array,
         ];
@@ -572,7 +592,7 @@ class ServerImpl extends EventEmitter {
       return;
     }
     this.#ac = ac;
-    Deno.serve(
+    DenoServe(
       {
         handler: handler as Deno.ServeHandler,
         ...this.#addr,
