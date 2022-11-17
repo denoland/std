@@ -1,7 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
+
+const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("[fs] existsNotExist", async function () {
   const tempDirPath: string = await Deno.makeTempDir();
@@ -45,7 +48,7 @@ Deno.test("[fs] existsFile", async function () {
       true
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempFilePath, 0o000);
       assertEquals(
         await exists(tempFilePath, {
@@ -87,7 +90,7 @@ Deno.test("[fs] existsFileLink", async function () {
       true
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempFilePath, 0o000);
       assertEquals(
         await exists(tempLinkFilePath, {
@@ -126,7 +129,7 @@ Deno.test("[fs] existsFileSync", function () {
       true
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempFilePath, 0o000);
       assertEquals(
         existsSync(tempFilePath, {
@@ -168,7 +171,7 @@ Deno.test("[fs] existsFileLinkSync", function () {
       true
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempFilePath, 0o000);
       assertEquals(
         existsSync(tempLinkFilePath, {
@@ -205,7 +208,7 @@ Deno.test("[fs] existsDir", async function () {
       false
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempDirPath, 0o000);
       assertEquals(
         await exists(tempDirPath, {
@@ -242,7 +245,7 @@ Deno.test("[fs] existsDirLink", async function () {
       false
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempDirPath, 0o000);
       assertEquals(
         await exists(tempLinkDirPath, {
@@ -278,7 +281,7 @@ Deno.test("[fs] existsDirSync", function () {
       false
     );
     if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempDirPath, 0o000);
       assertEquals(
         existsSync(tempDirPath, {
@@ -314,8 +317,8 @@ Deno.test("[fs] existsDirLinkSync", function () {
       }),
       false
     );
-    if (Deno.build.os != "windows") {
-      // TODO(martin-braun): include permission check for Windows tests when chmod is ported to NT
+    if (Deno.build.os !== "windows") {
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempDirPath, 0o000);
       assertEquals(
         existsSync(tempLinkDirPath, {
@@ -332,3 +335,105 @@ Deno.test("[fs] existsDirLinkSync", function () {
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
+
+/**
+ * Scenes control additional permission tests by spawning new Deno processes with and without --allow-read flag.
+ */
+interface Scene {
+  read: boolean; // true to test with --allow-read
+  sync: boolean; // true to test sync
+  fictional: boolean; // true to test on non existing file
+  output: string; // required string include of stdout to succeed
+}
+
+const scenes: Scene[] = [
+  // 1
+  {
+    read: false,
+    sync: false,
+    fictional: false,
+    output: "run again with the --allow-read flag",
+  },
+  {
+    read: false,
+    sync: true,
+    fictional: false,
+    output: "run again with the --allow-read flag",
+  },
+  // 2
+  {
+    read: true,
+    sync: false,
+    fictional: false,
+    output: "exist",
+  },
+  {
+    read: true,
+    sync: true,
+    fictional: false,
+    output: "exist",
+  },
+  // 3
+  {
+    read: false,
+    sync: false,
+    fictional: true,
+    output: "run again with the --allow-read flag",
+  },
+  {
+    read: false,
+    sync: true,
+    fictional: true,
+    output: "run again with the --allow-read flag",
+  },
+  // 4
+  {
+    read: true,
+    sync: false,
+    fictional: true,
+    output: "not exist",
+  },
+  {
+    read: true,
+    sync: true,
+    fictional: true,
+    output: "not exist",
+  },
+];
+
+for (const s of scenes) {
+  let title = `test ${!s.sync ? "exists" : "existsSync"} on`;
+  title += ` ${s.fictional ? "fictional" : "real"} file`;
+  title += ` ${s.read ? "with" : "without"} --allow-read`;
+  Deno.test(`[fs] existsPermission ${title}`, async function () {
+    const args = ["run", "--quiet", "--no-prompt"];
+
+    if (s.read) {
+      args.push("--allow-read");
+    }
+    args.push(path.join(testdataDir, !s.sync ? "exists.ts" : "exists_sync.ts"));
+
+    let tempFilePath = "does_not_exist.ts";
+    let tempDirPath: string | null = null;
+    let tempFile: Deno.FsFile | null = null;
+    if (!s.fictional) {
+      tempDirPath = await Deno.makeTempDir();
+      tempFilePath = path.join(tempDirPath, "0.ts");
+      tempFile = await Deno.create(tempFilePath);
+    }
+    args.push(tempFilePath);
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args,
+    });
+    const { stdout } = await command.output();
+
+    if (tempFile != null) {
+      tempFile.close();
+      await Deno.remove(tempDirPath!, { recursive: true });
+    }
+
+    assertStringIncludes(new TextDecoder().decode(stdout), s.output);
+  });
+  // done
+}

@@ -96,7 +96,13 @@ export async function exists(
       return false;
     }
     if (error instanceof Deno.errors.PermissionDenied) {
-      return !options?.isReadable; // Exclusive on Windows systems
+      if (
+        (await Deno.permissions.query({ name: "read", path })).state ===
+        "granted"
+      ) {
+        // --allow-read not missing
+        return !options?.isReadable; // PermissionDenied was raised by file system
+      }
     }
     throw error;
   }
@@ -181,7 +187,12 @@ export function existsSync(
       return false;
     }
     if (error instanceof Deno.errors.PermissionDenied) {
-      return !options?.isReadable; // Exclusive on Windows systems
+      if (
+        Deno.permissions.querySync({ name: "read", path }).state === "granted"
+      ) {
+        // --allow-read not missing
+        return !options?.isReadable; // PermissionDenied was raised by file system
+      }
     }
     throw error;
   }
