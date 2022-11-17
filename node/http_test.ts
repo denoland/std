@@ -224,3 +224,27 @@ Deno.test("[node/http] http.IncomingMessage can be created without url", () => {
   );
   message.url = "https://example.com";
 });
+
+Deno.test("[node/http] set http.IncomingMessage.statusMessage", () => {
+  const message = new http.IncomingMessageForClient(
+    new Response(null, { status: 404, statusText: "Not Found" }),
+    {
+      encrypted: true,
+      readable: false,
+      remoteAddress: "foo",
+      // @ts-expect-error - good enough for this test
+      address() {
+        return { port: 443, family: "IPv4" };
+      },
+      end(_cb) {
+        return this;
+      },
+      destroy(_e) {
+        return;
+      },
+    },
+  );
+  assertEquals(message.statusMessage, "Not Found");
+  message.statusMessage = "boom";
+  assertEquals(message.statusMessage, "boom");
+});
