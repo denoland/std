@@ -192,15 +192,17 @@ function utf8Write(
   if (buf.length === 0) return "";
   let r;
   let i;
+  // Because `TypedArray` is recognized as `ArrayBuffer` but in the reality, there are some fundamental difference. We would need to cast it properly
+  const normalizedBuffer: Buffer = isBufferType(buf) ? buf : Buffer.from(buf);
   if (this.lastNeed) {
-    r = this.fillLast(buf);
+    r = this.fillLast(normalizedBuffer);
     if (r === undefined) return "";
     i = this.lastNeed;
     this.lastNeed = 0;
   } else {
     i = 0;
   }
-  if (i < buf.length) return r ? r + this.text(buf, i) : this.text(buf, i);
+  if (i < buf.length) return r ? r + this.text(normalizedBuffer, i) : this.text(normalizedBuffer, i);
   return r || "";
 }
 
@@ -299,7 +301,7 @@ export class StringDecoder {
 
   constructor(encoding?: string) {
     const normalizedEncoding = normalizeEncoding(encoding);
-    let decoder;
+    let decoder: Utf8Decoder | Base64Decoder | GenericDecoder;
     switch (normalizedEncoding) {
       case "utf8":
         decoder = new Utf8Decoder(encoding);
@@ -317,13 +319,7 @@ export class StringDecoder {
     this.lastNeed = decoder.lastNeed;
     this.lastTotal = decoder.lastTotal;
     this.text = decoder.text;
-    this.write = function (buf: Buffer) {
-      // Because `TypedArray` is recognized as `ArrayBuffer` but in the reality, there are some fundamental difference. We would need to cast it properly
-      if (isBufferType(buf)) {
-        return decoder.write(buf);
-      }
-      return decoder.write(Buffer.from(buf));
-    };
+    this.write = decoder.write;
   }
 }
 // Allow calling StringDecoder() without new
