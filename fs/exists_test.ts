@@ -47,7 +47,7 @@ Deno.test("[fs] existsFile", async function () {
       }),
       true
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempFilePath, 0o000);
       assertEquals(
@@ -60,7 +60,7 @@ Deno.test("[fs] existsFile", async function () {
   } catch (error) {
     throw error;
   } finally {
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       await Deno.chmod(tempFilePath, 0o644);
     }
     tempFile.close();
@@ -89,7 +89,7 @@ Deno.test("[fs] existsFileLink", async function () {
       }),
       true
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempFilePath, 0o000);
       assertEquals(
@@ -128,7 +128,7 @@ Deno.test("[fs] existsFileSync", function () {
       }),
       true
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempFilePath, 0o000);
       assertEquals(
@@ -141,7 +141,7 @@ Deno.test("[fs] existsFileSync", function () {
   } catch (error) {
     throw error;
   } finally {
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempFilePath, 0o644);
     }
     tempFile.close();
@@ -170,7 +170,7 @@ Deno.test("[fs] existsFileLinkSync", function () {
       }),
       true
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempFilePath, 0o000);
       assertEquals(
@@ -207,7 +207,7 @@ Deno.test("[fs] existsDir", async function () {
       }),
       false
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempDirPath, 0o000);
       assertEquals(
@@ -244,7 +244,7 @@ Deno.test("[fs] existsDirLink", async function () {
       }),
       false
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       await Deno.chmod(tempDirPath, 0o000);
       assertEquals(
@@ -280,7 +280,7 @@ Deno.test("[fs] existsDirSync", function () {
       }),
       false
     );
-    if (Deno.build.os != "windows") {
+    if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
       Deno.chmodSync(tempDirPath, 0o000);
       assertEquals(
