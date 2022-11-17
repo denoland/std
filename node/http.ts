@@ -243,7 +243,7 @@ export class IncomingMessageForClient extends NodeReadable {
   get statusMessage() {
     return this.#statusMessage || this.response?.statusText || "";
   }
-  
+
   set statusMessage(v: string) {
     this.#statusMessage = v;
   }
