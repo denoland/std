@@ -1,10 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// A module to get formatted time duration from milliseconds.
+// A module to get formatted digital duration from milliseconds.
 
 const addZero = (num: number, digits: number) =>
   String(num).padStart(digits, "0");
 
-interface DurationObj {
+interface DurationObject {
   d: number;
   h: number;
   m: number;
@@ -14,7 +14,7 @@ interface DurationObj {
   ns: number;
 }
 
-const keyList: Record<keyof DurationObj, string> = {
+const keyList: Record<keyof DurationObject, string> = {
   d: "days",
   h: "hours",
   m: "minutes",
@@ -25,7 +25,7 @@ const keyList: Record<keyof DurationObj, string> = {
 };
 
 /** Parse milleseconds into a duration. */
-function parseDuration(ms: number): DurationObj {
+function millisecondsToDurationObject(ms: number): DurationObject {
   // Duration cannot be negative
   const absolute_ms = Math.abs(ms);
   return {
@@ -40,8 +40,8 @@ function parseDuration(ms: number): DurationObj {
 }
 
 function durationArray(
-  duration: DurationObj,
-): { type: keyof DurationObj; value: number }[] {
+  duration: DurationObject,
+): { type: keyof DurationObject; value: number }[] {
   return [
     { type: "d", value: duration.d },
     { type: "h", value: duration.h },
@@ -55,31 +55,31 @@ function durationArray(
 
 export interface PrettyDurationOptions {
   /**
-   * "short" for "0d 0h 0m 0s 0ms..."
-   * "time" for "00:00:00:00:000..."
+   * "narrow" for "0d 0h 0m 0s 0ms..."
+   * "digital" for "00:00:00:00:000..."
    * "full" for "0 days, 0 hours, 0 minutes,..."
    */
-  formatType: "short" | "time" | "full";
+  style: "narrow" | "digital" | "full";
   /**
    * Whether to ignore zero values.
-   * With formatType="short" | "full", all zero values are ignored.
-   * With formatType="time", only values in the ends are ignored.
+   * With style="narrow" | "full", all zero values are ignored.
+   * With style="digital", only values in the ends are ignored.
    */
   ignoreZero: boolean;
 }
 
-export function prettyDuration(
+export function format(
   ms: number,
   options: Partial<PrettyDurationOptions> = {},
 ): string {
   const opt = Object.assign(
-    { formatType: "short", ignoreZero: false },
+    { style: "narrow", ignoreZero: false },
     options,
   );
-  const duration = parseDuration(ms);
+  const duration = millisecondsToDurationObject(ms);
   const durationArr = durationArray(duration);
-  switch (opt.formatType) {
-    case "short": {
+  switch (opt.style) {
+    case "narrow": {
       if (opt.ignoreZero) {
         return `${
           durationArr.filter((x) => x.value).map((x) =>
@@ -105,7 +105,7 @@ export function prettyDuration(
         durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ")
       }`;
     }
-    case "time": {
+    case "digital": {
       const arr = durationArr.map((x) =>
         ["ms", "us", "ns"].includes(x.type)
           ? addZero(x.value, 3)
@@ -121,7 +121,7 @@ export function prettyDuration(
       return arr.join(":");
     }
     default: {
-      throw new TypeError(`formatType must be "short", "full", or "time"!`);
+      throw new TypeError(`style must be "narrow", "full", or "digital"!`);
     }
   }
 }

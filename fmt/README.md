@@ -270,22 +270,22 @@ prettyBytes(1337, { locale: "de" });
 
 # Pretty Duration
 
-Get formatted time duration from milliseconds.
+Format milliseconds to time duration.
 
 ```ts
-import { prettyDuration } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
 
 // "00:00:01:39:674:000:000"
-prettyDuration(99674, { formatType: "time" });
+format(99674, { style: "digital" });
 
 // "0d 0h 1m 39s 674ms 0µs 0ns"
-prettyDuration(99674);
+format(99674);
 
 // "1m 39s 674ms"
-prettyDuration(99674, { ignoreZero: true });
+format(99674, { ignoreZero: true });
 
 // "1 minutes, 39 seconds, 674 milliseconds"
-prettyDuration(99674, { formatType: "full", ignoreZero: true });
+format(99674, { style: "full", ignoreZero: true });
 ```
 
 [1]: https://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html
