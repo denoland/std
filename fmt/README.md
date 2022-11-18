@@ -247,24 +247,24 @@ Note: This module was ported from
 ## Usage
 
 ```ts
-import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+import { format } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
 
-prettyBytes(1337);
+format(1337);
 //=> '1.34 kB'
 
-prettyBytes(100);
+format(100);
 //=> '100 B'
 
 // Display with units of bits
-prettyBytes(1337, { bits: true });
+format(1337, { bits: true });
 //=> '1.34 kbit'
 
 // Display file size differences
-prettyBytes(42, { signed: true });
+format(42, { signed: true });
 //=> '+42 B'
 
 // Localized output using German locale
-prettyBytes(1337, { locale: "de" });
+format(1337, { locale: "de" });
 //=> '1,34 kB'
 ```
 
