@@ -163,7 +163,7 @@ export class ChildProcess extends EventEmitter {
     const stringEnv = mapValues(env, (value) => value.toString());
 
     try {
-      this.#process = DenoCommand(cmd, {
+      this.#process = new DenoCommand(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
@@ -768,7 +768,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const p = DenoCommand(command, {
+    const p = new DenoCommand(command, {
       args,
       cwd,
       env,
