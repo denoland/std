@@ -46,11 +46,8 @@ type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
 
 // @ts-ignore Deno[Deno.internal] is used on purpose here
-const DenoSpawnChild = Deno[Deno.internal]?.nodeUnstable?.spawnChild ||
-  Deno.spawnChild;
-// @ts-ignore Deno[Deno.internal] is used on purpose here
-const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
-  Deno.spawnSync;
+const DenoCommand = Deno[Deno.internal]?.nodeUnstable?.Command ||
+  Deno.Command;
 
 export function stdioStringToArray(
   stdio: NodeStdio,
@@ -131,7 +128,7 @@ export class ChildProcess extends EventEmitter {
     null,
   ];
 
-  #process!: Deno.Child;
+  #process!: Deno.Command;
   #spawned = deferred<void>();
 
   constructor(
@@ -166,7 +163,7 @@ export class ChildProcess extends EventEmitter {
     const stringEnv = mapValues(env, (value) => value.toString());
 
     try {
-      this.#process = DenoSpawnChild(cmd, {
+      this.#process = DenoCommand(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
@@ -175,6 +172,7 @@ export class ChildProcess extends EventEmitter {
         stderr: toDenoStdio(stderr as NodeStdio | number),
         windowsRawArguments: windowsVerbatimArguments,
       });
+      this.#process.spawn();
       this.pid = this.#process.pid;
 
       if (stdin === "pipe") {
@@ -737,10 +735,10 @@ export interface SpawnSyncResult {
 }
 
 function parseSpawnSyncOutputStreams(
-  output: Deno.SpawnOutput,
+  output: Deno.CommandOutput,
   name: "stdout" | "stderr",
 ): string | Buffer | null {
-  // Deno.spawnSync() returns getters for stdout and stderr that throw when set
+  // Deno.CommandOutput returns getters for stdout and stderr that throw when set
   // to 'inherit'.
   try {
     return Buffer.from(output[name]) as string | Buffer;
@@ -770,7 +768,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const output = DenoSpawnSync(command, {
+    const p = DenoCommand(command, {
       args,
       cwd,
       env,
@@ -781,10 +779,10 @@ export function spawnSync(
       windowsRawArguments: windowsVerbatimArguments,
     });
 
-    const { signal } = output;
+    const { signal } = p.outputSync();
     const status = signal ? null : 0;
-    let stdout = parseSpawnSyncOutputStreams(output, "stdout");
-    let stderr = parseSpawnSyncOutputStreams(output, "stderr");
+    let stdout = parseSpawnSyncOutputStreams(p, "stdout");
+    let stderr = parseSpawnSyncOutputStreams(p, "stderr");
 
     if (
       (stdout && stdout.length > maxBuffer!) ||

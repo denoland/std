@@ -16,12 +16,12 @@ Deno.test({
 }, async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const process = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
     stderr: "null",
     cwd: moduleDir,
   });
-
+  process.spawn();
   let conn: Deno.Conn | undefined;
   try {
     const r = process.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(

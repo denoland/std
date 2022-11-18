@@ -84,7 +84,7 @@ for (const pathname of tests) {
       );
 
       try {
-        const process = await Deno.spawnChild(Deno.execPath(), {
+        const process = new Deno.Command(Deno.execPath(), {
           cwd: workdir,
           args: [
             "run",
@@ -98,6 +98,7 @@ for (const pathname of tests) {
           ],
           stdin: "piped",
         });
+        process.spawn();
 
         if (options.stdin) {
           const writer = process.stdin.getWriter();

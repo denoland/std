@@ -13,7 +13,7 @@ import { toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 
-let fileServer: Deno.Child;
+let fileServer: Deno.Command;
 
 interface FileServerCfg {
   port?: string;
@@ -36,7 +36,7 @@ async function startFileServer({
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -54,6 +54,7 @@ async function startFileServer({
     cwd: moduleDir,
     stderr: "null",
   });
+  fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
   const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
@@ -65,7 +66,7 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -77,6 +78,7 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
     cwd: moduleDir,
     stderr: "null",
   });
+  fileServer.spawn();
   const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
@@ -438,7 +440,7 @@ async function startTlsFileServer({
   target = ".",
   port = "4577",
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -460,6 +462,7 @@ async function startTlsFileServer({
     cwd: moduleDir,
     stderr: "null",
   });
+  fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
   const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
@@ -496,7 +499,7 @@ Deno.test("serveDirIndex TLS", async function () {
 });
 
 Deno.test("partial TLS arguments fail", async function () {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -515,6 +518,7 @@ Deno.test("partial TLS arguments fail", async function () {
     cwd: moduleDir,
     stderr: "null",
   });
+  fileServer.spawn();
   try {
     // Once fileServer is ready it will write to its stdout.
     const r = fileServer.stdout.pipeThrough(new TextDecoderStream())
