@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
 import { getValidatedPath } from "../internal/fs/utils.mjs";
-import * as pathModule from "../../path/mod.ts";
 import { parseFileMode } from "../internal/validators.mjs";
 import { Buffer } from "../buffer.ts";
 import { promisify } from "../internal/util.mjs";
@@ -14,7 +13,7 @@ export function chmod(
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 
-  Deno.chmod(pathModule.toNamespacedPath(path), mode).then(
+  Deno.chmod(path, mode).then(
     () => callback(null),
     callback,
   );
@@ -29,5 +28,5 @@ export function chmodSync(path: string | URL, mode: string | number) {
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 
-  Deno.chmodSync(pathModule.toNamespacedPath(path), mode);
+  Deno.chmodSync(path, mode);
 }
