@@ -53,6 +53,7 @@ import {
   writeFileSync,
 } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
+// @deno-types="./internal/fs/streams.d.ts"
 import {
   createReadStream,
   createWriteStream,
