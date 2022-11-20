@@ -131,7 +131,7 @@ Deno.test({
 
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -140,6 +140,7 @@ Deno.test({
       ],
       cwd,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(stripColor(decoder.decode(stdout).trim()), "1\n2");
@@ -276,6 +277,12 @@ Deno.test({
 
     assertEquals(process.env.toString(), "[object Object]");
     assertEquals(process.env.toLocaleString(), "[object Object]");
+
+    // should not error when assigning false to an env var
+    process.env.HELLO = false as unknown as string;
+    assertEquals(process.env.HELLO, "false");
+    process.env.HELLO = "WORLD";
+    assertEquals(process.env.HELLO, "WORLD");
   },
 });
 
@@ -324,7 +331,7 @@ Deno.test({
     assertEquals(process.stdout.fd, Deno.stdout.rid);
     const isTTY = Deno.isatty(Deno.stdout.rid);
     assertEquals(process.stdout.isTTY, isTTY);
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stdout.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stdout.columns, consoleSize?.columns);
     assertEquals(process.stdout.rows, consoleSize?.rows);
     assertEquals(
@@ -352,7 +359,7 @@ Deno.test({
     assertEquals(process.stderr.fd, Deno.stderr.rid);
     const isTTY = Deno.isatty(Deno.stderr.rid);
     assertEquals(process.stderr.isTTY, isTTY);
-    const consoleSize = isTTY ? Deno.consoleSize(Deno.stderr.rid) : undefined;
+    const consoleSize = isTTY ? Deno.consoleSize() : undefined;
     assertEquals(process.stderr.columns, consoleSize?.columns);
     assertEquals(process.stderr.rows, consoleSize?.rows);
     assertEquals(
@@ -519,7 +526,7 @@ Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getgid, undefined);
   } else {
-    assertEquals(process.getgid?.(), Deno.getGid());
+    assertEquals(process.getgid?.(), Deno.gid());
   }
 });
 
@@ -527,7 +534,7 @@ Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getuid, undefined);
   } else {
-    assertEquals(process.getuid?.(), Deno.getUid());
+    assertEquals(process.getuid?.(), Deno.uid());
   }
 });
 
@@ -536,7 +543,7 @@ Deno.test({
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -545,6 +552,7 @@ Deno.test({
       ],
       cwd,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(stripColor(decoder.decode(stdout).trim()), "exit");

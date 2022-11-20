@@ -57,6 +57,7 @@ export class Server {
   #handler: Handler;
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
+  #acceptBackoffDelayAbortController = new AbortController();
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #onError: (error: unknown) => Response | Promise<Response>;
 
@@ -263,6 +264,8 @@ export class Server {
 
     this.#listeners.clear();
 
+    this.#acceptBackoffDelayAbortController.abort();
+
     for (const httpConn of this.#httpConnections) {
       this.#closeHttpConn(httpConn);
     }
@@ -384,7 +387,16 @@ export class Server {
             acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
           }
 
-          await delay(acceptBackoffDelay);
+          try {
+            await delay(acceptBackoffDelay, {
+              signal: this.#acceptBackoffDelayAbortController.signal,
+            });
+          } catch (err: unknown) {
+            // The backoff delay timer is aborted when closing the server.
+            if (!(err instanceof DOMException && err.name === "AbortError")) {
+              throw err;
+            }
+          }
 
           continue;
         }
@@ -726,102 +738,4 @@ export async function serveTls(
   }
 
   return await s;
-}
-
-/**
- * @deprecated (will be removed after 0.157.0) Use `serve` instead.
- *
- * Constructs a server, creates a listener on the given address, accepts
- * incoming connections, and handles requests on these connections with the
- * given handler.
- *
- * If the port is omitted from the ListenOptions, 80 is used.
- *
- * If the host is omitted from the ListenOptions, the non-routable meta-address
- * `0.0.0.0` is used.
- *
- * ```ts
- * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * const port = 4505;
- *
- * console.log("server listening on http://localhost:4505");
- *
- * await listenAndServe({ port }, (request) => {
- *   const body = `Your user-agent is:\n\n${request.headers.get(
- *     "user-agent",
- *   ) ?? "Unknown"}`;
- *
- *   return new Response(body, { status: 200 });
- * });
- * ```
- *
- * @param config The Deno.ListenOptions to specify the hostname and port.
- * @param handler The handler for individual HTTP requests.
- * @param options Optional serve options.
- */
-export async function listenAndServe(
-  config: Partial<Deno.ListenOptions>,
-  handler: Handler,
-  options?: ServeInit,
-) {
-  const server = new Server({ ...config, handler });
-
-  options?.signal?.addEventListener("abort", () => server.close(), {
-    once: true,
-  });
-
-  return await server.listenAndServe();
-}
-
-/**
- * @deprecated (will be removed after 0.157.0) Use `serveTls` instead.
- *
- * Constructs a server, creates a listener on the given address, accepts
- * incoming connections, upgrades them to TLS, and handles requests on these
- * connections with the given handler.
- *
- * If the port is omitted from the ListenOptions, port 443 is used.
- *
- * If the host is omitted from the ListenOptions, the non-routable meta-address
- * `0.0.0.0` is used.
- *
- * ```ts
- * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * const port = 4505;
- * const certFile = "/path/to/certFile.crt";
- * const keyFile = "/path/to/keyFile.key";
- *
- * console.log("server listening on http://localhost:4505");
- *
- * await listenAndServeTls({ port }, certFile, keyFile, (request) => {
- *   const body = `Your user-agent is:\n\n${request.headers.get(
- *     "user-agent",
- *   ) ?? "Unknown"}`;
- *
- *   return new Response(body, { status: 200 });
- * });
- * ```
- *
- * @param config The Deno.ListenOptions to specify the hostname and port.
- * @param certFile The path to the file containing the TLS certificate.
- * @param keyFile The path to the file containing the TLS private key.
- * @param handler The handler for individual HTTP requests.
- * @param options Optional serve options.
- */
-export async function listenAndServeTls(
-  config: Partial<Deno.ListenOptions>,
-  certFile: string,
-  keyFile: string,
-  handler: Handler,
-  options?: ServeInit,
-) {
-  const server = new Server({ ...config, handler });
-
-  options?.signal?.addEventListener("abort", () => server.close(), {
-    once: true,
-  });
-
-  return await server.listenAndServeTls(certFile, keyFile);
 }

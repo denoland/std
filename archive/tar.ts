@@ -38,7 +38,7 @@
 
 import { MultiReader } from "../io/readers.ts";
 import { Buffer, PartialReadError } from "../io/buffer.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
 
 type Reader = Deno.Reader;
@@ -82,9 +82,9 @@ class FileReader implements Reader {
     if (!this.#file) {
       this.#file = await Deno.open(this.filePath, { read: true });
     }
-    const res = await Deno.read(this.#file.rid, p);
+    const res = await this.#file.read(p);
     if (res === null) {
-      Deno.close(this.#file.rid);
+      this.#file.close();
       this.#file = undefined;
     }
     return res;

@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // usage: deno run -A --unstable node/_tools/vendor_readable_stream.ts
 const sourceUrl =
-  "https://esm.sh/v92/readable-stream@4.1.0/es2022/readable-stream.js";
+  "https://esm.sh/v96/readable-stream@4.2.0/es2022/readable-stream.js";
 const header =
   `// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -31,8 +31,8 @@ src = src.replaceAll(/"\/v\d+\/events@.+?"/g, '"./events.ts"');
 // Replace import of the Node.js process object with the APIs that are actually
 // used to avoid issues with circular imports.
 src = src.replaceAll(
-  /import __Process\$ from "\/v\d+\/node_process.js";/g,
-  "const __Process$ = { nextTick, stdio };",
+  /import __process\$ from "\/v\d+\/process@.+?";/g,
+  "const __process$ = { nextTick, stdio };",
 );
 
 // Get any additional code from the end of the current file.

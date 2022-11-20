@@ -326,9 +326,10 @@ Deno.test(
     async function runTestWithUpdateFlag(test: string) {
       await Deno.writeTextFile(tempTestFilePath, test);
 
-      const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+      const command = new Deno.Command(Deno.execPath(), {
         args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
       });
+      const { stdout, stderr } = await command.output();
 
       return {
         output: new TextDecoder().decode(stdout),

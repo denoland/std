@@ -188,9 +188,9 @@ export function parse(
       keysForExpandCheck.push(key);
     }
 
-    env[key] = notInterpolated
+    env[key] = typeof notInterpolated === "string"
       ? notInterpolated
-      : interpolated
+      : typeof interpolated === "string"
       ? expandCharacters(interpolated)
       : unquoted.trim();
   }

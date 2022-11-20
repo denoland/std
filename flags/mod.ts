@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Command line arguments parser based on
- * [minimist](https://github.com/substack/minimist).
+ * [minimist](https://github.com/minimistjs/minimist).
  *
  * This module is browser compatible.
  *
@@ -31,7 +31,7 @@
  *
  * @module
  */
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 
 /** Combines recursively all intersection types and returns a new single type. */
 type Id<T> = T extends Record<string, unknown>
@@ -262,7 +262,7 @@ export interface ParseOptions<
    *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "./mod.ts";
+   * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
    * console.dir(parse(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parse(Deno.args, { "--": true }));
@@ -386,13 +386,13 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * @example
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
  * @example
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
@@ -422,6 +422,7 @@ export function parse<
     unknown = (i: string): unknown => i,
   }: ParseOptions<B, S, C, N, D, A, DD> = {},
 ): Args<V, DD> {
+  const aliases: Record<string, string[]> = {};
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -430,6 +431,20 @@ export function parse<
     collect: {},
     negatable: {},
   };
+
+  if (alias !== undefined) {
+    for (const key in alias) {
+      const val = getForce(alias, key);
+      if (typeof val === "string") {
+        aliases[key] = [val];
+      } else {
+        aliases[key] = val as Array<string>;
+      }
+      for (const alias of getForce(aliases, key)) {
+        aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
+      }
+    }
+  }
 
   if (boolean !== undefined) {
     if (typeof boolean === "boolean") {
@@ -441,21 +456,12 @@ export function parse<
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
-      }
-    }
-  }
-
-  const aliases: Record<string, string[]> = {};
-  if (alias !== undefined) {
-    for (const key in alias) {
-      const val = getForce(alias, key);
-      if (typeof val === "string") {
-        aliases[key] = [val];
-      } else {
-        aliases[key] = val as Array<string>;
-      }
-      for (const alias of getForce(aliases, key)) {
-        aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
+        const alias = get(aliases, key);
+        if (alias) {
+          for (const al of alias) {
+            flags.bools[al] = true;
+          }
+        }
       }
     }
   }

@@ -9,7 +9,7 @@ import {
   SEP_PATTERN,
 } from "../path/mod.ts";
 import { walk, walkSync } from "./walk.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 import {
   createWalkEntry,
@@ -67,7 +67,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  *
  * @example
  * ```ts
- * import { expandGlob } from "./expand_glob.ts";
+ * import { expandGlob } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
  * for await (const file of expandGlob("**\/*.ts")) {
  *   console.log(file);
  * }
@@ -92,11 +92,15 @@ export async function* expandGlob(
     .map((s: string): RegExp => globToRegExp(s, globOptions));
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
-  const { segments, isAbsolute: isGlobAbsolute, hasTrailingSep, winRoot } =
-    split(toPathString(glob));
+  const {
+    segments,
+    isAbsolute: isGlobAbsolute,
+    hasTrailingSep,
+    winRoot,
+  } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? (winRoot != undefined ? winRoot : "/")
+    ? winRoot != undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
@@ -128,7 +132,10 @@ export async function* expandGlob(
       }
       return;
     } else if (globSegment == "**") {
-      return yield* walk(walkInfo.path, { skip: excludePatterns });
+      return yield* walk(walkInfo.path, {
+        skip: excludePatterns,
+        maxDepth: globstar ? Infinity : 1,
+      });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
     for await (
@@ -138,7 +145,8 @@ export async function* expandGlob(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path && walkEntry.name.match(globPattern)
+        walkEntry.path != walkInfo.path &&
+        walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;
       }
@@ -150,13 +158,16 @@ export async function* expandGlob(
     // Advancing the list of current matches may introduce duplicates, so we
     // pass everything through this Map.
     const nextMatchMap: Map<string, WalkEntry> = new Map();
-    await Promise.all(currentMatches.map(async (currentMatch) => {
-      for await (const nextMatch of advanceMatch(currentMatch, segment)) {
-        nextMatchMap.set(nextMatch.path, nextMatch);
-      }
-    }));
+    await Promise.all(
+      currentMatches.map(async (currentMatch) => {
+        for await (const nextMatch of advanceMatch(currentMatch, segment)) {
+          nextMatchMap.set(nextMatch.path, nextMatch);
+        }
+      }),
+    );
     currentMatches = [...nextMatchMap.values()].sort(comparePath);
   }
+
   if (hasTrailingSep) {
     currentMatches = currentMatches.filter(
       (entry: WalkEntry): boolean => entry.isDirectory,
@@ -175,7 +186,7 @@ export async function* expandGlob(
  *
  * @example
  * ```ts
- * import { expandGlobSync } from "./expand_glob.ts";
+ * import { expandGlobSync } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
  * for (const file of expandGlobSync("**\/*.ts")) {
  *   console.log(file);
  * }
@@ -200,11 +211,15 @@ export function* expandGlobSync(
     .map((s: string): RegExp => globToRegExp(s, globOptions));
   const shouldInclude = (path: string): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
-  const { segments, isAbsolute: isGlobAbsolute, hasTrailingSep, winRoot } =
-    split(toPathString(glob));
+  const {
+    segments,
+    isAbsolute: isGlobAbsolute,
+    hasTrailingSep,
+    winRoot,
+  } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? (winRoot != undefined ? winRoot : "/")
+    ? winRoot != undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
@@ -236,7 +251,10 @@ export function* expandGlobSync(
       }
       return;
     } else if (globSegment == "**") {
-      return yield* walkSync(walkInfo.path, { skip: excludePatterns });
+      return yield* walkSync(walkInfo.path, {
+        skip: excludePatterns,
+        maxDepth: globstar ? Infinity : 1,
+      });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
     for (
@@ -246,7 +264,8 @@ export function* expandGlobSync(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path && walkEntry.name.match(globPattern)
+        walkEntry.path != walkInfo.path &&
+        walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;
       }
@@ -265,6 +284,7 @@ export function* expandGlobSync(
     }
     currentMatches = [...nextMatchMap.values()].sort(comparePath);
   }
+
   if (hasTrailingSep) {
     currentMatches = currentMatches.filter(
       (entry: WalkEntry): boolean => entry.isDirectory,

@@ -9,7 +9,7 @@
  * @module
  */
 
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 
 export interface ParseOptions {
   /** Allow trailing commas at the end of arrays and objects.

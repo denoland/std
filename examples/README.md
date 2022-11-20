@@ -45,7 +45,7 @@ deno run --allow-net=deno.land https://deno.land/std/examples/curl.ts https://de
 
 ### gist - easily create and upload Gists
 
-```
+```sh
 export GIST_TOKEN=ABC # Generate at https://github.com/settings/tokens
 deno install --allow-net --allow-env https://deno.land/std/examples/gist.ts
 gist --title "Example gist 1" script.ts

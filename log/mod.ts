@@ -35,6 +35,65 @@
  * > antipattern use lazy evaluation with inline logging because the return value
  * > depends on the current log level.
  *
+ * ## For module authors
+ *
+ * The authors of public modules can let the users display the internal logs of the
+ * module by using a custom logger:
+ *
+ * ```ts
+ * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * function logger() {
+ *   return getLogger("my-awesome-module");
+ * }
+ *
+ * export function sum(a: number, b: number) {
+ *   logger().debug(`running ${a} + ${b}`);
+ *   return a + b;
+ * }
+ *
+ * export function mult(a: number, b: number) {
+ *   logger().debug(`running ${a} * ${b}`);
+ *   return a * b;
+ * }
+ * ```
+ *
+ * The user of the module can then display the internal logs with:
+ *
+ * ```ts, ignore
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { sum } from "<the-awesome-module>/mod.ts";
+ *
+ * await log.setup({
+ *   handlers: {
+ *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *   },
+ *
+ *   loggers: {
+ *     "my-awesome-module": {
+ *       level: "DEBUG",
+ *       handlers: ["console"],
+ *     },
+ *   },
+ * });
+ *
+ * sum(1, 2); // prints "running 1 + 2" to the console
+ * ```
+ *
+ * Please note that, due to the order of initialization of the loggers, the
+ * following won't work:
+ *
+ * ```ts
+ * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * const logger = getLogger("my-awesome-module");
+ *
+ * export function sum(a: number, b: number) {
+ *   logger.debug(`running ${a} + ${b}`); // no message will be logged, because getLogger() was called before log.setup()
+ *   return a + b;
+ * }
+ * ```
+ *
  * @example
  * ```ts
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
@@ -200,7 +259,7 @@ import {
   RotatingFileHandler,
   WriterHandler,
 } from "./handlers.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import type { LevelName } from "./levels.ts";
 
 export { LogLevels } from "./levels.ts";

@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/mod.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
@@ -174,7 +174,7 @@ export class Buffer {
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedBytesTransformStream } from "./buffer.ts";
+ * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
@@ -207,7 +207,7 @@ export class LimitedBytesTransformStream
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedTransformStream } from "./buffer.ts";
+ * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```
@@ -226,6 +226,47 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
         } else {
           this.#read++;
           controller.enqueue(chunk);
+        }
+      },
+    });
+  }
+}
+
+/**
+ * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
+ *
+ * @example
+ * ```ts
+ * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+ * const response = await fetch("https://example.com");
+ * const rangedStream = response.body!
+ *   .pipeThrough(new ByteSliceStream(3, 8));
+ * ```
+ */
+export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
+  #offsetStart = 0;
+  #offsetEnd = 0;
+
+  constructor(start = 0, end = Infinity) {
+    super({
+      start: () => {
+        assert(start >= 0, "`start` must be greater than 0");
+        end += 1;
+      },
+      transform: (chunk, controller) => {
+        this.#offsetStart = this.#offsetEnd;
+        this.#offsetEnd += chunk.byteLength;
+        if (this.#offsetEnd > start) {
+          if (this.#offsetStart < start) {
+            chunk = chunk.slice(start - this.#offsetStart);
+          }
+          if (this.#offsetEnd >= end) {
+            chunk = chunk.slice(0, chunk.byteLength - this.#offsetEnd + end);
+            controller.enqueue(chunk);
+            controller.terminate();
+          } else {
+            controller.enqueue(chunk);
+          }
         }
       },
     });

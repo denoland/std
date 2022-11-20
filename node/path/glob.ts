@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { isWindows, osType } from "../../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";

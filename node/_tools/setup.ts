@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --no-check=remote --allow-read=. --allow-write=.
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { gunzip } from "https://deno.land/x/denoflate@1.2.1/mod.ts";
+import { gunzip } from "https://deno.land/x/denoflate@2.0.2/deno/mod.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
@@ -17,6 +17,7 @@ import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
 import { copy, readAll, writeAll } from "../../streams/conversion.ts";
 import { downloadFile } from "../../_util/download_file.ts";
+import { updateToDo } from "./list_remaining_tests.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -110,7 +111,7 @@ async function decompressTests(archivePath: string) {
   );
 
   const buffer = new Buffer(gunzip(await readAll(compressedFile)));
-  Deno.close(compressedFile.rid);
+  compressedFile.close();
 
   const tar = new Untar(buffer);
   const outFolder = dirname(fromFileUrl(new URL(archivePath, import.meta.url)));
@@ -196,6 +197,7 @@ async function copyTests(filePath: string) {
   }
 }
 
+// main
 let shouldDownload = false;
 if (CACHE_MODE === "prompt") {
   let testArchiveExists = false;
@@ -277,3 +279,4 @@ if (shouldDecompress) {
 
 await clearTests();
 await copyTests(decompressedSourcePath);
+await updateToDo();

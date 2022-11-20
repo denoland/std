@@ -826,38 +826,6 @@ Deno.test("assertRejects with synchronous function that throws", async () => {
   );
 });
 
-Deno.test("assertThrows with non-error value thrown and error callback", () => {
-  assertThrows(
-    () => {
-      assertThrows(
-        () => {
-          throw "Panic!";
-        },
-        (error: Error) => error,
-        "Panic!",
-      );
-    },
-    AssertionError,
-    "A non-Error object was thrown.",
-  );
-});
-
-Deno.test("assertRejects with non-error value rejected and error callback", async () => {
-  await assertRejects(
-    () => {
-      return assertRejects(
-        () => {
-          return Promise.reject("Panic!");
-        },
-        (error: Error) => error,
-        "Panic!",
-      );
-    },
-    AssertionError,
-    "A non-Error object was rejected.",
-  );
-});
-
 Deno.test("assertRejects with PromiseLike", async () => {
   await assertRejects(
     () => ({
@@ -946,38 +914,6 @@ Deno.test("assertRejects with error class", async () => {
     },
     Error,
     "foo",
-  );
-});
-
-Deno.test("assertThrows with error callback", () => {
-  assertThrows(
-    () => {
-      throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
-    },
-    (error: Error) => {
-      assert(error instanceof AggregateError);
-      assertEquals(error.message, "baz");
-      assertEquals(error.errors.length, 2);
-      assertStringIncludes(error.errors[0].stack, "Error: foo");
-      assertStringIncludes(error.errors[1].stack, "Error: bar");
-    },
-  );
-});
-
-Deno.test("assertRejectes with error callback", async () => {
-  await assertRejects(
-    () => {
-      return Promise.reject(
-        new AggregateError([new Error("foo"), new Error("bar")], "baz"),
-      );
-    },
-    (error: Error) => {
-      assert(error instanceof AggregateError);
-      assertEquals(error.message, "baz");
-      assertEquals(error.errors.length, 2);
-      assertStringIncludes(error.errors[0].stack, "Error: foo");
-      assertStringIncludes(error.errors[1].stack, "Error: bar");
-    },
   );
 });
 

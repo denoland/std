@@ -1,4 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import {
+  O_APPEND,
+  O_CREAT,
+  O_EXCL,
+  O_RDONLY,
+  O_RDWR,
+  O_TRUNC,
+  O_WRONLY,
+} from "./_fs_constants.ts";
 import { validateFunction } from "../internal/validators.mjs";
 import type { ErrnoException } from "../_global.d.ts";
 import {
@@ -85,80 +94,118 @@ export function checkEncoding(encoding: Encodings | null): Encodings | null {
   throw new Error(`The value "${encoding}" is invalid for option "encoding"`);
 }
 
-export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
+export function getOpenOptions(
+  flag: string | number | undefined,
+): Deno.OpenOptions {
   if (!flag) {
     return { create: true, append: true };
   }
 
-  let openOptions: Deno.OpenOptions;
-  switch (flag) {
-    case "a": {
-      // 'a': Open file for appending. The file is created if it does not exist.
-      openOptions = { create: true, append: true };
-      break;
+  let openOptions: Deno.OpenOptions = {};
+
+  if (typeof flag === "string") {
+    switch (flag) {
+      case "a": {
+        // 'a': Open file for appending. The file is created if it does not exist.
+        openOptions = { create: true, append: true };
+        break;
+      }
+      case "ax":
+      case "xa": {
+        // 'ax', 'xa': Like 'a' but fails if the path exists.
+        openOptions = { createNew: true, write: true, append: true };
+        break;
+      }
+      case "a+": {
+        // 'a+': Open file for reading and appending. The file is created if it does not exist.
+        openOptions = { read: true, create: true, append: true };
+        break;
+      }
+      case "ax+":
+      case "xa+": {
+        // 'ax+', 'xa+': Like 'a+' but fails if the path exists.
+        openOptions = { read: true, createNew: true, append: true };
+        break;
+      }
+      case "r": {
+        // 'r': Open file for reading. An exception occurs if the file does not exist.
+        openOptions = { read: true };
+        break;
+      }
+      case "r+": {
+        // 'r+': Open file for reading and writing. An exception occurs if the file does not exist.
+        openOptions = { read: true, write: true };
+        break;
+      }
+      case "w": {
+        // 'w': Open file for writing. The file is created (if it does not exist) or truncated (if it exists).
+        openOptions = { create: true, write: true, truncate: true };
+        break;
+      }
+      case "wx":
+      case "xw": {
+        // 'wx', 'xw': Like 'w' but fails if the path exists.
+        openOptions = { createNew: true, write: true };
+        break;
+      }
+      case "w+": {
+        // 'w+': Open file for reading and writing. The file is created (if it does not exist) or truncated (if it exists).
+        openOptions = { create: true, write: true, truncate: true, read: true };
+        break;
+      }
+      case "wx+":
+      case "xw+": {
+        // 'wx+', 'xw+': Like 'w+' but fails if the path exists.
+        openOptions = { createNew: true, write: true, read: true };
+        break;
+      }
+      case "as":
+      case "sa": {
+        // 'as', 'sa': Open file for appending in synchronous mode. The file is created if it does not exist.
+        openOptions = { create: true, append: true };
+        break;
+      }
+      case "as+":
+      case "sa+": {
+        // 'as+', 'sa+': Open file for reading and appending in synchronous mode. The file is created if it does not exist.
+        openOptions = { create: true, read: true, append: true };
+        break;
+      }
+      case "rs+":
+      case "sr+": {
+        // 'rs+', 'sr+': Open file for reading and writing in synchronous mode. Instructs the operating system to bypass the local file system cache.
+        openOptions = { create: true, read: true, write: true };
+        break;
+      }
+      default: {
+        throw new Error(`Unrecognized file system flag: ${flag}`);
+      }
     }
-    case "ax": {
-      // 'ax': Like 'a' but fails if the path exists.
-      openOptions = { createNew: true, write: true, append: true };
-      break;
+  } else if (typeof flag === "number") {
+    if ((flag & O_APPEND) === O_APPEND) {
+      openOptions.append = true;
     }
-    case "a+": {
-      // 'a+': Open file for reading and appending. The file is created if it does not exist.
-      openOptions = { read: true, create: true, append: true };
-      break;
+    if ((flag & O_CREAT) === O_CREAT) {
+      openOptions.create = true;
+      openOptions.write = true;
     }
-    case "ax+": {
-      // 'ax+': Like 'a+' but fails if the path exists.
-      openOptions = { read: true, createNew: true, append: true };
-      break;
+    if ((flag & O_EXCL) === O_EXCL) {
+      openOptions.createNew = true;
+      openOptions.read = true;
+      openOptions.write = true;
     }
-    case "r": {
-      // 'r': Open file for reading. An exception occurs if the file does not exist.
-      openOptions = { read: true };
-      break;
+    if ((flag & O_TRUNC) === O_TRUNC) {
+      openOptions.truncate = true;
     }
-    case "r+": {
-      // 'r+': Open file for reading and writing. An exception occurs if the file does not exist.
-      openOptions = { read: true, write: true };
-      break;
+    if ((flag & O_RDONLY) === O_RDONLY) {
+      openOptions.read = true;
     }
-    case "w": {
-      // 'w': Open file for writing. The file is created (if it does not exist) or truncated (if it exists).
-      openOptions = { create: true, write: true, truncate: true };
-      break;
+    if ((flag & O_WRONLY) === O_WRONLY) {
+      openOptions.write = true;
     }
-    case "wx": {
-      // 'wx': Like 'w' but fails if the path exists.
-      openOptions = { createNew: true, write: true };
-      break;
-    }
-    case "w+": {
-      // 'w+': Open file for reading and writing. The file is created (if it does not exist) or truncated (if it exists).
-      openOptions = { create: true, write: true, truncate: true, read: true };
-      break;
-    }
-    case "wx+": {
-      // 'wx+': Like 'w+' but fails if the path exists.
-      openOptions = { createNew: true, write: true, read: true };
-      break;
-    }
-    case "as": {
-      // 'as': Open file for appending in synchronous mode. The file is created if it does not exist.
-      openOptions = { create: true, append: true };
-      break;
-    }
-    case "as+": {
-      // 'as+': Open file for reading and appending in synchronous mode. The file is created if it does not exist.
-      openOptions = { create: true, read: true, append: true };
-      break;
-    }
-    case "rs+": {
-      // 'rs+': Open file for reading and writing in synchronous mode. Instructs the operating system to bypass the local file system cache.
-      openOptions = { create: true, read: true, write: true };
-      break;
-    }
-    default: {
-      throw new Error(`Unrecognized file system flag: ${flag}`);
+    if ((flag & O_RDWR) === O_RDWR) {
+      openOptions.read = true;
+      openOptions.write = true;
     }
   }
 

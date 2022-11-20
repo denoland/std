@@ -6,6 +6,7 @@ import {
   assertExists,
   assertNotStrictEquals,
   assertStrictEquals,
+  assertStringIncludes,
 } from "../testing/asserts.ts";
 import CP from "./child_process.ts";
 import { Deferred, deferred } from "../async/deferred.ts";
@@ -14,7 +15,7 @@ import * as path from "../path/mod.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_CHILD_PROCESS_STDIO_MAXBUFFER } from "./internal/errors.ts";
 
-const { spawn, execFile, ChildProcess } = CP;
+const { spawn, execFile, execFileSync, ChildProcess } = CP;
 
 function withTimeout<T>(timeoutInMS: number): Deferred<T> {
   const promise = deferred<T>();
@@ -52,6 +53,24 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
     await promise;
     assertStrictEquals(exitCode, 0);
     assertStrictEquals(childProcess.exitCode, exitCode);
+  } finally {
+    childProcess.kill();
+    childProcess.stdout?.destroy();
+    childProcess.stderr?.destroy();
+  }
+});
+
+Deno.test("[node/child_process disconnect] the method exists", async () => {
+  const promise = withTimeout(1000);
+  const childProcess = spawn(Deno.execPath(), ["--help"], {
+    env: { NO_COLOR: "true" },
+  });
+  try {
+    childProcess.disconnect();
+    childProcess.on("exit", () => {
+      promise.resolve();
+    });
+    await promise;
   } finally {
     childProcess.kill();
     childProcess.stdout?.destroy();
@@ -507,3 +526,53 @@ Deno.test({
     await p;
   },
 });
+
+Deno.test({
+  name: "[node/child_process] child_process.fork",
+  async fn() {
+    const testdataDir = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "testdata",
+    );
+    const script = path.join(
+      testdataDir,
+      "node_modules",
+      "foo",
+      "index.js",
+    );
+    const p = deferred();
+    const cp = CP.fork(script, [], { cwd: testdataDir, stdio: "pipe" });
+    let output = "";
+    cp.on("close", () => p.resolve());
+    cp.stdout?.on("data", (data) => {
+      output += data;
+    });
+    await p;
+    assertEquals(output, "foo\ntrue\ntrue\ntrue\n");
+  },
+});
+
+Deno.test("[node/child_process execFileSync] 'inherit' stdout and stderr", () => {
+  execFileSync(Deno.execPath(), ["--help"], { stdio: "inherit" });
+});
+
+Deno.test(
+  "[node/child_process spawn] supports windowsVerbatimArguments option",
+  { ignore: Deno.build.os !== "windows" },
+  async () => {
+    const cmdFinished = deferred();
+    let output = "";
+    const cp = spawn("cmd", ["/d", "/s", "/c", '"deno ^"--version^""'], {
+      stdio: "pipe",
+      windowsVerbatimArguments: true,
+    });
+    cp.on("close", () => cmdFinished.resolve());
+    cp.stdout?.on("data", (data) => {
+      output += data;
+    });
+    await cmdFinished;
+    assertStringIncludes(output, "deno");
+    assertStringIncludes(output, "v8");
+    assertStringIncludes(output, "typescript");
+  },
+);

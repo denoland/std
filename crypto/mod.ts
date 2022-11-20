@@ -146,6 +146,26 @@
  * );
  * ```
  *
+ * @example Convert hash to a string
+ *
+ * ```ts
+ * import {
+ *   crypto,
+ *   toHashString,
+ * } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ *
+ * const hash = await crypto.subtle.digest(
+ *   "SHA-384",
+ *   new TextEncoder().encode("You hear that Mr. Anderson?"),
+ * );
+ *
+ * // Hex encoding by default
+ * console.log(toHashString(hash));
+ *
+ * // Or with base64 encoding
+ * console.log(toHashString(hash, "base64"));
+ * ```
+ *
  * @module
  */
 
@@ -153,11 +173,12 @@ import {
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
-} from "./_wasm_crypto/mod.ts";
+} from "./_wasm/mod.ts";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/index.ts";
 
 export { type Data, type Key, KeyStack } from "./keystack.ts";
+export { toHashString } from "./util.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -237,6 +258,10 @@ const stdCrypto: StdCrypto = ((x) => x)({
   subtle: {
     ...webCrypto.subtle,
 
+    /**
+     * Polyfills stream support until the Web Crypto API does so:
+     * @see {@link https://github.com/wintercg/proposal-webcrypto-streams}
+     */
     async digest(
       algorithm: DigestAlgorithm,
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
@@ -347,15 +372,15 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
-type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
+export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
-type DigestAlgorithmObject = {
+export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
-type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
+export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
   ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {

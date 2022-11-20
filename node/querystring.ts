@@ -42,6 +42,18 @@ export interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
 }
 
+export interface ParsedUrlQueryInput {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | ReadonlyArray<string>
+    | ReadonlyArray<number>
+    | ReadonlyArray<boolean>
+    | null
+    | undefined;
+}
+
 interface ParseOptions {
   /** The function to use when decoding percent-encoded characters in the query string. */
   decodeURIComponent?: (string: string) => string;

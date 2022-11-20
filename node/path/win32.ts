@@ -19,7 +19,7 @@ import {
   isWindowsDeviceRoot,
   normalizeString,
 } from "./_util.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 
 export const sep = "\\";
 export const delimiter = ";";
@@ -952,7 +952,7 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./win32.ts";
+ *      import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/node/path/win32.ts";
  *      fromFileUrl("file:///home/foo"); // "\\home\\foo"
  *      fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
  *      fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
@@ -980,7 +980,7 @@ export function fromFileUrl(url: string | URL): string {
  * Converts a path string to a file URL.
  *
  * ```ts
- *      import { toFileUrl } from "./win32.ts";
+ *      import { toFileUrl } from "https://deno.land/std@$STD_VERSION/node/path/win32.ts";
  *      toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
  *      toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
  *      toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")

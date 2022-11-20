@@ -6,17 +6,16 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import { encode } from "../encoding/hex.ts";
 import { contentType } from "../media_types/mod.ts";
 import { serve, serveTls } from "./server.ts";
-import { Status, STATUS_TEXT } from "./http_status.ts";
+import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
-import { compareEtag } from "./util.ts";
-
-const DEFAULT_CHUNK_SIZE = 16_640;
-
+import { compareEtag, createCommonResponse } from "./util.ts";
+import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
+import { VERSION } from "../version.ts";
 interface EntryInfo {
   mode: string;
   size: string;
@@ -25,42 +24,6 @@ interface EntryInfo {
 }
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-// The fnv-1a hash function.
-function fnv1a(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
-}
-
-/** Algorithm used to determine etag */
-export type EtagAlgorithm =
-  | "fnv1a"
-  | "sha-1"
-  | "sha-256"
-  | "sha-384"
-  | "sha-512";
-
-// Generates a hash for the provided string
-async function createEtagHash(
-  message: string,
-  algorithm: EtagAlgorithm = "fnv1a",
-): Promise<string> {
-  if (algorithm === "fnv1a") {
-    return fnv1a(message);
-  }
-  const msgUint8 = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest(algorithm, msgUint8);
-  return decoder.decode(encode(new Uint8Array(hashBuffer)));
-}
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
@@ -107,7 +70,7 @@ export interface ServeFileOptions {
    *
    * @default {"fnv1a"}
    */
-  etagAlgorithm?: EtagAlgorithm;
+  etagAlgorithm?: DigestAlgorithm;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
 }
@@ -127,12 +90,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      const status = Status.NotFound;
-      const statusText = STATUS_TEXT[status];
-      return new Response(statusText, {
-        status,
-        statusText,
-      });
+      return createCommonResponse(Status.NotFound);
     } else {
       throw error;
     }
@@ -140,9 +98,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    const status = Status.NotFound;
-    const statusText = STATUS_TEXT[status];
-    return new Response(statusText, { status, statusText });
+    return createCommonResponse(Status.NotFound);
   }
 
   const file = await Deno.open(filePath);
@@ -167,11 +123,13 @@ export async function serveFile(
     headers.set("last-modified", lastModified.toUTCString());
 
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
-      etagAlgorithm || "fnv1a",
+    const etag = toHashString(
+      await createHash(
+        etagAlgorithm ?? "FNV32A",
+        `${lastModified.toJSON()}${fileInfo.size}`,
+      ),
     );
-    headers.set("etag", simpleEtag);
+    headers.set("etag", etag);
 
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
@@ -179,21 +137,14 @@ export async function serveFile(
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch && compareEtag(ifNoneMatch, simpleEtag)) ||
+      (ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
       (ifNoneMatch === null &&
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
-      const status = Status.NotModified;
-      const statusText = STATUS_TEXT[status];
-
       file.close();
 
-      return new Response(null, {
-        status,
-        statusText,
-        headers,
-      });
+      return createCommonResponse(Status.NotModified, null, { headers });
     }
   }
 
@@ -222,71 +173,36 @@ export async function serveFile(
       start > maxRange ||
       end > maxRange)
   ) {
-    const status = Status.RequestedRangeNotSatisfiable;
-    const statusText = STATUS_TEXT[status];
-
     file.close();
 
-    return new Response(statusText, {
-      status,
-      statusText,
-      headers,
-    });
+    return createCommonResponse(
+      Status.RequestedRangeNotSatisfiable,
+      undefined,
+      {
+        headers,
+      },
+    );
   }
 
   // Set content length
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
-    // Create a stream of the file instead of loading it into memory
-    let bytesSent = 0;
-    const body = new ReadableStream({
-      async start() {
-        if (start > 0) {
-          await file.seek(start, Deno.SeekMode.Start);
-        }
-      },
-      async pull(controller) {
-        const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
-        const bytesRead = await file.read(bytes);
-        if (bytesRead === null) {
-          file.close();
-          controller.close();
-          return;
-        }
-        controller.enqueue(
-          bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
-        );
-        bytesSent += bytesRead;
-        if (bytesSent > contentLength) {
-          file.close();
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(body, {
-      status: Status.PartialContent,
-      statusText: STATUS_TEXT[Status.PartialContent],
+    await file.seek(start, Deno.SeekMode.Start);
+    return createCommonResponse(Status.PartialContent, file.readable, {
       headers,
     });
   }
 
-  return new Response(file.readable, {
-    status: Status.OK,
-    statusText: STATUS_TEXT[Status.OK],
-    headers,
-  });
+  return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
 async function serveDirIndex(
-  req: Request,
   dirPath: string,
   options: {
     dotfiles: boolean;
     target: string;
-    etagAlgorithm?: EtagAlgorithm;
   },
 ): Promise<Response> {
   const showDotfiles = options.dotfiles;
@@ -310,15 +226,9 @@ async function serveDirIndex(
       continue;
     }
     const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
+    const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
+      .replaceAll("%2F", "/");
     const fileInfo = await Deno.stat(filePath);
-    if (entry.name === "index.html" && entry.isFile) {
-      // in case index.html as dir...
-      return serveFile(req, filePath, {
-        etagAlgorithm: options.etagAlgorithm,
-        fileInfo,
-      });
-    }
     listEntry.push({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
@@ -335,32 +245,17 @@ async function serveDirIndex(
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
 
-  return new Response(page, { status: Status.OK, headers });
+  return createCommonResponse(Status.OK, page, { headers });
 }
 
 function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
-    return Promise.resolve(
-      new Response(STATUS_TEXT[Status.BadRequest], {
-        status: Status.BadRequest,
-        statusText: STATUS_TEXT[Status.BadRequest],
-      }),
-    );
+    return Promise.resolve(createCommonResponse(Status.BadRequest));
   } else if (e instanceof Deno.errors.NotFound) {
-    return Promise.resolve(
-      new Response(STATUS_TEXT[Status.NotFound], {
-        status: Status.NotFound,
-        statusText: STATUS_TEXT[Status.NotFound],
-      }),
-    );
+    return Promise.resolve(createCommonResponse(Status.NotFound));
   }
 
-  return Promise.resolve(
-    new Response(STATUS_TEXT[Status.InternalServerError], {
-      status: Status.InternalServerError,
-      statusText: STATUS_TEXT[Status.InternalServerError],
-    }),
-  );
+  return Promise.resolve(createCommonResponse(Status.InternalServerError));
 }
 
 function serverLog(req: Request, status: number) {
@@ -519,6 +414,8 @@ export interface ServeDirOptions {
    * @default {false}
    */
   showDotfiles?: boolean;
+  /** Serves index.html as the index file of the directory. */
+  showIndex?: boolean;
   /** Enable CORS via the "Access-Control-Allow-Origin" header.
    *
    * @default {false}
@@ -533,7 +430,7 @@ export interface ServeDirOptions {
    *
    * @default {"fnv1a"}
    */
-  etagAlgorithm?: EtagAlgorithm;
+  etagAlgorithm?: DigestAlgorithm;
 }
 
 /**
@@ -572,9 +469,10 @@ export interface ServeDirOptions {
  * @param req The request to handle
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
-  let response: Response;
+  let response: Response | undefined = undefined;
   const target = opts.fsRoot || ".";
   const urlRoot = opts.urlRoot;
+  const showIndex = opts.showIndex ?? true;
 
   try {
     let normalizedPath = normalizeURL(req.url);
@@ -590,12 +488,30 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     const fileInfo = await Deno.stat(fsPath);
 
     if (fileInfo.isDirectory) {
-      if (opts.showDirListing) {
-        response = await serveDirIndex(req, fsPath, {
+      if (showIndex) {
+        try {
+          const path = posix.join(fsPath, "index.html");
+          const indexFileInfo = await Deno.lstat(path);
+          if (indexFileInfo.isFile) {
+            response = await serveFile(req, path, {
+              etagAlgorithm: opts.etagAlgorithm,
+              fileInfo: indexFileInfo,
+            });
+          }
+        } catch (e) {
+          if (!(e instanceof Deno.errors.NotFound)) {
+            throw e;
+          }
+          // pass
+        }
+      }
+      if (!response && opts.showDirListing) {
+        response = await serveDirIndex(fsPath, {
           dotfiles: opts.showDotfiles || false,
           target,
         });
-      } else {
+      }
+      if (!response) {
         throw new Deno.errors.NotFound();
       }
     } else {
@@ -625,49 +541,20 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 }
 
 function normalizeURL(url: string): string {
-  let normalizedUrl = url;
-
-  try {
-    //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
-    const absoluteURI = new URL(normalizedUrl);
-    normalizedUrl = absoluteURI.pathname;
-  } catch (e) {
-    //wasn't an absoluteURI
-    if (!(e instanceof TypeError)) {
-      throw e;
-    }
-  }
-
-  try {
-    normalizedUrl = decodeURI(normalizedUrl);
-  } catch (e) {
-    if (!(e instanceof URIError)) {
-      throw e;
-    }
-  }
-
-  if (normalizedUrl[0] !== "/") {
-    throw new URIError("The request URI is malformed.");
-  }
-
-  normalizedUrl = posix.normalize(normalizedUrl);
-  const startOfParams = normalizedUrl.indexOf("?");
-
-  return startOfParams > -1
-    ? normalizedUrl.slice(0, startOfParams)
-    : normalizedUrl;
+  return posix.normalize(decodeURIComponent(new URL(url).pathname));
 }
 
 function main() {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
       verbose: false,
+      version: false,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -679,6 +566,7 @@ function main() {
       k: "key",
       h: "help",
       v: "verbose",
+      V: "version",
     },
   });
   const port = Number(serverArgs.port);
@@ -688,6 +576,11 @@ function main() {
 
   if (serverArgs.help) {
     printUsage();
+    Deno.exit();
+  }
+
+  if (serverArgs.version) {
+    console.log(`Deno File Server ${VERSION}`);
     Deno.exit();
   }
 
@@ -727,7 +620,7 @@ function main() {
 }
 
 function printUsage() {
-  console.log(`Deno File Server
+  console.log(`Deno File Server ${VERSION}
   Serves a local directory in HTTP.
 
 INSTALL:
@@ -747,6 +640,7 @@ OPTIONS:
   --no-dotfiles       Do not show dotfiles
   --no-cors           Disable cross-origin resource sharing
   -v, --verbose       Print request level logs
+  -V, --version       Print version information
 
   All TLS options are required when one is provided.`);
 }
