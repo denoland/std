@@ -22,7 +22,7 @@
  *
  * example.md
  *
- * ```
+ * ```ignore
  * ---
  * module: front_matter
  * tags:
@@ -51,7 +51,7 @@
  * }
  * ```
  *
- * ```
+ * ```ignore
  * $ deno run ./example.ts
  * {
  *   frontMatter: "module: front_matter\ntags:\n  - yaml\n  - toml\n  - json",
@@ -96,19 +96,19 @@
  *
  * #### YAML
  *
- * ```
+ * ```ignore
  * ---
  * these: are
  * ---
  * ```
  *
- * ```
+ * ```ignore
  * ---yaml
  * all: recognized
  * ---
  * ```
  *
- * ```
+ * ```ignore
  * = yaml =
  * as: yaml
  * = yaml =
@@ -116,13 +116,13 @@
  *
  * #### TOML
  *
- * ```
+ * ```ignore
  * ---toml
  * this = 'is'
  * ---
  * ```
  *
- * ```
+ * ```ignore
  * = toml =
  * parsed = 'as'
  * toml = 'data'
@@ -131,7 +131,7 @@
  *
  * #### JSON
  *
- * ```
+ * ```ignore
  * ---json
  * {
  *   "and": "this"
@@ -139,7 +139,7 @@
  * ---
  * ```
  *
- * ```
+ * ```ignore
  * {
  *   "is": "JSON"
  * }
