@@ -73,7 +73,7 @@ type Values<
   N extends Negatable,
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
-> = UseTypes<B, S, C> extends true ?
+> = UseTypes<B, S, C> extends true ? 
     & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
@@ -113,7 +113,7 @@ type AliasName<
  * **Result:** `{ foo: boolan | number, bar?: number }`
  */
 type SpreadDefaults<A, D> = D extends undefined ? A
-  : A extends Record<string, unknown> ?
+  : A extends Record<string, unknown> ? 
       & Omit<A, keyof D>
       & {
         [K in keyof D]: K extends keyof A
@@ -156,7 +156,7 @@ type CollectValues<
   C extends Collectable,
   N extends Negatable = undefined,
 > = UnionToIntersection<
-  C extends string ?
+  C extends string ? 
       & MapTypes<Exclude<T, C>, V, N>
       & (T extends undefined ? Record<never, never> : RecursiveRequired<
         MapTypes<Extract<C, T>, Array<V>, N>
