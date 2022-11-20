@@ -59,7 +59,7 @@ import {
   createWriteStream,
   ReadStream,
   WriteStream,
-} from "./internal/fs/streams.ts";
+} from "./internal/fs/streams.mjs";
 
 const {
   F_OK,
