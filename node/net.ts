@@ -87,7 +87,7 @@ import {
   PipeConnectWrap,
 } from "./internal_binding/pipe_wrap.ts";
 import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";

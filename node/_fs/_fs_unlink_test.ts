@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, fail } from "../../testing/asserts.ts";
 import { existsSync } from "../../fs/exists.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 import { unlink, unlinkSync } from "./_fs_unlink.ts";
 
 Deno.test({

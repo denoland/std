@@ -5,7 +5,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../../_utils.ts";
+import { assertCallbackErrorUncaught } from "../../_test_utils.ts";
 import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./_randomBytes.ts";
 
 Deno.test("randomBytes sync works correctly", function () {

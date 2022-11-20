@@ -152,10 +152,17 @@ TEST(async function test_google_for_cname_and_srv(done) {
     assert.ok(types.SRV);
   }
 
-  validateResult(await dnsPromises.resolve('_jabber._tcp.google.com', 'ANY'));
+  // TODO(kt3k): Temporarily use _caldav._tcp.google.com instead of
+  // _jabber._tcp.google.com, which currently doesn't respond
+  // validateResult(await dnsPromises.resolve('_jabber._tcp.google.com', 'ANY'));
+  validateResult(await dnsPromises.resolve('_caldav._tcp.google.com', 'ANY'));
 
+
+  // TODO(kt3k): Temporarily use _caldav._tcp.google.com instead of
+  // _jabber._tcp.google.com, which currently doesn't respond
   const req = dns.resolve(
-    '_jabber._tcp.google.com',
+    // '_jabber._tcp.google.com',
+    '_caldav._tcp.google.com',
     'ANY',
     common.mustSucceed((ret) => {
       validateResult(ret);

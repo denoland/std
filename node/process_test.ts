@@ -131,7 +131,7 @@ Deno.test({
 
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -140,6 +140,7 @@ Deno.test({
       ],
       cwd,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(stripColor(decoder.decode(stdout).trim()), "1\n2");
@@ -525,7 +526,7 @@ Deno.test("process.getgid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getgid, undefined);
   } else {
-    assertEquals(process.getgid?.(), Deno.getGid());
+    assertEquals(process.getgid?.(), Deno.gid());
   }
 });
 
@@ -533,7 +534,7 @@ Deno.test("process.getuid", () => {
   if (Deno.build.os === "windows") {
     assertEquals(process.getuid, undefined);
   } else {
-    assertEquals(process.getuid?.(), Deno.getUid());
+    assertEquals(process.getuid?.(), Deno.uid());
   }
 });
 
@@ -542,7 +543,7 @@ Deno.test({
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -551,6 +552,7 @@ Deno.test({
       ],
       cwd,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(stripColor(decoder.decode(stdout).trim()), "exit");

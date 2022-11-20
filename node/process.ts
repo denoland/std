@@ -6,7 +6,7 @@ import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import {
   arch,
@@ -566,12 +566,12 @@ class Process extends EventEmitter {
 
   /** This method is removed on Windows */
   getgid?(): number {
-    return Deno.getGid()!;
+    return Deno.gid()!;
   }
 
   /** This method is removed on Windows */
   getuid?(): number {
-    return Deno.getUid()!;
+    return Deno.uid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode

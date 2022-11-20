@@ -32,6 +32,10 @@ import { isIP } from "../internal/net.ts";
 
 import { isLinux, isWindows } from "../../_util/os.ts";
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoListenDatagram = Deno[Deno.internal]?.nodeUnstable?.listenDatagram ||
+  Deno.listenDatagram;
+
 type MessageType = string | Uint8Array | Buffer | DataView;
 
 const AF_INET = 2;
@@ -316,7 +320,7 @@ export class UDP extends HandleWrap {
     let listener;
 
     try {
-      listener = Deno.listenDatagram(listenOptions);
+      listener = DenoListenDatagram(listenOptions);
     } catch (e) {
       if (e instanceof Deno.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
