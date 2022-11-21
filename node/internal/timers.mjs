@@ -55,6 +55,9 @@ Timeout.prototype.refresh = function () {
       ...this._timerArgs,
     );
   }
+  if (!this[kRefed]) {
+    Deno.unrefTimer(this[kTimerId]);
+  }
   return this;
 };
 
