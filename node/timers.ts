@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { setUnrefTimeout, Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
+import { setUnrefTimeout, Timeout } from "./internal/timers.mjs";
 import { validateFunction } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 export { setUnrefTimeout } from "./internal/timers.mjs";
