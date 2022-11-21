@@ -1,11 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { notImplemented } from "../_utils.ts";
 import { inspect } from "./util/inspect.mjs";
-import { validateNumber } from "./validators.mjs";
+import { validateFunction, validateNumber } from "./validators.mjs";
 import { ERR_OUT_OF_RANGE } from "./errors.ts";
 import { emitWarning } from "../process.ts";
+
+const setTimeout_ = globalThis.setTimeout;
+const clearTimeout_ = globalThis.clearTimeout;
+const setInterval_ = globalThis.setInterval;
+const clearInterval_ = globalThis.clearInterval;
 
 // Timeout values > TIMEOUT_MAX are set to 1.
 export const TIMEOUT_MAX = 2 ** 31 - 1;
@@ -15,8 +19,11 @@ export const kTimeout = Symbol("timeout");
 const kRefed = Symbol("refed");
 
 // Timer constructor function.
-// The entire prototype is defined in lib/timers.js
-export function Timeout(id) {
+export function Timeout(id, callback, after, args, isRepeat) {
+  this._idleTimeout = after;
+  this._onTimeout = callback;
+  this._timerArgs = args;
+  this._isRepeat = isRepeat;
   this[kTimerId] = id;
   this[kRefed] = true;
 }
@@ -33,7 +40,22 @@ Timeout.prototype[inspect.custom] = function (_, options) {
 };
 
 Timeout.prototype.refresh = function () {
-  notImplemented();
+  if (this._isRepeat) {
+    clearInterval_(this[kTimerId]);
+    this[kTimerId] = setInterval_(
+      this._onTimeout,
+      this._idleTimeout,
+      ...this._timerArgs,
+    );
+  } else {
+    clearTimeout_(this[kTimerId]);
+    this[kTimerId] = setTimeout_(
+      this._onTimeout,
+      this._idleTimeout,
+      ...this._timerArgs,
+    );
+  }
+  return this;
 };
 
 Timeout.prototype.unref = function () {
@@ -86,10 +108,29 @@ export function getTimerDuration(msecs, name) {
   return msecs;
 }
 
+export function setUnrefTimeout(cb, timeout, ...args) {
+  validateFunction(cb, "callback");
+  if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
+    timeout = 1;
+  }
+  const callback = (...args) => {
+    cb.bind(timer)(...args);
+  };
+  const timer = new Timeout(
+    setTimeout_(callback, timeout, ...args),
+    callback,
+    timeout,
+    args,
+    false,
+  );
+  return timer.unref();
+}
+
 export default {
-  TIMEOUT_MAX,
+  getTimerDuration,
   kTimerId,
   kTimeout,
+  setUnrefTimeout,
   Timeout,
-  getTimerDuration,
+  TIMEOUT_MAX,
 };

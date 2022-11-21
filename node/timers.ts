@@ -1,43 +1,43 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
+import { setUnrefTimeout, Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
 import { validateFunction } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
+export { setUnrefTimeout } from "./internal/timers.mjs";
+
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;
 const clearInterval_ = globalThis.clearInterval;
+
 export function setTimeout(
   cb: (...args: unknown[]) => void,
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateFunction(cb, "cb");
+  validateFunction(cb, "callback");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }
-  const timer = new Timeout(setTimeout_(
-    (...args: unknown[]) => {
-      cb.bind(timer)(...args);
-    },
+  const callback = (...args: unknown[]) => {
+    cb.bind(timer)(...args);
+  };
+  const timer = new Timeout(
+    setTimeout_(callback, timeout, ...args),
+    callback,
     timeout,
-    ...args,
-  ));
+    args,
+    false,
+  );
   return timer;
 }
+
 Object.defineProperty(setTimeout, promisify.custom, {
   value: (timeout: number, ...args: unknown[]) => {
     return new Promise((cb) => setTimeout(cb, timeout, ...args));
   },
   enumerable: true,
 });
-export function setUnrefTimeout(
-  cb: (...args: unknown[]) => void,
-  timeout?: number,
-  ...args: unknown[]
-) {
-  setTimeout(cb, timeout, ...args).unref();
-}
 export function clearTimeout(timeout?: Timeout | number) {
   if (timeout == null) {
     return;
@@ -49,17 +49,20 @@ export function setInterval(
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateFunction(cb, "cb");
+  validateFunction(cb, "callback");
   if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
     timeout = 1;
   }
-  const timer = new Timeout(setInterval_(
-    (...args: unknown[]) => {
-      cb.bind(timer)(...args);
-    },
+  const callback = (...args: unknown[]) => {
+    cb.bind(timer)(...args);
+  };
+  const timer = new Timeout(
+    setInterval_(callback, timeout, ...args),
+    callback,
     timeout,
-    ...args,
-  ));
+    args,
+    true,
+  );
   return timer;
 }
 export function clearInterval(timeout?: Timeout | number | string) {
