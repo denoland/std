@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --no-check=remote --allow-read=. --allow-write=.
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { gunzip } from "https://deno.land/x/denoflate@2.0.2/deno/mod.ts";
+import { Foras, gunzip } from "https://deno.land/x/denoflate@2.0.2/deno/mod.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
@@ -31,6 +31,8 @@ import { updateToDo } from "./list_remaining_tests.ts";
  * You can additionally pass a flag to indicate if cache should be used for generating
  * the tests, or to generate the tests from scratch (-y/-n)
  */
+
+Foras.initSyncBundledOnce();
 
 const USE_CACHE = Deno.args.includes("-y");
 const DONT_USE_CACHE = Deno.args.includes("-n");
