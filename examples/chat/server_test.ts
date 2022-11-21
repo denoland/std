@@ -23,7 +23,9 @@ async function startServer(): Promise<Deno.Command> {
 
   try {
     const { value } = await reader.read();
-    assert(value && new TextDecoder().decode(value).includes("chat server starting"));
+    assert(
+      value && new TextDecoder().decode(value).includes("chat server starting"),
+    );
   } catch {
     await server.stdout.cancel();
   } finally {
