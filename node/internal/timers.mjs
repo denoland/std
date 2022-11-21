@@ -9,7 +9,6 @@ import { emitWarning } from "../process.ts";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;
-const clearInterval_ = globalThis.clearInterval;
 
 // Timeout values > TIMEOUT_MAX are set to 1.
 export const TIMEOUT_MAX = 2 ** 31 - 1;
@@ -18,14 +17,26 @@ export const kTimerId = Symbol("timerId");
 export const kTimeout = Symbol("timeout");
 const kRefed = Symbol("refed");
 
+function createTimer(callback, after, args, isRepeat, timerObj) {
+  const cb = (...args) => callback.bind(timerObj)(...args);
+  if (isRepeat) {
+    return setInterval_(cb, after, ...args);
+  } else {
+    return setTimeout_(cb, after, ...args);
+  }
+}
+
 // Timer constructor function.
-export function Timeout(id, callback, after, args, isRepeat) {
+export function Timeout(callback, after, args, isRepeat, isRefed) {
+  if (typeof after === "number" && after > TIMEOUT_MAX) {
+    after = 1;
+  }
   this._idleTimeout = after;
   this._onTimeout = callback;
   this._timerArgs = args;
   this._isRepeat = isRepeat;
-  this[kTimerId] = id;
-  this[kRefed] = true;
+  this[kTimerId] = createTimer(callback, after, args, isRepeat);
+  this[kRefed] = isRefed;
 }
 
 // Make sure the linked list only shows the minimal necessary information.
@@ -40,21 +51,13 @@ Timeout.prototype[inspect.custom] = function (_, options) {
 };
 
 Timeout.prototype.refresh = function () {
-  if (this._isRepeat) {
-    clearInterval_(this[kTimerId]);
-    this[kTimerId] = setInterval_(
-      this._onTimeout,
-      this._idleTimeout,
-      ...this._timerArgs,
-    );
-  } else {
-    clearTimeout_(this[kTimerId]);
-    this[kTimerId] = setTimeout_(
-      this._onTimeout,
-      this._idleTimeout,
-      ...this._timerArgs,
-    );
-  }
+  clearTimeout_(this[kTimerId]);
+  this[kTimerId] = createTimer(
+    this._onTimeout,
+    this._idleTimeout,
+    this._timerArgs,
+    this._isRepeat,
+  );
   if (!this[kRefed]) {
     Deno.unrefTimer(this[kTimerId]);
   }
@@ -111,22 +114,9 @@ export function getTimerDuration(msecs, name) {
   return msecs;
 }
 
-export function setUnrefTimeout(cb, timeout, ...args) {
-  validateFunction(cb, "callback");
-  if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
-    timeout = 1;
-  }
-  const callback = (...args) => {
-    cb.bind(timer)(...args);
-  };
-  const timer = new Timeout(
-    setTimeout_(callback, timeout, ...args),
-    callback,
-    timeout,
-    args,
-    false,
-  );
-  return timer.unref();
+export function setUnrefTimeout(callback, timeout, ...args) {
+  validateFunction(callback, "callback");
+  return new Timeout(callback, timeout, args, false, false);
 }
 
 export default {

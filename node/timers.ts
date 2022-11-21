@@ -5,31 +5,16 @@ import { validateFunction } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 export { setUnrefTimeout } from "./internal/timers.mjs";
 
-const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
-const setInterval_ = globalThis.setInterval;
 const clearInterval_ = globalThis.clearInterval;
 
 export function setTimeout(
-  cb: (...args: unknown[]) => void,
+  callback: (...args: unknown[]) => void,
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateFunction(cb, "callback");
-  if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
-    timeout = 1;
-  }
-  const callback = (...args: unknown[]) => {
-    cb.bind(timer)(...args);
-  };
-  const timer = new Timeout(
-    setTimeout_(callback, timeout, ...args),
-    callback,
-    timeout,
-    args,
-    false,
-  );
-  return timer;
+  validateFunction(callback, "callback");
+  return new Timeout(callback, timeout, args, false, true);
 }
 
 Object.defineProperty(setTimeout, promisify.custom, {
@@ -45,25 +30,12 @@ export function clearTimeout(timeout?: Timeout | number) {
   clearTimeout_(+timeout);
 }
 export function setInterval(
-  cb: (...args: unknown[]) => void,
+  callback: (...args: unknown[]) => void,
   timeout?: number,
   ...args: unknown[]
 ) {
-  validateFunction(cb, "callback");
-  if (typeof timeout === "number" && timeout > TIMEOUT_MAX) {
-    timeout = 1;
-  }
-  const callback = (...args: unknown[]) => {
-    cb.bind(timer)(...args);
-  };
-  const timer = new Timeout(
-    setInterval_(callback, timeout, ...args),
-    callback,
-    timeout,
-    args,
-    true,
-  );
-  return timer;
+  validateFunction(callback, "callback");
+  return new Timeout(callback, timeout, args, true, true);
 }
 export function clearInterval(timeout?: Timeout | number | string) {
   if (timeout == null) {
