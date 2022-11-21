@@ -175,10 +175,12 @@ if (!isMainThread) {
     notImplemented("parentPort.removeAllListeners");
 
   // Receive startup message
-  [{ threadId, workerData, environmentData }] = await once(
-    parentPort,
-    "message",
-  );
+  (async function() {
+    [{ threadId, workerData, environmentData }] = await once(
+      parentPort,
+      "message",
+    );
+  })()
 
   // alias
   parentPort.addEventListener("offline", () => {
