@@ -16,15 +16,7 @@ export const TIMEOUT_MAX = 2 ** 31 - 1;
 export const kTimerId = Symbol("timerId");
 export const kTimeout = Symbol("timeout");
 const kRefed = Symbol("refed");
-
-function createTimer(callback, after, args, isRepeat, timerObj) {
-  const cb = (...args) => callback.bind(timerObj)(...args);
-  if (isRepeat) {
-    return setInterval_(cb, after, ...args);
-  } else {
-    return setTimeout_(cb, after, ...args);
-  }
-}
+const createTimer = Symbol("createTimer");
 
 // Timer constructor function.
 export function Timeout(callback, after, args, isRepeat, isRefed) {
@@ -35,9 +27,21 @@ export function Timeout(callback, after, args, isRepeat, isRefed) {
   this._onTimeout = callback;
   this._timerArgs = args;
   this._isRepeat = isRepeat;
-  this[kTimerId] = createTimer(callback, after, args, isRepeat);
   this[kRefed] = isRefed;
+  this[kTimerId] = this[createTimer]();
 }
+
+Timeout.prototype[createTimer] = function () {
+  const callback = this._onTimeout;
+  const cb = (...args) => callback.bind(this)(...args);
+  const id = this._isRepeat
+    ? setInterval_(cb, this._idleTimeout, ...this._timerArgs)
+    : setTimeout_(cb, this._idleTimeout, ...this._timerArgs);
+  if (!this[kRefed]) {
+    Deno.unrefTimer(id);
+  }
+  return id;
+};
 
 // Make sure the linked list only shows the minimal necessary information.
 Timeout.prototype[inspect.custom] = function (_, options) {
@@ -52,15 +56,7 @@ Timeout.prototype[inspect.custom] = function (_, options) {
 
 Timeout.prototype.refresh = function () {
   clearTimeout_(this[kTimerId]);
-  this[kTimerId] = createTimer(
-    this._onTimeout,
-    this._idleTimeout,
-    this._timerArgs,
-    this._isRepeat,
-  );
-  if (!this[kRefed]) {
-    Deno.unrefTimer(this[kTimerId]);
-  }
+  this[kTimerId] = this[createTimer]();
   return this;
 };
 
