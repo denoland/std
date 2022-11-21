@@ -15,6 +15,7 @@ import {
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
+import { chunkExpression as RE_TE_CHUNKED } from "./_http_common.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
@@ -131,9 +132,10 @@ class ClientRequest extends NodeWritable {
       this.controller.close();
     }
 
+    const body = await this._createBody(this.body, this.opts);
     const client = await this._createCustomClient();
     const opts = {
-      body: this.body,
+      body,
       method: this.opts.method,
       client,
       headers: this.opts.headers,
@@ -162,6 +164,31 @@ class ClientRequest extends NodeWritable {
 
   abort() {
     this.destroy();
+  }
+
+  async _createBody(
+    body: ReadableStream | null,
+    opts: RequestOptions,
+  ): Promise<Buffer | ReadableStream | null> {
+    if (!body) return null;
+    if (!opts.headers) return body;
+
+    const headers = Object.fromEntries(
+      Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+    );
+
+    if (
+      !RE_TE_CHUNKED.test(headers["transfer-encoding"]) &&
+      !Number.isNaN(Number.parseInt(headers["content-length"], 10))
+    ) {
+      const bufferList: Buffer[] = [];
+      for await (const chunk of body) {
+        bufferList.push(chunk);
+      }
+      return Buffer.concat(bufferList);
+    }
+
+    return body;
   }
 
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
