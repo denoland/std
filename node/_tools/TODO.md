@@ -1,6 +1,6 @@
 # Remaining Node Tests
 
-Total: 2826
+Total: 2825
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -2103,7 +2103,6 @@ Total: 2826
 - [parallel/test-tls-connect-no-host.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-no-host.js)
 - [parallel/test-tls-connect-pipe.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-pipe.js)
 - [parallel/test-tls-connect-secure-context.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-secure-context.js)
-- [parallel/test-tls-connect-simple.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-simple.js)
 - [parallel/test-tls-connect-stream-writes.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-stream-writes.js)
 - [parallel/test-tls-connect-timeout-option.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-connect-timeout-option.js)
 - [parallel/test-tls-delayed-attach-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-tls-delayed-attach-error.js)
