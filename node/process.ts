@@ -252,7 +252,10 @@ memoryUsage.rss = function (): number {
   return memoryUsage().rss;
 };
 
+// Returns a negative error code than can be recognized by errnoException
 function _kill(pid: number, sig: number): number {
+  let err_code;
+
   if (sig === 0) {
     let status;
     if (Deno.build.os === "windows") {
@@ -266,8 +269,7 @@ function _kill(pid: number, sig: number): number {
     }
 
     if (!status.success) {
-      // ESRCH but negative for some reason
-      return -constants.os.errno.ESRCH;
+      err_code = constants.os.errno.ESRCH;
     }
   } else {
     // Reverse search the shortname based on the numeric code
@@ -276,22 +278,25 @@ function _kill(pid: number, sig: number): number {
     ) => numeric_code === sig);
 
     if (!maybe_signal) {
-      // I don't even want to know why unknown signals return SIGTTOU
-      return -constants.os.signals.SIGTTOU;
-    }
+      err_code = constants.os.errno.EINVAL;
+    } else {
+      try {
+        Deno.kill(pid, maybe_signal[0] as Deno.Signal);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          throw notImplemented(maybe_signal[0]);
+        }
 
-    try {
-      Deno.kill(pid, maybe_signal[0] as Deno.Signal);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        throw notImplemented(maybe_signal[0]);
+        throw e;
       }
-
-      throw e;
     }
   }
 
-  return 0;
+  if (!err_code) {
+    return 0;
+  } else {
+    return -err_code;
+  }
 }
 
 export function kill(pid: number, sig: string | number = "SIGTERM") {
