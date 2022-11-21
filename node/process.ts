@@ -1,10 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-import { warnNotImplemented } from "./_utils.ts";
+import { notImplemented, warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
-import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_UNKNOWN_SIGNAL,
+  errnoException,
+} from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/asserts.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
@@ -48,8 +52,13 @@ const stdin = stdin_ as any;
 const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
+import * as constants from "./internal_binding/constants.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
+
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
+  Deno.spawnSync;
 
 const notImplementedEvents = [
   "disconnect",
@@ -243,22 +252,67 @@ memoryUsage.rss = function (): number {
   return memoryUsage().rss;
 };
 
-export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
+function _kill(pid: number, sig: number): number {
+  if (sig === 0) {
+    let status;
+    if (Deno.build.os === "windows") {
+      status = DenoSpawnSync("powershell.exe", {
+        args: ["Get-Process", "-pid", pid],
+      });
+    } else {
+      status = DenoSpawnSync("kill", {
+        args: ["-0", pid],
+      });
+    }
+
+    if (!status.success) {
+      // ESRCH but negative for some reason
+      return -constants.os.errno.ESRCH;
+    }
+  } else {
+    // Reverse search the shortname based on the numeric code
+    const maybe_signal = Object.entries(constants.os.signals).find((
+      [_, numeric_code],
+    ) => numeric_code === sig);
+
+    if (!maybe_signal) {
+      // I don't even want to know why unknown signals return SIGTTOU
+      return -constants.os.signals.SIGTTOU;
+    }
+
+    try {
+      Deno.kill(pid, maybe_signal[0] as Deno.Signal);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        throw notImplemented(maybe_signal[0]);
+      }
+
+      throw e;
+    }
+  }
+
+  return 0;
+}
+
+export function kill(pid: number, sig: string | number = "SIGTERM") {
   if (pid != (pid | 0)) {
     throw new ERR_INVALID_ARG_TYPE("pid", "number", pid);
   }
 
-  if (typeof sig === "string") {
-    try {
-      Deno.kill(pid, sig);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        throw new ERR_UNKNOWN_SIGNAL(sig);
-      }
-      throw e;
-    }
+  let err;
+  if (typeof sig === "number") {
+    err = process._kill(pid, sig);
   } else {
-    throw new ERR_UNKNOWN_SIGNAL(sig.toString());
+    if (sig in constants.os.signals) {
+      // @ts-ignore Index previously checked
+      err = process._kill(pid, constants.os.signals[sig]);
+    } else {
+      throw new ERR_UNKNOWN_SIGNAL(sig);
+    }
+  }
+
+  if (err) {
+    throw errnoException(err, "kill");
   }
 
   return true;
@@ -527,6 +581,13 @@ class Process extends EventEmitter {
    * https://nodejs.org/api/process.html#process_process_hrtime_time
    */
   hrtime = hrtime;
+
+  /**
+   * @deprecated
+   *
+   * NodeJS internal, use process.kill instead
+   */
+  _kill = _kill;
 
   /** https://nodejs.org/api/process.html#processkillpid-signal */
   kill = kill;
