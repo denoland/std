@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { readAll } from "../streams/conversion.ts";
 import { assert, assertStringIncludes } from "../testing/asserts.ts";
 
 /** Asserts that an error thrown in a callback will not be wrongly caught. */
