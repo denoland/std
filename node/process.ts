@@ -53,6 +53,7 @@ const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import * as constants from "./internal_binding/constants.ts";
+import * as uv from "./internal_binding/uv.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
@@ -269,7 +270,7 @@ function _kill(pid: number, sig: number): number {
     }
 
     if (!status.success) {
-      err_code = constants.os.errno.ESRCH;
+      err_code = uv.codeMap.get("ESRCH");
     }
   } else {
     // Reverse search the shortname based on the numeric code
@@ -278,7 +279,7 @@ function _kill(pid: number, sig: number): number {
     ) => numeric_code === sig);
 
     if (!maybe_signal) {
-      err_code = constants.os.errno.EINVAL;
+      err_code = uv.codeMap.get("EINVAL");
     } else {
       try {
         Deno.kill(pid, maybe_signal[0] as Deno.Signal);
