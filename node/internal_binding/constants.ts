@@ -1,11 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+// Blame CommonJS and bad API design
+// All properties have to be initialized since they'll be reexported as named exports down the line in node/constants
+
 let os: {
   dlopen: {
-    RTLD_DEEPBIND?: number;
-    RTLD_GLOBAL?: number;
-    RTLD_LAZY?: number;
-    RTLD_LOCAL?: number;
-    RTLD_NOW?: number;
+    RTLD_DEEPBIND: number | undefined;
+    RTLD_GLOBAL: number | undefined;
+    RTLD_LAZY: number | undefined;
+    RTLD_LOCAL: number | undefined;
+    RTLD_NOW: number | undefined;
   };
   errno: {
     E2BIG: number;
@@ -26,7 +30,7 @@ let os: {
     EDEADLK: number;
     EDESTADDRREQ: number;
     EDOM: number;
-    EDQUOT?: number;
+    EDQUOT: number | undefined;
     EEXIST: number;
     EFAULT: number;
     EFBIG: number;
@@ -43,7 +47,7 @@ let os: {
     EMFILE: number;
     EMLINK: number;
     EMSGSIZE: number;
-    EMULTIHOP?: number;
+    EMULTIHOP: number | undefined;
     ENAMETOOLONG: number;
     ENETDOWN: number;
     ENETRESET: number;
@@ -81,70 +85,70 @@ let os: {
     EROFS: number;
     ESPIPE: number;
     ESRCH: number;
-    ESTALE?: number;
+    ESTALE: number | undefined;
     ETIME: number;
     ETIMEDOUT: number;
     ETXTBSY: number;
     EWOULDBLOCK: number;
     EXDEV: number;
-    WSA_E_CANCELLED?: number;
-    WSA_E_NO_MORE?: number;
-    WSAEACCES?: number;
-    WSAEADDRINUSE?: number;
-    WSAEADDRNOTAVAIL?: number;
-    WSAEAFNOSUPPORT?: number;
-    WSAEALREADY?: number;
-    WSAEBADF?: number;
-    WSAECANCELLED?: number;
-    WSAECONNABORTED?: number;
-    WSAECONNREFUSED?: number;
-    WSAECONNRESET?: number;
-    WSAEDESTADDRREQ?: number;
-    WSAEDISCON?: number;
-    WSAEDQUOT?: number;
-    WSAEFAULT?: number;
-    WSAEHOSTDOWN?: number;
-    WSAEHOSTUNREACH?: number;
-    WSAEINPROGRESS?: number;
-    WSAEINTR?: number;
-    WSAEINVAL?: number;
-    WSAEINVALIDPROCTABLE?: number;
-    WSAEINVALIDPROVIDER?: number;
-    WSAEISCONN?: number;
-    WSAELOOP?: number;
-    WSAEMFILE?: number;
-    WSAEMSGSIZE?: number;
-    WSAENAMETOOLONG?: number;
-    WSAENETDOWN?: number;
-    WSAENETRESET?: number;
-    WSAENETUNREACH?: number;
-    WSAENOBUFS?: number;
-    WSAENOMORE?: number;
-    WSAENOPROTOOPT?: number;
-    WSAENOTCONN?: number;
-    WSAENOTEMPTY?: number;
-    WSAENOTSOCK?: number;
-    WSAEOPNOTSUPP?: number;
-    WSAEPFNOSUPPORT?: number;
-    WSAEPROCLIM?: number;
-    WSAEPROTONOSUPPORT?: number;
-    WSAEPROTOTYPE?: number;
-    WSAEPROVIDERFAILEDINIT?: number;
-    WSAEREFUSED?: number;
-    WSAEREMOTE?: number;
-    WSAESHUTDOWN?: number;
-    WSAESOCKTNOSUPPORT?: number;
-    WSAESTALE?: number;
-    WSAETIMEDOUT?: number;
-    WSAETOOMANYREFS?: number;
-    WSAEUSERS?: number;
-    WSAEWOULDBLOCK?: number;
-    WSANOTINITIALISED?: number;
-    WSASERVICE_NOT_FOUND?: number;
-    WSASYSCALLFAILURE?: number;
-    WSASYSNOTREADY?: number;
-    WSATYPE_NOT_FOUND?: number;
-    WSAVERNOTSUPPORTED?: number;
+    WSA_E_CANCELLED: number | undefined;
+    WSA_E_NO_MORE: number | undefined;
+    WSAEACCES: number | undefined;
+    WSAEADDRINUSE: number | undefined;
+    WSAEADDRNOTAVAIL: number | undefined;
+    WSAEAFNOSUPPORT: number | undefined;
+    WSAEALREADY: number | undefined;
+    WSAEBADF: number | undefined;
+    WSAECANCELLED: number | undefined;
+    WSAECONNABORTED: number | undefined;
+    WSAECONNREFUSED: number | undefined;
+    WSAECONNRESET: number | undefined;
+    WSAEDESTADDRREQ: number | undefined;
+    WSAEDISCON: number | undefined;
+    WSAEDQUOT: number | undefined;
+    WSAEFAULT: number | undefined;
+    WSAEHOSTDOWN: number | undefined;
+    WSAEHOSTUNREACH: number | undefined;
+    WSAEINPROGRESS: number | undefined;
+    WSAEINTR: number | undefined;
+    WSAEINVAL: number | undefined;
+    WSAEINVALIDPROCTABLE: number | undefined;
+    WSAEINVALIDPROVIDER: number | undefined;
+    WSAEISCONN: number | undefined;
+    WSAELOOP: number | undefined;
+    WSAEMFILE: number | undefined;
+    WSAEMSGSIZE: number | undefined;
+    WSAENAMETOOLONG: number | undefined;
+    WSAENETDOWN: number | undefined;
+    WSAENETRESET: number | undefined;
+    WSAENETUNREACH: number | undefined;
+    WSAENOBUFS: number | undefined;
+    WSAENOMORE: number | undefined;
+    WSAENOPROTOOPT: number | undefined;
+    WSAENOTCONN: number | undefined;
+    WSAENOTEMPTY: number | undefined;
+    WSAENOTSOCK: number | undefined;
+    WSAEOPNOTSUPP: number | undefined;
+    WSAEPFNOSUPPORT: number | undefined;
+    WSAEPROCLIM: number | undefined;
+    WSAEPROTONOSUPPORT: number | undefined;
+    WSAEPROTOTYPE: number | undefined;
+    WSAEPROVIDERFAILEDINIT: number | undefined;
+    WSAEREFUSED: number | undefined;
+    WSAEREMOTE: number | undefined;
+    WSAESHUTDOWN: number | undefined;
+    WSAESOCKTNOSUPPORT: number | undefined;
+    WSAESTALE: number | undefined;
+    WSAETIMEDOUT: number | undefined;
+    WSAETOOMANYREFS: number | undefined;
+    WSAEUSERS: number | undefined;
+    WSAEWOULDBLOCK: number | undefined;
+    WSANOTINITIALISED: number | undefined;
+    WSASERVICE_NOT_FOUND: number | undefined;
+    WSASYSCALLFAILURE: number | undefined;
+    WSASYSNOTREADY: number | undefined;
+    WSATYPE_NOT_FOUND: number | undefined;
+    WSAVERNOTSUPPORTED: number | undefined;
   };
   priority: {
     PRIORITY_ABOVE_NORMAL: number;
@@ -156,55 +160,253 @@ let os: {
   };
   signals: {
     SIGABRT: number;
-    SIGALRM?: number;
-    SIGBREAK?: number;
-    SIGBUS?: number;
-    SIGCHLD?: number;
-    SIGCONT?: number;
+    SIGALRM: number | undefined;
+    SIGBREAK: number | undefined;
+    SIGBUS: number | undefined;
+    SIGCHLD: number | undefined;
+    SIGCONT: number | undefined;
     SIGFPE: number;
     SIGHUP: number;
     SIGILL: number;
-    SIGINFO?: number;
+    SIGINFO: number | undefined;
     SIGINT: number;
-    SIGIO?: number;
-    SIGIOT?: number;
+    SIGIO: number | undefined;
+    SIGIOT: number | undefined;
     SIGKILL: number;
-    SIGPIPE?: number;
-    SIGPOLL?: number;
-    SIGPROF?: number;
-    SIGPWR?: number;
-    SIGQUIT?: number;
+    SIGPIPE: number | undefined;
+    SIGPOLL: number | undefined;
+    SIGPROF: number | undefined;
+    SIGPWR: number | undefined;
+    SIGQUIT: number | undefined;
     SIGSEGV: number;
-    SIGSTKFLT?: number;
-    SIGSTOP?: number;
-    SIGSYS?: number;
+    SIGSTKFLT: number | undefined;
+    SIGSTOP: number | undefined;
+    SIGSYS: number | undefined;
     SIGTERM: number;
-    SIGTRAP?: number;
-    SIGTSTP?: number;
-    SIGTTIN?: number;
-    SIGTTOU?: number;
-    SIGUNUSED?: number;
-    SIGURG?: number;
-    SIGUSR1?: number;
-    SIGUSR2?: number;
-    SIGVTALRM?: number;
+    SIGTRAP: number | undefined;
+    SIGTSTP: number | undefined;
+    SIGTTIN: number | undefined;
+    SIGTTOU: number | undefined;
+    SIGUNUSED: number | undefined;
+    SIGURG: number | undefined;
+    SIGUSR1: number | undefined;
+    SIGUSR2: number | undefined;
+    SIGVTALRM: number | undefined;
     SIGWINCH: number;
-    SIGXCPU?: number;
-    SIGXFSZ?: number;
+    SIGXCPU: number | undefined;
+    SIGXFSZ: number | undefined;
   };
-  UV_UDP_IPV6ONLY?: number;
+  UV_UDP_IPV6ONLY: number | undefined;
   UV_UDP_REUSEADDR: number;
 };
+
+const optionalDlopen: typeof os.dlopen = {
+  RTLD_DEEPBIND: undefined,
+  RTLD_GLOBAL: undefined,
+  RTLD_LAZY: undefined,
+  RTLD_LOCAL: undefined,
+  RTLD_NOW: undefined,
+};
+
+const optionalErrno: Pick<
+  typeof os.errno,
+  | "EDQUOT"
+  | "EMULTIHOP"
+  | "ESTALE"
+  | "WSA_E_CANCELLED"
+  | "WSA_E_NO_MORE"
+  | "WSAEACCES"
+  | "WSAEADDRINUSE"
+  | "WSAEADDRNOTAVAIL"
+  | "WSAEAFNOSUPPORT"
+  | "WSAEALREADY"
+  | "WSAEBADF"
+  | "WSAECANCELLED"
+  | "WSAECONNABORTED"
+  | "WSAECONNREFUSED"
+  | "WSAECONNRESET"
+  | "WSAEDESTADDRREQ"
+  | "WSAEDISCON"
+  | "WSAEDQUOT"
+  | "WSAEFAULT"
+  | "WSAEHOSTDOWN"
+  | "WSAEHOSTUNREACH"
+  | "WSAEINPROGRESS"
+  | "WSAEINTR"
+  | "WSAEINVAL"
+  | "WSAEINVALIDPROCTABLE"
+  | "WSAEINVALIDPROVIDER"
+  | "WSAEISCONN"
+  | "WSAELOOP"
+  | "WSAEMFILE"
+  | "WSAEMSGSIZE"
+  | "WSAENAMETOOLONG"
+  | "WSAENETDOWN"
+  | "WSAENETRESET"
+  | "WSAENETUNREACH"
+  | "WSAENOBUFS"
+  | "WSAENOMORE"
+  | "WSAENOPROTOOPT"
+  | "WSAENOTCONN"
+  | "WSAENOTEMPTY"
+  | "WSAENOTSOCK"
+  | "WSAEOPNOTSUPP"
+  | "WSAEPFNOSUPPORT"
+  | "WSAEPROCLIM"
+  | "WSAEPROTONOSUPPORT"
+  | "WSAEPROTOTYPE"
+  | "WSAEPROVIDERFAILEDINIT"
+  | "WSAEREFUSED"
+  | "WSAEREMOTE"
+  | "WSAESHUTDOWN"
+  | "WSAESOCKTNOSUPPORT"
+  | "WSAESTALE"
+  | "WSAETIMEDOUT"
+  | "WSAETOOMANYREFS"
+  | "WSAEUSERS"
+  | "WSAEWOULDBLOCK"
+  | "WSANOTINITIALISED"
+  | "WSASERVICE_NOT_FOUND"
+  | "WSASYSCALLFAILURE"
+  | "WSASYSNOTREADY"
+  | "WSATYPE_NOT_FOUND"
+  | "WSAVERNOTSUPPORTED"
+> = {
+  EDQUOT: undefined,
+  EMULTIHOP: undefined,
+  ESTALE: undefined,
+  WSA_E_CANCELLED: undefined,
+  WSA_E_NO_MORE: undefined,
+  WSAEACCES: undefined,
+  WSAEADDRINUSE: undefined,
+  WSAEADDRNOTAVAIL: undefined,
+  WSAEAFNOSUPPORT: undefined,
+  WSAEALREADY: undefined,
+  WSAEBADF: undefined,
+  WSAECANCELLED: undefined,
+  WSAECONNABORTED: undefined,
+  WSAECONNREFUSED: undefined,
+  WSAECONNRESET: undefined,
+  WSAEDESTADDRREQ: undefined,
+  WSAEDISCON: undefined,
+  WSAEDQUOT: undefined,
+  WSAEFAULT: undefined,
+  WSAEHOSTDOWN: undefined,
+  WSAEHOSTUNREACH: undefined,
+  WSAEINPROGRESS: undefined,
+  WSAEINTR: undefined,
+  WSAEINVAL: undefined,
+  WSAEINVALIDPROCTABLE: undefined,
+  WSAEINVALIDPROVIDER: undefined,
+  WSAEISCONN: undefined,
+  WSAELOOP: undefined,
+  WSAEMFILE: undefined,
+  WSAEMSGSIZE: undefined,
+  WSAENAMETOOLONG: undefined,
+  WSAENETDOWN: undefined,
+  WSAENETRESET: undefined,
+  WSAENETUNREACH: undefined,
+  WSAENOBUFS: undefined,
+  WSAENOMORE: undefined,
+  WSAENOPROTOOPT: undefined,
+  WSAENOTCONN: undefined,
+  WSAENOTEMPTY: undefined,
+  WSAENOTSOCK: undefined,
+  WSAEOPNOTSUPP: undefined,
+  WSAEPFNOSUPPORT: undefined,
+  WSAEPROCLIM: undefined,
+  WSAEPROTONOSUPPORT: undefined,
+  WSAEPROTOTYPE: undefined,
+  WSAEPROVIDERFAILEDINIT: undefined,
+  WSAEREFUSED: undefined,
+  WSAEREMOTE: undefined,
+  WSAESHUTDOWN: undefined,
+  WSAESOCKTNOSUPPORT: undefined,
+  WSAESTALE: undefined,
+  WSAETIMEDOUT: undefined,
+  WSAETOOMANYREFS: undefined,
+  WSAEUSERS: undefined,
+  WSAEWOULDBLOCK: undefined,
+  WSANOTINITIALISED: undefined,
+  WSASERVICE_NOT_FOUND: undefined,
+  WSASYSCALLFAILURE: undefined,
+  WSASYSNOTREADY: undefined,
+  WSATYPE_NOT_FOUND: undefined,
+  WSAVERNOTSUPPORTED: undefined,
+};
+
+const optionalSignals: Pick<
+  typeof os.signals,
+  | "SIGALRM"
+  | "SIGBREAK"
+  | "SIGBUS"
+  | "SIGCHLD"
+  | "SIGCONT"
+  | "SIGINFO"
+  | "SIGIO"
+  | "SIGIOT"
+  | "SIGPIPE"
+  | "SIGPOLL"
+  | "SIGPROF"
+  | "SIGPWR"
+  | "SIGQUIT"
+  | "SIGSTKFLT"
+  | "SIGSTOP"
+  | "SIGSYS"
+  | "SIGTRAP"
+  | "SIGTSTP"
+  | "SIGTTIN"
+  | "SIGTTOU"
+  | "SIGUNUSED"
+  | "SIGURG"
+  | "SIGUSR1"
+  | "SIGUSR2"
+  | "SIGVTALRM"
+  | "SIGXCPU"
+  | "SIGXFSZ"
+> = {
+  SIGALRM: undefined,
+  SIGBREAK: undefined,
+  SIGBUS: undefined,
+  SIGCHLD: undefined,
+  SIGCONT: undefined,
+  SIGINFO: undefined,
+  SIGIO: undefined,
+  SIGIOT: undefined,
+  SIGPIPE: undefined,
+  SIGPOLL: undefined,
+  SIGPROF: undefined,
+  SIGPWR: undefined,
+  SIGQUIT: undefined,
+  SIGSTKFLT: undefined,
+  SIGSTOP: undefined,
+  SIGSYS: undefined,
+  SIGTRAP: undefined,
+  SIGTSTP: undefined,
+  SIGTTIN: undefined,
+  SIGTTOU: undefined,
+  SIGUNUSED: undefined,
+  SIGURG: undefined,
+  SIGUSR1: undefined,
+  SIGUSR2: undefined,
+  SIGVTALRM: undefined,
+  SIGXCPU: undefined,
+  SIGXFSZ: undefined,
+};
+
 if (Deno.build.os === "darwin") {
   os = {
+    UV_UDP_IPV6ONLY: undefined,
     UV_UDP_REUSEADDR: 4,
     dlopen: {
+      ...optionalDlopen,
       RTLD_LAZY: 1,
       RTLD_NOW: 2,
       RTLD_GLOBAL: 8,
       RTLD_LOCAL: 4,
     },
     errno: {
+      ...optionalErrno,
       E2BIG: 7,
       EACCES: 13,
       EADDRINUSE: 48,
@@ -286,6 +488,7 @@ if (Deno.build.os === "darwin") {
       EXDEV: 18,
     },
     signals: {
+      ...optionalSignals,
       SIGHUP: 1,
       SIGINT: 2,
       SIGQUIT: 3,
@@ -329,6 +532,7 @@ if (Deno.build.os === "darwin") {
   };
 } else if (Deno.build.os === "linux") {
   os = {
+    UV_UDP_IPV6ONLY: undefined,
     UV_UDP_REUSEADDR: 4,
     dlopen: {
       RTLD_LAZY: 1,
@@ -338,6 +542,7 @@ if (Deno.build.os === "darwin") {
       RTLD_DEEPBIND: 8,
     },
     errno: {
+      ...optionalErrno,
       E2BIG: 7,
       EACCES: 13,
       EADDRINUSE: 98,
@@ -419,6 +624,7 @@ if (Deno.build.os === "darwin") {
       EXDEV: 18,
     },
     signals: {
+      ...optionalSignals,
       SIGHUP: 1,
       SIGINT: 2,
       SIGQUIT: 3,
@@ -465,9 +671,11 @@ if (Deno.build.os === "darwin") {
   };
 } else {
   os = {
+    UV_UDP_IPV6ONLY: undefined,
     UV_UDP_REUSEADDR: 4,
-    dlopen: {},
+    dlopen: optionalDlopen,
     errno: {
+      ...optionalErrno,
       E2BIG: 7,
       EACCES: 13,
       EADDRINUSE: 100,
@@ -604,6 +812,7 @@ if (Deno.build.os === "darwin") {
       WSAEREFUSED: 10112,
     },
     signals: {
+      ...optionalSignals,
       SIGHUP: 1,
       SIGINT: 2,
       SIGILL: 4,
