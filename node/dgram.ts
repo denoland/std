@@ -455,12 +455,12 @@ export class Socket extends EventEmitter {
         return;
       }
 
-      let flags = 0;
+      let flags: number | undefined = 0;
 
       if (state.reuseAddr) {
         flags |= UV_UDP_REUSEADDR;
       }
-      if (state.ipv6Only) {
+      if (state.ipv6Only && UV_UDP_IPV6ONLY) {
         flags |= UV_UDP_IPV6ONLY;
       }
 
