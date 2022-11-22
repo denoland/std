@@ -460,8 +460,8 @@ export class Socket extends EventEmitter {
       if (state.reuseAddr) {
         flags |= UV_UDP_REUSEADDR;
       }
-      if (state.ipv6Only && UV_UDP_IPV6ONLY) {
-        flags |= UV_UDP_IPV6ONLY;
+      if (state.ipv6Only) {
+        flags |= UV_UDP_IPV6ONLY!;
       }
 
       // TODO(cmorten): here we deviate somewhat from the Node implementation which

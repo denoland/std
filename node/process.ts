@@ -255,7 +255,7 @@ memoryUsage.rss = function (): number {
 
 // Returns a negative error code than can be recognized by errnoException
 function _kill(pid: number, sig: number): number {
-  let err_code;
+  let errCode;
 
   if (sig === 0) {
     let status;
@@ -270,22 +270,22 @@ function _kill(pid: number, sig: number): number {
     }
 
     if (!status.success) {
-      err_code = uv.codeMap.get("ESRCH");
+      errCode = uv.codeMap.get("ESRCH");
     }
   } else {
     // Reverse search the shortname based on the numeric code
-    const maybe_signal = Object.entries(constants.os.signals).find((
-      [_, numeric_code],
-    ) => numeric_code === sig);
+    const maybeSignal = Object.entries(constants.os.signals).find((
+      [_, numericCode],
+    ) => numericCode === sig);
 
-    if (!maybe_signal) {
-      err_code = uv.codeMap.get("EINVAL");
+    if (!maybeSignal) {
+      errCode = uv.codeMap.get("EINVAL");
     } else {
       try {
-        Deno.kill(pid, maybe_signal[0] as Deno.Signal);
+        Deno.kill(pid, maybeSignal[0] as Deno.Signal);
       } catch (e) {
         if (e instanceof TypeError) {
-          throw notImplemented(maybe_signal[0]);
+          throw notImplemented(maybeSignal[0]);
         }
 
         throw e;
@@ -293,10 +293,10 @@ function _kill(pid: number, sig: number): number {
     }
   }
 
-  if (!err_code) {
+  if (!errCode) {
     return 0;
   } else {
-    return err_code;
+    return errCode;
   }
 }
 
@@ -589,7 +589,7 @@ class Process extends EventEmitter {
   hrtime = hrtime;
 
   /**
-   * @deprecated
+   * @private
    *
    * NodeJS internal, use process.kill instead
    */

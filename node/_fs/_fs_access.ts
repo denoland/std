@@ -58,7 +58,7 @@ export function access(
       );
       e.path = path;
       e.syscall = "access";
-      e.errno = codeMap.get("EACCES");
+      e.errno = codeMap.get("ENOENT");
       e.code = "ENOENT";
       cb(e);
     } else {
@@ -111,7 +111,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number) {
       );
       e.path = path;
       e.syscall = "access";
-      e.errno = codeMap.get("EACCES");
+      e.errno = codeMap.get("ENOENT");
       e.code = "ENOENT";
       throw e;
     } else {
