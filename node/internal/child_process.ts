@@ -738,7 +738,7 @@ function parseSpawnSyncOutputStreams(
   output: Deno.CommandOutput,
   name: "stdout" | "stderr",
 ): string | Buffer | null {
-  // Deno.CommandOutput returns getters for stdout and stderr that throw when set
+  // new Deno.Command().outputSync() returns getters for stdout and stderr that throw when set
   // to 'inherit'.
   try {
     return Buffer.from(output[name]) as string | Buffer;
