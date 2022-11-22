@@ -295,7 +295,7 @@ function _kill(pid: number, sig: number): number {
   if (!err_code) {
     return 0;
   } else {
-    return -err_code;
+    return err_code;
   }
 }
 
