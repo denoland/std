@@ -17,7 +17,7 @@ type LocaleOptions = {
 };
 
 /**
- * The options for pretty printing the byte numbers.
+ * @deprecated (will be removed after 0.170.0) use `FormatOptions` instead
  */
 export interface PrettyBytesOptions {
   /** Uses bits representation. Default is false. */
@@ -33,6 +33,30 @@ export interface PrettyBytesOptions {
   /** The maximum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
   maximumFractionDigits?: number;
 }
+/**
+ * The options for pretty printing the byte numbers.
+ */
+export interface FormatOptions {
+  /** Uses bits representation. Default is false. */
+  bits?: boolean;
+  /** Uses binary bytes (e.g. kibibyte). Default is false. */
+  binary?: boolean;
+  /** Include plus sign for positive numbers. */
+  signed?: boolean;
+  /** Uses localized number formatting. If it is set to true, uses default locale on the system. If it's set to string, uses that locale. The given string should be BCP 47 language tag (ref: https://en.wikipedia.org/wiki/IETF_language_tag). You can also give the list of language tags. */
+  locale?: boolean | string | string[];
+  /** The minimum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
+  minimumFractionDigits?: number;
+  /** The maximum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
+  maximumFractionDigits?: number;
+}
+
+/**
+ * @deprecated (will be removed after 0.170.0) use `format` instead
+ */
+export function prettyBytes(num: number, options: FormatOptions = {}) {
+  return format(num, options);
+}
 
 /**
  * Convert bytes to a human readable string: 1337 → 1.34 kB
@@ -40,9 +64,9 @@ export interface PrettyBytesOptions {
  * @param num The number to format
  * @param options The options
  */
-export function prettyBytes(
+export function format(
   num: number,
-  options: PrettyBytesOptions = {},
+  options: FormatOptions = {},
 ): string {
   if (!Number.isFinite(num)) {
     throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);
@@ -92,7 +116,7 @@ export function prettyBytes(
 }
 
 function getLocaleOptions(
-  { maximumFractionDigits, minimumFractionDigits }: PrettyBytesOptions,
+  { maximumFractionDigits, minimumFractionDigits }: FormatOptions,
 ): LocaleOptions | undefined {
   if (maximumFractionDigits || minimumFractionDigits) {
     return {

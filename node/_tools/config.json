@@ -1,7 +1,7 @@
 {
   "nodeVersion": "18.12.0",
   "ignore": {
-    "common": ["index.js", "tmpdir.js"],
+    "common": ["index.js", "internet.js", "tmpdir.js"],
     "fixtures": [
       "child-process-spawn-node.js",
       "elipses.txt",
@@ -662,6 +662,7 @@
       "test-timers-clearImmediate.js",
       "test-timers-interval-throw.js",
       "test-timers-non-integer-delay.js",
+      "test-timers-refresh.js",
       "test-timers-same-timeout-wrong-list-deleted.js",
       "test-timers-timeout-with-non-integer.js",
       "test-timers-uncaught-exception.js",

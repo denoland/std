@@ -1,6 +1,6 @@
 # Remaining Node Tests
 
-Total: 2828
+Total: 2826
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -2034,7 +2034,6 @@ Total: 2828
 - [parallel/test-timers-ordering.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-ordering.js)
 - [parallel/test-timers-promises-scheduler.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-promises-scheduler.js)
 - [parallel/test-timers-refresh-in-callback.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-refresh-in-callback.js)
-- [parallel/test-timers-refresh.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-refresh.js)
 - [parallel/test-timers-reset-process-domain-on-throw.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-reset-process-domain-on-throw.js)
 - [parallel/test-timers-setimmediate-infinite-loop.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-setimmediate-infinite-loop.js)
 - [parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-timers-socket-timeout-removes-other-socket-unref-timer.js)
