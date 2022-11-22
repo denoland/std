@@ -768,7 +768,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const p = new DenoCommand(command, {
+    const output = new DenoCommand(command, {
       args,
       cwd,
       env,
@@ -777,12 +777,11 @@ export function spawnSync(
       uid,
       gid,
       windowsRawArguments: windowsVerbatimArguments,
-    });
+    }).outputSync();
 
-    const { signal } = p.outputSync();
-    const status = signal ? null : 0;
-    let stdout = parseSpawnSyncOutputStreams(p, "stdout");
-    let stderr = parseSpawnSyncOutputStreams(p, "stderr");
+    const status = output.signal ? null : 0;
+    let stdout = parseSpawnSyncOutputStreams(output, "stdout");
+    let stderr = parseSpawnSyncOutputStreams(output, "stderr");
 
     if (
       (stdout && stdout.length > maxBuffer!) ||
@@ -797,10 +796,10 @@ export function spawnSync(
     }
 
     result.status = status;
-    result.signal = signal;
+    result.signal = output.signal;
     result.stdout = stdout;
     result.stderr = stderr;
-    result.output = [signal, stdout, stderr];
+    result.output = [output.signal, stdout, stderr];
   } catch (err) {
     if (err instanceof Deno.errors.NotFound) {
       result.error = _createSpawnSyncError("ENOENT", command, args);
