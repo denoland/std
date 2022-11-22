@@ -55,7 +55,6 @@ export const {
   SIGBUS,
   SIGCHLD,
   SIGCONT,
-  SIGEMT,
   SIGFPE,
   SIGHUP,
   SIGILL,
