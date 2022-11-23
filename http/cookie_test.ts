@@ -334,6 +334,17 @@ Deno.test({
     );
 
     headers = new Headers();
+    setCookie(headers, {
+      name: "Space",
+      value: "Cat",
+      expires: Date.UTC(1983, 0, 7, 15, 32),
+    });
+    assertEquals(
+      headers.get("Set-Cookie"),
+      "Space=Cat; Expires=Fri, 07 Jan 1983 15:32:00 GMT",
+    );
+
+    headers = new Headers();
     setCookie(headers, { name: "__Secure-Kitty", value: "Meow" });
     assertEquals(headers.get("Set-Cookie"), "__Secure-Kitty=Meow; Secure");
 

@@ -12,7 +12,7 @@ export interface Cookie {
   /** Value of the cookie. */
   value: string;
   /** Expiration date of the cookie. */
-  expires?: Date;
+  expires?: Date | number;
   /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
   maxAge?: number;
   /** Specifies those hosts to which the cookie will be sent. */
@@ -79,7 +79,8 @@ function toString(cookie: Cookie): string {
     out.push(`Path=${cookie.path}`);
   }
   if (cookie.expires) {
-    const dateString = toIMF(cookie.expires);
+    const { expires } = cookie;
+    const dateString = toIMF(typeof expires === "number" ? new Date(expires) : expires);
     out.push(`Expires=${dateString}`);
   }
   if (cookie.unparsed) {
