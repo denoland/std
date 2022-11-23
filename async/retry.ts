@@ -18,6 +18,9 @@ const defaultRetryOptions = {
   minTimeout: 1000,
 };
 
+/**
+ * Creates a retry promise which resolves to the value of the input using exponential backoff.
+ */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
   opts?: RetryOptions,
