@@ -483,7 +483,6 @@ Total: 2825
 - [parallel/test-crypto-hash-stream-pipe.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hash-stream-pipe.js)
 - [parallel/test-crypto-hash.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hash.js)
 - [parallel/test-crypto-hkdf.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hkdf.js)
-- [parallel/test-crypto-hmac.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hmac.js)
 - [parallel/test-crypto-key-objects-messageport.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-key-objects-messageport.js)
 - [parallel/test-crypto-key-objects.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-key-objects.js)
 - [parallel/test-crypto-keygen-deprecation.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-keygen-deprecation.js)
