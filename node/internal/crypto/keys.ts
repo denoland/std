@@ -17,6 +17,11 @@ import type {
 import { Buffer } from "../../buffer.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
 import { hideStackFrames } from "../errors.ts";
+import {
+  isCryptoKey as isCryptoKey_,
+  isKeyObject as isKeyObject_,
+  kKeyType,
+} from "./_keys.ts";
 
 const getArrayBufferOrView = hideStackFrames(
   (buffer, name, encoding): Buffer => {
@@ -90,20 +95,14 @@ export interface JwkKeyExportOptions {
   format: "jwk";
 }
 
-const kKeyType = Symbol("kKeyType");
-
 export function isKeyObject(obj: unknown): obj is KeyObject {
-  return (
-    obj != null && (obj as Record<symbol, unknown>)[kKeyType] !== undefined
-  );
+  return isKeyObject_(obj);
 }
 
 export function isCryptoKey(
   obj: unknown,
 ): obj is { type: string; [kKeyObject]: KeyObject } {
-  return (
-    obj != null && (obj as Record<symbol, unknown>)[kKeyObject] !== undefined
-  );
+  return isCryptoKey_(obj);
 }
 
 export class KeyObject {

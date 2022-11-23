@@ -22,6 +22,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as bindingTypes from "../../internal_binding/types.ts";
+export { isCryptoKey, isKeyObject } from "../crypto/_keys.ts";
 
 // https://tc39.es/ecma262/#sec-get-%typedarray%.prototype-@@tostringtag
 const _getTypedArrayToStringTag = Object.getOwnPropertyDescriptor(
