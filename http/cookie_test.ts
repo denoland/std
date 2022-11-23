@@ -101,6 +101,13 @@ Deno.test({
         "RFC2616 cookie 'Space'",
       );
     });
+
+    assertThrows(() => {
+      setCookie(headers, {
+        name: "location",
+        value: "United Kingdom"
+      })
+    }, Error, "RFC2616 cookie 'location' cannot contain character ' '")
   },
 });
 
