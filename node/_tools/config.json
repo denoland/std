@@ -31,6 +31,7 @@
       "test-child-process-execsync-maxbuf.js",
       "test-child-process-spawnsync-env.js",
       "test-console-instance.js",
+      "test-crypto-hmac.js",
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
       "test-dgram-send-cb-quelches-error.js",

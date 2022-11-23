@@ -118,10 +118,10 @@ export class Hash extends Transform {
         return encodeToBase64(digest);
       case "base64url":
         return encodeToBase64Url(digest);
+      case "buffer":
+        return Buffer.from(digest);
       default:
-        throw new Error(
-          `The output encoding for hash digest is not implemented: ${encoding}`,
-        );
+        return Buffer.from(digest).toString(encoding);
     }
   }
 }
