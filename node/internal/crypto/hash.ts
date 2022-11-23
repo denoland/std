@@ -148,7 +148,19 @@ export class HmacImpl extends Transform {
     key: string | ArrayBuffer | KeyObject,
     options?: TransformOptions,
   ) {
-    super();
+    super({
+      transform(chunk: string, encoding: string, callback: () => void) {
+        // deno-lint-ignore no-explicit-any
+        self.update(coerceToBytes(chunk), encoding as any);
+        callback();
+      },
+      flush(callback: () => void) {
+        this.push(self.digest());
+        callback();
+      },
+    });
+    // deno-lint-ignore no-this-alias
+    const self = this;
     if (key instanceof KeyObject) {
       notImplemented("Hmac: KeyObject key is not implemented");
     }
