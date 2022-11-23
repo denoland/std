@@ -1,6 +1,6 @@
 # Remaining Node Tests
 
-Total: 2826
+Total: 2825
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -483,7 +483,6 @@ Total: 2826
 - [parallel/test-crypto-hash-stream-pipe.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hash-stream-pipe.js)
 - [parallel/test-crypto-hash.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hash.js)
 - [parallel/test-crypto-hkdf.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hkdf.js)
-- [parallel/test-crypto-hmac.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-hmac.js)
 - [parallel/test-crypto-key-objects-messageport.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-key-objects-messageport.js)
 - [parallel/test-crypto-key-objects.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-key-objects.js)
 - [parallel/test-crypto-keygen-deprecation.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-crypto-keygen-deprecation.js)
@@ -1740,7 +1739,6 @@ Total: 2826
 - [parallel/test-process-hrtime.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-hrtime.js)
 - [parallel/test-process-initgroups.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-initgroups.js)
 - [parallel/test-process-kill-null.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-kill-null.js)
-- [parallel/test-process-kill-pid.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-kill-pid.js)
 - [parallel/test-process-next-tick.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-next-tick.js)
 - [parallel/test-process-no-deprecation.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-no-deprecation.js)
 - [parallel/test-process-ppid.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-ppid.js)

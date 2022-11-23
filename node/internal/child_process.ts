@@ -339,7 +339,7 @@ function toDenoSignal(signal: number | string): Deno.Signal {
   }
 
   const denoSignal = signal as Deno.Signal;
-  if (os.signals[denoSignal] != null) {
+  if (denoSignal in os.signals) {
     return denoSignal;
   }
   throw new ERR_UNKNOWN_SIGNAL(signal);

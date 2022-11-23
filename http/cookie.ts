@@ -12,7 +12,7 @@ export interface Cookie {
   /** Value of the cookie. */
   value: string;
   /** Expiration date of the cookie. */
-  expires?: Date;
+  expires?: Date | number;
   /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
   maxAge?: number;
   /** Specifies those hosts to which the cookie will be sent. */
@@ -79,7 +79,10 @@ function toString(cookie: Cookie): string {
     out.push(`Path=${cookie.path}`);
   }
   if (cookie.expires) {
-    const dateString = toIMF(cookie.expires);
+    const { expires } = cookie;
+    const dateString = toIMF(
+      typeof expires === "number" ? new Date(expires) : expires,
+    );
     out.push(`Expires=${dateString}`);
   }
   if (cookie.unparsed) {
@@ -134,7 +137,7 @@ function validateValue(name: string, value: string | null) {
       c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
-        "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
+        "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
