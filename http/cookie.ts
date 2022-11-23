@@ -80,7 +80,9 @@ function toString(cookie: Cookie): string {
   }
   if (cookie.expires) {
     const { expires } = cookie;
-    const dateString = toIMF(typeof expires === "number" ? new Date(expires) : expires);
+    const dateString = toIMF(
+      typeof expires === "number" ? new Date(expires) : expires,
+    );
     out.push(`Expires=${dateString}`);
   }
   if (cookie.unparsed) {
