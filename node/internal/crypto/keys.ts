@@ -18,7 +18,7 @@ import { Buffer } from "../../buffer.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
 import { hideStackFrames } from "../errors.ts";
 
-export const getArrayBufferOrView = hideStackFrames(
+const getArrayBufferOrView = hideStackFrames(
   (buffer, name, encoding): Buffer => {
     if (isAnyArrayBuffer(buffer)) {
       return buffer;
@@ -90,7 +90,7 @@ export interface JwkKeyExportOptions {
   format: "jwk";
 }
 
-export const kKeyType = Symbol("kKeyType");
+const kKeyType = Symbol("kKeyType");
 
 export function isKeyObject(obj: unknown): obj is KeyObject {
   return (
@@ -260,10 +260,11 @@ export function createSecretKey(
 }
 
 export default {
-  isKeyObject,
-  isCryptoKey,
-  KeyObject,
   createPrivateKey,
   createPublicKey,
   createSecretKey,
+  isKeyObject,
+  isCryptoKey,
+  KeyObject,
+  prepareSecretKey,
 };

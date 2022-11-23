@@ -136,7 +136,7 @@ export function Hmac(
 
 type Hmac = HmacImpl;
 
-export class HmacImpl extends Transform {
+class HmacImpl extends Transform {
   #ipad: Uint8Array;
   #opad: Uint8Array;
   #ZEROES = Buffer.alloc(128);
