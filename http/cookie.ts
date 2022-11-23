@@ -134,7 +134,7 @@ function validateValue(name: string, value: string | null) {
       c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
-        "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
+        "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
