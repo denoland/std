@@ -486,6 +486,7 @@
       "test-process-exit-handler.js",
       "test-process-exit-recursive.js",
       "test-process-exit.js",
+      "test-process-kill-pid.js",
       "test-process-uptime.js",
       "test-promise-unhandled-silent.js",
       "test-promise-unhandled-throw-handler.js",

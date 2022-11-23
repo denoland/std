@@ -25,6 +25,9 @@ import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
+import { os } from "./internal_binding/constants.ts";
+
+export const constants = os;
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
@@ -305,56 +308,6 @@ export function userInfo(
 ): UserInfo {
   notImplemented(SEE_GITHUB_ISSUE);
 }
-
-export const constants = {
-  // UV_UDP_REUSEADDR: 4,  //see https://nodejs.org/docs/latest-v12.x/api/os.html#os_libuv_constants
-  dlopen: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_dlopen_constants
-  },
-  errno: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_error_constants
-  },
-  // Needs to be kept in sync with `Deno.Signal` type.
-  signals: {
-    "SIGABRT": "SIGABRT",
-    "SIGALRM": "SIGALRM",
-    "SIGBREAK": "SIGBREAK",
-    "SIGBUS": "SIGBUS",
-    "SIGCHLD": "SIGCHLD",
-    "SIGCONT": "SIGCONT",
-    "SIGEMT": "SIGEMT",
-    "SIGFPE": "SIGFPE",
-    "SIGHUP": "SIGHUP",
-    "SIGILL": "SIGILL",
-    "SIGINFO": "SIGINFO",
-    "SIGINT": "SIGINT",
-    "SIGIO": "SIGIO",
-    "SIGKILL": "SIGKILL",
-    "SIGPIPE": "SIGPIPE",
-    "SIGPROF": "SIGPROF",
-    "SIGPWR": "SIGPWR",
-    "SIGQUIT": "SIGQUIT",
-    "SIGSEGV": "SIGSEGV",
-    "SIGSTKFLT": "SIGSTKFLT",
-    "SIGSTOP": "SIGSTOP",
-    "SIGSYS": "SIGSYS",
-    "SIGTERM": "SIGTERM",
-    "SIGTRAP": "SIGTRAP",
-    "SIGTSTP": "SIGTSTP",
-    "SIGTTIN": "SIGTTIN",
-    "SIGTTOU": "SIGTTOU",
-    "SIGURG": "SIGURG",
-    "SIGUSR1": "SIGUSR1",
-    "SIGUSR2": "SIGUSR2",
-    "SIGVTALRM": "SIGVTALRM",
-    "SIGWINCH": "SIGWINCH",
-    "SIGXCPU": "SIGXCPU",
-    "SIGXFSZ": "SIGXFSZ",
-  },
-  priority: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_priority_constants
-  },
-};
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
 export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";

@@ -1,6 +1,6 @@
 # Remaining Node Tests
 
-Total: 2826
+Total: 2825
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -1739,7 +1739,6 @@ Total: 2826
 - [parallel/test-process-hrtime.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-hrtime.js)
 - [parallel/test-process-initgroups.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-initgroups.js)
 - [parallel/test-process-kill-null.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-kill-null.js)
-- [parallel/test-process-kill-pid.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-kill-pid.js)
 - [parallel/test-process-next-tick.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-next-tick.js)
 - [parallel/test-process-no-deprecation.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-no-deprecation.js)
 - [parallel/test-process-ppid.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-ppid.js)

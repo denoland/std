@@ -19,6 +19,8 @@ import { copy, readAll, writeAll } from "../../streams/conversion.ts";
 import { downloadFile } from "../../_util/download_file.ts";
 import { updateToDo } from "./list_remaining_tests.ts";
 
+Foras.initSyncBundledOnce();
+
 /**
  * This script will download and extract the test files specified in the
  * configuration file
