@@ -239,10 +239,11 @@ const result = await deadline(delayedPromise, 10);
 
 # retry
 
-Creates a retry promise which resolves to the value of the input. If the input
-promise throws, it will be retried `maxAttempts` amount of times. It will retry
-the input every certain amount of milliseconds, starting at `minTimeout` and
-multiplying by the `multiplier` until it reaches the `maxTimeout`
+Creates a retry promise which resolves to the value of the input using
+exponential backoff. If the input promise throws, it will be retried
+`maxAttempts` number of times. It will retry the input every certain amount of
+milliseconds, starting at `minTimeout` and multiplying by the `multiplier` until
+it reaches the `maxTimeout`
 
 ```typescript
 import { retry } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
