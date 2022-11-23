@@ -8,7 +8,10 @@ import { assert } from "../_util/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 
 export interface CopyOptions {
-  /** overwrite existing file or directory. Default is `false` */
+  /**
+   * overwrite existing file or directory.
+   * @default {false}
+   */
   overwrite?: boolean;
   /**
    * When `true`, will set last modification and access times to the ones of the

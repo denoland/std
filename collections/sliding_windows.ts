@@ -10,7 +10,6 @@
  *
  * If partial is set, windows will be generated for the last elements of the
  * collection, resulting in some undefined values if size is greater than 1.
- * (Default: false)
  *
  * @example
  * ```ts
