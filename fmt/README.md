@@ -3,10 +3,6 @@
 This is very much a work-in-progress. I'm actively soliciting feedback. What
 immediately follows are points for discussion.
 
-## Discussion
-
-This is very much a work-in-progress. I'm actively soliciting feedback.
-
 - What useful features are available in other languages apart from Golang and C?
 
 - behaviour of `%v` verb. In Golang, this is a shortcut verb to "print the

@@ -1,6 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Load environment variables from `.env` files.
+ * Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv) and
+ * [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
  *
  * ```sh
  * # .env
