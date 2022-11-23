@@ -163,14 +163,14 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const res = await fetch("http://localhost:4507/README.md");
+      const res = await fetch("http://localhost:4507/mod.ts");
       assertEquals(
         res.headers.get("content-type"),
-        "text/markdown; charset=UTF-8",
+        "video/mp2t",
       );
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "README.md")),
+        await Deno.readFile(join(moduleDir, "mod.ts")),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
