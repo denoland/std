@@ -1,13 +1,17 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import Dirent from "./_fs_dirent.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
+import { ERR_MISSING_ARGS } from "../internal/errors.ts";
 
 export default class Dir {
   #dirPath: string | Uint8Array;
-  #syncIterator!: Iterator<Deno.DirEntry> | null;
-  #asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
+  #syncIterator!: Iterator<Deno.DirEntry, undefined> | null;
+  #asyncIterator!: AsyncIterator<Deno.DirEntry, undefined> | null;
 
   constructor(path: string | Uint8Array) {
+    if (!path) {
+      throw new ERR_MISSING_ARGS("path");
+    }
     this.#dirPath = path;
   }
 
@@ -27,10 +31,15 @@ export default class Dir {
       assert(this.#asyncIterator);
       this.#asyncIterator
         .next()
-        .then(({ value }) => {
-          resolve(value ? value : null);
+        .then((iteratorResult) => {
+          resolve(
+            iteratorResult.done ? null : new Dirent(iteratorResult.value),
+          );
           if (callback) {
-            callback(null, value ? value : null);
+            callback(
+              null,
+              iteratorResult.done ? null : new Dirent(iteratorResult.value),
+            );
           }
         }, (err) => {
           if (callback) {
@@ -46,9 +55,12 @@ export default class Dir {
       this.#syncIterator = Deno.readDirSync(this.path)![Symbol.iterator]();
     }
 
-    const file: Deno.DirEntry = this.#syncIterator.next().value;
-
-    return file ? new Dirent(file) : null;
+    const iteratorResult = this.#syncIterator.next();
+    if (iteratorResult.done) {
+      return null;
+    } else {
+      return new Dirent(iteratorResult.value);
+    }
   }
 
   /**

@@ -9,6 +9,7 @@ import {
   emitKeypressEvents,
   Interface,
   moveCursor,
+  promises,
 } from "./_readline.mjs";
 
 export {
@@ -19,6 +20,7 @@ export {
   emitKeypressEvents,
   Interface,
   moveCursor,
+  promises,
 };
 
 export default {
@@ -29,4 +31,5 @@ export default {
   cursorTo,
   emitKeypressEvents,
   moveCursor,
+  promises,
 };

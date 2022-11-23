@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, fail } from "../../testing/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 import { chown, chownSync } from "./_fs_chown.ts";
 
 // chown is difficult to test.  Best we can do is set the existing user id/group

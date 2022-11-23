@@ -3,78 +3,6 @@
 
 import { BytesList } from "../bytes/bytes_list.ts";
 
-const CR = "\r".charCodeAt(0);
-const LF = "\n".charCodeAt(0);
-
-/** @deprecated (will be removed after 0.157.0) Use TextLineStream instead, as it can handle empty lines.
- *
- * Transform a stream into a stream where each chunk is divided by a newline,
- * be it `\n` or `\r\n`.
- *
- * ```ts
- * import { LineStream } from "./delimiter.ts";
- * const res = await fetch("https://example.com");
- * const lines = res.body!.pipeThrough(new LineStream());
- * ```
- */
-export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
-  #bufs = new BytesList();
-  #prevHadCR = false;
-
-  constructor() {
-    super({
-      transform: (chunk, controller) => {
-        this.#handle(chunk, controller);
-      },
-      flush: (controller) => {
-        controller.enqueue(this.#mergeBufs(false));
-      },
-    });
-  }
-
-  #handle(
-    chunk: Uint8Array,
-    controller: TransformStreamDefaultController<Uint8Array>,
-  ) {
-    const lfIndex = chunk.indexOf(LF);
-
-    if (this.#prevHadCR) {
-      this.#prevHadCR = false;
-      if (lfIndex === 0) {
-        controller.enqueue(this.#mergeBufs(true));
-        this.#handle(chunk.subarray(1), controller);
-        return;
-      }
-    }
-
-    if (lfIndex === -1) {
-      if (chunk.at(-1) === CR) {
-        this.#prevHadCR = true;
-      }
-      this.#bufs.add(chunk);
-    } else {
-      let crOrLfIndex = lfIndex;
-      if (chunk[lfIndex - 1] === CR) {
-        crOrLfIndex--;
-      }
-      this.#bufs.add(chunk.subarray(0, crOrLfIndex));
-      controller.enqueue(this.#mergeBufs(false));
-      this.#handle(chunk.subarray(lfIndex + 1), controller);
-    }
-  }
-
-  #mergeBufs(prevHadCR: boolean): Uint8Array {
-    const mergeBuf = this.#bufs.concat();
-    this.#bufs = new BytesList();
-
-    if (prevHadCR) {
-      return mergeBuf.subarray(0, -1);
-    } else {
-      return mergeBuf;
-    }
-  }
-}
-
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
   allowCR: boolean;
@@ -84,7 +12,7 @@ interface TextLineStreamOptions {
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * ```ts
- * import { TextLineStream } from "./delimiter.ts";
+ * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())
@@ -142,7 +70,7 @@ export class TextLineStream extends TransformStream<string, string> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { DelimiterStream } from "./delimiter.ts";
+ * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo")))
@@ -208,7 +136,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { TextDelimiterStream } from "./delimiter.ts";
+ * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

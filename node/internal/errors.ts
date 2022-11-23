@@ -13,7 +13,6 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  */
 
-import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
@@ -21,13 +20,14 @@ import {
   errorMap,
   mapSysErrnoToUvErrno,
 } from "../internal_binding/uv.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
 import { os as osConstants } from "../internal_binding/constants.ts";
 const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
 import { hideStackFrames } from "./hide_stack_frames.ts";
+import { getSystemErrorName } from "../_utils.ts";
 
 export { errorMap };
 
@@ -61,8 +61,11 @@ const kTypes = [
 export class AbortError extends Error {
   code: string;
 
-  constructor() {
-    super("The operation was aborted");
+  constructor(message = "The operation was aborted", options?: ErrorOptions) {
+    if (options !== undefined && typeof options !== "object") {
+      throw new codes.ERR_INVALID_ARG_TYPE("options", "Object", options);
+    }
+    super(message, options);
     this.code = "ABORT_ERR";
     this.name = "AbortError";
   }
@@ -118,6 +121,7 @@ export interface ErrnoException extends Error {
   code?: string;
   path?: string;
   syscall?: string;
+  spawnargs?: string[];
 }
 
 /**
@@ -2101,6 +2105,14 @@ export class ERR_UNSUPPORTED_ESM_URL_SCHEME extends NodeError {
     );
   }
 }
+export class ERR_USE_AFTER_CLOSE extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_USE_AFTER_CLOSE",
+      `${x} was closed`,
+    );
+  }
+}
 export class ERR_V8BREAKITERATOR extends NodeError {
   constructor() {
     super(
@@ -2477,6 +2489,7 @@ export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
 
 interface UvExceptionContext {
   syscall: string;
+  path?: string;
 }
 export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
   const errno = extractOsErrorNumberFromErrorMessage(e);
@@ -2814,6 +2827,7 @@ export default {
   ERR_UNKNOWN_SIGNAL,
   ERR_UNSUPPORTED_DIR_IMPORT,
   ERR_UNSUPPORTED_ESM_URL_SCHEME,
+  ERR_USE_AFTER_CLOSE,
   ERR_V8BREAKITERATOR,
   ERR_VALID_PERFORMANCE_ENTRY_TYPE,
   ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING,

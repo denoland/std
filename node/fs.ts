@@ -8,7 +8,6 @@ import {
 import { chmod, chmodPromise, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownPromise, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
-import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFilePromise, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -54,13 +53,33 @@ import {
   writeFileSync,
 } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
-import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
+// @deno-types="./internal/fs/streams.d.ts"
+import {
+  createReadStream,
+  createWriteStream,
+  ReadStream,
+  WriteStream,
+} from "./internal/fs/streams.mjs";
 
 const {
   F_OK,
   R_OK,
   W_OK,
   X_OK,
+  O_RDONLY,
+  O_WRONLY,
+  O_RDWR,
+  O_NOCTTY,
+  O_TRUNC,
+  O_APPEND,
+  O_DIRECTORY,
+  O_NOFOLLOW,
+  O_SYNC,
+  O_DSYNC,
+  O_SYMLINK,
+  O_NONBLOCK,
+  O_CREAT,
+  O_EXCL,
 } = constants;
 
 const promises = {
@@ -133,6 +152,20 @@ export default {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
   openSync,
   opendir,
@@ -220,6 +253,20 @@ export {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
   opendir,
   opendirSync,

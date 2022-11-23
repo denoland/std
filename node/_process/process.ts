@@ -31,6 +31,19 @@ export const cwd = Deno.cwd;
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
 
+/** Wrapper of Deno.env.get, which doesn't throw type error when
+ * the env name has "=" or "\0" in it. */
+function denoEnvGet(name: string) {
+  try {
+    return Deno.env.get(name);
+  } catch (e) {
+    if (e instanceof TypeError) {
+      return undefined;
+    }
+    throw e;
+  }
+}
+
 const OBJECT_PROTO_PROP_NAMES = Object.getOwnPropertyNames(Object.prototype);
 /**
  * https://nodejs.org/api/process.html#process_process_env
@@ -43,7 +56,7 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
         return target[prop];
       }
 
-      const envValue = Deno.env.get(prop);
+      const envValue = denoEnvGet(prop);
 
       if (envValue) {
         return envValue;
@@ -57,20 +70,20 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
     },
     ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
     getOwnPropertyDescriptor: (_target, name) => {
-      const value = Deno.env.get(String(name));
+      const value = denoEnvGet(String(name));
       if (value) {
         return {
           enumerable: true,
           configurable: true,
-          value: Deno.env.get(String(name)),
+          value,
         };
       }
     },
     set(_target, prop, value) {
       Deno.env.set(String(prop), String(value));
-      return value;
+      return true; // success
     },
-    has: (_target, prop) => typeof Deno.env.get(String(prop)) === "string",
+    has: (_target, prop) => typeof denoEnvGet(String(prop)) === "string",
   });
 
 /** https://nodejs.org/api/process.html#process_process_pid */

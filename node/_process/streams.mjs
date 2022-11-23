@@ -41,17 +41,13 @@ function createWritableStdioStream(writer, name) {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty?.(writer?.rid)
-          ? Deno.consoleSize?.(writer?.rid).columns
-          : undefined,
+        Deno.isatty?.(writer?.rid) ? Deno.consoleSize?.().columns : undefined,
     },
     rows: {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty?.(writer?.rid)
-          ? Deno.consoleSize?.(writer?.rid).rows
-          : undefined,
+        Deno.isatty?.(writer?.rid) ? Deno.consoleSize?.().rows : undefined,
     },
     isTTY: {
       enumerable: true,
@@ -63,7 +59,7 @@ function createWritableStdioStream(writer, name) {
       configurable: true,
       value: () =>
         Deno.isatty?.(writer?.rid)
-          ? Object.values(Deno.consoleSize?.(writer?.rid))
+          ? Object.values(Deno.consoleSize?.())
           : undefined,
     },
   });
@@ -137,7 +133,7 @@ Object.defineProperty(stdin, "isTTY", {
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
-  Deno.setRaw?.(Deno.stdin?.rid, enable);
+  Deno.stdin?.setRaw?.(enable);
   stdin._isRawMode = enable;
   return stdin;
 };

@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../_util/asserts.ts";
 
 /** Compare to array buffers or data views in a way that timing based attacks
  * cannot gain information about the platform. */

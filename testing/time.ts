@@ -6,7 +6,7 @@
  * @module
  */
 
-import { ascend, RBTree } from "../collections/rb_tree.ts";
+import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
 import { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
@@ -212,7 +212,7 @@ let advanceFrequency: number;
 let advanceIntervalId: number | undefined;
 let timerId: Generator<number>;
 let dueNodes: Map<number, DueNode>;
-let dueTree: RBTree<DueNode>;
+let dueTree: RedBlackTree<DueNode>;
 
 /**
  * Overrides the real Date object and timer functions with fake ones that can be
@@ -269,7 +269,7 @@ export class FakeTime {
 
     timerId = timerIdGen();
     dueNodes = new Map();
-    dueTree = new RBTree(
+    dueTree = new RedBlackTree(
       (a: DueNode, b: DueNode) => ascend(a.due, b.due),
     );
 

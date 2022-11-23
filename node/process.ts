@@ -6,7 +6,7 @@ import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import {
   arch,
@@ -385,6 +385,8 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
         Deno.addSignalListener(event as Deno.Signal, listener);
       }
@@ -409,6 +411,8 @@ class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
         Deno.removeSignalListener(event as Deno.Signal, listener);
       }
@@ -560,16 +564,14 @@ class Process extends EventEmitter {
     return 0o22;
   }
 
-  /** https://nodejs.org/api/process.html#processgetuid */
-  getuid(): number {
-    // TODO(kt3k): return user id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getgid?(): number {
+    return Deno.gid()!;
   }
 
-  /** https://nodejs.org/api/process.html#processgetgid */
-  getgid(): number {
-    // TODO(kt3k): return group id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getuid?(): number {
+    return Deno.uid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
@@ -601,6 +603,11 @@ class Process extends EventEmitter {
   }
 
   features = { inspector: false };
+}
+
+if (Deno.build.os === "windows") {
+  delete Process.prototype.getgid;
+  delete Process.prototype.getuid;
 }
 
 /** https://nodejs.org/api/process.html#process_process */

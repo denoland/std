@@ -27,6 +27,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalCp from "./internal/child_process.ts";
 import internalCryptoCertificate from "./internal/crypto/certificate.ts";
 import internalCryptoCipher from "./internal/crypto/cipher.ts";
 import internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
@@ -65,6 +66,7 @@ import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
+import readlinePromises from "./readline/promises.ts";
 import repl from "./repl.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.mjs";
@@ -115,6 +117,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/child_process": internalCp,
   "internal/crypto/certificate": internalCryptoCertificate,
   "internal/crypto/cipher": internalCryptoCipher,
   "internal/crypto/diffiehellman": internalCryptoDiffiehellman,
@@ -161,6 +164,7 @@ export default {
   },
   querystring,
   readline,
+  "readline/promises": readlinePromises,
   repl,
   stream,
   "stream/consumers": streamConsumers,

@@ -87,7 +87,7 @@ import {
   PipeConnectWrap,
 } from "./internal_binding/pipe_wrap.ts";
 import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
@@ -1420,11 +1420,10 @@ export class Socket extends Duplex {
         this._handle = null;
         this._sockname = undefined;
 
-        cb(exception);
-
         debug("emit close");
         this.emit("close", isException);
       });
+      cb(exception);
     } else {
       cb(exception);
       nextTick(_emitCloseNT, this);
@@ -2415,10 +2414,14 @@ export class Server extends EventEmitter {
       return;
     }
 
+    // We use setTimeout instead of nextTick here to avoid EADDRINUSE error
+    // when the same port listened immediately after the 'close' event.
+    // ref: https://github.com/denoland/deno_std/issues/2788
     defaultTriggerAsyncIdScope(
       this[asyncIdSymbol],
-      nextTick,
+      setTimeout,
       _emitCloseNT,
+      0,
       this,
     );
   }

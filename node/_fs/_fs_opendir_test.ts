@@ -9,7 +9,7 @@ import {
 } from "../../testing/asserts.ts";
 import { opendir, opendirSync } from "./_fs_opendir.ts";
 import { Buffer } from "../buffer.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 
 Deno.test("[node/fs] opendir()", async (t) => {
   const path = await Deno.makeTempDir();

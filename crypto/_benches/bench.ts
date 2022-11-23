@@ -1,6 +1,5 @@
 #!/usr/bin/env -S deno run
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { createHash } from "../../hash/mod.ts";
 import { assert, assertEquals } from "../../testing/asserts.ts";
 
 import { crypto as stdCrypto } from "../mod.ts";
@@ -34,7 +33,6 @@ for (const algorithm of ["SHA-256", "SHA-512"] as const) {
     for (
       const implementation of [
         "runtime WebCrypto (target)",
-        "std@0.102.0/hash Wasm (baseline)",
         "std/crypto Wasm   (you are here)",
       ] as const
     ) {
@@ -52,12 +50,6 @@ for (const algorithm of ["SHA-256", "SHA-512"] as const) {
             digest = stdCrypto.subtle.digestSync(algorithm, buffer);
           } else if (implementation === "runtime WebCrypto (target)") {
             digest = await webCrypto.subtle.digest(algorithm, buffer);
-          } else if (implementation === "std@0.102.0/hash Wasm (baseline)") {
-            digest = createHash(
-              algorithm.toLowerCase().replace("-", "") as "sha256" | "sha512",
-            )
-              .update(buffer)
-              .digest();
           } else {
             throw new Error(`Unknown implementation ${implementation}`);
           }

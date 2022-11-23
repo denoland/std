@@ -38,6 +38,16 @@ Deno.test("[node/crypto.Hash] basic usage - hex output", () => {
   assertEquals(d, "1f8ac10f23c5b5bc1167bda84b833e5c057a77d2");
 });
 
+Deno.test("[node/crypto.Hash] basic usage - base64 output", () => {
+  const d = createHash("sha1").update("abc").update("def").digest("base64");
+  assertEquals(d, "H4rBDyPFtbwRZ72oS4M+XAV6d9I=");
+});
+
+Deno.test("[node/crypto.Hash] basic usage - base64url output", () => {
+  const d = createHash("sha1").update("abc").update("def").digest("base64url");
+  assertEquals(d, "H4rBDyPFtbwRZ72oS4M-XAV6d9I");
+});
+
 Deno.test("[node/crypto.Hash] streaming usage", async () => {
   const source = Readable.from(["abc", "def"]);
   const hash = createHash("sha1");

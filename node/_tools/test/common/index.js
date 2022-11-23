@@ -24,6 +24,7 @@ let localhostIPv4 = null;
 let knownGlobals = [
   atob,
   btoa,
+  caches,
   clearImmediate,
   global.clearInterval,
   global.clearTimeout,
@@ -431,6 +432,10 @@ function getBufferSources(buf) {
   return [...getArrayBufferViews(buf), new Uint8Array(buf).buffer];
 }
 
+const pwdCommand = isWindows ?
+  ['cmd.exe', ['/d', '/c', 'cd']] :
+  ['pwd', []];
+
 module.exports = {
   allowGlobals,
   expectsError,
@@ -447,6 +452,7 @@ module.exports = {
   PIPE,
   platformTimeout,
   printSkipMessage,
+  pwdCommand,
   skipIfDumbTerminal,
   isDumbTerminal,
   isWindows,

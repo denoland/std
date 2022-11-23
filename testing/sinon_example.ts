@@ -5,8 +5,8 @@
  *
  * Run this example with:
  *
- * ```ignore
- * deno test ./testing/sinon_example.ts
+ * ```shellsession
+ * $ deno test ./testing/sinon_example.ts
  * ```
  *
  * @module

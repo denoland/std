@@ -8,7 +8,7 @@ const testdataDir = path.resolve(moduleDir, "testdata");
 Deno.test({
   name: "load",
   async fn() {
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--allow-read",
@@ -17,6 +17,7 @@ Deno.test({
       ],
       cwd: testdataDir,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(
@@ -29,7 +30,7 @@ Deno.test({
 Deno.test({
   name: "load when multiple files",
   async fn() {
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--allow-read",
@@ -38,6 +39,7 @@ Deno.test({
       ],
       cwd: testdataDir,
     });
+    const { stdout } = await command.output();
 
     const decoder = new TextDecoder();
     assertEquals(

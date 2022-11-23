@@ -19,10 +19,13 @@ export const {
   groupEnd,
   info,
   log,
+  profile,
+  profileEnd,
   table,
   time,
   timeEnd,
   timeLog,
+  timeStamp,
   trace,
   warn,
 } = console;

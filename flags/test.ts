@@ -66,6 +66,22 @@ Deno.test("booleanGroups", function () {
   assertEquals(typeof argv.z, "boolean");
 });
 
+Deno.test("booleanAndAliasDefaultsToFalseWithNoArgs", function (): void {
+  const argv = parse([], {
+    string: ["foo"],
+    boolean: ["bar"],
+    alias: {
+      bar: "b",
+    },
+  });
+
+  assertEquals(argv, {
+    bar: false,
+    b: false,
+    _: [],
+  });
+});
+
 Deno.test("booleanAndAliasWithChainableApi", function () {
   const aliased = ["-h", "derp"];
   const regular = ["--herp", "derp"];

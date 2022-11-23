@@ -247,25 +247,45 @@ Note: This module was ported from
 ## Usage
 
 ```ts
-import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+import { format } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
 
-prettyBytes(1337);
+format(1337);
 //=> '1.34 kB'
 
-prettyBytes(100);
+format(100);
 //=> '100 B'
 
 // Display with units of bits
-prettyBytes(1337, { bits: true });
+format(1337, { bits: true });
 //=> '1.34 kbit'
 
 // Display file size differences
-prettyBytes(42, { signed: true });
+format(42, { signed: true });
 //=> '+42 B'
 
 // Localized output using German locale
-prettyBytes(1337, { locale: "de" });
+format(1337, { locale: "de" });
 //=> '1,34 kB'
+```
+
+# Pretty Duration
+
+Format milliseconds to time duration.
+
+```ts
+import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+
+// "00:00:01:39:674:000:000"
+format(99674, { style: "digital" });
+
+// "0d 0h 1m 39s 674ms 0µs 0ns"
+format(99674);
+
+// "1m 39s 674ms"
+format(99674, { ignoreZero: true });
+
+// "1 minutes, 39 seconds, 674 milliseconds"
+format(99674, { style: "full", ignoreZero: true });
 ```
 
 [1]: https://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html

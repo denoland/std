@@ -21,6 +21,7 @@ const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
 const cwd = fromFileUrl(new URL("./", import.meta.url));
 const requireTs = "require.ts";
+const importMap = "import_map.json";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
@@ -62,19 +63,22 @@ for await (const path of testPaths) {
         "--unstable",
         "--no-check",
         "--v8-flags=" + v8Flags.join(),
-        requireTs,
+        targetTestPath.endsWith(".mjs")
+          ? "--import-map=" + importMap
+          : requireTs,
         targetTestPath,
       ];
 
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
-      const { code, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+      const command = new Deno.Command(Deno.execPath(), {
         args,
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
         },
         cwd,
       });
+      const { code, stdout, stderr } = await command.output();
 
       const decodedStderr = decoder.decode(stderr);
       if (stderr.length) console.error(decodedStderr);

@@ -7,6 +7,9 @@
 // deno-lint-ignore no-explicit-any
 export let core: any;
 
+// deno-lint-ignore no-explicit-any
+const { Deno } = globalThis as any;
+
 // @ts-ignore Deno.core is not defined in types
 if (Deno?.core) {
   // @ts-ignore Deno.core is not defined in types
@@ -22,8 +25,18 @@ if (Deno?.core) {
     encode(chunk: string): Uint8Array {
       return new TextEncoder().encode(chunk);
     },
+    decode(chunk: Uint8Array): string {
+      return new TextDecoder().decode(chunk);
+    },
     eventLoopHasMoreWork(): boolean {
       return false;
+    },
+    ops: {
+      op_napi_open(_filename: string) {
+        throw new Error(
+          "Node API is not supported in this environment",
+        );
+      },
     },
   };
 }
