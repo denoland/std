@@ -11,7 +11,17 @@ export interface DotenvConfig {
   [key: string]: string;
 }
 
-type StringList = Array<string> | undefined;
+type StrictDotenvConfig<T extends ReadonlyArray<string>> =
+  & {
+    [key in T[number]]: string;
+  }
+  & DotenvConfig;
+
+type StrictEnvVarList<T extends string> =
+  | Array<Extract<T, string>>
+  | ReadonlyArray<Extract<T, string>>;
+
+type StringList = Array<string> | ReadonlyArray<string> | undefined;
 
 export interface ConfigOptions {
   path?: string;
@@ -81,6 +91,14 @@ const defaultConfigOptions = {
   restrictEnvAccessTo: [],
 };
 
+export function configSync(
+  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
+): DotenvConfig;
+export function configSync<TEnvVar extends string>(
+  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
 export function configSync(options: ConfigOptions = {}): DotenvConfig {
   const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
 
@@ -110,6 +128,14 @@ export function configSync(options: ConfigOptions = {}): DotenvConfig {
   return conf;
 }
 
+export function config(
+  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
+): Promise<DotenvConfig>;
+export function config<TEnvVar extends string>(
+  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): Promise<StrictDotenvConfig<StrictEnvVarList<TEnvVar>>>;
 export async function config(
   options: ConfigOptions = {},
 ): Promise<DotenvConfig> {
