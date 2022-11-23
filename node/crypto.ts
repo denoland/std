@@ -258,10 +258,10 @@ function createECDH(curve: string): ECDH {
 
 function createHmac(
   hmac: string,
-  key: string | ArrayBuffer,
+  key: string | ArrayBuffer | KeyObject,
   options?: TransformOptions,
-): Hmac {
-  return new Hmac(hmac, key, options);
+) {
+  return Hmac(hmac, key, options);
 }
 
 function createSign(algorithm: string, options?: WritableOptions): Sign {

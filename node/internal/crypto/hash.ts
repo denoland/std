@@ -13,8 +13,8 @@ import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
 import { encode as encodeToBase64Url } from "../../../encoding/base64url.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
-import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
-import { KeyObject } from "./keys.ts";
+import type { BinaryToTextEncoding, Encoding } from "./types.ts";
+import { KeyObject, prepareSecretKey } from "./keys.ts";
 import { notImplemented } from "../../_utils.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
@@ -126,16 +126,26 @@ export class Hash extends Transform {
   }
 }
 
-export class Hmac extends Transform {
-  #ipad: Uint8Array
-  #opad: Uint8Array
+export function Hmac(
+  hmac: string,
+  key: string | ArrayBuffer | KeyObject,
+  options?: TransformOptions,
+): Hmac {
+  return new HmacImpl(hmac, key, options);
+}
+
+type Hmac = HmacImpl;
+
+export class HmacImpl extends Transform {
+  #ipad: Uint8Array;
+  #opad: Uint8Array;
   #ZEROES = Buffer.alloc(128);
   #algorithm: string;
   #hash: Hash;
 
   constructor(
     hmac: string,
-    key: BinaryLike | KeyObject,
+    key: string | ArrayBuffer | KeyObject,
     options?: TransformOptions,
   ) {
     super();
@@ -144,12 +154,7 @@ export class Hmac extends Transform {
     }
 
     validateString(hmac, "hmac");
-
-    const u8Key = typeof key === "string"
-      ? new TextEncoder().encode(key)
-      : key instanceof Uint8Array
-      ? key
-      : new Uint8Array(key.buffer);
+    const u8Key = prepareSecretKey(key, options?.encoding) as Buffer;
 
     const alg = hmac.toLowerCase();
     this.#hash = new Hash(alg, options);
@@ -173,7 +178,7 @@ export class Hmac extends Transform {
       this.#opad[i] = bufKey[i] ^ 0x5C;
     }
 
-    this.#hash = new Hash(alg)
+    this.#hash = new Hash(alg);
     this.#hash.update(this.#ipad);
   }
 
@@ -192,6 +197,8 @@ export class Hmac extends Transform {
     return this;
   }
 }
+
+Hmac.prototype = HmacImpl.prototype;
 
 /**
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
