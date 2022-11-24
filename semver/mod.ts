@@ -397,13 +397,6 @@ export class SemVer {
     return 1;
   }
 
-  /**
-   * @deprecated (will be removed after 0.165.0) use `increment` instead
-   */
-  inc(release: ReleaseType, identifier?: string): SemVer {
-    return this.increment(release, identifier);
-  }
-
   increment(release: ReleaseType, identifier?: string): SemVer {
     switch (release) {
       case "premajor":
@@ -519,18 +512,6 @@ export class SemVer {
 }
 
 /**
- * @deprecated (will be removed after 0.165.0) use `increment` instead
- */
-export function inc(
-  version: string | SemVer,
-  release: ReleaseType,
-  options?: Options,
-  identifier?: string,
-): string | null {
-  return increment(version, release, options, identifier);
-}
-
-/**
  * Return the version incremented by the release type (major, minor, patch, or prerelease), or null if it's not valid.
  */
 export function increment(
@@ -548,17 +529,6 @@ export function increment(
   } catch {
     return null;
   }
-}
-
-/**
- * @deprecated (will be removed after 0.165.0) use `difference` instead
- */
-export function diff(
-  version1: string | SemVer,
-  version2: string | SemVer,
-  options?: Options,
-): string | null {
-  return difference(version1, version2, options);
 }
 
 export function difference(
