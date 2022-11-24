@@ -58,8 +58,8 @@ import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 // @ts-ignore Deno[Deno.internal] is used on purpose here
-const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
-  Deno.spawnSync;
+const DenoCommand = Deno[Deno.internal]?.nodeUnstable?.Command ||
+  Deno.Command;
 
 const notImplementedEvents = [
   "disconnect",
@@ -260,13 +260,13 @@ function _kill(pid: number, sig: number): number {
   if (sig === 0) {
     let status;
     if (Deno.build.os === "windows") {
-      status = DenoSpawnSync("powershell.exe", {
+      status = (new DenoCommand("powershell.exe", {
         args: ["Get-Process", "-pid", pid],
-      });
+      })).outputSync();
     } else {
-      status = DenoSpawnSync("kill", {
+      status = (new DenoCommand("kill", {
         args: ["-0", pid],
-      });
+      })).outputSync();
     }
 
     if (!status.success) {
