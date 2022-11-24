@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
-import { BufReader } from "../../io/buffer.ts";
+import { BufReader } from "../../io/buf_reader.ts";
 import { delay } from "../../async/delay.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
 

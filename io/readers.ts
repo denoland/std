@@ -4,59 +4,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Buffer } from "./buffer.ts";
+/** @deprecated (will be removed after 0.169.0) Please import from io/string_reader.ts instead */
+export { StringReader } from "./string_reader.ts";
 
-/** Reader utility for strings */
-export class StringReader extends Buffer {
-  constructor(s: string) {
-    super(new TextEncoder().encode(s).buffer);
-  }
-}
+/** @deprecated (will be removed after 0.169.0) Please import from io/multi_reader.ts instead */
+export { MultiReader } from "./multi_reader.ts";
 
-/** Reader utility for combining multiple readers */
-export class MultiReader implements Deno.Reader {
-  readonly #readers: Deno.Reader[];
-  #currentIndex = 0;
-
-  constructor(readers: Deno.Reader[]) {
-    this.#readers = [...readers];
-  }
-
-  async read(p: Uint8Array): Promise<number | null> {
-    const r = this.#readers[this.#currentIndex];
-    if (!r) return null;
-    const result = await r.read(p);
-    if (result === null) {
-      this.#currentIndex++;
-      return 0;
-    }
-    return result;
-  }
-}
-
-/**
- * A `LimitedReader` reads from `reader` but limits the amount of data returned to just `limit` bytes.
- * Each call to `read` updates `limit` to reflect the new amount remaining.
- * `read` returns `null` when `limit` <= `0` or
- * when the underlying `reader` returns `null`.
- */
-export class LimitedReader implements Deno.Reader {
-  constructor(public reader: Deno.Reader, public limit: number) {}
-
-  async read(p: Uint8Array): Promise<number | null> {
-    if (this.limit <= 0) {
-      return null;
-    }
-
-    if (p.length > this.limit) {
-      p = p.subarray(0, this.limit);
-    }
-    const n = await this.reader.read(p);
-    if (n == null) {
-      return null;
-    }
-
-    this.limit -= n;
-    return n;
-  }
-}
+/** @deprecated (will be removed after 0.169.0) Please import from io/limited_reader.ts instead */
+export { LimitedReader } from "./limited_reader.ts";

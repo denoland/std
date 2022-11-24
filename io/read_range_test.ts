@@ -7,7 +7,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { readRange, readRangeSync } from "./files.ts";
+import { readRange, readRangeSync } from "./read_range.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;

@@ -5,7 +5,7 @@
 Read reader[like file], line by line:
 
 ```ts
-import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+import { readLines } from "https://deno.land/std@$STD_VERSION/io/read_lines.ts";
 import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
 
 const filename = path.join(Deno.cwd(), "std/io/README.md");
@@ -21,7 +21,7 @@ for await (let line of readLines(fileReader)) {
 Read reader`[like file]` chunk by chunk, splitting based on delimiter.
 
 ```ts
-import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/read_string_delim.ts";
 import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
 
 const filename = path.join(Deno.cwd(), "std/io/README.md");
@@ -37,7 +37,7 @@ for await (let line of readStringDelim(fileReader, "\n")) {
 Create a `Reader` object for `string`.
 
 ```ts
-import { StringReader } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+import { StringReader } from "https://deno.land/std@$STD_VERSION/io/string_reader.ts";
 
 const data = new Uint8Array(6);
 const r = new StringReader("abcdef");

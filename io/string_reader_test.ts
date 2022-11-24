@@ -1,0 +1,26 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../testing/asserts.ts";
+import { StringReader } from "./readers.ts";
+
+Deno.test("ioStringReader", async function () {
+  const r = new StringReader("abcdef");
+  const res0 = await r.read(new Uint8Array(6));
+  assertEquals(res0, 6);
+  const res1 = await r.read(new Uint8Array(6));
+  assertEquals(res1, null);
+});
+
+Deno.test("ioStringReader", async function () {
+  const decoder = new TextDecoder();
+  const r = new StringReader("abcdef");
+  const buf = new Uint8Array(3);
+  const res1 = await r.read(buf);
+  assertEquals(res1, 3);
+  assertEquals(decoder.decode(buf), "abc");
+  const res2 = await r.read(buf);
+  assertEquals(res2, 3);
+  assertEquals(decoder.decode(buf), "def");
+  const res3 = await r.read(buf);
+  assertEquals(res3, null);
+  assertEquals(decoder.decode(buf), "def");
+});

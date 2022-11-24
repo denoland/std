@@ -91,8 +91,9 @@
  * @module
  */
 
-import { MultiReader } from "../io/readers.ts";
-import { Buffer, PartialReadError } from "../io/buffer.ts";
+import { MultiReader } from "../io/multi_reader.ts";
+import { Buffer } from "../io/buffer.ts";
+import { PartialReadError } from "../io/buf_reader.ts";
 import { assert } from "../_util/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
 

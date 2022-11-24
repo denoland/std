@@ -4,7 +4,7 @@ import {
   assertNotEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
-import { BufReader, ReadLineResult } from "../io/buffer.ts";
+import { BufReader, ReadLineResult } from "../io/buf_reader.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { TextLineStream } from "../streams/delimiter.ts";
 

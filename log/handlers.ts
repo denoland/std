@@ -3,7 +3,7 @@ import { getLevelByName, LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
 import { exists, existsSync } from "../fs/exists.ts";
-import { BufWriterSync } from "../io/buffer.ts";
+import { BufWriterSync } from "../io/buf_writer.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
