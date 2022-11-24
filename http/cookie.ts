@@ -11,31 +11,31 @@ export interface Cookie {
   name: string;
   /** Value of the cookie. */
   value: string;
-  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds. 
+  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds.
    * @example <caption>Explicit date:</caption>
-   * 
+   *
    * ```ts
    * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
-   * const cookie: Cookie = { 
-   *  name: 'name', 
-   *  value: 'value', 
-   *  // expires on Fri Dec 30 2022
-   *  expires: new Date('2022-12-31') 
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires on Fri Dec 30 2022
+   *   expires: new Date('2022-12-31')
    * }
    * ```
-   * 
+   *
    * @example <caption>UTC milliseconds</caption>
-   * 
+   *
    * ```ts
    * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
-   * const cookie: Cookie = { 
-   *  name: 'name', 
-   *  value: 'value', 
-   *  // expires 10 seconds from now
-   *  expires: Date.now() + 10000 
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires 10 seconds from now
+   *   expires: Date.now() + 10000
    * }
    * ```
-  */
+   */
   expires?: Date | number;
   /** The cookie's `Max-Age` attribute, in seconds. Must be a non-negative integer. A cookie with a `maxAge` of `0` expires immediately. */
   maxAge?: number;
