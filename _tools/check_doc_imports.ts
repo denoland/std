@@ -20,14 +20,10 @@ const EXCLUDED_PATHS = [
 
 const ROOT = new URL("../", import.meta.url);
 const ROOT_LENGTH = ROOT.pathname.slice(0, -1).length;
-const FAIL_FAST = Deno.args.includes("--fail-fast");
-const TEST_MODE = Deno.args.includes("--test-mode");
 
 const RX_JSDOC_COMMENT = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/mg;
 const RX_JSDOC_REMOVE_LEADING_ASTERISK = /^\s*\* ?/gm;
 const RX_CODE_BLOCK = /`{3}([\w]*)\n([\S\s]+?)\n`{3}/gm;
-
-const root = TEST_MODE ? new URL("./_tools/testdata", ROOT) : ROOT;
 
 let shouldFail = false;
 let countChecked = 0;
@@ -70,9 +66,6 @@ function checkImportStatements(
           ) + yellow(":" + (lineNumber + line)),
       );
 
-      if (FAIL_FAST) {
-        Deno.exit(1);
-      }
       shouldFail = true;
     }
   }
@@ -103,7 +96,7 @@ function checkCodeBlocks(
 }
 
 for await (
-  const { path } of walk(root, {
+  const { path } of walk(ROOT, {
     exts: EXTENSIONS,
     includeDirs: false,
     skip: EXCLUDED_PATHS.map((p) => new RegExp(p + "$")),
