@@ -7152,6 +7152,9 @@ export default {
     "compressible": false,
     "extensions": ["jpx", "jpf"]
   },
+  "image/jxl": {
+    "extensions": ["jxl"]
+  },
   "image/jxr": {
     "source": "iana",
     "extensions": ["jxr"]
