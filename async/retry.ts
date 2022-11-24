@@ -1,5 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+export class RetryError extends Error {
+  constructor(cause: string) {
+    super("Retry");
+    this.name = "RetryError";
+    this.cause = cause;
+  }
+}
+
 export interface RetryOptions {
   /** How much to backoff after each retry. This is `2` by default. */
   multiplier?: number;
@@ -35,7 +43,7 @@ export async function retry<T>(
   }
 
   let timeout = options.minTimeout;
-  let error = undefined;
+  let error = "";
 
   for (let i = 0; i < options.maxAttempts; i++) {
     try {
@@ -47,9 +55,9 @@ export async function retry<T>(
       if (options.maxTimeout >= 0) {
         timeout = Math.min(timeout, options.maxTimeout);
       }
-      error = err;
+      error = err as string;
     }
   }
 
-  throw error;
+  throw new RetryError(error);
 }
