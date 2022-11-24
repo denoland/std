@@ -28,7 +28,7 @@ async function startServer(): Promise<Deno.Command> {
   } catch {
     await server.stdout.cancel();
   } finally {
-    await reader.cancel();
+    reader.releaseLock();
   }
 
   return server;
@@ -45,6 +45,7 @@ Deno.test({
       const html = await resp.text();
       assert(html.includes("ws chat example"), "body is ok");
     } finally {
+      server.stdout.cancel();
       server.kill();
     }
     await server.status;
@@ -77,6 +78,7 @@ Deno.test({
     } catch (err) {
       console.log(err);
     } finally {
+      server.stdout.cancel();
       server.kill();
     }
     await server.status;
