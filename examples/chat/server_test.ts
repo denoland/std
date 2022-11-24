@@ -62,14 +62,13 @@ Deno.test({
       await new Promise<void>((resolve) => {
         ws.onmessage = (message) => {
           assertEquals(message.data, "Connected: [1]");
-          ws.close();
-          /* ws.onmessage = (message) => {
-            // This should block is unreachable, for some reason.
+
+          ws.onmessage = (message) => {
             assertEquals(message.data, "[1]: Hello");
             ws.close();
           };
 
-          ws.send("Hello"); */
+          ws.send("Hello");
         };
 
         ws.onclose = () => {
