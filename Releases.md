@@ -1,3 +1,25 @@
+### 0.166.0 / 2022.11.24
+
+- BREAKING(fmt/bytes): rename prettyBytes to format (#2896)
+- BREAKING(fmt/duration): rename prettyDuration to format (#2871)
+- feat(http/cookie): allow number type for expires param (#2932)
+- feat(node): export `process.argv` (#2924)
+- feat(node/crypto): add hmac implementation (#2664)
+- feat: Add process._kill and shim process.kill(pid, 0) correctly (#2922)
+- fix(fmt/bytes): default local decimal and group symbols (#2904)
+- fix(http/cookie): wording for cookie value validation error (#2931)
+- fix(node/console): update export members of console (#2927)
+- fix(node/fs): enable type narrowing with instanceof for ReadStream and
+  WriteStream (#2915)
+- fix(node/http): allow setting statusMessage (#2911)
+- fix(node/http): disable chunked request if Content-Length header is specified
+  (#2755)
+- fix(node/http): request with headers (#2898)
+- fix(node/string_decoder): proper buffer type casting and fix default logic
+  (#2897)
+- fix(node/timers): implement timeout.refresh (#2919)
+- fix: wait for denoflate wasm to load (#2923)
+
 ### 0.165.0 / 2022.11.16
 
 - fix(node): improve crypto.getHashes compatibility (#2890)
