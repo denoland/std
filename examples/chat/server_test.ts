@@ -48,7 +48,7 @@ Deno.test({
     } finally {
       server.kill();
     }
-    await delay(10);
+    await server.status;
   },
 });
 
@@ -81,5 +81,6 @@ Deno.test({
     } finally {
       server.kill();
     }
+    await server.status;
   },
 });
