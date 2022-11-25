@@ -4,7 +4,13 @@
 /** Utility functions for media types (MIME types).
  *
  * This API is inspired by the GoLang [`mime`](https://pkg.go.dev/mime) package
- * and [jshttp/mime-types](https://github.com/jshttp/mime-types).
+ * and [jshttp/mime-types](https://github.com/jshttp/mime-types), and is
+ * designed to integrate and improve the APIs from
+ * [deno.land/x/media_types](https://deno.land/x/media_types).
+ *
+ * The `vendor` folder contains copy of the
+ * [jshttp/mime-db](https://github.com/jshttp/mime-types) `db.json` file along
+ * with its license.
  *
  * @module
  */
@@ -80,7 +86,8 @@ export const types = new Map<string, KeyOfDb>();
   }
 })();
 
-/** Given an extension or media type, return a full `Content-Type` or
+/**
+ * Given an extension or media type, return a full `Content-Type` or
  * `Content-Disposition` header value.
  *
  * The function will treat the `extensionOrType` as a media type when it
@@ -89,8 +96,13 @@ export const types = new Map<string, KeyOfDb>();
  *
  * Returns `undefined` if unable to resolve the media type.
  *
- * ### Examples
+ * > Note: a side effect of `deno/x/media_types` was that you could pass a file
+ * > name (e.g. `file.json`) and it would return the content type. This behavior
+ * > is intentionally not supported here. If you want to get an extension for a
+ * > file name, use `extname()` from `std/path/mod.ts` to determine the
+ * > extension and pass it here.
  *
+ * @example
  * ```ts
  * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
@@ -131,13 +143,13 @@ export function contentType<
     : string | undefined;
 }
 
-/** For a given media type, return the most relevant extension, or `undefined`
+/**
+ * For a given media type, return the most relevant extension, or `undefined`
  * if no extension can be found.
  *
  * Extensions are returned without a leading `.`.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { extension } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
@@ -155,15 +167,15 @@ export function extension(type: string): string | undefined {
   return undefined;
 }
 
-/** Returns the extensions known to be associated with the media type `type`.
+/**
+ * Returns the extensions known to be associated with the media type `type`.
  * The returned extensions will each begin with a leading dot, as in `.html`.
  *
  * When `type` has no associated extensions, the function returns `undefined`.
  *
  * Extensions are returned without a leading `.`.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { extensionsByType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
@@ -189,8 +201,7 @@ export function extensionsByType(type: string): string[] | undefined {
  * When any of the arguments results in a standard violation then the return
  * value will be an empty string (`""`).
  *
- * ### Example
- *
+ * @example
  * ```ts
  * import { formatMediaType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
@@ -248,11 +259,11 @@ export function formatMediaType(
   return b;
 }
 
-/** Given a media type or header value, identify the encoding charset. If the
+/**
+ * Given a media type or header value, identify the encoding charset. If the
  * charset cannot be determined, the function returns `undefined`.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { getCharset } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
@@ -281,7 +292,8 @@ export function getCharset(type: string): string | undefined {
   return undefined;
 }
 
-/** Parses the media type and any optional parameters, per
+/**
+ * Parses the media type and any optional parameters, per
  * [RFC 1521](https://datatracker.ietf.org/doc/html/rfc1521). Media types are
  * the values in `Content-Type` and `Content-Disposition` headers. On success
  * the function returns a tuple where the first element is the media type and
@@ -294,8 +306,7 @@ export function getCharset(type: string): string | undefined {
  * params keys will be normalized to lower case, but preserves the casing of
  * the value.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { parseMediaType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
@@ -408,13 +419,13 @@ export function parseMediaType(
     : [mediaType, undefined];
 }
 
-/** Returns the media type associated with the file extension. Values are
+/**
+ * Returns the media type associated with the file extension. Values are
  * normalized to lower case and matched irrespective of a leading `.`.
  *
  * When `extension` has no associated type, the function returns `undefined`.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { typeByExtension } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *

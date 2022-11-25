@@ -17,17 +17,17 @@ export type Disposable = { dispose: () => void };
  * Example:
  *
  * ```ts
- *       import { signal } from "https://deno.land/std@$STD_VERSION/signal/mod.ts";
+ * import { signal } from "https://deno.land/std@$STD_VERSION/signal/mod.ts";
  *
- *       const sig = signal("SIGUSR1", "SIGINT");
- *       setTimeout(() => {}, 5000); // Prevents exiting immediately
+ * const sig = signal("SIGUSR1", "SIGINT");
+ * setTimeout(() => {}, 5000); // Prevents exiting immediately
  *
- *       for await (const _ of sig) {
- *         console.log("interrupt or usr1 signal received");
- *       }
+ * for await (const _ of sig) {
+ *   // ..
+ * }
  *
- *       // At some other point in your code when finished listening:
- *       sig.dispose();
+ * // At some other point in your code when finished listening:
+ * sig.dispose();
  * ```
  *
  * @param signals - one or more signals to listen to

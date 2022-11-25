@@ -12,7 +12,7 @@ export interface Cookie {
   /** Value of the cookie. */
   value: string;
   /** Expiration date of the cookie. */
-  expires?: Date;
+  expires?: Date | number;
   /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
   maxAge?: number;
   /** Specifies those hosts to which the cookie will be sent. */
@@ -79,7 +79,10 @@ function toString(cookie: Cookie): string {
     out.push(`Path=${cookie.path}`);
   }
   if (cookie.expires) {
-    const dateString = toIMF(cookie.expires);
+    const { expires } = cookie;
+    const dateString = toIMF(
+      typeof expires === "number" ? new Date(expires) : expires,
+    );
     out.push(`Expires=${dateString}`);
   }
   if (cookie.unparsed) {
@@ -134,7 +137,7 @@ function validateValue(name: string, value: string | null) {
       c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
-        "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
+        "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
@@ -166,6 +169,18 @@ function validateDomain(domain: string) {
 
 /**
  * Parse cookies of a header
+ *
+ * @example
+ * ```ts
+ * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * headers.set("Cookie", "full=of; tasty=chocolate");
+ *
+ * const cookies = getCookies(headers);
+ * console.log(cookies); // { full: "of", tasty: "chocolate" }
+ * ```
+ *
  * @param headers The headers instance to get cookies from
  * @return Object with cookie names as keys
  */
@@ -187,6 +202,22 @@ export function getCookies(headers: Headers): Record<string, string> {
 
 /**
  * Set the cookie header properly in the headers
+ *
+ * @example
+ * ```ts
+ * import {
+ *   Cookie,
+ *   setCookie,
+ * } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * const cookie: Cookie = { name: "Space", value: "Cat" };
+ * setCookie(headers, cookie);
+ *
+ * const cookieHeader = headers.get("set-cookie");
+ * console.log(cookieHeader); // Space=Cat
+ * ```
+ *
  * @param headers The headers instance to set the cookie to
  * @param cookie Cookie to set
  */
@@ -201,6 +232,21 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 
 /**
  * Set the cookie header with empty value in the headers to delete it
+ *
+ * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
+ * > the browser to delete it.
+ *
+ * @example
+ * ```ts
+ * import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * deleteCookie(headers, "deno");
+ *
+ * const cookieHeader = headers.get("set-cookie");
+ * console.log(cookieHeader); // deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
+ * ```
+ *
  * @param headers The headers instance to delete the cookie from
  * @param name Name of cookie
  * @param attributes Additional cookie attributes
@@ -302,6 +348,20 @@ function parseSetCookie(value: string): Cookie | null {
 
 /**
  * Parse set-cookies of a header
+ *
+ * @example
+ * ```ts
+ * import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers([
+ *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
+ *   ["Set-Cookie", "booya=kasha; HttpOnly; Path=/"],
+ * ]);
+ *
+ * const cookies = getSetCookies(headers);
+ * console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+ * ```
+ *
  * @param headers The headers instance to get set-cookies from
  * @return List of cookies
  */

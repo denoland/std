@@ -7,6 +7,7 @@ const UUID_RE =
 /**
  * Validate that the passed UUID is an RFC4122 v4 UUID.
  *
+ * @example
  * ```ts
  * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/v4.ts";
  * import { generate as generateV1 } from "https://deno.land/std@$STD_VERSION/uuid/v1.ts";

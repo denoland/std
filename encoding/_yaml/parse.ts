@@ -21,6 +21,25 @@ export function parse(content: string, options?: ParseOptions): unknown {
 /**
  * Same as `parse()`, but understands multi-document sources.
  * Applies iterator to each document if specified, or returns array of documents.
+ *
+ * @example
+ * ```ts
+ * import { parseAll } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+ *
+ * const data = parseAll(`
+ * ---
+ * id: 1
+ * name: Alice
+ * ---
+ * id: 2
+ * name: Bob
+ * ---
+ * id: 3
+ * name: Eve
+ * `);
+ * console.log(data);
+ * // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
+ * ```
  */
 export function parseAll(
   content: string,
