@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 export class RetryError extends Error {
-  constructor(cause: string) {
-    super("Retry");
+  constructor(cause: unknown, count: number) {
+    super(`Exceeded max retry count (${count})`);
     this.name = "RetryError";
     this.cause = cause;
   }
@@ -43,7 +43,7 @@ export async function retry<T>(
   }
 
   let timeout = options.minTimeout;
-  let error = "";
+  let error: unknown;
 
   for (let i = 0; i < options.maxAttempts; i++) {
     try {
@@ -55,9 +55,9 @@ export async function retry<T>(
       if (options.maxTimeout >= 0) {
         timeout = Math.min(timeout, options.maxTimeout);
       }
-      error = err as string;
+      error = err;
     }
   }
 
-  throw new RetryError(error);
+  throw new RetryError(error, options.maxAttempts);
 }
