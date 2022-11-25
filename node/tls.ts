@@ -34,7 +34,7 @@ export const DEFAULT_MIN_VERSION = "TLSv1.2";
 
 export class CryptoStream {}
 export class SecurePair {}
-export class Server {}
+export const Server = _tls_wrap.Server;
 export function createSecurePair() {
   notImplemented("tls.createSecurePair");
 }
