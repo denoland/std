@@ -4,17 +4,16 @@
 /**
  * Returns all distinct elements that appear in any of the given arrays
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { union } from "https://deno.land/std@$STD_VERSION/collections/union.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ]
- * const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ]
- * const shoppingList = union(soupIngredients, saladIngredients)
+ * const soupIngredients = ["Pepper", "Carrots", "Leek"];
+ * const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
+ * const shoppingList = union(soupIngredients, saladIngredients);
  *
- * assertEquals(shoppingList, [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ])
+ * assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
  * ```
  */
 export function union<T>(...arrays: (readonly T[])[]): T[] {

@@ -10,6 +10,13 @@ import { getFileInfoType, toPathString } from "./_util.ts";
  * these directories are created. If the file already exists,
  * it is NOTMODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * ensureFile("./folder/targetFile.dat"); // returns promise
+ * ```
  */
 export async function ensureFile(filePath: string | URL) {
   try {
@@ -41,6 +48,13 @@ export async function ensureFile(filePath: string | URL) {
  * these directories are created. If the file already exists,
  * it is NOT MODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { ensureFileSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * ensureFileSync("./folder/targetFile.dat"); // void
+ * ```
  */
 export function ensureFileSync(filePath: string | URL) {
   try {
