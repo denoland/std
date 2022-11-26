@@ -223,6 +223,12 @@ class ClientRequest extends NodeWritable {
   setTimeout() {
     console.log("not implemented: ClientRequest.setTimeout");
   }
+
+  // Note: Modify this to pass "parallel/test-http-outgoing-finish-writable.js"
+  // @ts-ignore Overrides property by getter.
+  override get writable(): boolean {
+    return !this.closed;
+  }
 }
 
 /** IncomingMessage for http(s) client */
