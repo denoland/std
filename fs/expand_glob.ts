@@ -58,18 +58,19 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
   return 0;
 }
 
-/** Expand the glob string from the specified `root` directory and yield each
+/**
+ * Expand the glob string from the specified `root` directory and yield each
  * result as a `WalkEntry` object.
  *
  * See [`globToRegExp()`](../path/glob.ts#globToRegExp) for details on supported
  * syntax.
  *
- * Example:
+ * @example
  * ```ts
- *      import { expandGlob } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
- *      for await (const file of expandGlob("**\/*.ts")) {
- *        console.log(file);
- *      }
+ * import { expandGlob } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
+ * for await (const file of expandGlob("**\/*.ts")) {
+ *   console.log(file);
+ * }
  * ```
  */
 export async function* expandGlob(
@@ -180,15 +181,15 @@ export async function* expandGlob(
   yield* currentMatches;
 }
 
-/** Synchronous version of `expandGlob()`.
+/**
+ * Synchronous version of `expandGlob()`.
  *
- * Example:
- *
+ * @example
  * ```ts
- *      import { expandGlobSync } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
- *      for (const file of expandGlobSync("**\/*.ts")) {
- *        console.log(file);
- *      }
+ * import { expandGlobSync } from "https://deno.land/std@$STD_VERSION/fs/expand_glob.ts";
+ * for (const file of expandGlobSync("**\/*.ts")) {
+ *   console.log(file);
+ * }
  * ```
  */
 export function* expandGlobSync(

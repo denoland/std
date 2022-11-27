@@ -11,6 +11,7 @@ const UUID_RE =
 /**
  * Validate that the passed UUID is an RFC4122 v5 UUID.
  *
+ * @example
  * ```ts
  * import { generate as generateV5, validate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
@@ -26,6 +27,7 @@ export function validate(id: string): boolean {
 /**
  * Generate a RFC4122 v5 UUID (SHA-1 namespace).
  *
+ * @example
  * ```js
  * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *

@@ -5,7 +5,36 @@ import type { Writer, WriterSync } from "./types.d.ts";
 
 const decoder = new TextDecoder();
 
-/** Writer utility for buffering string chunks */
+/**
+ * Writer utility for buffering string chunks.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   copyN,
+ *   StringReader,
+ *   StringWriter,
+ * } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ *
+ * const w = new StringWriter("base");
+ * const r = new StringReader("0123456789");
+ * await copyN(r, w, 4); // copy 4 bytes
+ *
+ * // Number of bytes read
+ * console.log(w.toString()); //base0123
+ *
+ * await copy(r, w); // copy all
+ * console.log(w.toString()); // base0123456789
+ * ```
+ *
+ * **Output:**
+ *
+ * ```text
+ * base0123
+ * base0123456789
+ * ```
+ */
 export class StringWriter implements Writer, WriterSync {
   #chunks: Uint8Array[] = [];
   #byteLength = 0;

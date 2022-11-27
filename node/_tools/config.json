@@ -113,6 +113,10 @@
       "loop.js",
       "x.txt"
     ],
+    "fixtures/keys": [
+      "agent1-cert.pem",
+      "agent1-key.pem"
+    ],
     "internet": [
       "test-dgram-connect.js",
       "test-dns-any.js",
@@ -672,6 +676,7 @@
       "test-timers-unref-throw-then-ref.js",
       "test-timers-user-call.js",
       "test-timers-zero-timeout.js",
+      "test-tls-connect-simple.js",
       "test-url-fileurltopath.js",
       "test-url-format-invalid-input.js",
       "test-url-format-whatwg.js",

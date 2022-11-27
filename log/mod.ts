@@ -4,6 +4,249 @@
  * Logging library with the support for terminal and file outputs. Also provides
  * interfaces for building custom loggers.
  *
+ * ## Loggers
+ *
+ * Loggers are objects that you interact with. When you use a logger method it
+ * constructs a `LogRecord` and passes it down to its handlers for output. To
+ * create custom loggers, specify them in `loggers` when calling `log.setup`.
+ *
+ * ## Custom message format
+ *
+ * If you want to override default format of message you can define `formatter`
+ * option for handler. It can be either simple string-based format that uses
+ * `LogRecord` fields or more complicated function-based one that takes `LogRecord`
+ * as argument and outputs string.
+ *
+ * The default log format is `{levelName} {msg}`.
+ *
+ * ## Inline Logging
+ *
+ * Log functions return the data passed in the `msg` parameter. Data is returned
+ * regardless if the logger actually logs it.
+ *
+ * ## Lazy Log Evaluation
+ *
+ * Some log statements are expensive to compute. In these cases, you can use
+ * lazy log evaluation to prevent the computation taking place if the logger
+ * won't log the message.
+ *
+ * > NOTE: When using lazy log evaluation, `undefined` will be returned if the
+ * > resolver function is not called because the logger won't log it. It is an
+ * > antipattern use lazy evaluation with inline logging because the return value
+ * > depends on the current log level.
+ *
+ * ## For module authors
+ *
+ * The authors of public modules can let the users display the internal logs of the
+ * module by using a custom logger:
+ *
+ * ```ts
+ * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * function logger() {
+ *   return getLogger("my-awesome-module");
+ * }
+ *
+ * export function sum(a: number, b: number) {
+ *   logger().debug(`running ${a} + ${b}`);
+ *   return a + b;
+ * }
+ *
+ * export function mult(a: number, b: number) {
+ *   logger().debug(`running ${a} * ${b}`);
+ *   return a * b;
+ * }
+ * ```
+ *
+ * The user of the module can then display the internal logs with:
+ *
+ * ```ts, ignore
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { sum } from "<the-awesome-module>/mod.ts";
+ *
+ * await log.setup({
+ *   handlers: {
+ *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *   },
+ *
+ *   loggers: {
+ *     "my-awesome-module": {
+ *       level: "DEBUG",
+ *       handlers: ["console"],
+ *     },
+ *   },
+ * });
+ *
+ * sum(1, 2); // prints "running 1 + 2" to the console
+ * ```
+ *
+ * Please note that, due to the order of initialization of the loggers, the
+ * following won't work:
+ *
+ * ```ts
+ * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * const logger = getLogger("my-awesome-module");
+ *
+ * export function sum(a: number, b: number) {
+ *   logger.debug(`running ${a} + ${b}`); // no message will be logged, because getLogger() was called before log.setup()
+ *   return a + b;
+ * }
+ * ```
+ *
+ * @example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * // Simple default logger out of the box. You can customize it
+ * // by overriding logger and handler named "default", or providing
+ * // additional logger configurations. You can log any data type.
+ * log.debug("Hello world");
+ * log.info(123456);
+ * log.warning(true);
+ * log.error({ foo: "bar", fizz: "bazz" });
+ * log.critical("500 Internal server error");
+ *
+ * // custom configuration with 2 loggers (the default and `tasks` loggers).
+ * await log.setup({
+ *   handlers: {
+ *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *
+ *     file: new log.handlers.FileHandler("WARNING", {
+ *       filename: "./log.txt",
+ *       // you can change format of output message using any keys in `LogRecord`.
+ *       formatter: "{levelName} {msg}",
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     // configure default logger available via short-hand methods above.
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["console", "file"],
+ *     },
+ *
+ *     tasks: {
+ *       level: "ERROR",
+ *       handlers: ["console"],
+ *     },
+ *   },
+ * });
+ *
+ * let logger;
+ *
+ * // get default logger.
+ * logger = log.getLogger();
+ * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
+ * logger.warning(41256); // logs to both `console` and `file` handlers.
+ *
+ * // get custom logger
+ * logger = log.getLogger("tasks");
+ * logger.debug("fizz"); // won't get output because this logger has "ERROR" level.
+ * logger.error({ productType: "book", value: "126.11" }); // log to `console`.
+ *
+ * // if you try to use a logger that hasn't been configured
+ * // you're good to go, it gets created automatically with level set to 0
+ * // so no message is logged.
+ * const unknownLogger = log.getLogger("mystery");
+ * unknownLogger.info("foobar"); // no-op
+ * ```
+ *
+ * @example
+ * Custom message format example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * await log.setup({
+ *   handlers: {
+ *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: "[{levelName}] {msg}",
+ *     }),
+ *
+ *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: (logRecord) => {
+ *         let msg = `${logRecord.level} ${logRecord.msg}`;
+ *
+ *         logRecord.args.forEach((arg, index) => {
+ *           msg += `, arg${index}: ${arg}`;
+ *         });
+ *
+ *         return msg;
+ *       },
+ *     }),
+ *
+ *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: "[{loggerName}] - {levelName} {msg}",
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["stringFmt", "functionFmt"],
+ *     },
+ *     dataLogger: {
+ *       level: "INFO",
+ *       handlers: ["anotherFmt"],
+ *     },
+ *   },
+ * });
+ *
+ * // calling:
+ * log.debug("Hello, world!", 1, "two", [3, 4, 5]);
+ * // results in: [DEBUG] Hello, world!
+ * // output from "stringFmt" handler.
+ * // 10 Hello, world!, arg0: 1, arg1: two, arg3: [3, 4, 5] // output from "functionFmt" formatter.
+ *
+ * // calling:
+ * log.getLogger("dataLogger").error("oh no!");
+ * // results in:
+ * // [dataLogger] - ERROR oh no! // output from anotherFmt handler.
+ * ```
+ *
+ * @example
+ * Inline Logging
+ * ```ts
+ * import * as logger from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * const stringData: string = logger.debug("hello world");
+ * const booleanData: boolean = logger.debug(true, 1, "abc");
+ * const fn = (): number => {
+ *   return 123;
+ * };
+ * const resolvedFunctionData: number = logger.debug(fn());
+ * console.log(stringData); // 'hello world'
+ * console.log(booleanData); // true
+ * console.log(resolvedFunctionData); // 123
+ * ```
+ *
+ * @example
+ * Lazy Log Evaluation
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * await log.setup({
+ *   handlers: {
+ *     console: new log.handlers.ConsoleHandler("DEBUG"),
+ *   },
+ *
+ *   loggers: {
+ *     tasks: {
+ *       level: "ERROR",
+ *       handlers: ["console"],
+ *     },
+ *   },
+ * });
+ *
+ * function someExpensiveFn(num: number, bool: boolean) {
+ *   // do some expensive computation
+ * }
+ *
+ * // not logged, as debug < error.
+ * const data = log.debug(() => someExpensiveFn(5, true));
+ * console.log(data); // undefined
+ * ```
+ *
  * @module
  */
 
@@ -59,6 +302,28 @@ const state = {
   config: DEFAULT_CONFIG,
 };
 
+/**
+ * Handlers are responsible for actual output of log messages. When a handler is
+ * called by a logger, it firstly checks that {@linkcode LogRecord}'s level is
+ * not lower than level of the handler. If level check passes, handlers formats
+ * log record into string and outputs it to target.
+ *
+ * ## Custom handlers
+ *
+ * Custom handlers can be implemented by subclassing {@linkcode BaseHandler} or
+ * {@linkcode WriterHandler}.
+ *
+ * {@linkcode BaseHandler} is bare-bones handler that has no output logic at all,
+ *
+ * {@linkcode WriterHandler} is an abstract class that supports any target with
+ * `Writer` interface.
+ *
+ * During setup async hooks `setup` and `destroy` are called, you can use them
+ * to open and close file/HTTP connection or any other action you might need.
+ *
+ * For examples check source code of {@linkcode FileHandler}`
+ * and {@linkcode TestHandler}.
+ */
 export const handlers = {
   BaseHandler,
   ConsoleHandler,
@@ -67,7 +332,7 @@ export const handlers = {
   RotatingFileHandler,
 };
 
-/** Get a logger instance. If not specified `name`, get the default logger.  */
+/** Get a logger instance. If not specified `name`, get the default logger. */
 export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");
