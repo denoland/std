@@ -7,12 +7,12 @@
  * @example
  * ```typescript
  * import { assertType, IsExact, IsNullable } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
- * 
+ *
  * const result = "some result" as string | number;
- * 
+ *
  * // compile error if the type of `result` is not exactly `string | number`
  * assertType<IsExact<typeof result, string | number>>(true);
- * 
+ *
  * // causes a compile error that `true` is not assignable to `false`
  * assertType<IsNullable<string>>(true); // error: string is not nullable
  * ```
@@ -22,13 +22,13 @@ export function assertType<T extends true | false>(_expectTrue: T) {
 
 /**
  * Asserts at compile time that the provided type argument's type resolves to true.
- * 
+ *
  * @example
  * ```typescript
  * import { AssertTrue, Has, IsNullable } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
- * 
+ *
  * const result = 1 as string | number | null;
- * 
+ *
  * type doTest = AssertTrue<Has<typeof result, string> | IsNullable<typeof result>>;
  * ```
  */
@@ -39,9 +39,9 @@ export type AssertTrue<T extends true> = never;
  * @example
  * ```typescript
  * import { AssertFalse, IsNever } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
- * 
+ *
  * const result = 1 as string | number | null;
- * 
+ *
  * type doTest = AssertFalse<IsNever<typeof result>>;
  * ```
  */
@@ -52,9 +52,9 @@ export type AssertFalse<T extends false> = never;
  * @example
  * ```typescript
  * import { Assert, Has } from "https://deno.land/std@$STD_VERSION/testing/types.ts";
- * 
+ *
  * const result = 1 as string | number | null;
- * 
+ *
  * type doTest = Assert<Has<typeof result, number>, true>;
  * ```
  */
