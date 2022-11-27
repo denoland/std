@@ -5,6 +5,30 @@
  *
  * This module is browser compatible.
  *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ *
+ * console.dir(parse(Deno.args));
+ * ```
+ *
+ * ```sh
+ * $ deno run https://deno.land/std/examples/flags.ts -a beep -b boop
+ * { _: [], a: 'beep', b: 'boop' }
+ * ```
+ *
+ * ```sh
+ * $ deno run https://deno.land/std/examples/flags.ts -x 3 -y 4 -n5 -abc --beep=boop foo bar baz
+ * { _: [ 'foo', 'bar', 'baz' ],
+ *   x: 3,
+ *   y: 4,
+ *   n: 5,
+ *   a: true,
+ *   b: true,
+ *   c: true,
+ *   beep: 'boop' }
+ * ```
+ *
  * @module
  */
 import { assert } from "../_util/asserts.ts";
@@ -229,9 +253,13 @@ export interface ParseOptions<
     | undefined,
   DD extends boolean | undefined = boolean | undefined,
 > {
-  /** When `true`, populate the result `_` with everything before the `--` and
-   * the result `['--']` with everything after the `--`. Here's an example:
+  /**
+   * When `true`, populate the result `_` with everything before the `--` and
+   * the result `['--']` with everything after the `--`.
    *
+   * @default {false}
+   *
+   *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
    * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
@@ -240,43 +268,55 @@ export interface ParseOptions<
    * console.dir(parse(Deno.args, { "--": true }));
    * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
-   *
-   * Defaults to `false`.
    */
   "--"?: DD;
 
-  /** An object mapping string names to strings or arrays of string argument
-   * names to use as aliases. */
+  /**
+   * An object mapping string names to strings or arrays of string argument
+   * names to use as aliases.
+   */
   alias?: A;
 
-  /** A boolean, string or array of strings to always treat as booleans. If
+  /**
+   * A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
-   * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
+   * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`).
+   *  All `boolean` arguments will be set to `false` by default.
+   */
   boolean?: B | ReadonlyArray<Extract<B, string>>;
 
   /** An object mapping string argument names to default values. */
   default?: D & Defaults<B, S>;
 
-  /** When `true`, populate the result `_` with everything after the first
-   * non-option. */
+  /**
+   * When `true`, populate the result `_` with everything after the first
+   * non-option.
+   */
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
   string?: S | ReadonlyArray<Extract<S, string>>;
 
-  /** A string or array of strings argument names to always treat as arrays.
+  /**
+   * A string or array of strings argument names to always treat as arrays.
    * Collectable options can be used multiple times. All values will be
    * collected into one array. If a non-collectable option is used multiple
-   * times, the last value is used. */
+   * times, the last value is used.
+   * All Collectable arguments will be set to `[]` by default.
+   */
   collect?: C | ReadonlyArray<Extract<C, string>>;
 
-  /** A string or array of strings argument names which can be negated
-   * by prefixing them with `--no-`, like `--no-config`. */
+  /**
+   * A string or array of strings argument names which can be negated
+   * by prefixing them with `--no-`, like `--no-config`.
+   */
   negatable?: N | ReadonlyArray<Extract<N, string>>;
 
-  /** A function which is invoked with a command line parameter not defined in
+  /**
+   * A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
-   * unknown option is not added to `parsedArgs`. */
+   * unknown option is not added to `parsedArgs`.
+   */
   unknown?: (arg: string, key?: string, value?: unknown) => unknown;
 }
 
@@ -331,11 +371,26 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
+ * By default, the flags module tries to determine the type of all arguments
+ * automatically and the return type of the `parse` method will have an index
+ * signature with `any` as value (`{ [x: string]: any }`).
+ *
+ * If the `string`, `boolean` or `collect` option is set, the return value of
+ * the `parse` method will be fully typed and the index signature of the return
+ * type will change to `{ [x: string]: unknown }`.
+ *
+ * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
+ *
+ * Numeric-looking arguments will be returned as numbers unless `options.string`
+ * or `options.boolean` is set for that argument name.
+ *
+ * @example
  * ```ts
  * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
+ * @example
  * ```ts
  * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);

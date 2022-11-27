@@ -61,7 +61,7 @@ for await (const path of testPaths) {
         "-A",
         "--quiet",
         "--unstable",
-        "--no-check",
+        "--unsafely-ignore-certificate-errors",
         "--v8-flags=" + v8Flags.join(),
         targetTestPath.endsWith(".mjs")
           ? "--import-map=" + importMap
