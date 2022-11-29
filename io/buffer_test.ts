@@ -3,7 +3,7 @@
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { copy } from "../bytes/mod.ts";
+import { copy } from "../bytes/copy.ts";
 import {
   assert,
   assertEquals,

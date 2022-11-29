@@ -19,7 +19,8 @@ import {
   writerFromStreamWriter,
 } from "./conversion.ts";
 import { Buffer } from "../io/buffer.ts";
-import { concat, copy as copyBytes } from "../bytes/mod.ts";
+import { concat } from "../bytes/concat.ts";
+import { copy as copyBytes } from "../bytes/copy.ts";
 
 function repeat(c: string, bytes: number): Uint8Array {
   assertEquals(c.length, 1);
