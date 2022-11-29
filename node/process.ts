@@ -27,6 +27,7 @@ import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
+  argv,
   chdir,
   cwd,
   env,

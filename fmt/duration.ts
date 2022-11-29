@@ -1,5 +1,25 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// A module to get formatted digital duration from milliseconds.
+
+/**
+ * Format milliseconds to time duration.
+ *
+ * ```ts
+ * import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+ *
+ * // "00:00:01:39:674:000:000"
+ * format(99674, { style: "digital" });
+ *
+ * // "0d 0h 1m 39s 674ms 0µs 0ns"
+ * format(99674);
+ *
+ * // "1m 39s 674ms"
+ * format(99674, { ignoreZero: true });
+ *
+ * // "1 minutes, 39 seconds, 674 milliseconds"
+ * format(99674, { style: "full", ignoreZero: true });
+ * ```
+ * @module
+ */
 
 const addZero = (num: number, digits: number) =>
   String(num).padStart(digits, "0");

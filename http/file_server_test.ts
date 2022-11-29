@@ -165,14 +165,14 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const res = await fetch("http://localhost:4507/README.md");
+      const res = await fetch("http://localhost:4507/mod.ts");
       assertEquals(
         res.headers.get("content-type"),
-        "text/markdown; charset=UTF-8",
+        "video/mp2t",
       );
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "README.md")),
+        await Deno.readFile(join(moduleDir, "mod.ts")),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -225,7 +225,7 @@ Deno.test("serveDirIndex", async function () {
   try {
     const res = await fetch("http://localhost:4507/");
     const page = await res.text();
-    assert(page.includes("README.md"));
+    assert(page.includes("mod.ts"));
     assert(page.includes(`<a href="/testdata/">testdata/</a>`));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
@@ -235,7 +235,7 @@ Deno.test("serveDirIndex", async function () {
       assert(/<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/.test(page));
     isWindows &&
       assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
-    assert(page.includes(`<a href="/README.md">README.md</a>`));
+    assert(page.includes(`<a href="/mod.ts">mod.ts</a>`));
   } finally {
     await killFileServer();
   }
@@ -283,7 +283,7 @@ Deno.test("checkPathTraversal", async function () {
 
     assertEquals(res.status, 200);
     const listing = await res.text();
-    assertStringIncludes(listing, "README.md");
+    assertStringIncludes(listing, "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -309,7 +309,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function () {
       "http://localhost/../../../..",
     );
     assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "README.md");
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -323,7 +323,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
     );
 
     assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "README.md");
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -424,11 +424,11 @@ Deno.test("file_server running as library", async function () {
 Deno.test("file_server should ignore query params", async () => {
   await startFileServer();
   try {
-    const res = await fetch("http://localhost:4507/README.md?key=value");
+    const res = await fetch("http://localhost:4507/mod.ts?key=value");
     assertEquals(res.status, 200);
     const downloadedFile = await res.text();
     const localFile = new TextDecoder().decode(
-      await Deno.readFile(join(moduleDir, "README.md")),
+      await Deno.readFile(join(moduleDir, "mod.ts")),
     );
     assertEquals(downloadedFile, localFile);
   } finally {

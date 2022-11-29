@@ -42,8 +42,8 @@ guaranteed for them.
 To browse documentation for modules:
 
 - Go to https://deno.land/std/.
-- Navigate to any module of interest.
 - Click "View Documentation".
+- Navigate to any module of interest.
 
 ## Contributing
 

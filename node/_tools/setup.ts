@@ -54,26 +54,17 @@ if (USE_CACHE) {
   CACHE_MODE = "prompt";
 }
 
-const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
-const NODE_FILE = "node-vNODE_VERSION";
+const NODE_URL = "https://nodejs.org/dist/v" + config.nodeVersion;
+const NODE_FILE = "node-v" + config.nodeVersion;
 const NODE_ARCHIVE_FILE = `${NODE_FILE}.tar.gz`;
 const NATIVE_NODE_TESTS_FOLDER = "/test";
 
 /** URL for the download */
-const url = `${NODE_URL}/${NODE_ARCHIVE_FILE}`.replaceAll(
-  "NODE_VERSION",
-  config.nodeVersion,
-);
+const url = `${NODE_URL}/${NODE_ARCHIVE_FILE}`;
 /** Local archive's url location */
-const archivePath = join(
-  config.versionsFolder,
-  NODE_ARCHIVE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
-);
+const archivePath = join(config.versionsFolder, NODE_ARCHIVE_FILE);
 /** Local decompressed source's location */
-const decompressedSourcePath = join(
-  config.versionsFolder,
-  NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
-);
+const decompressedSourcePath = join(config.versionsFolder, NODE_FILE);
 
 function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
   for (const testFileList of testFileLists) {
@@ -119,10 +110,7 @@ async function decompressTests(archivePath: string) {
 
   const tar = new Untar(buffer);
   const outFolder = dirname(fromFileUrl(new URL(archivePath, import.meta.url)));
-  const testsFolder = `${NODE_FILE}${NATIVE_NODE_TESTS_FOLDER}`.replace(
-    "NODE_VERSION",
-    config.nodeVersion,
-  );
+  const testsFolder = `${NODE_FILE}${NATIVE_NODE_TESTS_FOLDER}`;
 
   for await (const entry of tar) {
     if (entry.type !== "file") continue;
@@ -170,7 +158,12 @@ async function copyTests(filePath: string) {
   );
 
   for await (const entry of walk(path, { skip: ignoreList })) {
-    const expectedSuite = dirname(entry.path).split(sep).at(-1)!;
+    const fragments = entry.path.split(sep);
+    // Note: When the path is, for example,
+    // "/path/to/deno_std/node/_tools/versions/node-v18.12.0/test/fixtures/policy/main.mjs"
+    // then expectedSuite becomes "fixtures/policy" (The folder after "test" becomes "suite")
+    const expectedSuite = fragments.slice(fragments.indexOf(NODE_FILE) + 2, -1)
+      .join("/");
     const suite = getRequestedFileSuite(entry.name, expectedSuite);
     if (!suite) continue;
 

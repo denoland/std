@@ -41,7 +41,7 @@ export class Buffer {
    * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases the buffer content at
    * least until the next buffer modification, so immediate changes to the
    * slice will affect the result of future reads.
-   * @param options Defaults to `{ copy: true }`
+   * @param [options={ copy: true }]
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
@@ -968,7 +968,22 @@ export async function* readDelim(
   }
 }
 
-/** Read delimited strings from a Reader. */
+/**
+ * Read Reader chunk by chunk, splitting based on delimiter.
+ *
+ * @example
+ * ```ts
+ * import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+ * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ *
+ * const filename = path.join(Deno.cwd(), "std/io/README.md");
+ * let fileReader = await Deno.open(filename);
+ *
+ * for await (let line of readStringDelim(fileReader, "\n")) {
+ *   console.log(line);
+ * }
+ * ```
+ */
 export async function* readStringDelim(
   reader: Reader,
   delim: string,
@@ -985,7 +1000,22 @@ export async function* readStringDelim(
   }
 }
 
-/** Read strings line-by-line from a Reader. */
+/**
+ * Read strings line-by-line from a Reader.
+ *
+ *  @example
+ * ```ts
+ * import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+ * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ *
+ * const filename = path.join(Deno.cwd(), "std/io/README.md");
+ * let fileReader = await Deno.open(filename);
+ *
+ * for await (let line of readLines(fileReader)) {
+ *   console.log(line);
+ * }
+ * ```
+ */
 export async function* readLines(
   reader: Reader,
   decoderOpts?: {
