@@ -15,8 +15,8 @@ import {
   stringify,
 } from "./mod.ts";
 import * as path from "../path/mod.ts";
-import type { IsExact } from "../_util/assert_type.ts";
-import { assertType } from "../_util/assert_type.ts";
+import type { IsExact } from "../testing/types.ts";
+import { assertType } from "../testing/types.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
