@@ -6,7 +6,7 @@ import {
 } from "../testing/asserts.ts";
 import { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 

@@ -18,7 +18,7 @@
 
 import { parse } from "../flags/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { readAll } from "../streams/conversion.ts";
+import { readAll } from "../streams/read_all.ts";
 
 const decoder = new TextDecoder();
 

@@ -39,7 +39,7 @@
 import { MultiReader } from "../io/readers.ts";
 import { Buffer, PartialReadError } from "../io/buffer.ts";
 import { assert } from "../_util/asserts.ts";
-import { readAll } from "../streams/conversion.ts";
+import { readAll } from "../streams/read_all.ts";
 
 type Reader = Deno.Reader;
 type Seeker = Deno.Seeker;
@@ -318,7 +318,7 @@ interface TarEntry extends TarMeta {}
  * ```ts
  * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
  *
  * const tar = new Tar();
  * const content = new TextEncoder().encode("Deno.land");
@@ -568,7 +568,7 @@ class TarEntry implements Reader {
  * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
  * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
  * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
  *
  * const reader = await Deno.open("./out.tar", { read: true });
  * const untar = new Untar(reader);

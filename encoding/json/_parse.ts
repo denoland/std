@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { toTransformStream } from "../../streams/conversion.ts";
+import { toTransformStream } from "../../streams/to_transform_stream.ts";
 
 /** The type of the result of parsing JSON. */
 export type JsonValue =
@@ -28,7 +28,7 @@ export interface ParseStreamOptions {
  * @example
  * parse JSON lines or NDJSON
  * ```ts
- * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
  * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
@@ -47,7 +47,7 @@ export interface ParseStreamOptions {
  * @example
  * parse JSON Text Sequences
  * ```ts
- * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
  * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url =
