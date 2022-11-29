@@ -2,10 +2,8 @@
 import { CsvStream } from "./stream.ts";
 import type { CsvStreamOptions } from "./stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
-import {
-  readableStreamFromIterable,
-  readableStreamFromReader,
-} from "../../streams/conversion.ts";
+import { readableStreamFromIterable } from "../../streams/readable_stream_from_iterable.ts";
+import { readableStreamFromReader } from "../../streams/readable_stream_from_reader.ts";
 import {
   assert,
   assertEquals,

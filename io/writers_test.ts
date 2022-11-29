@@ -3,7 +3,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { StringWriter } from "./writers.ts";
 import { StringReader } from "./readers.ts";
 import { copyN } from "./util.ts";
-import { copy } from "../streams/conversion.ts";
+import { copy } from "../streams/copy.ts";
 
 Deno.test("ioStringWriter", async function () {
   const w = new StringWriter("base");

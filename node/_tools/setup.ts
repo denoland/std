@@ -15,7 +15,9 @@ import {
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
-import { copy, readAll, writeAll } from "../../streams/conversion.ts";
+import { copy } from "../../streams/copy.ts";
+import { readAll } from "../../streams/read_all.ts";
+import { writeAll } from "../../streams/write_all.ts";
 import { downloadFile } from "../../_util/download_file.ts";
 import { updateToDo } from "./list_remaining_tests.ts";
 

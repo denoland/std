@@ -6,7 +6,7 @@
  */
 
 import { parse } from "../flags/mod.ts";
-import { TextDelimiterStream } from "../streams/delimiter.ts";
+import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.
 const AsyncFunction = Object.getPrototypeOf(async function () {})

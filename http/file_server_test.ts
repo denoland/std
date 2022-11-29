@@ -4,11 +4,12 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { iterateReader, writeAll } from "../streams/conversion.ts";
+import { iterateReader } from "../streams/iterate_reader.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
 import { toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";

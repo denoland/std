@@ -23,7 +23,7 @@ import {
 } from "./buffer.ts";
 import * as iotest from "./_iotest.ts";
 import { StringReader } from "./readers.ts";
-import { writeAllSync } from "../streams/conversion.ts";
+import { writeAllSync } from "../streams/write_all.ts";
 import { StringWriter } from "./writers.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;

@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { defaultReadOptions, parseRecord } from "./_io.ts";
 import type { LineReader } from "./_io.ts";
-import { TextDelimiterStream } from "../../streams/delimiter.ts";
+import { TextDelimiterStream } from "../../streams/text_delimiter_stream.ts";
 
 export interface CsvStreamOptions {
   separator?: string;
