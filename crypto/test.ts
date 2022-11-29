@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { crypto as stdCrypto } from "./mod.ts";
-import * as bytes from "../bytes/mod.ts";
+import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -352,7 +352,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
-const aboutAMeg = bytes.repeat(
+const aboutAMeg = repeat(
   new Uint8Array(1237).fill(0).map((_, i) => i % 251),
   839,
 );

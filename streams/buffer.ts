@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
-import { copy } from "../bytes/mod.ts";
+import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
