@@ -68,7 +68,7 @@ Deno.test("[examples/catj] read from stdin", async () => {
   assertStrictEquals(actual, '.foo = "bar"');
 });
 
-function catj(...files: string[]): Deno.Command {
+function catj(...files: string[]): Deno.ChildProcess {
   const process = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -81,6 +81,5 @@ function catj(...files: string[]): Deno.Command {
     stdin: "piped",
     env: { NO_COLOR: "true" },
   });
-  process.spawn();
-  return process;
+  return process.spawn();
 }

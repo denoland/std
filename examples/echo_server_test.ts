@@ -21,10 +21,10 @@ Deno.test({
     stderr: "null",
     cwd: moduleDir,
   });
-  process.spawn();
+  const child = process.spawn();
   let conn: Deno.Conn | undefined;
   try {
-    const r = process.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
       new TextLineStream(),
     );
     const reader = r.getReader();
@@ -49,8 +49,8 @@ Deno.test({
 
     assertStrictEquals(actualResponse, expectedResponse);
   } finally {
-    process.kill("SIGTERM");
-    await process.status;
+    child.kill("SIGTERM");
+    await child.status;
     conn?.close();
   }
 });

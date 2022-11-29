@@ -51,11 +51,11 @@ Deno.test({
       cwd: moduleDir,
       stdin: "piped",
     });
-    p.spawn();
-    const writer = p.stdin.getWriter();
+    const child = p.spawn();
+    const writer = child.stdin.getWriter();
     await writer.write(new TextEncoder().encode("hello"));
     await writer.close();
-    const { success, stdout } = await p.output();
+    const { success, stdout } = await child.output();
     assertEquals(success, true);
     assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
   },

@@ -4,7 +4,7 @@ import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
 
 const moduleDir = resolve(dirname(fromFileUrl(import.meta.url)));
 
-async function startServer(): Promise<Deno.Command> {
+async function startServer(): Promise<Deno.ChildProcess> {
   const server = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -17,8 +17,8 @@ async function startServer(): Promise<Deno.Command> {
     stderr: "null",
     stdin: "null",
   });
-  server.spawn();
-  const reader = server.stdout.getReader();
+  const child = server.spawn();
+  const reader = child.stdout.getReader();
 
   try {
     const { value } = await reader.read();
@@ -26,18 +26,18 @@ async function startServer(): Promise<Deno.Command> {
       value && new TextDecoder().decode(value).includes("chat server starting"),
     );
   } catch {
-    await server.stdout.cancel();
+    await child.stdout.cancel();
   } finally {
     reader.releaseLock();
   }
 
-  return server;
+  return child;
 }
 
 Deno.test({
   name: "[examples/chat] GET / should serve html",
   async fn() {
-    const server = await startServer();
+    const child = await startServer();
     try {
       const resp = await fetch("http://127.0.0.1:8080/");
       assertEquals(resp.status, 200);
@@ -45,17 +45,17 @@ Deno.test({
       const html = await resp.text();
       assert(html.includes("ws chat example"), "body is ok");
     } finally {
-      server.stdout.cancel();
-      server.kill();
+      child.stdout.cancel();
+      child.kill();
     }
-    await server.status;
+    await child.status;
   },
 });
 
 Deno.test({
   name: "[examples/chat] GET /ws should upgrade conn to ws",
   async fn() {
-    const server = await startServer();
+    const child = await startServer();
     let ws: WebSocket;
     try {
       ws = new WebSocket("ws://127.0.0.1:8080/ws");
@@ -78,9 +78,9 @@ Deno.test({
     } catch (err) {
       console.log(err);
     } finally {
-      server.stdout.cancel();
-      server.kill();
+      child.stdout.cancel();
+      child.kill();
     }
-    await server.status;
+    await child.status;
   },
 });

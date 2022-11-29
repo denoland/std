@@ -181,9 +181,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     stdin: "piped",
     stderr: "inherit",
   });
-  process.spawn();
+  const child = process.spawn();
 
-  const writer = process.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
@@ -218,9 +218,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     `),
   );
   writer.releaseLock();
-  await process.stdin.close();
+  await child.stdin.close();
 
-  const res = await process.output();
+  const res = await child.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
   assertEquals(res.success, true, "test subprocess failed");
@@ -278,9 +278,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     stderr: "inherit",
     stdin: "piped",
   });
-  command.spawn();
+  const child = command.spawn();
 
-  const writer = command.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
@@ -317,9 +317,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     `),
   );
   writer.releaseLock();
-  await command.stdin.close();
+  await child.stdin.close();
 
-  const { stdout, success } = await command.output();
+  const { stdout, success } = await child.output();
   const output = new TextDecoder().decode(stdout);
 
   assert(success);

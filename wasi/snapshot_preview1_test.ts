@@ -98,17 +98,17 @@ for (const pathname of tests) {
           ],
           stdin: "piped",
         });
-        process.spawn();
+        const child = process.spawn();
 
         if (options.stdin) {
-          const writer = process.stdin.getWriter();
+          const writer = child.stdin.getWriter();
           await writer.write(new TextEncoder().encode(options.stdin));
           writer.releaseLock();
         }
 
-        process.stdin.close();
+        child.stdin.close();
 
-        const { code, stdout, stderr } = await process.output();
+        const { code, stdout, stderr } = await child.output();
 
         if (options.stdout) {
           assertEquals(new TextDecoder().decode(stdout), options.stdout);

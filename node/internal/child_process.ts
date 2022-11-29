@@ -128,7 +128,7 @@ export class ChildProcess extends EventEmitter {
     null,
   ];
 
-  #process!: Deno.Command;
+  #process!: Deno.ChildProcess;
   #spawned = deferred<void>();
 
   constructor(
@@ -171,8 +171,7 @@ export class ChildProcess extends EventEmitter {
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
         windowsRawArguments: windowsVerbatimArguments,
-      });
-      this.#process.spawn();
+      }).spawn();
       this.pid = this.#process.pid;
 
       if (stdin === "pipe") {
