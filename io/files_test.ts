@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { copy } from "../bytes/mod.ts";
+import { copy } from "../bytes/copy.ts";
 import {
   assert,
   assertEquals,

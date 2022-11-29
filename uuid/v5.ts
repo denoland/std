@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
-import { concat } from "../bytes/mod.ts";
+import { concat } from "../bytes/concat.ts";
 import { assert } from "../_util/asserts.ts";
 
 const UUID_RE =

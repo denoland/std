@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import { Args, parse, ParseOptions } from "./mod.ts";
-import { assertType, IsExact } from "../_util/assert_type.ts";
+import { assertType, IsExact } from "../testing/types.ts";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("flagBooleanTrue", function () {

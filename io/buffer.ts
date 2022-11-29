@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
 import { BytesList } from "../bytes/bytes_list.ts";
-import { concat, copy } from "../bytes/mod.ts";
+import { concat } from "../bytes/concat.ts";
+import { copy } from "../bytes/copy.ts";
 import type { Reader, ReaderSync, Writer, WriterSync } from "./types.d.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
