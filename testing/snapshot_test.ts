@@ -270,9 +270,8 @@ Deno.test("Snapshot Test - Options", async (t) => {
         const tempTestFilePath = join(tempDir, tempTestFileName);
         await Deno.writeTextFile(tempTestFilePath, test);
 
-        const process = await Deno.run({
-          cmd: [
-            Deno.execPath(),
+        const process = new Deno.Command(Deno.execPath(), {
+          args: [
             "test",
             "--allow-all",
             tempTestFilePath,
@@ -282,13 +281,11 @@ Deno.test("Snapshot Test - Options", async (t) => {
           stdout: "piped",
           stderr: "piped",
         });
-        const output = await process.output();
-        const error = await process.stderrOutput();
-        process.close();
+        const { stdout, stderr } = await process.output();
 
         return {
-          output: new TextDecoder().decode(output),
-          error: new TextDecoder().decode(error),
+          output: new TextDecoder().decode(stdout),
+          error: new TextDecoder().decode(stderr),
         };
       }
 

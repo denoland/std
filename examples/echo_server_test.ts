@@ -16,15 +16,15 @@ Deno.test({
 }, async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const process = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
     stderr: "null",
     cwd: moduleDir,
   });
-
+  const child = process.spawn();
   let conn: Deno.Conn | undefined;
   try {
-    const r = process.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
       new TextLineStream(),
     );
     const reader = r.getReader();
@@ -49,8 +49,8 @@ Deno.test({
 
     assertStrictEquals(actualResponse, expectedResponse);
   } finally {
-    process.kill("SIGTERM");
-    await process.status;
+    child.kill("SIGTERM");
+    await child.status;
     conn?.close();
   }
 });
