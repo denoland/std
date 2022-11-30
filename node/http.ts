@@ -66,7 +66,7 @@ const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    return core.encode(chunk);
+    return new TextEncoder().encode(chunk);
   }
   return chunk;
 }
