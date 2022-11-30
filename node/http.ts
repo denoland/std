@@ -63,9 +63,10 @@ const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
 const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
   Deno.upgradeHttpRaw;
 
+const ENCODER = new TextEncoder();
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    return new TextEncoder().encode(chunk);
+    return ENCODER.encode(chunk);
   }
   return chunk;
 }
