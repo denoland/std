@@ -114,6 +114,8 @@ export function arch(): string {
 // deno-lint-ignore no-explicit-any
 (release as any)[Symbol.toPrimitive] = (): string => release();
 // deno-lint-ignore no-explicit-any
+(version as any)[Symbol.toPrimitive] = (): string => version();
+// deno-lint-ignore no-explicit-any
 (totalmem as any)[Symbol.toPrimitive] = (): number => totalmem();
 // deno-lint-ignore no-explicit-any
 (type as any)[Symbol.toPrimitive] = (): string => type();
@@ -234,6 +236,13 @@ export function release(): string {
   return Deno.osRelease();
 }
 
+/** Returns a string identifying the kernel version */
+export function version(): string {
+  // TODO(kt3k): Temporarily uses Deno.osRelease().
+  // Revisit this if this implementation is insufficient for any npm module
+  return Deno.osRelease();
+}
+
 /** Not yet implemented */
 export function setPriority(pid: number, priority?: number) {
   /* The node API has the 'pid' as the first parameter and as optional.
@@ -330,6 +339,7 @@ export default {
   type,
   uptime,
   userInfo,
+  version,
   constants,
   EOL,
   devNull,
