@@ -106,7 +106,7 @@ export const {
   isArrayBuffer,
   isDataView,
   isSharedArrayBuffer,
-  // isProxy,
+  isProxy,
   isModuleNamespaceObject,
   isAnyArrayBuffer,
   isBoxedPrimitive,
