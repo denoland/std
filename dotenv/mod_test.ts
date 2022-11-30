@@ -714,7 +714,7 @@ Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permi
 
 Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
   await t.step("return type is inferred", async () => {
-    const conf = await config({
+    const conf = await load({
       ...testOptions,
       restrictEnvAccessTo: ["GREETING"],
     });
@@ -735,7 +735,7 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
   });
 
   await t.step("readonly array is also supported", () => {
-    const conf = configSync({
+    const conf = loadSync({
       ...testOptions,
       restrictEnvAccessTo: ["GREETING", "DEFAULT1"] as const,
     });
@@ -746,7 +746,7 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
   });
 
   await t.step("without restrictEnvAccessTo", async () => {
-    const conf = await config(testOptions);
+    const conf = await load(testOptions);
 
     assertType<
       IsExact<typeof conf, { GREETING: string }>
