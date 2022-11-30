@@ -6,6 +6,7 @@ import {
   assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
+import type { DotenvConfig } from "./mod.ts";
 import {
   load,
   loadSync,
@@ -14,6 +15,8 @@ import {
   stringify,
 } from "./mod.ts";
 import * as path from "../path/mod.ts";
+import type { IsExact } from "../testing/types.ts";
+import { assertType } from "../testing/types.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -707,4 +710,48 @@ Deno.test("use of restrictEnvAccessTo for an Env var, without granting env permi
   const error = decoder.decode(stdout).trim();
 
   assertStringIncludes(error, 'Requires env access to "GREETING"');
+});
+
+Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
+  await t.step("return type is inferred", async () => {
+    const conf = await config({
+      ...testOptions,
+      restrictEnvAccessTo: ["GREETING"],
+    });
+
+    assertType<
+      IsExact<typeof conf, { GREETING: string }>
+    >(true);
+
+    assertType<
+      IsExact<typeof conf, { NO_SUCH_KEY: string }>
+    >(false);
+
+    assertType<
+      IsExact<typeof conf, DotenvConfig>
+    >(false);
+
+    assertEquals(conf.DEFAULT1, "Some Default");
+  });
+
+  await t.step("readonly array is also supported", () => {
+    const conf = configSync({
+      ...testOptions,
+      restrictEnvAccessTo: ["GREETING", "DEFAULT1"] as const,
+    });
+
+    assertType<
+      IsExact<typeof conf, { GREETING: string; DEFAULT1: string }>
+    >(true);
+  });
+
+  await t.step("without restrictEnvAccessTo", async () => {
+    const conf = await config(testOptions);
+
+    assertType<
+      IsExact<typeof conf, { GREETING: string }>
+    >(false);
+
+    assertType<IsExact<typeof conf, DotenvConfig>>(true);
+  });
 });

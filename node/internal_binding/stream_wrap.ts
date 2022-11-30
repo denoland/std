@@ -32,7 +32,7 @@ import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../streams/conversion.ts";
+import { writeAll } from "../../streams/write_all.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,

@@ -1,6 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { LimitedBytesTransformStream as _LimitedBytesTransformStream } from "./limited_bytes_transform_stream.ts";
+import { LimitedTransformStream as _LimitedTransformStream } from "./limited_transform_stream.ts";
+import { ByteSliceStream as _ByteSliceStream } from "./byte_slice_stream.ts";
 import { assert } from "../_util/asserts.ts";
-import { copy } from "../bytes/mod.ts";
+import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
@@ -166,7 +169,10 @@ export class Buffer {
   }
 }
 
-/** A TransformStream that will only read & enqueue `size` amount of bytes.
+/**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
+ *
+ * A TransformStream that will only read & enqueue `size` amount of bytes.
  * This operation is chunk based and not BYOB based,
  * and as such will read more than needed.
  *
@@ -180,28 +186,12 @@ export class Buffer {
  *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
  * ```
  */
-export class LimitedBytesTransformStream
-  extends TransformStream<Uint8Array, Uint8Array> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + chunk.byteLength) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded byte size limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read += chunk.byteLength;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
+export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
 
-/** A TransformStream that will only read & enqueue `size` amount of chunks.
+/**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_transform_stream.ts` instead.
+ *
+ * A TransformStream that will only read & enqueue `size` amount of chunks.
  *
  * if options.error is set, then instead of terminating the stream,
  * an error will be thrown.
@@ -212,27 +202,11 @@ export class LimitedBytesTransformStream
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```
  */
-export class LimitedTransformStream<T> extends TransformStream<T, T> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + 1) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded chunk limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read++;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
+export const LimitedTransformStream = _LimitedTransformStream;
 
 /**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/byte_slice_stream.ts` instead.
+ *
  * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
  *
  * @example
@@ -243,32 +217,4 @@ export class LimitedTransformStream<T> extends TransformStream<T, T> {
  *   .pipeThrough(new ByteSliceStream(3, 8));
  * ```
  */
-export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
-  #offsetStart = 0;
-  #offsetEnd = 0;
-
-  constructor(start = 0, end = Infinity) {
-    super({
-      start: () => {
-        assert(start >= 0, "`start` must be greater than 0");
-        end += 1;
-      },
-      transform: (chunk, controller) => {
-        this.#offsetStart = this.#offsetEnd;
-        this.#offsetEnd += chunk.byteLength;
-        if (this.#offsetEnd > start) {
-          if (this.#offsetStart < start) {
-            chunk = chunk.slice(start - this.#offsetStart);
-          }
-          if (this.#offsetEnd >= end) {
-            chunk = chunk.slice(0, chunk.byteLength - this.#offsetEnd + end);
-            controller.enqueue(chunk);
-            controller.terminate();
-          } else {
-            controller.enqueue(chunk);
-          }
-        }
-      },
-    });
-  }
-}
+export const ByteSliceStream = _ByteSliceStream;

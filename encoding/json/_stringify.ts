@@ -26,7 +26,7 @@ export interface StringifyStreamOptions {
  *
  * @example
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
@@ -42,7 +42,7 @@ export interface StringifyStreamOptions {
  * To convert to [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), set the
  * prefix to the delimiter "\x1E" as options.
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });

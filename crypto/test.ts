@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { crypto as stdCrypto } from "./mod.ts";
-import * as bytes from "../bytes/mod.ts";
+import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -175,14 +175,15 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const process = new Deno.Command(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdin: "piped",
     stderr: "inherit",
   });
+  const child = process.spawn();
 
-  const writer = process.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
@@ -217,9 +218,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     `),
   );
   writer.releaseLock();
-  await process.stdin.close();
+  await child.stdin.close();
 
-  const res = await process.output();
+  const res = await child.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
   assertEquals(res.success, true, "test subprocess failed");
@@ -270,15 +271,16 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stderr: "inherit",
     stdin: "piped",
   });
+  const child = command.spawn();
 
-  const writer = process.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
@@ -315,12 +317,12 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     `),
   );
   writer.releaseLock();
-  await process.stdin.close();
+  await child.stdin.close();
 
-  const res = await process.output();
-  const stdout = new TextDecoder().decode(res.stdout);
+  const { stdout, success } = await child.output();
+  const output = new TextDecoder().decode(stdout);
 
-  assert(res.success);
+  assert(success);
   const {
     heapBytesInitial,
     heapBytesFinal,
@@ -329,7 +331,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     heapBytesInitial: number;
     heapBytesFinal: number;
     stateFinal: string;
-  } = JSON.parse(stdout);
+  } = JSON.parse(output);
 
   assert(
     heapBytesInitial < 2_000_000,
@@ -352,7 +354,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
-const aboutAMeg = bytes.repeat(
+const aboutAMeg = repeat(
   new Uint8Array(1237).fill(0).map((_, i) => i % 251),
   839,
 );

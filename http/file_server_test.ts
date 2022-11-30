@@ -4,16 +4,17 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { iterateReader, writeAll } from "../streams/conversion.ts";
+import { iterateReader } from "../streams/iterate_reader.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
 import { toHashString } from "../crypto/mod.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 
-let fileServer: Deno.Child;
+let child: Deno.ChildProcess;
 
 interface FileServerCfg {
   port?: string;
@@ -36,7 +37,7 @@ async function startFileServer({
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -54,8 +55,9 @@ async function startFileServer({
     cwd: moduleDir,
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -65,7 +67,7 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -77,7 +79,8 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
     cwd: moduleDir,
     stderr: "null",
   });
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  child = fileServer.spawn();
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -87,8 +90,8 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  fileServer.kill("SIGKILL");
-  await fileServer.status;
+  child.kill("SIGKILL");
+  await child.status;
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -438,7 +441,7 @@ async function startTlsFileServer({
   target = ".",
   port = "4577",
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -460,8 +463,9 @@ async function startTlsFileServer({
     cwd: moduleDir,
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -496,7 +500,7 @@ Deno.test("serveDirIndex TLS", async function () {
 });
 
 Deno.test("partial TLS arguments fail", async function () {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -515,9 +519,10 @@ Deno.test("partial TLS arguments fail", async function () {
     cwd: moduleDir,
     stderr: "null",
   });
+  child = fileServer.spawn();
   try {
     // Once fileServer is ready it will write to its stdout.
-    const r = fileServer.stdout.pipeThrough(new TextDecoderStream())
+    const r = child.stdout.pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextLineStream());
     const reader = r.getReader();
     const res = await reader.read();

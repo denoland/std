@@ -64,7 +64,7 @@ Deno.test("integration test of compat mode", {
   await Deno.remove(tempDir, { recursive: true });
 });
 
-type Opts = Pick<Deno.SpawnOptions, "env" | "cwd">;
+type Opts = Pick<Deno.CommandOptions, "env" | "cwd">;
 function exec(cmd: string, opts: Opts = {}) {
   const [command, ...args] = cmd.split(" ");
   return execCmd(command, args, opts);

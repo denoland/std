@@ -5,7 +5,7 @@
  * @module
  */
 
-import { copy } from "../streams/conversion.ts";
+import { copy } from "../streams/copy.ts";
 
 const hostname = "0.0.0.0";
 const port = 8080;

@@ -25,9 +25,6 @@ if (Deno?.core) {
     encode(chunk: string): Uint8Array {
       return new TextEncoder().encode(chunk);
     },
-    decode(chunk: Uint8Array): string {
-      return new TextDecoder().decode(chunk);
-    },
     eventLoopHasMoreWork(): boolean {
       return false;
     },

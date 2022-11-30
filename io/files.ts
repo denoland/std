@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { copy as copyBytes } from "../bytes/mod.ts";
+import { copy as copyBytes } from "../bytes/copy.ts";
 import { assert } from "../_util/asserts.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;

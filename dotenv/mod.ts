@@ -99,6 +99,18 @@ export interface DotenvConfig {
   [key: string]: string;
 }
 
+type StrictDotenvConfig<T extends ReadonlyArray<string>> =
+  & {
+    [key in T[number]]: string;
+  }
+  & DotenvConfig;
+
+type StrictEnvVarList<T extends string> =
+  | Array<Extract<T, string>>
+  | ReadonlyArray<Extract<T, string>>;
+
+type StringList = Array<string> | ReadonlyArray<string> | undefined;
+
 /**
  * @deprecated (will be removed after 0.170.0). Use `LoadOptions` instead
  */
@@ -159,18 +171,53 @@ export interface ConfigOptions {
    * looked up. This allows to permit access to only specific Env variables with
    * `--allow-env=ENV_VAR_NAME`.
    */
-  restrictEnvAccessTo?: string[];
+  restrictEnvAccessTo?: StringList;
 }
 
 export interface LoadOptions {
+  /** Optional path to `.env` file.
+   *
+   * @default {"./.env"}
+   */
   envPath?: string;
-  examplePath?: string;
-  defaultsPath?: string;
+  /**
+   * Set to `true` to export all `.env` variables to the current processes
+   * environment. Variables are then accessable via `Deno.env.get(<key>)`.
+   *
+   * @default {false}
+   */
   export?: boolean;
+  /** Optional path to `.env.example` file.
+   *
+   * @default {"./.env.example"}
+   */
+  examplePath?: string;
+  /**
+   * Set to `true` to allow required env variables to be empty. Otherwise, it
+   * will throw an error if any variable is empty.
+   *
+   * @default {false}
+   */
   allowEmptyValues?: boolean;
-  restrictEnvAccessTo?: string[];
+  /**
+   * Path to `.env.defaults` file which is used to define default values.
+   *
+   * ```sh
+   * # .env.defaults
+   * # Will not be set if GREETING is set in base .env file
+   * GREETING="a secret to everybody"
+   * ```
+   *
+   * @default {"./.env.defaults"}
+   */
+  defaultsPath?: string;
+  /**
+   * List of Env variables to read from process. By default, the complete Env is
+   * looked up. This allows to permit access to only specific Env variables with
+   * `--allow-env=ENV_VAR_NAME`.
+   */
+  restrictEnvAccessTo?: StringList;
 }
-
 type LineParseResult = {
   key: string;
   unquoted: string;
@@ -188,7 +235,7 @@ const RE_ExpandValue =
 
 export function parse(
   rawDotenv: string,
-  restrictEnvAccessTo: string[] = [],
+  restrictEnvAccessTo: StringList = [],
 ): Record<string, string> {
   const env: Record<string, string> = {};
 
@@ -222,17 +269,34 @@ export function parse(
 /**
  * @deprecated (will be removed after 0.170.0). Use `loadSync` instead
  */
-export function configSync(options: ConfigOptions = {}) {
+export function configSync(
+  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
+): DotenvConfig;
+export function configSync<TEnvVar extends string>(
+  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
+export function configSync(options: ConfigOptions = {}): DotenvConfig {
+  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
   return loadSync({
+    ...r,
     envPath: options.path,
     examplePath: options.safe ? options.example : undefined,
     defaultsPath: options.defaults,
     export: options.export,
     allowEmptyValues: options.allowEmptyValues,
-    restrictEnvAccessTo: options.restrictEnvAccessTo,
   });
 }
 
+export function loadSync(
+  options?: Omit<LoadOptions, "restrictEnvAccessTo">,
+): Record<string, string>;
+export function loadSync<TEnvVar extends string>(
+  options: Omit<LoadOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
 export function loadSync(
   {
     envPath = ".env",
@@ -272,16 +336,35 @@ export function loadSync(
 /**
  * @deprecated (will be removed after 0.170.0). Use `load` instead
  */
-export async function config(options: ConfigOptions = {}) {
+export function config(
+  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
+): Promise<DotenvConfig>;
+export function config<TEnvVar extends string>(
+  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): Promise<StrictDotenvConfig<StrictEnvVarList<TEnvVar>>>;
+export async function config(
+  options: ConfigOptions = {},
+): Promise<DotenvConfig> {
+  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
   return await load({
+    ...r,
     envPath: options.path,
     examplePath: options.safe ? options.example : undefined,
     defaultsPath: options.defaults,
     export: options.export,
     allowEmptyValues: options.allowEmptyValues,
-    restrictEnvAccessTo: options.restrictEnvAccessTo,
   });
 }
+export function load(
+  options?: Omit<LoadOptions, "restrictEnvAccessTo">,
+): Promise<Record<string, string>>;
+export function load<TEnvVar extends string>(
+  options: Omit<LoadOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): Promise<StrictDotenvConfig<StrictEnvVarList<TEnvVar>>>;
 export async function load(
   {
     envPath = ".env",
@@ -324,7 +407,7 @@ export async function load(
   return conf;
 }
 
-function parseFile(filepath: string, restrictEnvAccessTo: string[] = []) {
+function parseFile(filepath: string, restrictEnvAccessTo: StringList = []) {
   try {
     return parse(
       new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)),
@@ -338,7 +421,7 @@ function parseFile(filepath: string, restrictEnvAccessTo: string[] = []) {
 
 async function parseFileAsync(
   filepath: string,
-  restrictEnvAccessTo: string[] = [],
+  restrictEnvAccessTo: StringList = [],
 ) {
   try {
     return parse(
@@ -368,7 +451,7 @@ function assertSafe(
   conf: Record<string, string>,
   confExample: Record<string, string>,
   allowEmptyValues: boolean,
-  restrictEnvAccessTo: string[] = [],
+  restrictEnvAccessTo: StringList = [],
 ) {
   const currentEnv = readEnv(restrictEnvAccessTo);
 
@@ -404,9 +487,7 @@ function assertSafe(
 
 // a guarded env access, that reads only a subset from the Deno.env object,
 // if `restrictEnvAccessTo` property is passed.
-function readEnv(
-  restrictEnvAccessTo: string[],
-) {
+function readEnv(restrictEnvAccessTo: StringList) {
   if (
     restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) &&
     restrictEnvAccessTo.length > 0

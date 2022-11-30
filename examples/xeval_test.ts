@@ -40,7 +40,7 @@ const xevalPath = "xeval.ts";
 Deno.test({
   name: "xevalCliReplvar",
   fn: async function () {
-    const p = Deno.spawnChild(Deno.execPath(), {
+    const p = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -50,12 +50,12 @@ Deno.test({
       ],
       cwd: moduleDir,
       stdin: "piped",
-      stderr: "null",
     });
-    const writer = p.stdin.getWriter();
+    const child = p.spawn();
+    const writer = child.stdin.getWriter();
     await writer.write(new TextEncoder().encode("hello"));
     await writer.close();
-    const { success, stdout } = await p.output();
+    const { success, stdout } = await child.output();
     assertEquals(success, true);
     assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
   },

@@ -15,7 +15,8 @@ import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { Tar, TarEntry, Untar } from "./tar.ts";
 import type { TarEntry as TarEntryType, TarHeader, TarMeta } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy, readAll } from "../streams/conversion.ts";
+import { copy } from "../streams/copy.ts";
+import { readAll } from "../streams/read_all.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");

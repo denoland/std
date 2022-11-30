@@ -11,17 +11,41 @@ export interface Cookie {
   name: string;
   /** Value of the cookie. */
   value: string;
-  /** Expiration date of the cookie. */
+  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds.
+   * @example <caption>Explicit date:</caption>
+   *
+   * ```ts
+   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires on Fri Dec 30 2022
+   *   expires: new Date('2022-12-31')
+   * }
+   * ```
+   *
+   * @example <caption>UTC milliseconds</caption>
+   *
+   * ```ts
+   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires 10 seconds from now
+   *   expires: Date.now() + 10000
+   * }
+   * ```
+   */
   expires?: Date | number;
-  /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
+  /** The cookie's `Max-Age` attribute, in seconds. Must be a non-negative integer. A cookie with a `maxAge` of `0` expires immediately. */
   maxAge?: number;
-  /** Specifies those hosts to which the cookie will be sent. */
+  /** The cookie's `Domain` attribute. Specifies those hosts to which the cookie will be sent. */
   domain?: string;
-  /** Indicates a URL path that must exist in the request. */
+  /** The cookie's `Path` attribute. A cookie with a path will only be included in the `Cookie` request header if the requested URL matches that path. */
   path?: string;
-  /** Indicates if the cookie is made using SSL & HTTPS. */
+  /** The cookie's `Secure` attribute. If `true`, the cookie will only be included in the `Cookie` request header if the connection uses SSL and HTTPS. */
   secure?: boolean;
-  /** Indicates that cookie is not accessible via JavaScript. */
+  /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
   /**
    * Allows servers to assert that a cookie ought not to
