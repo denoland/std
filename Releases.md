@@ -1,3 +1,15 @@
+### 0.167.0 / 2022.12.01
+
+- Reorder steps to view documentation (#2948)
+- Revert "test(node/http): modify writable of ClientRequest (#2945)" (#2950)
+- feat(async): retry (#2929)
+- feat(dotenv): support type inference based on `restrictEnvAccessTo` option
+  (#2933)
+- feat(node): add os.version (#2962)
+- feat(node): add util.types.isProxy (#2960)
+- feat(testing): add conditional type check utils (#2864)
+- fix(node/tls): implement secureConnect event (#2926)
+
 ### 0.166.0 / 2022.11.24
 
 - BREAKING(fmt/bytes): rename prettyBytes to format (#2896)
