@@ -12,7 +12,7 @@
  * the array.
  *
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
  * const src = new Uint8Array([9, 8, 7]);
  * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
  * console.log(copy(src, dst)); // 3
@@ -20,7 +20,7 @@
  * ```
  *
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
  * const src = new Uint8Array([1, 1, 1, 1]);
  * const dst = new Uint8Array([0, 0, 0, 0]);
  * console.log(copy(src, dst, 1)); // 3

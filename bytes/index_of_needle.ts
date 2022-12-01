@@ -10,7 +10,7 @@
  * The complexity of this function is O(source.lenth * needle.length).
  *
  * ```ts
- * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
+ * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * console.log(indexOfNeedle(source, needle)); // 1
