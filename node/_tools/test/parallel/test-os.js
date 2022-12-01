@@ -202,11 +202,9 @@ const home = os.homedir();
 is.string(home);
 assert.ok(home.includes(path.sep));
 
-/* TODO(kt3k): Enable this test
 const version = os.version();
 assert.strictEqual(typeof version, 'string');
 assert(version);
-*/
 
 if (common.isWindows && process.env.USERPROFILE) {
   assert.strictEqual(home, process.env.USERPROFILE);
@@ -260,8 +258,7 @@ assert.strictEqual(`${os.endianness}`, os.endianness());
 // assert.strictEqual(`${os.tmpdir}`, os.tmpdir());
 assert.strictEqual(`${os.arch}`, os.arch());
 assert.strictEqual(`${os.platform}`, os.platform());
-// TODO(kt3k): Enable this test
-// assert.strictEqual(`${os.version}`, os.version());
+assert.strictEqual(`${os.version}`, os.version());
 
 assert.strictEqual(+os.totalmem, os.totalmem());
 
