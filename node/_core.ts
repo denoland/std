@@ -18,7 +18,31 @@ if (Deno?.core) {
   core = Deno.core;
 } else {
   core = {
-    setNextTickCallback: undefined,
+    runMicrotasks() {
+      throw new Error(
+        "Deno.core.runMicrotasks() is not supported in this environment",
+      );
+    },
+    setHasTickScheduled() {
+      throw new Error(
+        "Deno.core.setHasTickScheduled() is not supported in this environment",
+      );
+    },
+    hasTickScheduled() {
+      throw new Error(
+        "Deno.core.hasTickScheduled() is not supported in this environment",
+      );
+    },
+    setNextTickCallback() {
+      throw new Error(
+        "Deno.core.setNextTickCallback() is not supported in this environment",
+      );
+    },
+    setMacrotaskCallback() {
+      throw new Error(
+        "Deno.core.setNextTickCallback() is not supported in this environment",
+      );
+    },
     evalContext(_code: string, _filename: string) {
       throw new Error(
         "Deno.core.evalContext is not supported in this environment",
