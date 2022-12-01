@@ -3,6 +3,8 @@
 // This module provides an interface to `Deno.core`. For environments
 // that don't have access to `Deno.core` some APIs are polyfilled, while
 // some are unavailble and throw on call.
+// Note: deno_std shouldn't use Deno.core namespace. We should minimize these
+// usages.
 
 // deno-lint-ignore no-explicit-any
 export let core: any;
@@ -26,6 +28,9 @@ if (Deno?.core) {
       return new TextEncoder().encode(chunk);
     },
     eventLoopHasMoreWork(): boolean {
+      return false;
+    },
+    isProxy(): boolean {
       return false;
     },
     ops: {

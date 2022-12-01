@@ -21,6 +21,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { core } from "../_core.ts";
+
 const _toString = Object.prototype.toString;
 
 const _isObjectLike = (value: unknown): boolean =>
@@ -114,6 +116,10 @@ export function isBigIntObject(value: unknown): boolean {
 
 export function isPromise(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Promise]";
+}
+
+export function isProxy(value: unknown): boolean {
+  return core.isProxy(value);
 }
 
 export function isRegExp(value: unknown): boolean {
