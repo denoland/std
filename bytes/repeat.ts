@@ -22,13 +22,9 @@ export function repeat(source: Uint8Array, count: number): Uint8Array {
 
   if (count < 0) {
     throw new RangeError("bytes: negative repeat count");
-  } else if ((source.length * count) / count !== source.length) {
-    throw new Error("bytes: repeat count causes overflow");
   }
 
-  const int = Math.floor(count);
-
-  if (int !== count) {
+  if (!Number.isInteger(count)) {
     throw new Error("bytes: repeat count must be an integer");
   }
 
