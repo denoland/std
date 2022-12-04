@@ -26,6 +26,7 @@ interface FileServerCfg {
   key?: string;
   help?: boolean;
   target?: string;
+  cache?: string;
 }
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -36,6 +37,7 @@ async function startFileServer({
   port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
+  cache = "",
 }: FileServerCfg = {}) {
   const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
@@ -51,6 +53,7 @@ async function startFileServer({
       `${port}`,
       `${dirListing ? "" : "--no-dir-listing"}`,
       `${dotfiles ? "" : "--no-dotfiles"}`,
+      `${cache ? `--cache=${cache}` : ""}`,
     ],
     cwd: moduleDir,
     stderr: "null",
@@ -886,6 +889,38 @@ Deno.test("file_server sets `Date` header correctly", async () => {
     await killFileServer();
   }
 });
+
+Deno.test(
+  "file_server sets `cache-control` header correctly if provided as argument",
+  async () => {
+    await startFileServer({
+      cache: "100",
+    });
+    try {
+      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+      assertEquals(res.headers.get("cache-control"), "max-age=100");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
+  "file_server sets `cache-control` header to `no-store` if is -1",
+  async () => {
+    await startFileServer({
+      cache: "-1",
+    });
+    try {
+      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+      assertEquals(res.headers.get("cache-control"), "no-store");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
 
 Deno.test(
   "file_server file responses includes correct etag",

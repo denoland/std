@@ -431,6 +431,11 @@ export interface ServeDirOptions {
    * @default {"fnv1a"}
    */
   etagAlgorithm?: DigestAlgorithm;
+  /** The amount of time in seconds to cache results for. -1 will be interpeted as no-store.
+   *
+   * @default {3600}
+   */
+  cache?: number;
 }
 
 /**
@@ -537,6 +542,13 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 
   if (!opts.quiet) serverLog(req, response!.status);
 
+  if (opts.cache === -1) {
+    response.headers.append("cache-control", "no-store");
+  } else {
+    // console.log(opts.cache)
+    response.headers.append("cache-control", `max-age=${opts.cache ?? 3600}`);
+  }
+
   return response!;
 }
 
@@ -546,7 +558,7 @@ function normalizeURL(url: string): string {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key"],
+    string: ["port", "host", "cert", "key", "cache"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
     default: {
@@ -563,6 +575,7 @@ function main() {
     alias: {
       p: "port",
       c: "cert",
+      C: "cache",
       k: "key",
       h: "help",
       v: "verbose",
@@ -570,6 +583,7 @@ function main() {
     },
   });
   const port = Number(serverArgs.port);
+  const cache = Number(serverArgs.cache ?? "9999999999");
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -602,6 +616,7 @@ function main() {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
+      cache: cache,
     });
   };
 
@@ -636,6 +651,7 @@ OPTIONS:
   --host     <HOST>   Hostname (default is 0.0.0.0)
   -c, --cert <FILE>   TLS certificate file (enables TLS)
   -k, --key  <FILE>   TLS key file (enables TLS)
+  -C, --cache <TIME>  Sets the cache-control header
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
   --no-cors           Disable cross-origin resource sharing
