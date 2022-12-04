@@ -2,7 +2,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { Foras, gunzip } from "https://deno.land/x/denoflate@2.0.2/deno/mod.ts";
-import { Untar } from "../../archive/tar.ts";
+import { Untar } from "../../archive/untar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
   basename,
