@@ -545,7 +545,6 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   if (opts.cache === -1) {
     response.headers.append("cache-control", "no-store");
   } else {
-    // console.log(opts.cache)
     response.headers.append("cache-control", `max-age=${opts.cache ?? 3600}`);
   }
 
@@ -571,6 +570,7 @@ function main() {
       port: "4507",
       cert: "",
       key: "",
+      cache: "3600",
     },
     alias: {
       p: "port",
@@ -583,7 +583,7 @@ function main() {
     },
   });
   const port = Number(serverArgs.port);
-  const cache = Number(serverArgs.cache ?? "9999999999");
+  const cache = Number(serverArgs.cache);
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
