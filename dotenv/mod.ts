@@ -90,7 +90,8 @@
  * @module
  */
 
-import { difference, removeEmptyValues } from "./util.ts";
+import { filterValues } from "../collections/filter_values.ts";
+import { withoutAll } from "../collections/without_all.ts";
 
 export interface DotenvConfig {
   [key: string]: string;
@@ -356,11 +357,11 @@ function assertSafe(
   // Not all the variables have to be defined in .env, they can be supplied externally
   const confWithEnv = Object.assign({}, currentEnv, conf);
 
-  const missing = difference(
+  const missing = withoutAll(
     Object.keys(confExample),
     // If allowEmptyValues is false, filter out empty values from configuration
     Object.keys(
-      allowEmptyValues ? confWithEnv : removeEmptyValues(confWithEnv),
+      allowEmptyValues ? confWithEnv : filterValues(confWithEnv, Boolean),
     ),
   );
 
