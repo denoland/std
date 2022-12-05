@@ -32,5 +32,6 @@ for await (
   if (!content.includes(COPYRIGHT)) {
     const contentWithCopyright = COPYRIGHT + "\n" + content;
     await Deno.writeTextFile(path, contentWithCopyright);
+    console.log("Copyright headers automatically added to " + path);
   }
 }
