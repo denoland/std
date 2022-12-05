@@ -21,8 +21,6 @@ const CURRENT_YEAR = new Date().getFullYear();
 const COPYRIGHT =
   `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
-let failed = false;
-
 for await (
   const { path } of walk(ROOT, {
     exts: EXTENSIONS,
@@ -32,14 +30,7 @@ for await (
 ) {
   const content = await Deno.readTextFile(path);
   if (!content.includes(COPYRIGHT)) {
-    console.error(`Missing/incorrect copyright header: ${path}`);
-    if (!failed) {
-      failed = true;
-    }
+    const contentWithCopyright = COPYRIGHT + "\n" + content;
+    await Deno.writeTextFile(path, contentWithCopyright);
   }
-}
-
-if (failed) {
-  console.info(`Copyright header should be "${COPYRIGHT}"`);
-  Deno.exit(1);
 }
