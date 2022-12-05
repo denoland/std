@@ -117,7 +117,7 @@ function representYamlBinary(object: Uint8Array): string {
 }
 
 function isBinary(obj: Any): obj is Buffer {
-  if (typeof obj?.readFromSync !== "function") {
+  if (typeof obj?.readSync !== "function") {
     return false;
   }
   const buf = new Buffer();
