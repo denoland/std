@@ -51,7 +51,7 @@
  * }
  * ```
  *
- * ```bash
+ * ```sh
  * $ deno run ./example.ts
  * {
  *   frontMatter: "module: front_matter\ntags:\n  - yaml\n  - toml\n  - json",
