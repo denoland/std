@@ -40,3 +40,20 @@ Deno.test("[bytes] lastIndexOfNeedle with start index 2", () => {
   );
   assertEquals(i, -1);
 });
+
+Deno.test("[bytes] lastIndexOfNeedle with start index greater than source index", () => {
+  const i = lastIndexOfNeedle(
+    new Uint8Array([0, 1, 2, 0, 1, 2]),
+    new Uint8Array([0, 1]),
+    7,
+  );
+  assertEquals(i, 3);
+});
+
+Deno.test("[bytes] lastIndexOfNeedle if needle doesn't exist within source", () => {
+  const i = lastIndexOfNeedle(
+    new Uint8Array([0, 1, 2, 0, 1, 2]),
+    new Uint8Array([2, 3]),
+  );
+  assertEquals(i, -1);
+});

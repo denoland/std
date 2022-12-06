@@ -33,11 +33,7 @@ if (Deno?.core) {
         "Deno.core.hasTickScheduled() is not supported in this environment",
       );
     },
-    setNextTickCallback() {
-      throw new Error(
-        "Deno.core.setNextTickCallback() is not supported in this environment",
-      );
-    },
+    setNextTickCallback: undefined,
     setMacrotaskCallback() {
       throw new Error(
         "Deno.core.setNextTickCallback() is not supported in this environment",
