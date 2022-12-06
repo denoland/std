@@ -14,7 +14,11 @@ if (!branch) {
 // - non alphanumeric chars are removed (except "-")
 // - truncated to 26 chars
 // - trim the last "-"s
-const branchId = branch.replace(/[_\/.]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 26).replace(/-+$/, "");
+const branchId = branch
+  .replace(/[_\/.]/g, "-")
+  .replace(/[^a-zA-Z0-9-]/g, "")
+  .slice(0, 26)
+  .replace(/-+$/, "");
 
 const deployName = branch === "main"
   ? projectName
