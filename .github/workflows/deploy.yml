@@ -11,5 +11,8 @@ jobs:
       - name: Clone repository
         uses: actions/checkout@v3
 
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
       - name: Check deployment
         run: deno run --allow-net _tools/check_deploy.ts ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
