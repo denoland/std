@@ -9,9 +9,16 @@ if (!branch) {
   Deno.exit(1);
 }
 
+// branch name will be transformed by the following rules:
+// - separators (/, ., or _) are replaced to "-"
+// - non alphanumeric chars are removed (except "-")
+// - truncated to 26 chars
+// - trim the last "-"s
+const branchId = branch.replace(/[_\/.]/g, "-").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 26).replace(/-+$/, "");
+
 const deployName = branch === "main"
   ? projectName
-  : `${projectName}--${branch.replace(/\//g, "-")}`;
+  : `${projectName}--${branchId}`;
 
 await retry(async () => {
   const deployUrl = `https://${deployName}.deno.dev`;
