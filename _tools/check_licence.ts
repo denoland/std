@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
+import { isWindows } from "../_util/os.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
@@ -30,7 +31,8 @@ for await (
 ) {
   const content = await Deno.readTextFile(path);
   if (!content.includes(COPYRIGHT)) {
-    const contentWithCopyright = COPYRIGHT + "\n" + content;
+    const newline = isWindows ? "\r\n" : "\n";
+    const contentWithCopyright = COPYRIGHT + newline + content;
     await Deno.writeTextFile(path, contentWithCopyright);
     console.log("Copyright headers automatically added to " + path);
   }
