@@ -22,7 +22,7 @@
  *
  * example.md
  *
- * ```ignore
+ * ```markdown
  * ---
  * module: front_matter
  * tags:
