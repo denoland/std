@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [canary]
+        deno: [canary, vx.x.x]
         os:
           - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
           - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [canary]
+        deno: [canary, vx.x.x]
         os:
           - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
           - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
