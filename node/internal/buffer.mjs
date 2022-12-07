@@ -826,98 +826,10 @@ function _base64Slice(buf, start, end) {
   }
 }
 
+const decoder = new TextDecoder();
+
 function _utf8Slice(buf, start, end) {
-  end = Math.min(buf.length, end);
-  const res = [];
-  let i = start;
-  while (i < end) {
-    const firstByte = buf[i];
-    let codePoint = null;
-    let bytesPerSequence = firstByte > 239
-      ? 4
-      : firstByte > 223
-      ? 3
-      : firstByte > 191
-      ? 2
-      : 1;
-    if (i + bytesPerSequence <= end) {
-      let secondByte, thirdByte, fourthByte, tempCodePoint;
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 128) {
-            codePoint = firstByte;
-          }
-          break;
-        case 2:
-          secondByte = buf[i + 1];
-          if ((secondByte & 192) === 128) {
-            tempCodePoint = (firstByte & 31) << 6 | secondByte & 63;
-            if (tempCodePoint > 127) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 3:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          if ((secondByte & 192) === 128 && (thirdByte & 192) === 128) {
-            tempCodePoint = (firstByte & 15) << 12 |
-              (secondByte & 63) << 6 | thirdByte & 63;
-            if (
-              tempCodePoint > 2047 &&
-              (tempCodePoint < 55296 || tempCodePoint > 57343)
-            ) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 4:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          fourthByte = buf[i + 3];
-          if (
-            (secondByte & 192) === 128 && (thirdByte & 192) === 128 &&
-            (fourthByte & 192) === 128
-          ) {
-            tempCodePoint = (firstByte & 15) << 18 |
-              (secondByte & 63) << 12 | (thirdByte & 63) << 6 |
-              fourthByte & 63;
-            if (tempCodePoint > 65535 && tempCodePoint < 1114112) {
-              codePoint = tempCodePoint;
-            }
-          }
-      }
-    }
-    if (codePoint === null) {
-      codePoint = 65533;
-      bytesPerSequence = 1;
-    } else if (codePoint > 65535) {
-      codePoint -= 65536;
-      res.push(codePoint >>> 10 & 1023 | 55296);
-      codePoint = 56320 | codePoint & 1023;
-    }
-    res.push(codePoint);
-    i += bytesPerSequence;
-  }
-  return decodeCodePointsArray(res);
-}
-
-const MAX_ARGUMENTS_LENGTH = 4096;
-
-function decodeCodePointsArray(codePoints) {
-  const len = codePoints.length;
-  if (len <= MAX_ARGUMENTS_LENGTH) {
-    return String.fromCharCode.apply(String, codePoints);
-  }
-  let res = "";
-  let i = 0;
-  while (i < len) {
-    res += String.fromCharCode.apply(
-      String,
-      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH),
-    );
-  }
-  return res;
+  return decoder.decode(buf.slice(start, end));
 }
 
 function _latin1Slice(buf, start, end) {
