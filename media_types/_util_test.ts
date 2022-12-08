@@ -31,7 +31,11 @@ Deno.test({
       [`"My \\" value"end`, 'My " value', "end"],
       [`"\\" rest`, "", `"\\" rest`],
       [`"C:\\dev\\go\\robots.txt"`, `C:\\dev\\go\\robots.txt`, ""],
-      [`"C:\\新建文件夹\\中文第二次测试.mp4"`, `C:\\新建文件夹\\中文第二次测试.mp4`, ""],
+      [
+        `"C:\\新建文件夹\\中文第二次测试.mp4"`,
+        `C:\\新建文件夹\\中文第二次测试.mp4`,
+        "",
+      ],
     ] as const;
     for (const [fixture, value, rest] of fixtures) {
       assertEquals(consumeValue(fixture), [value, rest]);
