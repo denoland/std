@@ -116,6 +116,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
 
       - name: Format
         run: deno fmt --check
