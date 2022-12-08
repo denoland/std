@@ -285,7 +285,6 @@ export class ServerResponse extends NodeWritable {
   // used by `npm:on-finished`
   finished = false;
   headersSent = false;
-  #firstChunk: Chunk | null = null;
   // Used if --unstable flag IS NOT present
   #reqEvent?: Deno.RequestEvent;
   // Used if --unstable flag IS present

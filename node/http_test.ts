@@ -220,10 +220,10 @@ Deno.test("[node/http] server response - first chunk is not buffered", async () 
     try {
       const res = await deadline(
         fetch(`http://localhost:${server.address().port}`),
-        100,
+        500,
       );
       const reader = res.body?.getReader();
-      const dataA = await deadline(reader?.read()!, 100);
+      const dataA = await deadline(reader?.read()!, 500);
       // Can read the first chunk even if the response not finished
       assertEquals(new TextDecoder().decode(dataA!.value), "A");
       reader?.cancel();
