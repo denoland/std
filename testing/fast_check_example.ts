@@ -156,7 +156,7 @@ Deno.test("Can use fast-check to property test indexOf function", async (t) => {
             const pattern = b;
             const index = indexOf(text, pattern);
             return index === -1 ||
-              text.slice(index, pattern.length) === pattern;
+              text.slice(index, index + pattern.length) === pattern;
           },
         ),
       );
