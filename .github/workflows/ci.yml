@@ -15,8 +15,8 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
           - macOS-latest
 
     steps:
@@ -77,8 +77,8 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
           - macOS-latest
 
     steps:
@@ -106,7 +106,7 @@ jobs:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -142,7 +142,7 @@ jobs:
 
   crypto-wasm:
     name: "crypto/_wasm"
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -182,7 +182,7 @@ jobs:
 
   varint-wasm:
     name: "varint/_wasm"
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
