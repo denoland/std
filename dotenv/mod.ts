@@ -90,8 +90,12 @@
  * @module
  */
 
-import { difference, removeEmptyValues } from "./util.ts";
+import { filterValues } from "../collections/filter_values.ts";
+import { withoutAll } from "../collections/without_all.ts";
 
+/**
+ * @deprecated (will be removed after 0.170.0). Use `Record<string, string>` instead
+ */
 export interface DotenvConfig {
   [key: string]: string;
 }
@@ -108,6 +112,9 @@ type StrictEnvVarList<T extends string> =
 
 type StringList = Array<string> | ReadonlyArray<string> | undefined;
 
+/**
+ * @deprecated (will be removed after 0.170.0). Use `LoadOptions` instead
+ */
 export interface ConfigOptions {
   /** Optional path to `.env` file.
    *
@@ -168,6 +175,50 @@ export interface ConfigOptions {
   restrictEnvAccessTo?: StringList;
 }
 
+export interface LoadOptions {
+  /** Optional path to `.env` file.
+   *
+   * @default {"./.env"}
+   */
+  envPath?: string;
+  /**
+   * Set to `true` to export all `.env` variables to the current processes
+   * environment. Variables are then accessable via `Deno.env.get(<key>)`.
+   *
+   * @default {false}
+   */
+  export?: boolean;
+  /** Optional path to `.env.example` file.
+   *
+   * @default {"./.env.example"}
+   */
+  examplePath?: string;
+  /**
+   * Set to `true` to allow required env variables to be empty. Otherwise, it
+   * will throw an error if any variable is empty.
+   *
+   * @default {false}
+   */
+  allowEmptyValues?: boolean;
+  /**
+   * Path to `.env.defaults` file which is used to define default values.
+   *
+   * ```sh
+   * # .env.defaults
+   * # Will not be set if GREETING is set in base .env file
+   * GREETING="a secret to everybody"
+   * ```
+   *
+   * @default {"./.env.defaults"}
+   */
+  defaultsPath?: string;
+  /**
+   * List of Env variables to read from process. By default, the complete Env is
+   * looked up. This allows to permit access to only specific Env variables with
+   * `--allow-env=ENV_VAR_NAME`.
+   */
+  restrictEnvAccessTo?: StringList;
+}
 type LineParseResult = {
   key: string;
   unquoted: string;
@@ -186,8 +237,8 @@ const RE_ExpandValue =
 export function parse(
   rawDotenv: string,
   restrictEnvAccessTo: StringList = [],
-): DotenvConfig {
-  const env: DotenvConfig = {};
+): Record<string, string> {
+  const env: Record<string, string> = {};
 
   let match;
   const keysForExpandCheck = [];
@@ -216,16 +267,9 @@ export function parse(
   return env;
 }
 
-const defaultConfigOptions = {
-  path: `.env`,
-  export: false,
-  safe: false,
-  example: `.env.example`,
-  allowEmptyValues: false,
-  defaults: `.env.defaults`,
-  restrictEnvAccessTo: [],
-};
-
+/**
+ * @deprecated (will be removed after 0.170.0). Use `loadSync` instead
+ */
 export function configSync(
   options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
 ): DotenvConfig;
@@ -235,12 +279,39 @@ export function configSync<TEnvVar extends string>(
   },
 ): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
 export function configSync(options: ConfigOptions = {}): DotenvConfig {
-  const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
+  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
+  return loadSync({
+    ...r,
+    envPath: options.path,
+    examplePath: options.safe ? options.example : undefined,
+    defaultsPath: options.defaults,
+    export: options.export,
+    allowEmptyValues: options.allowEmptyValues,
+  });
+}
 
-  const conf = parseFile(o.path, o.restrictEnvAccessTo);
+export function loadSync(
+  options?: Omit<LoadOptions, "restrictEnvAccessTo">,
+): Record<string, string>;
+export function loadSync<TEnvVar extends string>(
+  options: Omit<LoadOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
+export function loadSync(
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+    export: _export = false,
+    allowEmptyValues = false,
+    restrictEnvAccessTo = [],
+  }: LoadOptions = {},
+): Record<string, string> {
+  const conf = parseFileSync(envPath, restrictEnvAccessTo);
 
-  if (o.defaults) {
-    const confDefaults = parseFile(o.defaults, o.restrictEnvAccessTo);
+  if (defaultsPath) {
+    const confDefaults = parseFileSync(defaultsPath, restrictEnvAccessTo);
     for (const key in confDefaults) {
       if (!(key in conf)) {
         conf[key] = confDefaults[key];
@@ -248,12 +319,12 @@ export function configSync(options: ConfigOptions = {}): DotenvConfig {
     }
   }
 
-  if (o.safe) {
-    const confExample = parseFile(o.example, o.restrictEnvAccessTo);
-    assertSafe(conf, confExample, o.allowEmptyValues, o.restrictEnvAccessTo);
+  if (examplePath) {
+    const confExample = parseFileSync(examplePath, restrictEnvAccessTo);
+    assertSafe(conf, confExample, allowEmptyValues, restrictEnvAccessTo);
   }
 
-  if (o.export) {
+  if (_export) {
     for (const key in conf) {
       if (Deno.env.get(key) !== undefined) continue;
       Deno.env.set(key, conf[key]);
@@ -263,6 +334,9 @@ export function configSync(options: ConfigOptions = {}): DotenvConfig {
   return conf;
 }
 
+/**
+ * @deprecated (will be removed after 0.170.0). Use `load` instead
+ */
 export function config(
   options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
 ): Promise<DotenvConfig>;
@@ -274,14 +348,40 @@ export function config<TEnvVar extends string>(
 export async function config(
   options: ConfigOptions = {},
 ): Promise<DotenvConfig> {
-  const o: Required<ConfigOptions> = { ...defaultConfigOptions, ...options };
+  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
+  return await load({
+    ...r,
+    envPath: options.path,
+    examplePath: options.safe ? options.example : undefined,
+    defaultsPath: options.defaults,
+    export: options.export,
+    allowEmptyValues: options.allowEmptyValues,
+  });
+}
+export function load(
+  options?: Omit<LoadOptions, "restrictEnvAccessTo">,
+): Promise<Record<string, string>>;
+export function load<TEnvVar extends string>(
+  options: Omit<LoadOptions, "restrictEnvAccessTo"> & {
+    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
+  },
+): Promise<StrictDotenvConfig<StrictEnvVarList<TEnvVar>>>;
+export async function load(
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+    export: _export = false,
+    allowEmptyValues = false,
+    restrictEnvAccessTo = [],
+  }: LoadOptions = {},
+): Promise<Record<string, string>> {
+  const conf = await parseFile(envPath, restrictEnvAccessTo);
 
-  const conf = await parseFileAsync(o.path, o.restrictEnvAccessTo);
-
-  if (o.defaults) {
-    const confDefaults = await parseFileAsync(
-      o.defaults,
-      o.restrictEnvAccessTo,
+  if (defaultsPath) {
+    const confDefaults = await parseFile(
+      defaultsPath,
+      restrictEnvAccessTo,
     );
     for (const key in confDefaults) {
       if (!(key in conf)) {
@@ -290,12 +390,15 @@ export async function config(
     }
   }
 
-  if (o.safe) {
-    const confExample = await parseFileAsync(o.example, o.restrictEnvAccessTo);
-    assertSafe(conf, confExample, o.allowEmptyValues, o.restrictEnvAccessTo);
+  if (examplePath) {
+    const confExample = await parseFile(
+      examplePath,
+      restrictEnvAccessTo,
+    );
+    assertSafe(conf, confExample, allowEmptyValues, restrictEnvAccessTo);
   }
 
-  if (o.export) {
+  if (_export) {
     for (const key in conf) {
       if (Deno.env.get(key) !== undefined) continue;
       Deno.env.set(key, conf[key]);
@@ -305,27 +408,24 @@ export async function config(
   return conf;
 }
 
-function parseFile(filepath: string, restrictEnvAccessTo: StringList = []) {
+function parseFileSync(
+  filepath: string,
+  restrictEnvAccessTo: StringList = [],
+): Record<string, string> {
   try {
-    return parse(
-      new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)),
-      restrictEnvAccessTo,
-    );
+    return parse(Deno.readTextFileSync(filepath), restrictEnvAccessTo);
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
   }
 }
 
-async function parseFileAsync(
+async function parseFile(
   filepath: string,
   restrictEnvAccessTo: StringList = [],
-) {
+): Promise<Record<string, string>> {
   try {
-    return parse(
-      new TextDecoder("utf-8").decode(await Deno.readFile(filepath)),
-      restrictEnvAccessTo,
-    );
+    return parse(await Deno.readTextFile(filepath), restrictEnvAccessTo);
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
@@ -346,8 +446,8 @@ function expandCharacters(str: string): string {
 }
 
 function assertSafe(
-  conf: DotenvConfig,
-  confExample: DotenvConfig,
+  conf: Record<string, string>,
+  confExample: Record<string, string>,
   allowEmptyValues: boolean,
   restrictEnvAccessTo: StringList = [],
 ) {
@@ -356,11 +456,11 @@ function assertSafe(
   // Not all the variables have to be defined in .env, they can be supplied externally
   const confWithEnv = Object.assign({}, currentEnv, conf);
 
-  const missing = difference(
+  const missing = withoutAll(
     Object.keys(confExample),
     // If allowEmptyValues is false, filter out empty values from configuration
     Object.keys(
-      allowEmptyValues ? confWithEnv : removeEmptyValues(confWithEnv),
+      allowEmptyValues ? confWithEnv : filterValues(confWithEnv, Boolean),
     ),
   );
 
@@ -385,15 +485,16 @@ function assertSafe(
 
 // a guarded env access, that reads only a subset from the Deno.env object,
 // if `restrictEnvAccessTo` property is passed.
-function readEnv(
-  restrictEnvAccessTo: StringList,
-) {
+function readEnv(restrictEnvAccessTo: StringList) {
   if (
     restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) &&
     restrictEnvAccessTo.length > 0
   ) {
     return restrictEnvAccessTo.reduce(
-      (accessedEnvVars: DotenvConfig, envVarName: string): DotenvConfig => {
+      (
+        accessedEnvVars: Record<string, string>,
+        envVarName: string,
+      ): Record<string, string> => {
         if (Deno.env.get(envVarName)) {
           accessedEnvVars[envVarName] = Deno.env.get(envVarName) as string;
         }
@@ -451,7 +552,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  * @param object object to be stringified
  * @returns string of object
  */
-export function stringify(object: DotenvConfig) {
+export function stringify(object: Record<string, string>) {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object)) {
     let quote;

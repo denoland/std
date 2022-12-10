@@ -1,23 +1,18 @@
 name: deploy-compat
 on:
   push:
-    branches: [main]
+    branches: main
+  pull_request:
+    branches: main
 jobs:
   deploy-compat:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
 
-      - name: Deploy to Deno Deploy
-        uses: denoland/deployctl@v1
-        id: deploy
-        with:
-          project: std-deploy-compat-test
-          entrypoint: _tools/deploy.ts
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
 
       - name: Check deployment
-        run: curl --fail ${{ steps.deploy.outputs.url }}
+        run: deno run --allow-net _tools/check_deploy.ts ${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}

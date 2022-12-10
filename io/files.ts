@@ -1,10 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { copy as copyBytes } from "../bytes/copy.ts";
-import { assert } from "../_util/asserts.ts";
+import {
+  readRange as _readRange,
+  readRangeSync as _readRangeSync,
+} from "./read_range.ts";
 
-const DEFAULT_BUFFER_SIZE = 32 * 1024;
-
+/** @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
   start: number;
@@ -14,6 +15,8 @@ export interface ByteRange {
 }
 
 /**
+ * @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead
+ *
  * Read a range of bytes from a file or other resource that is readable and
  * seekable.  The range start and end are inclusive of the bytes within that
  * range.
@@ -28,30 +31,11 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  */
-export async function readRange(
-  r: Deno.Reader & Deno.Seeker,
-  range: ByteRange,
-): Promise<Uint8Array> {
-  // byte ranges are inclusive, so we have to add one to the end
-  let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
-  await r.seek(range.start, Deno.SeekMode.Start);
-  const result = new Uint8Array(length);
-  let off = 0;
-  while (length) {
-    const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
-    const nread = await r.read(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
-    copyBytes(p, result, off);
-    off += nread;
-    length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
-  }
-  return result;
-}
+export const readRange = _readRange;
 
 /**
+ * @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead
+ *
  * Read a range of bytes synchronously from a file or other resource that is
  * readable and seekable.  The range start and end are inclusive of the bytes
  * within that range.
@@ -66,25 +50,4 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  */
-export function readRangeSync(
-  r: Deno.ReaderSync & Deno.SeekerSync,
-  range: ByteRange,
-): Uint8Array {
-  // byte ranges are inclusive, so we have to add one to the end
-  let length = range.end - range.start + 1;
-  assert(length > 0, "Invalid byte range was passed.");
-  r.seekSync(range.start, Deno.SeekMode.Start);
-  const result = new Uint8Array(length);
-  let off = 0;
-  while (length) {
-    const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
-    const nread = r.readSync(p);
-    assert(nread !== null, "Unexpected EOF reach while reading a range.");
-    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
-    copyBytes(p, result, off);
-    off += nread;
-    length -= nread;
-    assert(length >= 0, "Unexpected length remaining after reading range.");
-  }
-  return result;
-}
+export const readRangeSync = _readRangeSync;
