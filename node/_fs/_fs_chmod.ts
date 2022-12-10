@@ -14,7 +14,13 @@ export function chmod(
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 
-  Deno.chmod(pathModule.toNamespacedPath(path), mode).then(
+  Deno.chmod(pathModule.toNamespacedPath(path), mode).catch((error) => {
+    // Ignore NotSupportedError that occurs on windows
+    // https://github.com/denoland/deno_std/issues/2995
+    if (!(error instanceof Deno.errors.NotSupported)) {
+      throw error;
+    }
+  }).then(
     () => callback(null),
     callback,
   );
@@ -29,5 +35,13 @@ export function chmodSync(path: string | URL, mode: string | number) {
   path = getValidatedPath(path).toString();
   mode = parseFileMode(mode, "mode");
 
-  Deno.chmodSync(pathModule.toNamespacedPath(path), mode);
+  try {
+    Deno.chmodSync(pathModule.toNamespacedPath(path), mode);
+  } catch (error) {
+    // Ignore NotSupportedError that occurs on windows
+    // https://github.com/denoland/deno_std/issues/2995
+    if (!(error instanceof Deno.errors.NotSupported)) {
+      throw error;
+    }
+  }
 }
