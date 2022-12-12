@@ -109,7 +109,7 @@ function parseMediaType(
 
     for (const [key, val] of kvps) {
       const value = val && val[0] === `"` && val[val.length - 1] === `"`
-        ? val.substr(1, val.length - 2)
+        ? val.slice(1, val.length - 1)
         : val;
 
       if (key === "q" && value) {

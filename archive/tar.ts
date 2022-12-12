@@ -87,7 +87,7 @@ function clean(length: number): Uint8Array {
 
 function pad(num: number, bytes: number, base = 8): string {
   const numString = num.toString(base);
-  return "000000000000".substr(numString.length + 12 - bytes) + numString;
+  return "000000000000".slice(numString.length + 12 - bytes) + numString;
 }
 
 /**
@@ -188,8 +188,8 @@ export class Tar {
       while (i >= 0) {
         i = fileName.lastIndexOf("/", i);
         if (i <= 155) {
-          fileNamePrefix = fileName.substr(0, i);
-          fileName = fileName.substr(i + 1);
+          fileNamePrefix = fileName.slice(0, i);
+          fileName = fileName.slice(i + 1);
           break;
         }
         i--;

@@ -85,7 +85,7 @@ Deno.test({
           "FoodFile": "/home/deno/food.txt",
           "CalendarFile": "/home/deno/weekend.cal",
         },
-        (path) => path.substr(path.lastIndexOf(".")),
+        (path) => path.slice(path.lastIndexOf(".")),
       ],
       {
         "FoodFile": ".txt",
