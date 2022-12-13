@@ -344,7 +344,7 @@ function calculateServerName(options, req) {
         // Leading '[', but no ']'. Need to do something...
         servername = hostHeader;
       } else {
-        servername = hostHeader.substr(1, index - 1);
+        servername = hostHeader.slice(1, index);
       }
     } else {
       servername = hostHeader.split(":", 1)[0];

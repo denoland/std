@@ -654,11 +654,11 @@ class Printf {
     let round = false;
     if (fractional.length > precision) {
       fractional = "1" + fractional; // prepend a 1 in case of leading 0
-      let tmp = parseInt(fractional.substr(0, precision + 2)) / 10;
+      let tmp = parseInt(fractional.slice(0, precision + 2)) / 10;
       tmp = Math.round(tmp);
       fractional = Math.floor(tmp).toString();
       round = fractional[0] === "2";
-      fractional = fractional.substr(1); // remove extra 1
+      fractional = fractional.slice(1); // remove extra 1
     } else {
       while (fractional.length < precision) {
         fractional += "0";
@@ -741,7 +741,7 @@ class Printf {
         while (m.length < splIdx) {
           m += "0";
         }
-        return m.substr(0, splIdx) + "." + m.substr(splIdx);
+        return m.slice(0, splIdx) + "." + m.slice(splIdx);
       }
     }
     // avoiding sign makes padding easier
@@ -829,7 +829,7 @@ class Printf {
    */
   fmtString(s: string): string {
     if (this.flags.precision !== -1) {
-      s = s.substr(0, this.flags.precision);
+      s = s.slice(0, this.flags.precision);
     }
     return this.pad(s);
   }
@@ -883,7 +883,7 @@ class Printf {
       return this.pad(Deno.inspect(val, options));
     } else {
       const p = this.flags.precision;
-      return p === -1 ? val.toString() : val.toString().substr(0, p);
+      return p === -1 ? val.toString() : val.toString().slice(0, p);
     }
   }
 

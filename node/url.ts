@@ -436,7 +436,7 @@ export class Url {
       srcPath.unshift("");
     }
 
-    if (hasTrailingSlash && srcPath.join("/").substr(-1) !== "/") {
+    if (hasTrailingSlash && srcPath.join("/").slice(-1) !== "/") {
       srcPath.push("");
     }
 

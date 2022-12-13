@@ -56,7 +56,10 @@ Deno.test({
   name: "[TOML parser] basic string",
   fn() {
     const parse = ParserFactory(BasicString);
-    assertEquals(parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'), 'a"\n\t\b\\\あ🦕');
+    assertEquals(
+      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
+      'a"\n\t\b\\\あ🦕',
+    );
     assertEquals(parse('""'), "");
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
