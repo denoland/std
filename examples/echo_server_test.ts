@@ -18,6 +18,7 @@ Deno.test({
   const decoder = new TextDecoder();
   const process = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
+    stdout: "piped",
     stderr: "null",
     cwd: moduleDir,
   });

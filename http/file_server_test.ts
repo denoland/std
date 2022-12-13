@@ -53,6 +53,7 @@ async function startFileServer({
       `${dotfiles ? "" : "--no-dotfiles"}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
   child = fileServer.spawn();
@@ -77,6 +78,7 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
       "testdata/file_server_as_library.ts",
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
   child = fileServer.spawn();
@@ -461,6 +463,7 @@ async function startTlsFileServer({
       `${port}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
   child = fileServer.spawn();
@@ -517,6 +520,7 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
   child = fileServer.spawn();
