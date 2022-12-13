@@ -310,8 +310,7 @@ Deno.test("handle long uft8 plaintexts", function () {
     return decipher.update(enc, "base64", "utf8") + decipher.final("utf8");
   }
 
-  const input =
-    "ふっかつ　あきる　すぶり　はやい　つける　まゆげ　たんさん　みんぞく　ねほりはほり　せまい　たいまつばな　ひはん";
+  const input = "ふっかつ　あきる　すぶり　はやい　つける　まゆげ　たんさん　みんぞく　ねほりはほり　せまい　たいまつばな　ひはん";
   const enc = encrypt(input, "a");
 
   const dec = decrypt(enc, "a");
