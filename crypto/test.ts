@@ -179,6 +179,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdin: "piped",
+    stdout: "piped",
     stderr: "inherit",
   });
   const child = process.spawn();

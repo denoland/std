@@ -97,6 +97,7 @@ for (const pathname of tests) {
             path.resolve(rootdir, pathname),
           ],
           stdin: "piped",
+          stdout: "piped",
         });
         const child = process.spawn();
 

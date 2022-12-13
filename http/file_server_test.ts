@@ -53,6 +53,7 @@ async function startFileServer({
       `${dotfiles ? "" : "--no-dotfiles"}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
   child = fileServer.spawn();
