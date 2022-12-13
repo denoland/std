@@ -12,7 +12,6 @@ const EXCLUDED_DIRS = [
   "node/testdata",
   "crypto/_wasm/target",
   "encoding/varint/_wasm/target",
-  "_tools/testdata",
 ];
 
 const ROOT = new URL("../", import.meta.url);
