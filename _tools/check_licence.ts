@@ -31,10 +31,15 @@ for await (
   })
 ) {
   const content = await Deno.readTextFile(path);
+
   if (!content.includes(COPYRIGHT)) {
-    console.error(`Missing/incorrect copyright header: ${path}`);
-    if (!failed) {
+    if (Deno.args.includes("--check")) {
+      console.error(`Missing/incorrect copyright header: ${path}`);
       failed = true;
+    } else {
+      const contentWithCopyright = COPYRIGHT + "\n" + content;
+      await Deno.writeTextFile(path, contentWithCopyright);
+      console.log("Copyright headers automatically added to " + path);
     }
   }
 }

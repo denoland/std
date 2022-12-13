@@ -129,7 +129,7 @@ jobs:
         run: "deno task node:lint-circular-deps"
 
       - name: Check License headers
-        run: "deno task lint:licence-headers"
+        run: deno task fmt:licence-headers --check
 
       - name: Check Deprecations
         run: "deno task lint:deprecations"
