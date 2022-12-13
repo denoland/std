@@ -98,6 +98,7 @@ for (const pathname of tests) {
           ],
           stdin: "piped",
           stdout: "piped",
+          stderr: "piped",
         });
         const child = process.spawn();
 
