@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { isIterator, isToken, needsEncoding } from "./_util.ts";
 
 /** Serializes the media type and the optional parameters as a media type
@@ -10,7 +11,7 @@ import { isIterator, isToken, needsEncoding } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { formatMediaType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
+ * import { formatMediaType } from "https://deno.land/std@$STD_VERSION/media_types/format_media_type.ts";
  *
  * formatMediaType("text/plain", { charset: "UTF-8" }); // `text/plain; charset=UTF-8`
  * ```

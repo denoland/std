@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { parseMediaType } from "./parse_media_type.ts";
 import { type DBEntry } from "./_util.ts";
 import { db, type KeyOfDb } from "./_db.ts";
@@ -8,7 +9,7 @@ import { db, type KeyOfDb } from "./_db.ts";
  *
  * @example
  * ```ts
- * import { getCharset } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
+ * import { getCharset } from "https://deno.land/std@$STD_VERSION/media_types/get_charset.ts";
  *
  * getCharset("text/plain"); // `UTF-8`
  * getCharset("application/foo"); // undefined

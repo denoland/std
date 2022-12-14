@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { extensionsByType } from "./extensions_by_type.ts";
 
 /**
@@ -8,7 +9,7 @@ import { extensionsByType } from "./extensions_by_type.ts";
  *
  * @example
  * ```ts
- * import { extension } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
+ * import { extension } from "https://deno.land/std@$STD_VERSION/media_types/extension.ts";
  *
  * extension("text/plain"); // `txt`
  * extension("application/json"); // `json`

@@ -6,7 +6,7 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import { contentType } from "../media_types/mod.ts";
+import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";

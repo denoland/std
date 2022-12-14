@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { parseMediaType } from "./parse_media_type.ts";
 import { typeByExtension } from "./type_by_extension.ts";
 import { getCharset } from "./get_charset.ts";
@@ -34,7 +35,7 @@ type KnownExtensionOrType =
  *
  * @example
  * ```ts
- * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
+ * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/content_type.ts";
  *
  * contentType(".json"); // `application/json; charset=UTF-8`
  * contentType("text/html"); // `text/html; charset=UTF-8`
