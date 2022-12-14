@@ -1,3 +1,15 @@
+### 0.168.0 / 2022.12.14
+
+- BREAKING(archive): move to single-export files (#2958)
+- BREAKING(dotenv): rename config to load (#2616)
+- BREAKING(io): single-export files (#2975)
+- fix(encoding): base58 decoding (#2982)
+- fix(node): fix nextTick shim in deploy (#2980)
+- fix(node): ignore NotSupported errors coming from `Deno.chmod` (#2996)
+- fix(node/http): do not buffer first chunk (#2989)
+- perf(encoding/yaml) Don't allocate buffers unnecessarily (#2967)
+- perf(node/buffer): improve utf8 decoding performance (#2986)
+
 ### 0.167.0 / 2022.12.01
 
 - Reorder steps to view documentation (#2948)
