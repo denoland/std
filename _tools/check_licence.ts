@@ -12,12 +12,15 @@ const EXCLUDED_DIRS = [
   "node/testdata",
   "crypto/_wasm/target",
   "encoding/varint/_wasm/target",
-  "_tools/testdata",
 ];
 
 const ROOT = new URL("../", import.meta.url);
+const CHECK = Deno.args.includes("--check");
 const FIRST_YEAR = 2018;
 const CURRENT_YEAR = new Date().getFullYear();
+const RX_COPYRIGHT = new RegExp(
+  `// Copyright ([0-9]{4})-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
+);
 const COPYRIGHT =
   `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
@@ -31,15 +34,30 @@ for await (
   })
 ) {
   const content = await Deno.readTextFile(path);
+  const match = content.match(RX_COPYRIGHT);
 
-  if (!content.includes(COPYRIGHT)) {
-    if (Deno.args.includes("--check")) {
-      console.error(`Missing/incorrect copyright header: ${path}`);
+  if (!match) {
+    if (CHECK) {
+      console.error(`Missing copyright header: ${path}`);
       failed = true;
     } else {
       const contentWithCopyright = COPYRIGHT + "\n" + content;
       await Deno.writeTextFile(path, contentWithCopyright);
-      console.log("Copyright headers automatically added to " + path);
+      console.log("Copyright header automatically added to " + path);
+    }
+  } else if (
+    parseInt(match[1]) !== FIRST_YEAR || parseInt(match[2]) !== CURRENT_YEAR
+  ) {
+    if (CHECK) {
+      console.error(`Incorrect copyright year: ${path}`);
+      failed = true;
+    } else {
+      const index = match.index ?? 0;
+      const contentWithoutCopyright = content.replace(match[0], "");
+      const contentWithCopyright = contentWithoutCopyright.substring(0, index) +
+        COPYRIGHT + "\n" + contentWithoutCopyright.substring(index);
+      await Deno.writeTextFile(path, contentWithCopyright);
+      console.log("Copyright header automatically updated in " + path);
     }
   }
 }
