@@ -1130,6 +1130,50 @@ Deno.test("Server should not reject when the handler throws", async () => {
   await servePromise;
 });
 
+Deno.test("Server should not close the downstream connection when the response stream throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const postRespondWith = deferred();
+  let n = 0;
+
+  const handler = () => {
+    return new Response(
+      new ReadableStream({
+        async start() {
+          await delay(0);
+          try {
+            throw new Error("test-error");
+          } finally {
+            n++;
+            postRespondWith.resolve();
+          }
+        },
+      }),
+    );
+  };
+
+  const server = new Server({ handler });
+  const servePromise = server.serve(listener);
+
+  const conn = await Deno.connect(listenOptions);
+
+  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
+  await postRespondWith;
+  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
+  await delay(10); // Cannot use `postRespondWith` because it would block on test failure
+  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
+  await delay(10);
+  assertEquals(n, 3);
+
+  conn.close();
+  server.close();
+  await servePromise;
+});
+
 Deno.test("Server should be able to parse IPV6 addresses", async () => {
   const hostname = "[::1]";
   const port = 4505;
