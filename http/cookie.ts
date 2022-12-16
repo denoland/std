@@ -4,7 +4,7 @@
 // This module is browser compatible.
 
 import { assert } from "../_util/asserts.ts";
-import { toIMF } from "../datetime/mod.ts";
+import { toIMF } from "../datetime/to_imf.ts";
 
 export interface Cookie {
   /** Name of the cookie. */
