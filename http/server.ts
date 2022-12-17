@@ -310,10 +310,11 @@ export class Server {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // `respondWith()` can throw for various reasons, including downstream but also upstream connection errors,
-      // as well as errors thrown during streaming of the response content.
-      // In order to avoid false negatives, we ignore the error here and let `serveHttp` close the connection on
-      // the following iteration if it is in fact a downstream connection error.
+      // `respondWith()` can throw for various reasons, including downstream and
+      // upstream connection errors, as well as errors thrown during streaming
+      // of the response content.  In order to avoid false negatives, we ignore
+      // the error here and let `serveHttp` close the connection on the
+      // following iteration if it is in fact a downstream connection error.
     }
   }
 

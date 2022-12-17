@@ -1130,27 +1130,25 @@ Deno.test("Server should not reject when the handler throws", async () => {
   await servePromise;
 });
 
-Deno.test("Server should not close the downstream connection when the response stream throws", async () => {
+Deno.test("Server should not close the http2 downstream connection when the response stream throws", async () => {
   const listenOptions = {
     hostname: "localhost",
     port: 4505,
   };
   const listener = Deno.listen(listenOptions);
+  const url = `http://${listenOptions.hostname}:${listenOptions.port}/`;
 
-  const postRespondWith = deferred();
   let n = 0;
+  const connections = new Set();
 
-  const handler = () => {
+  const handler = (_req: Request, connInfo: ConnInfo) => {
+    connections.add(connInfo);
     return new Response(
       new ReadableStream({
         async start() {
           await delay(0);
-          try {
-            throw new Error("test-error");
-          } finally {
-            n++;
-            postRespondWith.resolve();
-          }
+          n++;
+          throw new Error("test-error");
         },
       }),
     );
@@ -1159,17 +1157,18 @@ Deno.test("Server should not close the downstream connection when the response s
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
 
-  const conn = await Deno.connect(listenOptions);
+  await (await fetch(url)).text();
+  await (await fetch(url)).text();
+  await (await fetch(url)).text();
 
-  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
-  await postRespondWith;
-  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
-  await delay(10); // Cannot use `postRespondWith` because it would block on test failure
-  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.1\r\n\r\n`));
-  await delay(10);
-  assertEquals(n, 3);
+  const numConns = connections.size;
+  assertEquals(
+    numConns,
+    1,
+    `fetch should had reused a single connection, but used ${numConns} instead.`,
+  );
+  assertEquals(n, 3, "The handler should had been called three times");
 
-  conn.close();
   server.close();
   await servePromise;
 });
