@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { DateTimeFormatter } from "./formatter.ts";
+import { DateTimeFormatter } from "./_common.ts";
 
 /**
  * Takes an input `string` and a `formatString` to parse to a `date`.
