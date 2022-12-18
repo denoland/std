@@ -179,7 +179,7 @@ export function extension(type: string): string | undefined {
  * ```ts
  * import { extensionsByType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
  *
- * extensionsByType("application/json"); // ["js", "mjs"]
+ * extensionsByType("application/json"); // ["json", "map"]
  * extensionsByType("text/html; charset=UTF-8"); // ["html", "htm", "shtml"]
  * extensionsByType("application/foo"); // undefined
  * ```
