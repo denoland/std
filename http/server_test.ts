@@ -1160,9 +1160,15 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
 
-  await (await fetch(url)).text();
-  await (await fetch(url)).text();
-  await (await fetch(url)).text();
+  const caCert = await Deno.readTextFile(
+    join(testdataDir, "tls/RootCA.pem"),
+  );
+  const client = Deno.createHttpClient({
+    caCerts: [caCert],
+  });
+  await (await fetch(url, { client })).text();
+  await (await fetch(url, { client })).text();
+  await (await fetch(url, { client })).text();
 
   const numConns = connections.size;
   assertEquals(
@@ -1172,6 +1178,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   );
   assertEquals(n, 3, "The handler should had been called three times");
 
+  client.close();
   server.close();
   await servePromise;
 });
