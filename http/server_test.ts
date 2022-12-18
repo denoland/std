@@ -1136,7 +1136,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
     port: 4505,
     certFile: join(testdataDir, "tls/localhost.crt"),
     keyFile: join(testdataDir, "tls/localhost.key"),
-    alpnProtocols: ["h2", "http/1.1"],
+    alpnProtocols: ["h2"],
   };
   const listener = Deno.listenTls(listenOptions);
   const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
