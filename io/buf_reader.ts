@@ -2,7 +2,6 @@
 
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -31,9 +30,9 @@ export interface ReadLineResult {
   more: boolean;
 }
 
-export class BufReader implements Reader {
+export class BufReader implements Deno.Reader {
   #buf!: Uint8Array;
-  #rd!: Reader; // Reader provided by caller.
+  #rd!: Deno.Reader; // Reader provided by caller.
   #r = 0; // buf read position.
   #w = 0; // buf write position.
   #eof = false;
@@ -41,11 +40,11 @@ export class BufReader implements Reader {
   // private lastCharSize: number;
 
   /** return new BufReader unless r is BufReader */
-  static create(r: Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
+  static create(r: Deno.Reader, size: number = DEFAULT_BUF_SIZE): BufReader {
     return r instanceof BufReader ? r : new BufReader(r, size);
   }
 
-  constructor(rd: Reader, size: number = DEFAULT_BUF_SIZE) {
+  constructor(rd: Deno.Reader, size: number = DEFAULT_BUF_SIZE) {
     if (size < MIN_BUF_SIZE) {
       size = MIN_BUF_SIZE;
     }
@@ -96,11 +95,11 @@ export class BufReader implements Reader {
   /** Discards any buffered data, resets all state, and switches
    * the buffered reader to read from r.
    */
-  reset(r: Reader) {
+  reset(r: Deno.Reader) {
     this.#reset(this.#buf, r);
   }
 
-  #reset = (buf: Uint8Array, rd: Reader) => {
+  #reset = (buf: Uint8Array, rd: Deno.Reader) => {
     this.#buf = buf;
     this.#rd = rd;
     this.#eof = false;

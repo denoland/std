@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { type Reader } from "./types.d.ts";
 import { readDelim } from "./read_delim.ts";
 
 /**
@@ -20,7 +19,7 @@ import { readDelim } from "./read_delim.ts";
  * ```
  */
 export async function* readStringDelim(
-  reader: Reader,
+  reader: Deno.Reader,
   delim: string,
   decoderOpts?: {
     encoding?: string;

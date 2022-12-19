@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader, ReaderSync } from "./types.d.ts";
 import {
   BufferFullError as _BufferFullError,
   BufReader as _BufReader,
@@ -203,7 +202,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
-  async readFrom(r: Reader): Promise<number> {
+  async readFrom(r: Deno.Reader): Promise<number> {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
     while (true) {
@@ -233,7 +232,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
-  readFromSync(r: ReaderSync): number {
+  readFromSync(r: Deno.ReaderSync): number {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
     while (true) {

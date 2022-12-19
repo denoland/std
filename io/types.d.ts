@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+/** @deprecated (will be removed after 0.170.0) Use `Deno.Reader` instead. */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
    * bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -26,6 +27,7 @@ export interface Reader {
   read(p: Uint8Array): Promise<number | null>;
 }
 
+/** @deprecated (will be removed after 0.170.0) Use `Deno.ReaderSync` instead. */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
    * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -51,6 +53,7 @@ export interface ReaderSync {
   readSync(p: Uint8Array): number | null;
 }
 
+/** @deprecated (will be removed after 0.170.0) Use `Deno.Writer` instead. */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
    * resolves to the number of bytes written from `p` (`0` <= `n` <=
@@ -64,6 +67,7 @@ export interface Writer {
   write(p: Uint8Array): Promise<number>;
 }
 
+/** @deprecated (will be removed after 0.170.0) Use `Deno.WriterSync` instead. */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
    * stream. It returns the number of bytes written from `p` (`0` <= `n`
@@ -77,6 +81,7 @@ export interface WriterSync {
   writeSync(p: Uint8Array): number;
 }
 
+/** @deprecated (will be removed after 0.170.0) Use `Deno.Closer` instead. */
 export interface Closer {
   close(): void;
 }

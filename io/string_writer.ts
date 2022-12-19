@@ -1,8 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Writer, WriterSync } from "./types.d.ts";
-
 const decoder = new TextDecoder();
 
 /**
@@ -35,7 +33,7 @@ const decoder = new TextDecoder();
  * base0123456789
  * ```
  */
-export class StringWriter implements Writer, WriterSync {
+export class StringWriter implements Deno.Writer, Deno.WriterSync {
   #chunks: Uint8Array[] = [];
   #byteLength = 0;
   #cache: string | undefined;

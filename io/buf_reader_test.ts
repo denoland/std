@@ -12,14 +12,13 @@ import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
-import type { Reader } from "./types.d.ts";
 import { copy } from "../bytes/copy.ts";
 
 /** OneByteReader returns a Reader that implements
  * each non-empty Read by reading one byte from r.
  */
-class OneByteReader implements Reader {
-  constructor(readonly r: Reader) {}
+class OneByteReader implements Deno.Reader {
+  constructor(readonly r: Deno.Reader) {}
 
   read(p: Uint8Array): Promise<number | null> {
     if (p.byteLength === 0) {
@@ -35,8 +34,8 @@ class OneByteReader implements Reader {
 /** HalfReader returns a Reader that implements Read
  * by reading half as many requested bytes from r.
  */
-class HalfReader implements Reader {
-  constructor(readonly r: Reader) {}
+class HalfReader implements Deno.Reader {
+  constructor(readonly r: Deno.Reader) {}
 
   read(p: Uint8Array): Promise<number | null> {
     if (!(p instanceof Uint8Array)) {

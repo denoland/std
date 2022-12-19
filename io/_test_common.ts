@@ -1,7 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import type { Reader } from "./types.d.ts";
-
 export const MIN_READ_BUFFER_SIZE = 16;
 export const bufsizes: number[] = [
   0,
@@ -16,7 +14,7 @@ export const bufsizes: number[] = [
   4096,
 ];
 
-export class BinaryReader implements Reader {
+export class BinaryReader implements Deno.Reader {
   index = 0;
 
   constructor(private bytes: Uint8Array = new Uint8Array(0)) {}

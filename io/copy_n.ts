@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assert } from "../_util/asserts.ts";
-import type { Reader, Writer } from "./types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
@@ -12,8 +11,8 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param size Read size
  */
 export async function copyN(
-  r: Reader,
-  dest: Writer,
+  r: Deno.Reader,
+  dest: Deno.Writer,
   size: number,
 ): Promise<number> {
   let bytesRead = 0;

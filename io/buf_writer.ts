@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { copy } from "../bytes/copy.ts";
-import type { Writer, WriterSync } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 
@@ -39,15 +38,18 @@ abstract class AbstractBufBase {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
  */
-export class BufWriter extends AbstractBufBase implements Writer {
-  #writer: Writer;
+export class BufWriter extends AbstractBufBase implements Deno.Writer {
+  #writer: Deno.Writer;
 
   /** return new BufWriter unless writer is BufWriter */
-  static create(writer: Writer, size: number = DEFAULT_BUF_SIZE): BufWriter {
+  static create(
+    writer: Deno.Writer,
+    size: number = DEFAULT_BUF_SIZE,
+  ): BufWriter {
     return writer instanceof BufWriter ? writer : new BufWriter(writer, size);
   }
 
-  constructor(writer: Writer, size: number = DEFAULT_BUF_SIZE) {
+  constructor(writer: Deno.Writer, size: number = DEFAULT_BUF_SIZE) {
     super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
@@ -55,7 +57,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: Writer) {
+  reset(w: Deno.Writer) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;
@@ -131,12 +133,12 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
  */
-export class BufWriterSync extends AbstractBufBase implements WriterSync {
-  #writer: WriterSync;
+export class BufWriterSync extends AbstractBufBase implements Deno.WriterSync {
+  #writer: Deno.WriterSync;
 
   /** return new BufWriterSync unless writer is BufWriterSync */
   static create(
-    writer: WriterSync,
+    writer: Deno.WriterSync,
     size: number = DEFAULT_BUF_SIZE,
   ): BufWriterSync {
     return writer instanceof BufWriterSync
@@ -144,7 +146,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
       : new BufWriterSync(writer, size);
   }
 
-  constructor(writer: WriterSync, size: number = DEFAULT_BUF_SIZE) {
+  constructor(writer: Deno.WriterSync, size: number = DEFAULT_BUF_SIZE) {
     super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
@@ -152,7 +154,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   /** Discards any unflushed buffered data, clears any error, and
    * resets buffer to write its output to w.
    */
-  reset(w: WriterSync) {
+  reset(w: Deno.WriterSync) {
     this.err = null;
     this.usedBufferBytes = 0;
     this.#writer = w;

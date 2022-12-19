@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { BytesList } from "../bytes/bytes_list.ts";
-import type { Reader } from "./types.d.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
 function createLPS(pat: Uint8Array): Uint8Array {
@@ -26,7 +25,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
 
 /** Read delimited bytes from a Reader. */
 export async function* readDelim(
-  reader: Reader,
+  reader: Deno.Reader,
   delim: Uint8Array,
 ): AsyncIterableIterator<Uint8Array> {
   // Avoid unicode problems
