@@ -13,7 +13,7 @@ import {
 import { fromFileUrl, join } from "../../path/mod.ts";
 import { StringReader } from "../../io/readers.ts";
 
-const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
+const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({

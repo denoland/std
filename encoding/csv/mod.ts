@@ -11,9 +11,9 @@
  * @module
  */
 
-import { assert } from "../_util/asserts.ts";
-import type { ReadOptions } from "./csv/_io.ts";
-import { Parser } from "./csv/_parser.ts";
+import { assert } from "../../_util/asserts.ts";
+import type { ReadOptions } from "./_io.ts";
+import { Parser } from "./_parser.ts";
 
 export {
   ERR_BARE_QUOTE,
@@ -21,8 +21,8 @@ export {
   ERR_INVALID_DELIM,
   ERR_QUOTE,
   ParseError,
-} from "./csv/_io.ts";
-export type { ReadOptions } from "./csv/_io.ts";
+} from "./_io.ts";
+export type { ReadOptions } from "./_io.ts";
 
 const QUOTE = '"';
 export const NEWLINE = "\r\n";
@@ -247,7 +247,7 @@ export type StringifyOptions = {
  * import {
  *   Column,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/encoding/csv.ts";
+ * } from "https://deno.land/std@$STD_VERSION/encoding/csv/mod.ts";
  *
  * type Character = {
  *   age: number;
@@ -340,7 +340,7 @@ export interface ParseOptions extends ReadOptions {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/encoding/csv.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/encoding/csv/mod.ts";
  * const string = "a,b,c\nd,e,f";
  *
  * console.log(
