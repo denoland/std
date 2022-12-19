@@ -6,6 +6,15 @@
  * @module
  * @private
  */
+export interface DBEntry {
+  source: string;
+  compressible?: boolean;
+  charset?: string;
+  extensions?: string[];
+}
+
+/** A map of extensions for a given media type. */
+export const extensions = new Map<string, string[]>();
 
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);
