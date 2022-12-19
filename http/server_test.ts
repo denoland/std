@@ -1142,16 +1142,21 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
 
   let n = 0;
+  const a = deferred();
   const connections = new Set();
 
   const handler = (_req: Request, connInfo: ConnInfo) => {
     connections.add(connInfo);
     return new Response(
       new ReadableStream({
-        async start() {
-          await delay(0);
+        async start(controller) {
           n++;
-          throw new Error("test-error");
+          if (n === 3) {
+            throw new Error("test-error");
+          }
+          await a;
+          controller.enqueue(new TextEncoder().encode("a"));
+          controller.close();
         },
       }),
     );
@@ -1166,17 +1171,29 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const client = Deno.createHttpClient({
     caCerts: [caCert],
   });
-  await (await fetch(url, { client })).text();
-  await (await fetch(url, { client })).text();
-  await (await fetch(url, { client })).text();
+  const resp1 = await fetch(url, { client });
+  const resp2 = await fetch(url, { client });
+  const resp3 = await fetch(url, { client });
+
+  const err = await assertRejects(async () => {
+    const data = await resp3.text();
+    // Note: the lone above should be throwing - but it's not right now due to
+    // a bug in ext/http. So for now we will add a check for the empty string
+    // (which is what we expect to be returned in case of this bug).
+    if (data === "") throw new Error("the stream errored!");
+  });
+  assert(err);
+  a.resolve();
+  assertEquals(await resp1.text(), "a");
+  assertEquals(await resp2.text(), "a");
 
   const numConns = connections.size;
   assertEquals(
     numConns,
     1,
-    `fetch should had reused a single connection, but used ${numConns} instead.`,
+    `fetch should have reused a single connection, but used ${numConns} instead.`,
   );
-  assertEquals(n, 3, "The handler should had been called three times");
+  assertEquals(n, 3, "The handler should have been called three times");
 
   client.close();
   server.close();
