@@ -1,3 +1,11 @@
+### 0.169.0 / 2022.12.19
+
+- feat(datetime): single-export files (#3007)
+- feat(media_types): single-export files (#3001)
+- fix(http): prevent downstream connections from getting closed when the
+  response stream throws an error (#3008)
+- fix(node): add missing exports to `process` (#3014)
+
 ### 0.168.0 / 2022.12.14
 
 - BREAKING(archive): move to single-export files (#2958)
