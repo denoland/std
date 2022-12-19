@@ -16,7 +16,7 @@ export { extensions };
  * ```ts
  * import { extensionsByType } from "https://deno.land/std@$STD_VERSION/media_types/extensions_by_type.ts";
  *
- * extensionsByType("application/json"); // ["js", "mjs"]
+ * extensionsByType("application/json"); // ["json", "map"]
  * extensionsByType("text/html; charset=UTF-8"); // ["html", "htm", "shtml"]
  * extensionsByType("application/foo"); // undefined
  * ```
