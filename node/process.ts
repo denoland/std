@@ -221,7 +221,7 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
-function hrtime(time?: [number, number]): [number, number] {
+export function hrtime(time?: [number, number]): [number, number] {
   const milli = performance.now();
   const sec = Math.floor(milli / 1000);
   const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
@@ -237,7 +237,7 @@ hrtime.bigint = function (): BigInt {
   return BigInt(sec) * 1_000_000_000n + BigInt(nano);
 };
 
-function memoryUsage(): {
+export function memoryUsage(): {
   rss: number;
   heapTotal: number;
   heapUsed: number;
