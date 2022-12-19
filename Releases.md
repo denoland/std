@@ -1,3 +1,7 @@
+### 0.170.0 / 2022.12.19
+
+- Revert "fix(node/http): do not buffer first chunk (#2989)" (#3013)
+
 ### 0.169.0 / 2022.12.19
 
 - feat(datetime): single-export files (#3007)
