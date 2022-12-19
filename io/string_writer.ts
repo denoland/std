@@ -1,5 +1,4 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 const decoder = new TextDecoder();
 
