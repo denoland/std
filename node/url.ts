@@ -67,7 +67,7 @@ import {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { toASCII } from "./internal/idna.ts";
+import { regexNonASCII, regexPunycode, toASCII, toUnicode } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 import querystring from "./querystring.ts";
@@ -1245,6 +1245,34 @@ export function resolveObject(source: string | Url, relative: string) {
 }
 
 /**
+ * The url.domainToASCII() takes an arbitrary domain and attempts to convert it into an IDN
+ * 
+ * @param domain The domain to convert to an IDN
+ * @see https://www.rfc-editor.org/rfc/rfc3490#section-4
+ */
+export function domainToASCII(domain: string) {
+  if(regexPunycode.test(domain) && regexNonASCII.test(domain)) {
+    return "" // Failure case
+  }
+
+  return toASCII(domain)
+}
+
+/**
+ * The url.domainToUnicode() takes an IDN and attempts to convert it into unicode
+ * 
+ * @param domain The IDN to convert to Unicode
+ * @see https://www.rfc-editor.org/rfc/rfc3490#section-4
+ */
+export function domainToUnicode(domain: string) {
+  if(regexPunycode.test(domain) && regexNonASCII.test(domain)) {
+    return "" // Failure case
+  }
+
+  return toUnicode(domain)
+}
+
+/**
  * This function ensures the correct decodings of percent-encoded characters as well as ensuring a cross-platform valid absolute path string.
  * @see Tested in `parallel/test-fileurltopath.js`.
  * @param path The file URL string or URL object to convert to a path.
@@ -1376,8 +1404,7 @@ export function pathToFileURL(filepath: string): URL {
       );
     }
 
-    // TODO(wafuwafu13): To be `outURL.hostname = domainToASCII(hostname)` once `domainToASCII` are implemented
-    outURL.hostname = hostname;
+    outURL.hostname = domainToASCII(hostname);
     outURL.pathname = encodePathChars(paths.slice(3).join("/"));
   } else {
     let resolved = path.resolve(filepath);
@@ -1456,6 +1483,8 @@ export default {
   format,
   resolve,
   resolveObject,
+  domainToASCII,
+  domainToUnicode,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,
