@@ -1,9 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Signal
+ * Higher level API for dealing with OS signals.
  *
  * @module
  */
+
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
 import { deferred } from "../async/deferred.ts";
 
@@ -16,17 +17,17 @@ export type Disposable = { dispose: () => void };
  * Example:
  *
  * ```ts
- *       import { signal } from "./mod.ts";
+ * import { signal } from "https://deno.land/std@$STD_VERSION/signal/mod.ts";
  *
- *       const sig = signal("SIGUSR1", "SIGINT");
- *       setTimeout(() => {}, 5000); // Prevents exiting immediately
+ * const sig = signal("SIGUSR1", "SIGINT");
+ * setTimeout(() => {}, 5000); // Prevents exiting immediately
  *
- *       for await (const _ of sig) {
- *         console.log("interrupt or usr1 signal received");
- *       }
+ * for await (const _ of sig) {
+ *   // ..
+ * }
  *
- *       // At some other point in your code when finished listening:
- *       sig.dispose();
+ * // At some other point in your code when finished listening:
+ * sig.dispose();
  * ```
  *
  * @param signals - one or more signals to listen to
@@ -49,7 +50,7 @@ export function signal(
   });
 
   // Create dispose method for the muxer of signal streams.
-  const dispose = (): void => {
+  const dispose = () => {
     streams.forEach((stream) => {
       stream.dispose();
     });

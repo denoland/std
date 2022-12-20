@@ -18,7 +18,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.mjs";
+import { deprecate, once } from "../util.mjs";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
@@ -120,14 +120,14 @@ const kWriteFileMaxChunkSize = 512 * 1024;
 
 export const kMaxUserId = 2 ** 32 - 1;
 
-function assertEncoding(encoding) {
+export function assertEncoding(encoding) {
   if (encoding && !Buffer.isEncoding(encoding)) {
     const reason = "is invalid encoding";
     throw new ERR_INVALID_ARG_VALUE(encoding, "encoding", reason);
   }
 }
 
-class Dirent {
+export class Dirent {
   constructor(name, type) {
     this.name = name;
     this[kType] = type;
@@ -216,7 +216,7 @@ function join(path, name) {
   );
 }
 
-function getDirents(path, { 0: names, 1: types }, callback) {
+export function getDirents(path, { 0: names, 1: types }, callback) {
   let i;
   if (typeof callback === "function") {
     const len = names.length;
@@ -261,7 +261,7 @@ function getDirents(path, { 0: names, 1: types }, callback) {
   }
 }
 
-function getDirent(path, name, type, callback) {
+export function getDirent(path, name, type, callback) {
   if (typeof callback === "function") {
     if (type === UV_DIRENT_UNKNOWN) {
       let filepath;
@@ -318,7 +318,7 @@ export function getOptions(options, defaultOptions) {
 /**
  * @param {InternalFSBinding.FSSyncContext} ctx
  */
-function handleErrorFromBinding(ctx) {
+export function handleErrorFromBinding(ctx) {
   if (ctx.errno !== undefined) { // libuv error numbers
     const err = uvException(ctx);
     Error.captureStackTrace(err, handleErrorFromBinding);
@@ -335,31 +335,33 @@ function handleErrorFromBinding(ctx) {
 
 // Check if the path contains null types if it is a string nor Uint8Array,
 // otherwise return silently.
-const nullCheck = hideStackFrames((path, propName, throwError = true) => {
-  const pathIsString = typeof path === "string";
-  const pathIsUint8Array = isUint8Array(path);
+export const nullCheck = hideStackFrames(
+  (path, propName, throwError = true) => {
+    const pathIsString = typeof path === "string";
+    const pathIsUint8Array = isUint8Array(path);
 
-  // We can only perform meaningful checks on strings and Uint8Arrays.
-  if (
-    (!pathIsString && !pathIsUint8Array) ||
-    (pathIsString && !path.includes("\u0000")) ||
-    (pathIsUint8Array && !path.includes(0))
-  ) {
-    return;
-  }
+    // We can only perform meaningful checks on strings and Uint8Arrays.
+    if (
+      (!pathIsString && !pathIsUint8Array) ||
+      (pathIsString && !path.includes("\u0000")) ||
+      (pathIsUint8Array && !path.includes(0))
+    ) {
+      return;
+    }
 
-  const err = new ERR_INVALID_ARG_VALUE(
-    propName,
-    path,
-    "must be a string or Uint8Array without null bytes",
-  );
-  if (throwError) {
-    throw err;
-  }
-  return err;
-});
+    const err = new ERR_INVALID_ARG_VALUE(
+      propName,
+      path,
+      "must be a string or Uint8Array without null bytes",
+    );
+    if (throwError) {
+      throw err;
+    }
+    return err;
+  },
+);
 
-function preprocessSymlinkDestination(path, type, linkPath) {
+export function preprocessSymlinkDestination(path, type, linkPath) {
   if (!isWindows) {
     // No preprocessing is needed on Unix.
     return path;
@@ -454,7 +456,7 @@ function dateFromMs(ms) {
   return new Date(Number(ms) + 0.5);
 }
 
-function BigIntStats(
+export function BigIntStats(
   dev,
   mode,
   nlink,
@@ -571,7 +573,7 @@ Stats.prototype._checkModeProperty = function (property) {
  * @param {number} offset
  * @returns
  */
-function getStatsFromBinding(stats, offset = 0) {
+export function getStatsFromBinding(stats, offset = 0) {
   if (isBigUint64Array(stats)) {
     return new BigIntStats(
       stats[0 + offset],
@@ -608,7 +610,7 @@ function getStatsFromBinding(stats, offset = 0) {
   );
 }
 
-function stringToFlags(flags, name = "flags") {
+export function stringToFlags(flags, name = "flags") {
   if (typeof flags === "number") {
     validateInt32(flags, name);
     return flags;
@@ -664,7 +666,7 @@ function stringToFlags(flags, name = "flags") {
   throw new ERR_INVALID_ARG_VALUE("flags", flags);
 }
 
-const stringToSymlinkType = hideStackFrames((type) => {
+export const stringToSymlinkType = hideStackFrames((type) => {
   let flags = 0;
   if (typeof type === "string") {
     switch (type) {
@@ -684,7 +686,7 @@ const stringToSymlinkType = hideStackFrames((type) => {
 });
 
 // converts Date or number to a fractional UNIX timestamp
-function toUnixTimestamp(time, name = "time") {
+export function toUnixTimestamp(time, name = "time") {
   // eslint-disable-next-line eqeqeq
   if (typeof time === "string" && +time == time) {
     return +time;
@@ -738,7 +740,7 @@ export const validateOffsetLengthWrite = hideStackFrames(
   },
 );
 
-const validatePath = hideStackFrames((path, propName = "path") => {
+export const validatePath = hideStackFrames((path, propName = "path") => {
   if (typeof path !== "string" && !isUint8Array(path)) {
     throw new ERR_INVALID_ARG_TYPE(propName, ["string", "Buffer", "URL"], path);
   }
@@ -786,7 +788,7 @@ export const validateBufferArray = hideStackFrames(
 
 let nonPortableTemplateWarn = true;
 
-function warnOnNonPortableTemplate(template) {
+export function warnOnNonPortableTemplate(template) {
   // Template strings passed to the mkdtemp() family of functions should not
   // end with 'X' because they are handled inconsistently across platforms.
   if (nonPortableTemplateWarn && template.endsWith("X")) {
@@ -820,7 +822,7 @@ const defaultRmdirOptions = {
   recursive: false,
 };
 
-const validateCpOptions = hideStackFrames((options) => {
+export const validateCpOptions = hideStackFrames((options) => {
   if (options === undefined) {
     return { ...defaultCpOptions };
   }
@@ -978,7 +980,7 @@ export const validateStringAfterArrayBufferView = hideStackFrames(
   },
 );
 
-const validatePosition = hideStackFrames((position) => {
+export const validatePosition = hideStackFrames((position) => {
   if (typeof position === "number") {
     validateInteger(position, "position");
   } else if (typeof position === "bigint") {
@@ -994,14 +996,23 @@ const validatePosition = hideStackFrames((position) => {
   }
 });
 
+export const realpathCacheKey = Symbol("realpathCacheKey");
+export const constants = {
+  kIoMaxLength,
+  kMaxUserId,
+  kReadFileBufferLength,
+  kReadFileUnknownBufferLength,
+  kWriteFileMaxChunkSize,
+};
+
+export const showStringCoercionDeprecation = deprecate(
+  () => {},
+  "Implicit coercion of objects with own toString property is deprecated.",
+  "DEP0162",
+);
+
 export default {
-  constants: {
-    kIoMaxLength,
-    kMaxUserId,
-    kReadFileBufferLength,
-    kReadFileUnknownBufferLength,
-    kWriteFileMaxChunkSize,
-  },
+  constants,
   assertEncoding,
   BigIntStats, // for testing
   copyObject,
@@ -1014,10 +1025,12 @@ export default {
   getValidatedPath,
   getValidMode,
   handleErrorFromBinding,
+  kMaxUserId,
   nullCheck,
   preprocessSymlinkDestination,
-  realpathCacheKey: Symbol("realpathCacheKey"),
+  realpathCacheKey,
   getStatsFromBinding,
+  showStringCoercionDeprecation,
   stringToFlags,
   stringToSymlinkType,
   Stats,

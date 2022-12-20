@@ -29,9 +29,11 @@ import {
   moveCursor,
 } from "./internal/readline/callbacks.mjs";
 import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.mjs";
+import promises from "./readline/promises.ts";
 import { validateAbortSignal } from "./internal/validators.mjs";
 import { promisify } from "./internal/util.mjs";
 import { AbortError } from "./internal/errors.ts";
+import { process } from "./process.ts";
 
 import {
   Interface as _Interface,
@@ -56,6 +58,7 @@ import {
   kOnLine,
   kPreviousKey,
   kPrompt,
+  kQuestion,
   kQuestionCallback,
   kQuestionCancel,
   kRefreshLine,
@@ -105,8 +108,6 @@ function Interface(input, output, completer, terminal) {
 Object.setPrototypeOf(Interface.prototype, _Interface.prototype);
 Object.setPrototypeOf(Interface, _Interface);
 
-const superQuestion = _Interface.prototype.question;
-
 /**
  * Displays `query` by writing it to the `output`.
  * @param {string} query
@@ -114,7 +115,7 @@ const superQuestion = _Interface.prototype.question;
  * @param {Function} cb
  * @returns {void}
  */
-Interface.prototype.question = function (query, options, cb) {
+Interface.prototype.question = function question(query, options, cb) {
   cb = typeof options === "function" ? options : cb;
   options = typeof options === "object" && options !== null ? options : {};
 
@@ -140,14 +141,19 @@ Interface.prototype.question = function (query, options, cb) {
   }
 
   if (typeof cb === "function") {
-    superQuestion.call(this, query, cb);
+    this[kQuestion](query, cb);
   }
 };
-Interface.prototype.question[promisify.custom] = function (query, options) {
+Interface.prototype.question[promisify.custom] = function question(
+  query,
+  options,
+) {
   options = typeof options === "object" && options !== null ? options : {};
 
   if (options.signal && options.signal.aborted) {
-    return Promise.reject(new AbortError());
+    return Promise.reject(
+      new AbortError(undefined, { cause: options.signal.reason }),
+    );
   }
 
   return new Promise((resolve, reject) => {
@@ -155,7 +161,7 @@ Interface.prototype.question[promisify.custom] = function (query, options) {
 
     if (options.signal) {
       const onAbort = () => {
-        reject(new AbortError());
+        reject(new AbortError(undefined, { cause: options.signal.reason }));
       };
       options.signal.addEventListener("abort", onAbort, { once: true });
       cb = (answer) => {
@@ -476,4 +482,5 @@ export {
   emitKeypressEvents,
   Interface,
   moveCursor,
+  promises,
 };

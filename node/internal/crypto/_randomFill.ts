@@ -32,7 +32,7 @@ export default function randomFill(
 export default function randomFill(
   buf: Buffer,
   offset: number,
-  cb: ((err: Error | null, buf: Buffer) => void),
+  cb: (err: Error | null, buf: Buffer) => void,
 ): void;
 
 export default function randomFill(
@@ -46,8 +46,8 @@ export default function randomFill(
   buf: Buffer,
   offset?: number | ((err: Error | null, buf: Buffer) => void),
   size?: number | ((err: Error | null, buf: Buffer) => void),
-  cb?: ((err: Error | null, buf: Buffer) => void),
-): void {
+  cb?: (err: Error | null, buf: Buffer) => void,
+) {
   if (typeof offset === "function") {
     cb = offset;
     offset = 0;

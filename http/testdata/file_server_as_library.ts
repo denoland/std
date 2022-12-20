@@ -1,8 +1,6 @@
-import { listenAndServe } from "../server.ts";
+import { serve } from "../server.ts";
 import { serveFile } from "../file_server.ts";
 
-listenAndServe({ port: 8000 }, (req) => {
+serve((req) => {
   return serveFile(req, "./testdata/hello.html");
-});
-
-console.log("Server running...");
+}, { port: 8000, onListen: () => console.log("Server running...") });

@@ -24,7 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
-import { unreachable } from "../../testing/asserts.ts";
+import { unreachable } from "../../_util/asserts.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {
@@ -32,9 +32,9 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  close(cb: () => void = () => {}): void {
+  close(cb: () => void = () => {}) {
     this._onClose();
-    cb();
+    queueMicrotask(cb);
   }
 
   ref() {

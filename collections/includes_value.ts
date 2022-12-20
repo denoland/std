@@ -3,12 +3,12 @@
 
 /**
  * If the given value is part of the given object it returns true, otherwise it
- * returns false.
- * Doesn't work with non-primitive values: includesValue({x: {}}, {}) returns false.
+ * returns false. Doesn't work with non-primitive values: includesValue({x: {}},
+ * {}) returns false.
  *
- * Example:
+ * @example
  * ```ts
- * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/includes_value.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const input = {
@@ -17,8 +17,8 @@
  * };
  *
  * assertEquals(includesValue(input, 34), true);
+ * ```
  */
-
 export function includesValue<T>(
   record: Readonly<Record<string, T>>,
   value: T,

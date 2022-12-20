@@ -11,7 +11,7 @@ import { Type } from "./type.ts";
 
 Deno.test({
   name: "`parse` parses single document yaml string",
-  fn(): void {
+  fn() {
     const yaml = `
       test: toto
       foo:
@@ -28,7 +28,7 @@ Deno.test({
 
 Deno.test({
   name: "`parseAll` parses the yaml string with multiple documents",
-  fn(): void {
+  fn() {
     const yaml = `
 ---
 id: 1
@@ -60,7 +60,7 @@ name: Eve
 
 Deno.test({
   name: "`!!js/*` yaml types are not handled in default schemas while parsing",
-  fn(): void {
+  fn() {
     const yaml = `undefined: !!js/undefined ~`;
     assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
   },
@@ -69,7 +69,7 @@ Deno.test({
 Deno.test({
   name:
     "`!!js/*` yaml types are correctly handled with extended schema while parsing",
-  fn(): void {
+  fn() {
     const yaml = `
       regexp:
         simple: !!js/regexp foobar
@@ -91,7 +91,7 @@ Deno.test({
 
 Deno.test({
   name: "`!!js/function` yaml type with extended schema throws while parsing",
-  fn(): void {
+  fn() {
     const func = function foobar() {
       return "hello world!";
     };
@@ -107,7 +107,7 @@ ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 
 Deno.test({
   name: "`!*` yaml user defined types are supported while parsing",
-  fn(): void {
+  fn() {
     const PointYamlType = new Type("!point", {
       kind: "sequence",
       resolve(data) {
@@ -132,7 +132,7 @@ Deno.test({
 
 Deno.test({
   name: "`parseAll` accepts parse options",
-  fn(): void {
+  fn() {
     const yaml = `
 ---
 regexp: !!js/regexp foo

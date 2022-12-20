@@ -1,44 +1,38 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Writer, WriterSync } from "./types.d.ts";
+import { StringWriter as _StringWriter } from "./string_writer.ts";
 
-const decoder = new TextDecoder();
-
-/** Writer utility for buffering string chunks */
-export class StringWriter implements Writer, WriterSync {
-  private chunks: Uint8Array[] = [];
-  private byteLength = 0;
-  private cache: string | undefined;
-
-  constructor(private base: string = "") {
-    const c = new TextEncoder().encode(base);
-    this.chunks.push(c);
-    this.byteLength += c.byteLength;
-  }
-
-  write(p: Uint8Array): Promise<number> {
-    return Promise.resolve(this.writeSync(p));
-  }
-
-  writeSync(p: Uint8Array): number {
-    this.chunks.push(p);
-    this.byteLength += p.byteLength;
-    this.cache = undefined;
-    return p.byteLength;
-  }
-
-  toString(): string {
-    if (this.cache) {
-      return this.cache;
-    }
-    const buf = new Uint8Array(this.byteLength);
-    let offs = 0;
-    for (const chunk of this.chunks) {
-      buf.set(chunk, offs);
-      offs += chunk.byteLength;
-    }
-    this.cache = decoder.decode(buf);
-    return this.cache;
-  }
-}
+/**
+ * @deprecated (will be removed after 0.170.0) Import from `std/io/string_writer.ts` instead
+ *
+ * Writer utility for buffering string chunks.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   copyN,
+ *   StringReader,
+ *   StringWriter,
+ * } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ *
+ * const w = new StringWriter("base");
+ * const r = new StringReader("0123456789");
+ * await copyN(r, w, 4); // copy 4 bytes
+ *
+ * // Number of bytes read
+ * console.log(w.toString()); //base0123
+ *
+ * await copy(r, w); // copy all
+ * console.log(w.toString()); // base0123456789
+ * ```
+ *
+ * **Output:**
+ *
+ * ```text
+ * base0123
+ * base0123456789
+ * ```
+ */
+export const StringWriter = _StringWriter;

@@ -1,5 +1,6 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import type { FormatInputPathObject } from "./_interface.ts";
 import {
@@ -13,7 +14,7 @@ import {
 } from "./_constants.ts";
 import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 
-export function assertPath(path: string): void {
+export function assertPath(path: string) {
   if (typeof path !== "string") {
     throw new ERR_INVALID_ARG_TYPE("path", ["string"], path);
   }

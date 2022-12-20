@@ -1,24 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This aliases are used in some node tests and represent a legacy alias
-// for the stream modules
-// deno-lint-ignore camelcase
 import _http_agent from "./_http_agent.mjs";
-// deno-lint-ignore camelcase
 import _http_outgoing from "./_http_outgoing.ts";
-// deno-lint-ignore camelcase
 import _stream_duplex from "./internal/streams/duplex.mjs";
-// deno-lint-ignore camelcase
 import _stream_passthrough from "./internal/streams/passthrough.mjs";
-// deno-lint-ignore camelcase
 import _stream_readable from "./internal/streams/readable.mjs";
-// deno-lint-ignore camelcase
 import _stream_transform from "./internal/streams/transform.mjs";
-// deno-lint-ignore camelcase
 import _stream_writable from "./internal/streams/writable.mjs";
-
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
-// deno-lint-ignore camelcase
 import async_hooks from "./async_hooks.ts";
 import buffer from "./buffer.ts";
 import childProcess from "./child_process.ts";
@@ -27,17 +16,18 @@ import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
+import diagnosticsChannel from "./diagnostics_channel.ts";
 import dns from "./dns.ts";
 import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
-import internalFsUtils from "./internal/fs/utils.mjs";
 import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalCp from "./internal/child_process.ts";
 import internalClusterChild from "./internal/cluster/child.ts";
 import internalClusterPrimary from "./internal/cluster/primary.ts";
 import internalClusterRoundRobinHandle from "./internal/cluster/round_robin_handle.ts";
@@ -61,15 +51,17 @@ import internalDgram from "./internal/dgram.ts";
 import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
 import internalEventTarget from "./internal/event_target.mjs";
+import internalFsUtils from "./internal/fs/utils.mjs";
 import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.mjs";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
-import internalStreamsAddBufferList from "./internal/streams/buffer_list.mjs";
+import internalStreamsBufferList from "./internal/streams/buffer_list.mjs";
+import internalStreamsLazyTransform from "./internal/streams/lazy_transform.mjs";
 import internalStreamsState from "./internal/streams/state.mjs";
 import internalTestBinding from "./internal/test/binding.ts";
 import internalTimers from "./internal/timers.mjs";
-import internalUtilInspect from "./internal/util/inspect.mjs";
 import internalUtil from "./internal/util.mjs";
+import internalUtilInspect from "./internal/util/inspect.mjs";
 import net from "./net.ts";
 import os from "./os.ts";
 import pathPosix from "./path/posix.ts";
@@ -80,6 +72,7 @@ import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
+import readlinePromises from "./readline/promises.ts";
 import repl from "./repl.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.mjs";
@@ -92,7 +85,7 @@ import timersPromises from "./timers/promises.ts";
 import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
-import utilTypes from "./util/types.mjs";
+import utilTypes from "./util/types.ts";
 import util from "./util.ts";
 import v8 from "./v8.ts";
 import vm from "./vm.ts";
@@ -119,6 +112,7 @@ export default {
   child_process: childProcess,
   cluster,
   dgram,
+  diagnostics_channel: diagnosticsChannel,
   dns,
   "dns/promises": dnsPromises,
   domain,
@@ -129,6 +123,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/child_process": internalCp,
   "internal/cluster/child": internalClusterChild,
   "internal/cluster/primary": internalClusterPrimary,
   "internal/cluster/round_robin_handle": internalClusterRoundRobinHandle,
@@ -156,7 +151,8 @@ export default {
   "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
-  "internal/streams/buffer_list": internalStreamsAddBufferList,
+  "internal/streams/buffer_list": internalStreamsBufferList,
+  "internal/streams/lazy_transform": internalStreamsLazyTransform,
   "internal/streams/state": internalStreamsState,
   "internal/test/binding": internalTestBinding,
   "internal/timers": internalTimers,
@@ -180,6 +176,7 @@ export default {
   },
   querystring,
   readline,
+  "readline/promises": readlinePromises,
   repl,
   stream,
   "stream/consumers": streamConsumers,
@@ -192,8 +189,8 @@ export default {
   tls,
   tty,
   url,
-  "util/types": utilTypes,
   util,
+  "util/types": utilTypes,
   v8,
   vm,
   wasi,

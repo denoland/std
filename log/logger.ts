@@ -13,6 +13,10 @@ export interface LogRecordOptions {
   loggerName: string;
 }
 
+/**
+ * An object that encapsulates provided message and arguments as well some
+ * metadata that can be later used when formatting a message.
+ */
 export class LogRecord {
   readonly msg: string;
   #args: unknown[];
@@ -88,7 +92,7 @@ export class Logger {
    * function, not the function itself, unless the function isn't called, in which
    * case undefined is returned.  All types are coerced to strings for logging.
    */
-  private _log<T>(
+  #_log<T>(
     level: number,
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
@@ -112,7 +116,7 @@ export class Logger {
       loggerName: this.loggerName,
     });
 
-    this.#handlers.forEach((handler): void => {
+    this.#handlers.forEach((handler) => {
       handler.handle(record);
     });
 
@@ -145,7 +149,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.DEBUG, msg, ...args);
+    return this.#_log(LogLevels.DEBUG, msg, ...args);
   }
 
   info<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -154,7 +158,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.INFO, msg, ...args);
+    return this.#_log(LogLevels.INFO, msg, ...args);
   }
 
   warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -163,7 +167,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.WARNING, msg, ...args);
+    return this.#_log(LogLevels.WARNING, msg, ...args);
   }
 
   error<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -172,7 +176,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.ERROR, msg, ...args);
+    return this.#_log(LogLevels.ERROR, msg, ...args);
   }
 
   critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -184,6 +188,6 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.CRITICAL, msg, ...args);
+    return this.#_log(LogLevels.CRITICAL, msg, ...args);
   }
 }

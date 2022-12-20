@@ -1,4 +1,147 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** A snapshotting library.
+ *
+ * The `assertSnapshot` function will create a snapshot of a value and compare it
+ * to a reference snapshot, which is stored alongside the test file in the
+ * `__snapshots__` directory.
+ *
+ * ```ts
+ * // example_test.ts
+ * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+ *
+ * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+ *   const a = {
+ *     hello: "world!",
+ *     example: 123,
+ *   };
+ *   await assertSnapshot(t, a);
+ * });
+ * ```
+ *
+ * ```js
+ * // __snapshots__/example_test.ts.snap
+ * export const snapshot = {};
+ *
+ * snapshot[`isSnapshotMatch 1`] = `
+ * {
+ *   example: 123,
+ *   hello: "world!",
+ * }
+ * `;
+ * ```
+ *
+ * Calling `assertSnapshot` in a test will throw an `AssertionError`, causing the
+ * test to fail, if the snapshot created during the test does not match the one in
+ * the snapshot file.
+ *
+ * ## Updating Snapshots:
+ *
+ * When adding new snapshot assertions to your test suite, or when intentionally
+ * making changes which cause your snapshots to fail, you can update your snapshots
+ * by running the snapshot tests in update mode. Tests can be run in update mode by
+ * passing the `--update` or `-u` flag as an argument when running the test. When
+ * this flag is passed, then any snapshots which do not match will be updated.
+ *
+ * ```sh
+ * deno test --allow-all -- --update
+ * ```
+ *
+ * Note: In Powershell, you need to quote `--`.
+ *
+ * ```powershell
+ * deno test --allow-all "--" --update
+ * ```
+ *
+ * Additionally, new snapshots will only be created when this flag is present.
+ *
+ * ## Permissions:
+ *
+ * When running snapshot tests, the `--allow-read` permission must be enabled, or
+ * else any calls to `assertSnapshot` will fail due to insufficient permissions.
+ * Additionally, when updating snapshots, the `--allow-write` permission must also
+ * be enabled, as this is required in order to update snapshot files.
+ *
+ * The `assertSnapshot` function will only attempt to read from and write to
+ * snapshot files. As such, the allow list for `--allow-read` and `--allow-write`
+ * can be limited to only include existing snapshot files, if so desired.
+ *
+ * ## Options:
+ *
+ * The `assertSnapshot` function optionally accepts an options object.
+ *
+ * ```ts
+ * // example_test.ts
+ * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+ *
+ * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+ *   const a = {
+ *     hello: "world!",
+ *     example: 123,
+ *   };
+ *   await assertSnapshot(t, a, {
+ *     // options
+ *   });
+ * });
+ * ```
+ *
+ * You can also configure default options for `assertSnapshot`.
+ *
+ * ```ts
+ * // example_test.ts
+ * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+ *
+ * const assertSnapshot = createAssertSnapshot({
+ *   // options
+ * });
+ * ```
+ *
+ * When configuring default options like this, the resulting `assertSnapshot`
+ * function will function the same as the default function exported from the
+ * snapshot module. If passed an optional options object, this will take precedence
+ * over the default options, where the value provded for an option differs.
+ *
+ * It is possible to "extend" an `assertSnapshot` function which has been
+ * configured with default options.
+ *
+ * ```ts
+ * // example_test.ts
+ * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+ * import { stripColor } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *
+ * const assertSnapshot = createAssertSnapshot({
+ *   dir: ".snaps",
+ * });
+ *
+ * const assertMonochromeSnapshot = createAssertSnapshot<string>(
+ *   { serializer: stripColor },
+ *   assertSnapshot,
+ * );
+ *
+ * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+ *   const a = "\x1b[32mThis green text has had it's colours stripped\x1b[39m";
+ *   await assertMonochromeSnapshot(t, a);
+ * });
+ * ```
+ *
+ * ```js
+ * // .snaps/example_test.ts.snap
+ * export const snapshot = {};
+ *
+ * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
+ * ```
+ *
+ * ## Version Control:
+ *
+ * Snapshot testing works best when changes to snapshot files are comitted
+ * alongside other code changes. This allows for changes to reference snapshots to
+ * be reviewed along side the code changes that caused them, and ensures that when
+ * others pull your changes, their tests will pass without needing to update
+ * snapshots locally.
+ *
+ * @module
+ */
+
 import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
@@ -140,16 +283,16 @@ class AssertSnapshotContext {
     return context;
   }
 
-  private teardownRegistered = false;
-  private currentSnapshots: Map<string, string | undefined> | undefined;
-  private updatedSnapshots = new Map<string, string>();
-  private snapshotCounts = new Map<string, number>();
-  private snapshotsUpdated = new Array<string>();
-  private snapshotFileUrl: URL;
-  private snapshotUpdateQueue = new Array<string>();
+  #teardownRegistered = false;
+  #currentSnapshots: Map<string, string | undefined> | undefined;
+  #updatedSnapshots = new Map<string, string>();
+  #snapshotCounts = new Map<string, number>();
+  #snapshotsUpdated = new Array<string>();
+  #snapshotFileUrl: URL;
+  snapshotUpdateQueue = new Array<string>();
 
   constructor(snapshotFileUrl: URL) {
-    this.snapshotFileUrl = snapshotFileUrl;
+    this.#snapshotFileUrl = snapshotFileUrl;
   }
 
   /**
@@ -157,22 +300,22 @@ class AssertSnapshotContext {
    *
    * Should only be called when `this.#currentSnapshots` has already been initialized.
    */
-  private getCurrentSnapshotsInitialized() {
+  #getCurrentSnapshotsInitialized() {
     assert(
-      this.currentSnapshots,
+      this.#currentSnapshots,
       "Snapshot was not initialized. This is a bug in `assertSnapshot`.",
     );
-    return this.currentSnapshots;
+    return this.#currentSnapshots;
   }
 
   /**
    * Write updates to the snapshot file and log statistics.
    */
-  private teardown = () => {
+  #teardown = () => {
     const buf = ["export const snapshot = {};"];
-    const currentSnapshots = this.getCurrentSnapshotsInitialized();
+    const currentSnapshots = this.#getCurrentSnapshotsInitialized();
     this.snapshotUpdateQueue.forEach((name) => {
-      const updatedSnapshot = this.updatedSnapshots.get(name);
+      const updatedSnapshot = this.#updatedSnapshots.get(name);
       const currentSnapshot = currentSnapshots.get(name);
       let formattedSnapshot: string;
       if (typeof updatedSnapshot === "string") {
@@ -193,7 +336,7 @@ class AssertSnapshotContext {
       const formattedName = escapeStringForJs(name);
       buf.push(`\nsnapshot[\`${formattedName}\`] = \`${formattedSnapshot}\`;`);
     });
-    const snapshotFilePath = fromFileUrl(this.snapshotFileUrl);
+    const snapshotFilePath = fromFileUrl(this.#snapshotFileUrl);
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
@@ -216,19 +359,19 @@ class AssertSnapshotContext {
    * snapshots from the snapshot file. If the snapshot mode is `update` and the snapshot file does
    * not exist then it will be created.
    */
-  private async readSnapshotFile(options: SnapshotOptions) {
-    if (this.currentSnapshots) {
-      return this.currentSnapshots;
+  async #readSnapshotFile(options: SnapshotOptions) {
+    if (this.#currentSnapshots) {
+      return this.#currentSnapshots;
     }
 
     if (getIsUpdate(options)) {
-      await ensureFile(fromFileUrl(this.snapshotFileUrl));
+      await ensureFile(fromFileUrl(this.#snapshotFileUrl));
     }
 
     try {
-      const snapshotFileUrl = this.snapshotFileUrl.toString();
+      const snapshotFileUrl = this.#snapshotFileUrl.toString();
       const { snapshot } = await import(snapshotFileUrl);
-      this.currentSnapshots = typeof snapshot === "undefined"
+      this.#currentSnapshots = typeof snapshot === "undefined"
         ? new Map()
         : new Map(
           Object.entries(snapshot).map(([name, snapshot]) => {
@@ -246,7 +389,7 @@ class AssertSnapshotContext {
             ];
           }),
         );
-      return this.currentSnapshots;
+      return this.#currentSnapshots;
     } catch (error) {
       if (
         error instanceof TypeError &&
@@ -271,9 +414,9 @@ class AssertSnapshotContext {
    * function once.
    */
   public registerTeardown() {
-    if (!this.teardownRegistered) {
-      globalThis.addEventListener("unload", this.teardown);
-      this.teardownRegistered = true;
+    if (!this.#teardownRegistered) {
+      globalThis.addEventListener("unload", this.#teardown);
+      this.#teardownRegistered = true;
     }
   }
 
@@ -282,8 +425,8 @@ class AssertSnapshotContext {
    * the count by 1.
    */
   public getCount(snapshotName: string) {
-    let count = this.snapshotCounts.get(snapshotName) || 0;
-    this.snapshotCounts.set(snapshotName, ++count);
+    let count = this.#snapshotCounts.get(snapshotName) || 0;
+    this.#snapshotCounts.set(snapshotName, ++count);
     return count;
   }
 
@@ -291,7 +434,7 @@ class AssertSnapshotContext {
    * Get an existing snapshot by name or returns `undefined` if the snapshot does not exist.
    */
   public async getSnapshot(snapshotName: string, options: SnapshotOptions) {
-    const snapshots = await this.readSnapshotFile(options);
+    const snapshots = await this.#readSnapshotFile(options);
     return snapshots.get(snapshotName);
   }
 
@@ -302,21 +445,21 @@ class AssertSnapshotContext {
    * Should only be called when mode is `update`.
    */
   public updateSnapshot(snapshotName: string, snapshot: string) {
-    if (!this.snapshotsUpdated.includes(snapshotName)) {
-      this.snapshotsUpdated.push(snapshotName);
+    if (!this.#snapshotsUpdated.includes(snapshotName)) {
+      this.#snapshotsUpdated.push(snapshotName);
     }
-    const currentSnapshots = this.getCurrentSnapshotsInitialized();
+    const currentSnapshots = this.#getCurrentSnapshotsInitialized();
     if (!currentSnapshots.has(snapshotName)) {
       currentSnapshots.set(snapshotName, undefined);
     }
-    this.updatedSnapshots.set(snapshotName, snapshot);
+    this.#updatedSnapshots.set(snapshotName, snapshot);
   }
 
   /**
    * Get the number of updated snapshots.
    */
   public getUpdatedCount() {
-    return this.snapshotsUpdated.length;
+    return this.#snapshotsUpdated.length;
   }
 
   /**
@@ -332,6 +475,15 @@ class AssertSnapshotContext {
   public pushSnapshotToUpdateQueue(snapshotName: string) {
     this.snapshotUpdateQueue.push(snapshotName);
   }
+
+  /**
+   * Check if exist snapshot
+   */
+  public hasSnapshot(snapshotName: string): boolean {
+    return this.#currentSnapshots
+      ? this.#currentSnapshots.has(snapshotName)
+      : false;
+  }
 }
 
 /**
@@ -339,9 +491,10 @@ class AssertSnapshotContext {
  * not a match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
- * For example:
+ *
+ * @example
  * ```ts
- * import { assertSnapshot } from "./snapshot.ts";
+ * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
  *
  * Deno.test("snapshot", async (test) => {
  *  await assertSnapshot<number>(test, 2);
@@ -349,7 +502,7 @@ class AssertSnapshotContext {
  * ```
  */
 export async function assertSnapshot<T>(
-  t: Deno.TestContext,
+  context: Deno.TestContext,
   actual: T,
   options: SnapshotOptions<T>,
 ): Promise<void>;
@@ -362,7 +515,7 @@ export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,
   msgOrOpts?: string | SnapshotOptions<unknown>,
-): Promise<void> {
+) {
   const options = getOptions();
   const assertSnapshotContext = AssertSnapshotContext.fromOptions(
     context,
@@ -385,7 +538,10 @@ export async function assertSnapshot(
       assertSnapshotContext.updateSnapshot(name, _actual);
     }
   } else {
-    if (!snapshot) {
+    if (
+      !assertSnapshotContext.hasSnapshot(name) ||
+      typeof snapshot === "undefined"
+    ) {
       throw new AssertionError(
         getErrorMessage(`Missing snapshot: ${name}`, options),
       );
@@ -429,4 +585,26 @@ export async function assertSnapshot(
     }
     return context.name;
   }
+}
+
+export function createAssertSnapshot<T>(
+  options: SnapshotOptions<T>,
+  baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
+): typeof assertSnapshot {
+  return async function _assertSnapshot(
+    context: Deno.TestContext,
+    actual: T,
+    messageOrOptions?: string | SnapshotOptions<T>,
+  ) {
+    const mergedOptions: SnapshotOptions<T> = {
+      ...options,
+      ...(typeof messageOrOptions === "string"
+        ? {
+          msg: messageOrOptions,
+        }
+        : messageOrOptions),
+    };
+
+    await baseAssertSnapshot(context, actual, mergedOptions);
+  };
 }

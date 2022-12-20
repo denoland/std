@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-const mysql = require("mysql2/promise");
-const assert = require("assert");
+import mysql from "npm:mysql2/promise";
+import assert from "npm:assert";
 
 async function main() {
   // create the connection to database

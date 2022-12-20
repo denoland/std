@@ -185,7 +185,7 @@ Agent.defaultMaxSockets = Infinity;
 Agent.prototype.createConnection = net.createConnection;
 
 // Get the key for a given set of request options
-Agent.prototype.getName = function getName(options) {
+Agent.prototype.getName = function getName(options = {}) {
   let name = options.host || "localhost";
 
   name += ":";
@@ -344,7 +344,7 @@ function calculateServerName(options, req) {
         // Leading '[', but no ']'. Need to do something...
         servername = hostHeader;
       } else {
-        servername = hostHeader.substr(1, index - 1);
+        servername = hostHeader.slice(1, index);
       }
     } else {
       servername = hostHeader.split(":", 1)[0];
@@ -519,7 +519,7 @@ function asyncResetHandle(socket) {
   }
 }
 
-const globalAgent = new Agent();
+export const globalAgent = new Agent();
 export default {
   Agent,
   globalAgent,

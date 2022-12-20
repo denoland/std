@@ -32,7 +32,7 @@ import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../streams/conversion.ts";
+import { writeAll } from "../../streams/write_all.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -253,12 +253,12 @@ export class LibuvStreamWrap extends HandleWrap {
    * Attaches the class to the underlying stream.
    * @param stream The stream to attach to.
    */
-  #attachToObject(stream?: Deno.Reader & Deno.Writer & Deno.Closer): void {
+  #attachToObject(stream?: Deno.Reader & Deno.Writer & Deno.Closer) {
     this[kStreamBaseField] = stream;
   }
 
   /** Internal method for reading from the attached stream. */
-  async #read(): Promise<void> {
+  async #read() {
     let buf = new Uint8Array(SUGGESTED_SIZE);
 
     let nread: number | null;

@@ -3,7 +3,9 @@ import type { CallbackWithError } from "./_fs_common.ts";
 import { makeCallback } from "./_fs_common.ts";
 import { Buffer } from "../buffer.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
-import { fs, os } from "../internal_binding/constants.ts";
+import { fs } from "../internal_binding/constants.ts";
+import { codeMap } from "../internal_binding/uv.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function copyFile(
   src: string | Buffer | URL,
@@ -21,7 +23,7 @@ export function copyFile(
   dest: string | Buffer | URL,
   mode: number | CallbackWithError,
   callback?: CallbackWithError,
-): void {
+) {
   if (typeof mode === "function") {
     callback = mode;
     mode = 0;
@@ -38,7 +40,7 @@ export function copyFile(
         `EEXIST: file already exists, copyfile '${srcStr}' -> '${destStr}'`,
       );
       e.syscall = "copyfile";
-      e.errno = os.errno.EEXIST;
+      e.errno = codeMap.get("EEXIST");
       e.code = "EEXIST";
       cb(e);
     }, (e) => {
@@ -52,11 +54,17 @@ export function copyFile(
   }
 }
 
+export const copyFilePromise = promisify(copyFile) as (
+  src: string | Buffer | URL,
+  dest: string | Buffer | URL,
+  mode?: number,
+) => Promise<void>;
+
 export function copyFileSync(
   src: string | Buffer | URL,
   dest: string | Buffer | URL,
   mode?: number,
-): void {
+) {
   const srcStr = getValidatedPath(src, "src").toString();
   const destStr = getValidatedPath(dest, "dest").toString();
   const modeNum = getValidMode(mode, "copyFile");

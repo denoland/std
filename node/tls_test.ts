@@ -1,12 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertInstanceOf } from "../testing/asserts.ts";
 import { delay } from "../async/delay.ts";
 import { deferred } from "../async/deferred.ts";
 import { fromFileUrl, join } from "./path.ts";
 import { serveTls } from "../http/server.ts";
 import * as tls from "./tls.ts";
 import * as net from "./net.ts";
+import * as stream from "./stream.ts";
 
 const tlsTestdataDir = fromFileUrl(
   new URL("../http/testdata/tls", import.meta.url),
@@ -30,12 +31,10 @@ Deno.test("tls.connect makes tls connection", async () => {
 
   const conn = tls.connect({
     port: 8443,
-    host: "localhost",
     secureContext: {
       ca: rootCaCert,
     },
   });
-
   conn.write(`GET / HTTP/1.1
 Host: localhost
 Connection: close
@@ -43,9 +42,9 @@ Connection: close
 `);
   conn.on("data", (chunk) => {
     const text = new TextDecoder().decode(chunk);
-    assertEquals(text, "hello");
-  });
-  conn.on("end", () => {
+    const bodyText = text.split("\r\n\r\n").at(-1)?.trim();
+    assertEquals(bodyText, "hello");
+    conn.destroy();
     ctl.abort();
   });
 
@@ -55,17 +54,21 @@ Connection: close
 Deno.test("tls.createServer creates a TLS server", async () => {
   const p = deferred();
   const server = tls.createServer(
-    { hostname: "localhost", key, cert },
+    { host: "0.0.0.0", key, cert },
     (socket: net.Socket) => {
       socket.write("welcome!\n");
       socket.setEncoding("utf8");
-      socket.pipe(socket);
+      socket.pipe(socket).on("data", (data) => {
+        if (data.toString().trim() === "goodbye") {
+          socket.destroy();
+        }
+      });
     },
   );
-  server.listen(8443, async () => {
+  server.listen(0, async () => {
     const conn = await Deno.connectTls({
-      hostname: "localhost",
-      port: 8443,
+      hostname: "127.0.0.1",
+      port: server.address().port,
       caCerts: [rootCaCert],
     });
 
@@ -87,9 +90,23 @@ Deno.test("tls.createServer creates a TLS server", async () => {
     text = new TextDecoder().decode(buf);
     assertEquals(text.replaceAll("\0", ""), "goodbye\n");
 
-    Deno.close(conn.rid);
+    conn.close();
     server.close();
     p.resolve();
   });
   await p;
+});
+
+Deno.test("TLSSocket can construct without options", () => {
+  new tls.TLSSocket(new stream.PassThrough());
+});
+
+Deno.test("tlssocket._handle._parentWrap is set", () => {
+  // Note: This feature is used in popular 'http2-wrapper' module
+  // https://github.com/szmarczak/http2-wrapper/blob/51eeaf59ff9344fb192b092241bfda8506983620/source/utils/js-stream-socket.js#L6
+  const parentWrap =
+    // deno-lint-ignore no-explicit-any
+    (new tls.TLSSocket(new stream.PassThrough(), {})._handle as any)!
+      ._parentWrap;
+  assertInstanceOf(parentWrap, stream.PassThrough);
 });

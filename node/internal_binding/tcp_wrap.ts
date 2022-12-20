@@ -25,7 +25,7 @@
 // - https://github.com/nodejs/node/blob/master/src/tcp_wrap.h
 
 import { notImplemented } from "../_utils.ts";
-import { unreachable } from "../../testing/asserts.ts";
+import { unreachable } from "../../_util/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { LibuvStreamWrap } from "./stream_wrap.ts";
@@ -39,7 +39,6 @@ import {
   INITIAL_ACCEPT_BACKOFF_DELAY,
   MAX_ACCEPT_BACKOFF_DELAY,
 } from "./_listen.ts";
-import * as DenoUnstable from "../../_deno_unstable.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -228,13 +227,13 @@ export class TCP extends ConnectionWrap {
 
   override ref() {
     if (this.#listener) {
-      DenoUnstable.ListenerRef(this.#listener);
+      this.#listener.ref();
     }
   }
 
   override unref() {
     if (this.#listener) {
-      DenoUnstable.ListenerUnref(this.#listener);
+      this.#listener.unref();
     }
   }
 
@@ -384,7 +383,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle backoff delays following an unsuccessful accept. */
-  async #acceptBackoff(): Promise<void> {
+  async #acceptBackoff() {
     // Backoff after transient errors to allow time for the system to
     // recover, and avoid blocking up the event loop with a continuously
     // running loop.

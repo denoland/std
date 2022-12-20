@@ -13,6 +13,25 @@ import {
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
 } from "./internal/errors.ts";
+import { isDeepEqual } from "./internal/util/comparisons.ts";
+
+function innerFail(obj: {
+  actual?: unknown;
+  expected?: unknown;
+  message?: string | Error;
+  operator?: string;
+}) {
+  if (obj.message instanceof Error) {
+    throw obj.message;
+  }
+
+  throw new AssertionError({
+    actual: obj.actual,
+    expected: obj.expected,
+    message: obj.message,
+    operator: obj.operator,
+  });
+}
 
 interface ExtendedAssertionErrorConstructorOptions
   extends AssertionErrorConstructorOptions {
@@ -84,7 +103,7 @@ function throws(
   fn: () => void,
   error?: RegExp | Function | Error,
   message?: string,
-): void {
+) {
   // Check arg types
   if (typeof fn !== "function") {
     throw new ERR_INVALID_ARG_TYPE("fn", "function", fn);
@@ -194,7 +213,7 @@ function doesNotThrow(
   fn: () => void,
   expected?: Function | RegExp | string,
   message?: string | Error,
-): void {
+) {
   // Check arg type
   if (typeof fn !== "function") {
     throw new ERR_INVALID_ARG_TYPE("fn", "function", fn);
@@ -218,7 +237,7 @@ function equal(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -253,7 +272,7 @@ function notEqual(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -292,7 +311,7 @@ function strictEqual(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
-): void {
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
@@ -317,21 +336,31 @@ function notStrictEqual(
   );
 }
 
-function deepEqual() {
+function deepEqual(
+  actual: unknown,
+  expected: unknown,
+  message?: string | Error,
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  // TODO(kt3k): Implement deepEqual
-  throw new Error("Not implemented");
+  if (!isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "deepEqual" });
+  }
 }
-function notDeepEqual() {
+function notDeepEqual(
+  actual: unknown,
+  expected: unknown,
+  message?: string | Error,
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  // TODO(kt3k): Implement notDeepEqual
-  throw new Error("Not implemented");
+  if (isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "notDeepEqual" });
+  }
 }
 function deepStrictEqual(
   actual: unknown,
@@ -446,7 +475,7 @@ function rejects(
   asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | Error | string,
   message?: string,
-): Promise<void> {
+) {
   let promise: Promise<void>;
   if (typeof asyncFn === "function") {
     try {
@@ -473,7 +502,7 @@ function rejects(
     promise = asyncFn;
   }
 
-  function onFulfilled(): Promise<void> {
+  function onFulfilled() {
     let message = "Missing expected rejection";
     if (typeof error === "string") {
       message += `: ${error}`;
@@ -490,7 +519,7 @@ function rejects(
   }
 
   // deno-lint-ignore camelcase
-  function rejects_onRejected(e: Error): void { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
+  function rejects_onRejected(e: Error) { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
     if (
       validateThrownError(e, error, message, {
         operator: rejects,
@@ -522,7 +551,7 @@ function doesNotReject(
   asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | string,
   message?: string,
-): Promise<void> {
+) {
   // deno-lint-ignore no-explicit-any
   let promise: Promise<any>;
   if (typeof asyncFn === "function") {
@@ -722,8 +751,7 @@ function validateThrownError(
     }
     throw createAssertionError({
       message:
-        `The error is expected to be an instance of "${error.name}". Received "${e
-          ?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
+        `The error is expected to be an instance of "${error.name}". Received "${e?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
       actual: e,
       expected: error,
       operator: options.operator.name,

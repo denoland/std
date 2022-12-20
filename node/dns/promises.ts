@@ -19,9 +19,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-import {
-  default as promisesBase,
+import { promises } from "../dns.ts";
+export const {
   getServers,
   lookup,
   resolve,
@@ -39,41 +38,33 @@ import {
   resolveSrv,
   resolveTxt,
   reverse,
-} from "../internal/dns/promises.ts";
-import { setDefaultResultOrder, setServers } from "../dns.ts";
-
-const promises = Object.defineProperties(promisesBase, {
-  setServers: {
-    configurable: true,
-    enumerable: true,
-    value: setServers,
-  },
-  setDefaultResultOrder: {
-    configurable: true,
-    enumerable: true,
-    value: setDefaultResultOrder,
-  },
-});
-
-export {
-  getServers,
-  lookup,
-  resolve,
-  resolve4,
-  resolve6,
-  resolveAny,
-  resolveCaa,
-  resolveCname,
-  resolveMx,
-  resolveNaptr,
-  resolveNs,
-  resolvePtr,
-  Resolver,
-  resolveSoa,
-  resolveSrv,
-  resolveTxt,
-  reverse,
+  setDefaultResultOrder,
   setServers,
-};
 
+  // ERROR CODES
+  NODATA,
+  FORMERR,
+  SERVFAIL,
+  NOTFOUND,
+  NOTIMP,
+  REFUSED,
+  BADQUERY,
+  BADNAME,
+  BADFAMILY,
+  BADRESP,
+  CONNREFUSED,
+  TIMEOUT,
+  EOF,
+  FILE,
+  NOMEM,
+  DESTRUCTION,
+  BADSTR,
+  BADFLAGS,
+  NONAME,
+  BADHINTS,
+  NOTINITIALIZED,
+  LOADIPHLPAPI,
+  ADDRGETNETWORKPARAMS,
+  CANCELLED,
+} = promises;
 export default promises;

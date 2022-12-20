@@ -2,7 +2,7 @@
 import type { CallbackWithError } from "./_fs_common.ts";
 import { getValidatedFd } from "../internal/fs/utils.mjs";
 
-export function close(fd: number, callback: CallbackWithError): void {
+export function close(fd: number, callback: CallbackWithError) {
   fd = getValidatedFd(fd);
   setTimeout(() => {
     let error = null;
@@ -15,7 +15,7 @@ export function close(fd: number, callback: CallbackWithError): void {
   }, 0);
 }
 
-export function closeSync(fd: number): void {
+export function closeSync(fd: number) {
   fd = getValidatedFd(fd);
   Deno.close(fd);
 }

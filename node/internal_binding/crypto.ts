@@ -9,6 +9,6 @@ export function getFipsCrypto(): boolean {
   notImplemented("crypto.getFipsCrypto");
 }
 
-export function setFipsCrypto(_fips: boolean): void {
+export function setFipsCrypto(_fips: boolean) {
   notImplemented("crypto.setFipsCrypto");
 }

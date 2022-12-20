@@ -277,7 +277,7 @@ export class Resolver {
     this._handle = new ChannelWrap(timeout, tries);
   }
 
-  cancel(): void {
+  cancel() {
     this._handle.cancel();
   }
 
@@ -292,7 +292,7 @@ export class Resolver {
     });
   }
 
-  setServers(servers: ReadonlyArray<string>): void {
+  setServers(servers: ReadonlyArray<string>) {
     validateArray(servers, "servers");
 
     // Cache the original servers because in the event of an error while
@@ -366,7 +366,7 @@ export class Resolver {
    * @param [ipv4='0.0.0.0'] A string representation of an IPv4 address.
    * @param [ipv6='::0'] A string representation of an IPv6 address.
    */
-  setLocalAddress(ipv4: string, ipv6?: string): void {
+  setLocalAddress(ipv4: string, ipv6?: string) {
     validateString(ipv4, "ipv4");
 
     if (ipv6 !== undefined) {
@@ -440,7 +440,7 @@ export function getDefaultVerbatim() {
  *
  * @param order must be `'ipv4first'` or `'verbatim'`.
  */
-export function setDefaultResultOrder(order: "ipv4first" | "verbatim"): void {
+export function setDefaultResultOrder(order: "ipv4first" | "verbatim") {
   validateOneOf(order, "dnsOrder", ["verbatim", "ipv4first"]);
   dnsOrder = order;
 }

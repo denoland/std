@@ -3,8 +3,8 @@ import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { getValidatedPath, kMaxUserId } from "../internal/fs/utils.mjs";
 import * as pathModule from "../../path/mod.ts";
 import { validateInteger } from "../internal/validators.mjs";
-
 import type { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 /**
  * Asynchronously changes the owner and group
@@ -15,7 +15,7 @@ export function chown(
   uid: number,
   gid: number,
   callback: CallbackWithError,
-): void {
+) {
   callback = makeCallback(callback);
   path = getValidatedPath(path).toString();
   validateInteger(uid, "uid", -1, kMaxUserId);
@@ -27,6 +27,12 @@ export function chown(
   );
 }
 
+export const chownPromise = promisify(chown) as (
+  path: string | Buffer | URL,
+  uid: number,
+  gid: number,
+) => Promise<void>;
+
 /**
  * Synchronously changes the owner and group
  * of a file.
@@ -35,7 +41,7 @@ export function chownSync(
   path: string | Buffer | URL,
   uid: number,
   gid: number,
-): void {
+) {
   path = getValidatedPath(path).toString();
   validateInteger(uid, "uid", -1, kMaxUserId);
   validateInteger(gid, "gid", -1, kMaxUserId);

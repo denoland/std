@@ -12,6 +12,7 @@ import {
   ERR_FS_RMDIR_ENOTDIR,
 } from "../internal/errors.ts";
 import { Buffer } from "../buffer.ts";
+import { promisify } from "../internal/util.mjs";
 
 type rmdirOptions = {
   maxRetries?: number;
@@ -74,14 +75,23 @@ export function rmdir(
   }
 }
 
+export const rmdirPromise = promisify(rmdir) as (
+  path: string | Buffer | URL,
+  options?: rmdirOptions,
+) => Promise<void>;
+
 export function rmdirSync(path: string | Buffer | URL, options?: rmdirOptions) {
   path = getValidatedPath(path);
   if (options?.recursive) {
     emitRecursiveRmdirWarning();
-    options = validateRmOptionsSync(path, { ...options, force: false }, true);
-    if (options === false) {
+    const optionsOrFalse: rmdirOptions | false = validateRmOptionsSync(path, {
+      ...options,
+      force: false,
+    }, true);
+    if (optionsOrFalse === false) {
       throw new ERR_FS_RMDIR_ENOTDIR(path.toString());
     }
+    options = optionsOrFalse;
   } else {
     validateRmdirOptions(options);
   }

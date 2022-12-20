@@ -57,9 +57,9 @@ Deno.test("process is correctly defined", () => {
 });
 
 Deno.test("global timers are not Node.js timers", () => {
-  assertNotEquals(setTimeout, timers.setTimeout);
+  assertNotEquals<unknown>(setTimeout, timers.setTimeout);
   assertNotEquals(clearTimeout, timers.clearTimeout);
-  assertNotEquals(setInterval, timers.setInterval);
+  assertNotEquals<unknown>(setInterval, timers.setInterval);
   assertNotEquals(clearInterval, timers.clearInterval);
 });
 
@@ -100,12 +100,13 @@ Deno.test("global.ts evaluates synchronously", async () => {
       }'; console.log(globalThis.async ? 'async' : 'sync')";
       import "data:application/javascript,globalThis.async = true";`,
     );
-    const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       args: ["run", "--no-check", tempPath],
       stdin: "null",
       stderr: "null",
     });
-    assertEquals(status.code, 0);
+    const { code, stdout } = await command.output();
+    assertEquals(code, 0);
     assertEquals(new TextDecoder().decode(stdout).trim(), "sync");
   } finally {
     await Deno.remove(tempPath).catch(() => {});

@@ -2,26 +2,30 @@
 // This module is browser compatible.
 
 /**
- * Returns a new record with all entries of the given record except the ones that do not match the given predicate
+ * Returns a new record with all entries of the given record except the ones
+ * that do not match the given predicate.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/filter_entries.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const menu = {
- *     'Salad': 11,
- *     'Soup': 8,
- *     'Pasta': 13,
+ *   "Salad": 11,
+ *   "Soup": 8,
+ *   "Pasta": 13,
  * } as const;
- * const myOptions = filterEntries(menu,
- *     ([ item, price ]) => item !== 'Pasta' && price < 10,
- * )
+ * const myOptions = filterEntries(
+ *   menu,
+ *   ([item, price]) => item !== "Pasta" && price < 10,
+ * );
  *
- * assertEquals(myOptions, {
- *     'Soup': 8,
- * })
+ * assertEquals(
+ *   myOptions,
+ *   {
+ *     "Soup": 8,
+ *   },
+ * );
  * ```
  */
 export function filterEntries<T>(

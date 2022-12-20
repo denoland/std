@@ -145,6 +145,7 @@ Deno.test("[bytes] BytesList.concat", () => {
 });
 Deno.test("[bytes] BytesList.shift", () => {
   const arr = setup();
+  arr.shift(0);
   arr.shift(3);
   assertEquals(arr.size(), 7);
   assertEquals(
@@ -207,7 +208,4 @@ Deno.test("[bytes] BytesList.iterator()", () => {
   assertEquals(Array.from(arr.iterator(5)), [5, 6, 7, 8, 9]);
   assertEquals(Array.from(arr.iterator(-1)), []);
   assertEquals(Array.from(arr.iterator(100)), []);
-});
-
-Deno.test("[bytes] ByteList.iterator() range", () => {
 });

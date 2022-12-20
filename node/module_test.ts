@@ -132,14 +132,14 @@ Deno.test("Require .mjs", () => {
   assertThrows(
     () => require("./testdata/inspect.mjs"),
     Error,
-    "Importing ESM module",
+    "Importing ESM module:",
   );
 });
 
 Deno.test("requireErrorInEval", async function () {
   const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--unstable",
@@ -149,6 +149,7 @@ Deno.test("requireErrorInEval", async function () {
     ],
     cwd,
   });
+  const { stderr, stdout } = await command.output();
 
   const decoder = new TextDecoder();
   const outputError = decoder.decode(stderr);
@@ -217,4 +218,35 @@ Deno.test("require in a web worker", async () => {
     worker.addEventListener("error", reject);
   });
   worker.terminate();
+});
+
+Deno.test("createRequire with http(s):// URL  throws with correct error message", () => {
+  assertThrows(
+    () => createRequire("http://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'http://example.com/foo.js'",
+  );
+  assertThrows(
+    () => createRequire("https://example.com/foo.js"),
+    Error,
+    "createRequire only supports 'file://' URLs for the 'filename' parameter. Received 'https://example.com/foo.js'",
+  );
+});
+
+Deno.test("require Node-API module", {
+  ignore: Deno.build.arch === "aarch64" && Deno.build.os === "darwin",
+}, () => {
+  const require = createRequire(import.meta.url);
+  if (Deno.build.os === "windows") {
+    // TODO(kt3k): Add lib binary for windows from 1_hello_world example of
+    // https://github.com/nodejs/node-addon-examples
+  }
+  if (Deno.build.os === "linux") {
+    // TODO(kt3k): Add lib binary for linux from 1_hello_world example of
+    // https://github.com/nodejs/node-addon-examples
+  }
+  if (Deno.build.os === "darwin") {
+    const str = require("./testdata/libhello_darwin.node").hello();
+    assertEquals(str, "world");
+  }
 });

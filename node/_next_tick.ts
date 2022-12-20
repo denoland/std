@@ -4,7 +4,7 @@
 // deno-lint-ignore-file no-inner-declarations
 
 import { core } from "./_core.ts";
-import { validateCallback } from "./internal/validators.mjs";
+import { validateFunction } from "./internal/validators.mjs";
 import { _exiting } from "./_process/exiting.ts";
 import { FixedQueue } from "./internal/fixed_queue.ts";
 
@@ -17,6 +17,56 @@ const queue = new FixedQueue();
 
 // deno-lint-ignore no-explicit-any
 let _nextTick: any;
+
+export function processTicksAndRejections() {
+  let tock;
+  do {
+    // deno-lint-ignore no-cond-assign
+    while (tock = queue.shift()) {
+      // FIXME(bartlomieju): Deno currently doesn't support async hooks
+      // const asyncId = tock[async_id_symbol];
+      // emitBefore(asyncId, tock[trigger_async_id_symbol], tock);
+
+      try {
+        const callback = (tock as Tock).callback;
+        if ((tock as Tock).args === undefined) {
+          callback();
+        } else {
+          const args = (tock as Tock).args;
+          switch (args.length) {
+            case 1:
+              callback(args[0]);
+              break;
+            case 2:
+              callback(args[0], args[1]);
+              break;
+            case 3:
+              callback(args[0], args[1], args[2]);
+              break;
+            case 4:
+              callback(args[0], args[1], args[2], args[3]);
+              break;
+            default:
+              callback(...args);
+          }
+        }
+      } finally {
+        // FIXME(bartlomieju): Deno currently doesn't support async hooks
+        // if (destroyHooksExist())
+        // emitDestroy(asyncId);
+      }
+
+      // FIXME(bartlomieju): Deno currently doesn't support async hooks
+      // emitAfter(asyncId);
+    }
+    core.runMicrotasks();
+    // FIXME(bartlomieju): Deno currently doesn't unhandled rejections
+    // } while (!queue.isEmpty() || processPromiseRejections());
+  } while (!queue.isEmpty());
+  core.setHasTickScheduled(false);
+  // FIXME(bartlomieju): Deno currently doesn't unhandled rejections
+  // setHasRejectionToWarn(false);
+}
 
 if (typeof core.setNextTickCallback !== "undefined") {
   function runNextTicks() {
@@ -36,56 +86,6 @@ if (typeof core.setNextTickCallback !== "undefined") {
     return true;
   }
 
-  function processTicksAndRejections() {
-    let tock;
-    do {
-      // deno-lint-ignore no-cond-assign
-      while (tock = queue.shift()) {
-        // FIXME(bartlomieju): Deno currently doesn't support async hooks
-        // const asyncId = tock[async_id_symbol];
-        // emitBefore(asyncId, tock[trigger_async_id_symbol], tock);
-
-        try {
-          const callback = (tock as Tock).callback;
-          if ((tock as Tock).args === undefined) {
-            callback();
-          } else {
-            const args = (tock as Tock).args;
-            switch (args.length) {
-              case 1:
-                callback(args[0]);
-                break;
-              case 2:
-                callback(args[0], args[1]);
-                break;
-              case 3:
-                callback(args[0], args[1], args[2]);
-                break;
-              case 4:
-                callback(args[0], args[1], args[2], args[3]);
-                break;
-              default:
-                callback(...args);
-            }
-          }
-        } finally {
-          // FIXME(bartlomieju): Deno currently doesn't support async hooks
-          // if (destroyHooksExist())
-          // emitDestroy(asyncId);
-        }
-
-        // FIXME(bartlomieju): Deno currently doesn't support async hooks
-        // emitAfter(asyncId);
-      }
-      core.runMicrotasks();
-      // FIXME(bartlomieju): Deno currently doesn't unhandled rejections
-      // } while (!queue.isEmpty() || processPromiseRejections());
-    } while (!queue.isEmpty());
-    core.setHasTickScheduled(false);
-    // FIXME(bartlomieju): Deno currently doesn't unhandled rejections
-    // setHasRejectionToWarn(false);
-  }
-
   core.setNextTickCallback(processTicksAndRejections);
   core.setMacrotaskCallback(runNextTicks);
 
@@ -94,7 +94,7 @@ if (typeof core.setNextTickCallback !== "undefined") {
     callback: (...args: T) => void,
     ...args: T
   ) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
 
     if (_exiting) {
       return;

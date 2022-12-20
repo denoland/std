@@ -1,0 +1,3 @@
+{
+  "//": "this file is necessary for child_process.fork test case"
+}

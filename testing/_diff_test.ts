@@ -4,14 +4,14 @@ import { assertEquals } from "../testing/asserts.ts";
 
 Deno.test({
   name: "empty",
-  fn(): void {
+  fn() {
     assertEquals(diff([], []), []);
   },
 });
 
 Deno.test({
   name: '"a" vs "b"',
-  fn(): void {
+  fn() {
     assertEquals(diff(["a"], ["b"]), [
       { type: DiffType.removed, value: "a" },
       { type: DiffType.added, value: "b" },
@@ -21,28 +21,28 @@ Deno.test({
 
 Deno.test({
   name: '"a" vs "a"',
-  fn(): void {
+  fn() {
     assertEquals(diff(["a"], ["a"]), [{ type: DiffType.common, value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"a" vs ""',
-  fn(): void {
+  fn() {
     assertEquals(diff(["a"], []), [{ type: DiffType.removed, value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"" vs "a"',
-  fn(): void {
+  fn() {
     assertEquals(diff([], ["a"]), [{ type: DiffType.added, value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"a" vs "a, b"',
-  fn(): void {
+  fn() {
     assertEquals(diff(["a"], ["a", "b"]), [
       { type: DiffType.common, value: "a" },
       { type: DiffType.added, value: "b" },
@@ -52,7 +52,7 @@ Deno.test({
 
 Deno.test({
   name: '"strength" vs "string"',
-  fn(): void {
+  fn() {
     assertEquals(diff(Array.from("strength"), Array.from("string")), [
       { type: DiffType.common, value: "s" },
       { type: DiffType.common, value: "t" },
@@ -69,7 +69,7 @@ Deno.test({
 
 Deno.test({
   name: '"strength" vs ""',
-  fn(): void {
+  fn() {
     assertEquals(diff(Array.from("strength"), Array.from("")), [
       { type: DiffType.removed, value: "s" },
       { type: DiffType.removed, value: "t" },
@@ -85,7 +85,7 @@ Deno.test({
 
 Deno.test({
   name: '"" vs "strength"',
-  fn(): void {
+  fn() {
     assertEquals(diff(Array.from(""), Array.from("strength")), [
       { type: DiffType.added, value: "s" },
       { type: DiffType.added, value: "t" },
@@ -101,7 +101,7 @@ Deno.test({
 
 Deno.test({
   name: '"abc", "c" vs "abc", "bcd", "c"',
-  fn(): void {
+  fn() {
     assertEquals(diff(["abc", "c"], ["abc", "bcd", "c"]), [
       { type: DiffType.common, value: "abc" },
       { type: DiffType.added, value: "bcd" },
@@ -112,7 +112,7 @@ Deno.test({
 
 Deno.test({
   name: '"a b c d" vs "a b x d e" (diffstr)',
-  fn(): void {
+  fn() {
     const diffResult = diffstr(
       [..."abcd"].join("\n"),
       [..."abxde"].join("\n"),
@@ -165,7 +165,7 @@ Deno.test({
 
 Deno.test({
   name: `"3.14" vs "2.71" (diffstr)`,
-  fn(): void {
+  fn() {
     const diffResult = diffstr("3.14", "2.71");
     assertEquals(diffResult, [
       {
@@ -218,7 +218,7 @@ Deno.test({
 
 Deno.test({
   name: `single line "a b" vs "c d" (diffstr)`,
-  fn(): void {
+  fn() {
     const diffResult = diffstr("a b", "c d");
     assertEquals(diffResult, [
       {
@@ -246,7 +246,7 @@ Deno.test({
 
 Deno.test({
   name: `"\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
-  fn(): void {
+  fn() {
     const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
     assertEquals(diffResult, [
       {

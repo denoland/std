@@ -129,14 +129,14 @@ function constructYamlInteger(data: string): number {
   }
 
   if (value.indexOf(":") !== -1) {
-    value.split(":").forEach((v): void => {
+    value.split(":").forEach((v) => {
       digits.unshift(parseInt(v, 10));
     });
 
     let valueInt = 0;
     let base = 1;
 
-    digits.forEach((d): void => {
+    digits.forEach((d) => {
       valueInt += d * base;
       base *= 60;
     });

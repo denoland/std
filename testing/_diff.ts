@@ -377,6 +377,10 @@ function createColor(
   diffType: DiffType,
   { background = false } = {},
 ): (s: string) => string {
+  // TODO(@littledivy): Remove this when we can detect
+  // true color terminals.
+  // https://github.com/denoland/deno_std/issues/2575
+  background = false;
   switch (diffType) {
     case DiffType.added:
       return (s: string): string =>
@@ -417,7 +421,7 @@ export function buildMessage(
   );
   messages.push("");
   messages.push("");
-  diffResult.forEach((result: DiffResult<string>): void => {
+  diffResult.forEach((result: DiffResult<string>) => {
     const c = createColor(result.type);
     const line = result.details?.map((detail) =>
       detail.type !== DiffType.common

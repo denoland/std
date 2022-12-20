@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { deepAssign } from "../../_util/deep_assign.ts";
+import { deepMerge } from "../../collections/deep_merge.ts";
 
 // ---------------------------
 // Interfaces and base classes
@@ -160,7 +160,7 @@ export const Utils = {
     type: "Table" | "TableArray";
     key: string[];
     value: Record<string, unknown>;
-  }): void {
+  }) {
     if (table.key.length === 0) {
       throw new Error("Unexpected key length");
     }
@@ -276,10 +276,11 @@ function merge(
     if (!result.ok) {
       return failure();
     }
-    const body = {};
+    let body = {};
     for (const record of result.body) {
       if (typeof body === "object" && body !== null) {
-        deepAssign(body, record);
+        // deno-lint-ignore no-explicit-any
+        body = deepMerge(body, record as Record<any, any>);
       }
     }
     return success(body);
@@ -748,9 +749,9 @@ export function InlineTable(
   if (!pairs.ok) {
     return failure();
   }
-  const table = {};
+  let table = {};
   for (const pair of pairs.body) {
-    deepAssign(table, pair);
+    table = deepMerge(table, pair);
   }
   return success(table);
 }
@@ -835,11 +836,11 @@ export function Toml(
   if (!blocks.ok) {
     return failure();
   }
-  const body = {};
+  let body = {};
   for (const block of blocks.body) {
     switch (block.type) {
       case "Block": {
-        deepAssign(body, block.value);
+        body = deepMerge(body, block.value);
         break;
       }
       case "Table": {

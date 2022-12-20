@@ -4,18 +4,17 @@
 /**
  * Applies the given selector to all elements of the given collection and
  * returns the min value of all elements. If an empty array is provided the
- * function will return undefined
+ * function will return undefined.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const inventory = [
- *      { name: "mustard", count: 2 },
- *      { name: "soy", count: 4 },
- *      { name: "tomato", count: 32 },
+ *   { name: "mustard", count: 2 },
+ *   { name: "soy", count: 4 },
+ *   { name: "tomato", count: 32 },
  * ];
  * const minCount = minOf(inventory, (i) => i.count);
  *

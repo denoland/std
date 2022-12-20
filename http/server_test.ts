@@ -2,11 +2,13 @@
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { readAll, writeAll } from "../streams/conversion.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { readAll } from "../streams/read_all.ts";
 import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertNotEquals,
   assertRejects,
   assertStrictEquals,
   assertThrows,
@@ -82,7 +84,7 @@ class MockListener implements Deno.Listener {
       : Promise.resolve(this.conn);
   }
 
-  close(): void {
+  close() {
     this.#closed = true;
   }
 
@@ -409,6 +411,36 @@ Deno.test(
     }
   },
 );
+
+Deno.test(`Server.serve should response with internal server error if response body is already consumed`, async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+  const body = "Internal Server Error";
+  const status = 500;
+
+  async function handler() {
+    const response = new Response("Hello, world!");
+    await response.text();
+    return response;
+  }
+
+  const server = new Server({ handler });
+  const servePromise = server.serve(listener);
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), body);
+    assertEquals(response.status, status);
+  } finally {
+    server.close();
+    await servePromise;
+  }
+});
 
 Deno.test(`Server.serve should handle requests`, async () => {
   const listenOptions = {
@@ -960,6 +992,44 @@ Deno.test(
   },
 );
 
+Deno.test("Server should not leak async ops when closed", () => {
+  const hostname = "127.0.0.1";
+  const port = 4505;
+  const handler = () => new Response();
+  const server = new Server({ port, hostname, handler });
+  server.listenAndServe();
+  server.close();
+  // Otherwise, the test would fail with: AssertionError: Test case is leaking async ops.
+});
+
+Deno.test("Server should abort accept backoff delay when closing", async () => {
+  const hostname = "127.0.0.1";
+  const port = 4505;
+  const handler = () => new Response();
+
+  const rejectionError = new Deno.errors.NotConnected(
+    "test-socket-closed-error",
+  );
+  const rejectionCount = 1;
+  const conn = createMockConn();
+
+  const listener = new MockListener({
+    conn,
+    rejectionError,
+    rejectionCount,
+  });
+
+  const server = new Server({ port, hostname, handler });
+  server.serve(listener);
+
+  // Wait until the connection is rejected and the backoff delay starts.
+  await delay(0);
+
+  // Close the server, this should end the test without still having an active timer that would trigger an
+  // AssertionError: Test case is leaking async ops.
+  server.close();
+});
+
 Deno.test("Server should reject if the listener throws an unexpected error accepting a connection", async () => {
   const conn = createMockConn();
   const rejectionError = new Error("test-unexpected-error");
@@ -1060,6 +1130,76 @@ Deno.test("Server should not reject when the handler throws", async () => {
   await servePromise;
 });
 
+Deno.test("Server should not close the http2 downstream connection when the response stream throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+    certFile: join(testdataDir, "tls/localhost.crt"),
+    keyFile: join(testdataDir, "tls/localhost.key"),
+    alpnProtocols: ["h2"],
+  };
+  const listener = Deno.listenTls(listenOptions);
+  const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
+
+  let n = 0;
+  const a = deferred();
+  const connections = new Set();
+
+  const handler = (_req: Request, connInfo: ConnInfo) => {
+    connections.add(connInfo);
+    return new Response(
+      new ReadableStream({
+        async start(controller) {
+          n++;
+          if (n === 3) {
+            throw new Error("test-error");
+          }
+          await a;
+          controller.enqueue(new TextEncoder().encode("a"));
+          controller.close();
+        },
+      }),
+    );
+  };
+
+  const server = new Server({ handler });
+  const servePromise = server.serve(listener);
+
+  const caCert = await Deno.readTextFile(
+    join(testdataDir, "tls/RootCA.pem"),
+  );
+  const client = Deno.createHttpClient({
+    caCerts: [caCert],
+  });
+  const resp1 = await fetch(url, { client });
+  const resp2 = await fetch(url, { client });
+  const resp3 = await fetch(url, { client });
+
+  const err = await assertRejects(async () => {
+    const data = await resp3.text();
+    // Note: the lone above should be throwing - but it's not right now due to
+    // a bug in ext/http. So for now we will add a check for the empty string
+    // (which is what we expect to be returned in case of this bug).
+    if (data === "") throw new Error("the stream errored!");
+  });
+  assert(err);
+  a.resolve();
+  assertEquals(await resp1.text(), "a");
+  assertEquals(await resp2.text(), "a");
+
+  const numConns = connections.size;
+  assertEquals(
+    numConns,
+    1,
+    `fetch should have reused a single connection, but used ${numConns} instead.`,
+  );
+  assertEquals(n, 3, "The handler should have been called three times");
+
+  client.close();
+  server.close();
+  await servePromise;
+});
+
 Deno.test("Server should be able to parse IPV6 addresses", async () => {
   const hostname = "[::1]";
   const port = 4505;
@@ -1141,7 +1281,7 @@ Deno.test(
     const servePromise = server.listenAndServe();
 
     try {
-      assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
+      await assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
     } finally {
       server.close();
       await servePromise;
@@ -1161,7 +1301,7 @@ Deno.test(
     const servePromise = server.listenAndServeTls(certFile, keyFile);
 
     try {
-      assertRejects(
+      await assertRejects(
         () => server.listenAndServeTls(certFile, keyFile),
         Deno.errors.AddrInUse,
       );
@@ -1372,8 +1512,24 @@ Deno.test("serve - onListen callback is called when the server started listening
   });
 });
 
+Deno.test("serve - onListen callback is called with ephemeral port", () => {
+  const abortController = new AbortController();
+  return serve((_) => new Response("hello"), {
+    port: 0,
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const responseText = await (await fetch(`http://localhost:${port}/`))
+        .text();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
 Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
-  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       `
@@ -1383,12 +1539,13 @@ Deno.test("serve - doesn't print the message when onListen set to undefined", as
       `,
     ],
   });
-  assertEquals(status.code, 0);
+  const { code, stdout } = await command.output();
+  assertEquals(code, 0);
   assertEquals(new TextDecoder().decode(stdout), "");
 });
 
 Deno.test("serve - can print customized start-up message in onListen handler", async () => {
-  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       `
@@ -1400,9 +1557,58 @@ Deno.test("serve - can print customized start-up message in onListen handler", a
       `,
     ],
   });
-  assertEquals(status.code, 0);
+  const { stdout, code } = await command.output();
+  assertEquals(code, 0);
   assertEquals(
     new TextDecoder().decode(stdout),
     "Server started at 0.0.0.0 port 8000\n",
   );
+});
+
+Deno.test("serveTls - onListen callback is called with ephemeral port", () => {
+  const abortController = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    port: 0,
+    certFile: join(testdataDir, "tls/localhost.crt"),
+    keyFile: join(testdataDir, "tls/localhost.key"),
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
+      );
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const responseText =
+        await (await fetch(`https://localhost:${port}/`, { client }))
+          .text();
+      client.close();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
+Deno.test("serveTls - cert, key can be injected directly from memory rather than file system.", () => {
+  const abortController = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    port: 0,
+    cert: Deno.readTextFileSync(join(testdataDir, "tls/localhost.crt")),
+    key: Deno.readTextFileSync(join(testdataDir, "tls/localhost.key")),
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
+      );
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const responseText = await (
+        await fetch(`https://localhost:${port}/`, { client })
+      ).text();
+      client.close();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
 });

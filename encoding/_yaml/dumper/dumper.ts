@@ -445,7 +445,7 @@ function writeScalar(
   string: string,
   level: number,
   iskey: boolean,
-): void {
+) {
   state.dump = ((): string => {
     if (string.length === 0) {
       return "''";
@@ -517,7 +517,7 @@ function writeFlowSequence(
   state: DumperState,
   level: number,
   object: Any,
-): void {
+) {
   let _result = "";
   const _tag = state.tag;
 
@@ -538,7 +538,7 @@ function writeBlockSequence(
   level: number,
   object: Any,
   compact = false,
-): void {
+) {
   let _result = "";
   const _tag = state.tag;
 
@@ -567,7 +567,7 @@ function writeFlowMapping(
   state: DumperState,
   level: number,
   object: Any,
-): void {
+) {
   let _result = "";
   const _tag = state.tag,
     objectKeyList = Object.keys(object);
@@ -614,7 +614,7 @@ function writeBlockMapping(
   level: number,
   object: Any,
   compact = false,
-): void {
+) {
   const _tag = state.tag,
     objectKeyList = Object.keys(object);
   let _result = "";
@@ -830,7 +830,7 @@ function inspectNode(
   object: Any,
   objects: Any[],
   duplicatesIndexes: number[],
-): void {
+) {
   if (object !== null && typeof object === "object") {
     const index = objects.indexOf(object);
     if (index !== -1) {
@@ -862,7 +862,7 @@ function inspectNode(
 function getDuplicateReferences(
   object: Record<string, unknown>,
   state: DumperState,
-): void {
+) {
   const objects: Any[] = [],
     duplicatesIndexes: number[] = [];
 

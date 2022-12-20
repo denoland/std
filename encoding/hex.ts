@@ -1,10 +1,31 @@
-// Ported from Go
-// https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go
 // Copyright 2009 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+
+/** Port of the Go
+ * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
+ * library.
+ *
+ * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ *
+ * const binary = new TextEncoder().encode("abc");
+ * const encoded = encode(binary);
+ * console.log(encoded);
+ * // => Uint8Array(6) [ 54, 49, 54, 50, 54, 51 ]
+ *
+ * console.log(decode(encoded));
+ * // => Uint8Array(3) [ 97, 98, 99 ]
+ * ```
+ *
+ * @module
+ */
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 

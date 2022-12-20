@@ -2,18 +2,20 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import {
-  crypto as wasmCrypto,
   DigestAlgorithm,
-} from "../../../_wasm_crypto/mod.ts";
+  DigestContext,
+  instantiateWasm,
+} from "../../../crypto/_wasm/mod.ts";
 import { Buffer } from "../../buffer.ts";
 import { Transform } from "../../stream.ts";
 import { encode as encodeToHex } from "../../../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
+import { encode as encodeToBase64Url } from "../../../encoding/base64url.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
+import type { BinaryToTextEncoding, Encoding } from "./types.ts";
+import { KeyObject, prepareSecretKey } from "./keys.ts";
 import { notImplemented } from "../../_utils.ts";
-import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
-import { KeyObject } from "./keys.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -39,18 +41,18 @@ const coerceToBytes = (data: string | BufferSource): Uint8Array => {
  * The crypto.createHash() method is used to create Hash instances. Hash objects are not to be created directly using the new keyword.
  */
 export class Hash extends Transform {
-  #context: wasmCrypto.DigestContext;
+  #context: DigestContext;
 
   constructor(
-    algorithm: string | wasmCrypto.DigestContext,
+    algorithm: string | DigestContext,
     _opts?: TransformOptions,
   ) {
     super({
-      transform(chunk: string, _encoding: string, callback: () => void): void {
+      transform(chunk: string, _encoding: string, callback: () => void) {
         context.update(coerceToBytes(chunk));
         callback();
       },
-      flush(callback: () => void): void {
+      flush(callback: () => void) {
         this.push(context.digest(undefined));
         callback();
       },
@@ -63,7 +65,7 @@ export class Hash extends Transform {
       if (opensslToWebCryptoDigestNames[algorithm]) {
         algorithm = opensslToWebCryptoDigestNames[algorithm];
       }
-      this.#context = new wasmCrypto.DigestContext(
+      this.#context = new (instantiateWasm().DigestContext)(
         algorithm as DigestAlgorithm,
       );
     } else {
@@ -99,7 +101,7 @@ export class Hash extends Transform {
    *
    * If encoding is provided a string will be returned; otherwise a Buffer is returned.
    *
-   * Supported encoding is currently 'hex', 'binary', 'base64'.
+   * Supported encodings are currently 'hex', 'binary', 'base64', 'base64url'.
    */
   digest(encoding?: string): Buffer | string {
     const digest = this.#context.digest(undefined);
@@ -114,44 +116,108 @@ export class Hash extends Transform {
         return String.fromCharCode(...digest);
       case "base64":
         return encodeToBase64(digest);
+      case "base64url":
+        return encodeToBase64Url(digest);
+      case "buffer":
+        return Buffer.from(digest);
       default:
-        throw new Error(
-          `The output encoding for hash digest is not implemented: ${encoding}`,
-        );
+        return Buffer.from(digest).toString(encoding);
     }
   }
 }
 
-export class Hmac extends Transform {
+export function Hmac(
+  hmac: string,
+  key: string | ArrayBuffer | KeyObject,
+  options?: TransformOptions,
+): Hmac {
+  return new HmacImpl(hmac, key, options);
+}
+
+type Hmac = HmacImpl;
+
+class HmacImpl extends Transform {
+  #ipad: Uint8Array;
+  #opad: Uint8Array;
+  #ZEROES = Buffer.alloc(128);
+  #algorithm: string;
+  #hash: Hash;
+
   constructor(
     hmac: string,
-    _key: BinaryLike | KeyObject,
-    _options?: TransformOptions,
+    key: string | ArrayBuffer | KeyObject,
+    options?: TransformOptions,
   ) {
+    super({
+      transform(chunk: string, encoding: string, callback: () => void) {
+        // deno-lint-ignore no-explicit-any
+        self.update(coerceToBytes(chunk), encoding as any);
+        callback();
+      },
+      flush(callback: () => void) {
+        this.push(self.digest());
+        callback();
+      },
+    });
+    // deno-lint-ignore no-this-alias
+    const self = this;
+    if (key instanceof KeyObject) {
+      notImplemented("Hmac: KeyObject key is not implemented");
+    }
+
     validateString(hmac, "hmac");
+    const u8Key = prepareSecretKey(key, options?.encoding) as Buffer;
 
-    super();
+    const alg = hmac.toLowerCase();
+    this.#hash = new Hash(alg, options);
+    this.#algorithm = alg;
+    const blockSize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
+    const keySize = u8Key.length;
 
-    notImplemented("crypto.Hmac");
+    let bufKey: Buffer;
+
+    if (keySize > blockSize) {
+      bufKey = this.#hash.update(u8Key).digest() as Buffer;
+    } else {
+      bufKey = Buffer.concat([u8Key, this.#ZEROES], blockSize);
+    }
+
+    this.#ipad = Buffer.allocUnsafe(blockSize);
+    this.#opad = Buffer.allocUnsafe(blockSize);
+
+    for (let i = 0; i < blockSize; i++) {
+      this.#ipad[i] = bufKey[i] ^ 0x36;
+      this.#opad[i] = bufKey[i] ^ 0x5C;
+    }
+
+    this.#hash = new Hash(alg);
+    this.#hash.update(this.#ipad);
   }
 
   digest(): Buffer;
   digest(encoding: BinaryToTextEncoding): string;
-  digest(_encoding?: BinaryToTextEncoding): Buffer | string {
-    notImplemented("crypto.Hmac.prototype.digest");
+  digest(encoding?: BinaryToTextEncoding): Buffer | string {
+    const result = this.#hash.digest();
+
+    return new Hash(this.#algorithm).update(this.#opad).update(result).digest(
+      encoding,
+    );
   }
 
-  update(data: BinaryLike): this;
-  update(data: string, inputEncoding: Encoding): this;
-  update(_data: BinaryLike, _inputEncoding?: Encoding): this {
-    notImplemented("crypto.Hmac.prototype.update");
+  update(data: string | ArrayBuffer, inputEncoding?: Encoding): this {
+    this.#hash.update(data, inputEncoding);
+    return this;
   }
 }
+
+Hmac.prototype = HmacImpl.prototype;
 
 /**
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
  */
 const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
+  BLAKE2B256: "BLAKE2B-256",
+  BLAKE2B384: "BLAKE2B-384",
   BLAKE2B512: "BLAKE2B",
   BLAKE2S256: "BLAKE2S",
   RIPEMD160: "RIPEMD-160",

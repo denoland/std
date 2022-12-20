@@ -1,10 +1,18 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
-// Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
-// Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
 /**
- * UUID
+ * Generators and validators for UUIDs for versions v1, v4 and v5.
+ *
+ * Consider using the web platform
+ * [`crypto.randomUUID`](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID)
+ * for v4 UUIDs instead.
+ *
+ * Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
+ *
+ * Support for RFC4122 version 1, 4, and 5 UUIDs
+ *
+ * This module is browser compatible.
+ *
  * @module
  */
 
@@ -18,7 +26,7 @@ export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
  * Check if the passed UUID is the nil UUID.
  *
  * ```js
- * import { isNil } from "./mod.ts";
+ * import { isNil } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts";
  *
  * isNil("00000000-0000-0000-0000-000000000000") // true
  * isNil(crypto.randomUUID()) // false
@@ -32,7 +40,7 @@ export function isNil(id: string): boolean {
  * Test a string to see if it is a valid UUID.
  *
  * ```js
- * import { validate } from "./mod.ts"
+ * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts"
  *
  * validate("not a UUID") // false
  * validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b") // true
@@ -49,7 +57,7 @@ export function validate(uuid: string): boolean {
  * Detect RFC version of a UUID.
  *
  * ```js
- * import { version } from "./mod.ts"
+ * import { version } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts"
  *
  * version("d9428888-122b-11e1-b85c-61cd3cbb3210") // 1
  * version("109156be-c4fb-41ea-b1b4-efe1671c5836") // 4
@@ -57,7 +65,7 @@ export function validate(uuid: string): boolean {
  */
 export function version(uuid: string): number {
   if (!validate(uuid)) {
-    throw TypeError("Invalid UUID");
+    throw new TypeError("Invalid UUID");
   }
 
   return parseInt(uuid[14], 16);

@@ -2,18 +2,18 @@
 // This module is browser compatible.
 
 /**
- * Returns all elements in the given array that produce a distinct value using the given selector, preserving order by first occurrence
+ * Returns all elements in the given array that produce a distinct value using
+ * the given selector, preserving order by first occurrence.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]
- * const exampleNamesByFirstLetter = distinctBy(names, it => it.charAt(0))
+ * const names = ["Anna", "Kim", "Arnold", "Kate"];
+ * const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
  *
- * assertEquals(exampleNamesByFirstLetter, [ 'Anna', 'Kim' ])
+ * assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
  * ```
  */
 export function distinctBy<T, D>(

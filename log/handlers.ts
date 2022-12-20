@@ -3,7 +3,7 @@ import { getLevelByName, LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
 import { exists, existsSync } from "../fs/exists.ts";
-import { BufWriterSync } from "../io/buffer.ts";
+import { BufWriterSync } from "../io/buf_writer.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
@@ -25,7 +25,7 @@ export class BaseHandler {
     this.formatter = options.formatter || DEFAULT_FORMATTER;
   }
 
-  handle(logRecord: LogRecord): void {
+  handle(logRecord: LogRecord) {
     if (this.level > logRecord.level) return;
 
     const msg = this.format(logRecord);
@@ -49,11 +49,15 @@ export class BaseHandler {
     });
   }
 
-  log(_msg: string): void {}
-  async setup() {}
-  async destroy() {}
+  log(_msg: string) {}
+  setup() {}
+  destroy() {}
 }
 
+/**
+ * This is the default logger. It will output color coded log messages to the
+ * console via `console.log()`.
+ */
 export class ConsoleHandler extends BaseHandler {
   override format(logRecord: LogRecord): string {
     let msg = super.format(logRecord);
@@ -78,7 +82,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  override log(msg: string): void {
+  override log(msg: string) {
     console.log(msg);
   }
 }
@@ -95,6 +99,24 @@ interface FileHandlerOptions extends HandlerOptions {
   mode?: LogMode;
 }
 
+/**
+ * This handler will output to a file using an optional mode (default is `a`,
+ * e.g. append). The file will grow indefinitely. It uses a buffer for writing
+ * to file. Logs can be manually flushed with `fileHandler.flush()`. Log
+ * messages with a log level greater than error are immediately flushed. Logs
+ * are also flushed on process completion.
+ *
+ * Behavior of the log modes is as follows:
+ *
+ * - `'a'` - Default mode. Appends new log messages to the end of an existing log
+ *   file, or create a new log file if none exists.
+ * - `'w'` - Upon creation of the handler, any existing log file will be removed
+ *   and a new one created.
+ * - `'x'` - This will create a new log file and throw an error if one already
+ *   exists.
+ *
+ * This handler requires `--allow-write` permission on the log file.
+ */
 export class FileHandler extends WriterHandler {
   protected _file: Deno.FsFile | undefined;
   protected _buf!: BufWriterSync;
@@ -120,15 +142,15 @@ export class FileHandler extends WriterHandler {
     };
   }
 
-  override async setup() {
-    this._file = await Deno.open(this._filename, this._openOptions);
+  override setup() {
+    this._file = Deno.openSync(this._filename, this._openOptions);
     this._writer = this._file;
     this._buf = new BufWriterSync(this._file);
 
     addEventListener("unload", this.#unloadCallback);
   }
 
-  override handle(logRecord: LogRecord): void {
+  override handle(logRecord: LogRecord) {
     super.handle(logRecord);
 
     // Immediately flush if log level is higher than ERROR
@@ -137,14 +159,14 @@ export class FileHandler extends WriterHandler {
     }
   }
 
-  log(msg: string): void {
+  log(msg: string) {
     if (this._encoder.encode(msg).byteLength + 1 > this._buf.available()) {
       this.flush();
     }
     this._buf.writeSync(this._encoder.encode(msg + "\n"));
   }
 
-  flush(): void {
+  flush() {
     if (this._buf?.buffered() > 0) {
       this._buf.flush();
     }
@@ -155,7 +177,6 @@ export class FileHandler extends WriterHandler {
     this._file?.close();
     this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
-    return Promise.resolve();
   }
 }
 
@@ -164,6 +185,44 @@ interface RotatingFileHandlerOptions extends FileHandlerOptions {
   maxBackupCount: number;
 }
 
+/**
+ * This handler extends the functionality of the {@linkcode FileHandler} by
+ * "rotating" the log file when it reaches a certain size. `maxBytes` specifies
+ * the maximum size in bytes that the log file can grow to before rolling over
+ * to a new one. If the size of the new log message plus the current log file
+ * size exceeds `maxBytes` then a roll-over is triggered. When a roll-over
+ * occurs, before the log message is written, the log file is renamed and
+ * appended with `.1`. If a `.1` version already existed, it would have been
+ * renamed `.2` first and so on. The maximum number of log files to keep is
+ * specified by `maxBackupCount`. After the renames are complete the log message
+ * is written to the original, now blank, file.
+ *
+ * Example: Given `log.txt`, `log.txt.1`, `log.txt.2` and `log.txt.3`, a
+ * `maxBackupCount` of 3 and a new log message which would cause `log.txt` to
+ * exceed `maxBytes`, then `log.txt.2` would be renamed to `log.txt.3` (thereby
+ * discarding the original contents of `log.txt.3` since 3 is the maximum number
+ * of backups to keep), `log.txt.1` would be renamed to `log.txt.2`, `log.txt`
+ * would be renamed to `log.txt.1` and finally `log.txt` would be created from
+ * scratch where the new log message would be written.
+ *
+ * This handler uses a buffer for writing log messages to file. Logs can be
+ * manually flushed with `fileHandler.flush()`. Log messages with a log level
+ * greater than ERROR are immediately flushed. Logs are also flushed on process
+ * completion.
+ *
+ * Additional notes on `mode` as described above:
+ *
+ * - `'a'` Default mode. As above, this will pick up where the logs left off in
+ *   rotation, or create a new log file if it doesn't exist.
+ * - `'w'` in addition to starting with a clean `filename`, this mode will also
+ *   cause any existing backups (up to `maxBackupCount`) to be deleted on setup
+ *   giving a fully clean slate.
+ * - `'x'` requires that neither `filename`, nor any backups (up to
+ *   `maxBackupCount`), exist before setup.
+ *
+ * This handler requires both `--allow-read` and `--allow-write` permissions on
+ * the log files.
+ */
 export class RotatingFileHandler extends FileHandler {
   #maxBytes: number;
   #maxBackupCount: number;
@@ -190,8 +249,12 @@ export class RotatingFileHandler extends FileHandler {
       // Remove old backups too as it doesn't make sense to start with a clean
       // log file, but old backups
       for (let i = 1; i <= this.#maxBackupCount; i++) {
-        if (await exists(this._filename + "." + i)) {
+        try {
           await Deno.remove(this._filename + "." + i);
+        } catch (error) {
+          if (!(error instanceof Deno.errors.NotFound)) {
+            throw error;
+          }
         }
       }
     } else if (this._mode === "x") {
@@ -209,7 +272,7 @@ export class RotatingFileHandler extends FileHandler {
     }
   }
 
-  override log(msg: string): void {
+  override log(msg: string) {
     const msgByteLength = this._encoder.encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
@@ -222,9 +285,9 @@ export class RotatingFileHandler extends FileHandler {
     this.#currentFileSize += msgByteLength;
   }
 
-  rotateLogFiles(): void {
+  rotateLogFiles() {
     this._buf.flush();
-    Deno.close(this._file!.rid);
+    this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
       const source = this._filename + (i === 0 ? "" : "." + i);

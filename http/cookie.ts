@@ -3,25 +3,49 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "../_util/assert.ts";
-import { toIMF } from "../datetime/mod.ts";
+import { assert } from "../_util/asserts.ts";
+import { toIMF } from "../datetime/to_imf.ts";
 
 export interface Cookie {
   /** Name of the cookie. */
   name: string;
   /** Value of the cookie. */
   value: string;
-  /** Expiration date of the cookie. */
-  expires?: Date;
-  /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
+  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds.
+   * @example <caption>Explicit date:</caption>
+   *
+   * ```ts
+   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires on Fri Dec 30 2022
+   *   expires: new Date('2022-12-31')
+   * }
+   * ```
+   *
+   * @example <caption>UTC milliseconds</caption>
+   *
+   * ```ts
+   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * const cookie: Cookie = {
+   *   name: 'name',
+   *   value: 'value',
+   *   // expires 10 seconds from now
+   *   expires: Date.now() + 10000
+   * }
+   * ```
+   */
+  expires?: Date | number;
+  /** The cookie's `Max-Age` attribute, in seconds. Must be a non-negative integer. A cookie with a `maxAge` of `0` expires immediately. */
   maxAge?: number;
-  /** Specifies those hosts to which the cookie will be sent. */
+  /** The cookie's `Domain` attribute. Specifies those hosts to which the cookie will be sent. */
   domain?: string;
-  /** Indicates a URL path that must exist in the request. */
+  /** The cookie's `Path` attribute. A cookie with a path will only be included in the `Cookie` request header if the requested URL matches that path. */
   path?: string;
-  /** Indicates if the cookie is made using SSL & HTTPS. */
+  /** The cookie's `Secure` attribute. If `true`, the cookie will only be included in the `Cookie` request header if the connection uses SSL and HTTPS. */
   secure?: boolean;
-  /** Indicates that cookie is not accessible via JavaScript. */
+  /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
   httpOnly?: boolean;
   /**
    * Allows servers to assert that a cookie ought not to
@@ -79,7 +103,10 @@ function toString(cookie: Cookie): string {
     out.push(`Path=${cookie.path}`);
   }
   if (cookie.expires) {
-    const dateString = toIMF(cookie.expires);
+    const { expires } = cookie;
+    const dateString = toIMF(
+      typeof expires === "number" ? new Date(expires) : expires,
+    );
     out.push(`Expires=${dateString}`);
   }
   if (cookie.unparsed) {
@@ -92,7 +119,7 @@ function toString(cookie: Cookie): string {
  * Validate Cookie Name.
  * @param name Cookie name.
  */
-function validateName(name: string | undefined | null): void {
+function validateName(name: string | undefined | null) {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
     throw new TypeError(`Invalid cookie name: "${name}".`);
   }
@@ -103,7 +130,7 @@ function validateName(name: string | undefined | null): void {
  * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
  * @param path Path value.
  */
-function validatePath(path: string | null): void {
+function validatePath(path: string | null) {
   if (path == null) {
     return;
   }
@@ -124,7 +151,7 @@ function validatePath(path: string | null): void {
  * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
  * @param value Cookie value.
  */
-function validateValue(name: string, value: string | null): void {
+function validateValue(name: string, value: string | null) {
   if (value == null || name == null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
@@ -134,7 +161,7 @@ function validateValue(name: string, value: string | null): void {
       c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
-        "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
+        "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
@@ -151,7 +178,7 @@ function validateValue(name: string, value: string | null): void {
  * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
-function validateDomain(domain: string): void {
+function validateDomain(domain: string) {
   if (domain == null) {
     return;
   }
@@ -166,8 +193,20 @@ function validateDomain(domain: string): void {
 
 /**
  * Parse cookies of a header
- * @param {Headers} headers The headers instance to get cookies from
- * @return {Object} Object with cookie names as keys
+ *
+ * @example
+ * ```ts
+ * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * headers.set("Cookie", "full=of; tasty=chocolate");
+ *
+ * const cookies = getCookies(headers);
+ * console.log(cookies); // { full: "of", tasty: "chocolate" }
+ * ```
+ *
+ * @param headers The headers instance to get cookies from
+ * @return Object with cookie names as keys
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
@@ -187,11 +226,26 @@ export function getCookies(headers: Headers): Record<string, string> {
 
 /**
  * Set the cookie header properly in the headers
- * @param {Headers} headers The headers instance to set the cookie to
- * @param {Object} cookie Cookie to set
+ *
+ * @example
+ * ```ts
+ * import {
+ *   Cookie,
+ *   setCookie,
+ * } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * const cookie: Cookie = { name: "Space", value: "Cat" };
+ * setCookie(headers, cookie);
+ *
+ * const cookieHeader = headers.get("set-cookie");
+ * console.log(cookieHeader); // Space=Cat
+ * ```
+ *
+ * @param headers The headers instance to set the cookie to
+ * @param cookie Cookie to set
  */
-export function setCookie(headers: Headers, cookie: Cookie): void {
-  // TODO(zekth) : Add proper parsing of Set-Cookie headers
+export function setCookie(headers: Headers, cookie: Cookie) {
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
   const v = toString(cookie);
@@ -202,19 +256,148 @@ export function setCookie(headers: Headers, cookie: Cookie): void {
 
 /**
  * Set the cookie header with empty value in the headers to delete it
- * @param {Headers} headers The headers instance to delete the cookie from
- * @param {string} name Name of cookie
- * @param {Object} attributes Additional cookie attributes
+ *
+ * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
+ * > the browser to delete it.
+ *
+ * @example
+ * ```ts
+ * import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers();
+ * deleteCookie(headers, "deno");
+ *
+ * const cookieHeader = headers.get("set-cookie");
+ * console.log(cookieHeader); // deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
+ * ```
+ *
+ * @param headers The headers instance to delete the cookie from
+ * @param name Name of cookie
+ * @param attributes Additional cookie attributes
  */
 export function deleteCookie(
   headers: Headers,
   name: string,
   attributes?: { path?: string; domain?: string },
-): void {
+) {
   setCookie(headers, {
     name: name,
     value: "",
     expires: new Date(0),
     ...attributes,
   });
+}
+
+function parseSetCookie(value: string): Cookie | null {
+  const attrs = value
+    .split(";")
+    .map((attr) =>
+      attr
+        .trim()
+        .split("=")
+        .map((keyOrValue) => keyOrValue.trim())
+    );
+  const cookie: Cookie = {
+    name: attrs[0][0],
+    value: attrs[0][1],
+  };
+
+  for (const [key, value] of attrs.slice(1)) {
+    switch (key.toLocaleLowerCase()) {
+      case "expires":
+        cookie.expires = new Date(value);
+        break;
+      case "max-age":
+        cookie.maxAge = Number(value);
+        if (cookie.maxAge < 0) {
+          console.warn(
+            "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+          );
+          return null;
+        }
+        break;
+      case "domain":
+        cookie.domain = value;
+        break;
+      case "path":
+        cookie.path = value;
+        break;
+      case "secure":
+        cookie.secure = true;
+        break;
+      case "httponly":
+        cookie.httpOnly = true;
+        break;
+      case "samesite":
+        cookie.sameSite = value as Cookie["sameSite"];
+        break;
+      default:
+        if (!Array.isArray(cookie.unparsed)) {
+          cookie.unparsed = [];
+        }
+        cookie.unparsed.push([key, value].join("="));
+    }
+  }
+  if (cookie.name.startsWith("__Secure-")) {
+    /** This requirement is mentioned in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie but not the RFC. */
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Secure-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
+  }
+  if (cookie.name.startsWith("__Host-")) {
+    if (!cookie.secure) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must be set with the secure flag. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.domain !== undefined) {
+      console.warn(
+        "Cookies with names starting with `__Host-` must not have a domain specified. Cookie ignored.",
+      );
+      return null;
+    }
+    if (cookie.path !== "/") {
+      console.warn(
+        "Cookies with names starting with `__Host-` must have path be `/`. Cookie has been ignored.",
+      );
+      return null;
+    }
+  }
+  return cookie;
+}
+
+/**
+ * Parse set-cookies of a header
+ *
+ * @example
+ * ```ts
+ * import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers([
+ *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],
+ *   ["Set-Cookie", "booya=kasha; HttpOnly; Path=/"],
+ * ]);
+ *
+ * const cookies = getSetCookies(headers);
+ * console.log(cookies); // [{ name: "lulu", value: "meow", secure: true, maxAge: 3600 }, { name: "booya", value: "kahsa", httpOnly: true, path: "/ }]
+ * ```
+ *
+ * @param headers The headers instance to get set-cookies from
+ * @return List of cookies
+ */
+export function getSetCookies(headers: Headers): Cookie[] {
+  if (!headers.has("set-cookie")) {
+    return [];
+  }
+  return [...headers.entries()]
+    .filter(([key]) => key === "set-cookie")
+    .map(([_, value]) => value)
+    /** Parse each `set-cookie` header separately */
+    .map(parseSetCookie)
+    /** Skip empty cookies */
+    .filter(Boolean) as Cookie[];
 }

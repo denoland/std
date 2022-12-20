@@ -299,6 +299,39 @@ Deno.test("deepMerge: sets merge (merge)", () => {
   );
 });
 
+Deno.test("deepMerge: nested replace", () => {
+  assertEquals(
+    deepMerge(
+      {
+        a: "A1",
+        b: ["B11", "B12"],
+        c: {
+          d: "D1",
+          e: ["E11"],
+        },
+      },
+      {
+        b: [],
+        c: {
+          d: "D2",
+          e: [],
+        },
+      },
+      {
+        arrays: "replace",
+      },
+    ),
+    {
+      a: "A1",
+      b: [],
+      c: {
+        d: "D2",
+        e: [],
+      },
+    },
+  );
+});
+
 Deno.test("deepMerge: complex test", () => {
   assertEquals(
     deepMerge({

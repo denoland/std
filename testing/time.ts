@@ -1,8 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-/** This module is browser compatible. */
+/**
+ * Utilities for mocking time while testing.
+ *
+ * @module
+ */
 
-import { ascend, RBTree } from "../collections/rb_tree.ts";
+import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
 import { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
@@ -127,7 +131,7 @@ function fakeSetTimeout(
   return setTimer(callback, delay, args, false);
 }
 
-function fakeClearTimeout(id?: number): void {
+function fakeClearTimeout(id?: number) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
@@ -145,7 +149,7 @@ function fakeSetInterval(
   return setTimer(callback, delay, args, true);
 }
 
-function fakeClearInterval(id?: number): void {
+function fakeClearInterval(id?: number) {
   if (!time) throw new TimeError("no fake time");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
@@ -179,7 +183,7 @@ function setTimer(
   return id;
 }
 
-function overrideGlobals(): void {
+function overrideGlobals() {
   globalThis.Date = FakeDate as DateConstructor;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
@@ -187,7 +191,7 @@ function overrideGlobals(): void {
   globalThis.clearInterval = fakeClearInterval;
 }
 
-function restoreGlobals(): void {
+function restoreGlobals() {
   globalThis.Date = _internals.Date;
   globalThis.setTimeout = _internals.setTimeout;
   globalThis.clearTimeout = _internals.clearTimeout;
@@ -208,7 +212,7 @@ let advanceFrequency: number;
 let advanceIntervalId: number | undefined;
 let timerId: Generator<number>;
 let dueNodes: Map<number, DueNode>;
-let dueTree: RBTree<DueNode>;
+let dueTree: RedBlackTree<DueNode>;
 
 /**
  * Overrides the real Date object and timer functions with fake ones that can be
@@ -265,7 +269,7 @@ export class FakeTime {
 
     timerId = timerIdGen();
     dueNodes = new Map();
-    dueTree = new RBTree(
+    dueTree = new RedBlackTree(
       (a: DueNode, b: DueNode) => ascend(a.due, b.due),
     );
 
@@ -288,7 +292,7 @@ export class FakeTime {
   }
 
   /** Restores real time. */
-  static restore(): void {
+  static restore() {
     if (!time) throw new TimeError("time already restored");
     time.restore();
   }
@@ -386,7 +390,7 @@ export class FakeTime {
   }
 
   /** Runs all pending microtasks. */
-  async runMicrotasks(): Promise<void> {
+  async runMicrotasks() {
     await this.delay(0);
   }
 
@@ -394,7 +398,7 @@ export class FakeTime {
    * Adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    */
-  tick(ms = 0): void {
+  tick(ms = 0) {
     this.now += ms;
   }
 
@@ -402,7 +406,7 @@ export class FakeTime {
    * Runs all pending microtasks then adds the specified number of milliseconds to the fake time.
    * This will call any functions waiting to be called between the current and new fake time.
    */
-  async tickAsync(ms = 0): Promise<void> {
+  async tickAsync(ms = 0) {
     await this.runMicrotasks();
     this.now += ms;
   }
@@ -432,7 +436,7 @@ export class FakeTime {
    * If the timers create additional timers, they will be run too. If there is an interval,
    * time will keep advancing forward until the interval is cleared.
    */
-  runAll(): void {
+  runAll() {
     while (!dueTree.isEmpty()) {
       this.next();
     }
@@ -444,14 +448,14 @@ export class FakeTime {
    * time will keep advancing forward until the interval is cleared.
    * Runs all pending microtasks before each timer.
    */
-  async runAllAsync(): Promise<void> {
+  async runAllAsync() {
     while (!dueTree.isEmpty()) {
       await this.nextAsync();
     }
   }
 
   /** Restores time related global functions to their original state. */
-  restore(): void {
+  restore() {
     if (!time) throw new TimeError("time already restored");
     time = undefined;
     restoreGlobals();

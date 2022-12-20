@@ -13,21 +13,23 @@ export interface Deferred<T> extends Promise<T> {
   reject(reason?: any): void;
 }
 
-/** Creates a Promise with the `reject` and `resolve` functions
- * placed as methods on the promise object itself. It allows you to do:
+/**
+ * Creates a Promise with the `reject` and `resolve` functions placed as methods
+ * on the promise object itself.
  *
- * ```ts
- *     import { deferred } from "./deferred.ts";
+ * @example
+ * ```typescript
+ * import { deferred } from "https://deno.land/std@$STD_VERSION/async/deferred.ts";
  *
- *     const p = deferred<number>();
- *     // ...
- *     p.resolve(42);
+ * const p = deferred<number>();
+ * // ...
+ * p.resolve(42);
  * ```
  */
 export function deferred<T>(): Deferred<T> {
   let methods;
   let state = "pending";
-  const promise = new Promise<T>((resolve, reject): void => {
+  const promise = new Promise<T>((resolve, reject) => {
     methods = {
       async resolve(value: T | PromiseLike<T>) {
         await value;

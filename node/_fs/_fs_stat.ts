@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { denoErrorToNodeError } from "../internal/errors.ts";
+import { promisify } from "../internal/util.mjs";
 
 export type statOptions = {
   bigint: boolean;
@@ -274,6 +275,12 @@ export function stat(
     (err) => callback(denoErrorToNodeError(err, { syscall: "stat" })),
   );
 }
+
+export const statPromise = promisify(stat) as (
+  & ((path: string | URL) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: false }) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: true }) => Promise<BigIntStats>)
+);
 
 export function statSync(path: string | URL): Stats;
 export function statSync(

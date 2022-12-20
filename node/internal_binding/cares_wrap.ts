@@ -522,7 +522,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     return 0;
   }
 
-  setLocalAddress(_addr0: string, _addr1?: string): void {
+  setLocalAddress(_addr0: string, _addr1?: string) {
     notImplemented("cares.ChannelWrap.prototype.setLocalAddress");
   }
 

@@ -26,7 +26,7 @@ import {
 
 Deno.test({
   name: "[TOML parser] Scanner",
-  fn(): void {
+  fn() {
     const scanner = new Scanner(" # comment\n\n\na \nb");
     scanner.nextUntilChar({ inline: true });
     assertEquals(scanner.char(), "#");
@@ -44,7 +44,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] bare key",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(BareKey);
     assertEquals(parse("A-Za-z0-9_-"), "A-Za-z0-9_-");
     assertThrows(() => parse(""));
@@ -54,9 +54,12 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] basic string",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(BasicString);
-    assertEquals(parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'), 'a"\n\t\b\\\あ🦕');
+    assertEquals(
+      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
+      'a"\n\t\b\\\あ🦕',
+    );
     assertEquals(parse('""'), "");
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
@@ -66,7 +69,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] literal string",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(LiteralString);
     assertEquals(parse("'a\\n'"), "a\\n");
     assertThrows(() => parse(""));
@@ -77,7 +80,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] multi-line basic string",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(MultilineBasicString);
     assertEquals(
       parse(`"""
@@ -98,7 +101,7 @@ Violets are\\tblue"""`),
 
 Deno.test({
   name: "[TOML parser] multi-line literal string",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(MultilineLiteralString);
     assertEquals(
       parse(`'''
@@ -111,7 +114,7 @@ Violets are\\tblue'''`),
 
 Deno.test({
   name: "[TOML parser] symbols",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Symbols);
     assertEquals(parse("true"), true);
     assertEquals(parse("nan"), NaN);
@@ -123,7 +126,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] dotted key",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(DottedKey);
     assertEquals(parse("a . b . c"), ["a", "b", "c"]);
     assertEquals(parse(`a.'b.c'."d.e"`), ["a", "b.c", "d.e"]);
@@ -135,7 +138,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] table",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Table);
     assertEquals(
       parse(`
@@ -167,7 +170,7 @@ fizz.buzz = true
 
 Deno.test({
   name: "[TOML parser] integer",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Integer);
     assertEquals(parse("123"), 123);
     assertEquals(parse("+123"), 123);
@@ -187,7 +190,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] float",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Float);
     assertEquals(parse("+1.0"), 1.0);
     assertEquals(parse("3.1415"), 3.1415);
@@ -204,7 +207,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] date and date time",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(DateTime);
     assertEquals(
       parse("1979-05-27T07:32:00Z"),
@@ -236,7 +239,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] local time",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(LocalTime);
     assertEquals(parse("07:32:00"), "07:32:00");
     assertEquals(parse("07:32:00.999"), "07:32:00.999");
@@ -246,7 +249,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] value",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Value);
     assertEquals(parse("1"), 1);
     assertEquals(parse("1.2"), 1.2);
@@ -259,7 +262,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] key value pair",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(Pair);
     assertEquals(parse("key = 'value'"), { key: "value" });
     assertThrows(() => parse("key ="));
@@ -270,7 +273,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] array",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(ArrayValue);
     assertEquals(parse("[]"), []);
     assertEquals(parse("[1, 2, 3]"), [1, 2, 3]);
@@ -304,7 +307,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] inline table",
-  fn(): void {
+  fn() {
     const parse = ParserFactory(InlineTable);
     assertEquals(parse(`{ first = "Tom", last = "Preston-Werner" }`), {
       first: "Tom",
@@ -319,7 +322,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] Utils.deepAssignWithTable",
-  fn(): void {
+  fn() {
     const source = {
       foo: {
         items: [
@@ -370,7 +373,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] Utils.deepAssignWithTable / TableArray",
-  fn(): void {
+  fn() {
     const source = {
       foo: {},
     };
@@ -423,7 +426,7 @@ Deno.test({
 
 Deno.test({
   name: "[TOML parser] error message",
-  fn(): void {
+  fn() {
     assertThrows(
       () => parse("foo = 1\nbar ="),
       TOMLParseError,

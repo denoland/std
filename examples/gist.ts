@@ -1,7 +1,18 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// A program to post files to gist.github.com. Use the following to install it:
-// deno install -f --allow-env --allow-read --allow-net=api.github.com https://deno.land/std/examples/gist.ts
+
+/**
+ * A program to post files to gist.github.com.
+ *
+ * Use the following to install it:
+ *
+ * ```shellsession
+ * $ deno install -f --allow-env --allow-read --allow-net=api.github.com https://deno.land/std/examples/gist.ts
+ * ```
+ *
+ * @module
+ */
+
 import { parse } from "../flags/mod.ts";
 
 function pathBase(p: string): string {

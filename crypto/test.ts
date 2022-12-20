@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { crypto as stdCrypto } from "./mod.ts";
-import * as bytes from "../bytes/mod.ts";
+import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
-import { DigestAlgorithm, digestAlgorithms } from "../_wasm_crypto/mod.ts";
+import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
@@ -22,6 +22,21 @@ Deno.test(
 
     assertEquals(
       toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(
+        await stdCrypto.subtle.digest(
+          "SHA-384",
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(inputBytes);
+              controller.close();
+            },
+          }),
+        ),
+      ),
       expectedDigest,
     );
 
@@ -126,6 +141,18 @@ Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
       })(),
     )) instanceof ArrayBuffer,
   );
+
+  assert(
+    (await stdCrypto.subtle.digest(
+      "BLAKE3",
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(inputBytes);
+          controller.close();
+        },
+      }),
+    )) instanceof ArrayBuffer,
+  );
 });
 
 Deno.test("[crypto/digest] Should not ignore length option", async () => {
@@ -148,19 +175,22 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const process = new Deno.Command(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdin: "piped",
+    stdout: "piped",
+    stderr: "inherit",
   });
+  const child = process.spawn();
 
-  const writer = process.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const toHexString = (bytes: ArrayBuffer): string =>
         new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
@@ -189,12 +219,12 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     `),
   );
   writer.releaseLock();
-  await process.stdin.close();
+  await child.stdin.close();
 
-  const res = await process.output();
+  const res = await child.output();
   const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assertEquals(res.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -223,39 +253,41 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   // Heap should stay under 2MB even though we provided a 64MB input.
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterSmall < 2_000_000,
-    `WASM heap was too large after small input: ${
+    `Wasm heap was too large after small input: ${
       (heapBytesAfterSmall / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterLarge < 2_000_000,
-    `WASM heap was too large after large input: ${
+    `Wasm heap was too large after large input: ${
       (heapBytesAfterLarge / 1_000_000).toFixed(1)
     } MB`,
   );
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
+    stderr: "inherit",
     stdin: "piped",
   });
+  const child = command.spawn();
 
-  const writer = process.stdin.getWriter();
+  const writer = child.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 
@@ -286,12 +318,12 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     `),
   );
   writer.releaseLock();
-  await process.stdin.close();
+  await child.stdin.close();
 
-  const res = await process.output();
-  const stdout = new TextDecoder().decode(res.stdout);
+  const { stdout, success } = await child.output();
+  const output = new TextDecoder().decode(stdout);
 
-  assertEquals(res.status.success, true, "test subprocess failed");
+  assert(success);
   const {
     heapBytesInitial,
     heapBytesFinal,
@@ -300,17 +332,17 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     heapBytesInitial: number;
     heapBytesFinal: number;
     stateFinal: string;
-  } = JSON.parse(stdout);
+  } = JSON.parse(output);
 
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesFinal < 2_000_000,
-    `WASM heap was too large after many digests: ${
+    `Wasm heap was too large after many digests: ${
       (heapBytesFinal / 1_000_000).toFixed(1)
     } MB`,
   );
@@ -323,7 +355,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
-const aboutAMeg = bytes.repeat(
+const aboutAMeg = repeat(
   new Uint8Array(1237).fill(0).map((_, i) => i % 251),
   839,
 );
@@ -1282,6 +1314,35 @@ const digestCases: [
   ],
 ];
 
+Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
+  const inputString = "deno";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  const expectedDigest32 = "6ed5a7a9";
+  const expectedDigest32a = "8ef64711";
+
+  const expectedDigest64 = "14edb27eecdaadc9";
+  const expectedDigest64a = "a5d9fb67426e48b1";
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    expectedDigest32,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    expectedDigest32a,
+  );
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    expectedDigest64,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    expectedDigest64a,
+  );
+});
+
 for (const algorithm of digestAlgorithms) {
   Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {
     for (
@@ -1328,3 +1389,12 @@ const toHexString = (bytes: ArrayBuffer): string =>
     (str, byte) => str + byte.toString(16).padStart(2, "0"),
     "",
   );
+
+Deno.test({
+  name: "[crypto/subtle/timeSafeEqual] - is present",
+  fn() {
+    const a = new Uint8Array([212, 213]);
+    const b = new Uint8Array([212, 213]);
+    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
+  },
+});

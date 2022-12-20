@@ -20,7 +20,7 @@ function assertValidParse(
 function assertInvalidParse(
   text: string,
   // deno-lint-ignore no-explicit-any
-  ErrorClass: (new (...args: any[]) => Error),
+  ErrorClass: new (...args: any[]) => Error,
   msgIncludes?: string,
   options?: JSONC.ParseOptions,
 ) {

@@ -579,4 +579,5 @@ export default {
   charLengthLeft,
   emitKeys,
   commonPrefix,
+  kSubstringSearch,
 };

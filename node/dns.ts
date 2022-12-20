@@ -24,7 +24,7 @@ import { nextTick } from "./_next_tick.ts";
 import { customPromisifyArgs } from "./internal/util.mjs";
 import {
   validateBoolean,
-  validateCallback,
+  validateFunction,
   validateNumber,
   validateOneOf,
   validateString,
@@ -196,16 +196,16 @@ export function lookup(
     callback = options;
     family = 0;
   } else if (isFamily(options)) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
 
     validateOneOf(options, "family", validFamilies);
     family = options;
   } else if (!isLookupOptions(options)) {
-    validateCallback(arguments.length === 2 ? options : callback);
+    validateFunction(arguments.length === 2 ? options : callback, "callback");
 
     throw new ERR_INVALID_ARG_TYPE("options", ["integer", "object"], options);
   } else {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
 
     if (options?.hints != null) {
       validateNumber(options.hints, "options.hints");
@@ -285,7 +285,7 @@ function onresolve(
   err: number,
   records: Records,
   ttls?: number[],
-): void {
+) {
   if (err) {
     this.callback(dnsException(err, this.bindingName, this.hostname));
 
@@ -315,7 +315,7 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     }
 
     validateString(name, "name");
-    validateCallback(callback);
+    validateFunction(callback, "callback");
 
     const req = new QueryReqWrap();
     req.bindingName = bindingName;
@@ -351,7 +351,7 @@ export class Resolver extends CallbackResolver {
   }
 
   // deno-lint-ignore no-explicit-any
-  [resolveMethod: string]: any
+  [resolveMethod: string]: any;
 }
 
 Resolver.prototype.resolveAny = resolveMap.ANY = resolver("queryAny");
@@ -426,7 +426,7 @@ function _resolve(
  *
  * @param servers array of `RFC 5952` formatted addresses
  */
-export function setServers(servers: ReadonlyArray<string>): void {
+export function setServers(servers: ReadonlyArray<string>) {
   const resolver = new Resolver();
 
   resolver.setServers(servers);
@@ -898,18 +898,37 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-const promises = Object.defineProperties(promisesBase, {
-  setServers: {
-    configurable: true,
-    enumerable: true,
-    value: setServers,
-  },
-  setDefaultResultOrder: {
-    configurable: true,
-    enumerable: true,
-    value: setDefaultResultOrder,
-  },
-});
+const promises = {
+  ...promisesBase,
+  setDefaultResultOrder,
+  setServers,
+
+  // ERROR CODES
+  NODATA,
+  FORMERR,
+  SERVFAIL,
+  NOTFOUND,
+  NOTIMP,
+  REFUSED,
+  BADQUERY,
+  BADNAME,
+  BADFAMILY,
+  BADRESP,
+  CONNREFUSED,
+  TIMEOUT,
+  EOF,
+  FILE,
+  NOMEM,
+  DESTRUCTION,
+  BADSTR,
+  BADFLAGS,
+  NONAME,
+  BADHINTS,
+  NOTINITIALIZED,
+  LOADIPHLPAPI,
+  ADDRGETNETWORKPARAMS,
+  CANCELLED,
+};
 
 export { ADDRCONFIG, ALL, promises, setDefaultResultOrder, V4MAPPED };
 

@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 /**
- * A collection of APIs to provide help with asynchronous tasks.
+ * Provide help with asynchronous tasks like delays, debouncing, deferring, or
+ * pooling.
  *
  * @module
  */
@@ -14,3 +15,4 @@ export * from "./delay.ts";
 export * from "./mux_async_iterator.ts";
 export * from "./pool.ts";
 export * from "./tee.ts";
+export * from "./retry.ts";

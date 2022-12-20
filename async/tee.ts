@@ -31,7 +31,7 @@ class Queue<T> {
     this.done = false;
   }
 
-  async next(): Promise<void> {
+  async next() {
     const result = await this.#source.next();
     if (!result.done) {
       const nextNode: QueueNode<T> = {
@@ -49,30 +49,25 @@ class Queue<T> {
 /**
  * Branches the given async iterable into the n branches.
  *
- * Example:
- *
+ * @example
  * ```ts
- *     import { tee } from "./tee.ts";
+ * import { tee } from "https://deno.land/std@$STD_VERSION/async/tee.ts";
  *
- *     const gen = async function* gen() {
- *       yield 1;
- *       yield 2;
- *       yield 3;
- *     }
+ * const gen = async function* gen() {
+ *   yield 1;
+ *   yield 2;
+ *   yield 3;
+ * };
  *
- *     const [branch1, branch2] = tee(gen());
+ * const [branch1, branch2] = tee(gen());
  *
- *     (async () => {
- *       for await (const n of branch1) {
- *         console.log(n); // => 1, 2, 3
- *       }
- *     })();
+ * for await (const n of branch1) {
+ *   console.log(n); // => 1, 2, 3
+ * }
  *
- *     (async () => {
- *       for await (const n of branch2) {
- *         console.log(n); // => 1, 2, 3
- *       }
- *     })();
+ * for await (const n of branch2) {
+ *   console.log(n); // => 1, 2, 3
+ * }
  * ```
  */
 export function tee<T, N extends number = 2>(

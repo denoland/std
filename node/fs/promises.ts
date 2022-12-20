@@ -4,7 +4,7 @@ import { promises as fsPromises } from "../fs.ts";
 export const access = fsPromises.access;
 export const copyFile = fsPromises.copyFile;
 export const open = fsPromises.open;
-// export const opendir = fs.opendir;
+export const opendir = fsPromises.opendir;
 export const rename = fsPromises.rename;
 export const truncate = fsPromises.truncate;
 export const rm = fsPromises.rm;

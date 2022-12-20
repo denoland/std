@@ -87,7 +87,7 @@ import {
   PipeConnectWrap,
 } from "./internal_binding/pipe_wrap.ts";
 import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
@@ -528,7 +528,7 @@ function _writeAfterFIN(
   return false;
 }
 
-function _tryReadStart(socket: Socket): void {
+function _tryReadStart(socket: Socket) {
   // Not already reading, start the flow.
   debug("Socket._handle.readStart");
   socket._handle!.reading = true;
@@ -540,14 +540,14 @@ function _tryReadStart(socket: Socket): void {
 }
 
 // Called when the "end" event is emitted.
-function _onReadableStreamEnd(this: Socket): void {
+function _onReadableStreamEnd(this: Socket) {
   if (!this.allowHalfOpen) {
     this.write = _writeAfterFIN;
   }
 }
 
 // Called when creating new Socket, or when re-using a closed Socket
-function _initSocketHandle(socket: Socket): void {
+function _initSocketHandle(socket: Socket) {
   socket._undestroy();
   socket._sockname = undefined;
 
@@ -581,7 +581,7 @@ function _initSocketHandle(socket: Socket): void {
 function _lookupAndConnect(
   self: Socket,
   options: TcpSocketConnectOptions,
-): void {
+) {
   const { localAddress, localPort } = options;
   const host = options.host || "localhost";
   let { port } = options;
@@ -1224,6 +1224,13 @@ export class Socket extends Duplex {
   }
 
   /**
+   * The string representation of the local IP family. `"IPv4"` or `"IPv6"`.
+   */
+  get localFamily(): string | undefined {
+    return this._getsockname().family;
+  }
+
+  /**
    * The string representation of the remote IP address. For example,`"74.125.127.100"` or `"2001:4860:a005::68"`. Value may be `undefined` if
    * the socket is destroyed (for example, if the client disconnected).
    */
@@ -1235,7 +1242,9 @@ export class Socket extends Duplex {
    * The string representation of the remote IP family. `"IPv4"` or `"IPv6"`.
    */
   get remoteFamily(): string | undefined {
-    return `IPv${this._getpeername().family}`;
+    const { family } = this._getpeername();
+
+    return family ? `IPv${family}` : family;
   }
 
   /**
@@ -1308,7 +1317,7 @@ export class Socket extends Duplex {
     return Duplex.prototype.read.call(this, size);
   }
 
-  destroySoon(): void {
+  destroySoon() {
     if (this.writable) {
       this.end();
     }
@@ -1380,7 +1389,7 @@ export class Socket extends Duplex {
     this.emit("timeout");
   }
 
-  override _read(size?: number): void {
+  override _read(size?: number) {
     debug("_read");
     if (this.connecting || !this._handle) {
       debug("_read wait for connection");
@@ -1412,11 +1421,10 @@ export class Socket extends Duplex {
         this._handle = null;
         this._sockname = undefined;
 
-        cb(exception);
-
         debug("emit close");
         this.emit("close", isException);
       });
+      cb(exception);
     } else {
       cb(exception);
       nextTick(_emitCloseNT, this);
@@ -1433,7 +1441,7 @@ export class Socket extends Duplex {
   }
 
   _getpeername(): AddressInfo | Record<string, never> {
-    if (!this._handle || !("getpeername" in this._handle)) {
+    if (!this._handle || !("getpeername" in this._handle) || this.connecting) {
       return this._peername || {};
     } else if (!this._peername) {
       this._peername = {};
@@ -1515,7 +1523,7 @@ export class Socket extends Duplex {
     this._writeGeneric(false, data, encoding, cb);
   }
 
-  [kAfterAsyncWrite](): void {
+  [kAfterAsyncWrite]() {
     this[kLastWriteQueueSize] = 0;
   }
 
@@ -1872,7 +1880,7 @@ function _setupListenHandle(
   backlog: number,
   fd?: number | null,
   flags?: number,
-): void {
+) {
   debug("setupListenHandle", address, port, addressType, backlog, fd);
 
   // If there is not yet a handle, we need to create one and bind.
@@ -2418,7 +2426,7 @@ export class Server extends EventEmitter {
 
   _listen2 = _setupListenHandle;
 
-  _emitCloseIfDrained(): void {
+  _emitCloseIfDrained() {
     debug("SERVER _emitCloseIfDrained");
     if (this._handle || this._connections) {
       debug(
@@ -2427,15 +2435,19 @@ export class Server extends EventEmitter {
       return;
     }
 
+    // We use setTimeout instead of nextTick here to avoid EADDRINUSE error
+    // when the same port listened immediately after the 'close' event.
+    // ref: https://github.com/denoland/deno_std/issues/2788
     defaultTriggerAsyncIdScope(
       this[asyncIdSymbol],
-      nextTick,
+      setTimeout,
       _emitCloseNT,
+      0,
       this,
     );
   }
 
-  _setupWorker(socketList: EventEmitter): void {
+  _setupWorker(socketList: EventEmitter) {
     this._usingWorkers = true;
     this._workers.push(socketList);
 
@@ -2450,7 +2462,7 @@ export class Server extends EventEmitter {
     err: Error,
     event: string,
     sock: Socket,
-  ): void {
+  ) {
     switch (event) {
       case "connection": {
         sock.destroy(err);

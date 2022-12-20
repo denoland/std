@@ -7,6 +7,7 @@ import {
   statOptions,
   Stats,
 } from "./_fs_stat.ts";
+import { promisify } from "../internal/util.mjs";
 
 export function lstat(path: string | URL, callback: statCallback): void;
 export function lstat(
@@ -41,6 +42,12 @@ export function lstat(
     (err) => callback(err),
   );
 }
+
+export const lstatPromise = promisify(lstat) as (
+  & ((path: string | URL) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: false }) => Promise<Stats>)
+  & ((path: string | URL, options: { bigint: true }) => Promise<BigIntStats>)
+);
 
 export function lstatSync(path: string | URL): Stats;
 export function lstatSync(

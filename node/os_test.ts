@@ -174,17 +174,6 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Signals are as expected",
-  fn() {
-    // Test a few random signals for equality
-    assertEquals(os.constants.signals.SIGKILL, "SIGKILL");
-    assertEquals(os.constants.signals.SIGCONT, "SIGCONT");
-    assertEquals(os.constants.signals.SIGXFSZ, "SIGXFSZ");
-    assertEquals(os.constants.signals.SIGBREAK, "SIGBREAK");
-  },
-});
-
-Deno.test({
   name: "EOL is as expected",
   fn() {
     assert(os.EOL == "\r\n" || os.EOL == "\n");

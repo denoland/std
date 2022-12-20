@@ -4,12 +4,11 @@
 import { randomInteger } from "./_utils.ts";
 
 /**
- * Returns a random element from the given array.
+ * Returns a random element from the given array
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { sample } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { sample } from "https://deno.land/std@$STD_VERSION/collections/sample.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [1, 2, 3, 4];

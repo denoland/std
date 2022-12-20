@@ -2,8 +2,11 @@
 // This module is browser compatible.
 
 /**
- * Enum of HTTP status codes.
+ * Contains the enum {@linkcode Status} which enumerates standard HTTP status
+ * codes and provides several type guards for handling status codes with type
+ * safety.
  *
+ * @example
  * ```ts
  * import {
  *   Status,
@@ -11,9 +14,23 @@
  * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
  *
  * console.log(Status.NotFound); //=> 404
- * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
+ * console.log(STATUS_TEXT[Status.NotFound]); //=> "Not Found"
  * ```
+ *
+ * ```ts
+ * import { isErrorStatus } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ *
+ * const res = await fetch("https://example.com/");
+ *
+ * if (isErrorStatus(res.status)) {
+ *   // error handling here...
+ * }
+ * ```
+ *
+ * @module
  */
+
+/** Standard HTTP status codes. */
 export enum Status {
   /** RFC 7231, 6.2.1 */
   Continue = 100,
@@ -23,6 +40,7 @@ export enum Status {
   Processing = 102,
   /** RFC 8297 **/
   EarlyHints = 103,
+
   /** RFC 7231, 6.3.1 */
   OK = 200,
   /** RFC 7231, 6.3.2 */
@@ -144,80 +162,182 @@ export enum Status {
   NetworkAuthenticationRequired = 511,
 }
 
-/**
- * Map from status code to status text.
- *
- * ```ts
- * import {
- *   Status,
- *   STATUS_TEXT,
- * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
- *
- * console.log(Status.NotFound); //=> 404
- * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
- * ```
- */
-export const STATUS_TEXT = new Map<Status, string>([
-  [Status.Continue, "Continue"],
-  [Status.SwitchingProtocols, "Switching Protocols"],
-  [Status.Processing, "Processing"],
-  [Status.EarlyHints, "Early Hints"],
-  [Status.OK, "OK"],
-  [Status.Created, "Created"],
-  [Status.Accepted, "Accepted"],
-  [Status.NonAuthoritativeInfo, "Non-Authoritative Information"],
-  [Status.NoContent, "No Content"],
-  [Status.ResetContent, "Reset Content"],
-  [Status.PartialContent, "Partial Content"],
-  [Status.MultiStatus, "Multi-Status"],
-  [Status.AlreadyReported, "Already Reported"],
-  [Status.IMUsed, "IM Used"],
-  [Status.MultipleChoices, "Multiple Choices"],
-  [Status.MovedPermanently, "Moved Permanently"],
-  [Status.Found, "Found"],
-  [Status.SeeOther, "See Other"],
-  [Status.NotModified, "Not Modified"],
-  [Status.UseProxy, "Use Proxy"],
-  [Status.TemporaryRedirect, "Temporary Redirect"],
-  [Status.PermanentRedirect, "Permanent Redirect"],
-  [Status.BadRequest, "Bad Request"],
-  [Status.Unauthorized, "Unauthorized"],
-  [Status.PaymentRequired, "Payment Required"],
-  [Status.Forbidden, "Forbidden"],
-  [Status.NotFound, "Not Found"],
-  [Status.MethodNotAllowed, "Method Not Allowed"],
-  [Status.NotAcceptable, "Not Acceptable"],
-  [Status.ProxyAuthRequired, "Proxy Authentication Required"],
-  [Status.RequestTimeout, "Request Timeout"],
-  [Status.Conflict, "Conflict"],
-  [Status.Gone, "Gone"],
-  [Status.LengthRequired, "Length Required"],
-  [Status.PreconditionFailed, "Precondition Failed"],
-  [Status.RequestEntityTooLarge, "Request Entity Too Large"],
-  [Status.RequestURITooLong, "Request URI Too Long"],
-  [Status.UnsupportedMediaType, "Unsupported Media Type"],
-  [Status.RequestedRangeNotSatisfiable, "Requested Range Not Satisfiable"],
-  [Status.ExpectationFailed, "Expectation Failed"],
-  [Status.Teapot, "I'm a teapot"],
-  [Status.MisdirectedRequest, "Misdirected Request"],
-  [Status.UnprocessableEntity, "Unprocessable Entity"],
-  [Status.Locked, "Locked"],
-  [Status.FailedDependency, "Failed Dependency"],
-  [Status.TooEarly, "Too Early"],
-  [Status.UpgradeRequired, "Upgrade Required"],
-  [Status.PreconditionRequired, "Precondition Required"],
-  [Status.TooManyRequests, "Too Many Requests"],
-  [Status.RequestHeaderFieldsTooLarge, "Request Header Fields Too Large"],
-  [Status.UnavailableForLegalReasons, "Unavailable For Legal Reasons"],
-  [Status.InternalServerError, "Internal Server Error"],
-  [Status.NotImplemented, "Not Implemented"],
-  [Status.BadGateway, "Bad Gateway"],
-  [Status.ServiceUnavailable, "Service Unavailable"],
-  [Status.GatewayTimeout, "Gateway Timeout"],
-  [Status.HTTPVersionNotSupported, "HTTP Version Not Supported"],
-  [Status.VariantAlsoNegotiates, "Variant Also Negotiates"],
-  [Status.InsufficientStorage, "Insufficient Storage"],
-  [Status.LoopDetected, "Loop Detected"],
-  [Status.NotExtended, "Not Extended"],
-  [Status.NetworkAuthenticationRequired, "Network Authentication Required"],
-]);
+/** A record of all the status codes text. */
+export const STATUS_TEXT: Readonly<Record<Status, string>> = {
+  [Status.Accepted]: "Accepted",
+  [Status.AlreadyReported]: "Already Reported",
+  [Status.BadGateway]: "Bad Gateway",
+  [Status.BadRequest]: "Bad Request",
+  [Status.Conflict]: "Conflict",
+  [Status.Continue]: "Continue",
+  [Status.Created]: "Created",
+  [Status.EarlyHints]: "Early Hints",
+  [Status.ExpectationFailed]: "Expectation Failed",
+  [Status.FailedDependency]: "Failed Dependency",
+  [Status.Forbidden]: "Forbidden",
+  [Status.Found]: "Found",
+  [Status.GatewayTimeout]: "Gateway Timeout",
+  [Status.Gone]: "Gone",
+  [Status.HTTPVersionNotSupported]: "HTTP Version Not Supported",
+  [Status.IMUsed]: "IM Used",
+  [Status.InsufficientStorage]: "Insufficient Storage",
+  [Status.InternalServerError]: "Internal Server Error",
+  [Status.LengthRequired]: "Length Required",
+  [Status.Locked]: "Locked",
+  [Status.LoopDetected]: "Loop Detected",
+  [Status.MethodNotAllowed]: "Method Not Allowed",
+  [Status.MisdirectedRequest]: "Misdirected Request",
+  [Status.MovedPermanently]: "Moved Permanently",
+  [Status.MultiStatus]: "Multi Status",
+  [Status.MultipleChoices]: "Multiple Choices",
+  [Status.NetworkAuthenticationRequired]: "Network Authentication Required",
+  [Status.NoContent]: "No Content",
+  [Status.NonAuthoritativeInfo]: "Non Authoritative Info",
+  [Status.NotAcceptable]: "Not Acceptable",
+  [Status.NotExtended]: "Not Extended",
+  [Status.NotFound]: "Not Found",
+  [Status.NotImplemented]: "Not Implemented",
+  [Status.NotModified]: "Not Modified",
+  [Status.OK]: "OK",
+  [Status.PartialContent]: "Partial Content",
+  [Status.PaymentRequired]: "Payment Required",
+  [Status.PermanentRedirect]: "Permanent Redirect",
+  [Status.PreconditionFailed]: "Precondition Failed",
+  [Status.PreconditionRequired]: "Precondition Required",
+  [Status.Processing]: "Processing",
+  [Status.ProxyAuthRequired]: "Proxy Auth Required",
+  [Status.RequestEntityTooLarge]: "Request Entity Too Large",
+  [Status.RequestHeaderFieldsTooLarge]: "Request Header Fields Too Large",
+  [Status.RequestTimeout]: "Request Timeout",
+  [Status.RequestURITooLong]: "Request URI Too Long",
+  [Status.RequestedRangeNotSatisfiable]: "Requested Range Not Satisfiable",
+  [Status.ResetContent]: "Reset Content",
+  [Status.SeeOther]: "See Other",
+  [Status.ServiceUnavailable]: "Service Unavailable",
+  [Status.SwitchingProtocols]: "Switching Protocols",
+  [Status.Teapot]: "I'm a teapot",
+  [Status.TemporaryRedirect]: "Temporary Redirect",
+  [Status.TooEarly]: "Too Early",
+  [Status.TooManyRequests]: "Too Many Requests",
+  [Status.Unauthorized]: "Unauthorized",
+  [Status.UnavailableForLegalReasons]: "Unavailable For Legal Reasons",
+  [Status.UnprocessableEntity]: "Unprocessable Entity",
+  [Status.UnsupportedMediaType]: "Unsupported Media Type",
+  [Status.UpgradeRequired]: "Upgrade Required",
+  [Status.UseProxy]: "Use Proxy",
+  [Status.VariantAlsoNegotiates]: "Variant Also Negotiates",
+};
+
+/** An HTTP status that is a informational (1XX). */
+export type InformationalStatus =
+  | Status.Continue
+  | Status.SwitchingProtocols
+  | Status.Processing
+  | Status.EarlyHints;
+
+/** An HTTP status that is a success (2XX). */
+export type SuccessfulStatus =
+  | Status.OK
+  | Status.Created
+  | Status.Accepted
+  | Status.NonAuthoritativeInfo
+  | Status.NoContent
+  | Status.ResetContent
+  | Status.PartialContent
+  | Status.MultiStatus
+  | Status.AlreadyReported
+  | Status.IMUsed;
+
+/** An HTTP status that is a redirect (3XX). */
+export type RedirectStatus =
+  | Status.MultipleChoices // 300
+  | Status.MovedPermanently // 301
+  | Status.Found // 302
+  | Status.SeeOther // 303
+  | Status.UseProxy // 305 - DEPRECATED
+  | Status.TemporaryRedirect // 307
+  | Status.PermanentRedirect; // 308
+
+/** An HTTP status that is a client error (4XX). */
+export type ClientErrorStatus =
+  | Status.BadRequest
+  | Status.Unauthorized
+  | Status.PaymentRequired
+  | Status.Forbidden
+  | Status.NotFound
+  | Status.MethodNotAllowed
+  | Status.NotAcceptable
+  | Status.ProxyAuthRequired
+  | Status.RequestTimeout
+  | Status.Conflict
+  | Status.Gone
+  | Status.LengthRequired
+  | Status.PreconditionFailed
+  | Status.RequestEntityTooLarge
+  | Status.RequestURITooLong
+  | Status.UnsupportedMediaType
+  | Status.RequestedRangeNotSatisfiable
+  | Status.ExpectationFailed
+  | Status.Teapot
+  | Status.MisdirectedRequest
+  | Status.UnprocessableEntity
+  | Status.Locked
+  | Status.FailedDependency
+  | Status.UpgradeRequired
+  | Status.PreconditionRequired
+  | Status.TooManyRequests
+  | Status.RequestHeaderFieldsTooLarge
+  | Status.UnavailableForLegalReasons;
+
+/** An HTTP status that is a server error (5XX). */
+export type ServerErrorStatus =
+  | Status.InternalServerError
+  | Status.NotImplemented
+  | Status.BadGateway
+  | Status.ServiceUnavailable
+  | Status.GatewayTimeout
+  | Status.HTTPVersionNotSupported
+  | Status.VariantAlsoNegotiates
+  | Status.InsufficientStorage
+  | Status.LoopDetected
+  | Status.NotExtended
+  | Status.NetworkAuthenticationRequired;
+
+/** An HTTP status that is an error (4XX and 5XX). */
+export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
+
+/** A type guard that determines if the status code is informational. */
+export function isInformationalStatus(
+  status: Status,
+): status is InformationalStatus {
+  return status >= 100 && status < 200;
+}
+
+/** A type guard that determines if the status code is successful. */
+export function isSuccessfulStatus(status: Status): status is SuccessfulStatus {
+  return status >= 200 && status < 300;
+}
+
+/** A type guard that determines if the status code is a redirection. */
+export function isRedirectStatus(status: Status): status is RedirectStatus {
+  return status >= 300 && status < 400;
+}
+
+/** A type guard that determines if the status code is a client error. */
+export function isClientErrorStatus(
+  status: Status,
+): status is ClientErrorStatus {
+  return status >= 400 && status < 500;
+}
+
+/** A type guard that determines if the status code is a server error. */
+export function isServerErrorStatus(
+  status: Status,
+): status is ServerErrorStatus {
+  return status >= 500 && status < 600;
+}
+
+/** A type guard that determines if the status code is an error. */
+export function isErrorStatus(status: Status): status is ErrorStatus {
+  return status >= 400 && status < 600;
+}

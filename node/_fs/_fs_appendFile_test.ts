@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
 import { appendFile, appendFileSync } from "./_fs_appendFile.ts";
 import { fromFileUrl } from "../path.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 
 const decoder = new TextDecoder("utf-8");
 
@@ -14,7 +14,7 @@ Deno.test({
         appendFile("some/path", "some data", "utf8");
       },
       Error,
-      "Callback must be a function. Received 'utf8'",
+      "The \"cb\" argument must be of type function. Received type string ('utf8')",
     );
   },
 });

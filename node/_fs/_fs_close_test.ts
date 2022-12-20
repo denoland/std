@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertThrows, fail } from "../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { assertCallbackErrorUncaught } from "../_test_utils.ts";
 import { close, closeSync } from "./_fs_close.ts";
 
 Deno.test({

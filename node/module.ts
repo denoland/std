@@ -27,7 +27,7 @@ import nodeMods from "./module_all.ts";
 import upstreamMods from "./upstream_modules.ts";
 
 import * as path from "../path/mod.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "../_util/os.ts";
 import {
@@ -84,7 +84,7 @@ function updateChildren(
   parent: Module | null,
   child: Module,
   scan: boolean,
-): void {
+) {
   const children = parent && parent.children;
   if (children && !(scan && children.includes(child))) {
     children.push(child);
@@ -229,7 +229,7 @@ class Module {
   }
 
   // Given a file name, pass it to the proper extension handler.
-  load(filename: string): void {
+  load(filename: string) {
     assert(!this.loaded);
     this.filename = filename;
     this.paths = Module._nodeModulePaths(path.dirname(filename));
@@ -665,7 +665,7 @@ class Module {
    * Also injects available Node.js builtin module polyfills.
    *
    * ```ts
-   *     import { createRequire } from "./module.ts";
+   *     import { createRequire } from "https://deno.land/std@$STD_VERSION/node/module.ts";
    *     const require = createRequire(import.meta.url);
    *     const fs = require("fs");
    *     const leftPad = require("left-pad");
@@ -684,13 +684,11 @@ class Module {
       try {
         filepath = fileURLToPath(filename);
       } catch (err) {
-        if (
-          err instanceof Deno.errors.InvalidData &&
-          err.message.includes("invalid url scheme")
-        ) {
+        // deno-lint-ignore no-explicit-any
+        if ((err as any).code === "ERR_INVALID_URL_SCHEME") {
           // Provide a descriptive error when url scheme is invalid.
           throw new Error(
-            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter. Received '${filename}'`,
           );
         } else {
           throw err;
@@ -704,7 +702,7 @@ class Module {
     return createRequireFromPath(filepath);
   }
 
-  static _initPaths(): void {
+  static _initPaths() {
     const homeDir = Deno.env.get("HOME");
     const nodePath = Deno.env.get("NODE_PATH");
 
@@ -732,7 +730,7 @@ class Module {
     Module.globalPaths = modulePaths.slice(0);
   }
 
-  static _preloadModules(requests: string[]): void {
+  static _preloadModules(requests: string[]) {
     if (!Array.isArray(requests)) {
       return;
     }
@@ -1225,7 +1223,7 @@ const nmChars = [115, 101, 108, 117, 100, 111, 109, 95, 101, 100, 111, 110];
 const nmLen = nmChars.length;
 
 // deno-lint-ignore no-explicit-any
-function emitCircularRequireWarning(prop: any): void {
+function emitCircularRequireWarning(prop: any) {
   console.error(
     `Accessing non-existent property '${
       String(prop)
@@ -1323,11 +1321,11 @@ function wrapSafe(
 }
 
 // Native extension for .js
-Module._extensions[".js"] = (module: Module, filename: string): void => {
+Module._extensions[".js"] = (module: Module, filename: string) => {
   if (filename.endsWith(".js")) {
     const pkg = readPackageScope(filename);
     if (pkg !== false && pkg.data && pkg.data.type === "module") {
-      throw new Error("Importing ESM module");
+      throw new Error(`Importing ESM module: ${filename}.`);
     }
   }
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
@@ -1335,12 +1333,12 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
 };
 
 // Native extension for .mjs
-Module._extensions[".mjs"] = (): void => {
-  throw new Error("Importing ESM module");
+Module._extensions[".mjs"] = (_module: Module, filename: string) => {
+  throw new Error(`Importing ESM module: ${filename}.`);
 };
 
 // Native extension for .json
-Module._extensions[".json"] = (module: Module, filename: string): void => {
+Module._extensions[".json"] = (module: Module, filename: string) => {
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
   // manifest code removed
   try {
@@ -1352,7 +1350,9 @@ Module._extensions[".json"] = (module: Module, filename: string): void => {
   }
 };
 
-// .node extension is not supported
+Module._extensions[".node"] = (module: Module, filename: string) => {
+  module.exports = core.ops.op_napi_open(filename);
+};
 
 function createRequireFromPath(filename: string): RequireFunction {
   // Allow a directory to be passed as the filename

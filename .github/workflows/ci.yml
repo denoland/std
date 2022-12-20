@@ -15,8 +15,8 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
           - macOS-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
           submodules: true
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
@@ -41,10 +41,10 @@ jobs:
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         if: |
           !startsWith(matrix.os, 'ubuntu')
         with:
@@ -77,29 +77,25 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
           - macOS-latest
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
       - name: Type check node modules
         shell: bash
         run: deno task node:check-unstable-api
-
-      # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
-      # - name: Doctest node/
-      #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
 
       - name: Unit test node/
         run: deno task node:unit
@@ -110,16 +106,18 @@ jobs:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: false
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
 
       - name: Format
         run: deno fmt --check
@@ -128,78 +126,96 @@ jobs:
         run: deno lint
 
       - name: Check circular dependencies
-        shell: bash
-        run: ./_tools/check_circular_deps.ts
+        run: "deno task node:lint-circular-deps"
 
-  hash-wasm:
-    name: "_wasm_crypto/"
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+      - name: Check License headers
+        run: deno task fmt:licence-headers --check
+
+      - name: Check Deprecations
+        run: "deno task lint:deprecations"
+
+      - name: Check Import paths in Docs
+        run: "deno task lint:doc-imports"
+
+      - name: Check non-test assertions
+        run: deno task lint:check-assertions
+
+  crypto-wasm:
+    name: "crypto/_wasm"
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # required to check for changes
           fetch-depth: 2
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to _wasm_crypto/
+      - name: Check for changes to crypto/_wasm
         id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
+          declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "WASM crypto source modified in this commit? $modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
+          echo "Wasm crypto source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in _wasm_crypto/rust-toolchain.toml:
-          rust-version: 1.57.0
+          # This must match the version in crypto/_wasm/rust-toolchain.toml
+          rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Set up wasm-bindgen-cli
-        run: |-
-          # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.78
+      - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
+        run: deno task build:crypto --check
 
-      - name: Rebuild WASM
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          ./_wasm_crypto/_build.ts
+  varint-wasm:
+    name: "varint/_wasm"
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        with:
+          # required to check for changes
+          fetch-depth: 2
+          submodules: false
+          persist-credentials: false
 
-      - name: Verify WASM hasn't changed
-        id: build
-        if: success() && steps.source.outputs.modified == 'true'
+      - name: Check for changes to varint/_wasm
+        id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git status --porcelain)"
-          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "Generated code modified? $modified"
+          declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm)"
+          declare modified="$([[ "$modifications" ]] && echo true || echo false)"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
+          echo "Wasm varint source modified in this commit? $modified"
           echo "$modifications"
 
-          if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
-            exit 1
-          fi
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+        if: success() && steps.source.outputs.modified == 'true'
 
-      - name: Upload rebuilt ./_wasm_crypto/ as artifact if it didn't match committed
-        if: failure() && steps.build.outputs.modified == 'true'
-        uses: actions/upload-artifact@v2
+      - name: Set up Rust
+        uses: hecrj/setup-rust-action@v1
+        if: success() && steps.source.outputs.modified == 'true'
         with:
-          name: Rebuilt _wasm_crypto
-          path: |-
-            ./_wasm_crypto/crypto.mjs
-            ./_wasm_crypto/crypto.wasm.mjs
+          # This must match the versions in encoding/varint/_wasm/rust-toolchain.toml
+          rust-version: 1.65.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt
+
+      - name: Rebuild Wasm and verify it hasn't changed
+        if: success() && steps.source.outputs.modified == 'true'
+        run: deno task build:varint --check

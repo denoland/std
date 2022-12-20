@@ -20,3 +20,7 @@ export class Point {
 export function stringifyPoint(point: Point) {
   return point.toString();
 }
+
+export type PointWithExtra = Point & {
+  nonExistent: () => number;
+};

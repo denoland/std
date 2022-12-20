@@ -42,6 +42,18 @@ export interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
 }
 
+export interface ParsedUrlQueryInput {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | ReadonlyArray<string>
+    | ReadonlyArray<number>
+    | ReadonlyArray<boolean>
+    | null
+    | undefined;
+}
+
 interface ParseOptions {
   /** The function to use when decoding percent-encoded characters in the query string. */
   decodeURIComponent?: (string: string) => string;
@@ -84,7 +96,7 @@ function addKeyVal(
   keyEncoded: boolean,
   valEncoded: boolean,
   decode: (encodedURIComponent: string) => string,
-): void {
+) {
   if (key.length > 0 && keyEncoded) {
     key = decode(key);
   }
@@ -433,7 +445,7 @@ const unhexTable = new Int8Array([
  * A safe fast alternative to decodeURIComponent
  */
 export function unescapeBuffer(s: string, decodeSpaces = false): Buffer {
-  const out = new Buffer(s.length);
+  const out = Buffer.alloc(s.length);
   let index = 0;
   let outIndex = 0;
   let currentChar;

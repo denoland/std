@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertObjectMatch } from "../testing/asserts.ts";
 import { fromFileUrl, relative } from "../path/mod.ts";
 import { EventEmitter, once } from "./events.ts";

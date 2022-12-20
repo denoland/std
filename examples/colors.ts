@@ -1,4 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+/** An example using `std/fmt/colors`.
+ *
+ * @module
+ */
+
 import { bgBlue, bold, italic, red } from "../fmt/colors.ts";
 
 if (import.meta.main) {

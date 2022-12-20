@@ -1,6 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/assert.ts";
-import { copy } from "../bytes/mod.ts";
+import { LimitedBytesTransformStream as _LimitedBytesTransformStream } from "./limited_bytes_transform_stream.ts";
+import { LimitedTransformStream as _LimitedTransformStream } from "./limited_transform_stream.ts";
+import { ByteSliceStream as _ByteSliceStream } from "./byte_slice_stream.ts";
+import { assert } from "../_util/asserts.ts";
+import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
@@ -60,10 +63,9 @@ export class Buffer {
    *
    * The slice is valid for use only until the next buffer modification (that
    * is, only until the next call to a method like `read()`, `write()`,
-   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases the buffer content at
-   * least until the next buffer modification, so immediate changes to the
-   * slice will affect the result of future reads.
-   * @param options Defaults to `{ copy: true }`
+   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases
+   * the buffer content at least until the next buffer modification, so
+   * immediate changes to the slice will affect the result of future reads.
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
@@ -89,7 +91,7 @@ export class Buffer {
   /** Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
    * negative or greater than the length of the buffer. */
-  truncate(n: number): void {
+  truncate(n: number) {
     if (n === 0) {
       this.reset();
       return;
@@ -100,7 +102,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
-  reset(): void {
+  reset() {
     this.#reslice(0);
     this.#off = 0;
   }
@@ -158,7 +160,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.Grow](https://golang.org/pkg/bytes/#Buffer.Grow). */
-  grow(n: number): void {
+  grow(n: number) {
     if (n < 0) {
       throw Error("Buffer.grow: negative count");
     }
@@ -167,7 +169,10 @@ export class Buffer {
   }
 }
 
-/** A TransformStream that will only read & enqueue `size` amount of bytes.
+/**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
+ *
+ * A TransformStream that will only read & enqueue `size` amount of bytes.
  * This operation is chunk based and not BYOB based,
  * and as such will read more than needed.
  *
@@ -175,60 +180,41 @@ export class Buffer {
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedBytesTransformStream } from "./buffer.ts";
+ * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
  * ```
  */
-export class LimitedBytesTransformStream
-  extends TransformStream<Uint8Array, Uint8Array> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + chunk.byteLength) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded byte size limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read += chunk.byteLength;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
+export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
 
-/** A TransformStream that will only read & enqueue `size` amount of chunks.
+/**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_transform_stream.ts` instead.
+ *
+ * A TransformStream that will only read & enqueue `size` amount of chunks.
  *
  * if options.error is set, then instead of terminating the stream,
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedTransformStream } from "./buffer.ts";
+ * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```
  */
-export class LimitedTransformStream<T> extends TransformStream<T, T> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + 1) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded chunk limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read++;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
+export const LimitedTransformStream = _LimitedTransformStream;
+
+/**
+ * @deprecated (will be removed after 0.169.0) Import from `std/streams/byte_slice_stream.ts` instead.
+ *
+ * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
+ *
+ * @example
+ * ```ts
+ * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+ * const response = await fetch("https://example.com");
+ * const rangedStream = response.body!
+ *   .pipeThrough(new ByteSliceStream(3, 8));
+ * ```
+ */
+export const ByteSliceStream = _ByteSliceStream;

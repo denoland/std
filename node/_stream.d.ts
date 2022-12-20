@@ -3,6 +3,7 @@
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
 
+import { Buffer } from "./buffer.ts";
 import { Abortable, EventEmitter } from "./_events.d.ts";
 import {
   Buffered,
@@ -35,7 +36,7 @@ interface StreamOptions<T extends Stream> extends Abortable {
   ): void;
   autoDestroy?: boolean | undefined;
 }
-interface ReadableOptions extends StreamOptions<Readable> {
+export interface ReadableOptions extends StreamOptions<Readable> {
   encoding?: BufferEncoding | undefined;
   read?(this: Readable, size: number): void;
 }
@@ -50,6 +51,20 @@ export class Readable extends Stream implements ReadableStream {
     iterable: Iterable<any> | AsyncIterable<any>,
     options?: ReadableOptions,
   ): Readable;
+
+  /**
+   * A utility method for creating `Readable` from a `ReadableStream`.
+   * @since v17.0.0
+   * @experimental
+   */
+  static fromWeb(
+    readableStream: globalThis.ReadableStream,
+    options?: Pick<
+      ReadableOptions,
+      "encoding" | "highWaterMark" | "objectMode" | "signal"
+    >,
+  ): Readable;
+
   /**
    * Returns whether the stream has been read from or cancelled.
    * @since v16.8.0
@@ -516,6 +531,19 @@ export interface WritableOptions extends StreamOptions<Writable> {
  */
 export class Writable extends Stream implements WritableStream {
   /**
+   * A utility method for creating `Writable` from a `WritableStream`.
+   * @since v17.0.0
+   * @experimental
+   */
+  static fromWeb(
+    writableStream: globalThis.WritableStream,
+    options?: Pick<
+      WritableOptions,
+      "decodeStrings" | "highWaterMark" | "objectMode" | "signal"
+    >,
+  ): Writable;
+
+  /**
    * Is `true` if it is safe to call `writable.write()`, which means
    * the stream has not been destroyed, errored or ended.
    * @since v11.4.0
@@ -561,6 +589,11 @@ export class Writable extends Stream implements WritableStream {
    * @since v8.0.0
    */
   destroyed: boolean;
+  /**
+   * Is true after 'close' has been emitted.
+   * @since v8.0.0
+   */
+  readonly closed: boolean;
   constructor(opts?: WritableOptions);
   _write(
     chunk: any,
@@ -866,6 +899,7 @@ export class Duplex extends Readable implements Writable {
   readonly writableLength: number;
   readonly writableObjectMode: boolean;
   readonly writableCorked: number;
+  readonly closed: boolean;
   /**
    * If `false` then the stream will automatically end the writable side when the
    * readable side ends. Set initially by the `allowHalfOpen` constructor option,
@@ -995,7 +1029,7 @@ export class Transform extends Duplex {
 }
 /**
  * The `stream.PassThrough` class is a trivial implementation of a `Transform` stream that simply passes the input bytes across to the output. Its purpose is
- * primarily for examples and testing, but there are some use cases where`stream.PassThrough` is useful as a building block for novel sorts of streams.
+ * primarily for examples and testing, but there are some use cases where `stream.PassThrough` is useful as a building block for novel sorts of streams.
  */
 export class PassThrough extends Transform {}
 /**
@@ -1157,9 +1191,9 @@ type PipelineDestinationPromiseFunction<T, P> = (
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
   PipelineTransformSource<infer ST> ? 
-  | WritableStream
-  | PipelineDestinationIterableFunction<ST>
-  | PipelineDestinationPromiseFunction<ST, P>
+    | WritableStream
+    | PipelineDestinationIterableFunction<ST>
+    | PipelineDestinationPromiseFunction<ST, P>
   : never;
 type PipelineCallback<S extends PipelineDestination<any, any>> = S extends
   PipelineDestinationPromiseFunction<any, infer P>
@@ -1450,5 +1484,5 @@ interface Pipe {
 }
 
 // These have to be at the bottom of the file to work correctly, for some reason
-export { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
-export { isUint8Array as _isUint8Array } from "./internal/util/types.ts";
+export function _uint8ArrayToBuffer(chunk: Uint8Array): Buffer;
+export function _isUint8Array(value: unknown): value is Uint8Array;

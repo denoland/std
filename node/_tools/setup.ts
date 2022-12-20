@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run --no-check=remote --allow-read=. --allow-write=.
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { gunzip } from "https://deno.land/x/denoflate@1.2.1/mod.ts";
-import { Untar } from "../../archive/tar.ts";
+import { Foras, gunzip } from "https://deno.land/x/denoflate@2.0.2/deno/mod.ts";
+import { Untar } from "../../archive/untar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
   basename,
@@ -15,8 +15,13 @@ import {
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
-import { copy, readAll, writeAll } from "../../streams/conversion.ts";
+import { copy } from "../../streams/copy.ts";
+import { readAll } from "../../streams/read_all.ts";
+import { writeAll } from "../../streams/write_all.ts";
 import { downloadFile } from "../../_util/download_file.ts";
+import { updateToDo } from "./list_remaining_tests.ts";
+
+Foras.initSyncBundledOnce();
 
 /**
  * This script will download and extract the test files specified in the
@@ -30,6 +35,8 @@ import { downloadFile } from "../../_util/download_file.ts";
  * You can additionally pass a flag to indicate if cache should be used for generating
  * the tests, or to generate the tests from scratch (-y/-n)
  */
+
+Foras.initSyncBundledOnce();
 
 const USE_CACHE = Deno.args.includes("-y");
 const DONT_USE_CACHE = Deno.args.includes("-n");
@@ -49,26 +56,17 @@ if (USE_CACHE) {
   CACHE_MODE = "prompt";
 }
 
-const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
-const NODE_FILE = "node-vNODE_VERSION";
+const NODE_URL = "https://nodejs.org/dist/v" + config.nodeVersion;
+const NODE_FILE = "node-v" + config.nodeVersion;
 const NODE_ARCHIVE_FILE = `${NODE_FILE}.tar.gz`;
 const NATIVE_NODE_TESTS_FOLDER = "/test";
 
 /** URL for the download */
-const url = `${NODE_URL}/${NODE_ARCHIVE_FILE}`.replaceAll(
-  "NODE_VERSION",
-  config.nodeVersion,
-);
+const url = `${NODE_URL}/${NODE_ARCHIVE_FILE}`;
 /** Local archive's url location */
-const archivePath = join(
-  config.versionsFolder,
-  NODE_ARCHIVE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
-);
+const archivePath = join(config.versionsFolder, NODE_ARCHIVE_FILE);
 /** Local decompressed source's location */
-const decompressedSourcePath = join(
-  config.versionsFolder,
-  NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
-);
+const decompressedSourcePath = join(config.versionsFolder, NODE_FILE);
 
 function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
   for (const testFileList of testFileLists) {
@@ -110,14 +108,11 @@ async function decompressTests(archivePath: string) {
   );
 
   const buffer = new Buffer(gunzip(await readAll(compressedFile)));
-  Deno.close(compressedFile.rid);
+  compressedFile.close();
 
   const tar = new Untar(buffer);
   const outFolder = dirname(fromFileUrl(new URL(archivePath, import.meta.url)));
-  const testsFolder = `${NODE_FILE}${NATIVE_NODE_TESTS_FOLDER}`.replace(
-    "NODE_VERSION",
-    config.nodeVersion,
-  );
+  const testsFolder = `${NODE_FILE}${NATIVE_NODE_TESTS_FOLDER}`;
 
   for await (const entry of tar) {
     if (entry.type !== "file") continue;
@@ -143,7 +138,7 @@ function getRequestedFileSuite(
   file: string,
   expectedSuite: string,
 ): string | undefined {
-  if (!config.tests[expectedSuite]) {
+  if (!Array.isArray(config.tests[expectedSuite])) {
     return;
   }
 
@@ -154,7 +149,7 @@ function getRequestedFileSuite(
   }
 }
 
-async function copyTests(filePath: string): Promise<void> {
+async function copyTests(filePath: string) {
   console.log("Copying test files...");
   const path = join(
     fromFileUrl(new URL(filePath, import.meta.url)),
@@ -165,7 +160,12 @@ async function copyTests(filePath: string): Promise<void> {
   );
 
   for await (const entry of walk(path, { skip: ignoreList })) {
-    const expectedSuite = dirname(entry.path).split(sep).at(-1)!;
+    const fragments = entry.path.split(sep);
+    // Note: When the path is, for example,
+    // "/path/to/deno_std/node/_tools/versions/node-v18.12.0/test/fixtures/policy/main.mjs"
+    // then expectedSuite becomes "fixtures/policy" (The folder after "test" becomes "suite")
+    const expectedSuite = fragments.slice(fragments.indexOf(NODE_FILE) + 2, -1)
+      .join("/");
     const suite = getRequestedFileSuite(entry.name, expectedSuite);
     if (!suite) continue;
 
@@ -196,6 +196,7 @@ async function copyTests(filePath: string): Promise<void> {
   }
 }
 
+// main
 let shouldDownload = false;
 if (CACHE_MODE === "prompt") {
   let testArchiveExists = false;
@@ -277,3 +278,4 @@ if (shouldDecompress) {
 
 await clearTests();
 await copyTests(decompressedSourcePath);
+await updateToDo();

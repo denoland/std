@@ -1,12 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { access, accessSync } from "./_fs/_fs_access.ts";
-import { appendFile, appendFileSync } from "./_fs/_fs_appendFile.ts";
-import { chmod, chmodSync } from "./_fs/_fs_chmod.ts";
-import { chown, chownSync } from "./_fs/_fs_chown.ts";
+import { access, accessPromise, accessSync } from "./_fs/_fs_access.ts";
+import {
+  appendFile,
+  appendFilePromise,
+  appendFileSync,
+} from "./_fs/_fs_appendFile.ts";
+import { chmod, chmodPromise, chmodSync } from "./_fs/_fs_chmod.ts";
+import { chown, chownPromise, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
-import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
-import { copyFile, copyFileSync } from "./_fs/_fs_copy.ts";
+import { copyFile, copyFilePromise, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
 import Dirent from "./_fs/_fs_dirent.ts";
 import { exists, existsSync } from "./_fs/_fs_exists.ts";
@@ -15,71 +18,99 @@ import { fstat, fstatSync } from "./_fs/_fs_fstat.ts";
 import { fsync, fsyncSync } from "./_fs/_fs_fsync.ts";
 import { ftruncate, ftruncateSync } from "./_fs/_fs_ftruncate.ts";
 import { futimes, futimesSync } from "./_fs/_fs_futimes.ts";
-import { link, linkSync } from "./_fs/_fs_link.ts";
-import { lstat, lstatSync } from "./_fs/_fs_lstat.ts";
-import { mkdir, mkdirSync } from "./_fs/_fs_mkdir.ts";
-import { mkdtemp, mkdtempSync } from "./_fs/_fs_mkdtemp.ts";
-import { open, openSync } from "./_fs/_fs_open.ts";
+import { link, linkPromise, linkSync } from "./_fs/_fs_link.ts";
+import { lstat, lstatPromise, lstatSync } from "./_fs/_fs_lstat.ts";
+import { mkdir, mkdirPromise, mkdirSync } from "./_fs/_fs_mkdir.ts";
+import { mkdtemp, mkdtempPromise, mkdtempSync } from "./_fs/_fs_mkdtemp.ts";
+import { open, openPromise, openSync } from "./_fs/_fs_open.ts";
+import { opendir, opendirPromise, opendirSync } from "./_fs/_fs_opendir.ts";
 import { read, readSync } from "./_fs/_fs_read.ts";
-import { readdir, readdirSync } from "./_fs/_fs_readdir.ts";
-import { readFile, readFileSync } from "./_fs/_fs_readFile.ts";
-import { readlink, readlinkSync } from "./_fs/_fs_readlink.ts";
-import { realpath, realpathSync } from "./_fs/_fs_realpath.ts";
-import { rename, renameSync } from "./_fs/_fs_rename.ts";
-import { rmdir, rmdirSync } from "./_fs/_fs_rmdir.ts";
-import { rm, rmSync } from "./_fs/_fs_rm.ts";
-import { stat, statSync } from "./_fs/_fs_stat.ts";
-import { symlink, symlinkSync } from "./_fs/_fs_symlink.ts";
-import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
-import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
-import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
-import { watch, watchFile } from "./_fs/_fs_watch.ts";
+import { readdir, readdirPromise, readdirSync } from "./_fs/_fs_readdir.ts";
+import { readFile, readFilePromise, readFileSync } from "./_fs/_fs_readFile.ts";
+import { readlink, readlinkPromise, readlinkSync } from "./_fs/_fs_readlink.ts";
+import { realpath, realpathPromise, realpathSync } from "./_fs/_fs_realpath.ts";
+import { rename, renamePromise, renameSync } from "./_fs/_fs_rename.ts";
+import { rmdir, rmdirPromise, rmdirSync } from "./_fs/_fs_rmdir.ts";
+import { rm, rmPromise, rmSync } from "./_fs/_fs_rm.ts";
+import { stat, statPromise, statSync } from "./_fs/_fs_stat.ts";
+import { symlink, symlinkPromise, symlinkSync } from "./_fs/_fs_symlink.ts";
+import { truncate, truncatePromise, truncateSync } from "./_fs/_fs_truncate.ts";
+import { unlink, unlinkPromise, unlinkSync } from "./_fs/_fs_unlink.ts";
+import { utimes, utimesPromise, utimesSync } from "./_fs/_fs_utimes.ts";
+import {
+  unwatchFile,
+  watch,
+  watchFile,
+  watchPromise,
+} from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
 import { write, writeSync } from "./_fs/_fs_write.mjs";
 // @deno-types="./_fs/_fs_writev.d.ts"
 import { writev, writevSync } from "./_fs/_fs_writev.mjs";
-import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
+import {
+  writeFile,
+  writeFilePromise,
+  writeFileSync,
+} from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
-import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
-
-import { promisify } from "./util.ts";
+// @deno-types="./internal/fs/streams.d.ts"
+import {
+  createReadStream,
+  createWriteStream,
+  ReadStream,
+  WriteStream,
+} from "./internal/fs/streams.mjs";
 
 const {
   F_OK,
   R_OK,
   W_OK,
   X_OK,
+  O_RDONLY,
+  O_WRONLY,
+  O_RDWR,
+  O_NOCTTY,
+  O_TRUNC,
+  O_APPEND,
+  O_DIRECTORY,
+  O_NOFOLLOW,
+  O_SYNC,
+  O_DSYNC,
+  O_SYMLINK,
+  O_NONBLOCK,
+  O_CREAT,
+  O_EXCL,
 } = constants;
 
 const promises = {
-  access: promisify(access),
-  copyFile: promisify(copyFile),
-  open: promisify(open),
-  // opendir: promisify(opendir),
-  rename: promisify(rename),
-  truncate: promisify(truncate),
-  rm: promisify(rm),
-  rmdir: promisify(rmdir),
-  mkdir: promisify(mkdir),
-  readdir: promisify(readdir),
-  readlink: promisify(readlink),
-  symlink: promisify(symlink),
-  lstat: promisify(lstat),
-  stat: promisify(stat),
-  link: promisify(link),
-  unlink: promisify(unlink),
-  chmod: promisify(chmod),
+  access: accessPromise,
+  copyFile: copyFilePromise,
+  open: openPromise,
+  opendir: opendirPromise,
+  rename: renamePromise,
+  truncate: truncatePromise,
+  rm: rmPromise,
+  rmdir: rmdirPromise,
+  mkdir: mkdirPromise,
+  readdir: readdirPromise,
+  readlink: readlinkPromise,
+  symlink: symlinkPromise,
+  lstat: lstatPromise,
+  stat: statPromise,
+  link: linkPromise,
+  unlink: unlinkPromise,
+  chmod: chmodPromise,
   // lchmod: promisify(lchmod),
   // lchown: promisify(lchown),
-  chown: promisify(chown),
-  utimes: promisify(utimes),
+  chown: chownPromise,
+  utimes: utimesPromise,
   // lutimes = promisify(lutimes),
-  realpath: promisify(realpath),
-  mkdtemp: promisify(mkdtemp),
-  writeFile: promisify(writeFile),
-  appendFile: promisify(appendFile),
-  readFile: promisify(readFile),
-  watch: promisify(watch),
+  realpath: realpathPromise,
+  mkdtemp: mkdtempPromise,
+  writeFile: writeFilePromise,
+  appendFile: appendFilePromise,
+  readFile: readFilePromise,
+  watch: watchPromise,
 };
 
 export default {
@@ -121,8 +152,24 @@ export default {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
   openSync,
+  opendir,
+  opendirSync,
   read,
   readSync,
   promises,
@@ -151,6 +198,7 @@ export default {
   truncateSync,
   unlink,
   unlinkSync,
+  unwatchFile,
   utimes,
   utimesSync,
   W_OK,
@@ -180,6 +228,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createReadStream,
   createWriteStream,
   Dir,
   Dirent,
@@ -204,7 +253,23 @@ export {
   mkdirSync,
   mkdtemp,
   mkdtempSync,
+  O_APPEND,
+  O_CREAT,
+  O_DIRECTORY,
+  O_DSYNC,
+  O_EXCL,
+  O_NOCTTY,
+  O_NOFOLLOW,
+  O_NONBLOCK,
+  O_RDONLY,
+  O_RDWR,
+  O_SYMLINK,
+  O_SYNC,
+  O_TRUNC,
+  O_WRONLY,
   open,
+  opendir,
+  opendirSync,
   openSync,
   promises,
   R_OK,
@@ -215,6 +280,7 @@ export {
   readFileSync,
   readlink,
   readlinkSync,
+  ReadStream,
   readSync,
   realpath,
   realpathSync,
@@ -233,6 +299,7 @@ export {
   truncateSync,
   unlink,
   unlinkSync,
+  unwatchFile,
   utimes,
   utimesSync,
   W_OK,

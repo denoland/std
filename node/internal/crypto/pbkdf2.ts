@@ -24,9 +24,8 @@ export type Algorithms =
   | "sha384"
   | "sha512";
 
-const createHasher = (algorithm: string) =>
-  (value: Uint8Array) =>
-    Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
+const createHasher = (algorithm: string) => (value: Uint8Array) =>
+  Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
 
 function getZeroes(zeros: number) {
   return Buffer.alloc(zeros);
@@ -159,7 +158,7 @@ export function pbkdf2(
   keylen: number,
   digest: Algorithms = "sha1",
   callback: (err: Error | null, derivedKey?: Buffer) => void,
-): void {
+) {
   setTimeout(() => {
     let err = null,
       res;
@@ -177,6 +176,8 @@ export function pbkdf2(
 }
 
 export default {
+  Hmac,
+  MAX_ALLOC,
   pbkdf2,
   pbkdf2Sync,
 };

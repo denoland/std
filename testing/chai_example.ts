@@ -1,9 +1,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
+ * An example of using [ChaiJs](https://www.chaijs.com/) with `Deno.test()`.
+ *
  * Run this example with:
  *
- * deno test ./testing/chai_example.ts
+ * ```shellsession
+ * $ deno test ./testing/chai_example.ts
+ * ```
+ *
+ * @module
  */
+
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 
 const foo = "bar";

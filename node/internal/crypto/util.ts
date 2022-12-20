@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-import { digestAlgorithms } from "../../../_wasm_crypto/mod.ts";
 import { getCiphers } from "../../_crypto/crypto_browserify/browserify_aes/mod.js";
 import { notImplemented } from "../../_utils.ts";
 import { Buffer } from "../../buffer.ts";
@@ -10,9 +9,38 @@ import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
 import { crypto as constants } from "../../internal_binding/constants.ts";
 import { kHandle, kKeyObject } from "./constants.ts";
 
+// TODO(kt3k): Generate this list from `digestAlgorithms`
+// of std/crypto/_wasm/mod.ts
+const digestAlgorithms = [
+  "blake2b256",
+  "blake2b384",
+  "blake2b",
+  "blake2s",
+  "blake3",
+  "keccak-224",
+  "keccak-256",
+  "keccak-384",
+  "keccak-512",
+  "sha384",
+  "sha3-224",
+  "sha3-256",
+  "sha3-384",
+  "sha3-512",
+  "shake128",
+  "shake256",
+  "tiger",
+  "rmd160",
+  "sha224",
+  "sha256",
+  "sha512",
+  "md4",
+  "md5",
+  "sha1",
+];
+
 let defaultEncoding = "buffer";
 
-export function setDefaultEncoding(val: string): void {
+export function setDefaultEncoding(val: string) {
   defaultEncoding = val;
 }
 
@@ -71,7 +99,7 @@ export function secureHeapUsed(): SecureHeapUsage {
   notImplemented("crypto.secureHeapUsed");
 }
 
-export function setEngine(_engine: string, _flags: typeof constants): void {
+export function setEngine(_engine: string, _flags: typeof constants) {
   notImplemented("crypto.setEngine");
 }
 

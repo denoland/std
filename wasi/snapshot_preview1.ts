@@ -1,7 +1,78 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-unused-vars
 
-import * as DenoUnstable from "../_deno_unstable.ts";
+/**
+ * Provides an implementation of the
+ * [WebAssembly System Interface](https://wasi.dev/).
+ *
+ * ## Supported Syscalls
+ * - [x] args_get
+ * - [x] args_sizes_get
+ * - [x] environ_get
+ * - [x] environ_sizes_get
+ * - [x] clock_res_get
+ * - [x] clock_time_get
+ * - [ ] fd_advise
+ * - [ ] fd_allocate
+ * - [x] fd_close
+ * - [x] fd_datasync
+ * - [x] fd_fdstat_get
+ * - [ ] fd_fdstat_set_flags
+ * - [ ] fd_fdstat_set_rights
+ * - [x] fd_filestat_get
+ * - [x] fd_filestat_set_size
+ * - [x] fd_filestat_set_times
+ * - [x] fd_pread
+ * - [x] fd_prestat_get
+ * - [x] fd_prestat_dir_name
+ * - [x] fd_pwrite
+ * - [x] fd_read
+ * - [x] fd_readdir
+ * - [x] fd_renumber
+ * - [x] fd_seek
+ * - [x] fd_sync
+ * - [x] fd_tell
+ * - [x] fd_write
+ * - [x] path_create_directory
+ * - [x] path_filestat_get
+ * - [x] path_filestat_set_times
+ * - [x] path_link
+ * - [x] path_open
+ * - [x] path_readlink
+ * - [x] path_remove_directory
+ * - [x] path_rename
+ * - [x] path_symlink
+ * - [x] path_unlink_file
+ * - [x] poll_oneoff
+ * - [x] proc_exit
+ * - [ ] proc_raise
+ * - [x] sched_yield
+ * - [x] random_get
+ * - [ ] sock_recv
+ * - [ ] sock_send
+ * - [ ] sock_shutdown
+ *
+ * @example
+ * ```ts
+ * import Context from "https://deno.land/std@$STD_VERSION/wasi/snapshot_preview1.ts";
+ *
+ * const context = new Context({
+ *   args: Deno.args,
+ *   env: Deno.env.toObject(),
+ * });
+ *
+ * const binary = await Deno.readFile("path/to/your/module.wasm");
+ * const module = await WebAssembly.compile(binary);
+ * const instance = await WebAssembly.instantiate(module, {
+ *   "wasi_snapshot_preview1": context.exports,
+ * });
+ *
+ * context.start(instance);
+ * ```
+ *
+ * @module
+ */
+
 import { relative, resolve } from "../path/mod.ts";
 
 const CLOCKID_REALTIME = 0;
@@ -727,7 +798,7 @@ export default class Context {
           mtim = BigInt(Date.now() * 1e6);
         }
 
-        DenoUnstable.utimeSync(entry.path!, Number(atim), Number(mtim));
+        Deno.utimeSync(entry.path!, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),
@@ -1221,7 +1292,7 @@ export default class Context {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        DenoUnstable.utimeSync(path, Number(atim), Number(mtim));
+        Deno.utimeSync(path, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),
@@ -1733,12 +1804,11 @@ export default class Context {
       );
     }
 
-    if (typeof _initialize != "function") {
+    if (_initialize && typeof _initialize != "function") {
       throw new TypeError(
-        "WebAsembly.instance export _initialize must be a function",
+        "WebAssembly.Instance export _initialize must be a function or not be defined",
       );
     }
-
-    _initialize();
+    _initialize?.();
   }
 }

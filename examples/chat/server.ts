@@ -1,10 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { fromFileUrl } from "../../path/mod.ts";
-import { readableStreamFromReader } from "../../streams/conversion.ts";
+import { readableStreamFromReader } from "../../streams/readable_stream_from_reader.ts";
 
 const clients = new Map<number, WebSocket>();
 let clientId = 0;
-function dispatch(msg: string): void {
+function dispatch(msg: string) {
   for (const client of clients.values()) {
     client.send(msg);
   }

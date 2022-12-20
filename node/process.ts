@@ -1,13 +1,17 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
-import { warnNotImplemented } from "./_utils.ts";
+
+import { notImplemented, warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
-import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_UNKNOWN_SIGNAL,
+  errnoException,
+} from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
-import { assert } from "../_util/assert.ts";
-import { fromFileUrl } from "../path/mod.ts";
+import { assert } from "../_util/asserts.ts";
+import { fromFileUrl, join } from "../path/mod.ts";
 import {
   arch,
   chdir,
@@ -23,6 +27,7 @@ import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
+  argv,
   chdir,
   cwd,
   env,
@@ -36,6 +41,9 @@ import {
   stdin as stdin_,
   stdout as stdout_,
 } from "./_process/streams.mjs";
+import { core } from "./_core.ts";
+import { processTicksAndRejections } from "./_next_tick.ts";
+
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
 const stderr = stderr_ as any;
@@ -45,18 +53,20 @@ const stdin = stdin_ as any;
 const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
+import * as constants from "./internal_binding/constants.ts";
+import * as uv from "./internal_binding/uv.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoCommand = Deno[Deno.internal]?.nodeUnstable?.Command ||
+  Deno.Command;
+
 const notImplementedEvents = [
-  "beforeExit",
   "disconnect",
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "uncaughtException",
-  "uncaughtExceptionMonitor",
-  "unhandledRejection",
   "worker",
 ];
 
@@ -66,7 +76,15 @@ const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
-Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+Object.defineProperty(argv, "1", {
+  get: () => {
+    if (Deno.mainModule.startsWith("file:")) {
+      return fromFileUrl(Deno.mainModule);
+    } else {
+      return join(Deno.cwd(), "$deno$node.js");
+    }
+  },
+});
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number | string) => {
@@ -81,6 +99,9 @@ export const exit = (code?: number | string) => {
 
   if (!process._exiting) {
     process._exiting = true;
+    // FIXME(bartlomieju): this is wrong, we won't be using syscall to exit
+    // and thus the `unload` event will not be emitted to properly trigger "emit"
+    // event on `process`.
     process.emit("exit", process.exitCode || 0);
   }
 
@@ -200,7 +221,7 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
-function hrtime(time?: [number, number]): [number, number] {
+export function hrtime(time?: [number, number]): [number, number] {
   const milli = performance.now();
   const sec = Math.floor(milli / 1000);
   const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
@@ -216,7 +237,7 @@ hrtime.bigint = function (): BigInt {
   return BigInt(sec) * 1_000_000_000n + BigInt(nano);
 };
 
-function memoryUsage(): {
+export function memoryUsage(): {
   rss: number;
   heapTotal: number;
   heapUsed: number;
@@ -233,30 +254,129 @@ memoryUsage.rss = function (): number {
   return memoryUsage().rss;
 };
 
-export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
+// Returns a negative error code than can be recognized by errnoException
+function _kill(pid: number, sig: number): number {
+  let errCode;
+
+  if (sig === 0) {
+    let status;
+    if (Deno.build.os === "windows") {
+      status = (new DenoCommand("powershell.exe", {
+        args: ["Get-Process", "-pid", pid],
+      })).outputSync();
+    } else {
+      status = (new DenoCommand("kill", {
+        args: ["-0", pid],
+      })).outputSync();
+    }
+
+    if (!status.success) {
+      errCode = uv.codeMap.get("ESRCH");
+    }
+  } else {
+    // Reverse search the shortname based on the numeric code
+    const maybeSignal = Object.entries(constants.os.signals).find((
+      [_, numericCode],
+    ) => numericCode === sig);
+
+    if (!maybeSignal) {
+      errCode = uv.codeMap.get("EINVAL");
+    } else {
+      try {
+        Deno.kill(pid, maybeSignal[0] as Deno.Signal);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          throw notImplemented(maybeSignal[0]);
+        }
+
+        throw e;
+      }
+    }
+  }
+
+  if (!errCode) {
+    return 0;
+  } else {
+    return errCode;
+  }
+}
+
+export function kill(pid: number, sig: string | number = "SIGTERM") {
   if (pid != (pid | 0)) {
     throw new ERR_INVALID_ARG_TYPE("pid", "number", pid);
   }
 
-  if (typeof sig === "string") {
-    try {
-      Deno.kill(pid, sig);
-    } catch (e) {
-      if (e instanceof TypeError) {
-        throw new ERR_UNKNOWN_SIGNAL(sig);
-      }
-      throw e;
-    }
+  let err;
+  if (typeof sig === "number") {
+    err = process._kill(pid, sig);
   } else {
-    throw new ERR_UNKNOWN_SIGNAL(sig.toString());
+    if (sig in constants.os.signals) {
+      // @ts-ignore Index previously checked
+      err = process._kill(pid, constants.os.signals[sig]);
+    } else {
+      throw new ERR_UNKNOWN_SIGNAL(sig);
+    }
+  }
+
+  if (err) {
+    throw errnoException(err, "kill");
   }
 
   return true;
 }
 
+// deno-lint-ignore no-explicit-any
+function uncaughtExceptionHandler(err: any, origin: string) {
+  // The origin parameter can be 'unhandledRejection' or 'uncaughtException'
+  // depending on how the uncaught exception was created. In Node.js,
+  // exceptions thrown from the top level of a CommonJS module are reported as
+  // 'uncaughtException', while exceptions thrown from the top level of an ESM
+  // module are reported as 'unhandledRejection'. Deno does not have a true
+  // CommonJS implementation, so all exceptions thrown from the top level are
+  // reported as 'uncaughtException'.
+  process.emit("uncaughtExceptionMonitor", err, origin);
+  process.emit("uncaughtException", err, origin);
+}
+
+let execPath: string | null = null;
+
 export class Process extends EventEmitter {
   constructor() {
     super();
+
+    globalThis.addEventListener("unhandledrejection", (event) => {
+      if (process.listenerCount("unhandledRejection") === 0) {
+        // The Node.js default behavior is to raise an uncaught exception if
+        // an unhandled rejection occurs and there are no unhandledRejection
+        // listeners.
+        if (process.listenerCount("uncaughtException") === 0) {
+          throw event.reason;
+        }
+
+        event.preventDefault();
+        uncaughtExceptionHandler(event.reason, "unhandledRejection");
+        return;
+      }
+
+      event.preventDefault();
+      process.emit("unhandledRejection", event.reason, event.promise);
+    });
+
+    globalThis.addEventListener("error", (event) => {
+      if (process.listenerCount("uncaughtException") > 0) {
+        event.preventDefault();
+      }
+
+      uncaughtExceptionHandler(event.error, "uncaughtException");
+    });
+
+    globalThis.addEventListener("beforeunload", (e) => {
+      super.emit("beforeExit", process.exitCode || 0);
+      processTicksAndRejections();
+      if (core.eventLoopHasMoreWork()) {
+        e.preventDefault();
+      }
+    });
 
     globalThis.addEventListener("unload", () => {
       if (!process._exiting) {
@@ -326,8 +446,10 @@ export class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.on(event, listener);
@@ -350,8 +472,10 @@ export class Process extends EventEmitter {
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
+      } else if (event === "SIGTERM" && Deno.build.os === "windows") {
+        // Ignores SIGTERM on windows.
       } else {
-        DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
+        Deno.removeSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.off(event, listener);
@@ -396,7 +520,7 @@ export class Process extends EventEmitter {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
       } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+        Deno.addSignalListener(event as Deno.Signal, listener);
       }
     } else {
       super.prependListener(event, listener);
@@ -465,6 +589,13 @@ export class Process extends EventEmitter {
    */
   hrtime = hrtime;
 
+  /**
+   * @private
+   *
+   * NodeJS internal, use process.kill instead
+   */
+  _kill = _kill;
+
   /** https://nodejs.org/api/process.html#processkillpid-signal */
   kill = kill;
 
@@ -501,16 +632,14 @@ export class Process extends EventEmitter {
     return 0o22;
   }
 
-  /** https://nodejs.org/api/process.html#processgetuid */
-  getuid(): number {
-    // TODO(kt3k): return user id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getgid?(): number {
+    return Deno.gid()!;
   }
 
-  /** https://nodejs.org/api/process.html#processgetgid */
-  getgid(): number {
-    // TODO(kt3k): return group id in mac and linux
-    return NaN;
+  /** This method is removed on Windows */
+  getuid?(): number {
+    return Deno.uid()!;
   }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
@@ -518,7 +647,15 @@ export class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processexecpath */
   get execPath() {
-    return argv[0];
+    if (execPath) {
+      return execPath;
+    }
+    execPath = Deno.execPath();
+    return execPath;
+  }
+
+  set execPath(path: string) {
+    execPath = path;
   }
 
   #startTime = Date.now();
@@ -534,6 +671,11 @@ export class Process extends EventEmitter {
   }
 
   features = { inspector: false };
+}
+
+if (Deno.build.os === "windows") {
+  delete Process.prototype.getgid;
+  delete Process.prototype.getuid;
 }
 
 /** https://nodejs.org/api/process.html#process_process */

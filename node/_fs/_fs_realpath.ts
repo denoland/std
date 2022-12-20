@@ -1,4 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { promisify } from "../internal/util.mjs";
+
 type Options = { encoding: string };
 type Callback = (err: Error | null, path?: string) => void;
 
@@ -20,6 +22,11 @@ export function realpath(
 }
 
 realpath.native = realpath;
+
+export const realpathPromise = promisify(realpath) as (
+  path: string,
+  options?: Options,
+) => Promise<string>;
 
 export function realpathSync(path: string): string {
   return Deno.realPathSync(path);

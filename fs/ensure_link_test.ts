@@ -26,12 +26,12 @@ Deno.test("ensureLinkIfItNotExist", async function () {
   await Deno.remove(destDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncIfItNotExist", function (): void {
+Deno.test("ensureLinkSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_2");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
 
-  assertThrows((): void => {
+  assertThrows(() => {
     ensureLinkSync(testFile, linkFile);
   });
 
@@ -85,7 +85,7 @@ Deno.test("ensureLinkIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncIfItExist", function (): void {
+Deno.test("ensureLinkSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -152,7 +152,7 @@ Deno.test("ensureLinkDirectoryIfItExist", async function () {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncDirectoryIfItExist", function (): void {
+Deno.test("ensureLinkSyncDirectoryIfItExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_origin_3");
   const linkDir = path.join(testdataDir, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");
@@ -161,7 +161,7 @@ Deno.test("ensureLinkSyncDirectoryIfItExist", function (): void {
   Deno.writeFileSync(testFile, new Uint8Array());
 
   assertThrows(
-    (): void => {
+    () => {
       ensureLinkSync(testDir, linkDir);
     },
     // "Operation not permitted (os error 1)" // throw an local matching test

@@ -1,66 +1,322 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
+ * Command line arguments parser based on
+ * [minimist](https://github.com/minimistjs/minimist).
+ *
  * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ *
+ * console.dir(parse(Deno.args));
+ * ```
+ *
+ * ```sh
+ * $ deno run https://deno.land/std/examples/flags.ts -a beep -b boop
+ * { _: [], a: 'beep', b: 'boop' }
+ * ```
+ *
+ * ```sh
+ * $ deno run https://deno.land/std/examples/flags.ts -x 3 -y 4 -n5 -abc --beep=boop foo bar baz
+ * { _: [ 'foo', 'bar', 'baz' ],
+ *   x: 3,
+ *   y: 4,
+ *   n: 5,
+ *   a: true,
+ *   b: true,
+ *   c: true,
+ *   beep: 'boop' }
+ * ```
  *
  * @module
  */
-import { assert } from "../_util/assert.ts";
+import { assert } from "../_util/asserts.ts";
+
+/** Combines recursively all intersection types and returns a new single type. */
+type Id<T> = T extends Record<string, unknown>
+  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
+  : T;
+
+/** Converts an union type `A | B | C` into an intersection type `A & B & C`. */
+type UnionToIntersection<T> =
+  (T extends unknown ? (args: T) => unknown : never) extends
+    (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
+    : never;
+
+type BooleanType = boolean | string | undefined;
+type StringType = string | undefined;
+type ArgType = StringType | BooleanType;
+
+type Collectable = string | undefined;
+type Negatable = string | undefined;
+
+type UseTypes<
+  B extends BooleanType,
+  S extends StringType,
+  C extends Collectable,
+> = undefined extends (
+  & (false extends B ? undefined : B)
+  & C
+  & S
+) ? false
+  : true;
+
+/**
+ * Creates a record with all available flags with the corresponding type and
+ * default type.
+ */
+type Values<
+  B extends BooleanType,
+  S extends StringType,
+  C extends Collectable,
+  N extends Negatable,
+  D extends Record<string, unknown> | undefined,
+  A extends Aliases | undefined,
+> = UseTypes<B, S, C> extends true ? 
+    & Record<string, unknown>
+    & AddAliases<
+      SpreadDefaults<
+        & CollectValues<S, string, C, N>
+        & RecursiveRequired<CollectValues<B, boolean, C>>
+        & CollectUnknownValues<B, S, C, N>,
+        DedotRecord<D>
+      >,
+      A
+    >
+  // deno-lint-ignore no-explicit-any
+  : Record<string, any>;
+
+type Aliases<T = string, V extends string = string> = Partial<
+  Record<Extract<T, string>, V | ReadonlyArray<V>>
+>;
+
+type AddAliases<
+  T,
+  A extends Aliases | undefined,
+> = { [K in keyof T as AliasName<K, A>]: T[K] };
+
+type AliasName<
+  K,
+  A extends Aliases | undefined,
+> = K extends keyof A
+  ? string extends A[K] ? K : A[K] extends string ? K | A[K] : K
+  : K;
+
+/**
+ * Spreads all default values of Record `D` into Record `A`
+ * and makes default values required.
+ *
+ * **Example:**
+ * `SpreadValues<{ foo?: boolean, bar?: number }, { foo: number }>`
+ *
+ * **Result:** `{ foo: boolan | number, bar?: number }`
+ */
+type SpreadDefaults<A, D> = D extends undefined ? A
+  : A extends Record<string, unknown> ? 
+      & Omit<A, keyof D>
+      & {
+        [K in keyof D]: K extends keyof A
+          ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
+            ? NonNullable<SpreadDefaults<A[K], D[K]>>
+          : D[K] | NonNullable<A[K]>
+          : unknown;
+      }
+  : never;
+
+/**
+ * Defines the Record for the `default` option to add
+ * auto suggestion support for IDE's.
+ */
+type Defaults<B extends BooleanType, S extends StringType> = Id<
+  UnionToIntersection<
+    & Record<string, unknown>
+    // Dedotted auto suggestions: { foo: { bar: unknown } }
+    & MapTypes<S, unknown>
+    & MapTypes<B, unknown>
+    // Flat auto suggestions: { "foo.bar": unknown }
+    & MapDefaults<B>
+    & MapDefaults<S>
+  >
+>;
+
+type MapDefaults<T extends ArgType> = Partial<
+  Record<T extends string ? T : string, unknown>
+>;
+
+type RecursiveRequired<T> = T extends Record<string, unknown> ? {
+    [K in keyof T]-?: RecursiveRequired<T[K]>;
+  }
+  : T;
+
+/** Same as `MapTypes` but also supports collectable options. */
+type CollectValues<
+  T extends ArgType,
+  V,
+  C extends Collectable,
+  N extends Negatable = undefined,
+> = UnionToIntersection<
+  C extends string ? 
+      & MapTypes<Exclude<T, C>, V, N>
+      & (T extends undefined ? Record<never, never> : RecursiveRequired<
+        MapTypes<Extract<C, T>, Array<V>, N>
+      >)
+    : MapTypes<T, V, N>
+>;
+
+/** Same as `Record` but also supports dotted and negatable options. */
+type MapTypes<T extends ArgType, V, N extends Negatable = undefined> =
+  undefined extends T ? Record<never, never>
+    : T extends `${infer Name}.${infer Rest}` ? {
+        [K in Name]?: MapTypes<
+          Rest,
+          V,
+          N extends `${Name}.${infer Negate}` ? Negate : undefined
+        >;
+      }
+    : T extends string ? Partial<Record<T, N extends T ? V | false : V>>
+    : Record<never, never>;
+
+type CollectUnknownValues<
+  B extends BooleanType,
+  S extends StringType,
+  C extends Collectable,
+  N extends Negatable,
+> = B & S extends C ? Record<never, never>
+  : DedotRecord<
+    // Unknown collectable & non-negatable args.
+    & Record<
+      Exclude<
+        Extract<Exclude<C, N>, string>,
+        Extract<S | B, string>
+      >,
+      Array<unknown>
+    >
+    // Unknown collectable & negatable args.
+    & Record<
+      Exclude<
+        Extract<Extract<C, N>, string>,
+        Extract<S | B, string>
+      >,
+      Array<unknown> | false
+    >
+  >;
+
+/** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
+type DedotRecord<T> = Record<string, unknown> extends T ? T
+  : T extends Record<string, unknown> ? UnionToIntersection<
+      ValueOf<
+        { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+      >
+    >
+  : T;
+
+type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`
+  ? { [K in Name]: Dedot<Rest, V> }
+  : { [K in T]: V };
+
+type ValueOf<T> = T[keyof T];
 
 /** The value returned from `parse`. */
-export interface Args {
-  /** Contains all the arguments that didn't have an option associated with
-   * them. */
-  _: Array<string | number>;
+export type Args<
   // deno-lint-ignore no-explicit-any
-  [key: string]: any;
-}
+  A extends Record<string, unknown> = Record<string, any>,
+  DD extends boolean | undefined = undefined,
+> = Id<
+  & A
+  & {
+    /** Contains all the arguments that didn't have an option associated with
+     * them. */
+    _: Array<string | number>;
+  }
+  & (boolean extends DD ? DoubleDash
+    : true extends DD ? Required<DoubleDash>
+    : Record<never, never>)
+>;
+
+type DoubleDash = {
+  /** Contains all the arguments that appear after the double dash: "--". */
+  "--"?: Array<string>;
+};
 
 /** The options for the `parse` call. */
-export interface ParseOptions {
-  /** When `true`, populate the result `_` with everything before the `--` and
-   * the result `['--']` with everything after the `--`. Here's an example:
+export interface ParseOptions<
+  B extends BooleanType = BooleanType,
+  S extends StringType = StringType,
+  C extends Collectable = Collectable,
+  N extends Negatable = Negatable,
+  D extends Record<string, unknown> | undefined =
+    | Record<string, unknown>
+    | undefined,
+  A extends Aliases<string, string> | undefined =
+    | Aliases<string, string>
+    | undefined,
+  DD extends boolean | undefined = boolean | undefined,
+> {
+  /**
+   * When `true`, populate the result `_` with everything before the `--` and
+   * the result `['--']` with everything after the `--`.
    *
+   * @default {false}
+   *
+   *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "./mod.ts";
+   * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
    * console.dir(parse(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parse(Deno.args, { "--": true }));
    * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
-   *
-   * Defaults to `false`.
    */
-  "--"?: boolean;
+  "--"?: DD;
 
-  /** An object mapping string names to strings or arrays of string argument
-   * names to use as aliases. */
-  alias?: Record<string, string | string[]>;
+  /**
+   * An object mapping string names to strings or arrays of string argument
+   * names to use as aliases.
+   */
+  alias?: A;
 
-  /** A boolean, string or array of strings to always treat as booleans. If
+  /**
+   * A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
-   * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
-  boolean?: boolean | string | string[];
+   * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`).
+   *  All `boolean` arguments will be set to `false` by default.
+   */
+  boolean?: B | ReadonlyArray<Extract<B, string>>;
 
   /** An object mapping string argument names to default values. */
-  default?: Record<string, unknown>;
+  default?: D & Defaults<B, S>;
 
-  /** When `true`, populate the result `_` with everything after the first
-   * non-option. */
+  /**
+   * When `true`, populate the result `_` with everything after the first
+   * non-option.
+   */
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
-  string?: string | string[];
+  string?: S | ReadonlyArray<Extract<S, string>>;
 
-  /** A string or array of strings argument names to always treat as arrays.
+  /**
+   * A string or array of strings argument names to always treat as arrays.
    * Collectable options can be used multiple times. All values will be
-   * colelcted into one array. If a non-collectable option is used multiple
-   * times, the last value is used. */
-  collect?: string | string[];
+   * collected into one array. If a non-collectable option is used multiple
+   * times, the last value is used.
+   * All Collectable arguments will be set to `[]` by default.
+   */
+  collect?: C | ReadonlyArray<Extract<C, string>>;
 
-  /** A function which is invoked with a command line parameter not defined in
+  /**
+   * A string or array of strings argument names which can be negated
+   * by prefixing them with `--no-`, like `--no-config`.
+   */
+  negatable?: N | ReadonlyArray<Extract<N, string>>;
+
+  /**
+   * A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
-   * unknown option is not added to `parsedArgs`. */
+   * unknown option is not added to `parsedArgs`.
+   */
   unknown?: (arg: string, key?: string, value?: unknown) => unknown;
 }
 
@@ -68,6 +324,7 @@ interface Flags {
   bools: Record<string, boolean>;
   strings: Record<string, boolean>;
   collect: Record<string, boolean>;
+  negatable: Record<string, boolean>;
   unknownFn: (arg: string, key?: string, value?: unknown) => unknown;
   allBools: boolean;
 }
@@ -103,69 +360,85 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
   });
 
   const key = keys[keys.length - 1];
-  return key in o;
+  return hasOwn(o, key);
 }
 
 /** Take a set of command line arguments, optionally with a set of options, and
  * return an object representing the flags found in the passed arguments.
  *
- * By default any arguments starting with `-` or `--` are considered boolean
+ * By default, any arguments starting with `-` or `--` are considered boolean
  * flags. If the argument name is followed by an equal sign (`=`) it is
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
+ * By default, the flags module tries to determine the type of all arguments
+ * automatically and the return type of the `parse` method will have an index
+ * signature with `any` as value (`{ [x: string]: any }`).
+ *
+ * If the `string`, `boolean` or `collect` option is set, the return value of
+ * the `parse` method will be fully typed and the index signature of the return
+ * type will change to `{ [x: string]: unknown }`.
+ *
+ * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
+ *
+ * Numeric-looking arguments will be returned as numbers unless `options.string`
+ * or `options.boolean` is set for that argument name.
+ *
+ * @example
  * ```ts
- * import { parse } from "./mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
+ * @example
  * ```ts
- * import { parse } from "./mod.ts";
- * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
- * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  */
-export function parse(
+export function parse<
+  V extends Values<B, S, C, N, D, A>,
+  DD extends boolean | undefined = undefined,
+  B extends BooleanType = undefined,
+  S extends StringType = undefined,
+  C extends Collectable = undefined,
+  N extends Negatable = undefined,
+  D extends Record<string, unknown> | undefined = undefined,
+  A extends Aliases<AK, AV> | undefined = undefined,
+  AK extends string = string,
+  AV extends string = string,
+>(
   args: string[],
   {
     "--": doubleDash = false,
-    alias = {},
+    alias = {} as NonNullable<A>,
     boolean = false,
-    default: defaults = {},
+    default: defaults = {} as D & Defaults<B, S>,
     stopEarly = false,
     string = [],
     collect = [],
+    negatable = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions = {},
-): Args {
+  }: ParseOptions<B, S, C, N, D, A, DD> = {},
+): Args<V, DD> {
+  const aliases: Record<string, string[]> = {};
   const flags: Flags = {
     bools: {},
     strings: {},
     unknownFn: unknown,
     allBools: false,
     collect: {},
+    negatable: {},
   };
 
-  if (boolean !== undefined) {
-    if (typeof boolean === "boolean") {
-      flags.allBools = !!boolean;
-    } else {
-      const booleanArgs = typeof boolean === "string" ? [boolean] : boolean;
-
-      for (const key of booleanArgs.filter(Boolean)) {
-        flags.bools[key] = true;
-      }
-    }
-  }
-
-  const aliases: Record<string, string[]> = {};
   if (alias !== undefined) {
     for (const key in alias) {
       const val = getForce(alias, key);
       if (typeof val === "string") {
         aliases[key] = [val];
       } else {
-        aliases[key] = val;
+        aliases[key] = val as Array<string>;
       }
       for (const alias of getForce(aliases, key)) {
         aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
@@ -173,8 +446,30 @@ export function parse(
     }
   }
 
+  if (boolean !== undefined) {
+    if (typeof boolean === "boolean") {
+      flags.allBools = !!boolean;
+    } else {
+      const booleanArgs: ReadonlyArray<string> = typeof boolean === "string"
+        ? [boolean]
+        : boolean;
+
+      for (const key of booleanArgs.filter(Boolean)) {
+        flags.bools[key] = true;
+        const alias = get(aliases, key);
+        if (alias) {
+          for (const al of alias) {
+            flags.bools[al] = true;
+          }
+        }
+      }
+    }
+  }
+
   if (string !== undefined) {
-    const stringArgs = typeof string === "string" ? [string] : string;
+    const stringArgs: ReadonlyArray<string> = typeof string === "string"
+      ? [string]
+      : string;
 
     for (const key of stringArgs.filter(Boolean)) {
       flags.strings[key] = true;
@@ -188,7 +483,9 @@ export function parse(
   }
 
   if (collect !== undefined) {
-    const collectArgs = typeof collect === "string" ? [collect] : collect;
+    const collectArgs: ReadonlyArray<string> = typeof collect === "string"
+      ? [collect]
+      : collect;
 
     for (const key of collectArgs.filter(Boolean)) {
       flags.collect[key] = true;
@@ -196,6 +493,22 @@ export function parse(
       if (alias) {
         for (const al of alias) {
           flags.collect[al] = true;
+        }
+      }
+    }
+  }
+
+  if (negatable !== undefined) {
+    const negatableArgs: ReadonlyArray<string> = typeof negatable === "string"
+      ? [negatable]
+      : negatable;
+
+    for (const key of negatableArgs.filter(Boolean)) {
+      flags.negatable[key] = true;
+      const alias = get(aliases, key);
+      if (alias) {
+        for (const al of alias) {
+          flags.negatable[al] = true;
         }
       }
     }
@@ -217,10 +530,10 @@ export function parse(
     name: string,
     value: unknown,
     collect = true,
-  ): void {
+  ) {
     let o = obj;
     const keys = name.split(".");
-    keys.slice(0, -1).forEach(function (key): void {
+    keys.slice(0, -1).forEach(function (key) {
       if (get(o, key) === undefined) {
         o[key] = {};
       }
@@ -246,7 +559,7 @@ export function parse(
     val: unknown,
     arg: string | undefined = undefined,
     collect?: boolean,
-  ): void {
+  ) {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }
@@ -290,7 +603,9 @@ export function parse(
       } else {
         setArg(key, value, arg);
       }
-    } else if (/^--no-.+/.test(arg)) {
+    } else if (
+      /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
+    ) {
       const m = arg.match(/^--no-(.+)/);
       assert(m != null);
       setArg(m[1], false, arg, false);
@@ -424,5 +739,5 @@ export function parse(
     }
   }
 
-  return argv;
+  return argv as Args<V, DD>;
 }

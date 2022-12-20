@@ -8,23 +8,22 @@ import { filterInPlace } from "./_utils.ts";
 const { hasOwn } = Object;
 
 /**
- * Merges the two given Records, recursively merging any nested Records with
- * the second collection overriding the first in case of conflict
+ * Merges the two given Records, recursively merging any nested Records with the
+ * second collection overriding the first in case of conflict
  *
  * For arrays, maps and sets, a merging strategy can be specified to either
- * "replace" values, or "merge" them instead.
- * Use "includeNonEnumerable" option to include non enumerable properties too.
+ * `replace` values, or `merge` them instead. Use `includeNonEnumerable` option
+ * to include non-enumerable properties too.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const a = {foo: true}
- * const b = {foo: {bar: true}}
+ * const a = { foo: true };
+ * const b = { foo: { bar: true } };
  *
- * assertEquals(deepMerge(a, b), {foo: {bar: true}});
+ * assertEquals(deepMerge(a, b), { foo: { bar: true } });
  * ```
  */
 export function deepMerge<
@@ -133,7 +132,7 @@ function mergeObjects(
 ): Readonly<NonNullable<object>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
-    return deepMergeInternal(left, right, seen);
+    return deepMergeInternal(left, right, seen, options);
   }
 
   if (isIterable(left) && isIterable(right)) {
@@ -404,5 +403,5 @@ export type DeepMerge<
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U, Options>
-    : // Handle primitives
-    T | U;
+    // Handle primitives
+    : T | U;

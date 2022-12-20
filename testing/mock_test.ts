@@ -26,7 +26,7 @@ import {
   spy,
   stub,
 } from "./mock.ts";
-import { Point, stringifyPoint } from "./_test_utils.ts";
+import { Point, PointWithExtra, stringifyPoint } from "./_test_utils.ts";
 
 Deno.test("spy default", () => {
   const func = spy();
@@ -418,7 +418,52 @@ Deno.test("stub function", () => {
     "instance method already restored",
   );
   assertEquals(func.restored, true);
+});
 
+Deno.test("stub non existent function", () => {
+  const point = new Point(2, 3);
+  const castPoint = point as PointWithExtra;
+  let i = 0;
+  const func = stub(castPoint, "nonExistent", () => {
+    i++;
+    return i;
+  });
+
+  assertSpyCalls(func, 0);
+
+  assertEquals(func.call(castPoint), 1);
+  assertSpyCall(func, 0, {
+    self: castPoint,
+    args: [],
+    returned: 1,
+  });
+  assertSpyCalls(func, 1);
+
+  assertEquals(castPoint.nonExistent(), 2);
+  assertSpyCall(func, 1, {
+    self: castPoint,
+    args: [],
+    returned: 2,
+  });
+  assertSpyCalls(func, 2);
+
+  assertEquals(func.original, undefined);
+  assertEquals(castPoint.nonExistent, func);
+
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertEquals(castPoint.nonExistent, undefined);
+  assertThrows(
+    () => func.restore(),
+    MockError,
+    "instance method already restored",
+  );
+  assertEquals(func.restored, true);
+});
+
+// This doesn't test any runtime code, only if the TypeScript types are correct.
+Deno.test("stub types", () => {
   // @ts-expect-error Stubbing with incorrect argument types should cause a type error
   stub(new Point(2, 3), "explicitTypes", (_x: string, _y: number) => true);
 
@@ -462,7 +507,7 @@ Deno.test("stub function", () => {
 Deno.test("mockSession and mockSessionAsync", async () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[] = [];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   await mockSessionAsync(async () => {
@@ -500,7 +545,7 @@ Deno.test("mockSession and mockSessionAsync", async () => {
 Deno.test("mockSession and restore current session", () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   try {
@@ -554,7 +599,7 @@ Deno.test("mockSession and restore current session", () => {
 Deno.test("mockSession and restore multiple sessions", () => {
   const points = Array(6).fill(undefined).map(() => new Point(2, 3));
   let actions: Spy<Point, unknown[], unknown>[];
-  function assertRestored(expected: boolean[]): void {
+  function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   try {
@@ -1680,16 +1725,16 @@ Deno.test("resolvesNext with array", async () => {
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
   );
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
@@ -1705,19 +1750,19 @@ Deno.test("resolvesNext with array", async () => {
     3,
   );
   assertEquals(await callback(), 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",
   );
   results.push(5);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",
@@ -1736,16 +1781,16 @@ Deno.test("resolvesNext with iterator", async () => {
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
   );
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
@@ -1761,19 +1806,19 @@ Deno.test("resolvesNext with iterator", async () => {
     3,
   );
   assertEquals(await callback(), 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",
   );
   results.push(5);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",
@@ -1796,16 +1841,16 @@ Deno.test("resolvesNext with async generator", async () => {
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
   );
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 5 times",
@@ -1821,19 +1866,19 @@ Deno.test("resolvesNext with async generator", async () => {
     3,
   );
   assertEquals(await callback(), 1);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 2);
-  assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",
   );
   results.push(5);
-  assertRejects(
+  await assertRejects(
     async () => await callback(),
     MockError,
     "not expected to be called more than 6 times",

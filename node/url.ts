@@ -25,8 +25,10 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_FILE_URL_HOST,
   ERR_INVALID_FILE_URL_PATH,
+  ERR_INVALID_URL,
   ERR_INVALID_URL_SCHEME,
 } from "./internal/errors.ts";
+import { validateString } from "./internal/validators.mjs";
 import {
   CHAR_0,
   CHAR_9,
@@ -65,11 +67,16 @@ import {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { toASCII } from "./internal/idna.ts";
+import {
+  regexNonASCII,
+  regexPunycode,
+  toASCII,
+  toUnicode,
+} from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 import querystring from "./querystring.ts";
-import type { ParsedUrlQuery } from "./querystring.ts";
+import type { ParsedUrlQuery, ParsedUrlQueryInput } from "./querystring.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -128,6 +135,22 @@ const noEscapeAuth = new Int8Array([
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 0x70 - 0x7F
 ]);
 
+// This prevents some common spoofing bugs due to our use of IDNA toASCII. For
+// compatibility, the set of characters we use here is the *intersection* of
+// "forbidden host code point" in the WHATWG URL Standard [1] and the
+// characters in the host parsing loop in Url.prototype.parse, with the
+// following additions:
+//
+// - ':' since this could cause a "protocol spoofing" bug
+// - '@' since this could cause parts of the hostname to be confused with auth
+// - '[' and ']' since this could cause a non-IPv6 hostname to be interpreted
+//   as IPv6 by isIpv6Hostname above
+//
+// [1]: https://url.spec.whatwg.org/#forbidden-host-code-point
+const forbiddenHostChars = /[\0\t\n\r #%/:<>?@[\\\]^|]/;
+// For IPv6, permit '[', ']', and ':'.
+const forbiddenHostCharsIpv6 = /[\0\t\n\r #%/<>?@\\^|]/;
+
 const _url = URL;
 export { _url as URL };
 
@@ -145,7 +168,7 @@ export class Url {
   public pathname: string | null;
   public path: string | null;
   public href: string | null;
-  [key: string]: unknown
+  [key: string]: unknown;
 
   constructor() {
     this.protocol = null;
@@ -162,7 +185,7 @@ export class Url {
     this.href = null;
   }
 
-  private parseHost() {
+  #parseHost() {
     let host = this.host || "";
     let port: RegExpExecArray | null | string = portPattern.exec(host);
     if (port) {
@@ -418,7 +441,7 @@ export class Url {
       srcPath.unshift("");
     }
 
-    if (hasTrailingSlash && srcPath.join("/").substr(-1) !== "/") {
+    if (hasTrailingSlash && srcPath.join("/").slice(-1) !== "/") {
       srcPath.push("");
     }
 
@@ -565,6 +588,8 @@ export class Url {
     parseQueryString: boolean,
     slashesDenoteHost: boolean,
   ) {
+    validateString(url, "url");
+
     // Copy chrome, IE, opera backslash-handling behavior.
     // Back slashes before the query string get converted to forward slashes
     // See: https://code.google.com/p/chromium/issues/detail?id=25916
@@ -752,7 +777,7 @@ export class Url {
       }
 
       // pull out port.
-      this.parseHost();
+      this.#parseHost();
 
       // We've indicated that there is a hostname,
       // so even if it's empty, it has to be present.
@@ -776,15 +801,34 @@ export class Url {
         this.hostname = this.hostname.toLowerCase();
       }
 
-      if (!ipv6Hostname) {
-        // IDNA Support: Returns a punycoded representation of "domain".
-        // It only converts parts of the domain name that
-        // have non-ASCII characters, i.e. it doesn't matter if
-        // you call it with a domain that already is ASCII-only.
+      if (this.hostname !== "") {
+        if (ipv6Hostname) {
+          if (forbiddenHostCharsIpv6.test(this.hostname)) {
+            throw new ERR_INVALID_URL(url);
+          }
+        } else {
+          // IDNA Support: Returns a punycoded representation of "domain".
+          // It only converts parts of the domain name that
+          // have non-ASCII characters, i.e. it doesn't matter if
+          // you call it with a domain that already is ASCII-only.
 
-        // Use lenient mode (`true`) to try to support even non-compliant
-        // URLs.
-        this.hostname = toASCII(this.hostname);
+          // Use lenient mode (`true`) to try to support even non-compliant
+          // URLs.
+          this.hostname = toASCII(this.hostname);
+
+          // Prevent two potential routes of hostname spoofing.
+          // 1. If this.hostname is empty, it must have become empty due to toASCII
+          //    since we checked this.hostname above.
+          // 2. If any of forbiddenHostChars appears in this.hostname, it must have
+          //    also gotten in due to toASCII. This is since getHostname would have
+          //    filtered them out otherwise.
+          // Rather than trying to correct this by moving the non-host part into
+          // the pathname as we've done in getHostname, throw an exception to
+          // convey the severity of this issue.
+          if (this.hostname === "" || forbiddenHostChars.test(this.hostname)) {
+            throw new ERR_INVALID_URL(url);
+          }
+        }
       }
 
       const p = this.port ? ":" + this.port : "";
@@ -865,8 +909,22 @@ export class Url {
   }
 }
 
+interface UrlObject {
+  auth?: string | null | undefined;
+  hash?: string | null | undefined;
+  host?: string | null | undefined;
+  hostname?: string | null | undefined;
+  href?: string | null | undefined;
+  pathname?: string | null | undefined;
+  protocol?: string | null | undefined;
+  search?: string | null | undefined;
+  slashes?: boolean | null | undefined;
+  port?: string | number | null | undefined;
+  query?: string | null | ParsedUrlQueryInput | undefined;
+}
+
 export function format(
-  urlObject: string | URL | Url,
+  urlObject: string | URL | Url | UrlObject,
   options?: {
     auth: boolean;
     fragment: boolean;
@@ -874,14 +932,22 @@ export function format(
     unicode: boolean;
   },
 ): string {
-  if (urlObject instanceof URL) {
-    return formatWhatwg(urlObject, options);
-  }
-
   if (typeof urlObject === "string") {
     urlObject = parse(urlObject, true, false);
+  } else if (typeof urlObject !== "object" || urlObject === null) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "urlObject",
+      ["Object", "string"],
+      urlObject,
+    );
+  } else if (!(urlObject instanceof Url)) {
+    if (urlObject instanceof URL) {
+      return formatWhatwg(urlObject, options);
+    }
+    return Url.prototype.format.call(urlObject);
   }
-  return urlObject.format();
+
+  return (urlObject as Url).format();
 }
 
 /**
@@ -1184,6 +1250,34 @@ export function resolveObject(source: string | Url, relative: string) {
 }
 
 /**
+ * The url.domainToASCII() takes an arbitrary domain and attempts to convert it into an IDN
+ *
+ * @param domain The domain to convert to an IDN
+ * @see https://www.rfc-editor.org/rfc/rfc3490#section-4
+ */
+export function domainToASCII(domain: string) {
+  if (regexPunycode.test(domain) && regexNonASCII.test(domain)) {
+    return ""; // Failure case
+  }
+
+  return toASCII(domain);
+}
+
+/**
+ * The url.domainToUnicode() takes an IDN and attempts to convert it into unicode
+ *
+ * @param domain The IDN to convert to Unicode
+ * @see https://www.rfc-editor.org/rfc/rfc3490#section-4
+ */
+export function domainToUnicode(domain: string) {
+  if (regexPunycode.test(domain) && regexNonASCII.test(domain)) {
+    return ""; // Failure case
+  }
+
+  return toUnicode(domain);
+}
+
+/**
  * This function ensures the correct decodings of percent-encoded characters as well as ensuring a cross-platform valid absolute path string.
  * @see Tested in `parallel/test-fileurltopath.js`.
  * @param path The file URL string or URL object to convert to a path.
@@ -1315,8 +1409,7 @@ export function pathToFileURL(filepath: string): URL {
       );
     }
 
-    // TODO(wafuwafu13): To be `outURL.hostname = domainToASCII(hostname)` once `domainToASCII` are implemented
-    outURL.hostname = hostname;
+    outURL.hostname = domainToASCII(hostname);
     outURL.pathname = encodePathChars(paths.slice(3).join("/"));
   } else {
     let resolved = path.resolve(filepath);
@@ -1362,7 +1455,7 @@ interface HttpOptions {
  * @returns HttpOptions.port Port of remote server.
  * @returns HttpOptions.auth Basic authentication i.e. `'user:password'` to compute an Authorization header.
  */
-function urlToHttpOptions(url: URL): HttpOptions {
+export function urlToHttpOptions(url: URL): HttpOptions {
   const options: HttpOptions = {
     protocol: url.protocol,
     hostname: typeof url.hostname === "string" && url.hostname.startsWith("[")
@@ -1387,11 +1480,16 @@ function urlToHttpOptions(url: URL): HttpOptions {
   return options;
 }
 
+const URLSearchParams_ = URLSearchParams;
+export { URLSearchParams_ as URLSearchParams };
+
 export default {
   parse,
   format,
   resolve,
   resolveObject,
+  domainToASCII,
+  domainToUnicode,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,

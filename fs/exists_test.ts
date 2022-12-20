@@ -14,7 +14,7 @@ Deno.test("[fs] existsFile", async function () {
   assertEquals(await existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
-Deno.test("[fs] existsFileSync", function (): void {
+Deno.test("[fs] existsFileSync", function () {
   assertEquals(existsSync(path.join(testdataDir, "not_exist_file.ts")), false);
   assertEquals(existsSync(path.join(testdataDir, "0.ts")), true);
 });
@@ -27,7 +27,7 @@ Deno.test("[fs] existsDirectory", async function () {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsDirectorySync", function (): void {
+Deno.test("[fs] existsDirectorySync", function () {
   assertEquals(
     existsSync(path.join(testdataDir, "not_exist_directory")),
     false,
@@ -35,7 +35,7 @@ Deno.test("[fs] existsDirectorySync", function (): void {
   assertEquals(existsSync(testdataDir), true);
 });
 
-Deno.test("[fs] existsLinkSync", function (): void {
+Deno.test("[fs] existsLinkSync", function () {
   // TODO(axetroy): generate link file use Deno api instead of set a link file
   // in repository
   assertEquals(existsSync(path.join(testdataDir, "0-link")), true);
@@ -122,10 +122,11 @@ for (const s of scenes) {
     args.push(path.join(testdataDir, s.async ? "exists.ts" : "exists_sync.ts"));
     args.push(s.file);
 
-    const { stdout } = await Deno.spawn(Deno.execPath(), {
+    const command = new Deno.Command(Deno.execPath(), {
       cwd: testdataDir,
       args,
     });
+    const { stdout } = await command.output();
 
     assertStringIncludes(new TextDecoder().decode(stdout), s.output);
   });

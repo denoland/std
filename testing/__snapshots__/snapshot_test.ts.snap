@@ -208,12 +208,11 @@ snapshot[`Snapshot Test - Options > mode 1`] = `
 snapshot[`Snapshot Test - Options > mode 2`] = `
 "running 1 test from <tempDir>/test.ts
 snapshot ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 1 passed | 0 failed (--ms)
 
 "
 `;
@@ -221,12 +220,11 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 1 passed | 0 failed (--ms)
 
 "
 `;
@@ -247,7 +245,7 @@ snapshot[`Snapshot Test - Update - Existing snapshot - no changes 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 1 passed | 0 failed (--ms)
 
 "
 `;
@@ -267,12 +265,11 @@ snapshot[\`Snapshot Test - Update 1\`] = \`
 snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-
 ------- output -------
 
  > 1 snapshots updated.
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 1 passed | 0 failed (--ms)
 
 "
 `;
@@ -295,12 +292,11 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-
 ------- output -------
 
  > 2 snapshots updated.
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 2 passed | 0 failed (--ms)
 
 "
 `;
@@ -319,7 +315,7 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 2 1`] = `
 Snapshot Test - Second ... ok (--ms)
 Snapshot Test - First ... ok (--ms)
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+ok | 2 passed | 0 failed (--ms)
 
 "
 `;
@@ -362,3 +358,13 @@ snapshot[`Snapshot Test - Regression #2144 1`] = `
   },
 }
 `;
+
+snapshot[`Snapshot Test - Empty #2245 1`] = ``;
+
+snapshot[`SnapshotTest - createAssertSnapshot > No Options 1`] = `This green text has had it's colours stripped`;
+
+snapshot[`SnapshotTest - createAssertSnapshot - Options Object - Custom Name 1`] = `This green text has had it's colours stripped`;
+
+snapshot[`SnapshotTest - createAssertSnapshot > Message 1`] = `"This snapshot has failed as expected"`;
+
+snapshot[`SnapshotTest - createAssertSnapshot - Composite - Custom Name 1`] = `This green text has had it's colours stripped`;

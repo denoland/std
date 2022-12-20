@@ -12,7 +12,7 @@ export function generateKey(
     length: number;
   },
   _callback: (err: Error | null, key: KeyObject) => void,
-): void {
+) {
   notImplemented("crypto.generateKey");
 }
 
@@ -476,7 +476,7 @@ export function generateKeyPair(
     // deno-lint-ignore no-explicit-any
     privateKey: any,
   ) => void,
-): void {
+) {
   notImplemented("crypto.generateKeyPair");
 }
 

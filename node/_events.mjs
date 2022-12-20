@@ -59,6 +59,8 @@ export default EventEmitter;
 EventEmitter.on = on;
 EventEmitter.once = once;
 EventEmitter.getEventListeners = getEventListeners;
+EventEmitter.setMaxListeners = setMaxListeners;
+EventEmitter.listenerCount = listenerCount;
 // Backwards-compat with node 0.10.x
 EventEmitter.EventEmitter = EventEmitter;
 EventEmitter.usingDomains = false;
@@ -138,7 +140,7 @@ Object.defineProperties(EventEmitter, {
  * @param {EventTarget[] | EventEmitter[]} [eventTargets]
  * @returns {void}
  */
-EventEmitter.setMaxListeners = function (
+export function setMaxListeners(
   n = defaultMaxListeners,
   ...eventTargets
 ) {
@@ -164,7 +166,7 @@ EventEmitter.setMaxListeners = function (
       }
     }
   }
-};
+}
 
 EventEmitter.init = function (opts) {
   if (
@@ -700,29 +702,12 @@ EventEmitter.prototype.rawListeners = function rawListeners(type) {
 };
 
 /**
- * Returns the number of listeners listening to the event name
- * specified as `type`.
- * @deprecated since v3.2.0
- * @param {EventEmitter} emitter
- * @param {string | symbol} type
- * @returns {number}
- */
-EventEmitter.listenerCount = function (emitter, type) {
-  if (typeof emitter.listenerCount === "function") {
-    return emitter.listenerCount(type);
-  }
-  return listenerCount.call(emitter, type);
-};
-
-EventEmitter.prototype.listenerCount = listenerCount;
-
-/**
  * Returns the number of listeners listening to event name
  * specified as `type`.
  * @param {string | symbol} type
  * @returns {number}
  */
-function listenerCount(type) {
+const _listenerCount = function listenerCount(type) {
   const events = this._events;
 
   if (events !== undefined) {
@@ -736,6 +721,23 @@ function listenerCount(type) {
   }
 
   return 0;
+};
+
+EventEmitter.prototype.listenerCount = _listenerCount;
+
+/**
+ * Returns the number of listeners listening to the event name
+ * specified as `type`.
+ * @deprecated since v3.2.0
+ * @param {EventEmitter} emitter
+ * @param {string | symbol} type
+ * @returns {number}
+ */
+export function listenerCount(emitter, type) {
+  if (typeof emitter.listenerCount === "function") {
+    return emitter.listenerCount(type);
+  }
+  return _listenerCount.call(emitter, type);
 }
 
 /**

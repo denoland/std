@@ -4,13 +4,17 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { iterateReader, writeAll } from "../streams/conversion.ts";
+import { iterateReader } from "../streams/iterate_reader.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
+import { toHashString } from "../crypto/mod.ts";
+import { createHash } from "../crypto/_util.ts";
+import { VERSION } from "../version.ts";
 
-let fileServer: Deno.Child<Deno.SpawnOptions>;
+let child: Deno.ChildProcess;
 
 interface FileServerCfg {
   port?: string;
@@ -33,7 +37,7 @@ async function startFileServer({
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -49,10 +53,12 @@ async function startFileServer({
       `${dotfiles ? "" : "--no-dotfiles"}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -62,7 +68,7 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -72,9 +78,11 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
       "testdata/file_server_as_library.ts",
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  child = fileServer.spawn();
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -84,8 +92,8 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  fileServer.kill("SIGKILL");
-  await fileServer.status;
+  child.kill("SIGKILL");
+  await child.status;
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -150,7 +158,7 @@ async function fetchExactPath(
     });
   } finally {
     if (conn) {
-      Deno.close(conn.rid);
+      conn.close();
     }
   }
 }
@@ -160,11 +168,14 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const res = await fetch("http://localhost:4507/README.md");
-      assertEquals(res.headers.get("content-type"), "text/markdown");
+      const res = await fetch("http://localhost:4507/mod.ts");
+      assertEquals(
+        res.headers.get("content-type"),
+        "video/mp2t",
+      );
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "README.md")),
+        await Deno.readFile(join(moduleDir, "mod.ts")),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -179,10 +190,31 @@ Deno.test(
     await startFileServer({ target: "./testdata" });
     try {
       const res = await fetch("http://localhost:4507/hello.html");
-      assertEquals(res.headers.get("content-type"), "text/html");
+      assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
         await Deno.readFile(join(testdataDir, "hello.html")),
+      );
+      assertEquals(downloadedFile, localFile);
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
+  "file_server serveFile with filename including hash symbol",
+  async () => {
+    await startFileServer({ target: "./testdata" });
+    try {
+      const res = await fetch("http://localhost:4507/file%232.txt");
+      assertEquals(
+        res.headers.get("content-type"),
+        "text/plain; charset=UTF-8",
+      );
+      const downloadedFile = await res.text();
+      const localFile = new TextDecoder().decode(
+        await Deno.readFile(join(testdataDir, "file#2.txt")),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -196,7 +228,7 @@ Deno.test("serveDirIndex", async function () {
   try {
     const res = await fetch("http://localhost:4507/");
     const page = await res.text();
-    assert(page.includes("README.md"));
+    assert(page.includes("mod.ts"));
     assert(page.includes(`<a href="/testdata/">testdata/</a>`));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
@@ -206,17 +238,29 @@ Deno.test("serveDirIndex", async function () {
       assert(/<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/.test(page));
     isWindows &&
       assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
-    assert(page.includes(`<a href="/README.md">README.md</a>`));
+    assert(page.includes(`<a href="/mod.ts">mod.ts</a>`));
   } finally {
     await killFileServer();
   }
 });
+
 Deno.test("serveDirIndex with filename including percent symbol", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/testdata/");
     const page = await res.text();
     assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
+
+Deno.test("serveDirIndex with filename including hash symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "/testdata/file%232.txt");
   } finally {
     await killFileServer();
   }
@@ -242,7 +286,7 @@ Deno.test("checkPathTraversal", async function () {
 
     assertEquals(res.status, 200);
     const listing = await res.text();
-    assertStringIncludes(listing, "README.md");
+    assertStringIncludes(listing, "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -268,7 +312,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function () {
       "http://localhost/../../../..",
     );
     assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "README.md");
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -281,8 +325,8 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
       "http://localhost:4507/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
     );
 
-    assertEquals(res.status, 404);
-    const _ = await res.text();
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -291,7 +335,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    let res = await fetch("http://localhost:4507/testdata/%");
+    let res = await fetch("http://localhost:4507/testdata/%25");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 200);
@@ -326,7 +370,7 @@ Deno.test("CORS support", async function () {
 });
 
 Deno.test("printHelp", async function () {
-  const helpProcess = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -336,8 +380,25 @@ Deno.test("printHelp", async function () {
     ],
     cwd: moduleDir,
   });
-  const stdout = new TextDecoder().decode(helpProcess.stdout);
-  assert(stdout.includes("Deno File Server"));
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
+});
+
+Deno.test("printVersion", async function () {
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-check",
+      "--quiet",
+      "file_server.ts",
+      "--version",
+    ],
+    cwd: moduleDir,
+  });
+  const { stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
+  assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
 Deno.test("contentType", async () => {
@@ -345,7 +406,7 @@ Deno.test("contentType", async () => {
   try {
     const res = await fetch("http://localhost:4507/testdata/hello.html");
     const contentType = res.headers.get("content-type");
-    assertEquals(contentType, "text/html");
+    assertEquals(contentType, "text/html; charset=UTF-8");
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
@@ -366,11 +427,11 @@ Deno.test("file_server running as library", async function () {
 Deno.test("file_server should ignore query params", async () => {
   await startFileServer();
   try {
-    const res = await fetch("http://localhost:4507/README.md?key=value");
+    const res = await fetch("http://localhost:4507/mod.ts?key=value");
     assertEquals(res.status, 200);
     const downloadedFile = await res.text();
     const localFile = new TextDecoder().decode(
-      await Deno.readFile(join(moduleDir, "README.md")),
+      await Deno.readFile(join(moduleDir, "mod.ts")),
     );
     assertEquals(downloadedFile, localFile);
   } finally {
@@ -382,7 +443,7 @@ async function startTlsFileServer({
   target = ".",
   port = "4577",
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -402,10 +463,12 @@ async function startTlsFileServer({
       `${port}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -440,7 +503,7 @@ Deno.test("serveDirIndex TLS", async function () {
 });
 
 Deno.test("partial TLS arguments fail", async function () {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -457,11 +520,13 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   try {
     // Once fileServer is ready it will write to its stdout.
-    const r = fileServer.stdout.pipeThrough(new TextDecoderStream())
+    const r = child.stdout.pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextLineStream());
     const reader = r.getReader();
     const res = await reader.read();
@@ -580,8 +645,8 @@ const getTestFileEtag = async () => {
 
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = await createEtagHash(
-      `${lastModified.toJSON()}${fileInfo.size}`,
+    const simpleEtag = toHashString(
+      await createHash("FNV32A", lastModified.toJSON() + fileInfo.size),
     );
     return simpleEtag;
   } else {
@@ -598,19 +663,6 @@ const getTestFileLastModified = async () => {
     return "";
   }
 };
-
-function createEtagHash(buf: string): string {
-  let hash = 2166136261; // 32-bit FNV offset basis
-  for (let i = 0; i < buf.length; i++) {
-    hash ^= buf.charCodeAt(i);
-    // Equivalent to `hash *= 16777619` without using BigInt
-    // 32-bit FNV prime
-    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
-      (hash << 24);
-  }
-  // 32-bit hex string
-  return (hash >>> 0).toString(16);
-}
 
 Deno.test(
   "file_server returns 206 for range request responses",
@@ -754,11 +806,17 @@ Deno.test(
       const txtRes = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
       );
-      assertEquals(txtRes.headers.get("content-type"), "text/plain");
+      assertEquals(
+        txtRes.headers.get("content-type"),
+        "text/plain; charset=UTF-8",
+      );
       await txtRes.text(); // Consuming the body so that the test doesn't leak resources
 
       const htmlRes = await fetch("http://localhost:4507/testdata/hello.html");
-      assertEquals(htmlRes.headers.get("content-type"), "text/html");
+      assertEquals(
+        htmlRes.headers.get("content-type"),
+        "text/html; charset=UTF-8",
+      );
       await htmlRes.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -923,6 +981,28 @@ Deno.test(
     assertEquals(await res.text(), localFile);
   },
 );
+
+Deno.test(
+  "file_server `serveFile` returns 404 due to file not found",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/non_existent.txt");
+    const testdataPath = join(testdataDir, "non_existent.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` returns 404 when the given path is a directory",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/");
+    const res = await serveFile(req, testdataDir);
+    assertEquals(res.status, 404);
+    assertEquals(res.statusText, "Not Found");
+  },
+);
+
 Deno.test(
   "file_server `serveFile` should return 416 due to a bad range request (500-200)",
   async () => {
@@ -933,6 +1013,7 @@ Deno.test(
     assertEquals(res.status, 416);
   },
 );
+
 Deno.test(
   "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
   async () => {
@@ -978,6 +1059,35 @@ Deno.test(
     });
     assertEquals(res.status, 200);
     assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir serves index.html when showIndex is true",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const expectedText = "This is subdir-with-index/index.html";
+    {
+      const res = await serveDir(new Request(url), { showIndex: true });
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+
+    {
+      // showIndex is true by default
+      const res = await serveDir(new Request(url));
+      assertEquals(res.status, 200);
+      assertStringIncludes(await res.text(), expectedText);
+    }
+  },
+);
+
+Deno.test(
+  "serveDir doesn't serve index.html when showIndex is false",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
+    const res = await serveDir(new Request(url), { showIndex: false });
+    assertEquals(res.status, 404);
   },
 );
 

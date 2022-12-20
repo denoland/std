@@ -235,15 +235,6 @@ function validatePort(port, name = "Port", allowZero = true) {
 }
 
 /**
- * @param {unknown} callback
- */
-const validateCallback = hideStackFrames((callback) => {
-  if (typeof callback !== "function") {
-    throw new codes.ERR_INVALID_CALLBACK(callback);
-  }
-});
-
-/**
  * @param {unknown} signal
  * @param {string} name
  */
@@ -296,7 +287,6 @@ export default {
   validateArray,
   validateBoolean,
   validateBuffer,
-  validateCallback,
   validateFunction,
   validateInt32,
   validateInteger,
@@ -315,7 +305,6 @@ export {
   validateArray,
   validateBoolean,
   validateBuffer,
-  validateCallback,
   validateFunction,
   validateInt32,
   validateInteger,

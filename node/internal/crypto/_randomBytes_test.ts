@@ -5,7 +5,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../../_utils.ts";
+import { assertCallbackErrorUncaught } from "../../_test_utils.ts";
 import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./_randomBytes.ts";
 
 Deno.test("randomBytes sync works correctly", function () {
@@ -27,7 +27,7 @@ Deno.test("randomBytes sync works correctly", function () {
   assertThrows(() => randomBytes(-1));
 });
 
-Deno.test("randomBytes async works correctly", function () {
+Deno.test("randomBytes async works correctly", async function () {
   randomBytes(0, function (err, resp) {
     assert(!err);
     assertEquals(resp?.length, 0, "len: " + 0);
@@ -66,7 +66,7 @@ Deno.test("randomBytes async works correctly", function () {
       assert(!err);
     })
   );
-  assertRejects(() =>
+  await assertRejects(() =>
     new Promise((resolve, reject) => {
       randomBytes(-1, function (err, res) {
         //Shouldn't throw async

@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { deferred } from "../async/mod.ts";
-import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+
+import { errorMap } from "./internal_binding/uv.ts";
+import { codes } from "./internal/error_codes.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -22,8 +23,10 @@ export function notImplemented(msg: string): never {
   throw new Error(message);
 }
 
-export function warnNotImplemented(msg?: string): void {
-  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+export function warnNotImplemented(msg?: string) {
+  const message = msg
+    ? `Warning: Not implemented: ${msg}`
+    : "Warning: Not implemented";
   console.warn(message);
 }
 
@@ -45,7 +48,7 @@ export function intoCallbackAPI<T>(
   cb: MaybeEmpty<(err: MaybeNull<Error>, value?: MaybeEmpty<T>) => void>,
   // deno-lint-ignore no-explicit-any
   ...args: any[]
-): void {
+) {
   func(...args).then(
     (value) => cb && cb(null, value),
     (err) => cb && cb(err),
@@ -59,14 +62,14 @@ export function intoCallbackAPIWithIntercept<T1, T2>(
   cb: MaybeEmpty<(err: MaybeNull<Error>, value?: MaybeEmpty<T2>) => void>,
   // deno-lint-ignore no-explicit-any
   ...args: any[]
-): void {
+) {
   func(...args).then(
     (value) => cb && cb(null, interceptor(value)),
     (err) => cb && cb(err),
   );
 }
 
-export function spliceOne(list: string[], index: number): void {
+export function spliceOne(list: string[], index: number) {
   for (; index + 1 < list.length; index++) list[index] = list[index + 1];
   list.pop();
 }
@@ -145,7 +148,7 @@ export function validateIntegerRange(
   name: string,
   min = -2147483648,
   max = 2147483647,
-): void {
+) {
   // The defaults for min and max correspond to the limits of 32-bit integers.
   if (!Number.isInteger(value)) {
     throw new Error(`${name} must be 'an integer' but was ${value}`);
@@ -172,79 +175,7 @@ export function once<T = undefined>(
   };
 }
 
-/**
- * @param {number} [expectedExecutions = 1]
- * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
-export function mustCall<T extends unknown[]>(
-  fn: ((...args: T) => void) = () => {},
-  expectedExecutions = 1,
-  timeout = 1000,
-): [Promise<void>, (...args: T) => void] {
-  if (expectedExecutions < 1) {
-    throw new Error("Expected executions can't be lower than 1");
-  }
-  let timesExecuted = 0;
-  const completed = deferred();
-
-  const abort = setTimeout(() => completed.reject(), timeout);
-
-  function callback(this: unknown, ...args: T) {
-    timesExecuted++;
-    if (timesExecuted === expectedExecutions) {
-      completed.resolve();
-    }
-    fn.apply(this, args);
-  }
-
-  const result = completed
-    .then(() => clearTimeout(abort))
-    .catch(() =>
-      fail(
-        `Async operation not completed: Expected ${expectedExecutions}, executed ${timesExecuted}`,
-      )
-    );
-
-  return [
-    result,
-    callback,
-  ];
-}
-/** Asserts that an error thrown in a callback will not be wrongly caught. */
-export async function assertCallbackErrorUncaught(
-  { prelude, invocation, cleanup }: {
-    /** Any code which needs to run before the actual invocation (notably, any import statements). */
-    prelude?: string;
-    /**
-     * The start of the invocation of the function, e.g. `open("foo.txt", `.
-     * The callback will be added after it.
-     */
-    invocation: string;
-    /** Called after the subprocess is finished but before running the assertions, e.g. to clean up created files. */
-    cleanup?: () => Promise<void> | void;
-  },
-) {
-  // Since the error has to be uncaught, and that will kill the Deno process,
-  // the only way to test this is to spawn a subprocess.
-  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
-    args: [
-      "eval",
-      "--no-check", // Running TSC for every one of these tests would take way too long
-      "--unstable",
-      `${prelude ?? ""}
-
-      ${invocation}(err) => {
-        // If the bug is present and the callback is called again with an error,
-        // don't throw another error, so if the subprocess fails we know it had the correct behaviour.
-        if (!err) throw new Error("success");
-      });`,
-    ],
-  });
-  await cleanup?.();
-  assert(!status.success);
-  assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
-}
-
-export function makeMethodsEnumerable(klass: { new (): unknown }): void {
+export function makeMethodsEnumerable(klass: { new (): unknown }) {
   const proto = klass.prototype;
   for (const key of Object.getOwnPropertyNames(proto)) {
     const value = proto[key];
@@ -256,4 +187,20 @@ export function makeMethodsEnumerable(klass: { new (): unknown }): void {
       }
     }
   }
+}
+
+const NumberIsSafeInteger = Number.isSafeInteger;
+
+/**
+ * Returns a system error name from an error code number.
+ * @param code error code number
+ */
+export function getSystemErrorName(code: number): string | undefined {
+  if (typeof code !== "number") {
+    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
+  }
+  if (code >= 0 || !NumberIsSafeInteger(code)) {
+    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
+  }
+  return errorMap.get(code)?.[0];
 }

@@ -94,12 +94,12 @@ function callbackify<ResultT>(
     throw new NodeInvalidArgTypeError('"original"');
   }
 
-  const callbackified = function (this: unknown, ...args: unknown[]): void {
+  const callbackified = function (this: unknown, ...args: unknown[]) {
     const maybeCb = args.pop();
     if (typeof maybeCb !== "function") {
       throw new NodeInvalidArgTypeError("last");
     }
-    const cb = (...args: unknown[]): void => {
+    const cb = (...args: unknown[]) => {
       maybeCb.apply(this, args);
     };
     original.apply(this, args).then(

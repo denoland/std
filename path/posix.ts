@@ -70,6 +70,8 @@ export function resolve(...pathSegments: string[]): string {
 
 /**
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
+ * Note that resolving these segments does not necessarily mean that all will be eliminated.
+ * A `'..'` at the top-level will be preserved, and an empty path is canonically `'.'`.
  * @param path to be normalized
  */
 export function normalize(path: string): string {
@@ -216,8 +218,8 @@ export function toNamespacedPath(path: string): string {
 }
 
 /**
- * Return the directory name of a `path`.
- * @param path to determine name for
+ * Return the directory path of a `path`.
+ * @param path to determine the directory path for
  */
 export function dirname(path: string): string {
   assertPath(path);
@@ -481,7 +483,7 @@ export function parse(path: string): ParsedPath {
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./posix.ts";
+ *      import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix.ts";
  *      fromFileUrl("file:///home/foo"); // "/home/foo"
  * ```
  * @param url of a file URL
@@ -500,7 +502,7 @@ export function fromFileUrl(url: string | URL): string {
  * Converts a path string to a file URL.
  *
  * ```ts
- *      import { toFileUrl } from "./posix.ts";
+ *      import { toFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix.ts";
  *      toFileUrl("/home/foo"); // new URL("file:///home/foo")
  * ```
  * @param path to convert to file URL

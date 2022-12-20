@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
-import { concat } from "../bytes/mod.ts";
-import { assert } from "../_util/assert.ts";
+import { concat } from "../bytes/concat.ts";
+import { assert } from "../_util/asserts.ts";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -11,8 +11,9 @@ const UUID_RE =
 /**
  * Validate that the passed UUID is an RFC4122 v5 UUID.
  *
+ * @example
  * ```ts
- * import { generate as generateV5, validate } from "./v5.ts";
+ * import { generate as generateV5, validate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
  * validate(await generateV5("6ba7b810-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false
@@ -26,8 +27,9 @@ export function validate(id: string): boolean {
 /**
  * Generate a RFC4122 v5 UUID (SHA-1 namespace).
  *
+ * @example
  * ```js
- * import { generate } from "./v5.ts";
+ * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
  * const NAMESPACE_URL = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
  *

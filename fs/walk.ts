@@ -2,46 +2,14 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../_util/assert.ts";
-import { basename, join, normalize } from "../path/mod.ts";
-
-/** Create WalkEntry for the `path` synchronously */
-export function _createWalkEntrySync(path: string): WalkEntry {
-  path = normalize(path);
-  const name = basename(path);
-  const info = Deno.statSync(path);
-  return {
-    path,
-    name,
-    isFile: info.isFile,
-    isDirectory: info.isDirectory,
-    isSymlink: info.isSymlink,
-  };
-}
-
-/** Create WalkEntry for the `path` asynchronously */
-export async function _createWalkEntry(path: string): Promise<WalkEntry> {
-  path = normalize(path);
-  const name = basename(path);
-  const info = await Deno.stat(path);
-  return {
-    path,
-    name,
-    isFile: info.isFile,
-    isDirectory: info.isDirectory,
-    isSymlink: info.isSymlink,
-  };
-}
-
-export interface WalkOptions {
-  maxDepth?: number;
-  includeFiles?: boolean;
-  includeDirs?: boolean;
-  followSymlinks?: boolean;
-  exts?: string[];
-  match?: RegExp[];
-  skip?: RegExp[];
-}
+import { assert } from "../_util/asserts.ts";
+import { join, normalize } from "../path/mod.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
 function include(
   path: string,
@@ -73,36 +41,38 @@ function wrapErrorWithRootPath(err: unknown, root: string) {
   return e;
 }
 
-export interface WalkEntry extends Deno.DirEntry {
-  path: string;
+export interface WalkOptions {
+  /** @default {Infinity} */
+  maxDepth?: number;
+  /** @default {true} */
+  includeFiles?: boolean;
+  /** @default {true} */
+  includeDirs?: boolean;
+  /** @default {false} */
+  followSymlinks?: boolean;
+  exts?: string[];
+  match?: RegExp[];
+  skip?: RegExp[];
 }
+export type { WalkEntry };
 
-/** Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options. The files are walked in lexical
- * order, which makes the output deterministic but means that for very large
- * directories walk() can be inefficient.
+/**
+ * Walks the file tree rooted at root, yielding each file or directory in the
+ * tree filtered according to the given options.
  *
- * Options:
- * - maxDepth?: number = Infinity;
- * - includeFiles?: boolean = true;
- * - includeDirs?: boolean = true;
- * - followSymlinks?: boolean = false;
- * - exts?: string[];
- * - match?: RegExp[];
- * - skip?: RegExp[];
- *
+ * @example
  * ```ts
- *       import { walk } from "./walk.ts";
- *       import { assert } from "../testing/asserts.ts";
+ * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- *       for await (const entry of walk(".")) {
- *         console.log(entry.path);
- *         assert(entry.isFile);
- *       }
+ * for await (const entry of walk(".")) {
+ *   console.log(entry.path);
+ *   assert(entry.isFile);
+ * }
  * ```
  */
 export async function* walk(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -116,8 +86,9 @@ export async function* walk(
   if (maxDepth < 0) {
     return;
   }
+  root = toPathString(root);
   if (includeDirs && include(root, exts, match, skip)) {
-    yield await _createWalkEntry(root);
+    yield await createWalkEntry(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
@@ -159,7 +130,7 @@ export async function* walk(
 
 /** Same as walk() but uses synchronous ops */
 export function* walkSync(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
@@ -170,11 +141,12 @@ export function* walkSync(
     skip = undefined,
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
+  root = toPathString(root);
   if (maxDepth < 0) {
     return;
   }
   if (includeDirs && include(root, exts, match, skip)) {
-    yield _createWalkEntrySync(root);
+    yield createWalkEntrySync(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;

@@ -13,7 +13,6 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  */
 
-import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
@@ -21,13 +20,14 @@ import {
   errorMap,
   mapSysErrnoToUvErrno,
 } from "../internal_binding/uv.ts";
-import { assert } from "../../_util/assert.ts";
+import { assert } from "../../_util/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
 import { os as osConstants } from "../internal_binding/constants.ts";
 const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
 import { hideStackFrames } from "./hide_stack_frames.ts";
+import { getSystemErrorName } from "../_utils.ts";
 
 export { errorMap };
 
@@ -61,15 +61,15 @@ const kTypes = [
 export class AbortError extends Error {
   code: string;
 
-  constructor() {
-    super("The operation was aborted");
+  constructor(message = "The operation was aborted", options?: ErrorOptions) {
+    if (options !== undefined && typeof options !== "object") {
+      throw new codes.ERR_INVALID_ARG_TYPE("options", "Object", options);
+    }
+    super(message, options);
     this.code = "ABORT_ERR";
     this.name = "AbortError";
   }
 }
-
-// deno-lint-ignore no-explicit-any
-type GenericFunction = (...args: any[]) => any;
 
 let maxStack_ErrorName: string | undefined;
 let maxStack_ErrorMessage: string | undefined;
@@ -121,6 +121,7 @@ export interface ErrnoException extends Error {
   code?: string;
   path?: string;
   syscall?: string;
+  spawnargs?: string[];
 }
 
 /**
@@ -617,7 +618,7 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   static RangeError = ERR_INVALID_ARG_TYPE_RANGE;
 }
 
-class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
+export class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
   constructor(name: string, value: unknown, reason: string = "is invalid") {
     const type = name.includes(".") ? "property" : "argument";
     const inspected = inspect(value);
@@ -1432,14 +1433,6 @@ export class ERR_INVALID_BUFFER_SIZE extends NodeRangeError {
     super("ERR_INVALID_BUFFER_SIZE", `Buffer size must be a multiple of ${x}`);
   }
 }
-export class ERR_INVALID_CALLBACK extends NodeTypeError {
-  constructor(object: unknown) {
-    super(
-      "ERR_INVALID_CALLBACK",
-      `Callback must be a function. Received ${inspect(object)}`,
-    );
-  }
-}
 export class ERR_INVALID_CURSOR_POS extends NodeTypeError {
   constructor() {
     super(
@@ -2112,6 +2105,14 @@ export class ERR_UNSUPPORTED_ESM_URL_SCHEME extends NodeError {
     );
   }
 }
+export class ERR_USE_AFTER_CLOSE extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_USE_AFTER_CLOSE",
+      `${x} was closed`,
+    );
+  }
+}
 export class ERR_V8BREAKITERATOR extends NodeError {
   constructor() {
     super(
@@ -2338,7 +2339,7 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
     super(
       "ERR_INVALID_RETURN_VALUE",
       `Expected ${input} to be returned from the "${name}" function but got ${
-        buildReturnPropertyType(
+        determineSpecificType(
           value,
         )
       }.`,
@@ -2488,6 +2489,7 @@ export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
 
 interface UvExceptionContext {
   syscall: string;
+  path?: string;
 }
 export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
   const errno = extractOsErrorNumberFromErrorMessage(e);
@@ -2548,7 +2550,6 @@ export function aggregateTwoErrors(
 codes.ERR_IPC_CHANNEL_CLOSED = ERR_IPC_CHANNEL_CLOSED;
 codes.ERR_INVALID_ARG_TYPE = ERR_INVALID_ARG_TYPE;
 codes.ERR_INVALID_ARG_VALUE = ERR_INVALID_ARG_VALUE;
-codes.ERR_INVALID_CALLBACK = ERR_INVALID_CALLBACK;
 codes.ERR_OUT_OF_RANGE = ERR_OUT_OF_RANGE;
 codes.ERR_SOCKET_BAD_PORT = ERR_SOCKET_BAD_PORT;
 codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
@@ -2558,9 +2559,9 @@ codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
 /**
  * This creates a generic Node.js error.
  *
- * @param {string} message The error message.
- * @param {object} errorProperties Object with additional properties to be added to the error.
- * @returns {Error}
+ * @param message The error message.
+ * @param errorProperties Object with additional properties to be added to the error.
+ * @returns
  */
 const genericNodeError = hideStackFrames(
   function genericNodeError(message, errorProperties) {
@@ -2572,11 +2573,295 @@ const genericNodeError = hideStackFrames(
   },
 );
 
+/**
+ * Determine the specific type of a value for type-mismatch errors.
+ * @param {*} value
+ * @returns {string}
+ */
+// deno-lint-ignore no-explicit-any
+function determineSpecificType(value: any) {
+  if (value == null) {
+    return "" + value;
+  }
+  if (typeof value === "function" && value.name) {
+    return `function ${value.name}`;
+  }
+  if (typeof value === "object") {
+    if (value.constructor?.name) {
+      return `an instance of ${value.constructor.name}`;
+    }
+    return `${inspect(value, { depth: -1 })}`;
+  }
+  let inspected = inspect(value, { colors: false });
+  if (inspected.length > 28) inspected = `${inspected.slice(0, 25)}...`;
+
+  return `type ${typeof value} (${inspected})`;
+}
+
 export { codes, genericNodeError, hideStackFrames };
 
 export default {
   AbortError,
+  ERR_AMBIGUOUS_ARGUMENT,
+  ERR_ARG_NOT_ITERABLE,
+  ERR_ASSERTION,
+  ERR_ASYNC_CALLBACK,
+  ERR_ASYNC_TYPE,
+  ERR_BROTLI_INVALID_PARAM,
+  ERR_BUFFER_OUT_OF_BOUNDS,
+  ERR_BUFFER_TOO_LARGE,
+  ERR_CANNOT_WATCH_SIGINT,
+  ERR_CHILD_CLOSED_BEFORE_REPLY,
+  ERR_CHILD_PROCESS_IPC_REQUIRED,
+  ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
+  ERR_CONSOLE_WRITABLE_STREAM,
+  ERR_CONTEXT_NOT_INITIALIZED,
+  ERR_CPU_USAGE,
+  ERR_CRYPTO_CUSTOM_ENGINE_NOT_SUPPORTED,
+  ERR_CRYPTO_ECDH_INVALID_FORMAT,
+  ERR_CRYPTO_ECDH_INVALID_PUBLIC_KEY,
+  ERR_CRYPTO_ENGINE_UNKNOWN,
+  ERR_CRYPTO_FIPS_FORCED,
+  ERR_CRYPTO_FIPS_UNAVAILABLE,
+  ERR_CRYPTO_HASH_FINALIZED,
+  ERR_CRYPTO_HASH_UPDATE_FAILED,
+  ERR_CRYPTO_INCOMPATIBLE_KEY,
+  ERR_CRYPTO_INCOMPATIBLE_KEY_OPTIONS,
+  ERR_CRYPTO_INVALID_DIGEST,
+  ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE,
+  ERR_CRYPTO_INVALID_STATE,
+  ERR_CRYPTO_PBKDF2_ERROR,
+  ERR_CRYPTO_SCRYPT_INVALID_PARAMETER,
+  ERR_CRYPTO_SCRYPT_NOT_SUPPORTED,
+  ERR_CRYPTO_SIGN_KEY_REQUIRED,
+  ERR_DIR_CLOSED,
+  ERR_DIR_CONCURRENT_OPERATION,
+  ERR_DNS_SET_SERVERS_FAILED,
+  ERR_DOMAIN_CALLBACK_NOT_AVAILABLE,
+  ERR_DOMAIN_CANNOT_SET_UNCAUGHT_EXCEPTION_CAPTURE,
+  ERR_ENCODING_INVALID_ENCODED_DATA,
+  ERR_ENCODING_NOT_SUPPORTED,
+  ERR_EVAL_ESM_CANNOT_PRINT,
+  ERR_EVENT_RECURSION,
+  ERR_FALSY_VALUE_REJECTION,
+  ERR_FEATURE_UNAVAILABLE_ON_PLATFORM,
+  ERR_FS_EISDIR,
+  ERR_FS_FILE_TOO_LARGE,
+  ERR_FS_INVALID_SYMLINK_TYPE,
+  ERR_FS_RMDIR_ENOTDIR,
+  ERR_HTTP2_ALTSVC_INVALID_ORIGIN,
+  ERR_HTTP2_ALTSVC_LENGTH,
+  ERR_HTTP2_CONNECT_AUTHORITY,
+  ERR_HTTP2_CONNECT_PATH,
+  ERR_HTTP2_CONNECT_SCHEME,
+  ERR_HTTP2_GOAWAY_SESSION,
+  ERR_HTTP2_HEADERS_AFTER_RESPOND,
+  ERR_HTTP2_HEADERS_SENT,
+  ERR_HTTP2_HEADER_SINGLE_VALUE,
+  ERR_HTTP2_INFO_STATUS_NOT_ALLOWED,
+  ERR_HTTP2_INVALID_CONNECTION_HEADERS,
+  ERR_HTTP2_INVALID_HEADER_VALUE,
+  ERR_HTTP2_INVALID_INFO_STATUS,
+  ERR_HTTP2_INVALID_ORIGIN,
+  ERR_HTTP2_INVALID_PACKED_SETTINGS_LENGTH,
+  ERR_HTTP2_INVALID_PSEUDOHEADER,
+  ERR_HTTP2_INVALID_SESSION,
+  ERR_HTTP2_INVALID_SETTING_VALUE,
+  ERR_HTTP2_INVALID_STREAM,
+  ERR_HTTP2_MAX_PENDING_SETTINGS_ACK,
+  ERR_HTTP2_NESTED_PUSH,
+  ERR_HTTP2_NO_SOCKET_MANIPULATION,
+  ERR_HTTP2_ORIGIN_LENGTH,
+  ERR_HTTP2_OUT_OF_STREAMS,
+  ERR_HTTP2_PAYLOAD_FORBIDDEN,
+  ERR_HTTP2_PING_CANCEL,
+  ERR_HTTP2_PING_LENGTH,
+  ERR_HTTP2_PSEUDOHEADER_NOT_ALLOWED,
+  ERR_HTTP2_PUSH_DISABLED,
+  ERR_HTTP2_SEND_FILE,
+  ERR_HTTP2_SEND_FILE_NOSEEK,
+  ERR_HTTP2_SESSION_ERROR,
+  ERR_HTTP2_SETTINGS_CANCEL,
+  ERR_HTTP2_SOCKET_BOUND,
+  ERR_HTTP2_SOCKET_UNBOUND,
+  ERR_HTTP2_STATUS_101,
+  ERR_HTTP2_STATUS_INVALID,
+  ERR_HTTP2_STREAM_CANCEL,
+  ERR_HTTP2_STREAM_ERROR,
+  ERR_HTTP2_STREAM_SELF_DEPENDENCY,
+  ERR_HTTP2_TRAILERS_ALREADY_SENT,
+  ERR_HTTP2_TRAILERS_NOT_READY,
+  ERR_HTTP2_UNSUPPORTED_PROTOCOL,
+  ERR_HTTP_HEADERS_SENT,
+  ERR_HTTP_INVALID_HEADER_VALUE,
+  ERR_HTTP_INVALID_STATUS_CODE,
+  ERR_HTTP_SOCKET_ENCODING,
+  ERR_HTTP_TRAILER_INVALID,
+  ERR_INCOMPATIBLE_OPTION_PAIR,
+  ERR_INPUT_TYPE_NOT_ALLOWED,
+  ERR_INSPECTOR_ALREADY_ACTIVATED,
+  ERR_INSPECTOR_ALREADY_CONNECTED,
+  ERR_INSPECTOR_CLOSED,
+  ERR_INSPECTOR_COMMAND,
+  ERR_INSPECTOR_NOT_ACTIVE,
+  ERR_INSPECTOR_NOT_AVAILABLE,
+  ERR_INSPECTOR_NOT_CONNECTED,
+  ERR_INSPECTOR_NOT_WORKER,
+  ERR_INTERNAL_ASSERTION,
+  ERR_INVALID_ADDRESS_FAMILY,
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_TYPE_RANGE,
+  ERR_INVALID_ARG_VALUE,
+  ERR_INVALID_ARG_VALUE_RANGE,
+  ERR_INVALID_ASYNC_ID,
+  ERR_INVALID_BUFFER_SIZE,
+  ERR_INVALID_CHAR,
+  ERR_INVALID_CURSOR_POS,
+  ERR_INVALID_FD,
+  ERR_INVALID_FD_TYPE,
+  ERR_INVALID_FILE_URL_HOST,
+  ERR_INVALID_FILE_URL_PATH,
+  ERR_INVALID_HANDLE_TYPE,
+  ERR_INVALID_HTTP_TOKEN,
+  ERR_INVALID_IP_ADDRESS,
+  ERR_INVALID_MODULE_SPECIFIER,
+  ERR_INVALID_OPT_VALUE,
+  ERR_INVALID_OPT_VALUE_ENCODING,
+  ERR_INVALID_PACKAGE_CONFIG,
+  ERR_INVALID_PACKAGE_TARGET,
+  ERR_INVALID_PERFORMANCE_MARK,
+  ERR_INVALID_PROTOCOL,
+  ERR_INVALID_REPL_EVAL_CONFIG,
+  ERR_INVALID_REPL_INPUT,
+  ERR_INVALID_RETURN_PROPERTY,
+  ERR_INVALID_RETURN_PROPERTY_VALUE,
+  ERR_INVALID_RETURN_VALUE,
+  ERR_INVALID_SYNC_FORK_INPUT,
+  ERR_INVALID_THIS,
+  ERR_INVALID_TUPLE,
+  ERR_INVALID_URI,
+  ERR_INVALID_URL,
+  ERR_INVALID_URL_SCHEME,
+  ERR_IPC_CHANNEL_CLOSED,
+  ERR_IPC_DISCONNECTED,
+  ERR_IPC_ONE_PIPE,
+  ERR_IPC_SYNC_FORK,
+  ERR_MANIFEST_DEPENDENCY_MISSING,
+  ERR_MANIFEST_INTEGRITY_MISMATCH,
+  ERR_MANIFEST_INVALID_RESOURCE_FIELD,
+  ERR_MANIFEST_TDZ,
+  ERR_MANIFEST_UNKNOWN_ONERROR,
+  ERR_METHOD_NOT_IMPLEMENTED,
+  ERR_MISSING_ARGS,
+  ERR_MISSING_OPTION,
+  ERR_MODULE_NOT_FOUND,
+  ERR_MULTIPLE_CALLBACK,
+  ERR_NAPI_CONS_FUNCTION,
+  ERR_NAPI_INVALID_DATAVIEW_ARGS,
+  ERR_NAPI_INVALID_TYPEDARRAY_ALIGNMENT,
+  ERR_NAPI_INVALID_TYPEDARRAY_LENGTH,
+  ERR_NO_CRYPTO,
+  ERR_NO_ICU,
+  ERR_OUT_OF_RANGE,
+  ERR_PACKAGE_IMPORT_NOT_DEFINED,
+  ERR_PACKAGE_PATH_NOT_EXPORTED,
+  ERR_QUICCLIENTSESSION_FAILED,
+  ERR_QUICCLIENTSESSION_FAILED_SETSOCKET,
+  ERR_QUICSESSION_DESTROYED,
+  ERR_QUICSESSION_INVALID_DCID,
+  ERR_QUICSESSION_UPDATEKEY,
+  ERR_QUICSOCKET_DESTROYED,
+  ERR_QUICSOCKET_INVALID_STATELESS_RESET_SECRET_LENGTH,
+  ERR_QUICSOCKET_LISTENING,
+  ERR_QUICSOCKET_UNBOUND,
+  ERR_QUICSTREAM_DESTROYED,
+  ERR_QUICSTREAM_INVALID_PUSH,
+  ERR_QUICSTREAM_OPEN_FAILED,
+  ERR_QUICSTREAM_UNSUPPORTED_PUSH,
+  ERR_QUIC_TLS13_REQUIRED,
+  ERR_SCRIPT_EXECUTION_INTERRUPTED,
+  ERR_SERVER_ALREADY_LISTEN,
+  ERR_SERVER_NOT_RUNNING,
+  ERR_SOCKET_ALREADY_BOUND,
+  ERR_SOCKET_BAD_BUFFER_SIZE,
+  ERR_SOCKET_BAD_PORT,
+  ERR_SOCKET_BAD_TYPE,
+  ERR_SOCKET_BUFFER_SIZE,
+  ERR_SOCKET_CLOSED,
+  ERR_SOCKET_DGRAM_IS_CONNECTED,
+  ERR_SOCKET_DGRAM_NOT_CONNECTED,
+  ERR_SOCKET_DGRAM_NOT_RUNNING,
+  ERR_SRI_PARSE,
+  ERR_STREAM_ALREADY_FINISHED,
+  ERR_STREAM_CANNOT_PIPE,
+  ERR_STREAM_DESTROYED,
+  ERR_STREAM_NULL_VALUES,
+  ERR_STREAM_PREMATURE_CLOSE,
+  ERR_STREAM_PUSH_AFTER_EOF,
+  ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
+  ERR_STREAM_WRAP,
+  ERR_STREAM_WRITE_AFTER_END,
+  ERR_SYNTHETIC,
+  ERR_TLS_CERT_ALTNAME_INVALID,
+  ERR_TLS_DH_PARAM_SIZE,
+  ERR_TLS_HANDSHAKE_TIMEOUT,
+  ERR_TLS_INVALID_CONTEXT,
+  ERR_TLS_INVALID_PROTOCOL_VERSION,
+  ERR_TLS_INVALID_STATE,
+  ERR_TLS_PROTOCOL_VERSION_CONFLICT,
+  ERR_TLS_RENEGOTIATION_DISABLED,
+  ERR_TLS_REQUIRED_SERVER_NAME,
+  ERR_TLS_SESSION_ATTACK,
+  ERR_TLS_SNI_FROM_SERVER,
+  ERR_TRACE_EVENTS_CATEGORY_REQUIRED,
+  ERR_TRACE_EVENTS_UNAVAILABLE,
+  ERR_UNAVAILABLE_DURING_EXIT,
+  ERR_UNCAUGHT_EXCEPTION_CAPTURE_ALREADY_SET,
+  ERR_UNESCAPED_CHARACTERS,
+  ERR_UNHANDLED_ERROR,
+  ERR_UNKNOWN_BUILTIN_MODULE,
+  ERR_UNKNOWN_CREDENTIAL,
+  ERR_UNKNOWN_ENCODING,
+  ERR_UNKNOWN_FILE_EXTENSION,
+  ERR_UNKNOWN_MODULE_FORMAT,
+  ERR_UNKNOWN_SIGNAL,
+  ERR_UNSUPPORTED_DIR_IMPORT,
+  ERR_UNSUPPORTED_ESM_URL_SCHEME,
+  ERR_USE_AFTER_CLOSE,
+  ERR_V8BREAKITERATOR,
+  ERR_VALID_PERFORMANCE_ENTRY_TYPE,
+  ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING,
+  ERR_VM_MODULE_ALREADY_LINKED,
+  ERR_VM_MODULE_CANNOT_CREATE_CACHED_DATA,
+  ERR_VM_MODULE_DIFFERENT_CONTEXT,
+  ERR_VM_MODULE_LINKING_ERRORED,
+  ERR_VM_MODULE_NOT_MODULE,
+  ERR_VM_MODULE_STATUS,
+  ERR_WASI_ALREADY_STARTED,
+  ERR_WORKER_INIT_FAILED,
+  ERR_WORKER_NOT_RUNNING,
+  ERR_WORKER_OUT_OF_MEMORY,
+  ERR_WORKER_UNSERIALIZABLE_ERROR,
+  ERR_WORKER_UNSUPPORTED_EXTENSION,
+  ERR_WORKER_UNSUPPORTED_OPERATION,
+  ERR_ZLIB_INITIALIZATION_FAILED,
+  NodeError,
+  NodeErrorAbstraction,
+  NodeRangeError,
+  NodeSyntaxError,
+  NodeTypeError,
+  NodeURIError,
   aggregateTwoErrors,
   codes,
+  connResetException,
+  denoErrorToNodeError,
   dnsException,
+  errnoException,
+  errorMap,
+  exceptionWithHostPort,
+  genericNodeError,
+  hideStackFrames,
+  isStackOverflowError,
+  uvException,
+  uvExceptionWithHostPort,
 };

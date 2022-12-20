@@ -1,7 +1,33 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// Modified from https://github.com/beatgammit/base64-js
 // Copyright (c) 2014 Jameson Little. MIT License.
-// This module is browser compatible.
+
+/**
+ * {@linkcode encode} and {@linkcode decode} for
+ * [base32](https://en.wikipedia.org/wiki/Base32) encoding.
+ *
+ * Modified from https://github.com/beatgammit/base64-js
+ *
+ * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * const b32Repr = "RC2E6GA=";
+ *
+ * const binaryData = decode(b32Repr);
+ * console.log(binaryData);
+ * // => Uint8Array [ 136, 180, 79, 24 ]
+ *
+ * console.log(encode(binaryData));
+ * // => RC2E6GA=
+ * ```
+ *
+ * @module
+ */
 
 const lookup: string[] = [];
 const revLookup: number[] = [];

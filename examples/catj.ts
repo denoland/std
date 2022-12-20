@@ -1,14 +1,24 @@
 #!/usr/bin/env -S deno run --allow-read
-// Ported from: https://github.com/soheilpro/catj
 // Copyright (c) 2014 Soheil Rashidi
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-// Install using `deno install`
-// $ deno install --allow-read https://deno.land/std/examples/catj.ts
+/** An implementation of [catj](https://github.com/soheilpro/catj) which prints
+ * JSON files to the console.
+ *
+ * Ported from: https://github.com/soheilpro/catj
+ *
+ * Install using `deno install`:
+ *
+ * ```shellsession
+ * $ deno install --allow-read https://deno.land/std/examples/catj.ts
+ * ```
+ *
+ * @module
+ */
 
 import { parse } from "../flags/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { readAll } from "../streams/conversion.ts";
+import { readAll } from "../streams/read_all.ts";
 
 const decoder = new TextDecoder();
 
@@ -24,7 +34,7 @@ function isValidIdentifier(value: string): boolean {
     );
 }
 
-function printValue(value: unknown, path: string): void {
+function printValue(value: unknown, path: string) {
   if (typeof value === "string") {
     value = colors.green('"' + value + '"');
   } else if (typeof value === "number") {
@@ -36,7 +46,7 @@ function printValue(value: unknown, path: string): void {
   console.log(path + " = " + value);
 }
 
-function printObject(obj: Record<string, unknown>, path: string): void {
+function printObject(obj: Record<string, unknown>, path: string) {
   for (const key of Object.keys(obj)) {
     const value = obj[key];
     let nodePath = path + colors.cyan(".") + key;
@@ -55,7 +65,7 @@ function printObject(obj: Record<string, unknown>, path: string): void {
   }
 }
 
-function printArray(array: unknown[], path: string): void {
+function printArray(array: unknown[], path: string) {
   for (const index in array) {
     const value = array[index];
     const nodePath = (path ? path : colors.cyan(".")) + "[" +
@@ -72,7 +82,7 @@ function printArray(array: unknown[], path: string): void {
 }
 
 // deno-lint-ignore no-explicit-any
-function print(data: any[] | Record<string, unknown>): void {
+function print(data: any[] | Record<string, unknown>) {
   if (Array.isArray(data)) {
     printArray(data, "");
   } else {

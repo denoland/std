@@ -174,7 +174,7 @@ function throwError(state: LoaderState, message: string): never {
   throw generateError(state, message);
 }
 
-function throwWarning(state: LoaderState, message: string): void {
+function throwWarning(state: LoaderState, message: string) {
   if (state.onWarning) {
     state.onWarning.call(null, generateError(state, message));
   }
@@ -216,7 +216,7 @@ const directiveHandlers: DirectiveHandlers = {
     }
   },
 
-  TAG(state, _name, ...args: string[]): void {
+  TAG(state, _name, ...args: string[]) {
     if (args.length !== 2) {
       return throwError(state, "TAG directive accepts exactly two arguments");
     }
@@ -257,7 +257,7 @@ function captureSegment(
   start: number,
   end: number,
   checkJson: boolean,
-): void {
+) {
   let result: string;
   if (start < end) {
     result = state.input.slice(start, end);
@@ -288,7 +288,7 @@ function mergeMappings(
   destination: ArrayObject,
   source: ArrayObject,
   overridableKeys: ArrayObject<boolean>,
-): void {
+) {
   if (!common.isObject(source)) {
     return throwError(
       state,
@@ -378,7 +378,7 @@ function storeMappingPair(
   return result;
 }
 
-function readLineBreak(state: LoaderState): void {
+function readLineBreak(state: LoaderState) {
   const ch = state.input.charCodeAt(state.position);
 
   if (ch === 0x0a /* LF */) {
@@ -465,7 +465,7 @@ function testDocumentSeparator(state: LoaderState): boolean {
   return false;
 }
 
-function writeFoldedLines(state: LoaderState, count: number): void {
+function writeFoldedLines(state: LoaderState, count: number) {
   if (count === 1) {
     state.result += " ";
   } else if (count > 1) {
@@ -1599,7 +1599,7 @@ function composeNode(
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
-function readDocument(state: LoaderState): void {
+function readDocument(state: LoaderState) {
   const documentStart = state.position;
   let position: number,
     directiveName: string,

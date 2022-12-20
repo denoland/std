@@ -19,12 +19,15 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-import * as DenoUnstable from "../_deno_unstable.ts";
+
 import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
+import { os } from "./internal_binding/constants.ts";
+
+export const constants = os;
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
@@ -111,6 +114,8 @@ export function arch(): string {
 // deno-lint-ignore no-explicit-any
 (release as any)[Symbol.toPrimitive] = (): string => release();
 // deno-lint-ignore no-explicit-any
+(version as any)[Symbol.toPrimitive] = (): string => version();
+// deno-lint-ignore no-explicit-any
 (totalmem as any)[Symbol.toPrimitive] = (): number => totalmem();
 // deno-lint-ignore no-explicit-any
 (type as any)[Symbol.toPrimitive] = (): string => type();
@@ -148,7 +153,7 @@ export function endianness(): "BE" | "LE" {
 
 /** Return free memory amount */
 export function freemem(): number {
-  return DenoUnstable.systemMemoryInfo().free;
+  return Deno.systemMemoryInfo().free;
 }
 
 /** Not yet implemented */
@@ -167,6 +172,7 @@ export function homedir(): string | null {
       return Deno.env.get("USERPROFILE") || null;
     case "linux":
     case "darwin":
+    case "freebsd":
       return Deno.env.get("HOME") || null;
     default:
       throw Error("unreachable");
@@ -175,7 +181,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  return DenoUnstable.hostname();
+  return Deno.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
@@ -183,7 +189,7 @@ export function loadavg(): number[] {
   if (isWindows) {
     return [0, 0, 0];
   }
-  return DenoUnstable.loadavg();
+  return Deno.loadavg();
 }
 
 /** Returns an object containing network interfaces that have been assigned a network address.
@@ -191,7 +197,7 @@ export function loadavg(): number[] {
 export function networkInterfaces(): NetworkInterfaces {
   const interfaces: NetworkInterfaces = {};
   for (
-    const { name, address, netmask, family, mac, scopeid, cidr } of DenoUnstable
+    const { name, address, netmask, family, mac, scopeid, cidr } of Deno
       .networkInterfaces()
   ) {
     const addresses = interfaces[name] ||= [];
@@ -227,11 +233,18 @@ export function platform(): string {
 
 /** Returns the operating system as a string */
 export function release(): string {
-  return DenoUnstable.osRelease();
+  return Deno.osRelease();
+}
+
+/** Returns a string identifying the kernel version */
+export function version(): string {
+  // TODO(kt3k): Temporarily uses Deno.osRelease().
+  // Revisit this if this implementation is insufficient for any npm module
+  return Deno.osRelease();
 }
 
 /** Not yet implemented */
-export function setPriority(pid: number, priority?: number): void {
+export function setPriority(pid: number, priority?: number) {
   /* The node API has the 'pid' as the first parameter and as optional.
        This makes for a problematic implementation in Typescript. */
   if (priority === undefined) {
@@ -273,18 +286,20 @@ export function tmpdir(): string | null {
 
 /** Return total physical memory amount */
 export function totalmem(): number {
-  return DenoUnstable.systemMemoryInfo().total;
+  return Deno.systemMemoryInfo().total;
 }
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
 export function type(): string {
-  switch (Deno.build.os) {
+  switch (Deno.build.os as string) {
     case "windows":
       return "Windows_NT";
     case "linux":
       return "Linux";
     case "darwin":
       return "Darwin";
+    case "freebsd":
+      return "FreeBSD";
     default:
       throw Error("unreachable");
   }
@@ -302,56 +317,6 @@ export function userInfo(
 ): UserInfo {
   notImplemented(SEE_GITHUB_ISSUE);
 }
-
-export const constants = {
-  // UV_UDP_REUSEADDR: 4,  //see https://nodejs.org/docs/latest-v12.x/api/os.html#os_libuv_constants
-  dlopen: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_dlopen_constants
-  },
-  errno: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_error_constants
-  },
-  // Needs to be kept in sync with `Deno.Signal` type.
-  signals: {
-    "SIGABRT": "SIGABRT",
-    "SIGALRM": "SIGALRM",
-    "SIGBREAK": "SIGBREAK",
-    "SIGBUS": "SIGBUS",
-    "SIGCHLD": "SIGCHLD",
-    "SIGCONT": "SIGCONT",
-    "SIGEMT": "SIGEMT",
-    "SIGFPE": "SIGFPE",
-    "SIGHUP": "SIGHUP",
-    "SIGILL": "SIGILL",
-    "SIGINFO": "SIGINFO",
-    "SIGINT": "SIGINT",
-    "SIGIO": "SIGIO",
-    "SIGKILL": "SIGKILL",
-    "SIGPIPE": "SIGPIPE",
-    "SIGPROF": "SIGPROF",
-    "SIGPWR": "SIGPWR",
-    "SIGQUIT": "SIGQUIT",
-    "SIGSEGV": "SIGSEGV",
-    "SIGSTKFLT": "SIGSTKFLT",
-    "SIGSTOP": "SIGSTOP",
-    "SIGSYS": "SIGSYS",
-    "SIGTERM": "SIGTERM",
-    "SIGTRAP": "SIGTRAP",
-    "SIGTSTP": "SIGTSTP",
-    "SIGTTIN": "SIGTTIN",
-    "SIGTTOU": "SIGTTOU",
-    "SIGURG": "SIGURG",
-    "SIGUSR1": "SIGUSR1",
-    "SIGUSR2": "SIGUSR2",
-    "SIGVTALRM": "SIGVTALRM",
-    "SIGWINCH": "SIGWINCH",
-    "SIGXCPU": "SIGXCPU",
-    "SIGXFSZ": "SIGXFSZ",
-  },
-  priority: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_priority_constants
-  },
-};
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
 export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";
@@ -374,6 +339,7 @@ export default {
   type,
   uptime,
   userInfo,
+  version,
   constants,
   EOL,
   devNull,

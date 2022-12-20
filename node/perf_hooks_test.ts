@@ -2,6 +2,7 @@
 import * as perfHooks from "./perf_hooks.ts";
 import { performance } from "./perf_hooks.ts";
 import { assertEquals } from "../testing/asserts.ts";
+import { assertSpyCall, assertSpyCalls, spy } from "../testing/mock.ts";
 
 Deno.test({
   name: "[perf_hooks] performance",
@@ -33,6 +34,24 @@ Deno.test({
 Deno.test({
   name: "[perf_hooks] PerformanceEntry",
   fn() {
-    assertEquals(perfHooks.PerformanceEntry, PerformanceEntry);
+    assertEquals<unknown>(perfHooks.PerformanceEntry, PerformanceEntry);
+  },
+});
+
+Deno.test({
+  name: "[perf_hooks] EventTarget methods",
+  fn() {
+    const handler = spy();
+    performance.addEventListener("event", handler);
+    assertSpyCalls(handler, 0);
+    const e = new Event("event");
+    performance.dispatchEvent(e);
+    // handler is called once
+    assertSpyCalls(handler, 1);
+    assertSpyCall(handler, 0, { args: [e] });
+    performance.removeEventListener("event", handler);
+    performance.dispatchEvent(e);
+    // handler is not called anymore
+    assertSpyCalls(handler, 1);
   },
 });

@@ -1,12 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
-import { TextLineStream } from "../../streams/delimiter.ts";
 
 const moduleDir = resolve(dirname(fromFileUrl(import.meta.url)));
 
-async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
-  const server = Deno.spawnChild(Deno.execPath(), {
+async function startServer(): Promise<Deno.ChildProcess> {
+  const server = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--quiet",
@@ -15,56 +14,74 @@ async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
       "server.ts",
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
+    stdin: "null",
   });
+  const child = server.spawn();
+  const reader = child.stdout.getReader();
+
   try {
-    const r = server.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-      new TextLineStream(),
+    const { value } = await reader.read();
+    assert(
+      value && new TextDecoder().decode(value).includes("chat server starting"),
     );
-    const reader = r.getReader();
-    const res = await reader.read();
-    assert(!res.done && res.value.includes("chat server starting"));
-    await reader.cancel();
   } catch {
-    server.kill("SIGTERM");
+    await child.stdout.cancel();
+  } finally {
+    reader.releaseLock();
   }
 
-  return server;
+  return child;
 }
 
 Deno.test({
   name: "[examples/chat] GET / should serve html",
-  sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
-    const server = await startServer();
-    const resp = await fetch("http://127.0.0.1:8080/");
-    assertEquals(resp.status, 200);
-    assertEquals(resp.headers.get("content-type"), "text/html");
-    const html = await resp.text();
-    assert(html.includes("ws chat example"), "body is ok");
-    server.kill("SIGTERM");
-    await server.status;
+    const child = await startServer();
+    try {
+      const resp = await fetch("http://127.0.0.1:8080/");
+      assertEquals(resp.status, 200);
+      assertEquals(resp.headers.get("content-type"), "text/html");
+      const html = await resp.text();
+      assert(html.includes("ws chat example"), "body is ok");
+    } finally {
+      child.stdout.cancel();
+      child.kill();
+    }
+    await child.status;
   },
 });
 
 Deno.test({
   name: "[examples/chat] GET /ws should upgrade conn to ws",
-  sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
-    const server = await startServer();
-    const ws = new WebSocket("ws://127.0.0.1:8080/ws");
-    await new Promise<void>((resolve) => {
-      ws.onmessage = (message) => {
-        assertEquals(message.data, "Connected: [1]");
+    const child = await startServer();
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket("ws://127.0.0.1:8080/ws");
+      await new Promise<void>((resolve) => {
         ws.onmessage = (message) => {
-          assertEquals(message.data, "[1]: Hello");
-          ws.close();
+          assertEquals(message.data, "Connected: [1]");
+
+          ws.onmessage = (message) => {
+            assertEquals(message.data, "[1]: Hello");
+            ws.close();
+          };
+
+          ws.send("Hello");
         };
-        ws.send("Hello");
-      };
-      ws.onclose = () => resolve();
-    });
-    server.kill("SIGTERM");
-    await server.status;
+
+        ws.onclose = () => {
+          resolve();
+        };
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      child.stdout.cancel();
+      child.kill();
+    }
+    await child.status;
   },
 });

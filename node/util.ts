@@ -10,8 +10,7 @@ import {
   stripVTControlCharacters,
 } from "./internal/util/inspect.mjs";
 import { codes } from "./internal/error_codes.ts";
-import { errorMap } from "./internal_binding/uv.ts";
-import types from "./util/types.mjs";
+import types from "./util/types.ts";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 
@@ -26,8 +25,6 @@ export {
   stripVTControlCharacters,
   types,
 };
-
-const NumberIsSafeInteger = Number.isSafeInteger;
 
 /** @deprecated - use `Array.isArray()` instead. */
 export function isArray(value: unknown): boolean {
@@ -123,20 +120,6 @@ export function _extend(
 }
 
 /**
- * Returns a system error name from an error code number.
- * @param code error code number
- */
-export function getSystemErrorName(code: number): string | undefined {
-  if (typeof code !== "number") {
-    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
-  }
-  if (code >= 0 || !NumberIsSafeInteger(code)) {
-    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
-  }
-  return errorMap.get(code)?.[0];
-}
-
-/**
  * https://nodejs.org/api/util.html#util_util_inherits_constructor_superconstructor
  * @param ctor Constructor function which needs to inherit the prototype.
  * @param superCtor Constructor function to inherit prototype from.
@@ -168,7 +151,7 @@ export function inherits<T, U>(
   Object.setPrototypeOf(ctor.prototype, superCtor.prototype);
 }
 
-import { _TextDecoder, _TextEncoder } from "./_utils.ts";
+import { _TextDecoder, _TextEncoder, getSystemErrorName } from "./_utils.ts";
 
 /** The global TextDecoder */
 export type TextDecoder = import("./_utils.ts")._TextDecoder;
@@ -215,9 +198,11 @@ function timestamp(): string {
  * @deprecated
  */
 // deno-lint-ignore no-explicit-any
-function log(...args: any[]): void {
+export function log(...args: any[]) {
   console.log("%s - %s", timestamp(), format(...args));
 }
+
+export { getSystemErrorName, isDeepStrictEqual };
 
 export default {
   format,

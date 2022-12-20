@@ -24,7 +24,7 @@
 
 import { ERR_INVALID_ARG_VALUE, ERR_INVALID_CURSOR_POS } from "../errors.ts";
 
-import { validateCallback } from "../validators.mjs";
+import { validateFunction } from "../validators.mjs";
 
 import { CSI } from "./utils.mjs";
 
@@ -41,7 +41,7 @@ const {
 
 export function cursorTo(stream, x, y, callback) {
   if (callback !== undefined) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
   }
 
   if (typeof y === "function") {
@@ -69,7 +69,7 @@ export function cursorTo(stream, x, y, callback) {
 
 export function moveCursor(stream, dx, dy, callback) {
   if (callback !== undefined) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
   }
 
   if (stream == null || !(dx || dy)) {
@@ -103,7 +103,7 @@ export function moveCursor(stream, dx, dy, callback) {
 
 export function clearLine(stream, dir, callback) {
   if (callback !== undefined) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
   }
 
   if (stream === null || stream === undefined) {
@@ -125,7 +125,7 @@ export function clearLine(stream, dir, callback) {
 
 export function clearScreenDown(stream, callback) {
   if (callback !== undefined) {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
   }
 
   if (stream === null || stream === undefined) {

@@ -8,7 +8,7 @@ Deno standard library as it's a compatibility module.
 
 ## Supported modules
 
-- [x] assert _partly_
+- [x] assert
 - [x] assert/strict _partly_
 - [x] async_hooks _partly_
 - [x] buffer
@@ -160,7 +160,7 @@ following:
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
-a path inside `https://github.com/nodejs/node/tree/master/test`.
+a path inside `https://github.com/nodejs/node/tree/main/test`.
 
 Adding a new entry under the `ignore` option will indicate the test runner that
 it should not regenerate that file from scratch the next time the setup is run,
@@ -240,3 +240,9 @@ if (err) {
 ```
 
 It's not as clean, but prevents the callback being called twice.
+
+### Remaining Tests
+
+Node compatibility can be measured by how many native Node tests pass. If you'd
+like to know what you can work on, check out the list of Node tests remaining
+[here](_tools/TODO.md).

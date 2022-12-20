@@ -62,8 +62,8 @@ const initialN = 128; // 0x80
 const delimiter = "-"; // '\x2D'
 
 /** Regular expressions */
-const regexPunycode = /^xn--/;
-const regexNonASCII = /[^\0-\x7E]/; // non-ASCII chars
+export const regexPunycode = /^xn--/;
+export const regexNonASCII = /[^\0-\x7E]/; // non-ASCII chars
 const regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g; // RFC 3490 separators
 
 /** Error messages */
@@ -159,8 +159,8 @@ function ucs2decode(str: string) {
  * @see `punycode.ucs2.decode`
  * @memberOf punycode.ucs2
  * @name encode
- * @param {Array} codePoints The array of numeric code points.
- * @returns {String} The new Unicode string (UCS-2).
+ * @param codePoints The array of numeric code points.
+ * @returns The new Unicode string (UCS-2).
  */
 function ucs2encode(array: number[]) {
   return String.fromCodePoint(...array);
@@ -430,9 +430,9 @@ export function encode(str: string) {
  * it doesn't matter if you call it on a string that has already been
  * converted to Unicode.
  * @memberOf punycode
- * @param {String} input The Punycoded domain name or email address to
+ * @param input The Punycoded domain name or email address to
  * convert to Unicode.
- * @returns {String} The Unicode representation of the given Punycode
+ * @returns The Unicode representation of the given Punycode
  * string.
  */
 export function toUnicode(input: string) {

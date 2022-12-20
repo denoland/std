@@ -1,10 +1,21 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
-import { assert } from "../_util/assert.ts";
+/** {@linkcode parse} function for parsing
+ * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
+ * (JSON with Comments) strings.
+ *
+ * This module is browser compatible.
+ *
+ * @module
+ */
+
+import { assert } from "../_util/asserts.ts";
 
 export interface ParseOptions {
-  /** Allow trailing commas at the end of arrays and objects. (default: `true`) */
+  /** Allow trailing commas at the end of arrays and objects.
+   *
+   * @default {true}
+   */
   allowTrailingComma?: boolean;
 }
 
@@ -12,16 +23,19 @@ export interface ParseOptions {
  * Converts a JSON with Comments (JSONC) string into an object.
  * If a syntax error is found, throw a SyntaxError.
  *
- * @param text A valid JSONC string.
- * @param options
- * @param options.allowTrailingComma Allow trailing commas at the end of arrays and objects. (default: `true`)
+ * @example
  *
  * ```ts
  * import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc.ts";
  *
- * JSONC.parse('{"foo": "bar", } // comment'); //=> { foo: "bar" }
- * JSONC.parse('{"foo": "bar" } // comment', { allowTrailingComma: false }); //=> { foo: "bar" }
+ * console.log(JSONC.parse('{"foo": "bar", } // comment')); //=> { foo: "bar" }
+ * console.log(JSONC.parse('{"foo": "bar", } /* comment *\/')); //=> { foo: "bar" }
+ * console.log(JSONC.parse('{"foo": "bar" } // comment', {
+ *   allowTrailingComma: false,
+ * })); //=> { foo: "bar" }
  * ```
+ *
+ * @param text A valid JSONC string.
  */
 export function parse(
   text: string,
@@ -35,7 +49,7 @@ export function parse(
 
 /** Valid types as a result of JSON parsing */
 export type JSONValue =
-  | { [key: string]: JSONValue }
+  | { [key: string]: JSONValue | undefined }
   | JSONValue[]
   | string
   | number

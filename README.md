@@ -42,8 +42,8 @@ guaranteed for them.
 To browse documentation for modules:
 
 - Go to https://deno.land/std/.
-- Navigate to any module of interest.
 - Click "View Documentation".
+- Navigate to any module of interest.
 
 ## Contributing
 
@@ -69,8 +69,8 @@ Before opening a PR make sure to:
 - have the latest Deno version installed locally
 - add tests that cover your changes.
 - `deno task test` passes.
-- `deno fmt` passes without changing files.
-- `deno lint` passes.
+- `deno fmt --check` passes.
+- `deno task lint` passes.
 
 Give the PR a descriptive title.
 
@@ -106,11 +106,13 @@ accepted.
 - wasm crypto check
 - CLA
 
-_Typechecking code in Markdown files_:
-
-If you want to run `deno test --doc x.md` you will need to specify the flag
-`--import-map=test_import_map.json`, this import map is in the root of deno_std.
-
 _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.
+
+### Internal Assertions
+
+All internal non-test code, that is files that do not have `test` or `bench` in
+the name, must use the assertion functions within `_utils/asserts.ts` and not
+`testing/asserts.ts`. This is to create a separation of concerns between
+internal and testing assertions.

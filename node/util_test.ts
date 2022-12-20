@@ -35,6 +35,13 @@ Deno.test({
       stripColor(util.inspect("Deno's logo is so cute.")),
       `"Deno's logo is so cute."`,
     );
+    assertEquals(
+      stripColor(util.inspect([1, 2, 3, 4, 5, 6, 7])),
+      `[
+  1, 2, 3, 4,
+  5, 6, 7
+]`,
+    );
   },
 });
 
@@ -135,7 +142,7 @@ Deno.test({
 Deno.test({
   name: "[util] isFunction",
   fn() {
-    const f = function (): void {};
+    const f = function () {};
     assert(util.isFunction(f));
     assert(!util.isFunction({}));
     assert(!util.isFunction(new RegExp(/f/)));
@@ -169,7 +176,7 @@ Deno.test({
     const integerType = 2;
     const symbolType = Symbol("anything");
 
-    const functionType = function doBest(): void {};
+    const functionType = function doBest() {};
     const objectType = { name: "ali" };
     const arrayType = [1, 2, 3];
 

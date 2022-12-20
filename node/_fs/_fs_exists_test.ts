@@ -5,8 +5,9 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { exists, existsSync } from "./_fs_exists.ts";
+import { promisify } from "../util.ts";
 
-Deno.test("existsFile", async function () {
+Deno.test("[std/node/fs] exists", async function () {
   const availableFile = await new Promise((resolve) => {
     const tmpFilePath = Deno.makeTempFileSync();
     exists(tmpFilePath, (exists: boolean) => {
@@ -21,18 +22,29 @@ Deno.test("existsFile", async function () {
   assertEquals(notAvailableFile, false);
 });
 
-Deno.test("existsSyncFile", function () {
+Deno.test("[std/node/fs] existsSync", function () {
   const tmpFilePath = Deno.makeTempFileSync();
   assertEquals(existsSync(tmpFilePath), true);
   Deno.removeSync(tmpFilePath);
   assertEquals(existsSync("./notAvailable.txt"), false);
 });
 
+Deno.test("[std/node/fs] promisify(exists)", async () => {
+  const tmpFilePath = await Deno.makeTempFile();
+  try {
+    const existsPromisified = promisify(exists);
+    assert(await existsPromisified(tmpFilePath));
+    assert(!await existsPromisified("./notAvailable.txt"));
+  } finally {
+    await Deno.remove(tmpFilePath);
+  }
+});
+
 Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown", async () => {
   // This doesn't use `assertCallbackErrorUncaught()` because `exists()` doesn't return a standard node callback, which is what it expects.
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_exists.ts", import.meta.url);
-  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       "--no-check",
@@ -46,7 +58,8 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
       });`,
     ],
   });
+  const { success, stderr } = await command.output();
   await Deno.remove(tempFile);
-  assert(!status.success);
+  assert(!success);
   assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
 });

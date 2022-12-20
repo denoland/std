@@ -21,12 +21,12 @@ const LOG_FILE = "./test_log.file";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public override log(str: string): void {
+  public override log(str: string) {
     this.messages.push(str);
   }
 }
 
-Deno.test("simpleHandler", function (): void {
+Deno.test("simpleHandler", function () {
   const cases = new Map<number, string[]>([
     [
       LogLevels.DEBUG,
@@ -77,7 +77,7 @@ Deno.test("simpleHandler", function (): void {
   }
 });
 
-Deno.test("testFormatterAsString", function (): void {
+Deno.test("testFormatterAsString", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: "test {levelName} {msg}",
   });
@@ -94,7 +94,7 @@ Deno.test("testFormatterAsString", function (): void {
   assertEquals(handler.messages, ["test DEBUG Hello, world!"]);
 });
 
-Deno.test("testFormatterAsStringWithoutSpace", function (): void {
+Deno.test("testFormatterAsStringWithoutSpace", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: "test:{levelName}:{msg}",
   });
@@ -128,7 +128,7 @@ Deno.test("testFormatterWithEmptyMsg", function () {
   assertEquals(handler.messages, ["test DEBUG "]);
 });
 
-Deno.test("testFormatterAsFunction", function (): void {
+Deno.test("testFormatterAsFunction", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: (logRecord): string =>
       `fn formatter ${logRecord.levelName} ${logRecord.msg}`,

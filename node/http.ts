@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as DenoUnstable from "../_deno_unstable.ts";
-import { core } from "./_core.ts";
+
+import { type Deferred, deferred } from "../async/deferred.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
@@ -14,7 +14,9 @@ import {
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
+import { chunkExpression as RE_TE_CHUNKED } from "./_http_common.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
+import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
 const METHODS = [
   "ACL",
@@ -55,9 +57,16 @@ const METHODS = [
 
 type Chunk = string | Buffer | Uint8Array;
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
+  Deno.upgradeHttpRaw;
+
+const ENCODER = new TextEncoder();
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    return core.encode(chunk);
+    return ENCODER.encode(chunk);
   }
   return chunk;
 }
@@ -88,8 +97,10 @@ export interface RequestOptions {
   href?: string;
 }
 
+// TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
+  defaultProtocol = "http:";
   body: null | ReadableStream = null;
   controller: ReadableStreamDefaultController | null = null;
   constructor(
@@ -121,8 +132,14 @@ class ClientRequest extends NodeWritable {
       this.controller.close();
     }
 
+    const body = await this._createBody(this.body, this.opts);
     const client = await this._createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
+    const opts = {
+      body,
+      method: this.opts.method,
+      client,
+      headers: this.opts.headers,
+    };
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
@@ -149,7 +166,32 @@ class ClientRequest extends NodeWritable {
     this.destroy();
   }
 
-  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+  async _createBody(
+    body: ReadableStream | null,
+    opts: RequestOptions,
+  ): Promise<Buffer | ReadableStream | null> {
+    if (!body) return null;
+    if (!opts.headers) return body;
+
+    const headers = Object.fromEntries(
+      Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+    );
+
+    if (
+      !RE_TE_CHUNKED.test(headers["transfer-encoding"]) &&
+      !Number.isNaN(Number.parseInt(headers["content-length"], 10))
+    ) {
+      const bufferList: Buffer[] = [];
+      for await (const chunk of body) {
+        bufferList.push(chunk);
+      }
+      return Buffer.concat(bufferList);
+    }
+
+    return body;
+  }
+
+  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
 
@@ -160,29 +202,33 @@ class ClientRequest extends NodeWritable {
     return new Socket({});
   }
 
-  // deno-lint-ignore no-explicit-any
-  _createUrlStrFromOptions(opts: any) {
+  _createUrlStrFromOptions(opts: RequestOptions): string {
     if (opts.href) {
       return opts.href;
-    } else {
-      const {
-        auth,
-        protocol,
-        host,
-        hostname,
-        path,
-        port,
-      } = opts;
-      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
-        port ? `:${port}` : ""
-      }${path}`;
     }
+    const protocol = opts.protocol ?? this.defaultProtocol;
+    const auth = opts.auth;
+    const host = opts.host ?? opts.hostname ?? "localhost";
+    const defaultPort = opts.agent?.defaultPort;
+    const port = opts.port ?? defaultPort ?? 80;
+    let path = opts.path ?? "/";
+    if (!path.startsWith("/")) {
+      path = "/" + path;
+    }
+    return `${protocol}//${auth ? `${auth}@` : ""}${host}${
+      port === 80 ? "" : `:${port}`
+    }${path}`;
+  }
+
+  setTimeout() {
+    console.log("not implemented: ClientRequest.setTimeout");
   }
 }
 
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
+  #statusMessage = "";
   constructor(public response: Response | undefined, public socket: Socket) {
     super();
     this.reader = response?.body?.getReader();
@@ -222,7 +268,11 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get statusMessage() {
-    return this.response?.statusText || "";
+    return this.#statusMessage || this.response?.statusText || "";
+  }
+
+  set statusMessage(v: string) {
+    this.#statusMessage = v;
   }
 }
 
@@ -230,12 +280,22 @@ export class ServerResponse extends NodeWritable {
   statusCode?: number = undefined;
   statusMessage?: string = undefined;
   #headers = new Headers({});
-  private readable: ReadableStream;
+  #readable: ReadableStream;
+  override writable = true;
+  // used by `npm:on-finished`
+  finished = false;
   headersSent = false;
-  #reqEvent: Deno.RequestEvent;
   #firstChunk: Chunk | null = null;
+  // Used if --unstable flag IS NOT present
+  #reqEvent?: Deno.RequestEvent;
+  // Used if --unstable flag IS present
+  #resolve?: (value: Response | PromiseLike<Response>) => void;
+  #isFlashRequest: boolean;
 
-  constructor(reqEvent: Deno.RequestEvent) {
+  constructor(
+    reqEvent: undefined | Deno.RequestEvent,
+    resolve: undefined | ((value: Response | PromiseLike<Response>) => void),
+  ) {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
@@ -276,8 +336,10 @@ export class ServerResponse extends NodeWritable {
         return cb(null);
       },
     });
-    this.readable = readable;
+    this.#readable = readable;
+    this.#resolve = resolve;
     this.#reqEvent = reqEvent;
+    this.#isFlashRequest = typeof resolve !== "undefined";
   }
 
   setHeader(name: string, value: string) {
@@ -311,7 +373,11 @@ export class ServerResponse extends NodeWritable {
       this.statusCode = 200;
       this.statusMessage = "OK";
     }
-    if (typeof singleChunk === "string" && !this.hasHeader("content-type")) {
+    // Only taken if --unstable IS NOT present
+    if (
+      !this.#isFlashRequest && typeof singleChunk === "string" &&
+      !this.hasHeader("content-type")
+    ) {
       this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
@@ -319,21 +385,36 @@ export class ServerResponse extends NodeWritable {
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? (final ? null : this.readable);
-    this.#reqEvent.respondWith(
-      new Response(body, {
-        headers: this.#headers,
-        status: this.statusCode,
-        statusText: this.statusMessage,
-      }),
-    ).catch(() => {
-      // ignore this error
-    });
+    const body = singleChunk ?? (final ? null : this.#readable);
+    if (this.#isFlashRequest) {
+      this.#resolve!(
+        new Response(body, {
+          headers: this.#headers,
+          status: this.statusCode,
+          statusText: this.statusMessage,
+        }),
+      );
+    } else {
+      this.#reqEvent!.respondWith(
+        new Response(body, {
+          headers: this.#headers,
+          status: this.statusCode,
+          statusText: this.statusMessage,
+        }),
+      ).catch(() => {
+        // ignore this error
+      });
+    }
   }
 
   // deno-lint-ignore no-explicit-any
   override end(chunk?: any, encoding?: any, cb?: any): this {
-    if (!chunk && this.#headers.has("transfer-encoding")) {
+    this.finished = true;
+    if (this.#isFlashRequest) {
+      // Flash sets both of these headers.
+      this.#headers.delete("transfer-encoding");
+      this.#headers.delete("content-length");
+    } else if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.
       this.#headers.set("content-length", "0");
@@ -347,8 +428,9 @@ export class ServerResponse extends NodeWritable {
 
 // TODO(@AaronO): optimize
 export class IncomingMessageForServer extends NodeReadable {
-  private req: Request;
+  #req: Request;
   url: string;
+  method: string;
 
   constructor(req: Request) {
     // Check if no body (GET/HEAD/OPTIONS/...)
@@ -373,24 +455,30 @@ export class IncomingMessageForServer extends NodeReadable {
         reader?.cancel().finally(() => cb(err));
       },
     });
-    this.req = req;
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(this.req.url.indexOf("/", 8));
+    this.url = req.url?.slice(req.url.indexOf("/", 8));
+    this.method = req.method;
+    this.#req = req;
   }
 
   get aborted() {
     return false;
   }
+
   get httpVersion() {
     return "1.1";
   }
 
   get headers() {
-    return Object.fromEntries(this.req.headers.entries());
+    return Object.fromEntries(this.#req.headers.entries());
   }
-  get method() {
-    return this.req.method;
+
+  get upgrade(): boolean {
+    return Boolean(
+      this.#req.headers.get("connection")?.toLowerCase().includes("upgrade") &&
+        this.#req.headers.get("upgrade"),
+    );
   }
 }
 
@@ -404,12 +492,25 @@ export function Server(handler?: ServerHandler): ServerImpl {
 }
 
 class ServerImpl extends EventEmitter {
+  #isFlashServer: boolean;
+
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
 
+  #addr?: Deno.NetAddr;
+  #hasClosed = false;
+  #ac?: AbortController;
+  #servePromise?: Deferred<void>;
+  listening = false;
+
   constructor(handler?: ServerHandler) {
     super();
-
+    // @ts-ignore Might be undefined without `--unstable` flag
+    this.#isFlashServer = typeof DenoServe == "function";
+    if (this.#isFlashServer) {
+      this.#servePromise = deferred();
+      this.#servePromise.then(() => this.emit("close"));
+    }
     if (handler !== undefined) {
       this.on("request", handler);
     }
@@ -434,10 +535,20 @@ class ServerImpl extends EventEmitter {
 
     // TODO(bnoordhuis) Node prefers [::] when host is omitted,
     // we on the other hand default to 0.0.0.0.
-    const hostname = options.host ?? "";
-
-    this.#listener = Deno.listen({ port, hostname });
-    nextTick(() => this.#listenLoop());
+    if (this.#isFlashServer) {
+      const hostname = options.host ?? "0.0.0.0";
+      this.#addr = {
+        hostname,
+        port,
+      } as Deno.NetAddr;
+      this.listening = true;
+      nextTick(() => this.#serve());
+    } else {
+      this.listening = true;
+      const hostname = options.host ?? "";
+      this.#listener = Deno.listen({ port, hostname });
+      nextTick(() => this.#listenLoop());
+    }
 
     return this;
   }
@@ -461,7 +572,7 @@ class ServerImpl extends EventEmitter {
             break;
           }
           const req = new IncomingMessageForServer(reqEvent.request);
-          const res = new ServerResponse(reqEvent);
+          const res = new ServerResponse(reqEvent, undefined);
           this.emit("request", req, res);
         }
       } finally {
@@ -488,13 +599,54 @@ class ServerImpl extends EventEmitter {
     }
   }
 
-  get listening() {
-    return this.#listener !== undefined;
+  #serve() {
+    const ac = new AbortController();
+    const handler = (request: Request) => {
+      const req = new IncomingMessageForServer(request);
+      if (req.upgrade && this.listenerCount("upgrade") > 0) {
+        const [conn, head] = DenoUpgradeHttpRaw(request) as [
+          Deno.Conn,
+          Uint8Array,
+        ];
+        const socket = new Socket({
+          handle: new TCP(constants.SERVER, conn),
+        });
+        this.emit("upgrade", req, socket, Buffer.from(head));
+      } else {
+        return new Promise<Response>((resolve): void => {
+          const res = new ServerResponse(undefined, resolve);
+          this.emit("request", req, res);
+        });
+      }
+    };
+
+    if (this.#hasClosed) {
+      return;
+    }
+    this.#ac = ac;
+    DenoServe(
+      {
+        handler: handler as Deno.ServeHandler,
+        ...this.#addr,
+        signal: ac.signal,
+        // @ts-ignore Might be any without `--unstable` flag
+        onListen: ({ port }) => {
+          this.#addr!.port = port;
+          this.emit("listening");
+        },
+      },
+    ).then(() => this.#servePromise!.resolve());
+  }
+
+  setTimeout() {
+    console.error("Not implemented: Server.setTimeout()");
   }
 
   close(cb?: (err?: Error) => void): this {
     const listening = this.listening;
+    this.listening = false;
 
+    this.#hasClosed = true;
     if (typeof cb === "function") {
       if (listening) {
         this.once("close", cb);
@@ -505,28 +657,42 @@ class ServerImpl extends EventEmitter {
       }
     }
 
-    nextTick(() => this.emit("close"));
-
-    if (listening) {
-      this.#listener!.close();
-      this.#listener = undefined;
-
-      for (const httpConn of this.#httpConnections) {
-        try {
-          httpConn.close();
-        } catch {
-          // Already closed.
-        }
+    if (this.#isFlashServer) {
+      if (listening && this.#ac) {
+        this.#ac.abort();
+        this.#ac = undefined;
+      } else {
+        this.#servePromise!.resolve();
       }
+    } else {
+      nextTick(() => this.emit("close"));
 
-      this.#httpConnections.clear();
+      if (listening) {
+        this.#listener!.close();
+        this.#listener = undefined;
+
+        for (const httpConn of this.#httpConnections) {
+          try {
+            httpConn.close();
+          } catch {
+            // Already closed.
+          }
+        }
+
+        this.#httpConnections.clear();
+      }
     }
 
     return this;
   }
 
   address() {
-    const addr = this.#listener!.addr as Deno.NetAddr;
+    let addr;
+    if (this.#isFlashServer) {
+      addr = this.#addr!;
+    } else {
+      addr = this.#listener!.addr as Deno.NetAddr;
+    }
     return {
       port: addr.port,
       address: addr.hostname,
@@ -590,7 +756,14 @@ export function get(...args: any[]) {
   return req;
 }
 
-export { Agent, ClientRequest, METHODS, OutgoingMessage, STATUS_CODES };
+export {
+  Agent,
+  ClientRequest,
+  IncomingMessageForServer as IncomingMessage,
+  METHODS,
+  OutgoingMessage,
+  STATUS_CODES,
+};
 export default {
   Agent,
   ClientRequest,
@@ -599,6 +772,8 @@ export default {
   createServer,
   Server,
   IncomingMessage: IncomingMessageForServer,
+  IncomingMessageForClient,
+  IncomingMessageForServer,
   OutgoingMessage,
   ServerResponse,
   request,

@@ -135,7 +135,7 @@ export class DiffieHellman {
   setPrivateKey(
     _privateKey: ArrayBufferView | string,
     _encoding?: BufferEncoding,
-  ): void {
+  ) {
     notImplemented("crypto.DiffieHellman.prototype.setPrivateKey");
   }
 
@@ -144,7 +144,7 @@ export class DiffieHellman {
   setPublicKey(
     _publicKey: ArrayBufferView | string,
     _encoding?: BufferEncoding,
-  ): void {
+  ) {
     notImplemented("crypto.DiffieHellman.prototype.setPublicKey");
   }
 }
