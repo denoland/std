@@ -11,4 +11,4 @@ const cluster = process.env.NODE_UNIQUE_ID !== undefined
 
 export { cluster };
 
-export default cluster;
+export default { cluster };

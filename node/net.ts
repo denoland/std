@@ -96,7 +96,7 @@ import { debuglog } from "./internal/util/debuglog.ts";
 import type { DuplexOptions } from "./_stream.d.ts";
 import type { BufferEncoding } from "./_global.d.ts";
 import type { Abortable } from "./_events.d.ts";
-import cluster from "./cluster.ts";
+import { cluster } from "./cluster.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
