@@ -23,7 +23,7 @@
  * import {
  *   parse,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+ * } from "https://deno.land/std@$STD_VERSION/encoding/yaml/mod.ts";
  *
  * const data = parse(`
  * foo: bar
@@ -46,17 +46,17 @@
  * @module
  */
 
-export type { ParseOptions } from "./_yaml/parse.ts";
-export { parse, parseAll } from "./_yaml/parse.ts";
-export type { DumpOptions as StringifyOptions } from "./_yaml/stringify.ts";
-export { stringify } from "./_yaml/stringify.ts";
-export type { SchemaDefinition } from "./_yaml/schema.ts";
-export { Type } from "./_yaml/type.ts";
-export type { KindType, RepresentFn, StyleVariant } from "./_yaml/type.ts";
+export type { ParseOptions } from "./_util/parse.ts";
+export { parse, parseAll } from "./_util/parse.ts";
+export type { DumpOptions as StringifyOptions } from "./_util/stringify.ts";
+export { stringify } from "./_util/stringify.ts";
+export type { SchemaDefinition } from "./_util/schema.ts";
+export { Type } from "./_util/type.ts";
+export type { KindType, RepresentFn, StyleVariant } from "./_util/type.ts";
 export {
   CORE_SCHEMA,
   DEFAULT_SCHEMA,
   EXTENDED_SCHEMA,
   FAILSAFE_SCHEMA,
   JSON_SCHEMA,
-} from "./_yaml/schema/mod.ts";
+} from "./_util/schema/mod.ts";

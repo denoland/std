@@ -14,7 +14,7 @@ import { def } from "./default.ts";
  * import {
  *   EXTENDED_SCHEMA,
  *   parse,
- * } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+ * } from "https://deno.land/std@$STD_VERSION/encoding/yaml/mod.ts";
  *
  * const data = parse(
  *   `

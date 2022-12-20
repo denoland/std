@@ -4,7 +4,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Type } from "../type.ts";
 import type { Any } from "../utils.ts";
-import { Buffer } from "../../../io/buffer.ts";
+import { Buffer } from "../../../../io/buffer.ts";
 
 // [ 64, 65, 66 ] -> [ padding, CR, LF ]
 const BASE64_MAP =

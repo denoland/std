@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { parse } from "../../yaml.ts";
+import { parse } from "../../../yaml/mod.ts";
 
 (() => {
   const yml = Deno.readFileSync(`${Deno.cwd()}/example/sample_document.yml`);

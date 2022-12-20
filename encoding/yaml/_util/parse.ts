@@ -24,7 +24,7 @@ export function parse(content: string, options?: ParseOptions): unknown {
  *
  * @example
  * ```ts
- * import { parseAll } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+ * import { parseAll } from "https://deno.land/std@$STD_VERSION/encoding/yaml/mod.ts";
  *
  * const data = parseAll(`
  * ---

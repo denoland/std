@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import "./_yaml/parse_test.ts";
-import "./_yaml/stringify_test.ts";
+import "./_util/parse_test.ts";
+import "./_util/stringify_test.ts";
 
 // Type check.
-import "./yaml.ts";
+import "./mod.ts";
