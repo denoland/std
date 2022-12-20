@@ -354,7 +354,7 @@ Deno.test({
   name: "[encoding/json/stream] parse: testdata(jsonl)",
   async fn() {
     // Read the test data file
-    const url = "../testdata/json/test.jsonl";
+    const url = "./testdata/test.jsonl";
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
@@ -378,7 +378,7 @@ Deno.test({
   name: "[encoding/json/stream] parse: testdata(ndjson)",
   async fn() {
     // Read the test data file
-    const url = "../testdata/json/test.ndjson";
+    const url = "./testdata/test.ndjson";
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
@@ -404,7 +404,7 @@ Deno.test({
     // Read the test data file
     const recordSeparator = "\x1E";
 
-    const url = "../testdata/json/test.json-seq";
+    const url = "./testdata/test.json-seq";
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
@@ -428,7 +428,7 @@ Deno.test({
   // Read the test data file
   name: "[encoding/json/stream] parse: testdata(concatenated-json)",
   async fn() {
-    const url = "../testdata/json/test.concatenated-json";
+    const url = "./testdata/test.concatenated-json";
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
