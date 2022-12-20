@@ -149,8 +149,8 @@ export function fork(
   options.shell = false;
 
   Object.assign(options.env ??= {}, {
-    // deno-lint-ignore no-explicit-any
     DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (
+      // deno-lint-ignore no-explicit-any
       Deno as any
     ).core.ops.op_npm_process_state(),
   });
