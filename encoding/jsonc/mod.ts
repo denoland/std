@@ -9,7 +9,7 @@
  * @module
  */
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../../_util/asserts.ts";
 
 export interface ParseOptions {
   /** Allow trailing commas at the end of arrays and objects.
@@ -26,7 +26,7 @@ export interface ParseOptions {
  * @example
  *
  * ```ts
- * import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc.ts";
+ * import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc/mod.ts";
  *
  * console.log(JSONC.parse('{"foo": "bar", } // comment')); //=> { foo: "bar" }
  * console.log(JSONC.parse('{"foo": "bar", } /* comment *\/')); //=> { foo: "bar" }

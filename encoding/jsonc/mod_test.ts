@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import * as JSONC from "./jsonc.ts";
+import * as JSONC from "./mod.ts";
 import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../../testing/asserts.ts";
 
 // The test code for the jsonc module can also be found in the testcode directory.
 
