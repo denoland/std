@@ -22,6 +22,7 @@ import { ChildProcess } from "../child_process.ts";
 import type { Handle } from "../../net.ts";
 import type { UDP } from "../../internal_binding/udp_wrap.ts";
 import { notImplemented } from "../../_utils.ts";
+import { ObjectAssign } from "../primordials.mjs";
 
 const cluster: ICluster = new EventEmitter() as ICluster;
 const intercom = new EventEmitter();
@@ -114,7 +115,9 @@ function setupSettingsNT(settings: ClusterSettings) {
 }
 
 function createWorkerProcess(id: number, env?: Record<string, unknown>) {
-  const workerEnv = { ...process.env, ...env, NODE_UNIQUE_ID: `${id}` };
+  const workerEnv = ObjectAssign({}, process.env, env, {
+    NODE_UNIQUE_ID: `${id}`,
+  }) as InstanceType<ObjectConstructor> & Record<string, string | number | boolean>;
   const execArgv = [...(cluster.settings.execArgv as string[])];
   const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
   const nodeOptions = process.env.NODE_OPTIONS || "";

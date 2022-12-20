@@ -357,7 +357,8 @@ export interface ChildProcessOptions {
   /**
    * Environment variables passed to the child process.
    */
-  env?: Record<string, string | number | boolean>;
+  env?: InstanceType<ObjectConstructor> &
+    Record<string, string | number | boolean>;
 
   /**
    * This option defines child process's stdio configuration.
