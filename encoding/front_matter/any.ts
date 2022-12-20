@@ -2,7 +2,7 @@
 
 import { createExtractor, Format, Parser, test as _test } from "./mod.ts";
 import { parse as parseYAML } from "../yaml.ts";
-import { parse as parseTOML } from "../toml.ts";
+import { parse as parseTOML } from "../toml/mod.ts";
 
 export { Format, test } from "./mod.ts";
 export const extract = createExtractor({

@@ -22,7 +22,7 @@ import {
   TOMLParseError,
   Utils,
   Value,
-} from "./parser.ts";
+} from "./_parser.ts";
 
 Deno.test({
   name: "[TOML parser] Scanner",

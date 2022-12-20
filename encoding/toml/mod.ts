@@ -96,7 +96,7 @@
  * import {
  *   parse,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
+ * } from "https://deno.land/std@$STD_VERSION/encoding/toml/mod.ts";
  * const obj = {
  *   bin: [
  *     { name: "deno", path: "cli/main.rs" },
@@ -136,7 +136,7 @@
  * @module
  */
 
-export { parse } from "./_toml/parser.ts";
+export { parse } from "./_parser.ts";
 
 // Bare keys may only contain ASCII letters,
 // ASCII digits, underscores, and dashes (A-Za-z0-9_-).

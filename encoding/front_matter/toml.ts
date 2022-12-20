@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { createExtractor, Format, Parser, test as _test } from "./mod.ts";
-import { parse } from "../toml.ts";
+import { parse } from "../toml/mod.ts";
 
 export { Format } from "./mod.ts";
 

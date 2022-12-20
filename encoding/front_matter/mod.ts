@@ -76,7 +76,7 @@
  *   Parser,
  *   test as _test,
  * } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/encoding/toml/mod.ts";
  *
  * const extract = createExtractor({
  *   [Format.TOML]: parse as Parser,
@@ -247,7 +247,7 @@ function _extract<T>(
  * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
- * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/encoding/toml.ts";
+ * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/encoding/toml/mod.ts";
  * const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
  * const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });
  * const extractJSON = createExtractor({ [Format.JSON]: JSON.parse as Parser });
