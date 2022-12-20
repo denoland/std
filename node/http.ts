@@ -285,6 +285,7 @@ export class ServerResponse extends NodeWritable {
   // used by `npm:on-finished`
   finished = false;
   headersSent = false;
+  #firstChunk: Chunk | null = null;
   // Used if --unstable flag IS NOT present
   #reqEvent?: Deno.RequestEvent;
   // Used if --unstable flag IS present
@@ -306,14 +307,23 @@ export class ServerResponse extends NodeWritable {
       defaultEncoding: "utf-8",
       emitClose: true,
       write: (chunk, _encoding, cb) => {
-        controller.enqueue(chunkToU8(chunk));
         if (!this.headersSent) {
-          this.respond(false);
+          if (this.#firstChunk === null) {
+            this.#firstChunk = chunk;
+            return cb();
+          } else {
+            controller.enqueue(chunkToU8(this.#firstChunk));
+            this.#firstChunk = null;
+            this.respond(false);
+          }
         }
+        controller.enqueue(chunkToU8(chunk));
         return cb();
       },
       final: (cb) => {
-        if (!this.headersSent) {
+        if (this.#firstChunk) {
+          this.respond(true, this.#firstChunk);
+        } else if (!this.headersSent) {
           this.respond(true);
         }
         controller.close();
@@ -358,16 +368,23 @@ export class ServerResponse extends NodeWritable {
     return this;
   }
 
-  #ensureHeaders() {
+  #ensureHeaders(singleChunk?: Chunk) {
     if (this.statusCode === undefined) {
       this.statusCode = 200;
       this.statusMessage = "OK";
+    }
+    // Only taken if --unstable IS NOT present
+    if (
+      !this.#isFlashRequest && typeof singleChunk === "string" &&
+      !this.hasHeader("content-type")
+    ) {
+      this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
 
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
-    this.#ensureHeaders();
+    this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.#readable);
     if (this.#isFlashRequest) {
       this.#resolve!(
