@@ -63,7 +63,7 @@ export function fork(
 export function fork(
   modulePath: string,
   _args?: ReadonlyArray<string> | ForkOptions,
-  _options?: ForkOptions
+  _options?: ForkOptions,
 ) {
   validateString(modulePath, "modulePath");
 
@@ -139,7 +139,7 @@ export function fork(
     // and stderr from the parent if silent isn't set.
     options.stdio = stdioStringToArray(
       options.silent ? "pipe" : "inherit",
-      "ipc"
+      "ipc",
     );
   } else if (!options.stdio.includes("ipc")) {
     throw new ERR_CHILD_PROCESS_IPC_REQUIRED("options.stdio");
@@ -148,7 +148,7 @@ export function fork(
   options.execPath = options.execPath || Deno.execPath();
   options.shell = false;
 
-  Object.assign((options.env ??= {}), {
+  Object.assign(options.env ??= {}, {
     // deno-lint-ignore no-explicit-any
     DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (
       Deno as any

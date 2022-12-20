@@ -117,7 +117,8 @@ function setupSettingsNT(settings: ClusterSettings) {
 function createWorkerProcess(id: number, env?: Record<string, unknown>) {
   const workerEnv = ObjectAssign({}, process.env, env, {
     NODE_UNIQUE_ID: `${id}`,
-  }) as InstanceType<ObjectConstructor> & Record<string, string | number | boolean>;
+  }) as InstanceType<ObjectConstructor>
+    & Record<string, string | number | boolean>;
   const execArgv = [...(cluster.settings.execArgv as string[])];
   const debugArgRegex = /--inspect(?:-brk|-port)?|--debug-port/;
   const nodeOptions = process.env.NODE_OPTIONS || "";
