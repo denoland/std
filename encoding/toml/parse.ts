@@ -136,5 +136,4 @@
  * @module
  */
 
-export * from "./parse.ts";
-export * from "./stringify.ts";
+export { parse } from "./_parser.ts";
