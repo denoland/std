@@ -116,3 +116,20 @@ All internal non-test code, that is files that do not have `test` or `bench` in
 the name, must use the assertion functions within `_utils/asserts.ts` and not
 `testing/asserts.ts`. This is to create a separation of concerns between
 internal and testing assertions.
+
+### Types
+
+Deno is slowly moving away from non-native IO functions and interfaces in favor
+of the
+[Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
+These types are to be defined here, in the Standard Library, instead of in the
+Deno namespace in the future. As a rule, use the following corresponding and
+identical types from `types.d.ts`:
+
+- `Deno.Reader`
+- `Deno.Writer`
+- `Deno.ReaderSync`
+- `Deno.WriterSync`
+- `Deno.Closer`
+
+See the tracking issue [here](https://github.com/denoland/deno/issues/9795).

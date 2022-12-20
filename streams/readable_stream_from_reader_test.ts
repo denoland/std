@@ -5,8 +5,9 @@ import { readableStreamFromReader } from "./readable_stream_from_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { concat } from "../bytes/concat.ts";
 import { copy } from "../bytes/copy.ts";
+import type { Closer, Reader } from "../types.d.ts";
 
-class MockReaderCloser implements Deno.Reader, Deno.Closer {
+class MockReaderCloser implements Reader, Closer {
   chunks: Uint8Array[] = [];
   closeCall = 0;
 

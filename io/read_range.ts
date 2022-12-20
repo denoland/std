@@ -2,6 +2,7 @@
 
 import { copy as copyBytes } from "../bytes/copy.ts";
 import { assert } from "../_util/asserts.ts";
+import type { Reader, ReaderSync, Seeker, SeekerSync } from "../types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
@@ -29,7 +30,7 @@ export interface ByteRange {
  * ```
  */
 export async function readRange(
-  r: Deno.Reader & Deno.Seeker,
+  r: Reader & Seeker,
   range: ByteRange,
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
@@ -67,7 +68,7 @@ export async function readRange(
  * ```
  */
 export function readRangeSync(
-  r: Deno.ReaderSync & Deno.SeekerSync,
+  r: ReaderSync & SeekerSync,
   range: ByteRange,
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end

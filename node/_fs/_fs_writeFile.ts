@@ -18,6 +18,7 @@ import {
   validateStringAfterArrayBufferView,
 } from "../internal/fs/utils.mjs";
 import { promisify } from "../internal/util.mjs";
+import type { Writer } from "../../types.d.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -156,7 +157,7 @@ interface WriteAllOptions {
   signal?: AbortSignal;
 }
 async function writeAll(
-  w: Deno.Writer,
+  w: Writer,
   arr: Uint8Array,
   options: WriteAllOptions = {},
 ) {

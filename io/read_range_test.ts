@@ -8,6 +8,13 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { readRange, readRangeSync } from "./read_range.ts";
+import type {
+  Closer,
+  Reader,
+  ReaderSync,
+  Seeker,
+  SeekerSync,
+} from "../types.d.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
@@ -22,13 +29,7 @@ export function init() {
   }
 }
 
-class MockFile
-  implements
-    Deno.Seeker,
-    Deno.SeekerSync,
-    Deno.Reader,
-    Deno.ReaderSync,
-    Deno.Closer {
+class MockFile implements Seeker, SeekerSync, Reader, ReaderSync, Closer {
   #buf: Uint8Array;
   #closed = false;
   #offset = 0;

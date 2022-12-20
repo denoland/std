@@ -1,5 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+/** See the Contributing > Types section in the README for an explanation of this file. */
+
+/** An abstract interface which when implemented provides an interface to read bytes into an array buffer asynchronously. */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
    * bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -26,6 +29,7 @@ export interface Reader {
   read(p: Uint8Array): Promise<number | null>;
 }
 
+/** An abstract interface which when implemented provides an interface to read bytes into an array buffer synchronously. */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
    * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -51,6 +55,7 @@ export interface ReaderSync {
   readSync(p: Uint8Array): number | null;
 }
 
+/** An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource asynchronously. */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
    * resolves to the number of bytes written from `p` (`0` <= `n` <=
@@ -63,7 +68,7 @@ export interface Writer {
    */
   write(p: Uint8Array): Promise<number>;
 }
-
+/** An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource synchronously. */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
    * stream. It returns the number of bytes written from `p` (`0` <= `n`
@@ -77,6 +82,33 @@ export interface WriterSync {
   writeSync(p: Uint8Array): number;
 }
 
+/** An abstract interface which when implemented provides an interface to close files/resources that were previously opened. */
 export interface Closer {
+  /** Closes the resource, "freeing" the backing file/resource. */
   close(): void;
+}
+
+/** A enum which defines the seek mode for IO related APIs that support seeking. */
+export enum SeekMode {
+  Current = 1,
+  End = 2,
+  Start = 0,
+}
+
+/** An abstract interface which when implemented provides an interface to seek within an open file/resource asynchronously. */
+export interface Seeker {
+  /**
+   * Seek sets the offset for the next `read()` or `write()` to offset, interpreted according to `whence`: Start means relative to the start of the file, `Current` means relative to the current offset, and `End` means relative to the end. Seek resolves to the new offset relative to the start of the file.
+   * Seeking to an offset before the start of the file is an error. Seeking to any positive offset is legal, but the behavior of subsequent I/O operations on the underlying object is implementation-dependent.
+   * It resolves with the updated offset.
+   */
+  seek(offset: number, whence: SeekMode): Promise<number>;
+}
+
+/** An abstract interface which when implemented provides an interface to seek within an open file/resource synchronously. */
+export interface SeekerSync {
+  /** Seek sets the offset for the next `readSync()` or `writeSync()` to offset, interpreted according to `whence`: `Start` means relative to the start of the file, `Current` means relative to the current offset, and `End` means relative to the end.
+   * Seeking to an offset before the start of the file is an error. Seeking to any positive offset is legal, but the behavior of subsequent I/O operations on the underlying object is implementation-dependent.
+   * It returns the updated offset. */
+  seekSync(offset: number, whence: SeekMode): number;
 }

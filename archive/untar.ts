@@ -3,13 +3,12 @@
 import {
   FileTypes,
   readBlock,
-  type Reader,
   recordSize,
-  type Seeker,
   type TarMeta,
   ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../streams/read_all.ts";
+import type { Reader, Seeker } from "../types.d.ts";
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -78,7 +77,7 @@ export interface TarEntry extends TarMeta {}
 
 export class TarEntry implements Reader {
   #header: TarHeader;
-  #reader: Reader | (Reader & Deno.Seeker);
+  #reader: Reader | (Reader & Seeker);
   #size: number;
   #read = 0;
   #consumed = false;
@@ -86,7 +85,7 @@ export class TarEntry implements Reader {
   constructor(
     meta: TarMeta,
     header: TarHeader,
-    reader: Reader | (Reader & Deno.Seeker),
+    reader: Reader | (Reader & Seeker),
   ) {
     Object.assign(this, meta);
     this.#header = header;
