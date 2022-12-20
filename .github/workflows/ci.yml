@@ -16,7 +16,7 @@ jobs:
         deno: [canary]
         os:
           - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
+          - windows-2022
           - macOS-latest
 
     steps:
@@ -78,7 +78,7 @@ jobs:
         deno: [canary]
         os:
           - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
-          - ${{ github.repository_owner == 'denoland' && 'windows-2022-xl' || 'windows-2022' }}
+          - windows-2022
           - macOS-latest
 
     steps:

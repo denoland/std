@@ -2268,7 +2268,6 @@ Total: 2825
 - [parallel/test-ttywrap-stack.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-ttywrap-stack.js)
 - [parallel/test-unhandled-exception-rethrow-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-unhandled-exception-rethrow-error.js)
 - [parallel/test-unicode-node-options.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-unicode-node-options.js)
-- [parallel/test-url-domain-ascii-unicode.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-url-domain-ascii-unicode.js)
 - [parallel/test-url-null-char.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-url-null-char.js)
 - [parallel/test-utf8-scripts.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-utf8-scripts.js)
 - [parallel/test-util-callbackify.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-util-callbackify.js)
