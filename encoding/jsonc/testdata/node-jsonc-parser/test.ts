@@ -6,8 +6,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as JSONC from "../../../mod.ts";
-import { assertEquals, assertThrows } from "../../../../../testing/asserts.ts";
+import * as JSONC from "../../mod.ts";
+import { assertEquals, assertThrows } from "../../../../testing/asserts.ts";
 function assertValidParse(
   text: string,
   expected: unknown,

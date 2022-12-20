@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import * as JSONC from "../../../mod.ts";
-import { assertEquals } from "../../../../../testing/asserts.ts";
-import { walk } from "../../../../../fs/mod.ts";
-import { fromFileUrl } from "../../../../../path/mod.ts";
+import * as JSONC from "../../mod.ts";
+import { assertEquals } from "../../../../testing/asserts.ts";
+import { walk } from "../../../../fs/mod.ts";
+import { fromFileUrl } from "../../../../path/mod.ts";
 
 function getError<T>(
   fn: () => T,
