@@ -9,4 +9,6 @@ const cluster = process.env.NODE_UNIQUE_ID !== undefined
   ? childCluster
   : primaryCluster;
 
+export { cluster }
+
 export default cluster;
