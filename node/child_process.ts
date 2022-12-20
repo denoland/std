@@ -41,13 +41,11 @@ import { convertToValidSignal, kEmptyObject } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
-type ForkOptions = ChildProcessOptions;
-
-// export interface ForkOptions extends ChildProcessOptions {
-//   execPath?: string | undefined;
-//   execArgv?: string[] | undefined;
-//   silent?: boolean | undefined;
-// }
+export interface ForkOptions extends ChildProcessOptions {
+  execPath?: string | undefined;
+  execArgv?: string[] | undefined;
+  silent?: boolean | undefined;
+}
 
 /**
  * Spawns a new Node.js process + fork.
