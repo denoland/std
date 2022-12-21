@@ -287,12 +287,10 @@ export class Server {
    * Responds to an HTTP request.
    *
    * @param requestEvent The HTTP request to respond to.
-   * @param httpCon The HTTP connection to yield requests from.
    * @param connInfo Information about the underlying connection.
    */
   async #respond(
     requestEvent: Deno.RequestEvent,
-    httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
   ) {
     let response: Response;
@@ -312,10 +310,11 @@ export class Server {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // respondWith() fails when the connection has already been closed, or there is some
-      // other error with responding on this connection that prompts us to
-      // close it and open a new connection.
-      return this.#closeHttpConn(httpConn);
+      // `respondWith()` can throw for various reasons, including downstream and
+      // upstream connection errors, as well as errors thrown during streaming
+      // of the response content.  In order to avoid false negatives, we ignore
+      // the error here and let `serveHttp` close the connection on the
+      // following iteration if it is in fact a downstream connection error.
     }
   }
 
@@ -344,7 +343,7 @@ export class Server {
 
       // Respond to the request. Note we do not await this async method to
       // allow the connection to handle multiple requests in the case of h2.
-      this.#respond(requestEvent, httpConn, connInfo);
+      this.#respond(requestEvent, connInfo);
     }
 
     this.#closeHttpConn(httpConn);
