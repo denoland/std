@@ -87,28 +87,3 @@ export interface Closer {
   /** Closes the resource, "freeing" the backing file/resource. */
   close(): void;
 }
-
-/** A enum which defines the seek mode for IO related APIs that support seeking. */
-export enum SeekMode {
-  Current = 1,
-  End = 2,
-  Start = 0,
-}
-
-/** An abstract interface which when implemented provides an interface to seek within an open file/resource asynchronously. */
-export interface Seeker {
-  /**
-   * Seek sets the offset for the next `read()` or `write()` to offset, interpreted according to `whence`: Start means relative to the start of the file, `Current` means relative to the current offset, and `End` means relative to the end. Seek resolves to the new offset relative to the start of the file.
-   * Seeking to an offset before the start of the file is an error. Seeking to any positive offset is legal, but the behavior of subsequent I/O operations on the underlying object is implementation-dependent.
-   * It resolves with the updated offset.
-   */
-  seek(offset: number, whence: SeekMode): Promise<number>;
-}
-
-/** An abstract interface which when implemented provides an interface to seek within an open file/resource synchronously. */
-export interface SeekerSync {
-  /** Seek sets the offset for the next `readSync()` or `writeSync()` to offset, interpreted according to `whence`: `Start` means relative to the start of the file, `Current` means relative to the current offset, and `End` means relative to the end.
-   * Seeking to an offset before the start of the file is an error. Seeking to any positive offset is legal, but the behavior of subsequent I/O operations on the underlying object is implementation-dependent.
-   * It returns the updated offset. */
-  seekSync(offset: number, whence: SeekMode): number;
-}
