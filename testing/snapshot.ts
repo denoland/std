@@ -21,8 +21,8 @@
  * ```
  *
  * @example
- * ```ts
- * // __snapshots__/example_test.ts.snap
+ * ```js
+ * // __snapshots__/example_test.js.snap
  * export const snapshot = {};
  *
  * snapshot[`isSnapshotMatch 1`] = `
@@ -130,8 +130,8 @@
  * ```
  *
  * @example
- * ```ts
- * // .snaps/example_test.ts.snap
+ * ```js
+ * // .snaps/example_test.js.snap
  * export const snapshot = {};
  *
  * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
