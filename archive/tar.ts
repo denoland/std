@@ -105,7 +105,7 @@ function formatHeader(data: TarData): Uint8Array {
   return buffer;
 }
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
 // deno-lint-ignore no-empty-interface
 export interface TarHeader extends _TarHeader {}
 
@@ -310,7 +310,7 @@ export class Tar {
 }
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead.
  *
  * A class to extract a tar archive
  *
@@ -342,5 +342,5 @@ export class Tar {
  */
 export const Untar = _Untar;
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
 export const TarEntry = _TarEntry;

@@ -4,7 +4,7 @@
 import { StringWriter as _StringWriter } from "./string_writer.ts";
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/string_writer.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/string_writer.ts` instead
  *
  * Writer utility for buffering string chunks.
  *
