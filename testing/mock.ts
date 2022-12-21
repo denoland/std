@@ -16,6 +16,7 @@
  * this with Spies, one is to have the `square` function take the `multiply`
  * multiply as a parameter.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/parameter_injection.ts
  * export function multiply(a: number, b: number): number {
@@ -34,6 +35,7 @@
  * a spy function around the `multiply` function and call
  * `square(multiplySpy, value)` in the testing code.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/parameter_injection_test.ts
  * import {
@@ -69,6 +71,7 @@
  * method and the `square` function calls `_internals.multiply` instead of
  * `multiply`.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/internals_injection.ts
  * export function multiply(a: number, b: number): number {
@@ -87,6 +90,7 @@
  * testing code to be able to spy on how the `square` function calls the `multiply`
  * function.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/internals_injection_test.ts
  * import {
@@ -153,6 +157,7 @@
  * through to the original `randomInt` function, we are going to replace
  * `randomInt` with a function that returns pre-defined values.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/random.ts
  * export function randomInt(lowerBound: number, upperBound: number): number {
@@ -170,6 +175,7 @@
  * easy. The `returnsNext` function takes an array of values we want it to return
  * on consecutive calls.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/random_test.ts
  * import {
@@ -219,6 +225,7 @@
  * starting from any point in time. Below is an example where we want to test that
  * the callback is called every second.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts
  * export function secondInterval(cb: () => void): number {
@@ -232,6 +239,7 @@
  * until real time is restored. You can control how time ticks forward with the
  * `tick` method on the `FakeTime` instance.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
  * import {

@@ -436,6 +436,7 @@ export interface ServeDirOptions {
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
@@ -454,6 +455,7 @@ export interface ServeDirOptions {
  *
  * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
+ * @example
  * ```ts
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
  *

@@ -478,6 +478,7 @@ export function bgRgb8(str: string, color: number): string {
  *
  * To produce the color magenta:
  *
+ * @example
  * ```ts
  *      import { rgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *      rgb24("foo", 0xff00ff);
@@ -518,6 +519,7 @@ export function rgb24(str: string, color: number | Rgb): string {
  *
  * To produce the color magenta:
  *
+ * @example
  * ```ts
  *      import { bgRgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *      bgRgb24("foo", 0xff00ff);

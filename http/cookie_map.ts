@@ -6,6 +6,7 @@
  * To access the keys in a request and have any set keys available for creating
  * a response:
  *
+ * @example
  * ```ts
  * import {
  *   CookieMap,
@@ -33,6 +34,7 @@
  * difference is that the methods operate async in order to be able to support
  * async signing and validation of cookies:
  *
+ * @example
  * ```ts
  * import {
  *   SecureCookieMap,
@@ -63,6 +65,7 @@
  * response at construction of the cookies object, they can be passed and any
  * set cookies will be added directly to those headers:
  *
+ * @example
  * ```ts
  * import { CookieMap } from "https://deno.land/std@$STD_VERSION/http/cookie_map.ts";
  *

@@ -6,6 +6,7 @@
  * returned array holding all first tuple elements and the second one holding
  * all the second elements.
  *
+ * @example
  * ```ts
  * import { unzip } from "https://deno.land/std@$STD_VERSION/collections/unzip.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

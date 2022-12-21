@@ -33,6 +33,7 @@ export interface ReadableStreamFromReaderOptions {
  *
  * An example converting a `Deno.FsFile` into a readable stream:
  *
+ * @example
  * ```ts
  * import { readableStreamFromReader } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_reader.ts";
  *

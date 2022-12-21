@@ -10,6 +10,7 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  *
  * The complexity of this function is O(source.length * needle.length).
  *
+ * @example
  * ```ts
  * import { includesNeedle } from "https://deno.land/std@$STD_VERSION/bytes/includes_needle.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);

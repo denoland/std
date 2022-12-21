@@ -218,6 +218,7 @@ let dueTree: RedBlackTree<DueNode>;
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
  * import {

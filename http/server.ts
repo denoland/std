@@ -499,6 +499,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *
+ * @example
  * ```ts
  * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
@@ -547,6 +548,7 @@ function hostnameForDisplay(hostname: string) {
  *
  * The below example serves with the port 8000.
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"));
@@ -555,6 +557,7 @@ function hostnameForDisplay(hostname: string) {
  * You can change the listening address by the `hostname` and `port` options.
  * The below example serves with the port 3000.
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
@@ -564,6 +567,7 @@ function hostnameForDisplay(hostname: string) {
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), {
@@ -576,6 +580,7 @@ function hostnameForDisplay(hostname: string) {
  *
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { onListen: undefined });
@@ -637,6 +642,7 @@ export interface ServeTlsInit extends ServeInit {
  *
  * The below example serves with the default port 8443.
  *
+ * @example
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
@@ -655,6 +661,7 @@ export interface ServeTlsInit extends ServeInit {
  * on start-up by default. If you like to change this message, you can specify
  * `onListen` option to override it.
  *
+ * @example
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * const certFile = "/path/to/certFile.crt";
@@ -671,6 +678,7 @@ export interface ServeTlsInit extends ServeInit {
  *
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
+ * @example
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * const certFile = "/path/to/certFile.crt";

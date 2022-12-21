@@ -8,6 +8,7 @@
  * Server APIs utilizing Deno's
  * [HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
  *
+ * @example
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *

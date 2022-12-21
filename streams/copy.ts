@@ -6,6 +6,7 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
+ * @example
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
  *

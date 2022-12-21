@@ -6,6 +6,7 @@
  *
  * The complexity of this function is O(prefix.length).
  *
+ * @example
  * ```ts
  * import { startsWith } from "https://deno.land/std@$STD_VERSION/bytes/starts_with.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);

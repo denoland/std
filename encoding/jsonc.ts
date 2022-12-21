@@ -25,6 +25,7 @@ export interface ParseOptions {
  *
  * @example
  *
+ * @example
  * ```ts
  * import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc.ts";
  *

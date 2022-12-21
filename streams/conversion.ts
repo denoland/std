@@ -29,6 +29,7 @@ import { writableStreamFromWriter as _writableStreamFromWriter } from "./writabl
  *
  * Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
+ * @example
  * ```ts
  *      import { readerFromIterable, copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -113,6 +114,7 @@ export const writableStreamFromWriter = _writableStreamFromWriter;
  *
  * reate a `ReadableStream` from any kind of iterable.
  *
+ * @example
  * ```ts
  *      import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -132,6 +134,7 @@ export const writableStreamFromWriter = _writableStreamFromWriter;
  * to have a `.throw()` method on it, that will be called upon
  * `readableStream.cancel()`. This is the case for the second input type above:
  *
+ * @example
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -154,6 +157,7 @@ export const readableStreamFromIterable = _readableStreamFromIterable;
  *
  * Convert the generator function into a TransformStream.
  *
+ * @example
  * ```ts
  * import { readableStreamFromIterable, toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -204,6 +208,7 @@ export interface ReadableStreamFromReaderOptions {
  *
  * An example converting a `Deno.FsFile` into a readable stream:
  *
+ * @example
  * ```ts
  * import { readableStreamFromReader } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
  *
@@ -219,6 +224,7 @@ export const readableStreamFromReader = _readableStreamFromReader;
  * Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAll } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
@@ -246,6 +252,7 @@ export const readAll = _readAll;
  * Synchronously reads Reader `r` until EOF (`null`) and returns the content
  * as `Uint8Array`.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAllSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
@@ -272,6 +279,7 @@ export const readAllSync = _readAllSync;
  *
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { writeAll } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
@@ -301,6 +309,7 @@ export const writeAll = _writeAll;
  * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { writeAllSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
@@ -329,6 +338,7 @@ export const writeAllSync = _writeAllSync;
  *
  * Turns a Reader, `r`, into an async iterator.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -342,6 +352,7 @@ export const writeAllSync = _writeAllSync;
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -362,6 +373,7 @@ export const iterateReader = _iterateReader;
  *
  * Turns a ReaderSync, `r`, into an iterator.
  *
+ * @example
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -375,6 +387,7 @@ export const iterateReader = _iterateReader;
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
+ * @example
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
 
@@ -402,6 +415,7 @@ export const iterateReaderSync = _iterateReaderSync;
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
+ * @example
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *

@@ -40,6 +40,7 @@
  * The authors of public modules can let the users display the internal logs of the
  * module by using a custom logger:
  *
+ * @example
  * ```ts
  * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *
@@ -60,6 +61,7 @@
  *
  * The user of the module can then display the internal logs with:
  *
+ * @example
  * ```ts, ignore
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  * import { sum } from "<the-awesome-module>/mod.ts";
@@ -83,6 +85,7 @@
  * Please note that, due to the order of initialization of the loggers, the
  * following won't work:
  *
+ * @example
  * ```ts
  * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *

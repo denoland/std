@@ -3,6 +3,7 @@
 
 /** Concatenate the given arrays into a new Uint8Array.
  *
+ * @example
  * ```ts
  * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
  * const a = new Uint8Array([0, 1, 2]);

@@ -295,6 +295,7 @@ export function assertStrictEquals<T>(
  * Make an assertion that `actual` and `expected` are not strictly equal.
  * If the values are strictly equal then throw.
  *
+ * @example
  * ```ts
  * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
@@ -668,6 +669,7 @@ export function assertThrows(
  *
  * @example
  *
+ * @example
  * ```ts
  * import { assertThrows } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *

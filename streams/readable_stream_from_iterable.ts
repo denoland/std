@@ -2,6 +2,7 @@
 
 /** Create a `ReadableStream` from any kind of iterable.
  *
+ * @example
  * ```ts
  *      import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  *
@@ -21,6 +22,7 @@
  * to have a `.throw()` method on it, that will be called upon
  * `readableStream.cancel()`. This is the case for the second input type above:
  *
+ * @example
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  *

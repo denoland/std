@@ -6,6 +6,7 @@
  *
  * The complexity of this function is O(suffix.length).
  *
+ * @example
  * ```ts
  * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/ends_with.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);

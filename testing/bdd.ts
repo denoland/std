@@ -86,6 +86,7 @@
  * `describe` and `it` using nested test grouping, flat test grouping, or a mix of
  * both styles.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_test.ts
  * import {
@@ -131,6 +132,7 @@
  * the new test suite it creates. The hooks can be created within it or be added to
  * the options argument for describe.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_nested_test.ts
  * import {
@@ -193,6 +195,7 @@
  * callback. The gives you the ability to have test grouping without any extra
  * indentation in front of the grouped tests.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_flat_test.ts
  * import {
@@ -253,6 +256,7 @@
  * be useful if you'd like to create deep groupings without all the extra
  * indentation in front of each line.
  *
+ * @example
  * ```ts
  * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_mixed_test.ts
  * import {

@@ -11,6 +11,7 @@
  *
  * Then import the configuration using the `config` function.
  *
+ * @example
  * ```ts
  * // app.ts
  * import { config } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
@@ -35,6 +36,7 @@
  * GREETING=hello world
  * ```
  *
+ * @example
  * ```ts
  * // app.ts
  * import "https://deno.land/std@$STD_VERSION/dotenv/load.ts";

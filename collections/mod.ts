@@ -15,6 +15,7 @@
  * {@linkcode groupBy} import the module using the snake cased version of the
  * module:
  *
+ * @example
  * ```ts
  * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
  * ```

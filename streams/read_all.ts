@@ -5,6 +5,7 @@ import { Buffer } from "../io/buffer.ts";
 /** Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAll } from "https://deno.land/std@$STD_VERSION/streams/read_all.ts";
@@ -33,6 +34,7 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
 /** Synchronously reads Reader `r` until EOF (`null`) and returns the content
  * as `Uint8Array`.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAllSync } from "https://deno.land/std@$STD_VERSION/streams/read_all.ts";

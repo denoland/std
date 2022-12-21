@@ -16,6 +16,7 @@ export type Disposable = { dispose: () => void };
  *
  * Example:
  *
+ * @example
  * ```ts
  * import { signal } from "https://deno.land/std@$STD_VERSION/signal/mod.ts";
  *

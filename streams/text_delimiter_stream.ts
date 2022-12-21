@@ -4,6 +4,7 @@ import { createLPS } from "./_common.ts";
 
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
+ * @example
  * ```ts
  * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
  * const res = await fetch("https://example.com");

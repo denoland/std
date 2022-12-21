@@ -25,6 +25,7 @@
  *
  * WebCrypto
  *
+ * @example
  * ```ts
  * // https://deno.land/std/crypto/mod.ts
  * const webCryptoDigestAlgorithms = [
@@ -38,6 +39,7 @@
  *
  * Wasm/Rust
  *
+ * @example
  * ```ts
  * // https://deno.land/std/_wasm_crypto/mod.ts
  * export const digestAlgorithms = [
@@ -81,6 +83,7 @@
  * [w3c/webcrypto#270](https://github.com/w3c/webcrypto/issues/270)), but until
  * that time, `timingSafeEqual()` is provided:
  *
+ * @example
  * ```ts
  * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
@@ -105,6 +108,7 @@
  * In addition to the method being part of the `crypto.subtle` interface, it is
  * also loadable directly:
  *
+ * @example
  * ```ts
  * import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
@@ -148,6 +152,7 @@
  *
  * @example Convert hash to a string
  *
+ * @example
  * ```ts
  * import {
  *   crypto,

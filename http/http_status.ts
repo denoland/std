@@ -17,6 +17,7 @@
  * console.log(STATUS_TEXT[Status.NotFound]); //=> "Not Found"
  * ```
  *
+ * @example
  * ```ts
  * import { isErrorStatus } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
  *

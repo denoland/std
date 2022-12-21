@@ -6,6 +6,7 @@
  * to a reference snapshot, which is stored alongside the test file in the
  * `__snapshots__` directory.
  *
+ * @example
  * ```ts
  * // example_test.ts
  * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
@@ -19,7 +20,8 @@
  * });
  * ```
  *
- * ```js
+ * @example
+ * ```ts
  * // __snapshots__/example_test.ts.snap
  * export const snapshot = {};
  *
@@ -70,6 +72,7 @@
  *
  * The `assertSnapshot` function optionally accepts an options object.
  *
+ * @example
  * ```ts
  * // example_test.ts
  * import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
@@ -87,6 +90,7 @@
  *
  * You can also configure default options for `assertSnapshot`.
  *
+ * @example
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
@@ -104,6 +108,7 @@
  * It is possible to "extend" an `assertSnapshot` function which has been
  * configured with default options.
  *
+ * @example
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
@@ -124,7 +129,8 @@
  * });
  * ```
  *
- * ```js
+ * @example
+ * ```ts
  * // .snaps/example_test.ts.snap
  * export const snapshot = {};
  *

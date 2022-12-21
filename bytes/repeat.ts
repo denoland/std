@@ -7,6 +7,7 @@ import { copy } from "./copy.ts";
  *
  * If `count` is negative, a `RangeError` is thrown.
  *
+ * @example
  * ```ts
  * import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/repeat.ts";
  * const source = new Uint8Array([0, 1, 2]);

@@ -7,6 +7,7 @@
  * if options.error is set, then instead of terminating the stream,
  * an error will be thrown.
  *
+ * @example
  * ```ts
  * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_bytes_transform_stream.ts";
  * const res = await fetch("https://example.com");

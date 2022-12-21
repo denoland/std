@@ -36,6 +36,7 @@
  *
  * example.ts
  *
+ * @example
  * ```ts
  * import {
  *   extract,
@@ -69,6 +70,7 @@
  *
  * ### Advanced usage
  *
+ * @example
  * ```ts
  * import {
  *   createExtractor,
@@ -243,6 +245,7 @@ function _extract<T>(
  * @param formats A descriptor containing Format-parser pairs to use for each format.
  * @returns A function that extracts front matter from a string with the given parsers.
  *
+ * @example
  * ```ts
  * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
@@ -305,6 +308,7 @@ export function createExtractor(
  * @param str String to test.
  * @param formats A list of formats to test for. Defaults to all supported formats.
  *
+ * @example
  * ```ts
  * import { test, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
@@ -341,6 +345,7 @@ export function test(str: string, formats?: Format[]): boolean {
  * @param str String to recognize.
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
+ * @example
  * ```ts
  * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

@@ -5,6 +5,7 @@ import { writeAll } from "./write_all.ts";
 
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
+ * @example
  * ```ts
  *      import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
  *      import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";

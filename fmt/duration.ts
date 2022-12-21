@@ -3,6 +3,7 @@
 /**
  * Format milliseconds to time duration.
  *
+ * @example
  * ```ts
  * import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
  *

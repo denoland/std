@@ -66,6 +66,7 @@ export type ColumnDetails = {
  * the top level, `Column` can simply be a property accessor, which is either a
  * `string` (if it's a plain object) or a `number` (if it's an array).
  *
+ * @example
  * ```ts
  * const columns = [
  *   "name",
@@ -232,6 +233,7 @@ export type StringifyOptions = {
  *
  * `DataItem: Record<string, unknown> | unknown[]`
  *
+ * @example
  * ```ts
  * const data = [
  *   {

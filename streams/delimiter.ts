@@ -11,6 +11,7 @@ import { TextDelimiterStream as _TextDelimiterStream } from "./text_delimiter_st
  * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
+ * @example
  * ```ts
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
@@ -26,6 +27,7 @@ export const TextLineStream = _TextLineStream;
  *
  * Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
+ * @example
  * ```ts
  * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");
@@ -41,6 +43,7 @@ export const DelimiterStream = _DelimiterStream;
  *
  * Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
+ * @example
  * ```ts
  * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter.ts";
  * const res = await fetch("https://example.com");

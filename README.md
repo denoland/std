@@ -116,3 +116,35 @@ All internal non-test code, that is files that do not have `test` or `bench` in
 the name, must use the assertion functions within `_utils/asserts.ts` and not
 `testing/asserts.ts`. This is to create a separation of concerns between
 internal and testing assertions.
+
+### Examples
+
+Always prefix JSDoc example blocks with the `@example` tag and specify the
+correct language next to the backticks before the fenced code block.
+
+Bad:
+
+````
+/**
+ * ```
+ * foo();
+ * ```
+ */
+function foo() {
+  ...
+}
+````
+
+Good:
+
+````
+/**
+ * @example
+ * ```ts
+ * foo();
+ * ```
+ */
+function foo() {
+  ...
+}
+````

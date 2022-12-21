@@ -25,7 +25,8 @@ export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
 /**
  * Check if the passed UUID is the nil UUID.
  *
- * ```js
+ * @example
+ * ```ts
  * import { isNil } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts";
  *
  * isNil("00000000-0000-0000-0000-000000000000") // true
@@ -39,7 +40,8 @@ export function isNil(id: string): boolean {
 /**
  * Test a string to see if it is a valid UUID.
  *
- * ```js
+ * @example
+ * ```ts
  * import { validate } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts"
  *
  * validate("not a UUID") // false
@@ -56,7 +58,8 @@ export function validate(uuid: string): boolean {
 /**
  * Detect RFC version of a UUID.
  *
- * ```js
+ * @example
+ * ```ts
  * import { version } from "https://deno.land/std@$STD_VERSION/uuid/mod.ts"
  *
  * version("d9428888-122b-11e1-b85c-61cd3cbb3210") // 1

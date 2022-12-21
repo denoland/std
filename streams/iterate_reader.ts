@@ -4,6 +4,7 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 
 /** Turns a Reader, `r`, into an async iterator.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
@@ -17,6 +18,7 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
@@ -50,6 +52,7 @@ export async function* iterateReader(
 
 /** Turns a ReaderSync, `r`, into an iterator.
  *
+ * @example
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
  *
@@ -63,6 +66,7 @@ export async function* iterateReader(
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
+ * @example
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
 

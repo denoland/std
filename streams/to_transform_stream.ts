@@ -3,6 +3,7 @@
 /**
  * Convert the generator function into a TransformStream.
  *
+ * @example
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/to_transform_stream.ts";

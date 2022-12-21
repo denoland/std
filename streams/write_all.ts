@@ -2,6 +2,7 @@
 
 /** Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { writeAll } from "https://deno.land/std@$STD_VERSION/streams/write_all.ts";
@@ -33,6 +34,7 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
 /** Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { writeAllSync } from "https://deno.land/std@$STD_VERSION/streams/write_all.ts";

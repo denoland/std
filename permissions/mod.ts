@@ -33,6 +33,7 @@ function getPermissionString(descriptors: Deno.PermissionDescriptor[]): string {
 /** Attempts to grant a set of permissions, resolving with the descriptors of
  * the permissions that are granted.
  *
+ * @example
  * ```ts
  *      import { grant } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      const perms = await grant({ name: "net" }, { name: "read" });
@@ -51,6 +52,7 @@ export async function grant(
 /** Attempts to grant a set of permissions, resolving with the descriptors of
  * the permissions that are granted.
  *
+ * @example
  * ```ts
  *      import { grant } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      const perms = await grant([{ name: "net" }, { name: "read" }]);
@@ -88,6 +90,7 @@ export async function grant(
 
 /** Attempts to grant a set of permissions or rejects.
  *
+ * @example
  * ```ts
  *      import { grantOrThrow } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      await grantOrThrow({ name: "env" }, { name: "net" });
@@ -102,6 +105,7 @@ export async function grantOrThrow(
 ): Promise<void>;
 /** Attempts to grant a set of permissions or rejects.
  *
+ * @example
  * ```ts
  *      import { grantOrThrow } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      await grantOrThrow([{ name: "env" }, { name: "net" }]);

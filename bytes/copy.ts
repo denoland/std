@@ -11,6 +11,7 @@
  * that given index in the `dst` array. The offset defaults to the beginning of
  * the array.
  *
+ * @example
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
  * const src = new Uint8Array([9, 8, 7]);
@@ -19,6 +20,7 @@
  * console.log(dst); // [9, 8, 7, 3, 4, 5]
  * ```
  *
+ * @example
  * ```ts
  * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
  * const src = new Uint8Array([1, 1, 1, 1]);

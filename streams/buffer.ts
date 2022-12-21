@@ -179,6 +179,7 @@ export class Buffer {
  * if options.error is set, then instead of terminating the stream,
  * an error will be thrown.
  *
+ * @example
  * ```ts
  * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");
@@ -196,6 +197,7 @@ export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
  * if options.error is set, then instead of terminating the stream,
  * an error will be thrown.
  *
+ * @example
  * ```ts
  * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
  * const res = await fetch("https://example.com");

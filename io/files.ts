@@ -21,6 +21,7 @@ export interface ByteRange {
  * seekable.  The range start and end are inclusive of the bytes within that
  * range.
  *
+ * @example
  * ```ts
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  * import { readRange } from "https://deno.land/std@$STD_VERSION/io/files.ts";
@@ -40,6 +41,7 @@ export const readRange = _readRange;
  * readable and seekable.  The range start and end are inclusive of the bytes
  * within that range.
  *
+ * @example
  * ```ts
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/files.ts";
