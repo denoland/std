@@ -2,7 +2,8 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "../errors.ts";
-import { deprecate, kEmptyObject } from "../util.mjs";
+import { kEmptyObject } from "../util.mjs";
+import { deprecate } from "../../util.ts";
 import { validateFunction, validateInteger } from "../validators.mjs";
 import { errorOrDestroy } from "../streams/destroy.mjs";
 import { open as fsOpen } from "../../_fs/_fs_open.ts";
