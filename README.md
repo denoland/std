@@ -119,8 +119,7 @@ internal and testing assertions.
 
 ### Types
 
-Deno is moving away from non-native IO functions and interfaces in favor
-of the
+Deno is moving away from non-native IO functions and interfaces in favor of the
 [Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
 These types are to be defined here, in the Standard Library, instead of in the
 Deno namespace in the future. As a rule, use the following corresponding and
