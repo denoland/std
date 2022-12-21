@@ -255,5 +255,5 @@ Deno.test({
   fn() {
     const fn = util.deprecate(() => {}, "foo");
     fn();
-  }
-})
+  },
+});
