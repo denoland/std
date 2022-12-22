@@ -1573,6 +1573,23 @@ Deno.test("typesOfCollectArgsWithDefaults", function () {
   >(true);
 });
 
+Deno.test("typesOfCollectArgsWithSingleValueTypeArray", function () {
+  const argv = parse([], {
+    boolean: ["foo"],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<boolean>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
 
 Deno.test("typesOfNegatableArgs", function () {

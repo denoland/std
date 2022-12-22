@@ -157,7 +157,7 @@ type CollectValues<
   N extends Negatable = undefined,
 > = UnionToIntersection<
   C extends string ? 
-      & MapTypes<Exclude<T, C>, V, N>
+      & (T extends C ? Record<never, never> : MapTypes<Exclude<T, C>, V, N>)
       & (T extends undefined ? Record<never, never> : RecursiveRequired<
         MapTypes<Extract<C, T>, Array<V>, N>
       >)
