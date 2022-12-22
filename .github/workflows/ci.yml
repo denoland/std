@@ -140,9 +140,12 @@ jobs:
       - name: Check non-test assertions
         run: deno task lint:check-assertions
 
-  crypto-wasm:
-    name: "crypto/_wasm"
+  wasm:
+    name: wasm
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    strategy:
+      matrix:
+        module: [ { name: crypto, path: ./crypto/_wasm }, { name: varint, path: ./encoding/varint/_wasm } ]
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -152,15 +155,15 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to crypto/_wasm
+      - name: Check for changes
         id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./crypto/_wasm)"
+          declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module.path }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "Wasm crypto source modified in this commit? $modified"
+          echo "${{ matrix.module.name }} WASM source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -171,51 +174,11 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in crypto/_wasm/rust-toolchain.toml
+          # This must match the version in _wasm/rust-toolchain.toml of the module folder
           rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
-
+    
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:crypto --check
-
-  varint-wasm:
-    name: "varint/_wasm"
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v3
-        with:
-          # required to check for changes
-          fetch-depth: 2
-          submodules: false
-          persist-credentials: false
-
-      - name: Check for changes to varint/_wasm
-        id: source
-        run: |-
-          set -o errexit
-          shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./encoding/varint/_wasm)"
-          declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "Wasm varint source modified in this commit? $modified"
-          echo "$modifications"
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v1
-        if: success() && steps.source.outputs.modified == 'true'
-
-      - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
-        if: success() && steps.source.outputs.modified == 'true'
-        with:
-          # This must match the versions in encoding/varint/_wasm/rust-toolchain.toml
-          rust-version: 1.65.0
-          targets: wasm32-unknown-unknown
-          components: rustfmt
-
-      - name: Rebuild Wasm and verify it hasn't changed
-        if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:varint --check
+        run: deno task build:${{ matrix.module.name }} --check
