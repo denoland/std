@@ -151,17 +151,19 @@ type RecursiveRequired<T> = T extends Record<string, unknown> ? {
 
 /** Same as `MapTypes` but also supports collectable options. */
 type CollectValues<
-  T extends ArgType,
-  V,
-  C extends Collectable,
-  N extends Negatable = undefined,
+  TArgs extends ArgType,
+  TType,
+  TCollactable extends Collectable,
+  TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  C extends string ? 
-      & (T extends C ? Record<never, never> : MapTypes<Exclude<T, C>, V, N>)
-      & (T extends undefined ? Record<never, never> : RecursiveRequired<
-        MapTypes<Extract<C, T>, Array<V>, N>
+  Extract<TArgs, TCollactable> extends string ? 
+      & (Exclude<TArgs, TCollactable> extends never ? Record<never, never>
+        : MapTypes<Exclude<TArgs, TCollactable>, TType, TNegatable>)
+      & (Extract<TArgs, TCollactable> extends never ? Record<never, never>
+        : RecursiveRequired<
+          MapTypes<Extract<TArgs, TCollactable>, Array<TType>, TNegatable>
       >)
-    : MapTypes<T, V, N>
+    : MapTypes<TArgs, TType, TNegatable>
 >;
 
 /** Same as `Record` but also supports dotted and negatable options. */
