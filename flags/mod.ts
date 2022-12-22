@@ -162,7 +162,7 @@ type CollectValues<
       & (Extract<TArgs, TCollactable> extends never ? Record<never, never>
         : RecursiveRequired<
           MapTypes<Extract<TArgs, TCollactable>, Array<TType>, TNegatable>
-      >)
+        >)
     : MapTypes<TArgs, TType, TNegatable>
 >;
 
@@ -186,25 +186,25 @@ type CollectUnknownValues<
   N extends Negatable,
 > = UnionToIntersection<
   C extends B & S ? Record<never, never>
-  : DedotRecord<
-    // Unknown collectable & non-negatable args.
-    & Record<
-      Exclude<
-        Extract<Exclude<C, N>, string>,
-        Extract<S | B, string>
-      >,
-      Array<unknown>
-    >
-    // Unknown collectable & negatable args.
-    & Record<
-      Exclude<
-        Extract<Extract<C, N>, string>,
-        Extract<S | B, string>
-      >,
-      Array<unknown> | false
+    : DedotRecord<
+      // Unknown collectable & non-negatable args.
+      & Record<
+        Exclude<
+          Extract<Exclude<C, N>, string>,
+          Extract<S | B, string>
+        >,
+        Array<unknown>
+      >
+      // Unknown collectable & negatable args.
+      & Record<
+        Exclude<
+          Extract<Extract<C, N>, string>,
+          Extract<S | B, string>
+        >,
+        Array<unknown> | false
       >
     >
-  >;
+>;
 
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<T> = Record<string, unknown> extends T ? T
