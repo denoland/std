@@ -13,7 +13,10 @@ export let core: any;
 const { Deno } = globalThis as any;
 
 // @ts-ignore Deno.core is not defined in types
-if (Deno?.core) {
+if (Deno?.[Deno.internal]?.core) {
+  // @ts-ignore Deno[Deno.internal].core is not defined in types
+  core = Deno[Deno.internal].core;
+} else if (Deno?.core) {
   // @ts-ignore Deno.core is not defined in types
   core = Deno.core;
 } else {
