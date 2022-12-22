@@ -182,7 +182,8 @@ type CollectUnknownValues<
   S extends StringType,
   C extends Collectable,
   N extends Negatable,
-> = C extends B & S ? Record<never, never>
+> = UnionToIntersection<
+  C extends B & S ? Record<never, never>
   : DedotRecord<
     // Unknown collectable & non-negatable args.
     & Record<
@@ -199,6 +200,7 @@ type CollectUnknownValues<
         Extract<S | B, string>
       >,
       Array<unknown> | false
+      >
     >
   >;
 
