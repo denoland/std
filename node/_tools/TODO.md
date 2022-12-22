@@ -1,5 +1,7 @@
 # Remaining Node Tests
 
+NOTE: This file should not be manually edited. Please edit `config.json` and run `deno task node:setup` instead.
+
 Total: 2822
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
