@@ -1,53 +1,115 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import {
-  formatLogMessage,
-  getMessageTypeName,
-  MessageLogContext,
-  MessageType,
+  MessageCategory,
+  MessageContext,
+  MessageHandler,
+  MessageLevel,
+  setMessageHandler,
 } from "./mod.ts";
 
-function createContext(
-  category: string,
-  msgType: MessageType,
-): MessageLogContext {
-  return {
-    category,
-    type: getMessageTypeName(msgType),
-    filename: import.meta.url,
-  };
+interface LevelCase {
+  level: MessageLevel;
+  messages: string[];
+  expected: string[];
 }
 
-Deno.test("formatLogMessage", function (): void {
-  const defaultDebugCtx = createContext("default", MessageType.Debug);
-  const defaultDebugMsg = formatLogMessage(
-    MessageType.Debug,
-    defaultDebugCtx,
-    "Debug message 1",
-  );
-  assertEquals(defaultDebugMsg, "Debug message 1");
+Deno.test("setMessageHandler", function (): void {
+  const usb = new MessageCategory("driver.usb");
+  const usbMessages: string[] = [];
+  const usbMessageHandler: MessageHandler = (
+    msg: string,
+    _context: MessageContext,
+  ) => {
+    usbMessages.push(msg);
+  };
+  setMessageHandler(usbMessageHandler);
+  usb.log("Log 1");
+  usb.info("Info 2");
+  usb.warn("Warn 3");
+  usb.error("Error 4");
+  assertEquals(usbMessages, ["Log 1", "Info 2", "Warn 3", "Error 4"]);
+});
 
-  const defaultInfoCtx = createContext("default", MessageType.Info);
-  const defaultInfoMsg = formatLogMessage(
-    MessageType.Info,
-    defaultInfoCtx,
-    "Info message 1",
-  );
-  assertEquals(defaultInfoMsg, "Info message 1");
+Deno.test("Only print certain categories", function (): void {
+  const usb = new MessageCategory("driver.usb");
+  const gpu = new MessageCategory("driver.gpu");
+  const messages: string[] = [];
+  const messageHandler: MessageHandler = (
+    msg: string,
+    context: MessageContext,
+  ) => {
+    if (context.category.name === "driver.usb") {
+      messages.push(msg);
+    }
+  };
+  setMessageHandler(messageHandler);
+  usb.log("Log");
+  gpu.info("Info");
+  usb.warn("Warn");
+  gpu.error("Error");
+  assertEquals(messages, ["Log", "Warn"]);
+});
 
-  const usbDebugCtx = createContext("driver.usb", MessageType.Debug);
-  const usbDebugMsg = formatLogMessage(
-    MessageType.Debug,
-    usbDebugCtx,
-    "Debug message 2",
-  );
-  assertEquals(usbDebugMsg, "driver.usb: Debug message 2");
-
-  const usbInfoCtx = createContext("driver.usb", MessageType.Info);
-  const usbInfoMsg = formatLogMessage(
-    MessageType.Info,
-    usbInfoCtx,
-    "Info message 2",
-  );
-  assertEquals(usbInfoMsg, "driver.usb: Info message 2");
+Deno.test("Only print certain levels", function (): void {
+  const cases: LevelCase[] = [
+    {
+      level: "log",
+      messages: [
+        "log-test",
+        "info-test",
+        "warning-test",
+        "error-test",
+      ],
+      expected: ["log-test"],
+    },
+    {
+      level: "info",
+      messages: [
+        "log-test",
+        "info-test",
+        "warning-test",
+        "error-test",
+      ],
+      expected: ["info-test"],
+    },
+    {
+      level: "warn",
+      messages: [
+        "log-test",
+        "info-test",
+        "warning-test",
+        "error-test",
+      ],
+      expected: ["warning-test"],
+    },
+    {
+      level: "error",
+      messages: [
+        "log-test",
+        "info-test",
+        "warning-test",
+        "error-test",
+      ],
+      expected: ["error-test"],
+    },
+  ];
+  for (const { level, messages, expected } of cases) {
+    const usb = new MessageCategory("driver.usb");
+    const usbMessages: string[] = [];
+    const messageHandler: MessageHandler = (
+      msg: string,
+      context: MessageContext,
+    ) => {
+      if (context.level === level) {
+        usbMessages.push(msg);
+      }
+    };
+    setMessageHandler(messageHandler);
+    usb.log(messages[0]);
+    usb.info(messages[1]);
+    usb.warn(messages[2]);
+    usb.error(messages[3]);
+    assertEquals(usbMessages, expected);
+  }
 });
