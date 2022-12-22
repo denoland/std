@@ -1644,7 +1644,7 @@ Deno.test("typesOfAliasArgs", function () {
     boolean: ["foo"],
     string: ["beep"],
     alias: {
-      foo: "bar",
+      foo: ["bar", "baz"],
       beep: "boop",
     },
   });
@@ -1657,6 +1657,7 @@ Deno.test("typesOfAliasArgs", function () {
         boop?: string | undefined;
         foo: boolean;
         bar: boolean;
+        baz: boolean;
         _: Array<string | number>;
       }
     >

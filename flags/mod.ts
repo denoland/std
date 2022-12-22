@@ -92,16 +92,18 @@ type Aliases<T = string, V extends string = string> = Partial<
 >;
 
 type AddAliases<
-  T,
-  A extends Aliases | undefined,
-> = { [K in keyof T as AliasName<K, A>]: T[K] };
+  TArgs,
+  TAliases extends Aliases | undefined,
+> = { [Arg in keyof TArgs as AliasName<Arg, TAliases>]: TArgs[Arg] };
 
 type AliasName<
-  K,
-  A extends Aliases | undefined,
-> = K extends keyof A
-  ? string extends A[K] ? K : A[K] extends string ? K | A[K] : K
-  : K;
+  TArg,
+  TAliases extends Aliases | undefined,
+> = TArg extends keyof TAliases ? string extends TAliases[TArg] ? TArg
+  : TAliases[TArg] extends string ? TArg | TAliases[TArg]
+  : TAliases[TArg] extends Array<string> ? TArg | TAliases[TArg][number]
+  : TArg
+  : TArg;
 
 /**
  * Spreads all default values of Record `D` into Record `A`
