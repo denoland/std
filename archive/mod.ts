@@ -35,6 +35,6 @@
  *
  * @module
  */
-/** @deprecated (will be removed after 0.169.0) TODO: export all once overlapping objects/types are removed */
+/** @deprecated (will be removed after 0.171.0) TODO: export all once overlapping objects/types are removed */
 export { Tar, type TarData, type TarDataWithSource } from "./tar.ts";
 export * from "./untar.ts";

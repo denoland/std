@@ -5,7 +5,7 @@ import { zipReadableStreams as _zipReadableStreams } from "./zip_readable_stream
 import { earlyZipReadableStreams as _earlyZipReadableStreams } from "./early_zip_readable_streams.ts";
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/merge_readable_streams.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/merge_readable_streams.ts` instead.
  *
  * Merge multiple streams into a single one, not taking order into account.
  * If a stream ends before other ones, the other will continue adding data,
@@ -14,7 +14,7 @@ import { earlyZipReadableStreams as _earlyZipReadableStreams } from "./early_zip
 export const mergeReadableStreams = _mergeReadableStreams;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/zip_readable_streams.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/zip_readable_streams.ts` instead.
  *
  * Merge multiple streams into a single one, taking order into account, and each stream
  * will wait for a chunk to enqueue before the next stream can append another chunk.
@@ -24,7 +24,7 @@ export const mergeReadableStreams = _mergeReadableStreams;
 export const zipReadableStreams = _zipReadableStreams;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/zip_readable_streams.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/zip_readable_streams.ts` instead.
  *
  * Merge multiple streams into a single one, taking order into account, and each stream
  * will wait for a chunk to enqueue before the next stream can append another chunk.

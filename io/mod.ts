@@ -11,7 +11,7 @@
 
 export * from "./buf_reader.ts";
 export * from "./buf_writer.ts";
-/** @deprecated (will be removed after 0.170.0) `export * from "./buffer.ts";` upon removal */
+/** @deprecated (will be removed after 0.172.0) `export * from "./buffer.ts";` upon removal */
 export { Buffer } from "./buffer.ts";
 export * from "./copy_n.ts";
 export * from "./limited_reader.ts";

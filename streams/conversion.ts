@@ -25,7 +25,7 @@ import {
 import { writableStreamFromWriter as _writableStreamFromWriter } from "./writable_stream_from_writer.ts";
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/reader_from_iterable.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/reader_from_iterable.ts` instead.
  *
  * Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
@@ -46,7 +46,7 @@ import { writableStreamFromWriter as _writableStreamFromWriter } from "./writabl
 export const readerFromIterable = _readerFromIterable;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/writer_from_stream_writer.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/writer_from_stream_writer.ts` instead.
  *
  * Create a `Writer` from a `WritableStreamDefaultWriter`.
  *
@@ -71,7 +71,7 @@ export const readerFromIterable = _readerFromIterable;
 export const writerFromStreamWriter = _writerFromStreamWriter;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/reader_from_stream_reader.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/reader_from_stream_reader.ts` instead.
  *
  * Create a `Reader` from a `ReadableStreamDefaultReader`.
  *
@@ -91,7 +91,7 @@ export const writerFromStreamWriter = _writerFromStreamWriter;
  */
 export const readerFromStreamReader = _readerFromStreamReader;
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/streams/writable_stream_from_writer.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/streams/writable_stream_from_writer.ts` instead. */
 export interface WritableStreamFromWriterOptions {
   /**
    * If the `writer` is also a `Deno.Closer`, automatically close the `writer`
@@ -103,13 +103,13 @@ export interface WritableStreamFromWriterOptions {
 }
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/writable_stream_from_writer.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/writable_stream_from_writer.ts` instead.
  * Create a `WritableStream` from a `Writer`.
  */
 export const writableStreamFromWriter = _writableStreamFromWriter;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/readable_stream_from_iterable.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/readable_stream_from_iterable.ts` instead.
  *
  * reate a `ReadableStream` from any kind of iterable.
  *
@@ -150,7 +150,7 @@ export const writableStreamFromWriter = _writableStreamFromWriter;
 export const readableStreamFromIterable = _readableStreamFromIterable;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/to_transform_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/to_transform_stream.ts` instead.
  *
  * Convert the generator function into a TransformStream.
  *
@@ -176,7 +176,7 @@ export const readableStreamFromIterable = _readableStreamFromIterable;
  */
 export const toTransformStream = _toTransformStream;
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/streams/readable_stream_from_reader.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/streams/readable_stream_from_reader.ts` instead. */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Deno.Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -194,7 +194,7 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/readable_stream_from_reader.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/readable_stream_from_reader.ts` instead.
  *
  * Create a `ReadableStream<Uint8Array>` from from a `Deno.Reader`.
  *
@@ -214,7 +214,7 @@ export interface ReadableStreamFromReaderOptions {
 export const readableStreamFromReader = _readableStreamFromReader;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/read_all.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/read_all.ts` instead.
  *
  * Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
@@ -241,7 +241,7 @@ export const readableStreamFromReader = _readableStreamFromReader;
 export const readAll = _readAll;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/read_all.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/read_all.ts` instead.
  *
  * Synchronously reads Reader `r` until EOF (`null`) and returns the content
  * as `Uint8Array`.
@@ -268,7 +268,7 @@ export const readAll = _readAll;
 export const readAllSync = _readAllSync;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/write_all.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/write_all.ts` instead.
  *
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
@@ -296,7 +296,7 @@ export const readAllSync = _readAllSync;
 export const writeAll = _writeAll;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/write_all.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/write_all.ts` instead.
  *
  * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
@@ -325,7 +325,7 @@ export const writeAll = _writeAll;
 export const writeAllSync = _writeAllSync;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/iterate_reader.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/iterate_reader.ts` instead.
  *
  * Turns a Reader, `r`, into an async iterator.
  *
@@ -358,7 +358,7 @@ export const writeAllSync = _writeAllSync;
 export const iterateReader = _iterateReader;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/iterate_reader.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/iterate_reader.ts` instead.
  *
  * Turns a ReaderSync, `r`, into an iterator.
  *
@@ -396,7 +396,7 @@ export const iterateReader = _iterateReader;
 export const iterateReaderSync = _iterateReaderSync;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/copy.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/copy.ts` instead.
  *
  * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
  * an error occurs. It resolves to the number of bytes copied or rejects with
