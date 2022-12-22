@@ -182,7 +182,7 @@ type CollectUnknownValues<
   S extends StringType,
   C extends Collectable,
   N extends Negatable,
-> = B & S extends C ? Record<never, never>
+> = C extends B & S ? Record<never, never>
   : DedotRecord<
     // Unknown collectable & non-negatable args.
     & Record<
