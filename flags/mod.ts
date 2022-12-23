@@ -274,9 +274,7 @@ export interface ParseOptions<
   TDefault extends Record<string, unknown> | undefined =
     | Record<string, unknown>
     | undefined,
-  TAliases extends Aliases<string, string> | undefined =
-    | Aliases<string, string>
-    | undefined,
+  TAliases extends Aliases | undefined = Aliases | undefined,
   TDoubleDash extends boolean | undefined = boolean | undefined,
 > {
   /**
