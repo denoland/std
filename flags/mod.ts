@@ -40,7 +40,7 @@ type Id<TRecord> = TRecord extends Record<string, unknown>
   : never
   : TRecord;
 
-/** Converts an union type `A | B | C` into an intersection type `A & B & C`. */
+/** Converts a union type `A | B | C` into an intersection type `A & B & C`. */
 type UnionToIntersection<TValue> =
   (TValue extends unknown ? (args: TValue) => unknown : never) extends
     (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
@@ -71,20 +71,20 @@ type UseTypes<
 type Values<
   TBooleans extends BooleanType,
   TStrings extends StringType,
-  TCollactable extends Collectable,
+  TCollectable extends Collectable,
   TNegatable extends Negatable,
   TDefault extends Record<string, unknown> | undefined,
   TAliases extends Aliases | undefined,
-> = UseTypes<TBooleans, TStrings, TCollactable> extends true ? 
+> = UseTypes<TBooleans, TStrings, TCollectable> extends true ? 
     & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
-        & CollectValues<TStrings, string, TCollactable, TNegatable>
-        & RecursiveRequired<CollectValues<TBooleans, boolean, TCollactable>>
+        & CollectValues<TStrings, string, TCollectable, TNegatable>
+        & RecursiveRequired<CollectValues<TBooleans, boolean, TCollectable>>
         & CollectUnknownValues<
           TBooleans,
           TStrings,
-          TCollactable,
+          TCollectable,
           TNegatable
         >,
         DedotRecord<TDefault>
@@ -117,7 +117,7 @@ type AliasNames<
   : TArgName;
 
 /**
- * Spreads all default values of Record `D` into Record `A`
+ * Spreads all default values of Record `TDefaults` into Record `TArgs`
  * and makes default values required.
  *
  * **Example:**
@@ -140,7 +140,7 @@ type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
 
 /**
  * Defines the Record for the `default` option to add
- * auto suggestion support for IDE's.
+ * auto-suggestion support for IDE's.
  */
 type Defaults<TBooleans extends BooleanType, TStrings extends StringType> = Id<
   UnionToIntersection<
@@ -269,7 +269,7 @@ type DoubleDash = {
 export interface ParseOptions<
   TBooleans extends BooleanType = BooleanType,
   TStrings extends StringType = StringType,
-  TCollactable extends Collectable = Collectable,
+  TCollectable extends Collectable = Collectable,
   TNegatable extends Negatable = Negatable,
   TDefault extends Record<string, unknown> | undefined =
     | Record<string, unknown>
@@ -330,7 +330,7 @@ export interface ParseOptions<
    * times, the last value is used.
    * All Collectable arguments will be set to `[]` by default.
    */
-  collect?: TCollactable | ReadonlyArray<Extract<TCollactable, string>>;
+  collect?: TCollectable | ReadonlyArray<Extract<TCollectable, string>>;
 
   /**
    * A string or array of strings argument names which can be negated
@@ -430,7 +430,7 @@ export function parse<
   TArgs extends Values<
     TBooleans,
     TStrings,
-    TCollactable,
+    TCollectable,
     TNegatable,
     TDefaults,
     TAliases
@@ -438,7 +438,7 @@ export function parse<
   TDoubleDash extends boolean | undefined = undefined,
   TBooleans extends BooleanType = undefined,
   TStrings extends StringType = undefined,
-  TCollactable extends Collectable = undefined,
+  TCollectable extends Collectable = undefined,
   TNegatable extends Negatable = undefined,
   TDefaults extends Record<string, unknown> | undefined = undefined,
   TAliases extends Aliases<TAliasArgNames, TAliasNames> | undefined = undefined,
@@ -459,7 +459,7 @@ export function parse<
   }: ParseOptions<
     TBooleans,
     TStrings,
-    TCollactable,
+    TCollectable,
     TNegatable,
     TDefaults,
     TAliases,
