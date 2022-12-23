@@ -102,10 +102,10 @@ type AddAliases<
   TArgs,
   TAliases extends Aliases | undefined,
 > = {
-  [TArgName in keyof TArgs as AliasName<TArgName, TAliases>]: TArgs[TArgName];
+  [TArgName in keyof TArgs as AliasNames<TArgName, TAliases>]: TArgs[TArgName];
 };
 
-type AliasName<
+type AliasNames<
   TArgName,
   TAliases extends Aliases | undefined,
 > = TArgName extends keyof TAliases
