@@ -38,7 +38,6 @@ assert.sameValue = function (actual, expected, message) {
     }
   } catch (error) {
     throw new Test262Error(message + ' (_isSameValue operation threw) ' + error);
-    return;
   }
 
   if (message === undefined) {
@@ -73,7 +72,6 @@ assert.throws = function (expectedErrorConstructor, func, message) {
   if (typeof func !== "function") {
     throw new Test262Error('assert.throws requires two arguments: the error constructor ' +
       'and a function to run');
-    return;
   }
   if (message === undefined) {
     message = '';

@@ -72,6 +72,5 @@ export function emptyDirSync(dir: string | URL) {
     }
     // if not exist. then create it
     Deno.mkdirSync(dir, { recursive: true });
-    return;
   }
 }

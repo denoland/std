@@ -230,7 +230,6 @@ function doesNotThrow(
   } catch (e) {
     gotUnwantedException(e, expected, message, doesNotThrow);
   }
-  return;
 }
 
 function equal(
