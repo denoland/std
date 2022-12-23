@@ -5,8 +5,10 @@
  * `read` returns `null` when `limit` <= `0` or
  * when the underlying `reader` returns `null`.
  */
-export class LimitedReader implements Deno.Reader {
-  constructor(public reader: Deno.Reader, public limit: number) {}
+import type { Reader } from "../types.d.ts";
+
+export class LimitedReader implements Reader {
+  constructor(public reader: Reader, public limit: number) {}
 
   async read(p: Uint8Array): Promise<number | null> {
     if (this.limit <= 0) {

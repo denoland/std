@@ -92,16 +92,18 @@ type Aliases<T = string, V extends string = string> = Partial<
 >;
 
 type AddAliases<
-  T,
-  A extends Aliases | undefined,
-> = { [K in keyof T as AliasName<K, A>]: T[K] };
+  TArgs,
+  TAliases extends Aliases | undefined,
+> = { [Arg in keyof TArgs as AliasName<Arg, TAliases>]: TArgs[Arg] };
 
 type AliasName<
-  K,
-  A extends Aliases | undefined,
-> = K extends keyof A
-  ? string extends A[K] ? K : A[K] extends string ? K | A[K] : K
-  : K;
+  TArg,
+  TAliases extends Aliases | undefined,
+> = TArg extends keyof TAliases ? string extends TAliases[TArg] ? TArg
+  : TAliases[TArg] extends string ? TArg | TAliases[TArg]
+  : TAliases[TArg] extends Array<string> ? TArg | TAliases[TArg][number]
+  : TArg
+  : TArg;
 
 /**
  * Spreads all default values of Record `D` into Record `A`
@@ -151,17 +153,19 @@ type RecursiveRequired<T> = T extends Record<string, unknown> ? {
 
 /** Same as `MapTypes` but also supports collectable options. */
 type CollectValues<
-  T extends ArgType,
-  V,
-  C extends Collectable,
-  N extends Negatable = undefined,
+  TArgs extends ArgType,
+  TType,
+  TCollactable extends Collectable,
+  TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  C extends string ? 
-      & MapTypes<Exclude<T, C>, V, N>
-      & (T extends undefined ? Record<never, never> : RecursiveRequired<
-        MapTypes<Extract<C, T>, Array<V>, N>
-      >)
-    : MapTypes<T, V, N>
+  Extract<TArgs, TCollactable> extends string ? 
+      & (Exclude<TArgs, TCollactable> extends never ? Record<never, never>
+        : MapTypes<Exclude<TArgs, TCollactable>, TType, TNegatable>)
+      & (Extract<TArgs, TCollactable> extends never ? Record<never, never>
+        : RecursiveRequired<
+          MapTypes<Extract<TArgs, TCollactable>, Array<TType>, TNegatable>
+        >)
+    : MapTypes<TArgs, TType, TNegatable>
 >;
 
 /** Same as `Record` but also supports dotted and negatable options. */
@@ -182,25 +186,27 @@ type CollectUnknownValues<
   S extends StringType,
   C extends Collectable,
   N extends Negatable,
-> = B & S extends C ? Record<never, never>
-  : DedotRecord<
-    // Unknown collectable & non-negatable args.
-    & Record<
-      Exclude<
-        Extract<Exclude<C, N>, string>,
-        Extract<S | B, string>
-      >,
-      Array<unknown>
+> = UnionToIntersection<
+  C extends B & S ? Record<never, never>
+    : DedotRecord<
+      // Unknown collectable & non-negatable args.
+      & Record<
+        Exclude<
+          Extract<Exclude<C, N>, string>,
+          Extract<S | B, string>
+        >,
+        Array<unknown>
+      >
+      // Unknown collectable & negatable args.
+      & Record<
+        Exclude<
+          Extract<Extract<C, N>, string>,
+          Extract<S | B, string>
+        >,
+        Array<unknown> | false
+      >
     >
-    // Unknown collectable & negatable args.
-    & Record<
-      Exclude<
-        Extract<Extract<C, N>, string>,
-        Extract<S | B, string>
-      >,
-      Array<unknown> | false
-    >
-  >;
+>;
 
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<T> = Record<string, unknown> extends T ? T

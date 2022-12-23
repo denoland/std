@@ -5,7 +5,6 @@ import http, { type RequestOptions } from "./http.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
-import { deadline } from "../async/deadline.ts";
 import { gzip } from "./zlib.ts";
 import { Buffer } from "./buffer.ts";
 import { serve } from "../http/server.ts";
@@ -199,34 +198,6 @@ Deno.test("[node/http] non-string buffer response", async () => {
     try {
       const text = await res.text();
       assertEquals(text, "a".repeat(100));
-    } catch (e) {
-      server.emit("error", e);
-    } finally {
-      server.close();
-    }
-  });
-  server.on("close", () => {
-    promise.resolve();
-  });
-  await promise;
-});
-
-Deno.test("[node/http] server response - first chunk is not buffered", async () => {
-  const promise = deferred<void>();
-  const server = http.createServer((_, res) => {
-    res.write("A");
-  });
-  server.listen(async () => {
-    try {
-      const res = await deadline(
-        fetch(`http://localhost:${server.address().port}`),
-        500,
-      );
-      const reader = res.body?.getReader();
-      const dataA = await deadline(reader?.read()!, 500);
-      // Can read the first chunk even if the response not finished
-      assertEquals(new TextDecoder().decode(dataA!.value), "A");
-      reader?.cancel();
     } catch (e) {
       server.emit("error", e);
     } finally {

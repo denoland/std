@@ -33,6 +33,7 @@ import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
 import { writeAll } from "../../streams/write_all.ts";
+import type { Closer, Reader, Writer } from "../../types.d.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -83,7 +84,7 @@ export const kStreamBaseField = Symbol("kStreamBaseField");
 const SUGGESTED_SIZE = 64 * 1024;
 
 export class LibuvStreamWrap extends HandleWrap {
-  [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
+  [kStreamBaseField]?: Reader & Writer & Closer;
 
   reading!: boolean;
   #reading = false;
@@ -96,7 +97,7 @@ export class LibuvStreamWrap extends HandleWrap {
 
   constructor(
     provider: providerType,
-    stream?: Deno.Reader & Deno.Writer & Deno.Closer,
+    stream?: Reader & Writer & Closer,
   ) {
     super(provider);
     this.#attachToObject(stream);
@@ -253,7 +254,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * Attaches the class to the underlying stream.
    * @param stream The stream to attach to.
    */
-  #attachToObject(stream?: Deno.Reader & Deno.Writer & Deno.Closer) {
+  #attachToObject(stream?: Reader & Writer & Closer) {
     this[kStreamBaseField] = stream;
   }
 

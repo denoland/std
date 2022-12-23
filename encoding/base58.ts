@@ -129,7 +129,7 @@ export function decode(b58: string): Uint8Array {
     length = i;
   });
 
-  const validOutput = output.filter((item) => item ?? false);
+  const validOutput = output.filter((item) => item !== undefined);
 
   if (ones > 0) {
     const onesResult = Array.from({ length: ones }).fill(0, 0, ones);

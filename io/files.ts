@@ -5,7 +5,7 @@ import {
   readRangeSync as _readRangeSync,
 } from "./read_range.ts";
 
-/** @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead */
+/** @deprecated (will be removed after 0.172.0) Import from `std/io/read_range.ts` instead */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
   start: number;
@@ -15,7 +15,7 @@ export interface ByteRange {
 }
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/read_range.ts` instead
  *
  * Read a range of bytes from a file or other resource that is readable and
  * seekable.  The range start and end are inclusive of the bytes within that
@@ -34,7 +34,7 @@ export interface ByteRange {
 export const readRange = _readRange;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/read_range.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/read_range.ts` instead
  *
  * Read a range of bytes synchronously from a file or other resource that is
  * readable and seekable.  The range start and end are inclusive of the bytes

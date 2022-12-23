@@ -26,6 +26,7 @@
 
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
+import type { Closer, Reader, Writer } from "../../types.d.ts";
 
 export class ConnectionWrap extends LibuvStreamWrap {
   /** Optional connection callback. */
@@ -39,7 +40,7 @@ export class ConnectionWrap extends LibuvStreamWrap {
    */
   constructor(
     provider: providerType,
-    object?: Deno.Reader & Deno.Writer & Deno.Closer,
+    object?: Reader & Writer & Closer,
   ) {
     super(provider, object);
   }

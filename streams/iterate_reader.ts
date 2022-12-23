@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
+import type { Reader, ReaderSync } from "../types.d.ts";
 
 /** Turns a Reader, `r`, into an async iterator.
  *
@@ -31,7 +32,7 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
  * ```
  */
 export async function* iterateReader(
-  r: Deno.Reader,
+  r: Reader,
   options?: {
     bufSize?: number;
   },
@@ -82,7 +83,7 @@ export async function* iterateReader(
  * next iteration will overwrite contents of previously returned chunk.
  */
 export function* iterateReaderSync(
-  r: Deno.ReaderSync,
+  r: ReaderSync,
   options?: {
     bufSize?: number;
   },

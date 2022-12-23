@@ -6,7 +6,7 @@ import { DelimiterStream as _DelimiterStream } from "./delimiter_stream.ts";
 import { TextDelimiterStream as _TextDelimiterStream } from "./text_delimiter_stream.ts";
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/text_line_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/text_line_stream.ts` instead.
  *
  * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
@@ -22,7 +22,7 @@ import { TextDelimiterStream as _TextDelimiterStream } from "./text_delimiter_st
 export const TextLineStream = _TextLineStream;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/delimiter_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/delimiter_stream.ts` instead.
  *
  * Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
@@ -37,7 +37,7 @@ export const TextLineStream = _TextLineStream;
 export const DelimiterStream = _DelimiterStream;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/delimiter_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/delimiter_stream.ts` instead.
  *
  * Transform a stream into a stream where each chunk is divided by a given delimiter.
  *

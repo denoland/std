@@ -170,7 +170,7 @@ export class Buffer {
 }
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
  *
  * A TransformStream that will only read & enqueue `size` amount of bytes.
  * This operation is chunk based and not BYOB based,
@@ -189,7 +189,7 @@ export class Buffer {
 export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_transform_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_transform_stream.ts` instead.
  *
  * A TransformStream that will only read & enqueue `size` amount of chunks.
  *
@@ -205,7 +205,7 @@ export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
 export const LimitedTransformStream = _LimitedTransformStream;
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/byte_slice_stream.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/streams/byte_slice_stream.ts` instead.
  *
  * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
  *

@@ -9,7 +9,7 @@ import { MultiReader as _MultiReader } from "./multi_reader.ts";
 import { LimitedReader as _LimitedReader } from "./limited_reader.ts";
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/string_reader.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/string_reader.ts` instead
  *
  * Reader utility for strings.
  *
@@ -42,14 +42,14 @@ import { LimitedReader as _LimitedReader } from "./limited_reader.ts";
 export const StringReader = _StringReader;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/multi_reader.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/multi_reader.ts` instead
  *
  * Reader utility for combining multiple readers
  */
 export const MultiReader = _MultiReader;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/limited_reader.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/limited_reader.ts` instead
  *
  * A `LimitedReader` reads from `reader` but limits the amount of data returned to just `limit` bytes.
  * Each call to `read` updates `limit` to reflect the new amount remaining.

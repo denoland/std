@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader, ReaderSync } from "./types.d.ts";
+import type { Reader, ReaderSync } from "../types.d.ts";
 import {
   BufferFullError as _BufferFullError,
   BufReader as _BufReader,
@@ -258,14 +258,14 @@ export class Buffer {
   }
 }
 
-/** @deprecated (will be removed after 0.170.0) Import from `std/io/buf_reader.ts` instead */
+/** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
 export const BufferFullError = _BufferFullError;
 
-/** @deprecated (will be removed after 0.170.0) Import from `std/io/buf_reader.ts` instead */
+/** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
 export const PartialReadError = _PartialReadError;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/buf_reader.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
  *
  * Result type returned by of BufReader.readLine().
  */
@@ -275,14 +275,14 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/buf_reader.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
  *
  * BufReader implements buffering for a Reader object.
  */
 export const BufReader = _BufReader;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/buf_writer.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
  *
  * BufWriter implements buffering for an deno.Writer object.
  * If an error occurs writing to a Writer, no more data will be
@@ -294,7 +294,7 @@ export const BufReader = _BufReader;
 export const BufWriter = _BufWriter;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/buf_writer.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
  *
  * BufWriterSync implements buffering for a deno.WriterSync object.
  * If an error occurs writing to a WriterSync, no more data will be
@@ -306,13 +306,13 @@ export const BufWriter = _BufWriter;
 export const BufWriterSync = _BufWriterSync;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/read_delim.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/read_delim.ts` instead
  *
  * Read delimited bytes from a Reader. */
 export const readDelim = _readDelim;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/read_string_delim.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/read_string_delim.ts` instead
  *
  * Read Reader chunk by chunk, splitting based on delimiter.
  *
@@ -332,7 +332,7 @@ export const readDelim = _readDelim;
 export const readStringDelim = _readStringDelim;
 
 /**
- * @deprecated (will be removed after 0.170.0) Import from `std/io/read_lines.ts` instead
+ * @deprecated (will be removed after 0.172.0) Import from `std/io/read_lines.ts` instead
  *
  * Read strings line-by-line from a Reader.
  *

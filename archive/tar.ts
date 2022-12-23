@@ -7,16 +7,14 @@ import {
 } from "./untar.ts";
 import {
   FileTypes,
-  type Reader,
   type TarInfo,
   type TarMeta,
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
+import type { Reader } from "../types.d.ts";
 
 export { type TarInfo, type TarMeta, type TarOptions };
-
-export type Seeker = Deno.Seeker;
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -87,7 +85,7 @@ function clean(length: number): Uint8Array {
 
 function pad(num: number, bytes: number, base = 8): string {
   const numString = num.toString(base);
-  return "000000000000".substr(numString.length + 12 - bytes) + numString;
+  return "000000000000".slice(numString.length + 12 - bytes) + numString;
 }
 
 /**
@@ -105,7 +103,7 @@ function formatHeader(data: TarData): Uint8Array {
   return buffer;
 }
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
 // deno-lint-ignore no-empty-interface
 export interface TarHeader extends _TarHeader {}
 
@@ -188,8 +186,8 @@ export class Tar {
       while (i >= 0) {
         i = fileName.lastIndexOf("/", i);
         if (i <= 155) {
-          fileNamePrefix = fileName.substr(0, i);
-          fileName = fileName.substr(i + 1);
+          fileNamePrefix = fileName.slice(0, i);
+          fileName = fileName.slice(i + 1);
           break;
         }
         i--;
@@ -310,7 +308,7 @@ export class Tar {
 }
 
 /**
- * @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead.
+ * @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead.
  *
  * A class to extract a tar archive
  *
@@ -342,5 +340,5 @@ export class Tar {
  */
 export const Untar = _Untar;
 
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
+/** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
 export const TarEntry = _TarEntry;

@@ -4,12 +4,13 @@ import { assertEquals } from "../testing/asserts.ts";
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
+import type { Reader, ReaderSync } from "../types.d.ts";
 
 Deno.test("iterateReader", async () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
-  class TestReader implements Deno.Reader {
+  class TestReader implements Reader {
     #offset = 0;
     #buf: Uint8Array;
 
@@ -55,7 +56,7 @@ Deno.test("iterateReaderSync", () => {
   // ref: https://github.com/denoland/deno/issues/2330
   const encoder = new TextEncoder();
 
-  class TestReader implements Deno.ReaderSync {
+  class TestReader implements ReaderSync {
     #offset = 0;
     #buf: Uint8Array;
 

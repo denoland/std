@@ -79,6 +79,7 @@ function catj(...files: string[]): Deno.ChildProcess {
     ],
     cwd: moduleDir,
     stdin: "piped",
+    stdout: "piped",
     env: { NO_COLOR: "true" },
   });
   return process.spawn();

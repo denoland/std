@@ -50,6 +50,7 @@ Deno.test({
       ],
       cwd: moduleDir,
       stdin: "piped",
+      stdout: "piped",
     });
     const child = p.spawn();
     const writer = child.stdin.getWriter();

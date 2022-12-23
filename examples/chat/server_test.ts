@@ -14,6 +14,7 @@ async function startServer(): Promise<Deno.ChildProcess> {
       "server.ts",
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
     stdin: "null",
   });
