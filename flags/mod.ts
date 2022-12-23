@@ -34,13 +34,15 @@
 import { assert } from "../_util/asserts.ts";
 
 /** Combines recursively all intersection types and returns a new single type. */
-type Id<T> = T extends Record<string, unknown>
-  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
-  : T;
+type Id<TValue> = TValue extends Record<string, unknown>
+  ? TValue extends infer InferedValue
+    ? { [Key in keyof InferedValue]: Id<InferedValue[Key]> }
+  : never
+  : TValue;
 
 /** Converts an union type `A | B | C` into an intersection type `A & B & C`. */
-type UnionToIntersection<T> =
-  (T extends unknown ? (args: T) => unknown : never) extends
+type UnionToIntersection<TValue> =
+  (TValue extends unknown ? (args: TValue) => unknown : never) extends
     (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
     : never;
 
@@ -52,13 +54,13 @@ type Collectable = string | undefined;
 type Negatable = string | undefined;
 
 type UseTypes<
-  B extends BooleanType,
-  S extends StringType,
-  C extends Collectable,
+  TBooleans extends BooleanType,
+  TStrings extends StringType,
+  TCollectable extends Collectable,
 > = undefined extends (
-  & (false extends B ? undefined : B)
-  & C
-  & S
+  & (false extends TBooleans ? undefined : TBooleans)
+  & TCollectable
+  & TStrings
 ) ? false
   : true;
 
@@ -67,41 +69,50 @@ type UseTypes<
  * default type.
  */
 type Values<
-  B extends BooleanType,
-  S extends StringType,
-  C extends Collectable,
-  N extends Negatable,
-  D extends Record<string, unknown> | undefined,
-  A extends Aliases | undefined,
-> = UseTypes<B, S, C> extends true ? 
+  TBooleans extends BooleanType,
+  TStrings extends StringType,
+  TCollactable extends Collectable,
+  TNegatable extends Negatable,
+  TDefault extends Record<string, unknown> | undefined,
+  TAliases extends Aliases | undefined,
+> = UseTypes<TBooleans, TStrings, TCollactable> extends true ? 
     & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
-        & CollectValues<S, string, C, N>
-        & RecursiveRequired<CollectValues<B, boolean, C>>
-        & CollectUnknownValues<B, S, C, N>,
-        DedotRecord<D>
+        & CollectValues<TStrings, string, TCollactable, TNegatable>
+        & RecursiveRequired<CollectValues<TBooleans, boolean, TCollactable>>
+        & CollectUnknownValues<
+          TBooleans,
+          TStrings,
+          TCollactable,
+          TNegatable
       >,
-      A
+        DedotRecord<TDefault>
+      >,
+      TAliases
     >
   // deno-lint-ignore no-explicit-any
   : Record<string, any>;
 
-type Aliases<T = string, V extends string = string> = Partial<
-  Record<Extract<T, string>, V | ReadonlyArray<V>>
+type Aliases<TArgNames = string, TAliasNames extends string = string> = Partial<
+  Record<Extract<TArgNames, string>, TAliasNames | ReadonlyArray<TAliasNames>>
 >;
 
 type AddAliases<
-  T,
-  A extends Aliases | undefined,
-> = { [K in keyof T as AliasName<K, A>]: T[K] };
+  TArgs,
+  TAliases extends Aliases | undefined,
+> = {
+  [TArgName in keyof TArgs as AliasNames<TArgName, TAliases>]: TArgs[TArgName];
+};
 
-type AliasName<
-  K,
-  A extends Aliases | undefined,
-> = K extends keyof A
-  ? string extends A[K] ? K : A[K] extends string ? K | A[K] : K
-  : K;
+type AliasNames<
+  TArgName,
+  TAliases extends Aliases | undefined,
+> = TArgName extends keyof TAliases
+  ? string extends TAliases[TArgName] ? TArgName
+  : TAliases[TArgName] extends string ? TArgName | TAliases[TArgName]
+  : TArgName
+  : TArgName;
 
 /**
  * Spreads all default values of Record `D` into Record `A`
@@ -112,14 +123,15 @@ type AliasName<
  *
  * **Result:** `{ foo: boolan | number, bar?: number }`
  */
-type SpreadDefaults<A, D> = D extends undefined ? A
-  : A extends Record<string, unknown> ? 
-      & Omit<A, keyof D>
+type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
+  : TArgs extends Record<string, unknown> ? 
+      & Omit<TArgs, keyof TDefaults>
       & {
-        [K in keyof D]: K extends keyof A
-          ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
-            ? NonNullable<SpreadDefaults<A[K], D[K]>>
-          : D[K] | NonNullable<A[K]>
+        [Default in keyof TDefaults]: Default extends keyof TArgs
+          ? (TArgs[Default] & TDefaults[Default] | TDefaults[Default]) extends
+            Record<string, unknown>
+            ? NonNullable<SpreadDefaults<TArgs[Default], TDefaults[Default]>>
+          : TDefaults[Default] | NonNullable<TArgs[Default]>
           : unknown;
       }
   : never;
@@ -128,109 +140,117 @@ type SpreadDefaults<A, D> = D extends undefined ? A
  * Defines the Record for the `default` option to add
  * auto suggestion support for IDE's.
  */
-type Defaults<B extends BooleanType, S extends StringType> = Id<
+type Defaults<TBooleans extends BooleanType, TStrings extends StringType> = Id<
   UnionToIntersection<
     & Record<string, unknown>
     // Dedotted auto suggestions: { foo: { bar: unknown } }
-    & MapTypes<S, unknown>
-    & MapTypes<B, unknown>
+    & MapTypes<TStrings, unknown>
+    & MapTypes<TBooleans, unknown>
     // Flat auto suggestions: { "foo.bar": unknown }
-    & MapDefaults<B>
-    & MapDefaults<S>
+    & MapDefaults<TBooleans>
+    & MapDefaults<TStrings>
   >
 >;
 
-type MapDefaults<T extends ArgType> = Partial<
-  Record<T extends string ? T : string, unknown>
+type MapDefaults<TArgNames extends ArgType> = Partial<
+  Record<TArgNames extends string ? TArgNames : string, unknown>
 >;
 
-type RecursiveRequired<T> = T extends Record<string, unknown> ? {
-    [K in keyof T]-?: RecursiveRequired<T[K]>;
+type RecursiveRequired<TRecord> = TRecord extends Record<string, unknown> ? {
+    [Key in keyof TRecord]-?: RecursiveRequired<TRecord[Key]>;
   }
-  : T;
+  : TRecord;
 
 /** Same as `MapTypes` but also supports collectable options. */
 type CollectValues<
-  T extends ArgType,
-  V,
-  C extends Collectable,
-  N extends Negatable = undefined,
+  TArgNames extends ArgType,
+  TType,
+  TCollectable extends Collectable,
+  TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  C extends string ? 
-      & MapTypes<Exclude<T, C>, V, N>
-      & (T extends undefined ? Record<never, never> : RecursiveRequired<
-        MapTypes<Extract<C, T>, Array<V>, N>
+  TCollectable extends string ? 
+      & MapTypes<Exclude<TArgNames, TCollectable>, TType, TNegatable>
+      & (TArgNames extends undefined ? Record<never, never> : RecursiveRequired<
+        MapTypes<Extract<TCollectable, TArgNames>, Array<TType>, TNegatable>
       >)
-    : MapTypes<T, V, N>
+    : MapTypes<TArgNames, TType, TNegatable>
 >;
 
 /** Same as `Record` but also supports dotted and negatable options. */
-type MapTypes<T extends ArgType, V, N extends Negatable = undefined> =
-  undefined extends T ? Record<never, never>
-    : T extends `${infer Name}.${infer Rest}` ? {
-        [K in Name]?: MapTypes<
+type MapTypes<
+  TArgNames extends ArgType,
+  TType,
+  TNegatable extends Negatable = undefined,
+> = undefined extends TArgNames ? Record<never, never>
+  : TArgNames extends `${infer Name}.${infer Rest}` ? {
+      [Key in Name]?: MapTypes<
           Rest,
-          V,
-          N extends `${Name}.${infer Negate}` ? Negate : undefined
+        TType,
+        TNegatable extends `${Name}.${infer Negate}` ? Negate : undefined
         >;
       }
-    : T extends string ? Partial<Record<T, N extends T ? V | false : V>>
+  : TArgNames extends string ? Partial<
+      Record<TArgNames, TNegatable extends TArgNames ? TType | false : TType>
+    >
     : Record<never, never>;
 
 type CollectUnknownValues<
-  B extends BooleanType,
-  S extends StringType,
-  C extends Collectable,
-  N extends Negatable,
-> = B & S extends C ? Record<never, never>
+  TBooleans extends BooleanType,
+  TStrings extends StringType,
+  TCollectable extends Collectable,
+  TNegatable extends Negatable,
+> = TBooleans & TStrings extends TCollectable ? Record<never, never>
   : DedotRecord<
     // Unknown collectable & non-negatable args.
     & Record<
       Exclude<
-        Extract<Exclude<C, N>, string>,
-        Extract<S | B, string>
+        Extract<Exclude<TCollectable, TNegatable>, string>,
+        Extract<TStrings | TBooleans, string>
       >,
       Array<unknown>
     >
     // Unknown collectable & negatable args.
     & Record<
       Exclude<
-        Extract<Extract<C, N>, string>,
-        Extract<S | B, string>
+        Extract<Extract<TCollectable, TNegatable>, string>,
+        Extract<TStrings | TBooleans, string>
       >,
       Array<unknown> | false
     >
   >;
 
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
-type DedotRecord<T> = Record<string, unknown> extends T ? T
-  : T extends Record<string, unknown> ? UnionToIntersection<
+type DedotRecord<TRecord> = Record<string, unknown> extends TRecord ? TRecord
+  : TRecord extends Record<string, unknown> ? UnionToIntersection<
       ValueOf<
-        { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+        {
+          [Key in keyof TRecord]: Key extends string ? Dedot<Key, TRecord[Key]>
+            : never;
+        }
       >
     >
-  : T;
+  : TRecord;
 
-type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`
-  ? { [K in Name]: Dedot<Rest, V> }
-  : { [K in T]: V };
+type Dedot<TKey extends string, TValue> = TKey extends
+  `${infer Name}.${infer Rest}` ? { [Key in Name]: Dedot<Rest, TValue> }
+  : { [Key in TKey]: TValue };
 
-type ValueOf<T> = T[keyof T];
+type ValueOf<TValue> = TValue[keyof TValue];
 
 /** The value returned from `parse`. */
 export type Args<
   // deno-lint-ignore no-explicit-any
-  A extends Record<string, unknown> = Record<string, any>,
-  DD extends boolean | undefined = undefined,
+  TArgs extends Record<string, unknown> = Record<string, any>,
+  TDoubleDash extends boolean | undefined = undefined,
 > = Id<
-  & A
+  & TArgs
   & {
     /** Contains all the arguments that didn't have an option associated with
      * them. */
     _: Array<string | number>;
   }
-  & (boolean extends DD ? DoubleDash
-    : true extends DD ? Required<DoubleDash>
+  & (boolean extends TDoubleDash ? DoubleDash
+    : true extends TDoubleDash ? Required<DoubleDash>
     : Record<never, never>)
 >;
 
@@ -241,17 +261,17 @@ type DoubleDash = {
 
 /** The options for the `parse` call. */
 export interface ParseOptions<
-  B extends BooleanType = BooleanType,
-  S extends StringType = StringType,
-  C extends Collectable = Collectable,
-  N extends Negatable = Negatable,
-  D extends Record<string, unknown> | undefined =
+  TBooleans extends BooleanType = BooleanType,
+  TStrings extends StringType = StringType,
+  TCollactable extends Collectable = Collectable,
+  TNegatable extends Negatable = Negatable,
+  TDefault extends Record<string, unknown> | undefined =
     | Record<string, unknown>
     | undefined,
-  A extends Aliases<string, string> | undefined =
+  TAliases extends Aliases<string, string> | undefined =
     | Aliases<string, string>
     | undefined,
-  DD extends boolean | undefined = boolean | undefined,
+  TDoubleDash extends boolean | undefined = boolean | undefined,
 > {
   /**
    * When `true`, populate the result `_` with everything before the `--` and
@@ -269,13 +289,13 @@ export interface ParseOptions<
    * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
    */
-  "--"?: DD;
+  "--"?: TDoubleDash;
 
   /**
    * An object mapping string names to strings or arrays of string argument
    * names to use as aliases.
    */
-  alias?: A;
+  alias?: TAliases;
 
   /**
    * A boolean, string or array of strings to always treat as booleans. If
@@ -283,10 +303,10 @@ export interface ParseOptions<
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`).
    *  All `boolean` arguments will be set to `false` by default.
    */
-  boolean?: B | ReadonlyArray<Extract<B, string>>;
+  boolean?: TBooleans | ReadonlyArray<Extract<TBooleans, string>>;
 
   /** An object mapping string argument names to default values. */
-  default?: D & Defaults<B, S>;
+  default?: TDefault & Defaults<TBooleans, TStrings>;
 
   /**
    * When `true`, populate the result `_` with everything after the first
@@ -295,7 +315,7 @@ export interface ParseOptions<
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
-  string?: S | ReadonlyArray<Extract<S, string>>;
+  string?: TStrings | ReadonlyArray<Extract<TStrings, string>>;
 
   /**
    * A string or array of strings argument names to always treat as arrays.
@@ -304,13 +324,13 @@ export interface ParseOptions<
    * times, the last value is used.
    * All Collectable arguments will be set to `[]` by default.
    */
-  collect?: C | ReadonlyArray<Extract<C, string>>;
+  collect?: TCollactable | ReadonlyArray<Extract<TCollactable, string>>;
 
   /**
    * A string or array of strings argument names which can be negated
    * by prefixing them with `--no-`, like `--no-config`.
    */
-  negatable?: N | ReadonlyArray<Extract<N, string>>;
+  negatable?: TNegatable | ReadonlyArray<Extract<TNegatable, string>>;
 
   /**
    * A function which is invoked with a command line parameter not defined in
@@ -335,13 +355,16 @@ interface NestedMapping {
 
 const { hasOwn } = Object;
 
-function get<T>(obj: Record<string, T>, key: string): T | undefined {
+function get<TValue>(
+  obj: Record<string, TValue>,
+  key: string,
+): TValue | undefined {
   if (hasOwn(obj, key)) {
     return obj[key];
   }
 }
 
-function getForce<T>(obj: Record<string, T>, key: string): T {
+function getForce<TValue>(obj: Record<string, TValue>, key: string): TValue {
   const v = get(obj, key);
   assert(v != null);
   return v;
@@ -398,30 +421,45 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * ```
  */
 export function parse<
-  V extends Values<B, S, C, N, D, A>,
-  DD extends boolean | undefined = undefined,
-  B extends BooleanType = undefined,
-  S extends StringType = undefined,
-  C extends Collectable = undefined,
-  N extends Negatable = undefined,
-  D extends Record<string, unknown> | undefined = undefined,
-  A extends Aliases<AK, AV> | undefined = undefined,
-  AK extends string = string,
-  AV extends string = string,
+  TArgs extends Values<
+    TBooleans,
+    TStrings,
+    TCollactable,
+    TNegatable,
+    TDefaults,
+    TAliases
+  >,
+  TDoubleDash extends boolean | undefined = undefined,
+  TBooleans extends BooleanType = undefined,
+  TStrings extends StringType = undefined,
+  TCollactable extends Collectable = undefined,
+  TNegatable extends Negatable = undefined,
+  TDefaults extends Record<string, unknown> | undefined = undefined,
+  TAliases extends Aliases<TAliasArgNames, TAliasNames> | undefined = undefined,
+  TAliasArgNames extends string = string,
+  TAliasNames extends string = string,
 >(
   args: string[],
   {
     "--": doubleDash = false,
-    alias = {} as NonNullable<A>,
+    alias = {} as NonNullable<TAliases>,
     boolean = false,
-    default: defaults = {} as D & Defaults<B, S>,
+    default: defaults = {} as TDefaults & Defaults<TBooleans, TStrings>,
     stopEarly = false,
     string = [],
     collect = [],
     negatable = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, C, N, D, A, DD> = {},
-): Args<V, DD> {
+  }: ParseOptions<
+    TBooleans,
+    TStrings,
+    TCollactable,
+    TNegatable,
+    TDefaults,
+    TAliases,
+    TDoubleDash
+  > = {},
+): Args<TArgs, TDoubleDash> {
   const aliases: Record<string, string[]> = {};
   const flags: Flags = {
     bools: {},
@@ -739,5 +777,5 @@ export function parse<
     }
   }
 
-  return argv as Args<V, DD>;
+  return argv as Args<TArgs, TDoubleDash>;
 }
