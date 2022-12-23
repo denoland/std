@@ -1,6 +1,9 @@
 # Remaining Node Tests
 
-Total: 2825
+NOTE: This file should not be manually edited. Please edit `config.json` and run
+`deno task node:setup` instead.
+
+Total: 2822
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -1717,7 +1720,6 @@ Total: 2825
 - [parallel/test-process-env.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-env.js)
 - [parallel/test-process-euid-egid.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-euid-egid.js)
 - [parallel/test-process-exception-capture-errors.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-exception-capture-errors.js)
-- [parallel/test-process-exception-capture-should-abort-on-uncaught-setflagsfromstring.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-exception-capture-should-abort-on-uncaught-setflagsfromstring.js)
 - [parallel/test-process-exception-capture-should-abort-on-uncaught.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-exception-capture-should-abort-on-uncaught.js)
 - [parallel/test-process-exception-capture.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-exception-capture.js)
 - [parallel/test-process-exec-argv.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-process-exec-argv.js)

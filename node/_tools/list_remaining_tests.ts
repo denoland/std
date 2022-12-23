@@ -70,6 +70,11 @@ export async function updateToDo() {
 
   await file.write(encoder.encode("# Remaining Node Tests\n\n"));
   await file.write(
+    encoder.encode(
+      "NOTE: This file should not be manually edited. Please edit `config.json` and run `deno task node:setup` instead.\n\n",
+    ),
+  );
+  await file.write(
     encoder.encode(`Total: ${missingTests.length}\n\n`),
   );
 
