@@ -34,11 +34,11 @@
 import { assert } from "../_util/asserts.ts";
 
 /** Combines recursively all intersection types and returns a new single type. */
-type Id<TValue> = TValue extends Record<string, unknown>
-  ? TValue extends infer InferedValue
-    ? { [Key in keyof InferedValue]: Id<InferedValue[Key]> }
+type Id<TRecord> = TRecord extends Record<string, unknown>
+  ? TRecord extends infer InferredRecord
+    ? { [Key in keyof InferredRecord]: Id<InferredRecord[Key]> }
   : never
-  : TValue;
+  : TRecord;
 
 /** Converts an union type `A | B | C` into an intersection type `A & B & C`. */
 type UnionToIntersection<TValue> =
