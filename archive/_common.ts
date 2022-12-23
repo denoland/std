@@ -1,9 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { PartialReadError } from "../io/buffer.ts";
-
-export type Reader = Deno.Reader;
-export type Seeker = Deno.Seeker;
+import type { Reader } from "../types.d.ts";
 
 export interface TarInfo {
   fileMode?: number;
@@ -140,7 +138,7 @@ export const ustarStructure: Array<{ field: string; length: number }> = [
 ];
 
 export async function readBlock(
-  reader: Deno.Reader,
+  reader: Reader,
   p: Uint8Array,
 ): Promise<number | null> {
   let bytesRead = 0;

@@ -7,16 +7,14 @@ import {
 } from "./untar.ts";
 import {
   FileTypes,
-  type Reader,
   type TarInfo,
   type TarMeta,
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
+import type { Reader } from "../types.d.ts";
 
 export { type TarInfo, type TarMeta, type TarOptions };
-
-export type Seeker = Deno.Seeker;
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
