@@ -196,7 +196,7 @@ export interface ReadableStreamFromReaderOptions {
 /**
  * @deprecated (will be removed after 0.171.0) Import from `std/streams/readable_stream_from_reader.ts` instead.
  *
- * Create a `ReadableStream<Uint8Array>` from from a `Deno.Reader`.
+ * Create a `ReadableStream<Uint8Array>` from a `Deno.Reader`.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader
  * will be read.  When `null` is returned from the reader, the stream will be
