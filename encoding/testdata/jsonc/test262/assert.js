@@ -73,6 +73,7 @@ assert.throws = function (expectedErrorConstructor, func, message) {
   if (typeof func !== "function") {
     throw new Test262Error('assert.throws requires two arguments: the error constructor ' +
       'and a function to run');
+    return;
   }
   if (message === undefined) {
     message = '';
