@@ -123,7 +123,7 @@ type AliasNames<
  * **Example:**
  * `SpreadValues<{ foo?: boolean, bar?: number }, { foo: number }>`
  *
- * **Result:** `{ foo: boolan | number, bar?: number }`
+ * **Result:** `{ foo: boolean | number, bar?: number }`
  */
 type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
   : TArgs extends Record<string, unknown> ? 
