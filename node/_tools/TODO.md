@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2822
+Total: 2818
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.0/test/abort/test-abort-fatal-error.js)
@@ -544,14 +544,10 @@ Total: 2822
 - [parallel/test-dgram-setBroadcast.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-dgram-setBroadcast.js)
 - [parallel/test-dgram-setTTL.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-dgram-setTTL.js)
 - [parallel/test-dgram-unref.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-dgram-unref.js)
-- [parallel/test-diagnostics-channel-has-subscribers.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-has-subscribers.js)
 - [parallel/test-diagnostics-channel-http-server-start.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-http-server-start.js)
 - [parallel/test-diagnostics-channel-http.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-http.js)
 - [parallel/test-diagnostics-channel-net.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-net.js)
-- [parallel/test-diagnostics-channel-object-channel-pub-sub.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-object-channel-pub-sub.js)
-- [parallel/test-diagnostics-channel-pub-sub.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-pub-sub.js)
 - [parallel/test-diagnostics-channel-safe-subscriber-errors.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-safe-subscriber-errors.js)
-- [parallel/test-diagnostics-channel-symbol-named.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-symbol-named.js)
 - [parallel/test-diagnostics-channel-udp.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-diagnostics-channel-udp.js)
 - [parallel/test-directory-import.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-directory-import.js)
 - [parallel/test-disable-proto-delete.js](https://github.com/nodejs/node/tree/v18.12.0/test/parallel/test-disable-proto-delete.js)
