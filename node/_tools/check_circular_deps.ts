@@ -2,7 +2,7 @@
 import {
   createGraph,
   ModuleGraph,
-} from "https://deno.land/x/deno_graph@0.37.1/mod.ts";
+} from "https://deno.land/x/deno_graph@0.40.0/mod.ts";
 
 const root = `${new URL("../module_all.ts", import.meta.url)}`;
 const seen = new Set<string>();

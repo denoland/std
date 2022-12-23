@@ -1,11 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import type { Reader } from "../types.d.ts";
+
 /** Reader utility for combining multiple readers */
-export class MultiReader implements Deno.Reader {
-  readonly #readers: Deno.Reader[];
+export class MultiReader implements Reader {
+  readonly #readers: Reader[];
   #currentIndex = 0;
 
-  constructor(readers: Deno.Reader[]) {
+  constructor(readers: Reader[]) {
     this.#readers = [...readers];
   }
 

@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader, ReaderSync } from "./types.d.ts";
+import type { Reader, ReaderSync } from "../types.d.ts";
 import {
   BufferFullError as _BufferFullError,
   BufReader as _BufReader,

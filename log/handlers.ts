@@ -4,6 +4,7 @@ import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
 import { exists, existsSync } from "../fs/exists.ts";
 import { BufWriterSync } from "../io/buf_writer.ts";
+import type { Writer } from "../types.d.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
@@ -88,7 +89,7 @@ export class ConsoleHandler extends BaseHandler {
 }
 
 export abstract class WriterHandler extends BaseHandler {
-  protected _writer!: Deno.Writer;
+  protected _writer!: Writer;
   #encoder = new TextEncoder();
 
   abstract override log(msg: string): void;

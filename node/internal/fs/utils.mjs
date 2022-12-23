@@ -18,7 +18,8 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { deprecate, once } from "../util.mjs";
+import { once } from "../util.mjs";
+import { deprecate } from "../../util.ts";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,

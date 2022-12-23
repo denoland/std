@@ -249,3 +249,11 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "[util] deprecate() works",
+  fn() {
+    const fn = util.deprecate(() => {}, "foo");
+    fn();
+  },
+});

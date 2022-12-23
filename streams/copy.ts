@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
+import type { Reader, Writer } from "../types.d.ts";
 
 /** Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
  * an error occurs. It resolves to the number of bytes copied or rejects with
@@ -20,8 +21,8 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
  * @param options Can be used to tune size of the buffer. Default size is 32kB
  */
 export async function copy(
-  src: Deno.Reader,
-  dst: Deno.Writer,
+  src: Reader,
+  dst: Writer,
   options?: {
     bufSize?: number;
   },

@@ -102,15 +102,17 @@ type AddAliases<
   TArgs,
   TAliases extends Aliases | undefined,
 > = {
-  [TArgName in keyof TArgs as AliasNames<TArgName, TAliases>]: TArgs[TArgName];
+  [TArgName in keyof TArgs as AliasName<TArgName, TAliases>]: TArgs[TArgName];
 };
 
-type AliasNames<
+type AliasName<
   TArgName,
   TAliases extends Aliases | undefined,
 > = TArgName extends keyof TAliases
   ? string extends TAliases[TArgName] ? TArgName
   : TAliases[TArgName] extends string ? TArgName | TAliases[TArgName]
+  : TAliases[TArgName] extends Array<string>
+    ? TArgName | TAliases[TArgName][number]
   : TArgName
   : TArgName;
 
@@ -168,11 +170,13 @@ type CollectValues<
   TCollectable extends Collectable,
   TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  TCollectable extends string ? 
-      & MapTypes<Exclude<TArgNames, TCollectable>, TType, TNegatable>
-      & (TArgNames extends undefined ? Record<never, never> : RecursiveRequired<
-        MapTypes<Extract<TCollectable, TArgNames>, Array<TType>, TNegatable>
-      >)
+  Extract<TArgNames, TCollectable> extends string ? 
+      & (Exclude<TArgNames, TCollectable> extends never ? Record<never, never>
+        : MapTypes<Exclude<TArgNames, TCollectable>, TType, TNegatable>)
+      & (Extract<TArgNames, TCollectable> extends never ? Record<never, never>
+        : RecursiveRequired<
+          MapTypes<Extract<TArgNames, TCollectable>, Array<TType>, TNegatable>
+        >)
     : MapTypes<TArgNames, TType, TNegatable>
 >;
 
@@ -199,25 +203,27 @@ type CollectUnknownValues<
   TStrings extends StringType,
   TCollectable extends Collectable,
   TNegatable extends Negatable,
-> = TBooleans & TStrings extends TCollectable ? Record<never, never>
-  : DedotRecord<
-    // Unknown collectable & non-negatable args.
-    & Record<
-      Exclude<
-        Extract<Exclude<TCollectable, TNegatable>, string>,
-        Extract<TStrings | TBooleans, string>
-      >,
-      Array<unknown>
+> = UnionToIntersection<
+  TCollectable extends TBooleans & TStrings ? Record<never, never>
+    : DedotRecord<
+      // Unknown collectable & non-negatable args.
+      & Record<
+        Exclude<
+          Extract<Exclude<TCollectable, TNegatable>, string>,
+          Extract<TStrings | TBooleans, string>
+        >,
+        Array<unknown>
+      >
+      // Unknown collectable & negatable args.
+      & Record<
+        Exclude<
+          Extract<Extract<TCollectable, TNegatable>, string>,
+          Extract<TStrings | TBooleans, string>
+        >,
+        Array<unknown> | false
+      >
     >
-    // Unknown collectable & negatable args.
-    & Record<
-      Exclude<
-        Extract<Extract<TCollectable, TNegatable>, string>,
-        Extract<TStrings | TBooleans, string>
-      >,
-      Array<unknown> | false
-    >
-  >;
+>;
 
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<TRecord> = Record<string, unknown> extends TRecord ? TRecord
