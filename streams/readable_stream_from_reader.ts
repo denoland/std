@@ -26,7 +26,7 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
- * Create a `ReadableStream<Uint8Array>` from from a `Reader`.
+ * Create a `ReadableStream<Uint8Array>` from a `Reader`.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader
  * will be read.  When `null` is returned from the reader, the stream will be
