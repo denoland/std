@@ -38,6 +38,7 @@ assert.sameValue = function (actual, expected, message) {
     }
   } catch (error) {
     throw new Test262Error(message + ' (_isSameValue operation threw) ' + error);
+    return;
   }
 
   if (message === undefined) {
