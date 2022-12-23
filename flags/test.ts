@@ -1573,6 +1573,76 @@ Deno.test("typesOfCollectArgsWithDefaults", function () {
   >(true);
 });
 
+Deno.test("typesOfCollectArgsWithSingleArgs", function () {
+  const argv = parse([], {
+    boolean: ["foo"],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<boolean>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithEmptyTypeArray", function () {
+  const argv = parse([], {
+    boolean: [],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithUnknownArgs", function () {
+  const argv = parse([], {
+    boolean: ["bar"],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bar: boolean;
+        foo: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithKnownAndUnknownArgs", function () {
+  const argv = parse([], {
+    boolean: ["foo"],
+    collect: ["foo", "bar"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<boolean>;
+        bar: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
 
 Deno.test("typesOfNegatableArgs", function () {
