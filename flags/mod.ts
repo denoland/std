@@ -86,7 +86,7 @@ type Values<
           TStrings,
           TCollactable,
           TNegatable
-      >,
+        >,
         DedotRecord<TDefault>
       >,
       TAliases
@@ -184,15 +184,15 @@ type MapTypes<
 > = undefined extends TArgNames ? Record<never, never>
   : TArgNames extends `${infer Name}.${infer Rest}` ? {
       [Key in Name]?: MapTypes<
-          Rest,
+        Rest,
         TType,
         TNegatable extends `${Name}.${infer Negate}` ? Negate : undefined
-        >;
-      }
+      >;
+    }
   : TArgNames extends string ? Partial<
       Record<TArgNames, TNegatable extends TArgNames ? TType | false : TType>
     >
-    : Record<never, never>;
+  : Record<never, never>;
 
 type CollectUnknownValues<
   TBooleans extends BooleanType,
