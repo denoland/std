@@ -431,11 +431,11 @@ export interface ServeDirOptions {
    * @default {"fnv1a"}
    */
   etagAlgorithm?: DigestAlgorithm;
-  /** The amount of time in seconds to cache results for. -1 will be interpeted as no-store.
+  /** Headers to add to each request
    *
-   * @default {3600}
+   * @default {[]}
    */
-  cache?: number;
+  headers?: string[];
 }
 
 /**
@@ -542,10 +542,12 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 
   if (!opts.quiet) serverLog(req, response!.status);
 
-  if (opts.cache === -1) {
-    response.headers.append("cache-control", "no-store");
-  } else {
-    response.headers.append("cache-control", `max-age=${opts.cache ?? 3600}`);
+  if (opts.headers) {
+    for (const header of opts.headers) {
+      const name = header.split(":")[0];
+      const value = header.split(":").slice(1).join(":");
+      response.headers.append(name, value);
+    }
   }
 
   return response!;
@@ -557,9 +559,10 @@ function normalizeURL(url: string): string {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key", "cache"],
+    string: ["port", "host", "cert", "key", "header"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
+    collect: ["header"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -570,20 +573,19 @@ function main() {
       port: "4507",
       cert: "",
       key: "",
-      cache: "3600",
     },
     alias: {
       p: "port",
       c: "cert",
-      C: "cache",
       k: "key",
       h: "help",
       v: "verbose",
       V: "version",
+      H: "header",
     },
   });
   const port = Number(serverArgs.port);
-  const cache = Number(serverArgs.cache);
+  const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -616,7 +618,7 @@ function main() {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
-      cache: cache,
+      headers,
     });
   };
 
@@ -645,18 +647,18 @@ USAGE:
   file_server [path] [options]
 
 OPTIONS:
-  -h, --help          Prints help information
-  -p, --port <PORT>   Set port
-  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-  --host     <HOST>   Hostname (default is 0.0.0.0)
-  -c, --cert <FILE>   TLS certificate file (enables TLS)
-  -k, --key  <FILE>   TLS key file (enables TLS)
-  -C, --cache <TIME>  Sets the cache-control header
-  --no-dir-listing    Disable directory listing
-  --no-dotfiles       Do not show dotfiles
-  --no-cors           Disable cross-origin resource sharing
-  -v, --verbose       Print request level logs
-  -V, --version       Print version information
+  -h, --help            Prints help information
+  -p, --port <PORT>     Set port
+  --cors                Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>     Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>     TLS certificate file (enables TLS)
+  -k, --key  <FILE>     TLS key file (enables TLS)
+  -H, --header <HEADER> Sets a header on every request
+  --no-dir-listing      Disable directory listing
+  --no-dotfiles         Do not show dotfiles
+  --no-cors             Disable cross-origin resource sharing
+  -v, --verbose         Print request level logs
+  -V, --version         Print version information
 
   All TLS options are required when one is provided.`);
 }
