@@ -318,8 +318,8 @@ export function diffstr(A: string, B: string) {
       ) {
         return {
           ...result,
-          type: t[i - 1].type
-        }
+          type: t[i - 1].type,
+        };
       }
       return result;
     });
