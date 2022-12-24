@@ -48,8 +48,6 @@ export async function move(
   }
 
   await Deno.rename(src, dest);
-
-  return;
 }
 
 /**

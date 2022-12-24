@@ -427,7 +427,6 @@ class Printf {
       err = true;
     }
     this.argNum = err ? this.argNum : positional - 1;
-    return;
   }
 
   /** Handle less than */

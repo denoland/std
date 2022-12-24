@@ -1712,8 +1712,6 @@ function readDocument(state: LoaderState) {
       state,
       "end of the stream or a document separator is expected",
     );
-  } else {
-    return;
   }
 }
 
