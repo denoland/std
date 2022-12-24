@@ -307,7 +307,7 @@ export function type(): string {
 
 /** Not yet implemented */
 export function uptime(): number {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Deno.uptime();
 }
 
 /** Not yet implemented */
