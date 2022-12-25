@@ -305,9 +305,9 @@ export function type(): string {
   }
 }
 
-/** Not yet implemented */
+/** Returns the Operating System uptime in number of seconds. */
 export function uptime(): number {
-  return Deno.uptime();
+  return Deno.osUptime();
 }
 
 /** Not yet implemented */
