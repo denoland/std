@@ -11,6 +11,14 @@ import {
   WalkEntry,
 } from "./_util.ts";
 
+export class WalkError extends Error {
+  constructor(err: unknown, path: string) {
+    super(`${err instanceof Error ? err.message : err} for path "${path}"` );
+    this.name = "RetryError";
+    this.cause = err;
+  }
+}
+
 function include(
   path: string,
   exts?: string[],
@@ -31,14 +39,7 @@ function include(
 
 function wrapErrorWithRootPath(err: unknown, root: string) {
   if (err instanceof Error && "root" in err) return err;
-  const e = new Error() as Error & { root: string };
-  e.root = root;
-  e.message = err instanceof Error
-    ? `${err.message} for path "${root}"`
-    : `[non-error thrown] for path "${root}"`;
-  e.stack = err instanceof Error ? err.stack : undefined;
-  e.cause = err instanceof Error ? err.cause : undefined;
-  return e;
+  return new WalkError(err, root);
 }
 
 export interface WalkOptions {
