@@ -13,7 +13,7 @@ import {
 
 export class WalkError extends Error {
   constructor(err: unknown, path: string) {
-    super(`${err instanceof Error ? err.message : err} for path "${path}"` );
+    super(`${err instanceof Error ? err.message : err} for path "${path}"`);
     this.name = "RetryError";
     this.cause = err;
   }
