@@ -3,11 +3,30 @@
 import { parse } from "../flags/mod.ts";
 
 export interface SupportsColorOptions {
-  streamIsTTY?: boolean;
+  /** Whether or not to use command line arguments to detect color support */
   sniffFlags?: boolean;
+
+  /** Override for the automatic detection of whether the stream is a TTY or not */
+  streamIsTTY?: boolean;
+
+  /** Override for the command line arguments*/
   args?: string[];
+
+  /** Override for what OS to detect color support of */
   os?: typeof Deno.build.os;
+
+  /** Override for what release your OS is*/
   osRelease?: string;
+}
+
+export interface ColorSupport {
+  level: number;
+  /** Basic color support (16 colors) */
+  hasBasic: boolean;
+  /** 256 color support */
+  has256: boolean;
+  /** Truecolor support (16 million colors) */
+  has16m: boolean;
 }
 
 function envForceColor() {
@@ -28,7 +47,7 @@ function envForceColor() {
   }
 }
 
-function translateLevel(level: number) {
+function translateLevel(level: number): ColorSupport {
   return {
     level,
     hasBasic: level >= 1,
@@ -203,6 +222,9 @@ function _supportsColor(
   return min;
 }
 
+/**
+ * Given a writer with an rid, determine the amount of color support it has.
+ */
 export function createSupportsColor(
   writer: {
     readonly rid: number;
