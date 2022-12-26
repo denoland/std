@@ -2,18 +2,6 @@
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
-import {
-  BufferFullError as _BufferFullError,
-  BufReader as _BufReader,
-  PartialReadError as _PartialReadError,
-} from "./buf_reader.ts";
-import {
-  BufWriter as _BufWriter,
-  BufWriterSync as _BufWriterSync,
-} from "./buf_writer.ts";
-import { readDelim as _readDelim } from "./read_delim.ts";
-import { readStringDelim as _readStringDelim } from "./read_string_delim.ts";
-import { readLines as _readLines } from "./read_lines.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
@@ -258,95 +246,98 @@ export class Buffer {
   }
 }
 
-/** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-export const BufferFullError = _BufferFullError;
+export {
+  /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
+  BufferFullError,
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
+   *
+   * BufReader implements buffering for a Reader object.
+   */
+  BufReader,
+  /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
+  PartialReadError,
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
+   *
+   * Result type returned by of BufReader.readLine().
+   */
+  type ReadLineResult,
+} from "./buf_reader.ts";
 
-/** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-export const PartialReadError = _PartialReadError;
+export {
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
+   *
+   * BufWriter implements buffering for an deno.Writer object.
+   * If an error occurs writing to a Writer, no more data will be
+   * accepted and all subsequent writes, and flush(), will return the error.
+   * After all data has been written, the client should call the
+   * flush() method to guarantee all data has been forwarded to
+   * the underlying deno.Writer.
+   */
+  BufWriter,
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
+   *
+   * BufWriterSync implements buffering for a deno.WriterSync object.
+   * If an error occurs writing to a WriterSync, no more data will be
+   * accepted and all subsequent writes, and flush(), will return the error.
+   * After all data has been written, the client should call the
+   * flush() method to guarantee all data has been forwarded to
+   * the underlying deno.WriterSync.
+   */
+  BufWriterSync,
+} from "./buf_writer.ts";
 
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
- *
- * Result type returned by of BufReader.readLine().
- */
-export interface ReadLineResult {
-  line: Uint8Array;
-  more: boolean;
-}
+export {
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_delim.ts` instead
+   *
+   * Read delimited bytes from a Reader. */
+  readDelim,
+} from "./read_delim.ts";
 
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
- *
- * BufReader implements buffering for a Reader object.
- */
-export const BufReader = _BufReader;
+export {
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_string_delim.ts` instead
+   *
+   * Read Reader chunk by chunk, splitting based on delimiter.
+   *
+   * @example
+   * ```ts
+   * import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+   * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+   *
+   * const filename = path.join(Deno.cwd(), "std/io/README.md");
+   * let fileReader = await Deno.open(filename);
+   *
+   * for await (let line of readStringDelim(fileReader, "\n")) {
+   *   console.log(line);
+   * }
+   * ```
+   */
+  readStringDelim,
+} from "./read_string_delim.ts";
 
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
- *
- * BufWriter implements buffering for an deno.Writer object.
- * If an error occurs writing to a Writer, no more data will be
- * accepted and all subsequent writes, and flush(), will return the error.
- * After all data has been written, the client should call the
- * flush() method to guarantee all data has been forwarded to
- * the underlying deno.Writer.
- */
-export const BufWriter = _BufWriter;
-
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
- *
- * BufWriterSync implements buffering for a deno.WriterSync object.
- * If an error occurs writing to a WriterSync, no more data will be
- * accepted and all subsequent writes, and flush(), will return the error.
- * After all data has been written, the client should call the
- * flush() method to guarantee all data has been forwarded to
- * the underlying deno.WriterSync.
- */
-export const BufWriterSync = _BufWriterSync;
-
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/read_delim.ts` instead
- *
- * Read delimited bytes from a Reader. */
-export const readDelim = _readDelim;
-
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/read_string_delim.ts` instead
- *
- * Read Reader chunk by chunk, splitting based on delimiter.
- *
- * @example
- * ```ts
- * import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
- * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
- *
- * const filename = path.join(Deno.cwd(), "std/io/README.md");
- * let fileReader = await Deno.open(filename);
- *
- * for await (let line of readStringDelim(fileReader, "\n")) {
- *   console.log(line);
- * }
- * ```
- */
-export const readStringDelim = _readStringDelim;
-
-/**
- * @deprecated (will be removed after 0.172.0) Import from `std/io/read_lines.ts` instead
- *
- * Read strings line-by-line from a Reader.
- *
- *  @example
- * ```ts
- * import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
- * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
- *
- * const filename = path.join(Deno.cwd(), "std/io/README.md");
- * let fileReader = await Deno.open(filename);
- *
- * for await (let line of readLines(fileReader)) {
- *   console.log(line);
- * }
- * ```
- */
-export const readLines = _readLines;
+export {
+  /**
+   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_lines.ts` instead
+   *
+   * Read strings line-by-line from a Reader.
+   *
+   *  @example
+   * ```ts
+   * import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+   * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+   *
+   * const filename = path.join(Deno.cwd(), "std/io/README.md");
+   * let fileReader = await Deno.open(filename);
+   *
+   * for await (let line of readLines(fileReader)) {
+   *   console.log(line);
+   * }
+   * ```
+   */
+  readLines,
+} from "./read_lines.ts";
