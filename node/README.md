@@ -18,7 +18,7 @@ Deno standard library as it's a compatibility module.
 - [x] constants _partly_
 - [x] crypto _partly_
 - [x] dgram _partly_
-- [ ] diagnostics_channel
+- [x] diagnostics_channel _partly_
 - [x] dns _partly_
 - [x] events
 - [x] fs _partly_
