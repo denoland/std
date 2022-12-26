@@ -100,7 +100,7 @@ export const platform = isWindows ? "win32" : Deno.build.os;
  * it pointed to Deno version, but that led to incompability
  * with some packages.
  */
-export const version = "v18.12.0";
+export const version = "v18.12.1";
 
 /**
  * https://nodejs.org/api/process.html#process_process_versions
@@ -111,7 +111,7 @@ export const version = "v18.12.0";
  * with some packages. Value of `v8` field is still taken from `Deno.version`.
  */
 export const versions = {
-  node: "18.12.0",
+  node: "18.12.1",
   uv: "1.43.0",
   zlib: "1.2.11",
   brotli: "1.0.9",
@@ -120,7 +120,7 @@ export const versions = {
   nghttp2: "1.47.0",
   napi: "8",
   llhttp: "6.0.10",
-  openssl: "3.0.5+quic",
+  openssl: "3.0.7+quic",
   cldr: "41.0",
   icu: "71.1",
   tz: "2022b",
