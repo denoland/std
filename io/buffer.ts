@@ -248,7 +248,7 @@ export class Buffer {
 
 export {
   /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-  type BufferFullError,
+  BufferFullError,
   /**
    * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
    *
@@ -256,7 +256,7 @@ export {
    */
   BufReader,
   /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-  type PartialReadError,
+  PartialReadError,
   /**
    * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
    *
