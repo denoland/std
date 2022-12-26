@@ -21,7 +21,7 @@ Deno.test("return true if `FORCE_COLOR` is in env", () => {
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: false,
   });
-  assertEquals(result.level, 1);
+  assertNotEquals(result.level, 0);
 });
 
 Deno.test("return true if `FORCE_COLOR` is in env, but honor 256", () => {
@@ -239,7 +239,9 @@ Deno.test("return false if `CI` is in env", () => {
   Deno.env.set("CI", "AppVeyor");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
+
   assertEquals(result.level, 0);
 });
 
@@ -318,6 +320,7 @@ Deno.test("return false if `TEAMCITY_VERSION` is in env and is < 9.1", () => {
   Deno.env.set("TEAMCITY_VERSION", "9.0.5 (build 32523)");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 0);
 });
@@ -327,6 +330,7 @@ Deno.test("return level 1 if `TEAMCITY_VERSION` is in env and is >= 9.1", () => 
   Deno.env.set("TEAMCITY_VERSION", "9.1.0 (build 32523)");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 1);
 });
@@ -336,6 +340,7 @@ Deno.test("support rxvt", () => {
   Deno.env.set("TERM", "rxvt");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 1);
 });
@@ -346,6 +351,7 @@ Deno.test("prefer level 2/xterm over COLORTERM", () => {
   Deno.env.set("TERM", "xterm-256color");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 });
@@ -355,6 +361,7 @@ Deno.test("support screen-256color", () => {
   Deno.env.set("TERM", "screen-256color");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 });
@@ -364,28 +371,37 @@ Deno.test("support putty-256color", () => {
   Deno.env.set("TERM", "putty-256color");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 });
 
-Deno.test("level should be 3 when using iTerm 3.0", () => {
-  cleanEnv();
-  Deno.env.set("TERM_PROGRAM", "iTerm.app");
-  Deno.env.set("TERM_PROGRAM_VERSION", "3.0.10");
-  const result = createSupportsColor(Deno.stdout, {
-    streamIsTTY: true,
-  });
-  assertEquals(result.level, 3);
+Deno.test({
+  name: "level should be 3 when using iTerm 3.0",
+  ignore: Deno.build.os !== "darwin",
+  fn: () => {
+    cleanEnv();
+    Deno.env.set("TERM_PROGRAM", "iTerm.app");
+    Deno.env.set("TERM_PROGRAM_VERSION", "3.0.10");
+    const result = createSupportsColor(Deno.stdout, {
+      streamIsTTY: true,
+    });
+    assertEquals(result.level, 3);
+  },
 });
 
-Deno.test("level should be 2 when using iTerm 2.9", () => {
-  cleanEnv();
-  Deno.env.set("TERM_PROGRAM", "iTerm.app");
-  Deno.env.set("TERM_PROGRAM_VERSION", "2.9.3");
-  const result = createSupportsColor(Deno.stdout, {
-    streamIsTTY: true,
-  });
-  assertEquals(result.level, 2);
+Deno.test({
+  name: "level should be 2 when using iTerm 2.9",
+  ignore: Deno.build.os !== "darwin",
+  fn: () => {
+    cleanEnv();
+    Deno.env.set("TERM_PROGRAM", "iTerm.app");
+    Deno.env.set("TERM_PROGRAM_VERSION", "2.9.3");
+    const result = createSupportsColor(Deno.stdout, {
+      streamIsTTY: true,
+    });
+    assertEquals(result.level, 2);
+  },
 });
 
 Deno.test("return level 1 if on Windows earlier than 10 build 10586", () => {
@@ -424,6 +440,7 @@ Deno.test("return level 2 when FORCE_COLOR is set when not TTY in xterm256", () 
   Deno.env.set("TERM", "xterm-256color");
   const result = createSupportsColor(Deno.stdout, {
     streamIsTTY: false,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 });
@@ -433,24 +450,28 @@ Deno.test("supports setting a color level using FORCE_COLOR", () => {
   Deno.env.set("FORCE_COLOR", "1");
   let result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 1);
 
   Deno.env.set("FORCE_COLOR", "2");
   result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 
   Deno.env.set("FORCE_COLOR", "3");
   result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 3);
 
   Deno.env.set("FORCE_COLOR", "0");
   result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 0);
 });
@@ -469,6 +490,7 @@ Deno.test("FORCE_COLOR works when set via command line (all values are strings)"
   Deno.env.set("FORCE_COLOR", "true");
   let result = createSupportsColor(Deno.stdout, {
     streamIsTTY: true,
+    os: "linux",
   });
   assertEquals(result.level, 1);
 
@@ -476,12 +498,14 @@ Deno.test("FORCE_COLOR works when set via command line (all values are strings)"
   Deno.env.set("TERM", "xterm-256color");
   result = createSupportsColor(Deno.stdout, {
     streamIsTTY: false,
+    os: "linux",
   });
   assertEquals(result.level, 2);
 
   Deno.env.set("FORCE_COLOR", "false");
   result = createSupportsColor(Deno.stdout, {
     streamIsTTY: false,
+    os: "linux",
   });
   assertEquals(result.level, 0);
 });
