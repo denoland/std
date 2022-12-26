@@ -35,6 +35,7 @@ export * from "./_comparators.ts";
  * const tree = new BinarySearchTree<number>();
  * values.forEach((value) => tree.insert(value));
  * assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+ * assertEquals(tree.getRoot(), 3);
  * assertEquals(tree.min(), 1);
  * assertEquals(tree.max(), 14);
  * assertEquals(tree.find(42), null);
@@ -46,6 +47,7 @@ export * from "./_comparators.ts";
  * const invertedTree = new BinarySearchTree<number>(descend);
  * values.forEach((value) => invertedTree.insert(value));
  * assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+ * assertEquals(invertedTree.getRoot(), 3);
  * assertEquals(invertedTree.min(), 14);
  * assertEquals(invertedTree.max(), 1);
  * assertEquals(invertedTree.find(42), null);
@@ -69,6 +71,7 @@ export * from "./_comparators.ts";
  *   "truck",
  *   "helicopter",
  * ]);
+ * assertEquals(words.getRoot(), "truck");
  * assertEquals(words.min(), "car");
  * assertEquals(words.max(), "helicopter");
  * assertEquals(words.find("scooter"), null);
@@ -293,6 +296,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
   /** Returns the maximum value in the binary search tree or null if empty. */
   max(): T | null {
     return this.root ? this.root.findMaxNode().value : null;
+  }
+
+  /** Return ths root value in the binary search tree or null if empty */
+  getRoot(): T | null {
+    return this.root?.value ?? null;
   }
 
   /** Removes all values from the binary search tree. */

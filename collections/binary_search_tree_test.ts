@@ -477,6 +477,7 @@ Deno.test("[collections/BinarySearchTree] README example", () => {
   const tree = new BinarySearchTree<number>();
   values.forEach((value) => tree.insert(value));
   assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+  assertEquals(tree.getRoot(), 3);
   assertEquals(tree.min(), 1);
   assertEquals(tree.max(), 14);
   assertEquals(tree.find(42), null);
@@ -488,6 +489,7 @@ Deno.test("[collections/BinarySearchTree] README example", () => {
   const invertedTree = new BinarySearchTree<number>(descend);
   values.forEach((value) => invertedTree.insert(value));
   assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+  assertEquals(invertedTree.getRoot(), 3);
   assertEquals(invertedTree.min(), 14);
   assertEquals(invertedTree.max(), 1);
   assertEquals(invertedTree.find(42), null);
@@ -511,6 +513,7 @@ Deno.test("[collections/BinarySearchTree] README example", () => {
     "truck",
     "helicopter",
   ]);
+  assertEquals(words.getRoot(), "truck");
   assertEquals(words.min(), "car");
   assertEquals(words.max(), "helicopter");
   assertEquals(words.find("scooter"), null);
