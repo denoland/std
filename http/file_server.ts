@@ -544,8 +544,9 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 
   if (opts.headers) {
     for (const header of opts.headers) {
-      const name = header.split(":")[0];
-      const value = header.split(":").slice(1).join(":");
+      const headerSplit = header.split(":");
+      const name = headerSplit[0];
+      const value = headerSplit.slice(1).join(":");
       response.headers.append(name, value);
     }
   }
@@ -653,7 +654,9 @@ OPTIONS:
   --host     <HOST>     Hostname (default is 0.0.0.0)
   -c, --cert <FILE>     TLS certificate file (enables TLS)
   -k, --key  <FILE>     TLS key file (enables TLS)
-  -H, --header <HEADER> Sets a header on every request
+  -H, --header <HEADER> Sets a header on every request.
+                        (e.g. --header "Cache-Control: no-cache")
+                        This option can be specified multiple times.
   --no-dir-listing      Disable directory listing
   --no-dotfiles         Do not show dotfiles
   --no-cors             Disable cross-origin resource sharing
