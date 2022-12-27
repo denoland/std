@@ -431,6 +431,11 @@ export interface ServeDirOptions {
    * @default {"fnv1a"}
    */
   etagAlgorithm?: DigestAlgorithm;
+  /** Headers to add to each request
+   *
+   * @default {[]}
+   */
+  headers?: string[];
 }
 
 /**
@@ -537,6 +542,15 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 
   if (!opts.quiet) serverLog(req, response!.status);
 
+  if (opts.headers) {
+    for (const header of opts.headers) {
+      const headerSplit = header.split(":");
+      const name = headerSplit[0];
+      const value = headerSplit.slice(1).join(":");
+      response.headers.append(name, value);
+    }
+  }
+
   return response!;
 }
 
@@ -546,9 +560,10 @@ function normalizeURL(url: string): string {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key"],
+    string: ["port", "host", "cert", "key", "header"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
+    collect: ["header"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -567,9 +582,11 @@ function main() {
       h: "help",
       v: "verbose",
       V: "version",
+      H: "header",
     },
   });
   const port = Number(serverArgs.port);
+  const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -602,6 +619,7 @@ function main() {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
+      headers,
     });
   };
 
@@ -630,17 +648,20 @@ USAGE:
   file_server [path] [options]
 
 OPTIONS:
-  -h, --help          Prints help information
-  -p, --port <PORT>   Set port
-  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-  --host     <HOST>   Hostname (default is 0.0.0.0)
-  -c, --cert <FILE>   TLS certificate file (enables TLS)
-  -k, --key  <FILE>   TLS key file (enables TLS)
-  --no-dir-listing    Disable directory listing
-  --no-dotfiles       Do not show dotfiles
-  --no-cors           Disable cross-origin resource sharing
-  -v, --verbose       Print request level logs
-  -V, --version       Print version information
+  -h, --help            Prints help information
+  -p, --port <PORT>     Set port
+  --cors                Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>     Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>     TLS certificate file (enables TLS)
+  -k, --key  <FILE>     TLS key file (enables TLS)
+  -H, --header <HEADER> Sets a header on every request.
+                        (e.g. --header "Cache-Control: no-cache")
+                        This option can be specified multiple times.
+  --no-dir-listing      Disable directory listing
+  --no-dotfiles         Do not show dotfiles
+  --no-cors             Disable cross-origin resource sharing
+  -v, --verbose         Print request level logs
+  -V, --version         Print version information
 
   All TLS options are required when one is provided.`);
 }
