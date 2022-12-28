@@ -11,7 +11,7 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { fromFileUrl, join } from "../../path/mod.ts";
-import { StringReader } from "../../io/readers.ts";
+import { StringReader } from "../../io/string_reader.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
 const encoder = new TextEncoder();

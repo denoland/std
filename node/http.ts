@@ -64,12 +64,6 @@ const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
   Deno.upgradeHttpRaw;
 
 const ENCODER = new TextEncoder();
-function chunkToU8(chunk: Chunk): Uint8Array {
-  if (typeof chunk === "string") {
-    return ENCODER.encode(chunk);
-  }
-  return chunk;
-}
 
 export interface RequestOptions {
   agent?: Agent;
@@ -292,6 +286,19 @@ export class ServerResponse extends NodeWritable {
   #resolve?: (value: Response | PromiseLike<Response>) => void;
   #isFlashRequest: boolean;
 
+  static #enqueue(controller: ReadableStreamDefaultController, chunk: Chunk) {
+    // TODO(kt3k): This is a workaround for denoland/deno#17194
+    // This if-block should be removed when the above issue is resolved.
+    if (chunk.length === 0) {
+      return;
+    }
+    if (typeof chunk === "string") {
+      controller.enqueue(ENCODER.encode(chunk));
+    } else {
+      controller.enqueue(chunk);
+    }
+  }
+
   constructor(
     reqEvent: undefined | Deno.RequestEvent,
     resolve: undefined | ((value: Response | PromiseLike<Response>) => void),
@@ -312,12 +319,12 @@ export class ServerResponse extends NodeWritable {
             this.#firstChunk = chunk;
             return cb();
           } else {
-            controller.enqueue(chunkToU8(this.#firstChunk));
+            ServerResponse.#enqueue(controller, this.#firstChunk);
             this.#firstChunk = null;
             this.respond(false);
           }
         }
-        controller.enqueue(chunkToU8(chunk));
+        ServerResponse.#enqueue(controller, chunk);
         return cb();
       },
       final: (cb) => {

@@ -162,7 +162,7 @@ async function copyTests(filePath: string) {
   for await (const entry of walk(path, { skip: ignoreList })) {
     const fragments = entry.path.split(sep);
     // Note: When the path is, for example,
-    // "/path/to/deno_std/node/_tools/versions/node-v18.12.0/test/fixtures/policy/main.mjs"
+    // "/path/to/deno_std/node/_tools/versions/node-v18.12.1/test/fixtures/policy/main.mjs"
     // then expectedSuite becomes "fixtures/policy" (The folder after "test" becomes "suite")
     const expectedSuite = fragments.slice(fragments.indexOf(NODE_FILE) + 2, -1)
       .join("/");

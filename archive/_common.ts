@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { PartialReadError } from "../io/buffer.ts";
+import { PartialReadError } from "../io/buf_reader.ts";
 import type { Reader } from "../types.d.ts";
 
 export interface TarInfo {

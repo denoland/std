@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "18.12.0",
+  "nodeVersion": "18.12.1",
   "ignore": {
     "common": ["index.js", "internet.js", "tmpdir.js"],
     "fixtures": [
@@ -259,6 +259,12 @@
       "test-dgram-udp4.js",
       "test-dgram-udp6-link-local-address.js",
       "test-dgram-udp6-send-default-host.js",
+      "test-diagnostics-channel-has-subscribers.js",
+      "test-diagnostics-channel-net.js",
+      "test-diagnostics-channel-object-channel-pub-sub.js",
+      "test-diagnostics-channel-pub-sub.js",
+      "test-diagnostics-channel-symbol-named.js",
+      "test-diagnostics-channel-udp.js",
       "test-dns-lookup.js",
       "test-dns-memory-error.js",
       "test-dns-multi-channel.js",
