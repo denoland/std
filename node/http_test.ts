@@ -128,6 +128,28 @@ Deno.test("[node/http] chunked response", async () => {
   }
 });
 
+// TODO(kt3k): This test case exercises the workaround for https://github.com/denoland/deno/issues/17194
+// This should be removed when #17194 is resolved.
+Deno.test("[node/http] empty chunk in the middle of response", async () => {
+  const promise = deferred<void>();
+
+  const server = http.createServer((_req, res) => {
+    res.write("a");
+    res.write("");
+    res.write("b");
+    res.end();
+  });
+
+  server.listen(async () => {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/`);
+    const actual = await res.text();
+    assertEquals(actual, "ab");
+    server.close(() => promise.resolve());
+  });
+
+  await promise;
+});
+
 Deno.test("[node/http] request default protocol", async () => {
   const promise = deferred<void>();
   const server = http.createServer((_, res) => {
