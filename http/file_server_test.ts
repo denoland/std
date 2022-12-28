@@ -10,7 +10,7 @@ import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { toHashString } from "../crypto/mod.ts";
+import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 
