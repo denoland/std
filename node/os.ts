@@ -31,6 +31,9 @@ export const constants = os;
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoOsUptime = Deno[Deno.internal]?.nodeUnstable?.osUptime || Deno.osUptime;
+
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
   user: number;
@@ -307,7 +310,7 @@ export function type(): string {
 
 /** Returns the Operating System uptime in number of seconds. */
 export function uptime(): number {
-  return Deno.osUptime();
+  return DenoOsUptime();
 }
 
 /** Not yet implemented */
