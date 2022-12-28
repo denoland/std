@@ -8,7 +8,7 @@ const encoder = new TextEncoder();
  *
  * @example <caption>Before:</caption>
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
  *
  * const encoder = new TextEncoder();
  *
