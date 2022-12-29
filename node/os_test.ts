@@ -222,6 +222,13 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Uptime should be greater than 0",
+  fn() {
+    assert(os.uptime() > 0);
+  },
+});
+
+Deno.test({
   name: "os.cpus()",
   fn() {
     assertEquals(os.cpus().length, navigator.hardwareConcurrency);
@@ -251,13 +258,6 @@ Deno.test({
     assertThrows(
       () => {
         os.setPriority(0);
-      },
-      Error,
-      "Not implemented",
-    );
-    assertThrows(
-      () => {
-        os.uptime();
       },
       Error,
       "Not implemented",
