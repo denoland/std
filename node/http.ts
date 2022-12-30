@@ -105,7 +105,7 @@ class ClientRequest extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  _write(chunk: any, _enc: string, cb: () => void) {
+  override _write(chunk: any, _enc: string, cb: () => void) {
     if (this.controller) {
       this.controller.enqueue(chunk);
       cb();
@@ -121,7 +121,7 @@ class ClientRequest extends NodeWritable {
     });
   }
 
-  async _final() {
+  override async _final() {
     if (this.controller) {
       this.controller.close();
     }
@@ -212,6 +212,10 @@ class ClientRequest extends NodeWritable {
     return `${protocol}//${auth ? `${auth}@` : ""}${host}${
       port === 80 ? "" : `:${port}`
     }${path}`;
+  }
+
+  setTimeout() {
+    console.log("not implemented: ClientRequest.setTimeout");
   }
 }
 
