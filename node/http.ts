@@ -93,7 +93,7 @@ export interface RequestOptions {
 
 // TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
-class ClientRequest extends NodeWritable {
+class ClientRequest extends OutgoingMessage {
   defaultProtocol = "http:";
   body: null | ReadableStream = null;
   controller: ReadableStreamDefaultController | null = null;
@@ -105,7 +105,7 @@ class ClientRequest extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  override _write(chunk: any, _enc: string, cb: () => void) {
+  _write(chunk: any, _enc: string, cb: () => void) {
     if (this.controller) {
       this.controller.enqueue(chunk);
       cb();
@@ -121,7 +121,7 @@ class ClientRequest extends NodeWritable {
     });
   }
 
-  override async _final() {
+  async _final() {
     if (this.controller) {
       this.controller.close();
     }
@@ -212,10 +212,6 @@ class ClientRequest extends NodeWritable {
     return `${protocol}//${auth ? `${auth}@` : ""}${host}${
       port === 80 ? "" : `:${port}`
     }${path}`;
-  }
-
-  setTimeout() {
-    console.log("not implemented: ClientRequest.setTimeout");
   }
 }
 

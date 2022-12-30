@@ -675,11 +675,11 @@ export class OutgoingMessage extends Stream {
 
   end(
     // deno-lint-ignore no-explicit-any
-    chunk: any,
+    chunk?: any,
     // deno-lint-ignore no-explicit-any
-    encoding: any,
+    encoding?: any,
     // deno-lint-ignore no-explicit-any
-    callback: any,
+    callback?: any,
   ) {
     if (typeof chunk === "function") {
       callback = chunk;
