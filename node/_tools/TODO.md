@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2816
+Total: 2811
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -195,7 +195,6 @@ Total: 2816
 - [parallel/test-assert-fail-deprecation.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-assert-fail-deprecation.js)
 - [parallel/test-assert-first-line.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-assert-first-line.js)
 - [parallel/test-assert-if-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-assert-if-error.js)
-- [parallel/test-assert-strict-exists.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-assert-strict-exists.js)
 - [parallel/test-assert-typedarray-deepequal.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-assert-typedarray-deepequal.js)
 - [parallel/test-async-hooks-async-await.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-async-hooks-async-await.js)
 - [parallel/test-async-hooks-asyncresource-constructor.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-async-hooks-asyncresource-constructor.js)
@@ -242,7 +241,6 @@ Total: 2816
 - [parallel/test-async-wrap-uncaughtexception.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-async-wrap-uncaughtexception.js)
 - [parallel/test-asyncresource-bind.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-asyncresource-bind.js)
 - [parallel/test-atomics-wake.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-atomics-wake.js)
-- [parallel/test-bad-unicode.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-bad-unicode.js)
 - [parallel/test-bash-completion.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-bash-completion.js)
 - [parallel/test-beforeexit-event-exit.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-beforeexit-event-exit.js)
 - [parallel/test-benchmark-cli.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-benchmark-cli.js)
@@ -658,8 +656,6 @@ Total: 2816
 - [parallel/test-eslint-require-common-first.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eslint-require-common-first.js)
 - [parallel/test-eslint-required-modules.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eslint-required-modules.js)
 - [parallel/test-eval-disallow-code-generation-from-strings.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eval-disallow-code-generation-from-strings.js)
-- [parallel/test-eval-strict-referenceerror.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eval-strict-referenceerror.js)
-- [parallel/test-eval.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eval.js)
 - [parallel/test-event-capture-rejections.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-event-capture-rejections.js)
 - [parallel/test-eventemitter-asyncresource.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eventemitter-asyncresource.js)
 - [parallel/test-events-customevent.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-events-customevent.js)
@@ -667,7 +663,6 @@ Total: 2816
 - [parallel/test-eventtarget-memoryleakwarning.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eventtarget-memoryleakwarning.js)
 - [parallel/test-eventtarget-once-twice.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eventtarget-once-twice.js)
 - [parallel/test-eventtarget.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-eventtarget.js)
-- [parallel/test-file-read-noexist.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-file-read-noexist.js)
 - [parallel/test-file-validate-mode-flag.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-file-validate-mode-flag.js)
 - [parallel/test-filehandle-close.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-filehandle-close.js)
 - [parallel/test-filehandle-readablestream.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-filehandle-readablestream.js)
