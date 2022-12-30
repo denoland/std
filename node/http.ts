@@ -93,7 +93,7 @@ export interface RequestOptions {
 
 // TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
-class ClientRequest extends OutgoingMessage {
+class ClientRequest extends NodeWritable {
   defaultProtocol = "http:";
   body: null | ReadableStream = null;
   controller: ReadableStreamDefaultController | null = null;
