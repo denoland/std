@@ -236,14 +236,12 @@ export class BinarySearchTree<T> implements Iterable<T> {
   }
 
   protected removeNode(
-    value: T,
+    node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
-    let removeNode: BinarySearchNode<T> | null = this.findNode(value);
-    if (removeNode) {
+    // let node: BinarySearchNode<T> | null = this.findNode(value);
+    if (node) {
       const successorNode: BinarySearchNode<T> | null =
-        !removeNode.left || !removeNode.right
-          ? removeNode
-          : removeNode.findSuccessorNode()!;
+        !node.left || !node.right ? node : node.findSuccessorNode()!;
       const replacementNode: BinarySearchNode<T> | null = successorNode.left ??
         successorNode.right;
       if (replacementNode) replacementNode.parent = successorNode.parent;
@@ -255,13 +253,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
           replacementNode;
       }
 
-      if (successorNode !== removeNode) {
-        removeNode.value = successorNode.value;
-        removeNode = successorNode;
+      if (successorNode !== node) {
+        node.value = successorNode.value;
+        node = successorNode;
       }
       this._size--;
     }
-    return removeNode;
+    return node;
   }
 
   /**
@@ -277,7 +275,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Returns true if found and removed.
    */
   remove(value: T): boolean {
-    return !!this.removeNode(value);
+    const node: BinarySearchNode<T> | null = this.findNode(value);
+    return !!(node && this.removeNode(node));
   }
 
   /** Returns node value if found in the binary search tree. */
