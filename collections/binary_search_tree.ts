@@ -238,7 +238,6 @@ export class BinarySearchTree<T> implements Iterable<T> {
   protected removeNode(
     node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
-    // let node: BinarySearchNode<T> | null = this.findNode(value);
     if (node) {
       const successorNode: BinarySearchNode<T> | null =
         !node.left || !node.right ? node : node.findSuccessorNode()!;
