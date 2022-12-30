@@ -22,6 +22,7 @@ Deno.test("basename", function () {
   assertEquals(path.basename("/aaa/bbb", "a/bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb", "bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb//", "bbb"), "bbb");
+  assertEquals(path.basename("/aaa/bbb//", "a/bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb", "bb"), "b");
   assertEquals(path.basename("/aaa/bbb", "b"), "bb");
   assertEquals(path.basename("/aaa/bbb"), "bbb");
