@@ -627,16 +627,16 @@ export class OutgoingMessage extends Stream {
 
   write(
     // deno-lint-ignore no-explicit-any
-    chunk: any,
-    encoding: string | null,
-    callback: () => void,
+    chunk?: any,
+    encoding?: string | null,
+    callback?: () => void,
   ) {
     if (typeof encoding === "function") {
       callback = encoding;
       encoding = null;
     }
 
-    const ret = write_(this, chunk, encoding, callback, false);
+    const ret = write_(this, chunk, encoding!, callback, false);
     if (!ret) {
       this[kNeedDrain] = true;
     }
