@@ -261,6 +261,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
       const swapValue = node.value;
       node.value = flaggedNode.value;
       flaggedNode.value = swapValue;
+
+      node = flaggedNode;
     }
 
     this._size--;
