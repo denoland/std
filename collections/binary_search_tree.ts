@@ -258,8 +258,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
     }
     if (flaggedNode !== node) {
       /** Swaps values, in case value of the removed node is still needed by consumer. */
-      [node.value, flaggedNode.value] = [flaggedNode.value, node.value];
-      node = flaggedNode;
+      const swapValue = node.value;
+      node.value = flaggedNode.value;
+      flaggedNode.value = swapValue;
     }
 
     this._size--;
