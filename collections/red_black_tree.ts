@@ -254,20 +254,21 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * Returns true if found and removed.
    */
   override remove(value: T): boolean {
-    const nodeToRemove = this.findNode(value) as (RedBlackNode<T> | null);
+    const node = this.findNode(value) as (RedBlackNode<T> | null);
 
-    if (!nodeToRemove) {
+    if (!node) {
       return false;
     }
 
-    const node = this.removeNode(nodeToRemove) as (
+    const removedNode = this.removeNode(node) as (
       | RedBlackNode<T>
       | null
     );
 
-    if (node && !node.red) {
-      this.removeFixup(node.parent, node.left ?? node.right);
+    if (removedNode && !removedNode.red) {
+      this.removeFixup(removedNode.parent, removedNode.left ?? removedNode.right);
     }
-    return !!node;
+
+    return true;
   }
 }

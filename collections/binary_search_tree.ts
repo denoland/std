@@ -235,29 +235,34 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return null;
   }
 
+  /** Removes the given node, and returns the node that was physically removed from the tree. */
   protected removeNode(
     node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
-    if (node) {
-      const successorNode: BinarySearchNode<T> | null =
-        !node.left || !node.right ? node : node.findSuccessorNode()!;
-      const replacementNode: BinarySearchNode<T> | null = successorNode.left ??
-        successorNode.right;
-      if (replacementNode) replacementNode.parent = successorNode.parent;
+    /**
+     * The node to physically remove from the tree.
+     * Guaranteed to not have both left and right children.
+     */
+    const flaggedNode: BinarySearchNode<T> | null = !node.left || !node.right
+      ? node
+      : node.findSuccessorNode()!;
+    /** Replaces the flagged node. */
+    const replacementNode: BinarySearchNode<T> | null = flaggedNode.left ??
+      flaggedNode.right;
 
-      if (!successorNode.parent) {
-        this.root = replacementNode;
-      } else {
-        successorNode.parent[successorNode.directionFromParent()!] =
-          replacementNode;
-      }
-
-      if (successorNode !== node) {
-        node.value = successorNode.value;
-        node = successorNode;
-      }
-      this._size--;
+    if (replacementNode) replacementNode.parent = flaggedNode.parent;
+    if (!flaggedNode.parent) {
+      this.root = replacementNode;
+    } else {
+      flaggedNode.parent[flaggedNode.directionFromParent()!] = replacementNode;
     }
+    if (flaggedNode !== node) {
+      /** Swaps values, in case value of the removed node is still needed by consumer. */
+      [node.value, flaggedNode.value] = [flaggedNode.value, node.value];
+      node = flaggedNode;
+    }
+
+    this._size--;
     return node;
   }
 
@@ -275,7 +280,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   remove(value: T): boolean {
     const node: BinarySearchNode<T> | null = this.findNode(value);
-    return !!(node && this.removeNode(node));
+    if (node) this.removeNode(node);
+    return node !== null;
   }
 
   /** Returns node value if found in the binary search tree. */
