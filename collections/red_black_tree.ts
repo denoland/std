@@ -266,7 +266,10 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
     );
 
     if (removedNode && !removedNode.red) {
-      this.removeFixup(removedNode.parent, removedNode.left ?? removedNode.right);
+      this.removeFixup(
+        removedNode.parent,
+        removedNode.left ?? removedNode.right,
+      );
     }
 
     return true;
