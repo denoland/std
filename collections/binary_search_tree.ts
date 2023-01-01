@@ -241,7 +241,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
   ): BinarySearchNode<T> | null {
     /**
      * The node to physically remove from the tree.
-     * Guaranteed to not have both left and right children.
+     * Guaranteed to have at most one child.
      */
     const flaggedNode: BinarySearchNode<T> | null = !node.left || !node.right
       ? node
