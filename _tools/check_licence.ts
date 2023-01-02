@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
+import { isWindows } from "../_util/os.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
@@ -12,7 +13,7 @@ const EXCLUDED_DIRS = [
   "node/testdata",
   "crypto/_wasm/target",
   "encoding/varint/_wasm/target",
-];
+].map((path) => path.replaceAll("/", isWindows ? "\\\\" : "/"));
 
 const ROOT = new URL("../", import.meta.url);
 const CHECK = Deno.args.includes("--check");
