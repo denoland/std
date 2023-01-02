@@ -3,6 +3,7 @@
 
 import { ascend } from "./_comparators.ts";
 import { BinarySearchNode, Direction } from "./binary_search_node.ts";
+
 export * from "./_comparators.ts";
 
 /**
@@ -92,7 +93,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
   constructor(
     protected compare: (a: T, b: T) => number = ascend,
   ) {}
-
+  getRoot(): BinarySearchNode<T> | null {
+    return this.root;
+  }
   /** Creates a new binary search tree from an array like or iterable object. */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinarySearchTree<T>,

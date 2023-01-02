@@ -3,6 +3,7 @@
 
 import { ascend, BinarySearchTree } from "./binary_search_tree.ts";
 import { Direction, RedBlackNode } from "./red_black_node.ts";
+
 export * from "./_comparators.ts";
 
 /**
@@ -95,7 +96,9 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   ) {
     super(compare);
   }
-
+  override getRoot(): RedBlackNode<T> | null {
+    return this.root;
+  }
   /** Creates a new red-black tree from an array like or iterable object. */
   static override from<T>(
     collection: ArrayLike<T> | Iterable<T> | RedBlackTree<T>,
