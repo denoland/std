@@ -176,7 +176,7 @@ Deno.test({
 
 Deno.test({
   name: "[jsonc] avoid prototype pollution",
-  async fn() {
+  fn() {
     // reference: https://github.com/advisories/GHSA-9c47-m6qq-7p4h
     // Check for prototype pollution using the code contained in the CVE-2022-46175.
 
