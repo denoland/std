@@ -19,7 +19,8 @@ export type DifferenceOptions = {
 };
 
 function calculateMonthsDifference(from: Date, to: Date): number {
-  let months = (from.getFullYear() - to.getFullYear()) * 12 + (from.getMonth() - to.getMonth());
+  let months = (from.getFullYear() - to.getFullYear()) * 12 +
+    (from.getMonth() - to.getMonth());
   if (from.getDate() < to.getDate()) {
     months--;
   }
