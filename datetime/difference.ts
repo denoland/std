@@ -33,8 +33,7 @@ function calculateMonthsDifference(bigger: number, smaller: number): number {
     : -1 === -compareResult
     ? 1
     : 0;
-  const months = compareResult * (calendarDifferences - isLastMonthNotFull);
-  return months === 0 ? 0 : months;
+  return compareResult * (calendarDifferences - isLastMonthNotFull);
 }
 
 /**
@@ -88,7 +87,7 @@ export function difference(
 
   const bigger = Math.max(from.getTime(), to.getTime());
   const smaller = Math.min(from.getTime(), to.getTime());
-  const differenceInMs = bigger - smaller;
+  const differenceInMs = Math.abs(from.getTime() - to.getTime());
 
   const differences: DifferenceFormat = {};
 
@@ -117,15 +116,13 @@ export function difference(
         break;
       case "quarters":
         differences.quarters = Math.floor(
-          (typeof differences.months !== "undefined" &&
-            differences.months / 4) ||
-            calculateMonthsDifference(bigger, smaller) / 4,
+          (differences.months !== undefined && differences.months / 3) ||
+            calculateMonthsDifference(bigger, smaller) / 3,
         );
         break;
       case "years":
         differences.years = Math.floor(
-          (typeof differences.months !== "undefined" &&
-            differences.months / 12) ||
+          (differences.months !== undefined && differences.months / 12) ||
             calculateMonthsDifference(bigger, smaller) / 12,
         );
         break;
