@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, Writer } from "../types.d.ts";

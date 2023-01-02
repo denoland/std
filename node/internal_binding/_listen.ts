@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /**
  * @param n Number to act on.
  * @return The number rounded up to the nearest power of 2.

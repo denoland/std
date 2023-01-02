@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { writeAll } from "./write_all.ts";
 import type { Closer, Writer } from "../types.d.ts";

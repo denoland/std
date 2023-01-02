@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Functions for specific common tasks around collection types like `Array` and
  * `Record`. This module is heavily inspired by `kotlin`s stdlib.

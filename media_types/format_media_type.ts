@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isIterator, isToken, needsEncoding } from "./_util.ts";
 
 /** Serializes the media type and the optional parameters as a media type
