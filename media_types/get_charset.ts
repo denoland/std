@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { parseMediaType } from "./parse_media_type.ts";
 import { type DBEntry } from "./_util.ts";
 import { db, type KeyOfDb } from "./_db.ts";

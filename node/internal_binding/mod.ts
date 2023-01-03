@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import * as asyncWrap from "./async_wrap.ts";
 import * as buffer from "./buffer.ts";
 import * as config from "./config.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import _http_agent from "./_http_agent.mjs";
 import _http_outgoing from "./_http_outgoing.ts";
 import _stream_duplex from "./internal/streams/duplex.mjs";

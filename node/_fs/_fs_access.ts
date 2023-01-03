@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs } from "../internal_binding/constants.ts";
