@@ -7,6 +7,7 @@ import * as path from "./mod.ts";
 Deno.test("basename", function () {
   assertEquals(path.basename(".js", ".js"), "");
   assertEquals(path.basename(""), "");
+  assertEquals(path.basename("//", "bbb"), "");
   assertEquals(path.basename("/dir/basename.ext"), "basename.ext");
   assertEquals(path.basename("/basename.ext"), "basename.ext");
   assertEquals(path.basename("basename.ext"), "basename.ext");
