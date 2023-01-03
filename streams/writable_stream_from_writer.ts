@@ -1,8 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { writeAll } from "./write_all.ts";
+import type { Closer, Writer } from "../types.d.ts";
 
-function isCloser(value: unknown): value is Deno.Closer {
+function isCloser(value: unknown): value is Closer {
   return typeof value === "object" && value != null && "close" in value &&
     // deno-lint-ignore no-explicit-any
     typeof (value as Record<string, any>)["close"] === "function";
@@ -10,7 +11,7 @@ function isCloser(value: unknown): value is Deno.Closer {
 
 export interface WritableStreamFromWriterOptions {
   /**
-   * If the `writer` is also a `Deno.Closer`, automatically close the `writer`
+   * If the `writer` is also a `Closer`, automatically close the `writer`
    * when the stream is closed, aborted, or a write error occurs.
    *
    * @default {true}
@@ -20,7 +21,7 @@ export interface WritableStreamFromWriterOptions {
 
 /** Create a `WritableStream` from a `Writer`. */
 export function writableStreamFromWriter(
-  writer: Deno.Writer,
+  writer: Writer,
   options: WritableStreamFromWriterOptions = {},
 ): WritableStream<Uint8Array> {
   const { autoClose = true } = options;

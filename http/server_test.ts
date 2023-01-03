@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
@@ -1173,14 +1173,10 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   });
   const resp1 = await fetch(url, { client });
   const resp2 = await fetch(url, { client });
-  const resp3 = await fetch(url, { client });
 
   const err = await assertRejects(async () => {
-    const data = await resp3.text();
-    // Note: the lone above should be throwing - but it's not right now due to
-    // a bug in ext/http. So for now we will add a check for the empty string
-    // (which is what we expect to be returned in case of this bug).
-    if (data === "") throw new Error("the stream errored!");
+    const resp3 = await fetch(url, { client });
+    const _data = await resp3.text();
   });
   assert(err);
   a.resolve();

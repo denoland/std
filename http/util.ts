@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { deepMerge } from "../collections/deep_merge.ts";
 

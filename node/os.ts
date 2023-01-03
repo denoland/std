@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,6 +30,10 @@ import { os } from "./internal_binding/constants.ts";
 export const constants = os;
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
+
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoOsUptime = Deno[Deno.internal]?.nodeUnstable?.osUptime ||
+  Deno.osUptime;
 
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
@@ -305,9 +309,9 @@ export function type(): string {
   }
 }
 
-/** Not yet implemented */
+/** Returns the Operating System uptime in number of seconds. */
 export function uptime(): number {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return DenoOsUptime();
 }
 
 /** Not yet implemented */

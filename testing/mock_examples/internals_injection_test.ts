@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertSpyCall, assertSpyCalls, spy } from "../mock.ts";
 import { assertEquals } from "../asserts.ts";
 import { _internals, square } from "./internals_injection.ts";

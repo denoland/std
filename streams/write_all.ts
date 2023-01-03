@@ -1,4 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+import type { Writer, WriterSync } from "../types.d.ts";
 
 /** Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
@@ -23,7 +25,7 @@
  * console.log(writer.bytes().length);  // 11
  * ```
  */
-export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
+export async function writeAll(w: Writer, arr: Uint8Array) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += await w.write(arr.subarray(nwritten));
@@ -54,7 +56,7 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * console.log(writer.bytes().length);  // 11
  * ```
  */
-export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array) {
+export function writeAllSync(w: WriterSync, arr: Uint8Array) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += w.writeSync(arr.subarray(nwritten));

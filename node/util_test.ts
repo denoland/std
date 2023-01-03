@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import {
   assert,
@@ -247,5 +247,13 @@ Deno.test({
         assertStrictEquals(util.getSystemErrorName(-98), "EADDRINUSE");
         break;
     }
+  },
+});
+
+Deno.test({
+  name: "[util] deprecate() works",
+  fn() {
+    const fn = util.deprecate(() => {}, "foo");
+    fn();
   },
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSubdir } from "./_util.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
@@ -48,8 +48,6 @@ export async function move(
   }
 
   await Deno.rename(src, dest);
-
-  return;
 }
 
 /**

@@ -1,4 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+import type { Writer } from "../types.d.ts";
 
 /** Create a `Writer` from a `WritableStreamDefaultWriter`.
  *
@@ -21,7 +23,7 @@
  */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
-): Deno.Writer {
+): Writer {
   return {
     async write(p: Uint8Array): Promise<number> {
       await streamWriter.ready;

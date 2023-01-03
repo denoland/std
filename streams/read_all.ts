@@ -1,6 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "../io/buffer.ts";
+import type { Reader, ReaderSync } from "../types.d.ts";
 
 /** Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
@@ -24,7 +25,7 @@ import { Buffer } from "../io/buffer.ts";
  * const bufferContent = await readAll(reader);
  * ```
  */
-export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
+export async function readAll(r: Reader): Promise<Uint8Array> {
   const buf = new Buffer();
   await buf.readFrom(r);
   return buf.bytes();
@@ -52,7 +53,7 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
  * const bufferContent = readAllSync(reader);
  * ```
  */
-export function readAllSync(r: Deno.ReaderSync): Uint8Array {
+export function readAllSync(r: ReaderSync): Uint8Array {
   const buf = new Buffer();
   buf.readFromSync(r);
   return buf.bytes();

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import { notImplemented, warnNotImplemented } from "./_utils.ts";
@@ -671,6 +671,9 @@ export class Process extends EventEmitter {
   }
 
   features = { inspector: false };
+
+  // TODO(kt3k): Get the value from --no-deprecation flag.
+  noDeprecation = false;
 }
 
 if (Deno.build.os === "windows") {

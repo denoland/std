@@ -1,15 +1,16 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
+import type { Closer, Reader } from "../types.d.ts";
 
-function isCloser(value: unknown): value is Deno.Closer {
+function isCloser(value: unknown): value is Closer {
   return typeof value === "object" && value != null && "close" in value &&
     // deno-lint-ignore no-explicit-any
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
 export interface ReadableStreamFromReaderOptions {
-  /** If the `reader` is also a `Deno.Closer`, automatically close the `reader`
+  /** If the `reader` is also a `Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
    *
    * @default {true}
@@ -25,11 +26,11 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
- * Create a `ReadableStream<Uint8Array>` from from a `Deno.Reader`.
+ * Create a `ReadableStream<Uint8Array>` from a `Reader`.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader
  * will be read.  When `null` is returned from the reader, the stream will be
- * closed along with the reader (if it is also a `Deno.Closer`).
+ * closed along with the reader (if it is also a `Closer`).
  *
  * An example converting a `Deno.FsFile` into a readable stream:
  *
@@ -41,7 +42,7 @@ export interface ReadableStreamFromReaderOptions {
  * ```
  */
 export function readableStreamFromReader(
-  reader: Deno.Reader | (Deno.Reader & Deno.Closer),
+  reader: Reader | (Reader & Closer),
   options: ReadableStreamFromReaderOptions = {},
 ): ReadableStream<Uint8Array> {
   const {

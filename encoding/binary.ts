@@ -1,10 +1,11 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Functions for encoding binary data in array buffers.
  *
  * @module
  */
+import type { Reader, Writer } from "../types.d.ts";
 
 type RawBaseType = "int8" | "int16" | "int32" | "uint8" | "uint16" | "uint32";
 type RawNumberType = RawBaseType | "float32" | "float64";
@@ -52,7 +53,7 @@ export function sizeof(dataType: DataType): number {
  *
  * Throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
 export async function readExact(
-  r: Deno.Reader,
+  r: Reader,
   b: Uint8Array,
 ) {
   let totalRead = 0;
@@ -69,7 +70,7 @@ export async function readExact(
  *
  * Resolves it in a `Uint8Array`, or throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
 export async function getNBytes(
-  r: Deno.Reader,
+  r: Reader,
   n: number,
 ): Promise<Uint8Array> {
   const scratch = new Uint8Array(n);
@@ -219,7 +220,7 @@ export function putVarbig(
  *
  * `o.dataType` defaults to `"int32"`. */
 export async function readVarnum(
-  r: Deno.Reader,
+  r: Reader,
   o: VarnumOptions = {},
 ): Promise<number> {
   o.dataType = o.dataType ?? "int32";
@@ -231,7 +232,7 @@ export async function readVarnum(
  *
  * `o.dataType` defaults to `"int64"`. */
 export async function readVarbig(
-  r: Deno.Reader,
+  r: Reader,
   o: VarbigOptions = {},
 ): Promise<bigint> {
   o.dataType = o.dataType ?? "int64";
@@ -243,7 +244,7 @@ export async function readVarbig(
  *
  * `o.dataType` defaults to `"int32"`. */
 export function writeVarnum(
-  w: Deno.Writer,
+  w: Writer,
   x: number,
   o: VarnumOptions = {},
 ): Promise<number> {
@@ -257,7 +258,7 @@ export function writeVarnum(
  *
  * `o.dataType` defaults to `"int64"`. */
 export function writeVarbig(
-  w: Deno.Writer,
+  w: Writer,
   x: bigint,
   o: VarbigOptions = {},
 ): Promise<number> {

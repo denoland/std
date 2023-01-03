@@ -1,7 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { LimitedBytesTransformStream as _LimitedBytesTransformStream } from "./limited_bytes_transform_stream.ts";
-import { LimitedTransformStream as _LimitedTransformStream } from "./limited_transform_stream.ts";
-import { ByteSliceStream as _ByteSliceStream } from "./byte_slice_stream.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
 import { copy } from "../bytes/copy.ts";
 
@@ -169,52 +166,58 @@ export class Buffer {
   }
 }
 
-/**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
- *
- * A TransformStream that will only read & enqueue `size` amount of bytes.
- * This operation is chunk based and not BYOB based,
- * and as such will read more than needed.
- *
- * if options.error is set, then instead of terminating the stream,
- * an error will be thrown.
- *
- * ```ts
- * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const res = await fetch("https://example.com");
- * const parts = res.body!
- *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
- * ```
- */
-export const LimitedBytesTransformStream = _LimitedBytesTransformStream;
+export {
+  /**
+   * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
+   *
+   * A TransformStream that will only read & enqueue `size` amount of bytes.
+   * This operation is chunk based and not BYOB based,
+   * and as such will read more than needed.
+   *
+   * if options.error is set, then instead of terminating the stream,
+   * an error will be thrown.
+   *
+   * ```ts
+   * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+   * const res = await fetch("https://example.com");
+   * const parts = res.body!
+   *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
+   * ```
+   */
+  LimitedBytesTransformStream,
+} from "./limited_bytes_transform_stream.ts";
 
-/**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/limited_transform_stream.ts` instead.
- *
- * A TransformStream that will only read & enqueue `size` amount of chunks.
- *
- * if options.error is set, then instead of terminating the stream,
- * an error will be thrown.
- *
- * ```ts
- * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const res = await fetch("https://example.com");
- * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
- * ```
- */
-export const LimitedTransformStream = _LimitedTransformStream;
+export {
+  /**
+   * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_transform_stream.ts` instead.
+   *
+   * A TransformStream that will only read & enqueue `size` amount of chunks.
+   *
+   * if options.error is set, then instead of terminating the stream,
+   * an error will be thrown.
+   *
+   * ```ts
+   * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+   * const res = await fetch("https://example.com");
+   * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
+   * ```
+   */
+  LimitedTransformStream,
+} from "./limited_transform_stream.ts";
 
-/**
- * @deprecated (will be removed after 0.169.0) Import from `std/streams/byte_slice_stream.ts` instead.
- *
- * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
- *
- * @example
- * ```ts
- * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const response = await fetch("https://example.com");
- * const rangedStream = response.body!
- *   .pipeThrough(new ByteSliceStream(3, 8));
- * ```
- */
-export const ByteSliceStream = _ByteSliceStream;
+export {
+  /**
+   * @deprecated (will be removed after 0.171.0) Import from `std/streams/byte_slice_stream.ts` instead.
+   *
+   * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
+   *
+   * @example
+   * ```ts
+   * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
+   * const response = await fetch("https://example.com");
+   * const rangedStream = response.body!
+   *   .pipeThrough(new ByteSliceStream(3, 8));
+   * ```
+   */
+  ByteSliceStream,
+} from "./byte_slice_stream.ts";

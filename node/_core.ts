@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 // This module provides an interface to `Deno.core`. For environments
 // that don't have access to `Deno.core` some APIs are polyfilled, while
@@ -13,7 +13,10 @@ export let core: any;
 const { Deno } = globalThis as any;
 
 // @ts-ignore Deno.core is not defined in types
-if (Deno?.core) {
+if (Deno?.[Deno.internal]?.core) {
+  // @ts-ignore Deno[Deno.internal].core is not defined in types
+  core = Deno[Deno.internal].core;
+} else if (Deno?.core) {
   // @ts-ignore Deno.core is not defined in types
   core = Deno.core;
 } else {

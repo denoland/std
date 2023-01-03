@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { type Deferred, deferred } from "../async/deferred.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
@@ -64,12 +64,6 @@ const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
   Deno.upgradeHttpRaw;
 
 const ENCODER = new TextEncoder();
-function chunkToU8(chunk: Chunk): Uint8Array {
-  if (typeof chunk === "string") {
-    return ENCODER.encode(chunk);
-  }
-  return chunk;
-}
 
 export interface RequestOptions {
   agent?: Agent;
@@ -292,6 +286,25 @@ export class ServerResponse extends NodeWritable {
   #resolve?: (value: Response | PromiseLike<Response>) => void;
   #isFlashRequest: boolean;
 
+  static #enqueue(controller: ReadableStreamDefaultController, chunk: Chunk) {
+    // TODO(kt3k): This is a workaround for denoland/deno#17194
+    // This if-block should be removed when the above issue is resolved.
+    if (chunk.length === 0) {
+      return;
+    }
+    if (typeof chunk === "string") {
+      controller.enqueue(ENCODER.encode(chunk));
+    } else {
+      controller.enqueue(chunk);
+    }
+  }
+
+  /** Returns true if the response body should be null with the given
+   * http status code */
+  static #bodyShouldBeNull(status: number) {
+    return status === 101 || status === 204 || status === 205 || status === 304;
+  }
+
   constructor(
     reqEvent: undefined | Deno.RequestEvent,
     resolve: undefined | ((value: Response | PromiseLike<Response>) => void),
@@ -312,12 +325,12 @@ export class ServerResponse extends NodeWritable {
             this.#firstChunk = chunk;
             return cb();
           } else {
-            controller.enqueue(chunkToU8(this.#firstChunk));
+            ServerResponse.#enqueue(controller, this.#firstChunk);
             this.#firstChunk = null;
             this.respond(false);
           }
         }
-        controller.enqueue(chunkToU8(chunk));
+        ServerResponse.#enqueue(controller, chunk);
         return cb();
       },
       final: (cb) => {
@@ -385,7 +398,10 @@ export class ServerResponse extends NodeWritable {
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? (final ? null : this.#readable);
+    let body = singleChunk ?? (final ? null : this.#readable);
+    if (ServerResponse.#bodyShouldBeNull(this.statusCode!)) {
+      body = null;
+    }
     if (this.#isFlashRequest) {
       this.#resolve!(
         new Response(body, {

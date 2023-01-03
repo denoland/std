@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
 import { timingSafeEqual as stdTimingSafeEqual } from "../../crypto/timing_safe_equal.ts";
 

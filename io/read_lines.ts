@@ -1,6 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { type Reader } from "./types.d.ts";
+import { type Reader } from "../types.d.ts";
 import { BufReader } from "./buf_reader.ts";
 import { concat } from "../bytes/concat.ts";
 

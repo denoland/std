@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import * as base64 from "../../encoding/base64.ts";
 import * as base64url from "../../encoding/base64url.ts";
 

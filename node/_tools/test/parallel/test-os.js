@@ -90,14 +90,12 @@ const hostname = os.hostname();
 is.string(hostname);
 assert.ok(hostname.length > 0);
 
-/** TODO(kt3k): Emable this test
 // On IBMi, os.uptime() returns 'undefined'
 if (!common.isIBMi) {
   const uptime = os.uptime();
   is.number(uptime);
   assert.ok(uptime > 0);
 }
-*/
 
 const cpus = os.cpus();
 is.array(cpus);
@@ -262,14 +260,12 @@ assert.strictEqual(`${os.version}`, os.version());
 
 assert.strictEqual(+os.totalmem, os.totalmem());
 
-/* TODO(kt3k): Enable this test
 // Assert that the following values are coercible to numbers.
 // On IBMi, os.uptime() returns 'undefined'
 if (!common.isIBMi) {
   is.number(+os.uptime, 'uptime');
   is.number(os.uptime(), 'uptime');
 }
-*/
 
 is.number(+os.freemem, 'freemem');
 is.number(os.freemem(), 'freemem');

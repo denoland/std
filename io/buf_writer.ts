@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { copy } from "../bytes/copy.ts";
-import type { Writer, WriterSync } from "./types.d.ts";
+import type { Writer, WriterSync } from "../types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 

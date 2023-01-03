@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assert } from "../_util/asserts.ts";
-import type { Reader, Writer } from "./types.d.ts";
+import type { Reader, Writer } from "../types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 

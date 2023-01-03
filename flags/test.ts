@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import { Args, parse, ParseOptions } from "./mod.ts";
 import { assertType, IsExact } from "../testing/types.ts";
@@ -1573,6 +1573,76 @@ Deno.test("typesOfCollectArgsWithDefaults", function () {
   >(true);
 });
 
+Deno.test("typesOfCollectArgsWithSingleArgs", function () {
+  const argv = parse([], {
+    boolean: ["foo"],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<boolean>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithEmptyTypeArray", function () {
+  const argv = parse([], {
+    boolean: [],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithUnknownArgs", function () {
+  const argv = parse([], {
+    boolean: ["bar"],
+    collect: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        bar: boolean;
+        foo: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfCollectArgsWithKnownAndUnknownArgs", function () {
+  const argv = parse([], {
+    boolean: ["foo"],
+    collect: ["foo", "bar"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<boolean>;
+        bar: Array<unknown>;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
 
 Deno.test("typesOfNegatableArgs", function () {
@@ -1644,7 +1714,7 @@ Deno.test("typesOfAliasArgs", function () {
     boolean: ["foo"],
     string: ["beep"],
     alias: {
-      foo: "bar",
+      foo: ["bar", "baz"],
       beep: "boop",
     },
   });
@@ -1657,6 +1727,7 @@ Deno.test("typesOfAliasArgs", function () {
         boop?: string | undefined;
         foo: boolean;
         bar: boolean;
+        baz: boolean;
         _: Array<string | number>;
       }
     >

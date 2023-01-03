@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { BytesList } from "../bytes/bytes_list.ts";
-import type { Reader } from "./types.d.ts";
+import type { Reader } from "../types.d.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
 function createLPS(pat: Uint8Array): Uint8Array {

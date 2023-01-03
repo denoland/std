@@ -1,6 +1,6 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Pretty print bytes.
  *
@@ -41,7 +41,7 @@ type LocaleOptions = {
 };
 
 /**
- * @deprecated (will be removed after 0.170.0) use `FormatOptions` instead
+ * @deprecated (will be removed after 0.172.0) use `FormatOptions` instead
  */
 export interface PrettyBytesOptions {
   /** Uses bits representation.
@@ -82,7 +82,7 @@ export interface FormatOptions {
 }
 
 /**
- * @deprecated (will be removed after 0.170.0) use `format` instead
+ * @deprecated (will be removed after 0.172.0) use `format` instead
  */
 export function prettyBytes(num: number, options: FormatOptions = {}) {
   return format(num, options);

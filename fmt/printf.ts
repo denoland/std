@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
@@ -427,7 +427,6 @@ class Printf {
       err = true;
     }
     this.argNum = err ? this.argNum : positional - 1;
-    return;
   }
 
   /** Handle less than */

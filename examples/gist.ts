@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * A program to post files to gist.github.com.

@@ -1,9 +1,10 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { writableStreamFromWriter } from "./writable_stream_from_writer.ts";
+import type { Closer, Writer } from "../types.d.ts";
 
-class MockWriterCloser implements Deno.Writer, Deno.Closer {
+class MockWriterCloser implements Writer, Closer {
   chunks: Uint8Array[] = [];
   closeCall = 0;
 

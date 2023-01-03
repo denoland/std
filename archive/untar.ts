@@ -1,15 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import {
   FileTypes,
   readBlock,
-  type Reader,
   recordSize,
-  type Seeker,
   type TarMeta,
   ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../streams/read_all.ts";
+import type { Reader } from "../types.d.ts";
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -139,8 +138,8 @@ export class TarEntry implements Reader {
     if (this.#consumed) return;
     this.#consumed = true;
 
-    if (typeof (this.#reader as Seeker).seek === "function") {
-      await (this.#reader as Seeker).seek(
+    if (typeof (this.#reader as Deno.Seeker).seek === "function") {
+      await (this.#reader as Deno.Seeker).seek(
         this.#entrySize - this.#read,
         Deno.SeekMode.Current,
       );

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { CsvStream } from "./stream.ts";
 import type { CsvStreamOptions } from "./stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
@@ -11,7 +11,7 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { fromFileUrl, join } from "../../path/mod.ts";
-import { StringReader } from "../../io/readers.ts";
+import { StringReader } from "../../io/string_reader.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
 const encoder = new TextEncoder();

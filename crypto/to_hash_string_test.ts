@@ -1,6 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { crypto, type DigestAlgorithm } from "./mod.ts";
-import { toHashString } from "./util.ts";
+import { toHashString } from "./to_hash_string.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { assertEquals } from "../testing/asserts.ts";
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import {
@@ -316,7 +316,10 @@ export function diffstr(A: string, B: string) {
         (result.type === DiffType.common) && (t[i - 1]) &&
         (t[i - 1]?.type === t[i + 1]?.type) && /\s+/.test(result.value)
       ) {
-        result.type = t[i - 1].type;
+        return {
+          ...result,
+          type: t[i - 1].type,
+        };
       }
       return result;
     });

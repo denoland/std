@@ -1,7 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
+import type { Reader } from "../types.d.ts";
 
 /**
  * Create a `Reader` from a `ReadableStreamDefaultReader`.
@@ -21,7 +22,7 @@ import { writeAll } from "./write_all.ts";
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,
-): Deno.Reader {
+): Reader {
   const buffer = new Buffer();
 
   return {

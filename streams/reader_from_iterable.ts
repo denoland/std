@@ -1,9 +1,10 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
+import { Reader } from "../types.d.ts";
 
-/** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
+/** Create a `Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
  *      import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
@@ -22,7 +23,7 @@ import { writeAll } from "./write_all.ts";
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
-): Deno.Reader {
+): Reader {
   const iterator: Iterator<Uint8Array> | AsyncIterator<Uint8Array> =
     (iterable as AsyncIterable<Uint8Array>)[Symbol.asyncIterator]?.() ??
       (iterable as Iterable<Uint8Array>)[Symbol.iterator]?.();

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
@@ -12,7 +12,7 @@ import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
-import type { Reader } from "./types.d.ts";
+import type { Reader } from "../types.d.ts";
 import { copy } from "../bytes/copy.ts";
 
 /** OneByteReader returns a Reader that implements
@@ -64,11 +64,11 @@ async function readBytes(buf: BufReader): Promise<string> {
 
 interface ReadMaker {
   name: string;
-  fn: (r: Deno.Reader) => Deno.Reader;
+  fn: (r: Reader) => Reader;
 }
 
 const readMakers: ReadMaker[] = [
-  { name: "full", fn: (r): Deno.Reader => r },
+  { name: "full", fn: (r): Reader => r },
   {
     name: "byte",
     fn: (r): OneByteReader => new OneByteReader(r),
@@ -313,7 +313,7 @@ const testInputrn = encoder.encode(
 const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
 // TestReader wraps a Uint8Array and returns reads of a specific length.
-class TestReader implements Deno.Reader {
+class TestReader implements Reader {
   constructor(private data: Uint8Array, private stride: number) {}
 
   read(buf: Uint8Array): Promise<number | null> {

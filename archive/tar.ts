@@ -1,22 +1,15 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import {
-  TarEntry as _TarEntry,
-  TarHeader as _TarHeader,
-  Untar as _Untar,
-} from "./untar.ts";
-import {
   FileTypes,
-  type Reader,
   type TarInfo,
   type TarMeta,
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
+import type { Reader } from "../types.d.ts";
 
 export { type TarInfo, type TarMeta, type TarOptions };
-
-export type Seeker = Deno.Seeker;
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -47,7 +40,7 @@ export type Seeker = Deno.Seeker;
  * THE SOFTWARE.
  */
 
-import { MultiReader } from "../io/readers.ts";
+import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { assert } from "../_util/asserts.ts";
 import { recordSize } from "./_common.ts";
@@ -104,10 +97,6 @@ function formatHeader(data: TarData): Uint8Array {
   });
   return buffer;
 }
-
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
-// deno-lint-ignore no-empty-interface
-export interface TarHeader extends _TarHeader {}
 
 export interface TarData {
   fileName?: string;
@@ -309,38 +298,41 @@ export class Tar {
   }
 }
 
-/**
- * @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead.
- *
- * A class to extract a tar archive
- *
- * @example
- * ```ts
- * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
- *
- * const reader = await Deno.open("./out.tar", { read: true });
- * const untar = new Untar(reader);
- *
- * for await (const entry of untar) {
- *   console.log(entry); // metadata
- *
- *   if (entry.type === "directory") {
- *     await ensureDir(entry.fileName);
- *     continue;
- *   }
- *
- *   await ensureFile(entry.fileName);
- *   const file = await Deno.open(entry.fileName, { write: true });
- *   // <entry> is a reader.
- *   await copy(entry, file);
- * }
- * reader.close();
- * ```
- */
-export const Untar = _Untar;
-
-/** @deprecated (will be removed after 0.169.0) Import from `std/archive/untar.ts` instead. */
-export const TarEntry = _TarEntry;
+export {
+  /** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
+  TarEntry,
+  /** @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead. */
+  type TarHeader,
+  /**
+   * @deprecated (will be removed after 0.171.0) Import from `std/archive/untar.ts` instead.
+   *
+   * A class to extract a tar archive
+   *
+   * @example
+   * ```ts
+   * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
+   * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
+   * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
+   * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+   *
+   * const reader = await Deno.open("./out.tar", { read: true });
+   * const untar = new Untar(reader);
+   *
+   * for await (const entry of untar) {
+   *   console.log(entry); // metadata
+   *
+   *   if (entry.type === "directory") {
+   *     await ensureDir(entry.fileName);
+   *     continue;
+   *   }
+   *
+   *   await ensureFile(entry.fileName);
+   *   const file = await Deno.open(entry.fileName, { write: true });
+   *   // <entry> is a reader.
+   *   await copy(entry, file);
+   * }
+   * reader.close();
+   * ```
+   */
+  Untar,
+} from "./untar.ts";
