@@ -30,9 +30,6 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Set Up Node
-        uses: actions/setup-node@v3
-
       - name: Run tests canary
         run: deno task test
 

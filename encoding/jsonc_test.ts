@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { bundle } from "https://deno.land/x/emit@0.12.0/mod.ts";
 import * as JSONC from "./jsonc.ts";
 import {
   assert,
@@ -191,33 +190,29 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] avoid prototype pollution in Node.js",
+  name: "[jsonc] use Object.defineProperty when setting object property",
   async fn() {
+    // Tests if the value is set using `Object.defineProperty(target, key, {value})`
+    // instead of `target[key] = value` when parsing the object.
+    // This makes a difference in behavior when __proto__ is set in Node.js and browsers.
+    // Using `Object.defineProperty` avoids prototype pollution in Node.js and browsers.
     // reference: https://github.com/advisories/GHSA-9c47-m6qq-7p4h (CVE-2022-46175)
-    // Check whether prototype pollution does not occur when running in Node.js or browser environment using the code contained in the CVE-2022-46175.
-    const tempTile = await Deno.makeTempFile();
-    try {
-      // 1. generate code
-      const { code } = await bundle(
-        new URL(import.meta.resolve("./testdata/jsonc/node/check_proto.ts")),
-        { type: "classic" },
-      );
 
-      // 2. create tmp file
-      await Deno.writeTextFile(tempTile, code);
-
-      // 3. run in Node.js
-      const command = new Deno.Command("node", {
-        stdout: "inherit",
-        stderr: "inherit",
-        args: [tempTile],
+    const testCode = `
+      Object.defineProperty(Object.prototype, "__proto__", {
+        set() {
+          throw new Error("Don't try to set the value directly to the key __proto__.")
+        }
       });
-
-      // 4. check for successful completion
-      const { success } = await command.output();
-      assert(success);
-    } finally {
-      await Deno.remove(tempTile);
-    }
+      import { parse } from "${import.meta.resolve("./jsonc.ts")}";
+      parse('{"__proto__": {"isAdmin": true}}');
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      stdout: "inherit",
+      stderr: "inherit",
+      args: ["eval", testCode],
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 });
