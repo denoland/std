@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { encode as hexEncode } from "../encoding/hex.ts";
 import { encode as base64Encode } from "../encoding/base64.ts";
 

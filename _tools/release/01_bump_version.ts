@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run=git,deno --no-check
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { getReleasesMdFile, loadRepo, VersionFile } from "./repo.ts";
 
 const repo = await loadRepo();

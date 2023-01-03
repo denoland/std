@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Ported from test262
 // https://github.com/tc39/test262/blob/276e79d62e8c45bc1e427fc680320c4899eace27/harness/propertyHelper.js
 // Copyright (C) 2017 Ecma International.  All rights reserved.

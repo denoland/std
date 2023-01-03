@@ -1,6 +1,6 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Pretty print bytes.
  *

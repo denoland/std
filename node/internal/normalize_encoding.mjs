@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 export function normalizeEncoding(enc) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";

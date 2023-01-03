@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // usage: deno run -A --unstable node/_tools/vendor_readable_stream.ts
 const sourceUrl =
   "https://esm.sh/v96/readable-stream@4.2.0/es2022/readable-stream.js";
