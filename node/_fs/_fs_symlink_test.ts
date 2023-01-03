@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertThrows, fail } from "../../testing/asserts.ts";
 import { symlink, symlinkSync } from "./_fs_symlink.ts";
 

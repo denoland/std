@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { bundle } from "https://deno.land/x/emit@0.12.0/mod.ts";
 import * as JSONC from "./jsonc.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** {@linkcode parse} function for parsing
  * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)

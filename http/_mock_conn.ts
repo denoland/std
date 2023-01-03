@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Create dummy `Deno.Conn` object with given base properties. */
 export function mockConn(base: Partial<Deno.Conn> = {}): Deno.Conn {

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 // This module provides an interface to `Deno.core`. For environments
 // that don't have access to `Deno.core` some APIs are polyfilled, while

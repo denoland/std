@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Upstream modules
 const callerPath = `const callerCallsite = require("caller-callsite");
 const re = /^file:/;
