@@ -1,19 +1,19 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
-import { isWindows } from "../_util/os.ts";
+import { globToRegExp } from "../path/glob.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
-  "node/_module",
-  "node/_tools/test",
-  "node/_tools/versions",
-  "dotenv/testdata",
-  "fs/testdata",
-  "http/testdata",
-  "node/testdata",
-  "crypto/_wasm/target",
-  "encoding/varint/_wasm/target",
-].map((path) => path.replaceAll("/", isWindows ? "\\\\" : "/"));
+  "**/node/_module",
+  "**/node/_tools/test",
+  "**/node/_tools/versions",
+  "**/dotenv/testdata",
+  "**/fs/testdata",
+  "**/http/testdata",
+  "**/node/testdata",
+  "**/crypto/_wasm/target",
+  "**/encoding/varint/_wasm/target",
+];
 
 const ROOT = new URL("../", import.meta.url);
 const CHECK = Deno.args.includes("--check");
@@ -30,7 +30,7 @@ let failed = false;
 for await (
   const { path } of walk(ROOT, {
     exts: EXTENSIONS,
-    skip: EXCLUDED_DIRS.map((path) => new RegExp(path + "$")),
+    skip: EXCLUDED_DIRS.map((path) => globToRegExp(path)),
     includeDirs: false,
   })
 ) {
