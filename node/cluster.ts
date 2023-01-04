@@ -12,4 +12,6 @@ import { _createServerHandle, createServer } from "./net.ts";
 initRoundRobinHandle(createServer);
 initSharedHandle(_createServerHandle);
 
-export { cluster, cluster as default };
+export { cluster };
+
+export default { cluster };
