@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2802
+Total: 2804
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -360,6 +360,7 @@ Total: 2802
 - [parallel/test-cluster-accept-fail.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-accept-fail.js)
 - [parallel/test-cluster-advanced-serialization.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-advanced-serialization.js)
 - [parallel/test-cluster-basic.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-basic.js)
+- [parallel/test-cluster-bind-privileged-port.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-bind-privileged-port.js)
 - [parallel/test-cluster-bind-twice.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-bind-twice.js)
 - [parallel/test-cluster-call-and-destroy.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-call-and-destroy.js)
 - [parallel/test-cluster-concurrent-disconnect.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-concurrent-disconnect.js)
@@ -409,6 +410,7 @@ Total: 2802
 - [parallel/test-cluster-setup-primary-multiple.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-setup-primary-multiple.js)
 - [parallel/test-cluster-setup-primary.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-setup-primary.js)
 - [parallel/test-cluster-shared-handle-bind-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-shared-handle-bind-error.js)
+- [parallel/test-cluster-shared-handle-bind-privileged-port.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-shared-handle-bind-privileged-port.js)
 - [parallel/test-cluster-shared-leak.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-shared-leak.js)
 - [parallel/test-cluster-uncaught-exception.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-uncaught-exception.js)
 - [parallel/test-cluster-worker-constructor.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-constructor.js)
