@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertRejects, assertThrows } from "../../testing/asserts.ts";
 import { mkdtemp, mkdtempSync } from "./_fs_mkdtemp.ts";
 import { existsSync } from "./_fs_exists.ts";

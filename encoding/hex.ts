@@ -1,6 +1,6 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Port of the Go
  * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)

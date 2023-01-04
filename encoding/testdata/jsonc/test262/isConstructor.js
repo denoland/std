@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Ported from test262
 // https://github.com/tc39/test262/blob/488eb365db7c613d52e72a9f5b8726684906e540/harness/isConstructor.js
 // Copyright (C) 2017 André Bargull. All rights reserved.
