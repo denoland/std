@@ -1556,7 +1556,7 @@ const MAX_BITS = 15;
 
 const MIN_MATCH = 3;
 const MAX_MATCH = 258;
-const MIN_LOOKAHEAD = (MAX_MATCH + MIN_MATCH + 1);
+const MIN_LOOKAHEAD = MAX_MATCH + MIN_MATCH + 1;
 
 const PRESET_DICT = 0x20;
 
@@ -5655,12 +5655,12 @@ const inflate$2 = (strm, flush) => {
         //---//
 
         switch ((hold & 0x03) /*BITS(2)*/) {
-          case 0:/* stored block */
+          case 0: /* stored block */
             //Tracev((stderr, "inflate:     stored block%s\n",
             //        state.last ? " (last)" : ""));
             state.mode = STORED;
             break;
-          case 1:/* fixed block */
+          case 1: /* fixed block */
             fixedtables(state);
             //Tracev((stderr, "inflate:     fixed codes block%s\n",
             //        state.last ? " (last)" : ""));
@@ -5673,7 +5673,7 @@ const inflate$2 = (strm, flush) => {
               break inf_leave;
             }
             break;
-          case 2:/* dynamic block */
+          case 2: /* dynamic block */
             //Tracev((stderr, "inflate:     dynamic codes block%s\n",
             //        state.last ? " (last)" : ""));
             state.mode = TABLE;

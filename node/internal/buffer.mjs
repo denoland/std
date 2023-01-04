@@ -346,7 +346,7 @@ function byteLength(string, encoding) {
   }
 
   const len = string.length;
-  const mustMatch = (arguments.length > 2 && arguments[2] === true);
+  const mustMatch = arguments.length > 2 && arguments[2] === true;
   if (!mustMatch && len === 0) {
     return 0;
   }
@@ -598,8 +598,7 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
   }
 
   if (isUint8Array(val)) {
-    const encodingVal =
-      (ops === undefined ? encodingsMap.utf8 : ops.encodingVal);
+    const encodingVal = ops === undefined ? encodingsMap.utf8 : ops.encodingVal;
     return indexOfBuffer(buffer, val, byteOffset, encodingVal, dir);
   }
 
