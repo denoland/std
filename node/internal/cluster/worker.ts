@@ -73,4 +73,4 @@ export class Worker extends EventEmitter implements IWorker {
   }
 }
 
-export { Worker as default };
+export default Worker;

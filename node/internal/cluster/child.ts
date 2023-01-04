@@ -334,4 +334,4 @@ Worker.prototype.destroy = function () {
   }
 };
 
-export { cluster as default };
+export default cluster;

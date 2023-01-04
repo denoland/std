@@ -62,7 +62,10 @@ cluster.schedulingPolicy = schedulingPolicy;
 cluster.setupPrimary = function (options?: ClusterSettings) {
   const settings = {
     args: process.argv.slice(2),
-    exec: process.argv[1],
+    // TODO: remove extension replacement if/when have a better solution for
+    // resolving TypeScript files through Deno's Node module resolution.
+    // See https://github.com/denoland/deno/blob/main/cli/node/mod.rs#L725.
+    exec: process.argv[1].replace(/\.ts$/, ".mjs"),
     execArgv: process.execArgv,
     silent: false,
     ...cluster.settings,
@@ -432,4 +435,4 @@ Worker.prototype.destroy = function (signo?: string): void {
   (proc as ChildProcess).kill(signo);
 };
 
-export { cluster as default };
+export default cluster;

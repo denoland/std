@@ -3,7 +3,6 @@
 
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
-import { notImplemented } from "../../_utils.ts";
 import type { Message, Worker } from "./types.ts";
 
 const callbacks = new Map();
@@ -16,9 +15,6 @@ export function sendHelper(
   handle?: any,
   cb?: unknown,
 ) {
-  // TODO(cmorten): implement required process properties and methods.
-  notImplemented("process.connected, process.send");
-
   // TODO(cmorten): remove type cast once ChildProcess implements `connected`
   // property.
   // deno-lint-ignore no-explicit-any
