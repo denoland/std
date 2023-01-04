@@ -96,8 +96,16 @@ import { debuglog } from "./internal/util/debuglog.ts";
 import type { DuplexOptions } from "./_stream.d.ts";
 import type { BufferEncoding } from "./_global.d.ts";
 import type { Abortable } from "./_events.d.ts";
-import { cluster } from "./cluster.ts";
+import { initRoundRobinHandle } from "./internal/cluster/round_robin_handle.ts";
+import { initSharedHandle } from "./internal/cluster/shared_handle.ts";
+import { cluster } from "./internal/cluster/cluster.ts";
 import { channel } from "./diagnostics_channel.ts";
+
+// Lazily initializes the cluster *Handle classes.
+// This trick is necessary for avoiding circular dependencies between
+// net and cluster modules.
+initRoundRobinHandle(createServer);
+initSharedHandle(_createServerHandle);
 
 let debug = debuglog("net", (fn) => {
   debug = fn;

@@ -2,13 +2,9 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import EventEmitter from "../../events.ts";
-import { Server } from "../../net.ts";
-import { Socket } from "../../dgram.ts";
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
 import type { ForkOptions } from "../../child_process.ts";
-import type { Handle } from "../../net.ts";
-import type { UDP } from "../../internal_binding/udp_wrap.ts";
 
 export interface Message {
   // deno-lint-ignore no-explicit-any
@@ -98,12 +94,14 @@ export interface Worker extends EventEmitter {
   ): boolean;
   send(
     message: Serializable,
-    sendHandle: Socket | Server,
+    // deno-lint-ignore no-explicit-any
+    sendHandle: any,
     callback?: (error: Error | null) => void,
   ): boolean;
   send(
     message: Serializable,
-    sendHandle: Socket | Server,
+    // deno-lint-ignore no-explicit-any
+    sendHandle: any,
     options?: MessageOptions,
     callback?: (error: Error | null) => void,
   ): boolean;
@@ -279,7 +277,8 @@ export interface Worker extends EventEmitter {
   addListener(event: "listening", listener: (address: Address) => void): this;
   addListener(
     event: "message",
-    listener: (message: unknown, handle: Socket | Server) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   addListener(event: "online", listener: () => void): this;
 
@@ -288,7 +287,8 @@ export interface Worker extends EventEmitter {
   emit(event: "error", error: Error): boolean;
   emit(event: "exit", code: number, signal: string): boolean;
   emit(event: "listening", address: Address): boolean;
-  emit(event: "message", message: unknown, handle: Socket | Server): boolean;
+  // deno-lint-ignore no-explicit-any
+  emit(event: "message", message: unknown, handle: any): boolean;
   emit(event: "online"): boolean;
 
   on(event: string, listener: (...args: unknown[]) => void): this;
@@ -296,10 +296,8 @@ export interface Worker extends EventEmitter {
   on(event: "error", listener: (error: Error) => void): this;
   on(event: "exit", listener: (code: number, signal: string) => void): this;
   on(event: "listening", listener: (address: Address) => void): this;
-  on(
-    event: "message",
-    listener: (message: unknown, handle: Socket | Server) => void,
-  ): this; // the handle is a Socket or Server object, or undefined.
+  // deno-lint-ignore no-explicit-any
+  on(event: "message", listener: (message: unknown, handle: any) => void): this; // the handle is a Socket or Server object, or undefined.
   on(event: "online", listener: () => void): this;
 
   once(event: string, listener: (...args: unknown[]) => void): this;
@@ -309,7 +307,8 @@ export interface Worker extends EventEmitter {
   once(event: "listening", listener: (address: Address) => void): this;
   once(
     event: "message",
-    listener: (message: unknown, handle: Socket | Server) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   once(event: "online", listener: () => void): this;
 
@@ -326,7 +325,8 @@ export interface Worker extends EventEmitter {
   ): this;
   prependListener(
     event: "message",
-    listener: (message: unknown, handle: Socket | Server) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   prependListener(event: "online", listener: () => void): this;
 
@@ -346,7 +346,8 @@ export interface Worker extends EventEmitter {
   ): this;
   prependOnceListener(
     event: "message",
-    listener: (message: unknown, handle: Socket | Server) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   prependOnceListener(event: "online", listener: () => void): this;
 }
@@ -368,7 +369,8 @@ export interface Cluster extends EventEmitter {
   _setupWorker?: () => void;
 
   _getServer?: (
-    obj: Server | Socket,
+    // deno-lint-ignore no-explicit-any
+    obj: any,
     options: {
       address?: string | null;
       port?: number | null;
@@ -376,7 +378,8 @@ export interface Cluster extends EventEmitter {
       fd?: number | null;
       flags?: number | null;
     },
-    cb: (err: number, handle: Handle | UDP | null) => void,
+    // deno-lint-ignore no-explicit-any
+    cb: (err: number, handle: any) => void,
   ) => void;
 
   disconnect(callback?: () => void): void;
@@ -414,11 +417,8 @@ export interface Cluster extends EventEmitter {
   ): this;
   addListener(
     event: "message",
-    listener: (
-      worker: Worker,
-      message: unknown,
-      handle: Socket | Server,
-    ) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (worker: Worker, message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   addListener(event: "online", listener: (worker: Worker) => void): this;
   addListener(
@@ -435,7 +435,8 @@ export interface Cluster extends EventEmitter {
     event: "message",
     worker: Worker,
     message: unknown,
-    handle: Socket | Server,
+    // deno-lint-ignore no-explicit-any
+    handle: any,
   ): boolean;
   emit(event: "online", worker: Worker): boolean;
   emit(event: "setup", settings: ClusterSettings): boolean;
@@ -453,11 +454,8 @@ export interface Cluster extends EventEmitter {
   ): this;
   on(
     event: "message",
-    listener: (
-      worker: Worker,
-      message: unknown,
-      handle: Socket | Server,
-    ) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (worker: Worker, message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   on(event: "online", listener: (worker: Worker) => void): this;
   on(event: "setup", listener: (settings: ClusterSettings) => void): this;
@@ -475,11 +473,8 @@ export interface Cluster extends EventEmitter {
   ): this;
   once(
     event: "message",
-    listener: (
-      worker: Worker,
-      message: unknown,
-      handle: Socket | Server,
-    ) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (worker: Worker, message: unknown, handle: any) => void,
   ): this; // the handle is a Socket or Server object, or undefined.
   once(event: "online", listener: (worker: Worker) => void): this;
   once(event: "setup", listener: (settings: ClusterSettings) => void): this;
@@ -501,11 +496,8 @@ export interface Cluster extends EventEmitter {
   // the handle is a Socket or Server object, or undefined.
   prependListener(
     event: "message",
-    listener: (
-      worker: Worker,
-      message: unknown,
-      handle?: Socket | Server,
-    ) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (worker: Worker, message: unknown, handle?: any) => void,
   ): this;
   prependListener(event: "online", listener: (worker: Worker) => void): this;
   prependListener(
@@ -533,11 +525,8 @@ export interface Cluster extends EventEmitter {
   // the handle is a Socket or Server object, or undefined.
   prependOnceListener(
     event: "message",
-    listener: (
-      worker: Worker,
-      message: unknown,
-      handle: Socket | Server,
-    ) => void,
+    // deno-lint-ignore no-explicit-any
+    listener: (worker: Worker, message: unknown, handle: any) => void,
   ): this;
   prependOnceListener(
     event: "online",

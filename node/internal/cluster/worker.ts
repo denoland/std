@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-import type { Worker as IWorker, WorkerOptions } from "./types.ts";
 import { EventEmitter } from "../../events.ts";
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
+import type { Worker as IWorker, WorkerOptions } from "./types.ts";
 
 // Common Worker implementation shared between the cluster primary and workers.
 export class Worker extends EventEmitter implements IWorker {
@@ -73,4 +73,4 @@ export class Worker extends EventEmitter implements IWorker {
   }
 }
 
-export default Worker;
+export { Worker as default };

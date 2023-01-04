@@ -3,77 +3,89 @@
 
 import assert from "../assert.mjs";
 import { _createSocketHandle } from "../dgram.ts";
-import { UDP } from "../../internal_binding/udp_wrap.ts";
-import { _createServerHandle } from "../../net.ts";
-import type { Handle } from "../../net.ts";
 import type { Message, Worker } from "./types.ts";
 
-export class SharedHandle {
-  key: string;
-  workers: Map<number, Worker>;
-  handle: UDP | Handle | null = null;
-  errno = 0;
+// deno-lint-ignore no-var no-explicit-any
+var SharedHandle: any;
 
-  constructor(
-    key: string,
-    address: string,
-    { port, addressType, fd, flags }: Message,
-  ) {
-    this.key = key;
-    this.workers = new Map();
-    this.handle = null;
-    this.errno = 0;
-
-    let rval;
-
-    if (addressType === "udp4" || addressType === "udp6") {
-      rval = _createSocketHandle(address, port!, addressType, fd!, flags!);
-    } else {
-      rval = _createServerHandle(
-        address,
-        port!,
-        addressType as number,
-        fd,
-        flags,
-      );
-    }
-
-    if (typeof rval === "number") {
-      this.errno = rval;
-    } else {
-      this.handle = rval;
-    }
+// Lazily initializes the actual SharedHandle class.
+// This trick is necessary for avoiding circular dependencies between
+// net and cluster modules.
+// deno-lint-ignore no-explicit-any
+export function initSharedHandle(_createServerHandle: any) {
+  if (SharedHandle) {
+    return;
   }
 
-  add(
-    worker: Worker,
-    send: (
-      errno: number,
-      reply: Record<string, unknown> | null,
-      handle: UDP | Handle,
-    ) => void,
-  ) {
-    assert(!this.workers.has(worker.id));
-    this.workers.set(worker.id, worker);
-    send(this.errno, null, this.handle!);
-  }
+  SharedHandle = class SharedHandle {
+    key: string;
+    workers: Map<number, Worker>;
+    // deno-lint-ignore no-explicit-any
+    handle: any = null;
+    errno = 0;
 
-  remove(worker: Worker) {
-    if (!this.workers.has(worker.id)) {
-      return false;
+    constructor(
+      key: string,
+      address: string,
+      { port, addressType, fd, flags }: Message,
+    ) {
+      this.key = key;
+      this.workers = new Map();
+      this.handle = null;
+      this.errno = 0;
+
+      let rval;
+
+      if (addressType === "udp4" || addressType === "udp6") {
+        rval = _createSocketHandle(address, port!, addressType, fd!, flags!);
+      } else {
+        rval = _createServerHandle(
+          address,
+          port!,
+          addressType as number,
+          fd,
+          flags,
+        );
+      }
+
+      if (typeof rval === "number") {
+        this.errno = rval;
+      } else {
+        this.handle = rval;
+      }
     }
 
-    this.workers.delete(worker.id);
-
-    if (this.workers.size !== 0) {
-      return false;
+    add(
+      worker: Worker,
+      send: (
+        errno: number,
+        reply: Record<string, unknown> | null,
+        // deno-lint-ignore no-explicit-any
+        handle: any,
+      ) => void,
+    ) {
+      assert(!this.workers.has(worker.id));
+      this.workers.set(worker.id, worker);
+      send(this.errno, null, this.handle!);
     }
 
-    this.handle!.close();
-    this.handle = null;
+    remove(worker: Worker) {
+      if (!this.workers.has(worker.id)) {
+        return false;
+      }
 
-    return true;
-  }
+      this.workers.delete(worker.id);
+
+      if (this.workers.size !== 0) {
+        return false;
+      }
+
+      this.handle!.close();
+      this.handle = null;
+
+      return true;
+    }
+  };
 }
 
-export default SharedHandle;
+export { SharedHandle as default };

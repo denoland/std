@@ -1,14 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import process from "./process.ts";
-import childCluster from "./internal/cluster/child.ts";
-import primaryCluster from "./internal/cluster/primary.ts";
+import { initRoundRobinHandle } from "./internal/cluster/round_robin_handle.ts";
+import { initSharedHandle } from "./internal/cluster/shared_handle.ts";
+import { cluster } from "./internal/cluster/cluster.ts";
+import { _createServerHandle, createServer } from "./net.ts";
 
-const cluster = process.env.NODE_UNIQUE_ID !== undefined
-  ? childCluster
-  : primaryCluster;
+// Lazily initializes the cluster *Handle classes.
+// This trick is necessary for avoiding circular dependencies between
+// net and cluster modules.
+initRoundRobinHandle(createServer);
+initSharedHandle(_createServerHandle);
 
-export { cluster };
-
-export default { cluster };
+export { cluster, cluster as default };

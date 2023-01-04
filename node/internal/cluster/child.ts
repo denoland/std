@@ -14,12 +14,6 @@ import type {
   Worker as IWorker,
   WorkerClass,
 } from "./types.ts";
-import { Server } from "../../net.ts";
-import type { AddressInfo } from "../../net.ts";
-import { Socket } from "../../dgram.ts";
-import type { Handle } from "../../net.ts";
-import type { TCP } from "../../internal_binding/tcp_wrap.ts";
-import type { UDP } from "../../internal_binding/udp_wrap.ts";
 
 const cluster: ICluster = new EventEmitter() as ICluster;
 const handles = new Map();
@@ -55,7 +49,8 @@ cluster._setupWorker = function () {
   process.on("internalMessage", internal(worker, onmessage));
   send({ act: "online" });
 
-  function onmessage(message: Message, handle: Handle | UDP) {
+  // deno-lint-ignore no-explicit-any
+  function onmessage(message: Message, handle: any) {
     if (message.act === "newconn") {
       onconnection(message, handle);
     } else if (message.act === "disconnect") {
@@ -66,7 +61,8 @@ cluster._setupWorker = function () {
 
 // `obj` is a net#Server or a dgram#Socket object.
 cluster._getServer = function (
-  obj: Server | Socket,
+  // deno-lint-ignore no-explicit-any
+  obj: any,
   options: {
     address?: string | null;
     port?: number | null;
@@ -74,7 +70,8 @@ cluster._getServer = function (
     fd?: number | null;
     flags?: number | null;
   },
-  cb: (err: number, handle: Handle | UDP | null) => void,
+  // deno-lint-ignore no-explicit-any
+  cb: (err: number, handle: any | null) => void,
 ) {
   let address = options.address;
 
@@ -120,30 +117,28 @@ cluster._getServer = function (
     message.data = (obj as any)._getServerData();
   }
 
-  send(
-    message,
-    (reply: Record<string, unknown> | null, handle: Handle | UDP) => {
+  // deno-lint-ignore no-explicit-any
+  send(message, (reply: Record<string, unknown> | null, handle: any) => {
+    // deno-lint-ignore no-explicit-any
+    if (typeof (obj as any)._setServerData === "function") {
       // deno-lint-ignore no-explicit-any
-      if (typeof (obj as any)._setServerData === "function") {
-        // deno-lint-ignore no-explicit-any
-        (obj as any)._setServerData(reply!.data);
-      }
+      (obj as any)._setServerData(reply!.data);
+    }
 
-      if (handle) {
-        // Shared listen socket
-        shared(reply!, { handle, indexesKey, index }, cb);
-      } else {
-        // Round-robin.
-        rr(reply!, { indexesKey, index }, cb);
-      }
-    },
-  );
+    if (handle) {
+      // Shared listen socket
+      shared(reply!, { handle, indexesKey, index }, cb);
+    } else {
+      // Round-robin.
+      rr(reply!, { indexesKey, index }, cb);
+    }
+  });
 
   obj.once("listening", () => {
     cluster.worker!.state = "listening";
     const address = obj.address();
     message.act = "listening";
-    message.port = (address && (address as AddressInfo).port) || options.port;
+    message.port = address?.port || options.port;
     send(message);
   });
 };
@@ -169,8 +164,10 @@ function shared(
     handle,
     indexesKey,
     index,
-  }: { handle: Handle | UDP; indexesKey: string; index: number },
-  cb: (errno: number, handle: Handle | UDP) => void,
+  }: // deno-lint-ignore no-explicit-any
+    { handle: any; indexesKey: string; index: number },
+  // deno-lint-ignore no-explicit-any
+  cb: (errno: number, handle: any) => void,
 ) {
   const key = message.key;
   // Monkey-patch the close() method so we can keep track of when it's
@@ -194,7 +191,8 @@ function shared(
 function rr(
   message: Message,
   { indexesKey, index }: { indexesKey: string; index: number },
-  cb: (errno: number, handle: Handle | UDP | null) => void,
+  // deno-lint-ignore no-explicit-any
+  cb: (errno: number, handle: any | null) => void,
 ) {
   if (message.errno) {
     return cb(message.errno, null);
@@ -234,12 +232,13 @@ function rr(
   // with it. Fools net.Server into thinking that it's backed by a real
   // handle. Use a noop function for ref() and unref() because the control
   // channel is going to keep the worker alive anyway.
-  const handle: TCP = {
+  // deno-lint-ignore no-explicit-any
+  const handle: any = {
     close,
     listen,
     ref: noop as () => void,
     unref: noop as () => void,
-  } as TCP;
+  };
 
   if (message.sockname) {
     handle.getsockname = getsockname; // TCP handles only.
@@ -251,7 +250,8 @@ function rr(
 }
 
 // Round-robin connection.
-function onconnection(message: Message, handle: Handle | UDP) {
+// deno-lint-ignore no-explicit-any
+function onconnection(message: Message, handle: any) {
   const key = message.key;
   const server = handles.get(key);
   const accepted = server !== undefined;
@@ -334,4 +334,4 @@ Worker.prototype.destroy = function () {
   }
 };
 
-export default cluster;
+export { cluster as default };

@@ -10,6 +10,10 @@ import SharedHandle from "./shared_handle.ts";
 import Worker from "./worker.ts";
 import { internal, sendHelper } from "./utils.ts";
 import { validatePort } from "../validators.mjs";
+import process from "../../process.ts";
+import { ChildProcess } from "../child_process.ts";
+import { notImplemented } from "../../_utils.ts";
+import { ObjectAssign } from "../primordials.mjs";
 import type {
   Cluster as ICluster,
   ClusterSettings,
@@ -17,12 +21,6 @@ import type {
   Worker as IWorker,
   WorkerClass,
 } from "./types.ts";
-import process from "../../process.ts";
-import { ChildProcess } from "../child_process.ts";
-import type { Handle } from "../../net.ts";
-import type { UDP } from "../../internal_binding/udp_wrap.ts";
-import { notImplemented } from "../../_utils.ts";
-import { ObjectAssign } from "../primordials.mjs";
 
 const cluster: ICluster = new EventEmitter() as ICluster;
 const intercom = new EventEmitter();
@@ -33,7 +31,7 @@ const maxPort = 65535;
 
 const handles = new Map();
 (cluster.isWorker as boolean) = false;
-(cluster.isMaster as boolean) = false;
+(cluster.isMaster as boolean) = true;
 (cluster.isPrimary as boolean) = true;
 (cluster.Worker as WorkerClass) = Worker;
 (cluster.workers as Record<number, IWorker>) = {};
@@ -194,7 +192,8 @@ cluster.fork = function (env) {
 
   worker.on(
     "message",
-    function (this: IWorker, message: Message, handle: Handle | UDP) {
+    // deno-lint-ignore no-explicit-any
+    function (this: IWorker, message: Message, handle: any) {
       cluster.emit("message", this, message, handle);
     },
   );
@@ -276,7 +275,8 @@ const methodMessageMapping = {
   queryServer,
 };
 
-function onmessage(this: IWorker, message: Message, _handle: Handle | UDP) {
+// deno-lint-ignore no-explicit-any
+function onmessage(this: IWorker, message: Message, _handle: any) {
   const fn =
     methodMessageMapping[message.act as keyof typeof methodMessageMapping];
 
@@ -349,7 +349,8 @@ function queryServer(worker: IWorker, message: Message) {
     (
       errno: number,
       reply: Record<string, unknown> | null,
-      handle: Handle | UDP,
+      // deno-lint-ignore no-explicit-any
+      handle: any,
     ) => {
       const { data } = handles.get(key);
 
@@ -399,7 +400,8 @@ function close(worker: IWorker, message: Message) {
 function send(
   worker: IWorker,
   message: Message,
-  handle?: Handle | UDP,
+  // deno-lint-ignore no-explicit-any
+  handle?: any,
   cb?: unknown,
 ) {
   return sendHelper(worker.process, message, handle, cb);
@@ -430,4 +432,4 @@ Worker.prototype.destroy = function (signo?: string): void {
   (proc as ChildProcess).kill(signo);
 };
 
-export default cluster;
+export { cluster as default };
