@@ -62,6 +62,7 @@ function getParentIndex(index: number) {
 export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
   constructor(private compare: (a: T, b: T) => number = descend) {}
+  /** Returns the underlying cloned array in arbitrary order */  
   toArray() {
     return Array.from(this.#data);
   }
