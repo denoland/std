@@ -2,7 +2,7 @@
 // https://github.com/golang/go/tree/go1.13.10/src/hash/fnv/fnv.go
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { mul64, swap32 } from "./util.ts";

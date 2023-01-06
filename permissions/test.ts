@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { grant, grantOrThrow } from "./mod.ts";
 import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
 

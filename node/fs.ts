@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { access, accessPromise, accessSync } from "./_fs/_fs_access.ts";
 import {
   appendFile,

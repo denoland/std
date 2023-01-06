@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-unused-vars
 
 /**
@@ -1424,21 +1424,17 @@ export default class Context {
           options.write = true;
         }
 
-        const read = (
-          RIGHTS_FD_READ |
-          RIGHTS_FD_READDIR
-        );
+        const read = RIGHTS_FD_READ |
+          RIGHTS_FD_READDIR;
 
         if ((rightsBase & read) != 0n) {
           options.read = true;
         }
 
-        const write = (
-          RIGHTS_FD_DATASYNC |
+        const write = RIGHTS_FD_DATASYNC |
           RIGHTS_FD_WRITE |
           RIGHTS_FD_ALLOCATE |
-          RIGHTS_FD_FILESTAT_SET_SIZE
-        );
+          RIGHTS_FD_FILESTAT_SET_SIZE;
 
         if ((rightsBase & write) != 0n) {
           options.write = true;

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2011 the Sputnik authors.  All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -155,7 +155,6 @@ export function* emitKeys(stream) {
          *
          * We have basically two classes of ascii characters to process:
          *
-         *
          * 1. `\x1b[24;5~` should be parsed as { code: '[24~', modifier: 5 }
          *
          * This particular example is featuring Ctrl+F12 in xterm.
@@ -165,7 +164,6 @@ export function* emitKeys(stream) {
          *
          * So the generic regexp is like /^\d\d?(;\d)?[~^$]$/
          *
-         *
          * 2. `\x1b[1;5H` should be parsed as { code: '[H', modifier: 5 }
          *
          * This particular example is featuring Ctrl+Home in xterm.
@@ -174,7 +172,6 @@ export function* emitKeys(stream) {
          *  - `1;` part is optional, e.g. it could be `\x1b[5H`
          *
          * So the generic regexp is like /^((\d;)?\d)?[A-Za-z]$/
-         *
          */
         const cmdStart = s.length - 1;
 

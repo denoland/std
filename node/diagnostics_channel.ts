@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import { validateFunction } from "./internal/validators.mjs";
 import { nextTick } from "./process.ts";

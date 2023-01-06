@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "../internal/util.mjs";
 
 export function unlink(path: string | URL, callback: (err?: Error) => void) {
