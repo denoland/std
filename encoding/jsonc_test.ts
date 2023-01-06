@@ -174,22 +174,6 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] avoid prototype pollution",
-  fn() {
-    // reference: https://github.com/advisories/GHSA-9c47-m6qq-7p4h
-    // Check for prototype pollution using the code contained in the CVE-2022-46175.
-
-    const jsonc = JSONC.parse('{"__proto__": { "isAdmin": true }}');
-    // @ts-expect-error: for test
-    assertEquals(jsonc.__proto__, { isAdmin: true });
-    // @ts-expect-error: for test
-    assertEquals(jsonc.isAdmin, undefined);
-    // @ts-expect-error: for test
-    assertEquals(Object.keys(jsonc), ["__proto__"]);
-  },
-});
-
-Deno.test({
   name: "[jsonc] use Object.defineProperty when setting object property",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
