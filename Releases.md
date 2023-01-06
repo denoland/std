@@ -1,3 +1,20 @@
+### 0.171.0 / 2023.01.05
+
+- feat(http): add --header option to file_server (#2977)
+- feat(node): Add support for os.uptime (#3052)
+- feat(node/diagnostics_channel): initial implementation (#3050)
+- feat(node/url): domainToASCII/domainToUnicode (#3022)
+- fix(flags): parse method looses types in certain cases with collect option
+  (#3040)
+- fix(flags): types for aliases defined as array are ignored (#3043)
+- fix(node/http): avoid empty chunk issue of flash (#3062)
+- fix(node/http): ignore body when status code is one of 101, 204, 205, 304
+  (#3067)
+- fix(node/util): reference error of 'process' (#3037)
+- fix(path): correctly handle trailing slashes for basename (#3068)
+- fix(testing): do not mutate tokens when creating details (#3049)
+- fix: don't use windows-xl runners, too expensive (#3021)
+
 ### 0.170.0 / 2022.12.19
 
 - Revert "fix(node/http): do not buffer first chunk (#2989)" (#3013)
