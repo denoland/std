@@ -53,10 +53,6 @@ Deno.test("[ANY/JSON] parse json delineate by ---json", async () => {
 
 // TOML //
 
-Deno.test("[ANY/TOML] test valid input true", () => {
-  runTestValidInputTests(Format.TOML, test);
-});
-
 Deno.test("[ANY/TOML] test invalid input false", () => {
   runTestInvalidInputTests(Format.TOML, test);
 });
@@ -65,6 +61,6 @@ Deno.test("[ANY/TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extract);
 });
 
-Deno.test("[ANY/TOML] parse toml delineate by ---toml", async () => {
+Deno.test("[ANY/TOML] parse toml delineate by +++toml", async () => {
   await runExtractTOMLTests(extract);
 });

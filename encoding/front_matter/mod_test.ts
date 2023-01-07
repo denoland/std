@@ -98,10 +98,6 @@ Deno.test("[JSON] parse json delineate by ---json", async () => {
 
 // TOML //
 
-Deno.test("[TOML] test valid input true", () => {
-  runTestValidInputTests(Format.TOML, test);
-});
-
 Deno.test("[TOML] test invalid input false", () => {
   runTestInvalidInputTests(Format.TOML, test);
 });

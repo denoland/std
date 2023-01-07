@@ -176,21 +176,21 @@ export async function runExtractTOMLTests(
   assert(content !== undefined);
   assertEquals(
     content.frontMatter,
-    `title = 'Three dashes followed by the format marks the spot'
+    `title = 'Three plus followed by the format marks the spot'
 tags = ['toml', 'front-matter']
-'expanded-description' = 'with some ---toml 👌 crazy stuff in it'`,
+'expanded-description' = 'with some +++toml 👌 crazy stuff in it'`,
   );
   assertEquals(
     content.body,
-    "don't break\n---\nAlso = '---toml this shouldn't be a problem'\n",
+    "don't break\n+++\nAlso = '+++toml this shouldn't be a problem'\n",
   );
   assertEquals(
     content.attrs.title,
-    "Three dashes followed by the format marks the spot",
+    "Three plus followed by the format marks the spot",
   );
   assertEquals(content.attrs.tags, ["toml", "front-matter"]);
   assertEquals(
     content.attrs["expanded-description"],
-    "with some ---toml 👌 crazy stuff in it",
+    "with some +++toml 👌 crazy stuff in it",
   );
 }

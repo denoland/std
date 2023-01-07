@@ -117,9 +117,9 @@
  * #### TOML
  *
  * ```markdown
- * ---toml
+ * +++toml
  * this = 'is'
- * ---
+ * +++
  * ```
  *
  * ```markdown
@@ -174,7 +174,7 @@ const [RX_RECOGNIZE_YAML, RX_YAML] = createRegExp(
   "---",
 );
 const [RX_RECOGNIZE_TOML, RX_TOML] = createRegExp(
-  ["---toml", "---"],
+  ["\\+\\+\\+toml", "\\+\\+\\+"],
   "= toml =",
 );
 const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
@@ -261,7 +261,7 @@ function _extract<T>(
  * assertEquals(body, "ferret");
  * assertEquals(frontMatter, "title: Three dashes marks the spot");
  *
- * ({ attrs, body, frontMatter } = extractTOML<{ title: string }>("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
+ * ({ attrs, body, frontMatter } = extractTOML<{ title: string }>("\\+\\+\\+toml\ntitle = 'Three plus followed by format marks the spot'\n\\+\\+\\+\n"));
  * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
  * assertEquals(body, "");
  * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot'");
@@ -310,7 +310,7 @@ export function createExtractor(
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
- * assert(test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
+ * assert(test("\\+\\+\\+toml\ntitle = 'Three plus followed by format marks the spot'\n\\+\\+\\+\n"));
  * assert(test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
  *
  * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
@@ -346,7 +346,7 @@ export function test(str: string, formats?: Format[]): boolean {
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), Format.YAML);
- * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), Format.TOML);
+ * assertEquals(recognize("\\+\\+\\+toml\ntitle = 'Three plus followed by format marks the spot'\n\\+\\+\\+n"), Format.TOML);
  * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), Format.JSON);
  * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), Format.UNKNOWN);
  *

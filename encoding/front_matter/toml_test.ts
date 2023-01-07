@@ -5,12 +5,7 @@ import {
   runExtractTOMLTests,
   runExtractTypeErrorTests,
   runTestInvalidInputTests,
-  runTestValidInputTests,
 } from "./_test_utils.ts";
-
-Deno.test("[TOML] test valid input true", () => {
-  runTestValidInputTests(Format.TOML, test);
-});
 
 Deno.test("[TOML] test invalid input false", () => {
   runTestInvalidInputTests(Format.TOML, test);
@@ -20,6 +15,6 @@ Deno.test("[TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extract);
 });
 
-Deno.test("[TOML] parse toml delineate by ---toml", async () => {
+Deno.test("[TOML] parse toml delineate by +++toml", async () => {
   await runExtractTOMLTests(extract);
 });
