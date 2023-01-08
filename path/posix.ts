@@ -4,14 +4,17 @@
 // This module is browser compatible.
 
 import type { FormatInputPathObject, ParsedPath } from "./_interface.ts";
-import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./_constants.ts";
+import { CHAR_DOT } from "./_constants.ts";
 
 import {
   _format,
   assertPath,
   encodeWhitespace,
   isPosixPathSeparator,
+  lastPathSegment,
   normalizeString,
+  stripSuffix,
+  stripTrailingSeparators,
 } from "./_util.ts";
 
 export const sep = "/";
@@ -47,7 +50,7 @@ export function resolve(...pathSegments: string[]): string {
     }
 
     resolvedPath = `${path}/${resolvedPath}`;
-    resolvedAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+    resolvedAbsolute = isPosixPathSeparator(path.charCodeAt(0));
   }
 
   // At this point the path should be resolved to a full absolute path, but
@@ -79,9 +82,10 @@ export function normalize(path: string): string {
 
   if (path.length === 0) return ".";
 
-  const isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
-  const trailingSeparator =
-    path.charCodeAt(path.length - 1) === CHAR_FORWARD_SLASH;
+  const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
+  const trailingSeparator = isPosixPathSeparator(
+    path.charCodeAt(path.length - 1),
+  );
 
   // Normalize the path
   path = normalizeString(path, !isAbsolute, "/", isPosixPathSeparator);
@@ -99,7 +103,7 @@ export function normalize(path: string): string {
  */
 export function isAbsolute(path: string): boolean {
   assertPath(path);
-  return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+  return path.length > 0 && isPosixPathSeparator(path.charCodeAt(0));
 }
 
 /**
@@ -141,7 +145,7 @@ export function relative(from: string, to: string): string {
   let fromStart = 1;
   const fromEnd = from.length;
   for (; fromStart < fromEnd; ++fromStart) {
-    if (from.charCodeAt(fromStart) !== CHAR_FORWARD_SLASH) break;
+    if (!isPosixPathSeparator(from.charCodeAt(fromStart))) break;
   }
   const fromLen = fromEnd - fromStart;
 
@@ -149,7 +153,7 @@ export function relative(from: string, to: string): string {
   let toStart = 1;
   const toEnd = to.length;
   for (; toStart < toEnd; ++toStart) {
-    if (to.charCodeAt(toStart) !== CHAR_FORWARD_SLASH) break;
+    if (!isPosixPathSeparator(to.charCodeAt(toStart))) break;
   }
   const toLen = toEnd - toStart;
 
@@ -160,7 +164,7 @@ export function relative(from: string, to: string): string {
   for (; i <= length; ++i) {
     if (i === length) {
       if (toLen > length) {
-        if (to.charCodeAt(toStart + i) === CHAR_FORWARD_SLASH) {
+        if (isPosixPathSeparator(to.charCodeAt(toStart + i))) {
           // We get here if `from` is the exact base path for `to`.
           // For example: from='/foo/bar'; to='/foo/bar/baz'
           return to.slice(toStart + i + 1);
@@ -170,7 +174,7 @@ export function relative(from: string, to: string): string {
           return to.slice(toStart + i);
         }
       } else if (fromLen > length) {
-        if (from.charCodeAt(fromStart + i) === CHAR_FORWARD_SLASH) {
+        if (isPosixPathSeparator(from.charCodeAt(fromStart + i))) {
           // We get here if `to` is the exact base path for `from`.
           // For example: from='/foo/bar/baz'; to='/foo/bar'
           lastCommonSep = i;
@@ -185,14 +189,14 @@ export function relative(from: string, to: string): string {
     const fromCode = from.charCodeAt(fromStart + i);
     const toCode = to.charCodeAt(toStart + i);
     if (fromCode !== toCode) break;
-    else if (fromCode === CHAR_FORWARD_SLASH) lastCommonSep = i;
+    else if (isPosixPathSeparator(fromCode)) lastCommonSep = i;
   }
 
   let out = "";
   // Generate the relative path based on the path difference between `to`
   // and `from`
   for (i = fromStart + lastCommonSep + 1; i <= fromEnd; ++i) {
-    if (i === fromEnd || from.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+    if (i === fromEnd || isPosixPathSeparator(from.charCodeAt(i))) {
       if (out.length === 0) out += "..";
       else out += "/..";
     }
@@ -203,7 +207,7 @@ export function relative(from: string, to: string): string {
   if (out.length > 0) return out + to.slice(toStart + lastCommonSep);
   else {
     toStart += lastCommonSep;
-    if (to.charCodeAt(toStart) === CHAR_FORWARD_SLASH) ++toStart;
+    if (isPosixPathSeparator(to.charCodeAt(toStart))) ++toStart;
     return to.slice(toStart);
   }
 }
@@ -219,108 +223,64 @@ export function toNamespacedPath(path: string): string {
 
 /**
  * Return the directory path of a `path`.
- * @param path to determine the directory path for
+ * @param path - path to extract the directory from.
  */
 export function dirname(path: string): string {
-  assertPath(path);
   if (path.length === 0) return ".";
-  const hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+
   let end = -1;
-  let matchedSlash = true;
+  let matchedNonSeparator = false;
+
   for (let i = path.length - 1; i >= 1; --i) {
-    if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
-      if (!matchedSlash) {
+    if (isPosixPathSeparator(path.charCodeAt(i))) {
+      if (matchedNonSeparator) {
         end = i;
         break;
       }
     } else {
-      // We saw the first non-path separator
-      matchedSlash = false;
+      matchedNonSeparator = true;
     }
   }
 
-  if (end === -1) return hasRoot ? "/" : ".";
-  if (hasRoot && end === 1) return "//";
-  return path.slice(0, end);
+  // No matches. Fallback based on provided path:
+  //
+  // - leading slashes paths
+  //     "/foo" => "/"
+  //     "///foo" => "/"
+  // - no slash path
+  //     "foo" => "."
+  if (end === -1) {
+    return isPosixPathSeparator(path.charCodeAt(0)) ? "/" : ".";
+  }
+
+  return stripTrailingSeparators(
+    path.slice(0, end),
+    isPosixPathSeparator,
+  );
 }
 
 /**
- * Return the last portion of a `path`. Trailing directory separators are ignored.
- * @param path to process
- * @param ext of path directory
+ * Return the last portion of a `path`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
+ *
+ * @param path - path to extract the name from.
+ * @param [suffix] - suffix to remove from extracted name.
  */
-export function basename(path: string, ext = ""): string {
-  if (ext !== undefined && typeof ext !== "string") {
-    throw new TypeError('"ext" argument must be a string');
-  }
+export function basename(path: string, suffix = ""): string {
   assertPath(path);
 
-  let start = 0;
-  let end = -1;
-  let matchedSlash = true;
-  let i: number;
-
-  if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
-    if (ext.length === path.length && ext === path) return "";
-    let extIdx = ext.length - 1;
-    let firstNonSlashEnd = -1;
-    for (i = path.length - 1; i >= 0; --i) {
-      const code = path.charCodeAt(i);
-      if (isPosixPathSeparator(code)) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else {
-        if (firstNonSlashEnd === -1) {
-          // We saw the first non-path separator, mark this as the end of our
-          // path component in case we don't match a whole suffix
-          matchedSlash = false;
-          firstNonSlashEnd = i + 1;
-          end = firstNonSlashEnd;
-        }
-        if (extIdx >= 0) {
-          // Try to match the explicit suffix
-          if (code === ext.charCodeAt(extIdx)) {
-            if (--extIdx === -1) {
-              // We matched whole suffix, so mark this as the end of our path
-              // component
-              end = i;
-            }
-          } else {
-            // Suffix character does not match, so bail out early
-            // from checking rest of characters
-            extIdx = -1;
-          }
-        }
-      }
-    }
-
-    if (end === -1) return "";
-    if (start === end) end = firstNonSlashEnd;
-    return path.slice(start, end);
-  } else {
-    for (i = path.length - 1; i >= 0; --i) {
-      if (isPosixPathSeparator(path.charCodeAt(i))) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else if (end === -1) {
-        // We saw the first non-path separator, mark this as the end of our
-        // path component
-        matchedSlash = false;
-        end = i + 1;
-      }
-    }
-
-    if (end === -1) return "";
-    return path.slice(start, end);
+  if (typeof suffix !== "string") {
+    throw new TypeError(
+      `Suffix must be a string. Received ${JSON.stringify(suffix)}`,
+    );
   }
+
+  const lastSegment = lastPathSegment(path, isPosixPathSeparator);
+  const strippedSegment = stripTrailingSeparators(
+    lastSegment,
+    isPosixPathSeparator,
+  );
+  return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
 }
 
 /**
@@ -339,7 +299,7 @@ export function extname(path: string): string {
   let preDotState = 0;
   for (let i = path.length - 1; i >= 0; --i) {
     const code = path.charCodeAt(i);
-    if (code === CHAR_FORWARD_SLASH) {
+    if (isPosixPathSeparator(code)) {
       // If we reached a path separator that was not part of a set of path
       // separators at the end of the string, stop now
       if (!matchedSlash) {
@@ -400,7 +360,7 @@ export function parse(path: string): ParsedPath {
 
   const ret: ParsedPath = { root: "", dir: "", base: "", ext: "", name: "" };
   if (path.length === 0) return ret;
-  const isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
+  const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
   let start: number;
   if (isAbsolute) {
     ret.root = "/";
@@ -421,7 +381,7 @@ export function parse(path: string): ParsedPath {
   // Get non-dir info
   for (; i >= start; --i) {
     const code = path.charCodeAt(i);
-    if (code === CHAR_FORWARD_SLASH) {
+    if (isPosixPathSeparator(code)) {
       // If we reached a path separator that was not part of a set of path
       // separators at the end of the string, stop now
       if (!matchedSlash) {
@@ -462,6 +422,8 @@ export function parse(path: string): ParsedPath {
         ret.base = ret.name = path.slice(startPart, end);
       }
     }
+    // Fallback to '/' in case there is no basename
+    ret.base = ret.base || "/";
   } else {
     if (startPart === 0 && isAbsolute) {
       ret.name = path.slice(1, startDot);
@@ -473,8 +435,12 @@ export function parse(path: string): ParsedPath {
     ret.ext = path.slice(startDot, end);
   }
 
-  if (startPart > 0) ret.dir = path.slice(0, startPart - 1);
-  else if (isAbsolute) ret.dir = "/";
+  if (startPart > 0) {
+    ret.dir = stripTrailingSeparators(
+      path.slice(0, startPart - 1),
+      isPosixPathSeparator,
+    );
+  } else if (isAbsolute) ret.dir = "/";
 
   return ret;
 }
