@@ -3,6 +3,7 @@
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
   allowCR: boolean;
+  flush: string;
 }
 
 /** Transform a stream into a stream where each chunk is divided by a newline,
@@ -23,7 +24,12 @@ export class TextLineStream extends TransformStream<string, string> {
   constructor(options?: TextLineStreamOptions) {
     super({
       transform: (chunk, controller) => this.#handle(chunk, controller),
-      flush: (controller) => this.#handle("\r\n", controller),
+      flush: (controller) => {
+        this.#handle(options?.flush ?? "\r\n", controller);
+        if (this.#buf.length > 0) {
+          controller.enqueue(this.#buf);
+        }
+      }
     });
     this.#allowCR = options?.allowCR ?? false;
   }
