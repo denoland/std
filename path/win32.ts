@@ -659,7 +659,7 @@ export function basename(path: string, suffix = ""): string {
     }
   }
 
-  const lastSegment = lastPathSegment(path, isPathSeparator, start) || "\\";
+  const lastSegment = lastPathSegment(path, isPathSeparator, start);
   const strippedSegment = stripTrailingSeparators(lastSegment, isPathSeparator);
   return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
 }
@@ -818,10 +818,9 @@ export function parse(path: string): ParsedPath {
             rootEnd = 3;
           }
         } else {
-          // `path` contains just a drive root, exit early to avoid
+          // `path` contains just a relative drive root, exit early to avoid
           // unnecessary work
           ret.root = ret.dir = path;
-          ret.base = "\\";
           return ret;
         }
       }

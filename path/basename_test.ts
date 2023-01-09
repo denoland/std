@@ -72,7 +72,7 @@ const WIN32_TESTSUITE = [
   [["aaa\\bbb", "bb"], "b"],
   [["aaa\\bbb", "b"], "bb"],
   [["/aaa/bbb", "bb"], "b"],
-  [["C:"], "\\"],
+  [["C:"], ""],
   [["C:."], "."],
   [["C:\\"], "\\"],
   [["C:\\dir\\base.ext"], "base.ext"],
