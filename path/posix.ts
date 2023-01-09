@@ -277,7 +277,6 @@ export function basename(path: string, suffix = ""): string {
     );
   }
 
-
   const lastSegment = lastPathSegment(path, isPosixPathSeparator) || "/";
   const strippedSegment = stripTrailingSeparators(
     lastSegment,
