@@ -640,6 +640,8 @@ export function dirname(path: string): string {
 export function basename(path: string, suffix = ""): string {
   assertPath(path);
 
+  if (path.length === 0) return path;
+
   if (typeof suffix !== "string") {
     throw new TypeError(
       `Suffix must be a string. Received ${JSON.stringify(suffix)}`,
@@ -657,7 +659,7 @@ export function basename(path: string, suffix = ""): string {
     }
   }
 
-  const lastSegment = lastPathSegment(path, isPathSeparator, start);
+  const lastSegment = lastPathSegment(path, isPathSeparator, start) || "\\";
   const strippedSegment = stripTrailingSeparators(lastSegment, isPathSeparator);
   return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
 }
@@ -810,6 +812,7 @@ export function parse(path: string): ParsedPath {
               // `path` contains just a drive root, exit early to avoid
               // unnecessary work
               ret.root = ret.dir = path;
+              ret.base = "\\";
               return ret;
             }
             rootEnd = 3;
@@ -818,6 +821,7 @@ export function parse(path: string): ParsedPath {
           // `path` contains just a drive root, exit early to avoid
           // unnecessary work
           ret.root = ret.dir = path;
+          ret.base = "\\";
           return ret;
         }
       }
@@ -825,7 +829,8 @@ export function parse(path: string): ParsedPath {
   } else if (isPathSeparator(code)) {
     // `path` contains just a path separator, exit early to avoid
     // unnecessary work
-    ret.root = ret.dir = ret.base = path;
+    ret.root = ret.dir = path;
+    ret.base = "\\";
     return ret;
   }
 

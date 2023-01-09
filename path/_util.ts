@@ -113,7 +113,7 @@ export function _format(
   const base: string = pathObject.base ||
     (pathObject.name || "") + (pathObject.ext || "");
   if (!dir) return base;
-  if (base === pathObject.root) return dir;
+  if (base === sep) return dir;
   if (dir === pathObject.root) return dir + base;
   return dir + sep + base;
 }
@@ -141,7 +141,7 @@ export function lastPathSegment(
   let matchedNonSeparator = false;
   let end = path.length;
 
-  for (let i = path.length - 1; i >= 0; --i) {
+  for (let i = path.length - 1; i >= start; --i) {
     if (isSep(path.charCodeAt(i))) {
       if (matchedNonSeparator) {
         start = i + 1;

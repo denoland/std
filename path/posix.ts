@@ -269,13 +269,16 @@ export function dirname(path: string): string {
 export function basename(path: string, suffix = ""): string {
   assertPath(path);
 
+  if (path.length === 0) return path;
+
   if (typeof suffix !== "string") {
     throw new TypeError(
       `Suffix must be a string. Received ${JSON.stringify(suffix)}`,
     );
   }
 
-  const lastSegment = lastPathSegment(path, isPosixPathSeparator);
+
+  const lastSegment = lastPathSegment(path, isPosixPathSeparator) || "/";
   const strippedSegment = stripTrailingSeparators(
     lastSegment,
     isPosixPathSeparator,
