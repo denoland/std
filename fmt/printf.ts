@@ -47,7 +47,8 @@
  * | `T`   | type of arg, as returned by `typeof`                           |
  * | `v`   | value of argument in 'default' format (see below)              |
  * | `j`   | argument as formatted by `JSON.stringify`                      |
- * | `i I` | argument as formatted by `Deno.inspect`                        |
+ * | `i`   | argument as formatted by `Deno.inspect`                        |
+ * | `I`   | argument as formatted by `Deno.inspect` in compact format      |
  *
  * ## Width and Precision
  *
