@@ -28,6 +28,12 @@ import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
 import internalCp from "./internal/child_process.ts";
+import internalClusterChild from "./internal/cluster/child.ts";
+import internalClusterPrimary from "./internal/cluster/primary.ts";
+import internalClusterRoundRobinHandle from "./internal/cluster/round_robin_handle.ts";
+import internalClusterSharedHandle from "./internal/cluster/shared_handle.ts";
+import internalClusterUtils from "./internal/cluster/utils.ts";
+import internalClusterWorker from "./internal/cluster/worker.ts";
 import internalCryptoCertificate from "./internal/crypto/certificate.ts";
 import internalCryptoCipher from "./internal/crypto/cipher.ts";
 import internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
@@ -118,6 +124,12 @@ export default {
   https,
   inspector,
   "internal/child_process": internalCp,
+  "internal/cluster/child": internalClusterChild,
+  "internal/cluster/primary": internalClusterPrimary,
+  "internal/cluster/round_robin_handle": internalClusterRoundRobinHandle,
+  "internal/cluster/shared_handle": internalClusterSharedHandle,
+  "internal/cluster/utils": internalClusterUtils,
+  "internal/cluster/worker": internalClusterWorker,
   "internal/crypto/certificate": internalCryptoCertificate,
   "internal/crypto/cipher": internalCryptoCipher,
   "internal/crypto/diffiehellman": internalCryptoDiffiehellman,

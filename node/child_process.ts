@@ -41,7 +41,11 @@ import { convertToValidSignal, kEmptyObject } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
-type ForkOptions = ChildProcessOptions;
+export interface ForkOptions extends ChildProcessOptions {
+  execPath?: string | undefined;
+  execArgv?: string[] | undefined;
+  silent?: boolean | undefined;
+}
 
 /**
  * Spawns a new Node.js process + fork.
@@ -50,9 +54,15 @@ type ForkOptions = ChildProcessOptions;
  * @param option
  * @returns
  */
+export function fork(modulePath: string, options?: ForkOptions): ChildProcess;
 export function fork(
   modulePath: string,
-  _args?: string[],
+  args?: ReadonlyArray<string>,
+  options?: ForkOptions,
+): ChildProcess;
+export function fork(
+  modulePath: string,
+  _args?: ReadonlyArray<string> | ForkOptions,
   _options?: ForkOptions,
 ) {
   validateString(modulePath, "modulePath");
@@ -139,9 +149,10 @@ export function fork(
   options.shell = false;
 
   Object.assign(options.env ??= {}, {
-    // deno-lint-ignore no-explicit-any
-    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (Deno as any).core.ops
-      .op_npm_process_state(),
+    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (
+      // deno-lint-ignore no-explicit-any
+      Deno as any
+    ).core.ops.op_npm_process_state(),
   });
 
   return spawn(options.execPath, args, options);

@@ -124,15 +124,15 @@ $ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -n
 
 To run the tests you have set up, do the following:
 
-```zsh
-$ deno test --allow-read --allow-run node/_tools/test.ts
+```shellsession
+$ deno test -A --unstable node/_tools/test.ts
 ```
 
 If you want to run specific Node.js test files, you can use the following
 command
 
 ```shellsession
-$ deno test -A node/_tools/test.ts -- <pattern-to-match>
+$ deno test -A --unstable node/_tools/test.ts -- <pattern-to-match>
 ```
 
 For example, if you want to run only
@@ -140,14 +140,14 @@ For example, if you want to run only
 use:
 
 ```shellsession
-$ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
+$ deno test -A --unstable node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
 ```
 
 If you want to run all test files which contains `event-emitter` in filename,
 then you can use:
 
 ```shellsession
-$ deno test -A node/_tools/test.ts -- event-emitter
+$ deno test -A --unstable node/_tools/test.ts -- event-emitter
 ```
 
 The test should be passing with the latest deno, so if the test fails, try the

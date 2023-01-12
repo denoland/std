@@ -289,6 +289,10 @@ interface StaticEventEmitterOptions {
  * @since v0.1.26
  */
 export class EventEmitter {
+  _events: any;
+  _eventsCount: any;
+  _maxListeners: any;
+
   /**
    * Alias for `emitter.on(eventName, listener)`.
    * @since v0.1.26

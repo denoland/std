@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2811
+Total: 2804
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -363,8 +363,6 @@ Total: 2811
 - [parallel/test-cluster-bind-privileged-port.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-bind-privileged-port.js)
 - [parallel/test-cluster-bind-twice.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-bind-twice.js)
 - [parallel/test-cluster-call-and-destroy.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-call-and-destroy.js)
-- [parallel/test-cluster-child-index-dgram.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-child-index-dgram.js)
-- [parallel/test-cluster-child-index-net.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-child-index-net.js)
 - [parallel/test-cluster-concurrent-disconnect.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-concurrent-disconnect.js)
 - [parallel/test-cluster-cwd.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-cwd.js)
 - [parallel/test-cluster-dgram-1.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-dgram-1.js)
@@ -374,11 +372,8 @@ Total: 2811
 - [parallel/test-cluster-dgram-reuse.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-dgram-reuse.js)
 - [parallel/test-cluster-disconnect-before-exit.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-before-exit.js)
 - [parallel/test-cluster-disconnect-exitedAfterDisconnect-race.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-exitedAfterDisconnect-race.js)
-- [parallel/test-cluster-disconnect-idle-worker.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-idle-worker.js)
 - [parallel/test-cluster-disconnect-leak.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-leak.js)
 - [parallel/test-cluster-disconnect-race.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-race.js)
-- [parallel/test-cluster-disconnect-unshared-tcp.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-unshared-tcp.js)
-- [parallel/test-cluster-disconnect-unshared-udp.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-unshared-udp.js)
 - [parallel/test-cluster-disconnect-with-no-workers.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect-with-no-workers.js)
 - [parallel/test-cluster-disconnect.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-disconnect.js)
 - [parallel/test-cluster-eaccess.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-eaccess.js)
@@ -403,7 +398,6 @@ Total: 2811
 - [parallel/test-cluster-primary-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-primary-error.js)
 - [parallel/test-cluster-primary-kill.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-primary-kill.js)
 - [parallel/test-cluster-process-disconnect.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-process-disconnect.js)
-- [parallel/test-cluster-rr-domain-listen.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-rr-domain-listen.js)
 - [parallel/test-cluster-rr-ref.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-rr-ref.js)
 - [parallel/test-cluster-send-deadlock.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-send-deadlock.js)
 - [parallel/test-cluster-send-handle-twice.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-send-handle-twice.js)
@@ -430,7 +424,6 @@ Total: 2811
 - [parallel/test-cluster-worker-handle-close.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-handle-close.js)
 - [parallel/test-cluster-worker-init.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-init.js)
 - [parallel/test-cluster-worker-isconnected.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-isconnected.js)
-- [parallel/test-cluster-worker-isdead.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-isdead.js)
 - [parallel/test-cluster-worker-kill-signal.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-kill-signal.js)
 - [parallel/test-cluster-worker-kill.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-kill.js)
 - [parallel/test-cluster-worker-no-exit.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-cluster-worker-no-exit.js)

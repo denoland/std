@@ -340,7 +340,7 @@ function uncaughtExceptionHandler(err: any, origin: string) {
 
 let execPath: string | null = null;
 
-class Process extends EventEmitter {
+export class Process extends EventEmitter {
   constructor() {
     super();
 
@@ -420,6 +420,18 @@ class Process extends EventEmitter {
   exit = exit;
 
   _exiting = _exiting;
+
+  /** https://nodejs.org/api/process.html#processconnected */
+  get connected() {
+    warnNotImplemented("process.connected");
+
+    return false;
+  }
+
+  /** https://nodejs.org/api/process.html#processsendmessage-sendhandle-options-callback */
+  send() {
+    warnNotImplemented("process.send");
+  }
 
   /** https://nodejs.org/api/process.html#processexitcode_1 */
   exitCode: undefined | number = undefined;

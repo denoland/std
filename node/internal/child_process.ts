@@ -42,6 +42,8 @@ import { kEmptyObject } from "./util.mjs";
 import { getValidatedPath } from "./fs/utils.mjs";
 import process from "../process.ts";
 
+export const kChannelHandle = Symbol("kChannelHandle");
+
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
 
@@ -131,11 +133,7 @@ export class ChildProcess extends EventEmitter {
   #process!: Deno.ChildProcess;
   #spawned = deferred<void>();
 
-  constructor(
-    command: string,
-    args?: string[],
-    options?: ChildProcessOptions,
-  ) {
+  constructor(command: string, args?: string[], options?: ChildProcessOptions) {
     super();
 
     const {
@@ -152,11 +150,7 @@ export class ChildProcess extends EventEmitter {
       stderr = "pipe",
       _channel, // TODO(kt3k): handle this correctly
     ] = normalizeStdioOption(stdio);
-    const [cmd, cmdArgs] = buildCommand(
-      command,
-      args || [],
-      shell,
-    );
+    const [cmd, cmdArgs] = buildCommand(command, args || [], shell);
     this.spawnfile = cmd;
     this.spawnargs = [cmd, ...cmdArgs];
 
@@ -269,8 +263,19 @@ export class ChildProcess extends EventEmitter {
     this.#process.unref();
   }
 
+  get connected() {
+    warnNotImplemented("ChildProcess.prototype.connected");
+
+    return false;
+  }
+
   disconnect() {
     warnNotImplemented("ChildProcess.prototype.disconnect");
+  }
+
+  /** https://nodejs.org/api/child_process.html#subprocesssendmessage-sendhandle-options-callback */
+  send() {
+    warnNotImplemented("ChildProcess.prototype.send");
   }
 
   async #_waitForChildStreamsToClose() {
@@ -301,6 +306,22 @@ export class ChildProcess extends EventEmitter {
       this.stdin.destroy();
     }
   }
+}
+
+export function setupChannel(
+  // deno-lint-ignore no-explicit-any
+  _target: any,
+  // deno-lint-ignore no-explicit-any
+  _channel: any,
+  // deno-lint-ignore no-explicit-any
+  _serializationMode: any,
+) {
+  notImplemented("child_process.setupChannel");
+}
+
+// deno-lint-ignore no-explicit-any
+export function getValidStdio(_stdio: any, _sync: any) {
+  notImplemented("child_process.getValidStdio");
 }
 
 const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
@@ -357,7 +378,9 @@ export interface ChildProcessOptions {
   /**
    * Environment variables passed to the child process.
    */
-  env?: Record<string, string | number | boolean>;
+  env?:
+    & InstanceType<ObjectConstructor>
+    & Record<string, string | number | boolean>;
 
   /**
    * This option defines child process's stdio configuration.
@@ -983,6 +1006,9 @@ function toDenoArgs(args: string[]): string[] {
 
 export default {
   ChildProcess,
+  kChannelHandle,
+  setupChannel,
+  getValidStdio,
   stdioStringToArray,
   spawnSync,
 };
