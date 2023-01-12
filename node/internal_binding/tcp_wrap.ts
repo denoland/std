@@ -78,6 +78,7 @@ export enum constants {
 
 export class TCP extends ConnectionWrap {
   [ownerSymbol]: unknown = null;
+  [kStreamBaseField]?: Deno.TcpConn;
   override reading = false;
 
   #address?: string;
@@ -229,11 +230,19 @@ export class TCP extends ConnectionWrap {
     if (this.#listener) {
       this.#listener.ref();
     }
+
+    if (this[kStreamBaseField]) {
+      this[kStreamBaseField].ref();
+    }
   }
 
   override unref() {
     if (this.#listener) {
       this.#listener.unref();
+    }
+
+    if (this[kStreamBaseField]) {
+      this[kStreamBaseField].unref();
     }
   }
 
