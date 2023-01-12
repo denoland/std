@@ -49,7 +49,7 @@ function isBufferType(buf: Buffer) {
 /*
  * Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
  * continuation byte. If an invalid byte is detected, -2 is returned.
- * */
+ */
 function utf8CheckByte(byte: number): number {
   if (byte <= 0x7f) return 0;
   else if (byte >> 5 === 0x06) return 2;
@@ -62,7 +62,7 @@ function utf8CheckByte(byte: number): number {
  * Checks at most 3 bytes at the end of a Buffer in order to detect an
  * incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or 4)
  * needed to complete the UTF-8 character (if applicable) are returned.
- * */
+ */
 function utf8CheckIncomplete(
   self: StringDecoderBase,
   buf: Buffer,
@@ -102,7 +102,7 @@ function utf8CheckIncomplete(
  * where all of the continuation bytes for a character exist in the same buffer.
  * It is also done this way as a slight performance increase instead of using a
  * loop.
- * */
+ */
 function utf8CheckExtraBytes(
   self: StringDecoderBase,
   buf: Buffer,
@@ -127,7 +127,7 @@ function utf8CheckExtraBytes(
 
 /*
  * Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
- * */
+ */
 function utf8FillLastComplete(
   this: StringDecoderBase,
   buf: Buffer,
@@ -145,7 +145,7 @@ function utf8FillLastComplete(
 
 /*
  * Attempts to complete a partial non-UTF-8 character using bytes from a Buffer
- * */
+ */
 function utf8FillLastIncomplete(
   this: StringDecoderBase,
   buf: Buffer,
@@ -162,7 +162,7 @@ function utf8FillLastIncomplete(
  * Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
  * partial character, the character's bytes are buffered until the required
  * number of bytes are available.
- * */
+ */
 function utf8Text(this: StringDecoderBase, buf: Buffer, i: number): string {
   const total = utf8CheckIncomplete(this, buf, i);
   if (!this.lastNeed) return buf.toString("utf8", i);
@@ -175,7 +175,7 @@ function utf8Text(this: StringDecoderBase, buf: Buffer, i: number): string {
 /*
  * For UTF-8, a replacement character is added when ending on a partial
  * character.
- * */
+ */
 function utf8End(this: Utf8Decoder, buf?: Buffer): string {
   const r = buf && buf.length ? this.write(buf) : "";
   if (this.lastNeed) return r + "\ufffd";
@@ -292,7 +292,7 @@ class Utf8Decoder extends StringDecoderBase {
  * StringDecoder provides an interface for efficiently splitting a series of
  * buffers into a series of JS strings without breaking apart multi-byte
  * characters.
- * */
+ */
 export class StringDecoder {
   public encoding: string;
   public end: (buf?: Buffer) => string;

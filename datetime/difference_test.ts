@@ -8,10 +8,12 @@ Deno.test({
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");
     let diff = difference(denoReleaseV1, denoInit, {
-      units: ["days", "months", "years"],
+      units: ["days", "weeks", "months", "years", "quarters"],
     });
     assertEquals(diff.days, 730);
+    assertEquals(diff.weeks, 104);
     assertEquals(diff.months, 23);
+    assertEquals(diff.quarters, 7);
     assertEquals(diff.years, 1);
 
     const birth = new Date("1998/2/23 10:10:10");

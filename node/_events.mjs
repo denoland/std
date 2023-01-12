@@ -321,7 +321,7 @@ function enhanceStackTrace(err, own) {
  * @returns {boolean}
  */
 EventEmitter.prototype.emit = function emit(type, ...args) {
-  let doError = (type === "error");
+  let doError = type === "error";
 
   const events = this._events;
   if (events !== undefined) {

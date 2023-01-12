@@ -691,8 +691,8 @@ export function basename(path: string, ext = ""): string {
       }
     }
 
+    if (end === -1) return "";
     if (start === end) end = firstNonSlashEnd;
-    else if (end === -1) end = path.length;
     return path.slice(start, end);
   } else {
     for (i = path.length - 1; i >= start; --i) {

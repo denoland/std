@@ -277,7 +277,7 @@ class Module {
 
   /*
    * Check for node modules paths.
-   * */
+   */
   static _resolveLookupPaths(
     request: string,
     parent: Module | null,

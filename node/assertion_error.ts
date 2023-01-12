@@ -547,7 +547,7 @@ export class AssertionError extends Error {
 
     for (const name of ["actual", "expected"]) {
       if (typeof this[name] === "string") {
-        const value = (this[name] as string);
+        const value = this[name] as string;
         const lines = value.split("\n");
         if (lines.length > 10) {
           lines.length = 10;
