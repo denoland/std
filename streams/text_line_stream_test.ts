@@ -46,7 +46,7 @@ Deno.test("[streams] TextLineStream", async () => {
   assertEquals(lines2, [
     "rewq0987",
     "",
-    "654321"
+    "654321",
   ]);
 });
 
