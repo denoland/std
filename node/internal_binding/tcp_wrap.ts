@@ -78,7 +78,6 @@ export enum constants {
 
 export class TCP extends ConnectionWrap {
   [ownerSymbol]: unknown = null;
-  [kStreamBaseField]?: Deno.TcpConn;
   override reading = false;
 
   #address?: string;
