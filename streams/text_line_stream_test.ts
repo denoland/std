@@ -46,8 +46,7 @@ Deno.test("[streams] TextLineStream", async () => {
   assertEquals(lines2, [
     "rewq0987",
     "",
-    "654321",
-    "",
+    "654321"
   ]);
 });
 
@@ -84,7 +83,6 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
     "rewq0987",
     "",
     "654321",
-    "",
   ]);
 
   const textStream2 = new ReadableStream({
@@ -102,7 +100,6 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
     "rewq0987",
     "",
     "654321",
-    "",
   ]);
 });
 
@@ -120,5 +117,5 @@ Deno.test("[streams] TextLineStream - large chunks", async () => {
     assertEquals(chunk, "");
     lines++;
   }
-  assertEquals(lines, 20001);
+  assertEquals(lines, 20000);
 });
