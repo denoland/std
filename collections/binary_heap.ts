@@ -2,6 +2,7 @@
 /** This module is browser compatible. */
 
 import { descend } from "./_comparators.ts";
+
 export * from "./_comparators.ts";
 
 /** Swaps the values at two indexes in an array. */
@@ -61,7 +62,10 @@ function getParentIndex(index: number) {
 export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
   constructor(private compare: (a: T, b: T) => number = descend) {}
-
+  /** Returns the underlying cloned array in arbitrary order without sorting */
+  toArray() {
+    return Array.from(this.#data);
+  }
   /** Creates a new binary heap from an array like or iterable object. */
   static from<T>(
     collection: ArrayLike<T> | Iterable<T> | BinaryHeap<T>,
