@@ -27,7 +27,6 @@ export class TextLineStream extends TransformStream<string, string> {
         if (this.#buf.length > 0) {
           if (
             this.#allowCR &&
-            this.#buf.length > 1 &&
             this.#buf[this.#buf.length - 1] === "\r"
           ) controller.enqueue(this.#buf.slice(0, -1));
           else controller.enqueue(this.#buf);
