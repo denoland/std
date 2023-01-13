@@ -25,13 +25,22 @@ const deployName = branch === "main"
   : `${projectName}--${branchId}`;
 
 await retry(async () => {
-  const deployUrl = `https://${deployName}.deno.dev`;
-  console.log(`Checking ${deployUrl}`);
-  const resp = await fetch(deployUrl);
-  await resp.text();
-  if (resp.status !== 200) {
-    console.log(`${deployUrl} is unavailable`);
+  const hostname = `${deployName}.deno.dev`;
+  console.log(`Checking ${hostname}`);
+  const conn = await Deno.connectTls({ hostname, port: 443 });
+  new ReadableStream({
+    start(c) {
+      c.enqueue(
+        new TextEncoder().encode(
+          `GET / HTTP/1.1\nHOST: ${hostname}\nConnection: close\n\n`,
+        ),
+      );
+    },
+  }).pipeTo(conn.writable);
+  const text = await new Response(conn.readable).text();
+  if (!text.endsWith("\r\n\r\nok")) {
+    console.log(`${hostname} is unavailable`);
     throw new Error("failed");
   }
-  console.log(`${deployUrl} is available`);
+  console.log(`${hostname} is available`);
 });
