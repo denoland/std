@@ -1,3 +1,12 @@
+### 0.172.0 / 2023.01.13
+
+- feat(collection): add toArray method to BinaryHeap (#3079)
+- feat(node/cluster): `cluster` module for Node compat (#2271)
+- fix(datetime): `.quarter` calculation for `difference()` (#3085)
+- fix(encoding/jsonc): avoid prototype pollution in Node.js and Browser (#3077)
+- fix(node): support ref & unref of TCP handle (#3102)
+- fix(path): correctly handle trailing slashes for posix basename (#3088)
+
 ### 0.171.0 / 2023.01.05
 
 - feat(http): add --header option to file_server (#2977)
