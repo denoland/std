@@ -271,7 +271,12 @@ class JSONCParser {
       }
 
       const token3 = this.#getNext();
-      target[key] = this.#parseJSONValue(token3);
+      Object.defineProperty(target, key, {
+        value: this.#parseJSONValue(token3),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
 
       const token4 = this.#getNext();
       if (token4.type === tokenType.endObject) {
