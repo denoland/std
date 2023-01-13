@@ -35,6 +35,8 @@ import { codeMap } from "./uv.ts";
 import { writeAll } from "../../streams/write_all.ts";
 import type { Closer, Reader, Writer } from "../../types.d.ts";
 
+type Ref = { ref(): void; unref(): void };
+
 enum StreamBaseStateFields {
   kReadBytesOrError,
   kArrayBufferOffset,
@@ -84,7 +86,7 @@ export const kStreamBaseField = Symbol("kStreamBaseField");
 const SUGGESTED_SIZE = 64 * 1024;
 
 export class LibuvStreamWrap extends HandleWrap {
-  [kStreamBaseField]?: Reader & Writer & Closer;
+  [kStreamBaseField]?: Reader & Writer & Closer & Ref;
 
   reading!: boolean;
   #reading = false;
@@ -97,7 +99,7 @@ export class LibuvStreamWrap extends HandleWrap {
 
   constructor(
     provider: providerType,
-    stream?: Reader & Writer & Closer,
+    stream?: Reader & Writer & Closer & Ref,
   ) {
     super(provider);
     this.#attachToObject(stream);
@@ -254,7 +256,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * Attaches the class to the underlying stream.
    * @param stream The stream to attach to.
    */
-  #attachToObject(stream?: Reader & Writer & Closer) {
+  #attachToObject(stream?: Reader & Writer & Closer & Ref) {
     this[kStreamBaseField] = stream;
   }
 

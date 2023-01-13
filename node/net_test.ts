@@ -3,6 +3,7 @@
 import * as net from "./net.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
+import * as path from "./path.ts";
 import * as http from "./http.ts";
 
 Deno.test("[node/net] close event emits after error event", async () => {
@@ -49,4 +50,35 @@ Deno.test("[node/net] the port is available immediately after close callback", a
     httpServer.close(() => p.resolve());
   });
   await p;
+});
+
+Deno.test("[node/net] net.connect().unref() works", async () => {
+  const ctl = new AbortController();
+  await Deno.serve(() => {
+    return new Response("hello");
+  }, {
+    signal: ctl.signal,
+    onListen: async () => {
+      const { stdout, stderr } = await new Deno.Command(Deno.execPath(), {
+        args: [
+          "eval",
+          `
+            import * as net from "./net.ts";
+            const socket = net.connect(9000, () => {
+              console.log("connected");
+              socket.unref();
+              socket.on("data", (data) => console.log(data.toString()));
+              socket.write("GET / HTTP/1.1\\n\\n");
+            });
+          `,
+        ],
+        cwd: path.dirname(path.fromFileUrl(new URL(import.meta.url))),
+      }).output();
+      if (stderr.length > 0) {
+        console.log(new TextDecoder().decode(stderr));
+      }
+      assertEquals(new TextDecoder().decode(stdout), "connected\n");
+      ctl.abort();
+    },
+  });
 });
