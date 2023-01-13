@@ -7,4 +7,5 @@
  */
 
 import { contains } from "./contains.ts";
+import { count } from "./count.ts";
 import { toLower } from "./to_lower.ts";
