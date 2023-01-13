@@ -6,5 +6,5 @@
  * @module
  */
 
-import * as contains from "./contains.ts";
-import * as toLower from "./to_lower.ts";
+import { contains } from "./contains.ts";
+import { toLower } from "./to_lower.ts";
