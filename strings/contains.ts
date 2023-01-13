@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { contains } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
+ * import { contains } from "https://deno.land/std@$STD_VERSION/strings/contains.ts";
  *
  * contains("Hello, Deno!", "Deno"); // true
  */

@@ -1,10 +1,9 @@
-
 /**
  * Returns s with all Unicode letters mapped to their lower case.
  *
  * @example
  * ```ts
- * import { toLower } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
+ * import { toLower } from "https://deno.land/std@$STD_VERSION/strings/to_lower.ts";
  *
  * toLower("Hello, Deno!"); // hello, deno!
  * ```
