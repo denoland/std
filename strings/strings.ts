@@ -8,6 +8,7 @@
  * compare("a", "b"); // -1
  * compare("a", "a"); // 0
  * compare("b", "a"); // 1
+ * ```
  */
 
 export function compare(a: string, b: string): number {
@@ -28,6 +29,7 @@ export function compare(a: string, b: string): number {
  * import { contains } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
  *
  * contains("Hello, Deno!", "Deno"); // true
+ * ```
  */
 
 export function contains(s: string, substr: string): boolean {
@@ -90,7 +92,7 @@ export function hasPrefix(str: string, prefix: string): boolean {
 
 export function hasSuffix(str: string, suffix: string): boolean {
   if (str.endsWith(suffix)) return true;
-  else return false;
+  return false;
 }
 
 /**
