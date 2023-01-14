@@ -119,3 +119,78 @@ Deno.test("[streams] TextLineStream - large chunks", async () => {
   }
   assertEquals(lines, 20000);
 });
+
+Deno.test(
+  "[streams] TextLineStream - no final empty chunk",
+  async (t) => {
+    await t.step("with terminal newline", async () => {
+      const inputChunks = [
+        "abc\n",
+        "def\nghi\njk",
+        "l\nmn",
+        "o\np",
+        "qr",
+        "\nstu\nvwx\n",
+        "yz\n",
+      ];
+
+      const textLineStream = new ReadableStream<string>({
+        start(controller) {
+          for (const chunk of inputChunks) controller.enqueue(chunk);
+          controller.close();
+        },
+      }).pipeThrough(new TextLineStream());
+
+      const lines = [];
+
+      for await (const chunk of textLineStream) lines.push(chunk);
+
+      assertEquals(lines, [
+        "abc",
+        "def",
+        "ghi",
+        "jkl",
+        "mno",
+        "pqr",
+        "stu",
+        "vwx",
+        "yz",
+      ]);
+    });
+
+    await t.step("without terminal newline", async () => {
+      const inputChunks = [
+        "abc\n",
+        "def\nghi\njk",
+        "l\nmn",
+        "o\np",
+        "qr",
+        "\nstu\nvwx\n",
+        "yz",
+      ];
+
+      const textLineStream = new ReadableStream<string>({
+        start(controller) {
+          for (const chunk of inputChunks) controller.enqueue(chunk);
+          controller.close();
+        },
+      }).pipeThrough(new TextLineStream());
+
+      const lines = [];
+
+      for await (const chunk of textLineStream) lines.push(chunk);
+
+      assertEquals(lines, [
+        "abc",
+        "def",
+        "ghi",
+        "jkl",
+        "mno",
+        "pqr",
+        "stu",
+        "vwx",
+        "yz",
+      ]);
+    });
+  },
+);
