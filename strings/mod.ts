@@ -6,9 +6,9 @@
  * @module
  */
 
-import { compare } from "./compare.ts";
-import { contains } from "./contains.ts";
-import { count } from "./count.ts";
-import { hasPrefix } from "./has_prefix.ts";
-import { hasSuffix } from "./has_suffix.ts";
-import { toLower } from "./to_lower.ts";
+import { compare } from "./strings.ts";
+import { contains } from "./strings.ts";
+import { count } from "./strings.ts";
+import { hasPrefix } from "./strings.ts";
+import { hasSuffix } from "./strings.ts";
+import { toLower } from "./strings.ts";
