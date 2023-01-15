@@ -3,7 +3,7 @@ import * as esbuild from "https://deno.land/x/esbuild@v0.16.17/mod.js";
 const PROJECT_ROOT = new URL("..", import.meta.url).pathname;
 const BUNDLE_FILENAME = "node_bundle.js";
 
-await esbuild.build({
+const result = await esbuild.build({
   entryPoints: ["./node/module_all.ts"],
   outfile: BUNDLE_FILENAME,
   bundle: true,
@@ -11,6 +11,19 @@ await esbuild.build({
   legalComments: "none",
 });
 
+if (result.warnings.length > 0) {
+  console.warn("Bundle generated with warnings:");
+  for (const warning of result.warnings) {
+    console.warn(warning);
+  }
+}
+if (result.errors.length > 0) {
+  console.warn("Generating bundle failed:");
+  for (const error of result.errors) {
+    console.warn(error);
+  }
+  Deno.exit(1);
+}
 const source = await Deno.readTextFile(`${PROJECT_ROOT}${BUNDLE_FILENAME}`);
 const sourceLines = source.split("\n");
 
