@@ -67,3 +67,23 @@ Deno.test("bigNumericPrerelease", function () {
   const r = new semver.SemVer("1.2.3-beta." + Number.MAX_SAFE_INTEGER + "0");
   assertEquals(r.prerelease, ["beta", "90071992547409910"]);
 });
+
+Deno.test("formatting", function () {
+  const assertions = [
+    ["1.2.3", "1.2.3", "1.2.3"],
+    ["1.2.3-rc", "1.2.3-rc", "1.2.3-rc"],
+    ["1.2.3-beta.0", "1.2.3-beta.0", "1.2.3-beta.0"],
+    ["1.2.3+1", "1.2.3", "1.2.3+1"],
+    ["1.2.3+1.42", "1.2.3", "1.2.3+1.42"],
+    ["1.2.3-rc+1", "1.2.3-rc", "1.2.3-rc+1"],
+    ["1.2.3-beta.0+1.42", "1.2.3-beta.0", "1.2.3-beta.0+1.42"],
+  ];
+
+  for (const [input, expectedWithoutBuild, expectedWithBuild] of assertions) {
+    assertEquals(new semver.SemVer(input).format(), expectedWithoutBuild);
+    assertEquals(
+      new semver.SemVer(input).format({ includeBuild: true }),
+      expectedWithBuild,
+    );
+  }
+});

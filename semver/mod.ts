@@ -542,10 +542,13 @@ export class SemVer {
     this.format();
   }
 
-  format(): string {
+  format({ includeBuild } = { includeBuild: false }): string {
     this.version = this.major + "." + this.minor + "." + this.patch;
     if (this.prerelease.length) {
       this.version += "-" + this.prerelease.join(".");
+    }
+    if (includeBuild && this.build.length) {
+      this.version += "+" + this.build.join(".");
     }
     return this.version;
   }
