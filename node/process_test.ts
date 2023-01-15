@@ -327,6 +327,70 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.stdin readable with TTY",
+  async fn() {
+    const promise = deferred();
+    const expected = ["foo", "bar", null, "end"];
+    const data: (string | null)[] = [];
+
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("readable", function () {
+      data.push(process.stdin.read());
+    });
+    process.stdin.on("end", function () {
+      data.push("end");
+    });
+
+    process.stdin.push("foo");
+    process.nextTick(() => {
+      process.stdin.push("bar");
+      process.nextTick(() => {
+        process.stdin.push(null);
+        promise.resolve();
+      });
+    });
+
+    await promise;
+    assert(process.stdin.isTTY);
+    assertEquals(process.stdin.readableHighWaterMark, 0);
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with piping a file",
+  async fn() {
+    const expected = ["false", "65536", "foo", "bar", "null", "end"];
+
+    const shell = Deno.build.os === "windows" ? "cmd" : "bash";
+    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+    const command =
+      `${Deno.execPath()} run --allow-read --quiet --unstable ./testdata/process_stdin.ts < ./testdata/process_stdin_dummy.txt`;
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const p = new Deno.Command(shell, {
+      cwd,
+      stdout: "piped",
+      stdin: "piped",
+      windowsRawArguments: true,
+    });
+    const child = p.spawn();
+
+    const writer = await child.stdin.getWriter();
+    writer.ready
+      .then(() => writer.write(encoder.encode(command)))
+      .then(() => writer.releaseLock())
+      .then(() => child.stdin.close());
+
+    const { stdout } = await child.output();
+    const data = decoder.decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
   name: "process.stdout",
   fn() {
     assertEquals(process.stdout.fd, Deno.stdout.rid);
