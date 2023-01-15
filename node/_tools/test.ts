@@ -88,7 +88,7 @@ for await (const path of testPaths) {
         console.log(`Error: "${path}" failed`);
         console.log(
           "You can repeat only this test with the command:",
-          magenta(`deno test -A --unstable node/_tools/test.ts -- ${path}`),
+          magenta(`deno test -A node/_tools/test.ts -- ${path}`),
         );
         fail(decodedStderr);
       }
