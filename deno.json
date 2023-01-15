@@ -52,6 +52,7 @@
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
+    "node:bundle": "deno run --allow-read --allow-write --allow-env --allow-run _tools/bundle_node.ts",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
     "build:varint": "deno task --cwd encoding/varint/_wasm wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.2/main.ts --js-ext mjs --sync"
