@@ -333,6 +333,12 @@ Deno.test({
     const expected = ["foo", "bar", null, "end"];
     const data: (string | null)[] = [];
 
+    // debug
+    console.log("Deno.stdin.rid:", Deno.stdin.rid);
+    console.log("Deno.isatty(Deno.stdin.rid):", Deno.isatty(Deno.stdin.rid));
+    console.log("process.stdin.isTTY:", process.stdin.isTTY);
+    console.log("highWaterMark:", process.stdin.readableHighWaterMark);
+
     process.stdin.setEncoding("utf8");
     process.stdin.on("readable", function () {
       data.push(process.stdin.read());
@@ -351,6 +357,10 @@ Deno.test({
     });
 
     await promise;
+
+    // debug
+    console.log("data:", data);
+
     assert(process.stdin.isTTY);
     assertEquals(process.stdin.readableHighWaterMark, 0);
     assertEquals(data, expected);
@@ -362,7 +372,6 @@ Deno.test({
   async fn() {
     const expected = ["false", "65536", "foo", "bar", "null", "end"];
 
-    const shell = Deno.build.os === "windows" ? "cmd" : "bash";
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
     const command =
       `${Deno.execPath()} run --allow-read --quiet --unstable ./testdata/process_stdin.ts < ./testdata/process_stdin_dummy.txt`;
@@ -370,7 +379,7 @@ Deno.test({
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
 
-    const p = new Deno.Command(shell, {
+    const p = new Deno.Command("bash", {
       cwd,
       stdout: "piped",
       stdin: "piped",
