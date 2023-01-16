@@ -137,6 +137,11 @@ if (!isMainThread) {
     const listeners = new WeakMap<(...args: any[]) => void, (ev: any) => any>();
 
     parentPort = self as ParentPort;
+    // Receive startup message
+    [{ threadId, workerData, environmentData }] = await once(
+      parentPort,
+      "message",
+    );
     parentPort.off = parentPort.removeListener = function (
       this: ParentPort,
       name,
@@ -174,12 +179,6 @@ if (!isMainThread) {
     parentPort.emit = () => notImplemented("parentPort.emit");
     parentPort.removeAllListeners = () =>
       notImplemented("parentPort.removeAllListeners");
-
-    // Receive startup message
-    [{ threadId, workerData, environmentData }] = await once(
-      parentPort,
-      "message",
-    );
 
     // alias
     parentPort.addEventListener("offline", () => {
