@@ -130,61 +130,62 @@ type ParentPort = typeof self & NodeEventTarget;
 let parentPort: ParentPort = null as any;
 
 if (!isMainThread) {
-  // deno-lint-ignore no-explicit-any
-  delete (globalThis as any).name;
-  // deno-lint-ignore no-explicit-any
-  const listeners = new WeakMap<(...args: any[]) => void, (ev: any) => any>();
-
-  parentPort = self as ParentPort;
-  parentPort.off = parentPort.removeListener = function (
-    this: ParentPort,
-    name,
-    listener,
-  ) {
-    this.removeEventListener(name, listeners.get(listener)!);
-    listeners.delete(listener);
-    return this;
-  };
-  parentPort.on = parentPort.addListener = function (
-    this: ParentPort,
-    name,
-    listener,
-  ) {
+  (async () => {
     // deno-lint-ignore no-explicit-any
-    const _listener = (ev: any) => listener(ev.data);
-    listeners.set(listener, _listener);
-    this.addEventListener(name, _listener);
-    return this;
-  };
-  parentPort.once = function (this: ParentPort, name, listener) {
+    delete (globalThis as any).name;
     // deno-lint-ignore no-explicit-any
-    const _listener = (ev: any) => listener(ev.data);
-    listeners.set(listener, _listener);
-    this.addEventListener(name, _listener);
-    return this;
-  };
+    const listeners = new WeakMap<(...args: any[]) => void, (ev: any) => any>();
 
-  // mocks
-  parentPort.setMaxListeners = () => {};
-  parentPort.getMaxListeners = () => Infinity;
-  parentPort.eventNames = () => [""];
-  parentPort.listenerCount = () => 0;
+    parentPort = self as ParentPort;
+    parentPort.off = parentPort.removeListener = function (
+      this: ParentPort,
+      name,
+      listener,
+    ) {
+      this.removeEventListener(name, listeners.get(listener)!);
+      listeners.delete(listener);
+      return this;
+    };
+    parentPort.on = parentPort.addListener = function (
+      this: ParentPort,
+      name,
+      listener,
+    ) {
+      // deno-lint-ignore no-explicit-any
+      const _listener = (ev: any) => listener(ev.data);
+      listeners.set(listener, _listener);
+      this.addEventListener(name, _listener);
+      return this;
+    };
+    parentPort.once = function (this: ParentPort, name, listener) {
+      // deno-lint-ignore no-explicit-any
+      const _listener = (ev: any) => listener(ev.data);
+      listeners.set(listener, _listener);
+      this.addEventListener(name, _listener);
+      return this;
+    };
 
-  parentPort.emit = () => notImplemented("parentPort.emit");
-  parentPort.removeAllListeners = () =>
-    notImplemented("parentPort.removeAllListeners");
+    // mocks
+    parentPort.setMaxListeners = () => {};
+    parentPort.getMaxListeners = () => Infinity;
+    parentPort.eventNames = () => [""];
+    parentPort.listenerCount = () => 0;
 
-  // Receive startup message
-  parentPort.once("message", (data) => {
-    threadId = data.threadId;
-    workerData = data.workerData;
-    environmentData = data.environmentData;
-  });
+    parentPort.emit = () => notImplemented("parentPort.emit");
+    parentPort.removeAllListeners = () =>
+      notImplemented("parentPort.removeAllListeners");
 
-  // alias
-  parentPort.addEventListener("offline", () => {
-    parentPort.emit("close");
-  });
+    // Receive startup message
+    [{ threadId, workerData, environmentData }] = await once(
+      parentPort,
+      "message",
+    );
+
+    // alias
+    parentPort.addEventListener("offline", () => {
+      parentPort.emit("close");
+    });
+  })();
 }
 
 export function getEnvironmentData(key: unknown) {
