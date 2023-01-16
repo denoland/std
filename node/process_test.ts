@@ -335,10 +335,10 @@ Deno.test({
     const data: (string | null)[] = [];
 
     process.stdin.setEncoding("utf8");
-    process.stdin.on("readable", function () {
+    process.stdin.on("readable", () => {
       data.push(process.stdin.read());
     });
-    process.stdin.on("end", function () {
+    process.stdin.on("end", () => {
       data.push("end");
     });
 
