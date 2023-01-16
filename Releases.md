@@ -1,3 +1,11 @@
+### 0.173.0 / 2023.01.16
+
+- fix(fs): change globstar default to true for expandGlob and expandGlobSync
+  (#3115)
+- fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
+- fix: revert "feat(node/cluster): `cluster` module for Node compat (#2271)"
+  (#3111)
+
 ### 0.172.0 / 2023.01.13
 
 - feat(collection): add toArray method to BinaryHeap (#3079)
