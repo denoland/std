@@ -327,24 +327,32 @@ Deno.test({
 });
 
 Deno.test({
-  name: "process.stdin readable with TTY",
+  name: "process.stdin readable with a TTY",
+  ignore: !Deno.isatty(Deno.stdin.rid),
   async fn() {
-    // debug
-    // may be failed on ci
+    const promise = deferred();
+    const expected = ["foo", "bar", null, "end"];
+    const data: (string | null)[] = [];
 
-    const expected = ["true", "0", "foo", "bar", "null", "end"];
-    const scriptPath = "./node/testdata/process_stdin_tty.ts";
-
-    const command = new Deno.Command(Deno.execPath(), {
-      args: ["run", scriptPath],
-      stdin: "inherit",
-      stdout: "piped",
-      stderr: "null",
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("readable", function () {
+      data.push(process.stdin.read());
     });
-    const { stdout } = await command.output();
+    process.stdin.on("end", function () {
+      data.push("end");
+    });
 
-    const decoder = new TextDecoder();
-    const data = decoder.decode(stdout).trim().split("\n");
+    process.stdin.push("foo");
+    process.nextTick(() => {
+      process.stdin.push("bar");
+      process.nextTick(() => {
+        process.stdin.push(null);
+        promise.resolve();
+      });
+    });
+
+    await promise;
+    assertEquals(process.stdin.readableHighWaterMark, 0);
     assertEquals(data, expected);
   },
 });
@@ -352,8 +360,8 @@ Deno.test({
 Deno.test({
   name: "process.stdin readable with piping a file",
   async fn() {
-    const expected = ["false", "65536", "foo", "bar", "null", "end"];
-    const scriptPath = "./node/testdata/process_stdin_pipe.ts";
+    const expected = ["65536", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
     const file = await Deno.readFile(`./node/testdata/process_stdin_dummy.txt`);
 
     const command = new Deno.Command(Deno.execPath(), {

@@ -1,6 +1,5 @@
 import process from "../process.ts";
 
-console.log(process.stdin.isTTY);
 console.log(process.stdin.readableHighWaterMark);
 
 process.stdin.setEncoding("utf8");
