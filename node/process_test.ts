@@ -329,40 +329,22 @@ Deno.test({
 Deno.test({
   name: "process.stdin readable with TTY",
   async fn() {
-    const promise = deferred();
-    const expected = ["foo", "bar", null, "end"];
-    const data: (string | null)[] = [];
-
     // debug
-    console.log("Deno.stdin.rid:", Deno.stdin.rid);
-    console.log("Deno.isatty(Deno.stdin.rid):", Deno.isatty(Deno.stdin.rid));
-    console.log("process.stdin.isTTY:", process.stdin.isTTY);
-    console.log("highWaterMark:", process.stdin.readableHighWaterMark);
+    // may be failed on ci
 
-    process.stdin.setEncoding("utf8");
-    process.stdin.on("readable", function () {
-      data.push(process.stdin.read());
+    const expected = ["true", "0", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin_tty.ts";
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["run", scriptPath],
+      stdin: "inherit",
+      stdout: "piped",
+      stderr: "null",
     });
-    process.stdin.on("end", function () {
-      data.push("end");
-    });
+    const { stdout } = await command.output();
 
-    process.stdin.push("foo");
-    process.nextTick(() => {
-      process.stdin.push("bar");
-      process.nextTick(() => {
-        process.stdin.push(null);
-        promise.resolve();
-      });
-    });
-
-    await promise;
-
-    // debug
-    console.log("data:", data);
-
-    assert(process.stdin.isTTY);
-    assertEquals(process.stdin.readableHighWaterMark, 0);
+    const decoder = new TextDecoder();
+    const data = decoder.decode(stdout).trim().split("\n");
     assertEquals(data, expected);
   },
 });
@@ -371,29 +353,26 @@ Deno.test({
   name: "process.stdin readable with piping a file",
   async fn() {
     const expected = ["false", "65536", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin_pipe.ts";
+    const file = await Deno.readFile(`./node/testdata/process_stdin_dummy.txt`);
 
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const command =
-      `${Deno.execPath()} run --allow-read --quiet --unstable ./testdata/process_stdin.ts < ./testdata/process_stdin_dummy.txt`;
-
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    const p = new Deno.Command("bash", {
-      cwd,
-      stdout: "piped",
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["run", scriptPath],
       stdin: "piped",
-      windowsRawArguments: true,
+      stdout: "piped",
+      stderr: "null",
     });
-    const child = p.spawn();
+    const child = command.spawn();
 
     const writer = await child.stdin.getWriter();
     writer.ready
-      .then(() => writer.write(encoder.encode(command)))
+      .then(() => writer.write(file))
       .then(() => writer.releaseLock())
       .then(() => child.stdin.close());
 
     const { stdout } = await child.output();
+
+    const decoder = new TextDecoder();
     const data = decoder.decode(stdout).trim().split("\n");
     assertEquals(data, expected);
   },
