@@ -328,6 +328,7 @@ Deno.test({
 
 Deno.test({
   name: "process.stdin readable with a TTY",
+  // TODO(PolarETech): Run this test even in non tty environment
   ignore: !Deno.isatty(Deno.stdin.rid),
   async fn() {
     const promise = deferred();
