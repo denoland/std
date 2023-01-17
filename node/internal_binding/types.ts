@@ -28,6 +28,62 @@ const _toString = Object.prototype.toString;
 const _isObjectLike = (value: unknown): boolean =>
   value !== null && typeof value === "object";
 
+// https://tc39.es/ecma262/#sec-bigint.prototype.valueof
+const _bigIntValueOf = BigInt.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-boolean.prototype.valueof
+const _booleanValueOf = Boolean.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-date.prototype.valueof
+const _dateValueOf = Date.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-number.prototype.valueof
+const _numberValueOf = Number.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-string.prototype.valueof
+const _stringValueOf = String.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-symbol.prototype.valueof
+const _symbolValueOf = Symbol.prototype.valueOf;
+
+// https://tc39.es/ecma262/#sec-weakmap.prototype.has
+const _weakMapHas = WeakMap.prototype.has;
+
+// https://tc39.es/ecma262/#sec-weakset.prototype.has
+const _weakSetHas = WeakSet.prototype.has;
+
+// https://tc39.es/ecma262/#sec-get-arraybuffer.prototype.bytelength
+const _getArrayBufferByteLength = Object.getOwnPropertyDescriptor(
+  ArrayBuffer.prototype,
+  "byteLength",
+)!.get!;
+
+// https://tc39.es/ecma262/#sec-get-sharedarraybuffer.prototype.bytelength
+const _getSharedArrayBufferByteLength = globalThis.SharedArrayBuffer
+  ? Object.getOwnPropertyDescriptor(
+    SharedArrayBuffer.prototype,
+    "byteLength",
+  )!.get!
+  : undefined;
+
+// https://tc39.es/ecma262/#sec-get-%typedarray%.prototype-@@tostringtag
+const _getTypedArrayToStringTag = Object.getOwnPropertyDescriptor(
+  Object.getPrototypeOf(Uint8Array).prototype,
+  Symbol.toStringTag,
+)!.get!;
+
+// https://tc39.es/ecma262/#sec-get-set.prototype.size
+const _getSetSize = Object.getOwnPropertyDescriptor(
+  Set.prototype,
+  "size",
+)!.get!;
+
+// https://tc39.es/ecma262/#sec-get-map.prototype.size
+const _getMapSize = Object.getOwnPropertyDescriptor(
+  Map.prototype,
+  "size",
+)!.get!;
+
 export function isAnyArrayBuffer(
   value: unknown,
 ): value is ArrayBuffer | SharedArrayBuffer {
@@ -39,9 +95,12 @@ export function isArgumentsObject(value: unknown): value is IArguments {
 }
 
 export function isArrayBuffer(value: unknown): value is ArrayBuffer {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object ArrayBuffer]"
-  );
+  try {
+    _getArrayBufferByteLength.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isAsyncFunction(
@@ -55,7 +114,16 @@ export function isAsyncFunction(
 
 // deno-lint-ignore ban-types
 export function isBooleanObject(value: unknown): value is Boolean {
-  return _isObjectLike(value) && _toString.call(value) === "[object Boolean]";
+  if (!_isObjectLike(value)) {
+    return false;
+  }
+
+  try {
+    _booleanValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isBoxedPrimitive(
@@ -72,11 +140,19 @@ export function isBoxedPrimitive(
 }
 
 export function isDataView(value: unknown): value is DataView {
-  return _isObjectLike(value) && _toString.call(value) === "[object DataView]";
+  return (
+    ArrayBuffer.isView(value) &&
+    _getTypedArrayToStringTag.call(value) === undefined
+  );
 }
 
 export function isDate(value: unknown): value is Date {
-  return _isObjectLike(value) && _toString.call(value) === "[object Date]";
+  try {
+    _dateValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isGeneratorFunction(
@@ -93,7 +169,12 @@ export function isGeneratorObject(value: unknown): value is Generator {
 }
 
 export function isMap(value: unknown): value is Map<unknown, unknown> {
-  return _isObjectLike(value) && _toString.call(value) === "[object Map]";
+  try {
+    _getMapSize.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isMapIterator(
@@ -116,11 +197,29 @@ export function isNativeError(value: unknown): value is Error {
 
 // deno-lint-ignore ban-types
 export function isNumberObject(value: unknown): value is Number {
-  return _isObjectLike(value) && _toString.call(value) === "[object Number]";
+  if (!_isObjectLike(value)) {
+    return false;
+  }
+
+  try {
+    _numberValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isBigIntObject(value: unknown): value is BigInt {
-  return _isObjectLike(value) && _toString.call(value) === "[object BigInt]";
+  if (_isObjectLike(value)) {
+    return false;
+  }
+
+  try {
+    _bigIntValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isPromise(value: unknown): value is Promise<unknown> {
@@ -138,7 +237,12 @@ export function isRegExp(value: unknown): value is RegExp {
 }
 
 export function isSet(value: unknown): value is Set<unknown> {
-  return _isObjectLike(value) && _toString.call(value) === "[object Set]";
+  try {
+    _getSetSize.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isSetIterator(
@@ -152,32 +256,69 @@ export function isSetIterator(
 export function isSharedArrayBuffer(
   value: unknown,
 ): value is SharedArrayBuffer {
-  return (
-    _isObjectLike(value) &&
-    _toString.call(value) === "[object SharedArrayBuffer]"
-  );
+  // SharedArrayBuffer is not available on this runtime
+  if (_getSharedArrayBufferByteLength === undefined) {
+    return false;
+  }
+
+  try {
+    _getSharedArrayBufferByteLength.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // deno-lint-ignore ban-types
 export function isStringObject(value: unknown): value is String {
-  return _isObjectLike(value) && _toString.call(value) === "[object String]";
+  if (!_isObjectLike(value)) {
+    return false;
+  }
+
+  try {
+    _stringValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // deno-lint-ignore ban-types
 export function isSymbolObject(value: unknown): value is Symbol {
-  return _isObjectLike(value) && _toString.call(value) === "[object Symbol]";
+  if (!_isObjectLike(value)) {
+    return false;
+  }
+
+  try {
+    _symbolValueOf.call(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isWeakMap(
   value: unknown,
 ): value is WeakMap<Record<string | number | symbol, unknown>, unknown> {
-  return _isObjectLike(value) && _toString.call(value) === "[object WeakMap]";
+  try {
+    // deno-lint-ignore no-explicit-any
+    _weakMapHas.call(value, null as any);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isWeakSet(
   value: unknown,
 ): value is WeakSet<Record<string | number | symbol, unknown>> {
-  return _isObjectLike(value) && _toString.call(value) === "[object WeakSet]";
+  try {
+    // deno-lint-ignore no-explicit-any
+    _weakSetHas.call(value, null as any);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export default {
