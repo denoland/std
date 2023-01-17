@@ -28,17 +28,10 @@ const _toString = Object.prototype.toString;
 const _isObjectLike = (value: unknown): boolean =>
   value !== null && typeof value === "object";
 
-const _isFunctionLike = (value: unknown): boolean =>
-  value !== null && typeof value === "function";
-
 export function isAnyArrayBuffer(
   value: unknown,
 ): value is ArrayBuffer | SharedArrayBuffer {
-  return (
-    _isObjectLike(value) &&
-    (_toString.call(value) === "[object ArrayBuffer]" ||
-      _toString.call(value) === "[object SharedArrayBuffer]")
-  );
+  return isArrayBuffer(value) || isSharedArrayBuffer(value);
 }
 
 export function isArgumentsObject(value: unknown): value is IArguments {
@@ -55,7 +48,8 @@ export function isAsyncFunction(
   value: unknown,
 ): value is (...args: unknown[]) => Promise<unknown> {
   return (
-    _isFunctionLike(value) && _toString.call(value) === "[object AsyncFunction]"
+    typeof value === "function" &&
+    _toString.call(value) === "[object AsyncFunction]"
   );
 }
 
@@ -89,7 +83,7 @@ export function isGeneratorFunction(
   value: unknown,
 ): value is GeneratorFunction {
   return (
-    _isFunctionLike(value) &&
+    typeof value === "function" &&
     _toString.call(value) === "[object GeneratorFunction]"
   );
 }
