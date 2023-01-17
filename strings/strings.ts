@@ -119,7 +119,7 @@ export function hasSuffix(str: string, suffix: string): boolean {
  *
  * @example
  * ```ts
- * import { toLower } from "https://deno.land/std@$STD_VERSION/strings/to_lower.ts";
+ * import { toLower } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
  *
  * toLower("Hello, Deno!"); // hello, deno!
  * ```
