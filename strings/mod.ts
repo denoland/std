@@ -4,10 +4,10 @@
  * @module
  */
 
-import { compare } from "./strings.ts";
-import { contains } from "./strings.ts";
-import { count } from "./strings.ts";
-import { cut } from "./strings.ts";
-import { hasPrefix } from "./strings.ts";
-import { hasSuffix } from "./strings.ts";
-import { toLower } from "./strings.ts";
+export { compare } from "./strings.ts";
+export { contains } from "./strings.ts";
+export { count } from "./strings.ts";
+export { cut } from "./strings.ts";
+export { hasPrefix } from "./strings.ts";
+export { hasSuffix } from "./strings.ts";
+export { toLower } from "./strings.ts";
