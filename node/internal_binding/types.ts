@@ -31,7 +31,9 @@ const _isObjectLike = (value: unknown): boolean =>
 const _isFunctionLike = (value: unknown): boolean =>
   value !== null && typeof value === "function";
 
-export function isAnyArrayBuffer(value: unknown): boolean {
+export function isAnyArrayBuffer(
+  value: unknown,
+): value is ArrayBuffer | SharedArrayBuffer {
   return (
     _isObjectLike(value) &&
     (_toString.call(value) === "[object ArrayBuffer]" ||
@@ -39,27 +41,33 @@ export function isAnyArrayBuffer(value: unknown): boolean {
   );
 }
 
-export function isArgumentsObject(value: unknown): boolean {
+export function isArgumentsObject(value: unknown): value is IArguments {
   return _isObjectLike(value) && _toString.call(value) === "[object Arguments]";
 }
 
-export function isArrayBuffer(value: unknown): boolean {
+export function isArrayBuffer(value: unknown): value is ArrayBuffer {
   return (
     _isObjectLike(value) && _toString.call(value) === "[object ArrayBuffer]"
   );
 }
 
-export function isAsyncFunction(value: unknown): boolean {
+export function isAsyncFunction(
+  value: unknown,
+): value is (...args: unknown[]) => Promise<unknown> {
   return (
     _isFunctionLike(value) && _toString.call(value) === "[object AsyncFunction]"
   );
 }
 
-export function isBooleanObject(value: unknown): boolean {
+// deno-lint-ignore ban-types
+export function isBooleanObject(value: unknown): value is Boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Boolean]";
 }
 
-export function isBoxedPrimitive(value: unknown): boolean {
+export function isBoxedPrimitive(
+  value: unknown,
+  // deno-lint-ignore ban-types
+): value is Boolean | String | Number | Symbol | BigInt {
   return (
     isBooleanObject(value) ||
     isStringObject(value) ||
@@ -69,93 +77,112 @@ export function isBoxedPrimitive(value: unknown): boolean {
   );
 }
 
-export function isDataView(value: unknown): boolean {
+export function isDataView(value: unknown): value is DataView {
   return _isObjectLike(value) && _toString.call(value) === "[object DataView]";
 }
 
-export function isDate(value: unknown): boolean {
+export function isDate(value: unknown): value is Date {
   return _isObjectLike(value) && _toString.call(value) === "[object Date]";
 }
 
-export function isGeneratorFunction(value: unknown): boolean {
+export function isGeneratorFunction(
+  value: unknown,
+): value is GeneratorFunction {
   return (
     _isFunctionLike(value) &&
     _toString.call(value) === "[object GeneratorFunction]"
   );
 }
 
-export function isGeneratorObject(value: unknown): boolean {
+export function isGeneratorObject(value: unknown): value is Generator {
   return _isObjectLike(value) && _toString.call(value) === "[object Generator]";
 }
 
-export function isMap(value: unknown): boolean {
+export function isMap(value: unknown): value is Map<unknown, unknown> {
   return _isObjectLike(value) && _toString.call(value) === "[object Map]";
 }
 
-export function isMapIterator(value: unknown): boolean {
+export function isMapIterator(
+  value: unknown,
+): value is IterableIterator<[unknown, unknown]> {
   return (
     _isObjectLike(value) && _toString.call(value) === "[object Map Iterator]"
   );
 }
 
-export function isModuleNamespaceObject(value: unknown): boolean {
+export function isModuleNamespaceObject(
+  value: unknown,
+): value is Record<string | number | symbol, unknown> {
   return _isObjectLike(value) && _toString.call(value) === "[object Module]";
 }
 
-export function isNativeError(value: unknown): boolean {
+export function isNativeError(value: unknown): value is Error {
   return _isObjectLike(value) && _toString.call(value) === "[object Error]";
 }
 
-export function isNumberObject(value: unknown): boolean {
+// deno-lint-ignore ban-types
+export function isNumberObject(value: unknown): value is Number {
   return _isObjectLike(value) && _toString.call(value) === "[object Number]";
 }
 
-export function isBigIntObject(value: unknown): boolean {
+export function isBigIntObject(value: unknown): value is BigInt {
   return _isObjectLike(value) && _toString.call(value) === "[object BigInt]";
 }
 
-export function isPromise(value: unknown): boolean {
+export function isPromise(value: unknown): value is Promise<unknown> {
   return _isObjectLike(value) && _toString.call(value) === "[object Promise]";
 }
 
-export function isProxy(value: unknown): boolean {
+export function isProxy(
+  value: unknown,
+): value is Record<string | number | symbol, unknown> {
   return core.isProxy(value);
 }
 
-export function isRegExp(value: unknown): boolean {
+export function isRegExp(value: unknown): value is RegExp {
   return _isObjectLike(value) && _toString.call(value) === "[object RegExp]";
 }
 
-export function isSet(value: unknown): boolean {
+export function isSet(value: unknown): value is Set<unknown> {
   return _isObjectLike(value) && _toString.call(value) === "[object Set]";
 }
 
-export function isSetIterator(value: unknown): boolean {
+export function isSetIterator(
+  value: unknown,
+): value is IterableIterator<unknown> {
   return (
     _isObjectLike(value) && _toString.call(value) === "[object Set Iterator]"
   );
 }
 
-export function isSharedArrayBuffer(value: unknown): boolean {
+export function isSharedArrayBuffer(
+  value: unknown,
+): value is SharedArrayBuffer {
   return (
     _isObjectLike(value) &&
     _toString.call(value) === "[object SharedArrayBuffer]"
   );
 }
 
-export function isStringObject(value: unknown): boolean {
+// deno-lint-ignore ban-types
+export function isStringObject(value: unknown): value is String {
   return _isObjectLike(value) && _toString.call(value) === "[object String]";
 }
 
-export function isSymbolObject(value: unknown): boolean {
+// deno-lint-ignore ban-types
+export function isSymbolObject(value: unknown): value is Symbol {
   return _isObjectLike(value) && _toString.call(value) === "[object Symbol]";
 }
 
-export function isWeakMap(value: unknown): boolean {
+export function isWeakMap(
+  value: unknown,
+): value is WeakMap<Record<string | number | symbol, unknown>, unknown> {
   return _isObjectLike(value) && _toString.call(value) === "[object WeakMap]";
 }
 
-export function isWeakSet(value: unknown): boolean {
+export function isWeakSet(
+  value: unknown,
+): value is WeakSet<Record<string | number | symbol, unknown>> {
   return _isObjectLike(value) && _toString.call(value) === "[object WeakSet]";
 }
 
