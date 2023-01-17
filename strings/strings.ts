@@ -78,7 +78,7 @@ export function cut(str: string, sep: string): [string, string, boolean] {
  *
  * @example
  * ```ts
- * import { hasSuffix } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
+ * import { hasPrefix } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
  *
  * hasPrefix("Deno", "De"); // true
  * hasPrefix("Deno", "C"); // false
