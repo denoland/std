@@ -55,6 +55,25 @@ export function count(str: string, substr: string): number {
 }
 
 /**
+ * Cut str into two parts with a sep. Return before, after, found. If sep is not present in str,
+ * return str, "", false.
+ *
+ * @example
+ * ```ts
+ * import { cut } from "https://deno.land/std@$STD_VERSION/strings/strings.ts";
+ *
+ * let [before, after, found] = cut("Deno", "n"); // "De", "o", true
+ * let [before, after, found] = cut("Hello, World!", " "); // "Hello," "World!", true
+ * let [before, after, found] = cut("Fresh", "i"); // "Fresh", "", false
+ */
+
+export function cut(str: string, sep: string): [string, string, boolean] {
+  const s = str.split(sep);
+  if (s.length == 2) return [s[0], s[1], true];
+  return [str, "", false];
+}
+
+/**
  * Test wheter str begins with prefix.
  *
  * @example

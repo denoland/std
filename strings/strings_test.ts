@@ -2,6 +2,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { compare } from "./strings.ts";
 import { contains } from "./strings.ts";
 import { count } from "./strings.ts";
+import { cut } from "./strings.ts";
 import { hasPrefix } from "./strings.ts";
 import { hasSuffix } from "./strings.ts";
 import { toLower } from "./strings.ts";
@@ -34,6 +35,15 @@ Deno.test("[STRINGS] count", () => {
   assertEquals(count("equal", "equal"), 1);
   assertEquals(count("abc1231231123q", "123"), 3);
   assertEquals(count("11111", "11"), 2);
+});
+
+Deno.test("[STRINGS] cut", () => {
+  const k = "Hello, Deno!";
+
+  assertEquals(cut(k, "De"), ["Hello, ", "no!", true]);
+  assertEquals(cut(k, "no!"), ["Hello, De", "", true]);
+  assertEquals(cut(k, "He"), ["", "llo, Deno!", true]);
+  assertEquals(cut(k, "Node"), ["Hello, Deno!", "", false]);
 });
 
 Deno.test("[STRINGS] hasPrefix", () => {
