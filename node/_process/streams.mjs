@@ -103,7 +103,11 @@ export const stdout = stdio.stdout = createWritableStdioStream(
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = stdio.stdin = new Readable({
-  highWaterMark: Deno.isatty?.(Deno.stdin?.rid) ? 0 : 64 * 1024,
+  highWaterMark: Deno.isatty?.(Deno.stdin?.rid)
+    ? 0
+    : Deno.fstatSync(Deno.stdin?.rid).isFile
+    ? 64 * 1024
+    : undefined,
   emitClose: false,
   read(size) {
     const p = Buffer.alloc(size || 16 * 1024);
