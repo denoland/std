@@ -101,13 +101,26 @@ export const stdout = stdio.stdout = createWritableStdioStream(
   "stdout",
 );
 
+function _adjustHighWaterMark() {
+  if (Deno.isatty?.(Deno.stdin?.rid)) {
+    return 0;
+  }
+  try {
+    // TODO(PolarETech): On Windows, isFile() is true even for stream,
+    // and file and stream cannot be distinguished
+    if (Deno.fstatSync(Deno.stdin?.rid).isFile) {
+      return 64 * 1024;
+    }
+    return undefined;
+  } catch (_) {
+    // Avoid error when executing net.connect().unref() on Windows
+    return 0;
+  }
+}
+
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = stdio.stdin = new Readable({
-  highWaterMark: Deno.isatty?.(Deno.stdin?.rid)
-    ? 0
-    : Deno.fstatSync(Deno.stdin?.rid).isFile
-    ? 64 * 1024
-    : undefined,
+  highWaterMark: _adjustHighWaterMark(),
   emitClose: false,
   read(size) {
     const p = Buffer.alloc(size || 16 * 1024);

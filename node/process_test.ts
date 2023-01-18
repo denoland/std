@@ -387,6 +387,10 @@ Deno.test({
   name: "process.stdin readable with piping a stream",
   async fn() {
     const expected = ["16384", "foo", "bar", "null", "end"];
+
+    // TODO(PolarETech): Unable to distinguish between file and stream on Windows
+    if (Deno.build.os === "windows") expected[0] = "65536";
+
     const scriptPath = "./node/testdata/process_stdin.ts";
 
     const command = new Deno.Command(Deno.execPath(), {
