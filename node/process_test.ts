@@ -363,7 +363,31 @@ Deno.test({
   async fn() {
     const expected = ["65536", "foo", "bar", "null", "end"];
     const scriptPath = "./node/testdata/process_stdin.ts";
-    const file = await Deno.readFile(`./node/testdata/process_stdin_dummy.txt`);
+    const filePath = "./node/testdata/process_stdin_dummy.txt";
+
+    const shell = Deno.build.os === "windows" ? "cmd.exe" : "/bin/sh";
+    const cmd = `"${Deno.execPath()}" run ${scriptPath} < ${filePath}`;
+    const args = Deno.build.os === "windows" ? ["/d", "/c", cmd] : ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+      windowsRawArguments: true,
+    });
+
+    const { stdout } = await p.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with piping a stream",
+  async fn() {
+    const expected = ["16384", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
 
     const command = new Deno.Command(Deno.execPath(), {
       args: ["run", scriptPath],
@@ -375,14 +399,12 @@ Deno.test({
 
     const writer = await child.stdin.getWriter();
     writer.ready
-      .then(() => writer.write(file))
+      .then(() => writer.write(new TextEncoder().encode("foo\nbar")))
       .then(() => writer.releaseLock())
       .then(() => child.stdin.close());
 
     const { stdout } = await child.output();
-
-    const decoder = new TextDecoder();
-    const data = decoder.decode(stdout).trim().split("\n");
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
     assertEquals(data, expected);
   },
 });
