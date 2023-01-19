@@ -549,6 +549,7 @@ export class SemVer {
 
     // todo: Consider a refactor of this class to have no side effects. Increment should return
     // a new SemVer instance with the new values. This would be a breaking change.
+    // see https://github.com/denoland/deno_std/issues/3110 for discussion details
     const release = this.version = this.major + "." + this.minor + "." +
       this.patch;
     if (this.prerelease.length) {
