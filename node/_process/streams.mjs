@@ -102,20 +102,21 @@ export const stdout = stdio.stdout = createWritableStdioStream(
 );
 
 function _adjustHighWaterMark() {
-  if (Deno.isatty?.(Deno.stdin?.rid)) {
-    return 0;
-  }
+  if (Deno.isatty?.(Deno.stdin?.rid)) return 0;
+
   try {
-    // TODO(PolarETech): On Windows, isFile() is true even for stream,
-    // and file and stream cannot be distinguished
-    if (Deno.fstatSync(Deno.stdin?.rid).isFile) {
-      return 64 * 1024;
-    }
-    return undefined;
+    // TODO(PolarETech): On Windows, isFile() returns true even for a stream,
+    // so it cannot distinguish a stream from a file.
+    // When stdin is a stream, it should return `undefined` (= 16 * 1024), not 64 * 1024.
+    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024;
   } catch (_) {
-    // Avoid error when executing net.connect().unref() on Windows
-    return 0;
+    // Avoid error that occurs when stdin is null on Windows.
+    return 64 * 1024;
   }
+
+  // TODO(PolarETech): On Linux and Mac, 64 * 1024 should be returned when stdin is null.
+
+  return undefined;
 }
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
