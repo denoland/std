@@ -7,7 +7,14 @@ import type { Options, ReleaseType } from "./mod.ts";
 Deno.test("increment", async (t) => {
   //  [version, inc, result, identifier]
   //  increment(version, inc) -> result
-  const versions: [string, ReleaseType, string | null, Options?, string?, string?][] = [
+  const versions: [
+    string,
+    ReleaseType,
+    string | null,
+    Options?,
+    string?,
+    string?,
+  ][] = [
     ["1.2.3", "major", "2.0.0"],
     ["1.2.3", "minor", "1.3.0"],
     ["1.2.3", "patch", "1.2.4"],
@@ -175,8 +182,16 @@ Deno.test("increment", async (t) => {
           parsed.increment(what, id, metadata);
           assertEquals(parsed.version, wanted, cmd + " object version updated");
           assertEquals(parsed.raw, wanted, cmd + " object raw field updated");
-          assertEquals(parsed.build, metadata?.split('.') ?? [], cmd + " build updated");
-          assertEquals(parsed.format({ style: 'full' }), [parsed.version, metadata].filter(v => v).join('+'), cmd + " full version updated");
+          assertEquals(
+            parsed.build,
+            metadata?.split(".") ?? [],
+            cmd + " build updated",
+          );
+          assertEquals(
+            parsed.format({ style: "full" }),
+            [parsed.version, metadata].filter((v) => v).join("+"),
+            cmd + " full version updated",
+          );
         } else if (parsed) {
           assertThrows(function () {
             parsed.increment(what, id, metadata);
@@ -184,7 +199,7 @@ Deno.test("increment", async (t) => {
         } else {
           assertEquals(parsed, null);
         }
-      }
+      },
     });
   }
 });

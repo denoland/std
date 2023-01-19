@@ -4,7 +4,11 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
 Deno.test("format", async (t) => {
-  const versions: [string, "release" | "prerelease" | "build" | "full" | undefined, string][] = [
+  const versions: [
+    string,
+    "release" | "prerelease" | "build" | "full" | undefined,
+    string,
+  ][] = [
     ["1.2.3", undefined, "1.2.3"],
     ["1.2.3", "release", "1.2.3"],
     ["1.2.3", "prerelease", "1.2.3"],
@@ -47,9 +51,9 @@ Deno.test("format", async (t) => {
       name: `format(${version} ${style} ${expected})`,
       fn: () => {
         const v = semver.parse(version)!;
-        const actual = v.format({ style })
+        const actual = v.format({ style });
         assertEquals(actual, expected);
-      }
-    })
+      },
+    });
   }
 });
