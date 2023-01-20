@@ -104,19 +104,23 @@ export const stdout = stdio.stdout = createWritableStdioStream(
 function _adjustHighWaterMark() {
   if (Deno.isatty?.(Deno.stdin?.rid)) return 0;
 
-  try {
-    // TODO(PolarETech): On Windows, isFile() returns true even for a stream,
-    // so it cannot distinguish a stream from a file.
-    // When stdin is a stream, it should return `undefined` (= 16 * 1024), not 64 * 1024.
-    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024;
-  } catch (_) {
-    // Avoid error that occurs when stdin is null on Windows.
-    return 64 * 1024;
+  if (Deno.build.os !== "windows") {
+    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024; // stdin is a redirected file
+    // TODO(PolarETech): Is there a better way to determine `/dev/null`.
+    if (Deno.fstatSync(Deno.stdin?.rid).mode === 8630) return 64 * 1024; // stdin is "ignore" (null)
+    return undefined; // stdin is "pipe" (stream)
   }
 
-  // TODO(PolarETech): On Linux and Mac, 64 * 1024 should be returned when stdin is null.
-
-  return undefined;
+  // Avoid error that occurs when stdin is null on Windows.
+  try {
+    // TODO(PolarETech): On Windows, `Deno.fstatSync(rid).isFile` returns true even for a stream,
+    // so it cannot distinguish a stream from a file.
+    // When stdin is a stream, it should return `undefined` (= 16 * 1024), not 64 * 1024.
+    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024; // stdin is a redirected file
+    return undefined;
+  } catch (_) {
+    return 64 * 1024; // stdin is "ignore" (null)
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
