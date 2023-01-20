@@ -414,6 +414,26 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.stdin readable with null",
+  async fn() {
+    const expected = ["65536", "null", "end"];
+
+    const scriptPath = "./node/testdata/process_stdin.ts";
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["run", scriptPath],
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+
+    const { stdout } = await command.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
   name: "process.stdout",
   fn() {
     assertEquals(process.stdout.fd, Deno.stdout.rid);
