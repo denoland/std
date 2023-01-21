@@ -623,6 +623,18 @@ Deno.test("formatJ", function () {
   assertEquals(S("%j", a), `{"a":{"a":{"a":{"a":{"a":{"a":{"a":{}}}}}}}}`);
 });
 
+Deno.test("formatI", function () {
+  const a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
+  assertEquals(
+    S("%i", a),
+    "{\n  a: {\n    a: {\n      a: {\n        a: {\n          a: {\n            a: {\n              a: {}\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+  );
+  assertEquals(
+    S("%I", a),
+    "{ a: { a: { a: { a: { a: { a: { a: {} } } } } } } }",
+  );
+});
+
 Deno.test("flagLessThan", function () {
   const a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   const aArray = [a, a, a];
