@@ -102,22 +102,27 @@ export const stdout = stdio.stdout = createWritableStdioStream(
 );
 
 function _adjustHighWaterMark() {
-  if (Deno.isatty?.(Deno.stdin?.rid)) return 0;
+  if (Deno.isatty?.(Deno.stdin?.rid)) return 0; // stdin is a TTY
 
   if (Deno.build.os !== "windows") {
-    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024; // stdin is a redirected file
-    // TODO(PolarETech): Is there a better way to determine `/dev/null`.
-    if (Deno.fstatSync(Deno.stdin?.rid).mode === 8630) return 64 * 1024; // stdin is "ignore" (null)
-    return undefined; // stdin is "pipe" (stream)
+    const fileInfo = Deno.fstatSync?.(Deno.stdin?.rid);
+    if (fileInfo.isFile) return 64 * 1024; // stdin is a redirected file
+    // TODO(PolarETech): Need a better way to identify `/dev/null`.
+    if (fileInfo.mode === 0o20666) return 64 * 1024; // stdin is "ignore" (null)
+    return undefined; // stdin is "pipe"
   }
 
   // Avoid error that occurs when stdin is null on Windows.
   try {
-    // TODO(PolarETech): On Windows, `Deno.fstatSync(rid).isFile` returns true even for a stream,
-    // so it cannot distinguish a stream from a file.
-    // When stdin is a stream, it should return `undefined` (= 16 * 1024), not 64 * 1024.
-    if (Deno.fstatSync(Deno.stdin?.rid).isFile) return 64 * 1024; // stdin is a redirected file
-    return undefined;
+    const fileInfo = Deno.fstatSync?.(Deno.stdin?.rid);
+    // TODO(PolarETech): Need a better way to identify a piped stdin.
+    // On Windows, `Deno.fstatSync(rid).isFile` returns true even for a piped stdin.
+    // Therefore, a piped stdin cannot be distinguished from a file by this property.
+    // The mtime, atime, and birthtime of the file are "2339-01-01T00:00:00.000Z",
+    // so this is used as a workaround.
+    if (fileInfo.birthtime.valueOf() === 11644473600000) return undefined; // stdin is "pipe"
+    if (fileInfo.isFile) return 64 * 1024; // stdin is a redirected file
+    return undefined; // should not reach here
   } catch (_) {
     return 64 * 1024; // stdin is "ignore" (null)
   }
