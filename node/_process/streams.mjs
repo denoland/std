@@ -101,54 +101,120 @@ export const stdout = stdio.stdout = createWritableStdioStream(
   "stdout",
 );
 
-function _adjustHighWaterMark() {
-  if (Deno.isatty?.(Deno.stdin?.rid)) return 0; // stdin is a TTY
+// TODO(PolarETech): This function should be replaced by
+// `guessHandleType()` in ". /internal_binding/util.ts".
+// https://github.com/nodejs/node/blob/v18.12.1/src/node_util.cc#L257
+function _guessStdinType(fd) {
+  // TODO(PolarETech): Need ”TCP” handling?
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L207
 
-  if (Deno.build.os !== "windows") {
-    const fileInfo = Deno.fstatSync?.(Deno.stdin?.rid);
-    if (fileInfo.isFile) return 64 * 1024; // stdin is a redirected file
-    // TODO(PolarETech): Need a better way to identify `/dev/null`.
-    if (fileInfo.mode === 0o20666) return 64 * 1024; // stdin is "ignore" (null)
-    return undefined; // stdin is "pipe"
-  }
+  if (Deno.isatty?.(fd)) return "TTY";
 
   // Avoid error that occurs when stdin is null on Windows.
   try {
-    const fileInfo = Deno.fstatSync?.(Deno.stdin?.rid);
-    // TODO(PolarETech): Need a better way to identify a piped stdin.
-    // On Windows, `Deno.fstatSync(rid).isFile` returns true even for a piped stdin.
-    // Therefore, a piped stdin cannot be distinguished from a file by this property.
-    // The mtime, atime, and birthtime of the file are "2339-01-01T00:00:00.000Z",
-    // so this is used as a workaround.
-    if (fileInfo.birthtime.valueOf() === 11644473600000) return undefined; // stdin is "pipe"
-    if (fileInfo.isFile) return 64 * 1024; // stdin is a redirected file
-    return undefined; // should not reach here
-  } catch (_) {
-    return 64 * 1024; // stdin is "ignore" (null)
-  }
-}
+    const fileInfo = Deno.fstatSync?.(fd);
 
-/** https://nodejs.org/api/process.html#process_process_stdin */
-export const stdin = stdio.stdin = new Readable({
-  highWaterMark: _adjustHighWaterMark(),
-  emitClose: false,
-  read(size) {
-    const p = Buffer.alloc(size || 16 * 1024);
-
-    if (!Deno.stdin) {
-      this.destroy(
-        new Error("Deno.stdin is not available in this environment"),
-      );
-      return;
+    if (Deno.build.os !== "windows") {
+      if (fileInfo.isFile) return "FILE";
+      // TODO(PolarETech): Need a better way to identify `/dev/null`.
+      if (fileInfo.mode === 0o20666) return "FILE"; // when stdin is "ignore" (null) on Linux/Mac
+      return "PIPE";
     }
 
-    Deno.stdin.read(p).then((length) => {
-      this.push(length === null ? null : p.slice(0, length));
-    }, (error) => {
-      this.destroy(error);
-    });
-  },
-});
+    if (fileInfo.isFile) {
+      // TODO(PolarETech): Need a better way to identify a piped stdin on Windows.
+      // On Windows, `Deno.fstatSync(rid).isFile` returns true even for a piped stdin.
+      // Therefore, a piped stdin cannot be distinguished from a file by this property.
+      // The mtime, atime, and birthtime of the file are "2339-01-01T00:00:00.000Z",
+      // so this is used as a workaround.
+      if (fileInfo.birthtime.valueOf() === 11644473600000) return "PIPE";
+      return "FILE";
+    }
+  } catch (_) {
+    return "FILE"; // when stdin is "ignore" (null) on Windows
+  }
+
+  return "UNKNOWN";
+}
+
+const _HighWaterMark = {
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/tty.js#L60
+  TTY: 0,
+
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/fs/streams.js#L155
+  // From the actual behavior of Node.js, when stdin is "ignore" (null),
+  // highWaterMark is the same as FILE.
+  FILE: 64 * 1024,
+
+  // Use the default value of Streams.
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/net.js#L329
+  // https://github.com/nodejs/readable-stream/blob/v4.2.0/lib/internal/streams/state.js#L11-L13
+  PIPE: undefined,
+  TCP: undefined,
+
+  UNKNOWN: undefined,
+};
+
+/** https://nodejs.org/api/process.html#process_process_stdin */
+// https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L189
+export const stdin = stdio.stdin = (() => {
+  const fd = Deno.stdin?.rid;
+  let _stdin;
+  const stdinType = _guessStdinType(fd);
+
+  // TODO(PolarETech):
+  // For TTY, `new Readable()` should be replaced `new tty.ReadStream()` if possible.
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L194
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/tty.js#L47
+
+  // NOTE:
+  // For FILE, since `fs.ReadStream` cannot be imported before process initialization,
+  // use `Readable` instead.
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L200
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/fs/streams.js#L148
+
+  // TODO(PolarETech):
+  // For PIPE and TCP, `new Readable()` should be replaced `new net.Socket()` if possible.
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L206
+  // https://github.com/nodejs/node/blob/v18.12.1/lib/net.js#L329
+  switch (stdinType) {
+    case "TTY":
+    case "FILE":
+    case "PIPE":
+    case "TCP": {
+      _stdin = new Readable({
+        highWaterMark: _HighWaterMark[stdinType],
+        emitClose: stdinType === "FILE" ? undefined : false,
+        autoDestroy: stdinType === "FILE" ? false : true,
+        read(size) {
+          const p = Buffer.alloc(size || 16 * 1024);
+
+          if (!Deno.stdin) {
+            this.destroy(
+              new Error("Deno.stdin is not available in this environment"),
+            );
+            return;
+          }
+
+          Deno.stdin.read(p).then((length) => {
+            this.push(length === null ? null : p.slice(0, length));
+          }, (error) => {
+            this.destroy(error);
+          });
+        },
+      });
+      break;
+    }
+    default: {
+      // Provide a dummy contentless input for e.g. non-console
+      // Windows applications.
+      _stdin = new Readable({ read() {} });
+      _stdin.push(null);
+    }
+  }
+
+  return _stdin;
+})();
 stdin.on("close", () => Deno.stdin?.close());
 stdin.fd = Deno.stdin?.rid ?? -1;
 Object.defineProperty(stdin, "isTTY", {
