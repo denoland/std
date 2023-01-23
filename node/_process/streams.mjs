@@ -8,7 +8,7 @@ import {
   cursorTo,
   moveCursor,
 } from "../internal/readline/callbacks.mjs";
-import { Readable, Writable } from "../stream.ts";
+import { Duplex, Readable, Writable } from "../stream.ts";
 import { stdio } from "./stdio.mjs";
 
 // https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
@@ -113,6 +113,8 @@ function _guessStdinType(fd) {
   // Avoid error that occurs when stdin is null on Windows.
   try {
     const fileInfo = Deno.fstatSync?.(fd);
+    // From the actual behavior of Node.js,
+    // when stdin is "ignore" (null), it is treated the same as "FILE".
 
     if (Deno.build.os !== "windows") {
       if (fileInfo.isFile) return "FILE";
@@ -137,22 +139,13 @@ function _guessStdinType(fd) {
   return "UNKNOWN";
 }
 
-const _HighWaterMark = {
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/tty.js#L60
-  TTY: 0,
-
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/fs/streams.js#L155
-  // From the actual behavior of Node.js, when stdin is "ignore" (null),
-  // highWaterMark is the same as FILE.
-  FILE: 64 * 1024,
-
-  // Use the default value of Streams.
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/net.js#L329
-  // https://github.com/nodejs/readable-stream/blob/v4.2.0/lib/internal/streams/state.js#L11-L13
-  PIPE: undefined,
-  TCP: undefined,
-
-  UNKNOWN: undefined,
+const _read = function (size) {
+  const p = Buffer.alloc(size || 16 * 1024);
+  Deno.stdin?.read(p).then((length) => {
+    this.push(length === null ? null : p.slice(0, length));
+  }, (error) => {
+    this.destroy(error);
+  });
 };
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
@@ -162,47 +155,51 @@ export const stdin = stdio.stdin = (() => {
   let _stdin;
   const stdinType = _guessStdinType(fd);
 
-  // TODO(PolarETech):
-  // For TTY, `new Readable()` should be replaced `new tty.ReadStream()` if possible.
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L194
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/tty.js#L47
-
-  // NOTE:
-  // For FILE, since `fs.ReadStream` cannot be imported before process initialization,
-  // use `Readable` instead.
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L200
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/fs/streams.js#L148
-
-  // TODO(PolarETech):
-  // For PIPE and TCP, `new Readable()` should be replaced `new net.Socket()` if possible.
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L206
-  // https://github.com/nodejs/node/blob/v18.12.1/lib/net.js#L329
   switch (stdinType) {
+    case "FILE": {
+      // Since `fs.ReadStream` cannot be imported before process initialization,
+      // use `Readable` instead.
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L200
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/fs/streams.js#L148
+      _stdin = new Readable({
+        highWaterMark: 64 * 1024,
+        autoDestroy: false,
+        read: _read,
+      });
+      break;
+    }
     case "TTY":
-    case "FILE":
     case "PIPE":
     case "TCP": {
-      _stdin = new Readable({
-        highWaterMark: _HighWaterMark[stdinType],
-        emitClose: stdinType === "FILE" ? undefined : false,
-        autoDestroy: stdinType === "FILE" ? false : true,
-        read(size) {
-          const p = Buffer.alloc(size || 16 * 1024);
+      // TODO(PolarETech):
+      // For TTY, `new Duplex()` should be replaced `new tty.ReadStream()` if possible.
+      // There are two problems that need to be resolved.
+      // 1. Using them here introduces a circular dependency.
+      // 2. Creating a tty.ReadStream() is not currently supported.
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L194
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/tty.js#L47
 
-          if (!Deno.stdin) {
-            this.destroy(
-              new Error("Deno.stdin is not available in this environment"),
-            );
-            return;
-          }
-
-          Deno.stdin.read(p).then((length) => {
-            this.push(length === null ? null : p.slice(0, length));
-          }, (error) => {
-            this.destroy(error);
-          });
-        },
+      // For PIPE and TCP, `new Duplex()` should be replaced `new net.Socket()` if possible.
+      // There are two problems that need to be resolved.
+      // 1. Using them here introduces a circular dependency.
+      // 2. Creating a net.Socket() from a fd is not currently supported.
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L206
+      // https://github.com/nodejs/node/blob/v18.12.1/lib/net.js#L329
+      _stdin = new Duplex({
+        readable: stdinType === "TTY" ? undefined : true,
+        writable: stdinType === "TTY" ? undefined : false,
+        readableHighWaterMark: stdinType === "TTY" ? 0 : undefined,
+        allowHalfOpen: false,
+        emitClose: false,
+        autoDestroy: true,
+        decodeStrings: false,
+        read: _read,
       });
+
+      if (stdinType !== "TTY") {
+        // Make sure the stdin can't be `.end()`-ed
+        _stdin._writableState.ended = true;
+      }
       break;
     }
     default: {
