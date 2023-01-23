@@ -102,10 +102,10 @@ export const stdout = stdio.stdout = createWritableStdioStream(
 );
 
 // TODO(PolarETech): This function should be replaced by
-// `guessHandleType()` in ". /internal_binding/util.ts".
+// `guessHandleType()` in "../internal_binding/util.ts".
 // https://github.com/nodejs/node/blob/v18.12.1/src/node_util.cc#L257
 function _guessStdinType(fd) {
-  // TODO(PolarETech): Need ”TCP” handling?
+  // TODO(PolarETech): Need "TCP" handling?
   // https://github.com/nodejs/node/blob/v18.12.1/lib/internal/bootstrap/switches/is_main_thread.js#L207
 
   if (Deno.isatty?.(fd)) return "TTY";
