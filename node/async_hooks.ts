@@ -2,7 +2,9 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
-import { validateFunction, validateString } from "./internal/validators.mjs";
+import { validateFunction, validateString, validateObject } from "./internal/validators.mjs";
+import { ERR_ASYNC_CALLBACK } from "./internal/errors.ts";
+import { kEmptyObject } from "./internal/util.mjs";
 import {
   // deno-lint-ignore camelcase
   async_id_symbol,
@@ -14,8 +16,11 @@ import {
   initHooksExist,
   newAsyncId,
   registerDestroyHook,
+  executionAsyncResource,
   // deno-lint-ignore camelcase
   trigger_async_id_symbol,
+  symbols,
+  AsyncHook,
 } from "./internal/async_hooks.ts";
 
 const destroyedSymbol = Symbol("destroyed");
@@ -143,20 +148,51 @@ export class AsyncResource {
   }
 }
 
+Deno.core.setPromiseHooks(() => {
+
+});
+
+export class AsyncLocalStorage {
+  constructor(options = kEmptyObject) {
+    validateObject(options, "options");
+
+    this.kResourceStore = Symbol("kResourceStore");
+  }
+
+  run(store: any, callback: any, ...args: any) {
+    // Avoid creation of an AsyncResource if store is already active
+    if (Object.is(store, this.getStore())) {
+      return Reflect.apply(callback, null, args);
+    }
+
+    const resource = executionAsyncResource();
+    const oldStore = resource[this.kResourceStore];
+
+    resource[this.kResourceStore] = store;
+
+    try {
+      return Reflect.apply(callback, null, args);
+    } finally {
+      resource[this.kResourceStore] = oldStore;
+    }
+  }
+
+  exit(callback: (...args: unknown[]) => any, ...args: unknown[]) {
+    this.run(undefined, callback, args);
+  }
+
+  getStore() {
+    const resource = executionAsyncResource();
+    return resource[this.kResourceStore];
+  }
+}
+
 export function executionAsyncId() {
   return 1;
 }
 
-class AsyncHook {
-  enable() {
-  }
-
-  disable() {
-  }
-}
-
-export function createHook() {
-  return new AsyncHook();
+export function createHook(fns: any) {
+  return new AsyncHook(fns);
 }
 
 // Placing all exports down here because the exported classes won't export
@@ -166,4 +202,5 @@ export default {
   AsyncResource,
   executionAsyncId,
   createHook,
+  AsyncLocalStorage,
 };

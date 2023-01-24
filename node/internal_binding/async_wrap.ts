@@ -129,6 +129,8 @@ export enum providerType {
 
 const kInvalidAsyncId = -1;
 
+export const execution_async_resources: any[] = [];
+
 export class AsyncWrap {
   provider: providerType = providerType.NONE;
   asyncId = kInvalidAsyncId;

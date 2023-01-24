@@ -53,6 +53,7 @@ const {
   asyncIdFields: async_id_fields,
   newAsyncId,
   constants,
+  execution_async_resources,
 } = async_wrap;
 export { newAsyncId };
 const {
@@ -100,6 +101,62 @@ export const symbols = {
   // deno-lint-ignore camelcase
   promise_resolve_symbol,
 };
+
+const topLevelResource = {};
+export function executionAsyncResource() {
+  // Indicate to the native layer that this function is likely to be used,
+  // in which case it will inform JS about the current async resource via
+  // the trampoline above.
+  async_hook_fields[constants.kUsesExecutionAsyncResource] = 1;
+
+  const index = async_hook_fields[kStackLength] - 1;
+  if (index === -1) return topLevelResource;
+  const resource = execution_async_resources[index];
+  return lookupPublicResource(resource);
+}
+
+class AsyncContextFrame {
+  tryGetContext() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L58
+  }
+
+  current() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L74
+  }
+
+  create() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L82
+  }
+
+  wrap() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L89
+  }
+
+  attachContext() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L118
+  }
+
+  get() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L133
+  }
+
+  scope(key, value) {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L142
+  }
+
+  storageScope() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L155
+  }
+
+  isRoot() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L165
+  }
+
+  getJSWrapper() {
+    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L169
+  }
+
+}
 
 // deno-lint-ignore no-explicit-any
 function lookupPublicResource(resource: any) {
