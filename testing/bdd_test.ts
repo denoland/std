@@ -43,7 +43,10 @@ Deno.test("global", async (t) => {
       fn: (t: Deno.TestContext) => void | Promise<void>,
     ): Promise<boolean>;
     async step(
-      tOrNameOrFn: Deno.TestStepDefinition | string | ((t: Deno.TestContext) => void | Promise<void>),
+      tOrNameOrFn:
+        | Deno.TestStepDefinition
+        | string
+        | ((t: Deno.TestContext) => void | Promise<void>),
       fn?: (t: Deno.TestContext) => void | Promise<void>,
     ): Promise<boolean> {
       let ignore = false;
@@ -55,7 +58,9 @@ Deno.test("global", async (t) => {
         fn = tOrNameOrFn.fn;
       }
 
-      const name = typeof tOrNameOrFn === "string" ? tOrNameOrFn : tOrNameOrFn.name;
+      const name = typeof tOrNameOrFn === "string"
+        ? tOrNameOrFn
+        : tOrNameOrFn.name;
       const context = new TestContext(name);
       this.steps.push(context);
       if (!ignore) {
