@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
@@ -11,6 +11,21 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * All currently executing transformations are allowed to finish and still
  * yielded on success. After that, the rejections among them are gathered and
  * thrown by the iterator in an `AggregateError`.
+ *
+ * @example
+ * ```typescript
+ * import { pooledMap } from "https://deno.land/std@$STD_VERSION/async/pool.ts";
+ *
+ * const results = pooledMap(
+ *   2,
+ *   [1, 2, 3],
+ *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+ * );
+ *
+ * for await (const value of results) {
+ *   // ...
+ * }
+ * ```
  *
  * @param poolLimit The maximum count of items being processed concurrently.
  * @param array The input array for mapping.

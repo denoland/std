@@ -1,30 +1,30 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Applies the given transformer to all entries in the given record and returns a new record containing the results
+ * Applies the given transformer to all entries in the given record and returns
+ * a new record containing the results.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/map_entries.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const usersById = {
- *     'a2e': { name: 'Kim', age: 22 },
- *     'dfe': { name: 'Anna', age: 31 },
- *     '34b': { name: 'Tim', age: 58 },
+ *   "a2e": { name: "Kim", age: 22 },
+ *   "dfe": { name: "Anna", age: 31 },
+ *   "34b": { name: "Tim", age: 58 },
  * } as const;
+ * const agesByNames = mapEntries(usersById, ([id, { name, age }]) => [name, age]);
  *
- * const agesByNames = mapEntries(usersById,
- *     ([ id, { name, age } ]) => [ name, age ],
- * )
- *
- * assertEquals(agesByNames, {
- *     'Kim': 22,
- *     'Anna': 31,
- *     'Tim': 58,
- * })
+ * assertEquals(
+ *   agesByNames,
+ *   {
+ *     "Kim": 22,
+ *     "Anna": 31,
+ *     "Tim": 58,
+ *   },
+ * );
  * ```
  */
 export function mapEntries<T, O>(

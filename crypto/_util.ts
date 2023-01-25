@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { crypto, type DigestAlgorithm } from "./mod.ts";
 
 const encoder = new TextEncoder();
@@ -8,7 +8,7 @@ const encoder = new TextEncoder();
  *
  * @example <caption>Before:</caption>
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
  *
  * const encoder = new TextEncoder();
  *

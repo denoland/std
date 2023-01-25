@@ -1,12 +1,12 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 import type { Options, ReleaseType } from "./mod.ts";
 
 Deno.test("increment", function () {
   //  [version, inc, result, identifier]
-  //  inc(version, inc) -> result
+  //  increment(version, inc) -> result
   const versions: [string, ReleaseType, string | null, Options?, string?][] = [
     ["1.2.3", "major", "2.0.0"],
     ["1.2.3", "minor", "1.3.0"],
@@ -156,7 +156,7 @@ Deno.test("increment", function () {
     const options = v[3];
     const id = v[4];
     const found = semver.increment(pre, what, options, id);
-    const cmd = "inc(" + pre + ", " + what + ", " + id + ")";
+    const cmd = "increment(" + pre + ", " + what + ", " + id + ")";
     assertEquals(found, wanted, cmd + " === " + wanted);
 
     const parsed = semver.parse(pre, options);

@@ -1,32 +1,36 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { mapEntries } from "./map_entries.ts";
 
 /**
- * Applies the given aggregator to each group in the given Grouping, returning the results together with the respective group keys
+ * Applies the given aggregator to each group in the given grouping, returning the
+ * results together with the respective group keys
  *
+ * @example
  * ```ts
  * import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/aggregate_groups.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const foodProperties = {
- *     'Curry': [ 'spicy', 'vegan' ],
- *     'Omelette': [ 'creamy', 'vegetarian' ],
- * }
- * const descriptions = aggregateGroups(foodProperties,
- *     (current, key, first, acc) => {
- *         if (first)
- *             return `${key} is ${current}`
+ *   "Curry": ["spicy", "vegan"],
+ *   "Omelette": ["creamy", "vegetarian"],
+ * };
+ * const descriptions = aggregateGroups(
+ *   foodProperties,
+ *   (current, key, first, acc) => {
+ *     if (first) {
+ *       return `${key} is ${current}`;
+ *     }
  *
- *         return `${acc} and ${current}`
- *     },
- * )
+ *     return `${acc} and ${current}`;
+ *   },
+ * );
  *
  * assertEquals(descriptions, {
- *     'Curry': 'Curry is spicy and vegan',
- *     'Omelette': 'Omelette is creamy and vegetarian',
- * })
+ *   "Curry": "Curry is spicy and vegan",
+ *   "Omelette": "Omelette is creamy and vegetarian",
+ * });
  * ```
  */
 export function aggregateGroups<T, A>(

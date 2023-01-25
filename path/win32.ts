@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -668,31 +668,31 @@ export function basename(path: string, ext = ""): string {
         }
       } else {
         if (firstNonSlashEnd === -1) {
-          // We saw the first non-path separator, remember this index in case
-          // we need it if the extension ends up not matching
+          // We saw the first non-path separator, mark this as the end of our
+          // path component in case we don't match a whole suffix
           matchedSlash = false;
           firstNonSlashEnd = i + 1;
+          end = firstNonSlashEnd;
         }
         if (extIdx >= 0) {
-          // Try to match the explicit extension
+          // Try to match the explicit suffix
           if (code === ext.charCodeAt(extIdx)) {
             if (--extIdx === -1) {
-              // We matched the extension, so mark this as the end of our path
+              // We matched whole suffix, so mark this as the end of our path
               // component
               end = i;
             }
           } else {
-            // Extension does not match, so our result is the entire path
-            // component
+            // Suffix character does not match, so bail out early
+            // from checking rest of characters
             extIdx = -1;
-            end = firstNonSlashEnd;
           }
         }
       }
     }
 
+    if (end === -1) return "";
     if (start === end) end = firstNonSlashEnd;
-    else if (end === -1) end = path.length;
     return path.slice(start, end);
   } else {
     for (i = path.length - 1; i >= start; --i) {

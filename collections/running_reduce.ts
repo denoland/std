@@ -1,13 +1,12 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Calls the given reducer on each element of the given collection, passing it's
- * result as the accumulator to the next respective call, starting with the given
- * initialValue. Returns all intermediate accumulator results.
+ * Calls the given reducer on each element of the given collection, passing its
+ * result as the accumulator to the next respective call, starting with the
+ * given initialValue. Returns all intermediate accumulator results.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/running_reduce.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

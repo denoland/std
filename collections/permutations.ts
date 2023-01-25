@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -6,19 +6,18 @@
  * Ignores equality of elements, meaning this will always return the same
  * number of permutations for a given length of input.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { permutations } from "https://deno.land/std@$STD_VERSION/collections/permutations.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const numbers = [ 1, 2 ]
- * const windows = permutations(numbers)
+ * const numbers = [ 1, 2 ];
+ * const windows = permutations(numbers);
  *
  * assertEquals(windows, [
- *     [ 1, 2 ],
- *     [ 2, 1 ],
- * ])
+ *   [ 1, 2 ],
+ *   [ 2, 1 ],
+ * ]);
  * ```
  */
 export function permutations<T>(inputArray: readonly T[]): T[][] {

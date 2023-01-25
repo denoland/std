@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { withoutAll } from "../../collections/without_all.ts";
 import { walk } from "../../fs/walk.ts";
 import { relative } from "../path/posix.ts";
@@ -69,6 +69,11 @@ export async function updateToDo() {
   const missingTests = await getMissingTests();
 
   await file.write(encoder.encode("# Remaining Node Tests\n\n"));
+  await file.write(
+    encoder.encode(
+      "NOTE: This file should not be manually edited. Please edit `config.json` and run `deno task node:setup` instead.\n\n",
+    ),
+  );
   await file.write(
     encoder.encode(`Total: ${missingTests.length}\n\n`),
   );

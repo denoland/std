@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../../testing/asserts.ts";
-import { readableStreamFromIterable } from "../../streams/conversion.ts";
+import { readableStreamFromIterable } from "../../streams/readable_stream_from_iterable.ts";
 import { JsonStringifyStream, StringifyStreamOptions } from "./_stringify.ts";
 
 async function assertValidStringify(

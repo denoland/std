@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import {
   ArrayValue,
@@ -56,7 +56,10 @@ Deno.test({
   name: "[TOML parser] basic string",
   fn() {
     const parse = ParserFactory(BasicString);
-    assertEquals(parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'), 'a"\n\t\b\\\あ🦕');
+    assertEquals(
+      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
+      'a"\n\t\b\\\あ🦕',
+    );
     assertEquals(parse('""'), "");
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));

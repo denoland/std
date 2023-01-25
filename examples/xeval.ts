@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Run a script for each new-line or otherwise delimited chunk of standard input.
  *
@@ -6,7 +6,7 @@
  */
 
 import { parse } from "../flags/mod.ts";
-import { TextDelimiterStream } from "../streams/delimiter.ts";
+import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.
 const AsyncFunction = Object.getPrototypeOf(async function () {})

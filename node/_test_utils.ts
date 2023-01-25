@@ -1,6 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { readAll } from "../streams/conversion.ts";
 import { assert, assertStringIncludes } from "../testing/asserts.ts";
 
 /** Asserts that an error thrown in a callback will not be wrongly caught. */
@@ -19,9 +18,8 @@ export async function assertCallbackErrorUncaught(
 ) {
   // Since the error has to be uncaught, and that will kill the Deno process,
   // the only way to test this is to spawn a subprocess.
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const p = new Deno.Command(Deno.execPath(), {
+    args: [
       "eval",
       "--unstable",
       `${prelude ?? ""}
@@ -34,11 +32,9 @@ export async function assertCallbackErrorUncaught(
     ],
     stderr: "piped",
   });
-  const status = await p.status();
-  const stderr = new TextDecoder().decode(await readAll(p.stderr));
-  p.close();
-  p.stderr.close();
+  const { stderr, success } = await p.output();
+  const error = new TextDecoder().decode(stderr);
   await cleanup?.();
-  assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
+  assert(!success);
+  assertStringIncludes(error, "Error: success");
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -57,9 +57,12 @@ import {
 import { guessHandleType } from "./internal_binding/util.ts";
 import { os } from "./internal_binding/constants.ts";
 import { nextTick } from "./process.ts";
+import { channel } from "./diagnostics_channel.ts";
 import { isArrayBufferView } from "./internal/util/types.ts";
 
 const { UV_UDP_REUSEADDR, UV_UDP_IPV6ONLY } = os;
+
+const udpSocketChannel = channel("udp.socket");
 
 const BIND_STATE_UNBOUND = 0;
 const BIND_STATE_BINDING = 1;
@@ -210,6 +213,12 @@ export class Socket extends EventEmitter {
           () => signal.removeEventListener("abort", onAborted),
         );
       }
+    }
+
+    if (udpSocketChannel.hasSubscribers) {
+      udpSocketChannel.publish({
+        socket: this,
+      });
     }
   }
 
@@ -455,13 +464,13 @@ export class Socket extends EventEmitter {
         return;
       }
 
-      let flags = 0;
+      let flags: number | undefined = 0;
 
       if (state.reuseAddr) {
         flags |= UV_UDP_REUSEADDR;
       }
       if (state.ipv6Only) {
-        flags |= UV_UDP_IPV6ONLY;
+        flags |= UV_UDP_IPV6ONLY!;
       }
 
       // TODO(cmorten): here we deviate somewhat from the Node implementation which

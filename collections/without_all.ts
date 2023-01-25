@@ -1,11 +1,10 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
  * Returns an array excluding all given values.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/without_all.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";

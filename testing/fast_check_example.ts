@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Tests that run the fast-check property-based testing library in the Deno
@@ -156,7 +156,7 @@ Deno.test("Can use fast-check to property test indexOf function", async (t) => {
             const pattern = b;
             const index = indexOf(text, pattern);
             return index === -1 ||
-              text.substr(index, pattern.length) === pattern;
+              text.slice(index, index + pattern.length) === pattern;
           },
         ),
       );

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for
@@ -6,18 +6,50 @@
  *
  * This module is browser compatible.
  *
+ * ## Specifying a standard and delimiter
+ *
+ * By default, all functions are using the most popular Adobe version of ascii85
+ * and not adding any delimiter. However, there are three more standards
+ * supported - btoa (different delimiter and additional compression of 4 bytes
+ * equal to 32), [Z85](https://rfc.zeromq.org/spec/32/) and
+ * [RFC 1924](https://tools.ietf.org/html/rfc1924). It's possible to use a
+ * different encoding by specifying it in `options` object as a second parameter.
+ *
+ * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for
+ * Adobe, `xbtoa Begin` and `xbtoa End` with newlines between the delimiters and
+ * encoded data for btoa. Checksums for btoa are not supported. Delimiters are not
+ * supported by other encodings.)
+ *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ *
+ * const a85Repr = "LpTqp";
+ *
+ * const binaryData = decode(a85Repr);
+ * console.log(binaryData);
+ * // => Uint8Array [ 136, 180, 79, 24 ]
+ *
+ * console.log(encode(binaryData));
+ * // => LpTqp
+ * ```
+ *
  * @module
  */
 
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
 
-/**
- * encoding/decoding options
- * @property standard - characterset and delimiter (if supported and used). Defaults to Adobe
- * @property delimiter - whether to use a delimiter (if supported) - "<~" and "~>" by default
- */
+/** encoding/decoding options */
 export interface Ascii85Options {
+  /** characterset and delimiter (if supported and used).
+   *
+   * @default {"Adobe"}
+   */
   standard?: Ascii85Standard;
+  /** whether to use a delimiter (if supported) - "<~" and "~>" by default */
   delimiter?: boolean;
 }
 const rfc1924 =

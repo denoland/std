@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { decode, encode } from "./base58.ts";
@@ -14,6 +14,7 @@ const testSetString = [
   ["foobar", "t1Zv2yaZ"],
   ["Hello World!", "2NEpo7TZRRrLZSi2U"],
   [new Uint8Array([0, 0, 0, 40, 127, 180, 205]), "111233QC4"],
+  [new Uint8Array([10, 0, 10]), "4MpV"],
 ];
 
 const testSetBinary = testSetString.map(([data, b58]) => {

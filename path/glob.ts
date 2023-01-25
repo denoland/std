@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { isWindows, osType } from "../_util/os.ts";
@@ -12,14 +12,19 @@ const { join, normalize } = path;
 
 export interface GlobOptions {
   /** Extended glob syntax.
-   * See https://www.linuxjournal.com/content/bash-extended-globbing. Defaults
-   * to true. */
+   * See https://www.linuxjournal.com/content/bash-extended-globbing.
+   *
+   * @default {true}
+   */
   extended?: boolean;
   /** Globstar syntax.
    * See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
-   * If false, `**` is treated like `*`. Defaults to true. */
+   * If false, `**` is treated like `*`.
+   *
+   * @default {true}
+   */
   globstar?: boolean;
-  /** Whether globstar should be case insensitive. */
+  /** Whether globstar should be case-insensitive. */
   caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
   os?: OSType;

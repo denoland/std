@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { join } from "../path/mod.ts";
 import { toPathString } from "./_util.ts";
 
@@ -8,6 +8,13 @@ import { toPathString } from "./_util.ts";
  * If the directory does not exist, it is created.
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { emptyDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * emptyDir("./foo"); // returns a promise
+ * ```
  */
 export async function emptyDir(dir: string | URL) {
   try {
@@ -39,6 +46,13 @@ export async function emptyDir(dir: string | URL) {
  * If the directory does not exist, it is created.
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { emptyDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * emptyDirSync("./foo"); // void
+ * ```
  */
 export function emptyDirSync(dir: string | URL) {
   try {
@@ -58,6 +72,5 @@ export function emptyDirSync(dir: string | URL) {
     }
     // if not exist. then create it
     Deno.mkdirSync(dir, { recursive: true });
-    return;
   }
 }

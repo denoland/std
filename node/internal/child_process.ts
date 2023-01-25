@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
@@ -46,11 +46,8 @@ type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
 
 // @ts-ignore Deno[Deno.internal] is used on purpose here
-const DenoSpawnChild = Deno[Deno.internal]?.nodeUnstable?.spawnChild ||
-  Deno.spawnChild;
-// @ts-ignore Deno[Deno.internal] is used on purpose here
-const DenoSpawnSync = Deno[Deno.internal]?.nodeUnstable?.spawnSync ||
-  Deno.spawnSync;
+const DenoCommand = Deno[Deno.internal]?.nodeUnstable?.Command ||
+  Deno.Command;
 
 export function stdioStringToArray(
   stdio: NodeStdio,
@@ -131,7 +128,7 @@ export class ChildProcess extends EventEmitter {
     null,
   ];
 
-  #process!: Deno.Child;
+  #process!: Deno.ChildProcess;
   #spawned = deferred<void>();
 
   constructor(
@@ -166,7 +163,7 @@ export class ChildProcess extends EventEmitter {
     const stringEnv = mapValues(env, (value) => value.toString());
 
     try {
-      this.#process = DenoSpawnChild(cmd, {
+      this.#process = new DenoCommand(cmd, {
         args: cmdArgs,
         cwd,
         env: stringEnv,
@@ -174,7 +171,7 @@ export class ChildProcess extends EventEmitter {
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
         windowsRawArguments: windowsVerbatimArguments,
-      });
+      }).spawn();
       this.pid = this.#process.pid;
 
       if (stdin === "pipe") {
@@ -341,7 +338,7 @@ function toDenoSignal(signal: number | string): Deno.Signal {
   }
 
   const denoSignal = signal as Deno.Signal;
-  if (os.signals[denoSignal] != null) {
+  if (denoSignal in os.signals) {
     return denoSignal;
   }
   throw new ERR_UNKNOWN_SIGNAL(signal);
@@ -737,10 +734,10 @@ export interface SpawnSyncResult {
 }
 
 function parseSpawnSyncOutputStreams(
-  output: Deno.SpawnOutput,
+  output: Deno.CommandOutput,
   name: "stdout" | "stderr",
 ): string | Buffer | null {
-  // Deno.spawnSync() returns getters for stdout and stderr that throw when set
+  // new Deno.Command().outputSync() returns getters for stdout and stderr that throw when set
   // to 'inherit'.
   try {
     return Buffer.from(output[name]) as string | Buffer;
@@ -770,7 +767,7 @@ export function spawnSync(
 
   const result: SpawnSyncResult = {};
   try {
-    const output = DenoSpawnSync(command, {
+    const output = new DenoCommand(command, {
       args,
       cwd,
       env,
@@ -779,10 +776,9 @@ export function spawnSync(
       uid,
       gid,
       windowsRawArguments: windowsVerbatimArguments,
-    });
+    }).outputSync();
 
-    const { signal } = output;
-    const status = signal ? null : 0;
+    const status = output.signal ? null : 0;
     let stdout = parseSpawnSyncOutputStreams(output, "stdout");
     let stderr = parseSpawnSyncOutputStreams(output, "stderr");
 
@@ -799,10 +795,10 @@ export function spawnSync(
     }
 
     result.status = status;
-    result.signal = signal;
+    result.signal = output.signal;
     result.stdout = stdout;
     result.stderr = stderr;
-    result.output = [signal, stdout, stderr];
+    result.output = [output.signal, stdout, stderr];
   } catch (err) {
     if (err instanceof Deno.errors.NotFound) {
       result.error = _createSpawnSyncError("ENOENT", command, args);

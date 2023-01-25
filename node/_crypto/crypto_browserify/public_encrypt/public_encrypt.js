@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2017 Calvin Metcalf. All rights reserved. MIT license.
 
 import parseKeys from "../parse_asn1/mod.js";

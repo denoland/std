@@ -1,10 +1,16 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Optional object interface for `JsonStringifyStream`. */
 export interface StringifyStreamOptions {
-  /** Prefix to be added after stringify. The default is "". */
+  /** Prefix to be added after stringify.
+   *
+   * @default {""}
+   */
   readonly prefix?: string;
-  /** Suffix to be added after stringify. The default is "\n". */
+  /** Suffix to be added after stringify.
+   *
+   * @default {"\n"}
+   */
   readonly suffix?: string;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<unknown>;
@@ -18,27 +24,66 @@ export interface StringifyStreamOptions {
  * This can be used to stringify [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/), [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), and [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is "" and the default suffix is "\n".
  *
+ * @example
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
  * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
- *   .pipeThrough(new JsonStringifyStream())
+ *   .pipeThrough(new JsonStringifyStream()) // convert to JSON lines (ndjson)
+ *   .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
+ *   .pipeTo(file.writable)
+ *   .then(() => console.log("write success"));
+ * ```
+ *
+ * @example
+ * To convert to [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), set the
+ * prefix to the delimiter "\x1E" as options.
+ * ```ts
+ * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ *
+ * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
+ *
+ * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
+ *   .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeTo(file.writable)
  *   .then(() => console.log("write success"));
  * ```
+ *
+ * @example
+ * If you want to stream [JSON lines](https://jsonlines.org/) from the server:
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ *
+ * // A server that streams one line of JSON every second
+ * serve(() => {
+ *   let intervalId: number | undefined;
+ *   const readable = new ReadableStream({
+ *     start(controller) {
+ *       // enqueue data once per second
+ *       intervalId = setInterval(() => {
+ *         controller.enqueue({ now: new Date() });
+ *       }, 1000);
+ *     },
+ *     cancel() {
+ *       clearInterval(intervalId);
+ *     },
+ *   });
+ *
+ *   const body = readable
+ *     .pipeThrough(new JsonStringifyStream()) // convert data to JSON lines
+ *     .pipeThrough(new TextEncoderStream()); // convert a string to a Uint8Array
+ *
+ *   return new Response(body);
+ * });
+ * ```
  */
 export class JsonStringifyStream extends TransformStream<unknown, string> {
-  /**
-   * @param options
-   * @param options.prefix Prefix to be added after stringify. The default is "".
-   * @param options.suffix Suffix to be added after stringify. The default is "\n".
-   * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   */
   constructor({
     prefix = "",
     suffix = "\n",

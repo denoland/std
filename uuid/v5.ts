@@ -1,8 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
-import { concat } from "../bytes/mod.ts";
+import { concat } from "../bytes/concat.ts";
 import { assert } from "../_util/asserts.ts";
 
 const UUID_RE =
@@ -11,6 +11,7 @@ const UUID_RE =
 /**
  * Validate that the passed UUID is an RFC4122 v5 UUID.
  *
+ * @example
  * ```ts
  * import { generate as generateV5, validate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
@@ -26,6 +27,7 @@ export function validate(id: string): boolean {
 /**
  * Generate a RFC4122 v5 UUID (SHA-1 namespace).
  *
+ * @example
  * ```js
  * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *

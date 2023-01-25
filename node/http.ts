@@ -1,7 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { type Deferred, deferred } from "../async/deferred.ts";
-import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
@@ -15,6 +14,7 @@ import {
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
+import { chunkExpression as RE_TE_CHUNKED } from "./_http_common.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import { constants, TCP } from "./internal_binding/tcp_wrap.ts";
 
@@ -63,12 +63,7 @@ const DenoServe = Deno[Deno.internal]?.nodeUnstable?.serve || Deno.serve;
 const DenoUpgradeHttpRaw = Deno[Deno.internal]?.nodeUnstable?.upgradeHttpRaw ||
   Deno.upgradeHttpRaw;
 
-function chunkToU8(chunk: Chunk): Uint8Array {
-  if (typeof chunk === "string") {
-    return core.encode(chunk);
-  }
-  return chunk;
-}
+const ENCODER = new TextEncoder();
 
 export interface RequestOptions {
   agent?: Agent;
@@ -96,6 +91,7 @@ export interface RequestOptions {
   href?: string;
 }
 
+// TODO: Implement ClientRequest methods (e.g. setHeader())
 /** ClientRequest represents the http(s) request from the client */
 class ClientRequest extends NodeWritable {
   defaultProtocol = "http:";
@@ -130,8 +126,14 @@ class ClientRequest extends NodeWritable {
       this.controller.close();
     }
 
+    const body = await this._createBody(this.body, this.opts);
     const client = await this._createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
+    const opts = {
+      body,
+      method: this.opts.method,
+      client,
+      headers: this.opts.headers,
+    };
     const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
       .catch((e) => {
         if (e.message.includes("connection closed before message completed")) {
@@ -156,6 +158,31 @@ class ClientRequest extends NodeWritable {
 
   abort() {
     this.destroy();
+  }
+
+  async _createBody(
+    body: ReadableStream | null,
+    opts: RequestOptions,
+  ): Promise<Buffer | ReadableStream | null> {
+    if (!body) return null;
+    if (!opts.headers) return body;
+
+    const headers = Object.fromEntries(
+      Object.entries(opts.headers).map(([k, v]) => [k.toLowerCase(), v]),
+    );
+
+    if (
+      !RE_TE_CHUNKED.test(headers["transfer-encoding"]) &&
+      !Number.isNaN(Number.parseInt(headers["content-length"], 10))
+    ) {
+      const bufferList: Buffer[] = [];
+      for await (const chunk of body) {
+        bufferList.push(chunk);
+      }
+      return Buffer.concat(bufferList);
+    }
+
+    return body;
   }
 
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
@@ -195,6 +222,7 @@ class ClientRequest extends NodeWritable {
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
+  #statusMessage = "";
   constructor(public response: Response | undefined, public socket: Socket) {
     super();
     this.reader = response?.body?.getReader();
@@ -234,7 +262,11 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get statusMessage() {
-    return this.response?.statusText || "";
+    return this.#statusMessage || this.response?.statusText || "";
+  }
+
+  set statusMessage(v: string) {
+    this.#statusMessage = v;
   }
 }
 
@@ -253,6 +285,25 @@ export class ServerResponse extends NodeWritable {
   // Used if --unstable flag IS present
   #resolve?: (value: Response | PromiseLike<Response>) => void;
   #isFlashRequest: boolean;
+
+  static #enqueue(controller: ReadableStreamDefaultController, chunk: Chunk) {
+    // TODO(kt3k): This is a workaround for denoland/deno#17194
+    // This if-block should be removed when the above issue is resolved.
+    if (chunk.length === 0) {
+      return;
+    }
+    if (typeof chunk === "string") {
+      controller.enqueue(ENCODER.encode(chunk));
+    } else {
+      controller.enqueue(chunk);
+    }
+  }
+
+  /** Returns true if the response body should be null with the given
+   * http status code */
+  static #bodyShouldBeNull(status: number) {
+    return status === 101 || status === 204 || status === 205 || status === 304;
+  }
 
   constructor(
     reqEvent: undefined | Deno.RequestEvent,
@@ -274,12 +325,12 @@ export class ServerResponse extends NodeWritable {
             this.#firstChunk = chunk;
             return cb();
           } else {
-            controller.enqueue(chunkToU8(this.#firstChunk));
+            ServerResponse.#enqueue(controller, this.#firstChunk);
             this.#firstChunk = null;
             this.respond(false);
           }
         }
-        controller.enqueue(chunkToU8(chunk));
+        ServerResponse.#enqueue(controller, chunk);
         return cb();
       },
       final: (cb) => {
@@ -347,7 +398,10 @@ export class ServerResponse extends NodeWritable {
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? (final ? null : this.#readable);
+    let body = singleChunk ?? (final ? null : this.#readable);
+    if (ServerResponse.#bodyShouldBeNull(this.statusCode!)) {
+      body = null;
+    }
     if (this.#isFlashRequest) {
       this.#resolve!(
         new Response(body, {
@@ -419,7 +473,7 @@ export class IncomingMessageForServer extends NodeReadable {
     });
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(req.url.indexOf("/", 8));
+    this.url = req.url?.slice(req.url.indexOf("/", 8));
     this.method = req.method;
     this.#req = req;
   }

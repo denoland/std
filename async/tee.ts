@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // Utility for representing n-tuple
@@ -49,26 +49,25 @@ class Queue<T> {
 /**
  * Branches the given async iterable into the n branches.
  *
- * Example:
- *
+ * @example
  * ```ts
- *     import { tee } from "https://deno.land/std@$STD_VERSION/async/tee.ts";
+ * import { tee } from "https://deno.land/std@$STD_VERSION/async/tee.ts";
  *
- *     const gen = async function* gen() {
- *       yield 1;
- *       yield 2;
- *       yield 3;
- *     }
+ * const gen = async function* gen() {
+ *   yield 1;
+ *   yield 2;
+ *   yield 3;
+ * };
  *
- *     const [branch1, branch2] = tee(gen());
+ * const [branch1, branch2] = tee(gen());
  *
- *     for await (const n of branch1) {
- *       console.log(n); // => 1, 2, 3
- *     }
+ * for await (const n of branch1) {
+ *   console.log(n); // => 1, 2, 3
+ * }
  *
- *     for await (const n of branch2) {
- *       console.log(n); // => 1, 2, 3
- *     }
+ * for await (const n of branch2) {
+ *   console.log(n); // => 1, 2, 3
+ * }
  * ```
  */
 export function tee<T, N extends number = 2>(

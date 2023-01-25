@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName } from "./levels.ts";
 import type { BaseHandler } from "./handlers.ts";
@@ -13,6 +13,10 @@ export interface LogRecordOptions {
   loggerName: string;
 }
 
+/**
+ * An object that encapsulates provided message and arguments as well some
+ * metadata that can be later used when formatting a message.
+ */
 export class LogRecord {
   readonly msg: string;
   #args: unknown[];

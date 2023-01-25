@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { diff, diffstr, DiffType } from "./_diff.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
@@ -236,7 +236,37 @@ Deno.test({
         value: "c d\n",
         details: [
           { type: DiffType.added, value: "c" },
+          { type: DiffType.added, value: " " },
           { type: DiffType.added, value: "d" },
+          { type: DiffType.common, value: "\n" },
+        ],
+      },
+    ]);
+  },
+});
+
+Deno.test({
+  name: `single line, different word length "a bc" vs "cd e" (diffstr)`,
+  fn() {
+    const diffResult = diffstr("a bc", "cd e");
+    assertEquals(diffResult, [
+      {
+        type: DiffType.removed,
+        value: "a bc\n",
+        details: [
+          { type: DiffType.removed, value: "a" },
+          { type: DiffType.removed, value: " " },
+          { type: DiffType.removed, value: "bc" },
+          { type: DiffType.common, value: "\n" },
+        ],
+      },
+      {
+        type: DiffType.added,
+        value: "cd e\n",
+        details: [
+          { type: DiffType.added, value: "cd" },
+          { type: DiffType.added, value: " " },
+          { type: DiffType.added, value: "e" },
           { type: DiffType.common, value: "\n" },
         ],
       },

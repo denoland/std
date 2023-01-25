@@ -1,24 +1,24 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Returns the first element that is the largest value of the given function or undefined if there are no elements.
+ * Returns the first element that is the largest value of the given function or
+ * undefined if there are no elements.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
- *     { name: 'Anna', age: 34 },
- *     { name: 'Kim', age: 42 },
- *     { name: 'John', age: 23 },
+ *   { name: "Anna", age: 34 },
+ *   { name: "Kim", age: 42 },
+ *   { name: "John", age: 23 },
  * ];
  *
- * const personWithMaxAge = maxBy(people, i => i.age);
+ * const personWithMaxAge = maxBy(people, (i) => i.age);
  *
- * assertEquals(personWithMaxAge, { name: 'Kim', age: 42 });
+ * assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
  * ```
  */
 export function maxBy<T>(

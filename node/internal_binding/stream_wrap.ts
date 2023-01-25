@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,7 +32,10 @@ import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../streams/conversion.ts";
+import { writeAll } from "../../streams/write_all.ts";
+import type { Closer, Reader, Writer } from "../../types.d.ts";
+
+type Ref = { ref(): void; unref(): void };
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -83,7 +86,7 @@ export const kStreamBaseField = Symbol("kStreamBaseField");
 const SUGGESTED_SIZE = 64 * 1024;
 
 export class LibuvStreamWrap extends HandleWrap {
-  [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
+  [kStreamBaseField]?: Reader & Writer & Closer & Ref;
 
   reading!: boolean;
   #reading = false;
@@ -96,7 +99,7 @@ export class LibuvStreamWrap extends HandleWrap {
 
   constructor(
     provider: providerType,
-    stream?: Deno.Reader & Deno.Writer & Deno.Closer,
+    stream?: Reader & Writer & Closer & Ref,
   ) {
     super(provider);
     this.#attachToObject(stream);
@@ -253,7 +256,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * Attaches the class to the underlying stream.
    * @param stream The stream to attach to.
    */
-  #attachToObject(stream?: Deno.Reader & Deno.Writer & Deno.Closer) {
+  #attachToObject(stream?: Reader & Writer & Closer & Ref) {
     this[kStreamBaseField] = stream;
   }
 

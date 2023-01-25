@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-undef
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import "./global.ts";
 import {
@@ -14,7 +14,7 @@ import { stripColor } from "../fmt/colors.ts";
 import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
-import { env } from "./process.ts";
+import { argv, env } from "./process.ts";
 
 Deno.test({
   name: "process.cwd and process.chdir success",
@@ -219,6 +219,7 @@ Deno.test({
 Deno.test({
   name: "process.argv",
   fn() {
+    assert(Array.isArray(argv));
     assert(Array.isArray(process.argv));
     assert(
       process.argv[0].match(/[^/\\]*deno[^/\\]*$/),

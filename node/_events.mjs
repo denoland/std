@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -321,7 +321,7 @@ function enhanceStackTrace(err, own) {
  * @returns {boolean}
  */
 EventEmitter.prototype.emit = function emit(type, ...args) {
-  let doError = (type === "error");
+  let doError = type === "error";
 
   const events = this._events;
   if (events !== undefined) {

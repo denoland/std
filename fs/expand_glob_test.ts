@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -46,7 +46,6 @@ const EG_OPTIONS: ExpandGlobOptions = {
   root: fromFileUrl(new URL(join("testdata", "glob"), import.meta.url)),
   includeDirs: true,
   extended: false,
-  globstar: false,
 };
 
 Deno.test("expandGlobWildcard", async function () {
@@ -97,9 +96,9 @@ Deno.test("expandGlobExt", async function () {
 });
 
 Deno.test("expandGlobGlobstar", async function () {
-  const options = { ...EG_OPTIONS, globstar: true };
+  const options = { ...EG_OPTIONS };
   assertEquals(
-    await expandGlobArray(joinGlobs(["**", "abc"], options), options),
+    await expandGlobArray("**/abc", options),
     ["abc", join("subdir", "abc")],
   );
 });

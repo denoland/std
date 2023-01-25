@@ -1,9 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import Context from "./snapshot_preview1.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/copy.ts";
 import * as path from "../path/mod.ts";
-import { writeAll } from "../streams/conversion.ts";
+import { writeAll } from "../streams/write_all.ts";
 import { isWindows } from "../_util/os.ts";
 
 const tests = [
@@ -84,7 +84,7 @@ for (const pathname of tests) {
       );
 
       try {
-        const process = await Deno.spawnChild(Deno.execPath(), {
+        const process = new Deno.Command(Deno.execPath(), {
           cwd: workdir,
           args: [
             "run",
@@ -97,17 +97,20 @@ for (const pathname of tests) {
             path.resolve(rootdir, pathname),
           ],
           stdin: "piped",
+          stdout: "piped",
+          stderr: "piped",
         });
+        const child = process.spawn();
 
         if (options.stdin) {
-          const writer = process.stdin.getWriter();
+          const writer = child.stdin.getWriter();
           await writer.write(new TextEncoder().encode(options.stdin));
           writer.releaseLock();
         }
 
-        process.stdin.close();
+        child.stdin.close();
 
-        const { code, stdout, stderr } = await process.output();
+        const { code, stdout, stderr } = await child.output();
 
         if (options.stdout) {
           assertEquals(new TextDecoder().decode(stdout), options.stdout);

@@ -1,11 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { notImplemented } from "../_utils.ts";
 import { inspect } from "./util/inspect.mjs";
-import { validateNumber } from "./validators.mjs";
+import { validateFunction, validateNumber } from "./validators.mjs";
 import { ERR_OUT_OF_RANGE } from "./errors.ts";
 import { emitWarning } from "../process.ts";
+
+const setTimeout_ = globalThis.setTimeout;
+const clearTimeout_ = globalThis.clearTimeout;
+const setInterval_ = globalThis.setInterval;
 
 // Timeout values > TIMEOUT_MAX are set to 1.
 export const TIMEOUT_MAX = 2 ** 31 - 1;
@@ -13,13 +16,32 @@ export const TIMEOUT_MAX = 2 ** 31 - 1;
 export const kTimerId = Symbol("timerId");
 export const kTimeout = Symbol("timeout");
 const kRefed = Symbol("refed");
+const createTimer = Symbol("createTimer");
 
 // Timer constructor function.
-// The entire prototype is defined in lib/timers.js
-export function Timeout(id) {
-  this[kTimerId] = id;
-  this[kRefed] = true;
+export function Timeout(callback, after, args, isRepeat, isRefed) {
+  if (typeof after === "number" && after > TIMEOUT_MAX) {
+    after = 1;
+  }
+  this._idleTimeout = after;
+  this._onTimeout = callback;
+  this._timerArgs = args;
+  this._isRepeat = isRepeat;
+  this[kRefed] = isRefed;
+  this[kTimerId] = this[createTimer]();
 }
+
+Timeout.prototype[createTimer] = function () {
+  const callback = this._onTimeout;
+  const cb = (...args) => callback.bind(this)(...args);
+  const id = this._isRepeat
+    ? setInterval_(cb, this._idleTimeout, ...this._timerArgs)
+    : setTimeout_(cb, this._idleTimeout, ...this._timerArgs);
+  if (!this[kRefed]) {
+    Deno.unrefTimer(id);
+  }
+  return id;
+};
 
 // Make sure the linked list only shows the minimal necessary information.
 Timeout.prototype[inspect.custom] = function (_, options) {
@@ -33,7 +55,9 @@ Timeout.prototype[inspect.custom] = function (_, options) {
 };
 
 Timeout.prototype.refresh = function () {
-  notImplemented();
+  clearTimeout_(this[kTimerId]);
+  this[kTimerId] = this[createTimer]();
+  return this;
 };
 
 Timeout.prototype.unref = function () {
@@ -86,10 +110,16 @@ export function getTimerDuration(msecs, name) {
   return msecs;
 }
 
+export function setUnrefTimeout(callback, timeout, ...args) {
+  validateFunction(callback, "callback");
+  return new Timeout(callback, timeout, args, false, false);
+}
+
 export default {
-  TIMEOUT_MAX,
+  getTimerDuration,
   kTimerId,
   kTimeout,
+  setUnrefTimeout,
   Timeout,
-  getTimerDuration,
+  TIMEOUT_MAX,
 };

@@ -1,11 +1,11 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { getDefaultHighWaterMark } from "./internal/streams/state.mjs";
 import assert from "./internal/assert.mjs";
 import EE from "./events.ts";
 import { Stream } from "./stream.ts";
-import * as internalUtil from "./internal/util.mjs";
+import { deprecate } from "./util.ts";
 import type { Socket } from "./net.ts";
 import { kNeedDrain, kOutHeaders, utcDate } from "./internal/http.ts";
 import { Buffer } from "./buffer.ts";
@@ -141,7 +141,7 @@ Object.defineProperty(OutgoingMessage.prototype, "writableCorked", {
 });
 
 Object.defineProperty(OutgoingMessage.prototype, "_headers", {
-  get: internalUtil.deprecate(
+  get: deprecate(
     // deno-lint-ignore no-explicit-any
     function (this: any) {
       return this.getHeaders();
@@ -149,7 +149,7 @@ Object.defineProperty(OutgoingMessage.prototype, "_headers", {
     "OutgoingMessage.prototype._headers is deprecated",
     "DEP0066",
   ),
-  set: internalUtil.deprecate(
+  set: deprecate(
     // deno-lint-ignore no-explicit-any
     function (this: any, val: any) {
       if (val == null) {
@@ -180,7 +180,7 @@ Object.defineProperty(OutgoingMessage.prototype, "connection", {
 });
 
 Object.defineProperty(OutgoingMessage.prototype, "_headerNames", {
-  get: internalUtil.deprecate(
+  get: deprecate(
     // deno-lint-ignore no-explicit-any
     function (this: any) {
       const headers = this[kOutHeaders];
@@ -201,7 +201,7 @@ Object.defineProperty(OutgoingMessage.prototype, "_headerNames", {
     "OutgoingMessage.prototype._headerNames is deprecated",
     "DEP0066",
   ),
-  set: internalUtil.deprecate(
+  set: deprecate(
     // deno-lint-ignore no-explicit-any
     function (this: any, val: any) {
       if (typeof val === "object" && val !== null) {

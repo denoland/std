@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -229,11 +229,19 @@ export class TCP extends ConnectionWrap {
     if (this.#listener) {
       this.#listener.ref();
     }
+
+    if (this[kStreamBaseField]) {
+      this[kStreamBaseField].ref();
+    }
   }
 
   override unref() {
     if (this.#listener) {
       this.#listener.unref();
+    }
+
+    if (this[kStreamBaseField]) {
+      this[kStreamBaseField].unref();
     }
   }
 

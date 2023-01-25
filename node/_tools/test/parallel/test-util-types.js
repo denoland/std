@@ -58,7 +58,7 @@ for (const [ value, _method ] of [
   //                         { value: 'foo' }) ],
   [ new DataView(new ArrayBuffer()) ],
   [ new SharedArrayBuffer() ],
-  // [ new Proxy({}, {}), 'isProxy' ],
+  [ new Proxy({}, {}), 'isProxy' ],
 ]) {
   const method = _method || `is${value.constructor.name}`;
   assert(method in types, `Missing ${method} for ${inspect(value)}`);

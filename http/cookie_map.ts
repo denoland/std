@@ -1,9 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Provides a iterable map interfaces for managing cookies server side.
  *
- * ### Examples
- *
+ * @example
  * To access the keys in a request and have any set keys available for creating
  * a response:
  *
@@ -28,6 +27,7 @@
  * });
  * ```
  *
+ * @example
  * To have automatic management of cryptographically signed cookies, you can use
  * the {@linkcode SecureCookieMap} instead of {@linkcode CookieMap}. The biggest
  * difference is that the methods operate async in order to be able to support
@@ -93,7 +93,10 @@ export interface CookieMapOptions {
    */
   response?: Headered | Headers;
   /** A flag that indicates if the request and response are being handled over
-   * a secure (e.g. HTTPS/TLS) connection. Defaults to `false`. */
+   * a secure (e.g. HTTPS/TLS) connection.
+   *
+   * @default {false}
+   */
   secure?: boolean;
 }
 
@@ -144,7 +147,10 @@ export interface SecureCookieMapOptions {
   response?: Headered | Headers;
 
   /** A flag that indicates if the request and response are being handled over
-   * a secure (e.g. HTTPS/TLS) connection. Defaults to `false`. */
+   * a secure (e.g. HTTPS/TLS) connection.
+   *
+   * @default {false}
+   */
   secure?: boolean;
 }
 
@@ -403,7 +409,8 @@ abstract class CookieMapBase implements Mergeable {
   }
 }
 
-/** Provides an way to manage cookies in a request and response on the server
+/**
+ * Provides a way to manage cookies in a request and response on the server
  * as a single iterable collection.
  *
  * The methods and properties align to {@linkcode Map}. When constructing a
@@ -564,7 +571,10 @@ export interface KeyRing {
  *
  * On construction, the optional set of keys implementing the
  * {@linkcode KeyRing} interface. While it is optional, if you don't plan to use
- * keys, you might want to consider using just the {@linkcode CookieMap}. */
+ * keys, you might want to consider using just the {@linkcode CookieMap}.
+ *
+ * @example
+ */
 export class SecureCookieMap extends CookieMapBase {
   #keyRing?: KeyRing;
 

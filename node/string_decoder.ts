@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,7 +21,6 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { Buffer } from "./buffer.ts";
-import { core } from "./_core.ts";
 import { normalizeEncoding as castEncoding, notImplemented } from "./_utils.ts";
 
 enum NotImplemented {
@@ -38,10 +37,19 @@ function normalizeEncoding(enc?: string): string {
   }
   return String(encoding);
 }
+
+/**
+ * Check is `ArrayBuffer` and not `TypedArray`. Typescript allowed `TypedArray` to be passed as `ArrayBuffer` and does not do a deep check
+ */
+
+function isBufferType(buf: Buffer) {
+  return buf instanceof ArrayBuffer && buf.BYTES_PER_ELEMENT;
+}
+
 /*
  * Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
  * continuation byte. If an invalid byte is detected, -2 is returned.
- * */
+ */
 function utf8CheckByte(byte: number): number {
   if (byte <= 0x7f) return 0;
   else if (byte >> 5 === 0x06) return 2;
@@ -54,7 +62,7 @@ function utf8CheckByte(byte: number): number {
  * Checks at most 3 bytes at the end of a Buffer in order to detect an
  * incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or 4)
  * needed to complete the UTF-8 character (if applicable) are returned.
- * */
+ */
 function utf8CheckIncomplete(
   self: StringDecoderBase,
   buf: Buffer,
@@ -94,7 +102,7 @@ function utf8CheckIncomplete(
  * where all of the continuation bytes for a character exist in the same buffer.
  * It is also done this way as a slight performance increase instead of using a
  * loop.
- * */
+ */
 function utf8CheckExtraBytes(
   self: StringDecoderBase,
   buf: Buffer,
@@ -119,7 +127,7 @@ function utf8CheckExtraBytes(
 
 /*
  * Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
- * */
+ */
 function utf8FillLastComplete(
   this: StringDecoderBase,
   buf: Buffer,
@@ -137,7 +145,7 @@ function utf8FillLastComplete(
 
 /*
  * Attempts to complete a partial non-UTF-8 character using bytes from a Buffer
- * */
+ */
 function utf8FillLastIncomplete(
   this: StringDecoderBase,
   buf: Buffer,
@@ -154,7 +162,7 @@ function utf8FillLastIncomplete(
  * Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
  * partial character, the character's bytes are buffered until the required
  * number of bytes are available.
- * */
+ */
 function utf8Text(this: StringDecoderBase, buf: Buffer, i: number): string {
   const total = utf8CheckIncomplete(this, buf, i);
   if (!this.lastNeed) return buf.toString("utf8", i);
@@ -167,7 +175,7 @@ function utf8Text(this: StringDecoderBase, buf: Buffer, i: number): string {
 /*
  * For UTF-8, a replacement character is added when ending on a partial
  * character.
- * */
+ */
 function utf8End(this: Utf8Decoder, buf?: Buffer): string {
   const r = buf && buf.length ? this.write(buf) : "";
   if (this.lastNeed) return r + "\ufffd";
@@ -184,15 +192,21 @@ function utf8Write(
   if (buf.length === 0) return "";
   let r;
   let i;
+  // Because `TypedArray` is recognized as `ArrayBuffer` but in the reality, there are some fundamental difference. We would need to cast it properly
+  const normalizedBuffer: Buffer = isBufferType(buf) ? buf : Buffer.from(buf);
   if (this.lastNeed) {
-    r = this.fillLast(buf);
+    r = this.fillLast(normalizedBuffer);
     if (r === undefined) return "";
     i = this.lastNeed;
     this.lastNeed = 0;
   } else {
     i = 0;
   }
-  if (i < buf.length) return r ? r + this.text(buf, i) : this.text(buf, i);
+  if (i < buf.length) {
+    return r
+      ? r + this.text(normalizedBuffer, i)
+      : this.text(normalizedBuffer, i);
+  }
   return r || "";
 }
 
@@ -228,16 +242,6 @@ function simpleWrite(
   return buf.toString(this.encoding);
 }
 
-function simpleUtf8Write(
-  this: StringDecoderBase,
-  buf: Buffer | string,
-): string {
-  if (typeof buf === "string") {
-    return buf;
-  }
-  return core.decode(buf);
-}
-
 function simpleEnd(this: GenericDecoder, buf?: Buffer): string {
   return buf && buf.length ? this.write(buf) : "";
 }
@@ -270,9 +274,6 @@ class GenericDecoder extends StringDecoderBase {
 
   constructor(encoding?: string) {
     super(normalizeEncoding(encoding), 4);
-    if (this.encoding === "utf8") {
-      this.write = simpleUtf8Write;
-    }
   }
 }
 
@@ -291,7 +292,7 @@ class Utf8Decoder extends StringDecoderBase {
  * StringDecoder provides an interface for efficiently splitting a series of
  * buffers into a series of JS strings without breaking apart multi-byte
  * characters.
- * */
+ */
 export class StringDecoder {
   public encoding: string;
   public end: (buf?: Buffer) => string;
@@ -303,8 +304,9 @@ export class StringDecoder {
   public write: (buf: Buffer) => string;
 
   constructor(encoding?: string) {
-    let decoder;
-    switch (encoding) {
+    const normalizedEncoding = normalizeEncoding(encoding);
+    let decoder: Utf8Decoder | Base64Decoder | GenericDecoder;
+    switch (normalizedEncoding) {
       case "utf8":
         decoder = new Utf8Decoder(encoding);
         break;

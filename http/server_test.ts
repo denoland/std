@@ -1,8 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { readAll, writeAll } from "../streams/conversion.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { readAll } from "../streams/read_all.ts";
 import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
@@ -1125,6 +1126,72 @@ Deno.test("Server should not reject when the handler throws", async () => {
 
   await postRespondWith;
   conn.close();
+  server.close();
+  await servePromise;
+});
+
+Deno.test("Server should not close the http2 downstream connection when the response stream throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+    certFile: join(testdataDir, "tls/localhost.crt"),
+    keyFile: join(testdataDir, "tls/localhost.key"),
+    alpnProtocols: ["h2"],
+  };
+  const listener = Deno.listenTls(listenOptions);
+  const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
+
+  let n = 0;
+  const a = deferred();
+  const connections = new Set();
+
+  const handler = (_req: Request, connInfo: ConnInfo) => {
+    connections.add(connInfo);
+    return new Response(
+      new ReadableStream({
+        async start(controller) {
+          n++;
+          if (n === 3) {
+            throw new Error("test-error");
+          }
+          await a;
+          controller.enqueue(new TextEncoder().encode("a"));
+          controller.close();
+        },
+      }),
+    );
+  };
+
+  const server = new Server({ handler });
+  const servePromise = server.serve(listener);
+
+  const caCert = await Deno.readTextFile(
+    join(testdataDir, "tls/RootCA.pem"),
+  );
+  const client = Deno.createHttpClient({
+    caCerts: [caCert],
+  });
+  const resp1 = await fetch(url, { client });
+  const resp2 = await fetch(url, { client });
+
+  const err = await assertRejects(async () => {
+    const resp3 = await fetch(url, { client });
+    const _data = await resp3.text();
+  });
+  assert(err);
+  a.resolve();
+  assertEquals(await resp1.text(), "a");
+  assertEquals(await resp2.text(), "a");
+
+  const numConns = connections.size;
+  assertEquals(
+    numConns,
+    1,
+    `fetch should have reused a single connection, but used ${numConns} instead.`,
+  );
+  assertEquals(n, 3, "The handler should have been called three times");
+
+  client.close();
   server.close();
   await servePromise;
 });

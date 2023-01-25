@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26,6 +26,9 @@
 
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
+import type { Closer, Reader, Writer } from "../../types.d.ts";
+
+type Ref = { ref(): void; unref(): void };
 
 export class ConnectionWrap extends LibuvStreamWrap {
   /** Optional connection callback. */
@@ -39,7 +42,7 @@ export class ConnectionWrap extends LibuvStreamWrap {
    */
   constructor(
     provider: providerType,
-    object?: Deno.Reader & Deno.Writer & Deno.Closer,
+    object?: Reader & Writer & Closer & Ref,
   ) {
     super(provider, object);
   }

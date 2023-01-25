@@ -1,12 +1,12 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
   assertNotEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
-import { BufReader, ReadLineResult } from "../io/buffer.ts";
+import { BufReader, ReadLineResult } from "../io/buf_reader.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
@@ -16,15 +16,16 @@ Deno.test({
 }, async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const process = Deno.spawnChild(Deno.execPath(), {
+  const process = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
+    stdout: "piped",
     stderr: "null",
     cwd: moduleDir,
   });
-
+  const child = process.spawn();
   let conn: Deno.Conn | undefined;
   try {
-    const r = process.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
       new TextLineStream(),
     );
     const reader = r.getReader();
@@ -49,8 +50,8 @@ Deno.test({
 
     assertStrictEquals(actualResponse, expectedResponse);
   } finally {
-    process.kill("SIGTERM");
-    await process.status;
+    child.kill("SIGTERM");
+    await child.status;
     conn?.close();
   }
 });

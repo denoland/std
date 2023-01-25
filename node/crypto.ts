@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import { ERR_CRYPTO_FIPS_FORCED } from "./internal/errors.ts";
@@ -258,10 +258,10 @@ function createECDH(curve: string): ECDH {
 
 function createHmac(
   hmac: string,
-  key: BinaryLike | KeyObject,
+  key: string | ArrayBuffer | KeyObject,
   options?: TransformOptions,
-): Hmac {
-  return new Hmac(hmac, key, options);
+) {
+  return Hmac(hmac, key, options);
 }
 
 function createSign(algorithm: string, options?: WritableOptions): Sign {

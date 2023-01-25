@@ -1,25 +1,24 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Builds a new Record using the given array as keys and choosing a value for each
- * key using the given selector. If any of two pairs would have the same value
- * the latest on will be used (overriding the ones before it).
+ * Builds a new Record using the given array as keys and choosing a value for
+ * each key using the given selector. If any of two pairs would have the same
+ * value the latest on will be used (overriding the ones before it).
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/associate_with.ts"
+ * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/associate_with.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const names = [ 'Kim', 'Lara', 'Jonathan' ]
- * const namesToLength = associateWith(names, it => it.length)
+ * const names = ["Kim", "Lara", "Jonathan"];
+ * const namesToLength = associateWith(names, (it) => it.length);
  *
  * assertEquals(namesToLength, {
- *   'Kim': 3,
- *   'Lara': 4,
- *   'Jonathan': 8,
- * })
+ *   "Kim": 3,
+ *   "Lara": 4,
+ *   "Jonathan": 8,
+ * });
  * ```
  */
 export function associateWith<T>(

@@ -1,6 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/asserts.ts";
-import { copy } from "../bytes/mod.ts";
+import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 const DEFAULT_CHUNK_SIZE = 16_640;
@@ -60,10 +60,9 @@ export class Buffer {
    *
    * The slice is valid for use only until the next buffer modification (that
    * is, only until the next call to a method like `read()`, `write()`,
-   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases the buffer content at
-   * least until the next buffer modification, so immediate changes to the
-   * slice will affect the result of future reads.
-   * @param options Defaults to `{ copy: true }`
+   * `reset()`, or `truncate()`). If `options.copy` is false the slice aliases
+   * the buffer content at least until the next buffer modification, so
+   * immediate changes to the slice will affect the result of future reads.
    */
   bytes(options = { copy: true }): Uint8Array {
     if (options.copy === false) return this.#buf.subarray(this.#off);
@@ -164,112 +163,5 @@ export class Buffer {
     }
     const m = this.#grow(n);
     this.#reslice(m);
-  }
-}
-
-/** A TransformStream that will only read & enqueue `size` amount of bytes.
- * This operation is chunk based and not BYOB based,
- * and as such will read more than needed.
- *
- * if options.error is set, then instead of terminating the stream,
- * an error will be thrown.
- *
- * ```ts
- * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const res = await fetch("https://example.com");
- * const parts = res.body!
- *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
- * ```
- */
-export class LimitedBytesTransformStream
-  extends TransformStream<Uint8Array, Uint8Array> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + chunk.byteLength) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded byte size limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read += chunk.byteLength;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
-
-/** A TransformStream that will only read & enqueue `size` amount of chunks.
- *
- * if options.error is set, then instead of terminating the stream,
- * an error will be thrown.
- *
- * ```ts
- * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const res = await fetch("https://example.com");
- * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
- * ```
- */
-export class LimitedTransformStream<T> extends TransformStream<T, T> {
-  #read = 0;
-  constructor(size: number, options: { error?: boolean } = {}) {
-    super({
-      transform: (chunk, controller) => {
-        if ((this.#read + 1) > size) {
-          if (options.error) {
-            throw new RangeError(`Exceeded chunk limit of '${size}'`);
-          } else {
-            controller.terminate();
-          }
-        } else {
-          this.#read++;
-          controller.enqueue(chunk);
-        }
-      },
-    });
-  }
-}
-
-/**
- * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
- *
- * @example
- * ```ts
- * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
- * const response = await fetch("https://example.com");
- * const rangedStream = response.body!
- *   .pipeThrough(new ByteSliceStream(3, 8));
- * ```
- */
-export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
-  #offsetStart = 0;
-  #offsetEnd = 0;
-
-  constructor(start = 0, end = Infinity) {
-    super({
-      start: () => {
-        assert(start >= 0, "`start` must be greater than 0");
-        end += 1;
-      },
-      transform: (chunk, controller) => {
-        this.#offsetStart = this.#offsetEnd;
-        this.#offsetEnd += chunk.byteLength;
-        if (this.#offsetEnd > start) {
-          if (this.#offsetStart < start) {
-            chunk = chunk.slice(start - this.#offsetStart);
-          }
-          if (this.#offsetEnd >= end) {
-            chunk = chunk.slice(0, chunk.byteLength - this.#offsetEnd + end);
-            controller.enqueue(chunk);
-            controller.terminate();
-          } else {
-            controller.enqueue(chunk);
-          }
-        }
-      },
-    });
   }
 }

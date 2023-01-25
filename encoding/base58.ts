@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for
@@ -26,9 +26,9 @@ const base58alphabet =
  * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
  *
- * @param {ArrayBuffer | string} data
+ * @param data
  *
- * @returns {string} Encoded value
+ * @returns Encoded value
  */
 export function encode(data: ArrayBuffer | string): string {
   const uint8tData = typeof data === "string"
@@ -86,9 +86,9 @@ export function encode(data: ArrayBuffer | string): string {
  * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
  *
- * @param {string} b58
+ * @param b58
  *
- * @returns {Uint8Array} Decoded value
+ * @returns Decoded value
  */
 export function decode(b58: string): Uint8Array {
   const splittedInput = b58.trim().split("");
@@ -129,7 +129,7 @@ export function decode(b58: string): Uint8Array {
     length = i;
   });
 
-  const validOutput = output.filter((item) => item ?? false);
+  const validOutput = output.filter((item) => item !== undefined);
 
   if (ones > 0) {
     const onesResult = Array.from({ length: ones }).fill(0, 0, ones);

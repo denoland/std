@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,7 +28,9 @@
 import { parse } from "../../flags/mod.ts";
 
 export function getOptions() {
-  const args = parse(Deno.args);
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
+  const args = parse(Deno?.args ?? []);
   const options = new Map(
     Object.entries(args).map(([key, value]) => [key, { value }]),
   );

@@ -1,19 +1,20 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import { contentType } from "../media_types/mod.ts";
+import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
 import { compareEtag, createCommonResponse } from "./util.ts";
-import { DigestAlgorithm, toHashString } from "../crypto/mod.ts";
+import { DigestAlgorithm } from "../crypto/crypto.ts";
+import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 interface EntryInfo {
@@ -66,7 +67,10 @@ function fileLenToString(len: number): string {
 
 /** Interface for serveFile options. */
 export interface ServeFileOptions {
-  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
+  /** The algorithm to use for generating the ETag.
+   *
+   * @default {"fnv1a"}
+   */
   etagAlgorithm?: DigestAlgorithm;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
@@ -76,10 +80,6 @@ export interface ServeFileOptions {
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
- * @param options
- * @param options.etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
- * @param options.fileInfo An optional FileInfo object returned by Deno.stat. It is used
- * for optimization purposes.
  */
 export async function serveFile(
   req: Request,
@@ -405,18 +405,38 @@ export interface ServeDirOptions {
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname. */
   urlRoot?: string;
-  /** Enable directory listing. Defaults to false. */
+  /** Enable directory listing.
+   *
+   * @default {false}
+   */
   showDirListing?: boolean;
-  /** Serves dotfiles. Defaults to false. */
+  /** Serves dotfiles.
+   *
+   * @default {false}
+   */
   showDotfiles?: boolean;
   /** Serves index.html as the index file of the directory. */
   showIndex?: boolean;
-  /** Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false. */
+  /** Enable CORS via the "Access-Control-Allow-Origin" header.
+   *
+   * @default {false}
+   */
   enableCors?: boolean;
-  /** Do not print request level logs. Defaults to false. Defaults to false. */
+  /** Do not print request level logs. Defaults to false.
+   *
+   * @default {false}
+   */
   quiet?: boolean;
-  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
+  /** The algorithm to use for generating the ETag.
+   *
+   * @default {"fnv1a"}
+   */
   etagAlgorithm?: DigestAlgorithm;
+  /** Headers to add to each request
+   *
+   * @default {[]}
+   */
+  headers?: string[];
 }
 
 /**
@@ -453,15 +473,6 @@ export interface ServeDirOptions {
  * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
  * @param req The request to handle
- * @param opts
- * @param opts.fsRoot Serves the files under the given directory root. Defaults to your current directory.
- * @param opts.urlRoot Specified that part is stripped from the beginning of the requested pathname.
- * @param opts.showDirListing Enable directory listing. Defaults to false.
- * @param opts.showDotfiles Serves dotfiles. Defaults to false.
- * @param opts.showIndex Serves index.html as the index file of the directory.
- * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false.
- * @param opts.quiet Do not print request level logs. Defaults to false.
- * @param opts.etagAlgorithm Etag The algorithm to use for generating the ETag. Defaults to "fnv1a".
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   let response: Response | undefined = undefined;
@@ -532,6 +543,15 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
 
   if (!opts.quiet) serverLog(req, response!.status);
 
+  if (opts.headers) {
+    for (const header of opts.headers) {
+      const headerSplit = header.split(":");
+      const name = headerSplit[0];
+      const value = headerSplit.slice(1).join(":");
+      response.headers.append(name, value);
+    }
+  }
+
   return response!;
 }
 
@@ -541,9 +561,10 @@ function normalizeURL(url: string): string {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key"],
+    string: ["port", "host", "cert", "key", "header"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],
+    collect: ["header"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -562,9 +583,11 @@ function main() {
       h: "help",
       v: "verbose",
       V: "version",
+      H: "header",
     },
   });
   const port = Number(serverArgs.port);
+  const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -597,6 +620,7 @@ function main() {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
+      headers,
     });
   };
 
@@ -625,17 +649,20 @@ USAGE:
   file_server [path] [options]
 
 OPTIONS:
-  -h, --help          Prints help information
-  -p, --port <PORT>   Set port
-  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-  --host     <HOST>   Hostname (default is 0.0.0.0)
-  -c, --cert <FILE>   TLS certificate file (enables TLS)
-  -k, --key  <FILE>   TLS key file (enables TLS)
-  --no-dir-listing    Disable directory listing
-  --no-dotfiles       Do not show dotfiles
-  --no-cors           Disable cross-origin resource sharing
-  -v, --verbose       Print request level logs
-  -V, --version       Print version information
+  -h, --help            Prints help information
+  -p, --port <PORT>     Set port
+  --cors                Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>     Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>     TLS certificate file (enables TLS)
+  -k, --key  <FILE>     TLS key file (enables TLS)
+  -H, --header <HEADER> Sets a header on every request.
+                        (e.g. --header "Cache-Control: no-cache")
+                        This option can be specified multiple times.
+  --no-dir-listing      Disable directory listing
+  --no-dotfiles         Do not show dotfiles
+  --no-cors             Disable cross-origin resource sharing
+  -v, --verbose         Print request level logs
+  -V, --version         Print version information
 
   All TLS options are required when one is provided.`);
 }

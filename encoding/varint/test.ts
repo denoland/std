@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { decodeU32, decodeU64, encodeU32, encodeU64 } from "./mod.ts";
 import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 

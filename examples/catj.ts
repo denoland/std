@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read
 // Copyright (c) 2014 Soheil Rashidi
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** An implementation of [catj](https://github.com/soheilpro/catj) which prints
  * JSON files to the console.
@@ -18,7 +18,7 @@
 
 import { parse } from "../flags/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { readAll } from "../streams/conversion.ts";
+import { readAll } from "../streams/read_all.ts";
 
 const decoder = new TextDecoder();
 

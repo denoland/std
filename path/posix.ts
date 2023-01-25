@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -70,6 +70,8 @@ export function resolve(...pathSegments: string[]): string {
 
 /**
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
+ * Note that resolving these segments does not necessarily mean that all will be eliminated.
+ * A `'..'` at the top-level will be preserved, and an empty path is canonically `'.'`.
  * @param path to be normalized
  */
 export function normalize(path: string): string {
@@ -264,7 +266,7 @@ export function basename(path: string, ext = ""): string {
     let firstNonSlashEnd = -1;
     for (i = path.length - 1; i >= 0; --i) {
       const code = path.charCodeAt(i);
-      if (code === CHAR_FORWARD_SLASH) {
+      if (isPosixPathSeparator(code)) {
         // If we reached a path separator that was not part of a set of path
         // separators at the end of the string, stop now
         if (!matchedSlash) {
@@ -273,35 +275,35 @@ export function basename(path: string, ext = ""): string {
         }
       } else {
         if (firstNonSlashEnd === -1) {
-          // We saw the first non-path separator, remember this index in case
-          // we need it if the extension ends up not matching
+          // We saw the first non-path separator, mark this as the end of our
+          // path component in case we don't match a whole suffix
           matchedSlash = false;
           firstNonSlashEnd = i + 1;
+          end = firstNonSlashEnd;
         }
         if (extIdx >= 0) {
-          // Try to match the explicit extension
+          // Try to match the explicit suffix
           if (code === ext.charCodeAt(extIdx)) {
             if (--extIdx === -1) {
-              // We matched the extension, so mark this as the end of our path
+              // We matched whole suffix, so mark this as the end of our path
               // component
               end = i;
             }
           } else {
-            // Extension does not match, so our result is the entire path
-            // component
+            // Suffix character does not match, so bail out early
+            // from checking rest of characters
             extIdx = -1;
-            end = firstNonSlashEnd;
           }
         }
       }
     }
 
+    if (end === -1) return "";
     if (start === end) end = firstNonSlashEnd;
-    else if (end === -1) end = path.length;
     return path.slice(start, end);
   } else {
     for (i = path.length - 1; i >= 0; --i) {
-      if (path.charCodeAt(i) === CHAR_FORWARD_SLASH) {
+      if (isPosixPathSeparator(path.charCodeAt(i))) {
         // If we reached a path separator that was not part of a set of path
         // separators at the end of the string, stop now
         if (!matchedSlash) {

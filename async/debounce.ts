@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -12,7 +12,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
   clear(): void;
   /** Clears the debounce timeout and calls the debounced function immediately. */
   flush(): void;
-  /** Returns a boolean wether a debounce call is pending or not. */
+  /** Returns a boolean whether a debounce call is pending or not. */
   readonly pending: boolean;
 }
 
@@ -22,6 +22,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * again before the timeout expires, the previous call will be
  * aborted.
  *
+ * @example
  * ```
  * import { debounce } from "https://deno.land/std@$STD_VERSION/async/debounce.ts";
  *
@@ -34,6 +35,8 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * for await (const event of Deno.watchFs("./")) {
  *   log(event);
  * }
+ * // wait 200ms ...
+ * // output: Function debounced after 200ms with baz
  * ```
  *
  * @param fn    The function to debounce.

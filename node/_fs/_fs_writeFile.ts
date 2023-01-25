@@ -1,8 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
-import { writeAllSync } from "../../streams/conversion.ts";
+import { writeAllSync } from "../../streams/write_all.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -18,6 +18,7 @@ import {
   validateStringAfterArrayBufferView,
 } from "../internal/fs/utils.mjs";
 import { promisify } from "../internal/util.mjs";
+import type { Writer } from "../../types.d.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -156,7 +157,7 @@ interface WriteAllOptions {
   signal?: AbortSignal;
 }
 async function writeAll(
-  w: Deno.Writer,
+  w: Writer,
   arr: Uint8Array,
   options: WriteAllOptions = {},
 ) {

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { mapValues } from "./map_values.ts";
@@ -85,7 +85,7 @@ Deno.test({
           "FoodFile": "/home/deno/food.txt",
           "CalendarFile": "/home/deno/weekend.cal",
         },
-        (path) => path.substr(path.lastIndexOf(".")),
+        (path) => path.slice(path.lastIndexOf(".")),
       ],
       {
         "FoodFile": ".txt",

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { mapKeys } from "./map_keys.ts";
@@ -93,7 +93,7 @@ Deno.test({
           "ad28": "bar",
           "100f": "dino",
         },
-        (it) => it.substr(0, 2),
+        (it) => it.slice(0, 2),
       ],
       {
         "ad": "bar",
@@ -114,7 +114,7 @@ Deno.test({
           "bcd": 33,
           "d": 11,
         },
-        (key) => key.substr(1),
+        (key) => key.slice(1),
       ],
       {
         "b": 22,

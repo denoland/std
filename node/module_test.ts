@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -232,7 +232,9 @@ Deno.test("createRequire with http(s):// URL  throws with correct error message"
   );
 });
 
-Deno.test("require Node-API module", () => {
+Deno.test("require Node-API module", {
+  ignore: Deno.build.arch === "aarch64" && Deno.build.os === "darwin",
+}, () => {
   const require = createRequire(import.meta.url);
   if (Deno.build.os === "windows") {
     // TODO(kt3k): Add lib binary for windows from 1_hello_world example of

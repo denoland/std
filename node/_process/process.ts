@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 // The following are all the process APIs that don't depend on the stream module
@@ -100,7 +100,7 @@ export const platform = isWindows ? "win32" : Deno.build.os;
  * it pointed to Deno version, but that led to incompability
  * with some packages.
  */
-export const version = "v16.17.0";
+export const version = "v18.12.1";
 
 /**
  * https://nodejs.org/api/process.html#process_process_versions
@@ -111,19 +111,21 @@ export const version = "v16.17.0";
  * with some packages. Value of `v8` field is still taken from `Deno.version`.
  */
 export const versions = {
-  node: "16.17.0",
+  node: "18.12.1",
   uv: "1.43.0",
   zlib: "1.2.11",
   brotli: "1.0.9",
   ares: "1.18.1",
-  modules: "93",
+  modules: "108",
   nghttp2: "1.47.0",
   napi: "8",
-  llhttp: "6.0.7",
-  openssl: "1.1.1q+quic",
+  llhttp: "6.0.10",
+  openssl: "3.0.7+quic",
   cldr: "41.0",
   icu: "71.1",
-  tz: "2022a",
+  tz: "2022b",
   unicode: "14.0",
+  ngtcp2: "0.8.1",
+  nghttp3: "0.7.0",
   ...Deno.version,
 };

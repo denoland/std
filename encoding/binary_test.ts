@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
@@ -17,7 +17,7 @@ import {
   writeVarnum,
 } from "./binary.ts";
 import { Buffer } from "../io/buffer.ts";
-import { readerFromIterable } from "../streams/conversion.ts";
+import { readerFromIterable } from "../streams/reader_from_iterable.ts";
 
 Deno.test("testReadExactMultipleReads", async function () {
   const reader = readerFromIterable([

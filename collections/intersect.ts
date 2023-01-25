@@ -1,22 +1,22 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { filterInPlace } from "./_utils.ts";
 
 /**
- * Returns all distinct elements that appear at least once in each of the given arrays
+ * Returns all distinct elements that appear at least once in each of the given
+ * arrays.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
- * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
- * const commonInterests = intersect(lisaInterests, kimInterests)
+ * const lisaInterests = ["Cooking", "Music", "Hiking"];
+ * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * const commonInterests = intersect(lisaInterests, kimInterests);
  *
- * assertEquals(commonInterests, [ 'Cooking', 'Music' ])
+ * assertEquals(commonInterests, ["Cooking", "Music"]);
  * ```
  */
 export function intersect<T>(...arrays: (readonly T[])[]): T[] {

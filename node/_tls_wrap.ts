@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
@@ -20,14 +20,15 @@ import {
 } from "./internal_binding/pipe_wrap.ts";
 import { EventEmitter } from "./events.ts";
 import { kEmptyObject } from "./internal/util.mjs";
+import { nextTick } from "./_next_tick.ts";
 
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
 const kRes = Symbol("res");
 
-let _debug = debuglog("tls", (fn) => {
-  _debug = fn;
+let debug = debuglog("tls", (fn) => {
+  debug = fn;
 });
 
 function onConnectEnd(this: any) {
@@ -233,14 +234,14 @@ export class ServerImpl extends EventEmitter {
   }
 
   listen(port: any, callback: any): this {
-    const { key, cert } = this.options;
-
-    // TODO(kt3k): Get this from optional 2nd argument.
-    const hostname = "localhost";
+    const key = this.options.key?.toString();
+    const cert = this.options.cert?.toString();
+    // TODO(kt3k): The default host should be "localhost"
+    const hostname = this.options.host ?? "0.0.0.0";
 
     this.listener = Deno.listenTls({ port, hostname, cert, key });
 
-    callback?.();
+    callback?.call(this);
     this.#listen(this.listener);
     return this;
   }
@@ -268,7 +269,18 @@ export class ServerImpl extends EventEmitter {
       this.listener.close();
     }
     cb?.();
+    nextTick(() => {
+      this.emit("close");
+    });
     return this;
+  }
+
+  address() {
+    const addr = this.listener!.addr as Deno.NetAddr;
+    return {
+      port: addr.port,
+      address: addr.hostname,
+    };
   }
 }
 
@@ -276,6 +288,15 @@ Server.prototype = ServerImpl.prototype;
 
 export function createServer(options: any, listener: any) {
   return new ServerImpl(options, listener);
+}
+
+function onConnectSecure(this: TLSSocket) {
+  this.authorized = true;
+  this.secureConnecting = false;
+  debug("client emit secureConnect. authorized:", this.authorized);
+  this.emit("secureConnect");
+
+  this.removeListener("end", onConnectEnd);
 }
 
 export function connect(...args: any[]) {
@@ -373,6 +394,7 @@ export function connect(...args: any[]) {
     tlssock._start();
   }
 
+  tlssock.on("secure", onConnectSecure);
   tlssock.prependListener("end", onConnectEnd);
 
   return tlssock;
@@ -413,5 +435,6 @@ export default {
   createServer,
   checkServerIdentity,
   DEFAULT_CIPHERS,
+  Server,
   unfqdn,
 };

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2017 crypto-browserify. All rights reserved. MIT license.
 // deno-lint-ignore-file no-var
 
@@ -126,7 +126,8 @@ Deno.test("encodings", async function (t) {
     cipher.final("base64");
   });
   await t.step("handle long uft8 plaintexts", function () {
-    var txt = "ふっかつ　あきる　すぶり　はやい　つける　まゆげ　たんさん　みんぞく　ねほりはほり　せまい　たいまつばな　ひはん";
+    var txt =
+      "ふっかつ　あきる　すぶり　はやい　つける　まゆげ　たんさん　みんぞく　ねほりはほり　せまい　たいまつばな　ひはん";
 
     var cipher = new Cipher();
     var decipher = new Cipher();

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
 import { ascend } from "./_comparators.ts";
@@ -7,7 +7,84 @@ export * from "./_comparators.ts";
 
 /**
  * An unbalanced binary search tree. The values are in ascending order by default,
- * using JavaScript's built in comparison operators to sort the values.
+ * using JavaScript's built-in comparison operators to sort the values.
+ *
+ * For performance, it's recommended that you use a self-balancing binary search
+ * tree instead of this one unless you are extending this to create a
+ * self-balancing tree. See RedBlackTree for an example of how BinarySearchTree
+ *  can be extended to create a self-balancing binary search tree.
+ *
+ * | Method        | Average Case | Worst Case |
+ * | ------------- | ------------ | ---------- |
+ * | find(value)   | O(log n)     | O(n)       |
+ * | insert(value) | O(log n)     | O(n)       |
+ * | remove(value) | O(log n)     | O(n)       |
+ * | min()         | O(log n)     | O(n)       |
+ * | max()         | O(log n)     | O(n)       |
+ *
+ * @example
+ * ```ts
+ * import {
+ *   ascend,
+ *   BinarySearchTree,
+ *   descend,
+ * } from "https://deno.land/std@$STD_VERSION/collections/binary_search_tree.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ *
+ * const values = [3, 10, 13, 4, 6, 7, 1, 14];
+ * const tree = new BinarySearchTree<number>();
+ * values.forEach((value) => tree.insert(value));
+ * assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+ * assertEquals(tree.min(), 1);
+ * assertEquals(tree.max(), 14);
+ * assertEquals(tree.find(42), null);
+ * assertEquals(tree.find(7), 7);
+ * assertEquals(tree.remove(42), false);
+ * assertEquals(tree.remove(7), true);
+ * assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+ *
+ * const invertedTree = new BinarySearchTree<number>(descend);
+ * values.forEach((value) => invertedTree.insert(value));
+ * assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+ * assertEquals(invertedTree.min(), 14);
+ * assertEquals(invertedTree.max(), 1);
+ * assertEquals(invertedTree.find(42), null);
+ * assertEquals(invertedTree.find(7), 7);
+ * assertEquals(invertedTree.remove(42), false);
+ * assertEquals(invertedTree.remove(7), true);
+ * assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+ *
+ * const words = new BinarySearchTree<string>((a, b) =>
+ *   ascend(a.length, b.length) || ascend(a, b)
+ * );
+ * ["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+ *   .forEach((value) => words.insert(value));
+ * assertEquals([...words], [
+ *   "car",
+ *   "suv",
+ *   "van",
+ *   "semi",
+ *   "tank",
+ *   "train",
+ *   "truck",
+ *   "helicopter",
+ * ]);
+ * assertEquals(words.min(), "car");
+ * assertEquals(words.max(), "helicopter");
+ * assertEquals(words.find("scooter"), null);
+ * assertEquals(words.find("tank"), "tank");
+ * assertEquals(words.remove("scooter"), false);
+ * assertEquals(words.remove("tank"), true);
+ * assertEquals([...words], [
+ *   "car",
+ *   "suv",
+ *   "van",
+ *   "semi",
+ *   "train",
+ *   "truck",
+ *   "helicopter",
+ * ]);
+ * ```
  */
 export class BinarySearchTree<T> implements Iterable<T> {
   protected root: BinarySearchNode<T> | null = null;
@@ -158,33 +235,36 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return null;
   }
 
+  /** Removes the given node, and returns the node that was physically removed from the tree. */
   protected removeNode(
-    value: T,
+    node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
-    let removeNode: BinarySearchNode<T> | null = this.findNode(value);
-    if (removeNode) {
-      const successorNode: BinarySearchNode<T> | null =
-        !removeNode.left || !removeNode.right
-          ? removeNode
-          : removeNode.findSuccessorNode()!;
-      const replacementNode: BinarySearchNode<T> | null = successorNode.left ??
-        successorNode.right;
-      if (replacementNode) replacementNode.parent = successorNode.parent;
+    /**
+     * The node to physically remove from the tree.
+     * Guaranteed to have at most one child.
+     */
+    const flaggedNode: BinarySearchNode<T> | null = !node.left || !node.right
+      ? node
+      : node.findSuccessorNode()!;
+    /** Replaces the flagged node. */
+    const replacementNode: BinarySearchNode<T> | null = flaggedNode.left ??
+      flaggedNode.right;
 
-      if (!successorNode.parent) {
-        this.root = replacementNode;
-      } else {
-        successorNode.parent[successorNode.directionFromParent()!] =
-          replacementNode;
-      }
-
-      if (successorNode !== removeNode) {
-        removeNode.value = successorNode.value;
-        removeNode = successorNode;
-      }
-      this._size--;
+    if (replacementNode) replacementNode.parent = flaggedNode.parent;
+    if (!flaggedNode.parent) {
+      this.root = replacementNode;
+    } else {
+      flaggedNode.parent[flaggedNode.directionFromParent()!] = replacementNode;
     }
-    return removeNode;
+    if (flaggedNode !== node) {
+      /** Swaps values, in case value of the removed node is still needed by consumer. */
+      const swapValue = node.value;
+      node.value = flaggedNode.value;
+      flaggedNode.value = swapValue;
+    }
+
+    this._size--;
+    return flaggedNode;
   }
 
   /**
@@ -200,7 +280,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Returns true if found and removed.
    */
   remove(value: T): boolean {
-    return !!this.removeNode(value);
+    const node: BinarySearchNode<T> | null = this.findNode(value);
+    if (node) this.removeNode(node);
+    return node !== null;
   }
 
   /** Returns node value if found in the binary search tree. */

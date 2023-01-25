@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { asyncIterableToCallback } from "./_fs_watch.ts";
 import Dirent from "./_fs_dirent.ts";
 import { denoErrorToNodeError } from "../internal/errors.ts";

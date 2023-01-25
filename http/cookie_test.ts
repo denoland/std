@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   deleteCookie,
   getCookies,
@@ -101,6 +101,17 @@ Deno.test({
         "RFC2616 cookie 'Space'",
       );
     });
+
+    assertThrows(
+      () => {
+        setCookie(headers, {
+          name: "location",
+          value: "United Kingdom",
+        });
+      },
+      Error,
+      "RFC2616 cookie 'location' cannot contain character ' '",
+    );
   },
 });
 
@@ -331,6 +342,17 @@ Deno.test({
       headers.get("Set-Cookie"),
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; Path=/; " +
         "Expires=Fri, 07 Jan 1983 15:32:00 GMT",
+    );
+
+    headers = new Headers();
+    setCookie(headers, {
+      name: "Space",
+      value: "Cat",
+      expires: Date.UTC(1983, 0, 7, 15, 32),
+    });
+    assertEquals(
+      headers.get("Set-Cookie"),
+      "Space=Cat; Expires=Fri, 07 Jan 1983 15:32:00 GMT",
     );
 
     headers = new Headers();

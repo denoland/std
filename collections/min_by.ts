@@ -1,24 +1,24 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Returns the first element that is the smallest value of the given function or undefined if there are no elements.
+ * Returns the first element that is the smallest value of the given function or
+ * undefined if there are no elements
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
- *     { name: 'Anna', age: 34 },
- *     { name: 'Kim', age: 42 },
- *     { name: 'John', age: 23 },
+ *   { name: "Anna", age: 34 },
+ *   { name: "Kim", age: 42 },
+ *   { name: "John", age: 23 },
  * ];
  *
- * const personWithMinAge = minBy(people, i => i.age);
+ * const personWithMinAge = minBy(people, (i) => i.age);
  *
- * assertEquals(personWithMinAge, { name: 'John', age: 23 });
+ * assertEquals(personWithMinAge, { name: "John", age: 23 });
  * ```
  */
 export function minBy<T>(

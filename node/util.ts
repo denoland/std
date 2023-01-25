@@ -1,8 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./internal/util.mjs";
 import { callbackify } from "./_util/_util_callbackify.ts";
 import { debuglog } from "./internal/util/debuglog.ts";
-import { deprecate } from "./internal/util.mjs";
 import {
   format,
   formatWithOptions,
@@ -13,11 +12,12 @@ import { codes } from "./internal/error_codes.ts";
 import types from "./util/types.ts";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
+import process from "./process.ts";
+import { validateString } from "./internal/validators.mjs";
 
 export {
   callbackify,
   debuglog,
-  deprecate,
   format,
   formatWithOptions,
   inspect,
@@ -200,6 +200,56 @@ function timestamp(): string {
 // deno-lint-ignore no-explicit-any
 export function log(...args: any[]) {
   console.log("%s - %s", timestamp(), format(...args));
+}
+
+// Keep a list of deprecation codes that have been warned on so we only warn on
+// each one once.
+const codesWarned = new Set();
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+// deno-lint-ignore no-explicit-any
+export function deprecate(fn: any, msg: string, code?: any) {
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  if (code !== undefined) {
+    validateString(code, "code");
+  }
+
+  let warned = false;
+  // deno-lint-ignore no-explicit-any
+  function deprecated(this: any, ...args: any[]) {
+    if (!warned) {
+      warned = true;
+      if (code !== undefined) {
+        if (!codesWarned.has(code)) {
+          process.emitWarning(msg, "DeprecationWarning", code, deprecated);
+          codesWarned.add(code);
+        }
+      } else {
+        // deno-lint-ignore no-explicit-any
+        process.emitWarning(msg, "DeprecationWarning", deprecated as any);
+      }
+    }
+    if (new.target) {
+      return Reflect.construct(fn, args, new.target);
+    }
+    return Reflect.apply(fn, this, args);
+  }
+
+  // The wrapper will keep the same prototype as fn to maintain prototype chain
+  Object.setPrototypeOf(deprecated, fn);
+  if (fn.prototype) {
+    // Setting this (rather than using Object.setPrototype, as above) ensures
+    // that calling the unwrapped constructor gives an instanceof the wrapped
+    // constructor.
+    deprecated.prototype = fn.prototype;
+  }
+
+  return deprecated;
 }
 
 export { getSystemErrorName, isDeepStrictEqual };

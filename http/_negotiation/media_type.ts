@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /*!
  * Adapted directly from negotiator at https://github.com/jshttp/negotiator/
  * which is licensed as follows:
@@ -109,7 +109,7 @@ function parseMediaType(
 
     for (const [key, val] of kvps) {
       const value = val && val[0] === `"` && val[val.length - 1] === `"`
-        ? val.substr(1, val.length - 2)
+        ? val.slice(1, val.length - 1)
         : val;
 
       if (key === "q" && value) {

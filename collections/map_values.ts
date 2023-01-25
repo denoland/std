@@ -1,26 +1,29 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Applies the given transformer to all values in the given record and returns a new record containing the resulting keys
- * associated to the last value that produced them.
+ * Applies the given transformer to all values in the given record and returns a
+ * new record containing the resulting keys associated to the last value that
+ * produced them.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/map_values.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const usersById = {
- *     'a5ec': { name: 'Mischa' },
- *     'de4f': { name: 'Kim' },
- * }
- * const namesById = mapValues(usersById, it => it.name)
+ *   "a5ec": { name: "Mischa" },
+ *   "de4f": { name: "Kim" },
+ * };
+ * const namesById = mapValues(usersById, (it) => it.name);
  *
- * assertEquals(namesById, {
- *     'a5ec': 'Mischa',
- *     'de4f': 'Kim',
- * });
+ * assertEquals(
+ *   namesById,
+ *   {
+ *     "a5ec": "Mischa",
+ *     "de4f": "Kim",
+ *   },
+ * );
  * ```
  */
 export function mapValues<T, O>(

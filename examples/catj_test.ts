@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
@@ -68,10 +68,8 @@ Deno.test("[examples/catj] read from stdin", async () => {
   assertStrictEquals(actual, '.foo = "bar"');
 });
 
-function catj(
-  ...files: string[]
-): Deno.Child {
-  return Deno.spawnChild(Deno.execPath(), {
+function catj(...files: string[]): Deno.ChildProcess {
+  const process = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--quiet",
@@ -81,6 +79,8 @@ function catj(
     ],
     cwd: moduleDir,
     stdin: "piped",
+    stdout: "piped",
     env: { NO_COLOR: "true" },
   });
+  return process.spawn();
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Contains the functions {@linkcode accepts}, {@linkcode acceptsEncodings}, and
@@ -17,12 +17,51 @@ export type Request = {
   };
 };
 
-/** Returns an array of media types accepted by the request, in order of
+/**
+ * Returns an array of media types accepted by the request, in order of
  * preference. If there are no media types supplied in the request, then any
- * media type selector will be returned. */
+ * media type selector will be returned.
+ *
+ * @example
+ * ```ts
+ * import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: {
+ *     "accept":
+ *       "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, *\/*;q=0.8",
+ *   },
+ * });
+ *
+ * console.log(accepts(req));
+ * // [
+ * //   "text/html",
+ * //   "application/xhtml+xml",
+ * //   "image/webp",
+ * //   "application/xml",
+ * //   "*\/*",
+ * // ]
+ * ```
+ */
 export function accepts(request: Request): string[];
-/** For a given set of media types, return the best match accepted in the
- * request. If no media type matches, then the function returns `undefined`. */
+/**
+ * For a given set of media types, return the best match accepted in the
+ * request. If no media type matches, then the function returns `undefined`.
+ *
+ *  @example
+ * ```ts
+ * import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: {
+ *     "accept":
+ *       "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, *\/*;q=0.8",
+ *   },
+ * });
+ *
+ * accepts(req, "text/html", "image/webp"); // "text/html";
+ * ```
+ */
 export function accepts(
   request: Request,
   ...types: string[]
@@ -39,17 +78,43 @@ export function accepts(
     : ["*/*"];
 }
 
-/** Returns an array of content encodings accepted by the request, in order of
+/**
+ * Returns an array of content encodings accepted by the request, in order of
  * preference. If there are no encoding supplied in the request, then `["*"]`
- * is returned, implying any encoding is accepted. */
+ * is returned, implying any encoding is accepted.
+ *
+ * @example
+ * ```ts
+ * import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
+ * });
+ *
+ * acceptsEncodings(req); // ["deflate", "gzip", "*"]
+ * ```
+ */
 export function acceptsEncodings(request: Request): string[];
-/** For a given set of content encodings, return the best match accepted in the
+/**
+ * For a given set of content encodings, return the best match accepted in the
  * request. If no content encodings match, then the function returns
  * `undefined`.
  *
  * **NOTE:** You should always supply `identity` as one of the encodings
  * to ensure that there is a match when the `Accept-Encoding` header is part
- * of the request. */
+ * of the request.
+ *
+ * @example
+ * ```ts
+ * import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
+ * });
+ *
+ * acceptsEncodings(req, "gzip", "identity"); // "gzip"
+ * ```
+ */
 export function acceptsEncodings(
   request: Request,
   ...encodings: string[]
@@ -68,12 +133,42 @@ export function acceptsEncodings(
     : ["*"];
 }
 
-/** Returns an array of languages accepted by the request, in order of
+/**
+ * Returns an array of languages accepted by the request, in order of
  * preference. If there are no languages supplied in the request, then `["*"]`
- * is returned, imply any language is accepted. */
+ * is returned, imply any language is accepted.
+ *
+ * @example
+ * ```ts
+ * import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: {
+ *     "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
+ *   },
+ * });
+ *
+ * acceptsLanguages(req); // ["fr-CH", "fr", "en", "de", "*"]
+ * ```
+ */
 export function acceptsLanguages(request: Request): string[];
-/** For a given set of languages, return the best match accepted in the request.
- * If no languages match, then the function returns `undefined`. */
+/**
+ * For a given set of languages, return the best match accepted in the request.
+ * If no languages match, then the function returns `undefined`.
+ *
+ * @example
+ * ```ts
+ * import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+ *
+ * const req = new Request("https://example.com/", {
+ *   headers: {
+ *     "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
+ *   },
+ * });
+ *
+ * acceptsLanguages(req, "en-gb", "en-us", "en"); // "en"
+ * ```
+ */
 export function acceptsLanguages(
   request: Request,
   ...langs: string[]

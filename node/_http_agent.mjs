@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import * as net from "./net.ts";
@@ -344,7 +344,7 @@ function calculateServerName(options, req) {
         // Leading '[', but no ']'. Need to do something...
         servername = hostHeader;
       } else {
-        servername = hostHeader.substr(1, index - 1);
+        servername = hostHeader.slice(1, index);
       }
     } else {
       servername = hostHeader.split(":", 1)[0];

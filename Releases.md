@@ -1,3 +1,101 @@
+### 0.173.0 / 2023.01.16
+
+- fix(fs): change globstar default to true for expandGlob and expandGlobSync
+  (#3115)
+- fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
+- fix: revert "feat(node/cluster): `cluster` module for Node compat (#2271)"
+  (#3111)
+
+### 0.172.0 / 2023.01.13
+
+- feat(collection): add toArray method to BinaryHeap (#3079)
+- feat(node/cluster): `cluster` module for Node compat (#2271)
+- fix(datetime): `.quarter` calculation for `difference()` (#3085)
+- fix(encoding/jsonc): avoid prototype pollution in Node.js and Browser (#3077)
+- fix(node): support ref & unref of TCP handle (#3102)
+- fix(path): correctly handle trailing slashes for posix basename (#3088)
+
+### 0.171.0 / 2023.01.05
+
+- feat(http): add --header option to file_server (#2977)
+- feat(node): Add support for os.uptime (#3052)
+- feat(node/diagnostics_channel): initial implementation (#3050)
+- feat(node/url): domainToASCII/domainToUnicode (#3022)
+- fix(flags): parse method looses types in certain cases with collect option
+  (#3040)
+- fix(flags): types for aliases defined as array are ignored (#3043)
+- fix(node/http): avoid empty chunk issue of flash (#3062)
+- fix(node/http): ignore body when status code is one of 101, 204, 205, 304
+  (#3067)
+- fix(node/util): reference error of 'process' (#3037)
+- fix(path): correctly handle trailing slashes for basename (#3068)
+- fix(testing): do not mutate tokens when creating details (#3049)
+- fix: don't use windows-xl runners, too expensive (#3021)
+
+### 0.170.0 / 2022.12.19
+
+- Revert "fix(node/http): do not buffer first chunk (#2989)" (#3013)
+
+### 0.169.0 / 2022.12.19
+
+- feat(datetime): single-export files (#3007)
+- feat(media_types): single-export files (#3001)
+- fix(http): prevent downstream connections from getting closed when the
+  response stream throws an error (#3008)
+- fix(node): add missing exports to `process` (#3014)
+
+### 0.168.0 / 2022.12.14
+
+- BREAKING(archive): move to single-export files (#2958)
+- BREAKING(dotenv): rename config to load (#2616)
+- BREAKING(io): single-export files (#2975)
+- fix(encoding): base58 decoding (#2982)
+- fix(node): fix nextTick shim in deploy (#2980)
+- fix(node): ignore NotSupported errors coming from `Deno.chmod` (#2996)
+- fix(node/http): do not buffer first chunk (#2989)
+- perf(encoding/yaml) Don't allocate buffers unnecessarily (#2967)
+- perf(node/buffer): improve utf8 decoding performance (#2986)
+
+### 0.167.0 / 2022.12.01
+
+- Reorder steps to view documentation (#2948)
+- Revert "test(node/http): modify writable of ClientRequest (#2945)" (#2950)
+- feat(async): retry (#2929)
+- feat(dotenv): support type inference based on `restrictEnvAccessTo` option
+  (#2933)
+- feat(node): add os.version (#2962)
+- feat(node): add util.types.isProxy (#2960)
+- feat(testing): add conditional type check utils (#2864)
+- fix(node/tls): implement secureConnect event (#2926)
+
+### 0.166.0 / 2022.11.24
+
+- BREAKING(fmt/bytes): rename prettyBytes to format (#2896)
+- BREAKING(fmt/duration): rename prettyDuration to format (#2871)
+- feat(http/cookie): allow number type for expires param (#2932)
+- feat(node): export `process.argv` (#2924)
+- feat(node/crypto): add hmac implementation (#2664)
+- feat: Add process._kill and shim process.kill(pid, 0) correctly (#2922)
+- fix(fmt/bytes): default local decimal and group symbols (#2904)
+- fix(http/cookie): wording for cookie value validation error (#2931)
+- fix(node/console): update export members of console (#2927)
+- fix(node/fs): enable type narrowing with instanceof for ReadStream and
+  WriteStream (#2915)
+- fix(node/http): allow setting statusMessage (#2911)
+- fix(node/http): disable chunked request if Content-Length header is specified
+  (#2755)
+- fix(node/http): request with headers (#2898)
+- fix(node/string_decoder): proper buffer type casting and fix default logic
+  (#2897)
+- fix(node/timers): implement timeout.refresh (#2919)
+- fix: wait for denoflate wasm to load (#2923)
+
+### 0.165.0 / 2022.11.16
+
+- fix(node): improve crypto.getHashes compatibility (#2890)
+- fix(node): issues with browser (#2892)
+- fix: allow creating http.IncomingRequest without url being set (#2893)
+
 ### 0.164.0 / 2022.11.13
 
 - feat(fmt): add `prettyDuration` (#2861)

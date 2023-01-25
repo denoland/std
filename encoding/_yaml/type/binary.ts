@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Type } from "../type.ts";
 import type { Any } from "../utils.ts";
 import { Buffer } from "../../../io/buffer.ts";
@@ -117,6 +117,9 @@ function representYamlBinary(object: Uint8Array): string {
 }
 
 function isBinary(obj: Any): obj is Buffer {
+  if (typeof obj?.readSync !== "function") {
+    return false;
+  }
   const buf = new Buffer();
   try {
     if (0 > buf.readFromSync(obj as Buffer)) return true;

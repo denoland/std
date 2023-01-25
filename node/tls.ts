@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { notImplemented } from "./_utils.ts";
@@ -34,7 +34,7 @@ export const DEFAULT_MIN_VERSION = "TLSv1.2";
 
 export class CryptoStream {}
 export class SecurePair {}
-export class Server {}
+export const Server = _tls_wrap.Server;
 export function createSecurePair() {
   notImplemented("tls.createSecurePair");
 }

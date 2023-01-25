@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2017 Fedor Indutny. All rights reserved. MIT license.
 
 import { assertEquals } from "../../../../../testing/asserts.ts";
@@ -10,7 +10,7 @@ Deno.test("asn1.js DER encoder", async function (t) {
   /*
    * Explicit value shold be wrapped with A0 | EXPLICIT tag
    * this adds two more bytes to resulting buffer.
-   * */
+   */
   await t.step("should code explicit tag as 0xA2", function () {
     const E = asn1.define("E", function () {
       this.explicit(2).octstr();

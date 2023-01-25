@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 //
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 //
@@ -106,7 +106,7 @@ export const {
   isArrayBuffer,
   isDataView,
   isSharedArrayBuffer,
-  // isProxy,
+  isProxy,
   isModuleNamespaceObject,
   isAnyArrayBuffer,
   isBoxedPrimitive,

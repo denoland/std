@@ -1,12 +1,17 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Functions for specific common tasks around collection types like `Array` and
- * `Record`.
+ * `Record`. This module is heavily inspired by `kotlin`s stdlib.
+ *
+ * - All provided functions are **pure**, which also means that they do **not
+ *   mutate** your inputs, **returning a new value** instead.
+ * - All functions are importable on their own by referencing their snake_case
+ *   named file (e.g. `collections/sort_by.ts`)
  *
  * This module re-exports several modules, and importing this module directly
  * will likely include a lot of code that you might not use.
  *
- * Consider importing the function directly.  For example to import
+ * Consider importing the function directly. For example to import
  * {@linkcode groupBy} import the module using the snake cased version of the
  * module:
  *

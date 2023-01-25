@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** A collection of HTTP errors and utilities.
  *
@@ -11,8 +11,7 @@
  * The function {@linkcode isHttpError} is a type guard that will narrow a value
  * to an `HttpError` instance.
  *
- * ### Examples
- *
+ * @example
  * ```ts
  * import { errors, isHttpError } from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
  *
@@ -27,6 +26,7 @@
  * }
  * ```
  *
+ * @example
  * ```ts
  * import { createHttpError } from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
  * import { Status } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
@@ -159,11 +159,16 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
   return ErrorCtor;
 }
 
-/** A map of HttpErrors that are unique instances for each HTTP error status
- * code.
+/**
+ * A namespace that contains each error constructor. Each error extends
+ * `HTTPError` and provides `.status` and `.expose` properties, where the
+ * `.status` will be an error `Status` value and `.expose` indicates if
+ * information, like a stack trace, should be shared in the response.
  *
- * ### Example
+ * By default, `.expose` is set to false in server errors, and true for client
+ * errors.
  *
+ * @example
  * ```ts
  * import { errors } from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
  *
@@ -179,7 +184,12 @@ for (const [key, value] of Object.entries(ERROR_STATUS_MAP)) {
   errors[key as ErrorStatusKeys] = createHttpErrorConstructor(value);
 }
 
-/** Create an instance of an HttpError based on the status code provided. */
+/**
+ * A factory function which provides a way to create errors. It takes up to 3
+ * arguments, the error `Status`, an message, which defaults to the status text
+ * and error options, which incudes the `expose` property to set the `.expose`
+ * value on the error.
+ */
 export function createHttpError(
   status: ErrorStatus = Status.InternalServerError,
   message?: string,

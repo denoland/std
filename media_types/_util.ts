@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** Supporting functions for media_types that do not make part of the public
  * API.
@@ -6,6 +6,15 @@
  * @module
  * @private
  */
+export interface DBEntry {
+  source: string;
+  compressible?: boolean;
+  charset?: string;
+  extensions?: string[];
+}
+
+/** A map of extensions for a given media type. */
+export const extensions = new Map<string, string[]>();
 
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);

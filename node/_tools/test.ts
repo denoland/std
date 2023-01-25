@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { magenta } from "../../fmt/colors.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
@@ -61,7 +61,7 @@ for await (const path of testPaths) {
         "-A",
         "--quiet",
         "--unstable",
-        "--no-check",
+        "--unsafely-ignore-certificate-errors",
         "--v8-flags=" + v8Flags.join(),
         targetTestPath.endsWith(".mjs")
           ? "--import-map=" + importMap

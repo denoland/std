@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, fail } from "../../testing/asserts.ts";
 import { fsync, fsyncSync } from "./_fs_fsync.ts";
 

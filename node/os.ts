@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,8 +25,15 @@ import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
+import { os } from "./internal_binding/constants.ts";
+
+export const constants = os;
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
+
+// @ts-ignore Deno[Deno.internal] is used on purpose here
+const DenoOsUptime = Deno[Deno.internal]?.nodeUnstable?.osUptime ||
+  Deno.osUptime;
 
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
@@ -110,6 +117,8 @@ export function arch(): string {
 (platform as any)[Symbol.toPrimitive] = (): string => platform();
 // deno-lint-ignore no-explicit-any
 (release as any)[Symbol.toPrimitive] = (): string => release();
+// deno-lint-ignore no-explicit-any
+(version as any)[Symbol.toPrimitive] = (): string => version();
 // deno-lint-ignore no-explicit-any
 (totalmem as any)[Symbol.toPrimitive] = (): number => totalmem();
 // deno-lint-ignore no-explicit-any
@@ -231,6 +240,13 @@ export function release(): string {
   return Deno.osRelease();
 }
 
+/** Returns a string identifying the kernel version */
+export function version(): string {
+  // TODO(kt3k): Temporarily uses Deno.osRelease().
+  // Revisit this if this implementation is insufficient for any npm module
+  return Deno.osRelease();
+}
+
 /** Not yet implemented */
 export function setPriority(pid: number, priority?: number) {
   /* The node API has the 'pid' as the first parameter and as optional.
@@ -293,9 +309,9 @@ export function type(): string {
   }
 }
 
-/** Not yet implemented */
+/** Returns the Operating System uptime in number of seconds. */
 export function uptime(): number {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return DenoOsUptime();
 }
 
 /** Not yet implemented */
@@ -305,56 +321,6 @@ export function userInfo(
 ): UserInfo {
   notImplemented(SEE_GITHUB_ISSUE);
 }
-
-export const constants = {
-  // UV_UDP_REUSEADDR: 4,  //see https://nodejs.org/docs/latest-v12.x/api/os.html#os_libuv_constants
-  dlopen: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_dlopen_constants
-  },
-  errno: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_error_constants
-  },
-  // Needs to be kept in sync with `Deno.Signal` type.
-  signals: {
-    "SIGABRT": "SIGABRT",
-    "SIGALRM": "SIGALRM",
-    "SIGBREAK": "SIGBREAK",
-    "SIGBUS": "SIGBUS",
-    "SIGCHLD": "SIGCHLD",
-    "SIGCONT": "SIGCONT",
-    "SIGEMT": "SIGEMT",
-    "SIGFPE": "SIGFPE",
-    "SIGHUP": "SIGHUP",
-    "SIGILL": "SIGILL",
-    "SIGINFO": "SIGINFO",
-    "SIGINT": "SIGINT",
-    "SIGIO": "SIGIO",
-    "SIGKILL": "SIGKILL",
-    "SIGPIPE": "SIGPIPE",
-    "SIGPROF": "SIGPROF",
-    "SIGPWR": "SIGPWR",
-    "SIGQUIT": "SIGQUIT",
-    "SIGSEGV": "SIGSEGV",
-    "SIGSTKFLT": "SIGSTKFLT",
-    "SIGSTOP": "SIGSTOP",
-    "SIGSYS": "SIGSYS",
-    "SIGTERM": "SIGTERM",
-    "SIGTRAP": "SIGTRAP",
-    "SIGTSTP": "SIGTSTP",
-    "SIGTTIN": "SIGTTIN",
-    "SIGTTOU": "SIGTTOU",
-    "SIGURG": "SIGURG",
-    "SIGUSR1": "SIGUSR1",
-    "SIGUSR2": "SIGUSR2",
-    "SIGVTALRM": "SIGVTALRM",
-    "SIGWINCH": "SIGWINCH",
-    "SIGXCPU": "SIGXCPU",
-    "SIGXFSZ": "SIGXFSZ",
-  },
-  priority: {
-    // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_priority_constants
-  },
-};
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
 export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";
@@ -377,6 +343,7 @@ export default {
   type,
   uptime,
   userInfo,
+  version,
   constants,
   EOL,
   devNull,

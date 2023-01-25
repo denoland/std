@@ -1,23 +1,33 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Splits the given array into chunks of the given size and returns them
+ * Splits the given array into chunks of the given size and returns them.
  *
- * Example:
- *
+ * @example
  * ```ts
  * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/chunk.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
- * const chunks = chunk(words, 3)
+ * const words = [
+ *   "lorem",
+ *   "ipsum",
+ *   "dolor",
+ *   "sit",
+ *   "amet",
+ *   "consetetur",
+ *   "sadipscing",
+ * ];
+ * const chunks = chunk(words, 3);
  *
- * assertEquals(chunks, [
- *     [ 'lorem', 'ipsum', 'dolor' ],
- *     [ 'sit', 'amet', 'consetetur' ],
- *     [ 'sadipscing' ],
- * ])
+ * assertEquals(
+ *   chunks,
+ *   [
+ *     ["lorem", "ipsum", "dolor"],
+ *     ["sit", "amet", "consetetur"],
+ *     ["sadipscing"],
+ *   ],
+ * );
  * ```
  */
 export function chunk<T>(array: readonly T[], size: number): T[][] {

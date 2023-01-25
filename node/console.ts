@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { Console } from "./internal/console/constructor.mjs";
 
@@ -19,10 +19,13 @@ export const {
   groupEnd,
   info,
   log,
+  profile,
+  profileEnd,
   table,
   time,
   timeEnd,
   timeLog,
+  timeStamp,
   trace,
   warn,
 } = console;

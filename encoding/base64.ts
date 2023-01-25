@@ -1,10 +1,27 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for
  * [base64](https://en.wikipedia.org/wiki/Base64) encoding.
  *
  * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ *
+ * const b64Repr = "Zm9vYg==";
+ *
+ * const binaryData = decode(b64Repr);
+ * console.log(binaryData);
+ * // => Uint8Array [ 102, 111, 111, 98 ]
+ *
+ * console.log(encode(binaryData));
+ * // => Zm9vYg==
+ * ```
  *
  * @module
  */

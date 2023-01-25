@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -72,8 +72,7 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  *
  * This was inspired by [keygrip](https://github.com/crypto-utils/keygrip/).
  *
- * ### Example
- *
+ * @example
  * ```ts
  * import { KeyStack } from "https://deno.land/std@$STD_VERSION/crypto/keystack.ts";
  *

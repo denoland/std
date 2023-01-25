@@ -1,6 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "./_node.ts";
-import { indexOfNeedle } from "../../bytes/mod.ts";
+import { indexOfNeedle } from "../../bytes/index_of_needle.ts";
 
 export function numberToBytes(n: number): Uint8Array {
   if (n === 0) return new Uint8Array([0]);

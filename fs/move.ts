@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSubdir } from "./_util.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
@@ -7,7 +7,16 @@ interface MoveOptions {
   overwrite?: boolean;
 }
 
-/** Moves a file or directory */
+/**
+ * Moves a file or directory.
+ *
+ * @example
+ * ```ts
+ * import { move } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * move("./foo", "./bar"); // returns a promise
+ * ```
+ */
 export async function move(
   src: string | URL,
   dest: string | URL,
@@ -39,11 +48,17 @@ export async function move(
   }
 
   await Deno.rename(src, dest);
-
-  return;
 }
 
-/** Moves a file or directory synchronously */
+/**
+ * Moves a file or directory synchronously.
+ * @example
+ * ```ts
+ * import { moveSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * moveSync("./foo", "./bar"); // void
+ * ```
+ */
 export function moveSync(
   src: string | URL,
   dest: string | URL,

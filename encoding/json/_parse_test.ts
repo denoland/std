@@ -1,11 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../../testing/asserts.ts";
-import {
-  readableStreamFromIterable,
-  TextDelimiterStream,
-  TextLineStream,
-} from "../../streams/mod.ts";
+import { readableStreamFromIterable } from "../../streams/readable_stream_from_iterable.ts";
+import { TextDelimiterStream } from "../../streams/text_delimiter_stream.ts";
+import { TextLineStream } from "../../streams/text_line_stream.ts";
 import {
   ConcatenatedJsonParseStream,
   JsonParseStream,

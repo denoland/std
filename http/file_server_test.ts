@@ -1,19 +1,20 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { iterateReader, writeAll } from "../streams/conversion.ts";
+import { iterateReader } from "../streams/iterate_reader.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { TextLineStream } from "../streams/delimiter.ts";
-import { toHashString } from "../crypto/mod.ts";
+import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 
-let fileServer: Deno.Child;
+let child: Deno.ChildProcess;
 
 interface FileServerCfg {
   port?: string;
@@ -25,6 +26,7 @@ interface FileServerCfg {
   key?: string;
   help?: boolean;
   target?: string;
+  headers?: string[];
 }
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -35,8 +37,9 @@ async function startFileServer({
   port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
+  headers = [],
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -50,12 +53,15 @@ async function startFileServer({
       `${port}`,
       `${dirListing ? "" : "--no-dir-listing"}`,
       `${dotfiles ? "" : "--no-dotfiles"}`,
+      ...headers.map((header) => "-H=" + header),
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -65,7 +71,7 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -75,9 +81,11 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
       "testdata/file_server_as_library.ts",
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  child = fileServer.spawn();
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -87,8 +95,8 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  fileServer.kill("SIGKILL");
-  await fileServer.status;
+  child.kill("SIGKILL");
+  await child.status;
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -163,14 +171,14 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const res = await fetch("http://localhost:4507/README.md");
+      const res = await fetch("http://localhost:4507/mod.ts");
       assertEquals(
         res.headers.get("content-type"),
-        "text/markdown; charset=UTF-8",
+        "video/mp2t",
       );
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "README.md")),
+        await Deno.readFile(join(moduleDir, "mod.ts")),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -223,7 +231,7 @@ Deno.test("serveDirIndex", async function () {
   try {
     const res = await fetch("http://localhost:4507/");
     const page = await res.text();
-    assert(page.includes("README.md"));
+    assert(page.includes("mod.ts"));
     assert(page.includes(`<a href="/testdata/">testdata/</a>`));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
@@ -233,7 +241,7 @@ Deno.test("serveDirIndex", async function () {
       assert(/<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/.test(page));
     isWindows &&
       assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
-    assert(page.includes(`<a href="/README.md">README.md</a>`));
+    assert(page.includes(`<a href="/mod.ts">mod.ts</a>`));
   } finally {
     await killFileServer();
   }
@@ -281,7 +289,7 @@ Deno.test("checkPathTraversal", async function () {
 
     assertEquals(res.status, 200);
     const listing = await res.text();
-    assertStringIncludes(listing, "README.md");
+    assertStringIncludes(listing, "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -307,7 +315,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function () {
       "http://localhost/../../../..",
     );
     assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "README.md");
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -321,7 +329,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
     );
 
     assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "README.md");
+    assertStringIncludes(await res.text(), "mod.ts");
   } finally {
     await killFileServer();
   }
@@ -422,11 +430,11 @@ Deno.test("file_server running as library", async function () {
 Deno.test("file_server should ignore query params", async () => {
   await startFileServer();
   try {
-    const res = await fetch("http://localhost:4507/README.md?key=value");
+    const res = await fetch("http://localhost:4507/mod.ts?key=value");
     assertEquals(res.status, 200);
     const downloadedFile = await res.text();
     const localFile = new TextDecoder().decode(
-      await Deno.readFile(join(moduleDir, "README.md")),
+      await Deno.readFile(join(moduleDir, "mod.ts")),
     );
     assertEquals(downloadedFile, localFile);
   } finally {
@@ -438,7 +446,7 @@ async function startTlsFileServer({
   target = ".",
   port = "4577",
 }: FileServerCfg = {}) {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -458,10 +466,12 @@ async function startTlsFileServer({
       `${port}`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
   const reader = r.getReader();
@@ -496,7 +506,7 @@ Deno.test("serveDirIndex TLS", async function () {
 });
 
 Deno.test("partial TLS arguments fail", async function () {
-  fileServer = Deno.spawnChild(Deno.execPath(), {
+  const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -513,11 +523,13 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
+    stdout: "piped",
     stderr: "null",
   });
+  child = fileServer.spawn();
   try {
     // Once fileServer is ready it will write to its stdout.
-    const r = fileServer.stdout.pipeThrough(new TextDecoderStream())
+    const r = child.stdout.pipeThrough(new TextDecoderStream())
       .pipeThrough(new TextLineStream());
     const reader = r.getReader();
     const res = await reader.read();
@@ -881,6 +893,23 @@ Deno.test("file_server sets `Date` header correctly", async () => {
     await killFileServer();
   }
 });
+
+Deno.test(
+  "file_server sets headers correctly if provided as arguments",
+  async () => {
+    await startFileServer({
+      headers: ["cache-control:max-age=100", "x-custom-header:hi"],
+    });
+    try {
+      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+      assertEquals(res.headers.get("cache-control"), "max-age=100");
+      assertEquals(res.headers.get("x-custom-header"), "hi");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
 
 Deno.test(
   "file_server file responses includes correct etag",

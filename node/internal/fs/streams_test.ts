@@ -1,10 +1,12 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+// @deno-types="./streams.d.ts"
 import {
   createReadStream,
   createWriteStream,
   ReadStream,
   WriteStream,
-} from "./streams.ts";
+} from "./streams.mjs";
 import { assertEquals } from "../../../testing/asserts.ts";
 import { Buffer } from "../../buffer.ts";
 import * as path from "../../path/mod.ts";
@@ -162,6 +164,8 @@ Deno.test({
   name: "[node/fs.WriteStream] Write data using 'WriteStream()'",
   async fn() {
     const tempFile: string = Deno.makeTempFileSync();
+    // deno-lint-ignore ban-ts-comment
+    // @ts-ignore
     const writable = WriteStream(tempFile);
 
     writable.write("hello world");

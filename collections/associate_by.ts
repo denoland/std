@@ -1,29 +1,28 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Transforms the given array into a Record, extracting the key of each element using the given selector.
- * If the selector produces the same key for multiple elements, the latest one will be used (overriding the
- * ones before it).
+ * Transforms the given array into a Record, extracting the key of each element
+ * using the given selector. If the selector produces the same key for multiple
+ * elements, the latest one will be used (overriding the ones before it).
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/associate_by.ts"
+ * import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/associate_by.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const users = [
- *     { id: 'a2e', userName: 'Anna' },
- *     { id: '5f8', userName: 'Arnold' },
- *     { id: 'd2c', userName: 'Kim' },
- * ]
- * const usersById = associateBy(users, it => it.id)
+ *   { id: "a2e", userName: "Anna" },
+ *   { id: "5f8", userName: "Arnold" },
+ *   { id: "d2c", userName: "Kim" },
+ * ];
+ * const usersById = associateBy(users, (it) => it.id);
  *
  * assertEquals(usersById, {
- *     'a2e': { id: 'a2e', userName: 'Anna' },
- *     '5f8': { id: '5f8', userName: 'Arnold' },
- *     'd2c': { id: 'd2c', userName: 'Kim' },
- * })
+ *   "a2e": { id: "a2e", userName: "Anna" },
+ *   "5f8": { id: "5f8", userName: "Arnold" },
+ *   "d2c": { id: "d2c", userName: "Kim" },
+ * });
  * ```
  */
 export function associateBy<T>(

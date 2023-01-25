@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../testing/asserts.ts";
@@ -7,6 +7,7 @@ import * as path from "./mod.ts";
 Deno.test("basename", function () {
   assertEquals(path.basename(".js", ".js"), "");
   assertEquals(path.basename(""), "");
+  assertEquals(path.basename("//", "bbb"), "");
   assertEquals(path.basename("/dir/basename.ext"), "basename.ext");
   assertEquals(path.basename("/basename.ext"), "basename.ext");
   assertEquals(path.basename("basename.ext"), "basename.ext");
@@ -22,6 +23,7 @@ Deno.test("basename", function () {
   assertEquals(path.basename("/aaa/bbb", "a/bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb", "bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb//", "bbb"), "bbb");
+  assertEquals(path.basename("/aaa/bbb//", "a/bbb"), "bbb");
   assertEquals(path.basename("/aaa/bbb", "bb"), "b");
   assertEquals(path.basename("/aaa/bbb", "b"), "bb");
   assertEquals(path.basename("/aaa/bbb"), "bbb");
