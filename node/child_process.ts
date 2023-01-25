@@ -2,6 +2,7 @@
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
+import { core } from "./_core.ts";
 import {
   ChildProcess,
   ChildProcessOptions,
@@ -140,7 +141,7 @@ export function fork(
 
   Object.assign(options.env ??= {}, {
     // deno-lint-ignore no-explicit-any
-    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (Deno as any).core.ops
+    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: core.ops
       .op_npm_process_state(),
   });
 
