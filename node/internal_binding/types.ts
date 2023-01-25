@@ -82,10 +82,11 @@ const _getMapSize = Object.getOwnPropertyDescriptor(
   "size",
 )!.get!;
 
-const isObjectLike = (
+function isObjectLike(
   value: unknown,
-): value is Record<string | number | symbol, unknown> =>
-  value !== null && typeof value === "object";
+): value is Record<string | number | symbol, unknown> {
+  return value !== null && typeof value === "object";
+}
 
 export function isAnyArrayBuffer(
   value: unknown,
