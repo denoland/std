@@ -542,12 +542,34 @@ export class SemVer {
     this.format();
   }
 
-  format(): string {
-    this.version = this.major + "." + this.minor + "." + this.patch;
+  format(
+    opts: { style?: "release" | "prerelease" | "build" | "full" } = {},
+  ): string {
+    const { style } = opts;
+
+    // todo: Consider a refactor of this class to have no side effects. Increment should return
+    // a new SemVer instance with the new values. This would be a breaking change.
+    // see https://github.com/denoland/deno_std/issues/3110 for discussion details
+    const release = this.version = this.major + "." + this.minor + "." +
+      this.patch;
     if (this.prerelease.length) {
       this.version += "-" + this.prerelease.join(".");
     }
-    return this.version;
+
+    switch (style) {
+      case "build":
+        return [release, this.build.join(".")].filter((v) => v).join("+");
+      case "full":
+        return [this.version, this.build.join(".")].filter((v) => v).join("+");
+      case "release":
+        return release;
+      case "prerelease":
+        return this.version;
+      default:
+        // todo: Have this function return the full version by default. This would be a breaking change.
+        // see this issue for discussion details https://github.com/denoland/deno_std/issues/3110
+        return this.version;
+    }
   }
 
   compare(other: string | SemVer): 1 | 0 | -1 {
@@ -627,7 +649,11 @@ export class SemVer {
     return 1;
   }
 
-  increment(release: ReleaseType, identifier?: string): SemVer {
+  increment(
+    release: ReleaseType,
+    identifier?: string,
+    metadata?: string,
+  ): SemVer {
     switch (release) {
       case "premajor":
         this.prerelease.length = 0;
@@ -731,6 +757,7 @@ export class SemVer {
       default:
         throw new Error("invalid increment argument: " + release);
     }
+    this.build = metadata ? metadata.split(".") : this.build;
     this.format();
     this.raw = this.version;
     return this;
