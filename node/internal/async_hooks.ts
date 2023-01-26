@@ -155,7 +155,6 @@ class AsyncContextFrame {
   getJSWrapper() {
     // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L169
   }
-
 }
 
 // deno-lint-ignore no-explicit-any

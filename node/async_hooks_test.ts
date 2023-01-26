@@ -34,15 +34,16 @@ Deno.test(async function foo() {
   ])
 });*/
 
-
 Deno.test(async function bar() {
   const als = new AsyncLocalStorage();
   const ac = new AbortController();
   const server = Deno.serve(() => {
     console.log(1);
-    const differentScope = als.run(123, () => AsyncResource.bind(() => {
-      console.log(als.getStore());
-    }));
+    const differentScope = als.run(123, () =>
+      AsyncResource.bind(() => {
+        console.log("differentScope");
+        console.log(als.getStore());
+      }));
     console.log(2);
     return als.run("Hello World", async () => {
       console.log(3);
@@ -51,15 +52,21 @@ Deno.test(async function bar() {
       setTimeout(differentScope, 5);
       console.log(4);
       // Some simulated async delay.
-      await new Promise(res => setTimeout(res, 10));
-      return new Response(als.getStore());  // "Hello World"
+      await new Promise((res) => setTimeout(res, 10));
+      console.log(40);
+      let store;
+      try {
+        store = als.getStore();
+      } catch (e) {
+        console.log("error", e);
+      }
+      console.log("store", store);
+      return new Response(store); // "Hello World"
     });
   }, {
     signal: ac.signal,
     port: 4000,
   });
-
-
 
   const res = await fetch("http://localhost:4000");
   console.log(5);
