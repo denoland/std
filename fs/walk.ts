@@ -12,9 +12,11 @@ import {
 } from "./_util.ts";
 
 export class WalkError extends Error {
+  path: string;
   constructor(err: unknown, path: string) {
     super(`${err instanceof Error ? err.message : err} for path "${path}"`);
     this.name = "WalkError";
+    this.path = path;
     this.cause = err;
   }
 }
@@ -37,8 +39,8 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: unknown, root: string) {
-  if (err instanceof Error && "root" in err) return err;
+function wrapErrorWithPath(err: unknown, root: string) {
+  if (err instanceof WalkError) return err;
   return new WalkError(err, root);
 }
 
@@ -125,7 +127,7 @@ export async function* walk(
       }
     }
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
 }
 
@@ -156,7 +158,7 @@ export function* walkSync(
   try {
     entries = Deno.readDirSync(root);
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
     assert(entry.name != null);
