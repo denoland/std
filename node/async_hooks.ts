@@ -282,11 +282,7 @@ export class AsyncLocalStorage {
     const value = currentFrame.get(this.#key);
 
     console.log("getStore value", value);
-    if (value) {
-      return value;
-    }
-
-    return undefined;
+    return value;
   }
 }
 
