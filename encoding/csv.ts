@@ -25,7 +25,8 @@ export {
 export type { ReadOptions } from "./csv/_io.ts";
 
 const QUOTE = '"';
-export const NEWLINE = "\r\n";
+const LF = "\n";
+const CRLF = "\r\n";
 
 export class StringifyError extends Error {
   override readonly name = "StringifyError";
@@ -40,7 +41,7 @@ function getEscapedString(value: unknown, sep: string): string {
 
   // Is regex.test more performant here? If so, how to dynamically create?
   // https://stackoverflow.com/questions/3561493/
-  if (str.includes(sep) || str.includes(NEWLINE) || str.includes(QUOTE)) {
+  if (str.includes(sep) || str.includes(LF) || str.includes(QUOTE)) {
     return `${QUOTE}${str.replaceAll(QUOTE, `${QUOTE}${QUOTE}`)}${QUOTE}`;
   }
 
@@ -291,7 +292,7 @@ export function stringify(
   data: DataItem[],
   { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
 ): string {
-  if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
+  if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",
       '  - U+0022: Quotation mark (")',
@@ -307,7 +308,7 @@ export function stringify(
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);
-    output += NEWLINE;
+    output += CRLF;
   }
 
   for (const item of data) {
@@ -315,7 +316,7 @@ export function stringify(
     output += values
       .map((value) => getEscapedString(value, sep))
       .join(sep);
-    output += NEWLINE;
+    output += CRLF;
   }
 
   return output;
