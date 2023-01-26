@@ -1,3 +1,8 @@
+### 0.174.0 / 2023.01.25
+
+- feat(fmt/printf): add formatter i/I (Deno.inspect) (#3100)
+- fix(encoding/csv): escape cells containing newlines (LFs) (#3128)
+
 ### 0.173.0 / 2023.01.16
 
 - fix(fs): change globstar default to true for expandGlob and expandGlobSync
