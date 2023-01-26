@@ -44,20 +44,52 @@ function popAsyncFrame() {
 let rootAsyncFrame: AsyncContextFrame | undefined = undefined;
 let asyncContextTrackingEnabled = false;
 
+const asyncContext = Symbol("asyncContext");
+function isRejected(promise: Promise<unknown>) {
+  const [state] = Deno[Deno.internal].core.getPromiseDetails(promise);
+  return state == 2;
+}
+
 function setAsyncContextTrackingEnabled() {
   if (asyncContextTrackingEnabled) {
     return;
   }
   asyncContextTrackingEnabled = true;
-  // TODO:
-  // Deno.core.setPromiseHooks(() => {
 
-  // });
+  Deno[Deno.internal].core.setPromiseHooks((promise: Promise<unknown>) => {
+    const currentFrame = AsyncContextFrame.current();
+    if (!currentFrame.isRoot()) {
+      assert(AsyncContextFrame.tryGetContext(promise) == null);
+      AsyncContextFrame.attachContext(promise);
+    }
+  }, (promise: Promise<unknown>) => {
+    const maybeFrame = AsyncContextFrame.tryGetContext(promise);
+    if (maybeFrame) {
+      pushAsyncFrame(maybeFrame);
+    } else {
+      pushAsyncFrame(AsyncContextFrame.getRootAsyncContext());
+    }
+  }, (promise: Promise<unknown>) => {
+    popAsyncFrame();
+
+    if (!isRejected(promise)) {
+      delete promise[asyncContext];
+    }
+  }, (promise: Promise<unknown>) => {
+    const currentFrame = AsyncContextFrame.current();
+    if (!currentFrame.isRoot() && isRejected(promise) && AsyncContextFrame.tryGetContext(promise) == null) {
+      AsyncContextFrame.attachContext(promise);
+    }
+  });
 }
 
 class AsyncContextFrame {
   storage: StorageEntry[];
-  constructor(maybeParent?: AsyncContextFrame | null, maybeStorageEntry?: StorageEntry | null, isRoot = false) {
+  constructor(
+    maybeParent?: AsyncContextFrame | null,
+    maybeStorageEntry?: StorageEntry | null,
+    isRoot = false,
+  ) {
     this.storage = [];
 
     setAsyncContextTrackingEnabled();
@@ -87,12 +119,14 @@ class AsyncContextFrame {
     }
   }
 
-  static tryGetContextFrame(value: unknown) {
-    throw new Error("not implemented");
+  static tryGetContext(promise: Promise<unknown>) {
+    return promise[asyncContext];
   }
 
-  static tryGetContext(promise: Promise<unknown>) {
-    throw new Error("not implemented");
+  static attachContext(promise: Promise<unknown>) {
+    assert(!(asyncContext in promise));
+    const frame = AsyncContextFrame.current();
+    promise[asyncContext] = frame;
   }
 
   static getRootAsyncContext() {
@@ -112,11 +146,18 @@ class AsyncContextFrame {
     return asyncContextStack[asyncContextStack.length - 1];
   }
 
-  static create(maybeParent?: AsyncContextFrame | null, maybeStorageEntry?: StorageEntry | null) {
+  static create(
+    maybeParent?: AsyncContextFrame | null,
+    maybeStorageEntry?: StorageEntry | null,
+  ) {
     return new AsyncContextFrame(maybeParent, maybeStorageEntry);
   }
 
-  static wrap(fn: () => unknown, maybeFrame: AsyncContextFrame | undefined, thisArg: any) {
+  static wrap(
+    fn: () => unknown,
+    maybeFrame: AsyncContextFrame | undefined,
+    thisArg: any,
+  ) {
     return (...args: any) => {
       const frame = maybeFrame || AsyncContextFrame.current();
       Scope.enter(frame);
@@ -257,22 +298,28 @@ class StorageKey {
     return this.#dead;
   }
 }
+
+const fnReg = new FinalizationRegistry((val: StorageKey) => {
+  val.reset();
+});
 export class AsyncLocalStorage {
   #key;
 
   constructor(options = kEmptyObject) {
     this.#key = new StorageKey();
+    fnReg.register(this, this.#key);
   }
 
   run(store: any, callback: any, ...args: any) {
     console.log("AsyncLocalStorage run", store);
     const _scope = new StorageScope(this.#key, store);
-    callback(...args);
+    const res = callback(...args);
     Scope.exit();
+    return res;
   }
 
   exit(callback: (...args: unknown[]) => any, ...args: unknown[]) {
-    this.run(undefined, callback, args);
+    return this.run(undefined, callback, args);
   }
 
   getStore() {
