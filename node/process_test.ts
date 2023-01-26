@@ -410,6 +410,38 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.stdin readable with piping a socket",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const expected = ["16384", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+
+    const listener = Deno.listen({ hostname: "127.0.0.1", port: 9000 });
+    listener.accept().then(async (conn) => {
+      await conn.write(new TextEncoder().encode("foo\nbar"));
+      conn.close();
+      listener.close();
+    });
+
+    const shell = "/bin/bash";
+    const cmd =
+      `"${Deno.execPath()}" run ${scriptPath} < /dev/tcp/127.0.0.1/9000`;
+    const args = ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+
+    const { stdout } = await p.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
   name: "process.stdin readable with null",
   async fn() {
     const expected = ["65536", "null", "end"];
@@ -423,6 +455,33 @@ Deno.test({
     });
 
     const { stdout } = await command.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with unsuitable stdin",
+  // TODO(PolarETech): Prepare a similar test that can be run on Windows
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const expected = ["16384", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+    const directoryPath = "./node/testdata/";
+
+    const shell = "/bin/bash";
+    const cmd = `"${Deno.execPath()}" run ${scriptPath} < ${directoryPath}`;
+    const args = ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+      windowsRawArguments: true,
+    });
+
+    const { stdout } = await p.output();
     const data = new TextDecoder().decode(stdout).trim().split("\n");
     assertEquals(data, expected);
   },
