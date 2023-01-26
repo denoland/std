@@ -27,7 +27,7 @@ import {
   trigger_async_id_symbol,
 } from "./internal/async_hooks.ts";
 
-function assert(cond) {
+function assert(cond: boolean) {
   if (!cond) throw new Error("boom!");
 }
 const asyncContextStack: AsyncContextFrame[] = [];
@@ -56,13 +56,14 @@ function setAsyncContextTrackingEnabled() {
 }
 
 class AsyncContextFrame {
-  constructor(maybeParent, maybeStorageEntry, isRoot = false) {
+  storage: StorageEntry[];
+  constructor(maybeParent?: AsyncContextFrame | null, maybeStorageEntry?: StorageEntry | null, isRoot = false) {
     this.storage = [];
 
     setAsyncContextTrackingEnabled();
 
-    const propagate = (parent) => {
-      parent.storage = parent.storage.filter((entry) => !entry.isDead());
+    const propagate = (parent: AsyncContextFrame) => {
+      parent.storage = parent.storage.filter((entry) => !entry.key.isDead());
       parent.storage.forEach((entry) => this.storage.push(entry));
 
       if (maybeStorageEntry) {
@@ -86,11 +87,11 @@ class AsyncContextFrame {
     }
   }
 
-  static tryGetContextFrame(value) {
+  static tryGetContextFrame(value: unknown) {
     throw new Error("not implemented");
   }
 
-  static tryGetContext(promise) {
+  static tryGetContext(promise: Promise<unknown>) {
     throw new Error("not implemented");
   }
 
@@ -111,12 +112,12 @@ class AsyncContextFrame {
     return asyncContextStack[asyncContextStack.length - 1];
   }
 
-  static create(maybeParent, maybeStorageEntry) {
+  static create(maybeParent?: AsyncContextFrame | null, maybeStorageEntry?: StorageEntry | null) {
     return new AsyncContextFrame(maybeParent, maybeStorageEntry);
   }
 
-  static wrap(fn, maybeFrame, thisArg) {
-    return (...args) => {
+  static wrap(fn: () => unknown, maybeFrame: AsyncContextFrame | undefined, thisArg: any) {
+    return (...args: any) => {
       const frame = maybeFrame || AsyncContextFrame.current();
       Scope.enter(frame);
       try {
@@ -127,9 +128,9 @@ class AsyncContextFrame {
     };
   }
 
-  get(key) {
+  get(key: StorageKey) {
     assert(!key.isDead());
-    this.storage = this.storage.filter((entry) => !entry.isDead());
+    this.storage = this.storage.filter((entry) => !entry.key.isDead());
     const entry = this.storage.find((entry) => entry.key === key);
     if (entry) {
       return entry.value;
@@ -158,6 +159,7 @@ type AsyncResourceOptions = number | {
 };
 
 export class AsyncResource {
+  frame: AsyncContextFrame;
   constructor(type: string, opts: AsyncResourceOptions = {}) {
     this.frame = AsyncContextFrame.current();
   }
@@ -210,7 +212,7 @@ export class AsyncResource {
 }
 
 class Scope {
-  static enter(maybeFrame) {
+  static enter(maybeFrame?: AsyncContextFrame) {
     if (maybeFrame) {
       pushAsyncFrame(maybeFrame);
     } else {
@@ -224,14 +226,17 @@ class Scope {
 }
 
 class StorageEntry {
-  constructor(key, value) {
+  key: StorageKey;
+  value: unknown;
+  constructor(key: StorageKey, value: unknown) {
     this.key = key;
     this.value = value;
   }
 }
 
 class StorageScope {
-  constructor(key, store) {
+  frame: AsyncContextFrame;
+  constructor(key: StorageKey, store: unknown) {
     this.frame = AsyncContextFrame.create(null, new StorageEntry(key, store));
     Scope.enter(this.frame);
   }

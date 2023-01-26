@@ -115,48 +115,6 @@ export function executionAsyncResource() {
   return lookupPublicResource(resource);
 }
 
-class AsyncContextFrame {
-  tryGetContext() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L58
-  }
-
-  current() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L74
-  }
-
-  create() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L82
-  }
-
-  wrap() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L89
-  }
-
-  attachContext() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L118
-  }
-
-  get() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L133
-  }
-
-  scope(key, value) {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L142
-  }
-
-  storageScope() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L155
-  }
-
-  isRoot() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L165
-  }
-
-  getJSWrapper() {
-    // TODO: https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/jsg/async-context.c++#L169
-  }
-}
-
 // deno-lint-ignore no-explicit-any
 function lookupPublicResource(resource: any) {
   if (typeof resource !== "object" || resource === null) return resource;
