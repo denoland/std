@@ -143,7 +143,7 @@ class AsyncContextFrame {
   }
 
   isRoot() {
-    AsyncContextFrame.getRootAsyncContext() == this;
+    return AsyncContextFrame.getRootAsyncContext() == this;
   }
 
   static pushAsyncFrame() {
