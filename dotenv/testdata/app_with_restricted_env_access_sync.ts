@@ -1,7 +1,7 @@
-import { configSync } from "../mod.ts";
+import { loadSync } from "../mod.ts";
 
 try {
-  const conf = configSync({
+  const conf = loadSync({
     restrictEnvAccessTo: ["GREETING"],
   });
 
