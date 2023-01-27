@@ -102,19 +102,6 @@ export const symbols = {
   promise_resolve_symbol,
 };
 
-const topLevelResource = {};
-export function executionAsyncResource() {
-  // Indicate to the native layer that this function is likely to be used,
-  // in which case it will inform JS about the current async resource via
-  // the trampoline above.
-  async_hook_fields[constants.kUsesExecutionAsyncResource] = 1;
-
-  const index = async_hook_fields[kStackLength] - 1;
-  if (index === -1) return topLevelResource;
-  const resource = execution_async_resources[index];
-  return lookupPublicResource(resource);
-}
-
 // deno-lint-ignore no-explicit-any
 function lookupPublicResource(resource: any) {
   if (typeof resource !== "object" || resource === null) return resource;
