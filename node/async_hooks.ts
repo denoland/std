@@ -222,8 +222,8 @@ export class AsyncResource {
 
   static bind(
     fn: (...args: unknown[]) => unknown,
-    type: string | undefined,
-    thisArg: AsyncResource | undefined,
+    type?: string,
+    thisArg?: AsyncResource,
   ) {
     type = type || fn.name;
     return (new AsyncResource(type || "AsyncResource")).bind(fn, thisArg);
@@ -289,7 +289,7 @@ export class AsyncLocalStorage {
   }
 
   // deno-lint-ignore no-explicit-any
-  run(store: any, callback: any, ...args: any) {
+  run(store: any, callback: any, ...args: any[]) {
     new StorageScope(this.#key, store);
     const res = callback(...args);
     Scope.exit();
@@ -297,11 +297,12 @@ export class AsyncLocalStorage {
   }
 
   // deno-lint-ignore no-explicit-any
-  exit(callback: (...args: unknown[]) => any, ...args: unknown[]) {
+  exit(callback: (...args: unknown[]) => any, ...args: any[]) {
     return this.run(undefined, callback, args);
   }
 
-  getStore() {
+  // deno-lint-ignore no-explicit-any
+  getStore(): any {
     const currentFrame = AsyncContextFrame.current();
     return currentFrame.get(this.#key);
   }
