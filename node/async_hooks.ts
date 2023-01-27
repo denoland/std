@@ -9,6 +9,7 @@ import {
 } from "./internal/validators.mjs";
 import { ERR_ASYNC_CALLBACK } from "./internal/errors.ts";
 import { kEmptyObject } from "./internal/util.mjs";
+import { core } from "./_core.ts";
 import {
   // deno-lint-ignore camelcase
   async_id_symbol,
@@ -46,7 +47,7 @@ let asyncContextTrackingEnabled = false;
 
 const asyncContext = Symbol("asyncContext");
 function isRejected(promise: Promise<unknown>) {
-  const [state] = Deno[Deno.internal].core.getPromiseDetails(promise);
+  const [state] = core.getPromiseDetails(promise);
   return state == 2;
 }
 
@@ -56,7 +57,7 @@ function setAsyncContextTrackingEnabled() {
   }
   asyncContextTrackingEnabled = true;
 
-  Deno[Deno.internal].core.setPromiseHooks((promise: Promise<unknown>) => {
+  core.setPromiseHooks((promise: Promise<unknown>) => {
     const currentFrame = AsyncContextFrame.current();
     if (!currentFrame.isRoot()) {
       assert(AsyncContextFrame.tryGetContext(promise) == null);

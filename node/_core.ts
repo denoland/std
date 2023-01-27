@@ -56,6 +56,16 @@ if (Deno?.[Deno.internal]?.core) {
     isProxy(): boolean {
       return false;
     },
+    getPromiseDetails() {
+      throw new Error(
+        "Deno.core.getPromiseDetails is not supported in this environment",
+      );
+    },
+    setPromiseHooks() {
+      throw new Error(
+        "Deno.core.setPromiseHooks is not supported in this environment",
+      );
+    },
     ops: {
       op_napi_open(_filename: string) {
         throw new Error(
