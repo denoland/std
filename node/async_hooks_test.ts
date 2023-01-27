@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AsyncLocalStorage, AsyncResource } from "./async_hooks.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 
