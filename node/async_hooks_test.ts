@@ -8,13 +8,13 @@ Deno.test(async function foo() {
   const out: string[] = [];
   function logWithId(msg: string) {
     const id = asyncLocalStorage.getStore();
-    out.push(`${id !== undefined ? id : '-'}: ${msg}`);
+    out.push(`${id !== undefined ? id : "-"}: ${msg}`);
   }
 
   async function exec() {
-    logWithId('start');
+    logWithId("start");
     await new Promise((resolve) => setTimeout(resolve, 100));
-    logWithId('finish');
+    logWithId("finish");
   }
 
   for (const foo of [1, 2, 3]) {
@@ -22,7 +22,6 @@ Deno.test(async function foo() {
   }
 
   await new Promise((resolve) => setTimeout(resolve, 500));
-
 
   assertEquals(out, [
     "1: start",

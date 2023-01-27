@@ -56,7 +56,7 @@ if (Deno?.[Deno.internal]?.core) {
     isProxy(): boolean {
       return false;
     },
-    getPromiseDetails() {
+    getPromiseDetails(_promise: Promise<unknown>): [number, unknown] {
       throw new Error(
         "Deno.core.getPromiseDetails is not supported in this environment",
       );
