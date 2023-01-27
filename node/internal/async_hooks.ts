@@ -53,7 +53,6 @@ const {
   asyncIdFields: async_id_fields,
   newAsyncId,
   constants,
-  execution_async_resources,
 } = async_wrap;
 export { newAsyncId };
 const {
