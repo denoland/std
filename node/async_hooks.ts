@@ -1,6 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
+// This implementation is inspired by "workerd" AsyncLocalStorage implementation:
+// https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/api/node/async-hooks.c++#L9
+
 import { validateFunction } from "./internal/validators.mjs";
 import { core } from "./_core.ts";
 
@@ -19,7 +22,7 @@ function popAsyncFrame() {
 }
 
 let rootAsyncFrame: AsyncContextFrame | undefined = undefined;
-let asyncContextTrackingEnabled = false;
+let promiseHooksSet = false;
 
 const asyncContext = Symbol("asyncContext");
 function isRejected(promise: Promise<unknown>) {
@@ -27,33 +30,35 @@ function isRejected(promise: Promise<unknown>) {
   return state == 2;
 }
 
-function setAsyncContextTrackingEnabled() {
-  if (asyncContextTrackingEnabled) {
+function setPromiseHooks() {
+  if (promiseHooksSet) {
     return;
   }
-  asyncContextTrackingEnabled = true;
+  promiseHooksSet = true;
 
-  core.setPromiseHooks((promise: Promise<unknown>) => {
+  const init = (promise: Promise<unknown>) => {
     const currentFrame = AsyncContextFrame.current();
     if (!currentFrame.isRoot()) {
       assert(AsyncContextFrame.tryGetContext(promise) == null);
       AsyncContextFrame.attachContext(promise);
     }
-  }, (promise: Promise<unknown>) => {
+  };
+  const before = (promise: Promise<unknown>) => {
     const maybeFrame = AsyncContextFrame.tryGetContext(promise);
     if (maybeFrame) {
       pushAsyncFrame(maybeFrame);
     } else {
       pushAsyncFrame(AsyncContextFrame.getRootAsyncContext());
     }
-  }, (promise: Promise<unknown>) => {
+  };
+  const after = (promise: Promise<unknown>) => {
     popAsyncFrame();
-
     if (!isRejected(promise)) {
       // @ts-ignore promise async context
       delete promise[asyncContext];
     }
-  }, (promise: Promise<unknown>) => {
+  };
+  const resolve = (promise: Promise<unknown>) => {
     const currentFrame = AsyncContextFrame.current();
     if (
       !currentFrame.isRoot() && isRejected(promise) &&
@@ -61,7 +66,9 @@ function setAsyncContextTrackingEnabled() {
     ) {
       AsyncContextFrame.attachContext(promise);
     }
-  });
+  };
+
+  core.setPromiseHooks(init, before, after, resolve);
 }
 
 class AsyncContextFrame {
@@ -73,7 +80,7 @@ class AsyncContextFrame {
   ) {
     this.storage = [];
 
-    setAsyncContextTrackingEnabled();
+    setPromiseHooks();
 
     const propagate = (parent: AsyncContextFrame) => {
       parent.storage = parent.storage.filter((entry) => !entry.key.isDead());
@@ -163,16 +170,8 @@ class AsyncContextFrame {
     return undefined;
   }
 
-  static pop() {
-    throw new Error("not implemented");
-  }
-
   isRoot() {
     return AsyncContextFrame.getRootAsyncContext() == this;
-  }
-
-  static pushAsyncFrame() {
-    throw new Error("not implemented");
   }
 }
 
@@ -253,18 +252,6 @@ class StorageEntry {
   }
 }
 
-class StorageScope {
-  frame: AsyncContextFrame;
-  constructor(key: StorageKey, store: unknown) {
-    this.frame = AsyncContextFrame.create(null, new StorageEntry(key, store));
-    Scope.enter(this.frame);
-  }
-
-  static exit() {
-    Scope.exit();
-  }
-}
-
 class StorageKey {
   #dead = false;
 
@@ -277,9 +264,10 @@ class StorageKey {
   }
 }
 
-const fnReg = new FinalizationRegistry((val: StorageKey) => {
-  val.reset();
+const fnReg = new FinalizationRegistry((key: StorageKey) => {
+  key.reset();
 });
+
 export class AsyncLocalStorage {
   #key;
 
@@ -289,15 +277,23 @@ export class AsyncLocalStorage {
   }
 
   // deno-lint-ignore no-explicit-any
-  run(store: any, callback: any, ...args: any[]) {
-    new StorageScope(this.#key, store);
-    const res = callback(...args);
-    Scope.exit();
+  run(store: any, callback: any, ...args: any[]): any {
+    const frame = AsyncContextFrame.create(
+      null,
+      new StorageEntry(this.#key, store),
+    );
+    Scope.enter(frame);
+    let res;
+    try {
+      res = callback(...args);
+    } finally {
+      Scope.exit();
+    }
     return res;
   }
 
   // deno-lint-ignore no-explicit-any
-  exit(callback: (...args: unknown[]) => any, ...args: any[]) {
+  exit(callback: (...args: unknown[]) => any, ...args: any[]): any {
     return this.run(undefined, callback, args);
   }
 
