@@ -1,6 +1,5 @@
 import { AsyncLocalStorage, AsyncResource } from "./async_hooks.ts";
-import { assertEquals } from "../testing/asserts.ts";
-import { serve } from "../http/server.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 
 Deno.test(async function foo() {
   const asyncLocalStorage = new AsyncLocalStorage();
@@ -34,12 +33,13 @@ Deno.test(async function foo() {
 });
 
 Deno.test(async function bar() {
+  let differentScopeDone = false;
   const als = new AsyncLocalStorage();
   const ac = new AbortController();
   const server = Deno.serve(() => {
     const differentScope = als.run(123, () =>
       AsyncResource.bind(() => {
-        console.log("differentScope");
+        differentScopeDone = true;
       }));
     return als.run("Hello World", async () => {
       // differentScope is attached to a different async context, so
@@ -58,4 +58,5 @@ Deno.test(async function bar() {
   assertEquals(await res.text(), "Hello World");
   ac.abort();
   await server;
+  assert(differentScopeDone);
 });
