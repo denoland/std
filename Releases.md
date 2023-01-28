@@ -1,3 +1,10 @@
+### 0.175.0 / 2023.01.28
+
+- BREAKING(dotenv,fmt,io): remove deprecated APIs (#3134)
+- BREAKING(path): rework basename and dirname to be coreutils compatible (#3089)
+- feat(node): AsyncLocalStorage (#3137)
+- feat(semver): add support for build metadata (#3126)
+
 ### 0.174.0 / 2023.01.25
 
 - feat(fmt/printf): add formatter i/I (Deno.inspect) (#3100)
