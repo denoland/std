@@ -3,9 +3,9 @@
 
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter, once } from "./events.ts";
+import { EventEmitter } from "./events.ts";
 
-let environmentData = new Map();
+const environmentData = new Map();
 let threads = 0;
 
 export interface WorkerOptions {
@@ -46,6 +46,7 @@ class _Worker extends EventEmitter {
   postMessage: Worker["postMessage"];
 
   constructor(specifier: URL | string, options?: WorkerOptions) {
+    notImplemented("Worker");
     super();
     if (options?.eval === true) {
       specifier = `data:text/javascript,${specifier}`;
@@ -103,8 +104,8 @@ export const resourceLimits = isMainThread ? {} : {
   stackSizeMb: 4,
 };
 
-let threadId = 0;
-let workerData: unknown = null;
+const threadId = 0;
+const workerData: unknown = null;
 
 // Like https://github.com/nodejs/node/blob/48655e17e1d84ba5021d7a94b4b88823f7c9c6cf/lib/internal/event_target.js#L611
 interface NodeEventTarget extends
@@ -127,8 +128,9 @@ interface NodeEventTarget extends
 type ParentPort = typeof self & NodeEventTarget;
 
 // deno-lint-ignore no-explicit-any
-let parentPort: ParentPort = null as any;
+const parentPort: ParentPort = null as any;
 
+/*
 if (!isMainThread) {
   // deno-lint-ignore no-explicit-any
   delete (globalThis as any).name;
@@ -185,12 +187,15 @@ if (!isMainThread) {
     parentPort.emit("close");
   });
 }
+*/
 
 export function getEnvironmentData(key: unknown) {
+  notImplemented("getEnvironmentData");
   return environmentData.get(key);
 }
 
 export function setEnvironmentData(key: unknown, value?: unknown) {
+  notImplemented("setEnvironmentData");
   if (value === undefined) {
     environmentData.delete(key);
   } else {
