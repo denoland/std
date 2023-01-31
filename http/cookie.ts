@@ -291,12 +291,10 @@ export function deleteCookie(
 function parseSetCookie(value: string): Cookie | null {
   const attrs = value
     .split(";")
-    .map((attr) =>
-      attr
-        .trim()
-        .split("=")
-        .map((keyOrValue) => keyOrValue.trim())
-    );
+    .map((attr) => {
+      const [key, ...values] = attr.trim().split("=").map((keyOrValue) => keyOrValue.trim());
+      return [key, values.join('=')];
+    });
   const cookie: Cookie = {
     name: attrs[0][0],
     value: attrs[0][1],
