@@ -139,15 +139,28 @@ function innerDeepEqual(
       return false;
     }
   } else if (isArrayBufferView(val1)) {
-    const TypedArrayPrototypeGetSymbolToStringTag = (val: []) =>
+    const TypedArrayPrototypeGetSymbolToStringTag = (
+      val:
+        | BigInt64Array
+        | BigUint64Array
+        | Float32Array
+        | Float64Array
+        | Int8Array
+        | Int16Array
+        | Int32Array
+        | Uint8Array
+        | Uint8ClampedArray
+        | Uint16Array
+        | Uint32Array,
+    ) =>
       Object.getOwnPropertySymbols(val)
         .map((item) => item.toString())
         .toString();
     if (
       isTypedArray(val1) &&
       isTypedArray(val2) &&
-      (TypedArrayPrototypeGetSymbolToStringTag(val1 as []) !==
-        TypedArrayPrototypeGetSymbolToStringTag(val2 as []))
+      (TypedArrayPrototypeGetSymbolToStringTag(val1) !==
+        TypedArrayPrototypeGetSymbolToStringTag(val2))
     ) {
       return false;
     }
@@ -189,8 +202,7 @@ function innerDeepEqual(
     );
   } else if (isMap(val1)) {
     if (
-      !isMap(val2) ||
-      (val1 as Set<unknown>).size !== (val2 as Set<unknown>).size
+      !isMap(val2) || val1.size !== val2.size
     ) {
       return false;
     }

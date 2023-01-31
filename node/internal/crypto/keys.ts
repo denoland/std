@@ -24,7 +24,26 @@ import {
 } from "./_keys.ts";
 
 const getArrayBufferOrView = hideStackFrames(
-  (buffer, name, encoding): Buffer => {
+  (
+    buffer,
+    name,
+    encoding,
+  ):
+    | ArrayBuffer
+    | SharedArrayBuffer
+    | Buffer
+    | DataView
+    | BigInt64Array
+    | BigUint64Array
+    | Float32Array
+    | Float64Array
+    | Int8Array
+    | Int16Array
+    | Int32Array
+    | Uint8Array
+    | Uint8ClampedArray
+    | Uint16Array
+    | Uint32Array => {
     if (isAnyArrayBuffer(buffer)) {
       return buffer;
     }
