@@ -51,6 +51,7 @@ class _Worker extends EventEmitter {
     if (options?.eval === true) {
       specifier = `data:text/javascript,${specifier}`;
     } else if (typeof specifier === "string") {
+      // @ts-ignore This API is temporarily disabled
       specifier = toFileUrl(resolve(specifier));
     }
     const handle = this[kHandle] = new Worker(
