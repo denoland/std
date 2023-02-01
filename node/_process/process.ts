@@ -24,10 +24,10 @@ function _arch(): string {
 export const arch = _arch();
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
-export const chdir = Deno.chdir;
+export const chdir = globalThis?.Deno?.chdir;
 
 /** https://nodejs.org/api/process.html#process_process_cwd */
-export const cwd = Deno.cwd;
+export const cwd = globalThis?.Deno?.cwd;
 
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 export const nextTick = _nextTick;
