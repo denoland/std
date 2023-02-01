@@ -39,6 +39,7 @@ import {
   validateFunction,
 } from "./internal/validators.mjs";
 import { spliceOne } from "./_utils.ts";
+import { emitWarning, nextTick } from "./process.ts";
 
 const kCapture = Symbol("kCapture");
 const kErrorMonitor = Symbol("events.errorMonitor");
@@ -203,7 +204,7 @@ function addCatch(that, promise, type, args) {
       then.call(promise, undefined, function (err) {
         // The callback is called with nextTick to avoid a follow-up
         // rejection from this promise.
-        process.nextTick(emitUnhandledRejectionOrErr, that, err, type, args);
+        nextTick(emitUnhandledRejectionOrErr, that, err, type, args);
       });
     }
   } catch (err) {
@@ -461,7 +462,7 @@ function _addListener(target, type, listener, prepend) {
       w.emitter = target;
       w.type = type;
       w.count = existing.length;
-      process.emitWarning(w);
+      emitWarning(w);
     }
   }
 
