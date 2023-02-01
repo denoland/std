@@ -432,7 +432,7 @@ export interface ServeDirOptions {
    * @default {"fnv1a"}
    */
   etagAlgorithm?: DigestAlgorithm;
-  /** Headers to add to each request
+  /** Headers to add to each response
    *
    * @default {[]}
    */

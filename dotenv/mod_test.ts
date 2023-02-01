@@ -6,7 +6,6 @@ import {
   assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
-import type { DotenvConfig } from "./mod.ts";
 import {
   load,
   loadSync,
@@ -728,7 +727,7 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
     >(false);
 
     assertType<
-      IsExact<typeof conf, DotenvConfig>
+      IsExact<typeof conf, Record<string, string>>
     >(false);
 
     assertEquals(conf.DEFAULT1, "Some Default");
@@ -752,6 +751,6 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
       IsExact<typeof conf, { GREETING: string }>
     >(false);
 
-    assertType<IsExact<typeof conf, DotenvConfig>>(true);
+    assertType<IsExact<typeof conf, Record<string, string>>>(true);
   });
 });

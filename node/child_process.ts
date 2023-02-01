@@ -2,6 +2,7 @@
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
+import { core } from "./_core.ts";
 import {
   ChildProcess,
   ChildProcessOptions,
@@ -41,11 +42,7 @@ import { convertToValidSignal, kEmptyObject } from "./internal/util.mjs";
 
 const MAX_BUFFER = 1024 * 1024;
 
-export interface ForkOptions extends ChildProcessOptions {
-  execPath?: string | undefined;
-  execArgv?: string[] | undefined;
-  silent?: boolean | undefined;
-}
+type ForkOptions = ChildProcessOptions;
 
 /**
  * Spawns a new Node.js process + fork.
@@ -54,15 +51,9 @@ export interface ForkOptions extends ChildProcessOptions {
  * @param option
  * @returns
  */
-export function fork(modulePath: string, options?: ForkOptions): ChildProcess;
 export function fork(
   modulePath: string,
-  args?: ReadonlyArray<string>,
-  options?: ForkOptions,
-): ChildProcess;
-export function fork(
-  modulePath: string,
-  _args?: ReadonlyArray<string> | ForkOptions,
+  _args?: string[],
   _options?: ForkOptions,
 ) {
   validateString(modulePath, "modulePath");
@@ -149,10 +140,8 @@ export function fork(
   options.shell = false;
 
   Object.assign(options.env ??= {}, {
-    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: (
-      // deno-lint-ignore no-explicit-any
-      Deno as any
-    ).core.ops.op_npm_process_state(),
+    DENO_DONT_USE_INTERNAL_NODE_COMPAT_STATE: core.ops
+      .op_npm_process_state(),
   });
 
   return spawn(options.execPath, args, options);

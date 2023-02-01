@@ -1,73 +1,186 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
-import { validateFunction, validateString } from "./internal/validators.mjs";
-import {
-  // deno-lint-ignore camelcase
-  async_id_symbol,
-  destroyHooksExist,
-  emitInit,
-  enabledHooksExist,
-  getDefaultTriggerAsyncId,
-  hasAsyncIdStack,
-  initHooksExist,
-  newAsyncId,
-  registerDestroyHook,
-  // deno-lint-ignore camelcase
-  trigger_async_id_symbol,
-} from "./internal/async_hooks.ts";
+// This implementation is inspired by "workerd" AsyncLocalStorage implementation:
+// https://github.com/cloudflare/workerd/blob/77fd0ed6ddba184414f0216508fc62b06e716cab/src/workerd/api/node/async-hooks.c++#L9
 
-const destroyedSymbol = Symbol("destroyed");
+import { validateFunction } from "./internal/validators.mjs";
+import { core } from "./_core.ts";
 
-type AsyncResourceOptions = number | {
-  triggerAsyncId?: number;
-  requireManualDestroy?: boolean;
-};
+function assert(cond: boolean) {
+  if (!cond) throw new Error("Assertion failed");
+}
+const asyncContextStack: AsyncContextFrame[] = [];
+
+function pushAsyncFrame(frame: AsyncContextFrame) {
+  asyncContextStack.push(frame);
+}
+
+function popAsyncFrame() {
+  assert(asyncContextStack.length > 0);
+  asyncContextStack.pop();
+}
+
+let rootAsyncFrame: AsyncContextFrame | undefined = undefined;
+let promiseHooksSet = false;
+
+const asyncContext = Symbol("asyncContext");
+function isRejected(promise: Promise<unknown>) {
+  const [state] = core.getPromiseDetails(promise);
+  return state == 2;
+}
+
+function setPromiseHooks() {
+  if (promiseHooksSet) {
+    return;
+  }
+  promiseHooksSet = true;
+
+  const init = (promise: Promise<unknown>) => {
+    const currentFrame = AsyncContextFrame.current();
+    if (!currentFrame.isRoot()) {
+      assert(AsyncContextFrame.tryGetContext(promise) == null);
+      AsyncContextFrame.attachContext(promise);
+    }
+  };
+  const before = (promise: Promise<unknown>) => {
+    const maybeFrame = AsyncContextFrame.tryGetContext(promise);
+    if (maybeFrame) {
+      pushAsyncFrame(maybeFrame);
+    } else {
+      pushAsyncFrame(AsyncContextFrame.getRootAsyncContext());
+    }
+  };
+  const after = (promise: Promise<unknown>) => {
+    popAsyncFrame();
+    if (!isRejected(promise)) {
+      // @ts-ignore promise async context
+      delete promise[asyncContext];
+    }
+  };
+  const resolve = (promise: Promise<unknown>) => {
+    const currentFrame = AsyncContextFrame.current();
+    if (
+      !currentFrame.isRoot() && isRejected(promise) &&
+      AsyncContextFrame.tryGetContext(promise) == null
+    ) {
+      AsyncContextFrame.attachContext(promise);
+    }
+  };
+
+  core.setPromiseHooks(init, before, after, resolve);
+}
+
+class AsyncContextFrame {
+  storage: StorageEntry[];
+  constructor(
+    maybeParent?: AsyncContextFrame | null,
+    maybeStorageEntry?: StorageEntry | null,
+    isRoot = false,
+  ) {
+    this.storage = [];
+
+    setPromiseHooks();
+
+    const propagate = (parent: AsyncContextFrame) => {
+      parent.storage = parent.storage.filter((entry) => !entry.key.isDead());
+      parent.storage.forEach((entry) => this.storage.push(entry));
+
+      if (maybeStorageEntry) {
+        const existingEntry = this.storage.find((entry) =>
+          entry.key === maybeStorageEntry.key
+        );
+        if (existingEntry) {
+          existingEntry.value = maybeStorageEntry.value;
+        } else {
+          this.storage.push(maybeStorageEntry);
+        }
+      }
+    };
+
+    if (!isRoot) {
+      if (maybeParent) {
+        propagate(maybeParent);
+      } else {
+        propagate(AsyncContextFrame.current());
+      }
+    }
+  }
+
+  static tryGetContext(promise: Promise<unknown>) {
+    // @ts-ignore promise async context
+    return promise[asyncContext];
+  }
+
+  static attachContext(promise: Promise<unknown>) {
+    assert(!(asyncContext in promise));
+    // @ts-ignore promise async context
+    promise[asyncContext] = AsyncContextFrame.current();
+  }
+
+  static getRootAsyncContext() {
+    if (typeof rootAsyncFrame !== "undefined") {
+      return rootAsyncFrame;
+    }
+
+    rootAsyncFrame = new AsyncContextFrame(null, null, true);
+    return rootAsyncFrame;
+  }
+
+  static current() {
+    if (asyncContextStack.length === 0) {
+      return AsyncContextFrame.getRootAsyncContext();
+    }
+
+    return asyncContextStack[asyncContextStack.length - 1];
+  }
+
+  static create(
+    maybeParent?: AsyncContextFrame | null,
+    maybeStorageEntry?: StorageEntry | null,
+  ) {
+    return new AsyncContextFrame(maybeParent, maybeStorageEntry);
+  }
+
+  static wrap(
+    fn: () => unknown,
+    maybeFrame: AsyncContextFrame | undefined,
+    // deno-lint-ignore no-explicit-any
+    thisArg: any,
+  ) {
+    // deno-lint-ignore no-explicit-any
+    return (...args: any) => {
+      const frame = maybeFrame || AsyncContextFrame.current();
+      Scope.enter(frame);
+      try {
+        return fn.apply(thisArg, args);
+      } finally {
+        Scope.exit();
+      }
+    };
+  }
+
+  get(key: StorageKey) {
+    assert(!key.isDead());
+    this.storage = this.storage.filter((entry) => !entry.key.isDead());
+    const entry = this.storage.find((entry) => entry.key === key);
+    if (entry) {
+      return entry.value;
+    }
+    return undefined;
+  }
+
+  isRoot() {
+    return AsyncContextFrame.getRootAsyncContext() == this;
+  }
+}
 
 export class AsyncResource {
-  [async_id_symbol]: number;
-  [trigger_async_id_symbol]: number;
-  [destroyedSymbol]!: { destroyed: boolean };
-
-  constructor(type: string, opts: AsyncResourceOptions = {}) {
-    validateString(type, "type");
-
-    let triggerAsyncId: number;
-    let requireManualDestroy = false;
-    if (typeof opts !== "number") {
-      triggerAsyncId = opts.triggerAsyncId === undefined
-        ? getDefaultTriggerAsyncId()
-        : opts.triggerAsyncId;
-      requireManualDestroy = !!opts.requireManualDestroy;
-    } else {
-      triggerAsyncId = opts;
-    }
-
-    // Unlike emitInitScript, AsyncResource doesn't supports null as the
-    // triggerAsyncId.
-    if (!Number.isSafeInteger(triggerAsyncId) || triggerAsyncId < -1) {
-      throw new ERR_INVALID_ASYNC_ID("triggerAsyncId", triggerAsyncId);
-    }
-
-    const asyncId = newAsyncId();
-    this[async_id_symbol] = asyncId;
-    this[trigger_async_id_symbol] = triggerAsyncId;
-
-    if (initHooksExist()) {
-      if (enabledHooksExist() && type.length === 0) {
-        throw new ERR_ASYNC_TYPE(type);
-      }
-
-      emitInit(asyncId, type, triggerAsyncId, this);
-    }
-
-    if (!requireManualDestroy && destroyHooksExist()) {
-      // This prop name (destroyed) has to be synchronized with C++
-      const destroyed = { destroyed: false };
-      this[destroyedSymbol] = destroyed;
-      registerDestroyHook(this, asyncId, destroyed);
-    }
+  frame: AsyncContextFrame;
+  type: string;
+  constructor(type: string) {
+    this.type = type;
+    this.frame = AsyncContextFrame.current();
   }
 
   runInAsyncScope(
@@ -75,48 +188,21 @@ export class AsyncResource {
     thisArg: unknown,
     ...args: unknown[]
   ) {
-    // deno-lint-ignore no-unused-vars
-    const asyncId = this[async_id_symbol];
-    // TODO(kt3k): Uncomment the below
-    // emitBefore(asyncId, this[trigger_async_id_symbol], this);
+    Scope.enter(this.frame);
 
     try {
-      const ret = Reflect.apply(fn, thisArg, args);
-
-      return ret;
+      return fn.apply(thisArg, args);
     } finally {
-      if (hasAsyncIdStack()) {
-        // TODO(kt3k): Uncomment the below
-        // emitAfter(asyncId);
-      }
+      Scope.exit();
     }
-  }
-
-  emitDestroy() {
-    if (this[destroyedSymbol] !== undefined) {
-      this[destroyedSymbol].destroyed = true;
-    }
-    // TODO(kt3k): Uncomment the below
-    // emitDestroy(this[async_id_symbol]);
-    return this;
-  }
-
-  asyncId() {
-    return this[async_id_symbol];
-  }
-
-  triggerAsyncId() {
-    return this[trigger_async_id_symbol];
   }
 
   bind(fn: (...args: unknown[]) => unknown, thisArg = this) {
     validateFunction(fn, "fn");
-    const ret = this.runInAsyncScope.bind(
-      this,
-      fn,
-      thisArg,
-    );
-    Object.defineProperties(ret, {
+    const frame = AsyncContextFrame.current();
+    const bound = AsyncContextFrame.wrap(fn, frame, thisArg);
+
+    Object.defineProperties(bound, {
       "length": {
         configurable: true,
         enumerable: false,
@@ -130,16 +216,91 @@ export class AsyncResource {
         writable: true,
       },
     });
-    return ret;
+    return bound;
   }
 
   static bind(
     fn: (...args: unknown[]) => unknown,
-    type: string | undefined,
-    thisArg: AsyncResource | undefined,
+    type?: string,
+    thisArg?: AsyncResource,
   ) {
     type = type || fn.name;
-    return (new AsyncResource(type || "bound-anonymous-fn")).bind(fn, thisArg);
+    return (new AsyncResource(type || "AsyncResource")).bind(fn, thisArg);
+  }
+}
+
+class Scope {
+  static enter(maybeFrame?: AsyncContextFrame) {
+    if (maybeFrame) {
+      pushAsyncFrame(maybeFrame);
+    } else {
+      pushAsyncFrame(AsyncContextFrame.getRootAsyncContext());
+    }
+  }
+
+  static exit() {
+    popAsyncFrame();
+  }
+}
+
+class StorageEntry {
+  key: StorageKey;
+  value: unknown;
+  constructor(key: StorageKey, value: unknown) {
+    this.key = key;
+    this.value = value;
+  }
+}
+
+class StorageKey {
+  #dead = false;
+
+  reset() {
+    this.#dead = true;
+  }
+
+  isDead() {
+    return this.#dead;
+  }
+}
+
+const fnReg = new FinalizationRegistry((key: StorageKey) => {
+  key.reset();
+});
+
+export class AsyncLocalStorage {
+  #key;
+
+  constructor() {
+    this.#key = new StorageKey();
+    fnReg.register(this, this.#key);
+  }
+
+  // deno-lint-ignore no-explicit-any
+  run(store: any, callback: any, ...args: any[]): any {
+    const frame = AsyncContextFrame.create(
+      null,
+      new StorageEntry(this.#key, store),
+    );
+    Scope.enter(frame);
+    let res;
+    try {
+      res = callback(...args);
+    } finally {
+      Scope.exit();
+    }
+    return res;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  exit(callback: (...args: unknown[]) => any, ...args: any[]): any {
+    return this.run(undefined, callback, args);
+  }
+
+  // deno-lint-ignore no-explicit-any
+  getStore(): any {
+    const currentFrame = AsyncContextFrame.current();
+    return currentFrame.get(this.#key);
   }
 }
 
@@ -166,4 +327,5 @@ export default {
   AsyncResource,
   executionAsyncId,
   createHook,
+  AsyncLocalStorage,
 };

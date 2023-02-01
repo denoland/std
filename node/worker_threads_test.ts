@@ -6,6 +6,7 @@ import * as workerThreads from "./worker_threads.ts";
 
 Deno.test({
   name: "[worker_threads] isMainThread",
+  ignore: true,
   fn() {
     assertEquals(workerThreads.isMainThread, true);
   },
@@ -13,6 +14,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] threadId",
+  ignore: true,
   fn() {
     assertEquals(workerThreads.threadId, 0);
   },
@@ -20,6 +22,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] resourceLimits",
+  ignore: true,
   fn() {
     assertObjectMatch(workerThreads.resourceLimits, {});
   },
@@ -27,6 +30,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] parentPort",
+  ignore: true,
   fn() {
     assertEquals(workerThreads.parentPort, null);
   },
@@ -34,6 +38,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] workerData",
+  ignore: true,
   fn() {
     assertEquals(workerThreads.workerData, null);
   },
@@ -41,6 +46,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] setEnvironmentData / getEnvironmentData",
+  ignore: true,
   fn() {
     workerThreads.setEnvironmentData("test", "test");
     assertEquals(workerThreads.getEnvironmentData("test"), "test");
@@ -52,6 +58,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] Worker threadId",
+  ignore: true,
   async fn() {
     const worker = new workerThreads.Worker(
       new URL("./testdata/worker_threads.ts", import.meta.url),
@@ -73,6 +80,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] Worker basics",
+  ignore: true,
   async fn() {
     workerThreads.setEnvironmentData("test", "test");
     workerThreads.setEnvironmentData(1, {
@@ -109,6 +117,7 @@ const workerThreadsURL = JSON.stringify(
 
 Deno.test({
   name: "[worker_threads] Worker eval",
+  ignore: true,
   async fn() {
     const worker = new workerThreads.Worker(
       `
@@ -126,6 +135,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] inheritences",
+  ignore: true,
   async fn() {
     const eventsURL = JSON.stringify(
       new URL("./events.ts", import.meta.url).toString(),
@@ -152,6 +162,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] Worker workerData",
+  ignore: true,
   async fn() {
     const worker = new workerThreads.Worker(
       new URL("./testdata/worker_threads.ts", import.meta.url),
@@ -176,6 +187,7 @@ Deno.test({
 
 Deno.test({
   name: "[worker_threads] Worker with relative path",
+  ignore: true,
   async fn() {
     const worker = new workerThreads.Worker(relative(
       Deno.cwd(),

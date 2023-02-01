@@ -246,6 +246,20 @@ Deno.test("modules", () => {
   assertEquals(keys(moduleAll.zlib), keys(zlib));
 });
 
+Deno.test("modules can be imported without any permission", async () => {
+  const { code, stderr } = await new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "module_all.ts",
+    ],
+    cwd: path.dirname(path.fromFileUrl(import.meta.url)),
+  }).output();
+  if (stderr.length > 0) {
+    console.log(new TextDecoder().decode(stderr));
+  }
+  assertEquals(code, 0);
+});
+
 // deno-lint-ignore no-explicit-any
 function keys(obj: any): Set<string> {
   const keys = new Set(Object.keys(obj));

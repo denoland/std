@@ -30,39 +30,64 @@ const _getTypedArrayToStringTag = Object.getOwnPropertyDescriptor(
   Symbol.toStringTag,
 )!.get!;
 
-export function isArrayBufferView(value: unknown): boolean {
+export function isArrayBufferView(
+  value: unknown,
+): value is
+  | DataView
+  | BigInt64Array
+  | BigUint64Array
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Uint16Array
+  | Uint32Array {
   return ArrayBuffer.isView(value);
 }
 
-export function isBigInt64Array(value: unknown): boolean {
+export function isBigInt64Array(value: unknown): value is BigInt64Array {
   return _getTypedArrayToStringTag.call(value) === "BigInt64Array";
 }
 
-export function isBigUint64Array(value: unknown): boolean {
+export function isBigUint64Array(value: unknown): value is BigUint64Array {
   return _getTypedArrayToStringTag.call(value) === "BigUint64Array";
 }
 
-export function isFloat32Array(value: unknown): boolean {
+export function isFloat32Array(value: unknown): value is Float32Array {
   return _getTypedArrayToStringTag.call(value) === "Float32Array";
 }
 
-export function isFloat64Array(value: unknown): boolean {
+export function isFloat64Array(value: unknown): value is Float64Array {
   return _getTypedArrayToStringTag.call(value) === "Float64Array";
 }
 
-export function isInt8Array(value: unknown): boolean {
+export function isInt8Array(value: unknown): value is Int8Array {
   return _getTypedArrayToStringTag.call(value) === "Int8Array";
 }
 
-export function isInt16Array(value: unknown): boolean {
+export function isInt16Array(value: unknown): value is Int16Array {
   return _getTypedArrayToStringTag.call(value) === "Int16Array";
 }
 
-export function isInt32Array(value: unknown): boolean {
+export function isInt32Array(value: unknown): value is Int32Array {
   return _getTypedArrayToStringTag.call(value) === "Int32Array";
 }
 
-export function isTypedArray(value: unknown): boolean {
+export function isTypedArray(value: unknown): value is
+  | BigInt64Array
+  | BigUint64Array
+  | Float32Array
+  | Float64Array
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Uint16Array
+  | Uint32Array {
   return _getTypedArrayToStringTag.call(value) !== undefined;
 }
 
@@ -70,15 +95,17 @@ export function isUint8Array(value: unknown): value is Uint8Array {
   return _getTypedArrayToStringTag.call(value) === "Uint8Array";
 }
 
-export function isUint8ClampedArray(value: unknown): boolean {
+export function isUint8ClampedArray(
+  value: unknown,
+): value is Uint8ClampedArray {
   return _getTypedArrayToStringTag.call(value) === "Uint8ClampedArray";
 }
 
-export function isUint16Array(value: unknown): boolean {
+export function isUint16Array(value: unknown): value is Uint16Array {
   return _getTypedArrayToStringTag.call(value) === "Uint16Array";
 }
 
-export function isUint32Array(value: unknown): boolean {
+export function isUint32Array(value: unknown): value is Uint32Array {
   return _getTypedArrayToStringTag.call(value) === "Uint32Array";
 }
 

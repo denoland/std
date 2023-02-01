@@ -8,7 +8,7 @@ Deno.test(
   async () => {
     const file = await Deno.makeTempFile();
     try {
-      await Deno.chmod(file, 0o600);
+      Deno.chmod(file, 0o600);
       await fs.promises.access(file, fs.constants.R_OK);
       await fs.promises.access(file, fs.constants.W_OK);
       await assertRejects(async () => {
@@ -40,7 +40,7 @@ Deno.test(
   () => {
     const file = Deno.makeTempFileSync();
     try {
-      Deno.chmodSync(file, 0o600);
+      Deno.chmod(file, 0o600);
       fs.accessSync(file, fs.constants.R_OK);
       fs.accessSync(file, fs.constants.W_OK);
       assertThrows(() => {
