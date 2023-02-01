@@ -83,6 +83,18 @@
  * // "1.2.4-beta.0"
  * ```
  *
+ * ### Build Metadata
+ *
+ * Build metadata has no affect on comparisons and must be a `.` delimited 
+ * alpha-numeric string. When parsing a version it is retained on the `build: string[]` field
+ * of the semver instance. When incrementing there is an additional parameter that
+ * can set the build metadata on the semver instance.
+ * 
+ * To print the full version including build metadata you must call `semver.format({ style: "full" })`.
+ * 
+ * For compatibility reasons the `.version` field will not contain the build metadata, you can only
+ * get a full version string by calling the format function.
+ *
  * ### Advanced Range Syntax
  *
  * Advanced range syntax desugars to primitive comparators in deterministic ways.
@@ -504,8 +516,6 @@ export class SemVer {
       throw new TypeError("Invalid Version: " + version);
     }
 
-    this.raw = version;
-
     // these are actually numbers
     this.major = +m[1];
     this.minor = +m[2];
@@ -540,6 +550,7 @@ export class SemVer {
 
     this.build = m[5] ? m[5].split(".") : [];
     this.format();
+    this.raw = this.version;
   }
 
   format(
@@ -757,7 +768,7 @@ export class SemVer {
       default:
         throw new Error("invalid increment argument: " + release);
     }
-    this.build = metadata ? metadata.split(".") : this.build;
+    this.build = metadata === undefined ? this.build : metadata.split(".");
     this.format();
     this.raw = this.version;
     return this;
@@ -779,19 +790,24 @@ export class SemVer {
  * If called from a non-prerelease version, the `prerelease` will work the same
  * as `prepatch`. It increments the patch version, then makes a prerelease. If
  * the input version is already a prerelease it simply increments it.
+ *
+ * If the original version has build metadata and the `metadata` parameter is 
+ * `undefined`, then it will be unchanged.
  */
 export function increment(
   version: string | SemVer,
   release: ReleaseType,
   options?: Options,
   identifier?: string,
+  metadata?: string,
 ): string | null {
   if (typeof options === "string") {
+    metadata = identifier;
     identifier = options;
     options = undefined;
   }
   try {
-    return new SemVer(version, options).increment(release, identifier).version;
+    return new SemVer(version, options).increment(release, identifier, metadata).format({ style: "full" });
   } catch {
     return null;
   }
