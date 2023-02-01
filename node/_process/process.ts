@@ -10,12 +10,13 @@ import { _exiting } from "./exiting.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {
-  if (Deno.build.arch == "x86_64") {
+  if (globalThis?.Deno?.build?.arch == "x86_64") {
     return "x64";
-  } else if (Deno.build.arch == "aarch64") {
+  } else if (globalThis?.Deno?.build?.arch == "aarch64") {
     return "arm64";
   } else {
-    throw Error("unreachable");
+    console.error("unrecognized architecture");
+    return "unknown";
   }
 }
 
