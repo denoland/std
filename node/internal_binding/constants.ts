@@ -195,7 +195,7 @@ let os: {
   UV_UDP_IPV6ONLY?: number;
   UV_UDP_REUSEADDR: number;
 };
-if (Deno.build.os === "darwin") {
+if (globalThis?.Deno?.build?.os === "darwin") {
   os = {
     UV_UDP_REUSEADDR: 4,
     dlopen: {
@@ -327,7 +327,7 @@ if (Deno.build.os === "darwin") {
       PRIORITY_HIGHEST: -20,
     },
   };
-} else if (Deno.build.os === "linux") {
+} else if (globalThis?.Deno?.build?.os === "linux") {
   os = {
     UV_UDP_REUSEADDR: 4,
     dlopen: {
