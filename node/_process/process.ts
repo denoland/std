@@ -91,14 +91,14 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
 export const pid = globalThis?.Deno?.pid;
 
 /** https://nodejs.org/api/process.html#process_process_platform */
-export const platform = isWindows ? "win32" : Deno.build.os;
+export const platform = isWindows ? "win32" : globalThis?.Deno?.build?.os;
 
 /**
  * https://nodejs.org/api/process.html#process_process_version
  *
  * This value is hard coded to latest stable release of Node, as
  * some packages are checking it for compatibility. Previously
- * it pointed to Deno version, but that led to incompability
+ * it pointed to Deno version, but that led to incompatibility
  * with some packages.
  */
 export const version = "v18.12.1";
@@ -108,7 +108,7 @@ export const version = "v18.12.1";
  *
  * This value is hard coded to latest stable release of Node, as
  * some packages are checking it for compatibility. Previously
- * it contained only output of `Deno.version`, but that led to incompability
+ * it contained only output of `Deno.version`, but that led to incompatibility
  * with some packages. Value of `v8` field is still taken from `Deno.version`.
  */
 export const versions = {
