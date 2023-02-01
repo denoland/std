@@ -88,7 +88,7 @@ export const env: InstanceType<ObjectConstructor> & Record<string, string> =
   });
 
 /** https://nodejs.org/api/process.html#process_process_pid */
-export const pid = Deno.pid;
+export const pid = globalThis?.Deno?.pid;
 
 /** https://nodejs.org/api/process.html#process_process_platform */
 export const platform = isWindows ? "win32" : Deno.build.os;
@@ -128,5 +128,5 @@ export const versions = {
   unicode: "14.0",
   ngtcp2: "0.8.1",
   nghttp3: "0.7.0",
-  ...Deno.version,
+  ...globalThis?.Deno?.version,
 };
