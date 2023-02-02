@@ -85,13 +85,13 @@
  *
  * ### Build Metadata
  *
- * Build metadata has no affect on comparisons and must be a `.` delimited 
+ * Build metadata has no affect on comparisons and must be a `.` delimited
  * alpha-numeric string. When parsing a version it is retained on the `build: string[]` field
  * of the semver instance. When incrementing there is an additional parameter that
  * can set the build metadata on the semver instance.
- * 
+ *
  * To print the full version including build metadata you must call `semver.format({ style: "full" })`.
- * 
+ *
  * For compatibility reasons the `.version` field will not contain the build metadata, you can only
  * get a full version string by calling the format function.
  *
@@ -791,7 +791,7 @@ export class SemVer {
  * as `prepatch`. It increments the patch version, then makes a prerelease. If
  * the input version is already a prerelease it simply increments it.
  *
- * If the original version has build metadata and the `metadata` parameter is 
+ * If the original version has build metadata and the `metadata` parameter is
  * `undefined`, then it will be unchanged.
  */
 export function increment(
@@ -807,7 +807,8 @@ export function increment(
     options = undefined;
   }
   try {
-    return new SemVer(version, options).increment(release, identifier, metadata).format({ style: "full" });
+    return new SemVer(version, options).increment(release, identifier, metadata)
+      .format({ style: "full" });
   } catch {
     return null;
   }
