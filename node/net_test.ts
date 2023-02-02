@@ -5,6 +5,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
 import * as path from "./path.ts";
 import * as http from "./http.ts";
+import { assert } from "../_util/asserts.ts";
 
 Deno.test("[node/net] close event emits after error event", async () => {
   const socket = net.createConnection(27009, "doesnotexist");
@@ -81,4 +82,17 @@ Deno.test("[node/net] net.connect().unref() works", async () => {
       ctl.abort();
     },
   });
+});
+
+Deno.test({
+  name: "[node/net] throws permission error instead of unknown error",
+  permissions: "none",
+  fn: () => {
+    try {
+      const s = new net.Server();
+      s.listen(3000);
+    } catch (e) {
+      assert(e instanceof Deno.errors.PermissionDenied);
+    }
+  },
 });

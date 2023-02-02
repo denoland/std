@@ -308,16 +308,18 @@ export const MyTextDecoderStream = () => {
   });
 };
 
-Deno.test({
-  name:
-    "[encoding/csv/stream] cancel CsvStream during iteration does not leak file",
-  permissions: { read: [testdataDir] },
-  fn: async () => {
-    const file = await Deno.open(join(testdataDir, "large.csv"));
-    const readable = file.readable.pipeThrough(MyTextDecoderStream())
-      .pipeThrough(new CsvStream());
-    for await (const _record of readable) {
-      break;
-    }
-  },
-});
+// This test is flaky. See https://github.com/denoland/deno_std/issues/3160
+//
+// Deno.test({
+//   name:
+//     "[encoding/csv/stream] cancel CsvStream during iteration does not leak file",
+//   permissions: { read: [testdataDir] },
+//   fn: async () => {
+//     const file = await Deno.open(join(testdataDir, "large.csv"));
+//     const readable = file.readable.pipeThrough(MyTextDecoderStream())
+//       .pipeThrough(new CsvStream());
+//     for await (const _record of readable) {
+//       break;
+//     }
+//   },
+// });

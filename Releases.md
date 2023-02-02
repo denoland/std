@@ -1,3 +1,17 @@
+### 0.176.0 / 2023.02.02
+
+- fix(node): disable worker_threads (#3151)
+- fix(node): throw permisison error instead of unknown error (#3133)
+- fix(node/util): stricter runtime type checking (#3122)
+- fix: make encoding/front_matter work in a browser (#3154)
+
+### 0.175.0 / 2023.01.28
+
+- BREAKING(dotenv,fmt,io): remove deprecated APIs (#3134)
+- BREAKING(path): rework basename and dirname to be coreutils compatible (#3089)
+- feat(node): AsyncLocalStorage (#3137)
+- feat(semver): add support for build metadata (#3126)
+
 ### 0.174.0 / 2023.01.25
 
 - feat(fmt/printf): add formatter i/I (Deno.inspect) (#3100)

@@ -326,6 +326,8 @@ export class UDP extends HandleWrap {
         return codeMap.get("EADDRINUSE")!;
       } else if (e instanceof Deno.errors.AddrNotAvailable) {
         return codeMap.get("EADDRNOTAVAIL")!;
+      } else if (e instanceof Deno.errors.PermissionDenied) {
+        throw e;
       }
 
       // TODO(cmorten): map errors to appropriate error codes.
