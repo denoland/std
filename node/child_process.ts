@@ -642,6 +642,11 @@ export function execFile(
   return child;
 }
 
+Object.defineProperty(execFile, promisify.custom, {
+  enumerable: false,
+  value: customPromiseExecFunction(execFile),
+});
+
 function checkExecSyncError(
   ret: SpawnSyncResult,
   args: string[],
