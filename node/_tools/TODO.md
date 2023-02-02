@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2811
+Total: 2810
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -278,7 +278,6 @@ Total: 2811
 - [parallel/test-child-process-exec-timeout-expire.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-expire.js)
 - [parallel/test-child-process-exec-timeout-kill.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-kill.js)
 - [parallel/test-child-process-exec-timeout-not-expired.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-not-expired.js)
-- [parallel/test-child-process-execFile-promisified-abortController.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-execFile-promisified-abortController.js)
 - [parallel/test-child-process-execfile-maxbuf.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-execfile-maxbuf.js)
 - [parallel/test-child-process-exit-code.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exit-code.js)
 - [parallel/test-child-process-flush-stdio.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-flush-stdio.js)
