@@ -1,3 +1,10 @@
+### 0.176.0 / 2023.02.02
+
+- fix(node): disable worker_threads (#3151)
+- fix(node): throw permisison error instead of unknown error (#3133)
+- fix(node/util): stricter runtime type checking (#3122)
+- fix: make encoding/front_matter work in a browser (#3154)
+
 ### 0.175.0 / 2023.01.28
 
 - BREAKING(dotenv,fmt,io): remove deprecated APIs (#3134)

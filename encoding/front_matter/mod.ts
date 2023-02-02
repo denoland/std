@@ -212,7 +212,7 @@ function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
     "$([\\s\\S]+?)" +
     "^(?:" + dv.map(getEndToken).join("|") + ")\\s*" +
     "$" +
-    (Deno.build.os === "windows" ? "\\r?" : "") +
+    (globalThis?.Deno?.build?.os === "windows" ? "\\r?" : "") +
     "(?:\\n)?)";
 
   return [
