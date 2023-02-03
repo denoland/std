@@ -155,43 +155,68 @@ Deno.test("increment", async (t) => {
     ["1.0.0-1", "major", "1.0.0", "dev" as Options],
     ["1.2.3-dev.bar", "prerelease", "1.2.3-dev.0", undefined, "dev"],
 
-    ["1.2.3+1", "major", "2.0.0", undefined, undefined, "2"],
-    ["1.2.3+1", "minor", "1.3.0", undefined, undefined, "2"],
-    ["1.2.3+1", "patch", "1.2.4", undefined, undefined, "2"],
-    ["1.2.3+1", "premajor", "2.0.0-0", undefined, undefined, "2"],
-    ["1.2.3+1", "preminor", "1.3.0-0", undefined, undefined, "2"],
-    ["1.2.3+1", "prepatch", "1.2.4-0", undefined, undefined, "2"],
-    ["1.2.3+1", "premajor", "2.0.0-dev.0", undefined, "dev", "2"],
-    ["1.2.3+1", "preminor", "1.3.0-dev.0", undefined, "dev", "2"],
-    ["1.2.3+1", "prepatch", "1.2.4-dev.0", undefined, "dev", "2"],
-    ["1.2.3", "pre", "1.2.3-pr123.0", undefined, "pr123", "1"],
-    ["1.2.3-pr123.0+1", "pre", "1.2.3-pr123.1", undefined, "pr123", "2"],
-    ["1.2.3-pr123.0+1", "pre", "1.2.3-pr123.1", undefined, "pr123", "a.b.c"],
+    // Add build metadata
+    ["1.2.3", "major", "2.0.0+1", undefined, undefined, "1"],
+    ["1.2.3", "minor", "1.3.0+1", undefined, undefined, "1"],
+    ["1.2.3", "patch", "1.2.4+1", undefined, undefined, "1"],
+    ["1.2.3", "premajor", "2.0.0-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "preminor", "1.3.0-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "prepatch", "1.2.4-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "pre", "1.2.3-dev.0+1", undefined, "dev", "1"],
+
+    // Update build metadata
+    ["1.2.3+1", "major", "2.0.0+2", undefined, undefined, "2"],
+    ["1.2.3+1", "minor", "1.3.0+2", undefined, undefined, "2"],
+    ["1.2.3+1", "patch", "1.2.4+2", undefined, undefined, "2"],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0+2", undefined, "dev", "2"],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0+2", undefined, "dev", "2"],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0+2", undefined, "dev", "2"],
+
+    // Retain build metadata
+    ["1.2.3+1", "major", "2.0.0+1", undefined, undefined, undefined],
+    ["1.2.3+1", "minor", "1.3.0+1", undefined, undefined, undefined],
+    ["1.2.3+1", "patch", "1.2.4+1", undefined, undefined, undefined],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "pre", "1.2.3-dev.0+1", undefined, "dev", undefined],
+
+    // Remove build metadata
+    ["1.2.3+1", "major", "2.0.0", undefined, undefined, ""],
+    ["1.2.3+1", "minor", "1.3.0", undefined, undefined, ""],
+    ["1.2.3+1", "patch", "1.2.4", undefined, undefined, ""],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "pre", "1.2.3-dev.0", undefined, "dev", ""],
   ];
 
   for (const [pre, what, wanted, options, id, metadata] of versions) {
     await t.step({
       name: `${pre}, ${what}, ${id}, ${metadata}`,
       fn: () => {
-        const found = semver.increment(pre, what, options, id);
-        const cmd = "increment(" + pre + ", " + what + ", " + id + ")";
-        assertEquals(found, wanted, cmd + " === " + wanted);
+        const found = semver.increment(pre, what, options, id, metadata);
+        const cmd = `increment(${pre}, ${what}, ${id}, ${metadata})`;
+        assertEquals(found, wanted);
 
         const parsed = semver.parse(pre, options);
         if (wanted && parsed) {
           parsed.increment(what, id, metadata);
-          assertEquals(parsed.version, wanted, cmd + " object version updated");
-          assertEquals(parsed.raw, wanted, cmd + " object raw field updated");
-          assertEquals(
-            parsed.build,
-            metadata?.split(".") ?? [],
-            cmd + " build updated",
-          );
-          assertEquals(
-            parsed.format({ style: "full" }),
-            [parsed.version, metadata].filter((v) => v).join("+"),
-            cmd + " full version updated",
-          );
+          const w = semver.parse(wanted)!;
+          assertEquals(parsed.version, w.version);
+          assertEquals(parsed.raw, w.raw);
+          if (metadata !== undefined) {
+            assertEquals(
+              parsed.build,
+              metadata.split(".") ?? [],
+              cmd + " build updated",
+            );
+            assertEquals(
+              parsed.format({ style: "full" }),
+              [parsed.version, metadata].filter((v) => v).join("+"),
+              cmd + " full version updated",
+            );
+          }
         } else if (parsed) {
           assertThrows(function () {
             parsed.increment(what, id, metadata);
