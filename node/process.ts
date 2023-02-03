@@ -43,6 +43,7 @@ import {
 } from "./_process/streams.mjs";
 import { core } from "./_core.ts";
 import { processTicksAndRejections } from "./_next_tick.ts";
+import { processHolder } from "./_process_holder.ts";
 
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
@@ -703,3 +704,5 @@ export default process;
 //Remove on 1.0
 //Kept for backwards compatibility with std
 export { process };
+
+processHolder.process = process;

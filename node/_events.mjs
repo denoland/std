@@ -32,6 +32,8 @@ import {
   ERR_OUT_OF_RANGE,
   ERR_UNHANDLED_ERROR,
 } from "./internal/errors.ts";
+import { nextTick } from "./_next_tick.ts";
+import { processHolder } from "./_process_holder.ts";
 
 import {
   validateAbortSignal,
@@ -203,7 +205,7 @@ function addCatch(that, promise, type, args) {
       then.call(promise, undefined, function (err) {
         // The callback is called with nextTick to avoid a follow-up
         // rejection from this promise.
-        process.nextTick(emitUnhandledRejectionOrErr, that, err, type, args);
+        nextTick(emitUnhandledRejectionOrErr, that, err, type, args);
       });
     }
   } catch (err) {
@@ -461,7 +463,7 @@ function _addListener(target, type, listener, prepend) {
       w.emitter = target;
       w.type = type;
       w.count = existing.length;
-      process.emitWarning(w);
+      processHolder.process?.emitWarning(w);
     }
   }
 
