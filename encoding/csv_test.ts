@@ -1318,11 +1318,11 @@ Deno.test({
     });
     await t.step(
       {
-        name: "byte-order mark with bom=true",
+        name: "byte-order mark with byteOrderMark=true",
         fn() {
           const data = [["abc"]];
           const output = `${BYTE_ORDER_MARK}abc${CRLF}`;
-          const options = { headers: false, bom: true };
+          const options = { headers: false, byteOrderMark: true };
           assertStringIncludes(stringify(data, options), BYTE_ORDER_MARK);
           assertEquals(stringify(data, options), output);
         },
@@ -1342,11 +1342,11 @@ Deno.test({
     );
     await t.step(
       {
-        name: "no byte-order mark with bom=false",
+        name: "no byte-order mark with byteOrderMark=false",
         fn() {
           const data = [["abc"]];
           const output = `abc${CRLF}`;
-          const options = { headers: false, bom: false };
+          const options = { headers: false, byteOrderMark: false };
           assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
           assertEquals(stringify(data, options), output);
         },
