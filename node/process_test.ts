@@ -327,6 +327,167 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.stdin readable with a TTY",
+  // TODO(PolarETech): Run this test even in non tty environment
+  ignore: !Deno.isatty(Deno.stdin.rid),
+  async fn() {
+    const promise = deferred();
+    const expected = ["foo", "bar", null, "end"];
+    const data: (string | null)[] = [];
+
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("readable", () => {
+      data.push(process.stdin.read());
+    });
+    process.stdin.on("end", () => {
+      data.push("end");
+    });
+
+    process.stdin.push("foo");
+    process.nextTick(() => {
+      process.stdin.push("bar");
+      process.nextTick(() => {
+        process.stdin.push(null);
+        promise.resolve();
+      });
+    });
+
+    await promise;
+    assertEquals(process.stdin.readableHighWaterMark, 0);
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with piping a file",
+  async fn() {
+    const expected = ["65536", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+    const filePath = "./node/testdata/process_stdin_dummy.txt";
+
+    const shell = Deno.build.os === "windows" ? "cmd.exe" : "/bin/sh";
+    const cmd = `"${Deno.execPath()}" run ${scriptPath} < ${filePath}`;
+    const args = Deno.build.os === "windows" ? ["/d", "/c", cmd] : ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+      windowsRawArguments: true,
+    });
+
+    const { stdout } = await p.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with piping a stream",
+  async fn() {
+    const expected = ["16384", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["run", scriptPath],
+      stdin: "piped",
+      stdout: "piped",
+      stderr: "null",
+    });
+    const child = command.spawn();
+
+    const writer = await child.stdin.getWriter();
+    writer.ready
+      .then(() => writer.write(new TextEncoder().encode("foo\nbar")))
+      .then(() => writer.releaseLock())
+      .then(() => child.stdin.close());
+
+    const { stdout } = await child.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with piping a socket",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const expected = ["16384", "foo", "bar", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+
+    const listener = Deno.listen({ hostname: "127.0.0.1", port: 9000 });
+    listener.accept().then(async (conn) => {
+      await conn.write(new TextEncoder().encode("foo\nbar"));
+      conn.close();
+      listener.close();
+    });
+
+    const shell = "/bin/bash";
+    const cmd =
+      `"${Deno.execPath()}" run ${scriptPath} < /dev/tcp/127.0.0.1/9000`;
+    const args = ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+
+    const { stdout } = await p.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with null",
+  async fn() {
+    const expected = ["65536", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["run", scriptPath],
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+
+    const { stdout } = await command.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
+  name: "process.stdin readable with unsuitable stdin",
+  // TODO(PolarETech): Prepare a similar test that can be run on Windows
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const expected = ["16384", "null", "end"];
+    const scriptPath = "./node/testdata/process_stdin.ts";
+    const directoryPath = "./node/testdata/";
+
+    const shell = "/bin/bash";
+    const cmd = `"${Deno.execPath()}" run ${scriptPath} < ${directoryPath}`;
+    const args = ["-c", cmd];
+
+    const p = new Deno.Command(shell, {
+      args,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+      windowsRawArguments: true,
+    });
+
+    const { stdout } = await p.output();
+    const data = new TextDecoder().decode(stdout).trim().split("\n");
+    assertEquals(data, expected);
+  },
+});
+
+Deno.test({
   name: "process.stdout",
   fn() {
     assertEquals(process.stdout.fd, Deno.stdout.rid);
