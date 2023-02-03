@@ -27,6 +27,7 @@ export type { ReadOptions } from "./csv/_io.ts";
 const QUOTE = '"';
 const LF = "\n";
 const CRLF = "\r\n";
+const BYTE_ORDER_MARK = "\ufeff";
 
 export class StringifyError extends Error {
   override readonly name = "StringifyError";
@@ -225,6 +226,15 @@ export type StringifyOptions = {
    * name for the column.
    */
   columns?: Column[];
+  /**
+   * Whether to add a
+   * [byte-order mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the
+   * beginning of the file content. Required by software such as MS Excel to
+   * properly display Unicode text.
+   *
+   * @default {false}
+   */
+  bom?: boolean;
 };
 
 /**
@@ -290,7 +300,8 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
+  { headers = true, separator: sep = ",", columns = [], bom = false }:
+    StringifyOptions = {},
 ): string {
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
@@ -303,6 +314,10 @@ export function stringify(
 
   const normalizedColumns = columns.map(normalizeColumn);
   let output = "";
+
+  if (bom) {
+    output += BYTE_ORDER_MARK;
+  }
 
   if (headers) {
     output += normalizedColumns

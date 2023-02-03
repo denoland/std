@@ -9,6 +9,8 @@ import {
   ReadOptions,
 } from "./_io.ts";
 
+const BYTE_ORDER_MARK = "\ufeff";
+
 export class Parser {
   #input = "";
   #cursor = 0;
@@ -225,7 +227,7 @@ export class Parser {
     return result;
   }
   parse(input: string): string[][] {
-    this.#input = input;
+    this.#input = input.startsWith(BYTE_ORDER_MARK) ? input.slice(1) : input;
     this.#cursor = 0;
     const result: string[][] = [];
     let _nbFields: number | undefined;
