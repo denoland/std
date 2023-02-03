@@ -642,9 +642,47 @@ export function execFile(
   return child;
 }
 
+type ExecFileExceptionForPromisify = ExecFileError & ExecOutputForPromisify;
+
+const customPromiseExecFileFunction = (
+  orig: (
+    file: string,
+    argsOrOptionsOrCallback?: string[] | ExecFileOptions | ExecFileCallback,
+    optionsOrCallback?: ExecFileOptions | ExecFileCallback,
+    maybeCallback?: ExecFileCallback,
+  ) => ChildProcess,
+) => {
+  return (
+    ...args: [
+      file: string,
+      argsOrOptions?: string[] | ExecFileOptions,
+      options?: ExecFileOptions,
+    ]
+  ) => {
+    const { promise, resolve, reject } = createDeferredPromise() as unknown as {
+      promise: PromiseWithChild<ExecOutputForPromisify>;
+      resolve?: (value: ExecOutputForPromisify) => void;
+      reject?: (reason?: ExecFileExceptionForPromisify) => void;
+    };
+
+    promise.child = orig(...args, (err, stdout, stderr) => {
+      if (err !== null) {
+        const _err: ExecFileExceptionForPromisify = err;
+        _err.stdout = stdout;
+        _err.stderr = stderr;
+        reject && reject(_err);
+      } else {
+        resolve && resolve({ stdout, stderr });
+      }
+    });
+
+    return promise;
+  };
+};
+
 Object.defineProperty(execFile, promisify.custom, {
   enumerable: false,
-  value: customPromiseExecFunction(execFile),
+  value: customPromiseExecFileFunction(execFile),
 });
 
 function checkExecSyncError(
