@@ -1,3 +1,11 @@
+### 0.177.0 / 2023.02.06
+
+- feat(encoding/csv): handle CSV byte-order marks (#3143)
+- fix(node/child_process): enable promisify(execFile) (#3161)
+- fix(node/process): null is not returned when reaching end-of-file in stdin
+  (#3113)
+- fix(semver): allow unsetting build metadata (#3157)
+
 ### 0.176.0 / 2023.02.02
 
 - fix(node): disable worker_threads (#3151)
