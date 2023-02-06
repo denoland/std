@@ -772,15 +772,6 @@
   },
   "windowsIgnore": {
     "parallel": [
-      "test-child-process-exec-cwd.js",
-      "test-child-process-exec-encoding.js",
-      "test-child-process-exec-env.js",
-      "test-child-process-exec-maxbuf.js",
-      "test-child-process-exec-std-encoding.js",
-      "test-child-process-exec-stdout-stderr-data-string.js",
-      "test-child-process-execfile.js",
-      "test-child-process-execsync-maxbuf.js",
-      "test-child-process-kill.js",
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",
