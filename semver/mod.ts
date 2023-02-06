@@ -278,8 +278,8 @@ export interface SemVer {
   major: number;
   minor: number;
   patch: number;
-  build: ReadonlyArray<string>;
   prerelease: ReadonlyArray<string | number>;
+  build: ReadonlyArray<string>;
 }
 
 // Note: this is the semver.org version of the spec that it implements
@@ -498,6 +498,22 @@ export function parse(version: string | SemVer): SemVer {
     prerelease,
     build,
   }
+}
+
+/**
+  * Returns true if the value is a valid version and adds a Type Assertion
+  */
+export function isValid(value: SemVer | undefined | null): value is SemVer {
+  const { major, minor, patch, build, prerelease } = value ?? {};
+  return (
+    typeof major === 'number' &&
+    typeof minor === 'number' &&
+    typeof patch === 'number' &&
+    Array.isArray(prerelease) &&
+    Array.isArray(build) &&
+    !prerelease.find(v => typeof v !== 'string' && typeof v !== 'number') &&
+    !build.find(v => typeof v !== 'string')
+  );
 }
 
 /** Returns the parsed version, or undefined if it's not valid. */
