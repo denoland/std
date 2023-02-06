@@ -35,6 +35,23 @@ Deno.test({
 });
 
 Deno.test({
+  name: "ASYNC: don't throw errors for mode parameter (Windows)",
+  ignore: !isWindows,
+  async fn() {
+    const tempFile: string = await Deno.makeTempFile();
+    await new Promise<void>((resolve, reject) => {
+      // @ts-ignore for test
+      chmod(tempFile, null, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    }).finally(() => {
+      Deno.removeSync(tempFile);
+    });
+  },
+});
+
+Deno.test({
   name: "ASYNC: don't throw NotSupportedError (Windows)",
   ignore: !isWindows,
   async fn() {
@@ -77,6 +94,20 @@ Deno.test({
       const newFileMode: number | null = Deno.lstatSync(tempFile).mode;
       assert(newFileMode && originalFileMode);
       assert(newFileMode === 33279 && newFileMode > originalFileMode);
+    } finally {
+      Deno.removeSync(tempFile);
+    }
+  },
+});
+
+Deno.test({
+  name: "SYNC: don't throw errors for mode parameter (Windows)",
+  ignore: !isWindows,
+  fn() {
+    const tempFile: string = Deno.makeTempFileSync();
+    try {
+      // @ts-ignore for test
+      chmodSync(tempFile, null);
     } finally {
       Deno.removeSync(tempFile);
     }
