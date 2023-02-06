@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2809
+Total: 2810
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -274,6 +274,7 @@ Total: 2809
 - [parallel/test-child-process-disconnect.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-disconnect.js)
 - [parallel/test-child-process-double-pipe.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-double-pipe.js)
 - [parallel/test-child-process-env.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-env.js)
+- [parallel/test-child-process-exec-any-shells-windows.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-any-shells-windows.js)
 - [parallel/test-child-process-exec-timeout-expire.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-expire.js)
 - [parallel/test-child-process-exec-timeout-kill.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-kill.js)
 - [parallel/test-child-process-exec-timeout-not-expired.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-child-process-exec-timeout-not-expired.js)
