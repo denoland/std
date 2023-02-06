@@ -274,6 +274,14 @@ export interface Options {
   includePrerelease?: boolean;
 }
 
+export interface SemVer {
+  major: number;
+  minor: number;
+  patch: number;
+  build: ReadonlyArray<string>;
+  prerelease: ReadonlyArray<string | number>;
+}
+
 // Note: this is the semver.org version of the spec that it implements
 // Not necessarily the package version of this code.
 export const SEMVER_SPEC_VERSION = "2.0.0";
@@ -431,351 +439,78 @@ for (let i = 0; i < R; i++) {
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or `null`.
  */
-export function parse(
-  version: string | SemVer | null,
-  options?: Options,
-): SemVer | null {
-  if (typeof options !== "object") {
-    options = {
-      includePrerelease: false,
-    };
-  }
-
-  if (version instanceof SemVer) {
+export function parse(version: string | SemVer): SemVer {
+  if (typeof version !== "string") {
     return version;
   }
 
-  if (typeof version !== "string") {
-    return null;
-  }
-
   if (version.length > MAX_LENGTH) {
-    return null;
-  }
-
-  const r: RegExp = re[FULL];
-  if (!r.test(version)) {
-    return null;
-  }
-
-  try {
-    return new SemVer(version, options);
-  } catch {
-    return null;
-  }
-}
-
-/** Returns the parsed version, or null if it's not valid. */
-export function valid(
-  version: string | SemVer | null,
-  options?: Options,
-): string | null {
-  if (version === null) return null;
-  const v: SemVer | null = parse(version, options);
-  return v ? v.version : null;
-}
-
-export class SemVer {
-  raw!: string;
-  options!: Options;
-
-  major!: number;
-  minor!: number;
-  patch!: number;
-  version!: string;
-  build!: ReadonlyArray<string>;
-  prerelease!: Array<string | number>;
-
-  constructor(version: string | SemVer, options?: Options) {
-    if (typeof options !== "object") {
-      options = {
-        includePrerelease: false,
-      };
-    }
-    if (version instanceof SemVer) {
-      version = version.version;
-    } else if (typeof version !== "string") {
-      throw new TypeError("Invalid Version: " + version);
-    }
-
-    if (version.length > MAX_LENGTH) {
-      throw new TypeError(
-        "version is longer than " + MAX_LENGTH + " characters",
-      );
-    }
-
-    if (!(this instanceof SemVer)) {
-      return new SemVer(version, options);
-    }
-
-    this.options = options;
-
-    const m = version.trim().match(re[FULL]);
-
-    if (!m) {
-      throw new TypeError("Invalid Version: " + version);
-    }
-
-    // these are actually numbers
-    this.major = +m[1];
-    this.minor = +m[2];
-    this.patch = +m[3];
-
-    if (this.major > Number.MAX_SAFE_INTEGER || this.major < 0) {
-      throw new TypeError("Invalid major version");
-    }
-
-    if (this.minor > Number.MAX_SAFE_INTEGER || this.minor < 0) {
-      throw new TypeError("Invalid minor version");
-    }
-
-    if (this.patch > Number.MAX_SAFE_INTEGER || this.patch < 0) {
-      throw new TypeError("Invalid patch version");
-    }
-
-    // numberify any prerelease numeric ids
-    if (!m[4]) {
-      this.prerelease = [];
-    } else {
-      this.prerelease = m[4].split(".").map((id: string) => {
-        if (/^[0-9]+$/.test(id)) {
-          const num: number = +id;
-          if (num >= 0 && num < Number.MAX_SAFE_INTEGER) {
-            return num;
-          }
-        }
-        return id;
-      });
-    }
-
-    this.build = m[5] ? m[5].split(".") : [];
-    this.format();
-    this.raw = this.version;
-  }
-
-  format(
-    opts: { style?: "release" | "prerelease" | "build" | "full" } = {},
-  ): string {
-    const { style } = opts;
-
-    // todo: Consider a refactor of this class to have no side effects. Increment should return
-    // a new SemVer instance with the new values. This would be a breaking change.
-    // see https://github.com/denoland/deno_std/issues/3110 for discussion details
-    const release = this.version = this.major + "." + this.minor + "." +
-      this.patch;
-    if (this.prerelease.length) {
-      this.version += "-" + this.prerelease.join(".");
-    }
-
-    switch (style) {
-      case "build":
-        return [release, this.build.join(".")].filter((v) => v).join("+");
-      case "full":
-        return [this.version, this.build.join(".")].filter((v) => v).join("+");
-      case "release":
-        return release;
-      case "prerelease":
-        return this.version;
-      default:
-        // todo: Have this function return the full version by default. This would be a breaking change.
-        // see this issue for discussion details https://github.com/denoland/deno_std/issues/3110
-        return this.version;
-    }
-  }
-
-  compare(other: string | SemVer): 1 | 0 | -1 {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options);
-    }
-
-    return this.compareMain(other) || this.comparePre(other);
-  }
-
-  compareMain(other: string | SemVer): 1 | 0 | -1 {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options);
-    }
-
-    return (
-      compareIdentifiers(this.major, other.major) ||
-      compareIdentifiers(this.minor, other.minor) ||
-      compareIdentifiers(this.patch, other.patch)
+    throw new TypeError(
+      `version is longer than ${MAX_LENGTH} characters`,
     );
   }
 
-  comparePre(other: string | SemVer): 1 | 0 | -1 {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options);
-    }
+  version = version.trim();
 
-    // NOT having a prerelease is > having one
-    if (this.prerelease.length && !other.prerelease.length) {
-      return -1;
-    } else if (!this.prerelease.length && other.prerelease.length) {
-      return 1;
-    } else if (!this.prerelease.length && !other.prerelease.length) {
-      return 0;
-    }
+  const r = re[FULL];
+  const m = version.match(r);
+  if (!m) {
+    throw new TypeError(`Invalid Version: ${version}`);
+  }
 
-    let i = 0;
-    do {
-      const a: string | number = this.prerelease[i];
-      const b: string | number = other.prerelease[i];
-      if (a === undefined && b === undefined) {
-        return 0;
-      } else if (b === undefined) {
-        return 1;
-      } else if (a === undefined) {
-        return -1;
-      } else if (a === b) {
-        continue;
+  // these are actually numbers
+  const major = parseInt(m[1]);
+  const minor = parseInt(m[2]);
+  const patch = parseInt(m[3]);
+
+  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
+    throw new TypeError("Invalid major version");
+  }
+
+  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
+    throw new TypeError("Invalid minor version");
+  }
+
+  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
+    throw new TypeError("Invalid patch version");
+  }
+
+  // number-ify any prerelease numeric ids
+  const prerelease = (m[4] ?? [])
+    .split(".")
+    .map((id: string) => {
+      const num = parseInt(id)
+      if (isNaN(num)) {
+        return id;
       } else {
-        return compareIdentifiers(a, b);
+        if (num > Number.MAX_SAFE_INTEGER || num < 0) {
+          throw new TypeError("Invalid prerelease version");
+        }
+        return num;
       }
-    } while (++i);
-    return 1;
+    });
+
+  const build = parseBuild(m[5]);
+  return {
+    major,
+    minor,
+    patch,
+    prerelease,
+    build,
   }
+}
 
-  compareBuild(other: string | SemVer): 1 | 0 | -1 {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options);
-    }
-
-    let i = 0;
-    do {
-      const a: string = this.build[i];
-      const b: string = other.build[i];
-      if (a === undefined && b === undefined) {
-        return 0;
-      } else if (b === undefined) {
-        return 1;
-      } else if (a === undefined) {
-        return -1;
-      } else if (a === b) {
-        continue;
-      } else {
-        return compareIdentifiers(a, b);
-      }
-    } while (++i);
-    return 1;
+/** Returns the parsed version, or undefined if it's not valid. */
+export function valid(
+  version: string | SemVer | undefined | null,
+): SemVer | undefined {
+  if (version == null) {
+    return undefined;
   }
-
-  increment(
-    release: ReleaseType,
-    identifier?: string,
-    metadata?: string,
-  ): SemVer {
-    switch (release) {
-      case "premajor":
-        this.prerelease.length = 0;
-        this.patch = 0;
-        this.minor = 0;
-        this.major++;
-        this.increment("pre", identifier);
-        break;
-      case "preminor":
-        this.prerelease.length = 0;
-        this.patch = 0;
-        this.minor++;
-        this.increment("pre", identifier);
-        break;
-      case "prepatch":
-        // If this is already a prerelease, it will bump to the next version
-        // drop any prereleases that might already exist, since they are not
-        // relevant at this point.
-        this.prerelease.length = 0;
-        this.increment("patch", identifier);
-        this.increment("pre", identifier);
-        break;
-      // If the input is a non-prerelease version, this acts the same as
-      // prepatch.
-      case "prerelease":
-        if (this.prerelease.length === 0) {
-          this.increment("patch", identifier);
-        }
-        this.increment("pre", identifier);
-        break;
-
-      case "major":
-        // If this is a pre-major version, bump up to the same major version.
-        // Otherwise increment major.
-        // 1.0.0-5 bumps to 1.0.0
-        // 1.1.0 bumps to 2.0.0
-        if (
-          this.minor !== 0 ||
-          this.patch !== 0 ||
-          this.prerelease.length === 0
-        ) {
-          this.major++;
-        }
-        this.minor = 0;
-        this.patch = 0;
-        this.prerelease = [];
-        break;
-      case "minor":
-        // If this is a pre-minor version, bump up to the same minor version.
-        // Otherwise increment minor.
-        // 1.2.0-5 bumps to 1.2.0
-        // 1.2.1 bumps to 1.3.0
-        if (this.patch !== 0 || this.prerelease.length === 0) {
-          this.minor++;
-        }
-        this.patch = 0;
-        this.prerelease = [];
-        break;
-      case "patch":
-        // If this is not a pre-release version, it will increment the patch.
-        // If it is a pre-release it will bump up to the same patch version.
-        // 1.2.0-5 patches to 1.2.0
-        // 1.2.0 patches to 1.2.1
-        if (this.prerelease.length === 0) {
-          this.patch++;
-        }
-        this.prerelease = [];
-        break;
-      // This probably shouldn't be used publicly.
-      // 1.0.0 "pre" would become 1.0.0-0 which is the wrong direction.
-      case "pre":
-        if (this.prerelease.length === 0) {
-          this.prerelease = [0];
-        } else {
-          let i: number = this.prerelease.length;
-          while (--i >= 0) {
-            if (typeof this.prerelease[i] === "number") {
-              // deno-fmt-ignore
-              (this.prerelease[i] as number)++;
-              i = -2;
-            }
-          }
-          if (i === -1) {
-            // didn't increment anything
-            this.prerelease.push(0);
-          }
-        }
-        if (identifier) {
-          // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-          // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
-          if (this.prerelease[0] === identifier) {
-            if (isNaN(this.prerelease[1] as number)) {
-              this.prerelease = [identifier, 0];
-            }
-          } else {
-            this.prerelease = [identifier, 0];
-          }
-        }
-        break;
-
-      default:
-        throw new Error("invalid increment argument: " + release);
-    }
-    this.build = metadata === undefined ? this.build : metadata.split(".");
-    this.format();
-    this.raw = this.version;
-    return this;
-  }
-
-  toString(): string {
-    return this.version;
+  try {
+    return parse(version)
+  } catch {
+    return undefined;
   }
 }
 
@@ -797,21 +532,178 @@ export class SemVer {
 export function increment(
   version: string | SemVer,
   release: ReleaseType,
-  options?: Options,
   identifier?: string,
   metadata?: string,
-): string | null {
-  if (typeof options === "string") {
-    metadata = identifier;
-    identifier = options;
-    options = undefined;
+): SemVer {
+  const v = parse(version);
+  switch (release) {
+    case "premajor":
+      return {
+        major: v.major + 1,
+        minor: 0,
+        patch: 0,
+        prerelease: pre(v.prerelease, identifier),
+        build: parseBuild(metadata),
+      };
+    case "preminor":
+      return {
+        major: v.major,
+        minor: v.minor + 1,
+        patch: 0,
+        prerelease: pre(v.prerelease, identifier),
+        build: parseBuild(metadata),
+      };
+    case "prepatch":
+      return {
+        major: v.major,
+        minor: v.minor,
+        patch: v.patch + 1,
+        prerelease: pre(v.prerelease, identifier),
+        build: parseBuild(metadata),
+      };
+    // If the input is a non-prerelease version, this acts the same as
+    // prepatch.
+    case "prerelease":
+      if (v.prerelease.length === 0) {
+        return {
+          major: v.major,
+          minor: v.minor,
+          patch: v.patch + 1,
+          prerelease: pre(v.prerelease, identifier),
+          build: parseBuild(metadata),
+        }
+      } else {
+        return {
+          major: v.major,
+          minor: v.minor,
+          patch: v.patch,
+          prerelease: pre(v.prerelease, identifier),
+          build: parseBuild(metadata),
+        };
+      }
+    case "major":
+      // If this is a pre-major version, bump up to the same major version.
+      // Otherwise increment major.
+      // 1.0.0-5 bumps to 1.0.0
+      // 1.1.0 bumps to 2.0.0
+      if (
+        v.minor !== 0 ||
+        v.patch !== 0 ||
+        v.prerelease.length === 0
+      ) {
+        return {
+          major: v.major + 1,
+          minor: 0,
+          patch: 0,
+          prerelease: [],
+          build: parseBuild(metadata)
+        };
+      } else {
+        return {
+          major: v.major,
+          minor: 0,
+          patch: 0,
+          prerelease: [],
+          build: parseBuild(metadata)
+        }
+      }
+    case "minor":
+      // If this is a pre-minor version, bump up to the same minor version.
+      // Otherwise increment minor.
+      // 1.2.0-5 bumps to 1.2.0
+      // 1.2.1 bumps to 1.3.0
+      if (v.patch !== 0 ||
+        v.prerelease.length === 0
+      ) {
+        return {
+          major: v.major,
+          minor: v.minor + 1,
+          patch: 0,
+          prerelease: [],
+          build: parseBuild(metadata),
+        };
+      } else {
+        return {
+          major: v.major,
+          minor: v.minor,
+          patch: 0,
+          prerelease: [],
+          build: parseBuild(metadata),
+        }
+      }
+    case "patch":
+      // If this is not a pre-release version, it will increment the patch.
+      // If it is a pre-release it will bump up to the same patch version.
+      // 1.2.0-5 patches to 1.2.0
+      // 1.2.0 patches to 1.2.1
+      if (v.prerelease.length === 0) {
+        return {
+          major: v.major,
+          minor: v.minor,
+          patch: v.patch + 1,
+          prerelease: [],
+          build: parseBuild(metadata),
+        };
+      } else {
+        return {
+          major: v.major,
+          minor: v.minor,
+          patch: v.patch,
+          prerelease: [],
+          build: parseBuild(metadata),
+        };
+      }
+    // 1.0.0 "pre" would become 1.0.0-0
+    // 1.0.0-0 would become 1.0.0-1
+    // 1.0.0-beta.0 would be come 1.0.0-beta.1
+    // switching the pre identifier resets the number to 0
+    case "pre":
+      return {
+        major: v.major,
+        minor: v.minor,
+        patch: v.patch,
+        prerelease: pre(v.prerelease, identifier),
+        build: parseBuild(metadata)
+      };
+    default:
+      throw new Error(`invalid increment argument: ${release}`);
   }
-  try {
-    return new SemVer(version, options).increment(release, identifier, metadata)
-      .format({ style: "full" });
-  } catch {
-    return null;
+}
+
+function pre(prerelease: ReadonlyArray<string | number>, identifier: string | undefined) {
+  let values = [...prerelease];
+
+  // In reality this will either be 0, 1 or 2 entries.
+  let i: number = values.length;
+  while (--i >= 0) {
+    if (typeof values[i] === "number") {
+      // deno-fmt-ignore
+      (values[i] as number)++;
+      i = -2;
+    }
   }
+
+  if (i === -1) {
+    // didn't increment anything
+    values.push(0);
+  }
+
+  if (identifier) {
+    // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
+    // 1.2.0-beta.foobar or 1.2.0-beta bumps to 1.2.0-beta.0
+    if (values[0] === identifier) {
+      if (isNaN(values[1] as number)) {
+        values = [identifier, 0];
+      }
+    } else {
+      values = [identifier, 0];
+    }
+  }
+  return values;
+}
+
+function parseBuild(metadata: string | undefined) {
+  return (metadata ?? "").split(".");
 }
 
 /**
@@ -820,18 +712,15 @@ export function increment(
  * null if the versions are the same.
  */
 export function difference(
-  version1: string | SemVer,
-  version2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
-): ReleaseType | null {
-  if (eq(version1, version2, options)) {
-    return null;
+): ReleaseType | undefined {
+  if (eq(v1, v2, options)) {
+    return undefined;
   } else {
-    const v1: SemVer | null = parse(version1);
-    const v2: SemVer | null = parse(version2);
     let prefix = "";
-    let defaultResult: ReleaseType | null = null;
-
+    let defaultResult: ReleaseType | undefined = undefined;
     if (v1 && v2) {
       if (v1.prerelease.length || v2.prerelease.length) {
         prefix = "pre";
@@ -850,80 +739,120 @@ export function difference(
   }
 }
 
-const numeric = /^[0-9]+$/;
-
 export function compareIdentifiers(
-  a: string | number | null,
-  b: string | number | null,
+  a: string | number | undefined,
+  b: string | number | undefined,
 ): 1 | 0 | -1 {
-  const anum: boolean = numeric.test(a as string);
-  const bnum: boolean = numeric.test(b as string);
+  if (a == null || b == null) throw new Error("Comparison against null invalid");
 
-  if (a === null || b === null) throw "Comparison against null invalid";
-
-  if (anum && bnum) {
-    a = +a;
-    b = +b;
+  const anum = parseInt(a as string);
+  const bnum = parseInt(b as string);
+  if (isNaN(anum) || isNaN(bnum)) {
+    throw new Error("Comparison against non-numbers");
   }
 
-  return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
+  return a === b
+    ? 0
+    : anum && !bnum
+      ? -1
+      : bnum && !anum
+        ? 1
+        : a < b
+          ? -1
+          : 1;
 }
 
 export function rcompareIdentifiers(
-  a: string | null,
-  b: string | null,
+  a: string | undefined,
+  b: string | undefined,
 ): 1 | 0 | -1 {
   return compareIdentifiers(b, a);
 }
 
 /** Returns the major version number. */
-export function major(
-  v: string | SemVer,
-  options?: Options,
-): number {
-  return new SemVer(v, options).major;
-}
+export const major = (v: string | SemVer) => parse(v).major;
 
 /** Returns the minor version number. */
-export function minor(
-  v: string | SemVer,
-  options?: Options,
-): number {
-  return new SemVer(v, options).minor;
-}
+export const minor = (v: string | SemVer) => parse(v).minor;
 
 /** Returns the patch version number. */
-export function patch(
-  v: string | SemVer,
-  options?: Options,
-): number {
-  return new SemVer(v, options).patch;
-}
+export const patch = (v: string | SemVer) => parse(v).patch;
 
 /**
  * Returns `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if `v2` is
  * greater. Sorts in ascending order if passed to `Array.sort()`,
  */
 export function compare(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): 1 | 0 | -1 {
-  return new SemVer(v1, options).compare(new SemVer(v2, options));
+  return (
+    compareIdentifiers(v1.major, v2.major) ||
+    compareIdentifiers(v1.minor, v2.minor) ||
+    compareIdentifiers(v1.patch, v2.patch) ||
+    comparePre(v1.prerelease, v2.prerelease, options)
+  );
+}
+
+
+function comparePre(
+  v1: ReadonlyArray<string | number>,
+  v2: ReadonlyArray<string | number>,
+  options?: Options,
+): 1 | 0 | -1 {
+
+  if (options?.includePrerelease !== true) {
+    return 0;
+  }
+
+  // NOT having a prerelease is > having one
+  if (v1.length && !v2.length) {
+    return -1;
+  } else if (!v1.length && v2.length) {
+    return 1;
+  } else if (!v1.length && !v2.length) {
+    return 0;
+  }
+
+  let i = 0;
+  do {
+    const a = v1[i];
+    const b = v2[i];
+    if (a === undefined && b === undefined) {
+      return 0;
+    } else if (b === undefined) {
+      return 1;
+    } else if (a === undefined) {
+      return -1;
+    } else if (a === b) {
+      continue;
+    } else {
+      return compareIdentifiers(a, b);
+    }
+  } while (++i);
+
+  return 1;
 }
 
 /**
- * The same as {@linkcode compare} but considers `build` when two versions are
- * equal. Sorts in ascending order if passed to `Array.sort()`.
+ * The same as {@linkcode compare} but considers `build` when determining if
+ * two versions are equal. Build values are not numeric so they are always
+ * compared alphabetically.
+ * Sorts in ascending order if passed to `Array.sort()`.
  */
 export function compareBuild(
-  a: string | SemVer,
-  b: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): 1 | 0 | -1 {
-  const versionA = new SemVer(a, options);
-  const versionB = new SemVer(b, options);
-  return versionA.compare(versionB) || versionA.compareBuild(versionB);
+  return (
+    compareIdentifiers(v1.major, v2.major) ||
+    compareIdentifiers(v1.minor, v2.minor) ||
+    compareIdentifiers(v1.patch, v2.patch) ||
+    comparePre(v1.prerelease, v2.prerelease, options) ||
+    comparePre(v1.build, v2.build, { includePrerelease: true })
+  );
 }
 
 /**
@@ -931,14 +860,14 @@ export function compareBuild(
  * greater. Sorts in descending order if passed to `Array.sort()`,
  */
 export function rcompare(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): 1 | 0 | -1 {
   return compare(v2, v1, options);
 }
 
-export function sort<T extends string | SemVer>(
+export function sort<T extends SemVer>(
   list: T[],
   options?: Options,
 ): T[] {
@@ -947,19 +876,17 @@ export function sort<T extends string | SemVer>(
   });
 }
 
-export function rsort<T extends string | SemVer>(
+export function rsort<T extends SemVer>(
   list: T[],
   options?: Options,
 ): T[] {
-  return list.sort((a, b) => {
-    return compareBuild(b, a, options);
-  });
+  return list.sort((a, b) => compareBuild(b, a, options));
 }
 
 /** Greater than comparison */
 export function gt(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) > 0;
@@ -967,8 +894,8 @@ export function gt(
 
 /** Less than comparison */
 export function lt(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) < 0;
@@ -979,8 +906,8 @@ export function lt(
  * same string.
  */
 export function eq(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) === 0;
@@ -991,8 +918,8 @@ export function eq(
  * same string.
  */
 export function neq(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) !== 0;
@@ -1000,8 +927,8 @@ export function neq(
 
 /** Greater than or equal comparison */
 export function gte(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) >= 0;
@@ -1009,8 +936,8 @@ export function gte(
 
 /** Less than or equal comparison */
 export function lte(
-  v1: string | SemVer,
-  v2: string | SemVer,
+  v1: SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   return compare(v1, v2, options) <= 0;
@@ -1022,21 +949,16 @@ export function lte(
  * for completeness. Throws if an invalid comparison string is provided.
  */
 export function cmp(
-  v1: string | SemVer,
+  v1: SemVer,
   operator: Operator,
-  v2: string | SemVer,
+  v2: SemVer,
   options?: Options,
 ): boolean {
   switch (operator) {
     case "===":
-      if (typeof v1 === "object") v1 = v1.version;
-      if (typeof v2 === "object") v2 = v2.version;
-      return v1 === v2;
-
+      return compare(v1, v2, options) === 0;
     case "!==":
-      if (typeof v1 === "object") v1 = v1.version;
-      if (typeof v2 === "object") v2 = v2.version;
-      return v1 !== v2;
+      return compare(v1, v2, options) !== 0;
 
     case "":
     case "=":
@@ -1946,5 +1868,3 @@ export function intersects(
   range2 = new Range(range2, options);
   return range1.intersects(range2);
 }
-
-export default SemVer;
