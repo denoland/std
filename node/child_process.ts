@@ -166,9 +166,12 @@ export function spawn(
   maybeOptions?: SpawnOptions,
 ): ChildProcess {
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
-  const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
+  let options = !Array.isArray(argsOrOptions) && argsOrOptions != null
     ? argsOrOptions
     : maybeOptions;
+
+  options = normalizeSpawnArguments(command, args, options);
+
   validateAbortSignal(options?.signal, "options.signal");
   return new ChildProcess(command, args, options);
 }
