@@ -7,6 +7,7 @@ import {
   ChildProcess,
   ChildProcessOptions,
   normalizeSpawnArguments,
+  type SpawnOptions,
   spawnSync as _spawnSync,
   type SpawnSyncOptions,
   type SpawnSyncResult,
@@ -147,8 +148,6 @@ export function fork(
   return spawn(options.execPath, args, options);
 }
 
-// deno-lint-ignore no-empty-interface
-interface SpawnOptions extends ChildProcessOptions {}
 export function spawn(command: string): ChildProcess;
 export function spawn(command: string, options: SpawnOptions): ChildProcess;
 export function spawn(command: string, args: string[]): ChildProcess;
@@ -168,7 +167,7 @@ export function spawn(
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
   let options = !Array.isArray(argsOrOptions) && argsOrOptions != null
     ? argsOrOptions
-    : maybeOptions;
+    : maybeOptions as SpawnOptions;
 
   options = normalizeSpawnArguments(command, args, options);
 

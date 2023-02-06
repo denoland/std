@@ -352,7 +352,7 @@ export interface ChildProcessOptions {
   /**
    * Current working directory of the child process.
    */
-  cwd?: string;
+  cwd?: string | URL;
 
   /**
    * Environment variables passed to the child process.
@@ -412,9 +412,9 @@ export interface ChildProcessOptions {
 }
 
 function copyProcessEnvToEnv(
-  env: Record<string, string | undefined>,
+  env: Record<string, string | number | boolean | undefined>,
   name: string,
-  optionEnv?: Record<string, string>,
+  optionEnv?: Record<string, string | number | boolean>,
 ) {
   if (
     Deno.env.get(name) &&
@@ -457,7 +457,7 @@ function normalizeStdioOption(
 export function normalizeSpawnArguments(
   file: string,
   args: string[],
-  options: SpawnSyncOptions,
+  options: SpawnOptions & SpawnSyncOptions,
 ) {
   validateString(file, "file");
 
@@ -702,25 +702,38 @@ function _createSpawnSyncError(
   return error;
 }
 
-export interface SpawnSyncOptions {
-  cwd?: string | URL;
+export interface SpawnOptions extends ChildProcessOptions {
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  timeout?: number;
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  killSignal?: string;
+}
+
+export interface SpawnSyncOptions extends
+  Pick<
+    ChildProcessOptions,
+    | "cwd"
+    | "env"
+    | "argv0"
+    | "stdio"
+    | "uid"
+    | "gid"
+    | "shell"
+    | "windowsVerbatimArguments"
+    | "windowsHide"
+  > {
   input?: string | Buffer | DataView;
-  argv0?: string;
-  stdio?: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio;
-  env?: Record<string, string>;
-  uid?: number;
-  gid?: number;
   timeout?: number;
   maxBuffer?: number;
   encoding?: string;
-  shell?: boolean | string;
-  /** No quoting or escaping of arguments is done on Windows. Ignored on Unix.
-   * Default: false. */
-  windowsVerbatimArguments?: boolean;
-  windowsHide?: boolean;
-  /** The below options aren't currently supported. However, they're here for validation checks. */
+  /**
+   * NOTE: This option is not yet implemented.
+   */
   killSignal?: string;
-  detached?: boolean;
 }
 
 export interface SpawnSyncResult {
