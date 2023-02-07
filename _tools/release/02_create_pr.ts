@@ -38,9 +38,9 @@ function getPrBody() {
     `- [ ] Version in version.ts is updated correctly\n` +
     `- [ ] Releases.md is updated correctly\n` +
     `- [ ] All the tests in this branch have been run against the CLI release being done` +
-    "```shell" +
-    `${TARGET} task test && ${TARGET} task node:unit && ${TARGET} task node:test` +
-    "```\n" +
+    "      ```shell" +
+    `      ${TARGET} task test && ${TARGET} task node:unit && ${TARGET} task node:test` +
+    "      ```\n" +
     `To make edits to this PR:\n` +
     "```shell\n" +
     `git fetch upstream ${newBranchName} && git checkout -b ${newBranchName} upstream/${newBranchName}\n` +
