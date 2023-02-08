@@ -12,7 +12,18 @@ export function chmod(
   callback: CallbackWithError,
 ) {
   path = getValidatedPath(path).toString();
-  mode = parseFileMode(mode, "mode");
+
+  try {
+    mode = parseFileMode(mode, "mode");
+  } catch (error) {
+    // TODO(PolarETech): Errors should not be ignored when Deno.chmod is supported on Windows.
+    // https://github.com/denoland/deno_std/issues/2916
+    if (Deno.build.os === "windows") {
+      mode = 0; // set dummy value to avoid type checking error at Deno.chmod
+    } else {
+      throw error;
+    }
+  }
 
   Deno.chmod(pathModule.toNamespacedPath(path), mode).catch((error) => {
     // Ignore NotSupportedError that occurs on windows
@@ -33,7 +44,18 @@ export const chmodPromise = promisify(chmod) as (
 
 export function chmodSync(path: string | URL, mode: string | number) {
   path = getValidatedPath(path).toString();
-  mode = parseFileMode(mode, "mode");
+
+  try {
+    mode = parseFileMode(mode, "mode");
+  } catch (error) {
+    // TODO(PolarETech): Errors should not be ignored when Deno.chmodSync is supported on Windows.
+    // https://github.com/denoland/deno_std/issues/2916
+    if (Deno.build.os === "windows") {
+      mode = 0; // set dummy value to avoid type checking error at Deno.chmodSync
+    } else {
+      throw error;
+    }
+  }
 
   try {
     Deno.chmodSync(pathModule.toNamespacedPath(path), mode);
