@@ -31,7 +31,7 @@ import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
 import { codeMap } from "./uv.ts";
-import { delay } from "../../async/mod.ts";
+import { delay } from "../_util/delay.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import { isIP } from "../internal/net.ts";
 import {
