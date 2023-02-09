@@ -4,7 +4,7 @@
 // The following are all the process APIs that don't depend on the stream module
 // They have to be split this way to prevent a circular dependency
 
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
 import { _exiting } from "./exiting.ts";
 

@@ -11,7 +11,7 @@ import {
   isFileOptions,
   WriteFileOptions,
 } from "./_fs_common.ts";
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
 import {
   showStringCoercionDeprecation,
