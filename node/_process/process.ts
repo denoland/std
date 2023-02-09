@@ -34,6 +34,13 @@ export const nextTick = _nextTick;
 /** Wrapper of Deno.env.get, which doesn't throw type error when
  * the env name has "=" or "\0" in it. */
 function denoEnvGet(name: string) {
+  // Returns silently undefined if the env permission is unavailable
+  if (
+    Deno.permissions.querySync({ name: "env", variable: name }).state !==
+      "granted"
+  ) {
+    return undefined;
+  }
   try {
     return Deno.env.get(name);
   } catch (e) {
