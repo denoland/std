@@ -104,7 +104,10 @@ export function debuglog(
 }
 
 let debugEnv;
-if (Deno.permissions.querySync({ name: "env", variable: "NODE_DEBUG" }).state === "granted") {
+if (
+  Deno.permissions.querySync({ name: "env", variable: "NODE_DEBUG" }).state ===
+    "granted"
+) {
   debugEnv = Deno.env.get("NODE_DEBUG") ?? "";
 } else {
   debugEnv = "";
