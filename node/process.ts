@@ -10,7 +10,7 @@ import {
   errnoException,
 } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "./_util/asserts.ts";
 import { fromFileUrl, join } from "./path.ts";
 import {
   arch,
