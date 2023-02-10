@@ -98,12 +98,6 @@ export class CsvStream<T extends CsvStreamOptions>
       this.#lineIndex,
     );
     if (record === null) {
-      if (this.#isFirstRow && this.#options.skipFirstRow) {
-        controller.error(
-          "The data had 0 rows even though the skipFirstRow option was set to true.",
-        );
-        return;
-      }
       controller.close();
       this.#lineReader.cancel();
       return;
