@@ -7,7 +7,7 @@ import { EventEmitter } from "../events.ts";
 import { os } from "../internal_binding/constants.ts";
 import { notImplemented, warnNotImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
-import { deferred } from "../../async/deferred.ts";
+import { deferred } from "../_util/async.ts";
 import { isWindows } from "../_util/os.ts";
 import { nextTick } from "../_next_tick.ts";
 import {
