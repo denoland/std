@@ -26,8 +26,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(PolarETech): The process.argv[3] should be argv[2].
+
 const assert = require('assert');
 
-var n = parseInt(process.argv[2]);
+var n = parseInt(process.argv[3]);
 
 process.stdout.write('c'.repeat(n));

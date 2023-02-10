@@ -4,8 +4,11 @@
     "common": ["index.js", "internet.js", "tmpdir.js"],
     "fixtures": [
       "child-process-spawn-node.js",
+      "echo.js",
       "elipses.txt",
       "empty.txt",
+      "exit.js",
+      "print-chars.js",
       "x.txt"
     ],
     "internet": [
@@ -27,9 +30,17 @@
       "test-child-process-exec-kill-throws.js",
       "test-child-process-exec-maxbuf.js",
       "test-child-process-exec-std-encoding.js",
+      "test-child-process-exec-timeout-expire.js",
+      "test-child-process-exec-timeout-kill.js",
+      "test-child-process-exec-timeout-not-expired.js",
       "test-child-process-execfile.js",
       "test-child-process-execsync-maxbuf.js",
+      "test-child-process-exit-code.js",
+      "test-child-process-ipc.js",
       "test-child-process-spawnsync-env.js",
+      "test-child-process-stdio-inherit.js",
+      "test-child-process-stdout-flush-exit.js",
+      "test-child-process-stdout-flush.js",
       "test-console-instance.js",
       "test-crypto-hmac.js",
       "test-dgram-custom-lookup.js",
@@ -91,6 +102,9 @@
     "pummel": [
       "test-net-bytes-per-incoming-chunk-overhead.js",
       "test-net-write-callbacks.js"
+    ],
+    "sequential": [
+      "test-child-process-exit.js"
     ]
   },
   "tests": {

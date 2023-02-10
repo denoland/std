@@ -31,7 +31,10 @@ const assert = require('assert');
 
 process.stdout.write('hello world\r\n');
 
-var stdin = process.openStdin();
+// TODO(PolarETech): process.openStdin() is not yet implemented.
+// Use process.stdin instead。
+var stdin = process.stdin;
+// var stdin = process.openStdin();
 
 stdin.on('data', function(data) {
   process.stdout.write(data.toString());

@@ -26,6 +26,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(PolarETech): The args passed to spawn() should not need to
+// include "require.ts".
+
 'use strict';
 const common = require('../common');
 const assert = require('assert');
@@ -36,7 +39,7 @@ const sub = fixtures.path('print-chars.js');
 
 const n = 500000;
 
-const child = spawn(process.argv[0], [sub, n]);
+const child = spawn(process.argv[0], ['require.ts', sub, n]);
 
 let count = 0;
 

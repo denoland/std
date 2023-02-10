@@ -26,18 +26,21 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(PolarETech): The process.argv[3] check should be argv[2], and
+// the args passed to spawn() should not need to include "require.ts".
+
 'use strict';
 require('../common');
 const assert = require('assert');
 const spawn = require('child_process').spawn;
 
-if (process.argv[2] === 'parent')
+if (process.argv[3] === 'parent')
   parent();
 else
   grandparent();
 
 function grandparent() {
-  const child = spawn(process.execPath, [__filename, 'parent']);
+  const child = spawn(process.execPath, ['require.ts', __filename, 'parent']);
   child.stderr.pipe(process.stderr);
   let output = '';
   const input = 'asdfasdf';
