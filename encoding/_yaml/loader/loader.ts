@@ -246,7 +246,7 @@ const directiveHandlers: DirectiveHandlers = {
     }
 
     if (typeof state.tagMap === "undefined") {
-      state.tagMap = {};
+      state.tagMap = Object.create(null) as common.ArrayObject;
     }
     state.tagMap[handle] = prefix;
   },
@@ -300,7 +300,12 @@ function mergeMappings(
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i];
     if (!hasOwn(destination, key)) {
-      destination[key] = (source as ArrayObject)[key];
+      Object.defineProperty(destination, key, {
+        value: source[key],
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
       overridableKeys[key] = true;
     }
   }
@@ -371,7 +376,12 @@ function storeMappingPair(
       state.position = startPos || state.position;
       return throwError(state, "duplicated mapping key");
     }
-    result[keyNode] = valueNode;
+    Object.defineProperty(result, keyNode, {
+      value: valueNode,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
     delete overridableKeys[keyNode];
   }
 
@@ -750,7 +760,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     isPair = (isExplicitPair = false);
   let following = 0,
     line = 0;
-  const overridableKeys: ArrayObject<boolean> = {};
+  const overridableKeys: ArrayObject<boolean> = Object.create(null);
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
 
@@ -1067,7 +1077,7 @@ function readBlockMapping(
   const tag = state.tag,
     anchor = state.anchor,
     result = {},
-    overridableKeys = {};
+    overridableKeys = Object.create(null);
   let following: number,
     allowCompact = false,
     line: number,
@@ -1609,8 +1619,8 @@ function readDocument(state: LoaderState) {
 
   state.version = null;
   state.checkLineBreaks = state.legacy;
-  state.tagMap = {};
-  state.anchorMap = {};
+  state.tagMap = Object.create(null);
+  state.anchorMap = Object.create(null);
 
   while ((ch = state.input.charCodeAt(state.position)) !== 0) {
     skipSeparationSpace(state, true, -1);

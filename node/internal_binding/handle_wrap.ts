@@ -24,7 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
-import { unreachable } from "../../_util/asserts.ts";
+import { unreachable } from "../_util/asserts.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {

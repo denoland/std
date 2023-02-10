@@ -36,7 +36,7 @@ const kStats = Symbol("stats");
 import assert from "../assert.mjs";
 import { lstat, lstatSync } from "../../_fs/_fs_lstat.ts";
 import { stat, statSync } from "../../_fs/_fs_stat.ts";
-import { isWindows } from "../../../_util/os.ts";
+import { isWindows } from "../../_util/os.ts";
 import process from "../../process.ts";
 
 import {
