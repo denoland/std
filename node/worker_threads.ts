@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { resolve, toFileUrl } from "../path/mod.ts";
+import { resolve, toFileUrl } from "./path.ts";
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 

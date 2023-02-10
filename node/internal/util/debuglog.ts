@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-import { sprintf } from "../../../fmt/printf.ts";
 import { inspect } from "./inspect.mjs";
 
 // `debugImpls` and `testEnabled` are deliberately not initialized so any call
@@ -47,7 +46,7 @@ function debuglogImpl(
       emitWarningIfNeeded(set);
       debugImpls[set] = function debug(...args: unknown[]) {
         const msg = args.map((arg) => inspect(arg)).join(" ");
-        console.error(sprintf("%s %s: %s", set, String(Deno.pid), msg));
+        console.error("%s %s: %s", set, String(Deno.pid), msg);
       };
     } else {
       debugImpls[set] = noop;

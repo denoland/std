@@ -25,7 +25,7 @@
 // - https://github.com/nodejs/node/blob/master/src/pipe_wrap.h
 
 import { notImplemented } from "../_utils.ts";
-import { unreachable } from "../../_util/asserts.ts";
+import { unreachable } from "../_util/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { LibuvStreamWrap } from "./stream_wrap.ts";
@@ -37,7 +37,7 @@ import {
   INITIAL_ACCEPT_BACKOFF_DELAY,
   MAX_ACCEPT_BACKOFF_DELAY,
 } from "./_listen.ts";
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 import { fs } from "./constants.ts";
 
 export enum socketType {

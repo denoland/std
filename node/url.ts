@@ -73,7 +73,7 @@ import {
   toASCII,
   toUnicode,
 } from "./internal/idna.ts";
-import { isWindows, osType } from "../_util/os.ts";
+import { isWindows, osType } from "./_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 import querystring from "./querystring.ts";
 import type { ParsedUrlQuery, ParsedUrlQueryInput } from "./querystring.ts";

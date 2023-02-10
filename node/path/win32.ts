@@ -19,7 +19,7 @@ import {
   isWindowsDeviceRoot,
   normalizeString,
 } from "./_util.ts";
-import { assert } from "../../_util/asserts.ts";
+import { assert } from "../_util/asserts.ts";
 
 export const sep = "\\";
 export const delimiter = ";";

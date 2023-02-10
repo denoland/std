@@ -30,7 +30,7 @@ import { codeMap } from "./uv.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { ares_strerror } from "./ares.ts";
 import { notImplemented } from "../_utils.ts";
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 
 interface LookupAddress {
   address: string;
