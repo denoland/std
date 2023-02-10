@@ -11,7 +11,7 @@ import {
 } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/asserts.ts";
-import { fromFileUrl, join } from "../path/mod.ts";
+import { fromFileUrl, join } from "./path.ts";
 import {
   arch,
   chdir,
