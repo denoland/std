@@ -3,6 +3,12 @@
 import { BytesList } from "../bytes/bytes_list.ts";
 import { createLPS } from "./_common.ts";
 
+type DelimiterDisposition =
+  | "suffix" // delimiter included in chunk
+  | "prefix" // delimiter included in subsequent chunk
+  | "discard" // delimiter discarded
+;
+
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
@@ -20,8 +26,12 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #matchIndex = 0;
   #delimLen: number;
   #delimLPS: Uint8Array;
+  #disp?: DelimiterDisposition;
 
-  constructor(delimiter: Uint8Array) {
+  constructor(
+    delimiter: Uint8Array,
+    options?: { disposition?: DelimiterDisposition },
+  ) {
     super({
       transform: (chunk, controller) => {
         this.#handle(chunk, controller);
@@ -34,6 +44,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     this.#delimiter = delimiter;
     this.#delimLen = delimiter.length;
     this.#delimLPS = createLPS(delimiter);
+    this.#disp = options?.disposition ?? "discard";
   }
 
   #handle(
@@ -49,12 +60,13 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
         this.#matchIndex++;
         if (this.#matchIndex === this.#delimLen) {
           // Full match
-          const matchEnd = this.#inspectIndex - this.#delimLen;
-          const readyBytes = this.#bufs.slice(0, matchEnd);
-          controller.enqueue(readyBytes);
-          // Reset match, different from KMP.
-          this.#bufs.shift(this.#inspectIndex);
-          this.#inspectIndex = 0;
+          const start = this.#inspectIndex - this.#delimLen;
+          const end = this.#disp == "suffix" ? this.#inspectIndex : start;
+          const copy = this.#bufs.slice(0, end);
+          controller.enqueue(copy);
+          const shift = this.#disp == "prefix" ? start : this.#inspectIndex;
+          this.#bufs.shift(shift);
+          this.#inspectIndex = this.#disp == "prefix" ? this.#delimLen : 0;
           this.#matchIndex = 0;
         }
       } else {
