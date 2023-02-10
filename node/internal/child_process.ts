@@ -996,6 +996,7 @@ function toDenoArgs(args: string[]): string[] {
 
 export default {
   ChildProcess,
+  normalizeSpawnArguments,
   stdioStringToArray,
   spawnSync,
 };
