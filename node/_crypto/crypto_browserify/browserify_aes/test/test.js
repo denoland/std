@@ -9,7 +9,7 @@ import {
   assertEquals,
   assertThrows,
 } from "../../../../../testing/asserts.ts";
-import { fromFileUrl } from "../../../../../path/mod.ts";
+import { fromFileUrl } from "../../../../path.ts";
 import * as crypto from "../mod.js";
 import { MODES } from "../modes/mod.js";
 const CIPHERS = Object.keys(MODES);

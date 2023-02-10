@@ -26,7 +26,7 @@ import { core } from "./_core.ts";
 import nodeMods from "./module_all.ts";
 import upstreamMods from "./upstream_modules.ts";
 
-import * as path from "../path/mod.ts";
+import * as path from "./path.ts";
 import { assert } from "./_util/asserts.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "./_util/os.ts";
