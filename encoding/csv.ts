@@ -12,7 +12,7 @@
  */
 
 import { assert } from "../_util/asserts.ts";
-import type { ReadOptions } from "./csv/_io.ts";
+import { convertRowToObject, type ReadOptions } from "./csv/_io.ts";
 import { Parser } from "./csv/_parser.ts";
 
 export {
@@ -407,31 +407,20 @@ export function parse(
 
   if (opt.skipFirstRow || opt.columns) {
     let headers: string[] = [];
-    let i = 0;
 
     if (opt.skipFirstRow) {
       const head = r.shift();
       assert(head != null);
       headers = head;
-      i++;
     }
 
     if (opt.columns) {
       headers = opt.columns;
     }
 
-    return r.map((e) => {
-      if (e.length !== headers.length) {
-        throw new Error(
-          `Error number of fields line: ${i}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${e.length}`,
-        );
-      }
-      i++;
-      const out: Record<string, unknown> = {};
-      for (let j = 0; j < e.length; j++) {
-        out[headers[j]] = e[j];
-      }
-      return out;
+    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    return r.map((row, i) => {
+      return convertRowToObject(row, headers, firstLineIndex + i);
     });
   }
   return r;

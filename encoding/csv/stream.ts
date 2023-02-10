@@ -1,11 +1,18 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { defaultReadOptions, parseRecord } from "./_io.ts";
-import type { LineReader } from "./_io.ts";
+import {
+  convertRowToObject,
+  defaultReadOptions,
+  type LineReader,
+  parseRecord,
+  type RowType,
+} from "./_io.ts";
 import { TextDelimiterStream } from "../../streams/text_delimiter_stream.ts";
 
 export interface CsvStreamOptions {
   separator?: string;
   comment?: string;
+  skipFirstRow?: boolean;
+  columns?: string[];
 }
 
 class StreamLineReader implements LineReader {
@@ -39,14 +46,20 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
-export class CsvStream implements TransformStream<string, Array<string>> {
-  readonly #readable: ReadableStream<Array<string>>;
+export class CsvStream<T extends CsvStreamOptions>
+  implements TransformStream<string, RowType<CsvStreamOptions, T>> {
+  readonly #readable: ReadableStream<
+    string[] | Record<string, string | unknown>
+  >;
   readonly #options: CsvStreamOptions;
   readonly #lineReader: StreamLineReader;
   readonly #lines: TextDelimiterStream;
   #lineIndex = 0;
+  #isFirstRow = true;
 
-  constructor(options: CsvStreamOptions = defaultReadOptions) {
+  #headers: string[] = [];
+
+  constructor(options: T = defaultReadOptions as T) {
     this.#options = {
       ...defaultReadOptions,
       ...options,
@@ -54,14 +67,16 @@ export class CsvStream implements TransformStream<string, Array<string>> {
 
     this.#lines = new TextDelimiterStream("\n");
     this.#lineReader = new StreamLineReader(this.#lines.readable.getReader());
-    this.#readable = new ReadableStream<Array<string>>({
+    this.#readable = new ReadableStream({
       pull: (controller) => this.#pull(controller),
       cancel: () => this.#lineReader.cancel(),
     });
   }
 
   async #pull(
-    controller: ReadableStreamDefaultController<Array<string>>,
+    controller: ReadableStreamDefaultController<
+      string[] | Record<string, string | unknown>
+    >,
   ): Promise<void> {
     const line = await this.#lineReader.readLine();
     if (line === "") {
@@ -83,21 +98,55 @@ export class CsvStream implements TransformStream<string, Array<string>> {
       this.#lineIndex,
     );
     if (record === null) {
+      if (this.#isFirstRow && this.#options.skipFirstRow) {
+        controller.error(
+          "The data had 0 rows even though the skipFirstRow option was set to true.",
+        );
+        return;
+      }
       controller.close();
       this.#lineReader.cancel();
       return;
     }
 
+    if (this.#isFirstRow) {
+      this.#isFirstRow = false;
+      if (this.#options.skipFirstRow || this.#options.columns) {
+        this.#headers = [];
+
+        if (this.#options.skipFirstRow) {
+          const head = record;
+          this.#headers = head;
+        }
+
+        if (this.#options.columns) {
+          this.#headers = this.#options.columns;
+        }
+      }
+
+      if (this.#options.skipFirstRow) {
+        return this.#pull(controller);
+      }
+    }
+
     this.#lineIndex++;
     if (record.length > 0) {
-      controller.enqueue(record);
+      if (this.#options.skipFirstRow || this.#options.columns) {
+        controller.enqueue(convertRowToObject(
+          record,
+          this.#headers,
+          this.#lineIndex,
+        ));
+      } else {
+        controller.enqueue(record);
+      }
     } else {
       return this.#pull(controller);
     }
   }
 
-  get readable(): ReadableStream<Array<string>> {
-    return this.#readable;
+  get readable() {
+    return this.#readable as ReadableStream<RowType<CsvStreamOptions, T>>;
   }
 
   get writable(): WritableStream<string> {
