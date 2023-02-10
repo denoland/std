@@ -274,12 +274,6 @@ x,,,
         skipFirstRow: false,
       },
       {
-        name: "simple Bufreader",
-        input: "a,b,c",
-        output: [["a", "b", "c"]],
-        skipFirstRow: false,
-      },
-      {
         name: "multiline",
         input: "a,b,c\ne,f,g\n",
         output: [
@@ -318,6 +312,13 @@ x,,,
         input: "a,b,c\nd,e",
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
+        errorMessage:
+          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+      },
+      {
+        name: "0 rows of data and skipFirstRow",
+        input: "",
+        skipFirstRow: true,
         errorMessage:
           "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
       },
