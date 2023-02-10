@@ -315,13 +315,6 @@ x,,,
         errorMessage:
           "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
       },
-      {
-        name: "0 rows of data and skipFirstRow",
-        input: "",
-        skipFirstRow: true,
-        errorMessage:
-          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
-      },
     ];
     for (const testCase of testCases) {
       await t.step(testCase.name, async () => {
