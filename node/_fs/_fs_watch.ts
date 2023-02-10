@@ -8,7 +8,7 @@ import { validateFunction } from "../internal/validators.mjs";
 import { stat, Stats } from "./_fs_stat.ts";
 import { Stats as StatsClass } from "../internal/fs/utils.mjs";
 import { Buffer } from "../buffer.ts";
-import { delay } from "../_util/delay.ts";
+import { delay } from "../_util/async.ts";
 
 const statPromisified = promisify(stat);
 const statAsync = async (filename: string): Promise<Stats | null> => {

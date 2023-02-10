@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { type Deferred, deferred } from "./_util/deferred.ts";
+import { type Deferred, deferred } from "./_util/async.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";

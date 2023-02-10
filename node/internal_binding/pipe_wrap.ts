@@ -30,7 +30,7 @@ import { ConnectionWrap } from "./connection_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { delay } from "../_util/delay.ts";
+import { delay } from "../_util/async.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import {
   ceilPowOf2,
