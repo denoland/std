@@ -2,18 +2,13 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import { notImplemented } from "../../_utils.ts";
-import { validateString } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
-import type { WritableOptions } from "../../_stream.d.ts";
-import Writable from "../streams/writable.mjs";
-import type {
-  BinaryLike,
-  BinaryToTextEncoding,
-  Encoding,
-  PrivateKeyInput,
-  PublicKeyInput,
-} from "./types.ts";
+import type { PrivateKeyInput, PublicKeyInput } from "./types.ts";
 import { KeyObject } from "./keys.ts";
+import {
+  Sign,
+  Verify,
+} from "../../_crypto/crypto_browserify/browserify_sign/index.js";
 
 export type DSAEncoding = "der" | "ieee-p1363";
 
@@ -35,67 +30,6 @@ export interface VerifyKeyObjectInput extends SigningOptions {
 }
 
 export type KeyLike = string | Buffer | KeyObject;
-
-export class Sign extends Writable {
-  constructor(algorithm: string, _options?: WritableOptions) {
-    validateString(algorithm, "algorithm");
-
-    super();
-
-    notImplemented("crypto.Sign");
-  }
-
-  sign(privateKey: KeyLike | SignKeyObjectInput | SignPrivateKeyInput): Buffer;
-  sign(
-    privateKey: KeyLike | SignKeyObjectInput | SignPrivateKeyInput,
-    outputFormat: BinaryToTextEncoding,
-  ): string;
-  sign(
-    _privateKey: KeyLike | SignKeyObjectInput | SignPrivateKeyInput,
-    _outputEncoding?: BinaryToTextEncoding,
-  ): Buffer | string {
-    notImplemented("crypto.Sign.prototype.sign");
-  }
-
-  update(data: BinaryLike): this;
-  update(data: string, inputEncoding: Encoding): this;
-  update(_data: BinaryLike | string, _inputEncoding?: Encoding): this {
-    notImplemented("crypto.Sign.prototype.update");
-  }
-}
-
-export class Verify extends Writable {
-  constructor(algorithm: string, _options?: WritableOptions) {
-    validateString(algorithm, "algorithm");
-
-    super();
-
-    notImplemented("crypto.Verify");
-  }
-
-  update(data: BinaryLike): this;
-  update(data: string, inputEncoding: Encoding): this;
-  update(_data: BinaryLike, _inputEncoding?: string): this {
-    notImplemented("crypto.Sign.prototype.update");
-  }
-
-  verify(
-    object: KeyLike | VerifyKeyObjectInput | VerifyPublicKeyInput,
-    signature: ArrayBufferView,
-  ): boolean;
-  verify(
-    object: KeyLike | VerifyKeyObjectInput | VerifyPublicKeyInput,
-    signature: string,
-    signatureEncoding?: BinaryToTextEncoding,
-  ): boolean;
-  verify(
-    _object: KeyLike | VerifyKeyObjectInput | VerifyPublicKeyInput,
-    _signature: ArrayBufferView | string,
-    _signatureEncoding?: BinaryToTextEncoding,
-  ): boolean {
-    notImplemented("crypto.Sign.prototype.sign");
-  }
-}
 
 export function signOneShot(
   algorithm: string | null | undefined,
@@ -146,3 +80,5 @@ export default {
   Sign,
   Verify,
 };
+
+export { Sign, Verify };

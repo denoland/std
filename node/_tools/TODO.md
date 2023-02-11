@@ -3,7 +3,7 @@
 NOTE: This file should not be manually edited. Please edit `config.json` and run
 `deno task node:setup` instead.
 
-Total: 2810
+Total: 2809
 
 - [abort/test-abort-backtrace.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-backtrace.js)
 - [abort/test-abort-fatal-error.js](https://github.com/nodejs/node/tree/v18.12.1/test/abort/test-abort-fatal-error.js)
@@ -503,7 +503,6 @@ Total: 2810
 - [parallel/test-crypto-scrypt.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-scrypt.js)
 - [parallel/test-crypto-secret-keygen.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-secret-keygen.js)
 - [parallel/test-crypto-secure-heap.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-secure-heap.js)
-- [parallel/test-crypto-sign-verify.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-sign-verify.js)
 - [parallel/test-crypto-stream.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-stream.js)
 - [parallel/test-crypto-subtle-zero-length.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-subtle-zero-length.js)
 - [parallel/test-crypto-update-encoding.js](https://github.com/nodejs/node/tree/v18.12.1/test/parallel/test-crypto-update-encoding.js)

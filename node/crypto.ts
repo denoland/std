@@ -264,12 +264,12 @@ function createHmac(
   return Hmac(hmac, key, options);
 }
 
-function createSign(algorithm: string, options?: WritableOptions): Sign {
-  return new Sign(algorithm, options);
+function createSign(algorithm: string, _options?: WritableOptions): Sign {
+  return new Sign(algorithm);
 }
 
-function createVerify(algorithm: string, options?: WritableOptions): Verify {
-  return new Verify(algorithm, options);
+function createVerify(algorithm: string, _options?: WritableOptions): Verify {
+  return new Verify(algorithm);
 }
 
 function setFipsForced(val: boolean) {

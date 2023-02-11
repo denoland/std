@@ -115,7 +115,9 @@
     ],
     "fixtures/keys": [
       "agent1-cert.pem",
-      "agent1-key.pem"
+      "agent1-key.pem",
+      "rsa_cert.crt",
+      "rsa_private.pem"
     ],
     "internet": [
       "test-dgram-connect.js",
@@ -213,6 +215,7 @@
       "test-console-table.js",
       "test-console-tty-colors.js",
       "test-crypto-hmac.js",
+      "test-crypto-sign-verify.js",
       "test-dgram-address.js",
       "test-dgram-bind-default-address.js",
       "test-dgram-bind.js",
