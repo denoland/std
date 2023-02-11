@@ -7,7 +7,7 @@
 
 // TODO(PolarETech): The process.argv[3] check should be argv[2], and the
 // command passed to exec() should not need to include "run", "-A",
-// and "require.ts"
+// and "require.ts".
 
 'use strict';
 

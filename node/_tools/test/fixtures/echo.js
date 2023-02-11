@@ -32,7 +32,7 @@ const assert = require('assert');
 process.stdout.write('hello world\r\n');
 
 // TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead。
+// Use process.stdin instead.
 var stdin = process.stdin;
 // var stdin = process.openStdin();
 
