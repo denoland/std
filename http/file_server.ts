@@ -150,12 +150,11 @@ export async function serveFile(
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (etag && ifNoneMatch && compareEtag(ifNoneMatch, etag)) || (
-        ifNoneMatch === null &&
+      (etag && ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
+      (ifNoneMatch === null &&
         fileInfo.mtime &&
         ifModifiedSince &&
-        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000
-      )
+        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       file.close();
 
