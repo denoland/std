@@ -4,7 +4,7 @@ import { BytesList } from "../bytes/bytes_list.ts";
 import { createLPS } from "./_common.ts";
 
 /** Disposition of the delimiter. */
-type DelimiterDisposition =
+export type DelimiterDisposition =
   /** Include delimiter in the found chunk. */
   | "suffix"
   /** Include delimiter in the subsequent chunk. */
