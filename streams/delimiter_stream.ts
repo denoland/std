@@ -34,7 +34,7 @@ export interface DelimiterStreamOptions {
  * Divide a stream after semi-colons, keeping the semi-colons in the output:
  * ```ts
  * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter_stream.ts";
- * const res = await Deno.openFileSync("/home/dino/main.js");
+ * const res = await Deno.openSync("/home/dino/main.js");
  * const parts = res.body!
  *   .pipeThrough(
  *     new DelimiterStream(
