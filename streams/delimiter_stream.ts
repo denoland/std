@@ -14,7 +14,7 @@ export type DelimiterDisposition =
 ;
 
 export interface DelimiterStreamOptions {
-  disposition?: DelimiterDisposition
+  disposition?: DelimiterDisposition;
 }
 
 /**
