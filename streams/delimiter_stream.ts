@@ -13,6 +13,10 @@ export type DelimiterDisposition =
   | "discard" // delimiter discarded
 ;
 
+export interface DelimiterStreamOptions {
+  disposition?: DelimiterDisposition
+}
+
 /**
  * Divide a stream into chunks delimited by a given byte sequence.
  *
@@ -57,7 +61,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
 
   constructor(
     delimiter: Uint8Array,
-    options?: { disposition?: DelimiterDisposition },
+    options?: DelimiterStreamOptions,
   ) {
     super({
       transform: (chunk, controller) => {
