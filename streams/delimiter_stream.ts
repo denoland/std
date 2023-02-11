@@ -3,21 +3,48 @@
 import { BytesList } from "../bytes/bytes_list.ts";
 import { createLPS } from "./_common.ts";
 
+/** Disposition of the delimiter. */
 type DelimiterDisposition =
-  | "suffix" // delimiter included in chunk
-  | "prefix" // delimiter included in subsequent chunk
+  /** Include delimiter in the found chunk. */
+  | "suffix"
+  /** Include delimiter in the subsequent chunk. */
+  | "prefix"
+  /** Discard the delimiter. */
   | "discard" // delimiter discarded
 ;
 
-/** Transform a stream into a stream where each chunk is divided by a given delimiter.
+/**
+ * Divide a stream into chunks delimited by a given byte sequence.
  *
+ * @example
+ * Divide a CSV stream by commas, discarding the commas:
  * ```ts
  * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter_stream.ts";
- * const res = await fetch("https://example.com");
+ * const res = await fetch("https://example.com/data.csv");
  * const parts = res.body!
- *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo")))
+ *   .pipeThrough(new DelimiterStream(new TextEncoder().encode(",")))
  *   .pipeThrough(new TextDecoderStream());
  * ```
+ *
+ * @example
+ * Divide a stream after semi-colons, keeping the semi-colons in the output:
+ * ```ts
+ * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter_stream.ts";
+ * const res = await Deno.openFileSync("/home/dino/main.js");
+ * const parts = res.body!
+ *   .pipeThrough(
+ *     new DelimiterStream(
+ *       new TextEncoder().encode(";"),
+ *       { disposition: "suffix" },
+ *     )
+ *   )
+ *   .pipeThrough(new TextDecoderStream());
+ * ```
+ *
+ * @param delimiter Delimiter byte sequence
+ * @param options Options for the transform stream
+ * @param options.disposition Disposition of the delimiter
+ * @returns Transform stream
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs = new BytesList();
