@@ -24,11 +24,13 @@ interface EntryInfo {
   name: string;
 }
 
-const DENO_DEPLOYMENT_ID =
-  Deno.permissions.querySync({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-      .state === "granted"
-    ? Deno.env.get("DENO_DEPLOYMENT_ID")
-    : undefined;
+const envPermissionStatus = await Deno.permissions.query({
+  name: "env",
+  variable: "DENO_DEPLOYMENT_ID",
+});
+const DENO_DEPLOYMENT_ID = envPermissionStatus.state === "granted"
+  ? Deno.env.get("DENO_DEPLOYMENT_ID")
+  : undefined;
 const encoder = new TextEncoder();
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
