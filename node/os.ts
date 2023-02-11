@@ -24,7 +24,7 @@ import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
-import { isWindows, osType } from "../_util/os.ts";
+import { isWindows, osType } from "./_util/os.ts";
 import { os } from "./internal_binding/constants.ts";
 
 export const constants = os;
