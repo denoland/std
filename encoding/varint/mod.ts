@@ -84,7 +84,7 @@ export function decodeU32(val: Uint8Array): number {
  * console.log(decodedValue === 25565n);
  * ```
  */
-export function decodeU64(val: Uint8Array): BigInt {
+export function decodeU64(val: Uint8Array): bigint {
   if (val.length > 10) throw RangeError("Too many bytes");
   const wasm = instantiate();
   try {
