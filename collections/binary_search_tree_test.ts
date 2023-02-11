@@ -1,5 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 import { ascend, BinarySearchTree, descend } from "./binary_search_tree.ts";
 
 class MyMath {
@@ -526,4 +530,12 @@ Deno.test("[collections/BinarySearchTree] README example", () => {
     "truck",
     "helicopter",
   ]);
+});
+
+Deno.test("[collections/BinarySearchTree] nully .max() and .clear()", () => {
+  const tree = BinarySearchTree.from([1]);
+  assert(!tree.isEmpty());
+  tree.clear();
+  assert(tree.isEmpty());
+  assertEquals(tree.max(), null);
 });
