@@ -4,6 +4,12 @@ import { DelimiterStream } from "./delimiter_stream.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { readableStreamFromIterable } from "./readable_stream_from_iterable.ts";
 
+/**
+ * Verify that a transform stream produces the expected output data.
+ * @param transform The transform stream to test
+ * @param inputs Source input data
+ * @param outputs Expected output data
+ */
 async function testTransformStream<T, U>(
   transform: TransformStream<T, U>,
   inputs: Iterable<T> | AsyncIterable<T>,
