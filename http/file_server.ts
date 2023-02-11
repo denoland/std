@@ -24,6 +24,11 @@ interface EntryInfo {
   name: string;
 }
 
+const DENO_DEPLOYMENT_ID =
+  Deno.permissions.querySync({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
+      .state === "granted"
+    ? Deno.env.get("DENO_DEPLOYMENT_ID")
+    : undefined;
 const encoder = new TextEncoder();
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -119,35 +124,73 @@ export async function serveFile(
   }
 
   // Set last modified header if last modification timestamp is available
-  if (fileInfo.mtime instanceof Date) {
-    const lastModified = new Date(fileInfo.mtime);
-    headers.set("last-modified", lastModified.toUTCString());
-
-    // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const etag = toHashString(
+  const lastModified = fileInfo.mtime;
+  // Create a simple etag that is an md5 of the last modified date and filesize concatenated
+  const etag = fileInfo.mtime
+    ? toHashString(
       await createHash(
         etagAlgorithm ?? "FNV32A",
-        `${lastModified.toJSON()}${fileInfo.size}`,
+        `${fileInfo.mtime.toJSON()}${fileInfo.size}`,
       ),
-    );
-    headers.set("etag", etag);
+    )
+    : DENO_DEPLOYMENT_ID;
 
+  if (lastModified) {
+    headers.set("last-modified", lastModified.toUTCString());
+  }
+  if (etag) {
+    headers.set("etag", etag);
+  }
+
+  if (etag || lastModified) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
     // the access timestamp value, then return 304
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
-      (ifNoneMatch === null &&
+      (etag && ifNoneMatch && compareEtag(ifNoneMatch, etag)) || (
+        ifNoneMatch === null &&
+        lastModified &&
         ifModifiedSince &&
-        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
+        lastModified.getTime() < new Date(ifModifiedSince).getTime() + 1000
+      )
     ) {
       file.close();
 
       return createCommonResponse(Status.NotModified, null, { headers });
     }
   }
+
+  // if (fileInfo.mtime instanceof Date) {
+  //   const lastModified = new Date(fileInfo.mtime);
+  //   headers.set("last-modified", lastModified.toUTCString());
+
+  //   // Create a simple etag that is an md5 of the last modified date and filesize concatenated
+  //   const etag = toHashString(
+  //     await createHash(
+  //       etagAlgorithm ?? "FNV32A",
+  //       `${lastModified.toJSON()}${fileInfo.size}`,
+  //     ),
+  //   );
+  //   headers.set("etag", etag);
+
+  //   // If a `if-none-match` header is present and the value matches the tag or
+  //   // if a `if-modified-since` header is present and the value is bigger than
+  //   // the access timestamp value, then return 304
+  //   const ifNoneMatch = req.headers.get("if-none-match");
+  //   const ifModifiedSince = req.headers.get("if-modified-since");
+  //   if (
+  //     (ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
+  //     (ifNoneMatch === null &&
+  //       ifModifiedSince &&
+  //       fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
+  //   ) {
+  //     file.close();
+
+  //     return createCommonResponse(Status.NotModified, null, { headers });
+  //   }
+  // }
 
   // Get and parse the "range" header
   const range = req.headers.get("range") as string;

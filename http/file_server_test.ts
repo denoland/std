@@ -8,7 +8,7 @@ import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { dirname, fromFileUrl, join, resolve, toFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
@@ -989,6 +989,32 @@ Deno.test(
 );
 
 Deno.test(
+  "file_server if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
+  async () => {
+    await startFileServer();
+    try {
+      // When used in combination with If-None-Match, If-Modified-Since is ignored
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
+      // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
+
+      const expectedIfModifiedSince = await getTestFileLastModified();
+      const headers = new Headers();
+      headers.set("if-none-match", "not match etag");
+      headers.set("if-modified-since", expectedIfModifiedSince);
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },
+      );
+      assertEquals(res.status, 200);
+      assertEquals(res.statusText, "OK");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
   "file_server `serveFile` serve test file",
   async () => {
     const req = new Request("http://localhost:4507/testdata/test file.txt");
@@ -1044,6 +1070,52 @@ Deno.test(
     const res = await serveFile(req, testdataPath);
     assertEquals(res.status, 304);
     assertEquals(res.statusText, "Not Modified");
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
+  async () => {
+    // When used in combination with If-None-Match, If-Modified-Since is ignored
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
+    // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
+
+    const expectedIfModifiedSince = await getTestFileLastModified();
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("if-none-match", "not match etag");
+    req.headers.set("if-modified-since", expectedIfModifiedSince);
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 200);
+    assertEquals(res.statusText, "OK");
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
+  async () => {
+    const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
+    // deno-fmt-ignore
+    const code = `
+      import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
+      import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
+      import { assertEquals } from "${import.meta.resolve("../testing/asserts.ts")}";
+      const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
+      const fileInfo = await Deno.stat(new URL(testdataPath));
+      fileInfo.mtime = null;
+      const req = new Request("http://localhost:4507/testdata/test file.txt");
+      const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
+      assertEquals(res.headers.get("etag"), "${testDenoDeploymentId}");
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["eval", code],
+      stdout: "inherit",
+      stderr: "inherit",
+      env: { DENO_DEPLOYMENT_ID: testDenoDeploymentId },
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 );
 
