@@ -4,7 +4,7 @@
 // The following are all the process APIs that don't depend on the stream module
 // They have to be split this way to prevent a circular dependency
 
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
 import { _exiting } from "./exiting.ts";
 
@@ -34,6 +34,13 @@ export const nextTick = _nextTick;
 /** Wrapper of Deno.env.get, which doesn't throw type error when
  * the env name has "=" or "\0" in it. */
 function denoEnvGet(name: string) {
+  const perm =
+    Deno.permissions.querySync?.({ name: "env", variable: name }).state ??
+      "granted"; // for Deno Deploy
+  // Returns undefined if the env permission is unavailable
+  if (perm !== "granted") {
+    return undefined;
+  }
   try {
     return Deno.env.get(name);
   } catch (e) {

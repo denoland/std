@@ -22,7 +22,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { inspect } from "./util.ts";
-import { stripColor as removeColors } from "../fmt/colors.ts";
+import { stripColor as removeColors } from "./_util/strip_color.ts";
 
 function getConsoleWidth(): number {
   try {

@@ -2,7 +2,7 @@
 // Ported mostly from https://github.com/browserify/path-browserify/
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { isWindows } from "../../_util/os.ts";
+import { isWindows } from "../_util/os.ts";
 import _win32 from "./win32.ts";
 import _posix from "./posix.ts";
 

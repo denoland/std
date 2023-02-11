@@ -26,8 +26,8 @@
 //
 // See also: http://docs.libuv.org/en/v1.x/errors.html#error-constants
 
-import { unreachable } from "../../_util/asserts.ts";
-import { osType } from "../../_util/os.ts";
+import { unreachable } from "../_util/asserts.ts";
+import { osType } from "../_util/os.ts";
 import { uvTranslateSysError } from "./_libuv_winerror.ts";
 
 // In Node these values are coming from libuv:

@@ -1,4 +1,4 @@
-import * as path from "../../../path/mod.ts";
+import * as path from "../../path.ts";
 import Module from "../../module.ts";
 
 const modulePath = path.join(
