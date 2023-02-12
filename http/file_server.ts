@@ -24,11 +24,10 @@ interface EntryInfo {
   name: string;
 }
 
-const envPermissionStatus = await Deno.permissions.query({
-  name: "env",
-  variable: "DENO_DEPLOYMENT_ID",
-});
-const DENO_DEPLOYMENT_ID = envPermissionStatus.state === "granted"
+const envPermissionStatus =
+  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
+    .state ?? "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID = envPermissionStatus === "granted"
   ? Deno.env.get("DENO_DEPLOYMENT_ID")
   : undefined;
 const encoder = new TextEncoder();
