@@ -1110,7 +1110,11 @@ Deno.test(
 Deno.test(
   "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
   async () => {
+    const encoder = new TextEncoder();
     const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
+    const hashedDenoDeploymentId = toHashString(
+      encoder.encode(testDenoDeploymentId),
+    );
     // deno-fmt-ignore
     const code = `
       import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
@@ -1121,7 +1125,7 @@ Deno.test(
       fileInfo.mtime = null;
       const req = new Request("http://localhost:4507/testdata/test file.txt");
       const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
-      assertEquals(res.headers.get("etag"), "${testDenoDeploymentId}");
+      assertEquals(res.headers.get("etag"), "${hashedDenoDeploymentId}");
     `;
     const command = new Deno.Command(Deno.execPath(), {
       args: ["eval", code],
