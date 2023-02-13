@@ -11,9 +11,10 @@ export type DelimiterDisposition =
   | "prefix"
   /** Discard the delimiter. */
   | "discard" // delimiter discarded
-;
+  ;
 
 export interface DelimiterStreamOptions {
+  /** Disposition of the delimiter. */
   disposition?: DelimiterDisposition;
 }
 
@@ -47,7 +48,6 @@ export interface DelimiterStreamOptions {
  *
  * @param delimiter Delimiter byte sequence
  * @param options Options for the transform stream
- * @param options.disposition Disposition of the delimiter
  * @returns Transform stream
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
