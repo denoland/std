@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertStrictEquals,
+  assertThrows,
 } from "../testing/asserts.ts";
 import { ascend, BinarySearchTree, descend } from "./binary_search_tree.ts";
 
@@ -538,4 +539,15 @@ Deno.test("[collections/BinarySearchTree] nully .max() and .clear()", () => {
   tree.clear();
   assert(tree.isEmpty());
   assertEquals(tree.max(), null);
+});
+
+Deno.test("[collections/BinarySearchTree] .rotateNode()", () => {
+  class MyTree<T> extends BinarySearchTree<T> {
+    rotateNode2() {
+      super.rotateNode(this.root!, "right");
+    }
+  }
+  const tree = new MyTree();
+  tree.insert(1);
+  assertThrows(() => tree.rotateNode2());
 });

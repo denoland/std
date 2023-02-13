@@ -188,6 +188,11 @@ export class BinarySearchTree<T> implements Iterable<T> {
     const replacementDirection: Direction = direction === "left"
       ? "right"
       : "left";
+    if (!node[replacementDirection]) {
+      throw new TypeError(
+        `cannot rotate ${direction} without ${replacementDirection} child`,
+      );
+    }
     const replacement: BinarySearchNode<T> = node[replacementDirection]!;
     node[replacementDirection] = replacement[direction] ?? null;
     if (replacement[direction]) replacement[direction]!.parent = node;
