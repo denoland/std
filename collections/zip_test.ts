@@ -91,6 +91,7 @@ Deno.test({
       [[], [{}, []]],
       [],
     );
+    assertEquals(zip([]), []);
   },
 });
 

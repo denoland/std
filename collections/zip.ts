@@ -31,7 +31,7 @@ import { minOf } from "./min_of.ts";
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: T[K][] }
 ): T[] {
-  const minLength = minOf(arrays, (it) => it.length)!;
+  const minLength = minOf(arrays, (it) => it.length) ?? 0;
 
   const ret: T[] = new Array(minLength);
 
