@@ -13,6 +13,7 @@ import { isWindows } from "../_util/os.ts";
 import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
+import { retry } from "../async/retry.ts";
 
 let child: Deno.ChildProcess;
 
@@ -95,7 +96,21 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  child.kill("SIGKILL");
+  // Note: We retry this because 'Access is denied' error is thrown sometimes
+  // on windows
+  await retry(() => {
+    try {
+      child.kill("SIGKILL");
+    } catch (e) {
+      if (
+        e instanceof TypeError &&
+        e.message === "Child process has already terminated."
+      ) {
+        return;
+      }
+      throw e;
+    }
+  });
   await child.status;
 }
 
