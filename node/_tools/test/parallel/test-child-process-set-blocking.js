@@ -26,16 +26,18 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+'use strict';
 const common = require('../common');
 const assert = require('assert');
+const ch = require('child_process');
 
-process.stdout.write('hello world\r\n');
+const SIZE = 100000;
+const python = process.env.PYTHON || (common.isWindows ? 'python' : 'python3');
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
-
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
+const cp = ch.spawn(python, ['-c', `print(${SIZE} * "C")`], {
+  stdio: 'inherit'
 });
+
+cp.on('exit', common.mustCall(function(code) {
+  assert.strictEqual(code, 0);
+}));

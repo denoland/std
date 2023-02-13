@@ -26,16 +26,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const common = require('../common');
-const assert = require('assert');
+const exec = require('child_process').exec;
 
-process.stdout.write('hello world\r\n');
-
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
-
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
+[0, 1].forEach(function(i) {
+  exec('ls', function(err, stdout, stderr) {
+    console.log(i);
+    throw new Error('hello world');
+  });
 });

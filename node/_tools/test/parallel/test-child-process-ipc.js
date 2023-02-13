@@ -26,16 +26,48 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const common = require('../common');
+// TODO(PolarETech): The args passed to spawn() should not need to
+// include "require.ts".
+
+'use strict';
+
+const {
+  mustCall,
+  mustNotCall,
+} = require('../common');
 const assert = require('assert');
+const debug = require('util').debuglog('test');
 
-process.stdout.write('hello world\r\n');
+const { spawn } = require('child_process');
+const fixtures = require('../common/fixtures');
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
+const sub = fixtures.path('echo.js');
 
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
-});
+const child = spawn(process.argv[0], ['require.ts', sub]);
+
+child.stderr.on('data', mustNotCall());
+
+child.stdout.setEncoding('utf8');
+
+const messages = [
+  'hello world\r\n',
+  'echo me\r\n',
+];
+
+child.stdout.on('data', mustCall((data) => {
+  debug(`child said: ${JSON.stringify(data)}`);
+  const test = messages.shift();
+  debug(`testing for '${test}'`);
+  assert.strictEqual(data, test);
+  if (messages.length) {
+    debug(`writing '${messages[0]}'`);
+    child.stdin.write(messages[0]);
+  } else {
+    assert.strictEqual(messages.length, 0);
+    child.stdin.end();
+  }
+}, messages.length));
+
+child.stdout.on('end', mustCall((data) => {
+  debug('child end');
+}));
