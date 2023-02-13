@@ -81,5 +81,10 @@ Deno.test({
       "13:00:00.0",
       format(new Date("2019-01-01T13:00:00.000"), "HH:mm:ss.S"),
     );
+
+    assertEquals(
+      "1",
+      format(new Date("2019-01-01T13:00:00.000"), "h"),
+    );
   },
 });

@@ -24,6 +24,13 @@ Deno.test({
     assertEquals(diff.quarters, 7);
     assertEquals(diff.years, 1);
 
+    // If `options.units.months` isn't defined
+    diff = difference(denoReleaseV1, denoInit, {
+      units: ["years", "quarters"],
+    });
+    assertEquals(diff.quarters, 7);
+    assertEquals(diff.years, 1);
+
     const birth = new Date("1998/2/23 10:10:10");
     const old = new Date("1998/2/23 11:11:11");
     diff = difference(birth, old, {
