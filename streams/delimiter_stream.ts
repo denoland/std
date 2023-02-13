@@ -11,7 +11,7 @@ export type DelimiterDisposition =
   | "prefix"
   /** Discard the delimiter. */
   | "discard" // delimiter discarded
-  ;
+;
 
 export interface DelimiterStreamOptions {
   /** Disposition of the delimiter. */
