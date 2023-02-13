@@ -26,16 +26,42 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(PolarETech): The process.argv[3] check should be argv[2],
+// the args passed to spawn() should not need to include "require.ts",
+// and the process.argv[2] passed to spawn() should be argv[1].
+
+'use strict';
 const common = require('../common');
 const assert = require('assert');
 
-process.stdout.write('hello world\r\n');
+// If child process output to console and exit
+// The console.log statements here are part of the test.
+if (process.argv[3] === 'child') {
+  console.log('hello');
+  for (let i = 0; i < 200; i++) {
+    console.log('filler');
+  }
+  console.log('goodbye');
+  process.exit(0);
+} else {
+  // parent process
+  const spawn = require('child_process').spawn;
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
+  // spawn self as child
+  const child = spawn(process.argv[0], ['require.ts', process.argv[2], 'child']);
 
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
-});
+  let stdout = '';
+
+  child.stderr.on('data', common.mustNotCall());
+
+  // Check if we receive both 'hello' at start and 'goodbye' at end
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', common.mustCallAtLeast((data) => {
+    stdout += data;
+  }));
+
+  child.on('close', common.mustCall(() => {
+    assert.strictEqual(stdout.slice(0, 6), 'hello\n');
+    assert.strictEqual(stdout.slice(stdout.length - 8), 'goodbye\n');
+  }));
+}

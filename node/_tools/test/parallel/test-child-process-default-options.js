@@ -26,16 +26,33 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const common = require('../common');
+'use strict';
+const { isWindows } = require('../common');
 const assert = require('assert');
 
-process.stdout.write('hello world\r\n');
+const spawn = require('child_process').spawn;
+const debug = require('util').debuglog('test');
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
+process.env.HELLO = 'WORLD';
 
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
+let child;
+if (isWindows) {
+  child = spawn('cmd.exe', ['/c', 'set'], {});
+} else {
+  child = spawn('/usr/bin/env', [], {});
+}
+
+let response = '';
+
+child.stdout.setEncoding('utf8');
+
+child.stdout.on('data', function(chunk) {
+  debug(`stdout: ${chunk}`);
+  response += chunk;
+});
+
+process.on('exit', function() {
+  assert.ok(response.includes('HELLO=WORLD'),
+            'spawn did not use process.env as default ' +
+            `(process.env.HELLO = ${process.env.HELLO})`);
 });

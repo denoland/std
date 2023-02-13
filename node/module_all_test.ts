@@ -31,6 +31,7 @@ import * as http from "./http.ts";
 import * as http2 from "./http2.ts";
 import * as https from "./https.ts";
 import * as inspector from "./inspector.ts";
+import * as internalCp from "./internal/child_process.ts";
 import * as internalCryptoCertificate from "./internal/crypto/certificate.ts";
 import * as internalCryptoCipher from "./internal/crypto/cipher.ts";
 import * as internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
@@ -122,6 +123,10 @@ Deno.test("modules", () => {
   assertEquals(keys(moduleAll.http2), keys(http2));
   assertEquals(keys(moduleAll.https), keys(https));
   assertEquals(keys(moduleAll.inspector), keys(inspector));
+  assertEquals(
+    keys(moduleAll["internal/child_process"]),
+    keys(internalCp),
+  );
   assertEquals(
     keys(moduleAll["internal/crypto/certificate"]),
     keys(internalCryptoCertificate),
