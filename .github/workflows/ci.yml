@@ -31,7 +31,7 @@ jobs:
         run: deno lint
 
       - name: Run tests
-        run: deno task test
+        run: deno task redis:test
 
       - name: Generate lcov
         run: deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
