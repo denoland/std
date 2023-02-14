@@ -26,4 +26,6 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-process.exit(process.argv[2] || 1);
+// TODO(PolarETech): The process.argv[3] should be argv[2].
+
+process.exit(process.argv[3] || 1);
