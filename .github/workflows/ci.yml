@@ -19,6 +19,13 @@ jobs:
           - windows-2022
           - macOS-latest
 
+    services:
+      redis:
+        image: redis
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
+
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -36,6 +43,9 @@ jobs:
       - name: Type check browser compatible modules
         shell: bash
         run: deno task test:browser
+
+      - name: Test Redis
+        run: deno task redis:test
 
       - name: Generate lcov
         shell: bash
