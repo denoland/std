@@ -1110,10 +1110,9 @@ Deno.test(
 Deno.test(
   "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
   async () => {
-    const encoder = new TextEncoder();
     const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
     const hashedDenoDeploymentId = toHashString(
-      encoder.encode(testDenoDeploymentId),
+      await createHash("FNV32A", testDenoDeploymentId),
     );
     // deno-fmt-ignore
     const code = `

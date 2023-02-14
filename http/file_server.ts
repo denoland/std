@@ -25,11 +25,16 @@ interface EntryInfo {
 }
 
 const encoder = new TextEncoder();
+
+// avoid top-lebvel-await
 const envPermissionStatus =
   Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
     .state ?? "granted"; // for deno deploy
-const hashedDenoDeploymentId = envPermissionStatus === "granted"
-  ? toHashString(encoder.encode(Deno.env.get("DENO_DEPLOYMENT_ID")))
+const DENO_DEPLOYMENT_ID = envPermissionStatus === "granted"
+  ? Deno.env.get("DENO_DEPLOYMENT_ID")
+  : undefined;
+const hashedDenoDeploymentId = DENO_DEPLOYMENT_ID
+  ? createHash("FNV32A", DENO_DEPLOYMENT_ID).then((hash) => toHashString(hash))
   : undefined;
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -132,7 +137,7 @@ export async function serveFile(
         `${fileInfo.mtime.toJSON()}${fileInfo.size}`,
       ),
     )
-    : hashedDenoDeploymentId;
+    : await hashedDenoDeploymentId;
 
   // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime) {
