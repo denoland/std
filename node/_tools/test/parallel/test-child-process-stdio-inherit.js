@@ -26,16 +26,41 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const common = require('../common');
+// TODO(PolarETech): The process.argv[3] check should be argv[2], and
+// the args passed to spawn() should not need to include "require.ts".
+
+'use strict';
+require('../common');
 const assert = require('assert');
+const spawn = require('child_process').spawn;
 
-process.stdout.write('hello world\r\n');
+if (process.argv[3] === 'parent')
+  parent();
+else
+  grandparent();
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
+function grandparent() {
+  const child = spawn(process.execPath, ['require.ts', __filename, 'parent']);
+  child.stderr.pipe(process.stderr);
+  let output = '';
+  const input = 'asdfasdf';
 
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
-});
+  child.stdout.on('data', function(chunk) {
+    output += chunk;
+  });
+  child.stdout.setEncoding('utf8');
+
+  child.stdin.end(input);
+
+  child.on('close', function(code, signal) {
+    assert.strictEqual(code, 0);
+    assert.strictEqual(signal, null);
+    // 'cat' on windows adds a \r\n at the end.
+    assert.strictEqual(output.trim(), input.trim());
+  });
+}
+
+function parent() {
+  // Should not immediately exit.
+  spawn('cat', [], { stdio: 'inherit' });
+}

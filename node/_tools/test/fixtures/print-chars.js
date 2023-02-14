@@ -26,16 +26,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const common = require('../common');
+// TODO(PolarETech): The process.argv[3] should be argv[2].
+
 const assert = require('assert');
 
-process.stdout.write('hello world\r\n');
+var n = parseInt(process.argv[3]);
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
-
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
-});
+process.stdout.write('c'.repeat(n));
