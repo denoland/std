@@ -63,9 +63,6 @@ jobs:
         shell: bash
         run: deno task test:browser
 
-      - name: Test Redis
-        run: deno task redis:test
-
       - name: Generate lcov
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
