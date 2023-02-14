@@ -174,7 +174,7 @@ async function readAttribute(
 }
 
 function readBigNumber(line: Uint8Array): bigint {
-  return bigint(removePrefix(line));
+  return BigInt(removePrefix(line));
 }
 
 async function readBlobError(
