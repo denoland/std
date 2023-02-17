@@ -12,10 +12,10 @@ export function timingSafeEqual(
     return false;
   }
   if (!(a instanceof DataView)) {
-    a = new DataView(ArrayBuffer.isView(a) ? a.buffer : a);
+    a = new DataView(ArrayBuffer.isView(a) ? a.buffer : a, 0, a.byteLength);
   }
   if (!(b instanceof DataView)) {
-    b = new DataView(ArrayBuffer.isView(b) ? b.buffer : b);
+    b = new DataView(ArrayBuffer.isView(b) ? b.buffer : b, 0, b.byteLength);
   }
   assert(a instanceof DataView);
   assert(b instanceof DataView);
