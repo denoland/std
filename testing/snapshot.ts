@@ -47,7 +47,6 @@
  * deno test --allow-all -- --update
  * ```
  *
- *
  * Additionally, new snapshots will only be created when this flag is present.
  *
  * ## Permissions:
