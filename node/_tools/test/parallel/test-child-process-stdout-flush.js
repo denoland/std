@@ -26,16 +26,33 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(PolarETech): The args passed to spawn() should not need to
+// include "require.ts".
+
+'use strict';
 const common = require('../common');
 const assert = require('assert');
+const spawn = require('child_process').spawn;
+const fixtures = require('../common/fixtures');
 
-process.stdout.write('hello world\r\n');
+const sub = fixtures.path('print-chars.js');
 
-// TODO(PolarETech): process.openStdin() is not yet implemented.
-// Use process.stdin instead.
-var stdin = process.stdin;
-// var stdin = process.openStdin();
+const n = 500000;
 
-stdin.on('data', function(data) {
-  process.stdout.write(data.toString());
+const child = spawn(process.argv[0], ['require.ts', sub, n]);
+
+let count = 0;
+
+child.stderr.setEncoding('utf8');
+child.stderr.on('data', common.mustNotCall());
+
+child.stdout.setEncoding('utf8');
+child.stdout.on('data', (data) => {
+  count += data.length;
 });
+
+child.on('close', common.mustCall((code, signal) => {
+  assert.strictEqual(code, 0);
+  assert.strictEqual(signal, null);
+  assert.strictEqual(n, count);
+}));

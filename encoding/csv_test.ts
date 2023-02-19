@@ -10,6 +10,7 @@ import {
   assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
+import type { AssertTrue, Has } from "../testing/types.ts";
 import { parse, ParseError, stringify, StringifyError } from "./csv.ts";
 
 const CRLF = "\r\n";
@@ -1352,5 +1353,55 @@ Deno.test({
         },
       },
     );
+  },
+});
+
+Deno.test({
+  name: "[encoding/csv] correct typing",
+  fn() {
+    {
+      const parsed = parse("a\nb");
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", {});
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
   },
 });
