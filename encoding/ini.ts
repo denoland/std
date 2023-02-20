@@ -282,9 +282,9 @@ export class IniMap {
           break;
         }
       }
-      lineValue.num = i - 1;
+      lineValue.num = i;
       // Append the line value at the end of all global values
-      this.lines.splice(lineValue.num - 1, 0, lineValue);
+      this.lines.splice(i, 0, lineValue);
       const { length } = this.lines;
       for (; i < length; i += 1) {
         const line = this.lines[i];
@@ -484,9 +484,8 @@ export class IniMap {
   }
 }
 
-function* readLines(input?: string) {
+function* readLines(text: string) {
   const lineBreak = "\r\n";
-  const text = input ?? "";
   const { length } = text;
   let lineBreakLength = -1;
   let line = "";

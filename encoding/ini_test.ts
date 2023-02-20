@@ -59,48 +59,95 @@ Deno.test({
       pretty: true,
     });
     assertValidStringify(
-      { a: "b", section: { c: "d" } },
-      `a=b\n[section]\nc=d`,
+      { a: "b", section: { c: "d" }, e: "f" },
+      `a=b\ne=f\n[section]\nc=d`,
+    );
+    assertValidStringify(
+      { dates: { a: new Date("1977-05-25") } },
+      `[dates]\na=1977-05-25T00:00:00.000Z`,
+      { replacer: (_, val) => val?.toJSON() },
     );
   },
 });
 
 Deno.test({
   name: "[ini] create and manage an IniMap",
-  fn() {
+  async fn({ step }) {
     const ini = new INI.IniMap();
 
-    assertEquals(ini.size, 0);
-    assertEquals(ini.get("keyA"), undefined);
-    assertEquals(ini.get("section1", "keyA"), undefined);
+    await step({
+      name: "[IniMap] get and set values",
+      fn() {
+        assertEquals(ini.size, 0);
+        assertEquals(ini.get("keyA"), undefined);
+        assertEquals(ini.get("section1", "keyA"), undefined);
 
-    ini.set("section1", "keyA", 100).set("keyA", "1977-05-25");
+        ini.set("section1", "keyA", null).set("keyA", "1977-05-25");
 
-    assertEquals(ini.size, 2);
-    assertEquals(ini.get("keyA"), "1977-05-25");
-    assertEquals(ini.get("section1", "keyA"), 100);
-    assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]\nkeyA=100");
-    assertEquals(ini.delete("section1", "keyA"), true);
-    assertEquals(ini.delete("section1", "keyA"), false);
-    assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]");
+        assertEquals(ini.size, 2);
+        assertEquals(ini.get("keyA"), "1977-05-25");
+        assertEquals(ini.get("section1", "keyA"), null);
 
-    ini.clear("section1");
+        ini.set("section1", "keyA", 100);
 
-    assertEquals(ini.size, 1);
-    assertEquals(ini.has("keyA"), true);
-    assertEquals(ini.has("keyB"), false);
-    assertEquals(ini.toString(), "keyA=1977-05-25");
-    assertObjectMatch(
-      Array.from(ini.entries()),
-      // deno-lint-ignore no-explicit-any
-      [["keyA", "1977-05-25"]] as any,
-    );
+        assertEquals(ini.get("section1", "keyA"), 100);
+        assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]\nkeyA=100");
+        assertObjectMatch(
+          Array.from(ini.entries()),
+          // deno-lint-ignore no-explicit-any
+          [["keyA", "1977-05-25"], ["keyA", 100, "section1"]] as any,
+        );
+      },
+    });
 
-    ini.clear();
+    await step({
+      name: "[IniMap] has and delete values",
+      fn() {
+        assertEquals(ini.delete("section1", "keyA"), true);
+        assertEquals(ini.delete("section1", "keyA"), false);
+        assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]");
 
-    assertEquals(ini.size, 0);
-    assertEquals(ini.has("keyA"), false);
-    assertEquals(ini.toString(), "");
+        ini.clear("section1");
+
+        assertEquals(ini.size, 1);
+        assertEquals(ini.has("keyA"), true);
+        assertEquals(ini.has("keyB"), false);
+        assertEquals(ini.toString(), "keyA=1977-05-25");
+
+        ini.set("section2", "keyC", null);
+        ini.set("keyB", 42);
+        ini.set("section1", "keyB", 42);
+        ini.set("section2", "keyD", null);
+
+        assertEquals(ini.has("keyB"), true);
+        assertEquals(ini.has("section1", "keyB"), true);
+        assertEquals(ini.has("section3", "keyB"), false);
+        assertEquals(ini.delete("keyB"), true);
+        assertEquals(ini.delete("section1", "keyB"), true);
+        assertEquals(ini.delete("keyB"), false);
+        assertEquals(ini.delete("section1", "keyB"), false);
+      },
+    });
+
+    await step({
+      name: "[IniMap] clear map",
+      fn() {
+        ini.clear();
+
+        assertEquals(ini.size, 0);
+        assertEquals(ini.has("keyA"), false);
+        assertEquals(ini.toString(), "");
+      },
+    });
+
+    await step({
+      name: "[IniMap] map to JSON",
+      fn() {
+        ini.set("section1", "key1", null);
+
+        assertEquals(JSON.stringify(ini), '{"section1":{"key1":null}}');
+      },
+    });
   },
 });
 
