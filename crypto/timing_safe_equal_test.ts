@@ -118,3 +118,27 @@ Deno.test({
     assert(!timingSafeEqual(ua, ub));
   },
 });
+
+Deno.test({
+  name: "[timingSafeEqual] - Uint8Array w. non-0 byteOffset",
+  fn() {
+    const a = new SharedArrayBuffer(4);
+    const va = new DataView(a);
+    va.setUint8(1, 212);
+    va.setUint8(2, 213);
+    const ua = new Uint8Array(a, 1, 2);
+
+    const b = new SharedArrayBuffer(4);
+    const vb = new DataView(b);
+    vb.setUint8(2, 212);
+    vb.setUint8(3, 213);
+    const ub = new Uint8Array(b, 2, 2);
+
+    assert(timingSafeEqual(ua, ub));
+
+    vb.setUint8(1, 214);
+    vb.setUint8(2, 215);
+
+    assert(!timingSafeEqual(ua, ub));
+  },
+});
