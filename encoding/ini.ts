@@ -261,7 +261,7 @@ export class IniMap {
     }
   }
 
-  /** Convert this IniMap to a plain object. */
+  /** Convert this `IniMap` to a plain object. */
   toObject(): Record<string, unknown | Record<string, unknown>> {
     const obj: Record<string, unknown | Record<string, unknown>> = {};
 
@@ -299,7 +299,7 @@ export class IniMap {
     return this.toObject();
   }
 
-  /** Convert this IniMap to an INI string. */
+  /** Convert this `IniMap` to an INI string. */
   toString(replacer?: ReplacerFunction): string {
     const replacerFunc: ReplacerFunction = typeof replacer === "function"
       ? replacer
@@ -321,7 +321,7 @@ export class IniMap {
     }).join(this.formatting?.lineBreak ?? "\n");
   }
 
-  /** Parse an INI string to an IniMap. */
+  /** Parse an INI string to an `IniMap`. */
   static parse(
     str: string,
     options?: ParseOptions & FormattingOptions,
@@ -410,7 +410,7 @@ export class IniMap {
     return ini;
   }
 
-  /** Create an IniMap from a plain object. */
+  /** Create an `IniMap` from a plain object. */
   static from(
     // deno-lint-ignore no-explicit-any
     input: Record<string, any>,
