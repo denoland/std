@@ -70,6 +70,14 @@ export class IniMap {
     this.formatting = { ...(formatting ?? {}) };
   }
 
+  get size(): number {
+    let size = this.global.size;
+    for (const { map } of this.sections.values()) {
+      size += map.size;
+    }
+    return size;
+  }
+
   /** Clear a single section or the entire INI. */
   clear(sectionName?: string): void {
     if (sectionName) {
@@ -123,10 +131,10 @@ export class IniMap {
     if (args.length > 1) {
       const section = this.sections.get(args[0]);
 
-      return section?.map.get(args[1]!);
+      return section?.map.get(args[1]!)?.val;
     }
 
-    return this.global.get(args[0]);
+    return this.global.get(args[0])?.val;
   }
 
   /** Check if a global key exists in the INI. */
@@ -239,7 +247,7 @@ export class IniMap {
           break;
         }
       }
-      lineValue.num = i;
+      lineValue.num = i - 1;
       // Append the line value at the end of all global values
       this.lines.splice(lineValue.num - 1, 0, lineValue);
       const { length } = this.lines;

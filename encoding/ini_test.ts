@@ -4,6 +4,7 @@ import * as INI from "./ini.ts";
 import {
   assert,
   assertEquals,
+  assertObjectMatch,
   assertStrictEquals,
   assertThrows,
 } from "../testing/asserts.ts";
@@ -61,6 +62,45 @@ Deno.test({
       { a: "b", section: { c: "d" } },
       `a=b\n[section]\nc=d`,
     );
+  },
+});
+
+Deno.test({
+  name: "[ini] create and manage an IniMap",
+  fn() {
+    const ini = new INI.IniMap();
+
+    assertEquals(ini.size, 0);
+    assertEquals(ini.get("keyA"), undefined);
+    assertEquals(ini.get("section1", "keyA"), undefined);
+
+    ini.set("section1", "keyA", 100).set("keyA", "1977-05-25");
+
+    assertEquals(ini.size, 2);
+    assertEquals(ini.get("keyA"), "1977-05-25");
+    assertEquals(ini.get("section1", "keyA"), 100);
+    assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]\nkeyA=100");
+    assertEquals(ini.delete("section1", "keyA"), true);
+    assertEquals(ini.delete("section1", "keyA"), false);
+    assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]");
+
+    ini.clear("section1");
+
+    assertEquals(ini.size, 1);
+    assertEquals(ini.has("keyA"), true);
+    assertEquals(ini.has("keyB"), false);
+    assertEquals(ini.toString(), "keyA=1977-05-25");
+    assertObjectMatch(
+      Array.from(ini.entries()),
+      // deno-lint-ignore no-explicit-any
+      [["keyA", "1977-05-25"]] as any,
+    );
+
+    ini.clear();
+
+    assertEquals(ini.size, 0);
+    assertEquals(ini.has("keyA"), false);
+    assertEquals(ini.toString(), "");
   },
 });
 
