@@ -11,19 +11,17 @@ import {
 function assertValidParse(
   text: string,
   expected: unknown,
-  reviver?: INI.ReviverFunction,
-  formatting?: INI.FormattingOptions,
+  options?: INI.ParseOptions,
 ) {
-  assertEquals(INI.parse(text, reviver, formatting), expected);
+  assertEquals(INI.parse(text, options), expected);
 }
 
 function assertValidStringify(
   obj: unknown,
   expected: unknown,
-  replacer?: INI.ReplacerFunction,
-  formatting?: INI.FormattingOptions,
+  options?: INI.StringifyOptions,
 ) {
-  assertEquals(INI.stringify(obj, replacer, formatting), expected);
+  assertEquals(INI.stringify(obj, options), expected);
 }
 
 function assertInvalidParse(
@@ -31,11 +29,10 @@ function assertInvalidParse(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes?: string,
-  reviver?: INI.ReviverFunction,
-  formatting?: INI.FormattingOptions,
+  options?: INI.ParseOptions,
 ) {
   assertThrows(
-    () => INI.parse(text, reviver, formatting),
+    () => INI.parse(text, options),
     ErrorClass,
     msgIncludes,
   );
@@ -44,7 +41,9 @@ function assertInvalidParse(
 Deno.test({
   name: "[ini] parse",
   fn() {
-    assertValidParse(`a=100`, { a: 100 }, (_, value) => Number(value));
+    assertValidParse(`a=100`, { a: 100 }, {
+      reviver: (_, value) => Number(value),
+    });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
   },
 });
@@ -53,8 +52,8 @@ Deno.test({
   name: "[ini] stringify",
   fn() {
     assertValidStringify({ a: "b" }, `a=b`);
-    assertValidStringify({ a: "b" }, `a = b`, undefined, { pretty: true });
-    assertValidStringify({ a: "b" }, `a : b`, undefined, {
+    assertValidStringify({ a: "b" }, `a = b`, { pretty: true });
+    assertValidStringify({ a: "b" }, `a : b`, {
       assignment: ":",
       pretty: true,
     });
@@ -127,8 +126,10 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"__proto__": 100}');
-    const ini = INI.parse("__proto__ = 100", (key, value) => {
-      if (key === "__proto__") return Number(value);
+    const ini = INI.parse("__proto__ = 100", {
+      reviver: (key, value) => {
+        if (key === "__proto__") return Number(value);
+      },
     });
     assertEquals(ini, json);
     assertEquals((ini as Record<string, number>).__proto__, 100);
@@ -146,7 +147,9 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
-    const ini = INI.parse("aaa=0\naaa=1", (_, value) => Number(value));
+    const ini = INI.parse("aaa=0\naaa=1", {
+      reviver: (_, value) => Number(value),
+    });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
   },

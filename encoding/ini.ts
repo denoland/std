@@ -16,13 +16,24 @@ export interface FormattingOptions {
   pretty?: boolean;
 }
 
+export interface ParseOptions {
+  /** The character used to assign a value to a key; defaults to '='. */
+  assignment?: FormattingOptions["assignment"];
+  /** Provide custom parsing of the value in a key/value pair. */
+  reviver?: ReviverFunction;
+}
+
+export interface StringifyOptions extends FormattingOptions {
+  /** Provide custom string conversion for the value in a key/value pair. */
+  replacer?: ReplacerFunction;
+}
+
 export type ReplacerFunction = (
   key: string,
   // deno-lint-ignore no-explicit-any
   value: any,
   section?: string,
-  // deno-lint-ignore no-explicit-any
-) => any;
+) => string;
 
 export type ReviverFunction = (
   key: string,
@@ -35,27 +46,25 @@ export type ReviverFunction = (
 /** Parse an INI config string into an object. Provide formatting options to override the default assignment operator. */
 export function parse(
   str: string,
-  reviver?: ReviverFunction,
-  formatting?: FormattingOptions,
+  options?: ParseOptions,
 ): Record<string, unknown | Record<string, unknown>> {
-  return INIMap.parse(str, reviver, formatting).toObject();
+  return INIMap.parse(str, options).toObject();
 }
 
 /** Compile an object into an INI config string. Provide formatting options to modify the output. */
 export function stringify(
   // deno-lint-ignore no-explicit-any
   obj: any,
-  replacer?: ReplacerFunction,
-  formatting?: FormattingOptions,
+  options?: StringifyOptions,
 ): string {
-  return INIMap.from(obj, formatting).toString(replacer);
+  return INIMap.from(obj, options).toString(options?.replacer);
 }
 
 export class INIMap {
-  global = new Map<string, LineValue>();
-  sections = new Map<string, LineSection>();
-  lines: Line[] = [];
-  formatting: FormattingOptions;
+  private global = new Map<string, LineValue>();
+  private sections = new Map<string, LineSection>();
+  private lines: Line[] = [];
+  private formatting: FormattingOptions;
 
   constructor(formatting?: FormattingOptions) {
     this.formatting = { ...(formatting ?? {}) };
@@ -107,13 +116,10 @@ export class INIMap {
   }
 
   /** Get a value from a global key in the INI. */
-  // deno-lint-ignore no-explicit-any
-  get(key: string): any;
+  get(key: string): unknown;
   /** Get a value from a section key in the INI. */
-  // deno-lint-ignore no-explicit-any
-  get(section: string, key: string): any;
-  // deno-lint-ignore no-explicit-any
-  get(...args: [keyOrSection: string, noneOrKey?: string]): any {
+  get(section: string, key: string): unknown;
+  get(...args: [keyOrSection: string, noneOrKey?: string]): unknown {
     if (args.length > 1) {
       const section = this.sections.get(args[0]);
 
@@ -182,8 +188,7 @@ export class INIMap {
   }
 
   /** Iterate over each entry in the INI to retrieve key, value, and section. */
-  // deno-lint-ignore no-explicit-any
-  *entries(): Generator<[key: string, value: any, section?: string]> {
+  *entries(): Generator<[key: string, value: unknown, section?: string]> {
     for (const { key, val } of this.global.values()) {
       yield [key, val];
     }
@@ -212,7 +217,6 @@ export class INIMap {
     return lineSection;
   }
 
-  /** Append values to global or sections. */
   #appendValue(lineValue: LineValue): void {
     if (lineValue.sec) {
       // For line values in a section, the end of the section is known
@@ -247,7 +251,6 @@ export class INIMap {
     }
   }
 
-  /** Delete values from global or sections. */
   #deleteValue(lineValue: LineValue): void {
     this.lines.splice(lineValue.num - 1, 1);
     const { length } = this.lines;
@@ -321,15 +324,14 @@ export class INIMap {
   /** Parse an INI string to an INIMap. */
   static parse(
     str: string,
-    reviver?: ReviverFunction,
-    formatting?: FormattingOptions,
+    options?: ParseOptions & FormattingOptions,
   ): INIMap {
     if (typeof str !== "string") {
       throw new SyntaxError(`Unexpected token ${str} in INI at line 0`);
     }
-    const ini = new INIMap(formatting);
-    const reviverFunc: ReviverFunction = typeof reviver === "function"
-      ? reviver
+    const ini = new INIMap(options);
+    const reviverFunc: ReviverFunction = typeof options?.reviver === "function"
+      ? options.reviver
       : (_key, value, _section) => value;
     const assignment = (ini.formatting?.assignment ?? "=").substring(0, 1);
     let lineNumber = 1;
