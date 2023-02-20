@@ -77,7 +77,7 @@ Deno.test({
   name: "[ini] preserve comments",
   fn() {
     const text = "#comment\na=b";
-    const ini = INI.INIMap.parse(text);
+    const ini = INI.IniMap.parse(text);
 
     assertEquals(ini.toString(), text);
   },

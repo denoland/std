@@ -48,7 +48,7 @@ export function parse(
   str: string,
   options?: ParseOptions,
 ): Record<string, unknown | Record<string, unknown>> {
-  return INIMap.parse(str, options).toObject();
+  return IniMap.parse(str, options).toObject();
 }
 
 /** Compile an object into an INI config string. Provide formatting options to modify the output. */
@@ -57,10 +57,10 @@ export function stringify(
   obj: any,
   options?: StringifyOptions,
 ): string {
-  return INIMap.from(obj, options).toString(options?.replacer);
+  return IniMap.from(obj, options).toString(options?.replacer);
 }
 
-export class INIMap {
+export class IniMap {
   private global = new Map<string, LineValue>();
   private sections = new Map<string, LineSection>();
   private lines: Line[] = [];
@@ -261,7 +261,7 @@ export class INIMap {
     }
   }
 
-  /** Convert this INIMap to a plain object. */
+  /** Convert this IniMap to a plain object. */
   toObject(): Record<string, unknown | Record<string, unknown>> {
     const obj: Record<string, unknown | Record<string, unknown>> = {};
 
@@ -299,7 +299,7 @@ export class INIMap {
     return this.toObject();
   }
 
-  /** Convert this INIMap to an INI string. */
+  /** Convert this IniMap to an INI string. */
   toString(replacer?: ReplacerFunction): string {
     const replacerFunc: ReplacerFunction = typeof replacer === "function"
       ? replacer
@@ -321,15 +321,15 @@ export class INIMap {
     }).join(this.formatting?.lineBreak ?? "\n");
   }
 
-  /** Parse an INI string to an INIMap. */
+  /** Parse an INI string to an IniMap. */
   static parse(
     str: string,
     options?: ParseOptions & FormattingOptions,
-  ): INIMap {
+  ): IniMap {
     if (typeof str !== "string") {
       throw new SyntaxError(`Unexpected token ${str} in INI at line 0`);
     }
-    const ini = new INIMap(options);
+    const ini = new IniMap(options);
     const reviverFunc: ReviverFunction = typeof options?.reviver === "function"
       ? options.reviver
       : (_key, value, _section) => value;
@@ -410,13 +410,13 @@ export class INIMap {
     return ini;
   }
 
-  /** Create an INIMap from a plain object. */
+  /** Create an IniMap from a plain object. */
   static from(
     // deno-lint-ignore no-explicit-any
     input: Record<string, any>,
     formatting?: FormattingOptions,
-  ): INIMap {
-    const ini = new INIMap(formatting);
+  ): IniMap {
+    const ini = new IniMap(formatting);
     // deno-lint-ignore no-explicit-any
     const isRecord = (val: any): val is Record<string, any> =>
       typeof val === "object" && val !== null;
