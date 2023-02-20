@@ -47,7 +47,7 @@ export interface FormattingOptions {
   pretty?: boolean;
 }
 
-/** Options for parsing INI strins. */
+/** Options for parsing INI strings. */
 export interface ParseOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: FormattingOptions["assignment"];
@@ -95,6 +95,7 @@ export function stringify(
   return IniMap.from(obj, options).toString(options?.replacer);
 }
 
+/** Class implementation for fine control of INI data structures. */
 export class IniMap {
   private global = new Map<string, LineValue>();
   private sections = new Map<string, LineSection>();
@@ -105,6 +106,7 @@ export class IniMap {
     this.formatting = { ...(formatting ?? {}) };
   }
 
+  /** Get the count of key/value pairs. */
   get size(): number {
     let size = this.global.size;
     for (const { map } of this.sections.values()) {
