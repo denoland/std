@@ -1,12 +1,43 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-/*
- * Basic INI-style config parser/compiler to handle key-value pairs and sections as raw as possible.
+/**
+ * {@linkcode parse} and {@linkcode stringify} for handling
+ * [INI](https://en.wikipedia.org/wiki/INI_file) encoded data, such as the
+ * [Desktop Entry specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html).
  * Values are parsed as strings by default to preserve data parity from the original.
- * BYO value transformer in the form of reviver/replacer like JSON.parse/JSON.stringify.
+ * Customization is possible in the form of reviver/replacer functions like those in `JSON.parse` and `JSON.stringify`.
  * Nested sections, repeated key names within a section, multi-line values, and key/value arrays are not supported.
- * White space padding and comment lines starting with '#', ';', or '//' will be skipped completely.
+ * White space padding and lines starting with '#', ';', or '//' will be treated as comments.
+ *
+ * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
+ * comments, accessing values like a map, iterating over key/value/section entries, and more.
+ *
+ * @example
+ * ```ts
+ * import { IniMap } from "https://deno.land/std@$STD_VERSION/encoding/ini.ts";
+ * const ini = new IniMap();
+ * ini.set("section1", "keyA", 100)
+ * console.log(ini.toString())
+ *
+ * // =>
+ * // [section1]
+ * // keyA=100
+ *
+ * ini.set('keyA', 25)
+ * console.log(ini.toObject())
+ *
+ * // =>
+ * // {
+ * //   keyA: 25,
+ * //   section1: {
+ * //     keyA: 100
+ * //   }
+ * // }
+ * ```
+ *
+ * @module
  */
 
+/** Options for providing formatting marks. */
 export interface FormattingOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: string;
@@ -16,6 +47,7 @@ export interface FormattingOptions {
   pretty?: boolean;
 }
 
+/** Options for parsing INI strins. */
 export interface ParseOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: FormattingOptions["assignment"];
@@ -23,11 +55,13 @@ export interface ParseOptions {
   reviver?: ReviverFunction;
 }
 
+/** Options for constructing INI strings. */
 export interface StringifyOptions extends FormattingOptions {
   /** Provide custom string conversion for the value in a key/value pair. */
   replacer?: ReplacerFunction;
 }
 
+/** Function for replacing JavaScript values with INI string values. */
 export type ReplacerFunction = (
   key: string,
   // deno-lint-ignore no-explicit-any
@@ -35,6 +69,7 @@ export type ReplacerFunction = (
   section?: string,
 ) => string;
 
+/** Function for replacing INI values with JavaScript values. */
 export type ReviverFunction = (
   key: string,
   // deno-lint-ignore no-explicit-any
