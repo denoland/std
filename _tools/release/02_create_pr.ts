@@ -39,7 +39,7 @@ function getPrBody() {
     `- [ ] Releases.md is updated correctly\n` +
     `- [ ] All the tests in this branch have been run against the CLI release being done` +
     "      ```shell" +
-    `      ${TARGET} task test && ${TARGET} task node:unit && ${TARGET} task node:test` +
+    `      ${TARGET} task test` +
     "      ```\n" +
     `To make edits to this PR:\n` +
     "```shell\n" +

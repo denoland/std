@@ -1,6 +1,2 @@
 # Use Unix line endings in all text files.
 * text=auto eol=lf
-
-# Tell github these are vendored files.
-# Doesn't include them in the language statistics.
-node/_tools/test/ linguist-vendored

@@ -1,6 +1,6 @@
-`std/_crypto_wasm` is only for internal use, such as by `std/crypto` and
-`std/node/crypto`. Its interface may not be stable between releases and it
-should not be imported directly.
+`std/_crypto_wasm` is only for internal use, such as by `std/crypto`. Its
+interface may not be stable between releases and it should not be imported
+directly.
 
 ## Overview
 
