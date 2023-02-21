@@ -581,7 +581,7 @@ export class IniMap {
   }
 
   /** Parse an INI string in this `IniMap`. */
-  parse(text: string, reviver?: ReviverFunction): this {
+  parseIni(text: string, reviver?: ReviverFunction): this {
     if (typeof text !== "string") {
       throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
     }
@@ -685,7 +685,7 @@ export class IniMap {
     text: string,
     options?: ParseOptions & FormattingOptions,
   ): IniMap {
-    return new IniMap(options).parse(text, options?.reviver);
+    return new IniMap(options).parseIni(text, options?.reviver);
   }
 
   /** Create an `IniMap` from a plain object. */
@@ -719,7 +719,7 @@ export class IniMap {
   }
 }
 
-interface Comments {
+export interface Comments {
   /** Clear all comments in the INI. */
   clear(): void;
   /** Delete a comment at a specific line in the INI. */
