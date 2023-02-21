@@ -141,7 +141,7 @@ Deno.test({
     });
 
     await step({
-      name: "[IniMap] map to JSON",
+      name: "[IniMap] convert map to JSON",
       fn() {
         ini.set("section1", "key1", null);
 
@@ -167,6 +167,56 @@ Deno.test({
     const ini = INI.IniMap.parse(text);
 
     assertEquals(ini.toString(), text);
+  },
+});
+
+Deno.test({
+  name: "[ini] get and set comments",
+  fn() {
+    const ini = INI.IniMap.parse("a=b");
+
+    assertEquals(ini.comments.getAtKey("a"), undefined);
+    ini.comments.setAtKey("a", "# added comment 1");
+    assertEquals(ini.comments.getAtKey("a"), "# added comment 1");
+    ini.comments.setAtKey("a", "# modified comment 1");
+    assertEquals(ini.comments.getAtKey("a"), "# modified comment 1");
+    ini.set("section1", "c", "d");
+    ini.comments.setAtSection("section1", "added comment 2");
+    assertEquals(ini.comments.getAtSection("section1"), "# added comment 2");
+    ini.comments.setAtSection("section1", "modified comment 2");
+    assertEquals(ini.comments.getAtSection("section1"), "# modified comment 2");
+    ini.comments.setAtKey("section1", "c", "# added comment 3");
+    assertEquals(ini.comments.getAtKey("section1", "c"), "# added comment 3");
+    ini.comments.setAtKey("section1", "c", "# modified comment 3");
+    assertEquals(
+      ini.comments.getAtKey("section1", "c"),
+      "# modified comment 3",
+    );
+
+    const line = ini.size + 8;
+
+    ini.comments.setAtLine(line, "added comment 4");
+    assertEquals(ini.comments.getAtLine(line), "# added comment 4");
+    ini.comments.setAtLine(line, "modified comment 4");
+    assertEquals(ini.comments.getAtLine(line), "# modified comment 4");
+
+    const expected = "# modified comment 1\na=b\n# modified comment 2\n" +
+      "[section1]\n# modified comment 3\nc=d\n\n\n\n# modified comment 4";
+
+    assertEquals(ini.toString(), expected);
+    assertEquals(ini.comments.deleteAtLine(line), true);
+    assertEquals(ini.comments.deleteAtLine(line), false);
+    assertEquals(ini.comments.deleteAtKey("a"), true);
+    assertEquals(ini.comments.deleteAtKey("a"), false);
+    assertEquals(ini.comments.deleteAtKey("b"), false);
+    assertEquals(ini.comments.deleteAtSection("section1"), true);
+    assertEquals(ini.comments.deleteAtSection("section1"), false);
+    assertEquals(ini.comments.deleteAtSection("section2"), false);
+    assertEquals(ini.comments.deleteAtKey("section1", "c"), true);
+    assertEquals(ini.comments.deleteAtKey("section1", "c"), false);
+    assertEquals(ini.toString(), "a=b\n[section1]\nc=d\n\n\n");
+    ini.comments.clear();
+    assertEquals(ini.toString(), "a=b\n[section1]\nc=d");
   },
 });
 

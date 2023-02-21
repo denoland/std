@@ -43,6 +43,8 @@ export interface FormattingOptions {
   assignment?: string;
   /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
   lineBreak?: string;
+  /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
+  comment?: string;
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
   pretty?: boolean;
 }
@@ -144,7 +146,7 @@ export class IniMap {
         const existing = section.map.get(args[1]!);
 
         if (existing) {
-          this.#deleteValue(existing);
+          this.#deleteLine(existing);
           return section.map.delete(args[1]!);
         }
       }
@@ -152,7 +154,7 @@ export class IniMap {
       const existing = this.global.get(args[0]);
 
       if (existing) {
-        this.#deleteValue(existing);
+        this.#deleteLine(existing);
         return this.global.delete(args[0]);
       }
     }
@@ -165,13 +167,7 @@ export class IniMap {
   /** Get a value from a section key in the INI. */
   get(section: string, key: string): unknown;
   get(...args: [keyOrSection: string, noneOrKey?: string]): unknown {
-    if (args.length > 1) {
-      const section = this.sections.get(args[0]);
-
-      return section?.map.get(args[1]!)?.val;
-    }
-
-    return this.global.get(args[0])?.val;
+    return this.#getValue(...args)?.val;
   }
 
   /** Check if a global key exists in the INI. */
@@ -244,6 +240,117 @@ export class IniMap {
     }
   }
 
+  /** Manage comments in the INI. */
+  get comments(): Comments {
+    return {
+      clear: (): void => {
+        this.lines = this.lines.filter((line) => line.type !== "comment");
+      },
+      deleteAtLine: (line: number): boolean => {
+        const comment = this.#getComment(line);
+        if (comment) {
+          this.#deleteLine(comment);
+          return true;
+        }
+        return false;
+      },
+      deleteAtKey: (
+        ...args: [keyOrSection: string, noneOrKey?: string]
+      ): boolean => {
+        const lineValue = this.#getValue(...args);
+        if (lineValue) {
+          return this.comments.deleteAtLine(lineValue.num - 1);
+        }
+        return false;
+      },
+      deleteAtSection: (sectionName: string): boolean => {
+        const section = this.sections.get(sectionName);
+        if (section) {
+          return this.comments.deleteAtLine(section.num - 1);
+        }
+        return false;
+      },
+      getAtLine: (line: number): string | undefined => {
+        return this.#getComment(line)?.val;
+      },
+      getAtKey: (
+        ...args: [keyOrSection: string, noneOrKey?: string]
+      ): string | undefined => {
+        const lineValue = this.#getValue(...args);
+        if (lineValue) {
+          return this.comments.getAtLine(lineValue.num - 1);
+        }
+      },
+      getAtSection: (sectionName: string): string | undefined => {
+        const section = this.sections.get(sectionName);
+        if (section) {
+          return this.comments.getAtLine(section.num - 1);
+        }
+      },
+      setAtLine: (line: number, text: string): Comments => {
+        const comment = this.#getComment(line);
+        const mark = this.formatting.comment ?? "#";
+        const formatted = text.startsWith(mark) || text === ""
+          ? text
+          : `${mark} ${text}`;
+        if (comment) {
+          comment.val = formatted;
+        } else {
+          if (line > this.lines.length) {
+            for (let i = this.lines.length + 1; i < line; i += 1) {
+              this.#appendLine({
+                type: "comment",
+                num: i,
+                val: "",
+              });
+            }
+          }
+          this.#appendLine({
+            type: "comment",
+            num: line,
+            val: formatted,
+          });
+        }
+        return this.comments;
+      },
+      setAtKey: (
+        ...args: [keyOrSection: string, textOrKey: string, noneOrText?: string]
+      ): Comments => {
+        if (args.length > 2) {
+          const lineValue = this.#getValue(args[0], args[1]);
+          if (lineValue) {
+            if (this.#getComment(lineValue.num - 1)) {
+              this.comments.setAtLine(lineValue.num - 1, args[2]!);
+            } else {
+              this.comments.setAtLine(lineValue.num, args[2]!);
+            }
+          }
+        } else {
+          const lineValue = this.#getValue(args[0]);
+          if (lineValue) {
+            if (this.#getComment(lineValue.num - 1)) {
+              this.comments.setAtLine(lineValue.num - 1, args[1]);
+            } else {
+              this.comments.setAtLine(lineValue.num, args[1]);
+            }
+          }
+        }
+        return this.comments;
+      },
+      setAtSection: (sectionName: string, text: string): Comments => {
+        const section = this.sections.get(sectionName);
+        if (section) {
+          if (this.#getComment(section.num - 1)) {
+            this.comments.setAtLine(section.num - 1, text);
+          } else {
+            this.comments.setAtLine(section.num, text);
+          }
+        }
+        return this.comments;
+      },
+    };
+  }
+
   #getOrCreateSection(section: string): LineSection {
     const existing = this.sections.get(section);
 
@@ -262,16 +369,27 @@ export class IniMap {
     return lineSection;
   }
 
+  #getValue(...args: [keyOrSection: string, noneOrKey?: string]) {
+    if (args.length > 1) {
+      const section = this.sections.get(args[0]);
+
+      return section?.map.get(args[1]!);
+    }
+
+    return this.global.get(args[0]);
+  }
+
+  #getComment(line: number): LineComment | undefined {
+    const comment: Line | undefined = this.lines[line - 1];
+    if (comment?.type === "comment") {
+      return comment;
+    }
+  }
+
   #appendValue(lineValue: LineValue): void {
     if (lineValue.sec) {
       // For line values in a section, the end of the section is known
-      this.lines.splice(lineValue.num - 1, 0, lineValue);
-      const { length } = this.lines;
-      for (let i = lineValue.num; i < length; i += 1) {
-        const line = this.lines[i];
-        line.num += 1;
-        if (line.type === "section") line.end += 1;
-      }
+      this.#appendLine(lineValue);
     } else if (this.lines.length === 0) {
       // For an empty aray, just insert the line value
       lineValue.num = 1;
@@ -284,25 +402,63 @@ export class IniMap {
           break;
         }
       }
-      lineValue.num = i;
+      lineValue.num = i + 1;
       // Append the line value at the end of all global values
-      this.lines.splice(i, 0, lineValue);
-      const { length } = this.lines;
-      for (; i < length; i += 1) {
-        const line = this.lines[i];
-        line.num += 1;
-        if (line.type === "section") line.end += 1;
+      this.#appendLine(lineValue);
+    }
+  }
+
+  #appendLine(input: Line): void {
+    this.lines.splice(input.num - 1, 0, input);
+    const { length } = this.lines;
+    // If the input is a comment, find the next section if any to update.
+    let updateSection = input.type === "comment";
+    for (let i = input.num; i < length; i += 1) {
+      const line = this.lines[i];
+      line.num += 1;
+      if (line.type === "section") {
+        line.end += 1;
+        // If the comment is before the nearest section, don't update the section further.
+        updateSection = false;
+      }
+      if (updateSection) {
+        // if the comment precedes a value in a section, get and update the section end.
+        if (line.type === "value" && line.sec) {
+          const section = this.sections.get(line.sec);
+
+          if (section) {
+            section.end += 1;
+            updateSection = false;
+          }
+        }
       }
     }
   }
 
-  #deleteValue(lineValue: LineValue): void {
-    this.lines.splice(lineValue.num - 1, 1);
+  #deleteLine(input: Line): void {
+    this.lines.splice(input.num - 1, 1);
     const { length } = this.lines;
-    for (let i = lineValue.num - 1; i < length; i += 1) {
+    // If the input is a comment, find the next section if any to update.
+    let updateSection = input.type === "comment";
+    for (let i = input.num - 1; i < length; i += 1) {
       const line = this.lines[i];
       line.num -= 1;
-      if (line.type === "section") line.end -= 1;
+      if (line.type === "section") {
+        line.end -= 1;
+        // If the comment is before the nearest section, don't update the section further.
+        updateSection = false;
+      }
+      if (updateSection) {
+        // if the comment precedes a value in a section, get and update the section end.
+        if (line.type === "value" && line.sec) {
+          const section = this.sections.get(line.sec);
+
+          if (section) {
+            section.end -= 1;
+            updateSection = false;
+          }
+        }
+      }
     }
   }
 
@@ -384,11 +540,18 @@ export class IniMap {
 
     for (const line of readLines(str)) {
       const trimmed = line.trim();
-
       if (isComment(trimmed)) {
+        // If comment formatting mark is not set, discover it.
+        if (!ini.formatting.comment) {
+          const mark = trimmed[0];
+          if (mark) {
+            // if mark is truthy, use the character.
+            ini.formatting.comment = mark === "/" ? "//" : mark;
+          }
+        }
         ini.lines.push({
           type: "comment",
-          num: lineNumber += 1,
+          num: lineNumber,
           val: trimmed,
         });
       } else if (isSection(trimmed, lineNumber)) {
@@ -400,13 +563,12 @@ export class IniMap {
           );
         }
 
-        const num = lineNumber += 1;
         currentSection = {
           type: "section",
-          num,
+          num: lineNumber,
           sec,
           map: new Map<string, LineValue>(),
-          end: num,
+          end: lineNumber,
         };
         ini.lines.push(currentSection);
         ini.sections.set(currentSection.sec, currentSection);
@@ -428,21 +590,20 @@ export class IniMap {
         const value = trimmed.substring(assignmentPos + 1).trim();
 
         if (currentSection) {
-          const num = lineNumber += 1;
           const lineValue: LineValue = {
             type: "value",
-            num,
+            num: lineNumber,
             sec: currentSection.sec,
             key,
             val: reviverFunc(key, value, currentSection.sec),
           };
           currentSection.map.set(key, lineValue);
           ini.lines.push(lineValue);
-          currentSection.end = num;
+          currentSection.end = lineNumber;
         } else {
           const lineValue: LineValue = {
             type: "value",
-            num: lineNumber += 1,
+            num: lineNumber,
             key,
             val: reviverFunc(key, value),
           };
@@ -450,6 +611,8 @@ export class IniMap {
           ini.lines.push(lineValue);
         }
       }
+
+      lineNumber += 1;
     }
 
     return ini;
@@ -484,6 +647,35 @@ export class IniMap {
 
     return ini;
   }
+}
+
+interface Comments {
+  /** Clear all comments in the INI. */
+  clear(): void;
+  /** Delete a comment at a specific line in the INI. */
+  deleteAtLine(line: number): boolean;
+  /** Delete a comment before a global key in the INI. */
+  deleteAtKey(key: string): boolean;
+  /** Delete a comment before a section key in the INI. */
+  deleteAtKey(section: string, key: string): boolean;
+  /** Delete a comment before a section line in the INI. */
+  deleteAtSection(section: string): boolean;
+  /** Get a comment at a specific line in the INI. */
+  getAtLine(line: number): string | undefined;
+  /** Get a comment before a global key in the INI. */
+  getAtKey(key: string): string | undefined;
+  /** Get a comment before a section key in the INI. */
+  getAtKey(section: string, key: string): string | undefined;
+  /** Get a comment before a section line in the INI. */
+  getAtSection(section: string): string | undefined;
+  /** Set a comment at a specific line in the INI. */
+  setAtLine(line: number, text: string): Comments;
+  /** Set a comment before a global key in the INI. */
+  setAtKey(key: string, text: string): Comments;
+  /** Set a comment before a section key in the INI. */
+  setAtKey(section: string, key: string, text: string): Comments;
+  /** Set a comment before a section line in the INI. */
+  setAtSection(section: string, text: string): Comments;
 }
 
 function* readLines(text: string) {
