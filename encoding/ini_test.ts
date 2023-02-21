@@ -143,9 +143,36 @@ Deno.test({
     await step({
       name: "[IniMap] convert map to JSON",
       fn() {
+        ini.clear();
         ini.set("section1", "key1", null);
 
         assertEquals(JSON.stringify(ini), '{"section1":{"key1":null}}');
+      },
+    });
+
+    await step({
+      name: "[IniMap] detect unambiguous formatting marks",
+      fn() {
+        assertObjectMatch(INI.IniMap.parse("# comment\na = b").formatting, {
+          comment: "#",
+          lineBreak: "\n",
+          pretty: true,
+        });
+        assertObjectMatch(INI.IniMap.parse("; comment\ra=b").formatting, {
+          comment: ";",
+          lineBreak: "\r",
+          pretty: false,
+        });
+        assertObjectMatch(INI.IniMap.parse("// comment\r\na= b").formatting, {
+          comment: "//",
+          lineBreak: "\r\n",
+          pretty: false,
+        });
+        assertObjectMatch(INI.IniMap.parse("# comment\n\ra =b").formatting, {
+          comment: "#",
+          lineBreak: "\n\r",
+          pretty: false,
+        });
       },
     });
   },
