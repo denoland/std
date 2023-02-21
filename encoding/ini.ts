@@ -105,7 +105,7 @@ export class IniMap {
   #formatting: FormattingOptions;
 
   constructor(formatting?: FormattingOptions) {
-    this.#formatting = { ...(formatting ?? {}) };
+    this.#formatting = this.#cleanFormatting(formatting);
   }
 
   /** Get the count of key/value pairs. */
@@ -115,6 +115,10 @@ export class IniMap {
       size += map.size;
     }
     return size;
+  }
+
+  get formatting(): FormattingOptions {
+    return this.#formatting;
   }
 
   /** Clear a single section or the entire INI. */
@@ -497,6 +501,21 @@ export class IniMap {
     }
 
     yield line;
+  }
+
+  #cleanFormatting(options?: FormattingOptions): FormattingOptions {
+    const sample: Required<FormattingOptions> = {
+      assignment: "",
+      lineBreak: "",
+      pretty: false,
+      comment: "",
+    };
+    const keys = Object.keys(sample) as (keyof FormattingOptions)[];
+    return Object.fromEntries(
+      Object.entries(options ?? {}).filter(([key]) =>
+        keys.includes(key as keyof FormattingOptions)
+      ),
+    );
   }
 
   /** Convert this `IniMap` to a plain object. */
