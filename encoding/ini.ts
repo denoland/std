@@ -142,24 +142,24 @@ export class IniMap {
   delete(key: string): boolean;
   /** Delete a section key in the INI. */
   delete(section: string, key: string): boolean;
-  delete(...args: [keyOrSection: string, noneOrKey?: string]): boolean {
-    if (args.length > 1) {
-      const section = this.#sections.get(args[0]);
+  delete(keyOrSection: string, noneOrKey?: string): boolean {
+    if (noneOrKey) {
+      const section = this.#sections.get(keyOrSection);
 
       if (section) {
-        const existing = section.map.get(args[1]!);
+        const existing = section.map.get(noneOrKey);
 
         if (existing) {
           this.#appendOrDeleteLine(existing, LineOp.Del);
-          return section.map.delete(args[1]!);
+          return section.map.delete(noneOrKey);
         }
       }
     } else {
-      const existing = this.#global.get(args[0]);
+      const existing = this.#global.get(keyOrSection);
 
       if (existing) {
         this.#appendOrDeleteLine(existing, LineOp.Del);
-        return this.#global.delete(args[0]);
+        return this.#global.delete(keyOrSection);
       }
     }
 
@@ -170,22 +170,22 @@ export class IniMap {
   get(key: string): unknown;
   /** Get a value from a section key in the INI. */
   get(section: string, key: string): unknown;
-  get(...args: [keyOrSection: string, noneOrKey?: string]): unknown {
-    return this.#getValue(...args)?.val;
+  get(keyOrSection: string, noneOrKey?: string): unknown {
+    return this.#getValue(keyOrSection, noneOrKey)?.val;
   }
 
   /** Check if a global key exists in the INI. */
   has(key: string): boolean;
   /** Check if a section key exists in the INI. */
   has(section: string, key: string): boolean;
-  has(...args: [keyOrSection: string, noneOrKey?: string]): boolean {
-    if (args.length > 1) {
-      const section = this.#sections.get(args[0]);
+  has(keyOrSection: string, noneOrKey?: string): boolean {
+    if (noneOrKey) {
+      const section = this.#sections.get(keyOrSection);
 
-      return section?.map.has(args[1]!) ?? false;
+      return section?.map.has(noneOrKey) ?? false;
     }
 
-    return this.#global.has(args[0]);
+    return this.#global.has(keyOrSection);
   }
 
   /** Set the value of a global key in the INI. */
@@ -260,10 +260,8 @@ export class IniMap {
         }
         return false;
       },
-      deleteAtKey: (
-        ...args: [keyOrSection: string, noneOrKey?: string]
-      ): boolean => {
-        const lineValue = this.#getValue(...args);
+      deleteAtKey: (keyOrSection: string, noneOrKey?: string): boolean => {
+        const lineValue = this.#getValue(keyOrSection, noneOrKey);
         if (lineValue) {
           return this.comments.deleteAtLine(lineValue.num - 1);
         }
@@ -280,9 +278,10 @@ export class IniMap {
         return this.#getComment(line)?.val;
       },
       getAtKey: (
-        ...args: [keyOrSection: string, noneOrKey?: string]
+        keyOrSection: string,
+        noneOrKey?: string,
       ): string | undefined => {
-        const lineValue = this.#getValue(...args);
+        const lineValue = this.#getValue(keyOrSection, noneOrKey);
         if (lineValue) {
           return this.comments.getAtLine(lineValue.num - 1);
         }
@@ -375,14 +374,14 @@ export class IniMap {
     return lineSection;
   }
 
-  #getValue(...args: [keyOrSection: string, noneOrKey?: string]) {
-    if (args.length > 1) {
-      const section = this.#sections.get(args[0]);
+  #getValue(keyOrSection: string, noneOrKey?: string): LineValue | undefined {
+    if (noneOrKey) {
+      const section = this.#sections.get(keyOrSection);
 
-      return section?.map.get(args[1]!);
+      return section?.map.get(noneOrKey);
     }
 
-    return this.#global.get(args[0]);
+    return this.#global.get(keyOrSection);
   }
 
   #getComment(line: number): LineComment | undefined {
@@ -393,13 +392,13 @@ export class IniMap {
   }
 
   #appendValue(lineValue: LineValue): void {
-    if (lineValue.sec) {
-      // For line values in a section, the end of the section is known
-      this.#appendOrDeleteLine(lineValue, LineOp.Add);
-    } else if (this.#lines.length === 0) {
+    if (this.#lines.length === 0) {
       // For an empty aray, just insert the line value
       lineValue.num = 1;
       this.#lines.push(lineValue);
+    } else if (lineValue.sec) {
+      // For line values in a section, the end of the section is known
+      this.#appendOrDeleteLine(lineValue, LineOp.Add);
     } else {
       // For global values, find the line preceding the first section
       let i = 0;
@@ -483,16 +482,9 @@ export class IniMap {
   }
 
   #cleanFormatting(options?: FormattingOptions): FormattingOptions {
-    const sample: Required<FormattingOptions> = {
-      assignment: "",
-      lineBreak: "",
-      pretty: false,
-      comment: "",
-    };
-    const keys = Object.keys(sample) as (keyof FormattingOptions)[];
     return Object.fromEntries(
       Object.entries(options ?? {}).filter(([key]) =>
-        keys.includes(key as keyof FormattingOptions)
+        FormattingKeys.includes(key as keyof FormattingOptions)
       ),
     );
   }
@@ -541,8 +533,8 @@ export class IniMap {
       ? replacer
       : (_key, value, _section) => `${value}`;
     const pretty = this.#formatting?.pretty ?? false;
-    const assign = () => (this.#formatting?.assignment ?? "=").substring(0, 1);
-    const assignment = pretty ? ` ${assign()} ` : assign();
+    const assignmentMark = (this.#formatting?.assignment ?? "=")[0];
+    const assignment = pretty ? ` ${assignmentMark} ` : assignmentMark;
 
     return this.#lines.map((line) => {
       switch (line.type) {
@@ -751,6 +743,15 @@ const LineOp = {
   Del: -1,
   Add: 1,
 } as const;
+const DummyFormatting: Required<FormattingOptions> = {
+  assignment: "",
+  lineBreak: "",
+  pretty: false,
+  comment: "",
+};
+const FormattingKeys = Object.keys(
+  DummyFormatting,
+) as (keyof FormattingOptions)[];
 
 interface LineComment {
   type: "comment";
