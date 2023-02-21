@@ -9,7 +9,6 @@
       "exclude": [
         ".git",
         "crypto/_wasm/target",
-        "encoding/varint/_wasm/target",
         "cov",
         "encoding/testdata/jsonc",
         "encoding/front_matter/testdata",
@@ -26,7 +25,6 @@
       "exclude": [
         ".git",
         "crypto/_wasm/target",
-        "encoding/varint/_wasm/target",
         "encoding/testdata/jsonc",
         "encoding/front_matter/testdata",
         "cov",
@@ -53,7 +51,6 @@
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
-    "build:varint": "deno task --cwd encoding/varint/_wasm wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.3/main.ts --js-ext mjs --sync"
   }
 }
