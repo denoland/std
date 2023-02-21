@@ -143,23 +143,13 @@ export class IniMap {
   /** Delete a section key in the INI. */
   delete(section: string, key: string): boolean;
   delete(keyOrSection: string, noneOrKey?: string): boolean {
-    if (noneOrKey) {
-      const section = this.#sections.get(keyOrSection);
-
-      if (section) {
-        const existing = section.map.get(noneOrKey);
-
-        if (existing) {
-          this.#appendOrDeleteLine(existing, LineOp.Del);
-          return section.map.delete(noneOrKey);
-        }
-      }
-    } else {
-      const existing = this.#global.get(keyOrSection);
-
-      if (existing) {
-        this.#appendOrDeleteLine(existing, LineOp.Del);
-        return this.#global.delete(keyOrSection);
+    const exists = this.#getValue(keyOrSection, noneOrKey);
+    if (exists) {
+      this.#appendOrDeleteLine(exists, LineOp.Del);
+      if (exists.sec) {
+        return this.#sections.get(exists.sec)!.map.delete(exists.key);
+      } else {
+        this.#global.delete(exists.key);
       }
     }
 
