@@ -82,19 +82,19 @@ export type ReviverFunction = (
 
 /** Parse an INI config string into an object. Provide formatting options to override the default assignment operator. */
 export function parse(
-  str: string,
+  text: string,
   options?: ParseOptions,
 ): Record<string, unknown | Record<string, unknown>> {
-  return IniMap.parse(str, options).toObject();
+  return IniMap.parse(text, options).toObject();
 }
 
 /** Compile an object into an INI config string. Provide formatting options to modify the output. */
 export function stringify(
   // deno-lint-ignore no-explicit-any
-  obj: any,
+  object: any,
   options?: StringifyOptions,
 ): string {
-  return IniMap.from(obj, options).toString(options?.replacer);
+  return IniMap.from(object, options).toString(options?.replacer);
 }
 
 /** Class implementation for fine control of INI data structures. */
@@ -462,6 +462,43 @@ export class IniMap {
     }
   }
 
+  *#readTextLines(text: string): Generator<string> {
+    const lineBreak = "\r\n";
+    const { length } = text;
+    let lineBreakLength = -1;
+    let line = "";
+
+    for (let i = 0; i < length; i += 1) {
+      const char = text[i];
+
+      if (lineBreak.includes(char)) {
+        yield line;
+        line = "";
+        if (lineBreakLength === -1) {
+          const ahead = text[i + 1];
+          if (
+            ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
+          ) {
+            if (!this.formatting.lineBreak) {
+              this.formatting.lineBreak = char + ahead;
+            }
+            lineBreakLength = 1;
+          } else {
+            if (!this.formatting.lineBreak) {
+              this.formatting.lineBreak = char;
+            }
+            lineBreakLength = 0;
+          }
+        }
+        i += lineBreakLength;
+      } else {
+        line += char;
+      }
+    }
+
+    yield line;
+  }
+
   /** Convert this `IniMap` to a plain object. */
   toObject(): Record<string, unknown | Record<string, unknown>> {
     const obj: Record<string, unknown | Record<string, unknown>> = {};
@@ -522,34 +559,30 @@ export class IniMap {
     }).join(this.formatting?.lineBreak ?? "\n");
   }
 
-  /** Parse an INI string to an `IniMap`. */
-  static parse(
-    str: string,
-    options?: ParseOptions & FormattingOptions,
-  ): IniMap {
-    if (typeof str !== "string") {
-      throw new SyntaxError(`Unexpected token ${str} in INI at line 0`);
+  /** Parse an INI string in this `IniMap`. */
+  parse(text: string, reviver?: ReviverFunction): this {
+    if (typeof text !== "string") {
+      throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
     }
-    const ini = new IniMap(options);
-    const reviverFunc: ReviverFunction = typeof options?.reviver === "function"
-      ? options.reviver
+    const reviverFunc: ReviverFunction = typeof reviver === "function"
+      ? reviver
       : (_key, value, _section) => value;
-    const assignment = (ini.formatting?.assignment ?? "=").substring(0, 1);
+    const assignment = (this.formatting.assignment ?? "=").substring(0, 1);
     let lineNumber = 1;
     let currentSection: LineSection | undefined;
 
-    for (const line of readLines(str)) {
+    for (const line of this.#readTextLines(text)) {
       const trimmed = line.trim();
       if (isComment(trimmed)) {
         // If comment formatting mark is not set, discover it.
-        if (!ini.formatting.comment) {
+        if (!this.formatting.comment) {
           const mark = trimmed[0];
           if (mark) {
             // if mark is truthy, use the character.
-            ini.formatting.comment = mark === "/" ? "//" : mark;
+            this.formatting.comment = mark === "/" ? "//" : mark;
           }
         }
-        ini.lines.push({
+        this.lines.push({
           type: "comment",
           num: lineNumber,
           val: trimmed,
@@ -570,8 +603,8 @@ export class IniMap {
           map: new Map<string, LineValue>(),
           end: lineNumber,
         };
-        ini.lines.push(currentSection);
-        ini.sections.set(currentSection.sec, currentSection);
+        this.lines.push(currentSection);
+        this.sections.set(currentSection.sec, currentSection);
       } else {
         const assignmentPos = trimmed.indexOf(assignment);
 
@@ -598,7 +631,7 @@ export class IniMap {
             val: reviverFunc(key, value, currentSection.sec),
           };
           currentSection.map.set(key, lineValue);
-          ini.lines.push(lineValue);
+          this.lines.push(lineValue);
           currentSection.end = lineNumber;
         } else {
           const lineValue: LineValue = {
@@ -607,15 +640,23 @@ export class IniMap {
             key,
             val: reviverFunc(key, value),
           };
-          ini.global.set(key, lineValue);
-          ini.lines.push(lineValue);
+          this.global.set(key, lineValue);
+          this.lines.push(lineValue);
         }
       }
 
       lineNumber += 1;
     }
 
-    return ini;
+    return this;
+  }
+
+  /** Parse an INI string to an `IniMap`. */
+  static parse(
+    text: string,
+    options?: ParseOptions & FormattingOptions,
+  ): IniMap {
+    return new IniMap(options).parse(text, options?.reviver);
   }
 
   /** Create an `IniMap` from a plain object. */
@@ -676,37 +717,6 @@ interface Comments {
   setAtKey(section: string, key: string, text: string): Comments;
   /** Set a comment before a section line in the INI. */
   setAtSection(section: string, text: string): Comments;
-}
-
-function* readLines(text: string) {
-  const lineBreak = "\r\n";
-  const { length } = text;
-  let lineBreakLength = -1;
-  let line = "";
-
-  for (let i = 0; i < length; i += 1) {
-    const char = text[i];
-
-    if (lineBreak.includes(char)) {
-      yield line;
-      line = "";
-      if (lineBreakLength === -1) {
-        const ahead = text[i + 1];
-        if (
-          ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
-        ) {
-          lineBreakLength = 1;
-        } else {
-          lineBreakLength = 0;
-        }
-      }
-      i += lineBreakLength;
-    } else {
-      line += char;
-    }
-  }
-
-  yield line;
 }
 
 /** Detect supported comment styles. */
