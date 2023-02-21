@@ -149,7 +149,7 @@ export class IniMap {
       if (exists.sec) {
         return this.#sections.get(exists.sec)!.map.delete(exists.key);
       } else {
-        this.#global.delete(exists.key);
+        return this.#global.delete(exists.key);
       }
     }
 
@@ -178,39 +178,35 @@ export class IniMap {
   /** Set the value of a section key in the INI. */
   // deno-lint-ignore no-explicit-any
   set(section: string, key: string, value: any): this;
-  set(
-    // deno-lint-ignore no-explicit-any
-    ...args: [keyOrSection: string, valueOrKey: any, value?: any]
-  ): this {
-    if (args.length > 2) {
-      const section = this.#getOrCreateSection(args[0]);
-      const existing = section.map.get(args[1]);
+  // deno-lint-ignore no-explicit-any
+  set(keyOrSection: string, valueOrKey: any, value?: any): this {
+    if (typeof valueOrKey === "string" && value !== undefined) {
+      const section = this.#getOrCreateSection(keyOrSection);
+      const exists = section.map.get(valueOrKey);
 
-      if (existing) {
-        existing.val = args[2];
+      if (exists) {
+        exists.val = value;
       } else {
         section.end += 1;
         const lineValue: LineValue = {
           type: "value",
           num: section.end,
           sec: section.sec,
-          key: args[1],
-          val: args[2],
+          key: valueOrKey,
+          val: value,
         };
         this.#appendValue(lineValue);
-        section.map.set(args[1], lineValue);
+        section.map.set(valueOrKey, lineValue);
       }
-
-      this.#sections.set(args[0], section);
     } else {
       const lineValue: LineValue = {
         type: "value",
         num: 0,
-        key: args[0],
-        val: args[1],
+        key: keyOrSection,
+        val: valueOrKey,
       };
       this.#appendValue(lineValue);
-      this.#global.set(args[0], lineValue);
+      this.#global.set(keyOrSection, lineValue);
     }
 
     return this;
@@ -355,6 +351,7 @@ export class IniMap {
       end: this.#lines.length + 1,
     };
     this.#lines.push(lineSection);
+    this.#sections.set(section, lineSection);
     return lineSection;
   }
 
