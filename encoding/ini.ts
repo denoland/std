@@ -169,13 +169,7 @@ export class IniMap {
   /** Check if a section key exists in the INI. */
   has(section: string, key: string): boolean;
   has(keyOrSection: string, noneOrKey?: string): boolean {
-    if (noneOrKey) {
-      const section = this.#sections.get(keyOrSection);
-
-      return section?.map.has(noneOrKey) ?? false;
-    }
-
-    return this.#global.has(keyOrSection);
+    return this.#getValue(keyOrSection, noneOrKey) !== undefined;
   }
 
   /** Set the value of a global key in the INI. */
