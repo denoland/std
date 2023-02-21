@@ -181,4 +181,4 @@ jobs:
     
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:${{ matrix.module.name }} --check
+        run: deno task build:${{ matrix.module }} --check
