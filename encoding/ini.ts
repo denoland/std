@@ -619,8 +619,16 @@ export class IniMap {
           );
         }
 
-        const key = trimmed.substring(0, assignmentPos).trim();
-        const value = trimmed.substring(assignmentPos + 1).trim();
+        const leftHand = trimmed.substring(0, assignmentPos);
+        const rightHand = trimmed.substring(assignmentPos + 1);
+
+        if (this.formatting.pretty === undefined) {
+          this.formatting.pretty = leftHand.endsWith(" ") &&
+            rightHand.startsWith(" ");
+        }
+
+        const key = leftHand.trim();
+        const value = rightHand.trim();
 
         if (currentSection) {
           const lineValue: LineValue = {
