@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 
 export const MaxUInt64 = 18446744073709551615n;
 export const MaxVarIntLen64 = 10;
