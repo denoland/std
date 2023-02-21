@@ -299,24 +299,26 @@ export class IniMap {
         return this.comments;
       },
       setAtKey: (
-        ...args: [keyOrSection: string, textOrKey: string, noneOrText?: string]
+        keyOrSection: string,
+        textOrKey: string,
+        noneOrText?: string,
       ): Comments => {
-        if (args.length > 2) {
-          const lineValue = this.#getValue(args[0], args[1]);
+        if (noneOrText !== undefined) {
+          const lineValue = this.#getValue(keyOrSection, textOrKey);
           if (lineValue) {
             if (this.#getComment(lineValue.num - 1)) {
-              this.comments.setAtLine(lineValue.num - 1, args[2]!);
+              this.comments.setAtLine(lineValue.num - 1, noneOrText);
             } else {
-              this.comments.setAtLine(lineValue.num, args[2]!);
+              this.comments.setAtLine(lineValue.num, noneOrText);
             }
           }
         } else {
-          const lineValue = this.#getValue(args[0]);
+          const lineValue = this.#getValue(keyOrSection);
           if (lineValue) {
             if (this.#getComment(lineValue.num - 1)) {
-              this.comments.setAtLine(lineValue.num - 1, args[1]);
+              this.comments.setAtLine(lineValue.num - 1, textOrKey);
             } else {
-              this.comments.setAtLine(lineValue.num, args[1]);
+              this.comments.setAtLine(lineValue.num, textOrKey);
             }
           }
         }
