@@ -150,7 +150,7 @@ export class IniMap {
         const existing = section.map.get(args[1]!);
 
         if (existing) {
-          this.#deleteLine(existing);
+          this.#appendOrDeleteLine(existing, LineOp.Del);
           return section.map.delete(args[1]!);
         }
       }
@@ -158,7 +158,7 @@ export class IniMap {
       const existing = this.#global.get(args[0]);
 
       if (existing) {
-        this.#deleteLine(existing);
+        this.#appendOrDeleteLine(existing, LineOp.Del);
         return this.#global.delete(args[0]);
       }
     }
@@ -255,7 +255,7 @@ export class IniMap {
       deleteAtLine: (line: number): boolean => {
         const comment = this.#getComment(line);
         if (comment) {
-          this.#deleteLine(comment);
+          this.#appendOrDeleteLine(comment, LineOp.Del);
           return true;
         }
         return false;
@@ -304,18 +304,18 @@ export class IniMap {
         } else {
           if (line > this.#lines.length) {
             for (let i = this.#lines.length + 1; i < line; i += 1) {
-              this.#appendLine({
+              this.#appendOrDeleteLine({
                 type: "comment",
                 num: i,
                 val: "",
-              });
+              }, LineOp.Add);
             }
           }
-          this.#appendLine({
+          this.#appendOrDeleteLine({
             type: "comment",
             num: line,
             val: formatted,
-          });
+          }, LineOp.Add);
         }
         return this.comments;
       },
@@ -395,7 +395,7 @@ export class IniMap {
   #appendValue(lineValue: LineValue): void {
     if (lineValue.sec) {
       // For line values in a section, the end of the section is known
-      this.#appendLine(lineValue);
+      this.#appendOrDeleteLine(lineValue, LineOp.Add);
     } else if (this.#lines.length === 0) {
       // For an empty aray, just insert the line value
       lineValue.num = 1;
@@ -410,20 +410,24 @@ export class IniMap {
       }
       lineValue.num = i + 1;
       // Append the line value at the end of all global values
-      this.#appendLine(lineValue);
+      this.#appendOrDeleteLine(lineValue, LineOp.Add);
     }
   }
 
-  #appendLine(input: Line): void {
-    this.#lines.splice(input.num - 1, 0, input);
+  #appendOrDeleteLine(input: Line, op: LineOp) {
+    if (op === LineOp.Add) {
+      this.#lines.splice(input.num - 1, 0, input);
+    } else {
+      this.#lines.splice(input.num - 1, 1);
+    }
     const { length } = this.#lines;
     // If the input is a comment, find the next section if any to update.
     let updateSection = input.type === "comment";
     for (let i = input.num; i < length; i += 1) {
       const line = this.#lines[i];
-      line.num += 1;
+      line.num += op;
       if (line.type === "section") {
-        line.end += 1;
+        line.end += op;
         // If the comment is before the nearest section, don't update the section further.
         updateSection = false;
       }
@@ -433,34 +437,7 @@ export class IniMap {
           const section = this.#sections.get(line.sec);
 
           if (section) {
-            section.end += 1;
-            updateSection = false;
-          }
-        }
-      }
-    }
-  }
-
-  #deleteLine(input: Line): void {
-    this.#lines.splice(input.num - 1, 1);
-    const { length } = this.#lines;
-    // If the input is a comment, find the next section if any to update.
-    let updateSection = input.type === "comment";
-    for (let i = input.num - 1; i < length; i += 1) {
-      const line = this.#lines[i];
-      line.num -= 1;
-      if (line.type === "section") {
-        line.end -= 1;
-        // If the comment is before the nearest section, don't update the section further.
-        updateSection = false;
-      }
-      if (updateSection) {
-        // if the comment precedes a value in a section, get and update the section end.
-        if (line.type === "value" && line.sec) {
-          const section = this.#sections.get(line.sec);
-
-          if (section) {
-            section.end -= 1;
+            section.end += op;
             updateSection = false;
           }
         }
@@ -768,6 +745,12 @@ function isSection(input: string, lineNumber: number): boolean {
   }
   return false;
 }
+
+type LineOp = typeof LineOp[keyof typeof LineOp];
+const LineOp = {
+  Del: -1,
+  Add: 1,
+} as const;
 
 interface LineComment {
   type: "comment";
