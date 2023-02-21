@@ -201,7 +201,7 @@ export class IniMap {
     } else {
       const lineValue: LineValue = {
         type: "value",
-        num: 0,
+        num: 0, // Simply set to zero since we have to find the end ofthe global keys
         key: keyOrSection,
         val: valueOrKey,
       };
