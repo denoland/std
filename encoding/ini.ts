@@ -233,7 +233,9 @@ export class IniMap {
   }
 
   /** Iterate over each entry in the INI to retrieve key, value, and section. */
-  *entries(): Generator<[key: string, value: unknown, section?: string]> {
+  *entries(): Generator<
+    [key: string, value: unknown, section?: string | undefined]
+  > {
     for (const { key, val } of this.#global.values()) {
       yield [key, val];
     }
