@@ -99,19 +99,19 @@ export function stringify(
 
 /** Class implementation for fine control of INI data structures. */
 export class IniMap {
-  private global = new Map<string, LineValue>();
-  private sections = new Map<string, LineSection>();
-  private lines: Line[] = [];
-  private formatting: FormattingOptions;
+  #global = new Map<string, LineValue>();
+  #sections = new Map<string, LineSection>();
+  #lines: Line[] = [];
+  #formatting: FormattingOptions;
 
   constructor(formatting?: FormattingOptions) {
-    this.formatting = { ...(formatting ?? {}) };
+    this.#formatting = { ...(formatting ?? {}) };
   }
 
   /** Get the count of key/value pairs. */
   get size(): number {
-    let size = this.global.size;
-    for (const { map } of this.sections.values()) {
+    let size = this.#global.size;
+    for (const { map } of this.#sections.values()) {
       size += map.size;
     }
     return size;
@@ -120,17 +120,17 @@ export class IniMap {
   /** Clear a single section or the entire INI. */
   clear(sectionName?: string): void {
     if (sectionName) {
-      const section = this.sections.get(sectionName);
+      const section = this.#sections.get(sectionName);
 
       if (section) {
         section.map.clear();
-        this.sections.delete(sectionName);
-        this.lines.splice(section.num - 1, section.end - section.num);
+        this.#sections.delete(sectionName);
+        this.#lines.splice(section.num - 1, section.end - section.num);
       }
     } else {
-      this.global.clear();
-      this.sections.clear();
-      this.lines.length = 0;
+      this.#global.clear();
+      this.#sections.clear();
+      this.#lines.length = 0;
     }
   }
 
@@ -140,7 +140,7 @@ export class IniMap {
   delete(section: string, key: string): boolean;
   delete(...args: [keyOrSection: string, noneOrKey?: string]): boolean {
     if (args.length > 1) {
-      const section = this.sections.get(args[0]);
+      const section = this.#sections.get(args[0]);
 
       if (section) {
         const existing = section.map.get(args[1]!);
@@ -151,11 +151,11 @@ export class IniMap {
         }
       }
     } else {
-      const existing = this.global.get(args[0]);
+      const existing = this.#global.get(args[0]);
 
       if (existing) {
         this.#deleteLine(existing);
-        return this.global.delete(args[0]);
+        return this.#global.delete(args[0]);
       }
     }
 
@@ -176,12 +176,12 @@ export class IniMap {
   has(section: string, key: string): boolean;
   has(...args: [keyOrSection: string, noneOrKey?: string]): boolean {
     if (args.length > 1) {
-      const section = this.sections.get(args[0]);
+      const section = this.#sections.get(args[0]);
 
       return section?.map.has(args[1]!) ?? false;
     }
 
-    return this.global.has(args[0]);
+    return this.#global.has(args[0]);
   }
 
   /** Set the value of a global key in the INI. */
@@ -213,7 +213,7 @@ export class IniMap {
         section.map.set(args[1], lineValue);
       }
 
-      this.sections.set(args[0], section);
+      this.#sections.set(args[0], section);
     } else {
       const lineValue: LineValue = {
         type: "value",
@@ -222,7 +222,7 @@ export class IniMap {
         val: args[1],
       };
       this.#appendValue(lineValue);
-      this.global.set(args[0], lineValue);
+      this.#global.set(args[0], lineValue);
     }
 
     return this;
@@ -230,10 +230,10 @@ export class IniMap {
 
   /** Iterate over each entry in the INI to retrieve key, value, and section. */
   *entries(): Generator<[key: string, value: unknown, section?: string]> {
-    for (const { key, val } of this.global.values()) {
+    for (const { key, val } of this.#global.values()) {
       yield [key, val];
     }
-    for (const { map } of this.sections.values()) {
+    for (const { map } of this.#sections.values()) {
       for (const { key, val, sec } of map.values()) {
         yield [key, val, sec];
       }
@@ -244,7 +244,7 @@ export class IniMap {
   get comments(): Comments {
     return {
       clear: (): void => {
-        this.lines = this.lines.filter((line) => line.type !== "comment");
+        this.#lines = this.#lines.filter((line) => line.type !== "comment");
       },
       deleteAtLine: (line: number): boolean => {
         const comment = this.#getComment(line);
@@ -264,7 +264,7 @@ export class IniMap {
         return false;
       },
       deleteAtSection: (sectionName: string): boolean => {
-        const section = this.sections.get(sectionName);
+        const section = this.#sections.get(sectionName);
         if (section) {
           return this.comments.deleteAtLine(section.num - 1);
         }
@@ -282,22 +282,22 @@ export class IniMap {
         }
       },
       getAtSection: (sectionName: string): string | undefined => {
-        const section = this.sections.get(sectionName);
+        const section = this.#sections.get(sectionName);
         if (section) {
           return this.comments.getAtLine(section.num - 1);
         }
       },
       setAtLine: (line: number, text: string): Comments => {
         const comment = this.#getComment(line);
-        const mark = this.formatting.comment ?? "#";
+        const mark = this.#formatting.comment ?? "#";
         const formatted = text.startsWith(mark) || text === ""
           ? text
           : `${mark} ${text}`;
         if (comment) {
           comment.val = formatted;
         } else {
-          if (line > this.lines.length) {
-            for (let i = this.lines.length + 1; i < line; i += 1) {
+          if (line > this.#lines.length) {
+            for (let i = this.#lines.length + 1; i < line; i += 1) {
               this.#appendLine({
                 type: "comment",
                 num: i,
@@ -338,7 +338,7 @@ export class IniMap {
         return this.comments;
       },
       setAtSection: (sectionName: string, text: string): Comments => {
-        const section = this.sections.get(sectionName);
+        const section = this.#sections.get(sectionName);
         if (section) {
           if (this.#getComment(section.num - 1)) {
             this.comments.setAtLine(section.num - 1, text);
@@ -352,7 +352,7 @@ export class IniMap {
   }
 
   #getOrCreateSection(section: string): LineSection {
-    const existing = this.sections.get(section);
+    const existing = this.#sections.get(section);
 
     if (existing) {
       return existing;
@@ -360,27 +360,27 @@ export class IniMap {
 
     const lineSection: LineSection = {
       type: "section",
-      num: this.lines.length + 1,
+      num: this.#lines.length + 1,
       sec: section,
       map: new Map<string, LineValue>(),
-      end: this.lines.length + 1,
+      end: this.#lines.length + 1,
     };
-    this.lines.push(lineSection);
+    this.#lines.push(lineSection);
     return lineSection;
   }
 
   #getValue(...args: [keyOrSection: string, noneOrKey?: string]) {
     if (args.length > 1) {
-      const section = this.sections.get(args[0]);
+      const section = this.#sections.get(args[0]);
 
       return section?.map.get(args[1]!);
     }
 
-    return this.global.get(args[0]);
+    return this.#global.get(args[0]);
   }
 
   #getComment(line: number): LineComment | undefined {
-    const comment: Line | undefined = this.lines[line - 1];
+    const comment: Line | undefined = this.#lines[line - 1];
     if (comment?.type === "comment") {
       return comment;
     }
@@ -390,15 +390,15 @@ export class IniMap {
     if (lineValue.sec) {
       // For line values in a section, the end of the section is known
       this.#appendLine(lineValue);
-    } else if (this.lines.length === 0) {
+    } else if (this.#lines.length === 0) {
       // For an empty aray, just insert the line value
       lineValue.num = 1;
-      this.lines.push(lineValue);
+      this.#lines.push(lineValue);
     } else {
       // For global values, find the line preceding the first section
       let i = 0;
-      for (; i < this.lines.length; i += 1) {
-        if (this.lines[i].type === "section") {
+      for (; i < this.#lines.length; i += 1) {
+        if (this.#lines[i].type === "section") {
           break;
         }
       }
@@ -409,12 +409,12 @@ export class IniMap {
   }
 
   #appendLine(input: Line): void {
-    this.lines.splice(input.num - 1, 0, input);
-    const { length } = this.lines;
+    this.#lines.splice(input.num - 1, 0, input);
+    const { length } = this.#lines;
     // If the input is a comment, find the next section if any to update.
     let updateSection = input.type === "comment";
     for (let i = input.num; i < length; i += 1) {
-      const line = this.lines[i];
+      const line = this.#lines[i];
       line.num += 1;
       if (line.type === "section") {
         line.end += 1;
@@ -424,7 +424,7 @@ export class IniMap {
       if (updateSection) {
         // if the comment precedes a value in a section, get and update the section end.
         if (line.type === "value" && line.sec) {
-          const section = this.sections.get(line.sec);
+          const section = this.#sections.get(line.sec);
 
           if (section) {
             section.end += 1;
@@ -436,12 +436,12 @@ export class IniMap {
   }
 
   #deleteLine(input: Line): void {
-    this.lines.splice(input.num - 1, 1);
-    const { length } = this.lines;
+    this.#lines.splice(input.num - 1, 1);
+    const { length } = this.#lines;
     // If the input is a comment, find the next section if any to update.
     let updateSection = input.type === "comment";
     for (let i = input.num - 1; i < length; i += 1) {
-      const line = this.lines[i];
+      const line = this.#lines[i];
       line.num -= 1;
       if (line.type === "section") {
         line.end -= 1;
@@ -451,7 +451,7 @@ export class IniMap {
       if (updateSection) {
         // if the comment precedes a value in a section, get and update the section end.
         if (line.type === "value" && line.sec) {
-          const section = this.sections.get(line.sec);
+          const section = this.#sections.get(line.sec);
 
           if (section) {
             section.end -= 1;
@@ -479,13 +479,13 @@ export class IniMap {
           if (
             ahead !== undefined && ahead !== char && lineBreak.includes(ahead)
           ) {
-            if (!this.formatting.lineBreak) {
-              this.formatting.lineBreak = char + ahead;
+            if (!this.#formatting.lineBreak) {
+              this.#formatting.lineBreak = char + ahead;
             }
             lineBreakLength = 1;
           } else {
-            if (!this.formatting.lineBreak) {
-              this.formatting.lineBreak = char;
+            if (!this.#formatting.lineBreak) {
+              this.#formatting.lineBreak = char;
             }
             lineBreakLength = 0;
           }
@@ -503,7 +503,7 @@ export class IniMap {
   toObject(): Record<string, unknown | Record<string, unknown>> {
     const obj: Record<string, unknown | Record<string, unknown>> = {};
 
-    for (const { key, val } of this.global.values()) {
+    for (const { key, val } of this.#global.values()) {
       Object.defineProperty(obj, key, {
         value: val,
         writable: true,
@@ -511,7 +511,7 @@ export class IniMap {
         configurable: true,
       });
     }
-    for (const { sec, map } of this.sections.values()) {
+    for (const { sec, map } of this.#sections.values()) {
       const section: Record<string, unknown> = {};
       Object.defineProperty(obj, sec, {
         value: section,
@@ -542,11 +542,11 @@ export class IniMap {
     const replacerFunc: ReplacerFunction = typeof replacer === "function"
       ? replacer
       : (_key, value, _section) => `${value}`;
-    const pretty = this.formatting?.pretty ?? false;
-    const assign = () => (this.formatting?.assignment ?? "=").substring(0, 1);
+    const pretty = this.#formatting?.pretty ?? false;
+    const assign = () => (this.#formatting?.assignment ?? "=").substring(0, 1);
     const assignment = pretty ? ` ${assign()} ` : assign();
 
-    return this.lines.map((line) => {
+    return this.#lines.map((line) => {
       switch (line.type) {
         case "comment":
           return line.val;
@@ -556,7 +556,7 @@ export class IniMap {
           return line.key + assignment +
             replacerFunc(line.key, line.val, line.sec);
       }
-    }).join(this.formatting?.lineBreak ?? "\n");
+    }).join(this.#formatting?.lineBreak ?? "\n");
   }
 
   /** Parse an INI string in this `IniMap`. */
@@ -567,7 +567,7 @@ export class IniMap {
     const reviverFunc: ReviverFunction = typeof reviver === "function"
       ? reviver
       : (_key, value, _section) => value;
-    const assignment = (this.formatting.assignment ?? "=").substring(0, 1);
+    const assignment = (this.#formatting.assignment ?? "=").substring(0, 1);
     let lineNumber = 1;
     let currentSection: LineSection | undefined;
 
@@ -575,14 +575,14 @@ export class IniMap {
       const trimmed = line.trim();
       if (isComment(trimmed)) {
         // If comment formatting mark is not set, discover it.
-        if (!this.formatting.comment) {
+        if (!this.#formatting.comment) {
           const mark = trimmed[0];
           if (mark) {
             // if mark is truthy, use the character.
-            this.formatting.comment = mark === "/" ? "//" : mark;
+            this.#formatting.comment = mark === "/" ? "//" : mark;
           }
         }
-        this.lines.push({
+        this.#lines.push({
           type: "comment",
           num: lineNumber,
           val: trimmed,
@@ -603,8 +603,8 @@ export class IniMap {
           map: new Map<string, LineValue>(),
           end: lineNumber,
         };
-        this.lines.push(currentSection);
-        this.sections.set(currentSection.sec, currentSection);
+        this.#lines.push(currentSection);
+        this.#sections.set(currentSection.sec, currentSection);
       } else {
         const assignmentPos = trimmed.indexOf(assignment);
 
@@ -622,8 +622,8 @@ export class IniMap {
         const leftHand = trimmed.substring(0, assignmentPos);
         const rightHand = trimmed.substring(assignmentPos + 1);
 
-        if (this.formatting.pretty === undefined) {
-          this.formatting.pretty = leftHand.endsWith(" ") &&
+        if (this.#formatting.pretty === undefined) {
+          this.#formatting.pretty = leftHand.endsWith(" ") &&
             rightHand.startsWith(" ");
         }
 
@@ -639,7 +639,7 @@ export class IniMap {
             val: reviverFunc(key, value, currentSection.sec),
           };
           currentSection.map.set(key, lineValue);
-          this.lines.push(lineValue);
+          this.#lines.push(lineValue);
           currentSection.end = lineNumber;
         } else {
           const lineValue: LineValue = {
@@ -648,8 +648,8 @@ export class IniMap {
             key,
             val: reviverFunc(key, value),
           };
-          this.global.set(key, lineValue);
-          this.lines.push(lineValue);
+          this.#global.set(key, lineValue);
+          this.#lines.push(lineValue);
         }
       }
 
