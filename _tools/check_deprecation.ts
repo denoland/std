@@ -9,7 +9,6 @@ import { walk } from "../fs/walk.ts";
 const EXTENSIONS = [".mjs", ".js", ".ts"];
 const EXCLUDED_PATHS = [
   ".git",
-  "node",
   "dotenv/testdata",
   "fs/testdata",
   "http/testdata",
