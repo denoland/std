@@ -10,6 +10,7 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "../../testing/asserts.ts";
+import type { AssertTrue, Has } from "../../testing/types.ts";
 import { fromFileUrl, join } from "../../path/mod.ts";
 import { StringReader } from "../../io/string_reader.ts";
 
@@ -266,6 +267,54 @@ x,,,
         input: `""""""""`,
         output: [[`"""`]],
       },
+      {
+        name: "simple",
+        input: "a,b,c",
+        output: [["a", "b", "c"]],
+        skipFirstRow: false,
+      },
+      {
+        name: "multiline",
+        input: "a,b,c\ne,f,g\n",
+        output: [
+          ["a", "b", "c"],
+          ["e", "f", "g"],
+        ],
+        skipFirstRow: false,
+      },
+      {
+        name: "header mapping boolean",
+        input: "a,b,c\ne,f,g\n",
+        output: [{ a: "e", b: "f", c: "g" }],
+        skipFirstRow: true,
+      },
+      {
+        name: "header mapping array",
+        input: "a,b,c\ne,f,g\n",
+        output: [
+          { this: "a", is: "b", sparta: "c" },
+          { this: "e", is: "f", sparta: "g" },
+        ],
+        columns: ["this", "is", "sparta"],
+      },
+      {
+        name: "provides both opts.skipFirstRow and opts.columns",
+        input: "a,b,1\nc,d,2\ne,f,3",
+        output: [
+          { foo: "c", bar: "d", baz: "2" },
+          { foo: "e", bar: "f", baz: "3" },
+        ],
+        skipFirstRow: true,
+        columns: ["foo", "bar", "baz"],
+      },
+      {
+        name: "mismatching number of headers and fields",
+        input: "a,b,c\nd,e",
+        skipFirstRow: true,
+        columns: ["foo", "bar", "baz"],
+        errorMessage:
+          "Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2",
+      },
     ];
     for (const testCase of testCases) {
       await t.step(testCase.name, async () => {
@@ -276,13 +325,26 @@ x,,,
         if (testCase.comment) {
           options.comment = testCase.comment;
         }
+        if (testCase.skipFirstRow) {
+          options.skipFirstRow = testCase.skipFirstRow;
+        }
+        if (testCase.columns) {
+          options.columns = testCase.columns;
+        }
         const readable = createReadableStreamFromString(testCase.input)
           .pipeThrough(new CsvStream(options));
-        const actual = [] as Array<Array<string>>;
-        for await (const record of readable) {
-          actual.push(record);
+
+        if (testCase.output) {
+          const actual = [] as Array<Array<string>>;
+          for await (const record of readable) {
+            actual.push(record);
+          }
+          assertEquals(actual, testCase.output);
+        } else {
+          await assertRejects(async () => {
+            for await (const _ of readable);
+          }, testCase.errorMessage);
         }
-        assertEquals(actual, testCase.output);
       });
     }
   },
@@ -321,6 +383,78 @@ Deno.test({
       .pipeThrough(new CsvStream());
     for await (const _record of readable) {
       break;
+    }
+  },
+});
+
+Deno.test({
+  name: "[encoding/csv/stream] correct typing",
+  fn() {
+    {
+      const { readable } = new CsvStream();
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({});
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({ skipFirstRow: undefined });
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({ skipFirstRow: false });
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({ skipFirstRow: true });
+      type _ = AssertTrue<
+        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+      >;
+    }
+    {
+      const { readable } = new CsvStream({ columns: undefined });
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({ columns: ["aaa"] });
+      type _ = AssertTrue<
+        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+      >;
+    }
+    {
+      const { readable } = new CsvStream({
+        skipFirstRow: false,
+        columns: undefined,
+      });
+      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvStream({
+        skipFirstRow: true,
+        columns: undefined,
+      });
+      type _ = AssertTrue<
+        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+      >;
+    }
+    {
+      const { readable } = new CsvStream({
+        skipFirstRow: false,
+        columns: ["aaa"],
+      });
+      type _ = AssertTrue<
+        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+      >;
+    }
+    {
+      const { readable } = new CsvStream({
+        skipFirstRow: true,
+        columns: ["aaa"],
+      });
+      type _ = AssertTrue<
+        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+      >;
     }
   },
 });

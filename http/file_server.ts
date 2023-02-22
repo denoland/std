@@ -26,6 +26,17 @@ interface EntryInfo {
 
 const encoder = new TextEncoder();
 
+// avoid top-lebvel-await
+const envPermissionStatus =
+  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
+    .state ?? "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID = envPermissionStatus === "granted"
+  ? Deno.env.get("DENO_DEPLOYMENT_ID")
+  : undefined;
+const hashedDenoDeploymentId = DENO_DEPLOYMENT_ID
+  ? createHash("FNV32A", DENO_DEPLOYMENT_ID).then((hash) => toHashString(hash))
+  : undefined;
+
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
 
@@ -118,28 +129,34 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  // Set last modified header if last modification timestamp is available
-  if (fileInfo.mtime instanceof Date) {
-    const lastModified = new Date(fileInfo.mtime);
-    headers.set("last-modified", lastModified.toUTCString());
-
-    // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const etag = toHashString(
+  // Create a simple etag that is an md5 of the last modified date and filesize concatenated
+  const etag = fileInfo.mtime
+    ? toHashString(
       await createHash(
         etagAlgorithm ?? "FNV32A",
-        `${lastModified.toJSON()}${fileInfo.size}`,
+        `${fileInfo.mtime.toJSON()}${fileInfo.size}`,
       ),
-    );
-    headers.set("etag", etag);
+    )
+    : await hashedDenoDeploymentId;
 
+  // Set last modified header if last modification timestamp is available
+  if (fileInfo.mtime) {
+    headers.set("last-modified", fileInfo.mtime.toUTCString());
+  }
+  if (etag) {
+    headers.set("etag", etag);
+  }
+
+  if (etag || fileInfo.mtime) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
     // the access timestamp value, then return 304
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
+      (etag && ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
       (ifNoneMatch === null &&
+        fileInfo.mtime &&
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {

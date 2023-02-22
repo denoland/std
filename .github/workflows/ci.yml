@@ -67,7 +67,7 @@ jobs:
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -95,42 +95,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
 
-  node:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        deno: [canary]
-        os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
-          - windows-2022
-          - macOS-latest
-
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          persist-credentials: false
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: ${{ matrix.deno }}
-
-      - name: Type check node modules
-        shell: bash
-        run: deno task node:check-unstable-api
-
-      - name: Unit test node/
-        run: deno task node:unit
-
-      - name: Run Node tests canary
-        run: deno task node:test
-        env:
-          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
-
   lint:
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
     steps:
@@ -150,9 +114,6 @@ jobs:
 
       - name: Lint
         run: deno lint
-
-      - name: Check circular dependencies
-        run: "deno task node:lint-circular-deps"
 
       - name: Check License headers
         run: deno task fmt:licence-headers --check

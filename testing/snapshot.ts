@@ -47,12 +47,6 @@
  * deno test --allow-all -- --update
  * ```
  *
- * Note: In Powershell, you need to quote `--`.
- *
- * ```powershell
- * deno test --allow-all "--" --update
- * ```
- *
  * Additionally, new snapshots will only be created when this flag is present.
  *
  * ## Permissions:
