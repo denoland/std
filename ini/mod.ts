@@ -14,7 +14,7 @@
  *
  * @example
  * ```ts
- * import { IniMap } from "https://deno.land/std@$STD_VERSION/encoding/ini.ts";
+ * import { IniMap } from "https://deno.land/std@$STD_VERSION/ini/mod.ts";
  * const ini = new IniMap();
  * ini.set("section1", "keyA", 100)
  * console.log(ini.toString())
@@ -40,7 +40,7 @@
  *
  * @example
  * ```ts
- * import { IniMap } from "https://deno.land/std@$STD_VERSION/encoding/ini.ts";
+ * import { IniMap } from "https://deno.land/std@$STD_VERSION/ini/mod.ts";
  * const iniFile = `# Example of key/value arrays
  * [section1]
  * key1=This key

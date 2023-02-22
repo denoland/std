@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import * as INI from "./ini.ts";
+import * as INI from "./mod.ts";
 import {
   assert,
   assertEquals,
