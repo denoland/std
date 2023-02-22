@@ -7,9 +7,8 @@ import { walk } from "../fs/walk.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const EXTS = [".mjs", ".ts"];
-const SKIP = [/(test|bench|node\/)/];
+const SKIP = [/(test|bench)/];
 const BAD_IMPORT = new URL("../testing/asserts.ts", import.meta.url);
-const EXCEPTION = new URL("../node/assert.ts", import.meta.url);
 
 async function getFilePaths(): Promise<string[]> {
   const paths: string[] = [];
@@ -28,8 +27,7 @@ async function getFilePathsWithBadImports(): Promise<string[]> {
   const paths = await getFilePaths();
   const { modules } = await createGraph(paths);
   return modules.filter(hasBadImports)
-    .map(({ specifier }: Module) => specifier)
-    .filter((path) => path !== EXCEPTION.href);
+    .map(({ specifier }: Module) => specifier);
 }
 
 const paths = await getFilePathsWithBadImports();

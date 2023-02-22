@@ -20,7 +20,6 @@ fs/           @kt3k
 http/         @kt3k
 io/           @kt3k
 log/          @kt3k
-node/         @kt3k
 path/         @kt3k
 permissions/  @kt3k
 semver/       @kt3k
