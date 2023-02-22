@@ -316,6 +316,11 @@ Deno.test({
     });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
+    assertEquals(
+      INI.IniMap.parse("#comment\naaa=0\naaa=1", { deduplicate: true })
+        .toString(),
+      "#comment\naaa=1",
+    );
   },
 });
 

@@ -5,7 +5,8 @@
  * [Desktop Entry specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html).
  * Values are parsed as strings by default to preserve data parity from the original.
  * Customization is possible in the form of reviver/replacer functions like those in `JSON.parse` and `JSON.stringify`.
- * Nested sections, repeated key names within a section, multi-line values, and key/value arrays are not supported.
+ * Nested sections, repeated key names within a section, and key/value arrays are not supported,
+ * but will be preserved when using {@linkcode IniMap}. Multi-line values are not supported and will throw a syntax error.
  * White space padding and lines starting with '#', ';', or '//' will be treated as comments.
  *
  * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
@@ -34,6 +35,50 @@
  * // }
  * ```
  *
+ * The reviver and replacer APIs can be used to extend the behavior of IniMap, such as adding support
+ * for duplicate keys as if they were arrays of values.
+ *
+ * @example
+ * ```ts
+ * import { IniMap } from "https://deno.land/std@$STD_VERSION/encoding/ini.ts";
+ * const iniFile = `# Example of key/value arrays
+ * [section1]
+ * key1=This key
+ * key1=is non-standard
+ * key1=but can be captured!
+ * `;
+ * const ini = new IniMap({ assignment: "=", deduplicate: true });
+ * ini.parseIni(iniFile, (key, value, section) => {
+ *   if (section) {
+ *     if (ini.has(section, key)) {
+ *       const exists = ini.get(section, key);
+ *       if (Array.isArray(exists)) {
+ *         exists.push(value);
+ *         return exists;
+ *       } else {
+ *         return [exists, value];
+ *       }
+ *     }
+ *   }
+ *   return value;
+ * });
+ * console.log(ini.get("section1", "key1"));
+ *
+ * // => [ "This key", "is non-standard", "but can be captured!" ]
+ *
+ * const result = ini.toString((key, value) => {
+ *   if (Array.isArray(value)) {
+ *     return value.join(
+ *       `${ini.formatting.lineBreak}${key}${ini.formatting.assignment}`,
+ *     );
+ *   }
+ *   return value;
+ * });
+ * console.log(result === iniFile);
+ *
+ * // => true
+ * ```
+ *
  * @module
  */
 
@@ -47,6 +92,8 @@ export interface FormattingOptions {
   comment?: string;
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
   pretty?: boolean;
+  /** Filter duplicate keys from INI string output; defaults to false to preserve data parity. */
+  deduplicate?: boolean;
 }
 
 /** Options for parsing INI strings. */
@@ -518,8 +565,20 @@ export class IniMap {
     const pretty = this.#formatting?.pretty ?? false;
     const assignmentMark = (this.#formatting?.assignment ?? "=")[0];
     const assignment = pretty ? ` ${assignmentMark} ` : assignmentMark;
+    const lines = this.#formatting.deduplicate
+      ? this.#lines.filter((lineA, index, self) => {
+        if (lineA.type === "value") {
+          const lastIndex = self.findLastIndex((lineB) => {
+            return lineA.sec === (lineB as LineValue).sec &&
+              lineA.key === (lineB as LineValue).key;
+          });
+          return index === lastIndex;
+        }
+        return true;
+      })
+      : this.#lines;
 
-    return this.#lines.map((line) => {
+    return lines.map((line) => {
       switch (line.type) {
         case "comment":
           return line.val;
@@ -731,6 +790,7 @@ const DummyFormatting: Required<FormattingOptions> = {
   lineBreak: "",
   pretty: false,
   comment: "",
+  deduplicate: false,
 };
 const FormattingKeys = Object.keys(
   DummyFormatting,
