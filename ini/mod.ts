@@ -9,6 +9,50 @@
  * but will be preserved when using {@linkcode IniMap}. Multi-line values are not supported and will throw a syntax error.
  * White space padding and lines starting with '#', ';', or '//' will be treated as comments.
  *
+ * @example
+ * ```ts
+ * import * as INI from "https://deno.land/std@$STD_VERSION/ini/mod.ts";
+ * const iniFile = `# Example configuration file
+ * Global Key=Some data here
+ *
+ * [Section #1]
+ * Section Value=42
+ * Section Date=1977-05-25
+ * `;
+ * const parsed = INI.parse(iniFile, {
+ *   reviver: (key, value, section) => {
+ *     if (section === "Section #1") {
+ *       if (key === "Section Value") return Number(value);
+ *       if (key === "Section Date") return new Date(value);
+ *     }
+ *     return value;
+ *   },
+ * });
+ * console.log(parsed);
+ *
+ * // =>
+ * // {
+ * //   "Global Key": "Some data here",
+ * //   "Section #1": { "Section Value": 42, "Section Date": 1977-05-25T00:00:00.000Z }
+ * // }
+ *
+ * const text = INI.stringify(parsed, {
+ *   replacer: (key, value, section) => {
+ *     if (section === "Section #1" && key === "Section Date") {
+ *       return (value as Date).toISOString().split("T")[0];
+ *     }
+ *     return value;
+ *   },
+ * });
+ * console.log(text);
+ *
+ * // =>
+ * // Global Key=Some data here
+ * // [Section #1]
+ * // Section Value=42
+ * // Section Date=1977-05-25
+ * ```
+ *
  * Optionally, {@linkcode IniMap} may be used for finer INI handling. Using this class will permit preserving
  * comments, accessing values like a map, iterating over key/value/section entries, and more.
  *
