@@ -48,7 +48,7 @@
  * key1=but can be captured!
  * `;
  * const ini = new IniMap({ assignment: "=", deduplicate: true });
- * ini.parseIni(iniFile, (key, value, section) => {
+ * ini.parse(iniFile, (key, value, section) => {
  *   if (section) {
  *     if (ini.has(section, key)) {
  *       const exists = ini.get(section, key);
@@ -132,7 +132,7 @@ export function parse(
   text: string,
   options?: ParseOptions,
 ): Record<string, unknown | Record<string, unknown>> {
-  return IniMap.parse(text, options).toObject();
+  return IniMap.from(text, options).toObject();
 }
 
 /** Compile an object into an INI config string. Provide formatting options to modify the output. */
@@ -149,6 +149,122 @@ export class IniMap {
   #global = new Map<string, LineValue>();
   #sections = new Map<string, LineSection>();
   #lines: Line[] = [];
+  #comments: Comments = {
+    clear: (): void => {
+      this.#lines = this.#lines.filter((line) => line.type !== "comment");
+      const { length } = this.#lines;
+      for (let i = 0; i < length; i += 1) {
+        const line = this.#lines[i];
+        if (line.type === "section") {
+          line.end = line.end - line.num + i + 1;
+        }
+        line.num = i + 1;
+      }
+    },
+    deleteAtLine: (line: number): boolean => {
+      const comment = this.#getComment(line);
+      if (comment) {
+        this.#appendOrDeleteLine(comment, LineOp.Del);
+        return true;
+      }
+      return false;
+    },
+    deleteAtKey: (keyOrSection: string, noneOrKey?: string): boolean => {
+      const lineValue = this.#getValue(keyOrSection, noneOrKey);
+      if (lineValue) {
+        return this.comments.deleteAtLine(lineValue.num - 1);
+      }
+      return false;
+    },
+    deleteAtSection: (sectionName: string): boolean => {
+      const section = this.#sections.get(sectionName);
+      if (section) {
+        return this.comments.deleteAtLine(section.num - 1);
+      }
+      return false;
+    },
+    getAtLine: (line: number): string | undefined => {
+      return this.#getComment(line)?.val;
+    },
+    getAtKey: (
+      keyOrSection: string,
+      noneOrKey?: string,
+    ): string | undefined => {
+      const lineValue = this.#getValue(keyOrSection, noneOrKey);
+      if (lineValue) {
+        return this.comments.getAtLine(lineValue.num - 1);
+      }
+    },
+    getAtSection: (sectionName: string): string | undefined => {
+      const section = this.#sections.get(sectionName);
+      if (section) {
+        return this.comments.getAtLine(section.num - 1);
+      }
+    },
+    setAtLine: (line: number, text: string): Comments => {
+      const comment = this.#getComment(line);
+      const mark = this.#formatting.comment ?? "#";
+      const formatted = text.startsWith(mark) || text === ""
+        ? text
+        : `${mark} ${text}`;
+      if (comment) {
+        comment.val = formatted;
+      } else {
+        if (line > this.#lines.length) {
+          for (let i = this.#lines.length + 1; i < line; i += 1) {
+            this.#appendOrDeleteLine({
+              type: "comment",
+              num: i,
+              val: "",
+            }, LineOp.Add);
+          }
+        }
+        this.#appendOrDeleteLine({
+          type: "comment",
+          num: line,
+          val: formatted,
+        }, LineOp.Add);
+      }
+      return this.comments;
+    },
+    setAtKey: (
+      keyOrSection: string,
+      textOrKey: string,
+      noneOrText?: string,
+    ): Comments => {
+      if (noneOrText !== undefined) {
+        const lineValue = this.#getValue(keyOrSection, textOrKey);
+        if (lineValue) {
+          if (this.#getComment(lineValue.num - 1)) {
+            this.comments.setAtLine(lineValue.num - 1, noneOrText);
+          } else {
+            this.comments.setAtLine(lineValue.num, noneOrText);
+          }
+        }
+      } else {
+        const lineValue = this.#getValue(keyOrSection);
+        if (lineValue) {
+          if (this.#getComment(lineValue.num - 1)) {
+            this.comments.setAtLine(lineValue.num - 1, textOrKey);
+          } else {
+            this.comments.setAtLine(lineValue.num, textOrKey);
+          }
+        }
+      }
+      return this.comments;
+    },
+    setAtSection: (sectionName: string, text: string): Comments => {
+      const section = this.#sections.get(sectionName);
+      if (section) {
+        if (this.#getComment(section.num - 1)) {
+          this.comments.setAtLine(section.num - 1, text);
+        } else {
+          this.comments.setAtLine(section.num, text);
+        }
+      }
+      return this.comments;
+    },
+  };
   #formatting: FormattingOptions;
 
   constructor(formatting?: FormattingOptions) {
@@ -166,6 +282,11 @@ export class IniMap {
 
   get formatting(): FormattingOptions {
     return this.#formatting;
+  }
+
+  /** Manage comments in the INI. */
+  get comments(): Comments {
+    return this.#comments;
   }
 
   /** Clear a single section or the entire INI. */
@@ -273,118 +394,6 @@ export class IniMap {
     }
   }
 
-  /** Manage comments in the INI. */
-  get comments(): Comments {
-    return {
-      clear: (): void => {
-        this.#lines = this.#lines.filter((line) => line.type !== "comment");
-      },
-      deleteAtLine: (line: number): boolean => {
-        const comment = this.#getComment(line);
-        if (comment) {
-          this.#appendOrDeleteLine(comment, LineOp.Del);
-          return true;
-        }
-        return false;
-      },
-      deleteAtKey: (keyOrSection: string, noneOrKey?: string): boolean => {
-        const lineValue = this.#getValue(keyOrSection, noneOrKey);
-        if (lineValue) {
-          return this.comments.deleteAtLine(lineValue.num - 1);
-        }
-        return false;
-      },
-      deleteAtSection: (sectionName: string): boolean => {
-        const section = this.#sections.get(sectionName);
-        if (section) {
-          return this.comments.deleteAtLine(section.num - 1);
-        }
-        return false;
-      },
-      getAtLine: (line: number): string | undefined => {
-        return this.#getComment(line)?.val;
-      },
-      getAtKey: (
-        keyOrSection: string,
-        noneOrKey?: string,
-      ): string | undefined => {
-        const lineValue = this.#getValue(keyOrSection, noneOrKey);
-        if (lineValue) {
-          return this.comments.getAtLine(lineValue.num - 1);
-        }
-      },
-      getAtSection: (sectionName: string): string | undefined => {
-        const section = this.#sections.get(sectionName);
-        if (section) {
-          return this.comments.getAtLine(section.num - 1);
-        }
-      },
-      setAtLine: (line: number, text: string): Comments => {
-        const comment = this.#getComment(line);
-        const mark = this.#formatting.comment ?? "#";
-        const formatted = text.startsWith(mark) || text === ""
-          ? text
-          : `${mark} ${text}`;
-        if (comment) {
-          comment.val = formatted;
-        } else {
-          if (line > this.#lines.length) {
-            for (let i = this.#lines.length + 1; i < line; i += 1) {
-              this.#appendOrDeleteLine({
-                type: "comment",
-                num: i,
-                val: "",
-              }, LineOp.Add);
-            }
-          }
-          this.#appendOrDeleteLine({
-            type: "comment",
-            num: line,
-            val: formatted,
-          }, LineOp.Add);
-        }
-        return this.comments;
-      },
-      setAtKey: (
-        keyOrSection: string,
-        textOrKey: string,
-        noneOrText?: string,
-      ): Comments => {
-        if (noneOrText !== undefined) {
-          const lineValue = this.#getValue(keyOrSection, textOrKey);
-          if (lineValue) {
-            if (this.#getComment(lineValue.num - 1)) {
-              this.comments.setAtLine(lineValue.num - 1, noneOrText);
-            } else {
-              this.comments.setAtLine(lineValue.num, noneOrText);
-            }
-          }
-        } else {
-          const lineValue = this.#getValue(keyOrSection);
-          if (lineValue) {
-            if (this.#getComment(lineValue.num - 1)) {
-              this.comments.setAtLine(lineValue.num - 1, textOrKey);
-            } else {
-              this.comments.setAtLine(lineValue.num, textOrKey);
-            }
-          }
-        }
-        return this.comments;
-      },
-      setAtSection: (sectionName: string, text: string): Comments => {
-        const section = this.#sections.get(sectionName);
-        if (section) {
-          if (this.#getComment(section.num - 1)) {
-            this.comments.setAtLine(section.num - 1, text);
-          } else {
-            this.comments.setAtLine(section.num, text);
-          }
-        }
-        return this.comments;
-      },
-    };
-  }
-
   #getOrCreateSection(section: string): LineSection {
     const existing = this.#sections.get(section);
 
@@ -452,7 +461,8 @@ export class IniMap {
     const { length } = this.#lines;
     // If the input is a comment, find the next section if any to update.
     let updateSection = input.type === "comment";
-    for (let i = input.num; i < length; i += 1) {
+    let i = op === LineOp.Add ? input.num : input.num - 1;
+    for (; i < length; i += 1) {
       const line = this.#lines[i];
       line.num += op;
       if (line.type === "section") {
@@ -592,7 +602,7 @@ export class IniMap {
   }
 
   /** Parse an INI string in this `IniMap`. */
-  parseIni(text: string, reviver?: ReviverFunction): this {
+  parse(text: string, reviver?: ReviverFunction): this {
     if (typeof text !== "string") {
       throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
     }
@@ -691,41 +701,46 @@ export class IniMap {
     return this;
   }
 
-  /** Parse an INI string to an `IniMap`. */
-  static parse(
-    text: string,
+  /** Create an `IniMap` from an INI string. */
+  static from(
+    input: string,
     options?: ParseOptions & FormattingOptions,
-  ): IniMap {
-    return new IniMap(options).parseIni(text, options?.reviver);
-  }
-
+  ): IniMap;
   /** Create an `IniMap` from a plain object. */
   static from(
     // deno-lint-ignore no-explicit-any
     input: Record<string, any>,
     formatting?: FormattingOptions,
+  ): IniMap;
+  static from(
+    // deno-lint-ignore no-explicit-any
+    input: Record<string, any> | string,
+    formatting?: ParseOptions & FormattingOptions,
   ): IniMap {
     const ini = new IniMap(formatting);
-    // deno-lint-ignore no-explicit-any
-    const isRecord = (val: any): val is Record<string, any> =>
-      typeof val === "object" && val !== null;
-    // deno-lint-ignore no-explicit-any
-    const sort = ([_a, valA]: [string, any], [_b, valB]: [string, any]) => {
-      if (isRecord(valA)) return 1;
-      if (isRecord(valB)) return -1;
-      return 0;
-    };
+    if (typeof input === "object" && input !== null) {
+      // deno-lint-ignore no-explicit-any
+      const isRecord = (val: any): val is Record<string, any> =>
+        typeof val === "object" && val !== null;
+      // deno-lint-ignore no-explicit-any
+      const sort = ([_a, valA]: [string, any], [_b, valB]: [string, any]) => {
+        if (isRecord(valA)) return 1;
+        if (isRecord(valB)) return -1;
+        return 0;
+      };
 
-    for (const [key, val] of Object.entries(input).sort(sort)) {
-      if (isRecord(val)) {
-        for (const [sectionKey, sectionValue] of Object.entries(val)) {
-          ini.set(key, sectionKey, sectionValue);
+      for (const [key, val] of Object.entries(input).sort(sort)) {
+        if (isRecord(val)) {
+          for (const [sectionKey, sectionValue] of Object.entries(val)) {
+            ini.set(key, sectionKey, sectionValue);
+          }
+        } else {
+          ini.set(key, val);
         }
-      } else {
-        ini.set(key, val);
       }
+    } else {
+      ini.parse(input, formatting?.reviver);
     }
-
     return ini;
   }
 }
