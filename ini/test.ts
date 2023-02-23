@@ -40,6 +40,289 @@ function assertInvalidParse(
 }
 
 Deno.test({
+  name: "[ini] create and manage an IniMap",
+  async fn({ step }) {
+    const text = "#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100";
+    let ini = new INI.IniMap();
+
+    await step({
+      name: "[IniMap] set values",
+      fn() {
+        assertEquals(ini.size, 0);
+        assertEquals(ini.set("section1", "keyA", null), ini);
+        assertEquals(ini.set("keyA", true), ini);
+        assertEquals(ini.set("section1", "keyA", 100), ini);
+        assertEquals(ini.set("keyA", "1977-05-25"), ini);
+        assertEquals(ini.size, 2);
+      },
+    });
+
+    await step({
+      name: "[IniMap] get values",
+      fn() {
+        assertEquals(ini.get("section1", "keyA"), 100);
+        assertEquals(ini.get("keyA"), "1977-05-25");
+      },
+    });
+
+    await step({
+      name: "[IniMap] delete values",
+      fn() {
+        assertEquals(ini.delete("section1", "keyB"), false);
+        assertEquals(ini.delete("keyB"), false);
+        assertEquals(ini.delete("section1", "keyA"), true);
+        assertEquals(ini.delete("keyA"), true);
+      },
+    });
+
+    await step({
+      name: "[IniMap] has values",
+      fn() {
+        assertEquals(ini.has("section1", "keyA"), false);
+        assertEquals(ini.has("keyA"), false);
+        ini.set("section1", "keyA", 100);
+        ini.set("keyA", "1977-05-25");
+        assertEquals(ini.has("section1", "keyA"), true);
+        assertEquals(ini.has("keyA"), true);
+      },
+    });
+
+    await step({
+      name: "[IniMap] clear map",
+      fn() {
+        ini.clear("section1");
+        assertEquals(ini.size, 1);
+        assertEquals(ini.has("section1", "keyA"), false);
+        ini.clear();
+        assertEquals(ini.size, 0);
+        assertEquals(ini.has("keyA"), false);
+      },
+    });
+
+    await step({
+      name: "[IniMap] entries",
+      fn() {
+        ini.set("section1", "keyA", 100);
+        ini.set("keyA", "1977-05-25");
+        assertObjectMatch(
+          Array.from(ini.entries()),
+          // deno-lint-ignore no-explicit-any
+          [["keyA", "1977-05-25"], ["keyA", 100, "section1"]] as any,
+        );
+      },
+    });
+
+    await step({
+      name: "[IniMap] parse INI string",
+      fn() {
+        ini = new INI.IniMap();
+        ini.parse(text);
+        assertEquals(ini.get("section1", "keyA"), "100");
+        assertEquals(ini.get("keyA"), "1977-05-25");
+        ini.clear();
+        ini.parse(
+          text,
+          (key, val, sec) =>
+            sec === "section1" && key === "keyA" ? Number(val) : val,
+        );
+        assertEquals(ini.get("section1", "keyA"), 100);
+        assertEquals(ini.get("keyA"), "1977-05-25");
+      },
+    });
+
+    await step({
+      name: "[IniMap] convert to INI string",
+      fn() {
+        assertEquals(ini.toString(), text);
+        assertEquals(
+          ini.toString((key, val, sec) => key && sec ? "one hundred" : val),
+          "#comment\nkeyA=1977-05-25\n[section1]\nkeyA=one hundred",
+        );
+      },
+    });
+
+    await step({
+      name: "[IniMap] convert to object",
+      fn() {
+        assertObjectMatch(ini.toObject(), {
+          keyA: "1977-05-25",
+          section1: { keyA: 100 },
+        });
+      },
+    });
+
+    await step({
+      name: "[IniMap] convert to JSON",
+      fn() {
+        assertEquals(
+          JSON.stringify(ini),
+          '{"keyA":"1977-05-25","section1":{"keyA":100}}',
+        );
+      },
+    });
+
+    await step({
+      name: "[IniMap] create from",
+      fn() {
+        assertEquals(
+          INI.IniMap.from("keyA=1977-05-25\n[section1]\nkeyA=100").toString(),
+          INI.IniMap.from({
+            keyA: "1977-05-25",
+            section1: { keyA: 100 },
+          }).toString(),
+        );
+      },
+    });
+
+    await step({
+      name: "[IniMap] detect unambiguous formatting marks",
+      fn() {
+        assertObjectMatch(INI.IniMap.from("# comment\na = b").formatting, {
+          comment: "#",
+          lineBreak: "\n",
+          pretty: true,
+        });
+        assertObjectMatch(INI.IniMap.from("; comment\ra=b").formatting, {
+          comment: ";",
+          lineBreak: "\r",
+          pretty: false,
+        });
+        assertObjectMatch(INI.IniMap.from("// comment\r\na= b").formatting, {
+          comment: "//",
+          lineBreak: "\r\n",
+          pretty: false,
+        });
+        assertObjectMatch(INI.IniMap.from("# comment\n\ra =b").formatting, {
+          comment: "#",
+          lineBreak: "\n\r",
+          pretty: false,
+        });
+      },
+    });
+
+    await step({
+      name: "[IniMap] manage comments",
+      async fn({ step }) {
+        ini = INI.IniMap.from({
+          keyA: "1977-05-25",
+          section1: { keyA: 100 },
+        });
+
+        await step({
+          name: "[Comments] set comments",
+          fn() {
+            assertEquals(
+              ini.comments.setAtLine(4, "# set comment 1"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtLine(6, "without formatting mark"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtKey("keyA", "# set comment 2"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtKey("section1", "keyA", "# set comment 3"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtSection("section1", "# set comment 4"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtLine(7, "# modified comment 1"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtKey("keyA", "# modified comment 2"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtKey("section1", "keyA", "# modified comment 3"),
+              ini.comments,
+            );
+            assertEquals(
+              ini.comments.setAtSection("section1", "# modified comment 4"),
+              ini.comments,
+            );
+          },
+        });
+
+        await step({
+          name: "[Comments] get comments",
+          fn() {
+            assertEquals(ini.comments.getAtLine(7), "# modified comment 1");
+            assertEquals(ini.comments.getAtLine(8), "");
+            assertEquals(
+              ini.comments.getAtLine(9),
+              "# without formatting mark",
+            );
+            assertEquals(ini.comments.getAtKey("keyA"), "# modified comment 2");
+            assertEquals(
+              ini.comments.getAtKey("section1", "keyA"),
+              "# modified comment 3",
+            );
+            assertEquals(
+              ini.comments.getAtSection("section1"),
+              "# modified comment 4",
+            );
+          },
+        });
+
+        await step({
+          name: "[Comments] delete comments",
+          fn() {
+            ini.comments.setAtLine(1, "# set comment 1");
+            assertEquals(ini.comments.deleteAtLine(9), true);
+            assertEquals(ini.comments.deleteAtLine(8), true);
+            assertEquals(ini.comments.deleteAtLine(7), true);
+            assertEquals(ini.comments.deleteAtKey("keyA"), true);
+            assertEquals(ini.comments.deleteAtKey("section1", "keyA"), true);
+            assertEquals(ini.comments.deleteAtSection("section1"), true);
+            assertEquals(ini.comments.deleteAtLine(9), false);
+            assertEquals(ini.comments.deleteAtLine(8), false);
+            assertEquals(ini.comments.deleteAtLine(7), false);
+            assertEquals(ini.comments.deleteAtKey("keyA"), false);
+            assertEquals(ini.comments.deleteAtKey("section1", "keyA"), false);
+            assertEquals(ini.comments.deleteAtSection("section1"), false);
+            assertEquals(ini.comments.deleteAtKey("section1", "keyB"), false);
+            assertEquals(ini.comments.deleteAtSection("section2"), false);
+          },
+        });
+
+        await step({
+          name: "[Comments] clear comments",
+          fn() {
+            ini.comments.setAtLine(1, "# set comment 1");
+            ini.comments.setAtKey("section1", "keyA", "# set comment 2");
+            ini.comments.setAtSection("section1", "# set comment 3");
+            assertEquals(
+              ini.toString(),
+              "# set comment 1\nkeyA=1977-05-25\n# set comment 3\n[section1]\n# set comment 2\nkeyA=100",
+            );
+            ini.comments.clear();
+            assertEquals(
+              ini.toString(),
+              "keyA=1977-05-25\n[section1]\nkeyA=100",
+            );
+          },
+        });
+
+        await step({
+          name: "[Comments] preserve comments",
+          fn() {
+            const comment = "# comment";
+            assertEquals(INI.IniMap.from(comment).toString(), comment);
+          },
+        });
+      },
+    });
+  },
+});
+
+Deno.test({
   name: "[ini] parse",
   fn() {
     assertValidParse(`a=100`, { a: 100 }, {
@@ -71,179 +354,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[ini] create and manage an IniMap",
-  async fn({ step }) {
-    const ini = new INI.IniMap();
-
-    await step({
-      name: "[IniMap] get and set values",
-      fn() {
-        assertEquals(ini.size, 0);
-        assertEquals(ini.get("keyA"), undefined);
-        assertEquals(ini.get("section1", "keyA"), undefined);
-
-        ini.set("section1", "keyA", null).set("keyA", "1977-05-25");
-
-        assertEquals(ini.size, 2);
-        assertEquals(ini.get("keyA"), "1977-05-25");
-        assertEquals(ini.get("section1", "keyA"), null);
-
-        ini.set("section1", "keyA", 100);
-
-        assertEquals(ini.get("section1", "keyA"), 100);
-        assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]\nkeyA=100");
-        assertObjectMatch(
-          Array.from(ini.entries()),
-          // deno-lint-ignore no-explicit-any
-          [["keyA", "1977-05-25"], ["keyA", 100, "section1"]] as any,
-        );
-      },
-    });
-
-    await step({
-      name: "[IniMap] has and delete values",
-      fn() {
-        assertEquals(ini.delete("section1", "keyA"), true);
-        assertEquals(ini.delete("section1", "keyA"), false);
-        assertEquals(ini.toString(), "keyA=1977-05-25\n[section1]");
-
-        ini.clear("section1");
-
-        assertEquals(ini.size, 1);
-        assertEquals(ini.has("keyA"), true);
-        assertEquals(ini.has("keyB"), false);
-        assertEquals(ini.toString(), "keyA=1977-05-25");
-
-        ini.set("section2", "keyC", null);
-        ini.set("keyB", 42);
-        ini.set("section1", "keyB", 42);
-        ini.set("section2", "keyD", null);
-
-        assertEquals(ini.has("keyB"), true);
-        assertEquals(ini.has("section1", "keyB"), true);
-        assertEquals(ini.has("section3", "keyB"), false);
-        assertEquals(ini.delete("keyB"), true);
-        assertEquals(ini.delete("section1", "keyB"), true);
-        assertEquals(ini.delete("keyB"), false);
-        assertEquals(ini.delete("section1", "keyB"), false);
-      },
-    });
-
-    await step({
-      name: "[IniMap] clear map",
-      fn() {
-        ini.clear();
-
-        assertEquals(ini.size, 0);
-        assertEquals(ini.has("keyA"), false);
-        assertEquals(ini.toString(), "");
-      },
-    });
-
-    await step({
-      name: "[IniMap] convert map to JSON",
-      fn() {
-        ini.clear();
-        ini.set("section1", "key1", null);
-
-        assertEquals(JSON.stringify(ini), '{"section1":{"key1":null}}');
-      },
-    });
-
-    await step({
-      name: "[IniMap] detect unambiguous formatting marks",
-      fn() {
-        assertObjectMatch(INI.IniMap.parse("# comment\na = b").formatting, {
-          comment: "#",
-          lineBreak: "\n",
-          pretty: true,
-        });
-        assertObjectMatch(INI.IniMap.parse("; comment\ra=b").formatting, {
-          comment: ";",
-          lineBreak: "\r",
-          pretty: false,
-        });
-        assertObjectMatch(INI.IniMap.parse("// comment\r\na= b").formatting, {
-          comment: "//",
-          lineBreak: "\r\n",
-          pretty: false,
-        });
-        assertObjectMatch(INI.IniMap.parse("# comment\n\ra =b").formatting, {
-          comment: "#",
-          lineBreak: "\n\r",
-          pretty: false,
-        });
-      },
-    });
-  },
-});
-
-Deno.test({
   name: "[ini] parse with comment",
   fn() {
     assertValidParse(`#comment\na=b`, { a: "b" });
     assertValidParse(`;comment\ra=b`, { a: "b" });
     assertValidParse(`//comment\n\ra=b`, { a: "b" });
-  },
-});
-
-Deno.test({
-  name: "[ini] preserve comments",
-  fn() {
-    const text = "#comment\na=b";
-    const ini = INI.IniMap.parse(text);
-
-    assertEquals(ini.toString(), text);
-  },
-});
-
-Deno.test({
-  name: "[ini] get and set comments",
-  fn() {
-    const ini = INI.IniMap.parse("a=b");
-
-    assertEquals(ini.comments.getAtKey("a"), undefined);
-    ini.comments.setAtKey("a", "# added comment 1");
-    assertEquals(ini.comments.getAtKey("a"), "# added comment 1");
-    ini.comments.setAtKey("a", "# modified comment 1");
-    assertEquals(ini.comments.getAtKey("a"), "# modified comment 1");
-    ini.set("section1", "c", "d");
-    ini.comments.setAtSection("section1", "added comment 2");
-    assertEquals(ini.comments.getAtSection("section1"), "# added comment 2");
-    ini.comments.setAtSection("section1", "modified comment 2");
-    assertEquals(ini.comments.getAtSection("section1"), "# modified comment 2");
-    ini.comments.setAtKey("section1", "c", "# added comment 3");
-    assertEquals(ini.comments.getAtKey("section1", "c"), "# added comment 3");
-    ini.comments.setAtKey("section1", "c", "# modified comment 3");
-    assertEquals(
-      ini.comments.getAtKey("section1", "c"),
-      "# modified comment 3",
-    );
-
-    const line = ini.size + 8;
-
-    ini.comments.setAtLine(line, "added comment 4");
-    assertEquals(ini.comments.getAtLine(line), "# added comment 4");
-    ini.comments.setAtLine(line, "modified comment 4");
-    assertEquals(ini.comments.getAtLine(line), "# modified comment 4");
-
-    const expected = "# modified comment 1\na=b\n# modified comment 2\n" +
-      "[section1]\n# modified comment 3\nc=d\n\n\n\n# modified comment 4";
-
-    assertEquals(ini.toString(), expected);
-    assertEquals(ini.comments.deleteAtLine(line), true);
-    assertEquals(ini.comments.deleteAtLine(line), false);
-    assertEquals(ini.comments.deleteAtKey("a"), true);
-    assertEquals(ini.comments.deleteAtKey("a"), false);
-    assertEquals(ini.comments.deleteAtKey("b"), false);
-    assertEquals(ini.comments.deleteAtSection("section1"), true);
-    assertEquals(ini.comments.deleteAtSection("section1"), false);
-    assertEquals(ini.comments.deleteAtSection("section2"), false);
-    assertEquals(ini.comments.deleteAtKey("section1", "c"), true);
-    assertEquals(ini.comments.deleteAtKey("section1", "c"), false);
-    assertEquals(ini.toString(), "a=b\n[section1]\nc=d\n\n\n");
-    ini.comments.clear();
-    assertEquals(ini.toString(), "a=b\n[section1]\nc=d");
   },
 });
 
@@ -317,7 +432,7 @@ Deno.test({
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
     assertEquals(
-      INI.IniMap.parse("#comment\naaa=0\naaa=1", { deduplicate: true })
+      INI.IniMap.from("#comment\naaa=0\naaa=1", { deduplicate: true })
         .toString(),
       "#comment\naaa=1",
     );
@@ -357,7 +472,7 @@ Deno.test({
           throw new Error("Don't try to set the value directly to the key __proto__.")
         }
       });
-      import { parse } from "${import.meta.resolve("./ini.ts")}";
+      import { parse } from "${import.meta.resolve("./mod.ts")}";
       parse('[__proto__]\\nisAdmin = true');
     `;
     const command = new Deno.Command(Deno.execPath(), {
