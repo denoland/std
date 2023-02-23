@@ -1,3 +1,19 @@
+### 0.178.0 / 2023.02.23
+
+- Remove std/node, it was merged into Deno itself (#3206)
+- feat(encoding/csv/streaming): add `skipFirstRow` and `columns` options (#3184)
+- feat(http/file_server): etag value falls back to `DENO_DEPLOYMENT_ID` if
+  `fileInfo.mtime` is not available (#3186)
+- feat(streams/delimiter_stream): add disposition option (#3189)
+- fix(crypto): create DataView with correct byteLength in timingSafeEqual
+  (#3208)
+- fix(encoding/yaml): avoid prototype pollution in Node.js and Browser (#3173)
+- fix(node): do not ask env permission from process.env access (#3178)
+- fix(node/child_process): "windowsVerbatimArguments" option should be
+  automatically set to true for CMD in spawn() (#3167)
+- fix(node/fs): chmod function throws unnecessary TypeError on Windows (#3168)
+- fix: change `BigInt` type to `bigint` type (#3187)
+
 ### 0.177.0 / 2023.02.06
 
 - feat(encoding/csv): handle CSV byte-order marks (#3143)
