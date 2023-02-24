@@ -110,7 +110,7 @@ export interface LoadOptions {
    *
    * @default {"./.env"}
    */
-  envPath?: string;
+  envPath?: string | null;
   /**
    * Set to `true` to export all `.env` variables to the current processes
    * environment. Variables are then accessable via `Deno.env.get(<key>)`.
@@ -122,7 +122,7 @@ export interface LoadOptions {
    *
    * @default {"./.env.example"}
    */
-  examplePath?: string;
+  examplePath?: string | null;
   /**
    * Set to `true` to allow required env variables to be empty. Otherwise, it
    * will throw an error if any variable is empty.
@@ -141,7 +141,7 @@ export interface LoadOptions {
    *
    * @default {"./.env.defaults"}
    */
-  defaultsPath?: string;
+  defaultsPath?: string | null;
   /**
    * List of Env variables to read from process. By default, the complete Env is
    * looked up. This allows to permit access to only specific Env variables with
@@ -215,7 +215,7 @@ export function loadSync(
     restrictEnvAccessTo = [],
   }: LoadOptions = {},
 ): Record<string, string> {
-  const conf = parseFileSync(envPath, restrictEnvAccessTo);
+  const conf = envPath ? parseFileSync(envPath, restrictEnvAccessTo) : {};
 
   if (defaultsPath) {
     const confDefaults = parseFileSync(defaultsPath, restrictEnvAccessTo);
@@ -259,7 +259,7 @@ export async function load(
     restrictEnvAccessTo = [],
   }: LoadOptions = {},
 ): Promise<Record<string, string>> {
-  const conf = await parseFile(envPath, restrictEnvAccessTo);
+  const conf = envPath ? await parseFile(envPath, restrictEnvAccessTo) : {};
 
   if (defaultsPath) {
     const confDefaults = await parseFile(
