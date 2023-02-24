@@ -3,11 +3,13 @@
 import {
   assertEquals,
   assertRejects,
+  assertStrictEquals,
   assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
 import {
   load,
+  type LoadOptions,
   loadSync,
   MissingEnvVarsError,
   parse,
@@ -754,3 +756,25 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
     assertType<IsExact<typeof conf, Record<string, string>>>(true);
   });
 });
+
+Deno.test(
+  "prevent file systems reads of default path parameter values by using explicit null",
+  { permissions: "none" },
+  async (t) => {
+    const noPaths = {
+      defaultsPath: null,
+      envPath: null,
+      examplePath: null,
+    } satisfies LoadOptions;
+
+    await t.step("load", async () => {
+      const conf = await load(noPaths);
+      assertStrictEquals(Object.keys(conf).length, 0);
+    });
+
+    await t.step("loadSync", () => {
+      const conf = loadSync(noPaths);
+      assertStrictEquals(Object.keys(conf).length, 0);
+    });
+  },
+);
