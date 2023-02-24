@@ -4,10 +4,9 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
 import { isWindows } from "../_util/os.ts";
 
-export function resolveSymlinkSrc(src: string, dest: string): string;
-export function resolveSymlinkSrc(src: URL, dest: URL): URL;
-export function resolveSymlinkSrc(src: string | URL, dest: string | URL) {
-  if (typeof src == "string" && typeof dest == "string") {
+function resolveSymlinkSrc(src: string | URL, dest: string | URL) {
+  if (typeof src != "string") return src; // URL is always absolute path
+  if (typeof dest == "string") {
     return path.resolve(path.dirname(dest), src);
   } else {
     return new URL(src, dest)
@@ -21,9 +20,7 @@ export function resolveSymlinkSrc(src: string | URL, dest: string | URL) {
  * @param src the source file path
  * @param dest the destination link path
  */
-export function ensureSymlink(src: string, dest: string);
-export function ensureSymlink(src: URL, dest: URL);
-export function ensureSymlink(src: any, dest: any) {
+export async function ensureSymlink(src: string | URL, dest: string | URL) {
   const srcReal = resolveSymlinkSrc(src, dest);
   const srcStatInfo = await Deno.lstat(srcReal);
   const srcFilePathType = getFileInfoType(srcStatInfo);
@@ -52,9 +49,7 @@ export function ensureSymlink(src: any, dest: any) {
  * @param src the source file path
  * @param dest the destination link path
  */
-export function ensureSymlinkSync(src: string, dest: string);
-export function ensureSymlinkSync(src: URL, dest: URL);
-export function ensureSymlinkSync(src: any, dest: any) {
+export function ensureSymlinkSync(src: string | URL, dest: string | URL) {
   const srcReal = resolveSymlinkSrc(src, dest);
   const srcStatInfo = Deno.lstatSync(srcReal);
   const srcFilePathType = getFileInfoType(srcStatInfo);
