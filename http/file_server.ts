@@ -520,8 +520,8 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
             // relative URLs in the index file will resolve against the parent
             // directory, rather than the current directory. To prevent that, we
             // return a 301 redirect to the URL with a slash.
-            const url = new URL(req.url);
-            if (!url.pathname.endsWith("/")) {
+            if (!fsPath.endsWith("/")) {
+              const url = new URL(req.url);
               url.pathname += "/";
               return Response.redirect(url, 301);
             }
