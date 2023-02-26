@@ -9,7 +9,7 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
   if (typeof linkName == "string") {
     return path.resolve(path.dirname(linkName), target);
   } else {
-    return new URL(target, linkName)
+    return new URL(target, linkName);
   }
 }
 
@@ -20,7 +20,10 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
  * @param target the source file path
  * @param linkName the destination link path
  */
-export async function ensureSymlink(target: string | URL, linkName: string | URL) {
+export async function ensureSymlink(
+  target: string | URL,
+  linkName: string | URL,
+) {
   const targetRealPath = resolveSymlinkTarget(target, linkName);
   const srcStatInfo = await Deno.lstat(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
@@ -49,7 +52,10 @@ export async function ensureSymlink(target: string | URL, linkName: string | URL
  * @param target the source file path
  * @param linkName the destination link path
  */
-export function ensureSymlinkSync(target: string | URL, linkName: string | URL) {
+export function ensureSymlinkSync(
+  target: string | URL,
+  linkName: string | URL,
+) {
   const targetRealPath = resolveSymlinkTarget(target, linkName);
   const srcStatInfo = Deno.lstatSync(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);

@@ -135,7 +135,7 @@ Deno.test("ensureSymlinkRelativeTarget", async function () {
   const testLinkName = path.join(testDir, "link.txt");
   const testFile = path.join(testDir, "target.txt");
 
-  await Deno.mkdir(testDir)
+  await Deno.mkdir(testDir);
 
   await Deno.writeFile(testFile, new Uint8Array());
 
@@ -150,14 +150,14 @@ Deno.test("ensureSymlinkRelativeTarget", async function () {
   assertEquals(linkDirStat.isSymlink, true);
 
   await Deno.remove(testDir, { recursive: true });
-})
+});
 
 Deno.test("ensureSymlinkSyncRelativeTarget", function () {
   const testDir = path.join(testdataDir, "symlink-relative-sync");
   const testLinkName = path.join(testDir, "link.txt");
   const testFile = path.join(testDir, "target.txt");
 
-  Deno.mkdirSync(testDir)
+  Deno.mkdirSync(testDir);
 
   Deno.writeFileSync(testFile, new Uint8Array());
 
@@ -172,4 +172,4 @@ Deno.test("ensureSymlinkSyncRelativeTarget", function () {
   assertEquals(linkDirStat.isSymlink, true);
 
   Deno.removeSync(testDir, { recursive: true });
-})
+});
