@@ -14,7 +14,7 @@ function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
 }
 
 /**
- * Ensures that the link exists.
+ * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  *
  * @param target the source file path
@@ -46,7 +46,7 @@ export async function ensureSymlink(
 }
 
 /**
- * Ensures that the link exists.
+ * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  *
  * @param target the source file path
