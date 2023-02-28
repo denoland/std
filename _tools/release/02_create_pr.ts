@@ -30,8 +30,6 @@ const openedPr = await octoKit.request("POST /repos/{owner}/{repo}/pulls", {
 });
 console.log(`Opened PR at ${openedPr.data.url}`);
 
-const TARGET = "../deno/target/release/deno";
-
 function getPrBody() {
   let text = `Bumped version for ${newVersion}\n\n` +
     `Please ensure:\n` +
@@ -39,7 +37,7 @@ function getPrBody() {
     `- [ ] Releases.md is updated correctly\n` +
     `- [ ] All the tests in this branch have been run against the CLI release being done` +
     "      ```shell" +
-    `      ${TARGET} task test` +
+    `      ../deno/target/release/deno task test` +
     "      ```\n" +
     `To make edits to this PR:\n` +
     "```shell\n" +
