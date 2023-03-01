@@ -292,8 +292,8 @@ function parseSetCookie(value: string): Cookie | null {
   const attrs = value
     .split(";")
     .map((attr) => {
-      const [key, ...values] = attr.trim().split("=").map((keyOrValue) => keyOrValue.trim());
-      return [key, values.join('=')];
+      const [key, ...values] = attr.trim().split("=");
+      return [key, values.join("=")];
     });
   const cookie: Cookie = {
     name: attrs[0][0],
