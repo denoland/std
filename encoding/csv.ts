@@ -12,7 +12,7 @@
  */
 
 import { assert } from "../_util/asserts.ts";
-import type { ReadOptions } from "./csv/_io.ts";
+import { convertRowToObject, type ReadOptions } from "./csv/_io.ts";
 import { Parser } from "./csv/_parser.ts";
 
 export {
@@ -27,6 +27,7 @@ export type { ReadOptions } from "./csv/_io.ts";
 const QUOTE = '"';
 const LF = "\n";
 const CRLF = "\r\n";
+const BYTE_ORDER_MARK = "\ufeff";
 
 export class StringifyError extends Error {
   override readonly name = "StringifyError";
@@ -225,6 +226,15 @@ export type StringifyOptions = {
    * name for the column.
    */
   columns?: Column[];
+  /**
+   * Whether to add a
+   * [byte-order mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the
+   * beginning of the file content. Required by software such as MS Excel to
+   * properly display Unicode text.
+   *
+   * @default {false}
+   */
+  bom?: boolean;
 };
 
 /**
@@ -290,7 +300,8 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
+  { headers = true, separator: sep = ",", columns = [], bom = false }:
+    StringifyOptions = {},
 ): string {
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
@@ -303,6 +314,10 @@ export function stringify(
 
   const normalizedColumns = columns.map(normalizeColumn);
   let output = "";
+
+  if (bom) {
+    output += BYTE_ORDER_MARK;
+  }
 
   if (headers) {
     output += normalizedColumns
@@ -392,31 +407,20 @@ export function parse(
 
   if (opt.skipFirstRow || opt.columns) {
     let headers: string[] = [];
-    let i = 0;
 
     if (opt.skipFirstRow) {
       const head = r.shift();
       assert(head != null);
       headers = head;
-      i++;
     }
 
     if (opt.columns) {
       headers = opt.columns;
     }
 
-    return r.map((e) => {
-      if (e.length !== headers.length) {
-        throw new Error(
-          `Error number of fields line: ${i}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${e.length}`,
-        );
-      }
-      i++;
-      const out: Record<string, unknown> = {};
-      for (let j = 0; j < e.length; j++) {
-        out[headers[j]] = e[j];
-      }
-      return out;
+    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    return r.map((row, i) => {
+      return convertRowToObject(row, headers, firstLineIndex + i);
     });
   }
   return r;

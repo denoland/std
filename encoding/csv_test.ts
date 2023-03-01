@@ -4,10 +4,17 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertStringIncludes,
+  assertThrows,
+} from "../testing/asserts.ts";
+import type { AssertTrue, Has } from "../testing/types.ts";
 import { parse, ParseError, stringify, StringifyError } from "./csv.ts";
 
 const CRLF = "\r\n";
+const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
   name: "parse",
@@ -766,6 +773,52 @@ Deno.test({
         );
       },
     });
+    await t.step({
+      name: "Strips leading byte-order mark with bare cell",
+      fn() {
+        const input = `${BYTE_ORDER_MARK}abc`;
+        const output = [["abc"]];
+        assert(!JSON.stringify(output).includes(BYTE_ORDER_MARK));
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "Strips leading byte-order mark with quoted cell",
+      fn() {
+        const input = `${BYTE_ORDER_MARK}"a""b"`;
+        const output = [['a"b']];
+        assert(!JSON.stringify(output).includes(BYTE_ORDER_MARK));
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "Does not strip byte-order mark after position [0]",
+      fn() {
+        const input = `a${BYTE_ORDER_MARK}bc`;
+        const output = [[`a${BYTE_ORDER_MARK}bc`]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name:
+        "trimLeadingSpace strips leading byte-order mark followed by whitespace",
+      fn() {
+        const input = `${BYTE_ORDER_MARK} abc`;
+        const output = [["abc"]];
+        assertEquals(parse(input, { trimLeadingSpace: true }), output);
+      },
+    });
+    await t.step({
+      // This behavior is due to String#trimStart including U+FEFF in the set of
+      // characters to be trimmed
+      name:
+        "trimLeadingSpace strips leading whitespace followed by byte-order mark",
+      fn() {
+        const input = ` ${BYTE_ORDER_MARK}abc`;
+        const output = [["abc"]];
+        assertEquals(parse(input, { trimLeadingSpace: true }), output);
+      },
+    });
   },
 });
 
@@ -1257,12 +1310,98 @@ Deno.test({
     );
     await t.step({
       name: "Valid data, no columns",
-      async fn() {
+      fn() {
         const data = [[1, 2, 3], [4, 5, 6]];
         const output = `${CRLF}1,2,3${CRLF}4,5,6${CRLF}`;
 
-        assertEquals(await stringify(data), output);
+        assertEquals(stringify(data), output);
       },
     });
+    await t.step(
+      {
+        name: "byte-order mark with bom=true",
+        fn() {
+          const data = [["abc"]];
+          const output = `${BYTE_ORDER_MARK}abc${CRLF}`;
+          const options = { headers: false, bom: true };
+          assertStringIncludes(stringify(data, options), BYTE_ORDER_MARK);
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "no byte-order mark with omitted bom option",
+        fn() {
+          const data = [["abc"]];
+          const output = `abc${CRLF}`;
+          const options = { headers: false };
+          assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "no byte-order mark with bom=false",
+        fn() {
+          const data = [["abc"]];
+          const output = `abc${CRLF}`;
+          const options = { headers: false, bom: false };
+          assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+  },
+});
+
+Deno.test({
+  name: "[encoding/csv] correct typing",
+  fn() {
+    {
+      const parsed = parse("a\nb");
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", {});
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
   },
 });

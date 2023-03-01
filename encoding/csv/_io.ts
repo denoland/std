@@ -251,3 +251,27 @@ export const ERR_BARE_QUOTE = 'bare " in non-quoted-field';
 export const ERR_QUOTE = 'extraneous or missing " in quoted-field';
 export const ERR_INVALID_DELIM = "Invalid Delimiter";
 export const ERR_FIELD_COUNT = "wrong number of fields";
+
+export function convertRowToObject(
+  row: string[],
+  headers: string[],
+  index: number,
+) {
+  if (row.length !== headers.length) {
+    throw new Error(
+      `Error number of fields line: ${index}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${row.length}`,
+    );
+  }
+  const out: Record<string, unknown> = {};
+  for (let i = 0; i < row.length; i++) {
+    out[headers[i]] = row[i];
+  }
+  return out;
+}
+
+export type RowType<ParseOptions, T> = T extends
+  Omit<ParseOptions, "columns"> & { columns: string[] }
+  ? Record<string, unknown>
+  : T extends Omit<ParseOptions, "skipFirstRow"> & { skipFirstRow: true }
+    ? Record<string, unknown>
+  : string[];
