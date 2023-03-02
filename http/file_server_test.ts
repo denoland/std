@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -8,11 +8,12 @@ import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { dirname, fromFileUrl, join, resolve, toFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { toHashString } from "../crypto/mod.ts";
+import { toHashString } from "../crypto/to_hash_string.ts";
 import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
+import { retry } from "../async/retry.ts";
 
 let child: Deno.ChildProcess;
 
@@ -26,6 +27,7 @@ interface FileServerCfg {
   key?: string;
   help?: boolean;
   target?: string;
+  headers?: string[];
 }
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -36,6 +38,7 @@ async function startFileServer({
   port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
+  headers = [],
 }: FileServerCfg = {}) {
   const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
@@ -51,6 +54,7 @@ async function startFileServer({
       `${port}`,
       `${dirListing ? "" : "--no-dir-listing"}`,
       `${dotfiles ? "" : "--no-dotfiles"}`,
+      ...headers.map((header) => "-H=" + header),
     ],
     cwd: moduleDir,
     stdout: "piped",
@@ -92,7 +96,21 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  child.kill("SIGKILL");
+  // Note: We retry this because 'Access is denied' error is thrown sometimes
+  // on windows
+  await retry(() => {
+    try {
+      child.kill("SIGKILL");
+    } catch (e) {
+      if (
+        e instanceof TypeError &&
+        e.message === "Child process has already terminated."
+      ) {
+        return;
+      }
+      throw e;
+    }
+  });
   await child.status;
 }
 
@@ -892,6 +910,23 @@ Deno.test("file_server sets `Date` header correctly", async () => {
 });
 
 Deno.test(
+  "file_server sets headers correctly if provided as arguments",
+  async () => {
+    await startFileServer({
+      headers: ["cache-control:max-age=100", "x-custom-header:hi"],
+    });
+    try {
+      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+      assertEquals(res.headers.get("cache-control"), "max-age=100");
+      assertEquals(res.headers.get("x-custom-header"), "hi");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
   "file_server file responses includes correct etag",
   async () => {
     await startFileServer();
@@ -969,6 +1004,32 @@ Deno.test(
 );
 
 Deno.test(
+  "file_server if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
+  async () => {
+    await startFileServer();
+    try {
+      // When used in combination with If-None-Match, If-Modified-Since is ignored
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
+      // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
+
+      const expectedIfModifiedSince = await getTestFileLastModified();
+      const headers = new Headers();
+      headers.set("if-none-match", "not match etag");
+      headers.set("if-modified-since", expectedIfModifiedSince);
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },
+      );
+      assertEquals(res.status, 200);
+      assertEquals(res.statusText, "OK");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
   "file_server `serveFile` serve test file",
   async () => {
     const req = new Request("http://localhost:4507/testdata/test file.txt");
@@ -1024,6 +1085,55 @@ Deno.test(
     const res = await serveFile(req, testdataPath);
     assertEquals(res.status, 304);
     assertEquals(res.statusText, "Not Modified");
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
+  async () => {
+    // When used in combination with If-None-Match, If-Modified-Since is ignored
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
+    // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
+
+    const expectedIfModifiedSince = await getTestFileLastModified();
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("if-none-match", "not match etag");
+    req.headers.set("if-modified-since", expectedIfModifiedSince);
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 200);
+    assertEquals(res.statusText, "OK");
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
+  async () => {
+    const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
+    const hashedDenoDeploymentId = toHashString(
+      await createHash("FNV32A", testDenoDeploymentId),
+    );
+    // deno-fmt-ignore
+    const code = `
+      import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
+      import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
+      import { assertEquals } from "${import.meta.resolve("../testing/asserts.ts")}";
+      const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
+      const fileInfo = await Deno.stat(new URL(testdataPath));
+      fileInfo.mtime = null;
+      const req = new Request("http://localhost:4507/testdata/test file.txt");
+      const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
+      assertEquals(res.headers.get("etag"), "${hashedDenoDeploymentId}");
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["eval", code],
+      stdout: "inherit",
+      stderr: "inherit",
+      env: { DENO_DEPLOYMENT_ID: testDenoDeploymentId },
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 );
 
@@ -1088,6 +1198,32 @@ Deno.test(
     const url = "http://localhost:4507/http/testdata/subdir-with-index/";
     const res = await serveDir(new Request(url), { showIndex: false });
     assertEquals(res.status, 404);
+  },
+);
+
+Deno.test(
+  "serveDir redirects a directory URL not ending with a slash if it has an index",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/subdir-with-index/",
+    );
+  },
+);
+
+Deno.test(
+  "serveDir redirects a directory URL not ending with a slash correctly even with a query string",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index?test";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/subdir-with-index/?test",
+    );
   },
 );
 

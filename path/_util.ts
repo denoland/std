@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
@@ -113,6 +113,7 @@ export function _format(
   const base: string = pathObject.base ||
     (pathObject.name || "") + (pathObject.ext || "");
   if (!dir) return base;
+  if (base === sep) return dir;
   if (dir === pathObject.root) return dir + base;
   return dir + sep + base;
 }
@@ -130,4 +131,64 @@ export function encodeWhitespace(string: string): string {
   return string.replaceAll(/[\s]/g, (c) => {
     return WHITESPACE_ENCODINGS[c] ?? c;
   });
+}
+
+export function lastPathSegment(
+  path: string,
+  isSep: (char: number) => boolean,
+  start = 0,
+): string {
+  let matchedNonSeparator = false;
+  let end = path.length;
+
+  for (let i = path.length - 1; i >= start; --i) {
+    if (isSep(path.charCodeAt(i))) {
+      if (matchedNonSeparator) {
+        start = i + 1;
+        break;
+      }
+    } else if (!matchedNonSeparator) {
+      matchedNonSeparator = true;
+      end = i + 1;
+    }
+  }
+
+  return path.slice(start, end);
+}
+
+export function stripTrailingSeparators(
+  segment: string,
+  isSep: (char: number) => boolean,
+): string {
+  if (segment.length <= 1) {
+    return segment;
+  }
+
+  let end = segment.length;
+
+  for (let i = segment.length - 1; i > 0; i--) {
+    if (isSep(segment.charCodeAt(i))) {
+      end = i;
+    } else {
+      break;
+    }
+  }
+
+  return segment.slice(0, end);
+}
+
+export function stripSuffix(name: string, suffix: string): string {
+  if (suffix.length >= name.length) {
+    return name;
+  }
+
+  const lenDiff = name.length - suffix.length;
+
+  for (let i = suffix.length - 1; i >= 0; --i) {
+    if (name.charCodeAt(lenDiff + i) !== suffix.charCodeAt(i)) {
+      return name;
+    }
+  }
+
+  return name.slice(0, -suffix.length);
 }

@@ -1,10 +1,10 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
   assertNotEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
-import { BufReader, ReadLineResult } from "../io/buffer.ts";
+import { BufReader, ReadLineResult } from "../io/buf_reader.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 

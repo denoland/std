@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
@@ -50,12 +50,16 @@ const winSpecialCaseFormatTests: FormatTestCase[] = [
   [{}, ""],
 ];
 
-const unixPaths: Array<[string, string]> = [
-  // [path, root]
+const unixPaths: Array<[string, string, string?]> = [
+  // [path, root, formatted]
   ["/home/user/dir/file.txt", "/"],
   ["/home/user/a dir/another File.zip", "/"],
-  ["/home/user/a dir//another&File.", "/"],
-  ["/home/user/a$$$dir//another File.zip", "/"],
+  ["/home/user/a dir//another&File.", "/", "/home/user/a dir/another&File."],
+  [
+    "/home/user/a$$$dir//another File.zip",
+    "/",
+    "/home/user/a$$$dir/another File.zip",
+  ],
   ["user/dir/another File.zip", ""],
   ["file", ""],
   [".\\file", ""],
@@ -86,20 +90,26 @@ const unixSpecialCaseFormatTests: FormatTestCase[] = [
 
 function checkParseFormat(
   path: typeof win32 | typeof posix,
-  testCases: Array<[string, string]>,
+  testCases: Array<[string, string, string?]>,
 ) {
-  testCases.forEach(([element, root]) => {
+  testCases.forEach(([element, root, formatted]) => {
     const output = path.parse(element);
     assertEquals(typeof output.root, "string");
     assertEquals(typeof output.dir, "string");
     assertEquals(typeof output.base, "string");
     assertEquals(typeof output.ext, "string");
     assertEquals(typeof output.name, "string");
-    assertEquals(path.format(output), element);
     assertEquals(output.root, root);
     assertEquals(output.dir, output.dir ? path.dirname(element) : "");
     assertEquals(output.base, path.basename(element));
     assertEquals(output.ext, path.extname(element));
+    // We normalize incorrect paths during parsing, so some "incorrect"
+    // input cannot be asserted for equality onto itself.
+    if (formatted) {
+      assertEquals(path.format(output), formatted);
+    } else {
+      assertEquals(path.format(output), element);
+    }
   });
 }
 
@@ -141,8 +151,8 @@ Deno.test("format", function () {
 // Test removal of trailing path separators
 const windowsTrailingTests: ParseTestCase[] = [
   [".\\", { root: "", dir: "", base: ".", ext: "", name: "." }],
-  ["\\\\", { root: "\\", dir: "\\", base: "", ext: "", name: "" }],
-  ["\\\\", { root: "\\", dir: "\\", base: "", ext: "", name: "" }],
+  ["\\\\", { root: "\\", dir: "\\", base: "\\", ext: "", name: "" }],
+  ["\\\\", { root: "\\", dir: "\\", base: "\\", ext: "", name: "" }],
   [
     "c:\\foo\\\\\\",
     { root: "c:\\", dir: "c:\\", base: "foo", ext: "", name: "foo" },
@@ -161,12 +171,12 @@ const windowsTrailingTests: ParseTestCase[] = [
 
 const posixTrailingTests: ParseTestCase[] = [
   ["./", { root: "", dir: "", base: ".", ext: "", name: "." }],
-  ["//", { root: "/", dir: "/", base: "", ext: "", name: "" }],
-  ["///", { root: "/", dir: "/", base: "", ext: "", name: "" }],
+  ["//", { root: "/", dir: "/", base: "/", ext: "", name: "" }],
+  ["///", { root: "/", dir: "/", base: "/", ext: "", name: "" }],
   ["/foo///", { root: "/", dir: "/", base: "foo", ext: "", name: "foo" }],
   [
     "/foo///bar.baz",
-    { root: "/", dir: "/foo//", base: "bar.baz", ext: ".baz", name: "bar" },
+    { root: "/", dir: "/foo", base: "bar.baz", ext: ".baz", name: "bar" },
   ],
 ];
 

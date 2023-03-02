@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 //
 // A number of test-cases based on:
 //
@@ -621,6 +621,18 @@ Deno.test("formatV", function () {
 Deno.test("formatJ", function () {
   const a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   assertEquals(S("%j", a), `{"a":{"a":{"a":{"a":{"a":{"a":{"a":{}}}}}}}}`);
+});
+
+Deno.test("formatI", function () {
+  const a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
+  assertEquals(
+    S("%i", a),
+    "{\n  a: {\n    a: {\n      a: {\n        a: {\n          a: {\n            a: {\n              a: {}\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+  );
+  assertEquals(
+    S("%I", a),
+    "{ a: { a: { a: { a: { a: { a: { a: {} } } } } } } }",
+  );
 });
 
 Deno.test("flagLessThan", function () {

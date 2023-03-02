@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { deferred } from "./deferred.ts";
@@ -12,6 +12,8 @@ export class DeadlineError extends Error {
 
 /**
  * Create a promise which will be rejected with {@linkcode DeadlineError} when a given delay is exceeded.
+ *
+ * NOTE: Prefer to use `AbortSignal.timeout` instead for the APIs accept `AbortSignal`.
  *
  * @example
  * ```typescript

@@ -1,10 +1,10 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assertEquals, assertThrows } from "../../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YAMLError } from "./error.ts";
 import { Type } from "./type.ts";
@@ -170,5 +170,49 @@ regexp: !!js/regexp bar
       undefined,
     );
     assertEquals(callback.calls(), 2);
+  },
+});
+
+Deno.test({
+  name: "parse __proto__",
+  async fn() {
+    // Tests if the value is set using `Object.defineProperty(target, key, {value})`
+    // instead of `target[key] = value` when parsing the object.
+    // This makes a difference in behavior when __proto__ is set in Node.js and browsers.
+    // Using `Object.defineProperty` avoids prototype pollution in Node.js and browsers.
+    // reference: https://github.com/advisories/GHSA-9c47-m6qq-7p4h (CVE-2022-46175)
+
+    const yaml1 = `
+__proto__:
+  isAdmin: true
+    `;
+
+    const yaml2 = `
+anchor: &__proto__
+  __proto__: 1111
+alias_test:
+  aaa: *__proto__
+merge_test:
+  bbb: 2222
+  <<: *__proto__
+    `;
+
+    const testCode = `
+      Object.defineProperty(Object.prototype, "__proto__", {
+        set() {
+          throw new Error("Don't try to set the value directly to the key __proto__.")
+        }
+      });
+      import { parse } from "${import.meta.resolve("./parse.ts")}";
+      parse(\`${yaml1}\`);
+      parse(\`${yaml2}\`);
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      stdout: "inherit",
+      stderr: "inherit",
+      args: ["eval", testCode],
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 });

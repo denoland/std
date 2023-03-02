@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -35,6 +35,5 @@
  *
  * @module
  */
-/** @deprecated (will be removed after 0.171.0) TODO: export all once overlapping objects/types are removed */
-export { Tar, type TarData, type TarDataWithSource } from "./tar.ts";
+export * from "./tar.ts";
 export * from "./untar.ts";

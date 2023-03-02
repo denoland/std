@@ -1,13 +1,20 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 import type { Options, ReleaseType } from "./mod.ts";
 
-Deno.test("increment", function () {
+Deno.test("increment", async (t) => {
   //  [version, inc, result, identifier]
   //  increment(version, inc) -> result
-  const versions: [string, ReleaseType, string | null, Options?, string?][] = [
+  const versions: [
+    string,
+    ReleaseType,
+    string | null,
+    Options?,
+    string?,
+    string?,
+  ][] = [
     ["1.2.3", "major", "2.0.0"],
     ["1.2.3", "minor", "1.3.0"],
     ["1.2.3", "patch", "1.2.4"],
@@ -147,30 +154,77 @@ Deno.test("increment", function () {
     ["1.2.0-1", "minor", "1.2.0", undefined, "dev"],
     ["1.0.0-1", "major", "1.0.0", "dev" as Options],
     ["1.2.3-dev.bar", "prerelease", "1.2.3-dev.0", undefined, "dev"],
+
+    // Add build metadata
+    ["1.2.3", "major", "2.0.0+1", undefined, undefined, "1"],
+    ["1.2.3", "minor", "1.3.0+1", undefined, undefined, "1"],
+    ["1.2.3", "patch", "1.2.4+1", undefined, undefined, "1"],
+    ["1.2.3", "premajor", "2.0.0-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "preminor", "1.3.0-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "prepatch", "1.2.4-dev.0+1", undefined, "dev", "1"],
+    ["1.2.3", "pre", "1.2.3-dev.0+1", undefined, "dev", "1"],
+
+    // Update build metadata
+    ["1.2.3+1", "major", "2.0.0+2", undefined, undefined, "2"],
+    ["1.2.3+1", "minor", "1.3.0+2", undefined, undefined, "2"],
+    ["1.2.3+1", "patch", "1.2.4+2", undefined, undefined, "2"],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0+2", undefined, "dev", "2"],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0+2", undefined, "dev", "2"],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0+2", undefined, "dev", "2"],
+
+    // Retain build metadata
+    ["1.2.3+1", "major", "2.0.0+1", undefined, undefined, undefined],
+    ["1.2.3+1", "minor", "1.3.0+1", undefined, undefined, undefined],
+    ["1.2.3+1", "patch", "1.2.4+1", undefined, undefined, undefined],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0+1", undefined, "dev", undefined],
+    ["1.2.3+1", "pre", "1.2.3-dev.0+1", undefined, "dev", undefined],
+
+    // Remove build metadata
+    ["1.2.3+1", "major", "2.0.0", undefined, undefined, ""],
+    ["1.2.3+1", "minor", "1.3.0", undefined, undefined, ""],
+    ["1.2.3+1", "patch", "1.2.4", undefined, undefined, ""],
+    ["1.2.3+1", "premajor", "2.0.0-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "preminor", "1.3.0-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "prepatch", "1.2.4-dev.0", undefined, "dev", ""],
+    ["1.2.3+1", "pre", "1.2.3-dev.0", undefined, "dev", ""],
   ];
 
-  versions.forEach(function (v) {
-    const pre = v[0];
-    const what = v[1];
-    const wanted = v[2];
-    const options = v[3];
-    const id = v[4];
-    const found = semver.increment(pre, what, options, id);
-    const cmd = "increment(" + pre + ", " + what + ", " + id + ")";
-    assertEquals(found, wanted, cmd + " === " + wanted);
+  for (const [pre, what, wanted, options, id, metadata] of versions) {
+    await t.step({
+      name: `${pre}, ${what}, ${id}, ${metadata}`,
+      fn: () => {
+        const found = semver.increment(pre, what, options, id, metadata);
+        const cmd = `increment(${pre}, ${what}, ${id}, ${metadata})`;
+        assertEquals(found, wanted);
 
-    const parsed = semver.parse(pre, options);
-    if (wanted && parsed) {
-      //todo ?
-      parsed.increment(what, id);
-      assertEquals(parsed.version, wanted, cmd + " object version updated");
-      assertEquals(parsed.raw, wanted, cmd + " object raw field updated");
-    } else if (parsed) {
-      assertThrows(function () {
-        parsed.increment(what, id);
-      });
-    } else {
-      assertEquals(parsed, null);
-    }
-  });
+        const parsed = semver.parse(pre, options);
+        if (wanted && parsed) {
+          parsed.increment(what, id, metadata);
+          const w = semver.parse(wanted)!;
+          assertEquals(parsed.version, w.version);
+          assertEquals(parsed.raw, w.raw);
+          if (metadata !== undefined) {
+            assertEquals(
+              parsed.build,
+              metadata.split(".") ?? [],
+              cmd + " build updated",
+            );
+            assertEquals(
+              parsed.format({ style: "full" }),
+              [parsed.version, metadata].filter((v) => v).join("+"),
+              cmd + " full version updated",
+            );
+          }
+        } else if (parsed) {
+          assertThrows(function () {
+            parsed.increment(what, id, metadata);
+          });
+        } else {
+          assertEquals(parsed, null);
+        }
+      },
+    });
+  }
 });

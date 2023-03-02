@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** A [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) interface
  * to `Deno.test()` API.

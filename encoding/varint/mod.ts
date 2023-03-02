@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Functions for encoding typed integers in array buffers.
@@ -12,6 +12,8 @@ const U32MAX = 4_294_967_295;
 const U64MAX = 18_446_744_073_709_551_615n;
 
 /**
+ * @deprecated (will be removed after 0.181.0) Use `encode` from `std/encoding/varint.ts` instead.
+ *
  * Encodes the given `number` into `Uint8Array` with LEB128. The number needs to be in the range of `0` and `0xffffffff`.
  * ```ts
  * import { encodeU32 } from "https://deno.land/std@$STD_VERSION/encoding/varint/mod.ts";
@@ -33,6 +35,8 @@ export function encodeU32(val: number): Uint8Array {
 }
 
 /**
+ * @deprecated (will be removed after 0.181.0) Use `encode()` from `std/encoding/varint.ts` instead.
+ *
  * Encodes the given `BigInt` into `Uint8Array` with LEB128. The number needs to be in the range of `0` and `0xffffffffffffffff`.
  * ```ts
  * import { encodeU64 } from "https://deno.land/std@$STD_VERSION/encoding/varint/mod.ts";
@@ -53,6 +57,8 @@ export function encodeU64(val: bigint): Uint8Array {
 }
 
 /**
+ * @deprecated (will be removed after 0.181.0) Use `decode32()` from `std/encoding/varint.ts` instead.
+ *
  * Decodes the given `Uint8Array` into a `number` with LEB128.
  * ```ts
  * import { decodeU32 } from "https://deno.land/std@$STD_VERSION/encoding/varint/mod.ts";
@@ -74,6 +80,8 @@ export function decodeU32(val: Uint8Array): number {
 }
 
 /**
+ * @deprecated (will be removed after 0.181.0) Use `decode64()` from `std/encoding/varint.ts` instead.
+ *
  * Decodes the given `Uint8Array` into a `BigInt` with LEB128.
  * ```ts
  * import { decodeU64 } from "https://deno.land/std@$STD_VERSION/encoding/varint/mod.ts";
@@ -84,7 +92,7 @@ export function decodeU32(val: Uint8Array): number {
  * console.log(decodedValue === 25565n);
  * ```
  */
-export function decodeU64(val: Uint8Array): BigInt {
+export function decodeU64(val: Uint8Array): bigint {
   if (val.length > 10) throw RangeError("Too many bytes");
   const wasm = instantiate();
   try {

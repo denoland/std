@@ -1,3 +1,80 @@
+### 0.178.0 / 2023.02.23
+
+- Remove std/node, it was merged into Deno itself (#3206)
+- feat(encoding/csv/streaming): add `skipFirstRow` and `columns` options (#3184)
+- feat(http/file_server): etag value falls back to `DENO_DEPLOYMENT_ID` if
+  `fileInfo.mtime` is not available (#3186)
+- feat(streams/delimiter_stream): add disposition option (#3189)
+- fix(crypto): create DataView with correct byteLength in timingSafeEqual
+  (#3208)
+- fix(encoding/yaml): avoid prototype pollution in Node.js and Browser (#3173)
+- fix(node): do not ask env permission from process.env access (#3178)
+- fix(node/child_process): "windowsVerbatimArguments" option should be
+  automatically set to true for CMD in spawn() (#3167)
+- fix(node/fs): chmod function throws unnecessary TypeError on Windows (#3168)
+- fix: change `BigInt` type to `bigint` type (#3187)
+
+### 0.177.0 / 2023.02.06
+
+- feat(encoding/csv): handle CSV byte-order marks (#3143)
+- fix(node/child_process): enable promisify(execFile) (#3161)
+- fix(node/process): null is not returned when reaching end-of-file in stdin
+  (#3113)
+- fix(semver): allow unsetting build metadata (#3157)
+
+### 0.176.0 / 2023.02.02
+
+- fix(node): disable worker_threads (#3151)
+- fix(node): throw permisison error instead of unknown error (#3133)
+- fix(node/util): stricter runtime type checking (#3122)
+- fix: make encoding/front_matter work in a browser (#3154)
+
+### 0.175.0 / 2023.01.28
+
+- BREAKING(dotenv,fmt,io): remove deprecated APIs (#3134)
+- BREAKING(path): rework basename and dirname to be coreutils compatible (#3089)
+- feat(node): AsyncLocalStorage (#3137)
+- feat(semver): add support for build metadata (#3126)
+
+### 0.174.0 / 2023.01.25
+
+- feat(fmt/printf): add formatter i/I (Deno.inspect) (#3100)
+- fix(encoding/csv): escape cells containing newlines (LFs) (#3128)
+
+### 0.173.0 / 2023.01.16
+
+- fix(fs): change globstar default to true for expandGlob and expandGlobSync
+  (#3115)
+- fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
+- fix: revert "feat(node/cluster): `cluster` module for Node compat (#2271)"
+  (#3111)
+
+### 0.172.0 / 2023.01.13
+
+- feat(collection): add toArray method to BinaryHeap (#3079)
+- feat(node/cluster): `cluster` module for Node compat (#2271)
+- fix(datetime): `.quarter` calculation for `difference()` (#3085)
+- fix(encoding/jsonc): avoid prototype pollution in Node.js and Browser (#3077)
+- fix(node): support ref & unref of TCP handle (#3102)
+- fix(path): correctly handle trailing slashes for posix basename (#3088)
+
+### 0.171.0 / 2023.01.05
+
+- feat(http): add --header option to file_server (#2977)
+- feat(node): Add support for os.uptime (#3052)
+- feat(node/diagnostics_channel): initial implementation (#3050)
+- feat(node/url): domainToASCII/domainToUnicode (#3022)
+- fix(flags): parse method looses types in certain cases with collect option
+  (#3040)
+- fix(flags): types for aliases defined as array are ignored (#3043)
+- fix(node/http): avoid empty chunk issue of flash (#3062)
+- fix(node/http): ignore body when status code is one of 101, 204, 205, 304
+  (#3067)
+- fix(node/util): reference error of 'process' (#3037)
+- fix(path): correctly handle trailing slashes for basename (#3068)
+- fix(testing): do not mutate tokens when creating details (#3049)
+- fix: don't use windows-xl runners, too expensive (#3021)
+
 ### 0.170.0 / 2022.12.19
 
 - Revert "fix(node/http): do not buffer first chunk (#2989)" (#3013)

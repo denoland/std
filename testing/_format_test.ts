@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { green, red, stripColor } from "../fmt/colors.ts";
 import { assertEquals, assertThrows } from "./asserts.ts";
 import { format } from "./_format.ts";

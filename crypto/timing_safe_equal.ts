@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assert } from "../_util/asserts.ts";
 
@@ -12,10 +12,14 @@ export function timingSafeEqual(
     return false;
   }
   if (!(a instanceof DataView)) {
-    a = new DataView(ArrayBuffer.isView(a) ? a.buffer : a);
+    a = ArrayBuffer.isView(a)
+      ? new DataView(a.buffer, a.byteOffset, a.byteLength)
+      : new DataView(a);
   }
   if (!(b instanceof DataView)) {
-    b = new DataView(ArrayBuffer.isView(b) ? b.buffer : b);
+    b = ArrayBuffer.isView(b)
+      ? new DataView(b.buffer, b.byteOffset, b.byteLength)
+      : new DataView(b);
   }
   assert(a instanceof DataView);
   assert(b instanceof DataView);

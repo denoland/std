@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /**
  * Formats the given date to IMF date time format. (Reference:
  * https://tools.ietf.org/html/rfc7231#section-7.1.1.1).

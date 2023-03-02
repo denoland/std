@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license
 
 /**
@@ -212,7 +212,7 @@ function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
     "$([\\s\\S]+?)" +
     "^(?:" + dv.map(getEndToken).join("|") + ")\\s*" +
     "$" +
-    (Deno.build.os === "windows" ? "\\r?" : "") +
+    (globalThis?.Deno?.build?.os === "windows" ? "\\r?" : "") +
     "(?:\\n)?)";
 
   return [

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 export class Point {
   constructor(public x: number, public y: number) {}
   // deno-lint-ignore no-explicit-any

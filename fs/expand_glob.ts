@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   GlobOptions,
   globToRegExp,
@@ -80,7 +80,7 @@ export async function* expandGlob(
     exclude = [],
     includeDirs = true,
     extended = true,
-    globstar = false,
+    globstar = true,
     caseInsensitive,
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
@@ -199,7 +199,7 @@ export function* expandGlobSync(
     exclude = [],
     includeDirs = true,
     extended = true,
-    globstar = false,
+    globstar = true,
     caseInsensitive,
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {

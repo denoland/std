@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
@@ -23,7 +23,15 @@ export class TextLineStream extends TransformStream<string, string> {
   constructor(options?: TextLineStreamOptions) {
     super({
       transform: (chunk, controller) => this.#handle(chunk, controller),
-      flush: (controller) => this.#handle("\r\n", controller),
+      flush: (controller) => {
+        if (this.#buf.length > 0) {
+          if (
+            this.#allowCR &&
+            this.#buf[this.#buf.length - 1] === "\r"
+          ) controller.enqueue(this.#buf.slice(0, -1));
+          else controller.enqueue(this.#buf);
+        }
+      },
     });
     this.#allowCR = options?.allowCR ?? false;
   }

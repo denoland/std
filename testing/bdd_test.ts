@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -40,16 +40,27 @@ Deno.test("global", async (t) => {
       fn: (t: Deno.TestContext) => void | Promise<void>,
     ): Promise<boolean>;
     async step(
-      tOrName: Deno.TestStepDefinition | string,
+      fn: (t: Deno.TestContext) => void | Promise<void>,
+    ): Promise<boolean>;
+    async step(
+      tOrNameOrFn:
+        | Deno.TestStepDefinition
+        | string
+        | ((t: Deno.TestContext) => void | Promise<void>),
       fn?: (t: Deno.TestContext) => void | Promise<void>,
     ): Promise<boolean> {
       let ignore = false;
-      if (typeof tOrName === "object") {
-        ignore = tOrName.ignore ?? false;
-        fn = tOrName.fn;
+      if (typeof tOrNameOrFn === "function") {
+        ignore = false;
+        fn = tOrNameOrFn;
+      } else if (typeof tOrNameOrFn === "object") {
+        ignore = tOrNameOrFn.ignore ?? false;
+        fn = tOrNameOrFn.fn;
       }
 
-      const name = typeof tOrName === "string" ? tOrName : tOrName.name;
+      const name = typeof tOrNameOrFn === "string"
+        ? tOrNameOrFn
+        : tOrNameOrFn.name;
       const context = new TestContext(name);
       this.steps.push(context);
       if (!ignore) {

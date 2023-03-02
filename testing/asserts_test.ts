@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertAlmostEquals,
@@ -1295,11 +1295,10 @@ Deno.test({
       class TestClass3 {}
       TestClassWithSameName = TestClass3;
     }
-    // todo(dsherret): this is a bug in swc and below it should only say TestClass3
     assertThrows(
       () => assertInstanceOf(new TestClassWithSameName(), TestClass3),
       AssertionError,
-      `Expected object to be an instance of "TestClass3" but was "TestClass31".`,
+      `Expected object to be an instance of "TestClass3".`,
     );
 
     assertThrows(

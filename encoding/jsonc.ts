@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** {@linkcode parse} function for parsing
  * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
@@ -271,7 +271,12 @@ class JSONCParser {
       }
 
       const token3 = this.#getNext();
-      target[key] = this.#parseJSONValue(token3);
+      Object.defineProperty(target, key, {
+        value: this.#parseJSONValue(token3),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
 
       const token4 = this.#getNext();
       if (token4.type === tokenType.endObject) {

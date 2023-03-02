@@ -1,7 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import * as JSONC from "./jsonc.ts";
 import {
+  assert,
   assertEquals,
   assertStrictEquals,
   assertThrows,
@@ -169,5 +170,33 @@ Deno.test({
     assertValidParse('  ["foo\\\\", "bar"]', ["foo\\", "bar"]);
     assertInvalidParse('["foo\\\\\\", "bar"]', SyntaxError);
     assertValidParse('  ["foo\\\\\\\\", "bar"]', ["foo\\\\", "bar"]);
+  },
+});
+
+Deno.test({
+  name: "[jsonc] use Object.defineProperty when setting object property",
+  async fn() {
+    // Tests if the value is set using `Object.defineProperty(target, key, {value})`
+    // instead of `target[key] = value` when parsing the object.
+    // This makes a difference in behavior when __proto__ is set in Node.js and browsers.
+    // Using `Object.defineProperty` avoids prototype pollution in Node.js and browsers.
+    // reference: https://github.com/advisories/GHSA-9c47-m6qq-7p4h (CVE-2022-46175)
+
+    const testCode = `
+      Object.defineProperty(Object.prototype, "__proto__", {
+        set() {
+          throw new Error("Don't try to set the value directly to the key __proto__.")
+        }
+      });
+      import { parse } from "${import.meta.resolve("./jsonc.ts")}";
+      parse('{"__proto__": {"isAdmin": true}}');
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      stdout: "inherit",
+      stderr: "inherit",
+      args: ["eval", testCode],
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 });

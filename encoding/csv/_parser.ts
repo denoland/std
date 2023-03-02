@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../../_util/asserts.ts";
 import {
   ERR_BARE_QUOTE,
@@ -8,6 +8,8 @@ import {
   ParseError,
   ReadOptions,
 } from "./_io.ts";
+
+const BYTE_ORDER_MARK = "\ufeff";
 
 export class Parser {
   #input = "";
@@ -225,7 +227,7 @@ export class Parser {
     return result;
   }
   parse(input: string): string[][] {
-    this.#input = input;
+    this.#input = input.startsWith(BYTE_ORDER_MARK) ? input.slice(1) : input;
     this.#cursor = 0;
     const result: string[][] = [];
     let _nbFields: number | undefined;

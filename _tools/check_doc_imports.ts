@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { walk } from "../fs/walk.ts";
@@ -15,7 +15,6 @@ const EXCLUDED_PATHS = [
   ".git",
   ".github",
   "_tools",
-  "node",
 ];
 
 const ROOT = new URL("../", import.meta.url);

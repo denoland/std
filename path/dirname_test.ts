@@ -1,61 +1,101 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../testing/asserts.ts";
 import * as path from "./mod.ts";
 
+// Test suite from "GNU core utilities"
+// https://github.com/coreutils/coreutils/blob/master/tests/misc/dirname.pl
+const COREUTILS_TESTSUITE = [
+  ["d/f", "d"],
+  ["/d/f", "/d"],
+  ["d/f/", "d"],
+  ["d/f//", "d"],
+  ["f", "."],
+  ["/", "/"],
+  ["//", "/"],
+  ["///", "/"],
+  ["//a//", "/"],
+  ["///a///", "/"],
+  ["///a///b", "///a"],
+  ["///a//b/", "///a"],
+  ["", "."],
+];
+
+const POSIX_TESTSUITE = [
+  ["/a/b/", "/a"],
+  ["/a/b", "/a"],
+  ["/a", "/"],
+  ["", "."],
+  ["/", "/"],
+  ["////", "/"],
+  ["//a", "/"],
+  ["foo", "."],
+];
+
+const WIN32_TESTSUITE = [
+  ["c:\\", "c:\\"],
+  ["c:\\foo", "c:\\"],
+  ["c:\\foo\\", "c:\\"],
+  ["c:\\foo\\bar", "c:\\foo"],
+  ["c:\\foo\\bar\\", "c:\\foo"],
+  ["c:\\foo\\bar\\baz", "c:\\foo\\bar"],
+  ["\\", "\\"],
+  ["\\foo", "\\"],
+  ["\\foo\\", "\\"],
+  ["\\foo\\bar", "\\foo"],
+  ["\\foo\\bar\\", "\\foo"],
+  ["\\foo\\bar\\baz", "\\foo\\bar"],
+  ["c:", "c:"],
+  ["c:foo", "c:"],
+  ["c:foo\\", "c:"],
+  ["c:foo\\bar", "c:foo"],
+  ["c:foo\\bar\\", "c:foo"],
+  ["c:foo\\bar\\baz", "c:foo\\bar"],
+  ["file:stream", "."],
+  ["dir\\file:stream", "dir"],
+  ["\\\\unc\\share", "\\\\unc\\share"],
+  ["\\\\unc\\share\\foo", "\\\\unc\\share\\"],
+  ["\\\\unc\\share\\foo\\", "\\\\unc\\share\\"],
+  ["\\\\unc\\share\\foo\\bar", "\\\\unc\\share\\foo"],
+  ["\\\\unc\\share\\foo\\bar\\", "\\\\unc\\share\\foo"],
+  ["\\\\unc\\share\\foo\\bar\\baz", "\\\\unc\\share\\foo\\bar"],
+  ["/a/b/", "/a"],
+  ["/a/b", "/a"],
+  ["/a", "/"],
+  ["", "."],
+  ["/", "/"],
+  ["////", "/"],
+  ["foo", "."],
+];
+
 Deno.test("dirname", function () {
-  assertEquals(path.posix.dirname("/a/b/"), "/a");
-  assertEquals(path.posix.dirname("/a/b"), "/a");
-  assertEquals(path.posix.dirname("/a"), "/");
-  assertEquals(path.posix.dirname(""), ".");
-  assertEquals(path.posix.dirname("/"), "/");
-  assertEquals(path.posix.dirname("////"), "/");
-  assertEquals(path.posix.dirname("//a"), "//");
-  assertEquals(path.posix.dirname("foo"), ".");
+  for (const [name, expected] of COREUTILS_TESTSUITE) {
+    assertEquals(path.dirname(name), expected);
+  }
+
+  for (const [name, expected] of POSIX_TESTSUITE) {
+    assertEquals(path.posix.dirname(name), expected);
+  }
+
+  // POSIX treats backslash as any other character.
+  assertEquals(path.posix.dirname("\\foo/bar"), "\\foo");
+  assertEquals(path.posix.dirname("\\/foo/bar"), "\\/foo");
+  assertEquals(path.posix.dirname("/foo/bar\\baz/qux"), "/foo/bar\\baz");
+  assertEquals(path.posix.dirname("/foo/bar/baz\\"), "/foo/bar");
 });
 
 Deno.test("dirnameWin32", function () {
-  assertEquals(path.win32.dirname("c:\\"), "c:\\");
-  assertEquals(path.win32.dirname("c:\\foo"), "c:\\");
-  assertEquals(path.win32.dirname("c:\\foo\\"), "c:\\");
-  assertEquals(path.win32.dirname("c:\\foo\\bar"), "c:\\foo");
-  assertEquals(path.win32.dirname("c:\\foo\\bar\\"), "c:\\foo");
-  assertEquals(path.win32.dirname("c:\\foo\\bar\\baz"), "c:\\foo\\bar");
-  assertEquals(path.win32.dirname("\\"), "\\");
-  assertEquals(path.win32.dirname("\\foo"), "\\");
-  assertEquals(path.win32.dirname("\\foo\\"), "\\");
-  assertEquals(path.win32.dirname("\\foo\\bar"), "\\foo");
-  assertEquals(path.win32.dirname("\\foo\\bar\\"), "\\foo");
-  assertEquals(path.win32.dirname("\\foo\\bar\\baz"), "\\foo\\bar");
-  assertEquals(path.win32.dirname("c:"), "c:");
-  assertEquals(path.win32.dirname("c:foo"), "c:");
-  assertEquals(path.win32.dirname("c:foo\\"), "c:");
-  assertEquals(path.win32.dirname("c:foo\\bar"), "c:foo");
-  assertEquals(path.win32.dirname("c:foo\\bar\\"), "c:foo");
-  assertEquals(path.win32.dirname("c:foo\\bar\\baz"), "c:foo\\bar");
-  assertEquals(path.win32.dirname("file:stream"), ".");
-  assertEquals(path.win32.dirname("dir\\file:stream"), "dir");
-  assertEquals(path.win32.dirname("\\\\unc\\share"), "\\\\unc\\share");
-  assertEquals(path.win32.dirname("\\\\unc\\share\\foo"), "\\\\unc\\share\\");
-  assertEquals(path.win32.dirname("\\\\unc\\share\\foo\\"), "\\\\unc\\share\\");
-  assertEquals(
-    path.win32.dirname("\\\\unc\\share\\foo\\bar"),
-    "\\\\unc\\share\\foo",
-  );
-  assertEquals(
-    path.win32.dirname("\\\\unc\\share\\foo\\bar\\"),
-    "\\\\unc\\share\\foo",
-  );
-  assertEquals(
-    path.win32.dirname("\\\\unc\\share\\foo\\bar\\baz"),
-    "\\\\unc\\share\\foo\\bar",
-  );
-  assertEquals(path.win32.dirname("/a/b/"), "/a");
-  assertEquals(path.win32.dirname("/a/b"), "/a");
-  assertEquals(path.win32.dirname("/a"), "/");
-  assertEquals(path.win32.dirname(""), ".");
-  assertEquals(path.win32.dirname("/"), "/");
-  assertEquals(path.win32.dirname("////"), "/");
-  assertEquals(path.win32.dirname("foo"), ".");
+  for (const [name, expected] of WIN32_TESTSUITE) {
+    assertEquals(path.win32.dirname(name), expected);
+  }
+
+  // path.win32 should pass all "forward slash" posix tests as well.
+  for (const [name, expected] of COREUTILS_TESTSUITE) {
+    assertEquals(path.win32.dirname(name), expected);
+  }
+
+  for (const [name, expected] of POSIX_TESTSUITE) {
+    assertEquals(path.win32.dirname(name), expected);
+  }
 });

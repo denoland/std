@@ -2,16 +2,19 @@
 // https://github.com/golang/go/blob/2cc15b1/src/encoding/csv/reader_test.go
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import {
-  NEWLINE,
-  parse,
-  ParseError,
-  stringify,
-  StringifyError,
-} from "./csv.ts";
+  assert,
+  assertEquals,
+  assertStringIncludes,
+  assertThrows,
+} from "../testing/asserts.ts";
+import type { AssertTrue, Has } from "../testing/types.ts";
+import { parse, ParseError, stringify, StringifyError } from "./csv.ts";
+
+const CRLF = "\r\n";
+const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
   name: "parse",
@@ -770,6 +773,52 @@ Deno.test({
         );
       },
     });
+    await t.step({
+      name: "Strips leading byte-order mark with bare cell",
+      fn() {
+        const input = `${BYTE_ORDER_MARK}abc`;
+        const output = [["abc"]];
+        assert(!JSON.stringify(output).includes(BYTE_ORDER_MARK));
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "Strips leading byte-order mark with quoted cell",
+      fn() {
+        const input = `${BYTE_ORDER_MARK}"a""b"`;
+        const output = [['a"b']];
+        assert(!JSON.stringify(output).includes(BYTE_ORDER_MARK));
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name: "Does not strip byte-order mark after position [0]",
+      fn() {
+        const input = `a${BYTE_ORDER_MARK}bc`;
+        const output = [[`a${BYTE_ORDER_MARK}bc`]];
+        assertEquals(parse(input), output);
+      },
+    });
+    await t.step({
+      name:
+        "trimLeadingSpace strips leading byte-order mark followed by whitespace",
+      fn() {
+        const input = `${BYTE_ORDER_MARK} abc`;
+        const output = [["abc"]];
+        assertEquals(parse(input, { trimLeadingSpace: true }), output);
+      },
+    });
+    await t.step({
+      // This behavior is due to String#trimStart including U+FEFF in the set of
+      // characters to be trimmed
+      name:
+        "trimLeadingSpace strips leading whitespace followed by byte-order mark",
+      fn() {
+        const input = ` ${BYTE_ORDER_MARK}abc`;
+        const output = [["abc"]];
+        assertEquals(parse(input, { trimLeadingSpace: true }), output);
+      },
+    });
   },
 });
 
@@ -864,7 +913,7 @@ Deno.test({
         fn() {
           const columns: string[] = [];
           const data: string[][] = [];
-          const output = NEWLINE;
+          const output = CRLF;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -887,7 +936,7 @@ Deno.test({
         fn() {
           const columns = ["a"];
           const data: string[][] = [];
-          const output = `a${NEWLINE}`;
+          const output = `a${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -911,7 +960,7 @@ Deno.test({
         fn() {
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
-          const output = `0\r1${NEWLINE}foo\rbar${NEWLINE}baz\rqux${NEWLINE}`;
+          const output = `0\r1${CRLF}foo\rbar${CRLF}baz\rqux${CRLF}`;
           const options = { separator: "\r", columns };
           assertEquals(stringify(data, options), output);
         },
@@ -924,7 +973,7 @@ Deno.test({
         fn() {
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
-          const output = `0\n1${NEWLINE}foo\nbar${NEWLINE}baz\nqux${NEWLINE}`;
+          const output = `0\n1${CRLF}foo\nbar${CRLF}baz\nqux${CRLF}`;
           const options = { separator: "\n", columns };
           assertEquals(stringify(data, options), output);
         },
@@ -936,7 +985,7 @@ Deno.test({
         fn() {
           const columns = [1];
           const data = [{ 1: 1 }, { 1: 2 }];
-          const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
+          const output = `1${CRLF}1${CRLF}2${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -948,7 +997,7 @@ Deno.test({
         fn() {
           const columns = [{ header: "Value", prop: "value" }];
           const data = [{ value: "foo" }, { value: "bar" }];
-          const output = `foo${NEWLINE}bar${NEWLINE}`;
+          const output = `foo${CRLF}bar${CRLF}`;
           const options = { headers: false, columns };
           assertEquals(stringify(data, options), output);
         },
@@ -960,7 +1009,7 @@ Deno.test({
         fn() {
           const columns = [1];
           const data = [["key", "foo"], ["key", "bar"]];
-          const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `1${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -972,7 +1021,7 @@ Deno.test({
         fn() {
           const columns = [[1]];
           const data = [{ 1: 1 }, { 1: 2 }];
-          const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
+          const output = `1${CRLF}1${CRLF}2${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -983,7 +1032,7 @@ Deno.test({
         fn() {
           const columns = [[1]];
           const data = [["key", "foo"], ["key", "bar"]];
-          const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `1${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -995,7 +1044,7 @@ Deno.test({
         fn() {
           const columns = [[1, 1]];
           const data = [["key", ["key", "foo"]], ["key", ["key", "bar"]]];
-          const output = `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `1${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1006,7 +1055,7 @@ Deno.test({
         fn() {
           const columns = ["value"];
           const data = [{ value: "foo" }, { value: "bar" }];
-          const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `value${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1017,7 +1066,7 @@ Deno.test({
         fn() {
           const columns = [["value"]];
           const data = [{ value: "foo" }, { value: "bar" }];
-          const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `value${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1028,7 +1077,7 @@ Deno.test({
         fn() {
           const columns = [["msg", "value"]];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `value${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1044,7 +1093,7 @@ Deno.test({
             },
           ];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
-          const output = `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `Value${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1057,7 +1106,7 @@ Deno.test({
           const columns = [0];
           const data = [[{ value: "foo" }], [{ value: "bar" }]];
           const output =
-            `0${NEWLINE}"{""value"":""foo""}"${NEWLINE}"{""value"":""bar""}"${NEWLINE}`;
+            `0${CRLF}"{""value"":""foo""}"${CRLF}"{""value"":""bar""}"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1072,7 +1121,7 @@ Deno.test({
             [[{ value: "baz" }, { value: "qux" }]],
           ];
           const output =
-            `0${NEWLINE}"[{""value"":""foo""},{""value"":""bar""}]"${NEWLINE}"[{""value"":""baz""},{""value"":""qux""}]"${NEWLINE}`;
+            `0${CRLF}"[{""value"":""foo""},{""value"":""bar""}]"${CRLF}"[{""value"":""baz""},{""value"":""qux""}]"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1084,7 +1133,7 @@ Deno.test({
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
-            `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
+            `0${CRLF}"[""foo"",""bar""]"${CRLF}"[""baz"",""qux""]"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1097,7 +1146,7 @@ Deno.test({
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
           const output =
-            `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`;
+            `0${CRLF}"[""foo"",""bar""]"${CRLF}"[""baz"",""qux""]"${CRLF}`;
           const options = { separator: "\t", columns };
           assertEquals(stringify(data, options), output);
         },
@@ -1109,7 +1158,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[], []];
-          const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
+          const output = `0${CRLF}${CRLF}${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1120,7 +1169,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[null], [null]];
-          const output = `0${NEWLINE}${NEWLINE}${NEWLINE}`;
+          const output = `0${CRLF}${CRLF}${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1131,7 +1180,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[0xa], [0xb]];
-          const output = `0${NEWLINE}10${NEWLINE}11${NEWLINE}`;
+          const output = `0${CRLF}10${CRLF}11${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1142,7 +1191,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[BigInt("1")], [BigInt("2")]];
-          const output = `0${NEWLINE}1${NEWLINE}2${NEWLINE}`;
+          const output = `0${CRLF}1${CRLF}2${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1153,7 +1202,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[true], [false]];
-          const output = `0${NEWLINE}true${NEWLINE}false${NEWLINE}`;
+          const output = `0${CRLF}true${CRLF}false${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1164,7 +1213,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
-          const output = `0${NEWLINE}foo${NEWLINE}bar${NEWLINE}`;
+          const output = `0${CRLF}foo${CRLF}bar${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1175,8 +1224,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[Symbol("foo")], [Symbol("bar")]];
-          const output =
-            `0${NEWLINE}Symbol(foo)${NEWLINE}Symbol(bar)${NEWLINE}`;
+          const output = `0${CRLF}Symbol(foo)${CRLF}Symbol(bar)${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1187,7 +1235,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [[(n: number) => n]];
-          const output = `0${NEWLINE}(n)=>n${NEWLINE}`;
+          const output = `0${CRLF}(n)=>n${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1198,7 +1246,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [['foo"']];
-          const output = `0${NEWLINE}"foo"""${NEWLINE}`;
+          const output = `0${CRLF}"foo"""${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1209,7 +1257,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo\r\n"]];
-          const output = `0${NEWLINE}"foo\r\n"${NEWLINE}`;
+          const output = `0${CRLF}"foo\r\n"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1220,7 +1268,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo\r"]];
-          const output = `0${NEWLINE}foo\r${NEWLINE}`;
+          const output = `0${CRLF}foo\r${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1231,7 +1279,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo\n"]];
-          const output = `0${NEWLINE}foo\n${NEWLINE}`;
+          const output = `0${CRLF}"foo\n"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1242,7 +1290,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo,"]];
-          const output = `0${NEWLINE}"foo,"${NEWLINE}`;
+          const output = `0${CRLF}"foo,"${CRLF}`;
           assertEquals(stringify(data, { columns }), output);
         },
       },
@@ -1253,7 +1301,7 @@ Deno.test({
         fn() {
           const columns = [0];
           const data = [["foo,"]];
-          const output = `0${NEWLINE}foo,${NEWLINE}`;
+          const output = `0${CRLF}foo,${CRLF}`;
 
           const options = { separator: "\t", columns };
           assertEquals(stringify(data, options), output);
@@ -1262,12 +1310,98 @@ Deno.test({
     );
     await t.step({
       name: "Valid data, no columns",
-      async fn() {
+      fn() {
         const data = [[1, 2, 3], [4, 5, 6]];
-        const output = `${NEWLINE}1,2,3${NEWLINE}4,5,6${NEWLINE}`;
+        const output = `${CRLF}1,2,3${CRLF}4,5,6${CRLF}`;
 
-        assertEquals(await stringify(data), output);
+        assertEquals(stringify(data), output);
       },
     });
+    await t.step(
+      {
+        name: "byte-order mark with bom=true",
+        fn() {
+          const data = [["abc"]];
+          const output = `${BYTE_ORDER_MARK}abc${CRLF}`;
+          const options = { headers: false, bom: true };
+          assertStringIncludes(stringify(data, options), BYTE_ORDER_MARK);
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "no byte-order mark with omitted bom option",
+        fn() {
+          const data = [["abc"]];
+          const output = `abc${CRLF}`;
+          const options = { headers: false };
+          assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "no byte-order mark with bom=false",
+        fn() {
+          const data = [["abc"]];
+          const output = `abc${CRLF}`;
+          const options = { headers: false, bom: false };
+          assert(!stringify(data, options).includes(BYTE_ORDER_MARK));
+          assertEquals(stringify(data, options), output);
+        },
+      },
+    );
+  },
+});
+
+Deno.test({
+  name: "[encoding/csv] correct typing",
+  fn() {
+    {
+      const parsed = parse("a\nb");
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", {});
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: false, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
+    {
+      const parsed = parse("a\nb", { skipFirstRow: true, columns: ["aaa"] });
+      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+    }
   },
 });

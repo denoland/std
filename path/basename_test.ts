@@ -1,34 +1,97 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../testing/asserts.ts";
 import * as path from "./mod.ts";
 
+// Test suite from "GNU core utilities"
+// https://github.com/coreutils/coreutils/blob/master/tests/misc/basename.pl
+const COREUTILS_TESTSUITE = [
+  [["d/f"], "f"],
+  [["/d/f"], "f"],
+  [["d/f/"], "f"],
+  [["d/f//"], "f"],
+  [["f"], "f"],
+  [["/"], "/"],
+  [["///"], "/"],
+  [["///a///"], "a"],
+  [[""], ""],
+  [["aa", "a"], "a"],
+  [["a-a", "-a"], "a"],
+  [["f.s", ".s"], "f"],
+  [["fs", "s"], "f"],
+  [["fs", "fs"], "fs"],
+  [["fs/", "s"], "f"],
+  [["dir/file.suf", ".suf"], "file"],
+  [["fs", "x"], "fs"],
+  [["fs", ""], "fs"],
+  [["fs/", "s/"], "fs"],
+];
+
+const POSIX_TESTSUITE = [
+  [[""], ""],
+  [["/dir/basename.ext"], "basename.ext"],
+  [["/basename.ext"], "basename.ext"],
+  [["basename.ext"], "basename.ext"],
+  [["basename.ext/"], "basename.ext"],
+  [["basename.ext//"], "basename.ext"],
+  [["aaa/bbb", "/bbb"], "bbb"],
+  [["aaa/bbb", "a/bbb"], "bbb"],
+  [["aaa/bbb", "bbb"], "bbb"],
+  [["aaa/bbb//", "bbb"], "bbb"],
+  [["aaa/bbb", "bb"], "b"],
+  [["aaa/bbb", "b"], "bb"],
+  [["/aaa/bbb", "/bbb"], "bbb"],
+  [["/aaa/bbb", "a/bbb"], "bbb"],
+  [["/aaa/bbb", "bbb"], "bbb"],
+  [["/aaa/bbb//", "bbb"], "bbb"],
+  [["/aaa/bbb//", "a/bbb"], "bbb"],
+  [["/aaa/bbb", "bb"], "b"],
+  [["/aaa/bbb", "b"], "bb"],
+  [["/aaa/bbb"], "bbb"],
+  [["/aaa/"], "aaa"],
+  [["/aaa/b"], "b"],
+  [["/a/b"], "b"],
+  [["//a"], "a"],
+  [["///"], "/"],
+  [["///", "bbb"], "/"],
+  [["//", "bbb"], "/"],
+];
+
+const WIN32_TESTSUITE = [
+  [["\\dir\\basename.ext"], "basename.ext"],
+  [["\\basename.ext"], "basename.ext"],
+  [["basename.ext"], "basename.ext"],
+  [["basename.ext\\"], "basename.ext"],
+  [["basename.ext\\\\"], "basename.ext"],
+  [["foo"], "foo"],
+  [["aaa\\bbb", "\\bbb"], "bbb"],
+  [["aaa\\bbb", "a\\bbb"], "bbb"],
+  [["aaa\\bbb", "bbb"], "bbb"],
+  [["aaa\\bbb\\\\\\\\", "bbb"], "bbb"],
+  [["aaa\\bbb", "bb"], "b"],
+  [["aaa\\bbb", "b"], "bb"],
+  [["/aaa/bbb", "bb"], "b"],
+  [["C:"], ""],
+  [["C:."], "."],
+  [["C:\\"], "\\"],
+  [["C:\\dir\\base.ext"], "base.ext"],
+  [["C:\\basename.ext"], "basename.ext"],
+  [["C:basename.ext"], "basename.ext"],
+  [["C:basename.ext\\"], "basename.ext"],
+  [["C:basename.ext\\\\"], "basename.ext"],
+  [["C:foo"], "foo"],
+  [["file:stream"], "file:stream"],
+];
+
 Deno.test("basename", function () {
-  assertEquals(path.basename(".js", ".js"), "");
-  assertEquals(path.basename(""), "");
-  assertEquals(path.basename("/dir/basename.ext"), "basename.ext");
-  assertEquals(path.basename("/basename.ext"), "basename.ext");
-  assertEquals(path.basename("basename.ext"), "basename.ext");
-  assertEquals(path.basename("basename.ext/"), "basename.ext");
-  assertEquals(path.basename("basename.ext//"), "basename.ext");
-  assertEquals(path.basename("aaa/bbb", "/bbb"), "bbb");
-  assertEquals(path.basename("aaa/bbb", "a/bbb"), "bbb");
-  assertEquals(path.basename("aaa/bbb", "bbb"), "bbb");
-  assertEquals(path.basename("aaa/bbb//", "bbb"), "bbb");
-  assertEquals(path.basename("aaa/bbb", "bb"), "b");
-  assertEquals(path.basename("aaa/bbb", "b"), "bb");
-  assertEquals(path.basename("/aaa/bbb", "/bbb"), "bbb");
-  assertEquals(path.basename("/aaa/bbb", "a/bbb"), "bbb");
-  assertEquals(path.basename("/aaa/bbb", "bbb"), "bbb");
-  assertEquals(path.basename("/aaa/bbb//", "bbb"), "bbb");
-  assertEquals(path.basename("/aaa/bbb", "bb"), "b");
-  assertEquals(path.basename("/aaa/bbb", "b"), "bb");
-  assertEquals(path.basename("/aaa/bbb"), "bbb");
-  assertEquals(path.basename("/aaa/"), "aaa");
-  assertEquals(path.basename("/aaa/b"), "b");
-  assertEquals(path.basename("/a/b"), "b");
-  assertEquals(path.basename("//a"), "a");
+  for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
+    assertEquals(path.basename(name, suffix), expected);
+  }
+
+  for (const [[name, suffix], expected] of POSIX_TESTSUITE) {
+    assertEquals(path.posix.basename(name, suffix), expected);
+  }
 
   // On unix a backslash is just treated as any other character.
   assertEquals(
@@ -50,26 +113,16 @@ Deno.test("basename", function () {
 });
 
 Deno.test("basenameWin32", function () {
-  assertEquals(path.win32.basename("\\dir\\basename.ext"), "basename.ext");
-  assertEquals(path.win32.basename("\\basename.ext"), "basename.ext");
-  assertEquals(path.win32.basename("basename.ext"), "basename.ext");
-  assertEquals(path.win32.basename("basename.ext\\"), "basename.ext");
-  assertEquals(path.win32.basename("basename.ext\\\\"), "basename.ext");
-  assertEquals(path.win32.basename("foo"), "foo");
-  assertEquals(path.win32.basename("aaa\\bbb", "\\bbb"), "bbb");
-  assertEquals(path.win32.basename("aaa\\bbb", "a\\bbb"), "bbb");
-  assertEquals(path.win32.basename("aaa\\bbb", "bbb"), "bbb");
-  assertEquals(path.win32.basename("aaa\\bbb\\\\\\\\", "bbb"), "bbb");
-  assertEquals(path.win32.basename("aaa\\bbb", "bb"), "b");
-  assertEquals(path.win32.basename("aaa\\bbb", "b"), "bb");
-  assertEquals(path.win32.basename("C:"), "");
-  assertEquals(path.win32.basename("C:."), ".");
-  assertEquals(path.win32.basename("C:\\"), "");
-  assertEquals(path.win32.basename("C:\\dir\\base.ext"), "base.ext");
-  assertEquals(path.win32.basename("C:\\basename.ext"), "basename.ext");
-  assertEquals(path.win32.basename("C:basename.ext"), "basename.ext");
-  assertEquals(path.win32.basename("C:basename.ext\\"), "basename.ext");
-  assertEquals(path.win32.basename("C:basename.ext\\\\"), "basename.ext");
-  assertEquals(path.win32.basename("C:foo"), "foo");
-  assertEquals(path.win32.basename("file:stream"), "file:stream");
+  for (const [[name, suffix], expected] of WIN32_TESTSUITE) {
+    assertEquals(path.win32.basename(name, suffix), expected);
+  }
+
+  // path.win32 should pass all "forward slash" posix tests as well.
+  for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
+    assertEquals(path.win32.basename(name, suffix), expected);
+  }
+
+  for (const [[name, suffix], expected] of POSIX_TESTSUITE) {
+    assertEquals(path.win32.basename(name, suffix), expected);
+  }
 });

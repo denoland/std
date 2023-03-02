@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
@@ -52,7 +52,7 @@ export async function* iterateReader(
 /** Turns a ReaderSync, `r`, into an iterator.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
+ * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
  * let f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {

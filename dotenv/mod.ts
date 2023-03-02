@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /**
  * Load environment variables from `.env` files.
  * Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv) and
@@ -9,13 +9,13 @@
  * GREETING=hello world
  * ```
  *
- * Then import the configuration using the `config` function.
+ * Then import the configuration using the `load` function.
  *
  * ```ts
  * // app.ts
- * import { config } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
  *
- * console.log(await config());
+ * console.log(await load());
  * ```
  *
  * Then run your app.
@@ -93,87 +93,17 @@
 import { filterValues } from "../collections/filter_values.ts";
 import { withoutAll } from "../collections/without_all.ts";
 
-/**
- * @deprecated (will be removed after 0.172.0). Use `Record<string, string>` instead
- */
-export interface DotenvConfig {
-  [key: string]: string;
-}
-
 type StrictDotenvConfig<T extends ReadonlyArray<string>> =
   & {
     [key in T[number]]: string;
   }
-  & DotenvConfig;
+  & Record<string, string>;
 
 type StrictEnvVarList<T extends string> =
   | Array<Extract<T, string>>
   | ReadonlyArray<Extract<T, string>>;
 
 type StringList = Array<string> | ReadonlyArray<string> | undefined;
-
-/**
- * @deprecated (will be removed after 0.172.0). Use `LoadOptions` instead
- */
-export interface ConfigOptions {
-  /** Optional path to `.env` file.
-   *
-   * @default {"./.env"}
-   */
-  path?: string;
-  /**
-   * Set to `true` to export all `.env` variables to the current processes
-   * environment. Variables are then accessable via `Deno.env.get(<key>)`.
-   *
-   * @default {false}
-   */
-  export?: boolean;
-  /**
-   * Set to `true` to ensure that all necessary environment variables are
-   * defined after reading from `.env`. It will read {@linkcode example} to get the
-   * list of needed variables.
-   *
-   * If any of the defined variables is not in `.env`, an error will occur. This
-   * method is preferred because it prevents runtime errors in a production
-   * application due to improper configuration.
-   * Another way to supply required variables is externally, like so:
-   *
-   * ```sh
-   * GREETING="hello world" deno run --allow-env app.ts
-   * ```
-   */
-  safe?: boolean;
-  /** Optional path to `.env.example` file.
-   *
-   * @default {"./.env.example"}
-   */
-  example?: string;
-  /**
-   * Set to `true` to allow required env variables to be empty. Otherwise, it
-   * will throw an error if any variable is empty.
-   *
-   * @default {false}
-   */
-  allowEmptyValues?: boolean;
-  /**
-   * Path to `.env.defaults` file which is used to define default values.
-   *
-   * ```sh
-   * # .env.defaults
-   * # Will not be set if GREETING is set in base .env file
-   * GREETING="a secret to everybody"
-   * ```
-   *
-   * @default {"./.env.defaults"}
-   */
-  defaults?: string;
-  /**
-   * List of Env variables to read from process. By default, the complete Env is
-   * looked up. This allows to permit access to only specific Env variables with
-   * `--allow-env=ENV_VAR_NAME`.
-   */
-  restrictEnvAccessTo?: StringList;
-}
 
 export interface LoadOptions {
   /** Optional path to `.env` file.
@@ -267,29 +197,6 @@ export function parse(
   return env;
 }
 
-/**
- * @deprecated (will be removed after 0.172.0). Use `loadSync` instead
- */
-export function configSync(
-  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
-): DotenvConfig;
-export function configSync<TEnvVar extends string>(
-  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
-    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
-  },
-): StrictDotenvConfig<StrictEnvVarList<TEnvVar>>;
-export function configSync(options: ConfigOptions = {}): DotenvConfig {
-  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
-  return loadSync({
-    ...r,
-    envPath: options.path,
-    examplePath: options.safe ? options.example : undefined,
-    defaultsPath: options.defaults,
-    export: options.export,
-    allowEmptyValues: options.allowEmptyValues,
-  });
-}
-
 export function loadSync(
   options?: Omit<LoadOptions, "restrictEnvAccessTo">,
 ): Record<string, string>;
@@ -334,30 +241,6 @@ export function loadSync(
   return conf;
 }
 
-/**
- * @deprecated (will be removed after 0.172.0). Use `load` instead
- */
-export function config(
-  options?: Omit<ConfigOptions, "restrictEnvAccessTo">,
-): Promise<DotenvConfig>;
-export function config<TEnvVar extends string>(
-  options: Omit<ConfigOptions, "restrictEnvAccessTo"> & {
-    restrictEnvAccessTo: StrictEnvVarList<TEnvVar>;
-  },
-): Promise<StrictDotenvConfig<StrictEnvVarList<TEnvVar>>>;
-export async function config(
-  options: ConfigOptions = {},
-): Promise<DotenvConfig> {
-  const r = { restrictEnvAccessTo: options.restrictEnvAccessTo };
-  return await load({
-    ...r,
-    envPath: options.path,
-    examplePath: options.safe ? options.example : undefined,
-    defaultsPath: options.defaults,
-    export: options.export,
-    allowEmptyValues: options.allowEmptyValues,
-  });
-}
 export function load(
   options?: Omit<LoadOptions, "restrictEnvAccessTo">,
 ): Promise<Record<string, string>>;

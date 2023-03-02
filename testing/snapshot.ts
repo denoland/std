@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /** A snapshotting library.
  *
@@ -45,12 +45,6 @@
  *
  * ```sh
  * deno test --allow-all -- --update
- * ```
- *
- * Note: In Powershell, you need to quote `--`.
- *
- * ```powershell
- * deno test --allow-all "--" --update
  * ```
  *
  * Additionally, new snapshots will only be created when this flag is present.

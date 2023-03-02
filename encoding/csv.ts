@@ -1,6 +1,6 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 // This module is browser compatible.
 
@@ -12,7 +12,7 @@
  */
 
 import { assert } from "../_util/asserts.ts";
-import type { ReadOptions } from "./csv/_io.ts";
+import { convertRowToObject, type ReadOptions } from "./csv/_io.ts";
 import { Parser } from "./csv/_parser.ts";
 
 export {
@@ -25,7 +25,9 @@ export {
 export type { ReadOptions } from "./csv/_io.ts";
 
 const QUOTE = '"';
-export const NEWLINE = "\r\n";
+const LF = "\n";
+const CRLF = "\r\n";
+const BYTE_ORDER_MARK = "\ufeff";
 
 export class StringifyError extends Error {
   override readonly name = "StringifyError";
@@ -40,7 +42,7 @@ function getEscapedString(value: unknown, sep: string): string {
 
   // Is regex.test more performant here? If so, how to dynamically create?
   // https://stackoverflow.com/questions/3561493/
-  if (str.includes(sep) || str.includes(NEWLINE) || str.includes(QUOTE)) {
+  if (str.includes(sep) || str.includes(LF) || str.includes(QUOTE)) {
     return `${QUOTE}${str.replaceAll(QUOTE, `${QUOTE}${QUOTE}`)}${QUOTE}`;
   }
 
@@ -224,6 +226,15 @@ export type StringifyOptions = {
    * name for the column.
    */
   columns?: Column[];
+  /**
+   * Whether to add a
+   * [byte-order mark](https://en.wikipedia.org/wiki/Byte_order_mark) to the
+   * beginning of the file content. Required by software such as MS Excel to
+   * properly display Unicode text.
+   *
+   * @default {false}
+   */
+  bom?: boolean;
 };
 
 /**
@@ -289,9 +300,10 @@ export type StringifyOptions = {
  */
 export function stringify(
   data: DataItem[],
-  { headers = true, separator: sep = ",", columns = [] }: StringifyOptions = {},
+  { headers = true, separator: sep = ",", columns = [], bom = false }:
+    StringifyOptions = {},
 ): string {
-  if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
+  if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
       "Separator cannot include the following strings:",
       '  - U+0022: Quotation mark (")',
@@ -303,11 +315,15 @@ export function stringify(
   const normalizedColumns = columns.map(normalizeColumn);
   let output = "";
 
+  if (bom) {
+    output += BYTE_ORDER_MARK;
+  }
+
   if (headers) {
     output += normalizedColumns
       .map((column) => getEscapedString(column.header, sep))
       .join(sep);
-    output += NEWLINE;
+    output += CRLF;
   }
 
   for (const item of data) {
@@ -315,7 +331,7 @@ export function stringify(
     output += values
       .map((value) => getEscapedString(value, sep))
       .join(sep);
-    output += NEWLINE;
+    output += CRLF;
   }
 
   return output;
@@ -391,31 +407,20 @@ export function parse(
 
   if (opt.skipFirstRow || opt.columns) {
     let headers: string[] = [];
-    let i = 0;
 
     if (opt.skipFirstRow) {
       const head = r.shift();
       assert(head != null);
       headers = head;
-      i++;
     }
 
     if (opt.columns) {
       headers = opt.columns;
     }
 
-    return r.map((e) => {
-      if (e.length !== headers.length) {
-        throw new Error(
-          `Error number of fields line: ${i}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${e.length}`,
-        );
-      }
-      i++;
-      const out: Record<string, unknown> = {};
-      for (let j = 0; j < e.length; j++) {
-        out[headers[j]] = e[j];
-      }
-      return out;
+    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    return r.map((row, i) => {
+      return convertRowToObject(row, headers, firstLineIndex + i);
     });
   }
   return r;

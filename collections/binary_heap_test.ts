@@ -1,5 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
+import { assert } from "../_util/asserts.ts";
 import { ascend, BinaryHeap, descend } from "./binary_heap.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
@@ -329,4 +330,13 @@ Deno.test("[collections/BinaryHeap] README example", () => {
   assertEquals(words.pop(), "helicopter");
   assertEquals([...words], ["truck", "tank", "car"]);
   assertEquals([...words], []);
+});
+
+Deno.test("[collections/BinaryHeap] .toArray() and .clear()", () => {
+  const values = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
+  const maxHeap = new BinaryHeap<number>();
+  maxHeap.push(...values);
+  assert(maxHeap.toArray().every((value) => values.includes(value)));
+  maxHeap.clear();
+  assertEquals(maxHeap.toArray(), []);
 });

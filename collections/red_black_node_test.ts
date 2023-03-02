@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { RedBlackNode } from "./red_black_node.ts";
 
