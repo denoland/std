@@ -47,6 +47,8 @@
  * | `T`   | type of arg, as returned by `typeof`                           |
  * | `v`   | value of argument in 'default' format (see below)              |
  * | `j`   | argument as formatted by `JSON.stringify`                      |
+ * | `i`   | argument as formatted by `Deno.inspect`                        |
+ * | `I`   | argument as formatted by `Deno.inspect` in compact format      |
  *
  * ## Width and Precision
  *
@@ -505,6 +507,10 @@ class Printf {
         return this.fmtV(arg);
       case "j":
         return this.fmtJ(arg);
+      case "i":
+        return this.fmtI(arg, false);
+      case "I":
+        return this.fmtI(arg, true);
       default:
         return `%!(BAD VERB '${this.verb}')`;
     }
@@ -892,6 +898,20 @@ class Printf {
    */
   fmtJ(val: unknown): string {
     return JSON.stringify(val);
+  }
+
+  /**
+   * Format inspect
+   * @param val
+   * @param compact Whether or not the output should be compact.
+   */
+  fmtI(val: unknown, compact: boolean): string {
+    return Deno.inspect(val, {
+      colors: true,
+      compact,
+      depth: Infinity,
+      iterableLimit: Infinity,
+    });
   }
 }
 

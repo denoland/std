@@ -8,7 +8,7 @@
  * @module
  */
 
-export { Buffer } from "./buffer.ts";
+export * from "./buffer.ts";
 export * from "./byte_slice_stream.ts";
 export * from "./copy.ts";
 export * from "./delimiter_stream.ts";

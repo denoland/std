@@ -1,7 +1,7 @@
-import { config } from "../mod.ts";
+import { load } from "../mod.ts";
 
 try {
-  const conf = await config({
+  const conf = await load({
     restrictEnvAccessTo: ["GREETING"],
   });
 

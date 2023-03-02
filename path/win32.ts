@@ -16,8 +16,12 @@ import {
   assertPath,
   encodeWhitespace,
   isPathSeparator,
+  isPosixPathSeparator,
   isWindowsDeviceRoot,
+  lastPathSegment,
   normalizeString,
+  stripSuffix,
+  stripTrailingSeparators,
 } from "./_util.ts";
 import { assert } from "../_util/asserts.ts";
 
@@ -536,7 +540,7 @@ export function toNamespacedPath(path: string): string {
 
 /**
  * Return the directory path of a `path`.
- * @param path to determine the directory path for
+ * @param path - path to extract the directory from.
  */
 export function dirname(path: string): string {
   assertPath(path);
@@ -623,29 +627,31 @@ export function dirname(path: string): string {
     if (rootEnd === -1) return ".";
     else end = rootEnd;
   }
-  return path.slice(0, end);
+  return stripTrailingSeparators(path.slice(0, end), isPosixPathSeparator);
 }
 
 /**
- * Return the last portion of a `path`. Trailing directory separators are ignored.
- * @param path to process
- * @param ext of path directory
+ * Return the last portion of a `path`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
+ *
+ * @param path - path to extract name from.
+ * @param [suffix] - suffix to remove from extracted name.
  */
-export function basename(path: string, ext = ""): string {
-  if (ext !== undefined && typeof ext !== "string") {
-    throw new TypeError('"ext" argument must be a string');
-  }
-
+export function basename(path: string, suffix = ""): string {
   assertPath(path);
 
-  let start = 0;
-  let end = -1;
-  let matchedSlash = true;
-  let i: number;
+  if (path.length === 0) return path;
+
+  if (typeof suffix !== "string") {
+    throw new TypeError(
+      `Suffix must be a string. Received ${JSON.stringify(suffix)}`,
+    );
+  }
 
   // Check for a drive letter prefix so as not to mistake the following
   // path separator as an extra separator at the end of the path that can be
   // disregarded
+  let start = 0;
   if (path.length >= 2) {
     const drive = path.charCodeAt(0);
     if (isWindowsDeviceRoot(drive)) {
@@ -653,67 +659,9 @@ export function basename(path: string, ext = ""): string {
     }
   }
 
-  if (ext !== undefined && ext.length > 0 && ext.length <= path.length) {
-    if (ext.length === path.length && ext === path) return "";
-    let extIdx = ext.length - 1;
-    let firstNonSlashEnd = -1;
-    for (i = path.length - 1; i >= start; --i) {
-      const code = path.charCodeAt(i);
-      if (isPathSeparator(code)) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else {
-        if (firstNonSlashEnd === -1) {
-          // We saw the first non-path separator, mark this as the end of our
-          // path component in case we don't match a whole suffix
-          matchedSlash = false;
-          firstNonSlashEnd = i + 1;
-          end = firstNonSlashEnd;
-        }
-        if (extIdx >= 0) {
-          // Try to match the explicit suffix
-          if (code === ext.charCodeAt(extIdx)) {
-            if (--extIdx === -1) {
-              // We matched whole suffix, so mark this as the end of our path
-              // component
-              end = i;
-            }
-          } else {
-            // Suffix character does not match, so bail out early
-            // from checking rest of characters
-            extIdx = -1;
-          }
-        }
-      }
-    }
-
-    if (start === end) end = firstNonSlashEnd;
-    else if (end === -1) end = path.length;
-    return path.slice(start, end);
-  } else {
-    for (i = path.length - 1; i >= start; --i) {
-      if (isPathSeparator(path.charCodeAt(i))) {
-        // If we reached a path separator that was not part of a set of path
-        // separators at the end of the string, stop now
-        if (!matchedSlash) {
-          start = i + 1;
-          break;
-        }
-      } else if (end === -1) {
-        // We saw the first non-path separator, mark this as the end of our
-        // path component
-        matchedSlash = false;
-        end = i + 1;
-      }
-    }
-
-    if (end === -1) return "";
-    return path.slice(start, end);
-  }
+  const lastSegment = lastPathSegment(path, isPathSeparator, start);
+  const strippedSegment = stripTrailingSeparators(lastSegment, isPathSeparator);
+  return suffix ? stripSuffix(strippedSegment, suffix) : strippedSegment;
 }
 
 /**
@@ -864,12 +812,13 @@ export function parse(path: string): ParsedPath {
               // `path` contains just a drive root, exit early to avoid
               // unnecessary work
               ret.root = ret.dir = path;
+              ret.base = "\\";
               return ret;
             }
             rootEnd = 3;
           }
         } else {
-          // `path` contains just a drive root, exit early to avoid
+          // `path` contains just a relative drive root, exit early to avoid
           // unnecessary work
           ret.root = ret.dir = path;
           return ret;
@@ -880,6 +829,7 @@ export function parse(path: string): ParsedPath {
     // `path` contains just a path separator, exit early to avoid
     // unnecessary work
     ret.root = ret.dir = path;
+    ret.base = "\\";
     return ret;
   }
 
@@ -940,6 +890,9 @@ export function parse(path: string): ParsedPath {
     ret.base = path.slice(startPart, end);
     ret.ext = path.slice(startDot, end);
   }
+
+  // Fallback to '\' in case there is no basename
+  ret.base = ret.base || "\\";
 
   // If the directory is the root, use the entire root as the `dir` including
   // the trailing slash if any (`C:\abc` -> `C:\`). Otherwise, strip out the

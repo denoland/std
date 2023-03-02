@@ -235,33 +235,36 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return null;
   }
 
+  /** Removes the given node, and returns the node that was physically removed from the tree. */
   protected removeNode(
-    value: T,
+    node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null {
-    let removeNode: BinarySearchNode<T> | null = this.findNode(value);
-    if (removeNode) {
-      const successorNode: BinarySearchNode<T> | null =
-        !removeNode.left || !removeNode.right
-          ? removeNode
-          : removeNode.findSuccessorNode()!;
-      const replacementNode: BinarySearchNode<T> | null = successorNode.left ??
-        successorNode.right;
-      if (replacementNode) replacementNode.parent = successorNode.parent;
+    /**
+     * The node to physically remove from the tree.
+     * Guaranteed to have at most one child.
+     */
+    const flaggedNode: BinarySearchNode<T> | null = !node.left || !node.right
+      ? node
+      : node.findSuccessorNode()!;
+    /** Replaces the flagged node. */
+    const replacementNode: BinarySearchNode<T> | null = flaggedNode.left ??
+      flaggedNode.right;
 
-      if (!successorNode.parent) {
-        this.root = replacementNode;
-      } else {
-        successorNode.parent[successorNode.directionFromParent()!] =
-          replacementNode;
-      }
-
-      if (successorNode !== removeNode) {
-        removeNode.value = successorNode.value;
-        removeNode = successorNode;
-      }
-      this._size--;
+    if (replacementNode) replacementNode.parent = flaggedNode.parent;
+    if (!flaggedNode.parent) {
+      this.root = replacementNode;
+    } else {
+      flaggedNode.parent[flaggedNode.directionFromParent()!] = replacementNode;
     }
-    return removeNode;
+    if (flaggedNode !== node) {
+      /** Swaps values, in case value of the removed node is still needed by consumer. */
+      const swapValue = node.value;
+      node.value = flaggedNode.value;
+      flaggedNode.value = swapValue;
+    }
+
+    this._size--;
+    return flaggedNode;
   }
 
   /**
@@ -277,7 +280,9 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * Returns true if found and removed.
    */
   remove(value: T): boolean {
-    return !!this.removeNode(value);
+    const node: BinarySearchNode<T> | null = this.findNode(value);
+    if (node) this.removeNode(node);
+    return node !== null;
   }
 
   /** Returns node value if found in the binary search tree. */

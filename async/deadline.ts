@@ -13,6 +13,8 @@ export class DeadlineError extends Error {
 /**
  * Create a promise which will be rejected with {@linkcode DeadlineError} when a given delay is exceeded.
  *
+ * NOTE: Prefer to use `AbortSignal.timeout` instead for the APIs accept `AbortSignal`.
+ *
  * @example
  * ```typescript
  * import { deadline } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
