@@ -12,12 +12,16 @@ import {
 } from "./_util.ts";
 
 export class WalkError extends Error {
+  override cause: unknown;
+  override name = "WalkError";
   path: string;
-  constructor(err: unknown, path: string) {
-    super(`${err instanceof Error ? err.message : err} for path "${path}"`);
-    this.name = "WalkError";
+
+  constructor(cause: unknown, path: string) {
+    super(
+      `${cause instanceof Error ? cause.message : cause} for path "${path}"`,
+    );
     this.path = path;
-    this.cause = err;
+    this.cause = cause;
   }
 }
 
