@@ -2,23 +2,23 @@
 import { CsvStream } from "./stream.ts";
 import type { CsvStreamOptions } from "./stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
-import { readableStreamFromIterable } from "../../streams/readable_stream_from_iterable.ts";
-import { readableStreamFromReader } from "../../streams/readable_stream_from_reader.ts";
+import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
+import { readableStreamFromReader } from "../streams/readable_stream_from_reader.ts";
 import {
   assert,
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "../../testing/asserts.ts";
-import type { AssertTrue, Has } from "../../testing/types.ts";
-import { fromFileUrl, join } from "../../path/mod.ts";
-import { StringReader } from "../../io/string_reader.ts";
+} from "../testing/asserts.ts";
+import type { AssertTrue, Has } from "../testing/types.ts";
+import { fromFileUrl, join } from "../path/mod.ts";
+import { StringReader } from "../io/string_reader.ts";
 
-const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
+const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "[encoding/csv/stream] CsvStream should work with Deno.File",
+  name: "[csv/stream] CsvStream should work with Deno.File",
   permissions: {
     read: [testdataDir],
   },
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CsvStream with invalid csv",
+  name: "[csv/stream] CsvStream with invalid csv",
   fn: async () => {
     const readable = readableStreamFromIterable([
       encoder.encode("id,name\n"),
@@ -63,7 +63,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] CsvStream with various inputs",
+  name: "[csv/stream] CsvStream with various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
@@ -371,8 +371,7 @@ export const MyTextDecoderStream = () => {
 };
 
 Deno.test({
-  name:
-    "[encoding/csv/stream] cancel CsvStream during iteration does not leak file",
+  name: "[csv/stream] cancel CsvStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   // TODO(kt3k): Enable this test on windows.
   // See https://github.com/denoland/deno_std/issues/3160
@@ -388,7 +387,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/csv/stream] correct typing",
+  name: "[csv/stream] correct typing",
   fn() {
     {
       const { readable } = new CsvStream();
