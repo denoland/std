@@ -15,7 +15,7 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
           - windows-2022
           - macOS-latest
 
@@ -70,7 +70,7 @@ jobs:
         run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -103,7 +103,7 @@ jobs:
 
   wasm:
     name: wasm
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-22.04-xl' || 'ubuntu-22.04' }}
     strategy:
       matrix:
         module: [ { name: crypto, path: ./crypto/_wasm }, { name: varint, path: ./encoding/varint/_wasm } ]
