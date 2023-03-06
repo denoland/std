@@ -33,7 +33,7 @@
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=_tools/testdata",
-    "test:browser": "deno run -A _tools/check_web_compat.ts",
+    "test:browser": "deno run -A _tools/check_browser_compat.ts",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
     "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",

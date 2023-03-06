@@ -4,7 +4,7 @@
 
 These modules do not have external dependencies and they are reviewed by the
 Deno core team. The intention is to have a standard set of high-quality,
-web-compatible code that all Deno projects can use fearlessly.
+browser-compatible code that all Deno projects can use fearlessly.
 
 Contributions are welcome!
 
@@ -128,9 +128,9 @@ identical types from `types.d.ts`:
 
 See the tracking issue [here](https://github.com/denoland/deno/issues/9795).
 
-### Browser compatibility
+### Browser-compatibility
 
-By default, all public code is browser-compatible. If a file is not, the
+By default, all public code is browser compatible. If a file is not, the
 following must be added to the corresponding file:
 
 ```
