@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 /**
  * Utilities for working with the
  * [Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).

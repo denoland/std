@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 import { isSubdir } from "./_util.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");

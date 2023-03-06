@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /** Copy bytes from the `src` array to the `dst` array. Returns the number of
  * bytes copied.

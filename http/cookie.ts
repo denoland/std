@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Structured similarly to Go's cookie.go
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
-// This module is browser compatible.
 
 import { assert } from "../_util/asserts.ts";
 import { toIMF } from "../datetime/to_imf.ts";

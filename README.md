@@ -3,8 +3,8 @@
 [![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
 
 These modules do not have external dependencies and they are reviewed by the
-Deno core team. The intention is to have a standard set of high quality code
-that all Deno projects can use fearlessly.
+Deno core team. The intention is to have a standard set of high-quality,
+web-compatible code that all Deno projects can use fearlessly.
 
 Contributions are welcome!
 
@@ -127,3 +127,12 @@ identical types from `types.d.ts`:
 - `Deno.Closer`
 
 See the tracking issue [here](https://github.com/denoland/deno/issues/9795).
+
+### Browser compatibility
+
+By default, all public code is browser-compatible. If a file is not, the
+following must be added to the corresponding file:
+
+```
+// This module is not browser compatible.
+```

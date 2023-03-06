@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 /**
  * Logging library with the support for terminal and file outputs. Also provides

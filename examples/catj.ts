@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read
 // Copyright (c) 2014 Soheil Rashidi
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 /** An implementation of [catj](https://github.com/soheilpro/catj) which prints
  * JSON files to the console.

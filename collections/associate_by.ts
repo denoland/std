@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /**
  * Transforms the given array into a Record, extracting the key of each element

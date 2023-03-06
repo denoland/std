@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 import { fnv32, fnv32a } from "./fnv32.ts";
 import { fnv64, fnv64a } from "./fnv64.ts";

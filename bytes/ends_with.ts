@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /** Returns true if the suffix array appears at the end of the source array,
  * false otherwise.

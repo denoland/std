@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 /**
  * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
  * and other utilities for creating HTTP servers and clients.

@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /**
  * Returns all elements in the given collection, sorted by their result using

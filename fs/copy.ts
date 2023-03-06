@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 // @ts-nocheck Bypass static errors for missing --unstable.
 
 import * as path from "../path/mod.ts";

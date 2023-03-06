@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 

@@ -1,9 +1,9 @@
 import { walk } from "../fs/walk.ts";
 
 const ROOT = new URL("../", import.meta.url);
-const SKIP = [/(test|bench)/, /\/_/];
+const SKIP = [/(test|bench|\/_)/, new RegExp(import.meta.url)];
 
-function isWebCompat(filePath: string): boolean {
+function isWebCompatible(filePath: string): boolean {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "check",
@@ -16,22 +16,53 @@ function isWebCompat(filePath: string): boolean {
   return code === 0;
 }
 
-function hasWebCompatDecl(filePath: string): boolean {
-  const output = Deno.readTextFileSync(filePath);
-  return output.includes("This module is browser compatible.");
+function hasWebIncompatibleComment(path: string): boolean {
+  const output = Deno.readTextFileSync(path);
+  return output.includes("// This module is not browser compatible.");
 }
 
+const needsWebIncompatibleCommentRemovedList: string[] = [];
+const needsWebIncompatibleCommentList: string[] = [];
+
 for await (const { path } of walk(ROOT, { exts: [".ts"], skip: SKIP })) {
-  const isWebCompatResult = isWebCompat(path);
-  const hasWebCompatDeclResult = hasWebCompatDecl(path);
+  const result = {
+    isWebCompatible: isWebCompatible(path),
+    hasWebIncompatibleComment: hasWebIncompatibleComment(path),
+  };
 
-  if (isWebCompatResult && !hasWebCompatDeclResult) {
-    console.log(`${path}: missed`);
+  if (result.isWebCompatible && result.hasWebIncompatibleComment) {
+    needsWebIncompatibleCommentRemovedList.push(path);
     continue;
   }
 
-  if (!isWebCompatResult && hasWebCompatDeclResult) {
-    console.log(`${path}: incorrect`);
+  if (!result.isWebCompatible && !result.hasWebIncompatibleComment) {
+    needsWebIncompatibleCommentList.push(path);
     continue;
   }
+}
+
+let failed = false;
+
+if (needsWebIncompatibleCommentRemovedList.length > 0) {
+  failed = true;
+  console.error(
+    'The following files must have their "This module is not browser compatible." comment removed:',
+  );
+  needsWebIncompatibleCommentRemovedList.forEach((path, index) =>
+    console.log(`${index + 1}. ${path}`)
+  );
+}
+
+if (needsWebIncompatibleCommentList.length > 0) {
+  failed = true;
+  console.error(
+    'The following files must have their "This module is not browser compatible." comment added:',
+  );
+  needsWebIncompatibleCommentList.forEach((path, index) =>
+    console.log(`${index + 1}. ${path}`)
+  );
+}
+
+if (failed) {
+  Deno.exit(1);
 }

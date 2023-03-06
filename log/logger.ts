@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName } from "./levels.ts";
 import type { BaseHandler } from "./handlers.ts";

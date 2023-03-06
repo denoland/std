@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 /**
  * Builds two separate arrays from the given array of 2-tuples, with the first

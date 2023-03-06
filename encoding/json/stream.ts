@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 /***
  * Streams JSON concatenated with line breaks or special characters. This module

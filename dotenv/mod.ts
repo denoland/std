@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 /**
  * Load environment variables from `.env` files.
  * Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv) and

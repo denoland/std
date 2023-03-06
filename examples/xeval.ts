@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 /** Run a script for each new-line or otherwise delimited chunk of standard input.
  *

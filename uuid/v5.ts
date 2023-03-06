@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/concat.ts";

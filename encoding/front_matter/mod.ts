@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) Jason Campbell. MIT license
+// This module is not browser compatible.
 
 /**
  * Extracts

@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run --allow-net --allow-env
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
 
 /**
  * A program to post files to gist.github.com.
