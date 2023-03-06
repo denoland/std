@@ -61,7 +61,10 @@ Deno.test("expandGlobWildcard", async function () {
 
 Deno.test("expandGlobTrailingSeparator", async function () {
   const options = EG_OPTIONS;
-  assertEquals(await expandGlobArray("*/", options), ["a[b]c", "subdir"]);
+  assertEquals(await expandGlobArray("*/", options), [
+    "a[b]c",
+    "subdir",
+  ]);
 });
 
 Deno.test("expandGlobParent", async function () {
@@ -144,4 +147,13 @@ Deno.test("expandGlobPermError", async function () {
 Deno.test("expandGlobRootIsNotGlob", async function () {
   const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
   assertEquals(await expandGlobArray("*", options), ["foo"]);
+});
+
+Deno.test("expandGlobFollowSymlink", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "link"),
+    followSymlinks: true,
+  };
+  assertEquals(await expandGlobArray("*", options), ["abc"]);
 });
