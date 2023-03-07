@@ -110,7 +110,7 @@ Deno.test("ensureDirSyncIfItAsFile", function () {
 Deno.test("ensureDirIfInvalidPath", async function () {
   await assertRejects(
     async () => {
-      await ensureDir("<invalid>");
+      await ensureDir("<invalid\0>");
     },
     Error,
   );
@@ -119,7 +119,7 @@ Deno.test("ensureDirIfInvalidPath", async function () {
 Deno.test("ensureDirSyncIfInvalidPath", function () {
   assertThrows(
     () => {
-      ensureDirSync("<invalid>");
+      ensureDirSync("<invalid\0>");
     },
     Error,
   );
