@@ -130,8 +130,9 @@ See the tracking issue [here](https://github.com/denoland/deno/issues/9795).
 
 ### Browser-compatibility
 
-By default, all public code is browser compatible. If a file is not, the
-following must be added to the corresponding file:
+We try to make deno_std browser-compatible as much as possible. If a file
+contains browser incompatible typings, it needs to be explicitly noted at the
+beginning of the file like the below:
 
 ```
 // This module is not browser compatible.
