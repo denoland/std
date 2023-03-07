@@ -11,97 +11,116 @@ Deno.test("ensureDirIfItNotExist", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_not_exist");
   const testDir = path.join(baseDir, "test");
 
-  await ensureDir(testDir);
+  try {
+    await ensureDir(testDir);
 
-  await assertRejects(
-    async () => {
-      await Deno.stat(testDir).then(() => {
-        throw new Error("test dir should exists.");
-      });
-    },
-  );
-
-  await Deno.remove(baseDir, { recursive: true });
+    // test dir should exists.
+    await Deno.stat(testDir);
+  } finally {
+    await Deno.remove(baseDir, { recursive: true });
+  }
 });
 
 Deno.test("ensureDirSyncIfItNotExist", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_sync_not_exist");
   const testDir = path.join(baseDir, "test");
 
-  ensureDirSync(testDir);
+  try {
+    ensureDirSync(testDir);
 
-  Deno.statSync(testDir);
-
-  Deno.removeSync(baseDir, { recursive: true });
+    // test dir should exists.
+    Deno.statSync(testDir);
+  } finally {
+    Deno.removeSync(baseDir, { recursive: true });
+  }
 });
 
 Deno.test("ensureDirIfItExist", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist");
   const testDir = path.join(baseDir, "test");
 
-  // create test directory
-  await Deno.mkdir(testDir, { recursive: true });
+  try {
+    // create test directory
+    await Deno.mkdir(testDir, { recursive: true });
 
-  await ensureDir(testDir);
+    await ensureDir(testDir);
 
-  await assertRejects(
-    async () => {
-      await Deno.stat(testDir).then(() => {
-        throw new Error("test dir should still exists.");
-      });
-    },
-  );
-
-  await Deno.remove(baseDir, { recursive: true });
+    // test dir should still exists.
+    await Deno.stat(testDir);
+  } finally {
+    await Deno.remove(baseDir, { recursive: true });
+  }
 });
 
 Deno.test("ensureDirSyncIfItExist", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_sync_exist");
   const testDir = path.join(baseDir, "test");
 
-  // create test directory
-  Deno.mkdirSync(testDir, { recursive: true });
+  try {
+    // create test directory
+    Deno.mkdirSync(testDir, { recursive: true });
 
-  ensureDirSync(testDir);
+    ensureDirSync(testDir);
 
-  assertThrows(() => {
+    // test dir should still exists.
     Deno.statSync(testDir);
-    throw new Error("test dir should still exists.");
-  });
-
-  Deno.removeSync(baseDir, { recursive: true });
+  } finally {
+    Deno.removeSync(baseDir, { recursive: true });
+  }
 });
 
 Deno.test("ensureDirIfItAsFile", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist_file");
   const testFile = path.join(baseDir, "test");
 
-  await ensureFile(testFile);
+  try {
+    await ensureFile(testFile);
 
-  await assertRejects(
-    async () => {
-      await ensureDir(testFile);
-    },
-    Error,
-    `Ensure path exists, expected 'dir', got 'file'`,
-  );
-
-  await Deno.remove(baseDir, { recursive: true });
+    await assertRejects(
+      async () => {
+        await ensureDir(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'file'`,
+    );
+  } finally {
+    await Deno.remove(baseDir, { recursive: true });
+  }
 });
 
 Deno.test("ensureDirSyncIfItAsFile", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist_file_async");
   const testFile = path.join(baseDir, "test");
 
-  ensureFileSync(testFile);
+  try {
+    ensureFileSync(testFile);
 
-  assertThrows(
-    () => {
-      ensureDirSync(testFile);
+    assertThrows(
+      () => {
+        ensureDirSync(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'file'`,
+    );
+  } finally {
+    Deno.removeSync(baseDir, { recursive: true });
+  }
+});
+
+Deno.test("ensureDirIfInvalidPath", async function () {
+  await assertRejects(
+    async () => {
+      await ensureDir("<invalid>");
     },
     Error,
-    `Ensure path exists, expected 'dir', got 'file'`,
   );
+});
 
-  Deno.removeSync(baseDir, { recursive: true });
+Deno.test("ensureDirSyncIfInvalidPath", function () {
+  assertThrows(
+    () => {
+      ensureDirSync("<invalid>");
+    },
+    Error,
+  );
 });
