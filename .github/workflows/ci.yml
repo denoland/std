@@ -45,14 +45,12 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
-        if: matrix.os != 'ubuntu-22.04'
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
       - name: Remove coverage report
         shell: bash
-        if: matrix.os != 'ubuntu-22.04'
         run: |
           rm -rf ./cov/
           rm cov.lcov
