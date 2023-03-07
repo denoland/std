@@ -52,7 +52,7 @@ jobs:
 
       - name: Remove coverage report
         shell: bash
-        if: matrix.os != ubuntu-22.04
+        if: matrix.os != 'ubuntu-22.04'
         run: |
           rm -rf ./cov/
           rm cov.lcov
