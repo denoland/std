@@ -3,7 +3,7 @@
 import { walk } from "../fs/walk.ts";
 
 const ROOT = new URL("../", import.meta.url);
-const SKIP = [/(test|bench|\/_)/, new RegExp(import.meta.url)];
+const SKIP = [/(test|bench|\/_|\\_)/, new RegExp(import.meta.url)];
 
 function isBrowserCompatible(filePath: string): boolean {
   const command = new Deno.Command(Deno.execPath(), {
