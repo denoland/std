@@ -22,6 +22,7 @@ export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   root?: string;
   exclude?: string[];
   includeDirs?: boolean;
+  followSymlinks?: boolean;
 }
 
 interface SplitPath {
@@ -82,6 +83,7 @@ export async function* expandGlob(
     extended = true,
     globstar = true,
     caseInsensitive,
+    followSymlinks,
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -135,6 +137,7 @@ export async function* expandGlob(
       return yield* walk(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
+        followSymlinks,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
@@ -142,6 +145,7 @@ export async function* expandGlob(
       const walkEntry of walk(walkInfo.path, {
         maxDepth: 1,
         skip: excludePatterns,
+        followSymlinks,
       })
     ) {
       if (
@@ -201,6 +205,7 @@ export function* expandGlobSync(
     extended = true,
     globstar = true,
     caseInsensitive,
+    followSymlinks,
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -254,6 +259,7 @@ export function* expandGlobSync(
       return yield* walkSync(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
+        followSymlinks,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
@@ -261,6 +267,7 @@ export function* expandGlobSync(
       const walkEntry of walkSync(walkInfo.path, {
         maxDepth: 1,
         skip: excludePatterns,
+        followSymlinks,
       })
     ) {
       if (
