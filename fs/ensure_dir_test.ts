@@ -107,20 +107,35 @@ Deno.test("ensureDirSyncIfItAsFile", function () {
   }
 });
 
-Deno.test("ensureDirIfInvalidPath", async function () {
-  await assertRejects(
-    async () => {
-      await ensureDir("<invalid\0>");
-    },
-    Error,
-  );
+Deno.test({
+  name: "ensureDirShouldNotSwallowErrors",
+  permissions: { read: true },
+  async fn() {
+    const baseDir = path.join(testdataDir, "ensure_dir_without_permission");
+
+    // ensureDir fails because this test doesn't have write permissions,
+    // but don't swallow that error.
+    await assertRejects(
+      async () => await ensureDir(baseDir),
+      Deno.errors.PermissionDenied,
+    );
+  },
 });
 
-Deno.test("ensureDirSyncIfInvalidPath", function () {
-  assertThrows(
-    () => {
-      ensureDirSync("<invalid\0>");
-    },
-    Error,
-  );
+Deno.test({
+  name: "ensureDirSyncShouldNotSwallowErrors",
+  permissions: { read: true },
+  fn() {
+    const baseDir = path.join(
+      testdataDir,
+      "ensure_dir_sync_without_permission",
+    );
+
+    // ensureDirSync fails because this test doesn't have write permissions,
+    // but don't swallow that error.
+    assertThrows(
+      () => ensureDirSync(baseDir),
+      Deno.errors.PermissionDenied,
+    );
+  },
 });

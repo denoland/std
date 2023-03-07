@@ -104,20 +104,34 @@ Deno.test("ensureFileSyncIfItExistAsDir", function () {
   }
 });
 
-Deno.test("ensureFileIfInvalidPath", async function () {
-  await assertRejects(
-    async () => {
-      await ensureFile("<invalid>");
-    },
-    Error,
-  );
+Deno.test({
+  name: "ensureFileShouldNotSwallowErrors",
+  permissions: { read: true },
+  async fn() {
+    const testDir = path.join(testdataDir, "ensure_file_7");
+    const testFile = path.join(testDir, "test.txt");
+
+    // ensureFile fails because this test doesn't have write permissions,
+    // but don't swallow that error.
+    await assertRejects(
+      async () => await ensureFile(testFile),
+      Deno.errors.PermissionDenied,
+    );
+  },
 });
 
-Deno.test("ensureFileSyncIfInvalidPath", function () {
-  assertThrows(
-    () => {
-      ensureFileSync("<invalid>");
-    },
-    Error,
-  );
+Deno.test({
+  name: "ensureFileSyncShouldNotSwallowErrors",
+  permissions: { read: true },
+  fn() {
+    const testDir = path.join(testdataDir, "ensure_file_8");
+    const testFile = path.join(testDir, "test.txt");
+
+    // ensureFileSync fails because this test doesn't have write permissions,
+    // but don't swallow that error.
+    assertThrows(
+      () => ensureFileSync(testFile),
+      Deno.errors.PermissionDenied,
+    );
+  },
 });
