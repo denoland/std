@@ -59,7 +59,7 @@ jobs:
 
       - name: Release if version change
         if: |
-          matrix.os = ubuntu-22.04 &&
+          matrix.os == 'ubuntu-22.04' &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
