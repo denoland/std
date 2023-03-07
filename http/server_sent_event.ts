@@ -17,10 +17,10 @@
  *
  * ```ts
  * import {
- *   ServerSentEventTarget,
+ *   ServerSentEvent,
  *   SSEStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * await serve((request) => {
  *   const target = new SSEStreamTarget();
@@ -93,10 +93,10 @@ class CloseEvent extends Event {
  *
  * ```ts
  * import {
- *   ServerSentEventTarget,
+ *   ServerSentEvent,
  *   SSEStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * await serve((request) => {
  *   const target = new SSEStreamTarget();
@@ -190,7 +190,7 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * ```ts
    * import { SSEStreamTarget } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
    *   const target = new SSEStreamTarget();
@@ -215,10 +215,10 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * ```ts
    * import {
-   *   ServerSentEventTarget,
+   *   ServerSentEvent,
    *   SSEStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
    *   const target = new SSEStreamTarget();
@@ -239,10 +239,10 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * ```ts
    * import {
-   *   ServerSentEventTarget,
+   *   ServerSentEvent,
    *   SSEStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
    *   const target = new SSEStreamTarget();
