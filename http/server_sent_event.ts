@@ -44,7 +44,7 @@
  * @module
  */
 
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../_util/asserts.ts";
 
 const encoder = new TextEncoder();
 
