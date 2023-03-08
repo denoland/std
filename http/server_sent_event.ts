@@ -1,11 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Provides {@linkcode ServerSentEvent} and {@linkcode SSEStreamTarget}
- * which provide an interface to sending sending server sent events to a
- * browser using the DOM event model.
+ * Provides {@linkcode ServerSentEvent} and
+ * {@linkcode ServerSentEventStreamTarget} which provides an interface to send
+ * server sent events to a browser using the DOM event model.
  *
- * The {@linkcode SSEStreamTarget} provides the `.asResponse()` or
+ * The {@linkcode ServerSentEventStreamTarget} provides the `.asResponse()` or
  * `.asResponseInit()` to provide a body and headers to the client to establish
  * the event connection. This is accomplished by keeping a connection open to
  * the client by not closing the body, which allows events to be sent down the
@@ -18,12 +18,12 @@
  * ```ts
  * import {
  *   ServerSentEvent,
- *   SSEStreamTarget,
+ *   ServerSentEventStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * await serve((request) => {
- *   const target = new SSEStreamTarget();
+ *   const target = new ServerSentEventStreamTarget();
  *   let counter = 0;
  *
  *   // Sends an event every 2 seconds, incrementing the ID
@@ -51,6 +51,11 @@ const encoder = new TextEncoder();
 const DEFAULT_KEEP_ALIVE_INTERVAL = 30_000;
 
 export interface ServerSentEventInit extends EventInit {
+  /** Optional arbitrary data to send to the client, data this is a string will
+   * be sent unmodified, otherwise `JSON.parse()` will be used to serialize the
+   * value. */
+  data?: unknown;
+
   /** An optional `id` which will be sent with the event and exposed in the
    * client `EventSource`. */
   id?: number;
@@ -94,12 +99,12 @@ class CloseEvent extends Event {
  * ```ts
  * import {
  *   ServerSentEvent,
- *   SSEStreamTarget,
+ *   ServerSentEventStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * await serve((request) => {
- *   const target = new SSEStreamTarget();
+ *   const target = new ServerSentEventStreamTarget();
  *   const evt = new ServerSentEvent(
  *     "message",
  *     { hello: "world" },
@@ -119,18 +124,11 @@ export class ServerSentEvent extends Event {
    * @param type the event type that will be available on the client. The type
    *             of `"message"` will be handled specifically as a message
    *             server-side event.
-   * @param data  arbitrary data to send to the client, data this is a string
-   *              will be sent unmodified, otherwise `JSON.parse()` will be used
-   *              to serialize the value
    * @param eventInit initialization options for the event
    */
-  constructor(
-    type: string,
-    data: unknown,
-    eventInit: ServerSentEventInit = {},
-  ) {
+  constructor(type: string, eventInit: ServerSentEventInit = {}) {
     super(type, eventInit);
-    const { replacer, space } = eventInit;
+    const { data, replacer, space } = eventInit;
     this.#type = type;
     try {
       this.#data = typeof data === "string"
@@ -189,11 +187,11 @@ export interface ServerSentEventTarget extends EventTarget {
    * connection is kept alive.
    *
    * ```ts
-   * import { SSEStreamTarget } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+   * import { ServerSentEventStreamTarget } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
    * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
-   *   const target = new SSEStreamTarget();
+   *   const target = new ServerSentEventStreamTarget();
    *   target.dispatchComment("this is a comment");
    *   return target.asResponse();
    * }, { port: 8000 });
@@ -216,12 +214,12 @@ export interface ServerSentEventTarget extends EventTarget {
    * ```ts
    * import {
    *   ServerSentEvent,
-   *   SSEStreamTarget,
+   *   ServerSentEventStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
    * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
-   *   const target = new SSEStreamTarget();
+   *   const target = new ServerSentEventStreamTarget();
    *   const evt = new ServerSentEvent("ping", "hello");
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
@@ -240,12 +238,12 @@ export interface ServerSentEventTarget extends EventTarget {
    * ```ts
    * import {
    *   ServerSentEvent,
-   *   SSEStreamTarget,
+   *   ServerSentEventStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
    * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * await serve((request) => {
-   *   const target = new SSEStreamTarget();
+   *   const target = new ServerSentEventStreamTarget();
    *   const evt = new ServerSentEvent("ping", "hello");
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
@@ -258,7 +256,7 @@ export interface ServerSentEventTarget extends EventTarget {
 /** An implementation of {@linkcode ServerSentEventTarget} that provides a
  * readable stream as a body of a response to establish a connection to a
  * client. */
-export class SSEStreamTarget extends EventTarget
+export class ServerSentEventStreamTarget extends EventTarget
   implements ServerSentEventTarget {
   #bodyInit: ReadableStream<Uint8Array>;
   #closed = false;
@@ -270,7 +268,6 @@ export class SSEStreamTarget extends EventTarget
 
   // deno-lint-ignore no-explicit-any
   #error(error: any) {
-    console.log("error", error);
     this.dispatchEvent(new CloseEvent({ cancelable: false }));
     const errorEvent = new ErrorEvent("error", { error });
     this.dispatchEvent(errorEvent);
@@ -366,7 +363,7 @@ export class SSEStreamTarget extends EventTarget
 
   // deno-lint-ignore no-explicit-any
   dispatchMessage(data: any): boolean {
-    const event = new ServerSentEvent("__message", data);
+    const event = new ServerSentEvent("__message", { data });
     return this.dispatchEvent(event);
   }
 

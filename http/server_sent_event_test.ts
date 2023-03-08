@@ -1,12 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { ServerSentEvent, SSEStreamTarget } from "./server_sent_event.ts";
+import {
+  ServerSentEvent,
+  ServerSentEventStreamTarget,
+} from "./server_sent_event.ts";
 
 Deno.test({
   name: "ServerSentEvent - construction",
   fn() {
-    const evt = new ServerSentEvent("message", "foobar");
+    const evt = new ServerSentEvent("message", { data: "foobar" });
     assertEquals(evt.type, "message");
     assertEquals(evt.data, "foobar");
     assertEquals(evt.id, undefined);
@@ -17,7 +20,7 @@ Deno.test({
 Deno.test({
   name: "ServerSentEvent - data coercion",
   fn() {
-    const evt = new ServerSentEvent("ping", { hello: true });
+    const evt = new ServerSentEvent("ping", { data: { hello: true } });
     assertEquals(evt.type, "ping");
     assertEquals(evt.data, `{"hello":true}`);
     assertEquals(evt.id, undefined);
@@ -28,7 +31,7 @@ Deno.test({
 Deno.test({
   name: "ServerSentEvent - init id",
   fn() {
-    const evt = new ServerSentEvent("ping", "foobar", { id: 1234 });
+    const evt = new ServerSentEvent("ping", { data: "foobar", id: 1234 });
     assertEquals(evt.type, "ping");
     assertEquals(evt.data, `foobar`);
     assertEquals(evt.id, 1234);
@@ -42,7 +45,10 @@ Deno.test({
 Deno.test({
   name: "ServerSentEvent - data space",
   fn() {
-    const evt = new ServerSentEvent("ping", { hello: [1, 2, 3] }, { space: 2 });
+    const evt = new ServerSentEvent("ping", {
+      data: { hello: [1, 2, 3] },
+      space: 2,
+    });
     assertEquals(evt.type, "ping");
     assertEquals(evt.data, `{\n  "hello": [\n    1,\n    2,\n    3\n  ]\n}`);
     assertEquals(
@@ -55,7 +61,7 @@ Deno.test({
 Deno.test({
   name: "ServerSentEvent - __message",
   fn() {
-    const evt = new ServerSentEvent("__message", { hello: "world" });
+    const evt = new ServerSentEvent("__message", { data: { hello: "world" } });
     assertEquals(evt.type, "__message");
     assertEquals(evt.data, `{"hello":"world"}`);
     assertEquals(String(evt), `data: {"hello":"world"}\n\n`);
@@ -63,9 +69,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - construction",
+  name: "ServerSentEventStreamTarget - construction",
   async fn() {
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     assertEquals(sse.closed, false);
     const response = sse.asResponse();
     await sse.close();
@@ -83,9 +89,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - construction with headers",
+  name: "ServerSentEventStreamTarget - construction with headers",
   async fn() {
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     const response = sse.asResponse({
       headers: new Headers([["X-Deno", "test"], ["Cache-Control", "special"]]),
     });
@@ -98,11 +104,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - dispatchEvent",
+  name: "ServerSentEventStreamTarget - dispatchEvent",
   async fn() {
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     const response = sse.asResponse();
-    const evt = new ServerSentEvent("message", "foobar");
+    const evt = new ServerSentEvent("message", { data: "foobar" });
     sse.dispatchEvent(evt);
     await sse.close();
     assertEquals(await response.text(), "event: message\ndata: foobar\n\n");
@@ -110,9 +116,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - dispatchMessage",
+  name: "ServerSentEventStreamTarget - dispatchMessage",
   async fn() {
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     const response = sse.asResponse();
     sse.dispatchMessage("foobar");
     await sse.close();
@@ -121,9 +127,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - dispatchComment",
+  name: "ServerSentEventStreamTarget - dispatchComment",
   async fn() {
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     const response = sse.asResponse();
     sse.dispatchComment("foobar");
     await sse.close();
@@ -132,9 +138,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - keep-alive setting",
+  name: "ServerSentEventStreamTarget - keep-alive setting",
   fn() {
-    const sse = new SSEStreamTarget({ keepAlive: 1000 });
+    const sse = new ServerSentEventStreamTarget({ keepAlive: 1000 });
     const response = sse.asResponse();
     const p = new Promise<void>((resolve, reject) => {
       setTimeout(async () => {
@@ -152,11 +158,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - connection closed readable stream",
+  name: "ServerSentEventStreamTarget - connection closed readable stream",
   fn() {
     let closed = false;
     let errored = false;
-    const sse = new SSEStreamTarget();
+    const sse = new ServerSentEventStreamTarget();
     const response = sse.asResponse();
     sse.addEventListener("close", () => {
       closed = true;
@@ -174,11 +180,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "SSEStreamTarget - inspecting",
+  name: "ServerSentEventStreamTarget - inspecting",
   fn() {
     assertEquals(
-      Deno.inspect(new SSEStreamTarget()),
-      `SSEStreamTarget { "#bodyInit": ReadableStream { locked: false }, "#closed": false }`,
+      Deno.inspect(new ServerSentEventStreamTarget()),
+      `ServerSentEventStreamTarget { "#bodyInit": ReadableStream { locked: false }, "#closed": false }`,
     );
   },
 });
