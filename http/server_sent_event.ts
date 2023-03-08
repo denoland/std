@@ -30,8 +30,7 @@
  *   const id = setInterval(() => {
  *     const evt = new ServerSentEvent(
  *       "message",
- *       { hello: "world" },
- *       { id: counter++ },
+ *       { data: { hello: "world" }, id: counter++ },
  *     );
  *     target.dispatchEvent(evt);
  *   }, 2000);
@@ -105,10 +104,10 @@ class CloseEvent extends Event {
  *
  * await serve((request) => {
  *   const target = new ServerSentEventStreamTarget();
- *   const evt = new ServerSentEvent(
- *     "message",
- *     { hello: "world", id: 1 },
- *   );
+ *   const evt = new ServerSentEvent("message", {
+ *     data: { hello: "world" },
+ *     id: 1
+ *   });
  *   target.dispatchEvent(evt);
  *   return target.asResponse();
  * }, { port: 8000 });
