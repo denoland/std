@@ -107,8 +107,7 @@ class CloseEvent extends Event {
  *   const target = new ServerSentEventStreamTarget();
  *   const evt = new ServerSentEvent(
  *     "message",
- *     { hello: "world" },
- *     { id: 1 },
+ *     { hello: "world", id: 1 },
  *   );
  *   target.dispatchEvent(evt);
  *   return target.asResponse();
@@ -220,7 +219,7 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * await serve((request) => {
    *   const target = new ServerSentEventStreamTarget();
-   *   const evt = new ServerSentEvent("ping", "hello");
+   *   const evt = new ServerSentEvent("ping", { data: "hello" });
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
    * }, { port: 8000 });
@@ -244,7 +243,7 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * await serve((request) => {
    *   const target = new ServerSentEventStreamTarget();
-   *   const evt = new ServerSentEvent("ping", "hello");
+   *   const evt = new ServerSentEvent("ping", { data: "hello" });
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
    * }, { port: 8000 });
