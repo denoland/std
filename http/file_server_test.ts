@@ -11,8 +11,6 @@ import { serveDir, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import { dirname, fromFileUrl, join, resolve, toFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { toHashString } from "../crypto/to_hash_string.ts";
-import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
 
