@@ -2,7 +2,10 @@
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { deepMerge } from "../collections/deep_merge.ts";
 
-/** Returns true if the etags match. Weak etag comparisons are handled. */
+/** Returns true if the etags match. Weak etag comparisons are handled.
+ *
+ * @deprecated Use `etag/ifMatch` and `etag/ifNoneMatch` instead.
+ */
 export function compareEtag(a: string, b: string): boolean {
   if (a === b) {
     return true;
