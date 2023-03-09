@@ -96,7 +96,21 @@ TODO.
 
 ## Building a Modern SaaS Business
 
-TODO.
+Along with this template, we are creating a series of How To guides to show how
+to build a modern SaaS business using SaaSkit and Fresh. This series will cover:
+
+- How to setup login logout in Fresh
+- How to setup user accounts with Supabase in Fresh
+- How to setup Stripe subscriptions in Fresh
+- How to create API routes in Fresh
+- How to create multi-tenancy in Fresh
+- How to deploy SaaSkit to Deno Deploy
+
+And more! We'll update all relevant links to point to written and video
+tutorials when they're released.
+
+If you have a specific topic that you'd like us to cover, please let us know in
+[Discord](https://discord.gg/deno).
 
 ## About Fresh and Deno
 
