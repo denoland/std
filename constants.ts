@@ -3,7 +3,7 @@ export const SITE_DESCRIPTION = "Some details about your SaaS.";
 
 export const COOKIE_NAME = "auth";
 
-export const AUTHENTICATED_REDIRECT_PATH = "/todos";
+export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
 
 export const STRIPE_PRODUCTS = [
   /** Free */

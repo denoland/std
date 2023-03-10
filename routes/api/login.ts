@@ -1,6 +1,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
 import { assert } from "std/testing/asserts.ts";
+import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
 
 export const handler: Handlers = {
   async POST(request) {
@@ -19,7 +20,7 @@ export const handler: Handlers = {
     });
 
     let redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
-      "/";
+      AUTHENTICATED_REDIRECT_PATH;
     if (error) {
       redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
     }

@@ -11,8 +11,8 @@ import { assert } from "std/testing/asserts.ts";
 const hasPaidPlan = signal(false);
 let isInit = true;
 
-async function requestCreatePersistentTodo(todo: Todo) {
-  const response = await fetch("/api/todo", {
+async function requestCreateTodo(todo: Todo) {
+  const response = await fetch("/dashboard/api/todo", {
     method: "POST",
     body: JSON.stringify(todo),
   });
@@ -28,12 +28,12 @@ async function createTodo(
   name: string,
 ) {
   const newTodo: Todo = { name, id: crypto.randomUUID() };
-  if (IS_BROWSER) await requestCreatePersistentTodo(newTodo);
+  if (IS_BROWSER) await requestCreateTodo(newTodo);
   createTodoInSignal(todos, newTodo);
 }
 
-async function requestDeletePersistentTodo(id: string) {
-  const response = await fetch("/api/todo", {
+async function requestDeleteTodo(id: string) {
+  const response = await fetch("/dashboard/api/todo", {
     method: "DELETE",
     body: JSON.stringify({ id }),
   });
@@ -48,7 +48,7 @@ async function deleteTodo(
   todos: Signal<Todo[]>,
   id: string,
 ) {
-  if (IS_BROWSER) await requestDeletePersistentTodo(id);
+  if (IS_BROWSER) await requestDeleteTodo(id);
   deleteTodoInSignal(todos, id);
 }
 

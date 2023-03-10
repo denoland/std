@@ -13,7 +13,7 @@ export default function SignupPage(props: PageProps) {
         <div class="m-auto space-y-8 w-72">
           <a href="/">
             <img
-              src="/logo.webp"
+              src="/logo.png"
               alt="Logo"
               class="h-24 w-auto mb-8 mx-auto"
             />

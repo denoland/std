@@ -2,7 +2,7 @@ import { SITE_NAME } from "@/constants.ts";
 import { JSX } from "preact";
 import Nav from "./Nav.tsx";
 
-export default function Footer(props: JSX.HTMLAttributes<HTMLDivElement>) {
+export default function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   const navItems = [
     {
       href: "https://discord.gg/deno",
@@ -12,7 +12,8 @@ export default function Footer(props: JSX.HTMLAttributes<HTMLDivElement>) {
 
   return (
     <footer
-      class={`flex flex-col md:flex-row w-full p-8 justify-between gap-y-4 mx-auto max-w-5xl text-white ${
+      {...props}
+      class={`flex flex-col md:flex-row w-full p-8 justify-between gap-y-4 mx-auto max-w-7xl ${
         props.class ?? ""
       }`}
     >

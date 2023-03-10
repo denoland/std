@@ -1,6 +1,3 @@
-/** Taken from {@link https://fresh.deno.dev/components} with changes:
- * 1. Removed `IS_BROWSER` comparison
- */
 import { JSX } from "preact";
 
 export default function Input(props: JSX.HTMLAttributes<HTMLInputElement>) {

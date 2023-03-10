@@ -53,7 +53,7 @@ function TopSection() {
       style="background-image: url('/hero-dark.svg')"
       class="min-h-screen bg-cover flex flex-col"
     >
-      <Header />
+      <Header class="text-white" />
       <Hero />
     </div>
   );
@@ -160,7 +160,7 @@ function BottomSection() {
       class="min-h-screen bg-cover flex flex-col justify-end"
     >
       <div class="bg-gradient-to-t from-black to-[#170139]">
-        <Footer />
+        <Footer class="text-white" />
       </div>
     </div>
   );

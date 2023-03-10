@@ -4,7 +4,7 @@ import { stripe } from "@/utils/stripe.ts";
 import { Stripe } from "stripe";
 import type { User } from "@supabase/supabase-js";
 import type { DashboardState } from "./_middleware.ts";
-import DashboardLayout from "@/components/DashboardLayout.tsx";
+import Dashboard from "@/components/Dashboard.tsx";
 
 interface AccountPageData {
   user: User;
@@ -13,11 +13,9 @@ interface AccountPageData {
 
 export const handler: Handlers<AccountPageData, DashboardState> = {
   async GET(request, ctx) {
-    const { data: { user }, error } = await ctx.state.supabaseClient.auth
-      .getUser();
-    if (error) throw error;
+    const { user } = ctx.state.session;
 
-    const customer = user!.user_metadata.stripe_customer_id;
+    const customer = user.user_metadata.stripe_customer_id;
     const returnUrl = new URL(request.url).href;
 
     const billingSession = await stripe.billingPortal.sessions.create({
@@ -26,7 +24,7 @@ export const handler: Handlers<AccountPageData, DashboardState> = {
     });
 
     return await ctx.render({
-      user: user!,
+      user,
       billingSession,
     });
   },
@@ -36,7 +34,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
   return (
     <>
       <Head title="Account" />
-      <DashboardLayout active="/dashboard/account">
+      <Dashboard active="/dashboard/account">
         <ul class="space-y-2">
           <li class="flex items-center justify-between gap-2 py-2">
             <div class="flex-1">
@@ -53,7 +51,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
             </a>
           </li>
         </ul>
-      </DashboardLayout>
+      </Dashboard>
     </>
   );
 }

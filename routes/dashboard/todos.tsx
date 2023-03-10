@@ -5,7 +5,8 @@ import Head from "@/components/Head.tsx";
 import TodoList from "@/islands/TodoList.tsx";
 import Notice from "@/components/Notice.tsx";
 import { DashboardState } from "./_middleware.ts";
-import DashboardLayout from "@/components/DashboardLayout.tsx";
+import Dashboard from "@/components/Dashboard.tsx";
+import { createSupabaseClient } from "../../utils/supabase.ts";
 
 interface Data {
   isPaid: boolean;
@@ -13,25 +14,15 @@ interface Data {
 }
 
 export const handler: Handlers<Data, DashboardState> = {
-  async GET(_request, ctx) {
-    if (ctx.state.isLoggedIn) {
-      const { data: { user }, error } = await ctx.state.supabaseClient.auth
-        .getUser();
-      if (error) throw error;
-
-      const { data: [subscription] } = await stripe.subscriptions.list({
-        customer: user!.user_metadata.stripe_customer_id,
-      });
-
-      return await ctx.render({
-        isPaid: subscription.plan.amount > 0,
-        todos: await getTodos(ctx.state.supabaseClient),
-      });
-    }
+  async GET(request, ctx) {
+    const { user } = ctx.state.session;
+    const { data: [subscription] } = await stripe.subscriptions.list({
+      customer: user.user_metadata.stripe_customer_id,
+    });
 
     return await ctx.render({
-      isPaid: false,
-      todos: [],
+      isPaid: subscription.plan.amount > 0,
+      todos: await getTodos(createSupabaseClient(request.headers)),
     });
   },
 };
@@ -40,7 +31,7 @@ export default function TodosPage(props: PageProps<Data>) {
   return (
     <>
       <Head title="Todos" />
-      <DashboardLayout active="/dashboard/todos">
+      <Dashboard active="/dashboard/todos">
         {!props.data.isPaid && (
           <Notice
             color="yellow"
@@ -57,7 +48,7 @@ export default function TodosPage(props: PageProps<Data>) {
           hasPaidPlan={props.data.isPaid}
           todos={props.data.todos}
         />
-      </DashboardLayout>
+      </Dashboard>
     </>
   );
 }

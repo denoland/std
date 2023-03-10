@@ -16,8 +16,10 @@ export function createSupabaseClient(
     supabaseUrl: Deno.env.get("SUPABASE_URL")!,
     supabaseKey: Deno.env.get("SUPABASE_ANON_KEY")!,
     getRequestHeader: (key) => requestHeaders.get(key) ?? undefined,
-    getCookie: (name) =>
-      decodeURIComponent(getCookies(requestHeaders)[name] ?? ""),
+    getCookie: (name) => {
+      const cookie = getCookies(requestHeaders)[name] ?? "";
+      return decodeURIComponent(cookie);
+    },
     setCookie: (name, value, options) => {
       if (responseHeaders) {
         setCookie(responseHeaders, {
@@ -25,7 +27,7 @@ export function createSupabaseClient(
           value: encodeURIComponent(value),
           ...options,
           sameSite: "Lax",
-          httpOnly: true,
+          httpOnly: false,
         });
       }
     },

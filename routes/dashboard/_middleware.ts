@@ -1,9 +1,10 @@
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
-import type { State } from "@/routes/_middleware.ts";
+import { assert } from "std/testing/asserts.ts";
+import type { Session } from "@supabase/supabase-js";
 
-export interface DashboardState extends State {
-  supabaseClient: ReturnType<typeof createSupabaseClient>;
+export interface DashboardState {
+  session: Session;
 }
 
 export function getLoginPath(redirectUrl: string) {
@@ -15,15 +16,22 @@ export async function handler(
   request: Request,
   ctx: MiddlewareHandlerContext<DashboardState>,
 ) {
-  if (ctx.state.isLoggedIn) {
-    ctx.state.supabaseClient = createSupabaseClient(request.headers);
-    return await ctx.next();
-  }
+  try {
+    const headers = new Headers();
+    const supabaseClient = createSupabaseClient(request.headers, headers);
+    const { data } = await supabaseClient.auth.getSession();
+    assert(data.session);
+    ctx.state.session = data.session;
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      location: getLoginPath(request.url),
-    },
-  });
+    const response = await ctx.next();
+    headers.forEach((value, key) => response.headers.set(key, value));
+    return response;
+  } catch {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: getLoginPath(request.url),
+      },
+    });
+  }
 }
