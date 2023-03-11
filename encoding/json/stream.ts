@@ -26,7 +26,7 @@
 
 export {
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/concatenated_json_parse_stream.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/concatenated_json_parse_stream.ts` instead.
    *
    * Stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
    *
@@ -48,7 +48,7 @@ export {
    */
   ConcatenatedJsonParseStream,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/json_parse_stream.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/json_parse_stream.ts` instead.
    *
    * Parse each chunk as JSON.
    *
@@ -97,7 +97,7 @@ export {
    */
   JsonParseStream,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/json_stringify_stream.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/json_stringify_stream.ts` instead.
    *
    * Convert each chunk to JSON string.
    *
@@ -165,19 +165,19 @@ export {
    */
   JsonStringifyStream,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/common.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/common.ts` instead.
    *
    * The type of the result of parsing JSON.
    */
   type JsonValue,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/common.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/common.ts` instead.
    *
    * Optional object interface for `JSONParseStream` and `ConcatenatedJsonParseStream`.
    */
   type ParseStreamOptions,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `json/json_stringify_stream.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `json/json_stringify_stream.ts` instead.
    *
    * Optional object interface for `JsonStringifyStream`.
    */
