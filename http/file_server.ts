@@ -516,6 +516,15 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
           const path = posix.join(fsPath, "index.html");
           const indexFileInfo = await Deno.lstat(path);
           if (indexFileInfo.isFile) {
+            // If the current URL's pathname doesn't end with a slash, any
+            // relative URLs in the index file will resolve against the parent
+            // directory, rather than the current directory. To prevent that, we
+            // return a 301 redirect to the URL with a slash.
+            if (!fsPath.endsWith("/")) {
+              const url = new URL(req.url);
+              url.pathname += "/";
+              return Response.redirect(url, 301);
+            }
             response = await serveFile(req, path, {
               etagAlgorithm: opts.etagAlgorithm,
               fileInfo: indexFileInfo,
