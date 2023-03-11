@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * @deprecated (will be removed after 0.181.0) Import from `std/jsonc` instead.
+ * @deprecated (will be removed after 0.182.0) Import from `std/jsonc` instead.
  *
  * {@linkcode parse} function for parsing
  * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
@@ -14,13 +14,13 @@
 
 export {
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `std/jsonc/parse.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `std/jsonc/parse.ts` instead.
    *
    * Valid types as a result of JSON parsing.
    */
   type JSONValue,
   /**
-   * @deprecated (will be removed after 0.181.0) Import from `std/jsonc/parse.ts` instead.
+   * @deprecated (will be removed after 0.182.0) Import from `std/jsonc/parse.ts` instead.
    *
    * Converts a JSON with Comments (JSONC) string into an object.
    * If a syntax error is found, throw a SyntaxError.
@@ -40,6 +40,6 @@ export {
    * @param text A valid JSONC string.
    */
   parse,
-  /** @deprecated (will be removed after 0.181.0) Import from `std/jsonc/parse.ts` instead. */
+  /** @deprecated (will be removed after 0.182.0) Import from `std/jsonc/parse.ts` instead. */
   type ParseOptions,
 } from "../jsonc/mod.ts";
