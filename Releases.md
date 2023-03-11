@@ -1,3 +1,14 @@
+### 0.179.0 / 2023.03.10
+
+- BREAKING(encoding/varint): deprecate Wasm implementation in favour of native
+  TypeScript (#3215)
+- feat(fs): add followSymlink to expandGlob (#3093)
+- fix(fs/ensureDir): fix racy ensureDir (#3242)
+- fix(fs/ensure_symlink): lstat relative symlink properly (#3216)
+- fix(http/cookie): accept cookies with value containing = character (#3152)
+- fix(http/file_server): redirect directory URLs that don't end with a slash
+  (#3220)
+
 ### 0.178.0 / 2023.02.23
 
 - Remove std/node, it was merged into Deno itself (#3206)
