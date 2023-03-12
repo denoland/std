@@ -5,6 +5,9 @@ import Footer from "@/components/Footer.tsx";
 import IconListDetails from "tabler-icons/list-details.tsx";
 import IconCheckbox from "tabler-icons/checkbox.tsx";
 import IconPrompt from "tabler-icons/prompt.tsx";
+import type { Handlers, PageProps } from "$fresh/server.ts";
+import { stripe } from "@/utils/stripe.ts";
+import type { Stripe } from "stripe";
 
 interface HeadingProps {
   title: string;
@@ -104,17 +107,29 @@ function FeaturesSection() {
   );
 }
 
-function PricingSection() {
-  const points = [
-    "Landing Page",
-    "Subscription Billing (via Stripe)",
-    "Customer Portal",
-    "User Authentication",
-    "SEO Friendly",
-    "Production-Ready",
-    "Mobile Friendly",
-  ];
+function PricingCard(props: { product: Stripe.Product }) {
+  return (
+    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-200 shadow-md rounded-xl text-center">
+      <div>
+        <h3 class="text-2xl font-bold">
+          {props.product.name}
+        </h3>
+        <p>{props.product.description}</p>
+      </div>
+      <p class="font-bold text-xl">
+        ${(props.product.default_price as Stripe.Price).unit_amount! / 100}
+        <span class="font-normal">{" "}per month</span>
+      </p>
+      <div>
+        <a href="/signup">
+          <Button class="w-full rounded-md">Subscribe</Button>
+        </a>
+      </div>
+    </div>
+  );
+}
 
+function PricingSection(props: { products: Stripe.Product[] }) {
   return (
     <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto">
       <Heading
@@ -123,8 +138,8 @@ function PricingSection() {
       />
       <div class="flex flex-col md:flex-row gap-8">
         <img src="/pricing.svg" alt="Pricing image" class="flex-1" />
-        <div class="flex-1 space-y-4 flex flex-col justify-center">
-          {points.map((point) => <p class="text-xl">{point}</p>)}
+        <div class="flex-1 flex flex-col gap-8">
+          {props.products.map((product) => <PricingCard product={product} />)}
         </div>
       </div>
     </div>
@@ -166,7 +181,25 @@ function BottomSection() {
   );
 }
 
-export default function LandingPage() {
+function sortProductsFromLowestPrice(products: Stripe.Product[]) {
+  return products.sort((productA, productB) =>
+    (productA.default_price as Stripe.Price).unit_amount! -
+    (productB.default_price as Stripe.Price).unit_amount!
+  );
+}
+
+export const handler: Handlers<Stripe.Product[]> = {
+  async GET(_request, ctx) {
+    const { data } = await stripe.products.list({
+      expand: ["data.default_price"],
+      active: true,
+    });
+
+    return await ctx.render(sortProductsFromLowestPrice(data));
+  },
+};
+
+export default function HomePage(props: PageProps<Stripe.Product[]>) {
   return (
     <>
       <Head />
@@ -174,7 +207,7 @@ export default function LandingPage() {
         <div class="bg-white">
           <TopSection />
           <FeaturesSection />
-          <PricingSection />
+          <PricingSection products={props.data} />
           <TestimonialSection />
           <BottomSection />
         </div>
