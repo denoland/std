@@ -27,7 +27,7 @@ export interface StringifyStreamOptions {
  * @example
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
- * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
@@ -43,7 +43,7 @@ export interface StringifyStreamOptions {
  * prefix to the delimiter "\x1E" as options.
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
- * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
@@ -58,7 +58,7 @@ export interface StringifyStreamOptions {
  * If you want to stream [JSON lines](https://jsonlines.org/) from the server:
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * // A server that streams one line of JSON every second
  * serve(() => {
