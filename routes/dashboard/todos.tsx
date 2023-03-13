@@ -38,7 +38,9 @@ export default function TodosPage(props: PageProps<Data>) {
             message={
               <span>
                 You are on a free subscription. Please{" "}
-                <a href="/account" class="underline">upgrade</a>{" "}
+                <a href="/dashboard/manage-subscription" class="underline">
+                  upgrade
+                </a>{" "}
                 to enable unlimited todos
               </span>
             }

@@ -38,7 +38,7 @@ function Hero() {
         Some details about your SaaS.
       </p>
       <div class="flex justify-center gap-8 flex-wrap">
-        <a href="#">
+        <a href="/signup">
           <Button>Signup</Button>
         </a>
         <a href="#">
