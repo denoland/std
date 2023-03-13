@@ -255,24 +255,16 @@ export type ReleaseType =
   | "prerelease";
 
 export type Operator =
-  | "==="
-  | "!=="
   | ""
   | "="
   | "=="
+  | "==="
+  | "!=="
   | "!="
   | ">"
   | ">="
   | "<"
   | "<=";
-
-export interface Options {
-  /**
-   * Set to suppress the default behavior of excluding prerelease tagged
-   * versions from ranges unless they are explicitly opted into.
-   */
-  includePrerelease?: boolean;
-}
 
 export interface SemVer {
   major: number;
@@ -282,9 +274,21 @@ export interface SemVer {
   build: ReadonlyArray<string>;
 }
 
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-export const SEMVER_SPEC_VERSION = "2.0.0";
+const MAX: SemVer = {
+  major: Number.POSITIVE_INFINITY,
+  minor: Number.POSITIVE_INFINITY,
+  patch: Number.POSITIVE_INFINITY,
+  prerelease: [],
+  build: [],
+};
+
+const MIN: SemVer = {
+  major: 0,
+  minor: 0,
+  patch: 0,
+  prerelease: [],
+  build: [],
+};
 
 const MAX_LENGTH = 256;
 
@@ -435,13 +439,155 @@ for (let i = 0; i < R; i++) {
   }
 }
 
+export class Comparator {
+  constructor(
+    public readonly operator: Operator,
+    public readonly semver: SemVer,
+  ) {
+  }
+
+  /**
+   * The minimum version that could match this comparator.
+   * @returns the version, the next patch version or 0.0.0
+   */
+  public min(): SemVer {
+    switch (this.operator) {
+      case ">":
+        return {
+          major: this.semver.major,
+          minor: this.semver.minor,
+          patch: this.semver.patch + 1,
+          prerelease: [],
+          build: [],
+        };
+      case "!=":
+      case "!==":
+      case "<=":
+      case "<":
+        return MIN;
+      case ">=":
+      case "":
+      case "=":
+      case "==":
+      case "===":
+        return this.semver;
+    }
+  }
+
+  /**
+   * The maximum version that could match this comparator.
+   * @returns the version, any version, the next smallest patch version
+   */
+  public max(): SemVer {
+    switch (this.operator) {
+      case "!=":
+      case "!==":
+      case ">":
+      case ">=":
+        return MAX;
+      case "":
+      case "=":
+      case "==":
+      case "===":
+      case "<=":
+        return this.semver;
+      case "<": {
+        const patch = this.semver.patch - 1;
+        const minor = patch >= 0 ? this.semver.minor : this.semver.minor - 1;
+        const major = minor >= 0 ? this.semver.major : 0;
+        return {
+          major,
+          minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
+          patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
+          prerelease: [],
+          build: [],
+        };
+      }
+    }
+  }
+
+  public test(version: SemVer): boolean {
+    return cmp(version, this.operator, this.semver);
+  }
+
+  /**
+   * Returns true if the range of possible versions intersects with the other comparators set of possible versions
+   * @param comp The other comparator whose range of versions will be checked for intersection
+   * @returns True if the range of possible versions of both comparators intersects
+   */
+  public intersects(comp: Comparator): boolean {
+    const l0 = this.min();
+    const l1 = this.max();
+    const r0 = comp.min();
+    const r1 = comp.max();
+
+    // We calculate the min and max ranges of both comparators.
+    // The minimum min is 0.0.0, the maximum max is ANY.
+    //
+    // Comparators with equality operators have the same min and max.
+    //
+    // We then check to see if the min's of either range falls within the span of the other range.
+    //
+    // A couple of intersection examples:
+    // ```
+    // l0 ---- l1
+    //     r0 ---- r1
+    // ```
+    // ```
+    //     l0 ---- l1
+    // r0 ---- r1
+    // ```
+    // ```
+    // l0 ------ l1
+    //    r0--r1
+    // ```
+    //
+    // non-intersection example
+    // ```
+    // l0 -- l1
+    //          r0 -- r1
+    // ```
+    return true &&
+      gte(l0, r0) && lte(l0, r1) ||
+      gte(r0, l0) && lte(r0, l1);
+  }
+
+  public toString(): string {
+    return `${this.operator}${format(this.semver)}`;
+  }
+}
+
+export class Range {
+  constructor(
+    public readonly min: SemVer,
+    public readonly max: SemVer,
+  ) {
+  }
+
+  public test(version: SemVer): boolean {
+    return gte(version, this.min) && lte(version, this.max);
+  }
+
+  public intersects(range: Range): boolean {
+    return true &&
+      gte(this.min, range.min) && lte(this.min, range.max) ||
+      gte(range.min, this.min) && lte(range.min, this.max);
+  }
+
+  toString(): string {
+    return `${format(this.min)}-${format(this.max)}}`;
+  }
+}
+
 /**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or `null`.
  */
-export function parse(version: string | SemVer): SemVer {
+export function parse(version: string): SemVer {
   if (typeof version !== "string") {
-    return version;
+    throw new TypeError(
+      `version must be a string`,
+    );
   }
 
   if (version.length > MAX_LENGTH) {
@@ -479,7 +625,7 @@ export function parse(version: string | SemVer): SemVer {
   const prerelease = (m[4] ?? [])
     .split(".")
     .map((id: string) => {
-      const num = parseInt(id)
+      const num = parseInt(id);
       if (isNaN(num)) {
         return id;
       } else {
@@ -497,34 +643,101 @@ export function parse(version: string | SemVer): SemVer {
     patch,
     prerelease,
     build,
-  }
+  };
+}
+
+function formatNumber(value: number) {
+  return value === Number.POSITIVE_INFINITY ||
+    value === Number.NEGATIVE_INFINITY
+    ? "*"
+    : `${value.toFixed(0)}`;
 }
 
 /**
-  * Returns true if the value is a valid version and adds a Type Assertion
-  */
+ * Format a SemVer object into a string.
+ *
+ * If major, minor or patch version are NaN then a TypeError will be thrown.
+ *
+ * If major, minor or patch are positive or negative infinity then '*' will be printed instead.
+ *
+ * @param semver The semantic version to format
+ * @returns The string representation of a smenatic version.
+ */
+export function format(semver: SemVer) {
+  const major = formatNumber(semver.major);
+  const minor = formatNumber(semver.minor);
+  const patch = formatNumber(semver.patch);
+  const pre = semver.prerelease.join(".");
+  const build = semver.build.join(".");
+
+  const primary = `${major}.${minor}.${patch}`;
+  const release = [primary, pre].join("-");
+  const full = [release, build].join("+");
+
+  if (isNaN(semver.major) || isNaN(semver.minor) || isNaN(semver.patch)) {
+    throw new TypeError(`Invalid Semver: ${full}`);
+  }
+  //           ┌───── full
+  //       ┌───┴───┐
+  //       ├───────── release
+  //   ┌───┴───┐   │
+  //   ├───────────── primary
+  // ┌─┴─┐     │   │
+  // 1.2.3-pre.1+b.1
+  // │ │ │ └─┬─┘ └┬┘
+  // │ │ │   │    └── build
+  // │ │ │   └─────── pre
+  // │ │ └─────────── patch
+  // │ └───────────── minor
+  // └─────────────── major
+  return full;
+}
+
+function isValidNumber(value: number) {
+  return true &&
+    !isNaN(value) &&
+    value !== Number.POSITIVE_INFINITY &&
+    value !== Number.NEGATIVE_INFINITY &&
+    value < Number.MAX_SAFE_INTEGER &&
+    value >= 0;
+}
+
+function isValidString(value: string) {
+  return value.length > 0 && value.length <= MAX_LENGTH &&
+    value.match(/[0-9A-Za-z-]+/);
+}
+
+/**
+ * Returns true if the value is a valid version and adds a Type Assertion
+ */
 export function isValid(value: SemVer | undefined | null): value is SemVer {
   const { major, minor, patch, build, prerelease } = value ?? {};
   return (
-    typeof major === 'number' &&
-    typeof minor === 'number' &&
-    typeof patch === 'number' &&
+    typeof major === "number" && isValidNumber(major) &&
+    typeof minor === "number" && isValidNumber(minor) &&
+    typeof patch === "number" && isValidNumber(patch) &&
     Array.isArray(prerelease) &&
     Array.isArray(build) &&
-    !prerelease.find(v => typeof v !== 'string' && typeof v !== 'number') &&
-    !build.find(v => typeof v !== 'string')
+    !prerelease.some((v) => v == null) &&
+    !prerelease.filter((v) => typeof v === "string").some((v) =>
+      !isValidString(v)
+    ) &&
+    !prerelease.filter((v) => typeof v === "number").some((v) =>
+      !isValidNumber(v)
+    ) &&
+    !build.some((v) => typeof v !== "string" && isValidString(v))
   );
 }
 
 /** Returns the parsed version, or undefined if it's not valid. */
 export function valid(
-  version: string | SemVer | undefined | null,
+  version: string | undefined | null,
 ): SemVer | undefined {
   if (version == null) {
     return undefined;
   }
   try {
-    return parse(version)
+    return parse(version);
   } catch {
     return undefined;
   }
@@ -546,54 +759,53 @@ export function valid(
  * `undefined`, then it will be unchanged.
  */
 export function increment(
-  version: string | SemVer,
+  version: SemVer,
   release: ReleaseType,
   identifier?: string,
   metadata?: string,
 ): SemVer {
-  const v = parse(version);
   switch (release) {
     case "premajor":
       return {
-        major: v.major + 1,
+        major: version.major + 1,
         minor: 0,
         patch: 0,
-        prerelease: pre(v.prerelease, identifier),
+        prerelease: pre(version.prerelease, identifier),
         build: parseBuild(metadata),
       };
     case "preminor":
       return {
-        major: v.major,
-        minor: v.minor + 1,
+        major: version.major,
+        minor: version.minor + 1,
         patch: 0,
-        prerelease: pre(v.prerelease, identifier),
+        prerelease: pre(version.prerelease, identifier),
         build: parseBuild(metadata),
       };
     case "prepatch":
       return {
-        major: v.major,
-        minor: v.minor,
-        patch: v.patch + 1,
-        prerelease: pre(v.prerelease, identifier),
+        major: version.major,
+        minor: version.minor,
+        patch: version.patch + 1,
+        prerelease: pre(version.prerelease, identifier),
         build: parseBuild(metadata),
       };
     // If the input is a non-prerelease version, this acts the same as
     // prepatch.
     case "prerelease":
-      if (v.prerelease.length === 0) {
+      if (version.prerelease.length === 0) {
         return {
-          major: v.major,
-          minor: v.minor,
-          patch: v.patch + 1,
-          prerelease: pre(v.prerelease, identifier),
+          major: version.major,
+          minor: version.minor,
+          patch: version.patch + 1,
+          prerelease: pre(version.prerelease, identifier),
           build: parseBuild(metadata),
-        }
+        };
       } else {
         return {
-          major: v.major,
-          minor: v.minor,
-          patch: v.patch,
-          prerelease: pre(v.prerelease, identifier),
+          major: version.major,
+          minor: version.minor,
+          patch: version.patch,
+          prerelease: pre(version.prerelease, identifier),
           build: parseBuild(metadata),
         };
       }
@@ -603,68 +815,69 @@ export function increment(
       // 1.0.0-5 bumps to 1.0.0
       // 1.1.0 bumps to 2.0.0
       if (
-        v.minor !== 0 ||
-        v.patch !== 0 ||
-        v.prerelease.length === 0
+        version.minor !== 0 ||
+        version.patch !== 0 ||
+        version.prerelease.length === 0
       ) {
         return {
-          major: v.major + 1,
+          major: version.major + 1,
           minor: 0,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata)
+          build: parseBuild(metadata),
         };
       } else {
         return {
-          major: v.major,
+          major: version.major,
           minor: 0,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata)
-        }
+          build: parseBuild(metadata),
+        };
       }
     case "minor":
       // If this is a pre-minor version, bump up to the same minor version.
       // Otherwise increment minor.
       // 1.2.0-5 bumps to 1.2.0
       // 1.2.1 bumps to 1.3.0
-      if (v.patch !== 0 ||
-        v.prerelease.length === 0
+      if (
+        version.patch !== 0 ||
+        version.prerelease.length === 0
       ) {
         return {
-          major: v.major,
-          minor: v.minor + 1,
+          major: version.major,
+          minor: version.minor + 1,
           patch: 0,
           prerelease: [],
           build: parseBuild(metadata),
         };
       } else {
         return {
-          major: v.major,
-          minor: v.minor,
+          major: version.major,
+          minor: version.minor,
           patch: 0,
           prerelease: [],
           build: parseBuild(metadata),
-        }
+        };
       }
     case "patch":
       // If this is not a pre-release version, it will increment the patch.
       // If it is a pre-release it will bump up to the same patch version.
       // 1.2.0-5 patches to 1.2.0
       // 1.2.0 patches to 1.2.1
-      if (v.prerelease.length === 0) {
+      if (version.prerelease.length === 0) {
         return {
-          major: v.major,
-          minor: v.minor,
-          patch: v.patch + 1,
+          major: version.major,
+          minor: version.minor,
+          patch: version.patch + 1,
           prerelease: [],
           build: parseBuild(metadata),
         };
       } else {
         return {
-          major: v.major,
-          minor: v.minor,
-          patch: v.patch,
+          major: version.major,
+          minor: version.minor,
+          patch: version.patch,
           prerelease: [],
           build: parseBuild(metadata),
         };
@@ -675,18 +888,21 @@ export function increment(
     // switching the pre identifier resets the number to 0
     case "pre":
       return {
-        major: v.major,
-        minor: v.minor,
-        patch: v.patch,
-        prerelease: pre(v.prerelease, identifier),
-        build: parseBuild(metadata)
+        major: version.major,
+        minor: version.minor,
+        patch: version.patch,
+        prerelease: pre(version.prerelease, identifier),
+        build: parseBuild(metadata),
       };
     default:
       throw new Error(`invalid increment argument: ${release}`);
   }
 }
 
-function pre(prerelease: ReadonlyArray<string | number>, identifier: string | undefined) {
+function pre(
+  prerelease: ReadonlyArray<string | number>,
+  identifier: string | undefined,
+) {
   let values = [...prerelease];
 
   // In reality this will either be 0, 1 or 2 entries.
@@ -730,9 +946,8 @@ function parseBuild(metadata: string | undefined) {
 export function difference(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): ReleaseType | undefined {
-  if (eq(v1, v2, options)) {
+  if (eq(v1, v2)) {
     return undefined;
   } else {
     let prefix = "";
@@ -755,44 +970,23 @@ export function difference(
   }
 }
 
-export function compareIdentifiers(
-  a: string | number | undefined,
-  b: string | number | undefined,
+export function compareNumber(
+  a: number,
+  b: number,
 ): 1 | 0 | -1 {
-  if (a == null || b == null) throw new Error("Comparison against null invalid");
-
-  const anum = parseInt(a as string);
-  const bnum = parseInt(b as string);
-  if (isNaN(anum) || isNaN(bnum)) {
+  if (isNaN(a) || isNaN(b)) {
     throw new Error("Comparison against non-numbers");
   }
 
-  return a === b
-    ? 0
-    : anum && !bnum
-      ? -1
-      : bnum && !anum
-        ? 1
-        : a < b
-          ? -1
-          : 1;
+  return a === b ? 0 : a < b ? -1 : 1;
 }
 
-export function rcompareIdentifiers(
-  a: string | undefined,
-  b: string | undefined,
+export function rcompareNumber(
+  a: number,
+  b: number,
 ): 1 | 0 | -1 {
-  return compareIdentifiers(b, a);
+  return compareNumber(b, a);
 }
-
-/** Returns the major version number. */
-export const major = (v: string | SemVer) => parse(v).major;
-
-/** Returns the minor version number. */
-export const minor = (v: string | SemVer) => parse(v).minor;
-
-/** Returns the patch version number. */
-export const patch = (v: string | SemVer) => parse(v).patch;
 
 /**
  * Returns `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if `v2` is
@@ -801,27 +995,20 @@ export const patch = (v: string | SemVer) => parse(v).patch;
 export function compare(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): 1 | 0 | -1 {
   return (
-    compareIdentifiers(v1.major, v2.major) ||
-    compareIdentifiers(v1.minor, v2.minor) ||
-    compareIdentifiers(v1.patch, v2.patch) ||
-    comparePre(v1.prerelease, v2.prerelease, options)
+    compareNumber(v1.major, v2.major) ||
+    compareNumber(v1.minor, v2.minor) ||
+    compareNumber(v1.patch, v2.patch) ||
+    compareIdentifier(v1.prerelease, v2.prerelease) ||
+    compareIdentifier(v1.build, v2.build)
   );
 }
 
-
-function comparePre(
+export function compareIdentifier(
   v1: ReadonlyArray<string | number>,
   v2: ReadonlyArray<string | number>,
-  options?: Options,
 ): 1 | 0 | -1 {
-
-  if (options?.includePrerelease !== true) {
-    return 0;
-  }
-
   // NOT having a prerelease is > having one
   if (v1.length && !v2.length) {
     return -1;
@@ -836,39 +1023,33 @@ function comparePre(
     const a = v1[i];
     const b = v2[i];
     if (a === undefined && b === undefined) {
+      // same length is equal
       return 0;
     } else if (b === undefined) {
+      // longer > shorter
       return 1;
     } else if (a === undefined) {
+      // shorter < longer
       return -1;
-    } else if (a === b) {
-      continue;
+    } else if (typeof a === "string" && typeof b === "number") {
+      // string < number
+      return -1;
+    } else if (typeof a === "number" && typeof b === "string") {
+      // number > string
+      return 1;
+    } else if (a < b) {
+      return -1;
+    } else if (a > b) {
+      return 1;
     } else {
-      return compareIdentifiers(a, b);
+      // If they're equal, continue comparing segments.
+      continue;
     }
   } while (++i);
 
-  return 1;
-}
-
-/**
- * The same as {@linkcode compare} but considers `build` when determining if
- * two versions are equal. Build values are not numeric so they are always
- * compared alphabetically.
- * Sorts in ascending order if passed to `Array.sort()`.
- */
-export function compareBuild(
-  v1: SemVer,
-  v2: SemVer,
-  options?: Options,
-): 1 | 0 | -1 {
-  return (
-    compareIdentifiers(v1.major, v2.major) ||
-    compareIdentifiers(v1.minor, v2.minor) ||
-    compareIdentifiers(v1.patch, v2.patch) ||
-    comparePre(v1.prerelease, v2.prerelease, options) ||
-    comparePre(v1.build, v2.build, { includePrerelease: true })
-  );
+  // It can't ever reach here, but typescript doesn't realize that so
+  // add this line so the return type is inferred correctly.
+  return 0;
 }
 
 /**
@@ -878,43 +1059,38 @@ export function compareBuild(
 export function rcompare(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): 1 | 0 | -1 {
-  return compare(v2, v1, options);
+  return compare(v2, v1);
 }
 
 export function sort<T extends SemVer>(
   list: T[],
-  options?: Options,
 ): T[] {
   return list.sort((a, b) => {
-    return compareBuild(a, b, options);
+    return compare(a, b);
   });
 }
 
 export function rsort<T extends SemVer>(
   list: T[],
-  options?: Options,
 ): T[] {
-  return list.sort((a, b) => compareBuild(b, a, options));
+  return list.sort((a, b) => compare(b, a));
 }
 
 /** Greater than comparison */
 export function gt(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) > 0;
+  return compare(v1, v2) > 0;
 }
 
 /** Less than comparison */
 export function lt(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) < 0;
+  return compare(v1, v2) < 0;
 }
 
 /**
@@ -924,9 +1100,8 @@ export function lt(
 export function eq(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) === 0;
+  return compare(v1, v2) === 0;
 }
 
 /**
@@ -936,27 +1111,24 @@ export function eq(
 export function neq(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) !== 0;
+  return compare(v1, v2) !== 0;
 }
 
 /** Greater than or equal comparison */
 export function gte(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) >= 0;
+  return compare(v1, v2) >= 0;
 }
 
 /** Less than or equal comparison */
 export function lte(
   v1: SemVer,
   v2: SemVer,
-  options?: Options,
 ): boolean {
-  return compare(v1, v2, options) <= 0;
+  return compare(v1, v2) <= 0;
 }
 
 /**
@@ -968,379 +1140,75 @@ export function cmp(
   v1: SemVer,
   operator: Operator,
   v2: SemVer,
-  options?: Options,
 ): boolean {
   switch (operator) {
-    case "===":
-      return compare(v1, v2, options) === 0;
-    case "!==":
-      return compare(v1, v2, options) !== 0;
-
     case "":
     case "=":
     case "==":
-      return eq(v1, v2, options);
+    case "===":
+      return eq(v1, v2);
 
     case "!=":
-      return neq(v1, v2, options);
+    case "!==":
+      return neq(v1, v2);
 
     case ">":
-      return gt(v1, v2, options);
+      return gt(v1, v2);
 
     case ">=":
-      return gte(v1, v2, options);
+      return gte(v1, v2);
 
     case "<":
-      return lt(v1, v2, options);
+      return lt(v1, v2);
 
     case "<=":
-      return lte(v1, v2, options);
+      return lte(v1, v2);
 
     default:
-      throw new TypeError("Invalid operator: " + operator);
+      throw new TypeError(`Invalid operator: ${operator}`);
   }
-}
-
-const ANY: SemVer = {} as SemVer;
-
-export class Comparator {
-  semver!: SemVer;
-  operator!: "" | "=" | "<" | ">" | "<=" | ">=";
-  value!: string;
-  options!: Options;
-
-  constructor(comp: string | Comparator, options?: Options) {
-    if (typeof options !== "object") {
-      options = {
-        includePrerelease: false,
-      };
-    }
-
-    if (comp instanceof Comparator) {
-      return comp;
-    }
-
-    if (!(this instanceof Comparator)) {
-      return new Comparator(comp, options);
-    }
-
-    this.options = options;
-    this.parse(comp);
-
-    if (this.semver === ANY) {
-      this.value = "";
-    } else {
-      this.value = this.operator + this.semver.version;
-    }
-  }
-
-  parse(comp: string) {
-    const r = re[COMPARATOR];
-    const m = comp.match(r);
-
-    if (!m) {
-      throw new TypeError("Invalid comparator: " + comp);
-    }
-
-    const m1 = m[1] as "" | "=" | "<" | ">" | "<=" | ">=";
-    this.operator = m1 !== undefined ? m1 : "";
-
-    if (this.operator === "=") {
-      this.operator = "";
-    }
-
-    // if it literally is just '>' or '' then allow anything.
-    if (!m[2]) {
-      this.semver = ANY;
-    } else {
-      this.semver = new SemVer(m[2], this.options);
-    }
-  }
-
-  test(version: string | SemVer): boolean {
-    if (this.semver === ANY || version === ANY) {
-      return true;
-    }
-
-    if (typeof version === "string") {
-      version = new SemVer(version, this.options);
-    }
-
-    return cmp(version, this.operator, this.semver, this.options);
-  }
-
-  intersects(comp: Comparator, options?: Options): boolean {
-    if (!(comp instanceof Comparator)) {
-      throw new TypeError("a Comparator is required");
-    }
-
-    if (typeof options !== "object") {
-      options = {
-        includePrerelease: false,
-      };
-    }
-
-    let rangeTmp: Range;
-
-    if (this.operator === "") {
-      if (this.value === "") {
-        return true;
-      }
-      rangeTmp = new Range(comp.value, options);
-      return satisfies(this.value, rangeTmp, options);
-    } else if (comp.operator === "") {
-      if (comp.value === "") {
-        return true;
-      }
-      rangeTmp = new Range(this.value, options);
-      return satisfies(comp.semver, rangeTmp, options);
-    }
-
-    const sameDirectionIncreasing: boolean =
-      (this.operator === ">=" || this.operator === ">") &&
-      (comp.operator === ">=" || comp.operator === ">");
-    const sameDirectionDecreasing: boolean =
-      (this.operator === "<=" || this.operator === "<") &&
-      (comp.operator === "<=" || comp.operator === "<");
-    const sameSemVer: boolean = this.semver.version === comp.semver.version;
-    const differentDirectionsInclusive: boolean =
-      (this.operator === ">=" || this.operator === "<=") &&
-      (comp.operator === ">=" || comp.operator === "<=");
-    const oppositeDirectionsLessThan: boolean =
-      cmp(this.semver, "<", comp.semver, options) &&
-      (this.operator === ">=" || this.operator === ">") &&
-      (comp.operator === "<=" || comp.operator === "<");
-    const oppositeDirectionsGreaterThan: boolean =
-      cmp(this.semver, ">", comp.semver, options) &&
-      (this.operator === "<=" || this.operator === "<") &&
-      (comp.operator === ">=" || comp.operator === ">");
-
-    return (
-      sameDirectionIncreasing ||
-      sameDirectionDecreasing ||
-      (sameSemVer && differentDirectionsInclusive) ||
-      oppositeDirectionsLessThan ||
-      oppositeDirectionsGreaterThan
-    );
-  }
-
-  toString(): string {
-    return this.value;
-  }
-}
-
-export class Range {
-  range!: string;
-  raw!: string;
-  options!: Options;
-  includePrerelease!: boolean;
-  set!: ReadonlyArray<ReadonlyArray<Comparator>>;
-
-  constructor(
-    range: string | Range | Comparator,
-    options?: Options,
-  ) {
-    if (typeof options !== "object") {
-      options = {
-        includePrerelease: false,
-      };
-    }
-
-    if (range instanceof Range) {
-      if (
-        range.includePrerelease === !!options.includePrerelease
-      ) {
-        return range;
-      } else {
-        return new Range(range.raw, options);
-      }
-    }
-
-    if (range instanceof Comparator) {
-      return new Range(range.value, options);
-    }
-
-    if (!(this instanceof Range)) {
-      return new Range(range, options);
-    }
-
-    this.options = options;
-    this.includePrerelease = !!options.includePrerelease;
-
-    // First, split based on boolean or ||
-    this.raw = range;
-    this.set = range
-      .split(/\s*\|\|\s*/)
-      .map((range) => this.parseRange(range.trim()))
-      .filter((c) => {
-        // throw out any that are not relevant for whatever reason
-        return c.length;
-      });
-
-    if (!this.set.length) {
-      throw new TypeError("Invalid SemVer Range: " + range);
-    }
-
-    this.format();
-  }
-
-  format(): string {
-    this.range = this.set
-      .map((comps) => comps.join(" ").trim())
-      .join("||")
-      .trim();
-    return this.range;
-  }
-
-  parseRange(range: string): ReadonlyArray<Comparator> {
-    range = range.trim();
-    // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-    const hr: RegExp = re[HYPHENRANGE];
-    range = range.replace(hr, hyphenReplace);
-
-    // normalize spaces
-    range = range.split(/\s+/).join(" ");
-
-    // At this point, the range is completely trimmed and
-    // ready to be split into comparators.
-
-    const set: string[] = range
-      .split(" ")
-      .map((comp) => parseComparator(comp, this.options))
-      .join(" ")
-      .split(/\s+/);
-
-    return set.map((comp) => new Comparator(comp, this.options));
-  }
-
-  test(version: string | SemVer): boolean {
-    if (typeof version === "string") {
-      version = new SemVer(version, this.options);
-    }
-
-    for (let i = 0; i < this.set.length; i++) {
-      if (testSet(this.set[i], version, this.options)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  intersects(range?: Range, options?: Options): boolean {
-    if (!(range instanceof Range)) {
-      throw new TypeError("a Range is required");
-    }
-
-    return this.set.some((thisComparators) => {
-      return (
-        isSatisfiable(thisComparators, options) &&
-        range.set.some((rangeComparators) => {
-          return (
-            isSatisfiable(rangeComparators, options) &&
-            thisComparators.every((thisComparator) => {
-              return rangeComparators.every((rangeComparator) => {
-                return thisComparator.intersects(
-                  rangeComparator,
-                  options,
-                );
-              });
-            })
-          );
-        })
-      );
-    });
-  }
-
-  toString(): string {
-    return this.range;
-  }
-}
-
-function testSet(
-  set: ReadonlyArray<Comparator>,
-  version: SemVer,
-  options: Options,
-): boolean {
-  for (let i = 0; i < set.length; i++) {
-    if (!set[i].test(version)) {
-      return false;
-    }
-  }
-
-  if (version.prerelease.length && !options.includePrerelease) {
-    // Find the set of versions that are allowed to have prereleases
-    // For example, ^1.2.3-pr.1 desugars to >=1.2.3-pr.1 <2.0.0
-    // That should allow `1.2.3-pr.2` to pass.
-    // However, `1.2.4-alpha.notready` should NOT be allowed,
-    // even though it's within the range set by the comparators.
-    for (let i = 0; i < set.length; i++) {
-      if (set[i].semver === ANY) {
-        continue;
-      }
-
-      if (set[i].semver.prerelease.length > 0) {
-        const allowed: SemVer = set[i].semver;
-        if (
-          allowed.major === version.major &&
-          allowed.minor === version.minor &&
-          allowed.patch === version.patch
-        ) {
-          return true;
-        }
-      }
-    }
-
-    // Version has a -pre, but it's not one of the ones we like.
-    return false;
-  }
-
-  return true;
-}
-
-// take a set of comparators and determine whether there
-// exists a version which can satisfy it
-function isSatisfiable(
-  comparators: readonly Comparator[],
-  options?: Options,
-): boolean {
-  let result = true;
-  const remainingComparators: Comparator[] = comparators.slice();
-  let testComparator = remainingComparators.pop();
-
-  while (result && remainingComparators.length) {
-    result = remainingComparators.every((otherComparator) => {
-      return testComparator?.intersects(otherComparator, options);
-    });
-
-    testComparator = remainingComparators.pop();
-  }
-
-  return result;
-}
-
-// Mostly just for testing and legacy API reasons
-export function toComparators(
-  range: string | Range,
-  options?: Options,
-): string[][] {
-  return new Range(range, options).set.map((comp) => {
-    return comp
-      .map((c) => c.value)
-      .join(" ")
-      .trim()
-      .split(" ");
-  });
 }
 
 // comprised of xranges, tildes, stars, and gtlt's at this point.
 // already replaced the hyphen ranges
 // turn into a set of JUST comparators.
-function parseComparator(comp: string, options: Options): string {
-  comp = replaceCarets(comp, options);
-  comp = replaceTildes(comp, options);
-  comp = replaceXRanges(comp, options);
-  comp = replaceStars(comp, options);
-  return comp;
+export function parseComparator(comp: string): Comparator {
+  comp = replaceCarets(comp);
+  comp = replaceTildes(comp);
+  comp = replaceXRanges(comp);
+  comp = replaceStars(comp);
+
+  const r = re[COMPARATOR];
+  const m = comp.match(r);
+
+  if (!m) {
+    throw new TypeError(`Invalid comparator: ${comp}`);
+  }
+
+  const operator = (m[1] ?? "") as Operator;
+  const semver = !m[2] ? MIN : parse(m[2]);
+  return new Comparator(
+    operator,
+    semver,
+  );
+}
+
+export function parseRange(range: string): Range {
+  range = range.trim();
+  // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
+  const hr: RegExp = re[HYPHENRANGE];
+  range = range.replace(hr, hyphenReplace);
+
+  // normalize spaces
+  range = range.replace(/\s+/g, " ");
+
+  // At this point, the range is completely trimmed and
+  // ready to be split into comparators.
+  const [l, r] = range
+    .split(" ")
+    .map((comp) => parseComparator(comp));
+
+  return new Range(l.min(), r.max());
 }
 
 function isX(id: string): boolean {
@@ -1353,15 +1221,15 @@ function isX(id: string): boolean {
 // ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0
 // ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
 // ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
-function replaceTildes(comp: string, options: Options): string {
+function replaceTildes(comp: string): string {
   return comp
     .trim()
     .split(/\s+/)
-    .map((comp) => replaceTilde(comp, options))
+    .map((comp) => replaceTilde(comp))
     .join(" ");
 }
 
-function replaceTilde(comp: string, _options: Options): string {
+function replaceTilde(comp: string): string {
   const r: RegExp = re[TILDE];
   return comp.replace(
     r,
@@ -1405,15 +1273,15 @@ function replaceTilde(comp: string, _options: Options): string {
 // ^1.2, ^1.2.x --> >=1.2.0 <2.0.0
 // ^1.2.3 --> >=1.2.3 <2.0.0
 // ^1.2.0 --> >=1.2.0 <2.0.0
-function replaceCarets(comp: string, options: Options): string {
+function replaceCarets(comp: string): string {
   return comp
     .trim()
     .split(/\s+/)
-    .map((comp) => replaceCaret(comp, options))
+    .map((comp) => replaceCaret(comp))
     .join(" ");
 }
 
-function replaceCaret(comp: string, _options: Options): string {
+function replaceCaret(comp: string): string {
   const r: RegExp = re[CARET];
   return comp.replace(r, (_: string, M, m, p, pr) => {
     let ret: string;
@@ -1481,14 +1349,14 @@ function replaceCaret(comp: string, _options: Options): string {
   });
 }
 
-function replaceXRanges(comp: string, options: Options): string {
+function replaceXRanges(comp: string): string {
   return comp
     .split(/\s+/)
-    .map((comp) => replaceXRange(comp, options))
+    .map((comp) => replaceXRange(comp))
     .join(" ");
 }
 
-function replaceXRange(comp: string, _options: Options): string {
+function replaceXRange(comp: string): string {
   comp = comp.trim();
   const r: RegExp = re[XRANGE];
   return comp.replace(r, (ret: string, gtlt, M, m, p, _pr) => {
@@ -1554,7 +1422,7 @@ function replaceXRange(comp: string, _options: Options): string {
 
 // Because * is AND-ed with everything else in the comparator,
 // and '' means "any version", just remove the *s entirely.
-function replaceStars(comp: string, _options: Options): string {
+function replaceStars(comp: string): string {
   return comp.trim().replace(re[STAR], "");
 }
 
@@ -1605,15 +1473,9 @@ function hyphenReplace(
 
 /** Returns true if the version satisfies the range. */
 export function satisfies(
-  version: string | SemVer,
-  range: string | Range,
-  options?: Options,
+  version: SemVer,
+  range: Range,
 ): boolean {
-  try {
-    range = new Range(range, options);
-  } catch {
-    return false;
-  }
   return range.test(version);
 }
 
@@ -1621,133 +1483,38 @@ export function satisfies(
  * Returns the highest version in the list that satisfies the range, or `null`
  * if none of them do.
  */
-export function maxSatisfying<T extends string | SemVer>(
-  versions: ReadonlyArray<T>,
-  range: string | Range,
-  options?: Options,
-): T | null {
-  //todo
-  let max: T | SemVer | null = null;
-  let maxSV: SemVer | null = null;
-  let rangeObj: Range;
-  try {
-    rangeObj = new Range(range, options);
-  } catch {
-    return null;
-  }
-  versions.forEach((v) => {
-    if (rangeObj.test(v)) {
-      // satisfies(v, range, options)
-      if (!max || (maxSV && maxSV.compare(v) === -1)) {
-        // compare(max, v, true)
-        max = v;
-        maxSV = new SemVer(max, options);
-      }
-    }
-  });
-  return max;
+export function maxSatisfying(
+  versions: SemVer[],
+  range: Range,
+): SemVer | undefined {
+  const satisfying = versions.filter((v) => range.test(v));
+  const sorted = sort(satisfying);
+  return sorted[-1];
 }
 
 /**
  * Returns the lowest version in the list that satisfies the range, or `null` if
  * none of them do.
  */
-export function minSatisfying<T extends string | SemVer>(
-  versions: ReadonlyArray<T>,
-  range: string | Range,
-  options?: Options,
-): T | null {
-  //todo
-  let min: string | SemVer | null = null;
-  let minSV: SemVer | null = null;
-  let rangeObj: Range;
-  try {
-    rangeObj = new Range(range, options);
-  } catch {
-    return null;
-  }
-  versions.forEach((v) => {
-    if (rangeObj.test(v)) {
-      // satisfies(v, range, options)
-      if (!min || minSV!.compare(v) === 1) {
-        // compare(min, v, true)
-        min = v;
-        minSV = new SemVer(min, options);
-      }
-    }
-  });
-  return min;
-}
-
-/** Returns the lowest version that can possibly match the given range. */
-export function minVersion(
-  range: string | Range,
-  options?: Options,
-): SemVer | null {
-  range = new Range(range, options);
-
-  let minver: SemVer | null = new SemVer("0.0.0");
-  if (range.test(minver)) {
-    return minver;
-  }
-
-  minver = new SemVer("0.0.0-0");
-  if (range.test(minver)) {
-    return minver;
-  }
-
-  minver = null;
-  for (let i = 0; i < range.set.length; ++i) {
-    const comparators = range.set[i];
-
-    comparators.forEach((comparator) => {
-      // Clone to avoid manipulating the comparator's semver object.
-      const compver = new SemVer(comparator.semver.version);
-      switch (comparator.operator) {
-        case ">":
-          if (compver.prerelease.length === 0) {
-            compver.patch++;
-          } else {
-            compver.prerelease.push(0);
-          }
-          compver.raw = compver.format();
-        /* fallthrough */
-        case "":
-        case ">=":
-          if (!minver || gt(minver, compver)) {
-            minver = compver;
-          }
-          break;
-        case "<":
-        case "<=":
-          /* Ignore maximum versions */
-          break;
-        /* istanbul ignore next */
-        default:
-          throw new Error("Unexpected operation: " + comparator.operator);
-      }
-    });
-  }
-
-  if (minver && range.test(minver)) {
-    return minver;
-  }
-
-  return null;
+export function minSatisfying(
+  versions: SemVer[],
+  range: Range,
+): SemVer | undefined {
+  const satisfying = versions.filter((v) => range.test(v));
+  const sorted = sort(satisfying);
+  return sorted[0];
 }
 
 /** Returns the valid range or null if it's not valid. */
 export function validRange(
-  range: string | Range | null,
-  options?: Options,
-): string | null {
+  range: string,
+): Range | undefined {
   try {
-    if (range === null) return null;
     // Return '*' instead of '' so that truthiness works.
     // This will throw if it's invalid anyway
-    return new Range(range, options).range || "*";
+    return parseRange(range);
   } catch {
-    return null;
+    return undefined;
   }
 }
 
@@ -1755,22 +1522,20 @@ export function validRange(
  * Returns true if version is less than all the versions possible in the range.
  */
 export function ltr(
-  version: string | SemVer,
-  range: string | Range,
-  options?: Options,
+  version: SemVer,
+  range: Range,
 ): boolean {
-  return outside(version, range, "<", options);
+  return outside(version, range, "<");
 }
 
 /**
  * Returns true if version is greater than all the versions possible in the range.
  */
 export function gtr(
-  version: string | SemVer,
-  range: string | Range,
-  options?: Options,
+  version: SemVer,
+  range: Range,
 ): boolean {
-  return outside(version, range, ">", options);
+  return outside(version, range, ">");
 }
 
 /**
@@ -1779,108 +1544,24 @@ export function gtr(
  * '<'. (This is the function called by {@linkcode gtr} and {@linkcode ltr}.)
  */
 export function outside(
-  version: string | SemVer,
-  range: string | Range,
-  hilo: ">" | "<",
-  options?: Options,
+  version: SemVer,
+  range: Range,
+  hilo?: ">" | "<",
 ): boolean {
-  version = new SemVer(version, options);
-  range = new Range(range, options);
-
-  let gtfn: typeof gt;
-  let ltefn: typeof lte;
-  let ltfn: typeof lt;
-  let comp: string;
-  let ecomp: string;
   switch (hilo) {
     case ">":
-      gtfn = gt;
-      ltefn = lte;
-      ltfn = lt;
-      comp = ">";
-      ecomp = ">=";
-      break;
+      return gt(version, range.max);
     case "<":
-      gtfn = lt;
-      ltefn = gte;
-      ltfn = gt;
-      comp = "<";
-      ecomp = "<=";
-      break;
+      return lt(version, range.min);
     default:
-      throw new TypeError('Must provide a hilo val of "<" or ">"');
+      return gt(version, range.max) || lt(version, range.min);
   }
-
-  // If it satisifes the range it is not outside
-  if (satisfies(version, range, options)) {
-    return false;
-  }
-
-  // From now on, variable terms are as if we're in "gtr" mode.
-  // but note that everything is flipped for the "ltr" function.
-
-  for (let i = 0; i < range.set.length; ++i) {
-    const comparators: readonly Comparator[] = range.set[i];
-
-    let high: Comparator | null = null;
-    let low: Comparator | null = null;
-
-    for (let comparator of comparators) {
-      if (comparator.semver === ANY) {
-        comparator = new Comparator(">=0.0.0");
-      }
-      high = high || comparator;
-      low = low || comparator;
-      if (gtfn(comparator.semver, high.semver, options)) {
-        high = comparator;
-      } else if (ltfn(comparator.semver, low.semver, options)) {
-        low = comparator;
-      }
-    }
-
-    if (high === null || low === null) return true;
-
-    // If the edge version comparator has a operator then our version
-    // isn't outside it
-    if (high!.operator === comp || high!.operator === ecomp) {
-      return false;
-    }
-
-    // If the lowest version comparator has an operator and our version
-    // is less than it then it isn't higher than the range
-    if (
-      (!low!.operator || low!.operator === comp) &&
-      ltefn(version, low!.semver)
-    ) {
-      return false;
-    } else if (low!.operator === ecomp && ltfn(version, low!.semver)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
- * Returns an array of prerelease components, or null if none exist.
- *
- * @example
- * `prerelease("1.2.3-alpha.1") -> ["alpha", 1]`
- */
-export function prerelease(
-  version: string | SemVer,
-  options?: Options,
-): ReadonlyArray<string | number> | null {
-  const parsed = parse(version, options);
-  return parsed && parsed.prerelease.length ? parsed.prerelease : null;
 }
 
 /** Returns true if the two supplied ranges or comparators intersect. */
 export function intersects(
-  range1: string | Range | Comparator,
-  range2: string | Range | Comparator,
-  options?: Options,
+  range1: Range,
+  range2: Range,
 ): boolean {
-  range1 = new Range(range1, options);
-  range2 = new Range(range2, options);
   return range1.intersects(range2);
 }
