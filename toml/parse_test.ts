@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import {
   ArrayValue,
   BareKey,
@@ -14,7 +14,6 @@ import {
   MultilineBasicString,
   MultilineLiteralString,
   Pair,
-  parse,
   ParserFactory,
   Scanner,
   Symbols,
@@ -22,7 +21,8 @@ import {
   TOMLParseError,
   Utils,
   Value,
-} from "./parser.ts";
+} from "./_parser.ts";
+import { parse } from "./parse.ts";
 
 Deno.test({
   name: "[TOML parser] Scanner",

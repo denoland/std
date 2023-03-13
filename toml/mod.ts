@@ -1,8 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-
 /**
- * @deprecated (will be removed after 0.182.0) Import from `std/toml` instead.
- *
  * {@linkcode parse} and {@linkcode stringify} for handling
  * [TOML](https://toml.io/en/latest) encoded data. Be sure to read the supported
  * types as not every spec is supported at the moment and the handling in
@@ -138,23 +135,5 @@
  * @module
  */
 
-export {
-  /** @deprecated (will be removed after 0.182.0) Import from `std/toml/stringify.ts` instead. */
-  type FormatOptions,
-  /**
-   * @deprecated (will be removed after 0.182.0) Import from `std/toml/parse.ts` instead.
-   *
-   * Parse parses TOML string into an object.
-   * @param tomlString
-   */
-  parse,
-  /**
-   * @deprecated (will be removed after 0.182.0) Import from `std/toml/stringify.ts` instead.
-   *
-   * Stringify dumps source object into TOML string and returns it.
-   * @param srcObj
-   * @param [fmtOptions] format options
-   * @param [fmtOptions.keyAlignment] whether to algin key
-   */
-  stringify,
-} from "../toml/mod.ts";
+export * from "./stringify.ts";
+export * from "./parse.ts";
