@@ -506,6 +506,14 @@ export class Comparator {
     }
   }
 
+  /**
+   * The range from the min to max value allowed for this comparator
+   * @returns A valid range representing this comparator
+   */
+  public range(): Range {
+    return new Range(this.min(), this.max())
+  }
+
   public test(version: SemVer): boolean {
     return cmp(version, this.operator, this.semver);
   }
