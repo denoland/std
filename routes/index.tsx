@@ -29,7 +29,7 @@ function Heading(props: HeadingProps) {
 
 function Hero() {
   return (
-    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center">
+    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center mt-[-96px]">
       <h1 class="font-bold text-3xl md:text-7xl">
         Your SaaS here.
       </h1>
@@ -170,14 +170,12 @@ function TestimonialSection() {
 
 function BottomSection() {
   return (
-    <div
-      style="background-image: url('/hero-light.svg')"
-      class="min-h-screen bg-cover flex flex-col justify-end"
-    >
+    <>
+      <img src="/hero-light.svg" alt="Hero (light)" class="w-full" />
       <div class="bg-gradient-to-t from-black to-[#170139]">
         <Footer class="text-white" />
       </div>
-    </div>
+    </>
   );
 }
 
