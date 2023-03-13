@@ -1,15 +1,7 @@
 import { SITE_NAME } from "@/constants.ts";
 import { JSX } from "preact";
-import Nav from "./Nav.tsx";
 
 export default function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
-  const navItems = [
-    {
-      href: "https://discord.gg/deno",
-      inner: "Discord",
-    },
-  ];
-
   return (
     <footer
       {...props}
@@ -20,7 +12,7 @@ export default function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
       <span>
         <strong>{SITE_NAME}</strong>
       </span>
-      <Nav items={navItems} />
+      {props.children}
     </footer>
   );
 }

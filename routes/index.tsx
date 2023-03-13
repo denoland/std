@@ -1,6 +1,7 @@
 import Button from "@/components/Button.tsx";
 import Head from "@/components/Head.tsx";
 import Header from "@/components/Header.tsx";
+import Nav from "@/components/Nav.tsx";
 import Footer from "@/components/Footer.tsx";
 import IconListDetails from "tabler-icons/list-details.tsx";
 import IconCheckbox from "tabler-icons/checkbox.tsx";
@@ -51,12 +52,21 @@ function Hero() {
 }
 
 function TopSection() {
+  const navItems = [
+    {
+      href: "/dashboard",
+      inner: "Dashboard",
+    },
+  ];
+
   return (
     <div
       style="background-image: url('/hero-dark.svg')"
       class="min-h-screen bg-cover flex flex-col"
     >
-      <Header class="text-white" />
+      <Header class="text-white">
+        <Nav items={navItems} />
+      </Header>
       <Hero />
     </div>
   );
@@ -83,7 +93,7 @@ function FeaturesSection() {
 
   return (
     <>
-      <div class="bg-[#170139]">
+      <div class="bg-[#170139]" id="features">
         <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto text-white">
           <div class="flex md:flex-row flex-col gap-8">
             {features.map((feature) => (
@@ -148,7 +158,7 @@ function PricingSection(props: { products: Stripe.Product[] }) {
 
 function TestimonialSection() {
   return (
-    <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto">
+    <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto" id="testimonial">
       <Heading title="Testimonial" />
       <div class="text-center text-lg space-y-8">
         <img
@@ -169,11 +179,28 @@ function TestimonialSection() {
 }
 
 function BottomSection() {
+  const navItems = [
+    {
+      inner: "Features",
+      href: "#features",
+    },
+    {
+      inner: "Pricing",
+      href: "#pricing",
+    },
+    {
+      inner: "Testimonial",
+      href: "#testimonial",
+    },
+  ];
+
   return (
     <>
       <img src="/hero-light.svg" alt="Hero (light)" class="w-full" />
       <div class="bg-gradient-to-t from-black to-[#170139]">
-        <Footer class="text-white" />
+        <Footer class="text-white">
+          <Nav items={navItems} />
+        </Footer>
       </div>
     </>
   );

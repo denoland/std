@@ -2,6 +2,7 @@ import { type ComponentChild, JSX } from "preact";
 import IconListDetails from "tabler-icons/list-details.tsx";
 import IconUser from "tabler-icons/user.tsx";
 import Header from "@/components/Header.tsx";
+import Nav from "./Nav.tsx";
 import Footer from "@/components/Footer.tsx";
 
 interface SidebarNavItem {
@@ -43,6 +44,13 @@ interface DashboardProps {
 }
 
 export default function DashboardLayout(props: DashboardProps) {
+  const headerNavItems = [
+    {
+      href: "/logout",
+      inner: "Logout",
+    },
+  ];
+
   const sidebarNavItems = [
     {
       icon: IconListDetails,
@@ -58,7 +66,9 @@ export default function DashboardLayout(props: DashboardProps) {
 
   return (
     <body class="flex flex-col min-h-screen">
-      <Header />
+      <Header>
+        <Nav items={headerNavItems} />
+      </Header>
 
       <div class="p-8 mx-auto max-w-7xl flex-1 flex md:flex-row flex-col w-full gap-8">
         <SidebarNav
