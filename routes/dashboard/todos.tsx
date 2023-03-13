@@ -21,7 +21,7 @@ export const handler: Handlers<Data, DashboardState> = {
     });
 
     return await ctx.render({
-      isPaid: subscription.plan.amount > 0,
+      isPaid: subscription?.plan?.amount > 0,
       todos: await getTodos(createSupabaseClient(request.headers)),
     });
   },
