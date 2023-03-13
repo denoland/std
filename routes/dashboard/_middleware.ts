@@ -24,9 +24,15 @@ export async function handler(
     ctx.state.session = data.session;
 
     const response = await ctx.next();
+    /**
+     * Note: ensure that a `new Response()` with a `location` header is used when performing redirects.
+     * Using `Response.redirect()` will throw as its headers are immutable.
+     */
     headers.forEach((value, key) => response.headers.set(key, value));
     return response;
-  } catch {
+  } catch (error) {
+    console.error(error);
+
     return new Response(null, {
       status: 302,
       headers: {

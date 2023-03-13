@@ -23,8 +23,8 @@ function SidebarNav(props: SidebarNavProps) {
           href={item.href}
           class={`px-4 py-2 rounded w-full ${
             item.href === props.active
-              ? "bg-gray-100 text-black font-bold"
-              : "text-gray-600 hover:text-black"
+              ? "bg-gray-100 font-bold"
+              : "hover:bg-gray-100"
           }`}
         >
           <span class="align-middle">
