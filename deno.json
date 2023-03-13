@@ -11,7 +11,7 @@
         "crypto/_wasm/target",
         "encoding/varint/_wasm/target",
         "cov",
-        "encoding/testdata/jsonc",
+        "jsonc/testdata",
         "encoding/front_matter/testdata",
         "wasi/testdata"
       ]
@@ -24,7 +24,7 @@
         ".git",
         "crypto/_wasm/target",
         "encoding/varint/_wasm/target",
-        "encoding/testdata/jsonc",
+        "jsonc/testdata",
         "encoding/front_matter/testdata",
         "cov",
         "wasi/testdata"
