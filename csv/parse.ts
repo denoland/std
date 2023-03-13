@@ -1,17 +1,27 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../../_util/asserts.ts";
 import {
+  convertRowToObject,
+  ERR_BARE_QUOTE,
+  ERR_FIELD_COUNT,
+  ERR_INVALID_DELIM,
+  ERR_QUOTE,
+  ParseError,
+  type ReadOptions,
+} from "./_io.ts";
+import { assert } from "../_util/asserts.ts";
+
+export {
   ERR_BARE_QUOTE,
   ERR_FIELD_COUNT,
   ERR_INVALID_DELIM,
   ERR_QUOTE,
   ParseError,
   ReadOptions,
-} from "./_io.ts";
+};
 
 const BYTE_ORDER_MARK = "\ufeff";
 
-export class Parser {
+class Parser {
   #input = "";
   #cursor = 0;
   #options: {
@@ -274,4 +284,93 @@ export class Parser {
     }
     return result;
   }
+}
+
+export interface ParseOptions extends ReadOptions {
+  /**
+   * If you provide `skipFirstRow: true` and `columns`, the first line will be
+   * skipped.
+   * If you provide `skipFirstRow: true` but not `columns`, the first line will
+   * be skipped and used as header definitions.
+   */
+  skipFirstRow?: boolean;
+
+  /** List of names used for header definition. */
+  columns?: string[];
+}
+
+/**
+ * Csv parse helper to manipulate data.
+ * Provides an auto/custom mapper for columns.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/csv/parse.ts";
+ * const string = "a,b,c\nd,e,f";
+ *
+ * console.log(
+ *   await parse(string, {
+ *     skipFirstRow: false,
+ *   }),
+ * );
+ * // output:
+ * // [["a", "b", "c"], ["d", "e", "f"]]
+ * ```
+ *
+ * @param input Input to parse.
+ * @param opt options of the parser.
+ * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
+ */
+export function parse(
+  input: string,
+): string[][];
+export function parse(
+  input: string,
+  opt: Omit<ParseOptions, "columns" | "skipFirstRow">,
+): string[][];
+export function parse(
+  input: string,
+  opt: Omit<ParseOptions, "columns"> & {
+    columns: string[];
+  },
+): Record<string, unknown>[];
+export function parse(
+  input: string,
+  opt: Omit<ParseOptions, "skipFirstRow"> & {
+    skipFirstRow: true;
+  },
+): Record<string, unknown>[];
+export function parse(
+  input: string,
+  opt: ParseOptions,
+): string[][] | Record<string, unknown>[];
+export function parse(
+  input: string,
+  opt: ParseOptions = {
+    skipFirstRow: false,
+  },
+): string[][] | Record<string, unknown>[] {
+  const parser = new Parser(opt);
+  const r = parser.parse(input);
+
+  if (opt.skipFirstRow || opt.columns) {
+    let headers: string[] = [];
+
+    if (opt.skipFirstRow) {
+      const head = r.shift();
+      assert(head != null);
+      headers = head;
+    }
+
+    if (opt.columns) {
+      headers = opt.columns;
+    }
+
+    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    return r.map((row, i) => {
+      return convertRowToObject(row, headers, firstLineIndex + i);
+    });
+  }
+  return r;
 }
