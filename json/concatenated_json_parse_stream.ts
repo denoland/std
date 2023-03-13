@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is not browser compatible.
+
 import { toTransformStream } from "../streams/to_transform_stream.ts";
 import type { JsonValue, ParseStreamOptions } from "./common.ts";
 import { parse } from "./_common.ts";
