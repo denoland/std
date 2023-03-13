@@ -393,6 +393,32 @@ Deno.test({
       value: "Cat",
     }]);
 
+    headers = new Headers({ "set-cookie": "Space=Cat=Happiness" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat=Happiness",
+    }]);
+
+    headers = new Headers({ "set-cookie": "Space=Cat= Happiness" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat= Happiness",
+    }]);
+
+    headers = new Headers({ "set-cookie": "Space=Cat = Happiness; Secure" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat = Happiness",
+      secure: true,
+    }]);
+
+    headers = new Headers({ "set-cookie": " Space=Cat = Happiness ; Secure" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat = Happiness",
+      secure: true,
+    }]);
+
     headers = new Headers({ "set-cookie": "Space=Cat; Secure" });
     assertEquals(getSetCookies(headers), [{
       name: "Space",

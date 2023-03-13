@@ -1202,6 +1202,32 @@ Deno.test(
 );
 
 Deno.test(
+  "serveDir redirects a directory URL not ending with a slash if it has an index",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/subdir-with-index/",
+    );
+  },
+);
+
+Deno.test(
+  "serveDir redirects a directory URL not ending with a slash correctly even with a query string",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/subdir-with-index?test";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/subdir-with-index/?test",
+    );
+  },
+);
+
+Deno.test(
   "file_server returns 304 for requests with if-none-match set with the etag but with W/ prefixed etag in request headers.",
   async () => {
     await startFileServer();
