@@ -8,7 +8,7 @@ import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 import IconTrash from "tabler-icons/trash.tsx";
 import { assert } from "std/testing/asserts.ts";
 
-const hasPaidPlan = signal(false);
+const subscribed = signal(false);
 let isInit = true;
 
 async function requestCreateTodo(todo: Todo) {
@@ -53,7 +53,7 @@ async function deleteTodo(
 }
 
 interface TodoListProps {
-  hasPaidPlan: boolean;
+  subscribed: boolean;
   todos: Todo[];
 }
 
@@ -62,10 +62,10 @@ export default function TodoList(props: TodoListProps) {
   const newTodoName = useSignal("");
   if (isInit) {
     isInit = false;
-    hasPaidPlan.value = props.hasPaidPlan;
+    subscribed.value = props.subscribed;
   }
 
-  const isMoreTodos = props.hasPaidPlan ||
+  const isMoreTodos = subscribed.value ||
     todos.value.length < FREE_PLAN_TODOS_LIMIT;
 
   return (
@@ -103,7 +103,7 @@ export default function TodoList(props: TodoListProps) {
           type="submit"
           class="shadow-md"
         >
-          Add{(!props.hasPaidPlan) &&
+          Add{(!props.subscribed) &&
             ` (${todos.value.length}/${FREE_PLAN_TODOS_LIMIT})`}
         </Button>
       </form>

@@ -9,7 +9,7 @@ import Dashboard from "@/components/Dashboard.tsx";
 import { createSupabaseClient } from "../../utils/supabase.ts";
 
 interface Data {
-  isPaid: boolean;
+  subscribed: boolean;
   todos: Todo[];
 }
 
@@ -21,7 +21,7 @@ export const handler: Handlers<Data, DashboardState> = {
     });
 
     return await ctx.render({
-      isPaid: subscription?.plan?.amount > 0,
+      subscribed: Boolean(subscription),
       todos: await getTodos(createSupabaseClient(request.headers)),
     });
   },
@@ -32,13 +32,13 @@ export default function TodosPage(props: PageProps<Data>) {
     <>
       <Head title="Todos" />
       <Dashboard active="/dashboard/todos">
-        {!props.data.isPaid && (
+        {!props.data.subscribed && (
           <Notice
             color="yellow"
             message={
               <span>
                 You are on a free subscription. Please{" "}
-                <a href="/dashboard/manage-subscription" class="underline">
+                <a href="/dashboard/upgrade-subscription" class="underline">
                   upgrade
                 </a>{" "}
                 to enable unlimited todos
@@ -47,7 +47,7 @@ export default function TodosPage(props: PageProps<Data>) {
           />
         )}
         <TodoList
-          hasPaidPlan={props.data.isPaid}
+          subscribed={props.data.subscribed}
           todos={props.data.todos}
         />
       </Dashboard>
