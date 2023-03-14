@@ -3,21 +3,8 @@
 import { assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-// | "full"
-// | "release"
-// | "primary"
-// | "build"
-// | "pre"
-// | "patch"
-// | "minor"
-// | "major"
-
 Deno.test("format", async (t) => {
-  const versions: [
-    string,
-    semver.FormatStyle | undefined,
-    string,
-  ][] = [
+  const versions: [string, semver.FormatStyle | undefined, string][] = [
     ["1.2.3", undefined, "1.2.3"],
     ["1.2.3", "full", "1.2.3"],
     ["1.2.3", "release", "1.2.3"],
