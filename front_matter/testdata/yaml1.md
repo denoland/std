@@ -6,6 +6,7 @@ tags:
   - dashes
 expanded-description: with some --- crazy stuff in it
 ---
-don't break
----
+
+## don't break
+
 Also this shouldn't be a problem
