@@ -266,6 +266,16 @@ export type Operator =
   | "<"
   | "<=";
 
+export type FormatStyle =
+  | "full"
+  | "release"
+  | "primary"
+  | "build"
+  | "pre"
+  | "patch"
+  | "minor"
+  | "major";
+
 export interface SemVer {
   major: number;
   minor: number;
@@ -641,7 +651,7 @@ function formatNumber(value: number) {
  * @param semver The semantic version to format
  * @returns The string representation of a smenatic version.
  */
-export function format(semver: SemVer) {
+export function format(semver: SemVer, style: FormatStyle = "full") {
   if (semver.major === Number.NEGATIVE_INFINITY) {
     // If you try to get a SemVer <0.0.0
     return "<0.0.0";
@@ -673,7 +683,24 @@ export function format(semver: SemVer) {
   // │ │ └─────────── patch
   // │ └───────────── minor
   // └─────────────── major
-  return full;
+  switch (style) {
+    case "full":
+      return full;
+    case "release":
+      return release;
+    case "primary":
+      return primary;
+    case "build":
+      return build;
+    case "pre":
+      return pre;
+    case "patch":
+      return patch;
+    case "minor":
+      return minor;
+    case "major":
+      return major;
+  }
 }
 
 function isValidNumber(value: number) {
