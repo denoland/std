@@ -40,7 +40,7 @@
  * import {
  *   extract,
  *   test,
- * } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/any.ts";
+ * } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
  *
  * const str = await Deno.readTextFile("./example.md");
  *
@@ -75,7 +75,7 @@
  *   Format,
  *   Parser,
  *   test as _test,
- * } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+ * } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
  *
  * const extract = createExtractor({
@@ -244,7 +244,7 @@ function _extract<T>(
  * @returns A function that extracts front matter from a string with the given parsers.
  *
  * ```ts
- * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+ * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
  * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
@@ -306,7 +306,7 @@ export function createExtractor(
  * @param formats A list of formats to test for. Defaults to all supported formats.
  *
  * ```ts
- * import { test, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+ * import { test, Format } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
@@ -342,7 +342,7 @@ export function test(str: string, formats?: Format[]): boolean {
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
  * ```ts
- * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+ * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), Format.YAML);
