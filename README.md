@@ -36,12 +36,12 @@ Want to know where SaaSkit is headed? Check out [our public roadmap]().
 
 Getting started with SaaSKit is straightforward.
 
-### Create .env file
+### Create `.env` file
 
 You can copy the `.example.env` into `.env`. The only variables you need are:
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_URL`
-- `STRIPE_API_KEY`
+- `STRIPE_SECRET_KEY`
 
 Continue below to learn where to grab these keys.
 
@@ -106,7 +106,7 @@ To setup Stripe:
 - Toggle on "Allow customers to cancel subscriptions"
 - Add relevant [products and prices](https://dashboard.stripe.com/test/products)
 - Set up the required business information and links [in your settings](https://dashboard.stripe.com/settings)
-- Grab the `STRIPE_API_KEY`, which is the secret key located at [Developers > API Keys](https://dashboard.stripe.com/test/apikeys)
+- Grab the `STRIPE_SECRET_KEY`, which is the secret key located at [Developers > API Keys](https://dashboard.stripe.com/test/apikeys)
 
 Once you have all of this setup, you should be able to run SaaSKit locally.
 
