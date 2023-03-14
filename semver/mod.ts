@@ -584,7 +584,7 @@ export class Comparator {
     //          r0 -- r1
     // ```
     return true &&
-        gte(l0, r0) && lte(l0, r1) ||
+      gte(l0, r0) && lte(l0, r1) ||
       gte(r0, l0) && lte(r0, l1);
   }
 
@@ -606,7 +606,7 @@ export class Range {
 
   public intersects(range: Range): boolean {
     return true &&
-        gte(this.min, range.min) && lte(this.min, range.max) ||
+      gte(this.min, range.min) && lte(this.min, range.max) ||
       gte(range.min, this.min) && lte(range.min, this.max);
   }
 
@@ -621,7 +621,7 @@ export class Range {
 }
 
 export class SemVerSet {
-  constructor(public readonly ranges: Range[]) {}
+  constructor(public readonly ranges: Range[]) { }
   public test(semver: SemVer): boolean {
     return this.ranges.some((r) => r.test(semver));
   }
@@ -781,7 +781,7 @@ export function increment(
         minor: 0,
         patch: 0,
         prerelease: pre(version.prerelease, identifier),
-        build: parseBuild(metadata),
+        build: parseBuild(version.build, metadata),
       };
     case "preminor":
       return {
@@ -789,7 +789,7 @@ export function increment(
         minor: version.minor + 1,
         patch: 0,
         prerelease: pre(version.prerelease, identifier),
-        build: parseBuild(metadata),
+        build: parseBuild(version.build, metadata),
       };
     case "prepatch":
       return {
@@ -797,7 +797,7 @@ export function increment(
         minor: version.minor,
         patch: version.patch + 1,
         prerelease: pre(version.prerelease, identifier),
-        build: parseBuild(metadata),
+        build: parseBuild(version.build, metadata),
       };
     // If the input is a non-prerelease version, this acts the same as
     // prepatch.
@@ -808,7 +808,7 @@ export function increment(
           minor: version.minor,
           patch: version.patch + 1,
           prerelease: pre(version.prerelease, identifier),
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       } else {
         return {
@@ -816,7 +816,7 @@ export function increment(
           minor: version.minor,
           patch: version.patch,
           prerelease: pre(version.prerelease, identifier),
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       }
     case "major":
@@ -834,7 +834,7 @@ export function increment(
           minor: 0,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       } else {
         return {
@@ -842,7 +842,7 @@ export function increment(
           minor: 0,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       }
     case "minor":
@@ -859,7 +859,7 @@ export function increment(
           minor: version.minor + 1,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       } else {
         return {
@@ -867,7 +867,7 @@ export function increment(
           minor: version.minor,
           patch: 0,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       }
     case "patch":
@@ -881,7 +881,7 @@ export function increment(
           minor: version.minor,
           patch: version.patch + 1,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       } else {
         return {
@@ -889,7 +889,7 @@ export function increment(
           minor: version.minor,
           patch: version.patch,
           prerelease: [],
-          build: parseBuild(metadata),
+          build: parseBuild(version.build, metadata),
         };
       }
     // 1.0.0 "pre" would become 1.0.0-0
@@ -902,7 +902,7 @@ export function increment(
         minor: version.minor,
         patch: version.patch,
         prerelease: pre(version.prerelease, identifier),
-        build: parseBuild(metadata),
+        build: parseBuild(version.build, metadata),
       };
     default:
       throw new Error(`invalid increment argument: ${release}`);
@@ -944,8 +944,10 @@ function pre(
   return values;
 }
 
-function parseBuild(metadata: string | undefined) {
-  return (metadata ?? "").split(".").filter((m) => m);
+function parseBuild(build: ReadonlyArray<string>, metadata: string | undefined) {
+  return metadata === undefined
+    ? build
+    : metadata.split(".").filter((m) => m);
 }
 
 /**
@@ -1250,7 +1252,7 @@ export function parse(version: string): SemVer {
       }
     });
 
-  const build = parseBuild(m[5]);
+  const build = parseBuild([], m[5]);
   return {
     major,
     minor,
