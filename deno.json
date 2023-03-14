@@ -12,7 +12,7 @@
         "encoding/varint/_wasm/target",
         "cov",
         "jsonc/testdata",
-        "encoding/front_matter/testdata",
+        "front_matter/testdata",
         "wasi/testdata"
       ]
     }
@@ -25,7 +25,7 @@
         "crypto/_wasm/target",
         "encoding/varint/_wasm/target",
         "jsonc/testdata",
-        "encoding/front_matter/testdata",
+        "front_matter/testdata",
         "cov",
         "wasi/testdata"
       ]

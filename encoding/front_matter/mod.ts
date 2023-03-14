@@ -2,6 +2,8 @@
 // Copyright (c) Jason Campbell. MIT license
 
 /**
+ * @deprecated (will be removed after 0.182.0) Import from `std/front_matter` instead.
+ *
  * Extracts
  * [front matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
  * from strings.
@@ -148,226 +150,82 @@
  * @module
  */
 
-type Delimiter = string | [begin: string, end: string];
-export type Parser = <T = Record<string, unknown>>(str: string) => T;
-export type Extractor = <T = Record<string, unknown>>(
-  str: string,
-) => Extract<T>;
-
-export enum Format {
-  YAML = "yaml",
-  TOML = "toml",
-  JSON = "json",
-  UNKNOWN = "unknown",
-}
-
-export type Extract<T> = {
-  frontMatter: string;
-  body: string;
-  attrs: T;
-};
-
-const { isArray } = Array;
-const [RX_RECOGNIZE_YAML, RX_YAML] = createRegExp(
-  ["---yaml", "---"],
-  "= yaml =",
-  "---",
-);
-const [RX_RECOGNIZE_TOML, RX_TOML] = createRegExp(
-  ["---toml", "---"],
-  "= toml =",
-);
-const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
-  ["---json", "---"],
-  "= json =",
-);
-const MAP_FORMAT_TO_RECOGNIZER_RX: Omit<
-  Record<Format, RegExp>,
-  Format.UNKNOWN
-> = {
-  [Format.YAML]: RX_RECOGNIZE_YAML,
-  [Format.TOML]: RX_RECOGNIZE_TOML,
-  [Format.JSON]: RX_RECOGNIZE_JSON,
-};
-const MAP_FORMAT_TO_EXTRACTOR_RX: Omit<Record<Format, RegExp>, Format.UNKNOWN> =
-  {
-    [Format.YAML]: RX_YAML,
-    [Format.TOML]: RX_TOML,
-    [Format.JSON]: RX_JSON,
-  };
-
-function getBeginToken(delimiter: Delimiter): string {
-  return isArray(delimiter) ? delimiter[0] : delimiter;
-}
-
-function getEndToken(delimiter: Delimiter): string {
-  return isArray(delimiter) ? delimiter[1] : delimiter;
-}
-
-function createRegExp(...dv: Delimiter[]): [RegExp, RegExp] {
-  const beginPattern = "(" + dv.map(getBeginToken).join("|") + ")";
-  const pattern = "^(" +
-    "\\ufeff?" + // Maybe byte order mark
-    beginPattern +
-    "$([\\s\\S]+?)" +
-    "^(?:" + dv.map(getEndToken).join("|") + ")\\s*" +
-    "$" +
-    (globalThis?.Deno?.build?.os === "windows" ? "\\r?" : "") +
-    "(?:\\n)?)";
-
-  return [
-    new RegExp("^" + beginPattern + "$", "im"),
-    new RegExp(pattern, "im"),
-  ];
-}
-
-function _extract<T>(
-  str: string,
-  rx: RegExp,
-  parse: Parser,
-): Extract<T> {
-  const match = rx.exec(str);
-  if (!match || match.index !== 0) {
-    throw new TypeError("Unexpected end of input");
-  }
-  const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
-  const attrs = parse(frontMatter) as T;
-  const body = str.replace(match[0], "");
-  return { frontMatter, body, attrs };
-}
-
-/**
- * Factory that creates a function that extracts front matter from a string with the given parsers.
- * Supports YAML, TOML and JSON.
- *
- * @param formats A descriptor containing Format-parser pairs to use for each format.
- * @returns A function that extracts front matter from a string with the given parsers.
- *
- * ```ts
- * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
- * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
- * const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
- * const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });
- * const extractJSON = createExtractor({ [Format.JSON]: JSON.parse as Parser });
- * const extractYAMLOrJSON = createExtractor({
- *     [Format.YAML]: parseYAML as Parser,
- *     [Format.JSON]: JSON.parse as Parser,
- * });
- *
- * let { attrs, body, frontMatter } = extractYAML<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret");
- * assertEquals(attrs.title, "Three dashes marks the spot");
- * assertEquals(body, "ferret");
- * assertEquals(frontMatter, "title: Three dashes marks the spot");
- *
- * ({ attrs, body, frontMatter } = extractTOML<{ title: string }>("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
- * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
- * assertEquals(body, "");
- * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot'");
- *
- * ({ attrs, body, frontMatter } = extractJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
- * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
- * assertEquals(body, "goat");
- * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
- *
- * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret"));
- * assertEquals(attrs.title, "Three dashes marks the spot");
- * assertEquals(body, "ferret");
- * assertEquals(frontMatter, "title: Three dashes marks the spot");
- *
- * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
- * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
- * assertEquals(body, "goat");
- * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
- * ```
- */
-export function createExtractor(
-  formats: Partial<Record<Format, Parser>>,
-): Extractor {
-  const formatKeys = Object.keys(formats) as Format[];
-
-  return function extract<T>(str: string): Extract<T> {
-    const format = recognize(str, formatKeys);
-    const parser = formats[format];
-
-    if (format === Format.UNKNOWN || !parser) {
-      throw new TypeError(`Unsupported front matter format`);
-    }
-
-    return _extract(str, MAP_FORMAT_TO_EXTRACTOR_RX[format], parser);
-  };
-}
-
-/**
- * Tests if a string has valid front matter. Supports YAML, TOML and JSON.
- *
- * @param str String to test.
- * @param formats A list of formats to test for. Defaults to all supported formats.
- *
- * ```ts
- * import { test, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- *
- * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
- * assert(test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
- * assert(test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
- *
- * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
- * ```
- */
-export function test(str: string, formats?: Format[]): boolean {
-  if (!formats) {
-    formats = Object.keys(MAP_FORMAT_TO_EXTRACTOR_RX) as Format[];
-  }
-
-  for (const format of formats) {
-    if (format === Format.UNKNOWN) {
-      throw new TypeError("Unable to test for unknown front matter format");
-    }
-
-    const match = MAP_FORMAT_TO_EXTRACTOR_RX[format].exec(str);
-    if (match?.index === 0) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Recognizes the format of the front matter in a string. Supports YAML, TOML and JSON.
- *
- * @param str String to recognize.
- * @param formats A list of formats to recognize. Defaults to all supported formats.
- *
- * ```ts
- * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- *
- * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), Format.YAML);
- * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), Format.TOML);
- * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), Format.JSON);
- * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), Format.UNKNOWN);
- *
- * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", [Format.YAML]), Format.UNKNOWN);
- */
-function recognize(str: string, formats?: Format[]): Format {
-  if (!formats) {
-    formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
-  }
-
-  const [firstLine] = str.split(/(\r?\n)/);
-
-  for (const format of formats) {
-    if (format === Format.UNKNOWN) {
-      continue;
-    }
-
-    if (MAP_FORMAT_TO_RECOGNIZER_RX[format].test(firstLine)) {
-      return format;
-    }
-  }
-
-  return Format.UNKNOWN;
-}
+export {
+  /**
+   * @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead.
+   *
+   * Factory that creates a function that extracts front matter from a string with the given parsers.
+   * Supports YAML, TOML and JSON.
+   *
+   * @param formats A descriptor containing Format-parser pairs to use for each format.
+   * @returns A function that extracts front matter from a string with the given parsers.
+   *
+   * ```ts
+   * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+   * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+   * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
+   * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
+   * const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
+   * const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });
+   * const extractJSON = createExtractor({ [Format.JSON]: JSON.parse as Parser });
+   * const extractYAMLOrJSON = createExtractor({
+   *     [Format.YAML]: parseYAML as Parser,
+   *     [Format.JSON]: JSON.parse as Parser,
+   * });
+   *
+   * let { attrs, body, frontMatter } = extractYAML<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret");
+   * assertEquals(attrs.title, "Three dashes marks the spot");
+   * assertEquals(body, "ferret");
+   * assertEquals(frontMatter, "title: Three dashes marks the spot");
+   *
+   * ({ attrs, body, frontMatter } = extractTOML<{ title: string }>("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
+   * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
+   * assertEquals(body, "");
+   * assertEquals(frontMatter, "title = 'Three dashes followed by format marks the spot'");
+   *
+   * ({ attrs, body, frontMatter } = extractJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
+   * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
+   * assertEquals(body, "goat");
+   * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
+   *
+   * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret"));
+   * assertEquals(attrs.title, "Three dashes marks the spot");
+   * assertEquals(body, "ferret");
+   * assertEquals(frontMatter, "title: Three dashes marks the spot");
+   *
+   * ({ attrs, body, frontMatter } = extractYAMLOrJSON<{ title: string }>("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\ngoat"));
+   * assertEquals(attrs.title, "Three dashes followed by format marks the spot");
+   * assertEquals(body, "goat");
+   * assertEquals(frontMatter, "{\"title\": \"Three dashes followed by format marks the spot\"}");
+   * ```
+   */
+  createExtractor,
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead. */
+  type Extract,
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead. */
+  type Extractor,
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead. */
+  Format,
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead. */
+  type Parser,
+  /**
+   * @deprecated (will be removed after 0.182.0) Import from `std/front_matter/mod.ts` instead.
+   *
+   * Tests if a string has valid front matter. Supports YAML, TOML and JSON.
+   *
+   * @param str String to test.
+   * @param formats A list of formats to test for. Defaults to all supported formats.
+   *
+   * ```ts
+   * import { test, Format } from "https://deno.land/std@$STD_VERSION/encoding/front_matter/mod.ts";
+   * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+   *
+   * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
+   * assert(test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
+   * assert(test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"));
+   *
+   * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
+   * ```
+   */
+  test,
+} from "../../front_matter/mod.ts";
