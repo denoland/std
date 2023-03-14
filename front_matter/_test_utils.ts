@@ -82,7 +82,6 @@ export async function runExtractJSONTests(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("json.md"));
-  console.log(resolveTestDataPath("json.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
@@ -116,7 +115,6 @@ export async function runExtractYAMLTests1(
   extractFn: ExtractFn,
 ) {
   const str = await Deno.readTextFile(resolveTestDataPath("yaml1.md"));
-  console.log(resolveTestDataPath("yaml1.md"));
   const content = extractFn(str);
 
   assert(content !== undefined);
