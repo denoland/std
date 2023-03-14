@@ -290,6 +290,14 @@ const MIN: SemVer = {
   build: [],
 };
 
+const ANY: SemVer = {
+  major: Number.NaN,
+  minor: Number.NaN,
+  patch: Number.NaN,
+  prerelease: [],
+  build: [],
+};
+
 const MAX_LENGTH = 256;
 
 // The actual regexps
@@ -451,6 +459,10 @@ export class Comparator {
    * @returns the version, the next patch version or 0.0.0
    */
   public min(): SemVer {
+    if (this.semver === ANY) {
+      return MIN;
+    }
+
     switch (this.operator) {
       case ">":
         return {
@@ -479,6 +491,10 @@ export class Comparator {
    * @returns the version, any version, the next smallest patch version
    */
   public max(): SemVer {
+    if (this.semver === ANY) {
+      return MAX;
+    }
+
     switch (this.operator) {
       case "!=":
       case "!==":
@@ -494,9 +510,11 @@ export class Comparator {
       case "<": {
         const patch = this.semver.patch - 1;
         const minor = patch >= 0 ? this.semver.minor : this.semver.minor - 1;
-        const major = minor >= 0 ? this.semver.major : 0;
+        const major = minor >= 0 ? this.semver.major : this.semver.major - 1;
+        // if you try to do <0.0.0 it will Give you -∞.∞.∞
+        // which means no SemVer can compare successfully to it.
         return {
-          major,
+          major: major >= 0 ? major : Number.NEGATIVE_INFINITY,
           minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
           patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
           prerelease: [],
@@ -511,7 +529,7 @@ export class Comparator {
    * @returns A valid range representing this comparator
    */
   public range(): Range {
-    return new Range(this.min(), this.max())
+    return new Range(this.min(), this.max());
   }
 
   public test(version: SemVer): boolean {
@@ -556,7 +574,7 @@ export class Comparator {
     //          r0 -- r1
     // ```
     return true &&
-      gte(l0, r0) && lte(l0, r1) ||
+        gte(l0, r0) && lte(l0, r1) ||
       gte(r0, l0) && lte(r0, l1);
   }
 
@@ -578,87 +596,39 @@ export class Range {
 
   public intersects(range: Range): boolean {
     return true &&
-      gte(this.min, range.min) && lte(this.min, range.max) ||
+        gte(this.min, range.min) && lte(this.min, range.max) ||
       gte(range.min, this.min) && lte(range.min, this.max);
   }
 
   toString(): string {
-    return `${format(this.min)}-${format(this.max)}}`;
+    if (this.max.major === Number.NEGATIVE_INFINITY) {
+      // If max is negative infinity then nothing can match the range
+      return "<0.0.0";
+    } else {
+      return `${format(this.min)} - ${format(this.max)}`;
+    }
   }
 }
 
-/**
- * Attempt to parse a string as a semantic version, returning either a `SemVer`
- * object or `null`.
- */
-export function parse(version: string): SemVer {
-  if (typeof version !== "string") {
-    throw new TypeError(
-      `version must be a string`,
-    );
+export class SemVerSet {
+  constructor(public readonly ranges: Range[]) {}
+  public test(semver: SemVer): boolean {
+    return this.ranges.some((r) => r.test(semver));
   }
 
-  if (version.length > MAX_LENGTH) {
-    throw new TypeError(
-      `version is longer than ${MAX_LENGTH} characters`,
-    );
+  toString(): string {
+    return this.ranges.map((r) => r.toString()).join(" || ");
   }
-
-  version = version.trim();
-
-  const r = re[FULL];
-  const m = version.match(r);
-  if (!m) {
-    throw new TypeError(`Invalid Version: ${version}`);
-  }
-
-  // these are actually numbers
-  const major = parseInt(m[1]);
-  const minor = parseInt(m[2]);
-  const patch = parseInt(m[3]);
-
-  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
-    throw new TypeError("Invalid major version");
-  }
-
-  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
-    throw new TypeError("Invalid minor version");
-  }
-
-  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
-    throw new TypeError("Invalid patch version");
-  }
-
-  // number-ify any prerelease numeric ids
-  const prerelease = (m[4] ?? [])
-    .split(".")
-    .map((id: string) => {
-      const num = parseInt(id);
-      if (isNaN(num)) {
-        return id;
-      } else {
-        if (num > Number.MAX_SAFE_INTEGER || num < 0) {
-          throw new TypeError("Invalid prerelease version");
-        }
-        return num;
-      }
-    });
-
-  const build = parseBuild(m[5]);
-  return {
-    major,
-    minor,
-    patch,
-    prerelease,
-    build,
-  };
 }
 
 function formatNumber(value: number) {
-  return value === Number.POSITIVE_INFINITY ||
-    value === Number.NEGATIVE_INFINITY
-    ? "*"
-    : `${value.toFixed(0)}`;
+  if (value === Number.POSITIVE_INFINITY) {
+    return "*";
+  } else if (value === Number.NEGATIVE_INFINITY) {
+    return "⧞";
+  } else {
+    return value.toFixed(0);
+  }
 }
 
 /**
@@ -672,6 +642,11 @@ function formatNumber(value: number) {
  * @returns The string representation of a smenatic version.
  */
 export function format(semver: SemVer) {
+  if (semver.major === Number.NEGATIVE_INFINITY) {
+    // If you try to get a SemVer <0.0.0
+    return "<0.0.0";
+  }
+
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
   const patch = formatNumber(semver.patch);
@@ -679,8 +654,8 @@ export function format(semver: SemVer) {
   const build = semver.build.join(".");
 
   const primary = `${major}.${minor}.${patch}`;
-  const release = [primary, pre].join("-");
-  const full = [release, build].join("+");
+  const release = [primary, pre].filter((v) => v).join("-");
+  const full = [release, build].filter((v) => v).join("+");
 
   if (isNaN(semver.major) || isNaN(semver.minor) || isNaN(semver.patch)) {
     throw new TypeError(`Invalid Semver: ${full}`);
@@ -943,7 +918,7 @@ function pre(
 }
 
 function parseBuild(metadata: string | undefined) {
-  return (metadata ?? "").split(".");
+  return (metadata ?? "").split(".").filter((m) => m);
 }
 
 /**
@@ -1013,7 +988,7 @@ export function compare(
   );
 }
 
-export function compareIdentifier(
+function compareIdentifier(
   v1: ReadonlyArray<string | number>,
   v2: ReadonlyArray<string | number>,
 ): 1 | 0 | -1 {
@@ -1177,24 +1152,88 @@ export function cmp(
   }
 }
 
+/**
+ * Attempt to parse a string as a semantic version, returning either a `SemVer`
+ * object or `null`.
+ */
+export function parse(version: string): SemVer {
+  if (typeof version !== "string") {
+    throw new TypeError(
+      `version must be a string`,
+    );
+  }
+
+  if (version.length > MAX_LENGTH) {
+    throw new TypeError(
+      `version is longer than ${MAX_LENGTH} characters`,
+    );
+  }
+
+  version = version.trim();
+
+  const r = re[FULL];
+  const m = version.match(r);
+  if (!m) {
+    throw new TypeError(`Invalid Version: ${version}`);
+  }
+
+  // these are actually numbers
+  const major = parseInt(m[1]);
+  const minor = parseInt(m[2]);
+  const patch = parseInt(m[3]);
+
+  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
+    throw new TypeError("Invalid major version");
+  }
+
+  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
+    throw new TypeError("Invalid minor version");
+  }
+
+  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
+    throw new TypeError("Invalid patch version");
+  }
+
+  // number-ify any prerelease numeric ids
+  const prerelease = (m[4] ?? "")
+    .split(".")
+    .filter((id) => id)
+    .map((id: string) => {
+      const num = parseInt(id);
+      if (isNaN(num)) {
+        return id;
+      } else {
+        if (num > Number.MAX_SAFE_INTEGER || num < 0) {
+          throw new TypeError("Invalid prerelease version");
+        }
+        return num;
+      }
+    });
+
+  const build = parseBuild(m[5]);
+  return {
+    major,
+    minor,
+    patch,
+    prerelease,
+    build,
+  };
+}
+
 // comprised of xranges, tildes, stars, and gtlt's at this point.
 // already replaced the hyphen ranges
 // turn into a set of JUST comparators.
 export function parseComparator(comp: string): Comparator {
-  comp = replaceCarets(comp);
-  comp = replaceTildes(comp);
-  comp = replaceXRanges(comp);
-  comp = replaceStars(comp);
-
   const r = re[COMPARATOR];
   const m = comp.match(r);
 
   if (!m) {
+    console.log({ comp, m });
     throw new TypeError(`Invalid comparator: ${comp}`);
   }
 
   const operator = (m[1] ?? "") as Operator;
-  const semver = !m[2] ? MIN : parse(m[2]);
+  const semver = m[2] ? parse(m[2]) : ANY;
   return new Comparator(
     operator,
     semver,
@@ -1206,17 +1245,40 @@ export function parseRange(range: string): Range {
   // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
   const hr: RegExp = re[HYPHENRANGE];
   range = range.replace(hr, hyphenReplace);
-
-  // normalize spaces
-  range = range.replace(/\s+/g, " ");
+  range = replaceCarets(range);
+  range = replaceTildes(range);
+  range = replaceXRanges(range);
+  range = replaceStars(range);
 
   // At this point, the range is completely trimmed and
   // ready to be split into comparators.
   const [l, r] = range
     .split(" ")
-    .map((comp) => parseComparator(comp));
+    .map((r) => parseComparator(r));
 
-  return new Range(l.min(), r.max());
+  const min = l?.min() ?? MIN;
+  const max = r?.max() ?? l?.max() ?? MAX;
+
+  // If a single comparator is given (no hyphen) use the left side for
+  // both sides. If nether side is given the use MIN - MAX.
+  return new Range(min, max);
+}
+
+export function parseSet(set: string): SemVerSet {
+  // normalize
+  const set1 = set
+    .replace(/\s+\|\|\s+/g, " || ") // 1 || 2 : 1 || 2
+    .replace(/\s+[-]\s+/g, " - ") // 1 - 2  : 1 - 2
+    .replace(/\b\s+\b/g, " || "); // 1 2    : 1 || 2
+
+  const ranges = set1
+    .trim()
+    .split(/\s*\|\|\s*/)
+    .map((r) => {
+      return parseRange(r.trim());
+    });
+
+  return new SemVerSet(ranges);
 }
 
 function isX(id: string): boolean {
@@ -1436,9 +1498,9 @@ function replaceStars(comp: string): string {
 
 // This function is passed to string.replace(re[HYPHENRANGE])
 // M, m, patch, prerelease, build
-// 1.2 - 3.4.5 => >=1.2.0 <=3.4.5
-// 1.2.3 - 3.4 => >=1.2.0 <3.5.0 Any 3.4.x will do
-// 1.2 - 3.4 => >=1.2.0 <3.5.0
+// 1.2 - 3.4.5 -> >=1.2.0 <=3.4.5
+// 1.2.3 - 3.4 -> >=1.2.0 <3.5.0 Any 3.4.x will do
+// 1.2 - 3.4 -> >=1.2.0 <3.5.0
 function hyphenReplace(
   _$0: string,
   from: string,
