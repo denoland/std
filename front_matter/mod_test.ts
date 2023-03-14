@@ -2,7 +2,7 @@
 
 import { assert, assertThrows } from "../testing/asserts.ts";
 import { createExtractor, Format, Parser, test } from "./mod.ts";
-import { parse as parseYAML } from "../encoding/yaml.ts";
+import { parse as parseYAML } from "../yaml/parse.ts";
 import { parse as parseTOML } from "../toml/parse.ts";
 import {
   resolveTestDataPath,
