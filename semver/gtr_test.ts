@@ -3,10 +3,10 @@
 import { assert } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
 
-Deno.test("gtr", function () {
+Deno.test("gtr", async (t) => {
   // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string]> = [
+  const versions: [string, string][] = [
     ["~1.2.2", "1.3.0"],
     ["~0.6.1-1", "0.7.1-1"],
     ["1.0.0 - 2.0.0", "2.0.1"],
@@ -62,18 +62,17 @@ Deno.test("gtr", function () {
     ["<0.7.x", "0.7.2"],
   ];
 
-  versions.forEach(function (tuple) {
-    const range = tuple[0];
-    const version = tuple[1];
-    const msg = `gtr(${version}, ${range})`;
-    assert(semver.gtr(version, range), msg);
-  });
+  for (const [a, b] of versions) {
+    await t.step(`${b} > ${a}`, () => {
+      const r = semver.parseSet(a);
+      const s = semver.parse(b);
+      assert(semver.gts(s, r));
+    });
+  }
 });
 
-Deno.test("gtrNegative", function () {
-  // [range, version]
-  // Version should be greater than range
-  const versions: ReadonlyArray<[string, string]> = [
+Deno.test("gtrNegative", async (t) => {
+  const versions: [string, string][] = [
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["1.0.0 - 2.0.0", "0.9.9"],
@@ -139,10 +138,11 @@ Deno.test("gtrNegative", function () {
     ["^0.1.0 || ~3.0.1 || >4 <=5.0.0", "3.5.0"],
   ];
 
-  versions.forEach(function (tuple) {
-    const range = tuple[0];
-    const version = tuple[1];
-    const msg = `!gtr(${version}, ${range})`;
-    assert(!semver.gtr(version, range), msg);
-  });
+  for (const [a, b] of versions) {
+    await t.step(`${b} ≯ ${a}`, () => {
+      const set = semver.parseSet(a);
+      const version = semver.parse(b);
+      assert(!semver.gts(version, set));
+    });
+  }
 });

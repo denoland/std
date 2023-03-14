@@ -1628,23 +1628,23 @@ export function validRange(
 }
 
 /**
- * Returns true if version is less than all the versions possible in the range.
+ * Returns true if version is less than all the versions possible in the set.
  */
-export function ltr(
+export function lts(
   version: SemVer,
-  range: Range,
+  set: SemVerSet,
 ): boolean {
-  return outside(version, range, "<");
+  return outside(version, set, "<");
 }
 
 /**
- * Returns true if version is greater than all the versions possible in the range.
+ * Returns true if version is greater than all the versions possible in the set.
  */
-export function gtr(
+export function gts(
   version: SemVer,
-  range: Range,
+  set: SemVerSet,
 ): boolean {
-  return outside(version, range, ">");
+  return outside(version, set, ">");
 }
 
 /**
@@ -1654,17 +1654,19 @@ export function gtr(
  */
 export function outside(
   version: SemVer,
-  range: Range,
+  set: SemVerSet,
   hilo?: ">" | "<",
 ): boolean {
-  switch (hilo) {
-    case ">":
-      return gt(version, range.max);
-    case "<":
-      return lt(version, range.min);
-    default:
-      return gt(version, range.max) || lt(version, range.min);
-  }
+  return set.ranges.every((range) => {
+    switch (hilo) {
+      case ">":
+        return gt(version, range.max);
+      case "<":
+        return lt(version, range.min);
+      default:
+        return gt(version, range.max) || lt(version, range.min);
+    }
+  });
 }
 
 /** Returns true if the two supplied ranges or comparators intersect. */
