@@ -34,29 +34,36 @@ Want to know where SaaSkit is headed? Check out [our public roadmap]().
 
 ## Installation
 
-Start the project:
+Getting started with SaaSKit is straightforward.
 
-```
-deno task start
-```
+### Create .env file
 
-This will watch the project directory and restart as necessary.
+You can copy the `.example.env` into `.env`. The only variables you need are:
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_URL`
+- `STRIPE_API_KEY`
 
-### Setup Environmental Variables
-
-Copy Supabase and Stripe credentials to `.env` same as `.example.env`.
+Continue below to learn where to grab these keys.
 
 ### Setup Supabase
 
-SaaSkit currently uses Supabase for data storage and authentication.
+This project uses [Supabase](https://supabase.com) for handling authentication strategies, as well as data storage for the product itself, which is a simple To-Do list app.
 
-1. Create the `todos` table:
+If you haven't, create a Supabase account and then [create a new Supabase project](https://app.supabase.com/projects).
+
+Once your project is created, you can grab your `SUPABASE_URL` and `SUPABASE_ANON_KEY` from the Settings > API.
+
+### Create a `todos` table
+
+SaaSKit defaults to a simple To-Do list app to illustrate how authenticated API routes can be created. Of course, you can choose to build whatever app you'd like.
+
+But to get this SaaSKit template to work, we'll create a `todos` table.
 
 - Go to `Databases` > `Tables`
 - Click `New Table`
 - Enter the name as `todos` and check `Enable Row Level Security (RLS)`
 - Configure the following columns:
-- 
+
 | Name      | Type   | Default value              | Primary |
 | --------- | ------ | -------------------------- | ------- |
 | `id`      | `int8` | --                         | `true`  |
@@ -67,7 +74,13 @@ You can also keep the column `created_at` if you'd like.
 
 Hit save and then your table should be created.
 
-2. Setup authentication:
+### Setup authentication
+
+[Supabase Auth](https://supabase.com/docs/guides/auth/overview) makes it simple to authenticate and authorize users through a variety of authentication strategies.
+
+SaaSKit currently supports email, but we plan to add more strategies going forward.
+
+To setup Supabase Auth:
 
 - Go to `Authentication` > `Providers` > `Email`
 - Disable `Confirm email`
@@ -78,19 +91,34 @@ Hit save and then your table should be created.
 - Enter the `USING expression` as `(uuid_generate_v4() = user_id)`
 - Click `Review` then `Save policy`
 
+These steps enable using email with Supabase Auth, and provides a simple authentication strategy via the `USING` expression that matches `user_id`.
+
 ### Setup Stripe
 
-SaaSkit uses Stripe for subscription billing.
+Currently, SaaSKit uses [Stripe](https://stripe.com) for subscription billing. In the future, we are open to adding other payment processors.
 
-1. Set your custom branding in the
-   [settings](https://dashboard.stripe.com/settings/branding)
-2. Configure the Customer Portal
-   [settings](https://dashboard.stripe.com/test/settings/billing/portal)
-3. Toggle on "Allow customers to update their payment methods"
-4. Toggle on "Allow customers to update subscriptions"
-5. Toggle on "Allow customers to cancel subscriptions"
-6. Add the products and prices that you want
-7. Set up the required business information and links
+To setup Stripe:
+- Create a Stripe account
+- Since upgrading to a paid tier will take you directly to Stripe's domain, we recommend [setting up your branding on Stripe](https://dashboard.stripe.com/settings/branding)
+- Configure [the Customer Portal settings](https://dashboard.stripe.com/test/settings/billing/portal). This is what your users will see when they add a credit card and upgrade.
+- Toggle on "Allow customers to update their payment methods"
+- Toggle on "Allow customers to update subscriptions"
+- Toggle on "Allow customers to cancel subscriptions"
+- Add relevant [products and prices](https://dashboard.stripe.com/test/products)
+- Set up the required business information and links [in your settings](https://dashboard.stripe.com/settings)
+- Grab the `STRIPE_API_KEY`, which is the secret key located at [Developers > API Keys](https://dashboard.stripe.com/test/apikeys)
+
+Once you have all of this setup, you should be able to run SaaSKit locally.
+
+### Running locally
+
+You can start the project by running:
+
+```
+deno task start
+```
+
+And going to `localhost:8000` on your browser.
 
 ## Hosting
 
