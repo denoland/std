@@ -99,9 +99,9 @@ function FeaturesSection() {
             {features.map((feature) => (
               <div class="flex-1 space-y-2 text-center">
                 <feature.icon class="h-12 w-auto mx-auto" />
-                <h3 class="text-2xl font-bold">
+                <h2 class="text-2xl font-bold">
                   {feature.title}
-                </h3>
+                </h2>
                 <p>{feature.description}</p>
               </div>
             ))}
