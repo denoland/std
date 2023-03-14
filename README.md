@@ -56,21 +56,27 @@ SaaSkit currently uses Supabase for data storage and authentication.
 - Click `New Table`
 - Enter the name as `todos` and check `Enable Row Level Security (RLS)`
 - Configure the following columns:
+- 
+| Name      | Type   | Default value              | Primary |
+| --------- | ------ | -------------------------- | ------- |
+| `id`      | `int8` | --                         | `true`  |
+| `name`    | `text` | (empty)                    | `false` |
+| `user_id` | `uuid` | `uuid_generate_v4()`       | `false` |
 
-| Name      | Type   | Default value | Primary |
-| --------- | ------ | ------------- | ------- |
-| `id`      | `int8` | --            | `true`  |
-| `name`    | `text` | (empty)       | `false` |
-| `user_id` | `uuid` | `uid()`       | `false` |
+You can also keep the column `created_at` if you'd like.
+
+Hit save and then your table should be created.
 
 2. Setup authentication:
 
 - Go to `Authentication` > `Providers` > `Email`
 - Disable `Confirm email`
-- Go to `Authentication` > `Policies`
+- Back on the left hand bar, under `Configuration`, click on `Policies`
 - Click `New Policy` and then `Create a policy from scratch`
 - Enter the policy name as `Enable all operations for users based on user_id`
-- Enter the `USING expression` as `(uid() = user_id)`
+- For `Allowed operation`, select `All`
+- Enter the `USING expression` as `(uuid_generate_v4() = user_id)`
+- Click `Review` then `Save policy`
 
 ### Setup Stripe
 
