@@ -97,14 +97,14 @@ export default function TodoList(props: TodoListProps) {
           disabled={!isMoreTodos}
           onInput={(event: any) => newTodoName.value = event.target.value}
           class="flex-1"
+          required
         />
         <Button
           disabled={!isMoreTodos}
           type="submit"
-          class="shadow-md"
+          class="shadow-md px-4"
         >
-          Add{(!props.subscribed) &&
-            ` (${todos.value.length}/${FREE_PLAN_TODOS_LIMIT})`}
+          +
         </Button>
       </form>
     </>
