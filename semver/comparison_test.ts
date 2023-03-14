@@ -36,19 +36,19 @@ Deno.test({
         const s1 = semver.parse(v1);
 
         const cmp = semver.compare(s0, s1);
-        assert(cmp === 1, `${v0} <=> ${v1} > 0 : ${cmp}`)
+        assert(cmp === 1, `${v0} <=> ${v1} > 0 : ${cmp}`);
 
         const gt = semver.gt(s0, s1);
-        assert(gt, `${v0} > ${v1} : ${gt}`)
+        assert(gt, `${v0} > ${v1} : ${gt}`);
 
         const lt = semver.lt(s1, s0);
-        assert(lt, `${v1} < ${v0} : ${lt}`)
+        assert(lt, `${v1} < ${v0} : ${lt}`);
 
         const ngt = semver.gt(s1, s0);
-        assert(!ngt, `${v1} !> ${v0} : ${ngt}`)
+        assert(!ngt, `${v1} !> ${v0} : ${ngt}`);
 
         const nlt = semver.lt(s0, s1);
-        assert(!nlt, `${v0} <! ${v1} : ${nlt}`)
+        assert(!nlt, `${v0} <! ${v1} : ${nlt}`);
 
         const eq0 = semver.eq(s0, s0);
         const eq1 = semver.eq(s1, s1);
@@ -67,7 +67,7 @@ Deno.test({
         assert(cmp3, `${v0} != ${v1} : ${cmp3}`);
       });
     }
-  }
+  },
 });
 
 Deno.test("compareBuild", async (t) => {
@@ -143,7 +143,7 @@ Deno.test({
         assertEquals(actual, expected);
       });
     }
-  }
+  },
 });
 
 Deno.test("compareIdentifierst", async (t) => {
