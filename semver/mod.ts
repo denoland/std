@@ -574,7 +574,7 @@ export class Comparator {
     //          r0 -- r1
     // ```
     return true &&
-        gte(l0, r0) && lte(l0, r1) ||
+      gte(l0, r0) && lte(l0, r1) ||
       gte(r0, l0) && lte(r0, l1);
   }
 
@@ -596,7 +596,7 @@ export class Range {
 
   public intersects(range: Range): boolean {
     return true &&
-        gte(this.min, range.min) && lte(this.min, range.max) ||
+      gte(this.min, range.min) && lte(this.min, range.max) ||
       gte(range.min, this.min) && lte(range.min, this.max);
   }
 
@@ -611,7 +611,7 @@ export class Range {
 }
 
 export class SemVerSet {
-  constructor(public readonly ranges: Range[]) {}
+  constructor(public readonly ranges: Range[]) { }
   public test(semver: SemVer): boolean {
     return this.ranges.some((r) => r.test(semver));
   }
@@ -983,24 +983,32 @@ export function compare(
     compareNumber(v1.major, v2.major) ||
     compareNumber(v1.minor, v2.minor) ||
     compareNumber(v1.patch, v2.patch) ||
+    checkIdentifier(v1.prerelease, v2.prerelease) ||
     compareIdentifier(v1.prerelease, v2.prerelease) ||
+    checkIdentifier(v2.build, v1.build) ||
     compareIdentifier(v1.build, v2.build)
   );
+}
+
+function checkIdentifier(
+  v1: ReadonlyArray<string | number>,
+  v2: ReadonlyArray<string | number>,
+): 1 | 0 | -1 {
+  // NOT having a prerelease is > having one
+  // But NOT having a build is < having one
+  if (v1.length && !v2.length) {
+    return -1;
+  } else if (!v1.length && v2.length) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 export function compareIdentifier(
   v1: ReadonlyArray<string | number>,
   v2: ReadonlyArray<string | number>,
 ): 1 | 0 | -1 {
-  // NOT having a prerelease is > having one
-  if (v1.length && !v2.length) {
-    return -1;
-  } else if (!v1.length && v2.length) {
-    return 1;
-  } else if (!v1.length && !v2.length) {
-    return 0;
-  }
-
   let i = 0;
   do {
     const a = v1[i];
@@ -1202,18 +1210,16 @@ export function parse(version: string): SemVer {
   }
 
   // number-ify any prerelease numeric ids
+  const numericIdentifier = new RegExp(`^${src[NUMERICIDENTIFIER]}$`)
   const prerelease = (m[4] ?? "")
     .split(".")
     .filter((id) => id)
     .map((id: string) => {
       const num = parseInt(id);
-      if (isNaN(num)) {
-        return id;
-      } else {
-        if (num > Number.MAX_SAFE_INTEGER || num < 0) {
-          throw new TypeError("Invalid prerelease version");
-        }
+      if (id.match(numericIdentifier) && isValidNumber(num)) {
         return num;
+      } else {
+        return id;
       }
     });
 
@@ -1235,7 +1241,6 @@ export function parseComparator(comp: string): Comparator {
   const m = comp.match(r);
 
   if (!m) {
-    console.log({ comp, m });
     throw new TypeError(`Invalid comparator: ${comp}`);
   }
 
