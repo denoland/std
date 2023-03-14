@@ -988,7 +988,7 @@ export function compare(
   );
 }
 
-function compareIdentifier(
+export function compareIdentifier(
   v1: ReadonlyArray<string | number>,
   v2: ReadonlyArray<string | number>,
 ): 1 | 0 | -1 {
@@ -1033,6 +1033,13 @@ function compareIdentifier(
   // It can't ever reach here, but typescript doesn't realize that so
   // add this line so the return type is inferred correctly.
   return 0;
+}
+
+export function rcompareIdentifier(
+  v1: ReadonlyArray<string | number>,
+  v2: ReadonlyArray<string | number>,
+): 1 | 0 | -1 {
+  return compareIdentifier(v2, v1);
 }
 
 /**
