@@ -1,8 +1,8 @@
 # Deno SaaSKit
 
 [Deno SaaSKit](https://deno.com/saaskit) is an open sourced, highly performant
-template for building your SaaS quickly and easily. This template ships with these
-foundational features that every SaaS needs:
+template for building your SaaS quickly and easily. This template ships with
+these foundational features that every SaaS needs:
 
 - User accounts
 - User creation flows
@@ -30,9 +30,11 @@ contribute, and meet other developers using Deno SaaSKit.
 Have feedback? Let us know in
 [the issues](https://github.com/denoland/saaskit/issues).
 
-Want to know where Deno SaaSKit is headed? Check out [our public roadmap](https://github.com/orgs/denoland/projects/35).
+Want to know where Deno SaaSKit is headed? Check out
+[our public roadmap](https://github.com/orgs/denoland/projects/35).
 
-Read more about Deno SaaSkit from [our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
+Read more about Deno SaaSkit from
+[our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
 
 ## Installation
 
@@ -62,8 +64,8 @@ Once your project is created, you can grab your `SUPABASE_URL` and
 
 ### Create a `todos` table
 
-Deno SaaSKit defaults to a simple To-Do list app to illustrate how authenticated API
-routes can be created. Of course, you can choose to build whatever app you'd
+Deno SaaSKit defaults to a simple To-Do list app to illustrate how authenticated
+API routes can be created. Of course, you can choose to build whatever app you'd
 like.
 
 But to get this Deno SaaSKit template to work, we'll create a `todos` table.
@@ -108,8 +110,8 @@ authentication strategy via the `USING` expression that matches `user_id`.
 
 ### Setup Stripe
 
-Currently, Deno SaaSKit uses [Stripe](https://stripe.com) for subscription billing.
-In the future, we are open to adding other payment processors.
+Currently, Deno SaaSKit uses [Stripe](https://stripe.com) for subscription
+billing. In the future, we are open to adding other payment processors.
 
 To setup Stripe:
 
@@ -152,7 +154,8 @@ TODO.
 ## Building a Modern SaaS Business
 
 Along with this template, we are creating a series of How To guides to show how
-to build a modern SaaS business using Deno SaaSKit and Fresh. This series will cover:
+to build a modern SaaS business using Deno SaaSKit and Fresh. This series will
+cover:
 
 - How to setup login logout in Fresh
 - How to setup user accounts with Supabase in Fresh
