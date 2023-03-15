@@ -1,15 +1,12 @@
 // deno-lint-ignore-file no-explicit-any
 import Input from "@/components/Input.tsx";
 import Button from "@/components/Button.tsx";
-import { type Signal, signal, useSignal } from "@preact/signals";
+import { type Signal, useSignal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
 import type { Todo } from "@/utils/todos.ts";
 import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 import IconTrash from "tabler-icons/trash.tsx";
 import { assert } from "std/testing/asserts.ts";
-
-const subscribed = signal(false);
-let isInit = true;
 
 async function requestCreateTodo(todo: Todo) {
   const response = await fetch("/dashboard/api/todo", {
@@ -60,12 +57,8 @@ interface TodoListProps {
 export default function TodoList(props: TodoListProps) {
   const todos = useSignal(props.todos);
   const newTodoName = useSignal("");
-  if (isInit) {
-    isInit = false;
-    subscribed.value = props.subscribed;
-  }
 
-  const isMoreTodos = subscribed.value ||
+  const isMoreTodos = props.subscribed ||
     todos.value.length < FREE_PLAN_TODOS_LIMIT;
 
   return (
