@@ -40,6 +40,20 @@ Read more about Deno SaaSkit from
 
 Getting started with Deno SaaSKit is straightforward.
 
+### Update `constants.ts`
+
+Feel free to update `constants.ts` with information that is relevant to your SaaS.
+
+```
+export const SITE_NAME = "Your SaaS";
+export const SITE_DESCRIPTION = "Some details about your SaaS.";
+export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
+export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPiEkD6QJts4RaYcp1SevPe";
+export const FREE_PLAN_TODOS_LIMIT = 5;
+```
+
+The Stripe premium plan price id is the "API ID" of your Stripe product.
+
 ### Create `.env` file
 
 You can copy the `.example.env` into `.env`. The only variables you need are:
