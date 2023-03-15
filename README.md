@@ -7,7 +7,7 @@ foundational features that every SaaS needs:
 - User accounts
 - User creation flows
 - Landing page
-- Pricing page
+- Pricing section
 - Signin and session management
 - Billing integration via Stripe
 - Gated API endpoints
@@ -16,9 +16,9 @@ Deno SaaSKit is built on [Fresh](https://fresh.deno.dev) and
 [Deno](https://deno.land), which means you get these awesome technical features:
 
 - Native TypeScript support
-- no build step
-- server-side rendering and islands architecture
-- built-in robust tooling, such as a
+- No build step
+- Server-side rendering and islands architecture
+- Built-in robust tooling, such as a
   [formatter](https://deno.land/manual/tools/formatter),
   [linter](https://deno.land/manual/tools/linter), and
   [test runner](https://deno.land/manual/basics/testing)
