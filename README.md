@@ -32,6 +32,8 @@ Have feedback? Let us know in
 
 Want to know where Deno SaaSKit is headed? Check out [our public roadmap](https://github.com/orgs/denoland/projects/35).
 
+Read more about Deno SaaSkit from [our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
+
 ## Installation
 
 Getting started with Deno SaaSKit is straightforward.
