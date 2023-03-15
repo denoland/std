@@ -1,7 +1,7 @@
-# SaaSKit
+# Deno SaaSKit
 
-[SaaSKit](https://deno.com/saaskit) is an open sourced, highly performant
-template for building your SaaS quickly and easily. SaaSKit ships with these
+[Deno SaaSKit](https://deno.com/saaskit) is an open sourced, highly performant
+template for building your SaaS quickly and easily. This template ships with these
 foundational features that every SaaS needs:
 
 - User accounts
@@ -12,7 +12,7 @@ foundational features that every SaaS needs:
 - Billing integration via Stripe
 - Gated API endpoints
 
-SaaSKit is built on [Fresh](https://fresh.deno.dev) and
+Deno SaaSKit is built on [Fresh](https://fresh.deno.dev) and
 [Deno](https://deno.land), which means you get these awesome technical features:
 
 - Native TypeScript support
@@ -25,16 +25,16 @@ SaaSKit is built on [Fresh](https://fresh.deno.dev) and
 - npm specifiers
 
 Join [our Discord](https://discord.gg/deno) to ask questions, learn how to
-contribute, and meet other developers using SaaSKit.
+contribute, and meet other developers using Deno SaaSKit.
 
 Have feedback? Let us know in
 [the issues](https://github.com/denoland/saaskit/issues).
 
-Want to know where SaaSKit is headed? Check out [our public roadmap]().
+Want to know where Deno SaaSKit is headed? Check out [our public roadmap](https://github.com/orgs/denoland/projects/35).
 
 ## Installation
 
-Getting started with SaaSKit is straightforward.
+Getting started with Deno SaaSKit is straightforward.
 
 ### Create `.env` file
 
@@ -60,11 +60,11 @@ Once your project is created, you can grab your `SUPABASE_URL` and
 
 ### Create a `todos` table
 
-SaaSKit defaults to a simple To-Do list app to illustrate how authenticated API
+Deno SaaSKit defaults to a simple To-Do list app to illustrate how authenticated API
 routes can be created. Of course, you can choose to build whatever app you'd
 like.
 
-But to get this SaaSKit template to work, we'll create a `todos` table.
+But to get this Deno SaaSKit template to work, we'll create a `todos` table.
 
 - Go to `Databases` > `Tables`
 - Click `New Table`
@@ -87,7 +87,7 @@ Hit save and then your table should be created.
 to authenticate and authorize users through a variety of authentication
 strategies.
 
-SaaSKit currently supports email, but we plan to add more strategies going
+Deno SaaSKit currently supports email, but we plan to add more strategies going
 forward.
 
 To setup Supabase Auth:
@@ -106,7 +106,7 @@ authentication strategy via the `USING` expression that matches `user_id`.
 
 ### Setup Stripe
 
-Currently, SaaSKit uses [Stripe](https://stripe.com) for subscription billing.
+Currently, Deno SaaSKit uses [Stripe](https://stripe.com) for subscription billing.
 In the future, we are open to adding other payment processors.
 
 To setup Stripe:
@@ -127,7 +127,7 @@ To setup Stripe:
 - Grab the `STRIPE_SECRET_KEY`, which is the secret key located at
   [Developers > API Keys](https://dashboard.stripe.com/test/apikeys)
 
-Once you have all of this setup, you should be able to run SaaSKit locally.
+Once you have all of this setup, you should be able to run Deno SaaSKit locally.
 
 ### Running locally
 
@@ -141,7 +141,7 @@ And going to `localhost:8000` on your browser.
 
 ## Hosting
 
-You can deploy your SaaSKit project to any VPS or Deno Deploy.
+You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
 
 ### Deno Deploy
 
@@ -150,14 +150,13 @@ TODO.
 ## Building a Modern SaaS Business
 
 Along with this template, we are creating a series of How To guides to show how
-to build a modern SaaS business using SaaSKit and Fresh. This series will cover:
+to build a modern SaaS business using Deno SaaSKit and Fresh. This series will cover:
 
 - How to setup login logout in Fresh
 - How to setup user accounts with Supabase in Fresh
 - How to setup Stripe subscriptions in Fresh
-- How to create API routes in Fresh
-- How to create multi-tenancy in Fresh
-- How to deploy SaaSKit to Deno Deploy
+- How to create authenticated API routes in Fresh
+- How to deploy Deno SaaSKit to any Virtual Private Server with Docker
 
 And more! We'll update all relevant links to point to written and video
 tutorials when they're released.
