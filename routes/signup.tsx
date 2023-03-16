@@ -18,7 +18,9 @@ export default function SignupPage(props: PageProps) {
               class="h-24 w-auto mb-8 mx-auto"
             />
           </a>
-          {errorMessage && <Notice message={errorMessage} color="yellow" />}
+          {errorMessage === "User already registered" && (
+            <Notice message={errorMessage} color="yellow" />
+          )}
           <AuthForm type="Signup" />
           <div class="text-center text-gray-500 hover:text-black">
             <a href="/login">Already have an account? Log in</a>

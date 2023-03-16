@@ -18,7 +18,9 @@ export default function LoginPage(props: PageProps) {
               class="h-24 w-auto mx-auto"
             />
           </a>
-          {errorMessage && <Notice message={errorMessage} color="yellow" />}
+          {errorMessage === "Invalid login credentials" && (
+            <Notice message={errorMessage} color="yellow" />
+          )}
           <AuthForm type="Login" />
           <div class="text-center text-gray-500 hover:text-black">
             <a href="/signup">Don't have an account? Sign up</a>
