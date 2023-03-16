@@ -214,10 +214,10 @@ You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
 
 TODO.
 
-## Building a Modern SaaS Business
+## Building a Modern SaaS Stack
 
 Along with this template, we are creating a series of How To guides to show how
-to build a modern SaaS business using Deno SaaSKit and Fresh. This series will
+to build a modern SaaS stack using Deno SaaSKit and Fresh. This series will
 cover:
 
 - How to setup login logout in Fresh
