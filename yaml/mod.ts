@@ -46,6 +46,8 @@
  * @module
  */
 
+export * from "./dumper/mod.ts";
+export * from "./loader/mod.ts";
 export * from "./parse.ts";
 export * from "./stringify.ts";
 export * from "./type.ts";
