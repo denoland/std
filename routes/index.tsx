@@ -9,6 +9,7 @@ import IconPrompt from "tabler-icons/prompt.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import type { Stripe } from "stripe";
+import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 
 interface HeadingProps {
   title: string;
@@ -117,21 +118,28 @@ function FeaturesSection() {
   );
 }
 
-function PricingCard(props: { product: Stripe.Product }) {
+interface PricingCardProps {
+  name: string;
+  description: string;
+  price_per_month: number;
+  url: string;
+}
+
+function PricingCard(props: PricingCardProps) {
   return (
     <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-200 shadow-md rounded-xl text-center">
       <div>
         <h3 class="text-2xl font-bold">
-          {props.product.name}
+          {props.name}
         </h3>
-        <p>{props.product.description}</p>
+        <p>{props.description}</p>
       </div>
       <p class="font-bold text-xl">
-        ${(props.product.default_price as Stripe.Price).unit_amount! / 100}
+        ${props.price_per_month}
         <span class="font-normal">{" "}per month</span>
       </p>
       <div>
-        <a href="/signup">
+        <a href={props.url}>
           <Button class="w-full rounded-md">Subscribe</Button>
         </a>
       </div>
@@ -149,7 +157,22 @@ function PricingSection(props: { products: Stripe.Product[] }) {
       <div class="flex flex-col md:flex-row gap-8">
         <img src="/pricing.svg" alt="Pricing image" class="flex-1" />
         <div class="flex-1 flex flex-col gap-8">
-          {props.products.map((product) => <PricingCard product={product} />)}
+          <PricingCard
+            name="Free tier"
+            description={`Limited to ${FREE_PLAN_TODOS_LIMIT} todos`}
+            price_per_month={0}
+            url="/signup"
+          />
+          {props.products.map((product) => (
+            // TODO: make user subscribed upon signup via URL param
+            <PricingCard
+              name={product.name}
+              description={product.description!}
+              price_per_month={(product.default_price as Stripe.Price)
+                .unit_amount! / 100}
+              url="/signup"
+            />
+          ))}
         </div>
       </div>
     </div>
