@@ -40,20 +40,6 @@ Read more about Deno SaaSkit from
 
 Getting started with Deno SaaSKit is straightforward.
 
-### Update `constants.ts`
-
-Feel free to update `constants.ts` with information that is relevant to your SaaS.
-
-```
-export const SITE_NAME = "Your SaaS";
-export const SITE_DESCRIPTION = "Some details about your SaaS.";
-export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
-export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPiEkD6QJts4RaYcp1SevPe";
-export const FREE_PLAN_TODOS_LIMIT = 5;
-```
-
-The Stripe premium plan price id is the "API ID" of your Stripe product.
-
 ### Create `.env` file
 
 You can copy the `.example.env` into `.env`. The only variables you need are:
@@ -156,6 +142,69 @@ deno task start
 ```
 
 And going to `localhost:8000` on your browser.
+
+## Customizing Deno SaaSKit
+
+This is a template to help you get started. Here is how you can tweak and update
+for your SaaS.
+
+### Update `constants.ts`
+
+Feel free to update `constants.ts` with information that is relevant to your
+SaaS.
+
+```
+export const SITE_NAME = "Your SaaS";
+export const SITE_DESCRIPTION = "Some details about your SaaS.";
+export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
+export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPiEkD6QJts4RaYcp1SevPe";
+export const FREE_PLAN_TODOS_LIMIT = 5;
+```
+
+The Stripe premium plan price id is the "API ID" of your Stripe product.
+
+### Landing Page
+
+The main landing page can be found at `/routes/index.tsx` and is composed of TSX
+components.
+
+### Login and Logout
+
+All of the authentication logic is handled by Supabase Auth. All of the logic
+can be found in these locations:
+
+- `/routes/api/*`: All login and logout API functionalities are located here
+- `/routes/signup.tsx`, `/routes/login.tsx`, `/routes/logout.ts`: The pages that
+  visitors see when signing up or logging in (logout.ts redirects the user to
+  `/`)
+- `/utils/supabase.ts`: A wrapper function around Supabase client.
+
+### Dashboard
+
+This template comes with a simple To Do checklist app. All of the logic for that
+can be found:
+
+- `/routes/dashboard/api/todo.ts`: the API route to handle creating and deleting
+  a "todo"
+- `/routes/dashboard/todos.tsx`: the actual To Dos page
+- `/islands/TodoList.tsx`: an island that offers interactivity when creating and
+  deleting "todo"s, as well as with various helper functions for interfacing
+  with `/dashboard/api/todo`
+- `/utils/todos.ts`: a set of helper functions to provide CRUD operations with
+  Supabase's database
+
+### Billing
+
+Billing is currently managed via Stripe. Here are locations where you can update
+Stripe logic:
+
+- `/utils/stripe.ts`: This helper function exports a Stripe client using the
+  `STRIPE_SECRET_KEY`
+- `/routes/dashboard/manage-subscription.ts`: This API endpoint redirects the
+  user to their subscription page on Stripe's domain via Stripe's client
+- `/routes/dashboard/upgrade-subscription.ts`: This API endpoint redirects the
+  user to a page that shows an upgraded subscription tier based on
+  `STRIPE_PREMIUM_PLAN_PRICE_ID`
 
 ## Hosting
 
