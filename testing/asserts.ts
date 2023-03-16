@@ -308,7 +308,9 @@ export function assertNotStrictEquals<T>(
 
   const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(
-    `Expected "actual" to be strictly unequal to: ${format(actual)}${msgSuffix}\n`,
+    `Expected "actual" to be strictly unequal to: ${
+      format(actual)
+    }${msgSuffix}\n`,
   );
 }
 
@@ -346,7 +348,7 @@ export function assertAlmostEquals(
   const msgSuffix = msg ? `: ${msg}` : ".";
   const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
   throw new AssertionError(
-      `Expected actual: "${f(actual)}" to be close to "${f(expected)}": \
+    `Expected actual: "${f(actual)}" to be close to "${f(expected)}": \
 delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`,
   );
 }
@@ -383,10 +385,11 @@ export function assertInstanceOf<T extends AnyConstructor>(
   }
 
   if (expectedTypeStr == actualTypeStr) {
-    msg = `Expected object to be an instance of "${expectedTypeStr}"${msgSuffix}`;
+    msg =
+      `Expected object to be an instance of "${expectedTypeStr}"${msgSuffix}`;
   } else if (actualTypeStr == "function") {
     msg =
-      `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object${msgSuffix}`
+      `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object${msgSuffix}`;
   } else {
     msg =
       `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}"${msgSuffix}`;
@@ -403,10 +406,11 @@ export function assertNotInstanceOf<A, T>(
   actual: A,
   // deno-lint-ignore no-explicit-any
   unexpectedType: new (...args: any[]) => T,
-  msg?: string
+  msg?: string,
 ): asserts actual is Exclude<A, T> {
   const msgSuffix = msg ? `: ${msg}` : ".";
-  msg = `Expected object to not be an instance of "${typeof unexpectedType}"${msgSuffix}`;
+  msg =
+    `Expected object to not be an instance of "${typeof unexpectedType}"${msgSuffix}`;
   assertFalse(actual instanceof unexpectedType, msg);
 }
 
@@ -420,7 +424,8 @@ export function assertExists<T>(
 ): asserts actual is NonNullable<T> {
   if (actual === undefined || actual === null) {
     const msgSuffix = msg ? `: ${msg}` : ".";
-    msg = `Expected actual: "${actual}" to not be null or undefined${msgSuffix}`;
+    msg =
+      `Expected actual: "${actual}" to not be null or undefined${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -510,7 +515,8 @@ export function assertNotMatch(
 ) {
   if (expected.test(actual)) {
     const msgSuffix = msg ? `: ${msg}` : ".";
-    msg = `Expected actual: "${actual}" to not match: "${expected}"${msgSuffix}`;
+    msg =
+      `Expected actual: "${actual}" to not match: "${expected}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -618,7 +624,9 @@ export function assertIsError<E extends Error = Error>(
 ): asserts error is E {
   const msgSuffix = msg ? `: ${msg}` : ".";
   if (error instanceof Error === false) {
-    throw new AssertionError(`Expected "error" to be an Error object${msgSuffix}}`);
+    throw new AssertionError(
+      `Expected "error" to be an Error object${msgSuffix}}`,
+    );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
     msg = `Expected error to be instance of "${ErrorClass.name}", but was "${

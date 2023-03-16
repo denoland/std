@@ -1199,7 +1199,7 @@ Deno.test({
   name: "strict failed with custom msg",
   fn() {
     assertThrows(
-      () => assertStrictEquals({ a: 1}, { a: 1}, "CUSTOM MESSAGE"),
+      () => assertStrictEquals({ a: 1 }, { a: 1 }, "CUSTOM MESSAGE"),
       AssertionError,
       `Values have the same structure but are not reference-equal: CUSTOM MESSAGE
 
