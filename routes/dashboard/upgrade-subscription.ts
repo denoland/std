@@ -7,7 +7,7 @@ import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/constants.ts";
 export const handler: Handlers<any, DashboardState> = {
   async GET(request, ctx) {
     const { url } = await stripe.checkout.sessions.create({
-      success_url: new URL(request.url).origin + "/todos",
+      success_url: new URL(request.url).origin + "/dashboard/todos",
       customer: ctx.state.session.user.user_metadata.stripe_customer_id,
       line_items: [
         {
