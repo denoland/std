@@ -1,3 +1,16 @@
+### 0.180.0 / 2023.03.16
+
+- BREAKING(csv): move `encoding/csv` to own top-level folder and towards
+  single-export files (#3228)
+- BREAKING(front_matter): move to top-level folder (#3252)
+- BREAKING(json): move to top-level folder and towards single-export files
+  (#3236)
+- BREAKING(jsonc): move to top-level folder and single-export files (#3243)
+- BREAKING(toml): move to top-level folder and towards single-export files
+  (#3241)
+- BREAKING(yaml): move to top-level folder (#3251)
+- feat(http): add http/server_sent_event (#3239)
+
 ### 0.179.0 / 2023.03.10
 
 - BREAKING(encoding/varint): deprecate Wasm implementation in favour of native
