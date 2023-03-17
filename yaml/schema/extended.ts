@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Schema } from "../schema.ts";
 import { regexp, undefinedType } from "../_type/mod.ts";

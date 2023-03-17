@@ -1,9 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { walk } from "../fs/walk.ts";
+/**
+ * Running this script provides a list of suggested files that might be browser-compatible.
+ * It skips test code, benchmark code, internal code and `version.ts` at the root.
+ *
+ * Run using: deno run --allow-read --allow-run _tools/check_browser_compat.ts
+ */
+import { walkSync } from "../fs/walk.ts";
 
 const ROOT = new URL("../", import.meta.url);
-const SKIP = [/(test|bench|\/_|\\_|testdata)/];
+const SKIP = [/(test|bench|\/_|\\_|testdata|version.ts)/];
 const DECLARATION = "// This module is browser compatible.";
 
 function isBrowserCompatible(filePath: string): boolean {
@@ -24,48 +30,19 @@ function hasBrowserCompatibleComment(path: string): boolean {
   return output.includes(DECLARATION);
 }
 
-const needsBrowserCompatibleCommentAddedList: string[] = [];
-const needsBrowserCompatibleCommentRemovedList: string[] = [];
+const maybeBrowserCompatibleFiles: string[] = [];
 
-for await (const { path } of walk(ROOT, { exts: [".ts"], skip: SKIP })) {
-  const result = {
-    isBrowserCompatible: isBrowserCompatible(path),
-    hasBrowserCompatibleComment: hasBrowserCompatibleComment(path),
-  };
-
-  if (!result.isBrowserCompatible && result.hasBrowserCompatibleComment) {
-    needsBrowserCompatibleCommentRemovedList.push(path);
-    continue;
-  }
-
-  if (result.isBrowserCompatible && !result.hasBrowserCompatibleComment) {
-    needsBrowserCompatibleCommentAddedList.push(path);
-    continue;
+for (const { path } of walkSync(ROOT, { exts: [".ts"], skip: SKIP })) {
+  if (isBrowserCompatible(path) && !hasBrowserCompatibleComment(path)) {
+    maybeBrowserCompatibleFiles.push(path);
   }
 }
 
-let failed = false;
-
-if (needsBrowserCompatibleCommentRemovedList.length > 0) {
-  failed = true;
-  console.error(
-    `The following files must have their "${DECLARATION}" comment removed:`,
+if (maybeBrowserCompatibleFiles.length) {
+  console.log(
+    `The following files are likely browser-compatible and can have the "${DECLARATION}" comment added:`,
   );
-  needsBrowserCompatibleCommentRemovedList.forEach((path, index) =>
+  maybeBrowserCompatibleFiles.forEach((path, index) =>
     console.log(`${index + 1}. ${path}`)
   );
-}
-
-if (needsBrowserCompatibleCommentAddedList.length > 0) {
-  failed = true;
-  console.error(
-    `The following files must have their "${DECLARATION}" comment added:`,
-  );
-  needsBrowserCompatibleCommentAddedList.forEach((path, index) =>
-    console.log(`${index + 1}. ${path}`)
-  );
-}
-
-if (failed) {
-  Deno.exit(1);
 }
