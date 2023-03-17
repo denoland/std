@@ -90,9 +90,9 @@ export function isSemVerRange(value: unknown): value is SemVerRange {
   const { ranges } = value as SemVerRange;
   return (
     Array.isArray(ranges),
-    ranges.every((r) =>
-      Array.isArray(r) && r.every((c) => isSemVerComparator(c))
-    )
+      ranges.every((r) =>
+        Array.isArray(r) && r.every((c) => isSemVerComparator(c))
+      )
   );
 }
 
