@@ -230,21 +230,31 @@
  *
  * @example
  * ```ts
- * import * as semver from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+ * import { valid, satisfies, parse, gt, lt, minVersion } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
- * semver.valid("1.2.3"); // "1.2.3"
- * semver.valid("a.b.c"); // undefined
- * semver.satisfies("1.2.3", "1.x || >=2.5.0 || 5.0.0 - 7.2.3"); // true
- * semver.gt("1.2.3", "9.8.7"); // false
- * semver.lt("1.2.3", "9.8.7"); // true
- * semver.minVersion(">=1.0.0"); // "1.0.0"
+ * valid("1.2.3"); // "1.2.3"
+ * valid("a.b.c"); // undefined
+ * satisfies("1.2.3", "1.x || >=2.5.0 || 5.0.0 - 7.2.3"); // true
+ * minVersion(">=1.0.0"); // "1.0.0"
+ *
+ * const s0 = parse("1.2.3");
+ * const s1 = parse("9.8.7");
+ * gt(s0, s1); // false
+ * lt(s0, s1); // true
  * ```
  *
  * @module
  */
 
-import { tryParse, tryParseRange } from "./parse.ts";
-import { rangeTest } from "./range.ts";
+import {
+  comparatorMax,
+  comparatorMin,
+  SemVerComparator,
+} from "./comparator.ts";
+import { tryParse, tryParseComparator, tryParseRange } from "./parse.ts";
+import { rangeTest, SemVerRange } from "./range.ts";
+import { SemVer } from "./semver.ts";
+import { isSemVer, isSemVerComparator, isSemVerRange } from "./validity.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -270,8 +280,41 @@ export function valid(value: string | undefined): string | undefined {
  * @param range A valid SemVerRange string
  * @returns True if the value is valid SemVer in the SemVerRange
  */
-export function satisfies(value: string, range: string): boolean {
-  const semver = tryParse(value);
-  const semverRange = tryParseRange(range);
+export function satisfies(
+  value: string | SemVer,
+  range: string | SemVerRange,
+): boolean {
+  const semver = isSemVer(value) ? value : tryParse(value);
+
+  const semverRange = isSemVerRange(range) ? range : tryParseRange(range);
+
   return !!semver && !!semverRange && rangeTest(semver, semverRange);
+}
+
+/**
+ * A compatibility function to get the minimum version of a range string.
+ * @param value The comparator string or SemVerComparator object
+ * @returns The minimum version for the given range
+ */
+export function minVersion(
+  value: string | SemVerComparator,
+): SemVer | undefined {
+  const comparator = isSemVerComparator(value)
+    ? value
+    : tryParseComparator(value);
+  return comparator && comparatorMin(comparator.semver, comparator.operator);
+}
+
+/**
+ * A compatibility function to get the maximum version of a range string.
+ * @param value The comparator string or SemVerComparator object
+ * @returns The maximum version for the given range
+ */
+export function maxVersion(
+  value: string | SemVerComparator,
+): SemVer | undefined {
+  const comparator = isSemVerComparator(value)
+    ? value
+    : tryParseComparator(value);
+  return comparator && comparatorMax(comparator.semver, comparator.operator);
 }

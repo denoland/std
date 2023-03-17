@@ -248,6 +248,21 @@ export function parse(version: string | SemVer): SemVer {
 }
 
 /**
+ * Parses a comparator string into a valid SemVerComparator or returns undefined if not valid.
+ * @param comparator
+ * @returns A valid SemVerComparator or undefined
+ */
+export function tryParseComparator(
+  comparator: string,
+): SemVerComparator | undefined {
+  try {
+    return parseComparator(comparator);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Parses a comparator string into a valid SemVerComparator.
  * @param comparator
  * @returns A valid SemVerComparator
@@ -270,6 +285,23 @@ export function parseComparator(comparator: string): SemVerComparator {
     min,
     max,
   };
+}
+
+/**
+ * A tries to parse a valid SemVerRange string or returns undefined
+ * @param range The range string
+ * @returns A SemVerRange object if valid otherwise `undefined`
+ */
+export function tryParseRange(
+  range: string,
+): SemVerRange | undefined {
+  try {
+    // Return '*' instead of '' so that truthiness works.
+    // This will throw if it's invalid anyway
+    return parseRange(range);
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -303,23 +335,6 @@ export function parseRange(range: string): SemVerRange {
     .filter((c) => c && c.length);
 
   return { ranges };
-}
-
-/**
- * A tries to parse a valid SemVerRange string or returns undefined
- * @param range The range string
- * @returns A SemVerRange object if valid otherwise `undefined`
- */
-export function tryParseRange(
-  range: string,
-): SemVerRange | undefined {
-  try {
-    // Return '*' instead of '' so that truthiness works.
-    // This will throw if it's invalid anyway
-    return parseRange(range);
-  } catch {
-    return undefined;
-  }
 }
 
 function isX(id: string): boolean {
