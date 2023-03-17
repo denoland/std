@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
 import { SemVer } from "../semver.ts";
 import { Operator } from "../types.ts";
 import { eq } from "./eq.ts";

@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
 import { rangeTest, SemVerRange } from "../range.ts";
 import { ANY, SemVer } from "../semver.ts";
 import { gt } from "./gt.ts";

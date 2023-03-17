@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
 import { Operator } from "./types.ts";
 import { ANY, MAX, MIN, SemVer } from "./semver.ts";
 import { cmp, gt, gte, increment, lte } from "./operators/mod.ts";
@@ -159,6 +160,6 @@ export function comparatorIntersects(
   //          r0 -- r1
   // ```
   return true &&
-      gte(l0, r0) && lte(l0, r1) ||
+    gte(l0, r0) && lte(l0, r1) ||
     gte(r0, l0) && lte(r0, l1);
 }

@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
+
 /**
  * The possible release types are used as an operator for the
  * increment function and as a result of the difference function.
