@@ -129,6 +129,13 @@
  * = toml =
  * ```
  *
+ * ```markdown
+ * +++
+ * is = 'that'
+ * not = 'cool?'
+ * +++
+ * ```
+ *
  * #### JSON
  *
  * ```markdown
@@ -175,6 +182,7 @@ const [RX_RECOGNIZE_YAML, RX_YAML] = createRegExp(
 );
 const [RX_RECOGNIZE_TOML, RX_TOML] = createRegExp(
   ["---toml", "---"],
+  "\\+\\+\\+",
   "= toml =",
 );
 const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
