@@ -3,6 +3,7 @@
 import extract, { Format, test } from "./toml.ts";
 import {
   runExtractTOMLTests,
+  runExtractTOMLTests2,
   runExtractTypeErrorTests,
   runTestInvalidInputTests,
   runTestValidInputTests,
@@ -22,4 +23,8 @@ Deno.test("[TOML] extract type error on invalid input", () => {
 
 Deno.test("[TOML] parse toml delineate by ---toml", async () => {
   await runExtractTOMLTests(extract);
+});
+
+Deno.test("[TOML] parse toml delineate by +++", async () => {
+  await runExtractTOMLTests2(extract);
 });
