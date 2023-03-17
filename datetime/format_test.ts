@@ -66,5 +66,25 @@ Deno.test({
       format(new Date(2019, 0, 20), "'today:' yyyy-MM-dd"),
       "today: 2019-01-20",
     );
+
+    assertEquals(
+      format(new Date("2019-01-09T21:09:09"), "H:m:s yy-M-d"),
+      "21:9:9 19-1-9",
+    );
+
+    assertEquals(
+      "13:00:00.00",
+      format(new Date("2019-01-01T13:00:00.000"), "HH:mm:ss.SS"),
+    );
+
+    assertEquals(
+      "13:00:00.0",
+      format(new Date("2019-01-01T13:00:00.000"), "HH:mm:ss.S"),
+    );
+
+    assertEquals(
+      "1",
+      format(new Date("2019-01-01T13:00:00.000"), "h"),
+    );
   },
 });

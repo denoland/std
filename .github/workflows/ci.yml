@@ -15,9 +15,9 @@ jobs:
       matrix:
         deno: [canary]
         os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+          - ubuntu-22.04
           - windows-2022
-          - macOS-latest
+          - macOS-12
 
     steps:
       - name: Clone repository
@@ -41,27 +41,23 @@ jobs:
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
-        if: |
-          !startsWith(matrix.os, 'ubuntu')
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
       - name: Remove coverage report
         shell: bash
-        if: |
-          !startsWith(matrix.os, 'ubuntu')
         run: |
           rm -rf ./cov/
           rm cov.lcov
 
       - name: Release if version change
         if: |
-          startsWith(matrix.os, 'ubuntu') &&
+          matrix.os == 'ubuntu-22.04' &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
@@ -69,44 +65,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
 
-  node:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        deno: [canary]
-        os:
-          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
-          - windows-2022
-          - macOS-latest
-
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          persist-credentials: false
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: ${{ matrix.deno }}
-
-      - name: Type check node modules
-        shell: bash
-        run: deno task node:check-unstable-api
-
-      - name: Unit test node/
-        run: deno task node:unit
-
-      - name: Run Node tests canary
-        run: deno task node:test
-        env:
-          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
-
   lint:
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -125,9 +85,6 @@ jobs:
       - name: Lint
         run: deno lint
 
-      - name: Check circular dependencies
-        run: "deno task node:lint-circular-deps"
-
       - name: Check License headers
         run: deno task fmt:licence-headers --check
 
@@ -142,7 +99,7 @@ jobs:
 
   wasm:
     name: wasm
-    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-22.04' }}
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         module: [ { name: crypto, path: ./crypto/_wasm }, { name: varint, path: ./encoding/varint/_wasm } ]

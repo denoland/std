@@ -175,7 +175,7 @@ import {
   instantiateWasm,
 } from "./_wasm/mod.ts";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
-import { fnv } from "./_fnv/index.ts";
+import { fnv } from "./_fnv/mod.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
