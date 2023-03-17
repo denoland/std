@@ -1,7 +1,8 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
-import * as semver from "./mod.ts";
+import { assert } from "../../testing/asserts.ts";
+import { parse, parseRange } from "../parse.ts";
+import { ltr } from "./ltr.ts";
 
 Deno.test("ltr", async (t) => {
   // [range, version]
@@ -68,9 +69,9 @@ Deno.test("ltr", async (t) => {
 
   for (const [a, b] of versions) {
     await t.step(`${b} < ${a}`, () => {
-      const range = semver.parseSet(a);
-      const version = semver.parse(b);
-      assert(semver.lts(version, range));
+      const range = parseRange(a);
+      const version = parse(b);
+      assert(ltr(version, range));
     });
   }
 });
@@ -140,14 +141,14 @@ Deno.test("ltrNegative", async (t) => {
     ["^0.1.0 || ~3.0.1 || >4 <=5.0.0", "3.5.0"],
     ["^1.0.0-alpha", "1.0.0-beta"],
     ["~1.0.0-alpha", "1.0.0-beta"],
-    ["=0.1.0", "1.0.0"],
+    ["=0.1.0", "0.1.0"],
   ];
 
   for (const [a, b] of versions) {
     await t.step(`${b} ≮ ${a}`, () => {
-      const range = semver.parseSet(a);
-      const version = semver.parse(b);
-      assert(!semver.lts(version, range));
+      const range = parseRange(a);
+      const version = parse(b);
+      assert(!ltr(version, range));
     });
   }
 });

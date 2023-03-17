@@ -86,7 +86,13 @@ Deno.test({
       ["<1", ["0.0.0", "0.9999.9999"], ["1.0.0", "9999.9999.9999"]],
       [">=1", ["1.0.0", "9999.9999.9999"], ["0.0.0", "0.9999.9999"]],
       ["<1.2", ["0.0.0", "1.1.0"], ["1.2.0", "9999.9999.9999"]],
-      ["1 2", ["1.0.0", "1.9999.9999", "2.0.0", "2.9999.9999"], [
+
+      // This is effectively 1 & 2, which matches nothing.
+      ["1 2", [], [
+        "1.0.0",
+        "1.9999.9999",
+        "2.0.0",
+        "2.9999.9999",
         "0.0.0",
         "0.9999.9999",
         "3.0.0",
@@ -116,26 +122,26 @@ Deno.test({
       ["<*", [], ["0.0.0", "9999.9999.9999"]],
     ];
 
-    for (const [v, validVersions, invalidVersions] of versions) {
+    for (const [range, validVersions, invalidVersions] of versions) {
       await t.step({
-        name: `${v}`,
+        name: `${range}`,
         fn: async (t) => {
-          const set = semver.parseSet(v);
+          const r = semver.parseRange(range);
           for (const valid of validVersions) {
             await t.step({
-              name: `${valid} ∋ ${set}`,
+              name: `${valid} ∋ ${range}`,
               fn: () => {
                 const version = semver.parse(valid);
-                const actual = set.test(version);
+                const actual = semver.rangeTest(version, r);
                 assertEquals(true, actual);
               },
             });
           }
           for (const invalid of invalidVersions) {
             await t.step({
-              name: `${invalid} ∌ ${set}`,
+              name: `${invalid} ∌ ${range}`,
               fn: () => {
-                const actual = set.test(semver.parse(invalid));
+                const actual = semver.rangeTest(semver.parse(invalid), r);
                 assertEquals(false, actual);
               },
             });
@@ -148,7 +154,7 @@ Deno.test({
 
 Deno.test("test", function () {
   const c = semver.parseComparator(">=1.2.3");
-  assert(c.test(semver.parse("1.2.4")));
+  assert(semver.comparatorTest(semver.parse("1.2.4"), c));
 });
 
 Deno.test("intersect", async (t) => {
@@ -195,15 +201,15 @@ Deno.test("intersect", async (t) => {
     await t.step({
       name: `${v[0]} ${expect ? "∩" : "∁"} ${v[1]}`,
       fn: () => {
-        const actual1 = comparator1.intersects(comparator2);
-        const actual2 = comparator2.intersects(comparator1);
-        const actual3 = semver.intersects(
-          comparator1.range(),
-          comparator2.range(),
+        const actual1 = semver.comparatorIntersects(comparator1, comparator2);
+        const actual2 = semver.comparatorIntersects(comparator2, comparator1);
+        const actual3 = semver.rangeIntersects(
+          { ranges: [[comparator1]] },
+          { ranges: [[comparator2]] },
         );
-        const actual4 = semver.intersects(
-          comparator2.range(),
-          comparator1.range(),
+        const actual4 = semver.rangeIntersects(
+          { ranges: [[comparator2]] },
+          { ranges: [[comparator1]] },
         );
         assertEquals(actual1, expect);
         assertEquals(actual2, expect);
@@ -214,30 +220,36 @@ Deno.test("intersect", async (t) => {
   }
 });
 
-Deno.test("outside", async (t) => {
-  const steps: [string, string, boolean][] = [
-    ["1.2.3", "1.0.0 - 1.2.2", true],
-    ["1.2.3", "1.0.0 - 1.2.3", false],
-    ["0.0.0", "1.0.0 - 1.2.2", true],
-    ["1.0.0", "1.0.0 - 1.2.3", false],
-  ];
-  for (const [version, range, expected] of steps) {
-    await t.step({
-      name: `${range} ${expected ? "∋" : "∌"} ${version}`,
-      fn: () => {
-        const v = semver.parse(version);
-        const r = semver.parseRange(range);
-        const actual = semver.outside(v, r);
-        assertEquals(actual, expected);
-      },
-    });
-  }
+Deno.test({
+  name: "outside",
+  fn: async (t) => {
+    const steps: [string, string, boolean][] = [
+      ["1.2.3", "1.0.0 - 1.2.2", true],
+      ["1.2.3", "1.0.0 - 1.2.3", false],
+      ["0.0.0", "1.0.0 - 1.2.2", true],
+      ["1.0.0", "1.0.0 - 1.2.3", false],
+    ];
+    for (const [version, range, expected] of steps) {
+      await t.step({
+        name: `${range} ${expected ? "∋" : "∌"} ${version}`,
+        fn: () => {
+          const v = semver.parse(version);
+          const r = semver.parseRange(range);
+          const actual = semver.outside(v, r);
+          assertEquals(actual, expected);
+        },
+      });
+    }
+  },
 });
 
 Deno.test("tostrings", function () {
-  assertEquals(semver.parseComparator(">= v1.2.3").toString(), ">=1.2.3");
   assertEquals(
-    semver.parseComparator(">= v1.2.3-pre.1+b.2").toString(),
+    semver.comparatorFormat(semver.parseComparator(">= v1.2.3")),
+    ">=1.2.3",
+  );
+  assertEquals(
+    semver.comparatorFormat(semver.parseComparator(">= v1.2.3-pre.1+b.2")),
     ">=1.2.3-pre.1+b.2",
   );
 });

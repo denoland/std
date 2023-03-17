@@ -1,7 +1,8 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
-import * as semver from "./mod.ts";
+import { assert } from "../../testing/asserts.ts";
+import { gtr } from "./gtr.ts";
+import { parse, parseRange } from "../parse.ts";
 
 Deno.test("gtr", async (t) => {
   // [range, version]
@@ -64,9 +65,9 @@ Deno.test("gtr", async (t) => {
 
   for (const [a, b] of versions) {
     await t.step(`${b} > ${a}`, () => {
-      const r = semver.parseSet(a);
-      const s = semver.parse(b);
-      assert(semver.gts(s, r));
+      const r = parseRange(a);
+      const s = parse(b);
+      assert(gtr(s, r));
     });
   }
 });
@@ -140,9 +141,9 @@ Deno.test("gtrNegative", async (t) => {
 
   for (const [a, b] of versions) {
     await t.step(`${b} ≯ ${a}`, () => {
-      const set = semver.parseSet(a);
-      const version = semver.parse(b);
-      assert(!semver.gts(version, set));
+      const range = parseRange(a);
+      const version = parse(b);
+      assert(!gtr(version, range));
     });
   }
 });

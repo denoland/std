@@ -1,10 +1,12 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
-import * as semver from "./mod.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { parse } from "../parse.ts";
+import { ReleaseType } from "../types.ts";
+import { difference } from "./difference.ts";
 
 Deno.test("diff", async (t) => {
-  const versions: [string, string, semver.ReleaseType | undefined][] = [
+  const versions: [string, string, ReleaseType | undefined][] = [
     ["1.2.3", "0.2.3", "major"],
     ["1.4.5", "0.2.3", "major"],
     ["1.2.3", "2.0.0-pre", "premajor"],
@@ -21,9 +23,9 @@ Deno.test("diff", async (t) => {
 
   for (const [v0, v1, expected] of versions) {
     await t.step(`${v0} ≏ ${v1} : ${expected}`, () => {
-      const s0 = semver.parse(v0);
-      const s1 = semver.parse(v1);
-      const actual = semver.difference(s0, s1);
+      const s0 = parse(v0);
+      const s1 = parse(v1);
+      const actual = difference(s0, s1);
       assertEquals(actual, expected);
     });
   }
