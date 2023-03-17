@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../testing/asserts.ts";
 import { ALL } from "./comparator.ts";
 import { INVALID, MAX, MIN } from "./semver.ts";

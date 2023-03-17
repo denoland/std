@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license."
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { comparatorIntersects, SemVerComparator } from "./comparator.ts";
 import { INVALID, SemVer } from "./semver.ts";
 import { gte, lte, sort } from "./operators/mod.ts";
