@@ -19,7 +19,7 @@ function isBrankString(str: string) {
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
  * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/json/json_parse_stream.ts";
  *
- * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
+ * const url = "https://deno.land/std@$STD_VERSION/json/testdata/test.jsonl";
  * const { body } = await fetch(url);
  *
  * const readable = body!
@@ -39,7 +39,7 @@ function isBrankString(str: string) {
  * import { JsonParseStream } from "https://deno.land/std@$STD_VERSION/json/json_parse_stream.ts";
  *
  * const url =
- *   "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.json-seq";
+ *   "https://deno.land/std@$STD_VERSION/json/testdata/test.json-seq";
  * const { body } = await fetch(url);
  *
  * const delimiter = "\x1E";
