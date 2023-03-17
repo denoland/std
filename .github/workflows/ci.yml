@@ -34,14 +34,11 @@ jobs:
         run: deno task test
 
       - name: Type check browser compatible modules
-        shell: bash
         run: deno task test:browser
 
       - name: Generate lcov
-        shell: bash
         # excludes tests, testdata, and generated sources from coverage report
-        run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
+        run: deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -50,7 +47,6 @@ jobs:
           files: cov.lcov
 
       - name: Remove coverage report
-        shell: bash
         run: |
           rm -rf ./cov/
           rm cov.lcov
@@ -60,7 +56,6 @@ jobs:
           matrix.os == 'ubuntu-22.04' &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
-        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
