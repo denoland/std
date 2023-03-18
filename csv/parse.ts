@@ -6,6 +6,7 @@ import {
   ERR_INVALID_DELIM,
   ERR_QUOTE,
   ParseError,
+  type ParseResult,
   type ReadOptions,
 } from "./_io.ts";
 import { assert } from "../_util/asserts.ts";
@@ -286,7 +287,8 @@ class Parser {
   }
 }
 
-export interface ParseOptions extends ReadOptions {
+export interface ParseOptions<Columns extends string = string>
+  extends ReadOptions {
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
    * skipped.
@@ -296,7 +298,7 @@ export interface ParseOptions extends ReadOptions {
   skipFirstRow?: boolean;
 
   /** List of names used for header definition. */
-  columns?: string[];
+  columns?: readonly Columns[];
 }
 
 /**
@@ -322,35 +324,15 @@ export interface ParseOptions extends ReadOptions {
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
-export function parse(
+export function parse(input: string, opt?: undefined): string[][];
+export function parse<Columns extends string, T extends ParseOptions<Columns>>(
   input: string,
-): string[][];
-export function parse(
+  opt: T,
+): ParseResult<ParseOptions, T>;
+export function parse<Columns extends string, T extends ParseOptions<Columns>>(
   input: string,
-  opt: Omit<ParseOptions, "columns" | "skipFirstRow">,
-): string[][];
-export function parse(
-  input: string,
-  opt: Omit<ParseOptions, "columns"> & {
-    columns: string[];
-  },
-): Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: Omit<ParseOptions, "skipFirstRow"> & {
-    skipFirstRow: true;
-  },
-): Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: ParseOptions,
-): string[][] | Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: ParseOptions = {
-    skipFirstRow: false,
-  },
-): string[][] | Record<string, unknown>[] {
+  opt: T = { skipFirstRow: false } as T,
+): ParseResult<ParseOptions, T> {
   const parser = new Parser(opt);
   const r = parser.parse(input);
 
@@ -364,13 +346,13 @@ export function parse(
     }
 
     if (opt.columns) {
-      headers = opt.columns;
+      headers = [...opt.columns];
     }
 
     const firstLineIndex = opt.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
       return convertRowToObject(row, headers, firstLineIndex + i);
-    });
+    }) as ParseResult<ParseOptions<string>, T>;
   }
-  return r;
+  return r as ParseResult<ParseOptions<string>, T>;
 }
