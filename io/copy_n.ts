@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { assert } from "../_util/asserts.ts";
 import type { Reader, Writer } from "../types.d.ts";

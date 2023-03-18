@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /** The type of the result of parsing JSON. */
 export type JsonValue =
   | { [key: string]: JsonValue | undefined }
