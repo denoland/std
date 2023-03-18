@@ -860,7 +860,7 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
-      const parsed = parse("a\nb", { columns: ["aaa", "bbb"] });
+      const parsed = parse("a,b\nc,d", { columns: ["aaa", "bbb"] });
       type _ = AssertTrue<
         IsExact<typeof parsed, Record<"aaa" | "bbb", string>[]>
       >;
