@@ -194,3 +194,31 @@ tags = ['toml', 'front-matter']
     "with some ---toml 👌 crazy stuff in it",
   );
 }
+
+export async function runExtractTOMLTests2(
+  extractFn: ExtractFn,
+) {
+  const str = await Deno.readTextFile(resolveTestDataPath("toml2.md"));
+  const content = extractFn(str);
+
+  assert(content !== undefined);
+  assertEquals(
+    content.frontMatter,
+    `title = 'Three pluses followed by the format marks the spot'
+tags = ['toml', 'front-matter']
+'expanded-description' = 'with some +++toml 👌 crazy stuff in it'`,
+  );
+  assertEquals(
+    content.body,
+    "don't break\n+++\nAlso = '+++toml this shouldn't be a problem'\n",
+  );
+  assertEquals(
+    content.attrs.title,
+    "Three pluses followed by the format marks the spot",
+  );
+  assertEquals(content.attrs.tags, ["toml", "front-matter"]);
+  assertEquals(
+    content.attrs["expanded-description"],
+    "with some +++toml 👌 crazy stuff in it",
+  );
+}
