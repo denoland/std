@@ -819,6 +819,7 @@ Deno.test({
 Deno.test({
   name: "[csv] correct typing",
   fn() {
+    // If no option is passed, defaults to string[][]
     {
       const parsed = parse("a\nb");
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
@@ -828,6 +829,10 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
+      // `skipFirstRow` may be `true` or `false`.
+      // `coloums` may be `undefined` or `string[]`.
+      // If you don't know exactly what the value of the option is,
+      // the return type is string[][] | Record<string, string|undefined>[]
       const options: ParseOptions = {};
       const parsed = parse("a\nb", options);
       type _ = AssertTrue<
@@ -841,6 +846,8 @@ Deno.test({
       const parsed = parse("a\nb", {});
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
+
+    // skipFirstRow option
     {
       const parsed = parse("a\nb", { skipFirstRow: undefined });
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
@@ -855,6 +862,8 @@ Deno.test({
         IsExact<typeof parsed, Record<string, string | undefined>[]>
       >;
     }
+
+    // columns option
     {
       const parsed = parse("a\nb", { columns: undefined });
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
@@ -871,6 +880,8 @@ Deno.test({
         IsExact<typeof parsed, Record<string, string | undefined>[]>
       >;
     }
+
+    // skipFirstRow option + columns option
     {
       const parsed = parse("a\nb", { skipFirstRow: false, columns: undefined });
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;

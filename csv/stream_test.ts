@@ -389,6 +389,7 @@ Deno.test({
 Deno.test({
   name: "[csv/stream] correct typing",
   fn() {
+    // If no option is passed, defaults to ReadableStream<string[]>.
     {
       const { readable } = new CsvStream();
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
@@ -398,6 +399,10 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
+      // `skipFirstRow` may be `true` or `false`.
+      // `coloums` may be `undefined` or `string[]`.
+      // If you don't know exactly what the value of the option is,
+      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
       const options: CsvStreamOptions = {};
       const { readable } = new CsvStream(options);
       type _ = AssertTrue<
@@ -411,6 +416,8 @@ Deno.test({
       const { readable } = new CsvStream({});
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
+
+    // skipFirstRow option
     {
       const { readable } = new CsvStream({ skipFirstRow: undefined });
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
@@ -428,6 +435,8 @@ Deno.test({
         >
       >;
     }
+
+    // columns option
     {
       const { readable } = new CsvStream({ columns: undefined });
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
@@ -447,6 +456,8 @@ Deno.test({
         >
       >;
     }
+
+    // skipFirstRow option + columns option
     {
       const { readable } = new CsvStream({
         skipFirstRow: false,
