@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** {@linkcode parse} function for parsing
  * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)

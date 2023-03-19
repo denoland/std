@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-/** This module is browser compatible. */
+// This module is browser compatible.
 
 import { ascend, BinarySearchTree } from "./binary_search_tree.ts";
 import { Direction, RedBlackNode } from "./red_black_node.ts";

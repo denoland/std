@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, Writer } from "../types.d.ts";
