@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { BytesList } from "../bytes/bytes_list.ts";
 import type { Reader } from "../types.d.ts";
