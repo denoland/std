@@ -7,7 +7,6 @@ import {
   type LineReader,
   parseRecord,
   type ParseResult,
-  // type RowType,
 } from "../csv/_io.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
