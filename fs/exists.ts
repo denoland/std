@@ -21,7 +21,7 @@ export interface ExistsOptions {
  * Test whether or not the given path exists by checking with the file system. Please consider to check if the path is readable and either a file or a directory by providing additional `options`:
  *
  * ```ts
- * import { isReadable } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { exists } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  * const isReadableDir = await exists("./foo", {
  *   isReadable: true,
  *   isDirectory: true
