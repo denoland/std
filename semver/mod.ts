@@ -1,5 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * The semantic version parser.
@@ -82,6 +83,18 @@
  * semver.increment("1.2.3", "prerelease", "beta");
  * // "1.2.4-beta.0"
  * ```
+ *
+ * ### Build Metadata
+ *
+ * Build metadata has no affect on comparisons and must be a `.` delimited
+ * alpha-numeric string. When parsing a version it is retained on the `build: string[]` field
+ * of the semver instance. When incrementing there is an additional parameter that
+ * can set the build metadata on the semver instance.
+ *
+ * To print the full version including build metadata you must call `semver.format({ style: "full" })`.
+ *
+ * For compatibility reasons the `.version` field will not contain the build metadata, you can only
+ * get a full version string by calling the format function.
  *
  * ### Advanced Range Syntax
  *
@@ -504,8 +517,6 @@ export class SemVer {
       throw new TypeError("Invalid Version: " + version);
     }
 
-    this.raw = version;
-
     // these are actually numbers
     this.major = +m[1];
     this.minor = +m[2];
@@ -540,14 +551,37 @@ export class SemVer {
 
     this.build = m[5] ? m[5].split(".") : [];
     this.format();
+    this.raw = this.version;
   }
 
-  format(): string {
-    this.version = this.major + "." + this.minor + "." + this.patch;
+  format(
+    opts: { style?: "release" | "prerelease" | "build" | "full" } = {},
+  ): string {
+    const { style } = opts;
+
+    // todo: Consider a refactor of this class to have no side effects. Increment should return
+    // a new SemVer instance with the new values. This would be a breaking change.
+    // see https://github.com/denoland/deno_std/issues/3110 for discussion details
+    const release = this.version = this.major + "." + this.minor + "." +
+      this.patch;
     if (this.prerelease.length) {
       this.version += "-" + this.prerelease.join(".");
     }
-    return this.version;
+
+    switch (style) {
+      case "build":
+        return [release, this.build.join(".")].filter((v) => v).join("+");
+      case "full":
+        return [this.version, this.build.join(".")].filter((v) => v).join("+");
+      case "release":
+        return release;
+      case "prerelease":
+        return this.version;
+      default:
+        // todo: Have this function return the full version by default. This would be a breaking change.
+        // see this issue for discussion details https://github.com/denoland/deno_std/issues/3110
+        return this.version;
+    }
   }
 
   compare(other: string | SemVer): 1 | 0 | -1 {
@@ -627,7 +661,11 @@ export class SemVer {
     return 1;
   }
 
-  increment(release: ReleaseType, identifier?: string): SemVer {
+  increment(
+    release: ReleaseType,
+    identifier?: string,
+    metadata?: string,
+  ): SemVer {
     switch (release) {
       case "premajor":
         this.prerelease.length = 0;
@@ -731,6 +769,7 @@ export class SemVer {
       default:
         throw new Error("invalid increment argument: " + release);
     }
+    this.build = metadata === undefined ? this.build : metadata.split(".");
     this.format();
     this.raw = this.version;
     return this;
@@ -752,19 +791,25 @@ export class SemVer {
  * If called from a non-prerelease version, the `prerelease` will work the same
  * as `prepatch`. It increments the patch version, then makes a prerelease. If
  * the input version is already a prerelease it simply increments it.
+ *
+ * If the original version has build metadata and the `metadata` parameter is
+ * `undefined`, then it will be unchanged.
  */
 export function increment(
   version: string | SemVer,
   release: ReleaseType,
   options?: Options,
   identifier?: string,
+  metadata?: string,
 ): string | null {
   if (typeof options === "string") {
+    metadata = identifier;
     identifier = options;
     options = undefined;
   }
   try {
-    return new SemVer(version, options).increment(release, identifier).version;
+    return new SemVer(version, options).increment(release, identifier, metadata)
+      .format({ style: "full" });
   } catch {
     return null;
   }

@@ -1,6 +1,7 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Pretty print bytes.
  *
@@ -41,29 +42,6 @@ type LocaleOptions = {
 };
 
 /**
- * @deprecated (will be removed after 0.172.0) use `FormatOptions` instead
- */
-export interface PrettyBytesOptions {
-  /** Uses bits representation.
-   *
-   * @default {false}
-   */
-  bits?: boolean;
-  /** Uses binary bytes (e.g. kibibyte).
-   *
-   * @default {false}
-   */
-  binary?: boolean;
-  /** Include plus sign for positive numbers. */
-  signed?: boolean;
-  /** Uses localized number formatting. If it is set to true, uses default locale on the system. If it's set to string, uses that locale. The given string should be BCP 47 language tag (ref: https://en.wikipedia.org/wiki/IETF_language_tag). You can also give the list of language tags. */
-  locale?: boolean | string | string[];
-  /** The minimum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
-  minimumFractionDigits?: number;
-  /** The maximum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
-  maximumFractionDigits?: number;
-}
-/**
  * The options for pretty printing the byte numbers.
  */
 export interface FormatOptions {
@@ -79,13 +57,6 @@ export interface FormatOptions {
   minimumFractionDigits?: number;
   /** The maximum number of fraction digits to display. If neither minimumFractionDigits or maximumFractionDigits are set, the default behavior is to round to 3 significant digits. */
   maximumFractionDigits?: number;
-}
-
-/**
- * @deprecated (will be removed after 0.172.0) use `format` instead
- */
-export function prettyBytes(num: number, options: FormatOptions = {}) {
-  return format(num, options);
 }
 
 /**

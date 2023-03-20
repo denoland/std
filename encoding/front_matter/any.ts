@@ -1,13 +1,17 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { createExtractor, Format, Parser, test as _test } from "./mod.ts";
-import { parse as parseYAML } from "../yaml.ts";
-import { parse as parseTOML } from "../toml.ts";
+import { extract } from "../../front_matter/any.ts";
 
-export { Format, test } from "./mod.ts";
-export const extract = createExtractor({
-  [Format.YAML]: parseYAML as Parser,
-  [Format.TOML]: parseTOML as Parser,
-  [Format.JSON]: JSON.parse as Parser,
-});
+export {
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/any.ts` instead. */
+  Format,
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/any.ts` instead. */
+  test,
+} from "./mod.ts";
+export {
+  /** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/any.ts` instead. */
+  extract,
+};
+
+/** @deprecated (will be removed after 0.182.0) Import from `std/front_matter/any.ts` instead. */
 export default extract;

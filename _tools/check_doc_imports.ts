@@ -8,14 +8,13 @@ import {
   ScriptTarget,
   StringLiteral,
   SyntaxKind,
-} from "https://esm.sh/typescript@4.8.4";
+} from "https://esm.sh/typescript@4.9.4";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".md"];
 const EXCLUDED_PATHS = [
   ".git",
   ".github",
   "_tools",
-  "node",
 ];
 
 const ROOT = new URL("../", import.meta.url);

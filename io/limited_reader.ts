@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * A `LimitedReader` reads from `reader` but limits the amount of data returned to just `limit` bytes.
  * Each call to `read` updates `limit` to reflect the new amount remaining.
