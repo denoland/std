@@ -95,7 +95,9 @@ format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
 
 ### exists
 
-Test whether or not the given path exists by checking with the file system. Please consider to check if the path is readable and either a file or a directory by providing additional `options`.
+Test whether or not the given path exists by checking with the file system.
+Please consider to check if the path is readable and either a file or a
+directory by providing additional `options`.
 
 ```ts
 import {

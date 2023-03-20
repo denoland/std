@@ -39,13 +39,13 @@ Deno.test("[fs] existsFile", async function () {
       await exists(tempFilePath, {
         isDirectory: true,
       }),
-      false
+      false,
     );
     assertEquals(
       await exists(tempFilePath, {
         isFile: true,
       }),
-      true
+      true,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -54,7 +54,7 @@ Deno.test("[fs] existsFile", async function () {
         await exists(tempFilePath, {
           isReadable: true,
         }),
-        false
+        false,
       );
     }
   } catch (error) {
@@ -81,13 +81,13 @@ Deno.test("[fs] existsFileLink", async function () {
       await exists(tempLinkFilePath, {
         isDirectory: true,
       }),
-      false
+      false,
     );
     assertEquals(
       await exists(tempLinkFilePath, {
         isFile: true,
       }),
-      true
+      true,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -96,7 +96,7 @@ Deno.test("[fs] existsFileLink", async function () {
         await exists(tempLinkFilePath, {
           isReadable: true,
         }),
-        false
+        false,
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
@@ -120,13 +120,13 @@ Deno.test("[fs] existsFileSync", function () {
       existsSync(tempFilePath, {
         isDirectory: true,
       }),
-      false
+      false,
     );
     assertEquals(
       existsSync(tempFilePath, {
         isFile: true,
       }),
-      true
+      true,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -135,7 +135,7 @@ Deno.test("[fs] existsFileSync", function () {
         existsSync(tempFilePath, {
           isReadable: true,
         }),
-        false
+        false,
       );
     }
   } catch (error) {
@@ -162,13 +162,13 @@ Deno.test("[fs] existsFileLinkSync", function () {
       existsSync(tempLinkFilePath, {
         isDirectory: true,
       }),
-      false
+      false,
     );
     assertEquals(
       existsSync(tempLinkFilePath, {
         isFile: true,
       }),
-      true
+      true,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -177,7 +177,7 @@ Deno.test("[fs] existsFileLinkSync", function () {
         existsSync(tempLinkFilePath, {
           isReadable: true,
         }),
-        false
+        false,
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
@@ -199,13 +199,13 @@ Deno.test("[fs] existsDir", async function () {
       await exists(tempDirPath, {
         isDirectory: true,
       }),
-      true
+      true,
     );
     assertEquals(
       await exists(tempDirPath, {
         isFile: true,
       }),
-      false
+      false,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -214,7 +214,7 @@ Deno.test("[fs] existsDir", async function () {
         await exists(tempDirPath, {
           isReadable: true,
         }),
-        false
+        false,
       );
     }
   } catch (error) {
@@ -236,13 +236,13 @@ Deno.test("[fs] existsDirLink", async function () {
       await exists(tempLinkDirPath, {
         isDirectory: true,
       }),
-      true
+      true,
     );
     assertEquals(
       await exists(tempLinkDirPath, {
         isFile: true,
       }),
-      false
+      false,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -251,7 +251,7 @@ Deno.test("[fs] existsDirLink", async function () {
         await exists(tempLinkDirPath, {
           isReadable: true,
         }),
-        false
+        false,
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
@@ -272,13 +272,13 @@ Deno.test("[fs] existsDirSync", function () {
       existsSync(tempDirPath, {
         isDirectory: true,
       }),
-      true
+      true,
     );
     assertEquals(
       existsSync(tempDirPath, {
         isFile: true,
       }),
-      false
+      false,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -287,7 +287,7 @@ Deno.test("[fs] existsDirSync", function () {
         existsSync(tempDirPath, {
           isReadable: true,
         }),
-        false
+        false,
       );
     }
   } catch (error) {
@@ -309,13 +309,13 @@ Deno.test("[fs] existsDirLinkSync", function () {
       existsSync(tempLinkDirPath, {
         isDirectory: true,
       }),
-      true
+      true,
     );
     assertEquals(
       existsSync(tempLinkDirPath, {
         isFile: true,
       }),
-      false
+      false,
     );
     if (Deno.build.os !== "windows") {
       // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
@@ -324,7 +324,7 @@ Deno.test("[fs] existsDirLinkSync", function () {
         existsSync(tempLinkDirPath, {
           isReadable: true,
         }),
-        false
+        false,
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }

@@ -59,7 +59,7 @@ export interface ExistsOptions {
  */
 export async function exists(
   path: string | URL,
-  options?: ExistsOptions
+  options?: ExistsOptions,
 ): Promise<boolean> {
   try {
     const stat: Deno.FileInfo = await Deno.stat(path);
@@ -69,7 +69,7 @@ export async function exists(
     ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
-          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together."
+          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
         );
       }
       if (
@@ -98,7 +98,7 @@ export async function exists(
     if (error instanceof Deno.errors.PermissionDenied) {
       if (
         (await Deno.permissions.query({ name: "read", path })).state ===
-        "granted"
+          "granted"
       ) {
         // --allow-read not missing
         return !options?.isReadable; // PermissionDenied was raised by file system
@@ -150,7 +150,7 @@ export async function exists(
  */
 export function existsSync(
   path: string | URL,
-  options?: ExistsOptions
+  options?: ExistsOptions,
 ): boolean {
   try {
     const stat: Deno.FileInfo = Deno.statSync(path);
@@ -160,7 +160,7 @@ export function existsSync(
     ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
-          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together."
+          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
         );
       }
       if (
