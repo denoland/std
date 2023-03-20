@@ -88,7 +88,7 @@ export async function exists(
         if (Deno.uid() == stat.uid) {
           return (stat.mode & 0o400) == 0o400; // User is owner and can read?
         } else if (Deno.gid() == stat.gid) {
-          return (stat.mode & 0o040) == 0o040; // User group is owner can read?
+          return (stat.mode & 0o040) == 0o040; // User group is owner and can read?
         }
         return (stat.mode & 0o004) == 0o004; // Others can read?
       }
@@ -104,7 +104,7 @@ export async function exists(
           "granted"
       ) {
         // --allow-read not missing
-        return !options?.isReadable; // PermissionDenied was raised by file system
+        return !options?.isReadable; // PermissionDenied was raised by file system, so the item exists, but can't be read
       }
     }
     throw error;
@@ -179,7 +179,7 @@ export function existsSync(
         if (Deno.uid() == stat.uid) {
           return (stat.mode & 0o400) == 0o400; // User is owner and can read?
         } else if (Deno.gid() == stat.gid) {
-          return (stat.mode & 0o040) == 0o040; // User group is owner can read?
+          return (stat.mode & 0o040) == 0o040; // User group is owner and can read?
         }
         return (stat.mode & 0o004) == 0o004; // Others can read?
       }
@@ -194,7 +194,7 @@ export function existsSync(
         Deno.permissions.querySync({ name: "read", path }).state === "granted"
       ) {
         // --allow-read not missing
-        return !options?.isReadable; // PermissionDenied was raised by file system
+        return !options?.isReadable; // PermissionDenied was raised by file system, so the item exists, but can't be read
       }
     }
     throw error;
