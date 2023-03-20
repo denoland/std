@@ -3,16 +3,19 @@
 export interface ExistsOptions {
   /**
    * When `true`, will check if the path is readable by the user as well.
+   * @default {false}
    */
   isReadable?: boolean;
   /**
    * When `true`, will check if the path is a directory as well.
    * Directory symlinks are included.
+   * @default {false}
    */
   isDirectory?: boolean;
   /**
    * When `true`, will check if the path is a file as well.
    * File symlinks are included.
+   * @default {false}
    */
   isFile?: boolean;
 }
