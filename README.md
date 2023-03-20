@@ -161,7 +161,13 @@ export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPiEkD6QJts4RaYcp1SevPe";
 export const FREE_PLAN_TODOS_LIMIT = 5;
 ```
 
-The Stripe premium plan price id is the "API ID" of your Stripe product.
+The Stripe premium plan price id is the "API ID" of your Stripe product. If you
+do not set it to your own premium plan price id, Stripe will not be able to find
+the set product plan when it tries to upgrade the subscription from the
+account's subscription settings. So make sure you set
+`STRIPE_PREMIUM_PLAN_PRICE_ID` to the value found on the
+[products page](https://dashboard.stripe.com/test/products) on Stripe using the
+`API-ID`.
 
 ### Landing Page
 
