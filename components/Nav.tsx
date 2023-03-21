@@ -7,12 +7,18 @@ interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
 
 export default function Nav(props: NavProps) {
   return (
-    <nav
-      class={`flex gap-x-8 gap-y-2 items-center justify-between ${
-        props.class ?? ""
-      }`}
-    >
-      {props.items.map((item) => <a href={item.href}>{item.inner}</a>)}
+    <nav>
+      <ul
+        class={`flex gap-x-8 gap-y-2 items-center justify-between ${
+          props.class ?? ""
+        }`}
+      >
+        {props.items.map((item) => (
+          <li>
+            <a href={item.href}>{item.inner}</a>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }
