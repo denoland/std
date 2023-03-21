@@ -264,7 +264,7 @@ Deno.test("[fs] existsDirLink", async function () {
 });
 
 Deno.test("[fs] existsDirSync", function () {
-  const tempDirPath = Deno.makeTempDirSync();
+  const tempDirPath: string = Deno.makeTempDirSync();
   try {
     assertEquals(existsSync(tempDirPath), true);
     assertEquals(existsSync(tempDirPath, {}), true);
