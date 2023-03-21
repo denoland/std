@@ -214,6 +214,8 @@ function getValuesFromItem(
 }
 
 /**
+ * Write data using CSV encoding.
+ *
  * @param data The source data to stringify. It's an array of items which are
  * plain objects or arrays.
  *
