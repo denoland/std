@@ -1,4 +1,4 @@
-import Button from "@/components/Button.tsx";
+import LinkButton from "@/components/LinkButton.tsx";
 import Head from "@/components/Head.tsx";
 import Header from "@/components/Header.tsx";
 import Nav from "@/components/Nav.tsx";
@@ -19,7 +19,7 @@ interface HeadingProps {
 function Heading(props: HeadingProps) {
   return (
     <div class="text-center space-y-4">
-      <h2 id="pricing" class="font-bold md:text-6xl text-4xl text-primary">
+      <h2 class="font-bold md:text-6xl text-4xl text-primary">
         {props.title}
       </h2>
       <p class="text-xl text-black">
@@ -39,14 +39,13 @@ function Hero() {
         Some details about your SaaS.
       </p>
       <div class="flex justify-center gap-8 flex-wrap">
-        <a href="/signup">
-          <Button>Signup</Button>
-        </a>
-        <a href="#">
-          <Button class="!bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300">
-            Learn more
-          </Button>
-        </a>
+        <LinkButton href="/signup">Signup</LinkButton>
+        <LinkButton
+          href="#"
+          class="!bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300"
+        >
+          Learn more
+        </LinkButton>
       </div>
     </div>
   );
@@ -139,9 +138,9 @@ function PricingCard(props: PricingCardProps) {
         <span class="font-normal">{" "}per month</span>
       </p>
       <div>
-        <a href={props.url}>
-          <Button class="w-full rounded-md">Subscribe</Button>
-        </a>
+        <LinkButton href={props.url} class="w-full rounded-md">
+          Subscribe
+        </LinkButton>
       </div>
     </div>
   );
@@ -149,7 +148,7 @@ function PricingCard(props: PricingCardProps) {
 
 function PricingSection(props: { products: Stripe.Product[] }) {
   return (
-    <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto">
+    <div id="pricing" class="px-8 py-16 max-w-7xl space-y-16 mx-auto">
       <Heading
         title="Pricing"
         subtitle="Some copy about pricing."
@@ -251,15 +250,11 @@ export default function HomePage(props: PageProps<Stripe.Product[]>) {
   return (
     <>
       <Head />
-      <body class="bg-black">
-        <div class="bg-white">
-          <TopSection />
-          <FeaturesSection />
-          <PricingSection products={props.data} />
-          <TestimonialSection />
-          <BottomSection />
-        </div>
-      </body>
+      <TopSection />
+      <FeaturesSection />
+      <PricingSection products={props.data} />
+      <TestimonialSection />
+      <BottomSection />
     </>
   );
 }

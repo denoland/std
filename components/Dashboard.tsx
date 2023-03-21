@@ -18,22 +18,27 @@ interface SidebarNavProps extends JSX.HTMLAttributes<HTMLElement> {
 
 function SidebarNav(props: SidebarNavProps) {
   return (
-    <nav class="w-full md:w-[16rem] md:flex-shrink-0 flex flex-col justify-start">
-      {props.items.map((item) => (
-        <a
-          href={item.href}
-          class={`px-4 py-2 rounded w-full ${
-            item.href === props.active
-              ? "bg-gray-100 font-bold"
-              : "hover:bg-gray-100"
-          }`}
-        >
-          <span class="align-middle">
-            <item.icon class="inline-block mr-2" />
-            {item.inner}
-          </span>
-        </a>
-      ))}
+    <nav class="w-full md:w-[16rem] md:flex-shrink-0 ">
+      <ul class="flex flex-col justify-start">
+        {props.items.map((item) => (
+          <li
+            class={`px-4 py-2 rounded w-full ${
+              item.href === props.active
+                ? "bg-gray-100 font-bold"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            <a
+              href={item.href}
+            >
+              <span class="align-middle">
+                <item.icon class="inline-block mr-2" />
+                {item.inner}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }
@@ -65,7 +70,7 @@ export default function DashboardLayout(props: DashboardProps) {
   ];
 
   return (
-    <body class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-h-screen">
       <Header>
         <Nav items={headerNavItems} />
       </Header>
@@ -80,6 +85,6 @@ export default function DashboardLayout(props: DashboardProps) {
         </div>
       </div>
       <Footer />
-    </body>
+    </div>
   );
 }
