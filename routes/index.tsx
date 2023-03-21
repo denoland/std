@@ -19,7 +19,7 @@ interface HeadingProps {
 function Heading(props: HeadingProps) {
   return (
     <div class="text-center space-y-4">
-      <h2 class="font-bold md:text-6xl text-4xl text-[#4f06be]">
+      <h2 class="font-bold md:text-6xl text-4xl text-primary">
         {props.title}
       </h2>
       <p class="text-xl text-black">
@@ -93,7 +93,7 @@ function FeaturesSection() {
 
   return (
     <>
-      <div class="bg-[#170139]" id="features">
+      <div class="bg-secondary" id="features">
         <div class="px-8 py-16 max-w-7xl space-y-16 mx-auto text-white">
           <div class="flex md:flex-row flex-col gap-8">
             {features.map((feature) => (
@@ -191,7 +191,7 @@ function TestimonialSection() {
         <p class="text-2xl">"This app is a game changer."</p>
         <div>
           <p>
-            <strong class="text-[#4f06be]">Brad</strong>
+            <strong class="text-primary">Brad</strong>
           </p>
           <p>CEO of Good Things</p>
         </div>
@@ -219,7 +219,7 @@ function BottomSection() {
   return (
     <>
       <img src="/hero-light.svg" alt="Hero (light)" class="w-full" />
-      <div class="bg-gradient-to-t from-black to-[#170139]">
+      <div class="bg-gradient-to-t from-black to-secondary">
         <Footer class="text-white">
           <Nav items={navItems} />
         </Footer>
