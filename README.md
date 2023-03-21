@@ -220,6 +220,12 @@ You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
 
 TODO.
 
+### Theme Customization
+
+You can customize theme options such as spacing, color, etc. By default, Deno
+SaaSKit comes with `primary` and `secondary` colors predefined within
+`twind.config.ts`. Change these values to match your desired color-scheme.
+
 ## Building a Modern SaaS Stack
 
 Along with this template, we are creating a series of How To guides to show how
