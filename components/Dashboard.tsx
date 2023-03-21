@@ -65,7 +65,7 @@ export default function DashboardLayout(props: DashboardProps) {
   ];
 
   return (
-    <body class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-h-screen">
       <Header>
         <Nav items={headerNavItems} />
       </Header>
@@ -80,6 +80,6 @@ export default function DashboardLayout(props: DashboardProps) {
         </div>
       </div>
       <Footer />
-    </body>
+    </div>
   );
 }
