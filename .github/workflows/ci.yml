@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ "crypto/_wasm" ]
+        module: [ crypto/_wasm ]
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
