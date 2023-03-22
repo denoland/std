@@ -103,7 +103,9 @@ Deno.test("[fs] existsFileLink", async function () {
   } catch (error) {
     throw error;
   } finally {
-    await Deno.chmod(tempFilePath, 0o644);
+    if (Deno.build.os !== "windows") {
+      await Deno.chmod(tempFilePath, 0o644);
+    }
     tempFile.close();
     await Deno.remove(tempDirPath, { recursive: true });
   }
@@ -184,7 +186,9 @@ Deno.test("[fs] existsFileLinkSync", function () {
   } catch (error) {
     throw error;
   } finally {
-    Deno.chmodSync(tempFilePath, 0o644);
+    if (Deno.build.os !== "windows") {
+      Deno.chmodSync(tempFilePath, 0o644);
+    }
     tempFile.close();
     Deno.removeSync(tempDirPath, { recursive: true });
   }
@@ -220,7 +224,9 @@ Deno.test("[fs] existsDir", async function () {
   } catch (error) {
     throw error;
   } finally {
-    await Deno.chmod(tempDirPath, 0o755);
+    if (Deno.build.os !== "windows") {
+      await Deno.chmod(tempDirPath, 0o755);
+    }
     await Deno.remove(tempDirPath, { recursive: true });
   }
 });
@@ -258,7 +264,9 @@ Deno.test("[fs] existsDirLink", async function () {
   } catch (error) {
     throw error;
   } finally {
-    await Deno.chmod(tempDirPath, 0o755);
+    if (Deno.build.os !== "windows") {
+      await Deno.chmod(tempDirPath, 0o755);
+    }
     await Deno.remove(tempDirPath, { recursive: true });
   }
 });
@@ -293,7 +301,9 @@ Deno.test("[fs] existsDirSync", function () {
   } catch (error) {
     throw error;
   } finally {
-    Deno.chmodSync(tempDirPath, 0o755);
+    if (Deno.build.os !== "windows") {
+      Deno.chmodSync(tempDirPath, 0o755);
+    }
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
@@ -331,7 +341,9 @@ Deno.test("[fs] existsDirLinkSync", function () {
   } catch (error) {
     throw error;
   } finally {
-    Deno.chmodSync(tempDirPath, 0o755);
+    if (Deno.build.os !== "windows") {
+      Deno.chmodSync(tempDirPath, 0o755);
+    }
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
