@@ -339,7 +339,6 @@ interface Scene {
 }
 
 const scenes: Scene[] = [
-  // 1
   {
     read: false,
     sync: false,
@@ -352,7 +351,6 @@ const scenes: Scene[] = [
     exists: false,
     output: "run again with the --allow-read flag",
   },
-  // 2
   {
     read: true,
     sync: false,
@@ -363,9 +361,8 @@ const scenes: Scene[] = [
     read: true,
     sync: true,
     exists: false,
-    output: "non exist",
+    output: "not exist",
   },
-  // 3
   {
     read: false,
     sync: false,
@@ -378,7 +375,6 @@ const scenes: Scene[] = [
     exists: true,
     output: "run again with the --allow-read flag",
   },
-  // 4
   {
     read: true,
     sync: false,
