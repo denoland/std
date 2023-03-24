@@ -65,7 +65,7 @@ export async function exists(
   options?: ExistsOptions,
 ): Promise<boolean> {
   try {
-    const stat: Deno.FileInfo = await Deno.stat(path);
+    const stat = await Deno.stat(path);
     if (
       options &&
       (options.isReadable || options.isDirectory || options.isFile)
@@ -156,7 +156,7 @@ export function existsSync(
   options?: ExistsOptions,
 ): boolean {
   try {
-    const stat: Deno.FileInfo = Deno.statSync(path);
+    const stat = Deno.statSync(path);
     if (
       options &&
       (options.isReadable || options.isDirectory || options.isFile)
