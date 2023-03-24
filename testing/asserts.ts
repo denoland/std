@@ -170,7 +170,9 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string) {
   if (equal(actual, expected)) {
     return;
   }
-  let message = "";
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  let message = `Values are not equal${msgSuffix}`;
+
   const actualString = format(actual);
   const expectedString = format(expected);
   try {
@@ -180,12 +182,9 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string) {
       ? diffstr(actual as string, expected as string)
       : diff(actualString.split("\n"), expectedString.split("\n"));
     const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    message = `Values are not equal:\n${diffMsg}`;
+    message = `${message}\n${diffMsg}`;
   } catch {
-    message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-  }
-  if (msg) {
-    message = msg;
+    message = `${message}\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
   throw new AssertionError(message);
 }
@@ -219,10 +218,10 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   } catch {
     expectedString = "[Cannot display]";
   }
-  if (!msg) {
-    msg = `actual: ${actualString} expected not to be: ${expectedString}`;
-  }
-  throw new AssertionError(msg);
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  throw new AssertionError(
+    `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`,
+  );
 }
 
 /**
@@ -256,35 +255,32 @@ export function assertStrictEquals<T>(
     return;
   }
 
+  const msgSuffix = msg ? `: ${msg}` : ".";
   let message: string;
 
-  if (msg) {
-    message = msg;
-  } else {
-    const actualString = format(actual);
-    const expectedString = format(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
 
-    if (actualString === expectedString) {
-      const withOffset = actualString
-        .split("\n")
-        .map((l) => `    ${l}`)
-        .join("\n");
-      message =
-        `Values have the same structure but are not reference-equal:\n\n${
-          red(withOffset)
-        }\n`;
-    } else {
-      try {
-        const stringDiff = (typeof actual === "string") &&
-          (typeof expected === "string");
-        const diffResult = stringDiff
-          ? diffstr(actual as string, expected as string)
-          : diff(actualString.split("\n"), expectedString.split("\n"));
-        const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-        message = `Values are not strictly equal:\n${diffMsg}`;
-      } catch {
-        message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
-      }
+  if (actualString === expectedString) {
+    const withOffset = actualString
+      .split("\n")
+      .map((l) => `    ${l}`)
+      .join("\n");
+    message =
+      `Values have the same structure but are not reference-equal${msgSuffix}\n\n${
+        red(withOffset)
+      }\n`;
+  } else {
+    try {
+      const stringDiff = (typeof actual === "string") &&
+        (typeof expected === "string");
+      const diffResult = stringDiff
+        ? diffstr(actual as string, expected as string)
+        : diff(actualString.split("\n"), expectedString.split("\n"));
+      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+      message = `Values are not strictly equal${msgSuffix}\n${diffMsg}`;
+    } catch {
+      message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
     }
   }
 
@@ -310,8 +306,11 @@ export function assertNotStrictEquals<T>(
     return;
   }
 
+  const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(
-    msg ?? `Expected "actual" to be strictly unequal to: ${format(actual)}\n`,
+    `Expected "actual" to be strictly unequal to: ${
+      format(actual)
+    }${msgSuffix}\n`,
   );
 }
 
@@ -345,11 +344,12 @@ export function assertAlmostEquals(
   if (delta <= tolerance) {
     return;
   }
+
+  const msgSuffix = msg ? `: ${msg}` : ".";
   const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
   throw new AssertionError(
-    msg ??
-      `actual: "${f(actual)}" expected to be close to "${f(expected)}": \
-delta "${f(delta)}" is greater than "${f(tolerance)}"`,
+    `Expected actual: "${f(actual)}" to be close to "${f(expected)}": \
+delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`,
   );
 }
 
@@ -368,31 +368,34 @@ export function assertInstanceOf<T extends AnyConstructor>(
   expectedType: T,
   msg = "",
 ): asserts actual is GetConstructorType<T> {
-  if (!msg) {
-    const expectedTypeStr = expectedType.name;
+  if (actual instanceof expectedType) return;
 
-    let actualTypeStr = "";
-    if (actual === null) {
-      actualTypeStr = "null";
-    } else if (actual === undefined) {
-      actualTypeStr = "undefined";
-    } else if (typeof actual === "object") {
-      actualTypeStr = actual.constructor?.name ?? "Object";
-    } else {
-      actualTypeStr = typeof actual;
-    }
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  const expectedTypeStr = expectedType.name;
 
-    if (expectedTypeStr == actualTypeStr) {
-      msg = `Expected object to be an instance of "${expectedTypeStr}".`;
-    } else if (actualTypeStr == "function") {
-      msg =
-        `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object.`;
-    } else {
-      msg =
-        `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}".`;
-    }
+  let actualTypeStr = "";
+  if (actual === null) {
+    actualTypeStr = "null";
+  } else if (actual === undefined) {
+    actualTypeStr = "undefined";
+  } else if (typeof actual === "object") {
+    actualTypeStr = actual.constructor?.name ?? "Object";
+  } else {
+    actualTypeStr = typeof actual;
   }
-  assert(actual instanceof expectedType, msg);
+
+  if (expectedTypeStr == actualTypeStr) {
+    msg =
+      `Expected object to be an instance of "${expectedTypeStr}"${msgSuffix}`;
+  } else if (actualTypeStr == "function") {
+    msg =
+      `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object${msgSuffix}`;
+  } else {
+    msg =
+      `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}"${msgSuffix}`;
+  }
+
+  throw new AssertionError(msg);
 }
 
 /**
@@ -403,8 +406,11 @@ export function assertNotInstanceOf<A, T>(
   actual: A,
   // deno-lint-ignore no-explicit-any
   unexpectedType: new (...args: any[]) => T,
-  msg = `Expected object to not be an instance of "${typeof unexpectedType}"`,
+  msg?: string,
 ): asserts actual is Exclude<A, T> {
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg =
+    `Expected object to not be an instance of "${typeof unexpectedType}"${msgSuffix}`;
   assertFalse(actual instanceof unexpectedType, msg);
 }
 
@@ -417,9 +423,9 @@ export function assertExists<T>(
   msg?: string,
 ): asserts actual is NonNullable<T> {
   if (actual === undefined || actual === null) {
-    if (!msg) {
-      msg = `actual: "${actual}" expected to not be null or undefined`;
-    }
+    const msgSuffix = msg ? `: ${msg}` : ".";
+    msg =
+      `Expected actual: "${actual}" to not be null or undefined${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -434,9 +440,8 @@ export function assertStringIncludes(
   msg?: string,
 ) {
   if (!actual.includes(expected)) {
-    if (!msg) {
-      msg = `actual: "${actual}" expected to contain: "${expected}"`;
-    }
+    const msgSuffix = msg ? `: ${msg}` : ".";
+    msg = `Expected actual: "${actual}" to contain: "${expected}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -475,11 +480,11 @@ export function assertArrayIncludes<T>(
   if (missing.length === 0) {
     return;
   }
-  if (!msg) {
-    msg = `actual: "${format(actual)}" expected to include: "${
-      format(expected)
-    }"\nmissing: ${format(missing)}`;
-  }
+
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  msg = `Expected actual: "${format(actual)}" to include: "${
+    format(expected)
+  }"${msgSuffix}\nmissing: ${format(missing)}`;
   throw new AssertionError(msg);
 }
 
@@ -493,9 +498,8 @@ export function assertMatch(
   msg?: string,
 ) {
   if (!expected.test(actual)) {
-    if (!msg) {
-      msg = `actual: "${actual}" expected to match: "${expected}"`;
-    }
+    const msgSuffix = msg ? `: ${msg}` : ".";
+    msg = `Expected actual: "${actual}" to match: "${expected}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -510,9 +514,9 @@ export function assertNotMatch(
   msg?: string,
 ) {
   if (expected.test(actual)) {
-    if (!msg) {
-      msg = `actual: "${actual}" expected to not match: "${expected}"`;
-    }
+    const msgSuffix = msg ? `: ${msg}` : ".";
+    msg =
+      `Expected actual: "${actual}" to not match: "${expected}"${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -525,6 +529,7 @@ export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any
   actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
+  msg?: string,
 ) {
   type loose = Record<PropertyKey, unknown>;
 
@@ -592,6 +597,7 @@ export function assertObjectMatch(
     // set (nested) instances' constructor field to be "Object" without changing expected value.
     // see https://github.com/denoland/deno_std/pull/1419
     filter(expected, expected),
+    msg,
   );
 }
 
@@ -599,7 +605,8 @@ export function assertObjectMatch(
  * Forcefully throws a failed assertion
  */
 export function fail(msg?: string): never {
-  assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  assert(false, `Failed assertion${msgSuffix}`);
 }
 
 /**
@@ -615,13 +622,16 @@ export function assertIsError<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): asserts error is E {
+  const msgSuffix = msg ? `: ${msg}` : ".";
   if (error instanceof Error === false) {
-    throw new AssertionError(`Expected "error" to be an Error object.`);
+    throw new AssertionError(
+      `Expected "error" to be an Error object${msgSuffix}}`,
+    );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
     msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
       typeof error === "object" ? error?.constructor?.name : "[not an object]"
-    }"${msg ? `: ${msg}` : "."}`;
+    }"${msgSuffix}`;
     throw new AssertionError(msg);
   }
   if (
@@ -630,7 +640,7 @@ export function assertIsError<E extends Error = Error>(
   ) {
     msg = `Expected error message to include "${msgIncludes}", but got "${
       error instanceof Error ? error.message : "[not an Error]"
-    }"${msg ? `: ${msg}` : "."}`;
+    }"${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
@@ -729,13 +739,13 @@ export function assertThrows<E extends Error = Error>(
     msg = errorClassOrMsg;
   }
   let doesThrow = false;
-  const msgToAppendToError = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : ".";
   try {
     fn();
   } catch (error) {
     if (ErrorClass) {
       if (error instanceof Error === false) {
-        throw new AssertionError("A non-Error object was thrown.");
+        throw new AssertionError(`A non-Error object was thrown${msgSuffix}`);
       }
       assertIsError(
         error,
@@ -748,7 +758,7 @@ export function assertThrows<E extends Error = Error>(
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msgToAppendToError}`;
+    msg = `Expected function to throw${msgSuffix}`;
     throw new AssertionError(msg);
   }
   return err;
@@ -856,7 +866,7 @@ export async function assertRejects<E extends Error = Error>(
   }
   let doesThrow = false;
   let isPromiseReturned = false;
-  const msgToAppendToError = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : ".";
   try {
     const possiblePromise = fn();
     if (
@@ -870,12 +880,12 @@ export async function assertRejects<E extends Error = Error>(
   } catch (error) {
     if (!isPromiseReturned) {
       throw new AssertionError(
-        `Function throws when expected to reject${msgToAppendToError}`,
+        `Function throws when expected to reject${msgSuffix}`,
       );
     }
     if (ErrorClass) {
       if (error instanceof Error === false) {
-        throw new AssertionError("A non-Error object was rejected.");
+        throw new AssertionError(`A non-Error object was rejected${msgSuffix}`);
       }
       assertIsError(
         error,
@@ -889,7 +899,7 @@ export async function assertRejects<E extends Error = Error>(
   }
   if (!doesThrow) {
     throw new AssertionError(
-      `Expected function to reject${msgToAppendToError}`,
+      `Expected function to reject${msgSuffix}`,
     );
   }
   return err;
@@ -897,7 +907,8 @@ export async function assertRejects<E extends Error = Error>(
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {
-  throw new AssertionError(msg || "unimplemented");
+  const msgSuffix = msg ? `: ${msg}` : ".";
+  throw new AssertionError(`Unimplemented${msgSuffix}`);
 }
 
 /** Use this to assert unreachable code. */

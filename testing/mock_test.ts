@@ -1420,7 +1420,14 @@ Deno.test("assertSpyArg", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, 2),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+-   undefined
++   2`,
   );
 
   spyFunc(7, 9);
@@ -1430,17 +1437,38 @@ Deno.test("assertSpyArg", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, 9),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+-   undefined
++   9`,
   );
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 1, 7),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+-   undefined
++   7`,
   );
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 2, 7),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+-   undefined
++   7`,
   );
 });
 
@@ -1458,12 +1486,28 @@ Deno.test("assertSpyArgs without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, [undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, [2]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     2,
+    ]`,
   );
 
   spyFunc(7, 9);
@@ -1471,12 +1515,32 @@ Deno.test("assertSpyArgs without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, [7, 9, undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      7,
+      9,
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, [9, 7]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+-     7,
+      9,
++     7,
+    ]`,
   );
 });
 
@@ -1494,12 +1558,28 @@ Deno.test("assertSpyArgs with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, [undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, [2]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     2,
+    ]`,
   );
 
   spyFunc(7, 9, 8);
@@ -1507,12 +1587,32 @@ Deno.test("assertSpyArgs with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, [9, 8, undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      9,
+      8,
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, [9, 7]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      9,
+-     8,
++     7,
+    ]`,
   );
 });
 
@@ -1530,12 +1630,30 @@ Deno.test("assertSpyArgs with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, [undefined, undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     undefined,
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, [2, 4]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
++     2,
++     4,
+    ]`,
   );
 
   spyFunc(7, 9, 8, 5, 6);
@@ -1543,12 +1661,32 @@ Deno.test("assertSpyArgs with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, 3, [9, 8, undefined]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      9,
+      8,
++     undefined,
+    ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, 3, [9, 7]),
     AssertionError,
-    "Values are not equal:",
+    `Values are not equal.
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      9,
+-     8,
++     7,
+    ]`,
   );
 });
 
