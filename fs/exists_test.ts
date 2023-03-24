@@ -354,7 +354,7 @@ Deno.test("[fs] existsDirLinkSync", function () {
 interface Scene {
   read: boolean; // true to test with --allow-read
   sync: boolean; // true to test sync
-  fictional: boolean; // true to test on non existing file
+  exists: boolean; // true to test on existing file
   output: string; // required string include of stdout to succeed
 }
 
@@ -363,59 +363,59 @@ const scenes: Scene[] = [
   {
     read: false,
     sync: false,
-    fictional: false,
+    exists: false,
     output: "run again with the --allow-read flag",
   },
   {
     read: false,
     sync: true,
-    fictional: false,
+    exists: false,
     output: "run again with the --allow-read flag",
   },
   // 2
   {
     read: true,
     sync: false,
-    fictional: false,
-    output: "exist",
+    exists: false,
+    output: "not exist",
   },
   {
     read: true,
     sync: true,
-    fictional: false,
-    output: "exist",
+    exists: false,
+    output: "non exist",
   },
   // 3
   {
     read: false,
     sync: false,
-    fictional: true,
+    exists: true,
     output: "run again with the --allow-read flag",
   },
   {
     read: false,
     sync: true,
-    fictional: true,
+    exists: true,
     output: "run again with the --allow-read flag",
   },
   // 4
   {
     read: true,
     sync: false,
-    fictional: true,
-    output: "not exist",
+    exists: true,
+    output: "exist",
   },
   {
     read: true,
     sync: true,
-    fictional: true,
-    output: "not exist",
+    exists: true,
+    output: "exist",
   },
 ];
 
 for (const s of scenes) {
   let title = `test ${!s.sync ? "exists" : "existsSync"} on`;
-  title += ` ${s.fictional ? "fictional" : "real"} file`;
+  title += ` ${s.exists ? "existing" : "non-existing"} file`;
   title += ` ${s.read ? "with" : "without"} --allow-read`;
   Deno.test(`[fs] existsPermission ${title}`, async function () {
     const args = ["run", "--quiet", "--no-prompt"];
@@ -428,7 +428,7 @@ for (const s of scenes) {
     let tempFilePath = "does_not_exist.ts";
     let tempDirPath: string | null = null;
     let tempFile: Deno.FsFile | null = null;
-    if (!s.fictional) {
+    if (s.exists) {
       tempDirPath = await Deno.makeTempDir();
       tempFilePath = path.join(tempDirPath, "0.ts");
       tempFile = await Deno.create(tempFilePath);
