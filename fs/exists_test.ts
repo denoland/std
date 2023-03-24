@@ -10,8 +10,6 @@ Deno.test("[fs] existsNotExist", async function () {
   const tempDirPath = await Deno.makeTempDir();
   try {
     assertEquals(await exists(path.join(tempDirPath, "not_exists")), false);
-  } catch (error) {
-    throw error;
   } finally {
     await Deno.remove(tempDirPath, { recursive: true });
   }
@@ -21,8 +19,6 @@ Deno.test("[fs] existsNotExistSync", function () {
   const tempDirPath = Deno.makeTempDirSync();
   try {
     assertEquals(existsSync(path.join(tempDirPath, "not_exists")), false);
-  } catch (error) {
-    throw error;
   } finally {
     Deno.removeSync(tempDirPath, { recursive: true });
   }
@@ -57,8 +53,6 @@ Deno.test("[fs] existsFile", async function () {
         false,
       );
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempFilePath, 0o644);
@@ -100,8 +94,6 @@ Deno.test("[fs] existsFileLink", async function () {
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempFilePath, 0o644);
@@ -140,8 +132,6 @@ Deno.test("[fs] existsFileSync", function () {
         false,
       );
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempFilePath, 0o644);
@@ -183,8 +173,6 @@ Deno.test("[fs] existsFileLinkSync", function () {
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempFilePath, 0o644);
@@ -221,8 +209,6 @@ Deno.test("[fs] existsDir", async function () {
         false,
       );
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempDirPath, 0o755);
@@ -261,8 +247,6 @@ Deno.test("[fs] existsDirLink", async function () {
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempDirPath, 0o755);
@@ -298,8 +282,6 @@ Deno.test("[fs] existsDirSync", function () {
         false,
       );
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempDirPath, 0o755);
@@ -338,8 +320,6 @@ Deno.test("[fs] existsDirLinkSync", function () {
       );
       // TODO(martin-braun): test unreadable link when Rust's nix::sys::stat::fchmodat has been implemented
     }
-  } catch (error) {
-    throw error;
   } finally {
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempDirPath, 0o755);
