@@ -289,8 +289,7 @@ class Parser {
   }
 }
 
-export interface ParseOptions<Columns extends string = string>
-  extends ReadOptions {
+export interface ParseOptions extends ReadOptions {
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
    * skipped.
@@ -300,7 +299,7 @@ export interface ParseOptions<Columns extends string = string>
   skipFirstRow?: boolean;
 
   /** List of names used for header definition. */
-  columns?: readonly Columns[];
+  columns?: readonly string[];
 }
 
 /**
@@ -327,11 +326,11 @@ export interface ParseOptions<Columns extends string = string>
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
 export function parse(input: string, opt?: undefined): string[][];
-export function parse<Columns extends string, T extends ParseOptions<Columns>>(
+export function parse<const T extends ParseOptions>(
   input: string,
   opt: T,
 ): ParseResult<ParseOptions, T>;
-export function parse<Columns extends string, T extends ParseOptions<Columns>>(
+export function parse<const T extends ParseOptions>(
   input: string,
   opt: T = { skipFirstRow: false } as T,
 ): ParseResult<ParseOptions, T> {
@@ -354,7 +353,7 @@ export function parse<Columns extends string, T extends ParseOptions<Columns>>(
     const firstLineIndex = opt.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
       return convertRowToObject(row, headers, firstLineIndex + i);
-    }) as ParseResult<ParseOptions<string>, T>;
+    }) as ParseResult<ParseOptions, T>;
   }
-  return r as ParseResult<ParseOptions<string>, T>;
+  return r as ParseResult<ParseOptions, T>;
 }

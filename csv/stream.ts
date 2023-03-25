@@ -10,11 +10,11 @@ import {
 } from "../csv/_io.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
-export interface CsvStreamOptions<Columns extends string = string> {
+export interface CsvStreamOptions {
   separator?: string;
   comment?: string;
   skipFirstRow?: boolean;
-  columns?: readonly Columns[];
+  columns?: readonly string[];
 }
 
 class StreamLineReader implements LineReader {
@@ -51,10 +51,8 @@ function stripLastCR(s: string): string {
 type RowType<T> = T extends undefined ? string[]
   : ParseResult<CsvStreamOptions, T>[number];
 
-export class CsvStream<
-  Columns extends string,
-  T extends CsvStreamOptions<Columns> | undefined = undefined,
-> implements TransformStream<string, RowType<T>> {
+export class CsvStream<const T extends CsvStreamOptions | undefined = undefined>
+  implements TransformStream<string, RowType<T>> {
   readonly #readable: ReadableStream<
     string[] | Record<string, string | unknown>
   >;
