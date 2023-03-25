@@ -1,3 +1,8 @@
+### 0.181.0 / 2023.03.22
+
+- feat(front_matter): support +++ for TOML block (#3254)
+- feat(testing/asserts): include `msg` in assertion errors (#3253)
+
 ### 0.180.0 / 2023.03.16
 
 - BREAKING(csv): move `encoding/csv` to own top-level folder and towards

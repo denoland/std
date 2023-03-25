@@ -13,10 +13,16 @@ export interface ReadOptions {
   separator?: string;
   /** Character to start a comment.
    *
+   * Lines beginning with the comment character without preceding whitespace
+   * are ignored. With leading whitespace the comment character becomes part of
+   * the field, even you provide `trimLeadingSpace: true`.
+   *
    * @default {"#"}
    */
   comment?: string;
   /** Flag to trim the leading space of the value.
+   *
+   * This is done even if the field delimiter, `separator`, is white space.
    *
    * @default {false}
    */
@@ -29,8 +35,15 @@ export interface ReadOptions {
    */
   lazyQuotes?: boolean;
   /**
-   * Enabling the check of fields for each row. If == 0, first row is used as
-   * referral for the number of fields.
+   * Enabling checking number of expected fields for each row.
+   *
+   * If positive, each record is required to have the given number of fields.
+   * If == 0, it will be set to the number of fields in the first row, so that
+   * future rows must have the same field count.
+   * If negative, no check is made and records may have a variable number of
+   * fields.
+   *
+   * If the wrong number of fields is in a row, a `ParseError` is thrown.
    */
   fieldsPerRecord?: number;
 }
