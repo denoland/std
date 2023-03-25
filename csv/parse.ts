@@ -338,7 +338,7 @@ export function parse<const T extends ParseOptions>(
   const r = parser.parse(input);
 
   if (opt.skipFirstRow || opt.columns) {
-    let headers: string[] = [];
+    let headers: readonly string[] = [];
 
     if (opt.skipFirstRow) {
       const head = r.shift();
@@ -347,7 +347,7 @@ export function parse<const T extends ParseOptions>(
     }
 
     if (opt.columns) {
-      headers = [...opt.columns];
+      headers = opt.columns;
     }
 
     const firstLineIndex = opt.skipFirstRow ? 1 : 0;

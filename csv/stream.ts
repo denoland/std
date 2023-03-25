@@ -62,7 +62,7 @@ export class CsvStream<const T extends CsvStreamOptions | undefined = undefined>
   #lineIndex = 0;
   #isFirstRow = true;
 
-  #headers: string[] = [];
+  #headers: readonly string[] = [];
 
   constructor(options: T = defaultReadOptions as T) {
     this.#options = {
@@ -119,7 +119,7 @@ export class CsvStream<const T extends CsvStreamOptions | undefined = undefined>
         }
 
         if (this.#options.columns) {
-          this.#headers = [...this.#options.columns];
+          this.#headers = this.#options.columns;
         }
       }
 

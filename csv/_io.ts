@@ -254,7 +254,7 @@ export const ERR_FIELD_COUNT = "wrong number of fields";
 
 export function convertRowToObject(
   row: string[],
-  headers: string[],
+  headers: readonly string[],
   index: number,
 ) {
   if (row.length !== headers.length) {
