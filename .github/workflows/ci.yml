@@ -7,32 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  redis:
-    runs-on: ubuntu-latest
-
-    services:
-      redis:
-        image: redis
-        ports:
-          # Maps port 6379 on service container to the host
-          - 6379:6379
-
-    steps:
-      - name: Setup repo
-        uses: actions/checkout@v3
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-
-      - name: Run tests
-        run: deno task redis:test
-
-      - name: Generate lcov
-        run: deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -44,6 +18,13 @@ jobs:
           - ubuntu-22.04
           - windows-2022
           - macOS-12
+
+    services:
+      redis:
+        image: redis
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
 
     steps:
       - name: Clone repository
@@ -58,6 +39,10 @@ jobs:
 
       - name: Run tests canary
         run: deno task test
+
+      - name: Run Redis tests canary
+        run: deno task redis:test
+        if: matrix.os == 'ubuntu-22.04'
 
       - name: Type check browser compatible modules
         shell: bash

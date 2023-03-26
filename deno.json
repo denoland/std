@@ -43,7 +43,7 @@
     "build:varint": "deno task --cwd encoding/varint/_wasm wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.3/main.ts --js-ext mjs --sync",
     "redis:start": "rm -f dump.rdb && redis-server --daemonize yes",
-    "redis:test": "deno test --allow-net --doc --coverage=./cov redis/test.ts",
+    "redis:test": "deno test --allow-net --doc --coverage=./cov redis/",
     "redis:bench": "deno bench --allow-net --allow-env redis/bench.ts"
   }
 }
