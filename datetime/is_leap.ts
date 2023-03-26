@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * Returns whether the given date or year (in number) is a leap year or not.
  * based on: https://docs.microsoft.com/en-us/office/troubleshoot/excel/determine-a-leap-year

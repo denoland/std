@@ -11,8 +11,8 @@
         "crypto/_wasm/target",
         "encoding/varint/_wasm/target",
         "cov",
-        "encoding/testdata/jsonc",
-        "encoding/front_matter/testdata",
+        "jsonc/testdata",
+        "front_matter/testdata",
         "wasi/testdata"
       ]
     }
@@ -24,16 +24,16 @@
         ".git",
         "crypto/_wasm/target",
         "encoding/varint/_wasm/target",
-        "encoding/testdata/jsonc",
-        "encoding/front_matter/testdata",
+        "jsonc/testdata",
+        "front_matter/testdata",
         "cov",
         "wasi/testdata"
       ]
     }
   },
   "tasks": {
-    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=_tools/testdata,redis/",
-    "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | xargs deno cache --check --reload --config browser-compat.tsconfig.json",
+    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=redis/",
+    "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
     "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",

@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { DAY, WEEK } from "./constants.ts";
 
 const DAYS_PER_WEEK = 7;
