@@ -5,6 +5,10 @@ import type { Session } from "@supabase/supabase-js";
 
 export interface DashboardState {
   session: Session;
+  subscription: {
+    stripeCustomerId: string;
+    isSubscribed: boolean;
+  };
 }
 
 export function getLoginPath(redirectUrl: string) {
@@ -19,9 +23,20 @@ export async function handler(
   try {
     const headers = new Headers();
     const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { data } = await supabaseClient.auth.getSession();
-    assert(data.session);
-    ctx.state.session = data.session;
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    assert(session);
+    ctx.state.session = session;
+
+    const { data } = await supabaseClient
+      .from("users_subscriptions")
+      .select("stripe_customer_id, is_subscribed")
+      .single()
+      .throwOnError();
+    ctx.state.subscription = {
+      stripeCustomerId: data?.stripe_customer_id,
+      isSubscribed: data?.is_subscribed,
+    };
 
     const response = await ctx.next();
     /**

@@ -1,12 +1,9 @@
 import type { Database } from "./supabase_types.ts";
 import { createServerSupabaseClient } from "@supabase/auth-helpers-shared";
 import { getCookies, setCookie } from "std/http/cookie.ts";
+import { createClient } from "@supabase/supabase-js";
 
 export type SupabaseClient = ReturnType<typeof createSupabaseClient>;
-
-export function hasSupabaseAuthToken(headers: Headers) {
-  return Boolean(getCookies(headers)["supabase-auth-token"]);
-}
 
 export function createSupabaseClient(
   requestHeaders: Headers,
@@ -33,3 +30,9 @@ export function createSupabaseClient(
     },
   });
 }
+
+// Required to bypass Row Level Security (RLS)
+export const supabaseAdminClient = createClient<Database>(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABSE_SERVICE_KEY")!,
+);

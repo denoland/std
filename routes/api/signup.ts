@@ -2,7 +2,6 @@ import type { Handlers } from "$fresh/server.ts";
 import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
 import { assert } from "std/testing/asserts.ts";
-import { stripe } from "@/utils/stripe.ts";
 
 export const handler: Handlers = {
   async POST(request) {
@@ -14,26 +13,20 @@ export const handler: Handlers = {
     assert(typeof password === "string");
 
     const headers = new Headers();
+    const { error } = await createSupabaseClient(request.headers, headers)
+      .auth.signUp({ email, password });
 
-    // 1. Create a Stripe account ready for a billing session later.
-    const { id } = await stripe.customers.create({ email });
-
-    // 2. Create a Supabase user with the Stripe customer ID as metadata
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: { data: { stripe_customer_id: id } },
-    });
-
-    let redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
-      AUTHENTICATED_REDIRECT_PATH;
+    let redirectUrl: string;
     if (error) {
       redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
+    } else {
+      redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
+        AUTHENTICATED_REDIRECT_PATH;
     }
 
-    headers.set("location", redirectUrl);
-
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, {
+      headers: { location: redirectUrl },
+      status: 302,
+    });
   },
 };

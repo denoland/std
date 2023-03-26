@@ -1,6 +1,5 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { getTodos, type Todo } from "@/utils/todos.ts";
-import { stripe } from "@/utils/stripe.ts";
 import Head from "@/components/Head.tsx";
 import TodoList from "@/islands/TodoList.tsx";
 import Notice from "@/components/Notice.tsx";
@@ -8,21 +7,17 @@ import { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
 import { createSupabaseClient } from "../../utils/supabase.ts";
 
-interface Data {
-  subscribed: boolean;
+interface Data extends DashboardState {
   todos: Todo[];
 }
 
 export const handler: Handlers<Data, DashboardState> = {
   async GET(request, ctx) {
-    const { user } = ctx.state.session;
-    const { data: [subscription] } = await stripe.subscriptions.list({
-      customer: user.user_metadata.stripe_customer_id,
-    });
+    const todos = await getTodos(createSupabaseClient(request.headers));
 
-    return await ctx.render({
-      subscribed: Boolean(subscription),
-      todos: await getTodos(createSupabaseClient(request.headers)),
+    return ctx.render({
+      ...ctx.state,
+      todos,
     });
   },
 };
@@ -32,7 +27,7 @@ export default function TodosPage(props: PageProps<Data>) {
     <>
       <Head title="Todos" />
       <Dashboard active="/dashboard/todos">
-        {!props.data.subscribed && (
+        {!props.data.subscription.isSubscribed && (
           <Notice
             color="yellow"
             message={
@@ -47,7 +42,7 @@ export default function TodosPage(props: PageProps<Data>) {
           />
         )}
         <TodoList
-          subscribed={props.data.subscribed}
+          isSubscribed={props.data.subscription.isSubscribed}
           todos={props.data.todos}
         />
       </Dashboard>

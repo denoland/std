@@ -50,7 +50,7 @@ async function deleteTodo(
 }
 
 interface TodoListProps {
-  subscribed: boolean;
+  isSubscribed: boolean;
   todos: Todo[];
 }
 
@@ -58,7 +58,7 @@ export default function TodoList(props: TodoListProps) {
   const todos = useSignal(props.todos);
   const newTodoName = useSignal("");
 
-  const isMoreTodos = props.subscribed ||
+  const isMoreTodos = props.isSubscribed ||
     todos.value.length < FREE_PLAN_TODOS_LIMIT;
 
   return (

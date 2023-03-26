@@ -8,7 +8,7 @@ export const handler: Handlers<any, DashboardState> = {
   async GET(request, ctx) {
     const { url } = await stripe.checkout.sessions.create({
       success_url: new URL(request.url).origin + "/dashboard/todos",
-      customer: ctx.state.session.user.user_metadata.stripe_customer_id,
+      customer: ctx.state.subscription.stripeCustomerId,
       line_items: [
         {
           price: STRIPE_PREMIUM_PLAN_PRICE_ID,

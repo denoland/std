@@ -1,31 +1,16 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
-import type { User } from "@supabase/supabase-js";
 import type { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
-import { stripe } from "@/utils/stripe.ts";
 
-interface PageData {
-  subscribed: boolean;
-  user: User;
-}
-
-export const handler: Handlers<PageData, DashboardState> = {
-  async GET(_request, ctx) {
-    const { user } = ctx.state.session;
-    const { data: [subscription] } = await stripe.subscriptions.list({
-      customer: user.user_metadata.stripe_customer_id,
-    });
-
-    return await ctx.render({
-      subscribed: Boolean(subscription),
-      user: ctx.state.session.user,
-    });
+export const handler: Handlers<DashboardState, DashboardState> = {
+  GET(_request, ctx) {
+    return ctx.render(ctx.state);
   },
 };
 
-export default function AccountPage(props: PageProps<PageData>) {
-  const action = props.data.subscribed ? "Manage" : "Upgrade";
+export default function AccountPage(props: PageProps<DashboardState>) {
+  const action = props.data.subscription.isSubscribed ? "Manage" : "Upgrade";
 
   return (
     <>
@@ -36,7 +21,7 @@ export default function AccountPage(props: PageProps<PageData>) {
             <div class="flex-1">
               <strong>Email</strong>
             </div>
-            <div>{props.data.user.email}</div>
+            <div>{props.data.session.user.email}</div>
           </li>
           <li class="flex items-center justify-between gap-2 py-2">
             <div class="flex-1">

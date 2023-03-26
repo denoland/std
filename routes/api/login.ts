@@ -13,20 +13,22 @@ export const handler: Handlers = {
     assert(typeof password === "string");
 
     const headers = new Headers();
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await createSupabaseClient(request.headers, headers)
+      .auth.signInWithPassword({ email, password });
 
-    let redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
-      AUTHENTICATED_REDIRECT_PATH;
+    let redirectUrl: string;
     if (error) {
       redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
+    } else {
+      redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
+        AUTHENTICATED_REDIRECT_PATH;
     }
 
-    headers.set("location", redirectUrl);
-
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, {
+      headers: {
+        location: redirectUrl,
+      },
+      status: 302,
+    });
   },
 };
