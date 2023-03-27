@@ -6,6 +6,7 @@ import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 import IconTrash from "tabler-icons/trash.tsx";
 import { assert } from "std/testing/asserts.ts";
 import { useRef } from "preact/hooks";
+import Input from "@/components/Input.tsx";
 
 async function requestCreateTodo(todo: Todo) {
   const response = await fetch("/dashboard/api/todo", {
@@ -83,11 +84,10 @@ export default function TodoList(props: TodoListProps) {
           newTodoRef.current!.form!.reset();
         }}
       >
-        {/** @todo Use `Input` component with working ref */}
-        <input
+        <Input
           ref={newTodoRef}
           disabled={!isMoreTodos}
-          class="px-3 py-2 bg-white rounded border-1 border-gray-300 shadow-md disabled:(opacity-50 cursor-not-allowed) flex-1"
+          class="flex-1"
           required
         />
         <Button
