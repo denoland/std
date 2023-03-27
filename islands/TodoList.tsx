@@ -1,5 +1,3 @@
-// deno-lint-ignore-file no-explicit-any
-import Input from "@/components/Input.tsx";
 import Button from "@/components/Button.tsx";
 import { type Signal, useSignal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";
@@ -7,6 +5,7 @@ import type { Todo } from "@/utils/todos.ts";
 import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 import IconTrash from "tabler-icons/trash.tsx";
 import { assert } from "std/testing/asserts.ts";
+import { useRef } from "preact/hooks";
 
 async function requestCreateTodo(todo: Todo) {
   const response = await fetch("/dashboard/api/todo", {
@@ -56,7 +55,7 @@ interface TodoListProps {
 
 export default function TodoList(props: TodoListProps) {
   const todos = useSignal(props.todos);
-  const newTodoName = useSignal("");
+  const newTodoRef = useRef<HTMLInputElement | null>(null);
 
   const isMoreTodos = props.subscribed ||
     todos.value.length < FREE_PLAN_TODOS_LIMIT;
@@ -80,16 +79,15 @@ export default function TodoList(props: TodoListProps) {
         class="flex gap-4 mt-8"
         onSubmit={async (event) => {
           event.preventDefault();
-          await createTodo(todos, newTodoName.value);
-          // Reset new todo field
-          newTodoName.value = "";
+          await createTodo(todos, newTodoRef.current!.value);
+          newTodoRef.current!.form!.reset();
         }}
       >
-        <Input
-          value={newTodoName.value}
+        {/** @todo Use `Input` component with working ref */}
+        <input
+          ref={newTodoRef}
           disabled={!isMoreTodos}
-          onInput={(event: any) => newTodoName.value = event.target.value}
-          class="flex-1"
+          class="px-3 py-2 bg-white rounded border-1 border-gray-300 shadow-md disabled:(opacity-50 cursor-not-allowed) flex-1"
           required
         />
         <Button
