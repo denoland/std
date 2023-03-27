@@ -3,8 +3,9 @@
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { doc } from "https://deno.land/x/deno_doc@0.48.0/mod.ts";
+import { doc } from "https://deno.land/x/deno_doc@0.59.0/mod.ts";
 import { walk } from "../fs/walk.ts";
+import { toFileUrl } from "../path/mod.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts"];
 const EXCLUDED_PATHS = [
@@ -56,7 +57,7 @@ for await (
   })
 ) {
   // deno_doc only takes urls.
-  const url = new URL(path, "file://");
+  const url = toFileUrl(path);
   const docs = await doc(url.href);
 
   for (const d of docs) {
