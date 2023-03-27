@@ -13,20 +13,21 @@ export const handler: Handlers = {
     assert(typeof password === "string");
 
     const headers = new Headers();
-    const { error } = await createSupabaseClient(request.headers, headers)
-      .auth.signUp({ email, password });
 
-    let redirectUrl: string;
+    const supabaseClient = createSupabaseClient(request.headers, headers);
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+    });
+
+    let redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
+      AUTHENTICATED_REDIRECT_PATH;
     if (error) {
       redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
-    } else {
-      redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
-        AUTHENTICATED_REDIRECT_PATH;
     }
 
-    return new Response(null, {
-      headers: { location: redirectUrl },
-      status: 302,
-    });
+    headers.set("location", redirectUrl);
+
+    return new Response(null, { headers, status: 302 });
   },
 };
