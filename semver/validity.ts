@@ -45,7 +45,6 @@ export function isSemVer(value: unknown): value is SemVer {
       isValidNumber(v)
     ) &&
     build.every((v) => typeof v === "string" && isValidString(v));
-  if (!result) console.log({ isSemVer: false, value });
   return result;
 }
 
