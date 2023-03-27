@@ -29,7 +29,7 @@ export const handler: Handlers = {
     switch (event.type) {
       case "customer.subscription.created": {
         await supabaseAdminClient
-          .from("users_subscriptions")
+          .from("subscriptions")
           .update({ is_subscribed: true })
           // @ts-ignore: Property 'customer' actually does exist on type 'Object'
           .eq("stripe_customer_id", event.data.object.customer)
@@ -38,7 +38,7 @@ export const handler: Handlers = {
       }
       case "customer.subscription.deleted": {
         await supabaseAdminClient
-          .from("users_subscriptions")
+          .from("subscriptions")
           .update({ is_subscribed: false })
           // @ts-ignore: Property 'customer' actually does exist on type 'Object'
           .eq("stripe_customer_id", event.data.object.customer)

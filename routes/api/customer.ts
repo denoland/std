@@ -33,7 +33,7 @@ export const handler: Handlers = {
     });
 
     await supabaseAdminClient
-      .from("users_subscriptions")
+      .from("subscriptions")
       .update({ stripe_customer_id: customer.id })
       .eq("user_id", user_id)
       .throwOnError();

@@ -29,7 +29,7 @@ export async function handler(
     ctx.state.session = session;
 
     const { data } = await supabaseClient
-      .from("users_subscriptions")
+      .from("subscriptions")
       .select("stripe_customer_id, is_subscribed")
       .single()
       .throwOnError();
