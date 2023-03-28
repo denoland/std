@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) 2014 Jameson Little. MIT License.
+// This module is browser compatible.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for

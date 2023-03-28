@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Generators and validators for UUIDs for versions v1, v4 and v5.

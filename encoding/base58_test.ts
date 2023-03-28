@@ -15,6 +15,17 @@ const testSetString = [
   ["Hello World!", "2NEpo7TZRRrLZSi2U"],
   [new Uint8Array([0, 0, 0, 40, 127, 180, 205]), "111233QC4"],
   [new Uint8Array([10, 0, 10]), "4MpV"],
+  [
+    // deno-fmt-ignore
+    new Uint8Array([
+        2, 212, 53, 147, 199,  21, 253, 211,
+       28,  97, 20,  26, 189,   4, 169, 159,
+      214, 130, 44, 133,  88, 133,  76, 205,
+      227, 154, 86, 132, 231, 165, 109, 162,
+      125, 137, 84
+    ]),
+    "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F",
+  ],
 ];
 
 const testSetBinary = testSetString.map(([data, b58]) => {

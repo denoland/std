@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * Formats the given date to IMF date time format. (Reference:
  * https://tools.ietf.org/html/rfc7231#section-7.1.1.1).
