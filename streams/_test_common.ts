@@ -15,7 +15,7 @@ export function init(): Uint8Array {
 }
 
 /**
- * Verify that a transform stream produces the expected output data.
+ * Verify that a transform stream produces the expected output data
  * @param transform The transform stream to test
  * @param inputs Source input data
  * @param outputs Expected output data
