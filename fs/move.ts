@@ -76,7 +76,9 @@ export function moveSync(
 
   if (overwrite) {
     try {
-      Deno.removeSync(dest, { recursive: true });
+      if (src !== dest) {
+        Deno.removeSync(dest, { recursive: true });
+      }
     } catch (error) {
       if (!(error instanceof Deno.errors.NotFound)) {
         throw error;
