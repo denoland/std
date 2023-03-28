@@ -32,7 +32,9 @@ export async function move(
 
   if (overwrite) {
     try {
-      await Deno.remove(dest, { recursive: true });
+      if (src !== dest) {
+        await Deno.remove(dest, { recursive: true });
+      }
     } catch (error) {
       if (!(error instanceof Deno.errors.NotFound)) {
         throw error;
