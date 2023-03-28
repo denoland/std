@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
 export type Unit =

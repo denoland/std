@@ -1,17 +1,26 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import {
   convertRowToObject,
   defaultReadOptions,
   type LineReader,
   parseRecord,
+  type ReadOptions,
   type RowType,
 } from "../csv/_io.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
-export interface CsvStreamOptions {
-  separator?: string;
-  comment?: string;
+export interface CsvStreamOptions extends ReadOptions {
+  /**
+   * If you provide `skipFirstRow: true` and `columns`, the first line will be
+   * skipped.
+   * If you provide `skipFirstRow: true` but not `columns`, the first line will
+   * be skipped and used as header definitions.
+   */
   skipFirstRow?: boolean;
+
+  /** List of names used for header definition. */
   columns?: string[];
 }
 
@@ -46,6 +55,22 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
+/**
+ * Read data from a CSV-encoded stream or file.
+ * Provides an auto/custom mapper for columns.
+ *
+ * A `CsvStream` expects input conforming to
+ * [RFC 4180](https://rfc-editor.org/rfc/rfc4180.html).
+ *
+ * @example
+ * ```ts
+ * import { CsvStream } from "https://deno.land/std@$STD_VERSION/csv/stream.ts";
+ * const res = await fetch("https://example.com/data.csv");
+ * const parts = res.body!
+ *   .pipeThrough(new TextDecoderStream())
+ *   .pipeThrough(new CsvStream());
+ * ```
+ */
 export class CsvStream<T extends CsvStreamOptions>
   implements TransformStream<string, RowType<CsvStreamOptions, T>> {
   readonly #readable: ReadableStream<

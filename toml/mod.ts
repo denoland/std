@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
  * [TOML](https://toml.io/en/latest) encoded data. Be sure to read the supported
