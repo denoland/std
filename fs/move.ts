@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSubdir } from "./_util.ts";
+import { isSamePath } from "./same_path.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
@@ -30,11 +31,14 @@ export async function move(
     );
   }
 
+  if (isSamePath(src, dest)) {
+    await Deno.rename(src, dest)
+    return
+  }
+
   if (overwrite) {
     try {
-      if (src !== dest) {
-        await Deno.remove(dest, { recursive: true });
-      }
+      await Deno.remove(dest, { recursive: true });
     } catch (error) {
       if (!(error instanceof Deno.errors.NotFound)) {
         throw error;
@@ -74,11 +78,14 @@ export function moveSync(
     );
   }
 
+  if (isSamePath(src, dest)) {
+    Deno.renameSync(src, dest)
+    return
+  }
+
   if (overwrite) {
     try {
-      if (src !== dest) {
-        Deno.removeSync(dest, { recursive: true });
-      }
+      Deno.removeSync(dest, { recursive: true });
     } catch (error) {
       if (!(error instanceof Deno.errors.NotFound)) {
         throw error;
