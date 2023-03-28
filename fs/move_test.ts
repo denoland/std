@@ -374,3 +374,40 @@ Deno.test("moveSyncIntoSubDir", function () {
   );
   Deno.removeSync(srcDir, { recursive: true });
 });
+
+Deno.test("moveFileIfSrcEqualToDest", async function () {
+  const srcDir = path.join(testdataDir, "move_src_equals_dest");
+  const srcFile = path.join(srcDir, "test.txt");
+  const srcContent = new TextEncoder().encode("src");
+
+  // ensure test data exists
+  await ensureFile(srcFile);
+  await Deno.writeFile(srcFile, srcContent);
+
+  // move file to itself with overwrite
+  await move(srcFile, srcFile, { overwrite: true });
+
+  // test file should be untouched
+  assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
+
+  await Deno.remove(srcDir, { recursive: true });
+});
+
+Deno.test("moveDirIfSrcEqualToDest", async function () {
+  const srcDir = path.join(testdataDir, "move_src_equals_dest");
+  const srcFile = path.join(srcDir, "test.txt");
+  const srcContent = new TextEncoder().encode("src");
+
+  // ensure test data exists
+  await Deno.mkdir(srcDir, { recursive: true });
+  assert(await Deno.lstat(srcDir));
+  await Deno.writeFile(srcFile, srcContent);
+
+  // move dir to itself with overwrite
+  await move(srcFile, srcFile, { overwrite: true });
+
+  // test file should be untouched
+  assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
+
+  await Deno.remove(srcDir, { recursive: true });
+});
