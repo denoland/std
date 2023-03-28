@@ -378,6 +378,7 @@ Deno.test("moveSyncIntoSubDir", function () {
 Deno.test("moveFileIfSrcEqualToDest", async function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
+  const srcUrl = new URL(srcFile, "file://");
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
@@ -386,6 +387,9 @@ Deno.test("moveFileIfSrcEqualToDest", async function () {
 
   // move file to itself with overwrite
   await move(srcFile, srcFile, { overwrite: true });
+  await move(srcFile, srcUrl, { overwrite: true });
+  await move(srcUrl, srcFile, { overwrite: true });
+  await move(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
   assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
@@ -396,6 +400,7 @@ Deno.test("moveFileIfSrcEqualToDest", async function () {
 Deno.test("moveDirIfSrcEqualToDest", async function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
+  const srcUrl = new URL(srcFile, "file://");
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
@@ -403,8 +408,11 @@ Deno.test("moveDirIfSrcEqualToDest", async function () {
   assert(await Deno.lstat(srcDir));
   await Deno.writeFile(srcFile, srcContent);
 
-  // move dir to itself with overwrite
+  // move file to itself with overwrite
   await move(srcFile, srcFile, { overwrite: true });
+  await move(srcFile, srcUrl, { overwrite: true });
+  await move(srcUrl, srcFile, { overwrite: true });
+  await move(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
   assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
@@ -415,6 +423,7 @@ Deno.test("moveDirIfSrcEqualToDest", async function () {
 Deno.test("moveFileIfSrcEqualToDestSync", function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
+  const srcUrl = new URL(srcFile, "file://");
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
@@ -423,6 +432,9 @@ Deno.test("moveFileIfSrcEqualToDestSync", function () {
 
   // move file to itself with overwrite
   moveSync(srcFile, srcFile, { overwrite: true });
+  moveSync(srcFile, srcUrl, { overwrite: true });
+  moveSync(srcUrl, srcFile, { overwrite: true });
+  moveSync(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
   assertEquals(new TextDecoder().decode(Deno.readFileSync(srcFile)), "src");
@@ -433,6 +445,7 @@ Deno.test("moveFileIfSrcEqualToDestSync", function () {
 Deno.test("moveDirIfSrcEqualToDestSync", function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
+  const srcUrl = new URL(srcFile, "file://");
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
@@ -440,8 +453,11 @@ Deno.test("moveDirIfSrcEqualToDestSync", function () {
   assert(Deno.lstat(srcDir));
   Deno.writeFileSync(srcFile, srcContent);
 
-  // move dir to itself with overwrite
+  // move file to itself with overwrite
   moveSync(srcFile, srcFile, { overwrite: true });
+  moveSync(srcFile, srcUrl, { overwrite: true });
+  moveSync(srcUrl, srcFile, { overwrite: true });
+  moveSync(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
   assertEquals(new TextDecoder().decode(Deno.readFileSync(srcFile)), "src");
