@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
 /** This constant allows preview deployments to successfully start up, making everything outside of the dashboard viewable. */
-const DUMMY_API_KEY =
+const DUMMY_SECRET_KEY =
   "sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 if (!Deno.env.get("STRIPE_SECRET_KEY")) {
@@ -11,7 +11,7 @@ if (!Deno.env.get("STRIPE_SECRET_KEY")) {
 }
 
 export const stripe = new Stripe(
-  Deno.env.get("STRIPE_SECRET_KEY") ?? DUMMY_API_KEY,
+  Deno.env.get("STRIPE_SECRET_KEY") ?? DUMMY_SECRET_KEY,
   {
     apiVersion: "2022-11-15",
     // Use the Fetch API instead of Node's HTTP client.
