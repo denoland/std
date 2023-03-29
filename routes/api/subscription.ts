@@ -5,6 +5,17 @@ import { supabaseAdminClient } from "@/utils/supabase.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
+async function changeCustomerSubscription(
+  customer: string,
+  isSubscribed: boolean,
+) {
+  await supabaseAdminClient
+    .from("subscriptions")
+    .update({ is_subscribed: isSubscribed })
+    .eq("stripe_customer_id", customer)
+    .throwOnError();
+}
+
 export const handler: Handlers = {
   /**
    * This handler handles Stripe webhooks for the following events:
@@ -18,36 +29,35 @@ export const handler: Handlers = {
     const signature = request.headers.get("stripe-signature")!;
     const signingSecret = Deno.env.get("STRIPE_SIGNING_SECRET")!;
 
-    const event = await stripe.webhooks.constructEventAsync(
-      body,
-      signature,
-      signingSecret,
-      undefined,
-      cryptoProvider,
-    );
+    let event!: Stripe.Event;
+    try {
+      event = await stripe.webhooks.constructEventAsync(
+        body,
+        signature,
+        signingSecret,
+        undefined,
+        cryptoProvider,
+      );
+    } catch (error) {
+      console.error(error.message);
+      return new Response(error.message, { status: 400 });
+    }
 
     switch (event.type) {
       case "customer.subscription.created": {
-        await supabaseAdminClient
-          .from("subscriptions")
-          .update({ is_subscribed: true })
-          // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-          .eq("stripe_customer_id", event.data.object.customer)
-          .throwOnError();
+        // @ts-ignore: Property 'customer' actually does exist on type 'Object'
+        await changeCustomerSubscription(event.data.object.customer, true);
         return new Response(null, { status: 201 });
       }
       case "customer.subscription.deleted": {
-        await supabaseAdminClient
-          .from("subscriptions")
-          .update({ is_subscribed: false })
-          // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-          .eq("stripe_customer_id", event.data.object.customer)
-          .throwOnError();
+        // @ts-ignore: Property 'customer' actually does exist on type 'Object'
+        await changeCustomerSubscription(event.data.object.customer, false);
         return new Response(null, { status: 202 });
       }
       default: {
-        console.error(`Event type not supported: ${event.type}`);
-        return new Response(null, { status: 400 });
+        const message = `Event type not supported: ${event.type}`;
+        console.error(message);
+        return new Response(message, { status: 400 });
       }
     }
   },
