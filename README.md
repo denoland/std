@@ -42,7 +42,13 @@ Getting started with Deno SaaSKit is straightforward.
 
 ### Create `.env` file
 
-You can copy the `.example.env` into `.env`. The only variables you need are:
+You can copy the `.example.env` into `.env`
+
+```bash
+cp .example.env .env
+```
+
+The only variables you need are:
 
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_URL`
@@ -56,11 +62,19 @@ This project uses [Supabase](https://supabase.com) for handling authentication
 strategies, as well as data storage for the product itself, which is a simple
 To-Do list app.
 
-If you haven't, create a Supabase account and then
+You can get started with Supabase in local development mode using the
+[Supabase CLI](https://supabase.com/docs/guides/cli).
+
+```bash
+npx supabase start
+```
+
+Once ready, you can create a Supabase account and then
 [create a new Supabase project](https://app.supabase.com/projects).
 
 Once your project is created, you can grab your `SUPABASE_URL` and
-`SUPABASE_ANON_KEY` from the Settings > API.
+`SUPABASE_ANON_KEY` from the
+[Settings > API](https://app.supabase.com/project/_/settings/api).
 
 ### Create a `todos` table
 
@@ -68,7 +82,8 @@ Deno SaaSKit defaults to a simple To-Do list app to illustrate how authenticated
 API routes can be created. Of course, you can choose to build whatever app you'd
 like.
 
-But to get this Deno SaaSKit template to work, we'll create a `todos` table.
+But to get this Deno SaaSKit template to work, we'll create a `todos` table in
+the [Supabase Dashboard](http://localhost:54323/project/default/editor).
 
 Copy the following snippet and paste it into the SQL editor as a new snippet:
 
@@ -160,11 +175,14 @@ To setup Supabase Auth:
 - Click `New Policy` and then `Create a policy from scratch`
 - Enter the policy name as `Enable all operations for users based on user_id`
 - For `Allowed operation`, select `All`
-- Enter the `USING expression` as `(uuid_generate_v4() = user_id)`
+- For `Target Roles` select `authenticated`
+- Enter the `USING expression` as `(auth.uid() = user_id)`
+- Enter the `WITH CHECK expression` as `(auth.uid() = user_id)`
 - Click `Review` then `Save policy`
 
 These steps enable using email with Supabase Auth, and provides a simple
-authentication strategy via the `USING` expression that matches `user_id`.
+authentication strategy restricting each user to only create, read, update, and
+delete their own data.
 
 ### Setup Stripe
 

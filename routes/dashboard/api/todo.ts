@@ -12,9 +12,10 @@ export const handler: Handlers = {
 
       return Response.json(null, { status: 201 });
     } catch (error) {
+      console.error(error);
       const status = error instanceof AuthError ? 401 : 400;
 
-      return new Response(error, { status });
+      return new Response(error.message, { status });
     }
   },
   async DELETE(request) {

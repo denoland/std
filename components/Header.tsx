@@ -1,5 +1,4 @@
 import { SITE_NAME } from "../constants.ts";
-import Nav from "./Nav.tsx";
 import { JSX } from "preact";
 
 function HeaderLogo() {

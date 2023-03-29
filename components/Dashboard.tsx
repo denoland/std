@@ -21,14 +21,13 @@ function SidebarNav(props: SidebarNavProps) {
     <nav class="w-full md:w-[16rem] md:flex-shrink-0 ">
       <ul class="flex flex-col justify-start">
         {props.items.map((item) => (
-          <li
-            class={`px-4 py-2 rounded w-full ${
-              item.href === props.active
-                ? "bg-gray-100 font-bold"
-                : "hover:bg-gray-100"
-            }`}
-          >
+          <li>
             <a
+              class={`px-4 py-2 rounded w-full block ${
+                item.href === props.active
+                  ? "bg-gray-100 font-bold"
+                  : "hover:bg-gray-100"
+              }`}
               href={item.href}
             >
               <span class="align-middle">

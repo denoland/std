@@ -7,7 +7,7 @@ import IconListDetails from "tabler-icons/list-details.tsx";
 import IconCheckbox from "tabler-icons/checkbox.tsx";
 import IconPrompt from "tabler-icons/prompt.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { formatAmountForDisplay, stripe } from "@/utils/stripe.ts";
 import type { Stripe } from "stripe";
 import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 
@@ -120,7 +120,7 @@ function FeaturesSection() {
 interface PricingCardProps {
   name: string;
   description: string;
-  price_per_month: number;
+  price_per_month: string;
   url: string;
 }
 
@@ -134,7 +134,7 @@ function PricingCard(props: PricingCardProps) {
         <p>{props.description}</p>
       </div>
       <p class="font-bold text-xl">
-        ${props.price_per_month}
+        {props.price_per_month}
         <span class="font-normal">{" "}per month</span>
       </p>
       <div>
@@ -159,7 +159,7 @@ function PricingSection(props: { products: Stripe.Product[] }) {
           <PricingCard
             name="Free tier"
             description={`Limited to ${FREE_PLAN_TODOS_LIMIT} todos`}
-            price_per_month={0}
+            price_per_month={"$0"}
             url="/signup"
           />
           {props.products.map((product) => (
@@ -167,8 +167,12 @@ function PricingSection(props: { products: Stripe.Product[] }) {
             <PricingCard
               name={product.name}
               description={product.description!}
-              price_per_month={(product.default_price as Stripe.Price)
-                .unit_amount! / 100}
+              price_per_month={formatAmountForDisplay(
+                (product.default_price as Stripe.Price)
+                  ?.unit_amount ?? 0,
+                (product.default_price as Stripe.Price)
+                  ?.currency ?? "usd",
+              )}
               url="/signup"
             />
           ))}
@@ -230,8 +234,8 @@ function BottomSection() {
 
 function sortProductsFromLowestPrice(products: Stripe.Product[]) {
   return products.sort((productA, productB) =>
-    (productA.default_price as Stripe.Price).unit_amount! -
-    (productB.default_price as Stripe.Price).unit_amount!
+    ((productA.default_price as Stripe.Price)?.unit_amount ?? 0) -
+    ((productB.default_price as Stripe.Price)?.unit_amount ?? 0)
   );
 }
 
