@@ -6,7 +6,7 @@ export interface Post {
   title: string;
   publishedAt: Date;
   content: string;
-  abstract: string;
+  summary: string;
 }
 
 export async function getPosts(): Promise<Post[]> {
@@ -32,6 +32,6 @@ export async function getPost(slug: string): Promise<Post | null> {
     title: attrs.title as string,
     publishedAt: new Date(attrs.published_at as Date),
     content: body,
-    abstract: attrs.abstract as string,
+    summary: attrs.summary as string,
   };
 }

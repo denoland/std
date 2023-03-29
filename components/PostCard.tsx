@@ -16,7 +16,7 @@ export default function PostCard(props: { post: Post }) {
           })}
         </time>
         <div class="mt-4 text-gray-900">
-          {post.abstract}
+          {post.summary}
         </div>
       </a>
     </div>
