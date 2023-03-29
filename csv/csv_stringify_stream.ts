@@ -52,6 +52,17 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
 
     super(
       {
+        start(controller) {
+          if (columns && columns.length > 0) {
+            try {
+              controller.enqueue(
+                stringify([columns], { separator, headers: false }),
+              );
+            } catch (error) {
+              controller.error(error);
+            }
+          }
+        },
         transform(chunk, controller) {
           try {
             controller.enqueue(
