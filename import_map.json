@@ -10,7 +10,7 @@
     "twind": "https://esm.sh/twind@0.16.19",
     "twind/": "https://esm.sh/twind@0.16.19/",
     "std/": "https://deno.land/std@0.178.0/",
-    "stripe": "https://esm.sh/stripe@11.13.0?target=deno",
+    "stripe": "https://esm.sh/stripe@11.13.0",
     "tabler-icons/": "https://deno.land/x/tabler_icons_tsx@0.0.2/tsx/",
     "@supabase/auth-helpers-shared": "https://esm.sh/@supabase/auth-helpers-shared@0.3.0",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.10.0"

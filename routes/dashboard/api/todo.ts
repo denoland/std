@@ -12,7 +12,7 @@ export const handler: Handlers = {
 
       return Response.json(null, { status: 201 });
     } catch (error) {
-      console.log({ error });
+      console.error(error);
       const status = error instanceof AuthError ? 401 : 400;
 
       return new Response(error.message, { status });

@@ -6,14 +6,13 @@ export const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-const isClient = typeof window === "object";
 
 export function formatAmountForDisplay(
   amount: number,
   currency: string,
 ): string {
   const numberFormat = new Intl.NumberFormat(
-    isClient ? navigator.language : "en-US",
+    navigator.language,
     {
       style: "currency",
       currency: currency,
@@ -21,12 +20,8 @@ export function formatAmountForDisplay(
     },
   );
   const parts = numberFormat.formatToParts(amount);
-  let zeroDecimalCurrency = true;
-  for (const part of parts) {
-    if (part.type === "decimal") {
-      zeroDecimalCurrency = false;
-    }
-  }
-  const amountToFormat = zeroDecimalCurrency ? amount : amount / 100;
+  const amountToFormat = parts.some((part) => part.type === "decimal")
+    ? amount / 100
+    : amount;
   return numberFormat.format(amountToFormat);
 }
