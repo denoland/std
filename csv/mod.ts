@@ -66,3 +66,4 @@
 export * from "./stringify.ts";
 export * from "./parse.ts";
 export * from "./stream.ts";
+export * from "./csv_stringify_stream.ts";
