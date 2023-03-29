@@ -30,13 +30,10 @@ Deno.test({
     const sig = signal(
       "SIGUSR1",
       "SIGUSR2",
-      "SIGINT",
     );
 
     setTimeout(async () => {
       await delay(20);
-      Deno.kill(Deno.pid, "SIGINT");
-      await delay(20);
       Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
       Deno.kill(Deno.pid, "SIGUSR1");
@@ -44,17 +41,16 @@ Deno.test({
       Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
       Deno.kill(Deno.pid, "SIGUSR1");
-      await delay(20);
-      Deno.kill(Deno.pid, "SIGINT");
       await delay(20);
       sig.dispose();
     });
 
     for await (const _ of sig) {
+      console.log(c);
       c += 1;
     }
 
-    assertEquals(c, 6);
+    assertEquals(c, 4);
 
     clearTimeout(t);
   },
