@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
-import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
+import { walk, WalkEntry, WalkError, WalkOptions, walkSync } from "./walk.ts";
 import {
   assert,
   assertEquals,
@@ -264,6 +264,21 @@ testWalk(
     const arr = await walkArray("a", { followSymlinks: true });
     assertEquals(arr.length, 5);
     assert(arr.some((f): boolean => f.endsWith("/b/z")));
+  },
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a");
+    await touch(d + "/a/x");
+    await touch(d + "/a/y");
+  },
+  async function walkError() {
+    await assertRejects(async () => {
+      for await (const _walkEntry of walk("./a")) {
+        await Deno.remove("./a", { recursive: true });
+      }
+    }, WalkError);
   },
 );
 
