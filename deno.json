@@ -1,6 +1,5 @@
 {
   "tasks": {
-    /** @todo: Remove `--cached-only` flag once upstream bug is fixed: https://github.com/supabase/auth-helpers/issues/471 */
     "start": "deno run -A --cached-only --watch=static/,routes/ dev.ts"
   },
   "importMap": "./import_map.json",
