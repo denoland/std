@@ -392,7 +392,7 @@ Deno.test("moveFileIfSrcEqualToDest", async function () {
   await move(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
-  assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
+  assertEquals(await Deno.readTextFile(srcFile), "src");
 
   await Deno.remove(srcDir, { recursive: true });
 });
@@ -415,7 +415,7 @@ Deno.test("moveDirIfSrcEqualToDest", async function () {
   await move(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
-  assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
+  assertEquals(await Deno.readTextFile(srcFile), "src");
 
   await Deno.remove(srcDir, { recursive: true });
 });
@@ -437,7 +437,7 @@ Deno.test("moveFileIfSrcEqualToDestSync", function () {
   moveSync(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
-  assertEquals(new TextDecoder().decode(Deno.readFileSync(srcFile)), "src");
+  assertEquals(Deno.readTextFileSync(srcFile), "src");
 
   Deno.removeSync(srcDir, { recursive: true });
 });
@@ -460,7 +460,7 @@ Deno.test("moveDirIfSrcEqualToDestSync", function () {
   moveSync(srcUrl, srcUrl, { overwrite: true });
 
   // test file should be untouched
-  assertEquals(new TextDecoder().decode(Deno.readFileSync(srcFile)), "src");
+  assertEquals(Deno.readTextFileSync(srcFile), "src");
 
   Deno.removeSync(srcDir, { recursive: true });
 });
