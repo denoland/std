@@ -3,7 +3,7 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
-import { getFileInfoType, isSubdir, PathType } from "./_util.ts";
+import { getFileInfoType, isSamePath, isSubdir, PathType } from "./_util.ts";
 import { ensureFileSync } from "./ensure_file.ts";
 import { ensureDirSync } from "./ensure_dir.ts";
 
@@ -61,5 +61,32 @@ Deno.test("_getFileInfoType", function () {
     Deno.removeSync(filePath, { recursive: true });
 
     assertEquals(getFileInfoType(stat), type);
+  });
+});
+
+Deno.test("_isSamePath", function () {
+  const pairs = [
+    ["", "", true, path.posix.sep],
+    ["/test", "/test/", true, path.posix.sep],
+    ["/test", new URL("file:///test"), true, path.posix.sep],
+    ["/test", new URL("file:///test/test"), false, path.posix.sep],
+    ["/test", "/test/test", false, path.posix.sep],
+    ["/test", "/test/test/..", true, path.posix.sep],
+    ["C:\\test", "C:\\test", true, path.win32.sep],
+    ["C:\\test", "C:\\test\\test", false, path.win32.sep],
+    ["C:\\test", new URL("file:///C:/test"), true, path.win32.sep],
+    ["C:\\test", new URL("file:///C:/test/test"), false, path.win32.sep],
+  ];
+
+  pairs.forEach(function (p) {
+    const src = p[0] as string | URL;
+    const dest = p[1] as string | URL;
+    const expected = p[2] as boolean;
+
+    assertEquals(
+      isSamePath(src, dest),
+      expected,
+      `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
+    );
   });
 });
