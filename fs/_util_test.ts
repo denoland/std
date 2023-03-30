@@ -66,25 +66,26 @@ Deno.test("_getFileInfoType", function () {
 
 Deno.test("_isSamePath", function () {
   const pairs = [
-    ["", "", true],
-    ["/test", "/test/", true],
-    ["/test", path.posix.toFileUrl("/test"), true],
-    ["/test", path.posix.toFileUrl("/test/test"), false],
-    ["/test", "/test/test", false],
-    ["/test", "/test/test/..", true],
-    ["C:\\test", "C:\\test", true],
-    ["C:\\test", "C:\\test\\test", false],
-    ["C:\\test", path.win32.toFileUrl("C:\\test"), true],
-    ["C:\\test", path.win32.toFileUrl("C:\\test\\test"), false],
+    ["", "", true, path.posix.sep],
+    ["/test", "/test/", true, path.posix.sep],
+    ["/test", path.posix.toFileUrl("/test"), true, path.posix.sep],
+    ["/test", path.posix.toFileUrl("/test/test"), false, path.posix.sep],
+    ["/test", "/test/test", false, path.posix.sep],
+    ["/test", "/test/test/..", true, path.posix.sep],
+    ["C:\\test", "C:\\test", true, path.win32.sep],
+    ["C:\\test", "C:\\test\\test", false, path.win32.sep],
+    ["C:\\test", path.win32.toFileUrl("C:\\test"), true, path.win32.sep],
+    ["C:\\test", path.win32.toFileUrl("C:\\test\\test"), false, path.win32.sep],
   ];
 
   pairs.forEach(function (p) {
     const src = p[0] as string | URL;
     const dest = p[1] as string | URL;
     const expected = p[2] as boolean;
+    const sep = p[3] as string;
 
     assertEquals(
-      isSamePath(src, dest),
+      isSamePath(src, dest, sep),
       expected,
       `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
     );
