@@ -11,6 +11,20 @@ import {
   WalkEntry,
 } from "./_util.ts";
 
+export class WalkError extends Error {
+  override cause: unknown;
+  override name = "WalkError";
+  path: string;
+
+  constructor(cause: unknown, path: string) {
+    super(
+      `${cause instanceof Error ? cause.message : cause} for path "${path}"`,
+    );
+    this.path = path;
+    this.cause = cause;
+  }
+}
+
 function include(
   path: string,
   exts?: string[],
@@ -29,16 +43,9 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: unknown, root: string) {
-  if (err instanceof Error && "root" in err) return err;
-  const e = new Error() as Error & { root: string };
-  e.root = root;
-  e.message = err instanceof Error
-    ? `${err.message} for path "${root}"`
-    : `[non-error thrown] for path "${root}"`;
-  e.stack = err instanceof Error ? err.stack : undefined;
-  e.cause = err instanceof Error ? err.cause : undefined;
-  return e;
+function wrapErrorWithPath(err: unknown, root: string) {
+  if (err instanceof WalkError) return err;
+  return new WalkError(err, root);
 }
 
 export interface WalkOptions {
@@ -124,7 +131,7 @@ export async function* walk(
       }
     }
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
 }
 
@@ -155,7 +162,7 @@ export function* walkSync(
   try {
     entries = Deno.readDirSync(root);
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
     assert(entry.name != null);
