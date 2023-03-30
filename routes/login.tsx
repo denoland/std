@@ -19,7 +19,7 @@ export default function LoginPage(props: PageProps) {
             />
           </a>
           {errorMessage === "Invalid login credentials" && (
-            <Notice message={errorMessage} color="yellow" />
+            <Notice>{errorMessage}</Notice>
           )}
           <AuthForm type="Login" />
           <div class="text-center text-gray-500 hover:text-black">

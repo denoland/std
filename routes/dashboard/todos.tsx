@@ -33,18 +33,15 @@ export default function TodosPage(props: PageProps<Data>) {
       <Head title="Todos" />
       <Dashboard active="/dashboard/todos">
         {!props.data.subscribed && (
-          <Notice
-            color="yellow"
-            message={
-              <span>
-                You are on a free subscription. Please{" "}
-                <a href="/dashboard/upgrade-subscription" class="underline">
-                  upgrade
-                </a>{" "}
-                to enable unlimited todos
-              </span>
-            }
-          />
+          <Notice>
+            <span>
+              You are on a free subscription. Please{" "}
+              <a href="/dashboard/upgrade-subscription" class="underline">
+                upgrade
+              </a>{" "}
+              to enable unlimited todos
+            </span>
+          </Notice>
         )}
         <TodoList
           subscribed={props.data.subscribed}

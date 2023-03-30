@@ -93,7 +93,7 @@ export default function TodoList(props: TodoListProps) {
         <Button
           disabled={!isMoreTodos}
           type="submit"
-          class="shadow-md px-4"
+          class="px-4"
         >
           +
         </Button>
