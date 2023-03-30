@@ -31,6 +31,11 @@ export async function move(
   }
 
   if (isSamePath(src, dest)) {
+    if (srcStat.isDirectory) {
+      throw new Error(
+        `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+      );
+    }
     return;
   }
 
@@ -77,6 +82,11 @@ export function moveSync(
   }
 
   if (isSamePath(src, dest)) {
+    if (srcStat.isDirectory) {
+      throw new Error(
+        `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+      );
+    }
     return;
   }
 
