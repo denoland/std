@@ -54,7 +54,7 @@ The only variables you need are:
 - `SUPABASE_URL`
 - `SUPABSE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`
-- `STRIPE_SIGNING_SECRET`
+- `STRIPE_WEBHOOK_SECRET`
 - `API_ROUTE_SECRET`
 
 Continue below to learn where to grab these keys.

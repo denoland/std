@@ -32,7 +32,7 @@ export const handler: Handlers = {
   async POST(request) {
     const body = await request.text();
     const signature = request.headers.get("stripe-signature")!;
-    const signingSecret = Deno.env.get("STRIPE_SIGNING_SECRET")!;
+    const signingSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
 
     let event!: Stripe.Event;
     try {
