@@ -3,6 +3,14 @@ import { isSamePath, isSubdir } from "./_util.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
+export class SubdirectoryMoveError extends Error {
+  constructor(src: string | URL, dest: string | URL) {
+    super(
+      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+    );
+  }
+}
+
 interface MoveOptions {
   overwrite?: boolean;
 }
@@ -25,16 +33,12 @@ export async function move(
   const srcStat = await Deno.stat(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {
-    throw new Error(
-      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
-    );
+    throw new SubdirectoryMoveError(src, dest);
   }
 
   if (isSamePath(src, dest)) {
     if (srcStat.isDirectory) {
-      throw new Error(
-        `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
-      );
+      throw new SubdirectoryMoveError(src, dest);
     }
     return;
   }
@@ -76,16 +80,12 @@ export function moveSync(
   const srcStat = Deno.statSync(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {
-    throw new Error(
-      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
-    );
+    throw new SubdirectoryMoveError(src, dest);
   }
 
   if (isSamePath(src, dest)) {
     if (srcStat.isDirectory) {
-      throw new Error(
-        `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
-      );
+      throw new SubdirectoryMoveError(src, dest);
     }
     return;
   }
