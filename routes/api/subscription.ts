@@ -2,15 +2,22 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { Stripe } from "stripe";
 import { supabaseAdminClient } from "@/utils/supabase.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "@/utils/supabase_types.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
-async function changeCustomerSubscription(
-  customer: string,
-  isSubscribed: boolean,
+interface SetCustomerSubscriptionConfig {
+  customer: string;
+  isSubscribed: boolean;
+}
+
+export async function setCustomerSubscription(
+  supabaseClient: SupabaseClient<Database>,
+  { customer, isSubscribed }: SetCustomerSubscriptionConfig,
 ) {
-  await supabaseAdminClient
-    .from("subscriptions")
+  await supabaseClient
+    .from("customers")
     .update({ is_subscribed: isSubscribed })
     .eq("stripe_customer_id", customer)
     .throwOnError();
@@ -21,8 +28,6 @@ export const handler: Handlers = {
    * This handler handles Stripe webhooks for the following events:
    * 1. customer.subscription.created (when a user subscribes to the premium plan)
    * 2. customer.subscription.deleted (when a user cancels the premium plan)
-   *
-   * @todo Create another subscription plan and implement `customer.subscription.deleted` event type.
    */
   async POST(request) {
     const body = await request.text();
@@ -45,13 +50,25 @@ export const handler: Handlers = {
 
     switch (event.type) {
       case "customer.subscription.created": {
-        // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-        await changeCustomerSubscription(event.data.object.customer, true);
+        await setCustomerSubscription(
+          supabaseAdminClient,
+          {
+            // @ts-ignore: Property 'customer' actually does exist on type 'Object'
+            customer: event.data.object.customer,
+            isSubscribed: true,
+          },
+        );
         return new Response(null, { status: 201 });
       }
       case "customer.subscription.deleted": {
-        // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-        await changeCustomerSubscription(event.data.object.customer, false);
+        await setCustomerSubscription(
+          supabaseAdminClient,
+          {
+            // @ts-ignore: Property 'customer' actually does exist on type 'Object'
+            customer: event.data.object.customer,
+            isSubscribed: false,
+          },
+        );
         return new Response(null, { status: 202 });
       }
       default: {

@@ -1,6 +1,8 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { supabaseAdminClient } from "@/utils/supabase.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "@/utils/supabase_types.ts";
 
 /**
  * Ensures that the Supabase request is authenticated based on the `API_ROUTE_SECRET` header.
@@ -12,9 +14,17 @@ function hasRouteSecret(request: Request) {
     Deno.env.get("API_ROUTE_SECRET");
 }
 
-async function setStripeCustomerId(userId: string, stripeCustomerId: string) {
-  await supabaseAdminClient
-    .from("subscriptions")
+interface SetStripeCustomerIdConfig {
+  userId: string;
+  stripeCustomerId: string;
+}
+
+export async function setStripeCustomerId(
+  supabaseClient: SupabaseClient<Database>,
+  { userId, stripeCustomerId }: SetStripeCustomerIdConfig,
+) {
+  await supabaseClient
+    .from("customers")
     .update({ stripe_customer_id: stripeCustomerId })
     .eq("user_id", userId)
     .throwOnError();
@@ -38,7 +48,10 @@ export const handler: Handlers = {
       email: data.user!.email,
     });
 
-    await setStripeCustomerId(user_id, customer.id);
+    await setStripeCustomerId(supabaseAdminClient, {
+      userId: user_id,
+      stripeCustomerId: customer.id,
+    });
 
     return Response.json(null, { status: 201 });
   },

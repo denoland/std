@@ -8,16 +8,15 @@ export const handler: Handlers = {
     const form = await request.formData();
     const email = form.get("email");
     const password = form.get("password");
-
     assert(typeof email === "string");
     assert(typeof password === "string");
 
     const headers = new Headers();
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await createSupabaseClient(request.headers, headers)
+      .auth.signInWithPassword({
+        email,
+        password,
+      });
 
     let redirectUrl = new URL(request.url).searchParams.get("redirect_url") ??
       AUTHENTICATED_REDIRECT_PATH;
@@ -26,7 +25,6 @@ export const handler: Handlers = {
     }
 
     headers.set("location", redirectUrl);
-
     return new Response(null, { headers, status: 302 });
   },
 };

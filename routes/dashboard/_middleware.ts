@@ -29,19 +29,16 @@ export async function handler(
     ctx.state.session = session;
 
     const { data } = await supabaseClient
-      .from("subscriptions")
+      .from("customers")
       .select("stripe_customer_id, is_subscribed")
       .single()
       .throwOnError();
+
     ctx.state.subscription = {
-      stripeCustomerId: data?.stripe_customer_id,
-      isSubscribed: data?.is_subscribed,
+      stripeCustomerId: data!.stripe_customer_id,
+      isSubscribed: data!.is_subscribed,
     };
 
-    // Throws if session is `null`, causing a redirect to the login page.
-    assert(session);
-
-    ctx.state.session = session;
     const response = await ctx.next();
     /**
      * Note: ensure that a `new Response()` with a `location` header is used when performing server-side redirects.
