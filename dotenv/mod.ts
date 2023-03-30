@@ -106,7 +106,8 @@ type StrictEnvVarList<T extends string> =
 type StringList = Array<string> | ReadonlyArray<string> | undefined;
 
 export interface LoadOptions {
-  /** Optional path to `.env` file.
+  /** Optional path to `.env` file. If null is specified, it skips the loading
+   * from env file.
    *
    * @default {"./.env"}
    */
@@ -118,7 +119,8 @@ export interface LoadOptions {
    * @default {false}
    */
   export?: boolean;
-  /** Optional path to `.env.example` file.
+  /** Optional path to `.env.example` file. If null is specified, it skips
+   * the validation using example file.
    *
    * @default {"./.env.example"}
    */
@@ -131,7 +133,8 @@ export interface LoadOptions {
    */
   allowEmptyValues?: boolean;
   /**
-   * Path to `.env.defaults` file which is used to define default values.
+   * Path to `.env.defaults` file which is used to define default values. If
+   * null is specified, it skips the loading of default values.
    *
    * ```sh
    * # .env.defaults
