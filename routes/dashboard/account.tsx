@@ -10,7 +10,7 @@ export const handler: Handlers<DashboardState, DashboardState> = {
 };
 
 export default function AccountPage(props: PageProps<DashboardState>) {
-  const action = props.data.subscription.isSubscribed ? "Manage" : "Upgrade";
+  const action = props.data.customer.is_subscribed ? "Manage" : "Upgrade";
 
   return (
     <>

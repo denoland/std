@@ -6,7 +6,7 @@ import { DashboardState } from "./_middleware.ts";
 export const handler: Handlers<any, DashboardState> = {
   async GET(request, ctx) {
     const { url } = await stripe.billingPortal.sessions.create({
-      customer: ctx.state.subscription.stripeCustomerId,
+      customer: ctx.state.customer.stripe_customer_id,
       return_url: new URL(request.url).origin + "/dashboard",
     });
 

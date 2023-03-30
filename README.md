@@ -55,7 +55,6 @@ The only variables you need are:
 - `SUPABSE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `API_ROUTE_SECRET`
 
 Continue below to learn where to grab these keys.
 
@@ -109,7 +108,7 @@ You can also keep the column `created_at` if you'd like.
 
 Hit save and then your table should be created.
 
-### Create a `customers` table with automattic population
+### Create a `customers` table
 
 - Go to `Database` > `Tables`
 - Click `New Table`
@@ -125,47 +124,8 @@ Hit save and then your table should be created.
 - Click the link symbol next to the `user_id` column name, select schema `auth`,
   table `users`, and column `id`. Now the `user_id` will link back to a user
   object in Supabase Auth.
-- Next, go `Database` > `Functions` and click `Create a new function` with the
-  following values:
-  - Name of function = `create_customer`
-  - Schema = `public`
-  - Return type = `trigger`
-  - Definition =
-
-```sql
-begin
-  insert into public.customers(user_id) 
-  values (new.id);
-  return new;
-end;
-```
-
-- Click `Show advanced settings` and select `SECURITY DEFINER` under
-  `Type of security`
-- Click `Confirm`
-- Go to `Database` > `Triggers`
-- Click `Create a new trigger` and enter the following values:
-  - Name of trigger = `new_customer`
-  - Table = `users auth`
-  - Events = `Insert`
-  - Trigger type = `After the event`
-  - Orientation = `Row`
-  - Function to trigger = `create_customer`
 
 ### Automate Stripe subscription updates via Supabase
-
-Next, [create a new webhook](https://app.supabase.com/project/_/database/hooks)
-with the following values:
-
-- Name = `create_stripe_customer`
-- Table = `customers`
-- Event = `Insert`
-- Type of hook = `HTTP Request`
-- Method = `POST`
-- URL = `https://<SITE HOSTNAME>/api/customer`
-- HTTP Parameters = `API_ROUTE_SECRET` for the parameter name and the value of
-  the `API_ROUTE_SECRET` environment variable for the parameter value.
-- Click `Create webhook`
 
 In Stripe, register a webhook endpoint by following
 [this guide](https://stripe.com/docs/development/dashboard/register-webhook)

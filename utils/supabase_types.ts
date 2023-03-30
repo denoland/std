@@ -9,20 +9,37 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      todos: {
+      customers: {
         Row: {
-          id: string;
-          name: string;
+          is_subscribed: boolean;
+          stripe_customer_id: string;
           user_id: string;
         };
         Insert: {
-          id?: string;
-          name: string;
+          is_subscribed?: boolean;
+          stripe_customer_id: string;
           user_id?: string;
         };
         Update: {
-          id?: string;
-          name?: string;
+          is_subscribed?: boolean;
+          stripe_customer_id?: string;
+          user_id?: string;
+        };
+      };
+      todos: {
+        Row: {
+          id: number;
+          name: string | null;
+          user_id: string;
+        };
+        Insert: {
+          id?: number;
+          name?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          id?: number;
+          name?: string | null;
           user_id?: string;
         };
       };
@@ -31,10 +48,7 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      install_available_extensions_and_test: {
-        Args: Record<PropertyKey, never>;
-        Returns: boolean;
-      };
+      [_ in never]: never;
     };
     Enums: {
       [_ in never]: never;

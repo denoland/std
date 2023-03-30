@@ -1,14 +1,14 @@
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
+import { createOrGetCustomer, createSupabaseClient } from "@/utils/supabase.ts";
 import { assert } from "std/testing/asserts.ts";
-import type { Session } from "@supabase/supabase-js";
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "@/utils/supabase_types.ts";
+import { stripe } from "@/utils/stripe.ts";
 
 export interface DashboardState {
   session: Session;
-  subscription: {
-    stripeCustomerId: string;
-    isSubscribed: boolean;
-  };
+  supabaseClient: SupabaseClient<Database>;
+  customer: Database["public"]["Tables"]["customers"]["Insert"];
 }
 
 export function getLoginPath(redirectUrl: string) {
@@ -26,18 +26,10 @@ export async function handler(
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     assert(session);
+
     ctx.state.session = session;
-
-    const { data } = await supabaseClient
-      .from("customers")
-      .select("stripe_customer_id, is_subscribed")
-      .single()
-      .throwOnError();
-
-    ctx.state.subscription = {
-      stripeCustomerId: data!.stripe_customer_id,
-      isSubscribed: data!.is_subscribed,
-    };
+    ctx.state.supabaseClient = supabaseClient;
+    ctx.state.customer = await createOrGetCustomer(supabaseClient, stripe);
 
     const response = await ctx.next();
     /**

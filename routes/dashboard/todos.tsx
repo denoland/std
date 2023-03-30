@@ -5,16 +5,14 @@ import TodoList from "@/islands/TodoList.tsx";
 import Notice from "@/components/Notice.tsx";
 import { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
-import { createSupabaseClient } from "../../utils/supabase.ts";
 
-interface Data extends DashboardState {
+interface TodosPageProps extends DashboardState {
   todos: Todo[];
 }
 
-export const handler: Handlers<Data, DashboardState> = {
-  async GET(request, ctx) {
-    const todos = await getTodos(createSupabaseClient(request.headers));
-
+export const handler: Handlers<TodosPageProps, DashboardState> = {
+  async GET(_request, ctx) {
+    const todos = await getTodos(ctx.state.supabaseClient);
     return ctx.render({
       ...ctx.state,
       todos,
@@ -22,12 +20,12 @@ export const handler: Handlers<Data, DashboardState> = {
   },
 };
 
-export default function TodosPage(props: PageProps<Data>) {
+export default function TodosPage(props: PageProps<TodosPageProps>) {
   return (
     <>
       <Head title="Todos" />
       <Dashboard active="/dashboard/todos">
-        {!props.data.subscription.isSubscribed && (
+        {!props.data.customer.is_subscribed && (
           <Notice
             color="yellow"
             message={
@@ -42,7 +40,7 @@ export default function TodosPage(props: PageProps<Data>) {
           />
         )}
         <TodoList
-          isSubscribed={props.data.subscription.isSubscribed}
+          isSubscribed={props.data.customer.is_subscribed}
           todos={props.data.todos}
         />
       </Dashboard>
