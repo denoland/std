@@ -399,28 +399,36 @@ Deno.test("moveFileIfSrcEqualToDest", async function () {
 
 Deno.test("moveDirIfSrcEqualToDest", async function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
-  const srcFile = path.join(srcDir, "test.txt");
-  const srcUrl = new URL(srcFile, "file://");
-  const srcContent = new TextEncoder().encode("src");
+  const srcUrl = path.toFileUrl(srcDir);
 
   // ensure test data exists
   await Deno.mkdir(srcDir, { recursive: true });
   assert(await Deno.lstat(srcDir));
-  await Deno.writeFile(srcFile, srcContent);
 
   // move file to itself with overwrite
-  await move(srcFile, srcFile, { overwrite: true });
-  await move(srcFile, srcUrl, { overwrite: true });
-  await move(srcUrl, srcFile, { overwrite: true });
-  await move(srcUrl, srcUrl, { overwrite: true });
+  const pairs = [
+    [srcDir, srcDir],
+    [srcDir, srcUrl],
+    [srcUrl, srcDir],
+    [srcUrl, srcUrl],
+  ];
 
-  // test file should be untouched
-  assertEquals(await Deno.readTextFile(srcFile), "src");
+  pairs.forEach(async function (p) {
+    const src = p[0];
+    const dest = p[1];
+    await assertRejects(
+      async () => {
+        await move(src, dest, { overwrite: true });
+      },
+      Error,
+      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+    );
+  });
 
   await Deno.remove(srcDir, { recursive: true });
 });
 
-Deno.test("moveFileIfSrcEqualToDestSync", function () {
+Deno.test("moveSyncFileIfSrcEqualToDest", function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
   const srcUrl = new URL(srcFile, "file://");
@@ -442,25 +450,34 @@ Deno.test("moveFileIfSrcEqualToDestSync", function () {
   Deno.removeSync(srcDir, { recursive: true });
 });
 
-Deno.test("moveDirIfSrcEqualToDestSync", function () {
+Deno.test("moveSyncDirIfSrcEqualToDestSync", function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
-  const srcFile = path.join(srcDir, "test.txt");
-  const srcUrl = new URL(srcFile, "file://");
-  const srcContent = new TextEncoder().encode("src");
+  const srcUrl = path.toFileUrl(srcDir);
 
   // ensure test data exists
   Deno.mkdirSync(srcDir, { recursive: true });
   assert(Deno.lstat(srcDir));
-  Deno.writeFileSync(srcFile, srcContent);
 
   // move file to itself with overwrite
-  moveSync(srcFile, srcFile, { overwrite: true });
-  moveSync(srcFile, srcUrl, { overwrite: true });
-  moveSync(srcUrl, srcFile, { overwrite: true });
-  moveSync(srcUrl, srcUrl, { overwrite: true });
+  const pairs = [
+    [srcDir, srcDir],
+    [srcDir, srcUrl],
+    [srcUrl, srcDir],
+    [srcUrl, srcUrl],
+  ];
 
-  // test file should be untouched
-  assertEquals(Deno.readTextFileSync(srcFile), "src");
+  pairs.forEach(function (p) {
+    const src = p[0];
+    const dest = p[1];
+
+    assertThrows(
+      () => {
+        moveSync(src, dest, { overwrite: true });
+      },
+      Error,
+      `Cannot move '${src}' to a subdirectory of itself, '${dest}'.`,
+    );
+  });
 
   Deno.removeSync(srcDir, { recursive: true });
 });
