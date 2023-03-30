@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { isSubdir } from "./_util.ts";
-import { resolve } from "../path/mod.ts";
+import { isSamePath, isSubdir } from "./_util.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
@@ -31,12 +30,8 @@ export async function move(
     );
   }
 
-  const srcAbsolute = src instanceof URL ? src.pathname : resolve(src)
-  const destAbsolute = dest instanceof URL ? dest.pathname : resolve(dest)
-
-  if (srcAbsolute === destAbsolute) {
-    await Deno.rename(src, dest)
-    return
+  if (isSamePath(src, dest)) {
+    return;
   }
 
   if (overwrite) {
@@ -81,12 +76,8 @@ export function moveSync(
     );
   }
 
-  const srcAbsolute = src instanceof URL ? src.pathname : resolve(src)
-  const destAbsolute = dest instanceof URL ? dest.pathname : resolve(dest)
-
-  if (srcAbsolute === destAbsolute) {
-    Deno.renameSync(src, dest)
-    return
+  if (isSamePath(src, dest)) {
+    return;
   }
 
   if (overwrite) {
