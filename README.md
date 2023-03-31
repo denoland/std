@@ -1,5 +1,8 @@
 # Deno SaaSKit
 
+> Warning: this project is in beta. Design, workflows and user accounts are
+> subject to change.
+
 [Deno SaaSKit](https://deno.com/saaskit) is an open-sourced, highly performant
 template for building your SaaS quickly and easily. This template ships with
 these foundational features that every SaaS needs:
