@@ -1,13 +1,5 @@
-import { SITE_NAME } from "../constants.ts";
 import { JSX } from "preact";
-
-function HeaderLogo() {
-  return (
-    <a href="/">
-      <strong class="font-bold text-2xl flex-1">{SITE_NAME}</strong>
-    </a>
-  );
-}
+import Logo from "@/components/Logo.tsx";
 
 export default function Header(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
@@ -17,7 +9,9 @@ export default function Header(props: JSX.HTMLAttributes<HTMLElement>) {
         props.class ?? ""
       }`}
     >
-      <HeaderLogo />
+      <a href="/">
+        <Logo class="h-12" />
+      </a>
       {props.children}
     </header>
   );

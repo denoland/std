@@ -31,7 +31,7 @@ function Heading(props: HeadingProps) {
 
 function Hero() {
   return (
-    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center mt-[-96px]">
+    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center mt-[-112px]">
       <h1 class="font-bold text-3xl md:text-7xl">
         Your SaaS here.
       </h1>
