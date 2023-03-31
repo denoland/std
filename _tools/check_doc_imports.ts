@@ -20,9 +20,9 @@ const EXCLUDED_PATHS = [
 const ROOT = new URL("../", import.meta.url);
 const ROOT_LENGTH = ROOT.pathname.slice(0, -1).length;
 
-const RX_JSDOC_COMMENT = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/mg;
-const RX_JSDOC_REMOVE_LEADING_ASTERISK = /^\s*\* ?/gm;
-const RX_CODE_BLOCK = /`{3}([\w]*)\n([\S\s]+?)\n`{3}/gm;
+export const RX_JSDOC_COMMENT = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/gm;
+export const RX_JSDOC_REMOVE_LEADING_ASTERISK = /^\s*\* ?/gm;
+export const RX_CODE_BLOCK = /`{3}([\w]*)\n([\S\s]+?)\n`{3}/gm;
 
 let shouldFail = false;
 let countChecked = 0;

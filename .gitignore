@@ -5,3 +5,4 @@
 **/cov/
 /crypto/_wasm/target
 deno.lock
+/string_width/testdata/unicode_width_crate/target
