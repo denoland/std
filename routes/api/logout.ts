@@ -4,8 +4,8 @@ import { createSupabaseClient } from "@/utils/supabase.ts";
 export const handler: Handlers = {
   async GET(request) {
     const headers = new Headers({ location: "/" });
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await createSupabaseClient(request.headers, headers)
+      .auth.signOut();
     if (error) throw error;
 
     return new Response(null, { headers, status: 302 });

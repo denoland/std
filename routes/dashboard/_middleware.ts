@@ -1,10 +1,14 @@
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
+import { createOrGetCustomer, createSupabaseClient } from "@/utils/supabase.ts";
 import { assert } from "std/testing/asserts.ts";
-import type { Session } from "@supabase/supabase-js";
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import { Database } from "@/utils/supabase_types.ts";
+import { stripe } from "@/utils/stripe.ts";
 
 export interface DashboardState {
   session: Session;
+  supabaseClient: SupabaseClient<Database>;
+  customer: Database["public"]["Tables"]["customers"]["Insert"];
 }
 
 export function getLoginPath(redirectUrl: string) {
@@ -19,12 +23,14 @@ export async function handler(
   try {
     const headers = new Headers();
     const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { data: { session } } = await supabaseClient.auth.getSession();
 
-    // Throws if session is `null`, causing a redirect to the login page.
+    const { data: { session } } = await supabaseClient.auth.getSession();
     assert(session);
 
     ctx.state.session = session;
+    ctx.state.supabaseClient = supabaseClient;
+    ctx.state.customer = await createOrGetCustomer(supabaseClient, stripe);
+
     const response = await ctx.next();
     /**
      * Note: ensure that a `new Response()` with a `location` header is used when performing server-side redirects.
