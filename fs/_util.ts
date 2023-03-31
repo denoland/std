@@ -15,7 +15,7 @@ export function isSamePath(
   src = toPathString(src, sep);
   dest = toPathString(dest, sep);
 
-  return path.resolve(src) === path.resolve(dest)
+  return path.resolve(src) === path.resolve(dest);
 }
 
 /**
@@ -94,8 +94,7 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
 /**
  * Convert a URL or string to a path
  * @param pathUrl A URL or string to be converted
- * @param sep A path separator
- * @returns 
+ * @param sep A path separator 
  */
 export function toPathString(
   pathUrl: string | URL,
