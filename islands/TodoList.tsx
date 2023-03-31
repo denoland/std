@@ -62,7 +62,7 @@ export default function TodoList(props: TodoListProps) {
     todos.value.length < FREE_PLAN_TODOS_LIMIT;
 
   return (
-    <>
+    <div class="space-y-4">
       <ul class="divide-y space-y-2">
         {todos.value.map((todo) => (
           <li class="flex items-center justify-between gap-2 p-2">
@@ -77,7 +77,7 @@ export default function TodoList(props: TodoListProps) {
         ))}
       </ul>
       <form
-        class="flex gap-4 mt-8"
+        class="flex gap-4"
         onSubmit={async (event) => {
           event.preventDefault();
           await createTodo(todos, newTodoRef.current!.value);
@@ -93,11 +93,11 @@ export default function TodoList(props: TodoListProps) {
         <Button
           disabled={!isMoreTodos}
           type="submit"
-          class="shadow-md px-4"
+          class="px-4"
         >
           +
         </Button>
       </form>
-    </>
+    </div>
   );
 }

@@ -1,14 +1,12 @@
-import type { ComponentChild } from "preact";
+import { JSX } from "preact";
 
-interface Props {
-  message: ComponentChild;
-  color: string;
-}
-
-export default function Notice({ message, color }: Props) {
+export default function Notice(props: JSX.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div class={`p-2 bg-${color}-100 text-${color}-700 rounded mb-4`}>
-      <strong>Note:</strong> {message}
-    </div>
+    <div
+      {...props}
+      class={`px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 ${
+        props.class ?? ""
+      }`}
+    />
   );
 }

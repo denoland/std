@@ -22,7 +22,7 @@ export default function AuthForm({ type }: AuthFormProps) {
         required
         class="w-full"
       />
-      <Button type="submit" class="w-full shadow-md">
+      <Button type="submit" class="w-full">
         {type}
       </Button>
     </form>
