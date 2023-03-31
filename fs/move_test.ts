@@ -378,7 +378,7 @@ Deno.test("moveSyncIntoSubDir", function () {
 Deno.test("moveFileIfSrcEqualToDest", async function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
-  const srcUrl = new URL(srcFile, "file://");
+  const srcUrl = path.toFileUrl(srcFile);
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
@@ -431,7 +431,7 @@ Deno.test("moveDirIfSrcEqualToDest", async function () {
 Deno.test("moveSyncFileIfSrcEqualToDest", function () {
   const srcDir = path.join(testdataDir, "move_src_equals_dest");
   const srcFile = path.join(srcDir, "test.txt");
-  const srcUrl = new URL(srcFile, "file://");
+  const srcUrl = path.toFileUrl(srcFile);
   const srcContent = new TextEncoder().encode("src");
 
   // ensure test data exists
