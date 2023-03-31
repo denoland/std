@@ -1,3 +1,14 @@
+### 0.182.0 / 2023.03.31
+
+- feat(csv): add `CsvStringifyStream` (#3270)
+- feat(fs): undo deprecation of `exists` and add permission and type check to it
+  (#2785)
+- feat(fs/walk): WalkError class (#3054)
+- feat: disposition on TextDelimiterStream (#3273)
+- fix(csv/csv_stringify_stream): output headers based on `columns` option
+  (#3293)
+- fix(encoding/base58): fix base58 decoding missing the first byte (#3275)
+
 ### 0.181.0 / 2023.03.22
 
 - feat(front_matter): support +++ for TOML block (#3254)
