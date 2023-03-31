@@ -10,7 +10,7 @@ export default function Header(props: JSX.HTMLAttributes<HTMLElement>) {
       }`}
     >
       <a href="/">
-        <Logo class="h-12" />
+        <Logo height="48" />
       </a>
       {props.children}
     </header>
