@@ -14,6 +14,28 @@
  *
  * A leading `"="` or `"v"` character is stripped off and ignored.
  *
+ * ## Format
+ * 
+ * Semantic versions can be formatted as strings, by default they 
+ * are formatted as `full`. Below is a diagram showing the various
+ * formatting options.
+ *
+ * ```
+ *           ┌───── full
+ *       ┌───┴───┐
+ *       ├───────── release
+ *   ┌───┴───┐   │
+ *   ├───────────── primary
+ * ┌─┴─┐     │   │
+ * 1.2.3-pre.1+b.1
+ * │ │ │ └─┬─┘ └┬┘
+ * │ │ │   │    └── build
+ * │ │ │   └─────── pre
+ * │ │ └─────────── patch
+ * │ └───────────── minor
+ * └─────────────── major
+ * ```
+ *
  * ## Ranges
  *
  * A `version range` is a set of `comparators` which specify versions that satisfy
@@ -80,18 +102,18 @@
  * will append the value of the string as a prerelease identifier:
  *
  * ```javascript
- * semver.increment("1.2.3", "prerelease", "beta");
+ * semver.increment(parse("1.2.3"), "prerelease", "beta");
  * // "1.2.4-beta.0"
  * ```
  *
  * ### Build Metadata
  *
- * Build metadata has no affect on comparisons and must be a `.` delimited
- * alpha-numeric string. When parsing a version it is retained on the `build: string[]` field
+ * Build metadata is `.` delimited alpha-numeric string. 
+ * When parsing a version it is retained on the `build: string[]` field
  * of the semver instance. When incrementing there is an additional parameter that
  * can set the build metadata on the semver instance.
  *
- * To print the full version including build metadata you must call `semver.format({ style: "full" })`.
+ * To print the full version including build metadata you must call `semver.format(value)`.
  *
  * For compatibility reasons the `.version` field will not contain the build metadata, you can only
  * get a full version string by calling the format function.
@@ -232,17 +254,23 @@
  *
  * @example
  * ```ts
- * import { valid, satisfies, parse, gt, lt, minVersion } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+ * import { parse, parseRange, valid, satisfies, parse, gt, lt, minVersion } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
- * valid("1.2.3"); // "1.2.3"
+ *
+ * valid("1.2.3"); // { major: 1, minor: 2, patch: 3, prerelease: [], build: [] }
  * valid("a.b.c"); // undefined
- * satisfies("1.2.3", "1.x || >=2.5.0 || 5.0.0 - 7.2.3"); // true
- * minVersion(">=1.0.0"); // "1.0.0"
+ *
+ * const semver = parse("1.2.3");
+ * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
+ * satisfies(semver, range); // true
+ * minVersion(parseRange(">=1.0.0")); // { major: 1, minor: 0 patch: 0, prerelease: [], build: [] }
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("9.8.7");
  * gt(s0, s1); // false
  * lt(s0, s1); // true
+ *
+ * format(semver) // "1.2.3"
  * ```
  *
  * @module

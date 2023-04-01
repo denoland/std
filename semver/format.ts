@@ -24,19 +24,6 @@ export function format(semver: SemVer, style: FormatStyle = "full") {
   const primary = `${major}.${minor}.${patch}`;
   const release = [primary, pre].filter((v) => v).join("-");
   const full = [release, build].filter((v) => v).join("+");
-  //           ┌───── full
-  //       ┌───┴───┐
-  //       ├───────── release
-  //   ┌───┴───┐   │
-  //   ├───────────── primary
-  // ┌─┴─┐     │   │
-  // 1.2.3-pre.1+b.1
-  // │ │ │ └─┬─┘ └┬┘
-  // │ │ │   │    └── build
-  // │ │ │   └─────── pre
-  // │ │ └─────────── patch
-  // │ └───────────── minor
-  // └─────────────── major
   switch (style) {
     case "full":
       return full;
