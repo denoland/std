@@ -31,7 +31,7 @@ export default function PostPage(props: PageProps<Post>) {
       <Header>
         <Nav items={BlogHeaderNavItems} />
       </Header>
-      <main class="max-w-screen-md px-4 pt-16 mx-auto">
+      <main class="max-w-screen-md px-4 py-16 mx-auto">
         <h1 class="text-5xl font-bold">{post.title}</h1>
         <time class="text-gray-500">
           {date}
