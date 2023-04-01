@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 type PropertyAccessor = number | string;
 type ObjectWithStringPropertyKeys = Record<string, unknown>;
 
@@ -212,6 +214,8 @@ function getValuesFromItem(
 }
 
 /**
+ * Write data using CSV encoding.
+ *
  * @param data The source data to stringify. It's an array of items which are
  * plain objects or arrays.
  *

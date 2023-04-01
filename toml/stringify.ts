@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 // Bare keys may only contain ASCII letters,
 // ASCII digits, underscores, and dashes (A-Za-z0-9_-).
 function joinKeys(keys: string[]): string {

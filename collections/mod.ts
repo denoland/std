@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Functions for specific common tasks around collection types like `Array` and
  * `Record`. This module is heavily inspired by `kotlin`s stdlib.
