@@ -2,14 +2,20 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import type { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
+import type { Database } from "@/utils/supabase_types.ts";
 
-export const handler: Handlers<DashboardState, DashboardState> = {
-  GET(_request, ctx) {
-    return ctx.render(ctx.state);
+interface AccountPageData extends DashboardState {
+  customer: Database["public"]["Tables"]["customers"]["Row"];
+}
+
+export const handler: Handlers<AccountPageData, DashboardState> = {
+  async GET(_request, ctx) {
+    const customer = await ctx.state.createOrGetCustomer();
+    return ctx.render({ ...ctx.state, customer });
   },
 };
 
-export default function AccountPage(props: PageProps<DashboardState>) {
+export default function AccountPage(props: PageProps<AccountPageData>) {
   const action = props.data.customer.is_subscribed ? "Manage" : "Upgrade";
 
   return (
