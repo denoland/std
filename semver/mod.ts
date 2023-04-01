@@ -249,7 +249,7 @@
  *
  * @example
  * ```ts
- * import { parse, parseRange, valid, satisfies, parse, gt, lt, minVersion } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+ * import { parse, parseComparator, valid, satisfies, gt, lt, minVersion, format } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
  *
  * valid("1.2.3"); // { major: 1, minor: 2, patch: 3, prerelease: [], build: [] }
@@ -258,7 +258,7 @@
  * const semver = parse("1.2.3");
  * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
  * satisfies(semver, range); // true
- * minVersion(parseRange(">=1.0.0")); // { major: 1, minor: 0 patch: 0, prerelease: [], build: [] }
+ * minVersion(parseComparator(">=1.0.0")); // { major: 1, minor: 0 patch: 0, prerelease: [], build: [] }
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("9.8.7");
