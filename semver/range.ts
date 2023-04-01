@@ -3,8 +3,8 @@ import { comparatorIntersects, SemVerComparator } from "./comparator.ts";
 import { INVALID, SemVer } from "./semver.ts";
 import { gte, lte, sort } from "./operators/mod.ts";
 
-type SemVerRangeAnd = ReadonlyArray<SemVerComparator>;
-type SemVerRangeOr = ReadonlyArray<SemVerRangeAnd>;
+type SemVerRangeAnd = SemVerComparator[];
+type SemVerRangeOr = SemVerRangeAnd[];
 
 /**
  * A type representing a semantic version range. The ranges consist of

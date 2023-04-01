@@ -205,7 +205,7 @@ function pre(
 }
 
 function parseBuild(
-  build: ReadonlyArray<string>,
+  build: string[],
   metadata: string | undefined,
 ) {
   return metadata === undefined ? build : metadata.split(".").filter((m) => m);

@@ -7,8 +7,8 @@ export interface SemVer {
   major: number;
   minor: number;
   patch: number;
-  prerelease: ReadonlyArray<string | number>;
-  build: ReadonlyArray<string>;
+  prerelease: (string | number)[];
+  build: string[];
 }
 
 /**
