@@ -30,9 +30,9 @@ export async function getPost(slug: string): Promise<Post | null> {
     return {
       slug,
       title: attrs.title as string,
-      publishedAt: new Date(attrs.published_at as Date),
+      publishedAt: new Date(attrs.published_at as Date) || null,
       content: body,
-      summary: attrs.summary as string,
+      summary: attrs.summary as string || "",
     };
   } catch (error) {
     console.error(error);
