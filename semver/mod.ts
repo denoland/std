@@ -111,12 +111,7 @@
  * Build metadata is `.` delimited alpha-numeric string. 
  * When parsing a version it is retained on the `build: string[]` field
  * of the semver instance. When incrementing there is an additional parameter that
- * can set the build metadata on the semver instance.
- *
- * To print the full version including build metadata you must call `semver.format(value)`.
- *
- * For compatibility reasons the `.version` field will not contain the build metadata, you can only
- * get a full version string by calling the format function.
+ * can set the build metadata on the semver instance. 
  *
  * ### Advanced Range Syntax
  *
