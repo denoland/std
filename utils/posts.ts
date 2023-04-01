@@ -22,15 +22,20 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
-  const text = await Deno.readTextFile(
-    join("./data/posts", `${slug}.md`),
-  );
-  const { attrs, body } = extract(text);
-  return {
-    slug,
-    title: attrs.title as string,
-    publishedAt: new Date(attrs.published_at as Date),
-    content: body,
-    summary: attrs.summary as string,
-  };
+  try {
+    const text = await Deno.readTextFile(
+      join("./data/posts", `${slug}.md`),
+    );
+    const { attrs, body } = extract(text);
+    return {
+      slug,
+      title: attrs.title as string,
+      publishedAt: new Date(attrs.published_at as Date),
+      content: body,
+      summary: attrs.summary as string,
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
