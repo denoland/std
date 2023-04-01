@@ -253,10 +253,9 @@ import {
   comparatorMin,
   SemVerComparator,
 } from "./comparator.ts";
-import { tryParse, tryParseComparator, tryParseRange } from "./parse.ts";
+import { tryParse } from "./parse.ts";
 import { rangeTest, SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
-import { isSemVer, isSemVerComparator, isSemVerRange } from "./validity.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -267,56 +266,49 @@ export * from "./semver.ts";
 export * from "./types.ts";
 
 /**
- * This just wraps tryParse with the intent to be compatible with an older version of this api.
+ * A compatibility function which checks that a string is a valid semver
  * @param value A string which may or may not contain a valid SemVer
- * @returns The original value if valid or undefined
+ * @returns A valid SemVer or undefined
+ * @deprecated Use parse or tryParse instead
  */
-export function valid(value: string | undefined): string | undefined {
-  const semver = tryParse(value);
-  return semver ? value : undefined;
+export function valid(value: string | undefined): SemVer | undefined {
+  return tryParse(value);
 }
 
 /**
- * This just wraps rangeTest with the intent to be compatible with an older version of this api.
- * @param value A valid SemVer string
+ * A compatibility function that calls rangeTest
+ * @param semver A valid SemVer string
  * @param range A valid SemVerRange string
  * @returns True if the value is valid SemVer in the SemVerRange
+ * @deprecated Use rangeTest instead
  */
 export function satisfies(
-  value: string | SemVer,
-  range: string | SemVerRange,
+  semver: SemVer,
+  range: SemVerRange,
 ): boolean {
-  const semver = isSemVer(value) ? value : tryParse(value);
-
-  const semverRange = isSemVerRange(range) ? range : tryParseRange(range);
-
-  return !!semver && !!semverRange && rangeTest(semver, semverRange);
+  return rangeTest(semver, range);
 }
 
 /**
  * A compatibility function to get the minimum version of a range string.
- * @param value The comparator string or SemVerComparator object
+ * @param comparator The comparator
  * @returns The minimum version for the given range
+ * @deprecated Use comparatorMin instead
  */
 export function minVersion(
-  value: string | SemVerComparator,
-): SemVer | undefined {
-  const comparator = isSemVerComparator(value)
-    ? value
-    : tryParseComparator(value);
-  return comparator && comparatorMin(comparator.semver, comparator.operator);
+  comparator: SemVerComparator,
+): SemVer {
+  return comparatorMin(comparator.semver, comparator.operator);
 }
 
 /**
  * A compatibility function to get the maximum version of a range string.
- * @param value The comparator string or SemVerComparator object
+ * @param comparator The comparator
  * @returns The maximum version for the given range
+ * @deprecated Use comparatorMax instead
  */
 export function maxVersion(
-  value: string | SemVerComparator,
-): SemVer | undefined {
-  const comparator = isSemVerComparator(value)
-    ? value
-    : tryParseComparator(value);
-  return comparator && comparatorMax(comparator.semver, comparator.operator);
+  comparator: SemVerComparator,
+): SemVer {
+  return comparatorMax(comparator.semver, comparator.operator);
 }
