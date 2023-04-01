@@ -15,8 +15,8 @@
  * A leading `"="` or `"v"` character is stripped off and ignored.
  *
  * ## Format
- * 
- * Semantic versions can be formatted as strings, by default they 
+ *
+ * Semantic versions can be formatted as strings, by default they
  * are formatted as `full`. Below is a diagram showing the various
  * formatting options.
  *
@@ -108,10 +108,10 @@
  *
  * ### Build Metadata
  *
- * Build metadata is `.` delimited alpha-numeric string. 
+ * Build metadata is `.` delimited alpha-numeric string.
  * When parsing a version it is retained on the `build: string[]` field
  * of the semver instance. When incrementing there is an additional parameter that
- * can set the build metadata on the semver instance. 
+ * can set the build metadata on the semver instance.
  *
  * ### Advanced Range Syntax
  *
