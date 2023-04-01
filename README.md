@@ -236,6 +236,28 @@ Stripe logic:
   user to a page that shows an upgraded subscription tier based on
   `STRIPE_PREMIUM_PLAN_PRICE_ID`
 
+### Blog
+
+SaaSKit also provides a markdown based blog. There are three main directories to
+manage the blog. First, in `routes/blog` you will find the routes needed to
+serve the `/blog` page and the routes to your posts. These will be available at
+`/blog/<slug>`. The name of the slug will be taken from the file name. Speaking
+of posts and their filenames. These are located in `data/posts`. To add a new
+blog post, simply create a new markdown file in this directory. The following
+front matter attributes are supported out of the box
+
+- title (required)
+- published_at (optional) in `YYYY-MM-DD` format
+- summary (optional)
+
+The third important file/directory is located in `utils/posts.ts`. There you
+will find the functions used to retrieve the data to create the post pages. The
+SaaSKit blog uses the styles provided by [gfm](https://deno.land/x/gfm@0.2.1).
+
+The blog is based on the instructions in the blog post
+[Building a Blog with Fresh](https://deno.com/blog/build-a-blog-with-fresh). For
+more information about how the blog works, see the reference post.
+
 ## Hosting
 
 You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
