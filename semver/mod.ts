@@ -269,7 +269,7 @@ export * from "./types.ts";
  * A compatibility function which checks that a string is a valid semver
  * @param value A string which may or may not contain a valid SemVer
  * @returns A valid SemVer or undefined
- * @deprecated Use parse or tryParse instead
+ * @deprecated (will be removed after 0.182.0) Use parse or tryParse instead
  */
 export function valid(value: string | undefined): SemVer | undefined {
   return tryParse(value);
@@ -280,7 +280,7 @@ export function valid(value: string | undefined): SemVer | undefined {
  * @param semver A valid SemVer string
  * @param range A valid SemVerRange string
  * @returns True if the value is valid SemVer in the SemVerRange
- * @deprecated Use rangeTest instead
+ * @deprecated (will be removed after 0.182.0) Use rangeTest instead
  */
 export function satisfies(
   semver: SemVer,
@@ -293,7 +293,7 @@ export function satisfies(
  * A compatibility function to get the minimum version of a range string.
  * @param comparator The comparator
  * @returns The minimum version for the given range
- * @deprecated Use comparatorMin instead
+ * @deprecated (will be removed after 0.182.0) Use comparatorMin instead
  */
 export function minVersion(
   comparator: SemVerComparator,
@@ -305,7 +305,7 @@ export function minVersion(
  * A compatibility function to get the maximum version of a range string.
  * @param comparator The comparator
  * @returns The maximum version for the given range
- * @deprecated Use comparatorMax instead
+ * @deprecated (will be removed after 0.182.0) Use comparatorMax instead
  */
 export function maxVersion(
   comparator: SemVerComparator,
