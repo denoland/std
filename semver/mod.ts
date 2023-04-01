@@ -249,8 +249,17 @@
  *
  * @example
  * ```ts
- * import { parse, parseComparator, valid, satisfies, gt, lt, minVersion, format } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
- *
+ * import {
+ *   parse,
+ *   parseComparator,
+ *   parseRange,
+ *   valid,
+ *   satisfies,
+ *   gt,
+ *   lt,
+ *   minVersion,
+ *   format
+ * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
  *
  * valid("1.2.3"); // { major: 1, minor: 2, patch: 3, prerelease: [], build: [] }
  * valid("a.b.c"); // undefined
