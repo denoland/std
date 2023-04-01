@@ -5,9 +5,10 @@ import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/constants.ts";
 
 export const handler: Handlers<null, DashboardState> = {
   async GET(request, ctx) {
+    const customer = await ctx.state.createOrGetCustomer();
     const { url } = await stripe.checkout.sessions.create({
       success_url: new URL(request.url).origin + "/dashboard/todos",
-      customer: ctx.state.customer.stripe_customer_id,
+      customer: customer.stripe_customer_id,
       line_items: [
         {
           price: STRIPE_PREMIUM_PLAN_PRICE_ID,

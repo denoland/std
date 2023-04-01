@@ -8,7 +8,9 @@ import { stripe } from "@/utils/stripe.ts";
 export interface DashboardState {
   session: Session;
   supabaseClient: SupabaseClient<Database>;
-  customer: Database["public"]["Tables"]["customers"]["Insert"];
+  createOrGetCustomer: () => Promise<
+    Database["public"]["Tables"]["customers"]["Row"]
+  >;
 }
 
 export function getLoginPath(redirectUrl: string) {
@@ -29,7 +31,8 @@ export async function handler(
 
     ctx.state.session = session;
     ctx.state.supabaseClient = supabaseClient;
-    ctx.state.customer = await createOrGetCustomer(supabaseClient, stripe);
+    ctx.state.createOrGetCustomer = async () =>
+      await createOrGetCustomer(supabaseClient, stripe);
 
     const response = await ctx.next();
     /**
