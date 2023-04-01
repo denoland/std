@@ -1,5 +1,6 @@
 import { Handlers } from "$fresh/server.ts";
 import { PageProps } from "$fresh/server.ts";
+import { Head } from "$fresh/runtime.ts";
 import Header from "../../components/Header.tsx";
 import Nav from "../../components/Nav.tsx";
 import PostCard from "../../components/PostCard.tsx";
@@ -16,6 +17,9 @@ export default function BlogIndexPage(props: PageProps<Post[]>) {
   const posts = props.data;
   return (
     <>
+      <Head>
+        <title>Blog</title>
+      </Head>
       <Header>
         <Nav items={BlogHeaderNavItems} />
       </Header>

@@ -27,6 +27,7 @@ export default function PostPage(props: PageProps<Post>) {
     <>
       <Head>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <title>{post.title}</title>
       </Head>
       <Header>
         <Nav items={BlogHeaderNavItems} />
