@@ -303,6 +303,15 @@ You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
 `twind.config.ts`. Change these values to match your desired color scheme.
 
+## Contributing
+
+When submitting a pull request, please:
+
+1. Follow the
+   [Deno Style Guide](https://deno.land/manual/references/contributing/style_guide).
+1. Include tests for any added functionality.
+1. Ensure `deno task test` passes successfully.
+
 ## Building a Modern SaaS Stack
 
 Along with this template, we are creating a series of How To guides to show how
