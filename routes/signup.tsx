@@ -2,6 +2,7 @@ import type { PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
 import Notice from "@/components/Notice.tsx";
+import Logo from "@/components/Logo.tsx";
 
 export default function SignupPage(props: PageProps) {
   const errorMessage = props.url.searchParams.get("error");
@@ -12,14 +13,10 @@ export default function SignupPage(props: PageProps) {
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto space-y-8 w-72">
           <a href="/">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              class="h-24 w-auto mb-8 mx-auto"
-            />
+            <Logo />
           </a>
           {errorMessage === "User already registered" && (
-            <Notice message={errorMessage} color="yellow" />
+            <Notice>{errorMessage}</Notice>
           )}
           <AuthForm type="Signup" />
           <div class="text-center text-gray-500 hover:text-black">

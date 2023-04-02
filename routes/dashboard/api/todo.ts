@@ -1,14 +1,13 @@
 import type { Handlers } from "$fresh/server.ts";
 import { AuthError } from "@supabase/supabase-js";
-import { createSupabaseClient } from "@/utils/supabase.ts";
 import { createTodo, deleteTodo } from "@/utils/todos.ts";
+import type { DashboardState } from "@/routes/dashboard/_middleware.ts";
 
-export const handler: Handlers = {
-  async POST(request) {
+export const handler: Handlers<null, DashboardState> = {
+  async POST(request, ctx) {
     try {
-      const supabaseClient = createSupabaseClient(request.headers);
       const todo = await request.json();
-      await createTodo(supabaseClient, todo);
+      await createTodo(ctx.state.supabaseClient, todo);
 
       return Response.json(null, { status: 201 });
     } catch (error) {
@@ -18,11 +17,10 @@ export const handler: Handlers = {
       return new Response(error.message, { status });
     }
   },
-  async DELETE(request) {
+  async DELETE(request, ctx) {
     try {
-      const supabaseClient = createSupabaseClient(request.headers);
       const { id } = await request.json();
-      await deleteTodo(supabaseClient, id);
+      await deleteTodo(ctx.state.supabaseClient, id);
 
       return new Response(null, { status: 202 });
     } catch (error) {

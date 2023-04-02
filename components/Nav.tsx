@@ -9,7 +9,7 @@ export default function Nav(props: NavProps) {
   return (
     <nav>
       <ul
-        class={`flex gap-x-8 gap-y-2 items-center justify-between ${
+        class={`flex gap-x-8 gap-y-2 items-center justify-between h-full ${
           props.class ?? ""
         }`}
       >

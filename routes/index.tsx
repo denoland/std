@@ -31,7 +31,7 @@ function Heading(props: HeadingProps) {
 
 function Hero() {
   return (
-    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center mt-[-96px]">
+    <div class="text-center px-8 py-16 max-w-7xl mx-auto text-white space-y-8 flex-1 flex flex-col justify-center mt-[-112px]">
       <h1 class="font-bold text-3xl md:text-7xl">
         Your SaaS here.
       </h1>
@@ -130,7 +130,7 @@ interface PricingCardProps {
 
 function PricingCard(props: PricingCardProps) {
   return (
-    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-200 shadow-md rounded-xl text-center">
+    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-200 rounded-xl text-center">
       <div>
         <h3 class="text-2xl font-bold">
           {props.name}
@@ -141,11 +141,9 @@ function PricingCard(props: PricingCardProps) {
         {props.price_per_month}
         <span class="font-normal">{" "}per month</span>
       </p>
-      <div>
-        <LinkButton href={props.url} class="w-full rounded-md">
-          Subscribe
-        </LinkButton>
-      </div>
+      <LinkButton href={props.url} class="w-full rounded-md block">
+        Subscribe
+      </LinkButton>
     </div>
   );
 }

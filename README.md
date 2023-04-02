@@ -1,6 +1,9 @@
 # Deno SaaSKit
 
-[Deno SaaSKit](https://deno.com/saaskit) is an open sourced, highly performant
+> Warning: this project is in beta. Design, workflows and user accounts are
+> subject to change.
+
+[Deno SaaSKit](https://deno.com/saaskit) is an open-sourced, highly performant
 template for building your SaaS quickly and easily. This template ships with
 these foundational features that every SaaS needs:
 
@@ -8,7 +11,7 @@ these foundational features that every SaaS needs:
 - User creation flows
 - Landing page
 - Pricing section
-- Signin and session management
+- Sign-in and session management
 - Billing integration via Stripe
 - Gated API endpoints
 
@@ -52,7 +55,9 @@ The only variables you need are:
 
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_URL`
+- `SUPABSE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
 
 Continue below to learn where to grab these keys.
 
@@ -73,7 +78,7 @@ Once ready, you can create a Supabase account and then
 [create a new Supabase project](https://app.supabase.com/projects).
 
 Once your project is created, you can grab your `SUPABASE_URL` and
-`SUPABASE_ANON_KEY` from the
+`SUPABASE_ANON_KEY` from
 [Settings > API](https://app.supabase.com/project/_/settings/api).
 
 ### Create a `todos` table
@@ -106,6 +111,35 @@ You can also keep the column `created_at` if you'd like.
 
 Hit save and then your table should be created.
 
+### Create a `customers` table
+
+- Go to `Database` > `Tables`
+- Click `New Table`
+- Enter the name as `customers` and check `Enable Row Level Security (RLS)`
+- Configure the following columns:
+
+| Name                 | Type   | Default value | Primary |
+| -------------------- | ------ | ------------- | ------- |
+| `user_id`            | `uuid` | `auth.uid()`  | `true`  |
+| `stripe_customer_id` | `text` | `NULL`        | `false` |
+| `is_subscribed`      | `bool` | `false`       | `false` |
+
+- Click the link symbol next to the `user_id` column name, select schema `auth`,
+  table `users`, and column `id`. Now the `user_id` will link back to a user
+  object in Supabase Auth.
+
+### Automate Stripe subscription updates via Supabase
+
+In Stripe, register a webhook endpoint by following
+[this guide](https://stripe.com/docs/development/dashboard/register-webhook)
+with the following values:
+
+- Endpoint URL = `https://<SITE HOSTNAME>/api/subscription`
+- Listen to `Events on your account`
+- Select events to listen to:
+  - `customer.subscription.created`
+  - `customer.subscription.deleted`
+
 ### Setup authentication
 
 [Supabase Auth](https://supabase.com/docs/guides/auth/overview) makes it simple
@@ -119,16 +153,18 @@ To setup Supabase Auth:
 
 - Go to `Authentication` > `Providers` > `Email`
 - Disable `Confirm email`
-- Back on the left hand bar, under `Configuration`, click on `Policies`
-- Click `New Policy` and then `Create a policy from scratch`
+- Back on the left-hand bar, under `Configuration`, click on `Policies`
+- Click `New Policy` on the `customers` table pane and then
+  `Create a policy from scratch`
 - Enter the policy name as `Enable all operations for users based on user_id`
 - For `Allowed operation`, select `All`
 - For `Target Roles` select `authenticated`
 - Enter the `USING expression` as `(auth.uid() = user_id)`
 - Enter the `WITH CHECK expression` as `(auth.uid() = user_id)`
 - Click `Review` then `Save policy`
+- Repeat for the `todos` table pane
 
-These steps enable using email with Supabase Auth, and provides a simple
+These steps enable using email with Supabase Auth and provide a simple
 authentication strategy restricting each user to only create, read, update, and
 delete their own data.
 
@@ -137,7 +173,7 @@ delete their own data.
 Currently, Deno SaaSKit uses [Stripe](https://stripe.com) for subscription
 billing. In the future, we are open to adding other payment processors.
 
-To setup Stripe:
+To set up Stripe:
 
 - Create a Stripe account
 - Since upgrading to a paid tier will take you directly to Stripe's domain, we
@@ -159,13 +195,8 @@ Once you have all of this setup, you should be able to run Deno SaaSKit locally.
 
 ### Running locally
 
-You can start the project by running:
-
-```
-deno task start
-```
-
-And going to `localhost:8000` on your browser.
+You can start the project by running: And go to `localhost:8000`` on your
+browser.
 
 ## Customizing Deno SaaSKit
 
@@ -211,7 +242,7 @@ can be found in these locations:
 
 ### Dashboard
 
-This template comes with a simple To Do checklist app. All of the logic for that
+This template comes with a simple To-Do checklist app. All of the logic for that
 can be found:
 
 - `/routes/dashboard/api/todo.ts`: the API route to handle creating and deleting
