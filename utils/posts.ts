@@ -35,7 +35,6 @@ export async function getPost(slug: string): Promise<Post | null> {
       summary: attrs.summary as string || "",
     };
   } catch (error) {
-    console.error(error);
     return null;
   }
 }
