@@ -54,6 +54,10 @@ function Hero() {
 function TopSection() {
   const navItems = [
     {
+      href: "/blog",
+      inner: "Blog",
+    },
+    {
       href: "/dashboard",
       inner: "Dashboard",
     },
