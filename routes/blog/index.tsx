@@ -1,15 +1,31 @@
 import { Handlers } from "$fresh/server.ts";
 import { PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import Header from "../../components/Header.tsx";
-import Nav from "../../components/Nav.tsx";
-import PostCard from "../../components/PostCard.tsx";
-import { getPosts, Post } from "../../utils/posts.ts";
+import Header from "@/components/Header.tsx";
+import Nav from "@/components/Nav.tsx";
+import PostCard from "@/components/PostCard.tsx";
+import { getPosts, Post } from "@/utils/posts.ts";
+import Footer from "@/components/Footer.tsx";
 
 export const BlogHeaderNavItems = [
   {
     href: "/blog",
     inner: "Blog",
+  },
+];
+
+export const BlogFooterNavItems = [
+  {
+    inner: "Features",
+    href: "/#features",
+  },
+  {
+    inner: "Pricing",
+    href: "/#pricing",
+  },
+  {
+    inner: "Testimonial",
+    href: "/#testimonial",
   },
 ];
 
@@ -29,6 +45,9 @@ export default function BlogIndexPage(props: PageProps<Post[]>) {
           {posts.map((post) => <PostCard post={post} />)}
         </div>
       </main>
+      <Footer>
+        <Nav items={BlogFooterNavItems} />
+      </Footer>
     </>
   );
 }

@@ -4,7 +4,11 @@ import { Head } from "$fresh/runtime.ts";
 import { getPost, Post } from "@/utils/posts.ts";
 import Nav from "@/components/Nav.tsx";
 import Header from "@/components/Header.tsx";
-import { BlogHeaderNavItems } from "@/routes/blog/index.tsx";
+import {
+  BlogFooterNavItems,
+  BlogHeaderNavItems,
+} from "@/routes/blog/index.tsx";
+import Footer from "@/components/Footer.tsx";
 
 export const handler: Handlers<Post> = {
   async GET(_req, ctx) {
@@ -42,6 +46,9 @@ export default function PostPage(props: PageProps<Post>) {
           dangerouslySetInnerHTML={{ __html: render(post.content) }}
         />
       </main>
+      <Footer>
+        <Nav items={BlogFooterNavItems} />
+      </Footer>
     </>
   );
 }
