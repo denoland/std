@@ -34,7 +34,7 @@ export async function getPost(slug: string): Promise<Post | null> {
       content: body,
       summary: attrs.summary as string || "",
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
