@@ -39,21 +39,21 @@ export function isLeap(year: Date | number): boolean {
  *
  * @example
  * ```ts
- * import { isUTCLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
+ * import { isUtcLeap } from "https://deno.land/std@$STD_VERSION/datetime/is_leap.ts";
  *
- * isUTCLeap(2000); // => returns true regardless of the local timezone
- * isUTCLeap(new Date("2000-01-01")); // => returns true regardless of the local timezone
- * isUTCLeap(new Date("January 1, 2000 00:00:00 GMT+00:00")); // => returns true regardless of the local timezone
- * isUTCLeap(new Date("December 31, 2000 23:59:59 GMT+00:00")); // => returns true regardless of the local timezone
- * isUTCLeap(new Date("January 1, 2000 00:00:00 GMT+01:00")); // => returns false regardless of the local timezone
- * isUTCLeap(new Date("December 31, 2000 23:59:59 GMT-01:00")); // => returns false regardless of the local timezone
- * isUTCLeap(new Date("January 1, 2001 00:00:00 GMT+01:00")); // => returns true regardless of the local timezone
- * isUTCLeap(new Date("December 31, 1999 23:59:59 GMT-01:00")); // => returns true regardless of the local timezone
+ * isUtcLeap(2000); // => returns true regardless of the local timezone
+ * isUtcLeap(new Date("2000-01-01")); // => returns true regardless of the local timezone
+ * isUtcLeap(new Date("January 1, 2000 00:00:00 GMT+00:00")); // => returns true regardless of the local timezone
+ * isUtcLeap(new Date("December 31, 2000 23:59:59 GMT+00:00")); // => returns true regardless of the local timezone
+ * isUtcLeap(new Date("January 1, 2000 00:00:00 GMT+01:00")); // => returns false regardless of the local timezone
+ * isUtcLeap(new Date("December 31, 2000 23:59:59 GMT-01:00")); // => returns false regardless of the local timezone
+ * isUtcLeap(new Date("January 1, 2001 00:00:00 GMT+01:00")); // => returns true regardless of the local timezone
+ * isUtcLeap(new Date("December 31, 1999 23:59:59 GMT-01:00")); // => returns true regardless of the local timezone
  * ```
  *
  * @param year year in number or Date format
  */
-export function isUTCLeap(year: Date | number): boolean {
+export function isUtcLeap(year: Date | number): boolean {
   const yearNumber = year instanceof Date ? year.getUTCFullYear() : year;
   return isYearNumberALeapYear(yearNumber);
 }
