@@ -3,6 +3,8 @@ import Logo from "@/components/Logo.tsx";
 import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
 import Notice from "@/components/Notice.tsx";
+import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
+import * as Icons from "@/components/Icons.tsx";
 
 export default function LoginPage(props: PageProps) {
   const errorMessage = props.url.searchParams.get("error");
@@ -18,6 +20,7 @@ export default function LoginPage(props: PageProps) {
           {errorMessage === "Invalid login credentials" && (
             <Notice>{errorMessage}</Notice>
           )}
+          <OAuthLoginButton provider="github" icon={Icons.GitHub} />
           <AuthForm type="Login" />
           <div class="text-center text-gray-500 hover:text-black">
             <a href="/signup">Don't have an account? Sign up</a>

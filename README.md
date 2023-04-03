@@ -289,6 +289,17 @@ The blog is based on the instructions in the blog post
 [Building a Blog with Fresh](https://deno.com/blog/build-a-blog-with-fresh). For
 more information about how the blog works, see the reference post.
 
+### OAuth
+
+1. Set up the OAuth application for your given provider by following one of
+   [these guides](https://supabase.com/docs/guides/auth#providers).
+1. [Configure your third-party provider](https://supabase.com/docs/guides/auth#configure-third-party-providers)
+   in Supabase.
+1. Insert your `OAuthLoginButton` component in your login or signup page
+   [as follows](routes/login.tsx), which has been done for GitHub. Note: you may
+   need to create the provider icon, which can be done in
+   [components/Icons.tsx](components/Icons.tsx).
+
 ## Hosting
 
 You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
