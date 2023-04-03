@@ -32,18 +32,15 @@ export async function move(
 ) {
   const srcStat = await Deno.stat(src);
 
-  if (srcStat.isDirectory && isSubdir(src, dest)) {
+  if (
+    srcStat.isDirectory &&
+    (isSubdir(src, dest) || isSamePath(src, dest))
+  ) {
     throw new SubdirectoryMoveError(src, dest);
   }
 
-  if (isSamePath(src, dest)) {
-    if (srcStat.isDirectory) {
-      throw new SubdirectoryMoveError(src, dest);
-    }
-    return;
-  }
-
   if (overwrite) {
+    if (isSamePath(src, dest)) return;
     try {
       await Deno.remove(dest, { recursive: true });
     } catch (error) {
@@ -79,18 +76,15 @@ export function moveSync(
 ) {
   const srcStat = Deno.statSync(src);
 
-  if (srcStat.isDirectory && isSubdir(src, dest)) {
+  if (
+    srcStat.isDirectory &&
+    (isSubdir(src, dest) || isSamePath(src, dest))
+  ) {
     throw new SubdirectoryMoveError(src, dest);
   }
 
-  if (isSamePath(src, dest)) {
-    if (srcStat.isDirectory) {
-      throw new SubdirectoryMoveError(src, dest);
-    }
-    return;
-  }
-
   if (overwrite) {
+    if (isSamePath(src, dest)) return;
     try {
       Deno.removeSync(dest, { recursive: true });
     } catch (error) {
