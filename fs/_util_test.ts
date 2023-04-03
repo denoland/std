@@ -68,17 +68,17 @@ Deno.test("_isSamePath", function () {
   const pairs = [
     ["", "", true],
     ["/test", "/test/", true],
-    ["/test", path.posix.toFileUrl("/test"), true],
-    ["/test", path.posix.toFileUrl("/test/test"), false],
+    ["/test", path.toFileUrl("/test"), true],
+    ["/test", path.toFileUrl("/test/test"), false],
     ["/test", "/test/test", false],
     ["/test", "/test/test/..", true],
     ["C:\\test", "C:\\test", true],
     ["C:\\test", "C:\\test\\test", false],
-    ["C:\\test", path.win32.toFileUrl("C:\\test"), true],
-    ["C:\\test", path.win32.toFileUrl("C:\\test\\test"), false],
+    ["C:\\test", path.toFileUrl("C:\\test"), true],
+    ["C:\\test", path.toFileUrl("C:\\test\\test"), false],
   ];
 
-  pairs.forEach(function (p) {
+  for (const p of pairs) {
     const src = p[0] as string | URL;
     const dest = p[1] as string | URL;
     const expected = p[2] as boolean;
@@ -88,5 +88,5 @@ Deno.test("_isSamePath", function () {
       expected,
       `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
     );
-  });
+  }
 });
