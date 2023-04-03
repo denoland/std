@@ -9,9 +9,9 @@ Deno.test({
     assert(isLeap(2000));
     assert(!isLeap(2003));
     assert(!isLeap(2007));
-    assert(!isLeap(new Date("1970-01-01")));
-    assert(isLeap(new Date("1972-01-01")));
-    assert(isLeap(new Date("2000-01-01")));
-    assert(!isLeap(new Date("2100-01-01")));
+    assert(!isLeap(new Date("1970-01-02")));
+    assert(isLeap(new Date("1972-01-02")));
+    assert(isLeap(new Date("2000-01-02")));
+    assert(!isLeap(new Date("2100-01-02")));
   },
 });
