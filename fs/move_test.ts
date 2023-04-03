@@ -10,7 +10,6 @@ import { move, moveSync, SubdirectoryMoveError } from "./move.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { existsSync } from "./exists.ts";
-import { isSamePath } from "./_util.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
