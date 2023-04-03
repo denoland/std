@@ -10,10 +10,9 @@ import { basename, normalize } from "../path/mod.ts";
 export function isSamePath(
   src: string | URL,
   dest: string | URL,
-  sep: string = path.sep,
 ): boolean | void {
-  src = toPathString(src, sep);
-  dest = toPathString(dest, sep);
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   return path.resolve(src) === path.resolve(dest);
 }
@@ -94,15 +93,9 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
 /**
  * Convert a URL or string to a path
  * @param pathUrl A URL or string to be converted
- * @param sep A path separator 
  */
 export function toPathString(
   pathUrl: string | URL,
-  sep: string = path.sep,
 ): string {
-  return pathUrl instanceof URL
-    ? sep === "/"
-      ? path.posix.fromFileUrl(pathUrl)
-      : path.win32.fromFileUrl(pathUrl)
-    : pathUrl;
+  return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;
 }
