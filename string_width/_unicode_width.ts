@@ -4,18 +4,7 @@
 import data from "https://deno.land/std@$STD_VERSION/string_width/_data.json" assert {
   type: "json",
 };
-
-const runLengthDecode = ({ d, r }: { d: string; r: string }) => {
-  const data = atob(d);
-  const runLengths = atob(r);
-  let out = "";
-
-  for (const [i, ch] of [...runLengths].entries()) {
-    out += data[i].repeat(ch.codePointAt(0)!);
-  }
-
-  return Uint8Array.from([...out].map((x) => x.codePointAt(0)!));
-};
+import { runLengthDecode } from "https://deno.land/std@$STD_VERSION/string_width/_rle.ts";
 
 let tables: Uint8Array[] | null = null;
 function lookupWidth(cp: number) {

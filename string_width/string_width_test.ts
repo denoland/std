@@ -127,6 +127,7 @@ Deno.test("property-testing equality with unicode_width Rust crate", async (t) =
         unicode_width: { parameters: ["buffer"], result: "usize" },
       });
     } catch {
+      // skip these tests if Rust code hasn't been compiled locally
       ignore = true;
     }
 
