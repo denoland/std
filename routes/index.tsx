@@ -220,6 +220,10 @@ function BottomSection() {
       inner: "Testimonial",
       href: "#testimonial",
     },
+    {
+      inner: "Source code",
+      href: "https://github.com/denoland/saaskit",
+    },
   ];
 
   return (
