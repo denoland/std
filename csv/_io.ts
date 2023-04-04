@@ -267,7 +267,7 @@ export const ERR_FIELD_COUNT = "wrong number of fields";
 
 export function convertRowToObject(
   row: string[],
-  headers: string[],
+  headers: readonly string[],
   index: number,
 ) {
   if (row.length !== headers.length) {
@@ -282,9 +282,22 @@ export function convertRowToObject(
   return out;
 }
 
-export type RowType<ParseOptions, T> = T extends
-  Omit<ParseOptions, "columns"> & { columns: string[] }
-  ? Record<string, unknown>
-  : T extends Omit<ParseOptions, "skipFirstRow"> & { skipFirstRow: true }
-    ? Record<string, unknown>
-  : string[];
+// deno-fmt-ignore
+export type ParseResult<ParseOptions, T> =
+  // If `columns` option is specified, the return type is Record type.
+  T extends ParseOptions & { columns: readonly (infer C extends string)[] }
+    ? RecordWithColumn<C>[]
+  // If `skipFirstRow` option is specified, the return type is Record type.
+  : T extends ParseOptions & { skipFirstRow: true }
+    ? Record<string, string | undefined>[]
+  // If `columns` and `skipFirstRow` option is _not_ specified, the return type is string[][].
+  : T extends ParseOptions & { columns?: undefined; skipFirstRow?: false | undefined }
+    ? string[][]
+  // else, the return type is Record type or string[][].
+  : Record<string, string | undefined>[] | string[][];
+
+// RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string>
+// RecordWithColumn<string> => Record<string, string | undefined>
+type RecordWithColumn<C extends string> = string extends C
+  ? Record<string, string | undefined>
+  : Record<C, string>;
