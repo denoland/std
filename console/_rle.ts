@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "https://deno.land/std@$STD_VERSION/_util/asserts.ts";
+import { assert } from "../_util/asserts.ts";
 
 export function runLengthEncode(arr: number[]) {
   const data: number[] = [];
