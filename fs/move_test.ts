@@ -489,4 +489,4 @@ Deno.test("moveSyncSameDirOverwrite", function () {
   }
 
   Deno.removeSync(dir, { recursive: true });
-})
+});
