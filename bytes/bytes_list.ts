@@ -129,15 +129,19 @@ export class BytesList {
     const startIdx = this.getChunkIndex(start);
     const endIdx = this.getChunkIndex(end - 1);
     let written = 0;
-    for (let i = startIdx; i < endIdx; i++) {
-      const chunk = this.#chunks[i];
-      const len = chunk.end - chunk.start;
-      result.set(chunk.value.subarray(chunk.start, chunk.end), written);
+    for (let i = startIdx; i <= endIdx; i++) {
+      const {
+        value: chunkValue,
+        start: chunkStart,
+        end: chunkEnd,
+        offset: chunkOffset,
+      } = this.#chunks[i];
+      const readStart = chunkStart + (i === startIdx ? start - chunkOffset : 0);
+      const readEnd = i === endIdx ? end - chunkOffset + chunkStart : chunkEnd;
+      const len = readEnd - readStart;
+      result.set(chunkValue.subarray(readStart, readEnd), written);
       written += len;
     }
-    const last = this.#chunks[endIdx];
-    const rest = end - start - written;
-    result.set(last.value.subarray(last.start, last.start + rest), written);
     return result;
   }
   /**

@@ -5,8 +5,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
-import { parse, ParseError } from "./parse.ts";
-import type { AssertTrue, Has } from "../testing/types.ts";
+import { parse, ParseError, ParseOptions } from "./parse.ts";
+import type { AssertTrue, IsExact } from "../testing/types.ts";
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -819,49 +819,90 @@ Deno.test({
 Deno.test({
   name: "[csv] correct typing",
   fn() {
+    // If no option is passed, defaults to string[][]
     {
       const parsed = parse("a\nb");
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
+    }
+    {
+      const parsed = parse("a\nb", undefined);
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
+    }
+    {
+      // `skipFirstRow` may be `true` or `false`.
+      // `coloums` may be `undefined` or `string[]`.
+      // If you don't know exactly what the value of the option is,
+      // the return type is string[][] | Record<string, string|undefined>[]
+      const options: ParseOptions = {};
+      const parsed = parse("a\nb", options);
+      type _ = AssertTrue<
+        IsExact<
+          typeof parsed,
+          string[][] | Record<string, string | undefined>[]
+        >
+      >;
     }
     {
       const parsed = parse("a\nb", {});
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
+
+    // skipFirstRow option
     {
       const parsed = parse("a\nb", { skipFirstRow: undefined });
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: false });
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: true });
-      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
+      >;
     }
+
+    // columns option
     {
       const parsed = parse("a\nb", { columns: undefined });
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
-      const parsed = parse("a\nb", { columns: ["aaa"] });
-      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+      const parsed = parse("a,b\nc,d", { columns: ["aaa", "bbb"] });
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<"aaa" | "bbb", string>[]>
+      >;
     }
+    {
+      const parsed = parse("a\nb", { columns: ["aaa"] as string[] });
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
+      >;
+    }
+
+    // skipFirstRow option + columns option
     {
       const parsed = parse("a\nb", { skipFirstRow: false, columns: undefined });
-      type _ = AssertTrue<Has<typeof parsed, string[][]>>;
+      type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: undefined });
-      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
+      >;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: false, columns: ["aaa"] });
-      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<"aaa", string>[]>
+      >;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: ["aaa"] });
-      type _ = AssertTrue<Has<typeof parsed, Record<string, unknown>[]>>;
+      type _ = AssertTrue<
+        IsExact<typeof parsed, Record<"aaa", string>[]>
+      >;
     }
   },
 });

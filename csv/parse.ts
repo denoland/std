@@ -8,6 +8,7 @@ import {
   ERR_INVALID_DELIM,
   ERR_QUOTE,
   ParseError,
+  type ParseResult,
   type ReadOptions,
 } from "./_io.ts";
 import { assert } from "../_util/asserts.ts";
@@ -298,7 +299,7 @@ export interface ParseOptions extends ReadOptions {
   skipFirstRow?: boolean;
 
   /** List of names used for header definition. */
-  columns?: string[];
+  columns?: readonly string[];
 }
 
 /**
@@ -324,40 +325,20 @@ export interface ParseOptions extends ReadOptions {
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
-export function parse(
+export function parse(input: string, opt?: undefined): string[][];
+export function parse<const T extends ParseOptions>(
   input: string,
-): string[][];
-export function parse(
+  opt: T,
+): ParseResult<ParseOptions, T>;
+export function parse<const T extends ParseOptions>(
   input: string,
-  opt: Omit<ParseOptions, "columns" | "skipFirstRow">,
-): string[][];
-export function parse(
-  input: string,
-  opt: Omit<ParseOptions, "columns"> & {
-    columns: string[];
-  },
-): Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: Omit<ParseOptions, "skipFirstRow"> & {
-    skipFirstRow: true;
-  },
-): Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: ParseOptions,
-): string[][] | Record<string, unknown>[];
-export function parse(
-  input: string,
-  opt: ParseOptions = {
-    skipFirstRow: false,
-  },
-): string[][] | Record<string, unknown>[] {
+  opt: T = { skipFirstRow: false } as T,
+): ParseResult<ParseOptions, T> {
   const parser = new Parser(opt);
   const r = parser.parse(input);
 
   if (opt.skipFirstRow || opt.columns) {
-    let headers: string[] = [];
+    let headers: readonly string[] = [];
 
     if (opt.skipFirstRow) {
       const head = r.shift();
@@ -372,7 +353,7 @@ export function parse(
     const firstLineIndex = opt.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
       return convertRowToObject(row, headers, firstLineIndex + i);
-    });
+    }) as ParseResult<ParseOptions, T>;
   }
-  return r;
+  return r as ParseResult<ParseOptions, T>;
 }
