@@ -7,8 +7,6 @@
  * @module
  */
 
-export * from "./varint/mod.ts";
-
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 // This module is browser compatible.
 

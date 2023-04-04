@@ -6,8 +6,8 @@ import {
   defaultReadOptions,
   type LineReader,
   parseRecord,
+  type ParseResult,
   type ReadOptions,
-  type RowType,
 } from "../csv/_io.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
@@ -19,9 +19,8 @@ export interface CsvStreamOptions extends ReadOptions {
    * be skipped and used as header definitions.
    */
   skipFirstRow?: boolean;
-
   /** List of names used for header definition. */
-  columns?: string[];
+  columns?: readonly string[];
 }
 
 class StreamLineReader implements LineReader {
@@ -55,6 +54,9 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
+type RowType<T> = T extends undefined ? string[]
+  : ParseResult<CsvStreamOptions, T>[number];
+
 /**
  * Read data from a CSV-encoded stream or file.
  * Provides an auto/custom mapper for columns.
@@ -71,8 +73,8 @@ function stripLastCR(s: string): string {
  *   .pipeThrough(new CsvStream());
  * ```
  */
-export class CsvStream<T extends CsvStreamOptions>
-  implements TransformStream<string, RowType<CsvStreamOptions, T>> {
+export class CsvStream<const T extends CsvStreamOptions | undefined = undefined>
+  implements TransformStream<string, RowType<T>> {
   readonly #readable: ReadableStream<
     string[] | Record<string, string | unknown>
   >;
@@ -82,7 +84,7 @@ export class CsvStream<T extends CsvStreamOptions>
   #lineIndex = 0;
   #isFirstRow = true;
 
-  #headers: string[] = [];
+  #headers: readonly string[] = [];
 
   constructor(options: T = defaultReadOptions as T) {
     this.#options = {
@@ -165,7 +167,7 @@ export class CsvStream<T extends CsvStreamOptions>
   }
 
   get readable() {
-    return this.#readable as ReadableStream<RowType<CsvStreamOptions, T>>;
+    return this.#readable as ReadableStream<RowType<T>>;
   }
 
   get writable(): WritableStream<string> {
