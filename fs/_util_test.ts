@@ -64,36 +64,55 @@ Deno.test("_getFileInfoType", function () {
   });
 });
 
-Deno.test("_isSamePath", function () {
-  const pairs: (string | URL | boolean)[][] = [
-    ["", "", true],
-    ["/test", "/test/", true],
-    ["/test", "/test/test", false],
-    ["/test", "/test/test/..", true],
-    ["C:\\test", "C:\\test", true],
-    ["C:\\test", "C:\\test\\test", false],
-  ];
-  if (path.sep === "/") {
-    pairs.push(
-      ["/test", path.posix.toFileUrl("/test"), true],
-      ["/test", path.posix.toFileUrl("/test/test"), false],
-    );
-  } else {
-    pairs.push(
-      ["C:\\test", path.win32.toFileUrl("C:\\test"), true],
-      ["C:\\test", path.win32.toFileUrl("C:\\test\\test"), false],
-    );
-  }
+Deno.test({
+  name: "_isSamePathWin32",
+  ignore: Deno.build.os !== "windows",
+  fn() {
+    const pairs: (string | URL | boolean)[][] = [
+      ["", "", true],
+      ["C:\\test", "C:\\test", true],
+      ["C:\\test", "C:\\test\\test", false],
+      ["C:\\test", path.toFileUrl("C:\\test"), true],
+      ["C:\\test", path.toFileUrl("C:\\test\\test"), false],
+    ];
 
-  for (const p of pairs) {
-    const src = p[0] as string | URL;
-    const dest = p[1] as string | URL;
-    const expected = p[2] as boolean;
+    for (const p of pairs) {
+      const src = p[0] as string | URL;
+      const dest = p[1] as string | URL;
+      const expected = p[2] as boolean;
 
-    assertEquals(
-      isSamePath(src, dest),
-      expected,
-      `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
-    );
-  }
+      assertEquals(
+        isSamePath(src, dest),
+        expected,
+        `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
+      );
+    }
+  },
+});
+
+Deno.test({
+  name: "_isSamePathPosix",
+  ignore: Deno.build.os === "windows",
+  fn() {
+    const pairs: (string | URL | boolean)[][] = [
+      ["", "", true],
+      ["/test", "/test/", true],
+      ["/test", "/test/test", false],
+      ["/test", "/test/test/..", true],
+      ["/test", path.toFileUrl("/test"), true],
+      ["/test", path.toFileUrl("/test/test"), false],
+    ];
+
+    for (const p of pairs) {
+      const src = p[0] as string | URL;
+      const dest = p[1] as string | URL;
+      const expected = p[2] as boolean;
+
+      assertEquals(
+        isSamePath(src, dest),
+        expected,
+        `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
+      );
+    }
+  },
 });
