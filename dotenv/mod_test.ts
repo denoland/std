@@ -786,13 +786,15 @@ Deno.test(
       examplePath: null,
     } satisfies LoadOptions;
 
-    await t.step("load", async () => {
-      assertStrictEquals(Object.keys(await load(optsNoPaths)).length, 0);
-
-      const env = await load(optsOnlyEnvPath);
+    const assertEnv = (env: Record<string, string>): void => {
       assertStrictEquals(Object.keys(env).length, 2);
       assertStrictEquals(env["GREETING"], "hello world");
       assertStrictEquals(env["DO_NOT_OVERRIDE"], "overridden");
+    };
+
+    await t.step("load", async () => {
+      assertStrictEquals(Object.keys(await load(optsNoPaths)).length, 0);
+      assertEnv(await load(optsOnlyEnvPath));
 
       assertRejects(
         () => load(optsEnvPath),
@@ -815,11 +817,7 @@ Deno.test(
 
     await t.step("loadSync", () => {
       assertStrictEquals(Object.keys(loadSync(optsNoPaths)).length, 0);
-
-      const env = loadSync(optsOnlyEnvPath);
-      assertStrictEquals(Object.keys(env).length, 2);
-      assertStrictEquals(env["GREETING"], "hello world");
-      assertStrictEquals(env["DO_NOT_OVERRIDE"], "overridden");
+      assertEnv(loadSync(optsOnlyEnvPath));
 
       assertThrows(
         () => loadSync(optsEnvPath),
@@ -837,6 +835,47 @@ Deno.test(
         () => loadSync({ ...optsEnvPath, examplePath: null }),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.defaults"`,
+      );
+    });
+  },
+);
+
+Deno.test(
+  "use restrictEnvAccessTo with empty array to prevent env access and read only from fs",
+  { permissions: { read: [testOptions.envPath] } },
+  async (t) => {
+    const optsOnlyEnvPath = {
+      envPath: testOptions.envPath,
+      defaultsPath: null,
+      examplePath: null,
+    } satisfies LoadOptions;
+
+    const optsNoEnvAccess = {
+      ...optsOnlyEnvPath,
+      restrictEnvAccessTo: [],
+    } satisfies LoadOptions;
+
+    const assertEnv = (env: Record<string, string>): void => {
+      assertStrictEquals(Object.keys(env).length, 2);
+      assertStrictEquals(env["GREETING"], "hello world");
+      assertStrictEquals(env["DO_NOT_OVERRIDE"], "overridden");
+    };
+
+    await t.step("load", async () => {
+      assertEnv(await load(optsNoEnvAccess));
+      assertRejects(
+        () => load(optsOnlyEnvPath),
+        Deno.errors.PermissionDenied,
+        `Requires env access to all, run again with the --allow-env flag`,
+      );
+    });
+
+    await t.step("loadSync", () => {
+      assertEnv(loadSync(optsNoEnvAccess));
+      assertThrows(
+        () => loadSync(optsOnlyEnvPath),
+        Deno.errors.PermissionDenied,
+        `Requires env access to all, run again with the --allow-env flag`,
       );
     });
   },
