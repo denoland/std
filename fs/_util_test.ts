@@ -65,18 +65,25 @@ Deno.test("_getFileInfoType", function () {
 });
 
 Deno.test("_isSamePath", function () {
-  const pairs = [
+  const pairs: (string | URL | boolean)[][] = [
     ["", "", true],
     ["/test", "/test/", true],
-    ["/test", path.toFileUrl("/test"), true],
-    ["/test", path.toFileUrl("/test/test"), false],
     ["/test", "/test/test", false],
     ["/test", "/test/test/..", true],
     ["C:\\test", "C:\\test", true],
     ["C:\\test", "C:\\test\\test", false],
-    ["C:\\test", path.toFileUrl("C:\\test"), true],
-    ["C:\\test", path.toFileUrl("C:\\test\\test"), false],
   ];
+  if (path.sep === "/") {
+    pairs.push(
+      ["/test", path.posix.toFileUrl("/test"), true],
+      ["/test", path.posix.toFileUrl("/test/test"), false],
+    );
+  } else {
+    pairs.push(
+      ["C:\\test", path.win32.toFileUrl("C:\\test"), true],
+      ["C:\\test", path.win32.toFileUrl("C:\\test\\test"), false],
+    );
+  }
 
   for (const p of pairs) {
     const src = p[0] as string | URL;
