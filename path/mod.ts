@@ -23,13 +23,25 @@
  */
 
 import { isWindows } from "../_util/os.ts";
-import * as _win32 from "./win32.ts";
-import * as _posix from "./posix.ts";
+import * as _win32 from "./_win32.ts";
+import * as _posix from "./_posix.ts";
 
-const path = isWindows ? _win32 : _posix;
+export const win32 = {
+  ..._win32,
+  win32: null as unknown as typeof _win32,
+  posix: null as unknown as typeof _posix,
+};
 
-export const win32 = _win32;
-export const posix = _posix;
+export const posix = {
+  ..._posix,
+  win32: null as unknown as typeof _win32,
+  posix: null as unknown as typeof _posix,
+};
+
+posix.win32 = win32.win32 = win32;
+posix.posix = win32.posix = posix;
+
+const path = isWindows ? win32 : posix;
 export const {
   basename,
   delimiter,
@@ -49,6 +61,4 @@ export const {
 } = path;
 
 export * from "./common.ts";
-export { SEP, SEP_PATTERN } from "./separator.ts";
 export * from "./_interface.ts";
-export * from "./glob.ts";

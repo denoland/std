@@ -7,7 +7,7 @@ import {
   joinGlobs,
   normalizeGlob,
 } from "./glob.ts";
-import { SEP } from "./mod.ts";
+import { SEP } from "./separator.ts";
 
 function match(
   glob: string,

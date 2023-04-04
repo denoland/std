@@ -4,18 +4,13 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import {
-  fromFileUrl,
-  join,
-  joinGlobs,
-  normalize,
-  relative,
-} from "../path/mod.ts";
+import { fromFileUrl, join, normalize, relative } from "../path/mod.ts";
 import {
   expandGlob,
   ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
+import { joinGlobs } from "../path/glob.ts";
 
 async function expandGlobArray(
   globString: string,
