@@ -581,6 +581,7 @@ Deno.test("expand variables", () => {
     "variables within and without brackets expanded",
   );
 });
+
 Deno.test("stringify", async (t) => {
   await t.step(
     "basic",
@@ -758,7 +759,7 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
 });
 
 Deno.test(
-  "prevent file systems reads of default path parameter values by using explicit null",
+  "prevent file system reads of default path parameter values by using explicit null",
   {
     permissions: {
       env: ["GREETING", "DO_NOT_OVERRIDE"],
