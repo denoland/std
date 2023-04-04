@@ -39,6 +39,8 @@ Want to know where Deno SaaSKit is headed? Check out
 Read more about Deno SaaSkit from
 [our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
 
+View the [Deno SaaSKit demo](https://saaskit.deno.dev/).
+
 ## Installation
 
 Getting started with Deno SaaSKit is straightforward.
@@ -269,7 +271,7 @@ Stripe logic:
 
 ### Blog
 
-SaaSKit also provides a markdown based blog. There are three main directories to
+SaaSKit also provides a markdown-based blog. There are three main directories to
 manage the blog. First, in `routes/blog` you will find the routes needed to
 serve the `/blog` page and the routes to your posts. These will be available at
 `/blog/<slug>`. The name of the slug will be taken from the file name. Speaking
@@ -300,6 +302,12 @@ more information about how the blog works, see the reference post.
    need to create the provider icon, which can be done in
    [components/Icons.tsx](components/Icons.tsx).
 
+### Theme Customization
+
+You can customize theme options such as spacing, color, etc. By default, Deno
+SaaSKit comes with `primary` and `secondary` colors predefined within
+`twind.config.ts`. Change these values to match your desired color scheme.
+
 ## Hosting
 
 You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
@@ -307,12 +315,6 @@ You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
 ### Deno Deploy
 
 TODO.
-
-### Theme Customization
-
-You can customize theme options such as spacing, color, etc. By default, Deno
-SaaSKit comes with `primary` and `secondary` colors predefined within
-`twind.config.ts`. Change these values to match your desired color scheme.
 
 ## Contributing
 
