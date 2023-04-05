@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { CsvStream } from "./stream.ts";
-import type { CsvStreamOptions } from "./stream.ts";
+import { CsvParseStream } from "./csv_parse_stream.ts";
+import type { CsvParseStreamOptions } from "./csv_parse_stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
 import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
 import { readableStreamFromReader } from "../streams/readable_stream_from_reader.ts";
@@ -10,7 +10,7 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import type { AssertTrue, Has } from "../testing/types.ts";
+import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import { StringReader } from "../io/string_reader.ts";
 
@@ -18,7 +18,7 @@ const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "[csv/stream] CsvStream should work with Deno.File",
+  name: "[csv/csv_parse_stream] CsvParseStream should work with Deno.File",
   permissions: {
     read: [testdataDir],
   },
@@ -26,7 +26,7 @@ Deno.test({
     const file = await Deno.open(join(testdataDir, "simple.csv"));
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new CsvStream());
+      .pipeThrough(new CsvParseStream());
     const records = [] as Array<Array<string>>;
     for await (const record of readable) {
       records.push(record);
@@ -40,7 +40,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv/stream] CsvStream with invalid csv",
+  name: "[csv/csv_parse_stream] CsvParseStream with invalid csv",
   fn: async () => {
     const readable = readableStreamFromIterable([
       encoder.encode("id,name\n"),
@@ -48,7 +48,7 @@ Deno.test({
       encoder.encode("1,foo\n"),
       encoder.encode('2,"baz\n'),
     ]).pipeThrough(new TextDecoderStream()).pipeThrough(
-      new CsvStream(),
+      new CsvParseStream(),
     );
     const reader = readable.getReader();
     assertEquals(await reader.read(), { done: false, value: ["id", "name"] });
@@ -63,7 +63,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv/stream] CsvStream with various inputs",
+  name: "[csv/csv_parse_stream] CsvParseStream with various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
@@ -318,7 +318,7 @@ x,,,
     ];
     for (const testCase of testCases) {
       await t.step(testCase.name, async () => {
-        const options: CsvStreamOptions = {};
+        const options: CsvParseStreamOptions = {};
         if (testCase.separator) {
           options.separator = testCase.separator;
         }
@@ -332,10 +332,10 @@ x,,,
           options.columns = testCase.columns;
         }
         const readable = createReadableStreamFromString(testCase.input)
-          .pipeThrough(new CsvStream(options));
+          .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [] as Array<Array<string>>;
+          const actual = [];
           for await (const record of readable) {
             actual.push(record);
           }
@@ -371,7 +371,8 @@ export const MyTextDecoderStream = () => {
 };
 
 Deno.test({
-  name: "[csv/stream] cancel CsvStream during iteration does not leak file",
+  name:
+    "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   // TODO(kt3k): Enable this test on windows.
   // See https://github.com/denoland/deno_std/issues/3160
@@ -379,7 +380,7 @@ Deno.test({
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
     const readable = file.readable.pipeThrough(MyTextDecoderStream())
-      .pipeThrough(new CsvStream());
+      .pipeThrough(new CsvParseStream());
     for await (const _record of readable) {
       break;
     }
@@ -387,72 +388,112 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv/stream] correct typing",
+  name: "[csv/csv_parse_stream] correct typing",
   fn() {
+    // If no option is passed, defaults to ReadableStream<string[]>.
     {
-      const { readable } = new CsvStream();
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      const { readable } = new CsvParseStream();
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvStream({});
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      const { readable } = new CsvParseStream(undefined);
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvStream({ skipFirstRow: undefined });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
-    }
-    {
-      const { readable } = new CsvStream({ skipFirstRow: false });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
-    }
-    {
-      const { readable } = new CsvStream({ skipFirstRow: true });
+      // `skipFirstRow` may be `true` or `false`.
+      // `coloums` may be `undefined` or `string[]`.
+      // If you don't know exactly what the value of the option is,
+      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
+      const options: CsvParseStreamOptions = {};
+      const { readable } = new CsvParseStream(options);
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<string[] | Record<string, string | undefined>>
+        >
       >;
     }
     {
-      const { readable } = new CsvStream({ columns: undefined });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      const { readable } = new CsvParseStream({});
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
+    }
+
+    // skipFirstRow option
+    {
+      const { readable } = new CsvParseStream({ skipFirstRow: undefined });
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvStream({ columns: ["aaa"] });
+      const { readable } = new CsvParseStream({ skipFirstRow: false });
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvParseStream({ skipFirstRow: true });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
+      >;
+    }
+
+    // columns option
+    {
+      const { readable } = new CsvParseStream({ columns: undefined });
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvParseStream({ columns: ["aaa", "bbb"] });
+      type _ = AssertTrue<
+        IsExact<typeof readable, ReadableStream<Record<"aaa" | "bbb", string>>>
       >;
     }
     {
-      const { readable } = new CsvStream({
+      const { readable } = new CsvParseStream({ columns: ["aaa"] as string[] });
+      type _ = AssertTrue<
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
+      >;
+    }
+
+    // skipFirstRow option + columns option
+    {
+      const { readable } = new CsvParseStream({
         skipFirstRow: false,
         columns: undefined,
       });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvStream({
+      const { readable } = new CsvParseStream({
         skipFirstRow: true,
         columns: undefined,
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
       >;
     }
     {
-      const { readable } = new CsvStream({
+      const { readable } = new CsvParseStream({
         skipFirstRow: false,
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
       >;
     }
     {
-      const { readable } = new CsvStream({
+      const { readable } = new CsvParseStream({
         skipFirstRow: true,
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
       >;
     }
   },
