@@ -16,7 +16,7 @@ export const handler: Handlers = {
       provider: provider as Provider,
       options: {
         redirectTo: new URL(request.url).origin +
-          "/oauth-success",
+          "/login-success",
       },
     });
 
