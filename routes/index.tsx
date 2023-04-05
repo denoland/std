@@ -156,7 +156,9 @@ function PricingSection(props: { products: Stripe.Product[] }) {
         subtitle="Some copy about pricing."
       />
       <div class="flex flex-col md:flex-row gap-8">
-        <img src="/pricing.svg" alt="Pricing image" class="flex-1" />
+        <div class="flex-1">
+          <img src="/pricing.svg" alt="Pricing image" />
+        </div>
         <div class="flex-1 flex flex-col gap-8">
           <PricingCard
             name="Free tier"
