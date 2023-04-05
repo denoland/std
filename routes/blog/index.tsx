@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Handlers } from "$fresh/server.ts";
 import { PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";

@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import Button from "@/components/Button.tsx";
 import { type Signal, useSignal } from "@preact/signals";
 import { IS_BROWSER } from "$fresh/runtime.ts";

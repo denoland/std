@@ -23,5 +23,8 @@ jobs:
       - name: Run linter
         run: deno lint
 
+      - name: Check license headers
+        run: deno task check:license --check
+
       - name: Run tests
         run: deno task test

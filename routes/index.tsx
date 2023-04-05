@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import LinkButton from "@/components/LinkButton.tsx";
 import Head from "@/components/Head.tsx";
 import Header from "@/components/Header.tsx";

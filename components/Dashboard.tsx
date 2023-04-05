@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { type ComponentChild, JSX } from "preact";
 import IconListDetails from "tabler-icons/list-details.tsx";
 import IconUser from "tabler-icons/user.tsx";
