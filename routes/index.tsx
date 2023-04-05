@@ -212,20 +212,19 @@ function TestimonialSection() {
 function BottomSection() {
   const navItems = [
     {
-      inner: "Features",
-      href: "#features",
-    },
-    {
-      inner: "Pricing",
-      href: "#pricing",
-    },
-    {
-      inner: "Testimonial",
-      href: "#testimonial",
-    },
-    {
       inner: "Source code",
       href: "https://github.com/denoland/saaskit",
+    },
+    {
+      href: "https://fresh.deno.dev",
+      inner: (
+        <img
+          width="197"
+          height="37"
+          src="https://fresh.deno.dev/fresh-badge.svg"
+          alt="Made with Fresh"
+        />
+      ),
     },
   ];
 

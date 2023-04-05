@@ -69,6 +69,24 @@ export default function DashboardLayout(props: DashboardProps) {
     },
   ];
 
+  const footerNavItems = [
+    {
+      inner: "Source code",
+      href: "https://github.com/denoland/saaskit",
+    },
+    {
+      href: "https://fresh.deno.dev",
+      inner: (
+        <img
+          width="197"
+          height="37"
+          src="https://fresh.deno.dev/fresh-badge.svg"
+          alt="Made with Fresh"
+        />
+      ),
+    },
+  ];
+
   return (
     <div class="flex flex-col min-h-screen">
       <Header>
@@ -84,7 +102,9 @@ export default function DashboardLayout(props: DashboardProps) {
           {props.children}
         </div>
       </div>
-      <Footer />
+      <Footer>
+        <Nav items={footerNavItems} />
+      </Footer>
     </div>
   );
 }
