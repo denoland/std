@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase_types.ts";
 

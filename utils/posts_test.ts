@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { getPost, getPosts } from "./posts.ts";
 
 import { assert, assertEquals } from "std/testing/asserts.ts";

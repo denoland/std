@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { DashboardState } from "./_middleware.ts";

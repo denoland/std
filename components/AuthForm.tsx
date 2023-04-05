@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import Input from "./Input.tsx";
 import Button from "./Button.tsx";
 
