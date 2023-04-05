@@ -22,8 +22,6 @@ const COPYRIGHT =
 
 let failed = false;
 
-console.log(EXCLUDED_DIRS.map((path) => globToRegExp(path)));
-
 for await (
   const { path } of walk(ROOT, {
     exts: EXTENSIONS,
