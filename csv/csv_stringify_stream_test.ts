@@ -89,6 +89,7 @@ Deno.test({
         output.push(r);
       }
       assertEquals(output, [
+        "id,name\r\n",
         "1,foo\r\n",
         "2,bar\r\n",
         "3,baz\r\n",

@@ -102,6 +102,16 @@ Deno.test("[bytes] BytesList.add should throw if invalid range", () => {
 });
 Deno.test("[bytes] BytesList.slice", () => {
   const arr = setup();
+
+  const arrWithContent = new BytesList();
+  const te = new TextEncoder();
+  const td = new TextDecoder();
+
+  arrWithContent.add(te.encode("Some dummy example "), 2, 13);
+  arrWithContent.add(te.encode("to show it does work now"), 5, 20);
+  assertEquals(td.decode(arrWithContent.slice(5, 9)), "mmy ");
+  assertEquals(td.decode(arrWithContent.slice(9, 13)), "exow");
+
   assertEquals(
     bytes.equals(arr.slice(0, 4), new Uint8Array([0, 1, 2, 3])),
     true,

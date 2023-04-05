@@ -8,7 +8,6 @@ const EXCLUDED_DIRS = [
   "**/fs/testdata",
   "**/http/testdata",
   "**/crypto/_wasm/target",
-  "**/encoding/varint/_wasm/target",
 ];
 
 const ROOT = new URL("../", import.meta.url);

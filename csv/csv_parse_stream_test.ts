@@ -10,7 +10,7 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import type { AssertTrue, Has } from "../testing/types.ts";
+import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import { StringReader } from "../io/string_reader.ts";
 
@@ -335,7 +335,7 @@ x,,,
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [] as Array<Array<string>>;
+          const actual = [];
           for await (const record of readable) {
             actual.push(record);
           }
@@ -390,44 +390,81 @@ Deno.test({
 Deno.test({
   name: "[csv/csv_parse_stream] correct typing",
   fn() {
+    // If no option is passed, defaults to ReadableStream<string[]>.
     {
       const { readable } = new CsvParseStream();
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      const { readable } = new CsvParseStream(undefined);
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
+    }
+    {
+      // `skipFirstRow` may be `true` or `false`.
+      // `coloums` may be `undefined` or `string[]`.
+      // If you don't know exactly what the value of the option is,
+      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
+      const options: CsvParseStreamOptions = {};
+      const { readable } = new CsvParseStream(options);
+      type _ = AssertTrue<
+        IsExact<
+          typeof readable,
+          ReadableStream<string[] | Record<string, string | undefined>>
+        >
+      >;
     }
     {
       const { readable } = new CsvParseStream({});
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
+
+    // skipFirstRow option
     {
       const { readable } = new CsvParseStream({ skipFirstRow: undefined });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
       const { readable } = new CsvParseStream({ skipFirstRow: false });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
       const { readable } = new CsvParseStream({ skipFirstRow: true });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
       >;
     }
+
+    // columns option
     {
       const { readable } = new CsvParseStream({ columns: undefined });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvParseStream({ columns: ["aaa"] });
+      const { readable } = new CsvParseStream({ columns: ["aaa", "bbb"] });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<typeof readable, ReadableStream<Record<"aaa" | "bbb", string>>>
       >;
     }
+    {
+      const { readable } = new CsvParseStream({ columns: ["aaa"] as string[] });
+      type _ = AssertTrue<
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
+      >;
+    }
+
+    // skipFirstRow option + columns option
     {
       const { readable } = new CsvParseStream({
         skipFirstRow: false,
         columns: undefined,
       });
-      type _ = AssertTrue<Has<typeof readable, ReadableStream<string[]>>>;
+      type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
       const { readable } = new CsvParseStream({
@@ -435,7 +472,10 @@ Deno.test({
         columns: undefined,
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<string, string | undefined>>
+        >
       >;
     }
     {
@@ -444,7 +484,7 @@ Deno.test({
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
       >;
     }
     {
@@ -453,7 +493,7 @@ Deno.test({
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        Has<typeof readable, ReadableStream<Record<string, unknown>>>
+        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
       >;
     }
   },
