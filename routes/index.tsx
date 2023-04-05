@@ -190,7 +190,7 @@ function TestimonialSection() {
       <Heading title="Testimonial" />
       <div class="text-center text-lg space-y-8">
         <img
-          src="brad.png"
+          src="brad.webp"
           alt="Brad, CEO of Good Things"
           class="h-16 w-auto rounded-full mx-auto"
         />
