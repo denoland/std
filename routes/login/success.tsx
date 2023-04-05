@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import AuthFragmentCatcher from "@/islands/AuthFragmentCatcher.tsx";
 
 export default function OAuthSuccessPage() {

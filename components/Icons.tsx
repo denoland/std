@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 // Copied from https://github.com/denoland/dotland/blob/main/components/Icons.tsx
 export function GitHub(props: { class?: string }) {
   return (

@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { useEffect } from "preact/hooks";
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-shared";
 import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
