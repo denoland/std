@@ -1,14 +1,10 @@
 import Button from "@/components/Button.tsx";
 import type { Provider } from "@supabase/supabase-js";
-import type { GitHub } from "./Icons.tsx";
-
-function capitalize(value: string) {
-  return value[0].toUpperCase() + value.slice(1);
-}
+import type { ComponentChild } from "preact";
 
 interface OAuthLoginButtonProps {
   provider: Provider;
-  icon: typeof GitHub;
+  children: ComponentChild;
 }
 
 export default function OAuthLoginButton(props: OAuthLoginButtonProps) {
@@ -19,8 +15,7 @@ export default function OAuthLoginButton(props: OAuthLoginButtonProps) {
         type="submit"
         class="w-full bg-white! text-black border-black border-2 align-middle"
       >
-        <props.icon class="inline mr-2" />Log in with{" "}
-        {capitalize(props.provider)}
+        {props.children}
       </Button>
     </form>
   );

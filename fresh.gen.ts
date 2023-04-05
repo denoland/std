@@ -20,8 +20,8 @@ import * as $13 from "./routes/dashboard/manage-subscription.ts";
 import * as $14 from "./routes/dashboard/todos.tsx";
 import * as $15 from "./routes/dashboard/upgrade-subscription.ts";
 import * as $16 from "./routes/index.tsx";
-import * as $17 from "./routes/login-success.tsx";
-import * as $18 from "./routes/login.tsx";
+import * as $17 from "./routes/login/index.tsx";
+import * as $18 from "./routes/login/success.tsx";
 import * as $19 from "./routes/logout.ts";
 import * as $20 from "./routes/signup.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
@@ -46,8 +46,8 @@ const manifest = {
     "./routes/dashboard/todos.tsx": $14,
     "./routes/dashboard/upgrade-subscription.ts": $15,
     "./routes/index.tsx": $16,
-    "./routes/login-success.tsx": $17,
-    "./routes/login.tsx": $18,
+    "./routes/login/index.tsx": $17,
+    "./routes/login/success.tsx": $18,
     "./routes/logout.ts": $19,
     "./routes/signup.tsx": $20,
   },
