@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import LinkButton from "@/components/LinkButton.tsx";
 import Head from "@/components/Head.tsx";
 import Header from "@/components/Header.tsx";
@@ -156,7 +157,9 @@ function PricingSection(props: { products: Stripe.Product[] }) {
         subtitle="Some copy about pricing."
       />
       <div class="flex flex-col md:flex-row gap-8">
-        <img src="/pricing.svg" alt="Pricing image" class="flex-1" />
+        <div class="flex-1">
+          <img src="/pricing.svg" alt="Pricing image" />
+        </div>
         <div class="flex-1 flex flex-col gap-8">
           <PricingCard
             name="Free tier"
@@ -190,7 +193,7 @@ function TestimonialSection() {
       <Heading title="Testimonial" />
       <div class="text-center text-lg space-y-8">
         <img
-          src="brad.png"
+          src="brad.webp"
           alt="Brad, CEO of Good Things"
           class="h-16 w-auto rounded-full mx-auto"
         />
@@ -209,20 +212,19 @@ function TestimonialSection() {
 function BottomSection() {
   const navItems = [
     {
-      inner: "Features",
-      href: "#features",
-    },
-    {
-      inner: "Pricing",
-      href: "#pricing",
-    },
-    {
-      inner: "Testimonial",
-      href: "#testimonial",
-    },
-    {
       inner: "Source code",
       href: "https://github.com/denoland/saaskit",
+    },
+    {
+      href: "https://fresh.deno.dev",
+      inner: (
+        <img
+          width="197"
+          height="37"
+          src="https://fresh.deno.dev/fresh-badge.svg"
+          alt="Made with Fresh"
+        />
+      ),
     },
   ];
 

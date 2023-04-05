@@ -1,7 +1,8 @@
 {
   "tasks": {
     "start": "deno run -A --cached-only --watch=static/,routes/ dev.ts",
-    "test": "deno test -A"
+    "test": "deno test -A",
+    "check:license": "deno run --allow-read tools/check_license.ts"
   },
   "importMap": "./import_map.json",
   "compilerOptions": {

@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { JSX } from "preact";
 
 export default function LinkButton(
