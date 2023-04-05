@@ -237,9 +237,9 @@ All of the authentication logic is handled by Supabase Auth. All of the logic
 can be found in these locations:
 
 - `/routes/api/*`: All login and logout API functionalities are located here
-- `/routes/signup.tsx`, `/routes/login.tsx`, `/routes/logout.ts`: The pages that
-  visitors see when signing up or logging in (logout.ts redirects the user to
-  `/`)
+- `/routes/signup.tsx`, `/routes/login/index.tsx`, `/routes/logout.ts`: The
+  pages that visitors see when signing up or logging in (logout.ts redirects the
+  user to `/`)
 - `/utils/supabase.ts`: A wrapper function around Supabase client.
 
 ### Dashboard
