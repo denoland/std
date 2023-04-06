@@ -39,6 +39,8 @@ Want to know where Deno SaaSKit is headed? Check out
 Read more about Deno SaaSkit from
 [our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
 
+View the [Deno SaaSKit demo](https://saaskit.deno.dev/).
+
 ## Installation
 
 Getting started with Deno SaaSKit is straightforward.
@@ -55,7 +57,7 @@ The only variables you need are:
 
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_URL`
-- `SUPABSE_SERVICE_KEY`
+- `SUPABASE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 
@@ -235,9 +237,9 @@ All of the authentication logic is handled by Supabase Auth. All of the logic
 can be found in these locations:
 
 - `/routes/api/*`: All login and logout API functionalities are located here
-- `/routes/signup.tsx`, `/routes/login.tsx`, `/routes/logout.ts`: The pages that
-  visitors see when signing up or logging in (logout.ts redirects the user to
-  `/`)
+- `/routes/signup.tsx`, `/routes/login/index.tsx`, `/routes/logout.ts`: The
+  pages that visitors see when signing up or logging in (logout.ts redirects the
+  user to `/`)
 - `/utils/supabase.ts`: A wrapper function around Supabase client.
 
 ### Dashboard
@@ -269,7 +271,7 @@ Stripe logic:
 
 ### Blog
 
-SaaSKit also provides a markdown based blog. There are three main directories to
+SaaSKit also provides a markdown-based blog. There are three main directories to
 manage the blog. First, in `routes/blog` you will find the routes needed to
 serve the `/blog` page and the routes to your posts. These will be available at
 `/blog/<slug>`. The name of the slug will be taken from the file name. Speaking
@@ -289,6 +291,23 @@ The blog is based on the instructions in the blog post
 [Building a Blog with Fresh](https://deno.com/blog/build-a-blog-with-fresh). For
 more information about how the blog works, see the reference post.
 
+### OAuth
+
+1. Set up the OAuth application for your given provider by following one of
+   [these guides](https://supabase.com/docs/guides/auth#providers).
+1. [Configure your third-party provider](https://supabase.com/docs/guides/auth#configure-third-party-providers)
+   in Supabase.
+1. Insert your `OAuthLoginButton` component in your login or signup page
+   [as follows](routes/login.tsx), which has been done for GitHub. Note: you may
+   need to create the provider icon, which can be done in
+   [components/Icons.tsx](components/Icons.tsx).
+
+### Theme Customization
+
+You can customize theme options such as spacing, color, etc. By default, Deno
+SaaSKit comes with `primary` and `secondary` colors predefined within
+`twind.config.ts`. Change these values to match your desired color scheme.
+
 ## Hosting
 
 You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
@@ -297,11 +316,14 @@ You can deploy your Deno SaaSKit project to any VPS or Deno Deploy.
 
 TODO.
 
-### Theme Customization
+## Contributing
 
-You can customize theme options such as spacing, color, etc. By default, Deno
-SaaSKit comes with `primary` and `secondary` colors predefined within
-`twind.config.ts`. Change these values to match your desired color scheme.
+When submitting a pull request, please:
+
+1. Follow the
+   [Deno Style Guide](https://deno.land/manual/references/contributing/style_guide).
+1. Include tests for any added functionality.
+1. Ensure `deno task test` passes successfully.
 
 ## Building a Modern SaaS Stack
 

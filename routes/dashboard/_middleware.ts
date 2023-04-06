@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { createOrGetCustomer, createSupabaseClient } from "@/utils/supabase.ts";
 import { assert } from "std/testing/asserts.ts";

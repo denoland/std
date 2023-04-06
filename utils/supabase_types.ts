@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export type Json =
   | string
   | number
@@ -28,17 +29,17 @@ export interface Database {
       };
       todos: {
         Row: {
-          id: number;
+          id: string;
           name: string | null;
           user_id: string;
         };
         Insert: {
-          id?: number;
+          id: string;
           name?: string | null;
           user_id?: string;
         };
         Update: {
-          id?: number;
+          id?: string;
           name?: string | null;
           user_id?: string;
         };

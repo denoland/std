@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Database } from "./supabase_types.ts";
 import { createServerSupabaseClient } from "@supabase/auth-helpers-shared";
 import { getCookies, setCookie } from "std/http/cookie.ts";
@@ -33,7 +34,7 @@ export function createSupabaseClient(
 // Required to bypass Row Level Security (RLS)
 export const supabaseAdminClient = createClient<Database>(
   Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABSE_SERVICE_KEY")!,
+  Deno.env.get("SUPABASE_SERVICE_KEY")!,
 );
 
 async function getCustomer(

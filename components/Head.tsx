@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Head as _Head } from "$fresh/runtime.ts";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/constants.ts";
 

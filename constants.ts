@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const SITE_NAME = "Your SaaS";
 export const SITE_DESCRIPTION = "Some details about your SaaS.";
 

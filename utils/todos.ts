@@ -1,7 +1,10 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase_types.ts";
 
 const TABLE_NAME = "todos";
+
+export type Todo = Database["public"]["Tables"]["todos"]["Insert"];
 
 export async function getTodos(client: SupabaseClient<Database>) {
   const { data } = await client
@@ -13,7 +16,7 @@ export async function getTodos(client: SupabaseClient<Database>) {
 
 export async function createTodo(
   client: SupabaseClient<Database>,
-  todo: Database["public"]["Tables"]["todos"]["Insert"],
+  todo: Todo,
 ) {
   await client
     .from(TABLE_NAME)
@@ -23,7 +26,7 @@ export async function createTodo(
 
 export async function deleteTodo(
   client: SupabaseClient<Database>,
-  id: Database["public"]["Tables"]["todos"]["Insert"]["id"],
+  id: Todo["id"],
 ) {
   await client
     .from(TABLE_NAME)

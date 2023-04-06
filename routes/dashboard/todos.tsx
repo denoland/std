@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { getTodos } from "@/utils/todos.ts";
 import Head from "@/components/Head.tsx";
