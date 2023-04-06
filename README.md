@@ -237,9 +237,9 @@ All of the authentication logic is handled by Supabase Auth. All of the logic
 can be found in these locations:
 
 - `/routes/api/*`: All login and logout API functionalities are located here
-- `/routes/signup.tsx`, `/routes/login.tsx`, `/routes/logout.ts`: The pages that
-  visitors see when signing up or logging in (logout.ts redirects the user to
-  `/`)
+- `/routes/signup.tsx`, `/routes/login/index.tsx`, `/routes/logout.ts`: The
+  pages that visitors see when signing up or logging in (logout.ts redirects the
+  user to `/`)
 - `/utils/supabase.ts`: A wrapper function around Supabase client.
 
 ### Dashboard
@@ -290,6 +290,17 @@ SaaSKit blog uses the styles provided by [gfm](https://deno.land/x/gfm@0.2.1).
 The blog is based on the instructions in the blog post
 [Building a Blog with Fresh](https://deno.com/blog/build-a-blog-with-fresh). For
 more information about how the blog works, see the reference post.
+
+### OAuth
+
+1. Set up the OAuth application for your given provider by following one of
+   [these guides](https://supabase.com/docs/guides/auth#providers).
+1. [Configure your third-party provider](https://supabase.com/docs/guides/auth#configure-third-party-providers)
+   in Supabase.
+1. Insert your `OAuthLoginButton` component in your login or signup page
+   [as follows](routes/login.tsx), which has been done for GitHub. Note: you may
+   need to create the provider icon, which can be done in
+   [components/Icons.tsx](components/Icons.tsx).
 
 ### Theme Customization
 
