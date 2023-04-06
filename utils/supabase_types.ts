@@ -29,17 +29,17 @@ export interface Database {
       };
       todos: {
         Row: {
-          id: number;
+          id: string;
           name: string | null;
           user_id: string;
         };
         Insert: {
-          id?: number;
+          id: string;
           name?: string | null;
           user_id?: string;
         };
         Update: {
-          id?: number;
+          id?: string;
           name?: string | null;
           user_id?: string;
         };
