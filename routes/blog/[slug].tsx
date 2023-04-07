@@ -43,6 +43,8 @@ export default function PostPage(props: PageProps<Post>) {
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.summary} />
         <meta name="description" content={post.summary} />
+        <meta itemProp="name" content={post.title} />
+        <meta itemProp="description" content={post.summary} />
       </Head>
       <Header>
         <Nav items={BlogHeaderNavItems} />
