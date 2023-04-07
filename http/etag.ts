@@ -34,7 +34,11 @@ const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
   : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
   ? crypto.subtle.digest(DEFAULT_ALGORITHM, encoder.encode(DENO_DEPLOYMENT_ID))
-    .then((hash) => base64Encode(hash).substring(0, 27))
+    .then((hash) =>
+      `${DENO_DEPLOYMENT_ID.length.toString(16)}-${
+        base64Encode(hash).substring(0, 27)
+      }`
+    )
   : undefined;
 
 export interface ETagOptions {
