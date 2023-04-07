@@ -60,3 +60,4 @@ export * from "./http_errors.ts";
 export * from "./http_status.ts";
 export * from "./negotiation.ts";
 export * from "./server.ts";
+export * from "./server_sent_event.ts";

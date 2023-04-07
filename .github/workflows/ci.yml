@@ -17,7 +17,7 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macOS-latest
+          - macOS-12
 
     steps:
       - name: Clone repository
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        module: [ { name: crypto, path: ./crypto/_wasm }, { name: varint, path: ./encoding/varint/_wasm } ]
+        module: [ crypto/_wasm ]
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -117,10 +117,10 @@ jobs:
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module.path }})"
+          declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "modified=$modified" >> $GITHUB_OUTPUT
-          echo "${{ matrix.module.name }} WASM source modified in this commit? $modified"
+          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -138,4 +138,4 @@ jobs:
     
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:${{ matrix.module.name }} --check
+        run: deno task build:${{ matrix.module }} --check

@@ -3,11 +3,13 @@
 import {
   assertEquals,
   assertRejects,
+  assertStrictEquals,
   assertStringIncludes,
   assertThrows,
 } from "../testing/asserts.ts";
 import {
   load,
+  type LoadOptions,
   loadSync,
   MissingEnvVarsError,
   parse,
@@ -20,10 +22,10 @@ import { assertType } from "../testing/types.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-const testOptions = {
-  envPath: path.join(testdataDir, "./.env"),
-  defaultsPath: path.join(testdataDir, "./.env.defaults"),
-};
+const testOptions = Object.freeze({
+  envPath: path.join(testdataDir, ".env"),
+  defaultsPath: path.join(testdataDir, ".env.defaults"),
+});
 
 Deno.test("parser", () => {
   const testDotenv = Deno.readTextFileSync(
@@ -754,3 +756,87 @@ Deno.test("type inference based on restrictEnvAccessTo", async (t) => {
     assertType<IsExact<typeof conf, Record<string, string>>>(true);
   });
 });
+
+Deno.test(
+  "prevent file systems reads of default path parameter values by using explicit null",
+  {
+    permissions: {
+      env: ["GREETING", "DO_NOT_OVERRIDE"],
+      read: [testOptions.envPath],
+    },
+  },
+  async (t) => {
+    const optsNoPaths = {
+      defaultsPath: null,
+      envPath: null,
+      examplePath: null,
+    } satisfies LoadOptions;
+
+    const restrictEnvAccessTo = ["GREETING", "DO_NOT_OVERRIDE"] as const;
+
+    const optsEnvPath = {
+      envPath: testOptions.envPath,
+      restrictEnvAccessTo,
+    } satisfies LoadOptions;
+
+    const optsOnlyEnvPath = {
+      ...optsEnvPath,
+      defaultsPath: null,
+      examplePath: null,
+    } satisfies LoadOptions;
+
+    await t.step("load", async () => {
+      assertStrictEquals(Object.keys(await load(optsNoPaths)).length, 0);
+
+      const env = await load(optsOnlyEnvPath);
+      assertStrictEquals(Object.keys(env).length, 2);
+      assertStrictEquals(env["GREETING"], "hello world");
+      assertStrictEquals(env["DO_NOT_OVERRIDE"], "overridden");
+
+      assertRejects(
+        () => load(optsEnvPath),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.defaults"`,
+      );
+
+      assertRejects(
+        () => load({ ...optsEnvPath, defaultsPath: null }),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.example"`,
+      );
+
+      assertRejects(
+        () => load({ ...optsEnvPath, examplePath: null }),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.defaults"`,
+      );
+    });
+
+    await t.step("loadSync", () => {
+      assertStrictEquals(Object.keys(loadSync(optsNoPaths)).length, 0);
+
+      const env = loadSync(optsOnlyEnvPath);
+      assertStrictEquals(Object.keys(env).length, 2);
+      assertStrictEquals(env["GREETING"], "hello world");
+      assertStrictEquals(env["DO_NOT_OVERRIDE"], "overridden");
+
+      assertThrows(
+        () => loadSync(optsEnvPath),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.defaults"`,
+      );
+
+      assertThrows(
+        () => loadSync({ ...optsEnvPath, defaultsPath: null }),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.example"`,
+      );
+
+      assertThrows(
+        () => loadSync({ ...optsEnvPath, examplePath: null }),
+        Deno.errors.PermissionDenied,
+        `Requires read access to ".env.defaults"`,
+      );
+    });
+  },
+);

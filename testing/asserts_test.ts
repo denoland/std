@@ -375,18 +375,18 @@ Deno.test("ArrayContains", function () {
   assertThrows(
     () => assertArrayIncludes(fixtureObject, [{ deno: "node" }]),
     AssertionError,
-    `actual: "[
+    `Expected actual: "[
   {
     deno: "luv",
   },
   {
     deno: "Js",
   },
-]" expected to include: "[
+]" to include: "[
   {
     deno: "node",
   },
-]"
+]".
 missing: [
   {
     deno: "node",
@@ -403,7 +403,7 @@ Deno.test("AssertStringContainsThrow", function () {
     assert(e instanceof AssertionError);
     assert(
       e.message ===
-        `actual: "Denosaurus from Jurassic" expected to contain: "Raptor"`,
+        `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor".`,
     );
     didThrow = true;
   }
@@ -422,7 +422,7 @@ Deno.test("AssertStringMatchingThrows", function () {
     assert(e instanceof AssertionError);
     assert(
       e.message ===
-        `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`,
+        `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/".`,
     );
     didThrow = true;
   }
@@ -441,7 +441,7 @@ Deno.test("AssertStringNotMatchingThrows", function () {
     assert(e instanceof AssertionError);
     assert(
       e.message ===
-        `actual: "Denosaurus from Jurassic" expected to not match: "/from/"`,
+        `Expected actual: "Denosaurus from Jurassic" to not match: "/from/".`,
     );
     didThrow = true;
   }
@@ -751,7 +751,7 @@ Deno.test("AssertsUnimplemented", function () {
     unimplemented();
   } catch (e) {
     assert(e instanceof AssertionError);
-    assert(e.message === "unimplemented");
+    assert(e.message === "Unimplemented.");
     didThrow = true;
   }
   assert(didThrow);
@@ -1006,7 +1006,7 @@ Deno.test({
       () => assertEquals(1, 2),
       AssertionError,
       [
-        "Values are not equal:",
+        "Values are not equal.",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
@@ -1023,7 +1023,7 @@ Deno.test({
       () => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
-        "Values are not equal:",
+        "Values are not equal.",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   "1"`),
@@ -1080,7 +1080,7 @@ Deno.test({
         ),
       AssertionError,
       [
-        "Values are not equal:",
+        "Values are not equal.",
         ...createHeader(),
         removed(`-   ${new Date(2019, 0, 3, 4, 20, 1, 10).toISOString()}`),
         added(`+   ${new Date(2019, 0, 3, 4, 20, 1, 20).toISOString()}`),
@@ -1092,10 +1092,27 @@ Deno.test({
         assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
-        "Values are not equal:",
+        "Values are not equal.",
         ...createHeader(),
         removed(`-   ${new Date("invalid")}`),
         added(`+   ${new Date(2019, 0, 3, 4, 20, 1, 20).toISOString()}`),
+        "",
+      ].join("\n"),
+    );
+  },
+});
+
+Deno.test({
+  name: "failed with custom msg",
+  fn() {
+    assertThrows(
+      () => assertEquals(1, 2, "CUSTOM MESSAGE"),
+      AssertionError,
+      [
+        "Values are not equal: CUSTOM MESSAGE",
+        ...createHeader(),
+        removed(`-   ${yellow("1")}`),
+        added(`+   ${yellow("2")}`),
         "",
       ].join("\n"),
     );
@@ -1168,11 +1185,26 @@ Deno.test({
     assertThrows(
       () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, b: 2 }),
       AssertionError,
-      `Values have the same structure but are not reference-equal:
+      `Values have the same structure but are not reference-equal.
 
     {
       a: 1,
       b: 2,
+    }`,
+    );
+  },
+});
+
+Deno.test({
+  name: "strict failed with custom msg",
+  fn() {
+    assertThrows(
+      () => assertStrictEquals({ a: 1 }, { a: 1 }, "CUSTOM MESSAGE"),
+      AssertionError,
+      `Values have the same structure but are not reference-equal: CUSTOM MESSAGE
+
+    {
+      a: 1,
     }`,
     );
   },
@@ -1220,11 +1252,11 @@ Deno.test("assert almost equals number", () => {
   assertThrows(
     () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
     AssertionError,
-    `"${
+    `Expected actual: "${
       (
         0.1 + 0.2
       ).toExponential()
-    }" expected to be close to "${(0.3).toExponential()}"`,
+    }" to be close to "${(0.3).toExponential()}"`,
   );
 
   //Special cases
@@ -1232,17 +1264,17 @@ Deno.test("assert almost equals number", () => {
   assertThrows(
     () => assertAlmostEquals(0, Infinity),
     AssertionError,
-    '"0" expected to be close to "Infinity"',
+    'Expected actual: "0" to be close to "Infinity"',
   );
   assertThrows(
     () => assertAlmostEquals(-Infinity, +Infinity),
     AssertionError,
-    '"-Infinity" expected to be close to "Infinity"',
+    'Expected actual: "-Infinity" to be close to "Infinity"',
   );
   assertThrows(
     () => assertAlmostEquals(Infinity, NaN),
     AssertionError,
-    '"Infinity" expected to be close to "NaN"',
+    'Expected actual: "Infinity" to be close to "NaN"',
   );
 });
 

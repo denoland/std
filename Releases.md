@@ -1,3 +1,43 @@
+### 0.182.0 / 2023.03.31
+
+- feat(csv): add `CsvStringifyStream` (#3270)
+- feat(fs): undo deprecation of `exists` and add permission and type check to it
+  (#2785)
+- feat(fs/walk): WalkError class (#3054)
+- feat: disposition on TextDelimiterStream (#3273)
+- fix(csv/csv_stringify_stream): output headers based on `columns` option
+  (#3293)
+- fix(encoding/base58): fix base58 decoding missing the first byte (#3275)
+
+### 0.181.0 / 2023.03.22
+
+- feat(front_matter): support +++ for TOML block (#3254)
+- feat(testing/asserts): include `msg` in assertion errors (#3253)
+
+### 0.180.0 / 2023.03.16
+
+- BREAKING(csv): move `encoding/csv` to own top-level folder and towards
+  single-export files (#3228)
+- BREAKING(front_matter): move to top-level folder (#3252)
+- BREAKING(json): move to top-level folder and towards single-export files
+  (#3236)
+- BREAKING(jsonc): move to top-level folder and single-export files (#3243)
+- BREAKING(toml): move to top-level folder and towards single-export files
+  (#3241)
+- BREAKING(yaml): move to top-level folder (#3251)
+- feat(http): add http/server_sent_event (#3239)
+
+### 0.179.0 / 2023.03.10
+
+- BREAKING(encoding/varint): deprecate Wasm implementation in favour of native
+  TypeScript (#3215)
+- feat(fs): add followSymlink to expandGlob (#3093)
+- fix(fs/ensureDir): fix racy ensureDir (#3242)
+- fix(fs/ensure_symlink): lstat relative symlink properly (#3216)
+- fix(http/cookie): accept cookies with value containing = character (#3152)
+- fix(http/file_server): redirect directory URLs that don't end with a slash
+  (#3220)
+
 ### 0.178.0 / 2023.02.23
 
 - Remove std/node, it was merged into Deno itself (#3206)

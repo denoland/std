@@ -90,7 +90,7 @@ Ensure there is a related issue and it is referenced in the PR text.
 
 _About CI checks_:
 
-We currently have 7 checks on CI. Each PR should pass all of these checks to be
+We currently have 6 checks on CI. Each PR should pass all of these checks to be
 accepted.
 
 - test with Deno canary on Windows
@@ -98,7 +98,6 @@ accepted.
 - test with Deno canary on macOS
 - lint
 - wasm crypto check
-- wasm varint check
 - CLA
 
 _For maintainers_:

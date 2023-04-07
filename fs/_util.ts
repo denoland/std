@@ -1,6 +1,21 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
-import { basename, fromFileUrl, normalize } from "../path/mod.ts";
+import { basename, normalize } from "../path/mod.ts";
+
+/**
+ * Test whether `src` and `dest` resolve to the same location
+ * @param src src file path
+ * @param dest dest file path
+ */
+export function isSamePath(
+  src: string | URL,
+  dest: string | URL,
+): boolean | void {
+  src = toPathString(src);
+  dest = toPathString(dest);
+
+  return path.resolve(src) === path.resolve(dest);
+}
 
 /**
  * Test whether or not `dest` is a sub-directory of `src`
@@ -75,6 +90,12 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
   };
 }
 
-export function toPathString(path: string | URL): string {
-  return path instanceof URL ? fromFileUrl(path) : path;
+/**
+ * Convert a URL or string to a path
+ * @param pathUrl A URL or string to be converted
+ */
+export function toPathString(
+  pathUrl: string | URL,
+): string {
+  return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;
 }
