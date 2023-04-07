@@ -5,6 +5,7 @@ import { Head } from "$fresh/runtime.ts";
 import { getPost, Post } from "@/utils/posts.ts";
 import Nav from "@/components/Nav.tsx";
 import Header from "@/components/Header.tsx";
+import { SITE_NAME } from "@/constants.ts";
 import {
   BlogFooterNavItems,
   BlogHeaderNavItems,
@@ -33,6 +34,17 @@ export default function PostPage(props: PageProps<Post>) {
       <Head>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
         <title>{post.title}</title>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:locale" content="en" />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.summary} />
+        <meta property="og:url" content={props.url.origin} />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.summary} />
+        <meta name="description" content={post.summary} />
+        <meta itemProp="name" content={post.title} />
+        <meta itemProp="description" content={post.summary} />
       </Head>
       <Header>
         <Nav items={BlogHeaderNavItems} />
