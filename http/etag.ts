@@ -12,9 +12,7 @@
  * @module
  */
 
-import { type DigestAlgorithm } from "../crypto/crypto.ts";
-import { toHashString } from "../crypto/to_hash_string.ts";
-import { createHash } from "../crypto/_util.ts";
+import { encode as base64Encode } from "../encoding/base64.ts";
 
 /** Just the part of `Deno.FileInfo` that is required to calculate an `ETag`,
  * so partial or user generated file information can be passed. */
@@ -25,7 +23,9 @@ export interface FileInfo {
 
 type Entity = string | Uint8Array | FileInfo;
 
-const DEFAULT_ALGORITHM = "FNV32A";
+const encoder = new TextEncoder();
+
+const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
 const ENV_PERM_STATUS =
   Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
     .state ?? "granted"; // for deno deploy
@@ -33,13 +33,14 @@ const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
   ? Deno.env.get("DENO_DEPLOYMENT_ID")
   : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
-  ? createHash("FNV32A", DENO_DEPLOYMENT_ID).then((hash) => toHashString(hash))
+  ? crypto.subtle.digest(DEFAULT_ALGORITHM, encoder.encode(DENO_DEPLOYMENT_ID))
+    .then((hash) => base64Encode(hash).substring(0, 27))
   : undefined;
 
 export interface ETagOptions {
   /** A digest algorithm to use to calculate the etag. Defaults to
    * `"FNV32A"`. */
-  algorithm?: DigestAlgorithm;
+  algorithm?: AlgorithmIdentifier;
 
   /** Override the default behavior of calculating the `ETag`, either forcing
    * a tag to be labelled weak or not. */
@@ -54,24 +55,35 @@ function isFileInfo(value: unknown): value is FileInfo {
 
 async function calcEntity(
   entity: string | Uint8Array,
-  { algorithm }: ETagOptions,
+  { algorithm = DEFAULT_ALGORITHM }: ETagOptions,
 ) {
   // a short circuit for zero length entities
-  if (!entity.length && !algorithm) {
-    return "811c9dc5";
+  if (entity.length === 0) {
+    return `0-47DEQpj8HBSa+/TImW+5JCeuQeR`;
   }
 
-  return toHashString(await createHash(algorithm ?? DEFAULT_ALGORITHM, entity));
+  if (typeof entity === "string") {
+    entity = encoder.encode(entity);
+  }
+
+  const hash = base64Encode(await crypto.subtle.digest(algorithm, entity))
+    .substring(0, 27);
+
+  return `${entity.length.toString(16)}-${hash}`;
 }
 
-async function calcFileInfo(fileInfo: FileInfo, { algorithm }: ETagOptions) {
+async function calcFileInfo(
+  fileInfo: FileInfo,
+  { algorithm = DEFAULT_ALGORITHM }: ETagOptions,
+) {
   if (fileInfo.mtime) {
-    return toHashString(
-      await createHash(
-        algorithm ?? DEFAULT_ALGORITHM,
-        `${fileInfo.mtime.toJSON()}${fileInfo.size}`,
+    const hash = base64Encode(
+      await crypto.subtle.digest(
+        algorithm,
+        encoder.encode(fileInfo.mtime.toJSON()),
       ),
-    );
+    ).substring(0, 27);
+    return `${fileInfo.size.toString(16)}-${hash}`;
   }
   return HASHED_DENO_DEPLOYMENT_ID;
 }
@@ -82,7 +94,7 @@ async function calcFileInfo(fileInfo: FileInfo, { algorithm }: ETagOptions) {
  *
  * ```ts
  * import { calculate } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/_util/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const body = "hello deno!";
  *
@@ -118,7 +130,7 @@ export async function calculate(
  *   ifMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/_util/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const body = "hello deno!";
  *
@@ -162,7 +174,7 @@ export function ifMatch(
  *   ifNoneMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/_util/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const body = "hello deno!";
  *

@@ -10,7 +10,7 @@ Deno.test({
   name: "etag - calculate - string - empty",
   async fn() {
     const actual = await calculate("");
-    assertEquals(actual, `"811c9dc5"`);
+    assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
   },
 });
 
@@ -18,7 +18,7 @@ Deno.test({
   name: "etag - calculate - string",
   async fn() {
     const actual = await calculate("hello deno");
-    assertEquals(actual, `"a196f44d"`);
+    assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
   },
 });
 
@@ -26,7 +26,7 @@ Deno.test({
   name: "etag - calculate - Uint8Array - empty",
   async fn() {
     const actual = await calculate(new Uint8Array());
-    assertEquals(actual, `"811c9dc5"`);
+    assertEquals(actual, `"0-47DEQpj8HBSa+/TImW+5JCeuQeR"`);
   },
 });
 
@@ -34,7 +34,7 @@ Deno.test({
   name: "etag - calculate - Uint8Array",
   async fn() {
     const actual = await calculate(encoder.encode("hello deno"));
-    assertEquals(actual, `"a196f44d"`);
+    assertEquals(actual, `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`);
   },
 });
 
@@ -49,7 +49,7 @@ Deno.test({
       mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
       atime: null,
       birthtime: null,
-      dev: null,
+      dev: 0,
       ino: null,
       mode: null,
       nlink: null,
@@ -60,7 +60,7 @@ Deno.test({
       blocks: null,
     };
     const actual = await calculate(fixture);
-    assertEquals(actual, `W/"673fdf71"`);
+    assertEquals(actual, `W/"400-H0YzXysQPV20qNisAZMuvAEVuHV"`);
   },
 });
 
@@ -68,9 +68,14 @@ Deno.test({
   name: "etag - ifMatch",
   async fn() {
     assert(!ifMatch(`"abcdefg"`, await calculate("hello deno")));
-    assert(ifMatch(`"a196f44d"`, await calculate("hello deno")));
     assert(
-      ifMatch(`"abcdefg", "a196f44d"`, await calculate("hello deno")),
+      ifMatch(`"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`, await calculate("hello deno")),
+    );
+    assert(
+      ifMatch(
+        `"abcdefg", "a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
+        await calculate("hello deno"),
+      ),
     );
     assert(ifMatch("*", await calculate("hello deno")));
     assert(
@@ -89,17 +94,22 @@ Deno.test({
   name: "etag - ifNoneMatch",
   async fn() {
     assert(ifNoneMatch(`"abcdefg"`, await calculate("hello deno")));
-    assert(!ifNoneMatch(`"a196f44d"`, await calculate("hello deno")));
     assert(
       !ifNoneMatch(
-        `"abcdefg", "a196f44d"`,
+        `"a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
+        await calculate("hello deno"),
+      ),
+    );
+    assert(
+      !ifNoneMatch(
+        `"abcdefg", "a-YdfmHmj2RiwOVqJupcf3PLK9PuJ"`,
         await calculate("hello deno"),
       ),
     );
     assert(!ifNoneMatch("*", await calculate("hello deno")));
     assert(
       !ifNoneMatch(
-        `W/"673fdf71"`,
+        `W/"400-H0YzXysQPV20qNisAZMuvAEVuHV"`,
         await calculate({
           size: 1024,
           mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
@@ -108,7 +118,7 @@ Deno.test({
     );
     assert(
       !ifNoneMatch(
-        `"673fdf71"`,
+        `"400-H0YzXysQPV20qNisAZMuvAEVuHV"`,
         await calculate({
           size: 1024,
           mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
