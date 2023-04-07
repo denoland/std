@@ -197,8 +197,13 @@ Once you have all of this setup, you should be able to run Deno SaaSKit locally.
 
 ### Running locally
 
-You can start the project by running: And go to `localhost:8000`` on your
-browser.
+You can start the project by running
+
+```bash
+deno task start
+```
+
+After running navigate to `localhost:8000` in your browser.
 
 ## Customizing Deno SaaSKit
 
