@@ -67,7 +67,6 @@ const Z85 =
 export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
   // Create a new Uint8Array from the given uint8 instead of using it
   uint8 = new Uint8Array(uint8);
-
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],
     v: number,
