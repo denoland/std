@@ -65,6 +65,9 @@ const Z85 =
  * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
  */
 export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
+  // Create a new Uint8Array from the given uint8 instead of using it
+  uint8 = new Uint8Array(uint8);
+
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],
     v: number,
