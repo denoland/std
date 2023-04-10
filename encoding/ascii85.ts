@@ -65,8 +65,6 @@ const Z85 =
  * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
  */
 export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
-  // Create a new Uint8Array from the given uint8 instead of using it
-  uint8 = new Uint8Array(uint8);
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],
     v: number,
@@ -78,7 +76,7 @@ export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
     uint8 = new Uint8Array(tmp.length + difference);
     uint8.set(tmp);
   }
-  const view = new DataView(uint8.buffer);
+  const view = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
   for (let i = 0, len = uint8.length; i < len; i += 4) {
     v = view.getUint32(i);
     // Adobe and btoa standards compress 4 zeroes to single "z" character
