@@ -33,6 +33,9 @@ contribute, and meet other developers using Deno SaaSKit.
 Have feedback? Let us know in
 [the issues](https://github.com/denoland/saaskit/issues).
 
+Want to know where Deno SaaSKit is headed? Check out
+[our public roadmap](https://github.com/denoland/saaskit/issues/60).
+
 Read more about Deno SaaSkit from
 [our announcement blog post](https://deno.com/blog/announcing-deno-saaskit).
 
