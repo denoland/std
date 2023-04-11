@@ -272,7 +272,7 @@ export function convertRowToObject(
 ) {
   if (row.length !== headers.length) {
     throw new Error(
-      `Error number of fields line: ${index}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${row.length}`,
+      `Error number of fields at line: ${index}\nExpected number of fields: ${headers.length}\nNumber of fields found: ${row.length}`,
     );
   }
   const out: Record<string, unknown> = {};
