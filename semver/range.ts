@@ -95,7 +95,7 @@ export function maxSatisfying(
 }
 
 /**
- * Returns the lowest version in the list that satisfies the range, or `null` if
+ * Returns the lowest version in the list that satisfies the range, or `undefined` if
  * none of them do.
  * @param versions The versions to check.
  * @param range The range of possible versions to compare to.
