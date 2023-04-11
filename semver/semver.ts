@@ -48,7 +48,7 @@ export const INVALID: SemVer = {
 };
 
 /**
- * ANY is a sentinal value used by some range calculations. It is not a valid
+ * ANY is a sentinel value used by some range calculations. It is not a valid
  * SemVer object and should not be used directly.
  * @example `eq(parseRange("*.*.*"), ANY)`
  */
