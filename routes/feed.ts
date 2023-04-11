@@ -4,7 +4,7 @@ import { getPosts } from "../utils/posts.ts";
 const copyright = `Copyright ${new Date().getFullYear()} Deno Land Inc.`;
 
 export const handler = {
-  /** Use https://validator.w3.org/feed/ to validate RSS feed syntax */
+  // Use https://validator.w3.org/feed/ to validate RSS feed syntax.
   GET: async (req: Request) => {
     const { origin } = new URL(req.url);
     const feed = new Feed({
