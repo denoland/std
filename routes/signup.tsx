@@ -15,6 +15,8 @@ import { GitHub } from "@/components/Icons.tsx";
 const POSSIBLE_ERROR_MESSAGES = new Set([
   "User already registered",
   "Password should be at least 6 characters",
+  "To signup, please provide your email",
+  "Signup requires a valid password",
 ]);
 
 export default function SignupPage(props: PageProps) {
