@@ -35,7 +35,7 @@ export const MIN: SemVer = {
 };
 
 /**
- * A sentinal value used to denoate an invalid SemVer object
+ * A sentinel value used to denoate an invalid SemVer object
  * which may be the result of impossible ranges or comparator operations.
  * @example `eq(parseRange("<0.0.0"), INVALID)`
  */
