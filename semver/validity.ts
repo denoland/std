@@ -133,13 +133,9 @@ export function isValidOperator(value: unknown): value is Operator {
 export function isValidNumber(value: unknown): value is number {
   return (
     typeof value === "number" &&
-    !isNaN(value) && (
-      value === Number.POSITIVE_INFINITY ||
-      value === Number.NEGATIVE_INFINITY ||
-      (
-        value <= Number.MAX_SAFE_INTEGER &&
-        value >= 0
-      )
+    !Number.isNaN(value) && (
+      !Number.isFinite(value) ||
+      (0 <= value && value <= Number.MAX_SAFE_INTEGER)
     )
   );
 }
