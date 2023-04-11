@@ -1,8 +1,9 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Feed, Item as FeedItem } from "feed";
-import { getPosts } from "../utils/posts.ts";
+import { getPosts } from "@/utils/posts.ts";
+import { SITE_NAME } from "@/constants.ts";
 
-const copyright = `Copyright ${new Date().getFullYear()} Deno Land Inc.`;
+const copyright = `Copyright ${new Date().getFullYear()} ${SITE_NAME}`;
 
 export const handler = {
   // Use https://validator.w3.org/feed/ to validate RSS feed syntax.
@@ -10,7 +11,7 @@ export const handler = {
     const { origin } = new URL(req.url);
     const feed = new Feed({
       title: "Deno",
-      description: "The latest news from Deno Land Inc.",
+      description: `The latest news from ${SITE_NAME}`,
       id: `${origin}/blog`,
       link: `${origin}/blog`,
       language: "en",
