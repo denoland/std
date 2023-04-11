@@ -1,3 +1,4 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Feed, Item as FeedItem } from "feed";
 import { getPosts } from "../utils/posts.ts";
 
