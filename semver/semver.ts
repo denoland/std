@@ -12,7 +12,7 @@ export interface SemVer {
 }
 
 /**
- * MAX is a sentinal value used by some range calculations.
+ * MAX is a sentinel value used by some range calculations.
  * It is equivalent to `9007199254740991.9007199254740991.9007199254740991`.
  */
 export const MAX: SemVer = {
