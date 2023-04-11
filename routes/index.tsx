@@ -261,7 +261,7 @@ export const handler: Handlers<Stripe.Product[]> = {
 export default function HomePage(props: PageProps<Stripe.Product[]>) {
   return (
     <>
-      <Head />
+      <Head url={props.url.href} />
       <TopSection />
       <FeaturesSection />
       <PricingSection products={props.data} />
