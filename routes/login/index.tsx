@@ -7,6 +7,15 @@ import Notice from "@/components/Notice.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 
+/**
+ * If an error message isn't one of these possible error messages, the error message is not displayed.
+ * This is done to avoid phising attacks.
+ * E.g. if the `error` parameter's value is "Authentication error: please send your password to mrscammer@shady.com".
+ */
+const POSSIBLE_ERROR_MESSAGES = new Set([
+  "Invalid login credentials",
+]);
+
 export default function LoginPage(props: PageProps) {
   const errorMessage = props.url.searchParams.get("error");
 
@@ -18,8 +27,8 @@ export default function LoginPage(props: PageProps) {
           <a href="/">
             <Logo class="mb-8" />
           </a>
-          {errorMessage === "Invalid login credentials" && (
-            <Notice>{errorMessage}</Notice>
+          {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
+            <Notice class="mb-4">{errorMessage}</Notice>
           )}
           <AuthForm type="Login" />
           <hr class="my-4" />
