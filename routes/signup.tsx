@@ -7,6 +7,18 @@ import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 
+/**
+ * If an error message isn't one of these possible error messages, the error message is not displayed.
+ * This is done to avoid phising attacks.
+ * E.g. if the `error` parameter's value is "Authentication error: please send your password to mrscammer@shady.com".
+ */
+const POSSIBLE_ERROR_MESSAGES = new Set([
+  "User already registered",
+  "Password should be at least 6 characters",
+  "To signup, please provide your email",
+  "Signup requires a valid password",
+]);
+
 export default function SignupPage(props: PageProps) {
   const errorMessage = props.url.searchParams.get("error");
 
@@ -18,8 +30,8 @@ export default function SignupPage(props: PageProps) {
           <a href="/">
             <Logo class="mb-8" />
           </a>
-          {errorMessage === "User already registered" && (
-            <Notice>{errorMessage}</Notice>
+          {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
+            <Notice class="mb-4">{errorMessage}</Notice>
           )}
           <AuthForm type="Signup" />
           <hr class="my-4" />
