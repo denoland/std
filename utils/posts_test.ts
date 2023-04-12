@@ -9,7 +9,7 @@ Deno.test("[blog] getPost()", async () => {
   assertEquals(post.title, "This is my first blog post!");
 });
 
-Deno.test("[blog ] getPost() for non-existent post", async () => {
+Deno.test("[blog] getPost() for non-existent post", async () => {
   const post = await getPost("third-post");
   assertEquals(post, null);
 });
