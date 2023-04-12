@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import Input from "./Input.tsx";
-import Button from "./Button.tsx";
+import { BASE_BUTTON_STYLES, BASE_INPUT_STYLES } from "@/constants.ts";
 
 interface AuthFormProps {
   type: "Login" | "Signup";
@@ -9,23 +8,23 @@ interface AuthFormProps {
 export default function AuthForm({ type }: AuthFormProps) {
   return (
     <form method="POST" class="space-y-4" action={`/api/${type.toLowerCase()}`}>
-      <Input
+      <input
         placeholder="Email"
         name="email"
         type="email"
         required
-        class="w-full max-w-screen-sm"
+        class={`${BASE_INPUT_STYLES} w-full`}
       />
-      <Input
+      <input
         placeholder="Password"
         name="password"
         type="password"
         required
-        class="w-full"
+        class={`${BASE_INPUT_STYLES} w-full`}
       />
-      <Button type="submit" class="w-full">
+      <button type="submit" class={`${BASE_BUTTON_STYLES} w-full`}>
         {type}
-      </Button>
+      </button>
     </form>
   );
 }

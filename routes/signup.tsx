@@ -2,10 +2,10 @@
 import type { PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
-import Notice from "@/components/Notice.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
+import { BASE_NOTICE_STYLES } from "@/constants.ts";
 
 /**
  * If an error message isn't one of these possible error messages, the error message is not displayed.
@@ -31,7 +31,7 @@ export default function SignupPage(props: PageProps) {
             <Logo class="mb-8" />
           </a>
           {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
-            <Notice class="mb-4">{errorMessage}</Notice>
+            <div class={BASE_NOTICE_STYLES}>{errorMessage}</div>
           )}
           <AuthForm type="Signup" />
           <hr class="my-4" />

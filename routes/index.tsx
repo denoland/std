@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import LinkButton from "@/components/LinkButton.tsx";
 import Head from "@/components/Head.tsx";
 import Header from "@/components/Header.tsx";
 import Nav from "@/components/Nav.tsx";
@@ -10,7 +9,7 @@ import IconPrompt from "tabler-icons/prompt.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/stripe.ts";
 import type { Stripe } from "stripe";
-import { FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
+import { BASE_BUTTON_STYLES, FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
 
 interface HeadingProps {
   title: string;
@@ -40,13 +39,13 @@ function Hero() {
         Some details about your SaaS.
       </p>
       <div class="flex justify-center gap-8 flex-wrap">
-        <LinkButton href="/signup">Signup</LinkButton>
-        <LinkButton
+        <a href="/signup" class={BASE_BUTTON_STYLES}>Signup</a>
+        <a
           href="#"
-          class="!bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300"
+          class={`${BASE_BUTTON_STYLES} !bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300`}
         >
           Learn more
-        </LinkButton>
+        </a>
       </div>
     </div>
   );
@@ -142,9 +141,12 @@ function PricingCard(props: PricingCardProps) {
         {props.price_per_month}
         <span class="font-normal">{" "}per month</span>
       </p>
-      <LinkButton href={props.url} class="w-full rounded-md block">
+      <a
+        href={props.url}
+        class={`${BASE_BUTTON_STYLES} w-full rounded-md block`}
+      >
         Subscribe
-      </LinkButton>
+      </a>
     </div>
   );
 }

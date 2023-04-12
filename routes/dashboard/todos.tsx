@@ -3,10 +3,10 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { getTodos } from "@/utils/todos.ts";
 import Head from "@/components/Head.tsx";
 import TodoList from "@/islands/TodoList.tsx";
-import Notice from "@/components/Notice.tsx";
 import { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
 import { Database } from "@/utils/supabase_types.ts";
+import { BASE_NOTICE_STYLES } from "@/constants.ts";
 
 interface TodosPageData extends DashboardState {
   todos: Database["public"]["Tables"]["todos"]["Insert"][];
@@ -31,13 +31,13 @@ export default function TodosPage(props: PageProps<TodosPageData>) {
       <Head title="Todos" />
       <Dashboard active="/dashboard/todos">
         {!props.data.customer.is_subscribed && (
-          <Notice class="mb-4">
+          <div class={BASE_NOTICE_STYLES}>
             You are on a free subscription. Please{" "}
             <a href="/dashboard/upgrade-subscription" class="underline">
               upgrade
             </a>{" "}
             to enable unlimited todos
-          </Notice>
+          </div>
         )}
         <TodoList
           isSubscribed={props.data.customer.is_subscribed!}
