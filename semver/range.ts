@@ -79,9 +79,9 @@ export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
 }
 
 function rangesSatisfiable(ranges: SemVerRange[]): boolean {
-  return ranges.every(r => {
+  return ranges.every((r) => {
     // For each OR at least one AND must be satisfiable
-    return r.ranges.some(comparators => comparatorsSatisfiable(comparators));
+    return r.ranges.some((comparators) => comparatorsSatisfiable(comparators));
   });
 }
 
