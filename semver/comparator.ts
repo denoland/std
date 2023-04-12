@@ -167,7 +167,5 @@ export function comparatorIntersects(
   // l0 -- l1
   //          r0 -- r1
   // ```
-  return true &&
-      gte(l0, r0) && lte(l0, r1) ||
-    gte(r0, l0) && lte(r0, l1);
+  return (gte(l0, r0) && lte(l0, r1)) || (gte(r0, l0) && lte(r0, l1));
 }

@@ -370,7 +370,7 @@ Deno.test({
   fn: async (t) => {
     const versions: [string, string, boolean][] = [
       ["1.3.0 || <1.0.0 >2.0.0", "1.3.0 || <1.0.0 >2.0.0", true],
-      [">0.0.0", "<1.0.0 >2.0.0", true],
+      [">0.0.0", "<1.0.0 >2.0.0", false],
       ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0", false],
       ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
       [">1.0.0 <=2.0.0", "2.0.0", true],
@@ -438,8 +438,6 @@ Deno.test({
         fn: () => {
           const range1 = parseRange(r1);
           const range2 = parseRange(r2);
-
-          // console.log(Deno.inspect({ range1, range2 }, { depth: 10 }))
           const actual1 = rangeIntersects(range1, range2);
           const actual2 = rangeIntersects(range2, range1);
           assertEquals(actual1, expected);
