@@ -17,3 +17,5 @@ export const BASE_BUTTON_STYLES =
   "px-4 py-2 bg-pink-700 text-white text-lg rounded-full hover:bg-black transition duration-300 disabled:(opacity-50 cursor-not-allowed)";
 export const BASE_INPUT_STYLES =
   "px-4 py-2 bg-white rounded-full border-1 border-gray-300 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed)";
+export const BASE_NOTICE_STYLES =
+  "px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 mb-4";

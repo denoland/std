@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Provider } from "@supabase/supabase-js";
 import type { ComponentChild } from "preact";
-import { BASE_BUTTON_STYLES } from "../constants.ts";
+import { BASE_BUTTON_STYLES } from "@/constants.ts";
 
 interface OAuthLoginButtonProps {
   provider: Provider;

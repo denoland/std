@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { BASE_BUTTON_STYLES, BASE_INPUT_STYLES } from "../constants.ts";
+import { BASE_BUTTON_STYLES, BASE_INPUT_STYLES } from "@/constants.ts";
 
 interface AuthFormProps {
   type: "Login" | "Signup";
