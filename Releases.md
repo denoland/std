@@ -1,3 +1,17 @@
+### 0.183.0 / 2023.04.12
+
+- BREAKING(csv): rename `CsvStream` to `CsvParseStream` (#3287)
+- BREAKING(encoding/varint): remove deprecated APIs (#3282)
+- feat(datetime): add isUtcLeap (#3295)
+- feat: add http/etag (#3245)
+- fix(bytes): correct slice() of BytesList (#3292)
+- fix(csv): improve typing for CSV parser (#3267)
+- fix(dotenv): allow `null` for `*path` values (#3221)
+- fix(encoding/ascii85): fix `encode()` returns a wrong result with a subarray
+  (#3310)
+- fix(fs): fix NotFound error when moving src to itself with overwrite: true
+  (#3289)
+
 ### 0.182.0 / 2023.03.31
 
 - feat(csv): add `CsvStringifyStream` (#3270)
