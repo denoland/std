@@ -42,8 +42,8 @@ Deno.test({
       ["1.2.3-alpha.0.pr.1", "9.9.9-alpha.0.pr.1", -1],
       ["1.2.3-alpha.0.pr.1", "1.2.3", -1],
       ["1.2.3-alpha.0.pr.1", "1.2.3-alpha.0.pr.2", -1],
-      ["1.2.3-alpha.0.pr.1", "1.2.3-alpha.0.2", -1],
-      ["1.2.3-alpha.0.pr.1", "1.2.3-alpha.pr.0", 1],
+      ["1.2.3-alpha.0.pr.1", "1.2.3-alpha.0.2", 1],
+      ["1.2.3-alpha.0.pr.1", "1.2.3-alpha.pr.0", -1],
       ["1.2.3-alpha.0.pr.1", "1.2.3-beta.0.pr.1", -1],
     ];
     for (const [v0, v1, expected] of cases) {

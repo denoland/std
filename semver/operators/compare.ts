@@ -71,11 +71,11 @@ function compareIdentifier(
       // shorter < longer
       return -1;
     } else if (typeof a === "string" && typeof b === "number") {
-      // string < number
-      return -1;
-    } else if (typeof a === "number" && typeof b === "string") {
-      // number > string
+      // string > number
       return 1;
+    } else if (typeof a === "number" && typeof b === "string") {
+      // number < string
+      return -1;
     } else if (a < b) {
       return -1;
     } else if (a > b) {
