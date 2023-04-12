@@ -26,5 +26,8 @@ jobs:
       - name: Check license headers
         run: deno task check:license --check
 
+      - name: Check types
+        run: deno check main.ts
+
       - name: Run tests
         run: deno task test
