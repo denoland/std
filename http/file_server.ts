@@ -8,14 +8,13 @@
 import { extname, posix } from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
+import { calculate, ifNoneMatch } from "./etag.ts";
 import { Status } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
-import { compareEtag, createCommonResponse } from "./util.ts";
+import { createCommonResponse } from "./util.ts";
 import { DigestAlgorithm } from "../crypto/crypto.ts";
-import { toHashString } from "../crypto/to_hash_string.ts";
-import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 interface EntryInfo {
   mode: string;
@@ -25,17 +24,6 @@ interface EntryInfo {
 }
 
 const encoder = new TextEncoder();
-
-// avoid top-lebvel-await
-const envPermissionStatus =
-  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-    .state ?? "granted"; // for deno deploy
-const DENO_DEPLOYMENT_ID = envPermissionStatus === "granted"
-  ? Deno.env.get("DENO_DEPLOYMENT_ID")
-  : undefined;
-const hashedDenoDeploymentId = DENO_DEPLOYMENT_ID
-  ? createHash("FNV32A", DENO_DEPLOYMENT_ID).then((hash) => toHashString(hash))
-  : undefined;
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
@@ -95,7 +83,7 @@ export interface ServeFileOptions {
 export async function serveFile(
   req: Request,
   filePath: string,
-  { etagAlgorithm, fileInfo }: ServeFileOptions = {},
+  { etagAlgorithm: algorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
   try {
     fileInfo ??= await Deno.stat(filePath);
@@ -129,15 +117,7 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-  const etag = fileInfo.mtime
-    ? toHashString(
-      await createHash(
-        etagAlgorithm ?? "FNV32A",
-        `${fileInfo.mtime.toJSON()}${fileInfo.size}`,
-      ),
-    )
-    : await hashedDenoDeploymentId;
+  const etag = await calculate(fileInfo, { algorithm });
 
   // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime) {
@@ -151,14 +131,15 @@ export async function serveFile(
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
     // the access timestamp value, then return 304
-    const ifNoneMatch = req.headers.get("if-none-match");
-    const ifModifiedSince = req.headers.get("if-modified-since");
+    const ifNoneMatchValue = req.headers.get("if-none-match");
+    const ifModifiedSinceValue = req.headers.get("if-modified-since");
     if (
-      (etag && ifNoneMatch && compareEtag(ifNoneMatch, etag)) ||
-      (ifNoneMatch === null &&
+      (!ifNoneMatch(ifNoneMatchValue, etag)) ||
+      (ifNoneMatchValue === null &&
         fileInfo.mtime &&
-        ifModifiedSince &&
-        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
+        ifModifiedSinceValue &&
+        fileInfo.mtime.getTime() <
+          new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
       file.close();
 
