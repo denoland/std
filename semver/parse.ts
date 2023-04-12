@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
+  ALL,
   comparatorMax,
   comparatorMin,
   NONE,
@@ -313,6 +314,10 @@ export function tryParseRange(
 export function parseRange(range: string): SemVerRange {
   range = range.trim();
 
+  if (range === "") {
+    return { ranges: [[ALL]] };
+  }
+
   // Split into groups of comparators, these are considered OR'd together.
   const ranges = range
     .trim()
@@ -329,11 +334,15 @@ export function parseRange(range: string): SemVerRange {
       // At this point, the range is completely trimmed and
       // ready to be split into comparators.
       // These are considered AND's
-      return range
-        .split(" ")
-        .map((r) => parseComparator(r));
-    })
-    .filter((c) => c && c.length);
+      if (range === "") {
+        return [ALL];
+      } else {
+        return range
+          .split(" ")
+          .filter((r) => r)
+          .map((r) => parseComparator(r));
+      }
+    });
 
   return { ranges };
 }

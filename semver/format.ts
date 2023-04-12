@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVerComparator } from "./comparator.ts";
 import { SemVerRange } from "./range.ts";
-import { SemVer } from "./semver.ts";
+import { ANY, SemVer } from "./semver.ts";
 import { FormatStyle } from "./types.ts";
 
 /**
@@ -15,6 +15,10 @@ import { FormatStyle } from "./types.ts";
  * @returns The string representation of a smenatic version.
  */
 export function format(semver: SemVer, style: FormatStyle = "full") {
+  if (semver === ANY) {
+    return "*";
+  }
+
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
   const patch = formatNumber(semver.patch);
@@ -62,9 +66,10 @@ export function comparatorFormat(comparator: SemVerComparator) {
  * @returns A string representation of the range
  */
 export function rangeFormat(range: SemVerRange) {
-  return range.ranges.map((c) => c.map((c) => c.toString()).join(" ")).join(
-    " || ",
-  );
+  return range.ranges.map((c) => c.map((c) => comparatorFormat(c)).join(" "))
+    .join(
+      "||",
+    );
 }
 
 function formatNumber(value: number) {

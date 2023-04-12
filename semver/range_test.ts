@@ -1,16 +1,14 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
-import { format } from "./format.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
+import { format, rangeFormat } from "./format.ts";
 import { eq } from "./operators/eq.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse.ts";
-import { rangeMin, rangeTest } from "./range.ts";
+import { rangeIntersects, rangeMin, rangeTest } from "./range.ts";
 import { INVALID, SemVer } from "./semver.ts";
 
 Deno.test("range", async (t) => {
-  // [range, version, options]
-  // version should be included by range
   const versions: [string, string][] = [
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["^1.2.3+build", "1.2.3"],
@@ -109,7 +107,6 @@ Deno.test("range", async (t) => {
 Deno.test({
   name: "rangeMin",
   fn: async (t) => {
-    // [range, version]
     const versions: [string, string | SemVer][] = [
       // Stars
       ["*", "0.0.0"],
@@ -185,10 +182,7 @@ Deno.test({
 
 Deno.test({
   name: "negativeRange",
-  // only: true,
   fn: async (t) => {
-    // [range, version]
-    // version should not be included by range
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", "2.2.3"],
       ["1.2.3+asdf - 2.4.3+asdf", "1.2.3-pre.2"],
@@ -271,208 +265,187 @@ Deno.test({
   },
 });
 
-// Deno.test("unlockedPrereleaseRange", function () {
-//   // [range, version]
-//   // version should be included by range
-//   const versions: [string, string][] = [
-//     ["*", "1.0.0-rc1"],
-//     ["^1.0.0", "2.0.0-rc1"],
-//     ["^1.0.0-0", "1.0.1-rc1"],
-//     ["^1.0.0-rc2", "1.0.1-rc1"],
-//     ["^1.0.0", "1.0.1-rc1"],
-//     ["^1.0.0", "1.1.0-rc1"],
-//   ];
+Deno.test("unlockedPrereleaseRange", function () {
+  const versions: [string, string][] = [
+    ["*", "1.0.0-rc1"],
+    ["^1.0.0-0", "1.0.1-rc1"],
+    ["^1.0.0-rc2", "1.0.1-rc1"],
+    ["^1.0.0", "1.0.1-rc1"],
+    ["^1.0.0", "1.1.0-rc1"],
+  ];
 
-//   versions.forEach(function (v) {
-//     const range = v[0];
-//     const ver = v[1];
-//     const options = { includePrerelease: true };
-//     assert(
-//       semver.satisfies(ver, range, options),
-//       range + " satisfied by " + ver,
-//     );
-//   });
-// });
+  for (const [r, v] of versions) {
+    const range = parseRange(r);
+    const s = parse(v);
+    const found = rangeTest(s, range);
+    assert(found, `${r} not satisfied by ${v}`);
+  }
+});
 
-// Deno.test("negativeUnlockedPrereleaseRange", function () {
-//   // [range, version]
-//   // version should be included by range
-//   const versions: [string, string][] = [
-//     ["^1.0.0", "1.0.0-rc1"],
-//     ["^1.2.3-rc2", "2.0.0"],
-//   ];
+Deno.test("negativeUnlockedPrereleaseRange", function () {
+  const versions: [string, string][] = [
+    ["^1.0.0", "1.0.0-rc1"],
+    ["^1.2.3-rc2", "2.0.0"],
+    ["^1.0.0", "2.0.0-rc1"], // todo: review, this is inverted from original test case
+  ];
 
-//   versions.forEach(function (v) {
-//     const range = v[0];
-//     const ver = v[1];
-//     const options = { includePrerelease: true };
-//     const found = semver.satisfies(ver, range, options);
-//     assert(!found, ver + " not satisfied by " + range);
-//   });
-// });
+  for (const [r, v] of versions) {
+    const range = parseRange(r);
+    const s = parse(v);
+    const found = rangeTest(s, range);
+    assert(!found, `${v} satisfied by ${r} unexpectedly`);
+  }
+});
 
-// Deno.test("validRange", function () {
-//   // [range, result]
-//   // validRange(range) -> result
-//   // translate ranges into their canonical form
-//   const versions: [string | null, string | null, Options?][] = [
-//     ["1.0.0 - 2.0.0", ">=1.0.0 <=2.0.0"],
-//     ["1.0.0", "1.0.0"],
-//     [">=*", "*"],
-//     ["", "*"],
-//     ["*", "*"],
-//     ["*", "*"],
-//     [">=1.0.0", ">=1.0.0"],
-//     [">1.0.0", ">1.0.0"],
-//     ["<=2.0.0", "<=2.0.0"],
-//     ["1", ">=1.0.0 <2.0.0"],
-//     ["<=2.0.0", "<=2.0.0"],
-//     ["<=2.0.0", "<=2.0.0"],
-//     ["<2.0.0", "<2.0.0"],
-//     ["<2.0.0", "<2.0.0"],
-//     [">=0.1.97", ">=0.1.97"],
-//     [">=0.1.97", ">=0.1.97"],
-//     ["0.1.20 || 1.2.4", "0.1.20||1.2.4"],
-//     [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
-//     [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
-//     [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
-//     ["||", "||"],
-//     ["2.x.x", ">=2.0.0 <3.0.0"],
-//     ["1.2.x", ">=1.2.0 <1.3.0"],
-//     ["1.2.x || 2.x", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
-//     ["1.2.x || 2.x", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
-//     ["x", "*"],
-//     ["2.*.*", ">=2.0.0 <3.0.0"],
-//     ["1.2.*", ">=1.2.0 <1.3.0"],
-//     ["1.2.* || 2.*", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
-//     ["*", "*"],
-//     ["2", ">=2.0.0 <3.0.0"],
-//     ["2.3", ">=2.3.0 <2.4.0"],
-//     ["~2.4", ">=2.4.0 <2.5.0"],
-//     ["~2.4", ">=2.4.0 <2.5.0"],
-//     ["~>3.2.1", ">=3.2.1 <3.3.0"],
-//     ["~1", ">=1.0.0 <2.0.0"],
-//     ["~>1", ">=1.0.0 <2.0.0"],
-//     ["~1.0", ">=1.0.0 <1.1.0"],
-//     ["^0", ">=0.0.0 <1.0.0"],
-//     ["^0.1", ">=0.1.0 <0.2.0"],
-//     ["^1.0", ">=1.0.0 <2.0.0"],
-//     ["^1.2", ">=1.2.0 <2.0.0"],
-//     ["^0.0.1", ">=0.0.1 <0.0.2"],
-//     ["^0.0.1-beta", ">=0.0.1-beta <0.0.2"],
-//     ["^0.1.2", ">=0.1.2 <0.2.0"],
-//     ["^1.2.3", ">=1.2.3 <2.0.0"],
-//     ["^1.2.3-beta.4", ">=1.2.3-beta.4 <2.0.0"],
-//     ["<1", "<1.0.0"],
-//     [">=1", ">=1.0.0"],
-//     ["<1.2", "<1.2.0"],
-//     ["1", ">=1.0.0 <2.0.0"],
-//   ];
+Deno.test({
+  name: "validRange",
+  fn: async (t) => {
+    const versions: [string, string][] = [
+      ["1.0.0 - 2.0.0", ">=1.0.0 <=2.0.0"],
+      ["1.0.0", "1.0.0"],
+      [">=*", "*"],
+      ["", "*"],
+      ["*", "*"],
+      [">=1.0.0", ">=1.0.0"],
+      [">1.0.0", ">1.0.0"],
+      ["<=2.0.0", "<=2.0.0"],
+      ["1", ">=1.0.0 <2.0.0"],
+      ["<=2.0.0", "<=2.0.0"],
+      ["<=2.0.0", "<=2.0.0"],
+      ["<2.0.0", "<2.0.0"],
+      ["<2.0.0", "<2.0.0"],
+      [">=0.1.97", ">=0.1.97"],
+      [">=0.1.97", ">=0.1.97"],
+      ["0.1.20 || 1.2.4", "0.1.20||1.2.4"],
+      [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
+      [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
+      [">=0.2.3 || <0.0.1", ">=0.2.3||<0.0.1"],
+      ["||", "*||*"],
+      ["2.x.x", ">=2.0.0 <3.0.0"],
+      ["1.2.x", ">=1.2.0 <1.3.0"],
+      ["1.2.x || 2.x", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
+      ["1.2.x || 2.x", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
+      ["x", "*"],
+      ["2.*.*", ">=2.0.0 <3.0.0"],
+      ["1.2.*", ">=1.2.0 <1.3.0"],
+      ["1.2.* || 2.*", ">=1.2.0 <1.3.0||>=2.0.0 <3.0.0"],
+      ["2", ">=2.0.0 <3.0.0"],
+      ["2.3", ">=2.3.0 <2.4.0"],
+      ["~2.4", ">=2.4.0 <2.5.0"],
+      ["~2.4", ">=2.4.0 <2.5.0"],
+      ["~>3.2.1", ">=3.2.1 <3.3.0"],
+      ["~1", ">=1.0.0 <2.0.0"],
+      ["~>1", ">=1.0.0 <2.0.0"],
+      ["~1.0", ">=1.0.0 <1.1.0"],
+      ["^0", ">=0.0.0 <1.0.0"],
+      ["^0.1", ">=0.1.0 <0.2.0"],
+      ["^1.0", ">=1.0.0 <2.0.0"],
+      ["^1.2", ">=1.2.0 <2.0.0"],
+      ["^0.0.1", ">=0.0.1 <0.0.2"],
+      ["^0.0.1-beta", ">=0.0.1-beta <0.0.2"],
+      ["^0.1.2", ">=0.1.2 <0.2.0"],
+      ["^1.2.3", ">=1.2.3 <2.0.0"],
+      ["^1.2.3-beta.4", ">=1.2.3-beta.4 <2.0.0"],
+      ["<1", "<1.0.0"],
+      [">=1", ">=1.0.0"],
+      ["<1.2", "<1.2.0"],
+      ["1", ">=1.0.0 <2.0.0"],
+    ];
 
-//   versions.forEach(function (v) {
-//     const pre = v[0];
-//     const wanted = v[1];
-//     const options = v[2];
-//     const found = semver.validRange(pre, options);
-//     assertEquals(found, wanted, "validRange(" + pre + ") === " + wanted);
-//   });
-// });
+    for (const [r, expected] of versions) {
+      await t.step({
+        name: `${r} -> ${expected}`,
+        fn: () => {
+          const range = parseRange(r);
+          const actual = rangeFormat(range);
+          assertEquals(actual, expected);
+        },
+      });
+    }
+  },
+});
 
-// Deno.test("missingRangeParameterInRangeIntersect", function () {
-//   assertThrows(
-//     function () {
-//       new semver.Range("1.0.0").intersects(undefined);
-//     },
-//     TypeError,
-//     "a Range is required",
-//   );
-// });
+Deno.test({
+  name: "rangesIntersect",
+  fn: async (t) => {
+    const versions: [string, string, boolean][] = [
+      ["1.3.0 || <1.0.0 >2.0.0", "1.3.0 || <1.0.0 >2.0.0", true],
+      [">0.0.0", "<1.0.0 >2.0.0", true],
+      ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0", false],
+      ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
+      [">1.0.0 <=2.0.0", "2.0.0", true],
+      ["<1.0.0 >=2.0.0", "2.1.0", false],
+      ["<1.0.0 >=2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
+      ["1.5.x", "<1.5.0 || >=1.6.0", false],
+      ["<1.5.0 || >=1.6.0", "1.5.x", false],
+      [
+        "<1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
+        ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
+        false,
+      ],
+      [
+        "<=1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
+        ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
+        true,
+      ],
+      [">=1.0.0", "<=1.0.0", true],
+      [">1.0.0 <1.0.0", "<=0.0.0", false],
+      ["*", "0.0.1", true],
+      ["*", ">=1.0.0", true],
+      ["*", ">1.0.0", true],
+      ["*", "~1.0.0", true],
+      ["*", "<1.6.0", true],
+      ["*", "<=1.6.0", true],
+      ["1.*", "0.0.1", false],
+      ["1.*", "2.0.0", false],
+      ["1.*", "1.0.0", true],
+      ["1.*", "<2.0.0", true],
+      ["1.*", ">1.0.0", true],
+      ["1.*", "<=1.0.0", true],
+      ["1.*", "^1.0.0", true],
+      ["1.0.*", "0.0.1", false],
+      ["1.0.*", "<0.0.1", false],
+      ["1.0.*", ">0.0.1", true],
+      ["*", "1.3.0 || <1.0.0 >2.0.0", true],
+      ["1.3.0 || <1.0.0 >2.0.0", "*", true],
+      ["1.*", "1.3.0 || <1.0.0 >2.0.0", true],
+      ["x", "0.0.1", true],
+      ["x", ">=1.0.0", true],
+      ["x", ">1.0.0", true],
+      ["x", "~1.0.0", true],
+      ["x", "<1.6.0", true],
+      ["x", "<=1.6.0", true],
+      ["1.x", "0.0.1", false],
+      ["1.x", "2.0.0", false],
+      ["1.x", "1.0.0", true],
+      ["1.x", "<2.0.0", true],
+      ["1.x", ">1.0.0", true],
+      ["1.x", "<=1.0.0", true],
+      ["1.x", "^1.0.0", true],
+      ["1.0.x", "0.0.1", false],
+      ["1.0.x", "<0.0.1", false],
+      ["1.0.x", ">0.0.1", true],
+      ["x", "1.3.0 || <1.0.0 >2.0.0", true],
+      ["1.3.0 || <1.0.0 >2.0.0", "x", true],
+      ["1.x", "1.3.0 || <1.0.0 >2.0.0", true],
+      ["*", "*", true],
+      ["x", "", true],
+    ];
 
-// Deno.test("tostrings", function () {
-//   assertEquals(new semver.Range(">=v1.2.3").toString(), ">=1.2.3");
-// });
+    for (const [r1, r2, expected] of versions) {
+      await t.step({
+        name: `${r1} ∩ ${r2}`,
+        fn: () => {
+          const range1 = parseRange(r1);
+          const range2 = parseRange(r2);
 
-// Deno.test("rangesIntersect", function () {
-//   const versions: [string, string, boolean][] = [
-//     ["1.3.0 || <1.0.0 >2.0.0", "1.3.0 || <1.0.0 >2.0.0", true],
-//     ["<1.0.0 >2.0.0", ">0.0.0", false],
-//     [">0.0.0", "<1.0.0 >2.0.0", false],
-//     ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0", false],
-//     ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
-//     [">1.0.0 <=2.0.0", "2.0.0", true],
-//     ["<1.0.0 >=2.0.0", "2.1.0", false],
-//     ["<1.0.0 >=2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
-//     ["1.5.x", "<1.5.0 || >=1.6.0", false],
-//     ["<1.5.0 || >=1.6.0", "1.5.x", false],
-//     [
-//       "<1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
-//       ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
-//       false,
-//     ],
-//     [
-//       "<=1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
-//       ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
-//       true,
-//     ],
-//     [">=1.0.0", "<=1.0.0", true],
-//     [">1.0.0 <1.0.0", "<=0.0.0", false],
-//     ["*", "0.0.1", true],
-//     ["*", ">=1.0.0", true],
-//     ["*", ">1.0.0", true],
-//     ["*", "~1.0.0", true],
-//     ["*", "<1.6.0", true],
-//     ["*", "<=1.6.0", true],
-//     ["1.*", "0.0.1", false],
-//     ["1.*", "2.0.0", false],
-//     ["1.*", "1.0.0", true],
-//     ["1.*", "<2.0.0", true],
-//     ["1.*", ">1.0.0", true],
-//     ["1.*", "<=1.0.0", true],
-//     ["1.*", "^1.0.0", true],
-//     ["1.0.*", "0.0.1", false],
-//     ["1.0.*", "<0.0.1", false],
-//     ["1.0.*", ">0.0.1", true],
-//     ["*", "1.3.0 || <1.0.0 >2.0.0", true],
-//     ["1.3.0 || <1.0.0 >2.0.0", "*", true],
-//     ["1.*", "1.3.0 || <1.0.0 >2.0.0", true],
-//     ["x", "0.0.1", true],
-//     ["x", ">=1.0.0", true],
-//     ["x", ">1.0.0", true],
-//     ["x", "~1.0.0", true],
-//     ["x", "<1.6.0", true],
-//     ["x", "<=1.6.0", true],
-//     ["1.x", "0.0.1", false],
-//     ["1.x", "2.0.0", false],
-//     ["1.x", "1.0.0", true],
-//     ["1.x", "<2.0.0", true],
-//     ["1.x", ">1.0.0", true],
-//     ["1.x", "<=1.0.0", true],
-//     ["1.x", "^1.0.0", true],
-//     ["1.0.x", "0.0.1", false],
-//     ["1.0.x", "<0.0.1", false],
-//     ["1.0.x", ">0.0.1", true],
-//     ["x", "1.3.0 || <1.0.0 >2.0.0", true],
-//     ["1.3.0 || <1.0.0 >2.0.0", "x", true],
-//     ["1.x", "1.3.0 || <1.0.0 >2.0.0", true],
-//     ["*", "*", true],
-//     ["x", "", true],
-//   ];
-
-//   versions.forEach(function (v) {
-//     const range1 = new semver.Range(v[0]);
-//     const range2 = new semver.Range(v[1]);
-//     const expect = v[2];
-//     const actual1 = range1.intersects(range2);
-//     const actual2 = range2.intersects(range1);
-//     const actual3 = semver.intersects(v[1], v[0]);
-//     const actual4 = semver.intersects(v[0], v[1]);
-//     const actual5 = semver.intersects(range1, range2);
-//     const actual6 = semver.intersects(range2, range1);
-//     assertEquals(actual1, expect);
-//     assertEquals(actual2, expect);
-//     assertEquals(actual3, expect);
-//     assertEquals(actual4, expect);
-//     assertEquals(actual5, expect);
-//     assertEquals(actual6, expect);
-//   });
-// });
+          // console.log(Deno.inspect({ range1, range2 }, { depth: 10 }))
+          const actual1 = rangeIntersects(range1, range2);
+          const actual2 = rangeIntersects(range2, range1);
+          assertEquals(actual1, expected);
+          assertEquals(actual2, expected);
+        },
+      });
+    }
+  },
+});

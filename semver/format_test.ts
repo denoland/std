@@ -3,7 +3,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { format } from "./format.ts";
 import { parse } from "./parse.ts";
-import { MAX, MIN, SemVer } from "./semver.ts";
+import { INVALID, MAX, MIN, SemVer } from "./semver.ts";
 import { FormatStyle } from "./types.ts";
 
 Deno.test("format", async (t) => {
@@ -68,8 +68,9 @@ Deno.test("format", async (t) => {
     ["1.2.3-pre.0+b.0", "minor", "2"],
     ["1.2.3-pre.0+b.0", "major", "1"],
 
-    [MAX, "full", "9007199254740991.9007199254740991.9007199254740991"],
+    [MAX, "full", "∞.∞.∞"],
     [MIN, "full", "0.0.0"],
+    [INVALID, "full", "⧞.∞.∞"],
   ];
 
   for (const [version, style, expected] of versions) {

@@ -13,12 +13,12 @@ export interface SemVer {
 
 /**
  * MAX is a sentinel value used by some range calculations.
- * It is equivalent to `9007199254740991.9007199254740991.9007199254740991`.
+ * It is equivalent to `∞.∞.∞`.
  */
 export const MAX: SemVer = {
-  major: Number.MAX_SAFE_INTEGER,
-  minor: Number.MAX_SAFE_INTEGER,
-  patch: Number.MAX_SAFE_INTEGER,
+  major: Number.POSITIVE_INFINITY,
+  minor: Number.POSITIVE_INFINITY,
+  patch: Number.POSITIVE_INFINITY,
   prerelease: [],
   build: [],
 };
@@ -35,14 +35,14 @@ export const MIN: SemVer = {
 };
 
 /**
- * A sentinel value used to denoate an invalid SemVer object
+ * A sentinel value used to denote an invalid SemVer object
  * which may be the result of impossible ranges or comparator operations.
  * @example `eq(parseRange("<0.0.0"), INVALID)`
  */
 export const INVALID: SemVer = {
-  major: Number.NaN,
-  minor: Number.NaN,
-  patch: Number.NaN,
+  major: Number.NEGATIVE_INFINITY,
+  minor: Number.POSITIVE_INFINITY,
+  patch: Number.POSITIVE_INFINITY,
   prerelease: [],
   build: [],
 };

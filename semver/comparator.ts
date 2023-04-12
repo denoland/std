@@ -1,14 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Operator } from "./types.ts";
-import { ANY, MAX, MIN, SemVer } from "./semver.ts";
+import { ANY, INVALID, MAX, MIN, SemVer } from "./semver.ts";
 import { cmp, gt, gte, increment, lte } from "./operators/mod.ts";
 
 /**
  * A comparator which will span all valid semantic versions
  */
 export const ALL: SemVerComparator = {
-  operator: ">=",
-  semver: MIN,
+  operator: "",
+  semver: ANY,
   min: MIN,
   max: MAX,
 };
@@ -94,13 +94,17 @@ export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
       const major = minor >= 0 ? semver.major : semver.major - 1;
       // if you try to do <0.0.0 it will Give you -∞.∞.∞
       // which means no SemVer can compare successfully to it.
-      return {
-        major: major >= 0 ? major : Number.NEGATIVE_INFINITY,
-        minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
-        patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
-        prerelease: [],
-        build: [],
-      };
+      if (major < 0) {
+        return INVALID;
+      } else {
+        return {
+          major,
+          minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
+          patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
+          prerelease: [],
+          build: [],
+        };
+      }
     }
   }
 }
@@ -152,6 +156,10 @@ export function comparatorIntersects(
   // ```
   // l0 ------ l1
   //    r0--r1
+  // ```
+  // ```
+  // l0 - l1
+  // r0 - r1
   // ```
   //
   // non-intersection example
