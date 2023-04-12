@@ -6,7 +6,7 @@ import { deepMerge } from "../collections/deep_merge.ts";
 
 /** Returns true if the etags match. Weak etag comparisons are handled.
  *
- * @deprecated (will be removed in 0.184.0) use `etag/ifMatch` and `etag/ifNoneMatch` instead.
+ * @deprecated (will be removed after 0.187.0) use `etag/ifMatch` and `etag/ifNoneMatch` instead.
  */
 export function compareEtag(a: string, b: string): boolean {
   if (a === b) {
