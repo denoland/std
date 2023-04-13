@@ -428,7 +428,7 @@ export interface ServeDirOptions {
    *
    * @default {"SHA-256"}
    */
-  etagAlgorithm?: DigestAlgorithm;
+  etagAlgorithm?: AlgorithmIdentifier;
   /** Headers to add to each response
    *
    * @default {[]}
