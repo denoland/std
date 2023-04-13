@@ -2,7 +2,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
-import { assert, assertEquals } from "../../testing/asserts.ts";
+import { assert } from "../../_util/asserts.ts";
 import { runLengthEncode } from "../_rle.ts";
 
 // change this line and re-run the script to update for new Unicode versions
@@ -321,7 +321,7 @@ const data = {
   ),
 };
 
-assertEquals(data.UNICODE_VERSION.split(".").length, 3);
-assertEquals(data.tables.length, 3);
+assert(data.UNICODE_VERSION.split(".").length === 3);
+assert(data.tables.length === 3);
 
 await Deno.writeTextFile("../_data.json", JSON.stringify(data, null, 2) + "\n");
