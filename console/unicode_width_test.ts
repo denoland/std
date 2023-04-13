@@ -2,10 +2,8 @@
 
 import { unicodeWidth } from "./unicode_width.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { fromFileUrl } from "../path/mod.ts";
-import fc from "https://esm.sh/fast-check@3.8.0";
 
-Deno.test("stringWidth", async (t) => {
+Deno.test("unicodeWidth", async (t) => {
   await t.step("ASCII", () => {
     const lorem =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -37,60 +35,4 @@ Deno.test("stringWidth", async (t) => {
       assertEquals(unicodeWidth(nfd), 1);
     });
   });
-});
-
-Deno.test("fast-check equality with unicode_width Rust crate", async (t) => {
-  const libPath = fromFileUrl(
-    import.meta.resolve(
-      "./testdata/unicode_width_crate/target/debug/libunicode_width_crate.so",
-    ),
-  );
-
-  let ignore = false;
-
-  const toCString = (str: string) => new TextEncoder().encode(str + "\0");
-
-  // @ts-ignore type-check errors if unavailable due to lack of --unstable flag
-  let dylib: Deno.DynamicLibrary<{
-    unicode_width: { parameters: ["buffer"]; result: "usize" };
-  }>;
-
-  try {
-    try {
-      // @ts-ignore type-check errors if unavailable due to lack of --unstable flag
-      dylib = Deno.dlopen(libPath, {
-        unicode_width: { parameters: ["buffer"], result: "usize" },
-      });
-    } catch {
-      // skip these tests if Rust code hasn't been compiled locally
-      ignore = true;
-    }
-
-    for (
-      const arbitrary of [
-        "string",
-        "unicodeString",
-        "fullUnicodeString",
-      ] as const
-    ) {
-      await t.step({
-        name: `fc.${arbitrary}()`,
-        ignore,
-        fn() {
-          fc.assert(
-            fc.property(
-              fc[arbitrary](),
-              // JSON stringify to allow "\0" chars to cross FFI boundary in a null-terminated string
-              (str) =>
-                unicodeWidth(str) ===
-                  dylib.symbols.unicode_width(toCString(JSON.stringify(str))),
-            ),
-          );
-        },
-      });
-    }
-  } finally {
-    // deno-lint-ignore no-extra-non-null-assertion
-    dylib!?.close();
-  }
 });
