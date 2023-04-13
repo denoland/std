@@ -8,10 +8,9 @@ import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
+import { calculate } from "./etag.ts";
 import { dirname, fromFileUrl, join, resolve, toFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
-import { toHashString } from "../crypto/to_hash_string.ts";
-import { createHash } from "../crypto/_util.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
 
@@ -660,16 +659,9 @@ const getTestFileStat = async (): Promise<Deno.FileInfo> => {
 
 const getTestFileEtag = async () => {
   const fileInfo = await getTestFileStat();
-
-  if (fileInfo.mtime instanceof Date) {
-    const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = toHashString(
-      await createHash("FNV32A", lastModified.toJSON() + fileInfo.size),
-    );
-    return simpleEtag;
-  } else {
-    return "";
-  }
+  const etag = await calculate(fileInfo);
+  assert(etag);
+  return etag;
 };
 
 const getTestFileLastModified = async () => {
@@ -933,7 +925,7 @@ Deno.test(
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
       const expectedEtag = await getTestFileEtag();
-      assertEquals(res.headers.get("etag"), `W/${expectedEtag}`);
+      assertEquals(res.headers.get("etag"), expectedEtag);
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -1111,9 +1103,9 @@ Deno.test(
   "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
   async () => {
     const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
-    const hashedDenoDeploymentId = toHashString(
-      await createHash("FNV32A", testDenoDeploymentId),
-    );
+    const hashedDenoDeploymentId = await calculate(testDenoDeploymentId, {
+      weak: true,
+    });
     // deno-fmt-ignore
     const code = `
       import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
@@ -1124,7 +1116,7 @@ Deno.test(
       fileInfo.mtime = null;
       const req = new Request("http://localhost:4507/testdata/test file.txt");
       const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
-      assertEquals(res.headers.get("etag"), "${hashedDenoDeploymentId}");
+      assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
     `;
     const command = new Deno.Command(Deno.execPath(), {
       args: ["eval", code],

@@ -176,3 +176,19 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     },
   });
 }
+
+Deno.test({
+  name: `[encoding/ascii85] encode subarray of an Uint8Array`,
+  fn() {
+    const data1 = new Uint8Array([0x73, 0x70, 0x61, 0x6d]);
+    const data2 = new Uint8Array(
+      [0x01, 0x02, 0x03, 0x04, 0x73, 0x70, 0x61, 0x6d],
+    );
+
+    const encoded1 = encode(data1);
+    const encoded2 = encode(data2.subarray(4));
+
+    assertEquals(encoded1, "F)YQ)");
+    assertEquals(encoded2, "F)YQ)");
+  },
+});
