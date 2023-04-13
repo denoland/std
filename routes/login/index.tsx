@@ -1,11 +1,37 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps } from "$fresh/server.ts";
+import type { Handlers, PageProps } from "$fresh/server.ts";
 import Logo from "@/components/Logo.tsx";
 import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 import { BASE_NOTICE_STYLES } from "@/constants.ts";
+import { createSupabaseClient } from "@/utils/supabase.ts";
+import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
+
+export const handler: Handlers = {
+  /**
+   * Redirects the client to the authenticated redirect path if already login.
+   * If not logged in, it continues to rendering the login page.
+   */
+  async GET(request, ctx) {
+    const headers = new Headers();
+    const supabaseClient = createSupabaseClient(request.headers, headers);
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: AUTHENTICATED_REDIRECT_PATH,
+        },
+      });
+    }
+
+    return ctx.render();
+  },
+};
 
 /**
  * If an error message isn't one of these possible error messages, the error message is not displayed.
