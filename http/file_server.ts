@@ -14,7 +14,6 @@ import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
 import { createCommonResponse } from "./util.ts";
-import { DigestAlgorithm } from "../crypto/crypto.ts";
 import { VERSION } from "../version.ts";
 interface EntryInfo {
   mode: string;
@@ -68,9 +67,9 @@ function fileLenToString(len: number): string {
 export interface ServeFileOptions {
   /** The algorithm to use for generating the ETag.
    *
-   * @default {"fnv1a"}
+   * @default {"SHA-256"}
    */
-  etagAlgorithm?: DigestAlgorithm;
+  etagAlgorithm?: AlgorithmIdentifier;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
 }
@@ -427,9 +426,9 @@ export interface ServeDirOptions {
   quiet?: boolean;
   /** The algorithm to use for generating the ETag.
    *
-   * @default {"fnv1a"}
+   * @default {"SHA-256"}
    */
-  etagAlgorithm?: DigestAlgorithm;
+  etagAlgorithm?: AlgorithmIdentifier;
   /** Headers to add to each response
    *
    * @default {[]}
