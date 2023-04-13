@@ -439,6 +439,12 @@ export interface it {
 
   /** Registers an individual test case with ignore set to true. */
   ignore<T>(...args: ItArgs<T>): void;
+
+  /**
+   * Registers an individual test case with ignore set to true. Alias of
+   * `.ignore()`.
+   */
+  skip<T>(...args: ItArgs<T>): void;
 }
 
 /** Registers an individual test case. */
@@ -503,6 +509,8 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
     ignore: true,
   });
 };
+
+it.skip = it.ignore;
 
 function addHook<T>(
   name: HookNames,
@@ -684,6 +692,9 @@ export interface describe {
 
   /** Registers a test suite with ignore set to true. */
   ignore<T>(...args: DescribeArgs<T>): TestSuite<T>;
+
+  /** Registers a test suite with ignore set to true. Alias of `.ignore()`. */
+  skip<T>(...args: ItArgs<T>): void;
 }
 
 /** Registers a test suite. */
@@ -720,3 +731,5 @@ describe.ignore = function describeIgnore<T>(
     ignore: true,
   });
 };
+
+describe.skip = describe.ignore;
