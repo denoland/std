@@ -36,7 +36,7 @@ export default function PostPage(props: PageProps<Post>) {
         <Meta
           title={post.title}
           description={post.summary}
-          url={props.url.href}
+          href={props.url.href}
         />
       </Head>
       <Header>

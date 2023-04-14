@@ -38,7 +38,7 @@ export default function BlogIndexPage(props: PageProps<Post[]>) {
       <Head
         title={`Blog | ${SITE_NAME}`}
         description="This is the blog for Deno SaaSKit"
-        url={props.url.href}
+        href={props.url.href}
       />
       <Header>
         <Nav items={BlogHeaderNavItems} />
