@@ -56,8 +56,8 @@ cp .example.env .env
 The only variables you need are:
 
 - `SUPABASE_ANON_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_KEY`
+- `SUPABASE_API_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 
@@ -79,7 +79,7 @@ npx supabase start
 Once ready, you can create a Supabase account and then
 [create a new Supabase project](https://app.supabase.com/projects).
 
-Once your project is created, you can grab your `SUPABASE_URL` and
+Once your project is created, you can grab your `SUPABASE_API_URL` and
 `SUPABASE_ANON_KEY` from
 [Settings > API](https://app.supabase.com/project/_/settings/api).
 

@@ -10,7 +10,7 @@ export function createSupabaseClient(
   responseHeaders?: Headers,
 ) {
   return createServerSupabaseClient<Database>({
-    supabaseUrl: Deno.env.get("SUPABASE_URL")!,
+    supabaseUrl: Deno.env.get("SUPABASE_API_URL")!,
     supabaseKey: Deno.env.get("SUPABASE_ANON_KEY")!,
     getRequestHeader: (key) => requestHeaders.get(key) ?? undefined,
     getCookie: (name) => {
@@ -33,8 +33,8 @@ export function createSupabaseClient(
 
 // Required to bypass Row Level Security (RLS)
 export const supabaseAdminClient = createClient<Database>(
-  Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_KEY")!,
+  Deno.env.get("SUPABASE_API_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
 async function getCustomer(
