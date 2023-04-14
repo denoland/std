@@ -42,7 +42,7 @@ function Hero() {
         <a href="/signup" class={BASE_BUTTON_STYLES}>Signup</a>
         <a
           href="#"
-          class={`${BASE_BUTTON_STYLES} !bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300`}
+          class={`${BASE_BUTTON_STYLES} !bg-white border-2 border-pink-700 !text-pink-700 hover:border-black hover:!text-black transition duration-300`}
         >
           Learn more
         </a>
