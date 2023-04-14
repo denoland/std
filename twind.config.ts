@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Options } from "twind_fresh_plugin/twind.ts";
+import type { Options } from "$fresh/plugins/twindv1.ts";
 import { defineConfig } from "twind";
 // twind preset
 import presetAutoPrefix from "twind-preset-autoprefix";
