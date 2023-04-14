@@ -152,7 +152,11 @@ Then, point your browser to `localhost:8000`.
 
 ## Deploying to Production
 
+This section shows how to get your SaaS ready for production and deploy it.
+
 ### Authentication
+
+TODO
 
 ### Payments
 
@@ -165,31 +169,32 @@ Keep your `customers` database up to date with billing changes by
 
 ### Deno Deploy
 
+TODO
+
 ### Any VPS via Docker
+
+TODO
 
 ## Architecture
 
 ### Authentication
 
-### Blog
+TODO:
 
-### Database
-
-### Formatting
-
-### Fresh
-
-### Linting
-
-### Payments
-
-### Testing
+- Blog
+- Database
+- Formatting
+- Fresh
+- Linting
+- Payments
+- Testing
 
 ## Extending Deno SaaSKit
 
-### Blog
+TODO:
 
-### Themes
+- Blog
+- Themes
 
 ## Contributing
 
