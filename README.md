@@ -228,3 +228,4 @@ to meet other SaaSKit developers, ask questions, and get unblocked.
 Here's a list of articles, how to guides, and videos about SaaSKit:
 
 - [Announcing Deno SaaSKit](https://deno.com/blog/announcing-deno-saaskit)
+- [Getting Started with SaaSKit (video walkthrough)](https://www.youtube.com/watch?v=1GYs3NbVCfE)
