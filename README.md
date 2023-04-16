@@ -30,7 +30,7 @@ Want to know where Deno SaaSKit is headed? Check out
 
 ### Prerequisites
 
-- [deno v1.32](https://deno.com/manual/getting_started/installation)
+- [Deno](https://deno.com/manual/getting_started/installation)
 - [Docker](https://docs.docker.com/engine/install/)
 - [Git](https://github.com/git-guides/install-git)
 - [A free Stripe account](https://stripe.com)
@@ -76,7 +76,12 @@ This will automatically configure the database tables and their settings for us.
 1. Create the “Premium tier” product in Stripe via the Stripe CLI:
 
 ```
-stripe products create --name="Premium tier" --default-price-data.unit-amount=500 --default-price-data.currency=usd --default-price-data.recurring.interval=month --description="Unlimited todos"
+stripe products create \
+  --name="Premium tier" \
+  --default-price-data.unit-amount=500 \
+  --default-price-data.currency=usd \
+  --default-price-data.recurring.interval=month \
+  --description="Unlimited todos"
 ```
 
 2. The resulting [product object](https://stripe.com/docs/api/products) will be
@@ -88,7 +93,9 @@ stripe products create --name="Premium tier" --default-price-data.unit-amount=50
    to copy the `STRIPE_SECRET_KEY` into your `.env` file. We recommend using the
    test key for your development environment.
 
-4. Ensure your users can manage their subscription via Stripe's Customer portal
+4. Configure Stripe's customer portal settings:
+
+5. Ensure your users can manage their subscription via Stripe's Customer portal
    by going to
    [your Customer Portal settings](https://dashboard.stripe.com/test/settings/billing/portal)
    and toggling on:
