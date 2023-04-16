@@ -1,6 +1,7 @@
 {
   "lock": false,
   "tasks": {
+    "init:stripe": "deno run --allow-read --allow-env --allow-net init/stripe.ts ",
     "start": "deno run -A --watch=static/,routes/ dev.ts",
     "test": "deno test -A",
     "check:license": "deno run --allow-read tools/check_license.ts"
