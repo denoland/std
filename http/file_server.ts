@@ -24,6 +24,16 @@ interface EntryInfo {
 
 const encoder = new TextEncoder();
 
+const ENV_PERM_STATUS =
+  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
+    .state ?? "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
+  ? Deno.env.get("DENO_DEPLOYMENT_ID")
+  : undefined;
+const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
+  ? calculate(DENO_DEPLOYMENT_ID, { weak: true })
+  : undefined;
+
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
 
@@ -116,7 +126,9 @@ export async function serveFile(
     headers.set("date", date.toUTCString());
   }
 
-  const etag = await calculate(fileInfo, { algorithm });
+  const etag = fileInfo.mtime
+    ? await calculate(fileInfo, { algorithm })
+    : await HASHED_DENO_DEPLOYMENT_ID;
 
   // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime) {
