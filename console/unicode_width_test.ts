@@ -35,4 +35,10 @@ Deno.test("unicodeWidth", async (t) => {
       assertEquals(unicodeWidth(nfd), 1);
     });
   });
+
+  await t.step("Emoji", () => {
+    assertEquals(unicodeWidth("👩"), 2); // Woman
+    assertEquals(unicodeWidth("🔬"), 2); // Microscope
+    assertEquals(unicodeWidth("👩‍🔬"), 4); // Woman Scientist
+  });
 });
