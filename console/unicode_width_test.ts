@@ -40,7 +40,7 @@ Deno.test("unicodeWidth", async (t) => {
     assertEquals(unicodeWidth("👩"), 2); // Woman
     assertEquals(unicodeWidth("🔬"), 2); // Microscope
     // Note: Returns 4 for the below case, following the upstream crate
-    // `unicode_width`. Another possible might be returning 2, which is what
+    // `unicode_width`. Another possibility might be returning 2, which is what
     // `npm:string-width` returns.
     // See discussion at https://github.com/denoland/deno_std/pull/3297#discussion_r1166289430
     assertEquals(unicodeWidth("👩‍🔬"), 4); // Woman Scientist
