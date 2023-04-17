@@ -186,11 +186,14 @@ TODO
 
 ### Blog
 
-To create a new blog post, simply create a Markdown (`.md`) file within
+To create a new blog post, create a Markdown (`.md`) file within
 [`/data/posts/`](data/posts) with the filename as the slug. E.g.
-`/data/blog/hello-there.md` will correspond to the `/blog/hello-there` route. Be
-sure to add the post properties to the starting Front Matter section of the
-file. See [`/data/posts/`](data/posts) for examples.
+`/data/blog/hello-there.md` will correspond to the `/blog/hello-there` route.
+See [`/data/posts/`](data/posts) for examples.
+
+Post properties are to be added to the starting Front Matter section of the
+Markdown file. See the `Post` interface in [`/utils/posts.ts`](utils/posts.ts)
+for a full list of properties and their types.
 
 ### Themes
 
