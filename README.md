@@ -173,8 +173,8 @@ TODO
 
 ### Global Constants
 
-The [`constants.ts`](constants.ts) file includes global values used across
-various aspects of the codebase. Update these values according to your needs.
+The [constants.ts](constants.ts) file includes global values used across various
+aspects of the codebase. Update these values according to your needs.
 
 ### Blog
 
