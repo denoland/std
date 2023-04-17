@@ -174,12 +174,15 @@ TODO:
 
 ## Contributing
 
-When submitting a pull request, please:
+When submitting a pull request, please follow the
+[Deno Style Guide](https://deno.land/manual/references/contributing/style_guide).
 
-1. Follow the
-   [Deno Style Guide](https://deno.land/manual/references/contributing/style_guide).
-2. Include tests for any added functionality.
-3. Ensure `deno task test` passes successfully.
+Before submitting, run the following to check the formatting, linting, licenses,
+and types and run tests in one hit:
+
+```
+deno task ok
+```
 
 ## Goals and Philosophy
 
