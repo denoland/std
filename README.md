@@ -53,7 +53,7 @@ cd saaskit
 cp .example.env .env
 ```
 
-### Auth and Database
+### Auth and Database (Supabase)
 
 The values of these environmental variables will be gathered in the following
 steps.
@@ -71,78 +71,39 @@ This will automatically configure the database tables and their settings for us.
    file as `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY`,
    respectively.
 
-### Payments
+### Payments and Subscriptions (Stripe)
 
-1. Create the “Premium tier” product in Stripe via the Stripe CLI:
+1. Copy your Stripe secret key as `STRIPE_SECRET_KEY` into your `.env` file. We
+   recommend using the test key for your development environment.
+2. Run `deno task init:stripe` and follow the instructions. This automatically
+   creates your "Premium tier" product and configures the Stripe customer
+   portal.
 
-```
-stripe products create \
-  --name="Premium tier" \
-  --default-price-data.unit-amount=500 \
-  --default-price-data.currency=usd \
-  --default-price-data.recurring.interval=month \
-  --description="Unlimited todos"
-```
+> Note: go to [init/stripe.ts](init/stripe.ts) if you'd like to learn more about
+> how the `init:stripe` task works.
 
-2. The resulting [product object](https://stripe.com/docs/api/products) will be
-   printed in the terminal. Copy the `default_price` value as
-   `STRIPE_PREMIUM_PLAN_PRICE_ID` in [`constants.ts`](constants.ts).
-
-3. Next, head over to
-   [your Stripe dashboard settings](https://dashboard.stripe.com/test/apikeys)
-   to copy the `STRIPE_SECRET_KEY` into your `.env` file. We recommend using the
-   test key for your development environment.
-
-4. Configure Stripe's customer portal settings:
-
-5. Ensure your users can manage their subscription via Stripe's Customer portal
-   by going to
-   [your Customer Portal settings](https://dashboard.stripe.com/test/settings/billing/portal)
-   and toggling on:
-
-- Payment methods > Allow customers to view and update payment methods.
-- Cancellations > Cancel subscriptions
-- Subscriptions > Customers can switch plans (and select your relevant
-  subscription tiers)
-
-Hit save.
-
-5. (Optional)
-   [Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
-   as a user will be taken to Stripe's checkout page when they upgrade.
-
-#### Updating `customers` database via Stripe webhooks
-
-Keep your `customers` database up to date with billing changes by
-[registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
-
-To test locally, use the Stripe CLI:
+3. Listen locally to Stripe events:
 
 ```
 stripe listen --forward-to localhost:8000/api/subscription
 ```
 
-You'll receive an output that includes your webhook signing secret. Copy that
-into your `.env` file as `STRIPE_WEBHOOK_SECRET`.
+4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
 
-Start the server with `deno task start` and test the webhook with
-`stripe trigger customer.subscription.created` or
-`stripe trigger customer.subscription.deleted`.
+### Running the Server
 
-#### Testing Payments
-
-You can use [Stripe's test credit cards](https://stripe.com/docs/testing) to
-make test payments while in Stripe's test mode.
-
-### Running Locally
-
-Once Docker and Supabase services are running, start the project with:
+Finally, start the server by running:
 
 ```
 deno task start
 ```
 
-Then, point your browser to `localhost:8000`.
+Go to [http://localhost:8000](http://localhost:8000) to begin playing with your
+new SaaS app.
+
+> Note: You can use
+> [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
+> payments while in Stripe's test mode.
 
 ## Deploying to Production
 
@@ -153,6 +114,9 @@ This section shows how to get your SaaS ready for production and deploy it.
 TODO
 
 ### Payments
+
+[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
+as a user will be taken to Stripe's checkout page when they upgrade.
 
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
