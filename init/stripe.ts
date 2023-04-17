@@ -5,6 +5,7 @@ import "std/dotenv/load.ts";
 import { stripe } from "@/utils/stripe.ts";
 
 async function createPremiumTierProduct(stripe: Stripe) {
+  // These parameters can be configured as you'd like.
   return await stripe.products.create({
     name: "Premium tier",
     description: "Unlimited todos",
