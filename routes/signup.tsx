@@ -5,7 +5,7 @@ import AuthForm from "@/components/AuthForm.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
-import { BASE_NOTICE_STYLES } from "@/constants.ts";
+import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
 
 /**
  * If an error message isn't one of these possible error messages, the error message is not displayed.

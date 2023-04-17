@@ -5,7 +5,7 @@ import Header from "@/components/Header.tsx";
 import Nav from "@/components/Nav.tsx";
 import PostCard from "@/components/PostCard.tsx";
 import { getPosts, Post } from "@/utils/posts.ts";
-import { SITE_NAME } from "@/constants.ts";
+import { SITE_NAME } from "@/utils/constants.ts";
 import Footer from "@/components/Footer.tsx";
 import Head from "@/components/Head.tsx";
 

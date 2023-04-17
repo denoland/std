@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { SITE_DESCRIPTION, SITE_NAME } from "@/constants.ts";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";
 
 interface MetaProps {
   title?: string;

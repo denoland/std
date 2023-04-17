@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { JSX } from "preact";
-import { SITE_NAME } from "@/constants.ts";
+import { SITE_NAME } from "@/utils/constants.ts";
 
 export default function Logo(props: JSX.HTMLAttributes<HTMLImageElement>) {
   const height = props.height ?? 96;

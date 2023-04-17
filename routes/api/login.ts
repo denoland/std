@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
-import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
+import { AUTHENTICATED_REDIRECT_PATH } from "@/utils/constants.ts";
 
 export const handler: Handlers = {
   async POST(request) {

@@ -6,7 +6,7 @@ import TodoList from "@/islands/TodoList.tsx";
 import { DashboardState } from "./_middleware.ts";
 import Dashboard from "@/components/Dashboard.tsx";
 import { Database } from "@/utils/supabase_types.ts";
-import { BASE_NOTICE_STYLES } from "@/constants.ts";
+import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
 
 interface TodosPageData extends DashboardState {
   todos: Database["public"]["Tables"]["todos"]["Insert"][];

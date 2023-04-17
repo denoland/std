@@ -79,8 +79,8 @@ This will automatically configure the database tables and their settings for us.
    creates your "Premium tier" product and configures the Stripe customer
    portal.
 
-> Note: go to [init/stripe.ts](init/stripe.ts) if you'd like to learn more about
-> how the `init:stripe` task works.
+> Note: go to [tools/init_stripe.ts](tools/init_stripe.ts) if you'd like to
+> learn more about how the `init:stripe` task works.
 
 3. Listen locally to Stripe events:
 
@@ -137,8 +137,9 @@ TODO
 
 ### Global Constants
 
-The [constants.ts](constants.ts) file includes global values used across various
-aspects of the codebase. Update these values according to your needs.
+The [utils/constants.ts](utils/constants.ts) file includes global values used
+across various aspects of the codebase. Update these values according to your
+needs.
 
 ### Blog
 
