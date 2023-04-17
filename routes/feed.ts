@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Feed, Item as FeedItem } from "feed";
 import { getPosts } from "@/utils/posts.ts";
-import { SITE_NAME } from "@/constants.ts";
+import { SITE_NAME } from "@/utils/constants.ts";
 
 const copyright = `Copyright ${new Date().getFullYear()} ${SITE_NAME}`;
 

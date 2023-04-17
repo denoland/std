@@ -9,7 +9,10 @@ import IconPrompt from "tabler-icons/prompt.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/stripe.ts";
 import type { Stripe } from "stripe";
-import { BASE_BUTTON_STYLES, FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
+import {
+  BASE_BUTTON_STYLES,
+  FREE_PLAN_TODOS_LIMIT,
+} from "@/utils/constants.ts";
 
 interface HeadingProps {
   title: string;
@@ -42,7 +45,7 @@ function Hero() {
         <a href="/signup" class={BASE_BUTTON_STYLES}>Signup</a>
         <a
           href="#"
-          class={`${BASE_BUTTON_STYLES} !bg-white border-2 border-pink-700 text-pink-700 hover:border-black hover:text-black transition duration-300`}
+          class={`${BASE_BUTTON_STYLES} !bg-white border-2 border-pink-700 !text-pink-700 hover:border-black hover:!text-black transition duration-300`}
         >
           Learn more
         </a>
@@ -130,7 +133,7 @@ interface PricingCardProps {
 
 function PricingCard(props: PricingCardProps) {
   return (
-    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-200 rounded-xl text-center">
+    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-300 rounded-xl text-center">
       <div>
         <h3 class="text-2xl font-bold">
           {props.name}
@@ -263,7 +266,7 @@ export const handler: Handlers<Stripe.Product[]> = {
 export default function HomePage(props: PageProps<Stripe.Product[]>) {
   return (
     <>
-      <Head />
+      <Head href={props.url.href} />
       <TopSection />
       <FeaturesSection />
       <PricingSection products={props.data} />

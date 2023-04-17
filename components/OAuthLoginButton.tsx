@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Provider } from "@supabase/supabase-js";
 import type { ComponentChild } from "preact";
-import { BASE_BUTTON_STYLES } from "@/constants.ts";
+import { BASE_BUTTON_STYLES } from "@/utils/constants.ts";
 
 interface OAuthLoginButtonProps {
   provider: Provider;
@@ -14,7 +14,7 @@ export default function OAuthLoginButton(props: OAuthLoginButtonProps) {
       <input type="hidden" value={props.provider} name="provider" />
       <button
         type="submit"
-        class={`${BASE_BUTTON_STYLES} w-full bg-white! text-black border-black border-2 align-middle`}
+        class={`w-full !bg-white !text-black border-black border-2 align-middle ${BASE_BUTTON_STYLES}`}
       >
         {props.children}
       </button>
