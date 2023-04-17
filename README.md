@@ -186,11 +186,11 @@ TODO
 
 ### Blog
 
-To create a new blog post, simply create a Markdown (`.md`) file within the
-[`data/posts`](data/posts) folder with the filename as the slug. E.g.
+To create a new blog post, simply create a Markdown (`.md`) file within
+[`data/posts/`](data/posts) with the filename as the slug. E.g.
 `data/blog/hello-there.md` will correspond to the `/blog/hello-there` route. Be
 sure to add the post properties to the starting Front Matter section of the
-file. See the [`data/blog`] folder for examples.
+file. See [`data/posts/`](data/posts) for examples.
 
 ### Themes
 
