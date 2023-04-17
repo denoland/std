@@ -2,7 +2,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { DashboardState } from "./_middleware.ts";
-import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/constants.ts";
+import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/utils/constants.ts";
 
 export const handler: Handlers<null, DashboardState> = {
   async GET(request, ctx) {

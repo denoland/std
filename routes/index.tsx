@@ -9,7 +9,10 @@ import IconPrompt from "tabler-icons/prompt.tsx";
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/stripe.ts";
 import type { Stripe } from "stripe";
-import { BASE_BUTTON_STYLES, FREE_PLAN_TODOS_LIMIT } from "@/constants.ts";
+import {
+  BASE_BUTTON_STYLES,
+  FREE_PLAN_TODOS_LIMIT,
+} from "@/utils/constants.ts";
 
 interface HeadingProps {
   title: string;

@@ -6,7 +6,7 @@ import {
   BASE_BUTTON_STYLES,
   BASE_INPUT_STYLES,
   FREE_PLAN_TODOS_LIMIT,
-} from "@/constants.ts";
+} from "@/utils/constants.ts";
 import IconTrash from "tabler-icons/trash.tsx";
 import { assert } from "std/testing/asserts.ts";
 import { useRef } from "preact/hooks";

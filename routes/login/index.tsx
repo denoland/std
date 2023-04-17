@@ -5,9 +5,9 @@ import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
-import { BASE_NOTICE_STYLES } from "@/constants.ts";
+import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
-import { AUTHENTICATED_REDIRECT_PATH } from "@/constants.ts";
+import { AUTHENTICATED_REDIRECT_PATH } from "@/utils/constants.ts";
 
 export const handler: Handlers = {
   /**
