@@ -105,35 +105,7 @@ new SaaS app.
 > [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
 > payments while in Stripe's test mode.
 
-## Deploying to Production
-
-This section shows how to get your SaaS ready for production and deploy it.
-
-### Authentication
-
-TODO
-
-### Payments
-
-[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
-as a user will be taken to Stripe's checkout page when they upgrade.
-
-Keep your `customers` database up to date with billing changes by
-[registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
-
-- Endpoint URL: `https://{{ YOUR DOMAIN }}/api/subscription`
-- Listen to `Events on your account`
-- Select: `customer.subscription.created` and `customer.subscription.deleted`
-
-### Deno Deploy
-
-TODO
-
-### Any VPS via Docker
-
-TODO
-
-## Extending Deno SaaSKit
+## Customization
 
 ### Global Constants
 
@@ -157,6 +129,34 @@ for a full list of properties and their types.
 You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
 `twind.config.ts`. Change these values to match your desired color scheme.
+
+## Deploying to Production
+
+### Authentication
+
+TODO
+
+### Customer Portal Branding (Stripe)
+
+[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
+as the user will be taken to Stripe's checkout page when they upgrade.
+
+### Webhooks for Subscriptions (Stripe)
+
+Keep your `customers` database up to date with billing changes by
+[registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
+
+- Endpoint URL: `https://{{ YOUR DOMAIN }}/api/subscription`
+- Listen to `Events on your account`
+- Select `customer.subscription.created` and `customer.subscription.deleted`
+
+### Deno Deploy
+
+TODO
+
+### Any VPS via Docker
+
+TODO
 
 ## Architecture
 
