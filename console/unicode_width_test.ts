@@ -39,6 +39,9 @@ Deno.test("unicodeWidth", async (t) => {
   await t.step("Emoji", () => {
     assertEquals(unicodeWidth("👩"), 2); // Woman
     assertEquals(unicodeWidth("🔬"), 2); // Microscope
+    // Note: Returns 4 for the below case, following the upstream crate
+    // `unicode_width`. Another possible might be returning 2, which is what
+    // `npm:string-width` returns.
     assertEquals(unicodeWidth("👩‍🔬"), 4); // Woman Scientist
   });
 });
