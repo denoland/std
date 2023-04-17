@@ -53,7 +53,7 @@ cd saaskit
 cp .example.env .env
 ```
 
-### Auth and Database
+### Auth and Database (Supabase)
 
 The values of these environmental variables will be gathered in the following
 steps.
@@ -71,7 +71,7 @@ This will automatically configure the database tables and their settings for us.
    file as `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY`,
    respectively.
 
-### Payments and Subscriptions
+### Payments and Subscriptions (Stripe)
 
 1. Copy your Stripe secret key as `STRIPE_SECRET_KEY` into your `.env` file. We
    recommend using the test key for your development environment.
