@@ -17,5 +17,17 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
 
-      - name: Check the formatting, linting, licenses, and types and run tests
-        run: deno task ok
+      - name: Verify formatting
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint
+
+      - name: Check license headers
+        run: deno task check:license --check
+
+      - name: Check types
+        run: deno check main.ts
+
+      - name: Run tests
+        run: deno task test
