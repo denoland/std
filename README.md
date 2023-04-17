@@ -105,16 +105,6 @@ new SaaS app.
 > [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
 > payments while in Stripe's test mode.
 
-### Running Locally
-
-Once Docker and Supabase services are running, start the project with:
-
-```
-deno task start
-```
-
-Then, point your browser to `http://localhost:8000`.
-
 ## Deploying to Production
 
 This section shows how to get your SaaS ready for production and deploy it.
