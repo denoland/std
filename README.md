@@ -182,6 +182,22 @@ TODO
 
 TODO
 
+## Extending Deno SaaSKit
+
+### Blog
+
+To create a new blog post, simply create a Markdown (`.md`) file within the
+[`data/posts`](data/posts) folder with the filename as the slug. E.g.
+`data/blog/hello-there.md` will correspond to the `/blog/hello-there` route. Be
+sure to add the post properties to the starting Front Matter section of the
+file. See the [`data/blog`] folder for examples.
+
+### Themes
+
+You can customize theme options such as spacing, color, etc. By default, Deno
+SaaSKit comes with `primary` and `secondary` colors predefined within
+`twind.config.ts`. Change these values to match your desired color scheme.
+
 ## Architecture
 
 ### Authentication
@@ -195,13 +211,6 @@ TODO:
 - Linting
 - Payments
 - Testing
-
-## Extending Deno SaaSKit
-
-TODO:
-
-- Blog
-- Themes
 
 ## Contributing
 
