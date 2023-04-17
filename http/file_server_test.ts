@@ -686,8 +686,8 @@ Deno.test(
         "http://localhost:4507/testdata/test%20file.txt",
         { headers },
       );
-      await res.text(); // Consuming the body so that the test doesn't leak resources
       assertEquals(res.status, 206);
+      assertEquals((await res.arrayBuffer()).byteLength, 101);
     } finally {
       await killFileServer();
     }
@@ -1053,6 +1053,18 @@ Deno.test(
     const res = await serveFile(req, testdataDir);
     assertEquals(res.status, 404);
     assertEquals(res.statusText, "Not Found");
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` should return 206 due to a bad range request (200-500)",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("range", "bytes=200-500");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 206);
+    assertEquals((await res.arrayBuffer()).byteLength, 301);
   },
 );
 

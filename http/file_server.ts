@@ -10,6 +10,7 @@ import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import { Status } from "./http_status.ts";
+import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
@@ -187,7 +188,9 @@ export async function serveFile(
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
     await file.seek(start, Deno.SeekMode.Start);
-    return createCommonResponse(Status.PartialContent, file.readable, {
+    const sliced = file.readable
+      .pipeThrough(new ByteSliceStream(0, contentLength - 1));
+    return createCommonResponse(Status.PartialContent, sliced, {
       headers,
     });
   }
