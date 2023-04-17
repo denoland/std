@@ -176,8 +176,6 @@ TODO
 The [`constants.ts`](constants.ts) file includes global values used across
 various aspects of the codebase. Update these values according to your needs.
 
-https://github.com/denoland/saaskit/blob/af3dcc5bc36d4b5e8799220afc79f62cabe42353/constants.ts#L1-L9
-
 ### Blog
 
 To create a new blog post, create a Markdown (`.md`) file within
