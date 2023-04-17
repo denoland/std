@@ -134,19 +134,6 @@ Start the server with `deno task start` and test the webhook with
 You can use [Stripe's test credit cards](https://stripe.com/docs/testing) to
 make test payments while in Stripe's test mode.
 
-### Global Constants
-
-The `constants.ts` file includes information relevant to your SaaS. Updating
-these will update your SaaS across the project:
-
-```
-export const SITE_NAME = "Your SaaS";
-export const SITE_DESCRIPTION = "Some details about your SaaS.";
-export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
-export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPxxxxxxxxxx";
-export const FREE_PLAN_TODOS_LIMIT = 5;
-```
-
 ### Running Locally
 
 Once Docker and Supabase services are running, start the project with:
@@ -183,6 +170,13 @@ TODO
 TODO
 
 ## Extending Deno SaaSKit
+
+### Global Constants
+
+The [`constants.ts`](constants.ts) file includes global values used across
+various aspects of the codebase. Update these values according to your needs.
+
+https://github.com/denoland/saaskit/blob/af3dcc5bc36d4b5e8799220afc79f62cabe42353/constants.ts#L1-L9
 
 ### Blog
 
