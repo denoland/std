@@ -71,36 +71,39 @@ This will automatically configure the database tables and their settings for us.
    file as `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY`,
    respectively.
 
-### Payments
+### Payments and Subscriptions
 
 1. Copy your Stripe secret key as `STRIPE_SECRET_KEY` into your `.env` file. We
    recommend using the test key for your development environment.
-1. Run `deno task init:stripe` and follow the instructions. This automatically
+2. Run `deno task init:stripe` and follow the instructions. This automatically
    creates your "Premium tier" product and configures the Stripe customer
    portal.
 
-#### Updating `customers` database via Stripe webhooks
+> Note: go to [init/stripe.ts] if you'd like to learn more about how the
+> `init:stripe` task works.
 
-Keep your `customers` database up to date with billing changes by
-[registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
-
-To test locally, use the Stripe CLI:
+3. Listen locally to Stripe events:
 
 ```
 stripe listen --forward-to localhost:8000/api/subscription
 ```
 
-You'll receive an output that includes your webhook signing secret. Copy that
-into your `.env` file as `STRIPE_WEBHOOK_SECRET`.
+4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
 
-Start the server with `deno task start` and test the webhook with
-`stripe trigger customer.subscription.created` or
-`stripe trigger customer.subscription.deleted`.
+### Running the Server
 
-#### Testing Payments
+Finally, start the server by running:
 
-You can use [Stripe's test credit cards](https://stripe.com/docs/testing) to
-make test payments while in Stripe's test mode.
+```
+deno task start
+```
+
+Go to [http://localhost:8000](http://localhost:8000) to begin playing with your
+new SaaS app.
+
+> Note: You can use
+> [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
+> payments while in Stripe's test mode.
 
 ### Global Constants
 
