@@ -158,20 +158,6 @@ TODO
 
 TODO
 
-## Architecture
-
-### Authentication
-
-TODO:
-
-- Blog
-- Database
-- Formatting
-- Fresh
-- Linting
-- Payments
-- Testing
-
 ## Contributing
 
 When submitting a pull request, please:
