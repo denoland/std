@@ -1,3 +1,14 @@
+### 0.184.0 / 2023.04.18
+
+- BREAKING(encoding): remove deprecated APIs (#3303)
+- BREAKING(encoding): remove deprecated APIs (#3315)
+- feat(console): add unicodeWidth for TTY text layout (#3297)
+- feat(testing): add .skip alias to bdd test API (#3300)
+- fix(http): move deno deploy specific logic from `etag.ts` to `file_server.ts`
+  (#3316)
+- fix(http/file_server.ts): respond to Range requests with correct byte length
+  (#3319)
+
 ### 0.183.0 / 2023.04.12
 
 - BREAKING(csv): rename `CsvStream` to `CsvParseStream` (#3287)
