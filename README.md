@@ -42,7 +42,7 @@ Want to know where Deno SaaSKit is headed? Check out
 
 1. Clone the repo:
 
-```
+```bash
 git clone https://github.com/denoland/saaskit.git
 cd saaskit
 ```
@@ -157,20 +157,6 @@ TODO
 ### Any VPS via Docker
 
 TODO
-
-## Architecture
-
-### Authentication
-
-TODO:
-
-- Blog
-- Database
-- Formatting
-- Fresh
-- Linting
-- Payments
-- Testing
 
 ## Contributing
 
