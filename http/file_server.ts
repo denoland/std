@@ -111,20 +111,11 @@ export async function serveFile(
     return createCommonResponse(Status.NotFound);
   }
 
-  const file = await Deno.open(filePath);
-
   const headers = setBaseHeaders();
 
-  // Set mime-type using the file extension in filePath
-  const contentTypeValue = contentType(extname(filePath));
-  if (contentTypeValue) {
-    headers.set("content-type", contentTypeValue);
-  }
-
   // Set date header if access timestamp is available
-  if (fileInfo.atime instanceof Date) {
-    const date = new Date(fileInfo.atime);
-    headers.set("date", date.toUTCString());
+  if (fileInfo.atime) {
+    headers.set("date", fileInfo.atime.toUTCString());
   }
 
   const etag = fileInfo.mtime
@@ -153,10 +144,14 @@ export async function serveFile(
         fileInfo.mtime.getTime() <
           new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
-      file.close();
-
       return createCommonResponse(Status.NotModified, null, { headers });
     }
+  }
+
+  // Set mime-type using the file extension in filePath
+  const contentTypeValue = contentType(extname(filePath));
+  if (contentTypeValue) {
+    headers.set("content-type", contentTypeValue);
   }
 
   // Get and parse the "range" header
@@ -184,8 +179,6 @@ export async function serveFile(
       start > maxRange ||
       end > maxRange)
   ) {
-    file.close();
-
     return createCommonResponse(
       Status.RequestedRangeNotSatisfiable,
       undefined,
@@ -194,6 +187,8 @@ export async function serveFile(
       },
     );
   }
+
+  const file = await Deno.open(filePath);
 
   // Set content length
   const contentLength = end - start + 1;
