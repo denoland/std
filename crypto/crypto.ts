@@ -40,7 +40,7 @@
  * Wasm/Rust
  *
  * ```ts
- * // https://deno.land/std/_wasm_crypto/crypto.ts
+ * // https://deno.land/std/crypto/_wasm/mod.ts
  * export const digestAlgorithms = [
  *   "BLAKE2B-256",
  *   "BLAKE2B-384",
@@ -65,6 +65,7 @@
  *   "SHA-256",
  *   "SHA-512",
  *   // insecure (collidable and length-extendable):
+ *   "MD4",
  *   "MD5",
  *   "SHA-1",
  * ] as const;
