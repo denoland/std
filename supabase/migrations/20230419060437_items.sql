@@ -18,6 +18,8 @@ alter table "public"."items" add constraint "items_author_id_fkey" FOREIGN KEY (
 
 alter table "public"."items" validate constraint "items_author_id_fkey";
 
+alter table "public"."items" alter column "author_id" set default auth.uid();
+
 create policy "Enable delete for users based on user_id"
 on "public"."items"
 as permissive
