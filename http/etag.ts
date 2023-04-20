@@ -26,20 +26,6 @@ type Entity = string | Uint8Array | FileInfo;
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
-const ENV_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-    .state ?? "granted"; // for deno deploy
-const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
-  ? Deno.env.get("DENO_DEPLOYMENT_ID")
-  : undefined;
-const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
-  ? crypto.subtle.digest(DEFAULT_ALGORITHM, encoder.encode(DENO_DEPLOYMENT_ID))
-    .then((hash) =>
-      `${DENO_DEPLOYMENT_ID.length.toString(16)}-${
-        base64Encode(hash).substring(0, 27)
-      }`
-    )
-  : undefined;
 
 export interface ETagOptions {
   /** A digest algorithm to use to calculate the etag. Defaults to
@@ -89,7 +75,6 @@ async function calcFileInfo(
     ).substring(0, 27);
     return `${fileInfo.size.toString(16)}-${hash}`;
   }
-  return HASHED_DENO_DEPLOYMENT_ID;
 }
 
 /** Calculate an ETag for an entity. When the entity is a specific set of data

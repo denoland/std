@@ -178,7 +178,7 @@ const RE_ExpandValue =
 
 export function parse(
   rawDotenv: string,
-  restrictEnvAccessTo: StringList = [],
+  restrictEnvAccessTo?: StringList,
 ): Record<string, string> {
   const env: Record<string, string> = {};
 
@@ -224,7 +224,7 @@ export function loadSync(
     defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
-    restrictEnvAccessTo = [],
+    restrictEnvAccessTo,
   }: LoadOptions = {},
 ): Record<string, string> {
   const conf = envPath ? parseFileSync(envPath, restrictEnvAccessTo) : {};
@@ -268,7 +268,7 @@ export async function load(
     defaultsPath = ".env.defaults",
     export: _export = false,
     allowEmptyValues = false,
-    restrictEnvAccessTo = [],
+    restrictEnvAccessTo,
   }: LoadOptions = {},
 ): Promise<Record<string, string>> {
   const conf = envPath ? await parseFile(envPath, restrictEnvAccessTo) : {};
@@ -305,7 +305,7 @@ export async function load(
 
 function parseFileSync(
   filepath: string,
-  restrictEnvAccessTo: StringList = [],
+  restrictEnvAccessTo?: StringList,
 ): Record<string, string> {
   try {
     return parse(Deno.readTextFileSync(filepath), restrictEnvAccessTo);
@@ -317,7 +317,7 @@ function parseFileSync(
 
 async function parseFile(
   filepath: string,
-  restrictEnvAccessTo: StringList = [],
+  restrictEnvAccessTo?: StringList,
 ): Promise<Record<string, string>> {
   try {
     return parse(await Deno.readTextFile(filepath), restrictEnvAccessTo);
@@ -344,7 +344,7 @@ function assertSafe(
   conf: Record<string, string>,
   confExample: Record<string, string>,
   allowEmptyValues: boolean,
-  restrictEnvAccessTo: StringList = [],
+  restrictEnvAccessTo?: StringList,
 ) {
   const currentEnv = readEnv(restrictEnvAccessTo);
 
@@ -381,10 +381,7 @@ function assertSafe(
 // a guarded env access, that reads only a subset from the Deno.env object,
 // if `restrictEnvAccessTo` property is passed.
 function readEnv(restrictEnvAccessTo: StringList) {
-  if (
-    restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo) &&
-    restrictEnvAccessTo.length > 0
-  ) {
+  if (restrictEnvAccessTo && Array.isArray(restrictEnvAccessTo)) {
     return restrictEnvAccessTo.reduce(
       (
         accessedEnvVars: Record<string, string>,
