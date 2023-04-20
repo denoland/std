@@ -1,10 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
 import type { Provider } from "@supabase/supabase-js";
+import { State } from "@/routes/_middleware.ts";
 
-export const handler: Handlers = {
-  async POST(req) {
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
+  async POST(req, ctx) {
     const form = await req.formData();
     const provider = form.get("provider");
 
@@ -12,20 +13,18 @@ export const handler: Handlers = {
       return new Response(null, { status: 400 });
     }
 
-    const headers = new Headers();
-    const supabaseClient = createSupabaseClient(req.headers, headers);
     const { origin } = new URL(req.url);
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
-      provider: provider as Provider,
-      options: {
-        redirectTo: origin + "/login/success",
+    const { data, error } = await ctx.state.supabaseClient.auth.signInWithOAuth(
+      {
+        provider: provider as Provider,
+        options: {
+          redirectTo: origin + "/login/success",
+        },
       },
-    });
+    );
 
     if (error) throw error;
 
-    headers.set("location", data.url);
-
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, { headers: { location: data.url }, status: 302 });
   },
 };

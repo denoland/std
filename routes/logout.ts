@@ -1,14 +1,14 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
+import type { State } from "./_middleware.ts";
 
-export const handler: Handlers = {
-  async GET(req) {
-    const headers = new Headers({ location: "/" });
-    const { error } = await createSupabaseClient(req.headers, headers)
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
+  async GET(_req, ctx) {
+    const { error } = await ctx.state.supabaseClient
       .auth.signOut();
     if (error) throw error;
 
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, { headers: { location: "/" }, status: 302 });
   },
 };

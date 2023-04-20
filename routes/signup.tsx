@@ -8,20 +8,17 @@ import { GitHub } from "@/components/Icons.tsx";
 import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
+import type { State } from "./_middleware.ts";
 
-export const handler: Handlers = {
-  async POST(req) {
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
+  async POST(req, ctx) {
     const form = await req.formData();
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
-    const headers = new Headers();
-    const { error } = await createSupabaseClient(req.headers, headers)
-      .auth.signUp({
-        email,
-        password,
-      });
+    const { error } = await ctx.state.supabaseClient
+      .auth.signUp({ email, password });
 
     let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
       REDIRECT_PATH_AFTER_LOGIN;
@@ -29,8 +26,10 @@ export const handler: Handlers = {
       redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
     }
 
-    headers.set("location", redirectUrl);
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, {
+      headers: { location: redirectUrl },
+      status: 302,
+    });
   },
 };
 

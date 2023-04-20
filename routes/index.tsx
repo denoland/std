@@ -1,10 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import { createSupabaseClient, type SupabaseClient } from "@/utils/supabase.ts";
+import { type SupabaseClient } from "@/utils/supabase.ts";
 import { BASE_SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { Database } from "@/utils/supabase_types.ts";
+import type { State } from "./_middleware.ts";
 
 type Item = Database["public"]["Tables"]["items"]["Row"];
 
@@ -16,11 +17,9 @@ export async function getItems(client: SupabaseClient) {
     .then(({ data }) => data) || [];
 }
 
-export const handler: Handlers<Item[]> = {
-  async GET(req, ctx) {
-    const supabaseClient = createSupabaseClient(req.headers);
-    const items = await getItems(supabaseClient);
-
+export const handler: Handlers<Item[], State> = {
+  async GET(_req, ctx) {
+    const items = await getItems(ctx.state.supabaseClient);
     return ctx.render(items);
   },
 };

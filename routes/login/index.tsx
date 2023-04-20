@@ -6,19 +6,18 @@ import AuthForm from "@/components/AuthForm.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
+import type { State } from "@/routes/_middleware.ts";
 
-export const handler: Handlers = {
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
   /**
    * Redirects the client to the authenticated redirect path if already login.
    * If not logged in, it continues to rendering the login page.
    */
-  async GET(request, ctx) {
-    const headers = new Headers();
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-
-    const { data: { session } } = await supabaseClient.auth.getSession();
+  async GET(_req, ctx) {
+    const { data: { session } } = await ctx.state.supabaseClient.auth
+      .getSession();
 
     if (session) {
       return new Response(null, {
@@ -32,13 +31,12 @@ export const handler: Handlers = {
 
     return ctx.render();
   },
-  async POST(req) {
+  async POST(req, ctx) {
     const form = await req.formData();
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
-    const headers = new Headers();
-    const { error } = await createSupabaseClient(req.headers, headers)
+    const { error } = await ctx.state.supabaseClient
       .auth.signInWithPassword({ email, password });
 
     let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
@@ -47,8 +45,10 @@ export const handler: Handlers = {
       redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
     }
 
-    headers.set("location", redirectUrl);
-    return new Response(null, { headers, status: 302 });
+    return new Response(null, {
+      headers: { location: redirectUrl },
+      status: 302,
+    });
   },
 };
 
