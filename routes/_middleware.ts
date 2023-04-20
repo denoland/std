@@ -5,8 +5,8 @@ import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "@/utils/supabase_types.ts";
 import { stripe } from "@/utils/stripe.ts";
 
-export interface DashboardState {
-  session: Session;
+export interface State {
+  session: Session | null;
   supabaseClient: SupabaseClient<Database>;
   createOrGetCustomer: () => Promise<
     Database["public"]["Tables"]["customers"]["Row"]
@@ -14,22 +14,13 @@ export interface DashboardState {
 }
 
 export async function handler(
-  request: Request,
-  ctx: MiddlewareHandlerContext<DashboardState>,
+  req: Request,
+  ctx: MiddlewareHandlerContext<State>,
 ) {
   const headers = new Headers();
-  const supabaseClient = createSupabaseClient(request.headers, headers);
+  const supabaseClient = createSupabaseClient(req.headers, headers);
 
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) {
-    const params = new URLSearchParams({ redirect_url: request.url });
-    return new Response(null, {
-      status: 302,
-      headers: {
-        location: `/login?${params}`,
-      },
-    });
-  }
 
   ctx.state.session = session;
   ctx.state.supabaseClient = supabaseClient;

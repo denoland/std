@@ -2,8 +2,10 @@
 import type { Database } from "./supabase_types.ts";
 import { createServerSupabaseClient } from "@supabase/auth-helpers-shared";
 import { getCookies, setCookie } from "std/http/cookie.ts";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import type { Stripe } from "stripe";
+
+export type SupabaseClient = ReturnType<typeof createSupabaseClient>;
 
 export function createSupabaseClient(
   requestHeaders: Headers,
@@ -38,7 +40,7 @@ export const supabaseAdminClient = createClient<Database>(
 );
 
 async function getCustomer(
-  supabaseClient: SupabaseClient<Database>,
+  supabaseClient: SupabaseClient,
 ) {
   const { data } = await supabaseClient
     .from("customers")
@@ -48,7 +50,7 @@ async function getCustomer(
 }
 
 async function createCustomer(
-  supabaseClient: SupabaseClient<Database>,
+  supabaseClient: SupabaseClient,
   customer: Database["public"]["Tables"]["customers"]["Insert"],
 ) {
   const { data } = await supabaseClient
@@ -61,7 +63,7 @@ async function createCustomer(
 }
 
 export async function createOrGetCustomer(
-  supabaseClient: SupabaseClient<Database>,
+  supabaseClient: SupabaseClient,
   stripeClient: Stripe,
 ) {
   const customer = await getCustomer(supabaseClient);

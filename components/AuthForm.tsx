@@ -7,7 +7,7 @@ interface AuthFormProps {
 
 export default function AuthForm({ type }: AuthFormProps) {
   return (
-    <form method="POST" class="space-y-4" action={`/api/${type.toLowerCase()}`}>
+    <form method="POST" class="space-y-4" action={`/${type.toLowerCase()}`}>
       <input
         placeholder="Email"
         name="email"

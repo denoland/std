@@ -4,8 +4,8 @@ import { createSupabaseClient } from "@/utils/supabase.ts";
 import type { Provider } from "@supabase/supabase-js";
 
 export const handler: Handlers = {
-  async POST(request) {
-    const form = await request.formData();
+  async POST(req) {
+    const form = await req.formData();
     const provider = form.get("provider");
 
     if (typeof provider !== "string") {
@@ -13,8 +13,8 @@ export const handler: Handlers = {
     }
 
     const headers = new Headers();
-    const supabaseClient = createSupabaseClient(request.headers, headers);
-    const { origin } = new URL(request.url);
+    const supabaseClient = createSupabaseClient(req.headers, headers);
+    const { origin } = new URL(req.url);
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: provider as Provider,
       options: {

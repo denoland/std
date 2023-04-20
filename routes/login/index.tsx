@@ -7,7 +7,7 @@ import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
 import { createSupabaseClient } from "@/utils/supabase.ts";
-import { AUTHENTICATED_REDIRECT_PATH } from "@/utils/constants.ts";
+import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 
 export const handler: Handlers = {
   /**
@@ -22,14 +22,33 @@ export const handler: Handlers = {
 
     if (session) {
       return new Response(null, {
-        status: 302,
         headers: {
-          location: AUTHENTICATED_REDIRECT_PATH,
+          location: "/",
         },
+        /** @todo Confirm whether this HTTP redirect status code is correct */
+        status: 302,
       });
     }
 
     return ctx.render();
+  },
+  async POST(req) {
+    const form = await req.formData();
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
+
+    const headers = new Headers();
+    const { error } = await createSupabaseClient(req.headers, headers)
+      .auth.signInWithPassword({ email, password });
+
+    let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
+      REDIRECT_PATH_AFTER_LOGIN;
+    if (error) {
+      redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
+    }
+
+    headers.set("location", redirectUrl);
+    return new Response(null, { headers, status: 302 });
   },
 };
 

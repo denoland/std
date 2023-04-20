@@ -3,14 +3,8 @@ import { Handlers, PageProps } from "$fresh/server.ts";
 import { CSS, render } from "$gfm";
 import { Head } from "$fresh/runtime.ts";
 import { getPost, Post } from "@/utils/posts.ts";
-import Nav from "@/components/Nav.tsx";
-import Header from "@/components/Header.tsx";
-import {
-  BlogFooterNavItems,
-  BlogHeaderNavItems,
-} from "@/routes/blog/index.tsx";
-import Footer from "@/components/Footer.tsx";
 import Meta from "@/components/Meta.tsx";
+import Layout from "@/components/Layout.tsx";
 
 export const handler: Handlers<Post> = {
   async GET(_req, ctx) {
@@ -39,22 +33,18 @@ export default function PostPage(props: PageProps<Post>) {
           href={props.url.href}
         />
       </Head>
-      <Header>
-        <Nav items={BlogHeaderNavItems} />
-      </Header>
-      <main class="max-w-screen-md px-4 py-16 mx-auto">
-        <h1 class="text-5xl font-bold">{post.title}</h1>
-        <time class="text-gray-500">
-          {date}
-        </time>
-        <div
-          class="mt-8 markdown-body"
-          dangerouslySetInnerHTML={{ __html: render(post.content) }}
-        />
-      </main>
-      <Footer>
-        <Nav items={BlogFooterNavItems} />
-      </Footer>
+      <Layout>
+        <main class="max-w-screen-md px-4 py-16 mx-auto">
+          <h1 class="text-5xl font-bold">{post.title}</h1>
+          <time class="text-gray-500">
+            {date}
+          </time>
+          <div
+            class="mt-8 markdown-body"
+            dangerouslySetInnerHTML={{ __html: render(post.content) }}
+          />
+        </main>
+      </Layout>
     </>
   );
 }
