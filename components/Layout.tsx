@@ -1,0 +1,119 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import type { ComponentChild, ComponentChildren, JSX } from "preact";
+import { BASE_SITE_WIDTH_STYLES, SITE_NAME } from "@/utils/constants.ts";
+import Logo from "./Logo.tsx";
+
+interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
+  active?: string;
+  items: (JSX.HTMLAttributes<HTMLAnchorElement> & { inner: ComponentChild })[];
+}
+
+function Nav(props: NavProps) {
+  return (
+    <nav>
+      <ul
+        class={`flex gap-x-8 gap-y-2 items-center justify-between h-full ${
+          props.class ?? ""
+        }`}
+      >
+        {props.items.map((item) => (
+          <li>
+            <a href={item.href}>{item.inner}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function Header(props: JSX.HTMLAttributes<HTMLElement>) {
+  return (
+    <header
+      {...props}
+      class={`p-8 justify-between ${BASE_SITE_WIDTH_STYLES} flex z-10 ${
+        props.class ?? ""
+      }`}
+    >
+      <a href="/">
+        <Logo height="48" />
+      </a>
+      {props.children}
+    </header>
+  );
+}
+
+function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
+  return (
+    <footer
+      {...props}
+      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${BASE_SITE_WIDTH_STYLES} ${
+        props.class ?? ""
+      }`}
+    >
+      <span>
+        <strong>{SITE_NAME}</strong>
+      </span>
+      {props.children}
+    </footer>
+  );
+}
+
+interface LayoutProps {
+  children: ComponentChildren;
+}
+
+export default function Layout(props: LayoutProps) {
+  /** @todo Make dynamic */
+  const headerNavItems = [
+    {
+      href: "/blog",
+      inner: "Blog",
+    },
+    {
+      href: "/submit",
+      inner: "Submit",
+    },
+    {
+      href: "/account",
+      inner: "Account",
+    },
+    {
+      href: "/login",
+      inner: "Login",
+    },
+    {
+      href: "/logout",
+      inner: "Logout",
+    },
+  ];
+
+  const footerNavItems = [
+    {
+      inner: "Source code",
+      href: "https://github.com/denoland/saaskit",
+    },
+    {
+      href: "https://fresh.deno.dev",
+      inner: (
+        <img
+          width="197"
+          height="37"
+          src="https://fresh.deno.dev/fresh-badge.svg"
+          alt="Made with Fresh"
+        />
+      ),
+    },
+  ];
+
+  return (
+    <div class="flex flex-col min-h-screen">
+      <Header>
+        <Nav items={headerNavItems} />
+      </Header>
+      {props.children}
+      <Footer>
+        <Nav items={footerNavItems} />
+      </Footer>
+    </div>
+  );
+}
