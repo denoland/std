@@ -4,7 +4,7 @@ export const SITE_DESCRIPTION = "Some details about your SaaS.";
 
 export const AUTHENTICATED_REDIRECT_PATH = "/dashboard";
 
-export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MPiEkD6QJts4RaYcp1SevPe";
+export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MwvC6EOqsNTUoMKO8RAJdcU";
 
 export const FREE_PLAN_TODOS_LIMIT = 5;
 
