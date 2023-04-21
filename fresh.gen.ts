@@ -5,57 +5,47 @@
 import config from "./deno.json" assert { type: "json" };
 import * as $0 from "./routes/_404.tsx";
 import * as $1 from "./routes/_500.tsx";
-import * as $2 from "./routes/api/login.ts";
-import * as $3 from "./routes/api/logout.ts";
-import * as $4 from "./routes/api/oauth.ts";
-import * as $5 from "./routes/api/signup.ts";
-import * as $6 from "./routes/api/subscription.ts";
-import * as $7 from "./routes/blog/[slug].tsx";
-import * as $8 from "./routes/blog/index.tsx";
-import * as $9 from "./routes/dashboard/_middleware.ts";
-import * as $10 from "./routes/dashboard/account.tsx";
-import * as $11 from "./routes/dashboard/api/todo.ts";
-import * as $12 from "./routes/dashboard/index.tsx";
-import * as $13 from "./routes/dashboard/manage-subscription.ts";
-import * as $14 from "./routes/dashboard/todos.tsx";
-import * as $15 from "./routes/dashboard/upgrade-subscription.ts";
-import * as $16 from "./routes/feed.ts";
-import * as $17 from "./routes/index.tsx";
-import * as $18 from "./routes/login/index.tsx";
-import * as $19 from "./routes/login/success.tsx";
-import * as $20 from "./routes/logout.ts";
-import * as $21 from "./routes/signup.tsx";
+import * as $2 from "./routes/_middleware.ts";
+import * as $3 from "./routes/account/_middleware.ts";
+import * as $4 from "./routes/account/index.tsx";
+import * as $5 from "./routes/account/manage.ts";
+import * as $6 from "./routes/account/upgrade.ts";
+import * as $7 from "./routes/api/stripe-webhooks.ts";
+import * as $8 from "./routes/blog/[slug].tsx";
+import * as $9 from "./routes/blog/index.tsx";
+import * as $10 from "./routes/feed.ts";
+import * as $11 from "./routes/index.tsx";
+import * as $12 from "./routes/login/index.tsx";
+import * as $13 from "./routes/login/oauth.ts";
+import * as $14 from "./routes/login/success.tsx";
+import * as $15 from "./routes/logout.ts";
+import * as $16 from "./routes/signup.tsx";
+import * as $17 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
-import * as $$1 from "./islands/TodoList.tsx";
 
 const manifest = {
   routes: {
     "./routes/_404.tsx": $0,
     "./routes/_500.tsx": $1,
-    "./routes/api/login.ts": $2,
-    "./routes/api/logout.ts": $3,
-    "./routes/api/oauth.ts": $4,
-    "./routes/api/signup.ts": $5,
-    "./routes/api/subscription.ts": $6,
-    "./routes/blog/[slug].tsx": $7,
-    "./routes/blog/index.tsx": $8,
-    "./routes/dashboard/_middleware.ts": $9,
-    "./routes/dashboard/account.tsx": $10,
-    "./routes/dashboard/api/todo.ts": $11,
-    "./routes/dashboard/index.tsx": $12,
-    "./routes/dashboard/manage-subscription.ts": $13,
-    "./routes/dashboard/todos.tsx": $14,
-    "./routes/dashboard/upgrade-subscription.ts": $15,
-    "./routes/feed.ts": $16,
-    "./routes/index.tsx": $17,
-    "./routes/login/index.tsx": $18,
-    "./routes/login/success.tsx": $19,
-    "./routes/logout.ts": $20,
-    "./routes/signup.tsx": $21,
+    "./routes/_middleware.ts": $2,
+    "./routes/account/_middleware.ts": $3,
+    "./routes/account/index.tsx": $4,
+    "./routes/account/manage.ts": $5,
+    "./routes/account/upgrade.ts": $6,
+    "./routes/api/stripe-webhooks.ts": $7,
+    "./routes/blog/[slug].tsx": $8,
+    "./routes/blog/index.tsx": $9,
+    "./routes/feed.ts": $10,
+    "./routes/index.tsx": $11,
+    "./routes/login/index.tsx": $12,
+    "./routes/login/oauth.ts": $13,
+    "./routes/login/success.tsx": $14,
+    "./routes/logout.ts": $15,
+    "./routes/signup.tsx": $16,
+    "./routes/submit.tsx": $17,
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,
-    "./islands/TodoList.tsx": $$1,
   },
   baseUrl: import.meta.url,
   config,

@@ -85,7 +85,7 @@ This will automatically configure the database tables and their settings for us.
 3. Listen locally to Stripe events:
 
 ```
-stripe listen --forward-to localhost:8000/api/subscription
+stripe listen --forward-to localhost:8000/api/stripe-webhooks
 ```
 
 4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
@@ -211,7 +211,7 @@ Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
 
-- Endpoint URL: `https://{{ YOUR DOMAIN }}/api/subscription`
+- Endpoint URL: `https://{{ YOUR DOMAIN }}/api/stripe-webhooks`
 - Listen to `Events on your account`
 - Select `customer.subscription.created` and `customer.subscription.deleted`
 
