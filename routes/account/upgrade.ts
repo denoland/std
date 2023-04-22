@@ -1,15 +1,15 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
-import { DashboardState } from "./_middleware.ts";
 import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/utils/constants.ts";
+import type { AccountState } from "./_middleware.ts";
 
-export const handler: Handlers<null, DashboardState> = {
-  async GET(request, ctx) {
+export const handler: Handlers<null, AccountState> = {
+  async GET(req, ctx) {
     const customer = await ctx.state.createOrGetCustomer();
     const { url } = await stripe.checkout.sessions.create({
-      success_url: new URL(request.url).origin + "/dashboard/todos",
-      customer: customer.stripe_customer_id,
+      success_url: new URL(req.url).origin + "/account",
+      customer: customer.stripe_customer_id!,
       line_items: [
         {
           price: STRIPE_PREMIUM_PLAN_PRICE_ID,

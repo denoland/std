@@ -6,6 +6,32 @@ import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
+import type { Handlers } from "$fresh/server.ts";
+import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
+import type { State } from "./_middleware.ts";
+
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
+  async POST(req, ctx) {
+    const form = await req.formData();
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
+
+    const { error } = await ctx.state.supabaseClient
+      .auth.signUp({ email, password });
+
+    let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
+      REDIRECT_PATH_AFTER_LOGIN;
+    if (error) {
+      redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
+    }
+
+    return new Response(null, {
+      headers: { location: redirectUrl },
+      status: 302,
+    });
+  },
+};
 
 /**
  * If an error message isn't one of these possible error messages, the error message is not displayed.

@@ -30,9 +30,9 @@ export const handler: Handlers = {
    * 1. customer.subscription.created (when a user subscribes to the premium plan)
    * 2. customer.subscription.deleted (when a user cancels the premium plan)
    */
-  async POST(request) {
-    const body = await request.text();
-    const signature = request.headers.get("stripe-signature")!;
+  async POST(req) {
+    const body = await req.text();
+    const signature = req.headers.get("stripe-signature")!;
     const signingSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
 
     let event!: Stripe.Event;
