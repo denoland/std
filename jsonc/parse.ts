@@ -153,22 +153,22 @@ class JSONCParser {
 
       switch (this.#text[i]) {
         case "{":
-          yield { type: TokenType.BeginObject, position: i } as const;
+          yield { type: TokenType.BeginObject, position: i };
           break;
         case "}":
-          yield { type: TokenType.EndObject, position: i } as const;
+          yield { type: TokenType.EndObject, position: i };
           break;
         case "[":
-          yield { type: TokenType.BeginArray, position: i } as const;
+          yield { type: TokenType.BeginArray, position: i };
           break;
         case "]":
-          yield { type: TokenType.EndArray, position: i } as const;
+          yield { type: TokenType.EndArray, position: i };
           break;
         case ":":
-          yield { type: TokenType.NameSeparator, position: i } as const;
+          yield { type: TokenType.NameSeparator, position: i };
           break;
         case ",":
-          yield { type: TokenType.ValueSeparator, position: i } as const;
+          yield { type: TokenType.ValueSeparator, position: i };
           break;
         case '"': { // parse string token
           const startIndex = i;
@@ -189,7 +189,7 @@ class JSONCParser {
             type: TokenType.String,
             sourceText: this.#text.substring(startIndex, i + 1),
             position: startIndex,
-          } as const;
+          };
           break;
         }
         default: { // parse null, true, false or number token
@@ -204,7 +204,7 @@ class JSONCParser {
             type: TokenType.NullOrTrueOrFalseOrNumber,
             sourceText: this.#text.substring(startIndex, i + 1),
             position: startIndex,
-          } as const;
+          };
         }
       }
     }
