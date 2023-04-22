@@ -97,7 +97,7 @@ class JSONCParser {
   }
   parse(): JsonValue {
     const token = this.#getNext();
-    const res = this.#parseJSONValue(token);
+    const res = this.#parseJsonValue(token);
 
     // make sure all characters have been read
     const { done, value } = this.#tokenized.next();
@@ -209,7 +209,7 @@ class JSONCParser {
       }
     }
   }
-  #parseJSONValue(value: Token): JsonValue {
+  #parseJsonValue(value: Token): JsonValue {
     switch (value.type) {
       case TokenType.BeginObject:
         return this.#parseObject();
@@ -267,7 +267,7 @@ class JSONCParser {
 
       const token3 = this.#getNext();
       Object.defineProperty(target, key, {
-        value: this.#parseJSONValue(token3),
+        value: this.#parseJsonValue(token3),
         writable: true,
         enumerable: true,
         configurable: true,
@@ -306,7 +306,7 @@ class JSONCParser {
       ) {
         return target;
       }
-      target.push(this.#parseJSONValue(token1));
+      target.push(this.#parseJsonValue(token1));
 
       const token2 = this.#getNext();
       if (token2.type === TokenType.EndArray) {
