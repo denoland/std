@@ -12,6 +12,9 @@
 
 import { assert } from "../_util/asserts.ts";
 
+import type { JsonValue } from "../json/common.ts";
+export type { JsonValue } from "../json/common.ts";
+
 export interface ParseOptions {
   /** Allow trailing commas at the end of arrays and objects.
    *
@@ -41,21 +44,12 @@ export interface ParseOptions {
 export function parse(
   text: string,
   { allowTrailingComma = true }: ParseOptions = {},
-): JSONValue {
+): JsonValue {
   if (new.target) {
     throw new TypeError("parse is not a constructor");
   }
   return new JSONCParser(text, { allowTrailingComma }).parse();
 }
-
-/** Valid types as a result of JSON parsing */
-export type JSONValue =
-  | { [key: string]: JSONValue | undefined }
-  | JSONValue[]
-  | string
-  | number
-  | boolean
-  | null;
 
 enum tokenType {
   beginObject,
@@ -101,7 +95,7 @@ class JSONCParser {
     this.#tokenized = this.#tokenize();
     this.#options = options;
   }
-  parse(): JSONValue {
+  parse(): JsonValue {
     const token = this.#getNext();
     const res = this.#parseJSONValue(token);
 
@@ -215,7 +209,7 @@ class JSONCParser {
       }
     }
   }
-  #parseJSONValue(value: Token): JSONValue {
+  #parseJSONValue(value: Token): JsonValue {
     switch (value.type) {
       case tokenType.beginObject:
         return this.#parseObject();
@@ -229,8 +223,8 @@ class JSONCParser {
         throw new SyntaxError(buildErrorMessage(value));
     }
   }
-  #parseObject(): { [key: string]: JSONValue | undefined } {
-    const target: { [key: string]: JSONValue | undefined } = {};
+  #parseObject(): { [key: string]: JsonValue | undefined } {
+    const target: { [key: string]: JsonValue | undefined } = {};
     //   ┌─token1
     // { }
     //      ┌─────────────token1
@@ -288,8 +282,8 @@ class JSONCParser {
       }
     }
   }
-  #parseArray(): JSONValue[] {
-    const target: JSONValue[] = [];
+  #parseArray(): JsonValue[] {
+    const target: JsonValue[] = [];
     //   ┌─token1
     // [ ]
     //      ┌─────────────token1
