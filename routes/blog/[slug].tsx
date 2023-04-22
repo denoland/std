@@ -5,6 +5,7 @@ import { Head } from "$fresh/runtime.ts";
 import { getPost, Post } from "@/utils/posts.ts";
 import Meta from "@/components/Meta.tsx";
 import Layout from "@/components/Layout.tsx";
+import { BASE_SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 
 export const handler: Handlers<Post> = {
   async GET(_req, ctx) {
@@ -34,7 +35,7 @@ export default function PostPage(props: PageProps<Post>) {
         />
       </Head>
       <Layout>
-        <main class="max-w-screen-md px-4 py-16 mx-auto">
+        <main class={`${BASE_SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">{post.title}</h1>
           <time class="text-gray-500">
             {date}
