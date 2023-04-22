@@ -41,11 +41,11 @@ export interface ParseOptions {
 export function parse(
   text: string,
   { allowTrailingComma = true }: ParseOptions = {},
-) {
+): JSONValue {
   if (new.target) {
     throw new TypeError("parse is not a constructor");
   }
-  return new JSONCParser(text, { allowTrailingComma }).parse() as JSONValue;
+  return new JSONCParser(text, { allowTrailingComma }).parse();
 }
 
 /** Valid types as a result of JSON parsing */
@@ -101,7 +101,7 @@ class JSONCParser {
     this.#tokenized = this.#tokenize();
     this.#options = options;
   }
-  parse() {
+  parse(): JSONValue {
     const token = this.#getNext();
     const res = this.#parseJSONValue(token);
 
@@ -114,7 +114,7 @@ class JSONCParser {
     return res;
   }
   /** Read the next token. If the token is read to the end, it throws a SyntaxError. */
-  #getNext() {
+  #getNext(): Token {
     const { done, value } = this.#tokenized.next();
     if (done) {
       throw new SyntaxError("Unexpected end of JSONC input");
@@ -215,7 +215,7 @@ class JSONCParser {
       }
     }
   }
-  #parseJSONValue(value: Token) {
+  #parseJSONValue(value: Token): JSONValue {
     switch (value.type) {
       case tokenType.beginObject:
         return this.#parseObject();
@@ -229,8 +229,8 @@ class JSONCParser {
         throw new SyntaxError(buildErrorMessage(value));
     }
   }
-  #parseObject() {
-    const target: Record<string, unknown> = {};
+  #parseObject(): { [key: string]: JSONValue | undefined } {
+    const target: { [key: string]: JSONValue | undefined } = {};
     //   ┌─token1
     // { }
     //      ┌─────────────token1
@@ -288,8 +288,8 @@ class JSONCParser {
       }
     }
   }
-  #parseArray() {
-    const target: unknown[] = [];
+  #parseArray(): JSONValue[] {
+    const target: JSONValue[] = [];
     //   ┌─token1
     // [ ]
     //      ┌─────────────token1
@@ -342,7 +342,7 @@ class JSONCParser {
     type: tokenType.nullOrTrueOrFalseOrNumber;
     sourceText: string;
     position: number;
-  }) {
+  }): null | boolean | number {
     if (value.sourceText === "null") {
       return null;
     }
@@ -364,7 +364,7 @@ class JSONCParser {
   }
 }
 
-function buildErrorMessage({ type, sourceText, position }: Token) {
+function buildErrorMessage({ type, sourceText, position }: Token): string {
   let token = "";
   switch (type) {
     case tokenType.beginObject:
