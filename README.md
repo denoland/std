@@ -137,66 +137,62 @@ This section assumes that a
 
 ### Database (Supabase)
 
-In order to setup Supabase for production, you'll have to create two tables:
+We'll use the Supabase CLI to create and configure these SaaSKit application
+tables:
 
 - `todos`
 - `customers`
 
-**The `todos` table**:
+**Using Supabase link & push commands to migrate your local database to the
+remote server**
 
-- Go to `Databases` > `Table Editor`
-- Click `New Table`
-- Enter the name as `todos` and check `Enable Row Level Security (RLS)`
-- Configure the following columns:
+1. Login with the Supabase CLI
 
-| Name      | Type   | Default value        | Primary |
-| --------- | ------ | -------------------- | ------- |
-| `id`      | `uuid` | `uuid_generate_v4()` | `true`  |
-| `name`    | `text` | `NULL`               | `false` |
-| `user_id` | `uuid` | `auth.uid()`         | `false` |
+```sh
+supabase login
+```
 
-- Click the link symbol next to the `user_id` column name. Then, select schema
-  `auth`, table `users`, and column `id`. Now the `user_id` will link back to a
-  user object in Supabase Auth.
+2. Run the Supabase link command to setup a local-remote project link
 
-**Setup the `customers` table**
+- Generate SUPABASE_ACCESS_TOKEN by going to
+  https://app.supabase.com/account/tokens
 
-- Go to `Database` > `Tables`
-- Click `New Table`
-- Enter the name as `customers` and check `Enable Row Level Security (RLS)`
-- Configure the following columns:
+- Get project-ref from the last part of the Supabase SaaSKit project URL:
+  https://app.supabase.com/project/{{ saaskit project-ref }}
 
-| Name                 | Type   | Default value | Primary |
-| -------------------- | ------ | ------------- | ------- |
-| `user_id`            | `uuid` | `auth.uid()`  | `true`  |
-| `stripe_customer_id` | `text` | `NULL`        | `false` |
-| `is_subscribed`      | `bool` | `false`       | `false` |
+- Run the `supabase link` command with SUPABASE_ACCESS_TOKEN set on the command
+  line:
 
-- Click the link symbol next to the `user_id` column name. Then, select schema
-  `auth`, table `users`, and column `id`. Now the `user_id` will link back to a
-  user object in Supabase Auth.
+```sh
+SUPABASE_ACCESS_TOKEN={{ supabase access token }} supabase link -p {{ supabase project pwd }} --project-ref {{ supabase project ref }}
+# Command output:
+# Finished supabase link.
+```
+
+3. Run Supabase db push command to push the migration SQL (found in
+   `supabase/migrations`) to your remote Supabase account.
+
+```sh
+supabase db push -p {{ supabase project pwd }}
+# Command output:
+# Pushing migration 20230328042936_init.sql...
+# Pushing migration 20230405074631_customers.sql…
+# Finished supabase db push.
+```
+
+The database tables should now be in your remote Supabase project with access
+policies configured. The policies restrict each user to only create, read,
+update, and delete their own data.
 
 ### Authentication (Supabase)
+
+These steps enable using email with Supabase Auth.
 
 In your [Supabase dashboard](https://app.supabase.com/projects):
 
 1. Go to your project
 2. Go to `Authentication` > `Providers` > click `Email`
 3. Disable `Confirm email`
-4. Back on the left-hand bar, click on `Policies`
-5. Click `New Policy` on the `customers` table pane and then
-   `Create a policy from scratch`
-6. Enter the policy name as `Enable all operations for users based on user_id`
-7. For `Allowed operation`, select `All`
-8. For `Target Roles` select `authenticated`
-9. Enter the `USING expression` as `(auth.uid() = user_id)`
-10. Enter the `WITH CHECK expression` as `(auth.uid() = user_id)`
-11. Click `Review` then `Save policy`
-12. Repeat steps 5 to 11 for the `todos` table pane
-
-These steps enable using email with Supabase Auth and provide a simple
-authentication strategy restricting each user to only create, read, update, and
-delete their own data.
 
 ### Payments (Stripe)
 
@@ -280,13 +276,13 @@ jobs:
 
       - name: Install Deno
         uses: denoland/setup-deno@main
-        # If you need to install a specific Deno version	
+        # If you need to install a specific Deno version
         # with:
         #   deno-version: 1.32.4
 
 ## You would put your building, linting, testing and other CI/CD steps here
 
-## FInally, deploy 
+## Finally, deploy
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
