@@ -142,7 +142,7 @@ In order to setup Supabase for production, you'll have to create two tables:
 - `todos`
 - `customers`
 
-#### Setup the `todos` table
+**The `todos` table**:
 
 - Go to `Databases` > `Table Editor`
 - Click `New Table`
@@ -159,7 +159,7 @@ In order to setup Supabase for production, you'll have to create two tables:
   `auth`, table `users`, and column `id`. Now the `user_id` will link back to a
   user object in Supabase Auth.
 
-#### Setup the `customers` table
+**Setup the `customers` table**
 
 - Go to `Database` > `Tables`
 - Click `New Table`
@@ -206,7 +206,7 @@ In order to use Stripe in production, you'll have to
 Once your Stripe account is activated, simply grab the production version of the
 Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
 
-#### Automate Stripe Subscription Updates via Webhooks
+**Automate Stripe Subscription Updates via Webhooks**
 
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
@@ -215,14 +215,12 @@ Keep your `customers` database up to date with billing changes by
 - Listen to `Events on your account`
 - Select `customer.subscription.created` and `customer.subscription.deleted`
 
-#### Customer Portal Branding
+**Customer Portal Branding**
 
 [Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
 as the user will be taken to Stripe's checkout page when they upgrade.
 
-### Deployment Options
-
-#### Deno Deploy
+### Automatic Deployment with Deno Deploy
 
 These steps show you how to deploy your SaaS app close to your users at the edge
 with [Deno Deploy](https://deno.com/deploy).
@@ -242,7 +240,7 @@ with [Deno Deploy](https://deno.com/deploy).
 
 You should be able to visit your newly deployed SaaS.
 
-#### Deno Deploy via GitHub Action
+### Deno Deploy via GitHub Action
 
 You can also choose to deploy to
 [Deno Deploy via a GitHub Action](https://github.com/denoland/deployctl/blob/main/action/README.md),
@@ -303,19 +301,17 @@ jobs:
    When the action successfully completes, your app should be available on Deno
    Deploy.
 
-### Using Docker to Deploy to any VPS
+### Deploying to Digital Ocean with Docker
 
 [Docker](https://docker.com) makes it easy to deploy and run your Deno app to
-any virtual private server. This section will show you how to do that with AWS
-Lightsail and Digital Ocean.
+any virtual private server. This section will show you how to do that with
+[Digital Ocean](https://digitalocean.com).
 
-#### Digital Ocean
+### Deploying to Amazon Lightsail with Docker
 
-TODO
-
-#### Amazon Lightsail
-
-TODO
+[Docker](https://docker.com) makes it easy to deploy and run your Deno app to
+any virtual private server. This section will show you how to do that with
+[AWS Lightsail](https://aws.amazon.com/lightsail/).
 
 ## Contributing
 
