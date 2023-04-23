@@ -227,7 +227,7 @@ as the user will be taken to Stripe's checkout page when they upgrade.
 These steps show you how to deploy your SaaS app close to your users at the edge
 with [Deno Deploy](https://deno.com/deploy).
 
-1. Create a GitHub repository for your SaaSKit project.
+1. Clone this repository for your SaaSKit project.
 
 2. Sign into [Deno Deploy](https://dash.deno.com) with your GitHub account.
 
@@ -244,9 +244,9 @@ You should be able to visit your newly deployed SaaS.
 
 #### Deno Deploy via GitHub Action
 
-You can also choose to deploy to Deno Deploy via a
-[GitHub Action](https://github.com/features/actions), which offers more
-flexibility. For instance, with the GitHub Action, you could:
+You can also choose to deploy to
+[Deno Deploy via a GitHub Action](https://github.com/denoland/deployctl/blob/main/action/README.md),
+which offers more flexibility. For instance, with the GitHub Action, you could:
 
 - Add a build step
 - Run `deno lint` to lint your code
