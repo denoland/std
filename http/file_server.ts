@@ -10,11 +10,11 @@ import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import { Status } from "./http_status.ts";
+import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
 import { createCommonResponse } from "./util.ts";
-import { DigestAlgorithm } from "../crypto/crypto.ts";
 import { VERSION } from "../version.ts";
 interface EntryInfo {
   mode: string;
@@ -24,6 +24,16 @@ interface EntryInfo {
 }
 
 const encoder = new TextEncoder();
+
+const ENV_PERM_STATUS =
+  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
+    .state ?? "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
+  ? Deno.env.get("DENO_DEPLOYMENT_ID")
+  : undefined;
+const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
+  ? calculate(DENO_DEPLOYMENT_ID, { weak: true })
+  : undefined;
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
@@ -68,9 +78,9 @@ function fileLenToString(len: number): string {
 export interface ServeFileOptions {
   /** The algorithm to use for generating the ETag.
    *
-   * @default {"fnv1a"}
+   * @default {"SHA-256"}
    */
-  etagAlgorithm?: DigestAlgorithm;
+  etagAlgorithm?: AlgorithmIdentifier;
   /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
 }
@@ -101,23 +111,16 @@ export async function serveFile(
     return createCommonResponse(Status.NotFound);
   }
 
-  const file = await Deno.open(filePath);
-
   const headers = setBaseHeaders();
 
-  // Set mime-type using the file extension in filePath
-  const contentTypeValue = contentType(extname(filePath));
-  if (contentTypeValue) {
-    headers.set("content-type", contentTypeValue);
-  }
-
   // Set date header if access timestamp is available
-  if (fileInfo.atime instanceof Date) {
-    const date = new Date(fileInfo.atime);
-    headers.set("date", date.toUTCString());
+  if (fileInfo.atime) {
+    headers.set("date", fileInfo.atime.toUTCString());
   }
 
-  const etag = await calculate(fileInfo, { algorithm });
+  const etag = fileInfo.mtime
+    ? await calculate(fileInfo, { algorithm })
+    : await HASHED_DENO_DEPLOYMENT_ID;
 
   // Set last modified header if last modification timestamp is available
   if (fileInfo.mtime) {
@@ -141,10 +144,14 @@ export async function serveFile(
         fileInfo.mtime.getTime() <
           new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
-      file.close();
-
       return createCommonResponse(Status.NotModified, null, { headers });
     }
+  }
+
+  // Set mime-type using the file extension in filePath
+  const contentTypeValue = contentType(extname(filePath));
+  if (contentTypeValue) {
+    headers.set("content-type", contentTypeValue);
   }
 
   // Get and parse the "range" header
@@ -172,8 +179,6 @@ export async function serveFile(
       start > maxRange ||
       end > maxRange)
   ) {
-    file.close();
-
     return createCommonResponse(
       Status.RequestedRangeNotSatisfiable,
       undefined,
@@ -183,12 +188,16 @@ export async function serveFile(
     );
   }
 
+  const file = await Deno.open(filePath);
+
   // Set content length
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
   if (range && parsed) {
     await file.seek(start, Deno.SeekMode.Start);
-    return createCommonResponse(Status.PartialContent, file.readable, {
+    const sliced = file.readable
+      .pipeThrough(new ByteSliceStream(0, contentLength - 1));
+    return createCommonResponse(Status.PartialContent, sliced, {
       headers,
     });
   }
@@ -427,9 +436,9 @@ export interface ServeDirOptions {
   quiet?: boolean;
   /** The algorithm to use for generating the ETag.
    *
-   * @default {"fnv1a"}
+   * @default {"SHA-256"}
    */
-  etagAlgorithm?: DigestAlgorithm;
+  etagAlgorithm?: AlgorithmIdentifier;
   /** Headers to add to each response
    *
    * @default {[]}
