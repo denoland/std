@@ -34,7 +34,7 @@ export function validate(id: string): boolean {
  * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
  *
  * const uuid = await generate(NAMESPACE_URL, new TextEncoder().encode("python.org"));
- * uuid === "886313e1-3b8a-5372-9b90-0c9aee199e5d" // true
+ * uuid === "7af94e2b-4dd9-50f0-9c9a-8a48519bdef0" // true
  * ```
  *
  * @param namespace The namespace to use, encoded as a UUID.
