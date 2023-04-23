@@ -15,7 +15,7 @@ const UUID_RE =
  * ```ts
  * import { generate as generateV5, validate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
- * validate(await generateV5("6ba7b810-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
+ * validate(await generateV5("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false
  * validate("this-is-not-a-uuid"); // false
  * ```
@@ -31,7 +31,7 @@ export function validate(id: string): boolean {
  * ```js
  * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
  *
- * const NAMESPACE_URL = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+ * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
  *
  * const uuid = await generate(NAMESPACE_URL, new TextEncoder().encode("python.org"));
  * uuid === "886313e1-3b8a-5372-9b90-0c9aee199e5d" // true
