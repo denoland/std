@@ -4,6 +4,7 @@ import Head from "@/components/Head.tsx";
 import type { Database } from "@/utils/supabase_types.ts";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
+import { BASE_BUTTON_STYLES } from "../../utils/constants.ts";
 
 interface AccountPageData extends AccountState {
   customer: Database["public"]["Tables"]["customers"]["Row"];
@@ -22,9 +23,9 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
   return (
     <>
       <Head title="Account" />
-      <Layout>
-        <div class="max-w-lg m-auto w-full flex-1 px-8 pt-32 pb-8">
-          <h1 class="text-2xl mb-4">
+      <Layout isLoggedIn={props.data.isLoggedIn}>
+        <div class="max-w-lg m-auto w-full flex-1 p-8 flex flex-col justify-center">
+          <h1 class="text-3xl mb-4">
             <strong>Account</strong>
           </h1>
           <ul class="divide-y">
@@ -47,6 +48,12 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
               </p>
             </li>
           </ul>
+          <a
+            href="/logout"
+            class={`${BASE_BUTTON_STYLES} block text-center mt-8`}
+          >
+            Logout
+          </a>
         </div>
       </Layout>
     </>

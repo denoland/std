@@ -60,34 +60,31 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
+  isLoggedIn: boolean;
 }
 
 export default function Layout(props: LayoutProps) {
-  /** @todo Make dynamic */
   const headerNavItems = [
-    {
-      href: "/blog",
-      inner: "Blog",
-    },
     {
       href: "/submit",
       inner: "Submit",
     },
-    {
-      href: "/account",
-      inner: "Account",
-    },
-    {
-      href: "/login",
-      inner: "Login",
-    },
-    {
-      href: "/logout",
-      inner: "Logout",
-    },
+    props.isLoggedIn
+      ? {
+        href: "/account",
+        inner: "Account",
+      }
+      : {
+        href: "/login",
+        inner: "Login",
+      },
   ];
 
   const footerNavItems = [
+    {
+      href: "/blog",
+      inner: "Blog",
+    },
     {
       inner: "Source code",
       href: "https://github.com/denoland/saaskit",
