@@ -206,7 +206,7 @@ In order to use Stripe in production, you'll have to
 Once your Stripe account is activated, simply grab the production version of the
 Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
 
-#### Automate Stripe subscription updates via Supabase
+#### Automate Stripe Subscription Updates via Webhooks
 
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
