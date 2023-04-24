@@ -4,7 +4,6 @@ import Head from "@/components/Head.tsx";
 import type { Database } from "@/utils/supabase_types.ts";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
-import { BASE_SITE_WIDTH_STYLES } from "../../utils/constants.ts";
 
 interface AccountPageData extends AccountState {
   customer: Database["public"]["Tables"]["customers"]["Row"];
@@ -24,21 +23,28 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
     <>
       <Head title="Account" />
       <Layout>
-        <div class={`${BASE_SITE_WIDTH_STYLES} flex-1 px-8`}>
-          <ul class="space-y-2">
-            <li class="flex items-center justify-between gap-2 py-2">
-              <div class="flex-1">
+        <div class="max-w-lg m-auto w-full flex-1 px-8 pt-32 pb-8">
+          <h1 class="text-2xl mb-4">
+            <strong>Account</strong>
+          </h1>
+          <ul class="divide-y">
+            <li class="py-4">
+              <p>
                 <strong>Email</strong>
-              </div>
-              <div>{props.data.session!.user.email}</div>
+              </p>
+              <p>
+                {props.data.session!.user.email}
+              </p>
             </li>
-            <li class="flex items-center justify-between gap-2 py-2">
-              <div class="flex-1">
+            <li class="py-4">
+              <p>
                 <strong>Subscription</strong>
-              </div>
-              <a class="underline" href={`/account/${action.toLowerCase()}`}>
-                {action} subscription
-              </a>
+              </p>
+              <p>
+                <a class="underline" href={`/account/${action.toLowerCase()}`}>
+                  {action} subscription
+                </a>
+              </p>
             </li>
           </ul>
         </div>
