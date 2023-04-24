@@ -194,6 +194,15 @@ In your [Supabase dashboard](https://app.supabase.com/projects):
 2. Go to `Authentication` > `Providers` > click `Email`
 3. Disable `Confirm email`
 
+**Supabase Production Environmental Variables**
+
+- SERVICE_ROLE_KEY: Dashboard Home -> Settings -> API -> API Settings/Project
+  API Keys -> service_role secret
+- SUPABASE_ANON_KEY: Dashboard Home -> Settings -> API -> API Settings/Project
+  API Keys -> anon public
+- SUPABASE_API_URL: Dashboard Home -> Settings -> API Settings/Project URL ->
+  URL
+
 ### Payments (Stripe)
 
 In order to use Stripe in production, you'll have to
@@ -211,10 +220,21 @@ Keep your `customers` database up to date with billing changes by
 - Listen to `Events on your account`
 - Select `customer.subscription.created` and `customer.subscription.deleted`
 
-**Customer Portal Branding**
+**Stripe Customer Portal Branding**
 
 [Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
-as the user will be taken to Stripe's checkout page when they upgrade.
+as the user will be taken to Stripe's checkout page when they upgrade to a
+subscription.
+
+**Stripe Production Environmental Variables**
+
+- STRIPE_SECRET_KEY: Dashboard Home (Right Side of Page) -> Secret Key (only
+  revealed once)
+- STRIPE_WEBHOOK_SECRET: Dashboard Home -> Developers (right side of page) ->
+  Create webhook -> Click Add Endpoint
+  - After Creation, redirected to new webhook page -> Signing Secret -> Reveal
+- STRIPE_PREMIUM_PLAN_PRICE_ID: (in constants.ts): Dashboard -> Products ->
+  Premium Tier -> Pricing/API ID
 
 ### Automatic Deployment with Deno Deploy
 
@@ -258,7 +278,7 @@ example `.yml` file to deploy to Deno Deploy. Be sure to update the
 `YOUR_DENO_DEPLOY_PROJECT_NAME` with one that you've set in Deno Deploy.
 
 ```yml
-# Deploy this project to Deno Deploy
+# Github action to deploy this project to Deno Deploy
 name: Deploy
 on: [push]
 
@@ -297,17 +317,74 @@ jobs:
    When the action successfully completes, your app should be available on Deno
    Deploy.
 
-### Deploying to Digital Ocean with Docker
-
-[Docker](https://docker.com) makes it easy to deploy and run your Deno app to
-any virtual private server. This section will show you how to do that with
-[Digital Ocean](https://digitalocean.com).
-
 ### Deploying to Amazon Lightsail with Docker
 
 [Docker](https://docker.com) makes it easy to deploy and run your Deno app to
 any virtual private server. This section will show you how to do that with
 [AWS Lightsail](https://aws.amazon.com/lightsail/).
+
+In order to deploy your Docker image to Amazon Lightsail you need to create an
+AWS account if you don’t already have one.
+
+The deployment process starts with a local Docker image build:
+
+```sh
+docker compose -f docker-compose.yml build
+```
+
+The built image will be registered on [Docker Hub](https://hub.docker.com). In
+order to do that sign into your Hub account (or create one if you don’t have
+one).
+
+You will also need to tag your image locally using the following command:
+
+```sh
+docker tag deno-image {{ username }}/deno-saaskit-aws
+```
+
+The name `deno-image` comes from your `docker-compose.yml` file. We have chosen
+the name `deno-saaskit-aws` which you can change. Substitute `{{username}}` with
+your Docker Hub username.
+
+Next, push the image to Docker Hub with this command:
+
+```sh
+docker push {{ username }}/deno-saaskit-aws
+```
+
+You should then be able to see your image on Docker Hub where it can be picked
+up by the AWS container service.
+
+Once you have done that, go to
+[AWS LIghtsail Create a Container Service landing page](https://lightsail.aws.amazon.com/ls/webapp/create/container-service).
+On that page you can choose a server location and service capacity or keep the
+defaults.
+
+Next, click on “Setup deployment” and choose “Specify a custom deployment” which
+will result in the display of a form. Here’s what you fill out:
+
+- Container name: Give it a name of your choosing.
+- Image: Use the Docker Hub name {{username}}/deno-saaskit-aws.
+- Open ports: Click “Add open ports” and then enter “8000” as the port.
+- Environmental Variables: Enter the name and values of all production
+  environmental variables from `.env`.
+- Public Endpoint: Select the container name you just entered
+
+Under “Identify your service”, enter a container service name of your choosing.
+It will become part of the service’s domain.
+
+Lastly, click the “Create Container Service” button. It will take some time for
+the deployment to complete. You will see a ‘Deployed” message when it is
+finished.
+
+After the deployment is complete, click on the public address link and you'll
+see your app running in your browser.
+
+### Deploying to Digital Ocean with Docker
+
+[Docker](https://docker.com) makes it easy to deploy and run your Deno app to
+any virtual private server. This section will show you how to do that with
+[Digital Ocean](https://digitalocean.com).
 
 ## Contributing
 
