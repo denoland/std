@@ -1,7 +1,7 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import type { SupabaseClient } from "@/utils/supabase.ts";
-import type { Item } from "@/utils/item.ts";
+import type { ItemWithCommentsCount } from "@/utils/item.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -14,21 +14,30 @@ import type { Database } from "@/utils/supabase_types.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
 
 interface ItemPageData extends State {
-  item: Item;
+  item: ItemWithCommentsCount;
   comments: Database["public"]["Tables"]["comments"]["Row"][];
 }
 
-async function getItem(supabaseClient: SupabaseClient, id: Item["id"]) {
+async function getItem(
+  supabaseClient: SupabaseClient,
+  id: ItemWithCommentsCount["id"],
+) {
   return await supabaseClient
     .from("items")
-    .select()
+    .select(`
+      *,
+      comments(count)
+    `)
     .eq("id", id)
     .single()
     .throwOnError()
     .then(({ data }) => data);
 }
 
-async function getItemComments(supabaseClient: SupabaseClient, id: Item["id"]) {
+async function getItemComments(
+  supabaseClient: SupabaseClient,
+  id: ItemWithCommentsCount["id"],
+) {
   return await supabaseClient
     .from("comments")
     .select()
@@ -95,7 +104,7 @@ function Comment(comment: Database["public"]["Tables"]["comments"]["Row"]) {
   return (
     <div class="py-4">
       <p>{comment.user_id}</p>
-      <p class="text-gray-500">{timeAgo(new Date(comment.created_at))}</p>
+      <p class="text-gray-500">{timeAgo(new Date(comment.created_at))} ago</p>
       <p>{comment.text}</p>
     </div>
   );

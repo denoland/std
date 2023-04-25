@@ -1,4 +1,4 @@
-import type { Item } from "@/utils/item.ts";
+import type { ItemWithCommentsCount } from "@/utils/item.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -12,7 +12,7 @@ export function timeAgo(time: number | Date) {
   else return pluralize(~~(between / 86400), "day");
 }
 
-export default function ItemSummary(props: Item) {
+export default function ItemSummary(props: ItemWithCommentsCount) {
   return (
     <div class="py-2">
       <div>
@@ -27,7 +27,9 @@ export default function ItemSummary(props: Item) {
       <div class="text-gray-500">
         {pluralize(props.score, "point")} by {props.author_id}{" "}
         {timeAgo(new Date(props.created_at!))} ago •{" "}
-        <a href={`/item/${props.id}`}>Comments</a>
+        <a href={`/item/${props.id}`}>
+          {pluralize(props.comments[0].count, "comment")}
+        </a>
       </div>
     </div>
   );
