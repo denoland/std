@@ -49,6 +49,6 @@ export const {
 } = path;
 
 export * from "./common.ts";
-export { SEP, SEP_PATTERN } from "./separator.ts";
+export * from "./_separator.ts";
 export * from "./_interface.ts";
 export * from "./glob.ts";

@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { isWindows, osType } from "../_util/os.ts";
-import { SEP, SEP_PATTERN } from "./separator.ts";
+import { SEP, SEP_PATTERN } from "./_separator.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
 import type { OSType } from "../_util/os.ts";
