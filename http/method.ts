@@ -3,27 +3,57 @@
 
 /**
  * Contains the constant {@linkcode HTTP_METHODS} and the type
- * {@linkcode HttpMethods} and the type guard {@linkcode isHttpMethod} for
+ * {@linkcode HttpMethod} and the type guard {@linkcode isHttpMethod} for
  * working with HTTP methods with type safety.
  *
  * @module
  */
 
-/** A constant array of common HTTP methods. */
+/** A constant array of common HTTP methods.
+ *
+ * This list is compatible with Node.js `http` module.
+ */
 export const HTTP_METHODS = [
-  "HEAD",
-  "OPTIONS",
+  "ACL",
+  "BIND",
+  "CHECKOUT",
+  "CONNECT",
+  "COPY",
+  "DELETE",
   "GET",
-  "PUT",
+  "HEAD",
+  "LINK",
+  "LOCK",
+  "M-SEARCH",
+  "MERGE",
+  "MKACTIVITY",
+  "MKCALENDAR",
+  "MKCOL",
+  "MOVE",
+  "NOTIFY",
+  "OPTIONS",
   "PATCH",
   "POST",
-  "DELETE",
+  "PROPFIND",
+  "PROPPATCH",
+  "PURGE",
+  "PUT",
+  "REBIND",
+  "REPORT",
+  "SEARCH",
+  "SOURCE",
+  "SUBSCRIBE",
+  "TRACE",
+  "UNBIND",
+  "UNLINK",
+  "UNLOCK",
+  "UNSUBSCRIBE",
 ] as const;
 
 /** A type representing string literals of each of the common HTTP method. */
-export type HttpMethods = typeof HTTP_METHODS[number];
+export type HttpMethod = typeof HTTP_METHODS[number];
 
 /** A type guard that determines if a value is a valid HTTP method. */
-export function isHttpMethod(value: unknown): value is HttpMethods {
-  return HTTP_METHODS.includes(value as HttpMethods);
+export function isHttpMethod(value: unknown): value is HttpMethod {
+  return HTTP_METHODS.includes(value as HttpMethod);
 }

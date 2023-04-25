@@ -8,13 +8,40 @@ Deno.test({
   name: "HTTP_METHODS",
   fn() {
     const methods = [
-      "HEAD",
-      "OPTIONS",
+      "ACL",
+      "BIND",
+      "CHECKOUT",
+      "CONNECT",
+      "COPY",
+      "DELETE",
       "GET",
-      "PUT",
+      "HEAD",
+      "LINK",
+      "LOCK",
+      "M-SEARCH",
+      "MERGE",
+      "MKACTIVITY",
+      "MKCALENDAR",
+      "MKCOL",
+      "MOVE",
+      "NOTIFY",
+      "OPTIONS",
       "PATCH",
       "POST",
-      "DELETE",
+      "PROPFIND",
+      "PROPPATCH",
+      "PURGE",
+      "PUT",
+      "REBIND",
+      "REPORT",
+      "SEARCH",
+      "SOURCE",
+      "SUBSCRIBE",
+      "TRACE",
+      "UNBIND",
+      "UNLINK",
+      "UNLOCK",
+      "UNSUBSCRIBE",
     ] as const;
     for (const method of methods) {
       assert(HTTP_METHODS.includes(method));
@@ -28,5 +55,6 @@ Deno.test({
   fn() {
     assert(isHttpMethod("GET"));
     assert(!isHttpMethod("PUSH"));
+    assert(isHttpMethod("M-SEARCH"));
   },
 });
