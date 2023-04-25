@@ -161,12 +161,11 @@ supabase link --project-ref {{ supabase project ref }}
    `supabase/migrations`) to your remote Supabase account.
 
 ```sh
-supabase db push -p {{ supabase project pwd }}
+supabase db push
 ```
 
-The database tables should now be in your remote Supabase project with access
-policies configured. The policies restrict each user to only create, read,
-update, and delete their own data.
+The database tables should now be in your remote Supabase project with
+[Row-Level Security policies configured](https://supabase.com/docs/guides/auth/row-level-security).
 
 ### Authentication (Supabase)
 
@@ -178,14 +177,14 @@ In your [Supabase dashboard](https://app.supabase.com/projects):
 2. Go to `Authentication` > `Providers` > click `Email`
 3. Disable `Confirm email`
 
-**Supabase Production Environmental Variables**
+### Supabase Production Environmental Variables
 
-- `SERVICE_ROLE_KEY`: Dashboard Home -> Settings -> API -> API Settings/Project
-  API Keys -> service_role secret
-- `SUPABASE_ANON_KEY`: Dashboard Home -> Settings -> API -> API Settings/Project
-  API Keys -> anon public
-- `SUPABASE_API_URL`: Dashboard Home -> Settings -> API Settings/Project URL ->
-  URL
+The following can be found in Dashboard Home -> Settings -> API -> API
+Settings/Project API Keys
+
+- `SERVICE_ROLE_KEY` under `service_role secret`
+- `SUPABASE_ANON_KEY` under `anon public`
+- `SUPABASE_API_URL` under `URL`
 
 ### Payments (Stripe)
 
@@ -195,7 +194,7 @@ In order to use Stripe in production, you'll have to
 Once your Stripe account is activated, simply grab the production version of the
 Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
 
-## Automate Stripe Subscription Updates via Webhooks
+### Automate Stripe Subscription Updates via Webhooks
 
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
@@ -261,7 +260,7 @@ README.md
 ```
 
 A `docker-compose.yml` file will be needed to run the docker file on a VPS.
-Here’s what that file -- in your repo's root folder -- will look like:
+Here’s what that file in your repo's root folder will look like:
 
 ```yml
 version: '3'
