@@ -1,7 +1,8 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import type { SupabaseClient } from "@/utils/supabase.ts";
-import type { ItemWithCommentsCount } from "@/utils/item.ts";
+import type { Item } from "@/utils/item.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -14,20 +15,17 @@ import type { Database } from "@/utils/supabase_types.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
 
 interface ItemPageData extends State {
-  item: ItemWithCommentsCount;
+  item: Item;
   comments: Database["public"]["Tables"]["comments"]["Row"][];
 }
 
 async function getItem(
   supabaseClient: SupabaseClient,
-  id: ItemWithCommentsCount["id"],
+  id: Item["id"],
 ) {
   return await supabaseClient
     .from("items")
-    .select(`
-      *,
-      comments(count)
-    `)
+    .select()
     .eq("id", id)
     .single()
     .throwOnError()
@@ -36,7 +34,7 @@ async function getItem(
 
 async function getItemComments(
   supabaseClient: SupabaseClient,
-  id: ItemWithCommentsCount["id"],
+  id: Item["id"],
 ) {
   return await supabaseClient
     .from("comments")

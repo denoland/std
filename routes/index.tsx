@@ -11,10 +11,7 @@ import type { Item } from "@/utils/item.ts";
 export async function getItems(client: SupabaseClient) {
   return await client
     .from("items")
-    .select(`
-      *,
-      comments(count)
-    `)
+    .select()
     .throwOnError()
     .then(({ data }) => data) || [];
 }

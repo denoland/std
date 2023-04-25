@@ -1,4 +1,5 @@
-import type { ItemWithCommentsCount } from "@/utils/item.ts";
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import type { Item } from "@/utils/item.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -12,7 +13,7 @@ export function timeAgo(time: number | Date) {
   else return pluralize(~~(between / 86400), "day");
 }
 
-export default function ItemSummary(props: ItemWithCommentsCount) {
+export default function ItemSummary(props: Item) {
   return (
     <div class="py-2">
       <div>
@@ -28,7 +29,7 @@ export default function ItemSummary(props: ItemWithCommentsCount) {
         {pluralize(props.score, "point")} by {props.author_id}{" "}
         {timeAgo(new Date(props.created_at!))} ago •{" "}
         <a href={`/item/${props.id}`}>
-          {pluralize(props.comments[0].count, "comment")}
+          Comments
         </a>
       </div>
     </div>
