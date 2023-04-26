@@ -6,7 +6,7 @@ import { getPosts, Post } from "@/utils/posts.ts";
 import { SITE_NAME } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
-import { BASE_SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 
 interface BlogPageData extends State {
@@ -29,7 +29,7 @@ export default function BlogPage(props: PageProps<BlogPageData>) {
         href={props.url.href}
       />
       <Layout isLoggedIn={props.data.isLoggedIn}>
-        <main class={`${BASE_SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>
+        <main class={`${SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">Blog</h1>
           <div class="mt-8">
             {props.data.posts.map((post) => <PostCard post={post} />)}

@@ -1,11 +1,29 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { ComponentChild, ComponentChildren, JSX } from "preact";
 import {
-  BASE_BUTTON_STYLES,
-  BASE_SITE_WIDTH_STYLES,
+  BUTTON_STYLES,
+  NOTICE_STYLES,
   SITE_NAME,
+  SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
+
+function Notice() {
+  return (
+    <div class={`${NOTICE_STYLES} rounded-none`}>
+      <div class={`text-center px-8`}>
+        Deno Hunt powered by Deno SaaSKit is currently in beta. Check out
+        progress in the{" "}
+        <a
+          href="https://github.com/denoland/saaskit/issues/60"
+          class="underline"
+        >
+          roadmap
+        </a>.
+      </div>
+    </div>
+  );
+}
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
   active?: string;
@@ -34,7 +52,7 @@ function Header(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <header
       {...props}
-      class={`p-8 justify-between ${BASE_SITE_WIDTH_STYLES} flex z-10 ${
+      class={`p-8 justify-between ${SITE_WIDTH_STYLES} flex z-10 ${
         props.class ?? ""
       }`}
     >
@@ -50,7 +68,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <footer
       {...props}
-      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${BASE_SITE_WIDTH_STYLES} ${
+      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
       }`}
     >
@@ -71,7 +89,7 @@ export default function Layout(props: LayoutProps) {
   const headerNavItems = [
     {
       href: "/submit",
-      inner: <span class={BASE_BUTTON_STYLES}>Submit</span>,
+      inner: <span class={BUTTON_STYLES}>Submit</span>,
     },
     props.isLoggedIn
       ? {
@@ -108,6 +126,7 @@ export default function Layout(props: LayoutProps) {
 
   return (
     <div class="flex flex-col min-h-screen">
+      <Notice />
       <Header>
         <Nav items={headerNavItems} />
       </Header>

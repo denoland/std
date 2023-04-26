@@ -2,7 +2,7 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
-import { BASE_BUTTON_STYLES, BASE_INPUT_STYLES } from "@/utils/constants.ts";
+import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { SupabaseClient } from "@/utils/supabase.ts";
 import type { Database } from "@/utils/supabase_types.ts";
 import type { State } from "@/routes/_middleware.ts";
@@ -49,20 +49,20 @@ function Form() {
   return (
     <form class=" space-y-2" method="post">
       <input
-        class={BASE_INPUT_STYLES}
+        class={INPUT_STYLES}
         type="text"
         name="title"
         required
         placeholder="Title"
       />
       <input
-        class={BASE_INPUT_STYLES}
+        class={INPUT_STYLES}
         type="url"
         name="url"
         required
         placeholder="URL"
       />
-      <button class={`${BASE_BUTTON_STYLES} block w-full`} type="submit">
+      <button class={`${BUTTON_STYLES} block w-full`} type="submit">
         Submit
       </button>
     </form>

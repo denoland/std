@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { type SupabaseClient } from "@/utils/supabase.ts";
-import { BASE_SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { Database } from "@/utils/supabase_types.ts";
@@ -65,7 +65,7 @@ export interface ItemListProps {
 
 export function ItemList(props: ItemListProps) {
   return (
-    <div class={`${BASE_SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
+    <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
       {props.items.map((item) => <ItemSummary {...item} />)}
     </div>
   );
