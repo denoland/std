@@ -7,9 +7,9 @@ import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import {
-  BASE_BUTTON_STYLES,
-  BASE_INPUT_STYLES,
-  BASE_SITE_WIDTH_STYLES,
+  BUTTON_STYLES,
+  INPUT_STYLES,
+  SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import type { Database } from "@/utils/supabase_types.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
@@ -112,20 +112,20 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
       <Head title={props.data.item.title} />
-      <Layout>
-        <div class={`${BASE_SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
+      <Layout isLoggedIn={props.data.isLoggedIn}>
+        <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
           <ItemSummary {...props.data.item} />
           <div class="divide-y">
             {props.data.comments.map((comment) => <Comment {...comment} />)}
           </div>
           <form method="post">
             <textarea
-              class={BASE_INPUT_STYLES}
+              class={INPUT_STYLES}
               type="text"
               name="text"
               required
             />
-            <button type="submit" class={BASE_BUTTON_STYLES}>Comment</button>
+            <button type="submit" class={BUTTON_STYLES}>Comment</button>
           </form>
         </div>
       </Layout>

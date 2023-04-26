@@ -18,7 +18,7 @@ export async function createItem(
 }
 
 export const handler: Handlers<State, State> = {
-  async GET(req, ctx) {
+  GET(req, ctx) {
     if (!ctx.state.session) {
       return new Response(null, {
         headers: {
@@ -29,7 +29,7 @@ export const handler: Handlers<State, State> = {
       });
     }
 
-    return await ctx.render(ctx.state);
+    return ctx.render(ctx.state);
   },
   async POST(req, ctx) {
     const form = await req.formData();
@@ -41,7 +41,7 @@ export const handler: Handlers<State, State> = {
     // @ts-ignore Fix at some point
     await createItem(ctx.state.supabaseClient, item);
 
-    return ctx.render();
+    return ctx.render(ctx.state);
   },
 };
 
