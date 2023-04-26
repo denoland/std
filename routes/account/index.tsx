@@ -4,7 +4,7 @@ import Head from "@/components/Head.tsx";
 import type { Database } from "@/utils/supabase_types.ts";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
-import { BASE_BUTTON_STYLES } from "../../utils/constants.ts";
+import { BUTTON_STYLES } from "../../utils/constants.ts";
 
 interface AccountPageData extends AccountState {
   customer: Database["public"]["Tables"]["customers"]["Row"];
@@ -50,7 +50,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
           </ul>
           <a
             href="/logout"
-            class={`${BASE_BUTTON_STYLES} block text-center mt-8`}
+            class={`${BUTTON_STYLES} block text-center mt-8`}
           >
             Logout
           </a>
