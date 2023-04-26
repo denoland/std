@@ -132,16 +132,69 @@ SaaSKit comes with `primary` and `secondary` colors predefined within
 
 ## Deploying to Production
 
-### Authentication
+This section assumes that a
+[local development environment](#getting-started-locally) has been set up.
 
-TODO
+### Database (Supabase)
 
-### Customer Portal Branding (Stripe)
+We'll use the Supabase CLI to migrate your local database to Supabase's remote
+production servers.
 
-[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
-as the user will be taken to Stripe's checkout page when they upgrade.
+1. Login with the Supabase CLI
 
-### Webhooks for Subscriptions (Stripe)
+```sh
+supabase login
+```
+
+2. Run the Supabase link command to setup a local-remote project link
+
+- Get project-ref from the last part of the Supabase SaaSKit project URL:
+  https://app.supabase.com/project/{{ saaskit project-ref }}
+
+- Run `supabase link`:
+
+```sh
+supabase link --project-ref {{ supabase project ref }}
+```
+
+3. Run `supabase db push` to push the migration SQL (found in
+   `supabase/migrations`) to your remote Supabase account.
+
+```sh
+supabase db push
+```
+
+The database tables should now be in your remote Supabase project with
+[Row-Level Security policies configured](https://supabase.com/docs/guides/auth/row-level-security).
+
+### Authentication (Supabase)
+
+These steps enable using email with Supabase Auth.
+
+In your [Supabase dashboard](https://app.supabase.com/projects):
+
+1. Go to your project
+2. Go to `Authentication` > `Providers` > click `Email`
+3. Disable `Confirm email`
+
+### Supabase Production Environmental Variables
+
+The following can be found in Dashboard Home -> Settings -> API -> API
+Settings/Project API Keys
+
+- `SERVICE_ROLE_KEY` under `service_role secret`
+- `SUPABASE_ANON_KEY` under `anon public`
+- `SUPABASE_API_URL` under `URL`
+
+### Payments (Stripe)
+
+In order to use Stripe in production, you'll have to
+[activate your Stripe account](https://stripe.com/docs/account/activate).
+
+Once your Stripe account is activated, simply grab the production version of the
+Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
+
+### Automate Stripe Subscription Updates via Webhooks
 
 Keep your `customers` database up to date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
@@ -150,13 +203,295 @@ Keep your `customers` database up to date with billing changes by
 - Listen to `Events on your account`
 - Select `customer.subscription.created` and `customer.subscription.deleted`
 
-### Deno Deploy
+### Stripe Production Environmental Variables
 
-TODO
+- `STRIPE_SECRET_KEY`: Dashboard Home (Right Side of Page) -> Secret Key (only
+  revealed once)
+- `STRIPE_WEBHOOK_SECRET`: Dashboard Home -> Developers (right side of page) ->
+  Create webhook -> Click Add Endpoint
+  - After Creation, redirected to new webhook page -> Signing Secret -> Reveal
+- `STRIPE_PREMIUM_PLAN_PRICE_ID`: (in constants.ts): Dashboard -> Products ->
+  Premium Tier -> Pricing/API ID
 
-### Any VPS via Docker
+### Stripe Customer Portal Branding
 
-TODO
+[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
+as the user will be taken to Stripe's checkout page when they upgrade to a
+subscription.
+
+## Using Docker to Deploy to any VPS
+
+[Docker](https://docker.com) makes it easy to deploy and run your Deno app to
+any virtual private server (VPS). This section will show you how to do that with
+AWS Lightsail and Digital Ocean.
+
+### Setting up Docker
+
+[Install Docker](https://docker.com) on your machine, which should also install
+[the `docker` CLI](https://docs.docker.com/engine/reference/commandline/cli/).
+
+Create an account on [Docker Hub](https://hub.docker.com), a registry for Docker
+container images.
+
+Create a `Dockerfile` in the root of your repo:
+
+```docker
+FROM denoland/deno:1.32.4
+
+EXPOSE 8000
+
+WORKDIR /app
+
+ADD . /app
+
+# Add dependencies to the container's Deno cache
+RUN deno cache main.ts --import-map=import_map.json
+CMD ["run", "--allow-run", "--allow-write", "--allow-read", "--allow-env", "--allow-net", "main.ts"]
+```
+
+Create a `.dockerignore` file in the root folder of your repo to make sure
+certain files are not deployed to the docker container:
+
+```
+README.md
+.example.env
+.vscode/
+.github/
+```
+
+A `docker-compose.yml` file will be needed to run the docker file on a VPS.
+Here’s what that file in your repo's root folder will look like:
+
+```yml
+version: '3'
+
+services:
+  web:
+    build: .
+    container_name: deno-sasskit
+    image: deno-image
+   environment:
+     - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+     - SUPABASE_API_URL=${SUPABASE_API_URL}
+     - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+     - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+     - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    ports:
+      - "8000:8000"
+```
+
+### Automatic Deployment with Deno Deploy
+
+These steps show you how to deploy your SaaS app close to your users at the edge
+with [Deno Deploy](https://deno.com/deploy).
+
+1. Clone this repository for your SaaSKit project.
+
+2. Sign into [Deno Deploy](https://dash.deno.com) with your GitHub account.
+
+3. Select your GitHub organization or user, repository, and branch
+
+4. Select "Automatic" deployment mode and `main.ts` as the entry point
+
+5. Click "Link", which will start the deployment.
+
+6. Once the deployment is complete, click on "Settings" and add the production
+   environmental variables, then hit "Save"
+
+You should be able to visit your newly deployed SaaS.
+
+### Deno Deploy via GitHub Action
+
+You can also choose to deploy to
+[Deno Deploy via a GitHub Action](https://github.com/denoland/deployctl/blob/main/action/README.md),
+which offers more flexibility. For instance, with the GitHub Action, you could:
+
+- Add a build step
+- Run `deno lint` to lint your code
+- Run `deno test` to run automated unit tests
+
+1. Create
+   [a new, empty project from the Deno Deploy dashboard](https://dash.deno.com/new).
+   Set a name for your project.
+
+2. Add the GitHub Action.
+
+[GitHub Actions](https://docs.github.com/en/actions) are configured using a
+`.yml` file placed in the `.github/workflows` folder of your repo. Here's an
+example `.yml` file to deploy to Deno Deploy. Be sure to update the
+`YOUR_DENO_DEPLOY_PROJECT_NAME` with one that you've set in Deno Deploy.
+
+```yml
+# Github action to deploy this project to Deno Deploy
+name: Deploy
+on: [push]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Needed for auth with Deno Deploy
+      contents: read  # Needed to clone the repository
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Install Deno
+        uses: denoland/setup-deno@main
+        # If you need to install a specific Deno version
+        # with:
+        #   deno-version: 1.32.4
+
+## You would put your building, linting, testing and other CI/CD steps here
+
+## Finally, deploy
+      - name: Upload to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: YOUR_DENO_DEPLOY_PROJECT_NAME
+          entrypoint: main.ts
+          # root: dist
+          import-map: import_map.json
+          exclude: .git/** .gitignore .vscode/** .github/** README.md .env .example.env
+```
+
+3. Commit and push your code to GitHub. This should trigger the GitHub Action.
+   When the action successfully completes, your app should be available on Deno
+   Deploy.
+
+### Deploying to Amazon Lightsail with Docker
+
+In order to deploy your Docker image to Amazon Lightsail you need to create an
+AWS account if you don’t already have one.
+
+1. The deployment process starts with a local Docker image build which requires
+   that the `Dockerfile` and `docker-compose.yml` have beed created
+   [as above](#setting-up-docker):
+
+```sh
+docker compose -f docker-compose.yml build
+```
+
+2. Tag your image locally using the following command:
+
+```sh
+docker tag deno-image {{ username }}/deno-saaskit-aws
+```
+
+The name `deno-image` comes from your `docker-compose.yml` file.
+
+3. The tagged image needs to be registered on
+   [Docker Hub](https://hub.docker.com). In order to do that, sign into your Hub
+   account (or create one if you don’t have one).
+
+4. Push the tagged image to Docker Hub. We have chosen the name
+   `deno-saaskit-aws` which you can change. Substitute `{{username}}` with your
+   Docker Hub username.
+
+```sh
+docker push {{ username }}/deno-saaskit-aws
+```
+
+You should then be able to see your image on Docker Hub where it can be picked
+up by the AWS container service.
+
+5. Go to the
+   [AWS LIghtsail Create a Container Service landing page](https://lightsail.aws.amazon.com/ls/webapp/create/container-service).
+   On that page you can choose a server location and service capacity or keep
+   the defaults.
+
+- Click on “Setup deployment” and choose “Specify a custom deployment” which
+  will result in the display of a form. Here’s what you need to fill out:
+
+  - _Container name_: Give it a name of your choosing.
+  - _Image_: Use the Docker Hub name {{username}}/deno-saaskit-aws.
+  - _Open Ports_: Click “Add open ports” and then enter “8000” as the port.
+  - _Environmental Variables_: Enter the name and values of all production
+    environmental variables from `.env`.
+  - _Public Endpoint_: Select the container name you just entered.
+
+Under “Identify your service”, enter a container service name of your choosing.
+It will become part of the app's domain.
+
+6. Click the “Create Container Service” button. It will take some time for the
+   deployment to complete. You will see a "Deployed” message when it is
+   finished.
+
+After the deployment is complete, click on the public address link and you'll
+see your app running in the browser.
+
+### Deploying to Digital Ocean with Docker
+
+To deploy your image to Digital Ocean, you will need A
+[Digital Ocean account](https://www.digitalocean.com/) and the
+[`doctl` CLI](https://docs.digitalocean.com/reference/doctl/how-to/install/)
+installed and validated locally.
+
+1. Build the Docker image locally and tag it for a Digital Ocean Container
+   Registry. This requires that you have created `Dockerfile` and
+   `docker-compose.yml` files [as instructed above](#setting-up-docker)
+
+```sh
+# Local Docker build
+docker compose -f docker-compose.yml build
+```
+
+```sh
+# Tag for DO container registry (separate from Docker Hub)
+docker tag deno-image registry.digitalocean.com/deno-saaskit/deno-image:new
+```
+
+2. Push your tagged image to your DO container registry.
+
+- [Create an API token with `doctl`](https://docs.digitalocean.com/reference/doctl/how-to/install/#step-2-create-an-api-token)
+  and
+  [validate that you can authenticate with the CLI](https://docs.digitalocean.com/reference/doctl/how-to/install/#step-4-validate-that-doctl-is-working).
+
+- Login using `doctl` and the API token you just created:
+
+```sh
+doctl registry login -t {{ API Access Token }}
+```
+
+- Create a Digital Ocean Container Registry named `deno-saaskit`:
+
+```sh
+doctl registry create deno-saaskit
+```
+
+Alternatively, you can
+[create the container registry online](https://docs.digitalocean.com/products/container-registry/quickstart/).
+
+- Push the image to Digital Ocean’s registry (make sure you are logged in using
+  `doctl registry login`).
+
+```sh
+docker push registry.digitalocean.com/deno-saaskit/deno-image:new
+```
+
+You should now be able to see your image in the
+[DO Container Registry](https://cloud.digitalocean.com/registry).
+
+3. Once the `deno-image` has been pushed to the Digital Ocean registry we can
+   run it in a
+   [Digital Ocean Droplet](https://www.digitalocean.com/products/droplets). Go
+   to your
+   [Digital Ocean project page](https://cloud.digitalocean.com/projects/) and
+   click the 'Create' button and select 'Droplets'.
+
+4. When the droplet is created, use the `console` link on your droplet page to
+   SSH to the droplet VM or
+   [use SSH locally](https://docs.digitalocean.com/products/droplets/how-to/connect-with-ssh/)
+   run this command:
+
+```sh
+docker run -d --restart always -it -p 8000:8000 --name deno-image registry.digitalocean.com/deno-on-digital-ocean/deno-image:new
+```
+
+The URL will be visible once the command completes. Use the droplet's IP address
+with port 8000 to browse to your application deployed on Digital Ocean.
 
 ## Contributing
 

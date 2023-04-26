@@ -2,14 +2,14 @@
 import Head from "@/components/Head.tsx";
 import { ErrorPageProps } from "$fresh/server.ts";
 import Logo from "@/components/Logo.tsx";
-import { BASE_SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 
 export default function Error500Page(props: ErrorPageProps) {
   return (
     <>
       <Head title="Server error" />
       <div
-        class={`h-screen flex flex-col justify-center ${BASE_SITE_WIDTH_STYLES} p-4 text-center space-y-4`}
+        class={`h-screen flex flex-col justify-center ${SITE_WIDTH_STYLES} p-4 text-center space-y-4`}
       >
         <Logo />
         <h1 class="text-4xl inline-block font-bold">Server error</h1>

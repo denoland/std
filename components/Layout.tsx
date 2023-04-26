@@ -1,6 +1,10 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { ComponentChild, ComponentChildren, JSX } from "preact";
-import { BASE_SITE_WIDTH_STYLES, SITE_NAME } from "@/utils/constants.ts";
+import {
+  BUTTON_STYLES,
+  SITE_NAME,
+  SITE_WIDTH_STYLES,
+} from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
@@ -30,7 +34,7 @@ function Header(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <header
       {...props}
-      class={`p-8 justify-between ${BASE_SITE_WIDTH_STYLES} flex z-10 ${
+      class={`p-8 justify-between ${SITE_WIDTH_STYLES} flex z-10 ${
         props.class ?? ""
       }`}
     >
@@ -46,7 +50,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <footer
       {...props}
-      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${BASE_SITE_WIDTH_STYLES} ${
+      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
       }`}
     >
@@ -60,34 +64,31 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
+  isLoggedIn: boolean;
 }
 
 export default function Layout(props: LayoutProps) {
-  /** @todo Make dynamic */
   const headerNavItems = [
+    {
+      href: "/submit",
+      inner: <span class={BUTTON_STYLES}>Submit</span>,
+    },
+    props.isLoggedIn
+      ? {
+        href: "/account",
+        inner: "Account",
+      }
+      : {
+        href: "/login",
+        inner: "Login",
+      },
+  ];
+
+  const footerNavItems = [
     {
       href: "/blog",
       inner: "Blog",
     },
-    {
-      href: "/submit",
-      inner: "Submit",
-    },
-    {
-      href: "/account",
-      inner: "Account",
-    },
-    {
-      href: "/login",
-      inner: "Login",
-    },
-    {
-      href: "/logout",
-      inner: "Logout",
-    },
-  ];
-
-  const footerNavItems = [
     {
       inner: "Source code",
       href: "https://github.com/denoland/saaskit",

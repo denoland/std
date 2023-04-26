@@ -11,6 +11,7 @@ export interface State {
   createOrGetCustomer: () => Promise<
     Database["public"]["Tables"]["customers"]["Row"]
   >;
+  isLoggedIn: boolean;
 }
 
 export async function handler(
@@ -26,6 +27,7 @@ export async function handler(
   ctx.state.supabaseClient = supabaseClient;
   ctx.state.createOrGetCustomer = async () =>
     await createOrGetCustomer(supabaseClient, stripe);
+  ctx.state.isLoggedIn = Boolean(session);
 
   const response = await ctx.next();
   /**

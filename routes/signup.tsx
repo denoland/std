@@ -5,7 +5,7 @@ import AuthForm from "@/components/AuthForm.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
-import { BASE_NOTICE_STYLES } from "@/utils/constants.ts";
+import { NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
@@ -57,7 +57,7 @@ export default function SignupPage(props: PageProps) {
             <Logo class="mb-8" />
           </a>
           {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
-            <div class={BASE_NOTICE_STYLES}>{errorMessage}</div>
+            <div class={NOTICE_STYLES}>{errorMessage}</div>
           )}
           <AuthForm type="Signup" />
           <hr class="my-4" />
