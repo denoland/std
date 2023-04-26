@@ -62,8 +62,8 @@ enable_confirmations = false
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin`, `notion`, `twitch`,
 # `twitter`, `slack`, `spotify`, `workos`, `zoom`.
 [auth.external.github]
-enabled = true
-client_id = "a569dc05b642ef3daa8a"
+enabled = false
+client_id = ""
 secret = ""
 # Overrides the default auth redirectUrl.
 redirect_uri = ""
