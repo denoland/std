@@ -2,10 +2,28 @@
 import type { ComponentChild, ComponentChildren, JSX } from "preact";
 import {
   BUTTON_STYLES,
+  NOTICE_STYLES,
   SITE_NAME,
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
+
+function Notice() {
+  return (
+    <div class={`${NOTICE_STYLES} rounded-none`}>
+      <div class={`text-center px-8`}>
+        Deno Hunt powered by Deno SaaSKit is currently in beta. Check out
+        progress in the{" "}
+        <a
+          href="https://github.com/denoland/saaskit/issues/60"
+          class="underline"
+        >
+          roadmap
+        </a>.
+      </div>
+    </div>
+  );
+}
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
   active?: string;
@@ -108,6 +126,7 @@ export default function Layout(props: LayoutProps) {
 
   return (
     <div class="flex flex-col min-h-screen">
+      <Notice />
       <Header>
         <Nav items={headerNavItems} />
       </Header>
