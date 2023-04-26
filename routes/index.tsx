@@ -8,6 +8,9 @@ import type { Database } from "@/utils/supabase_types.ts";
 import type { State } from "./_middleware.ts";
 
 type Item = Database["public"]["Tables"]["items"]["Row"];
+interface HomePageData extends State {
+  items: Item[];
+}
 
 export async function getItems(client: SupabaseClient) {
   return await client
@@ -17,10 +20,10 @@ export async function getItems(client: SupabaseClient) {
     .then(({ data }) => data) || [];
 }
 
-export const handler: Handlers<Item[], State> = {
+export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
     const items = await getItems(ctx.state.supabaseClient);
-    return ctx.render(items);
+    return ctx.render({ ...ctx.state, items });
   },
 };
 
@@ -68,12 +71,12 @@ export function ItemList(props: ItemListProps) {
   );
 }
 
-export default function HomePage(props: PageProps<Item[]>) {
+export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
       <Head />
-      <Layout>
-        <ItemList items={props.data} />
+      <Layout isLoggedIn={props.data.isLoggedIn}>
+        <ItemList items={props.data.items} />
       </Layout>
     </>
   );

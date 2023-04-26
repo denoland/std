@@ -1,6 +1,10 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { ComponentChild, ComponentChildren, JSX } from "preact";
-import { BASE_SITE_WIDTH_STYLES, SITE_NAME } from "@/utils/constants.ts";
+import {
+  BASE_BUTTON_STYLES,
+  BASE_SITE_WIDTH_STYLES,
+  SITE_NAME,
+} from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
@@ -60,34 +64,31 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
+  isLoggedIn: boolean;
 }
 
 export default function Layout(props: LayoutProps) {
-  /** @todo Make dynamic */
   const headerNavItems = [
+    {
+      href: "/submit",
+      inner: <span class={BASE_BUTTON_STYLES}>Submit</span>,
+    },
+    props.isLoggedIn
+      ? {
+        href: "/account",
+        inner: "Account",
+      }
+      : {
+        href: "/login",
+        inner: "Login",
+      },
+  ];
+
+  const footerNavItems = [
     {
       href: "/blog",
       inner: "Blog",
     },
-    {
-      href: "/submit",
-      inner: "Submit",
-    },
-    {
-      href: "/account",
-      inner: "Account",
-    },
-    {
-      href: "/login",
-      inner: "Login",
-    },
-    {
-      href: "/logout",
-      inner: "Logout",
-    },
-  ];
-
-  const footerNavItems = [
     {
       inner: "Source code",
       href: "https://github.com/denoland/saaskit",
