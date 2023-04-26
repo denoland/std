@@ -1,9 +1,9 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { ComponentChild, ComponentChildren, JSX } from "preact";
 import {
-  BASE_BUTTON_STYLES,
-  BASE_SITE_WIDTH_STYLES,
+  BUTTON_STYLES,
   SITE_NAME,
+  SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
 
@@ -34,7 +34,7 @@ function Header(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <header
       {...props}
-      class={`p-8 justify-between ${BASE_SITE_WIDTH_STYLES} flex z-10 ${
+      class={`p-8 justify-between ${SITE_WIDTH_STYLES} flex z-10 ${
         props.class ?? ""
       }`}
     >
@@ -50,7 +50,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <footer
       {...props}
-      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${BASE_SITE_WIDTH_STYLES} ${
+      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
       }`}
     >
@@ -71,7 +71,7 @@ export default function Layout(props: LayoutProps) {
   const headerNavItems = [
     {
       href: "/submit",
-      inner: <span class={BASE_BUTTON_STYLES}>Submit</span>,
+      inner: <span class={BUTTON_STYLES}>Submit</span>,
     },
     props.isLoggedIn
       ? {
