@@ -601,7 +601,7 @@ export async function serve(
     once: true,
   });
 
-  const s = server.listenAndServe();
+  const s = await server.listenAndServe();
 
   port = (server.addrs[0] as Deno.NetAddr).port;
 
@@ -611,7 +611,7 @@ export async function serve(
     console.log(`Listening on http://${hostnameForDisplay(hostname)}:${port}/`);
   }
 
-  return await s;
+  return s;
 }
 
 export interface ServeTlsInit extends ServeInit {
