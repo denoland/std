@@ -12,7 +12,7 @@ export interface InitItemValue {
 export async function createItem(initItem: InitItemValue) {
   const itemId = crypto.randomUUID();
 
-  const itemKey = ["items", crypto.randomUUID()];
+  const itemKey = ["items", itemId];
   const itemsByUserKey = ["items_by_user", initItem.userId, itemId];
 
   const item: ItemValue = { ...initItem, score: 0, createdAt: new Date() };
