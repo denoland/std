@@ -132,9 +132,8 @@ export async function setUserSubscription(
     .set(key, { ...userRes.value, isSubscribed } as UserValue)
     .commit();
 
-  if (res !== null) {
-    /** @todo */
-    throw new Error();
+  if (res === null) {
+    throw new TypeError("Atomic operation has failed");
   }
 }
 
