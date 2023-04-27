@@ -1,8 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const kv = await Deno.openKv();
 
-const versionstamp = null;
-
 export interface InitItemValue {
   userId: string;
   title: string;
@@ -19,8 +17,8 @@ export async function createItem(initItem: InitItemValue) {
 
     const item: ItemValue = { ...initItem, score: 0, createdAt: new Date() };
     res = await kv.atomic()
-      .check({ key: itemKey, versionstamp })
-      .check({ key: itemsByUserKey, versionstamp })
+      .check({ key: itemKey, versionstamp: null })
+      .check({ key: itemsByUserKey, versionstamp: null })
       .set(itemKey, item)
       .set(itemsByUserKey, item)
       .commit();
@@ -69,8 +67,8 @@ export async function createComment(initComment: InitCommentValue) {
 
     const comment: CommentValue = { ...initComment, createdAt: new Date() };
     res = await kv.atomic()
-      .check({ key: commentsByUserKey, versionstamp })
-      .check({ key: commentsByItemKey, versionstamp })
+      .check({ key: commentsByUserKey, versionstamp: null })
+      .check({ key: commentsByItemKey, versionstamp: null })
       .set(commentsByUserKey, comment)
       .set(commentsByItemKey, comment)
       .commit();
@@ -110,8 +108,8 @@ export async function createUser(initUser: InitUserValue) {
   const user: UserValue = { ...initUser, isSubscribed: false };
 
   const res = await kv.atomic()
-    .check({ key: usersKey, versionstamp })
-    .check({ key: stripeCustomersKey, versionstamp })
+    .check({ key: usersKey, versionstamp: null })
+    .check({ key: stripeCustomersKey, versionstamp: null })
     .set(usersKey, user)
     .set(stripeCustomersKey, user.id)
     .commit();
