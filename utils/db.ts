@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const kv = await Deno.openKv();
 
-const versionstamp = null;
+const versionstamp = "2023-04-28";
 
 export interface InitItemValue {
   userId: string;
@@ -10,22 +10,22 @@ export interface InitItemValue {
 }
 
 export async function createItem(initItem: InitItemValue) {
-  const itemId = crypto.randomUUID();
+  let res = null;
+  while (res === null) {
+    const itemId = crypto.randomUUID();
 
-  const itemKey = ["items", itemId];
-  const itemsByUserKey = ["items_by_user", initItem.userId, itemId];
+    const itemKey = ["items", itemId];
+    const itemsByUserKey = ["items_by_user", initItem.userId, itemId];
 
-  const item: ItemValue = { ...initItem, score: 0, createdAt: new Date() };
-  const res = await kv.atomic()
-    .check({ key: itemKey, versionstamp })
-    .check({ key: itemsByUserKey, versionstamp })
-    .set(itemKey, item)
-    .set(itemsByUserKey, item)
-    .commit();
-
-  if (res === null) {
-    throw new TypeError("Item with ID or for user already exists");
+    const item: ItemValue = { ...initItem, score: 0, createdAt: new Date() };
+    res = await kv.atomic()
+      .check({ key: itemKey, versionstamp })
+      .check({ key: itemsByUserKey, versionstamp })
+      .set(itemKey, item)
+      .set(itemsByUserKey, item)
+      .commit();
   }
+
   return res;
 }
 
@@ -52,25 +52,28 @@ export interface InitCommentValue {
 }
 
 export async function createComment(initComment: InitCommentValue) {
-  const commentId = crypto.randomUUID();
+  let res = null;
+  while (res === null) {
+    const commentId = crypto.randomUUID();
 
-  const commentsByUserKey = [
-    "comments_by_users",
-    initComment.userId,
-    commentId,
-  ];
-  const commentsByItemKey = ["comments_by_item", initComment.itemId, commentId];
+    const commentsByUserKey = [
+      "comments_by_users",
+      initComment.userId,
+      commentId,
+    ];
+    const commentsByItemKey = [
+      "comments_by_item",
+      initComment.itemId,
+      commentId,
+    ];
 
-  const comment: CommentValue = { ...initComment, createdAt: new Date() };
-  const res = await kv.atomic()
-    .check({ key: commentsByUserKey, versionstamp })
-    .check({ key: commentsByItemKey, versionstamp })
-    .set(commentsByUserKey, comment)
-    .set(commentsByItemKey, comment)
-    .commit();
-
-  if (res === null) {
-    throw new TypeError("Comment with ID for item or user already exists");
+    const comment: CommentValue = { ...initComment, createdAt: new Date() };
+    res = await kv.atomic()
+      .check({ key: commentsByUserKey, versionstamp })
+      .check({ key: commentsByItemKey, versionstamp })
+      .set(commentsByUserKey, comment)
+      .set(commentsByItemKey, comment)
+      .commit();
   }
 
   return res;
@@ -98,12 +101,19 @@ export interface InitUserValue {
 }
 
 export async function createUser(initUser: InitUserValue) {
-  const key = ["users", initUser.id];
+  const usersKey = ["users", initUser.id];
+  const stripeCustomersKey = [
+    "user_ids_by_stripe_customer",
+    initUser.stripeCustomerId,
+  ];
+
   const user: UserValue = { ...initUser, isSubscribed: false };
 
   const res = await kv.atomic()
-    .check({ key, versionstamp })
-    .set(key, user)
+    .check({ key: usersKey, versionstamp })
+    .check({ key: stripeCustomersKey, versionstamp })
+    .set(usersKey, user)
+    .set(stripeCustomersKey, user.id)
     .commit();
 
   if (res === null) {
@@ -111,11 +121,12 @@ export async function createUser(initUser: InitUserValue) {
   }
 }
 
-export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  const iter = kv.list<UserValue>({ prefix: ["users"] });
-  for await (const res of iter) {
-    if (res.value.stripeCustomerId === stripeCustomerId) return res;
-  }
+export async function getUserIdByStripeCustomerId(stripeCustomerId: string) {
+  const res = await kv.get<UserValue["id"]>([
+    "user_ids_by_stripe_customer",
+    stripeCustomerId,
+  ]);
+  return res.value;
 }
 
 export async function setUserSubscription(
