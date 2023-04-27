@@ -17,7 +17,10 @@ template for building your SaaS quickly and easily.
 - User authentication with [Supabase Auth](https://supabase.com/auth), including
   email/password and OAuth flows.
 - Session management
-- Database management with [Deno KV](https://deno.com/manual/runtime/kv).
+- Database management with [Deno KV](https://deno.com/manual/runtime/kv), which
+  provides zero config durable data storage. _Prefer using Supabase for data
+  storage?
+  [Check out this version of SaaSKit](https://github.com/denoland/saaskit/tree/3b1b14a97eef8859596015b22557d575d3b63c09)._
 - Billing management with [Stripe](https://stripe.com/).
 - [Fresh](https://fresh.deno.dev/) as the web framework and
   [Tailwind CSS](https://tailwindcss.com/) as the CSS framework.
