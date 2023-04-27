@@ -66,10 +66,9 @@ supabase start
 
 This will automatically configure the database tables and their settings for us.
 
-2. Copy the values of the printed Supabase `API URL`, `anon key`, and
-   `service_role key` variables into the environmental variables in your `.env`
-   file as `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY`,
-   respectively.
+2. Copy the values of the printed Supabase `API URL` and `anon key` variables
+   into the environmental variables in your `.env` file as `SUPABASE_URL` and
+   `SUPABASE_ANON_KEY`, respectively.
 
 ### Payments and Subscriptions (Stripe)
 
@@ -182,7 +181,6 @@ In your [Supabase dashboard](https://app.supabase.com/projects):
 The following can be found in Dashboard Home -> Settings -> API -> API
 Settings/Project API Keys
 
-- `SERVICE_ROLE_KEY` under `service_role secret`
 - `SUPABASE_ANON_KEY` under `anon public`
 - `SUPABASE_API_URL` under `URL`
 
