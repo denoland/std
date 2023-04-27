@@ -26,7 +26,7 @@ export default function ItemSummary(props: Deno.KvEntry<ItemValue>) {
         </span>
       </div>
       <div class="text-gray-500">
-        {pluralize(props.value.score, "point")} by {props.value.authorId}{" "}
+        {pluralize(props.value.score, "point")} by {props.value.userId}{" "}
         {timeAgo(new Date(props.value.createdAt))} ago •{" "}
         <a href={`/item/${props.key.at(-1)}`}>
           Comments

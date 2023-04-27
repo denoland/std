@@ -3,13 +3,14 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/utils/constants.ts";
 import type { AccountState } from "./_middleware.ts";
+import { getUser } from "@/utils/db.ts";
 
 export const handler: Handlers<null, AccountState> = {
   async GET(req, ctx) {
-    const customer = await ctx.state.createOrGetCustomer();
+    const user = await getUser(ctx.state.session.user.id);
     const { url } = await stripe.checkout.sessions.create({
       success_url: new URL(req.url).origin + "/account",
-      customer: customer.stripe_customer_id!,
+      customer: user.value?.stripeCustomerId,
       line_items: [
         {
           price: STRIPE_PREMIUM_PLAN_PRICE_ID,

@@ -4,7 +4,7 @@ export const kv = await Deno.openKv();
 const versionstamp = null;
 
 export interface InitItemValue {
-  authorId: string;
+  userId: string;
   title: string;
   url: string;
 }
@@ -13,18 +13,18 @@ export async function createItem(initItem: InitItemValue) {
   const itemId = crypto.randomUUID();
 
   const itemKey = ["items", crypto.randomUUID()];
-  const itemsByAuthorKey = ["items_by_author", initItem.authorId, itemId];
+  const itemsByUserKey = ["items_by_user", initItem.userId, itemId];
 
   const item: ItemValue = { ...initItem, score: 0, createdAt: new Date() };
   const res = await kv.atomic()
     .check({ key: itemKey, versionstamp })
-    .check({ key: itemsByAuthorKey, versionstamp })
+    .check({ key: itemsByUserKey, versionstamp })
     .set(itemKey, item)
-    .set(itemsByAuthorKey, item)
+    .set(itemsByUserKey, item)
     .commit();
 
   if (res === null) {
-    throw new TypeError("Item with ID or for author already exists");
+    throw new TypeError("Item with ID or for user already exists");
   }
   return res;
 }
@@ -46,7 +46,7 @@ export async function getItem(id: string) {
 }
 
 export interface InitCommentValue {
-  authorId: string;
+  userId: string;
   itemId: string;
   text: string;
 }
@@ -54,23 +54,23 @@ export interface InitCommentValue {
 export async function createComment(initComment: InitCommentValue) {
   const commentId = crypto.randomUUID();
 
-  const commentsByAuthorKey = [
-    "comments_by_authors",
-    initComment.authorId,
+  const commentsByUserKey = [
+    "comments_by_users",
+    initComment.userId,
     commentId,
   ];
   const commentsByItemKey = ["comments_by_item", initComment.itemId, commentId];
 
   const comment: CommentValue = { ...initComment, createdAt: new Date() };
   const res = await kv.atomic()
-    .check({ key: commentsByAuthorKey, versionstamp })
+    .check({ key: commentsByUserKey, versionstamp })
     .check({ key: commentsByItemKey, versionstamp })
-    .set(commentsByAuthorKey, comment)
+    .set(commentsByUserKey, comment)
     .set(commentsByItemKey, comment)
     .commit();
 
   if (res === null) {
-    throw new TypeError("Comment with ID for item or author already exists");
+    throw new TypeError("Comment with ID for item or user already exists");
   }
 
   return res;
@@ -90,4 +90,58 @@ export async function getItemComments(
   const comments = [];
   for await (const res of iter) comments.push(res);
   return comments;
+}
+
+export interface InitUserValue {
+  id: string;
+  stripeCustomerId: string;
+}
+
+export async function createUser(initUser: InitUserValue) {
+  const key = ["users", initUser.id];
+  const user: UserValue = { ...initUser, isSubscribed: false };
+
+  const res = await kv.atomic()
+    .check({ key, versionstamp })
+    .set(key, user)
+    .commit();
+
+  if (res === null) {
+    throw new TypeError("User with ID already exists");
+  }
+}
+
+export async function getUserByStripeCustomerId(stripeCustomerId: string) {
+  const iter = kv.list<UserValue>({ prefix: ["users"] });
+  for await (const res of iter) {
+    if (res.value.stripeCustomerId === stripeCustomerId) return res;
+  }
+}
+
+export async function setUserSubscription(
+  id: string,
+  isSubscribed: boolean,
+) {
+  const key = ["users", id];
+  const userRes = await kv.get<UserValue>(key);
+
+  if (userRes.value === null) throw new Error("User with ID does not exist");
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .set(key, { ...userRes.value, isSubscribed } as UserValue)
+    .commit();
+
+  if (res !== null) {
+    /** @todo */
+    throw new Error();
+  }
+}
+
+export async function getUser(id: string) {
+  return await kv.get<UserValue>(["users", id]);
+}
+
+export interface UserValue extends InitUserValue {
+  isSubscribed: boolean;
 }

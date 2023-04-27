@@ -2,27 +2,9 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/stripe.ts";
 import { Stripe } from "stripe";
-import { supabaseAdminClient } from "@/utils/supabase.ts";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "@/utils/supabase_types.ts";
+import { getUserByStripeCustomerId, setUserSubscription } from "@/utils/db.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
-
-interface SetCustomerSubscriptionConfig {
-  customer: string;
-  isSubscribed: boolean;
-}
-
-export async function setCustomerSubscription(
-  supabaseClient: SupabaseClient<Database>,
-  { customer, isSubscribed }: SetCustomerSubscriptionConfig,
-) {
-  await supabaseClient
-    .from("customers")
-    .update({ is_subscribed: isSubscribed })
-    .eq("stripe_customer_id", customer)
-    .throwOnError();
-}
 
 export const handler: Handlers = {
   /**
@@ -49,27 +31,20 @@ export const handler: Handlers = {
       return new Response(error.message, { status: 400 });
     }
 
+    // @ts-ignore: Property 'customer' actually does exist on type 'Object'
+    const { customer } = event.data.object;
+
     switch (event.type) {
       case "customer.subscription.created": {
-        await setCustomerSubscription(
-          supabaseAdminClient,
-          {
-            // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-            customer: event.data.object.customer,
-            isSubscribed: true,
-          },
-        );
+        const userRes = await getUserByStripeCustomerId(customer);
+        if (userRes === undefined) return new Response(null, { status: 400 });
+        await setUserSubscription(userRes.key.at(-1) as string, true);
         return new Response(null, { status: 201 });
       }
       case "customer.subscription.deleted": {
-        await setCustomerSubscription(
-          supabaseAdminClient,
-          {
-            // @ts-ignore: Property 'customer' actually does exist on type 'Object'
-            customer: event.data.object.customer,
-            isSubscribed: false,
-          },
-        );
+        const userRes = await getUserByStripeCustomerId(customer);
+        if (userRes === undefined) return new Response(null, { status: 400 });
+        await setUserSubscription(userRes.key.at(-1) as string, false);
         return new Response(null, { status: 202 });
       }
       default: {

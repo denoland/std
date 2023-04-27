@@ -42,7 +42,7 @@ export const handler: Handlers<State, State> = {
     }
 
     await createItem({
-      authorId: ctx.state.session!.user.id,
+      userId: ctx.state.session!.user.id,
       title,
       url,
     });

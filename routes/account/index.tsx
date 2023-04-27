@@ -1,24 +1,24 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
-import type { Database } from "@/utils/supabase_types.ts";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
-import { BUTTON_STYLES } from "../../utils/constants.ts";
+import { BUTTON_STYLES } from "@/utils/constants.ts";
+import { getUser, type UserValue } from "@/utils/db.ts";
 
 interface AccountPageData extends AccountState {
-  customer: Database["public"]["Tables"]["customers"]["Row"];
+  user: UserValue;
 }
 
 export const handler: Handlers<AccountPageData, AccountState> = {
   async GET(_request, ctx) {
-    const customer = await ctx.state.createOrGetCustomer();
-    return ctx.render({ ...ctx.state, customer });
+    const user = await getUser(ctx.state.session.user.id);
+    return ctx.render({ ...ctx.state, user: user.value! });
   },
 };
 
 export default function AccountPage(props: PageProps<AccountPageData>) {
-  const action = props.data.customer.is_subscribed ? "Manage" : "Upgrade";
+  const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
 
   return (
     <>

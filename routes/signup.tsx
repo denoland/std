@@ -9,6 +9,8 @@ import { NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
+import { stripe } from "@/utils/stripe.ts";
+import { createUser } from "@/utils/db.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
@@ -17,7 +19,7 @@ export const handler: Handlers<any, State> = {
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
-    const { error } = await ctx.state.supabaseClient
+    const { data, error } = await ctx.state.supabaseClient
       .auth.signUp({ email, password });
 
     let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
@@ -25,6 +27,12 @@ export const handler: Handlers<any, State> = {
     if (error) {
       redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
     }
+
+    const { id } = await stripe.customers.create({ email });
+    await createUser({
+      id: data.user!.id,
+      stripeCustomerId: id,
+    });
 
     return new Response(null, {
       headers: { location: redirectUrl },

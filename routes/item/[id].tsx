@@ -55,7 +55,7 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     await createComment({
-      authorId: ctx.state.session.user.id,
+      userId: ctx.state.session.user.id,
       itemId: ctx.params.id,
       text,
     });
@@ -70,7 +70,7 @@ export const handler: Handlers<ItemPageData, State> = {
 function Comment(comment: CommentValue) {
   return (
     <div class="py-4">
-      <p>{comment.authorId}</p>
+      <p>{comment.userId}</p>
       <p class="text-gray-500">{timeAgo(new Date(comment.createdAt))} ago</p>
       <p>{comment.text}</p>
     </div>
