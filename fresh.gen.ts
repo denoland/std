@@ -15,12 +15,13 @@ import * as $8 from "./routes/blog/[slug].tsx";
 import * as $9 from "./routes/blog/index.tsx";
 import * as $10 from "./routes/feed.ts";
 import * as $11 from "./routes/index.tsx";
-import * as $12 from "./routes/login/index.tsx";
-import * as $13 from "./routes/login/oauth.ts";
-import * as $14 from "./routes/login/success.tsx";
-import * as $15 from "./routes/logout.ts";
-import * as $16 from "./routes/signup.tsx";
-import * as $17 from "./routes/submit.tsx";
+import * as $12 from "./routes/item/[id].tsx";
+import * as $13 from "./routes/login/index.tsx";
+import * as $14 from "./routes/login/oauth.ts";
+import * as $15 from "./routes/login/success.tsx";
+import * as $16 from "./routes/logout.ts";
+import * as $17 from "./routes/signup.tsx";
+import * as $18 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
 
 const manifest = {
@@ -37,12 +38,13 @@ const manifest = {
     "./routes/blog/index.tsx": $9,
     "./routes/feed.ts": $10,
     "./routes/index.tsx": $11,
-    "./routes/login/index.tsx": $12,
-    "./routes/login/oauth.ts": $13,
-    "./routes/login/success.tsx": $14,
-    "./routes/logout.ts": $15,
-    "./routes/signup.tsx": $16,
-    "./routes/submit.tsx": $17,
+    "./routes/item/[id].tsx": $12,
+    "./routes/login/index.tsx": $13,
+    "./routes/login/oauth.ts": $14,
+    "./routes/login/success.tsx": $15,
+    "./routes/logout.ts": $16,
+    "./routes/signup.tsx": $17,
+    "./routes/submit.tsx": $18,
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,
