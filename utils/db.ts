@@ -1,7 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const kv = await Deno.openKv();
 
-const versionstamp = "2023-04-28";
+// Last version of Deno SaaSKit that involved a database modification
+const versionstamp = "0.1.0";
 
 export interface InitItemValue {
   userId: string;
