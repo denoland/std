@@ -34,7 +34,6 @@
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
-    "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",
     "lint:check-assertions": "deno run --allow-read --allow-net ./_tools/check_assertions.ts",
     "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:deprecations && deno task lint:doc-imports && deno task lint:check-assertions",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
