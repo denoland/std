@@ -52,7 +52,7 @@ cd saaskit
 cp .example.env .env
 ```
 
-### Auth and Database (Supabase)
+### Auth (Supabase)
 
 The values of these environmental variables will be gathered in the following
 steps.
@@ -62,8 +62,6 @@ steps.
 ```
 supabase start
 ```
-
-This will automatically configure the database tables and their settings for us.
 
 2. Copy the values of the printed Supabase `API URL` and `anon key` variables
    into the environmental variables in your `.env` file as `SUPABASE_URL` and
@@ -133,38 +131,6 @@ SaaSKit comes with `primary` and `secondary` colors predefined within
 This section assumes that a
 [local development environment](#getting-started-locally) has been set up.
 
-### Database (Supabase)
-
-We'll use the Supabase CLI to migrate your local database to Supabase's remote
-production servers.
-
-1. Login with the Supabase CLI
-
-```sh
-supabase login
-```
-
-2. Run the Supabase link command to setup a local-remote project link
-
-- Get project-ref from the last part of the Supabase SaaSKit project URL:
-  https://app.supabase.com/project/{{ saaskit project-ref }}
-
-- Run `supabase link`:
-
-```sh
-supabase link --project-ref {{ supabase project ref }}
-```
-
-3. Run `supabase db push` to push the migration SQL (found in
-   `supabase/migrations`) to your remote Supabase account.
-
-```sh
-supabase db push
-```
-
-The database tables should now be in your remote Supabase project with
-[Row-Level Security policies configured](https://supabase.com/docs/guides/auth/row-level-security).
-
 ### Authentication (Supabase)
 
 These steps enable using email with Supabase Auth.
@@ -193,7 +159,7 @@ Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
 
 ### Automate Stripe Subscription Updates via Webhooks
 
-Keep your `customers` database up to date with billing changes by
+Keep your user's customer information up-to-date with billing changes by
 [registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
 
 - Endpoint URL: `https://{{ YOUR DOMAIN }}/api/stripe-webhooks`
