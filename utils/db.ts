@@ -96,6 +96,11 @@ export async function getItemComments(
 export interface InitUserValue {
   id: string;
   stripeCustomerId: string;
+  displayName: string;
+}
+
+export interface UserValue extends InitUserValue {
+  isSubscribed: boolean;
 }
 
 export async function createUser(initUser: InitUserValue) {
@@ -150,6 +155,11 @@ export async function getUser(id: string) {
   return await kv.get<UserValue>(["users", id]);
 }
 
-export interface UserValue extends InitUserValue {
-  isSubscribed: boolean;
+export async function getUsers(ids: string[]) {
+  const keys = ids.map((id) => ["users", id]);
+  return await kv.getMany<UserValue[]>(keys);
+}
+
+export interface ItemWithUserDisplayName extends ItemValue {
+  userDisplayName?: string;
 }

@@ -2,12 +2,12 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Logo from "@/components/Logo.tsx";
 import Head from "@/components/Head.tsx";
-import AuthForm from "@/components/AuthForm.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { GitHub } from "@/components/Icons.tsx";
 import { NOTICE_STYLES } from "@/utils/constants.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
+import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
@@ -75,7 +75,25 @@ export default function LoginPage(props: PageProps) {
           {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
             <div class={NOTICE_STYLES}>{errorMessage}</div>
           )}
-          <AuthForm type="Login" />
+          <form method="POST" class="space-y-4">
+            <input
+              placeholder="Email"
+              name="email"
+              type="email"
+              required
+              class={INPUT_STYLES}
+            />
+            <input
+              placeholder="Password"
+              name="password"
+              type="password"
+              required
+              class={INPUT_STYLES}
+            />
+            <button type="submit" class={`${BUTTON_STYLES} w-full`}>
+              Login
+            </button>
+          </form>
           <hr class="my-4" />
           <OAuthLoginButton provider="github">
             <GitHub class="inline mr-2 h-5 w-5 align-text-top" />{" "}
