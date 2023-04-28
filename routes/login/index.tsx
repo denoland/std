@@ -76,7 +76,10 @@ export default function LoginPage(props: PageProps) {
           )}
           <AuthForm type="Login" />
           <hr class="my-4" />
-          <OAuthLoginButton provider="github">
+          <OAuthLoginButton
+            provider="github"
+            disabled={props.url.hostname === "localhost"}
+          >
             <img
               src="/github-mark.svg"
               alt="GitHub logo"
