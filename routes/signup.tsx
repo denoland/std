@@ -21,10 +21,13 @@ export const handler: Handlers<any, State> = {
     const { data, error } = await ctx.state.supabaseClient
       .auth.signUp({ email, password });
 
-    let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
-      REDIRECT_PATH_AFTER_LOGIN;
     if (error) {
-      redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
+      return new Response(null, {
+        headers: {
+          location: `/signup?error=${encodeURIComponent(error.message)}`,
+        },
+        status: 302,
+      });
     }
 
     const { id } = await stripe.customers.create({ email });
@@ -33,6 +36,8 @@ export const handler: Handlers<any, State> = {
       stripeCustomerId: id,
     });
 
+    const redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
+      REDIRECT_PATH_AFTER_LOGIN;
     return new Response(null, {
       headers: { location: redirectUrl },
       status: 302,
