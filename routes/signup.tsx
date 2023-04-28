@@ -8,7 +8,7 @@ import { NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { stripe } from "@/utils/payments.ts";
 import { createUser } from "@/utils/db.ts";
 
 // deno-lint-ignore no-explicit-any
