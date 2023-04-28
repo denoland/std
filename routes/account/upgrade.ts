@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { stripe } from "@/utils/payments.ts";
 import { STRIPE_PREMIUM_PLAN_PRICE_ID } from "@/utils/constants.ts";
 import type { AccountState } from "./_middleware.ts";
 import { getUser } from "@/utils/db.ts";

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { createSupabaseClient } from "@/utils/supabase.ts";
+import { createSupabaseClient } from "@/utils/auth.ts";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
 export interface State {
