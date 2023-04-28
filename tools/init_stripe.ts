@@ -2,7 +2,7 @@
 import type { Stripe } from "stripe";
 import { SITE_DESCRIPTION } from "@/utils/constants.ts";
 import "std/dotenv/load.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { stripe } from "@/utils/payments.ts";
 
 async function createPremiumTierProduct(stripe: Stripe) {
   /**

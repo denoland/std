@@ -4,6 +4,7 @@ import type { ComponentChild } from "preact";
 
 interface OAuthLoginButtonProps {
   provider: Provider;
+  disabled: boolean;
   children: ComponentChild;
 }
 
@@ -14,8 +15,7 @@ export default function OAuthLoginButton(props: OAuthLoginButtonProps) {
       <button
         type="submit"
         class="px-4 py-2 w-full bg-white text-black text-lg rounded-lg border-2 border-black disabled:(opacity-50 cursor-not-allowed)"
-        /** @todo disabled for preview deployment */
-        disabled
+        disabled={props.disabled}
       >
         {props.children}
       </button>
