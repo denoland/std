@@ -73,7 +73,10 @@ export default function SignupPage(props: PageProps) {
           )}
           <AuthForm type="Signup" />
           <hr class="my-4" />
-          <OAuthLoginButton provider="github">
+          <OAuthLoginButton
+            provider="github"
+            disabled={props.url.hostname === "localhost"}
+          >
             <img
               src="/github-mark.svg"
               alt="GitHub logo"
