@@ -1,16 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { createOrGetCustomer, createSupabaseClient } from "@/utils/supabase.ts";
+import { createSupabaseClient } from "@/utils/supabase.ts";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { Database } from "@/utils/supabase_types.ts";
-import { stripe } from "@/utils/stripe.ts";
 
 export interface State {
   session: Session | null;
-  supabaseClient: SupabaseClient<Database>;
-  createOrGetCustomer: () => Promise<
-    Database["public"]["Tables"]["customers"]["Row"]
-  >;
+  supabaseClient: SupabaseClient;
   isLoggedIn: boolean;
 }
 
@@ -25,8 +20,6 @@ export async function handler(
 
   ctx.state.session = session;
   ctx.state.supabaseClient = supabaseClient;
-  ctx.state.createOrGetCustomer = async () =>
-    await createOrGetCustomer(supabaseClient, stripe);
   ctx.state.isLoggedIn = Boolean(session);
 
   const response = await ctx.next();

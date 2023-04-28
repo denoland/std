@@ -3,19 +3,8 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import type { SupabaseClient } from "@/utils/supabase.ts";
-import type { Database } from "@/utils/supabase_types.ts";
 import type { State } from "@/routes/_middleware.ts";
-
-export async function createItem(
-  supabaseClient: SupabaseClient,
-  item: Database["public"]["Tables"]["items"]["Insert"],
-) {
-  return await supabaseClient
-    .from("items")
-    .insert(item)
-    .throwOnError();
-}
+import { createItem } from "@/utils/db.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
@@ -32,14 +21,31 @@ export const handler: Handlers<State, State> = {
     return ctx.render(ctx.state);
   },
   async POST(req, ctx) {
-    const form = await req.formData();
-    const item: Database["public"]["Tables"]["items"]["Insert"] = {
-      title: form.get("title") as string,
-      url: form.get("url") as string,
-    };
+    if (!ctx.state.isLoggedIn) {
+      await req.body?.cancel();
+      return new Response(null, { status: 401 });
+    }
 
-    // @ts-ignore Fix at some point
-    await createItem(ctx.state.supabaseClient, item);
+    const form = await req.formData();
+    const title = form.get("title");
+    const url = form.get("url");
+
+    if (typeof title !== "string" || typeof url !== "string") {
+      return new Response(null, { status: 400 });
+    }
+
+    try {
+      // Throws if an invalid URL
+      new URL(url);
+    } catch {
+      return new Response(null, { status: 400 });
+    }
+
+    await createItem({
+      userId: ctx.state.session!.user.id,
+      title,
+      url,
+    });
 
     return ctx.render(ctx.state);
   },

@@ -1,8 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
-import type { SupabaseClient } from "@/utils/supabase.ts";
-import type { Item } from "@/utils/item.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -11,62 +9,32 @@ import {
   INPUT_STYLES,
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
-import type { Database } from "@/utils/supabase_types.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
+import {
+  CommentValue,
+  createComment,
+  getItem,
+  getItemComments,
+  ItemValue,
+} from "@/utils/db.ts";
 
 interface ItemPageData extends State {
-  item: Item;
-  comments: Database["public"]["Tables"]["comments"]["Row"][];
-}
-
-async function getItem(
-  supabaseClient: SupabaseClient,
-  id: Item["id"],
-) {
-  return await supabaseClient
-    .from("items")
-    .select()
-    .eq("id", id)
-    .single()
-    .throwOnError()
-    .then(({ data }) => data);
-}
-
-async function getItemComments(
-  supabaseClient: SupabaseClient,
-  id: Item["id"],
-) {
-  return await supabaseClient
-    .from("comments")
-    .select()
-    .eq("item_id", id)
-    .throwOnError()
-    .then(({ data }) => data) || [];
-}
-
-async function createComment(
-  supabaseClient: SupabaseClient,
-  comment: Database["public"]["Tables"]["comments"]["Insert"],
-) {
-  await supabaseClient
-    .from("comments")
-    .insert(comment)
-    .throwOnError();
+  itemRes: Deno.KvEntry<ItemValue>;
+  commentsRes: Deno.KvEntry<CommentValue>[];
 }
 
 export const handler: Handlers<ItemPageData, State> = {
   async GET(_req, ctx) {
     const { id } = ctx.params;
 
-    const item = await getItem(ctx.state.supabaseClient, id);
-
-    if (!item) {
+    const itemRes = await getItem(id);
+    if (itemRes.value === null) {
       return ctx.renderNotFound();
     }
 
-    const comments = await getItemComments(ctx.state.supabaseClient, id);
+    const commentsRes = await getItemComments(id);
 
-    return ctx.render({ ...ctx.state, item, comments });
+    return ctx.render({ ...ctx.state, itemRes, commentsRes });
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
@@ -86,9 +54,10 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
-    await createComment(ctx.state.supabaseClient, {
+    await createComment({
+      userId: ctx.state.session.user.id,
+      itemId: ctx.params.id,
       text,
-      item_id: ctx.params.id,
     });
 
     return new Response(null, {
@@ -98,11 +67,11 @@ export const handler: Handlers<ItemPageData, State> = {
   },
 };
 
-function Comment(comment: Database["public"]["Tables"]["comments"]["Row"]) {
+function Comment(comment: CommentValue) {
   return (
     <div class="py-4">
-      <p>{comment.user_id}</p>
-      <p class="text-gray-500">{timeAgo(new Date(comment.created_at))} ago</p>
+      <p>{comment.userId}</p>
+      <p class="text-gray-500">{timeAgo(new Date(comment.createdAt))} ago</p>
       <p>{comment.text}</p>
     </div>
   );
@@ -111,12 +80,14 @@ function Comment(comment: Database["public"]["Tables"]["comments"]["Row"]) {
 export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
-      <Head title={props.data.item.title} />
+      <Head title={props.data.itemRes.value.title} />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
-          <ItemSummary {...props.data.item} />
+          <ItemSummary {...props.data.itemRes} />
           <div class="divide-y">
-            {props.data.comments.map((comment) => <Comment {...comment} />)}
+            {props.data.commentsRes.map((comment) => (
+              <Comment {...comment.value} />
+            ))}
           </div>
           <form method="post">
             <textarea
