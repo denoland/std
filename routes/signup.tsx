@@ -4,7 +4,6 @@ import Head from "@/components/Head.tsx";
 import AuthForm from "@/components/AuthForm.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
-import { GitHub } from "@/components/Icons.tsx";
 import { NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
@@ -70,8 +69,12 @@ export default function SignupPage(props: PageProps) {
           <AuthForm type="Signup" />
           <hr class="my-4" />
           <OAuthLoginButton provider="github">
-            <GitHub class="inline mr-2 h-5 w-5 align-text-top" />{" "}
-            Login with GitHub
+            <img
+              src="/github-mark.svg"
+              alt="GitHub logo"
+              class="inline mr-2 h-5 w-5 align-text-top"
+            />
+            Signup with GitHub
           </OAuthLoginButton>
           <div class="text-center text-gray-500 hover:text-black mt-8">
             <a href="/login">Already have an account? Log in</a>
