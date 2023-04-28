@@ -64,7 +64,7 @@ async function main() {
   });
 
   console.log(
-    "Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` constant in `constants.ts`: " +
+    "Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` variable in `.env`: " +
       product.default_price,
   );
 }
