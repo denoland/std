@@ -1,3 +1,12 @@
+### 0.185.0 / 2023.04.27
+
+- feat(dotenv): allow reading from `.env` files without granting env access
+  (#3306)
+- feat(jsonc): annotate return types (#3327)
+- feat(uuid): uuid v3 (#3324)
+- perf(http/file_server): avoid calculating Content-Type when 304 Not Modified
+  response (#3323)
+
 ### 0.184.0 / 2023.04.18
 
 - BREAKING(encoding): remove deprecated APIs (#3303)
