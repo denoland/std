@@ -30,12 +30,24 @@ export async function createItem(initItem: InitItemValue) {
 export interface ItemValue extends InitItemValue {
   createdAt: Date;
   score: number;
+  comment_count?: number;
 }
 
 export async function getItems(options?: Deno.KvListOptions) {
   const iter = await kv.list<ItemValue>({ prefix: ["items"] }, options);
   const items = [];
-  for await (const res of iter) items.push(res);
+  for await (const res of iter) {
+    let comment_count = 0;
+    for await (
+      const _ of kv.list(
+        { prefix: ["comments_by_item", res.key[1]] },
+      )
+    ) {
+      comment_count++;
+    }
+    res.value= {comment_count, ...res.value};
+    items.push(res);
+  }
   return items;
 }
 

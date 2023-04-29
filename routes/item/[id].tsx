@@ -33,6 +33,10 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     const commentsRes = await getItemComments(id);
+    itemRes.value = {
+      ...{ comment_count: commentsRes.length },
+      ...itemRes.value,
+    };
 
     return ctx.render({ ...ctx.state, itemRes, commentsRes });
   },
