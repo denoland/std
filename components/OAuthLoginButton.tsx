@@ -15,7 +15,8 @@ export default function OAuthLoginButton(props: OAuthLoginButtonProps) {
       <button
         type="submit"
         class="px-4 py-2 w-full bg-white text-black text-lg rounded-lg border-2 border-black disabled:(opacity-50 cursor-not-allowed)"
-        disabled={props.disabled}
+        /** @todo Pass `props.disabled` once OAuth and the `user` object play well together */
+        disabled
       >
         {props.children}
       </button>
