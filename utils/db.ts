@@ -45,7 +45,7 @@ export async function getItems(options?: Deno.KvListOptions) {
     ) {
       comment_count++;
     }
-    res.value= {comment_count, ...res.value};
+    res.value = { comment_count, ...res.value };
     items.push(res);
   }
   return items;
