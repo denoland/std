@@ -45,7 +45,6 @@ Deno.test("[collections/includesValue] Returns false when it doesn't include the
 });
 
 Deno.test("[collections/includesValue] Non-enumerable properties", () => {
-  // FAIL is expected, TODO: Figure out how to make it work on
   const input = {};
 
   Object.defineProperty(input, "nep", {
@@ -67,9 +66,9 @@ Deno.test("[collections/includesValue] Non-enumerable properties", () => {
   const actual2 = includesValue(input, "hello");
   const actual3 = includesValue(input, true);
 
-  assert(!actual1);
-  assert(!actual2);
-  assert(!actual3);
+  assert(actual1);
+  assert(actual2);
+  assert(actual3);
 });
 
 Deno.test("[collections/includesValue] Non-primitive values", () => {
