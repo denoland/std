@@ -69,6 +69,10 @@ Deno.test("xevalCliSyntaxError", async function () {
   });
   const { code, success, stdout, stderr } = await command.output();
   const decoder = new TextDecoder();
+  console.log("code", code);
+  console.log("success", success);
+  console.log("decoder.decode(stdout)", decoder.decode(stdout));
+  console.log("decoder.decode(stderr)", decoder.decode(stderr));
   assertEquals(code, 1);
   assertEquals(success, false);
   assertEquals(decoder.decode(stdout), "");
