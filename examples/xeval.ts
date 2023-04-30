@@ -46,12 +46,16 @@ export async function xeval(
   xevalFunc: XevalFunc,
   { delimiter = DEFAULT_DELIMITER }: XevalOptions = {},
 ) {
+  console.log("1");
   const chunks = readable
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new TextDelimiterStream(delimiter));
+  console.log("1");
   for await (const chunk of chunks) {
+    console.log("2", chunk);
     // Ignore empty chunks.
     if (chunk.length > 0) {
+      console.log("3")
       await xevalFunc(chunk);
     }
   }
