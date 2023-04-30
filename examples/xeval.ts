@@ -55,7 +55,7 @@ export async function xeval(
     console.log("2", chunk);
     // Ignore empty chunks.
     if (chunk.length > 0) {
-      console.log("3")
+      console.log("3");
       await xevalFunc(chunk);
     }
   }
