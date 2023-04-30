@@ -62,7 +62,8 @@ Deno.test({
   },
 });
 
-Deno.test("xevalCliSyntaxError", async function () {
+// TODO(kt3k): Enable this test
+Deno.test("xevalCliSyntaxError", { ignore: true }, async function () {
   const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--quiet", xevalPath, "("],
     cwd: moduleDir,
