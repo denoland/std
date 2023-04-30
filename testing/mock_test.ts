@@ -1492,9 +1492,9 @@ Deno.test("assertSpyArgs without range", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     undefined,
-    ]`,
++   ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, [2]),
@@ -1505,9 +1505,9 @@ Deno.test("assertSpyArgs without range", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     2,
-    ]`,
++   ]`,
   );
 
   spyFunc(7, 9);
@@ -1564,9 +1564,9 @@ Deno.test("assertSpyArgs with start only", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     undefined,
-    ]`,
++   ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, [2]),
@@ -1577,9 +1577,9 @@ Deno.test("assertSpyArgs with start only", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     2,
-    ]`,
++   ]`,
   );
 
   spyFunc(7, 9, 8);
@@ -1636,10 +1636,10 @@ Deno.test("assertSpyArgs with range", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     undefined,
 +     undefined,
-    ]`,
++   ]`,
   );
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, [2, 4]),
@@ -1650,10 +1650,10 @@ Deno.test("assertSpyArgs with range", () => {
     [Diff] Actual / Expected
 
 
-    [
++   [
 +     2,
 +     4,
-    ]`,
++   ]`,
   );
 
   spyFunc(7, 9, 8, 5, 6);

@@ -43,7 +43,7 @@ Deno.test("assert diff formatting", () => {
       },
     })),
     `{
-  a: 1,
+  a: [Getter: 1],
 }`,
   );
 
