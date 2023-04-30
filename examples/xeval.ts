@@ -75,14 +75,17 @@ async function main() {
       replvar: "$",
     },
   });
+  console.log("0");
   if (parsedArgs._.length != 1) {
     console.error(HELP_MSG);
     console.log(parsedArgs._);
     Deno.exit(1);
   }
+  console.log("0");
   if (parsedArgs.help) {
     return console.log(HELP_MSG);
   }
+  console.log("0");
 
   const delimiter = parsedArgs.delim;
   const replVar = parsedArgs.replvar;
@@ -93,8 +96,10 @@ async function main() {
     console.error(`Bad replvar identifier: "${replVar}"`);
     Deno.exit(1);
   }
+  console.log("0");
 
   const xEvalFunc = new AsyncFunction(replVar, code);
+  console.log("0");
 
   await xeval(Deno.stdin.readable, xEvalFunc, { delimiter });
 }
