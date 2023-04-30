@@ -97,6 +97,8 @@ async function main() {
     Deno.exit(1);
   }
   console.log("0");
+  console.log("reprVar", replVar);
+  console.log("code", code);
 
   const xEvalFunc = new AsyncFunction(replVar, code);
   console.log("0");
