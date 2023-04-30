@@ -176,8 +176,8 @@ Keep your user's customer information up-to-date with billing changes by
 - `STRIPE_WEBHOOK_SECRET`: Dashboard Home -> Developers (right side of page) ->
   Create webhook -> Click Add Endpoint
   - After Creation, redirected to new webhook page -> Signing Secret -> Reveal
-- `STRIPE_PREMIUM_PLAN_PRICE_ID`: (in constants.ts): Dashboard -> Products ->
-  Premium Tier -> Pricing/API ID
+- `STRIPE_PREMIUM_PLAN_PRICE_ID`: Dashboard -> Products -> Premium Tier ->
+  Pricing/API ID
 
 ### Stripe Customer Portal Branding
 
@@ -241,6 +241,7 @@ services:
      - SUPABASE_API_URL=${SUPABASE_API_URL}
      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+     - STRIPE_PREMIUM_PLAN_PRICE_ID=${STRIPE_PREMIUM_PLAN_PRICE_ID}
     ports:
       - "8000:8000"
 ```
