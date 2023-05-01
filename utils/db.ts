@@ -100,7 +100,7 @@ export interface User extends InitUser {
 export async function createUser(initUser: InitUser) {
   const usersKey = ["users", initUser.id];
   const stripeCustomersKey = [
-    "users_by_stripe_customer",
+    "user_ids_by_stripe_customer",
     initUser.stripeCustomerId,
   ];
   const user: User = { ...initUser, isSubscribed: false };
@@ -109,7 +109,7 @@ export async function createUser(initUser: InitUser) {
     .check({ key: usersKey, versionstamp: null })
     .check({ key: stripeCustomersKey, versionstamp: null })
     .set(usersKey, user)
-    .set(stripeCustomersKey, user)
+    .set(stripeCustomersKey, user.id)
     .commit();
 
   if (!res.ok) {
@@ -125,11 +125,12 @@ export async function getUserById(id: string) {
 }
 
 export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  const res = await kv.get<User>([
-    "users_by_stripe_customer",
+  const res = await kv.get<string>([
+    "user_ids_by_stripe_customer",
     stripeCustomerId,
   ]);
-  return res.value;
+  if (!res.value) return null;
+  return await getUserById(res.value);
 }
 
 export async function setUserSubscription(
