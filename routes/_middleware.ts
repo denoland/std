@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { createSupabaseClient } from "@/utils/auth.ts";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { walk } from "std/fs/walk.ts";
 
 const STATIC_DIR_ROOT = new URL("../static", import.meta.url);
@@ -12,7 +12,7 @@ for await (const { name } of walk(STATIC_DIR_ROOT, { includeDirs: false })) {
 
 export interface State {
   session: Session | null;
-  supabaseClient: SupabaseClient;
+  supabaseClient: ReturnType<typeof createSupabaseClient>;
   isLoggedIn: boolean;
 }
 
