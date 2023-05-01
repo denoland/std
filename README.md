@@ -15,7 +15,7 @@ template for building your SaaS quickly and easily.
   [linter](https://deno.land/manual/tools/linter) and
   [test runner](https://deno.land/manual/basics/testing) and TypeScript support.
 - User authentication with [Supabase Auth](https://supabase.com/auth), including
-  email/password and OAuth flows.
+  email/password, OAuth and reset password flows.
 - Session management
 - Database management with [Deno KV](https://deno.com/manual/runtime/kv), which
   provides zero config durable data storage. _Prefer using Supabase for data

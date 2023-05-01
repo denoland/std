@@ -5,6 +5,7 @@ import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { getUser, type UserValue } from "@/utils/db.ts";
+import { NOTICE_STYLES } from "@/utils/constants.ts";
 
 interface AccountPageData extends AccountState {
   user: UserValue;
@@ -19,6 +20,9 @@ export const handler: Handlers<AccountPageData, AccountState> = {
 
 export default function AccountPage(props: PageProps<AccountPageData>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
+  const hasResetPassword = new URL(props.url).searchParams.get(
+    "has_reset_password",
+  );
 
   return (
     <>
@@ -28,6 +32,11 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
           <h1 class="text-3xl mb-4">
             <strong>Account</strong>
           </h1>
+          {hasResetPassword && (
+            <div class={NOTICE_STYLES}>
+              Your password has successfully been reset
+            </div>
+          )}
           <ul class="divide-y">
             <li class="py-4">
               <p>
