@@ -2,6 +2,13 @@
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { createSupabaseClient } from "@/utils/auth.ts";
 import type { Session } from "@supabase/supabase-js";
+import { walk } from "std/fs/walk.ts";
+
+const STATIC_DIR_ROOT = new URL("../static", import.meta.url);
+const staticFileNames: string[] = [];
+for await (const { name } of walk(STATIC_DIR_ROOT, { includeDirs: false })) {
+  staticFileNames.push(name);
+}
 
 export interface State {
   session: Session | null;
@@ -14,7 +21,8 @@ export async function handler(
   ctx: MiddlewareHandlerContext<State>,
 ) {
   const { pathname } = new URL(req.url);
-  if (["_frsh", ".ico", "logo"].some((part) => pathname.includes(part))) {
+  // Don't process session-related data for keepalive and static requests
+  if (["_frsh", ...staticFileNames].some((part) => pathname.includes(part))) {
     return await ctx.next();
   }
 
