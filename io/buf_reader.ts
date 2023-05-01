@@ -181,13 +181,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = p.subarray(0, bytesRead);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = p.subarray(0, bytesRead);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -364,13 +357,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = slice;
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = slice;
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -409,13 +395,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = this.#buf.subarray(this.#r, this.#w);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = this.#buf.subarray(this.#r, this.#w);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
