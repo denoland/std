@@ -92,7 +92,10 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
           <div class="divide-y">
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
-                <p>{props.data.commentsUsers[index].displayName}</p>
+                <p>
+                  {props.data.commentsUsers[index].displayName ||
+                    comment.userId}
+                </p>
                 <p class="text-gray-500">
                   {timeAgo(new Date(comment.createdAt))} ago
                 </p>
