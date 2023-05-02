@@ -13,7 +13,7 @@ Deno.test("[async] pooledMap", async function () {
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 1000)),
   );
   const array = [];
   for await (const value of results) {
@@ -58,7 +58,9 @@ Deno.test("pooledMap returns ordered items", async () => {
     2,
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     (i) =>
-      new Promise((r) => setTimeout(() => r(i), getRandomInt(5, 20) * 100)),
+      new Promise<number>((r) =>
+        setTimeout(() => r(i), getRandomInt(5, 20) * 100)
+      ),
   );
 
   const returned = [];
