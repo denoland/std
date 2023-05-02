@@ -3,12 +3,11 @@ import type { PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
-import { GitHub } from "@/components/Icons.tsx";
 import { NOTICE_STYLES } from "@/utils/constants.ts";
 import type { Handlers } from "$fresh/server.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { stripe } from "@/utils/payments.ts";
 import { createUser } from "@/utils/db.ts";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 
@@ -23,10 +22,13 @@ export const handler: Handlers<any, State> = {
     const { data, error } = await ctx.state.supabaseClient
       .auth.signUp({ email, password });
 
-    let redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
-      REDIRECT_PATH_AFTER_LOGIN;
     if (error) {
-      redirectUrl = `/signup?error=${encodeURIComponent(error.message)}`;
+      return new Response(null, {
+        headers: {
+          location: `/signup?error=${encodeURIComponent(error.message)}`,
+        },
+        status: 302,
+      });
     }
 
     const { id } = await stripe.customers.create({ email });
@@ -36,6 +38,8 @@ export const handler: Handlers<any, State> = {
       stripeCustomerId: id,
     });
 
+    const redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
+      REDIRECT_PATH_AFTER_LOGIN;
     return new Response(null, {
       headers: { location: redirectUrl },
       status: 302,
@@ -99,9 +103,16 @@ export default function SignupPage(props: PageProps) {
             </button>
           </form>
           <hr class="my-4" />
-          <OAuthLoginButton provider="github">
-            <GitHub class="inline mr-2 h-5 w-5 align-text-top" />{" "}
-            Login with GitHub
+          <OAuthLoginButton
+            provider="github"
+            disabled={props.url.hostname === "localhost"}
+          >
+            <img
+              src="/github-mark.svg"
+              alt="GitHub logo"
+              class="inline mr-2 h-5 w-5 align-text-top"
+            />
+            Signup with GitHub
           </OAuthLoginButton>
           <div class="text-center text-gray-500 hover:text-black mt-8">
             <a href="/login">Already have an account? Log in</a>

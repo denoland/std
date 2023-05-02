@@ -2,7 +2,7 @@
 import type { Stripe } from "stripe";
 import { SITE_DESCRIPTION } from "@/utils/constants.ts";
 import "std/dotenv/load.ts";
-import { stripe } from "@/utils/stripe.ts";
+import { stripe } from "@/utils/payments.ts";
 
 async function createPremiumTierProduct(stripe: Stripe) {
   /**
@@ -64,7 +64,7 @@ async function main() {
   });
 
   console.log(
-    "Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` constant in `constants.ts`: " +
+    "Please copy and paste this value into the `STRIPE_PREMIUM_PLAN_PRICE_ID` variable in `.env`: " +
       product.default_price,
   );
 }

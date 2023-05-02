@@ -11,30 +11,30 @@ import {
 } from "@/utils/constants.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
 import {
-  CommentValue,
+  Comment,
   createComment,
-  getItem,
-  getItemComments,
-  ItemValue,
+  getCommentsByItem,
+  getItemById,
+  Item,
 } from "@/utils/db.ts";
 
 interface ItemPageData extends State {
-  itemRes: Deno.KvEntry<ItemValue>;
-  commentsRes: Deno.KvEntry<CommentValue>[];
+  item: Item;
+  comments: Comment[];
 }
 
 export const handler: Handlers<ItemPageData, State> = {
   async GET(_req, ctx) {
     const { id } = ctx.params;
 
-    const itemRes = await getItem(id);
-    if (itemRes.value === null) {
+    const item = await getItemById(id);
+    if (item === null) {
       return ctx.renderNotFound();
     }
 
-    const commentsRes = await getItemComments(id);
+    const comments = await getCommentsByItem(id);
 
-    return ctx.render({ ...ctx.state, itemRes, commentsRes });
+    return ctx.render({ ...ctx.state, item, comments });
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
@@ -67,26 +67,22 @@ export const handler: Handlers<ItemPageData, State> = {
   },
 };
 
-function Comment(comment: CommentValue) {
-  return (
-    <div class="py-4">
-      <p>{comment.userId}</p>
-      <p class="text-gray-500">{timeAgo(new Date(comment.createdAt))} ago</p>
-      <p>{comment.text}</p>
-    </div>
-  );
-}
-
 export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
-      <Head title={props.data.itemRes.value.title} />
+      <Head title={props.data.item.title} />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
-          <ItemSummary {...props.data.itemRes} />
+          <ItemSummary {...props.data.item} />
           <div class="divide-y">
-            {props.data.commentsRes.map((comment) => (
-              <Comment {...comment.value} />
+            {props.data.comments.map((comment) => (
+              <div class="py-4">
+                <p>{comment.userId}</p>
+                <p class="text-gray-500">
+                  {timeAgo(new Date(comment.createdAt))} ago
+                </p>
+                <p>{comment.text}</p>
+              </div>
             ))}
           </div>
           <form method="post">

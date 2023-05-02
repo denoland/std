@@ -3,8 +3,6 @@ export const SITE_NAME = "Deno Hunt (Beta)";
 export const SITE_DESCRIPTION = "Discover new Deno projects. Share your own.";
 export const REDIRECT_PATH_AFTER_LOGIN = "/";
 
-export const STRIPE_PREMIUM_PLAN_PRICE_ID = "price_1MxmZBLtShjVFzl88qok3U5D";
-
 /**
  * These are base styles for some elements. This approach is chosen as it avoids more complex alternatives:
  * 1. Writing custom classes in Tailwind CSS (see https://tailwindcss.com/docs/reusing-styles#compared-to-css-abstractions)
