@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Generators and validators for UUIDs for versions v1, v4 and v5.
+ * Generators and validators for UUIDs for versions v1, v3, v4 and v5.
  *
  * Consider using the web platform
  * [`crypto.randomUUID`](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID)
@@ -10,7 +10,7 @@
  *
  * Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
  *
- * Support for RFC4122 version 1, 4, and 5 UUIDs
+ * Support for RFC4122 version 1, 3, 4, and 5 UUIDs
  *
  * This module is browser compatible.
  *
@@ -18,10 +18,16 @@
  */
 
 import * as v1 from "./v1.ts";
+import * as v3 from "./v3.ts";
 import * as v4 from "./v4.ts";
 import * as v5 from "./v5.ts";
 
 export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
+
+export const NAMESPACE_DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+export const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+export const NAMESPACE_OID = "6ba7b812-9dad-11d1-80b4-00c04fd430c8";
+export const NAMESPACE_X500 = "6ba7b814-9dad-11d1-80b4-00c04fd430c8";
 
 /**
  * Check if the passed UUID is the nil UUID.
@@ -72,4 +78,4 @@ export function version(uuid: string): number {
   return parseInt(uuid[14], 16);
 }
 
-export { v1, v4, v5 };
+export { v1, v3, v4, v5 };
