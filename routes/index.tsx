@@ -5,15 +5,15 @@ import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import { getItems, type ItemValue } from "@/utils/db.ts";
+import { getAllItems, type Item } from "@/utils/db.ts";
 
 interface HomePageData extends State {
-  items: Deno.KvEntry<ItemValue>[];
+  items: Item[];
 }
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
-    const items = await getItems();
+    const items = await getAllItems();
     return ctx.render({ ...ctx.state, items });
   },
 };
