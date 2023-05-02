@@ -1,15 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
-import {
-  isNil,
-  NAMESPACE_DNS,
-  NAMESPACE_OID,
-  NAMESPACE_URL,
-  NAMESPACE_X500,
-  NIL_UUID,
-  validate,
-  version,
-} from "./mod.ts";
+import { isNil, NIL_UUID, validate, version } from "./mod.ts";
 
 Deno.test("[UUID] isNil", () => {
   const nil = NIL_UUID;
@@ -40,11 +31,4 @@ Deno.test("[UUID] version", () => {
       "=Y00a-f*v00b*-00c-00d#-p00f\b-00g-00h-####00i^^^-00j*1*2*3&-L00k-\n00l-/00m-----00n-fg000-00p-00r+",
     )
   );
-});
-
-Deno.test("[UUID] namespaces", () => {
-  assertEquals(validate(NAMESPACE_DNS), true);
-  assertEquals(validate(NAMESPACE_URL), true);
-  assertEquals(validate(NAMESPACE_OID), true);
-  assertEquals(validate(NAMESPACE_X500), true);
 });
