@@ -16,6 +16,7 @@ import {
   getCommentsByItem,
   getItemById,
   getUserById,
+  getUsersByIds,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -24,6 +25,7 @@ interface ItemPageData extends State {
   user: User;
   item: Item;
   comments: Comment[];
+  commentsUsers: User[];
 }
 
 export const handler: Handlers<ItemPageData, State> = {
@@ -36,9 +38,18 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     const comments = await getCommentsByItem(id);
+    const commentsUsers = await getUsersByIds(
+      comments.map((comment) => comment.userId),
+    );
     const user = await getUserById(item.userId);
 
-    return ctx.render({ ...ctx.state, item, comments, user: user! });
+    return ctx.render({
+      ...ctx.state,
+      item,
+      comments,
+      user: user!,
+      commentsUsers,
+    });
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
@@ -79,9 +90,9 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
           <ItemSummary item={props.data.item} user={props.data.user} />
           <div class="divide-y">
-            {props.data.comments.map((comment) => (
+            {props.data.comments.map((comment, index) => (
               <div class="py-4">
-                <p>{comment.userId}</p>
+                <p>{props.data.commentsUsers[index].displayName}</p>
                 <p class="text-gray-500">
                   {timeAgo(new Date(comment.createdAt))} ago
                 </p>
