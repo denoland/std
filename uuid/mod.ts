@@ -17,6 +17,8 @@
  * @module
  */
 
+export * from "./constants.ts";
+
 import * as v1 from "./v1.ts";
 import * as v3 from "./v3.ts";
 import * as v4 from "./v4.ts";
