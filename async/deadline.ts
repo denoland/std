@@ -1,12 +1,17 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { deferred } from "./deferred.ts";
+import { delay } from "./delay.ts";
+
+export interface DeadlineOptions {
+  /** Signal used to abort the deadline. */
+  signal?: AbortSignal;
+}
 
 export class DeadlineError extends Error {
   constructor() {
     super("Deadline");
-    this.name = "DeadlineError";
+    this.name = this.constructor.name;
   }
 }
 
@@ -25,8 +30,19 @@ export class DeadlineError extends Error {
  * const result = await deadline(delayedPromise, 10);
  * ```
  */
-export function deadline<T>(p: Promise<T>, delay: number): Promise<T> {
-  const d = deferred<never>();
-  const t = setTimeout(() => d.reject(new DeadlineError()), delay);
-  return Promise.race([p, d]).finally(() => clearTimeout(t));
+export function deadline<T>(
+  p: Promise<T>,
+  ms: number,
+  options: DeadlineOptions = {},
+): Promise<T> {
+  const controller = new AbortController();
+  const { signal } = options;
+  if (signal?.aborted) {
+    return Promise.reject(new DeadlineError());
+  }
+  signal?.addEventListener("abort", () => controller.abort(signal.reason));
+  const d = delay(ms, { signal: controller.signal })
+    .catch(() => {}) // Do NOTHING on abort.
+    .then(() => Promise.reject(new DeadlineError()));
+  return Promise.race([p.finally(() => controller.abort()), d]);
 }
