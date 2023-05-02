@@ -69,3 +69,24 @@ Deno.test("pooledMap returns ordered items", async () => {
   }
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
+
+Deno.test("[async] pooledMap (browser compat)", async function () {
+  // Simulates the environment where Symbol.asyncIterator is not available
+  const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
+  // deno-lint-ignore no-explicit-any
+  delete (ReadableStream.prototype as any)[Symbol.asyncIterator];
+  try {
+    const results = pooledMap(
+      2,
+      [1, 2, 3],
+      (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
+    );
+    const array = [];
+    for await (const value of results) {
+      array.push(value);
+    }
+    assertEquals(array, [1, 2, 3]);
+  } finally {
+    ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;
+  }
+});

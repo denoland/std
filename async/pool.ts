@@ -95,7 +95,7 @@ export function pooledMap<T, R>(
   // Feature test until browser coverage is adequate
   return Symbol.asyncIterator in res.readable &&
       typeof res.readable[Symbol.asyncIterator] === "function"
-    ? (res.readable[Symbol.asyncIterator] as () => AsyncIterableIterator<R>)()
+    ? res.readable[Symbol.asyncIterator]()
     : (async function* () {
       const reader = res.readable.getReader();
       while (true) {
