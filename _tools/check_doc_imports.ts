@@ -2,13 +2,14 @@
 
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { walk } from "../fs/walk.ts";
-import {
+import ts from "npm:typescript@5.0.2";
+const {
   createSourceFile,
   ImportDeclaration,
   ScriptTarget,
   StringLiteral,
   SyntaxKind,
-} from "https://esm.sh/typescript@5.0.2";
+} = ts;
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".md"];
 const EXCLUDED_PATHS = [
