@@ -408,9 +408,15 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
 
 /** Interface for serveDir options. */
 export interface ServeDirOptions {
-  /** Serves the files under the given directory root. Defaults to your current directory. */
+  /** Serves the files under the given directory root. Defaults to your current directory.
+   *
+   * @default {"."}
+   */
   fsRoot?: string;
-  /** Specified that part is stripped from the beginning of the requested pathname. */
+  /** Specified that part is stripped from the beginning of the requested pathname.
+   *
+   * @default {undefined}
+   */
   urlRoot?: string;
   /** Enable directory listing.
    *
@@ -422,7 +428,10 @@ export interface ServeDirOptions {
    * @default {false}
    */
   showDotfiles?: boolean;
-  /** Serves index.html as the index file of the directory. */
+  /** Serves index.html as the index file of the directory.
+   *
+   * @default {true}
+   */
   showIndex?: boolean;
   /** Enable CORS via the "Access-Control-Allow-Origin" header.
    *
