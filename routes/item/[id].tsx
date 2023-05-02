@@ -11,14 +11,17 @@ import {
 } from "@/utils/constants.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
 import {
-  Comment,
+  type Comment,
   createComment,
   getCommentsByItem,
   getItemById,
-  Item,
+  getUserById,
+  type Item,
+  type User,
 } from "@/utils/db.ts";
 
 interface ItemPageData extends State {
+  user: User;
   item: Item;
   comments: Comment[];
 }
@@ -33,8 +36,9 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     const comments = await getCommentsByItem(id);
+    const user = await getUserById(item.userId);
 
-    return ctx.render({ ...ctx.state, item, comments });
+    return ctx.render({ ...ctx.state, item, comments, user: user! });
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
@@ -73,7 +77,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
       <Head title={props.data.item.title} />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
-          <ItemSummary {...props.data.item} />
+          <ItemSummary item={props.data.item} user={props.data.user} />
           <div class="divide-y">
             {props.data.comments.map((comment) => (
               <div class="py-4">

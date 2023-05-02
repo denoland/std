@@ -153,10 +153,10 @@ export async function setUserSubscription(
   }
 }
 
-export async function getUsers(ids: string[]) {
+export async function getUsersByIds(ids: string[]) {
   const keys = ids.map((id) => ["users", id]);
   const res = await kv.getMany<User[]>(keys);
-  return res.values;
+  return res.map((entry) => entry.value!);
 }
 
 export async function getOrCreateUser(id: string, email: string) {
