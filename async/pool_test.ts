@@ -13,7 +13,7 @@ Deno.test("[async] pooledMap", async function () {
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 1000)),
   );
   const array = [];
   for await (const value of results) {
@@ -58,7 +58,9 @@ Deno.test("pooledMap returns ordered items", async () => {
     2,
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     (i) =>
-      new Promise((r) => setTimeout(() => r(i), getRandomInt(5, 20) * 100)),
+      new Promise<number>((r) =>
+        setTimeout(() => r(i), getRandomInt(5, 20) * 100)
+      ),
   );
 
   const returned = [];
@@ -66,4 +68,25 @@ Deno.test("pooledMap returns ordered items", async () => {
     returned.push(value);
   }
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+});
+
+Deno.test("[async] pooledMap (browser compat)", async function () {
+  // Simulates the environment where Symbol.asyncIterator is not available
+  const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
+  // deno-lint-ignore no-explicit-any
+  delete (ReadableStream.prototype as any)[Symbol.asyncIterator];
+  try {
+    const results = pooledMap(
+      2,
+      [1, 2, 3],
+      (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
+    );
+    const array = [];
+    for await (const value of results) {
+      array.push(value);
+    }
+    assertEquals(array, [1, 2, 3]);
+  } finally {
+    ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;
+  }
 });
