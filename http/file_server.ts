@@ -74,6 +74,45 @@ function fileLenToString(len: number): string {
   return `${(len / base).toFixed(2)}${suffix[suffixIndex]}`;
 }
 
+/**
+ * parse range header.
+ *
+ * ```ts
+ * parseRangeHeader("bytes=0-100",   500); // => { start: 0, end: 100 }
+ * parseRangeHeader("bytes=0-",      500); // => { start: 0, end: 500 }
+ * parseRangeHeader("bytes=-100",    500); // => { start: 400, end: 499 }
+ * parseRangeHeader("bytes=invalid", 500); // => null
+ * ```
+ *
+ * Note: Currently, no support for multiple Ranges (e.g. `bytes=0-10, 20-30`)
+ */
+function parseRangeHeader(rangeValue: string, fileSize: number) {
+  const rangeRegex = /bytes=(?<start>\d+)?-(?<end>\d+)?$/u;
+  const parsed = rangeValue.match(rangeRegex);
+
+  if (!parsed || !parsed.groups) {
+    // failed to parse range header
+    return null;
+  }
+
+  const { start, end } = parsed.groups;
+  if (start !== undefined) {
+    if (end !== undefined) {
+      return { start: +start, end: +end };
+    } else {
+      return { start: +start, end: fileSize - 1 };
+    }
+  } else {
+    if (end !== undefined) {
+      // example: `bytes=-100` means the last 100 bytes.
+      return { start: fileSize - +end, end: fileSize - 1 };
+    } else {
+      // failed to parse range header
+      return null;
+    }
+  }
+}
+
 /** Interface for serveFile options. */
 export interface ServeFileOptions {
   /** The algorithm to use for generating the ETag.
@@ -154,54 +193,60 @@ export async function serveFile(
     headers.set("content-type", contentTypeValue);
   }
 
-  // Get and parse the "range" header
-  const range = req.headers.get("range") as string;
-  const rangeRe = /bytes=(\d+)-(\d+)?/;
-  const parsed = rangeRe.exec(range);
+  const fileSize = fileInfo.size;
 
-  // Use the parsed value if available, fallback to the start and end of the entire file
-  const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
+  // handle range request
+  const rangeValue = req.headers.get("range");
+  if (rangeValue) {
+    const parsed = parseRangeHeader(rangeValue, fileSize);
 
-  // If there is a range, set the status to 206, and set the "Content-range" header.
-  if (range && parsed) {
-    headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
-  }
+    // Returns 200 OK if parsing the range header fails
+    if (!parsed) {
+      // Set content length
+      headers.set("content-length", `${fileSize}`);
 
-  // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange = fileInfo.size - 1;
+      const file = await Deno.open(filePath);
+      return createCommonResponse(Status.OK, file.readable, { headers });
+    }
 
-  if (
-    range &&
-    (!parsed ||
-      typeof start !== "number" ||
-      start > end ||
-      start > maxRange ||
-      end > maxRange)
-  ) {
-    return createCommonResponse(
-      Status.RequestedRangeNotSatisfiable,
-      undefined,
-      {
-        headers,
-      },
-    );
-  }
+    // Return 416 Range Not Satisfiable if invalid range header value
+    if (
+      parsed.end < 0 ||
+      parsed.end < parsed.start ||
+      fileSize <= parsed.start
+    ) {
+      // Set the "Content-range" header
+      headers.set("content-range", `bytes */${fileSize}`);
 
-  const file = await Deno.open(filePath);
+      return createCommonResponse(
+        Status.RequestedRangeNotSatisfiable,
+        undefined,
+        { headers },
+      );
+    }
 
-  // Set content length
-  const contentLength = end - start + 1;
-  headers.set("content-length", `${contentLength}`);
-  if (range && parsed) {
+    // clamps the range header value
+    const start = Math.max(0, parsed.start);
+    const end = Math.min(parsed.end, fileSize - 1);
+
+    // Set the "Content-range" header
+    headers.set("content-range", `bytes ${start}-${end}/${fileSize}`);
+
+    // Set content length
+    const contentLength = end - start + 1;
+    headers.set("content-length", `${contentLength}`);
+
+    const file = await Deno.open(filePath);
     await file.seek(start, Deno.SeekMode.Start);
     const sliced = file.readable
       .pipeThrough(new ByteSliceStream(0, contentLength - 1));
-    return createCommonResponse(Status.PartialContent, sliced, {
-      headers,
-    });
+    return createCommonResponse(Status.PartialContent, sliced, { headers });
   }
 
+  // Set content length
+  headers.set("content-length", `${fileSize}`);
+
+  const file = await Deno.open(filePath);
   return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
