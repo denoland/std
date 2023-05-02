@@ -79,7 +79,7 @@ function fileLenToString(len: number): string {
  *
  * ```ts ignore
  * parseRangeHeader("bytes=0-100",   500); // => { start: 0, end: 100 }
- * parseRangeHeader("bytes=0-",      500); // => { start: 0, end: 500 }
+ * parseRangeHeader("bytes=0-",      500); // => { start: 0, end: 499 }
  * parseRangeHeader("bytes=-100",    500); // => { start: 400, end: 499 }
  * parseRangeHeader("bytes=invalid", 500); // => null
  * ```
