@@ -94,10 +94,6 @@ interface InitUser {
   displayName: string;
 }
 
-export interface UserValue extends InitUserValue {
-  isSubscribed: boolean;
-}
-
 export interface User extends InitUser {
   isSubscribed: boolean;
 }
@@ -159,7 +155,8 @@ export async function setUserSubscription(
 
 export async function getUsers(ids: string[]) {
   const keys = ids.map((id) => ["users", id]);
-  return await kv.getMany<UserValue[]>(keys);
+  const res = await kv.getMany<User[]>(keys);
+  return res.values;
 }
 
 export async function getOrCreateUser(id: string, email: string) {
@@ -167,5 +164,9 @@ export async function getOrCreateUser(id: string, email: string) {
   if (user) return user;
 
   const customer = await stripe.customers.create({ email });
-  return await createUser({ id, stripeCustomerId: customer.id });
+  return await createUser({
+    id,
+    stripeCustomerId: customer.id,
+    displayName: "",
+  });
 }
