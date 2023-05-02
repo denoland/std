@@ -29,7 +29,9 @@ export default function ItemSummary(props: Item) {
         {pluralize(props.score, "point")} by {props.userId}{" "}
         {timeAgo(new Date(props.createdAt))} ago •{" "}
         <a href={`/item/${props.id}`}>
-          Comments
+          {props.commentsCount
+            ? pluralize(props.commentsCount, "Comment")
+            : "Comments"}
         </a>
       </div>
     </div>

@@ -13,6 +13,7 @@ export interface Item extends InitItem {
   id: string;
   createdAt: Date;
   score: number;
+  commentsCount: number;
 }
 
 export async function createItem(initItem: InitItem) {
@@ -21,7 +22,13 @@ export async function createItem(initItem: InitItem) {
     const id = crypto.randomUUID();
     const itemKey = ["items", id];
     const itemsByUserKey = ["items_by_user", initItem.userId, id];
-    const item: Item = { ...initItem, id, score: 0, createdAt: new Date() };
+    const item: Item = {
+      ...initItem,
+      id,
+      score: 0,
+      commentsCount: 0,
+      createdAt: new Date(),
+    };
 
     res = await kv.atomic()
       .check({ key: itemKey, versionstamp: null })
@@ -61,6 +68,7 @@ export async function createComment(initComment: InitComment) {
   let res = { ok: false };
   while (!res.ok) {
     const id = crypto.randomUUID();
+    const itemKey = ["items", initComment.itemId];
     const commentsByUserKey = ["comments_by_users", initComment.userId, id];
     const commentsByItemKey = ["comments_by_item", initComment.itemId, id];
     const comment: Comment = { ...initComment, id, createdAt: new Date() };
@@ -72,6 +80,13 @@ export async function createComment(initComment: InitComment) {
       .set(commentsByItemKey, comment)
       .commit();
 
+    if (res.ok) {
+      const { value: item } = await kv.get<Item>(itemKey);
+      if (item) {
+        item.commentsCount++;
+        await kv.atomic().set(itemKey, item).commit();
+      }
+    }
     return comment;
   }
 }
