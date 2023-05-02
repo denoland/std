@@ -41,13 +41,16 @@ export const handler: Handlers<State, State> = {
       return new Response(null, { status: 400 });
     }
 
-    await createItem({
+    const item = await createItem({
       userId: ctx.state.session!.user.id,
       title,
       url,
     });
 
-    return ctx.render(ctx.state);
+    return new Response(null, {
+      headers: { location: `/item/${item!.id}` },
+      status: 302,
+    });
   },
 };
 
