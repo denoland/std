@@ -3,18 +3,20 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
-import { BUTTON_STYLES } from "@/utils/constants.ts";
-import { getUser, type UserValue } from "@/utils/db.ts";
-import { NOTICE_STYLES } from "@/utils/constants.ts";
+import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
+import { getOrCreateUser, type User } from "@/utils/db.ts";
 
 interface AccountPageData extends AccountState {
-  user: UserValue;
+  user: User;
 }
 
 export const handler: Handlers<AccountPageData, AccountState> = {
   async GET(_request, ctx) {
-    const user = await getUser(ctx.state.session.user.id);
-    return ctx.render({ ...ctx.state, user: user.value! });
+    const user = await getOrCreateUser(
+      ctx.state.session.user.id,
+      ctx.state.session.user.email!,
+    );
+    return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
   },
 };
 
