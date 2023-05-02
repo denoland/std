@@ -27,12 +27,14 @@ export const handler: Handlers<ItemPageData, State> = {
   async GET(_req, ctx) {
     const { id } = ctx.params;
 
-    const item = await getItemById(id);
+    let item = await getItemById(id);
     if (item === null) {
       return ctx.renderNotFound();
     }
 
     const comments = await getCommentsByItem(id);
+    const commentsCount = comments.length;
+    item = { commentsCount, ...item };
 
     return ctx.render({ ...ctx.state, item, comments });
   },

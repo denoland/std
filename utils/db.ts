@@ -13,7 +13,7 @@ export interface Item extends InitItem {
   id: string;
   createdAt: Date;
   score: number;
-  commentsCount: number;
+  commentsCount?: number;
 }
 
 export async function createItem(initItem: InitItem) {
@@ -26,7 +26,6 @@ export async function createItem(initItem: InitItem) {
       ...initItem,
       id,
       score: 0,
-      commentsCount: 0,
       createdAt: new Date(),
     };
 
@@ -44,7 +43,12 @@ export async function createItem(initItem: InitItem) {
 export async function getAllItems(options?: Deno.KvListOptions) {
   const iter = await kv.list<Item>({ prefix: ["items"] }, options);
   const items = [];
-  for await (const res of iter) items.push(res.value);
+  for await (const res of iter) {
+    const { id } = res.value;
+    const commentsCount = await getItemCommentsCount(id);
+    res.value = { commentsCount, ...res.value };
+    items.push(res.value);
+  }
   return items;
 }
 
@@ -68,7 +72,6 @@ export async function createComment(initComment: InitComment) {
   let res = { ok: false };
   while (!res.ok) {
     const id = crypto.randomUUID();
-    const itemKey = ["items", initComment.itemId];
     const commentsByUserKey = ["comments_by_users", initComment.userId, id];
     const commentsByItemKey = ["comments_by_item", initComment.itemId, id];
     const comment: Comment = { ...initComment, id, createdAt: new Date() };
@@ -80,13 +83,6 @@ export async function createComment(initComment: InitComment) {
       .set(commentsByItemKey, comment)
       .commit();
 
-    if (res.ok) {
-      const { value: item } = await kv.get<Item>(itemKey);
-      if (item) {
-        item.commentsCount++;
-        await kv.atomic().set(itemKey, item).commit();
-      }
-    }
     return comment;
   }
 }
@@ -101,6 +97,18 @@ export async function getCommentsByItem(
   const comments = [];
   for await (const res of iter) comments.push(res.value);
   return comments;
+}
+
+export async function getItemCommentsCount(
+  itemId: string,
+  options?: Deno.KvListOptions,
+) {
+  const iter = await kv.list<Comment>({
+    prefix: ["comments_by_item", itemId],
+  }, options);
+  let commentsCount = 0;
+  for await (const _ of iter) commentsCount++;
+  return commentsCount;
 }
 
 interface InitUser {
