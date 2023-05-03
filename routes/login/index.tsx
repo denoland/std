@@ -105,8 +105,13 @@ export default function LoginPage(props: PageProps) {
             />
             Login with GitHub
           </OAuthLoginButton>
-          <div class="text-center text-gray-500 hover:text-black mt-8">
-            <a href="/signup">Don't have an account? Sign up</a>
+          <div class="text-center text-gray-500 space-y-2 mt-8">
+            <p class="hover:text-black">
+              <a href="/signup">Don't have an account? Sign up</a>
+            </p>
+            <p class="hover:text-black">
+              <a href="/forgot-password">Forgot your password?</a>
+            </p>
           </div>
         </div>
       </div>
