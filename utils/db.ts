@@ -21,7 +21,12 @@ export async function createItem(initItem: InitItem) {
     const id = crypto.randomUUID();
     const itemKey = ["items", id];
     const itemsByUserKey = ["items_by_user", initItem.userId, id];
-    const item: Item = { ...initItem, id, score: 0, createdAt: new Date() };
+    const item: Item = {
+      ...initItem,
+      id,
+      score: 0,
+      createdAt: new Date(),
+    };
 
     res = await kv.atomic()
       .check({ key: itemKey, versionstamp: null })
@@ -86,6 +91,13 @@ export async function getCommentsByItem(
   const comments = [];
   for await (const res of iter) comments.push(res.value);
   return comments;
+}
+
+export async function getItemCommentsCount(itemId: string) {
+  const iter = kv.list<Comment>({ prefix: ["comments_by_item", itemId] });
+  let count = 0;
+  for await (const _ of iter) count++;
+  return count;
 }
 
 interface InitUser {

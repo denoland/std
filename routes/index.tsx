@@ -5,16 +5,20 @@ import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import { getAllItems, type Item } from "@/utils/db.ts";
+import { getAllItems, getItemCommentsCount, type Item } from "@/utils/db.ts";
 
 interface HomePageData extends State {
   items: Item[];
+  commentsCounts: number[];
 }
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
     const items = await getAllItems();
-    return ctx.render({ ...ctx.state, items });
+    const commentsCounts = await Promise.all(
+      items.map((item) => getItemCommentsCount(item.id)),
+    );
+    return ctx.render({ ...ctx.state, items, commentsCounts });
   },
 };
 
@@ -24,7 +28,12 @@ export default function HomePage(props: PageProps<HomePageData>) {
       <Head />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
-          {props.data.items.map((item) => <ItemSummary {...item} />)}
+          {props.data.items.map((item, index) => (
+            <ItemSummary
+              item={item}
+              commentsCount={props.data.commentsCounts[index]}
+            />
+          ))}
         </div>
       </Layout>
     </>
