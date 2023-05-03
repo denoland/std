@@ -91,10 +91,8 @@ jobs:
       - name: Check Deprecations
         run: "deno task lint:deprecations"
 
-      # TODO(bartlomieju): temporarily disabled, because it relies on 
-      # `Deno[Deno.internal].core`, which was removed in v1.33.0.
-      # - name: Check Import paths in Docs
-      #   run: "deno task lint:doc-imports"
+      - name: Check Import paths in Docs
+        run: "deno task lint:doc-imports"
 
       - name: Check non-test assertions
         run: deno task lint:check-assertions
@@ -137,7 +135,7 @@ jobs:
           rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
-    
+
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
         run: deno task build:${{ matrix.module }} --check
