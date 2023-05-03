@@ -6,8 +6,6 @@ export async function resetKv() {
   const promises = [];
   for await (const res of iter) promises.push(kv.delete(res.key));
   await Promise.all(promises);
-
-  await kv.close();
 }
 
 if (import.meta.main) {
@@ -19,4 +17,5 @@ if (import.meta.main) {
     close();
   }
   await resetKv();
+  await kv.close();
 }
