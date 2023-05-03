@@ -195,9 +195,13 @@ export async function serveFile(
 
   const fileSize = fileInfo.size;
 
-  // handle range request
   const rangeValue = req.headers.get("range");
-  if (rangeValue) {
+
+  // handle range request
+  // Note: Some clients add a Range header to all requests to limit the size of the response.
+  // If the file is empty, ignore the range header and respond with a 200 rather than a 416.
+  // https://github.com/golang/go/blob/0d347544cbca0f42b160424f6bc2458ebcc7b3fc/src/net/http/fs.go#L273-L276
+  if (rangeValue && 0 < fileSize) {
     const parsed = parseRangeHeader(rangeValue, fileSize);
 
     // Returns 200 OK if parsing the range header fails

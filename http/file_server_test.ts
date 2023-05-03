@@ -983,7 +983,7 @@ Deno.test(
 );
 
 Deno.test(
-  "file_server should return 416 due to request for empty file",
+  "file_server should return 200 OK due to range request for empty file",
   async () => {
     await startFileServer();
     try {
@@ -994,15 +994,11 @@ Deno.test(
         "http://localhost:4507/testdata/test_empty_file.txt",
         { headers },
       );
-      await res.text();
 
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes */0`,
-      );
+      assertEquals(await res.text(), "");
 
-      assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable");
+      assertEquals(res.status, 200);
+      assertEquals(res.statusText, "OK");
     } finally {
       await killFileServer();
     }
