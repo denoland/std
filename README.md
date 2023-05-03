@@ -144,6 +144,10 @@ In your [Supabase dashboard](https://app.supabase.com/projects):
 2. Go to `Authentication` > `Providers` > click `Email`
 3. Disable `Confirm email`
 
+If you'd like to use additional social OAuth authentication strategies, please
+refer to the
+[Supabase Auth documentation](https://supabase.com/docs/guides/auth).
+
 ### Supabase Production Environmental Variables
 
 The following can be found in Dashboard Home -> Settings -> API -> API
