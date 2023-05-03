@@ -1,5 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Item } from "@/utils/db.ts";
+import type { Item, Vote } from "@/utils/db.ts";
+import VoteBtn from "@/islands/Vote.tsx";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -16,13 +17,31 @@ export function timeAgo(time: number | Date) {
 export interface ItemSummaryProps {
   item: Item;
   commentsCount: number;
+  votes: Vote[];
+  curUserId?: string;
 }
 
 export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
-        <span class="cursor-pointer mr-2 text-gray-300">▲</span>
+        {
+          /* <button
+          class="cursor-pointer mr-2 text-gray-300"
+          type="submit"
+          onClick={() => {
+            console.log('click!');
+             fetch("/api/vote", {
+              method: "POST",
+              credentials: "same-origin",
+              body: JSON.stringify(props.item),
+            });
+          }}
+        >
+          ▲
+        </button> */
+        }
+        <VoteBtn item={props.item} votes={props.votes} />
         <span class="mr-2">
           <a href={props.item.url}>{props.item.title}</a>
         </span>
@@ -31,8 +50,11 @@ export default function ItemSummary(props: ItemSummaryProps) {
         </span>
       </div>
       <div class="text-gray-500">
-        {pluralize(props.item.score, "point")} by {props.item.userId}{" "}
-        {timeAgo(new Date(props.item.createdAt))} ago •{" "}
+        {pluralize(
+          props.item.score,
+          "point",
+        )} by {props.item.userId} {timeAgo(new Date(props.item.createdAt))}{" "}
+        ago •{" "}
         <a href={`/item/${props.item.id}`}>
           {pluralize(props.commentsCount, "comment")}
         </a>

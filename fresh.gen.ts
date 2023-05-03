@@ -11,18 +11,20 @@ import * as $4 from "./routes/account/index.tsx";
 import * as $5 from "./routes/account/manage.ts";
 import * as $6 from "./routes/account/upgrade.ts";
 import * as $7 from "./routes/api/stripe-webhooks.ts";
-import * as $8 from "./routes/blog/[slug].tsx";
-import * as $9 from "./routes/blog/index.tsx";
-import * as $10 from "./routes/feed.ts";
-import * as $11 from "./routes/index.tsx";
-import * as $12 from "./routes/item/[id].tsx";
-import * as $13 from "./routes/login/index.tsx";
-import * as $14 from "./routes/login/oauth.ts";
-import * as $15 from "./routes/login/success.tsx";
-import * as $16 from "./routes/logout.ts";
-import * as $17 from "./routes/signup.tsx";
-import * as $18 from "./routes/submit.tsx";
+import * as $8 from "./routes/api/vote.ts";
+import * as $9 from "./routes/blog/[slug].tsx";
+import * as $10 from "./routes/blog/index.tsx";
+import * as $11 from "./routes/feed.ts";
+import * as $12 from "./routes/index.tsx";
+import * as $13 from "./routes/item/[id].tsx";
+import * as $14 from "./routes/login/index.tsx";
+import * as $15 from "./routes/login/oauth.ts";
+import * as $16 from "./routes/login/success.tsx";
+import * as $17 from "./routes/logout.ts";
+import * as $18 from "./routes/signup.tsx";
+import * as $19 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
+import * as $$1 from "./islands/Vote.tsx";
 
 const manifest = {
   routes: {
@@ -34,20 +36,22 @@ const manifest = {
     "./routes/account/manage.ts": $5,
     "./routes/account/upgrade.ts": $6,
     "./routes/api/stripe-webhooks.ts": $7,
-    "./routes/blog/[slug].tsx": $8,
-    "./routes/blog/index.tsx": $9,
-    "./routes/feed.ts": $10,
-    "./routes/index.tsx": $11,
-    "./routes/item/[id].tsx": $12,
-    "./routes/login/index.tsx": $13,
-    "./routes/login/oauth.ts": $14,
-    "./routes/login/success.tsx": $15,
-    "./routes/logout.ts": $16,
-    "./routes/signup.tsx": $17,
-    "./routes/submit.tsx": $18,
+    "./routes/api/vote.ts": $8,
+    "./routes/blog/[slug].tsx": $9,
+    "./routes/blog/index.tsx": $10,
+    "./routes/feed.ts": $11,
+    "./routes/index.tsx": $12,
+    "./routes/item/[id].tsx": $13,
+    "./routes/login/index.tsx": $14,
+    "./routes/login/oauth.ts": $15,
+    "./routes/login/success.tsx": $16,
+    "./routes/logout.ts": $17,
+    "./routes/signup.tsx": $18,
+    "./routes/submit.tsx": $19,
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,
+    "./islands/Vote.tsx": $$1,
   },
   baseUrl: import.meta.url,
   config,

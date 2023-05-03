@@ -100,6 +100,68 @@ export async function getItemCommentsCount(itemId: string) {
   return count;
 }
 
+interface InitVote {
+  userId: string;
+  itemId: string;
+  voteId: string | null;
+}
+
+export interface Vote extends InitVote {
+  id: string;
+  createdAt: Date;
+}
+
+export async function createOrDeleteVote(initVote: InitVote) {
+  let res = { ok: false };
+  while (!res.ok) {
+    const id = initVote?.voteId || crypto.randomUUID();
+    const votesByUserKey = ["vote_by_users", initVote.userId, id];
+    const { value } = await kv.get(votesByUserKey);
+    if (value) {
+      await kv.delete(votesByUserKey);
+      const itemKey = ["items", initVote.itemId]
+      const { value: item } = await kv.get<Item>(itemKey);
+      if (item) {
+        item.score && item.score--;
+        await kv.atomic().set(itemKey, item).commit();
+      }
+      return {status: 200};
+    }   
+    const vote: Vote = { ...initVote, id, createdAt: new Date() };
+    res = await kv.atomic()
+      .check({ key: votesByUserKey, versionstamp: null })
+      .set(votesByUserKey, vote)
+      .commit();
+
+    if(res.ok){
+      const itemKey = ["items", initVote.itemId]
+      const { value: item } = await kv.get<Item>(itemKey);
+      if (item) {
+        item.score++;
+        await kv.atomic().set(itemKey, item).commit();
+      }
+    }
+    return vote;
+  }
+}
+
+export async function getVotesByUser(
+  userId: string | undefined,
+  options?: Deno.KvListOptions,
+) {
+  if (userId) {
+    const iter = await kv.list<Vote>({
+      prefix: ["vote_by_users", userId],
+    }, options);
+    const votes = [];
+    for await (const res of iter) {
+      votes.push(res.value);
+    }
+    return votes;
+  }
+  return [];
+}
+
 interface InitUser {
   id: string;
   stripeCustomerId: string;

@@ -11,16 +11,19 @@ import {
 } from "@/utils/constants.ts";
 import { timeAgo } from "@/components/ItemSummary.tsx";
 import {
-  Comment,
+  type Comment,
   createComment,
   getCommentsByItem,
   getItemById,
-  Item,
+  getVotesByUser,
+  type Item,
+  type Vote,
 } from "@/utils/db.ts";
 
-interface ItemPageData extends State {
+export interface ItemPageData extends State {
   item: Item;
   comments: Comment[];
+  votes: Vote[];
 }
 
 export const handler: Handlers<ItemPageData, State> = {
@@ -34,7 +37,9 @@ export const handler: Handlers<ItemPageData, State> = {
 
     const comments = await getCommentsByItem(id);
 
-    return ctx.render({ ...ctx.state, item, comments });
+    const votes = await getVotesByUser(ctx.state.session?.user.id);
+
+    return ctx.render({ ...ctx.state, item, comments, votes });
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
@@ -76,6 +81,8 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
           <ItemSummary
             item={props.data.item}
             commentsCount={props.data.comments.length}
+            votes={props.data.votes}
+            curUserId={props.data.session?.user.id}
           />
           <div class="divide-y">
             {props.data.comments.map((comment) => (

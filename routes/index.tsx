@@ -5,20 +5,40 @@ import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import { getAllItems, getItemCommentsCount, type Item } from "@/utils/db.ts";
+import {
+  getAllItems,
+  getItemCommentsCount,
+  getVotesByUser,
+  type Item,
+  type Vote,
+} from "@/utils/db.ts";
 
 interface HomePageData extends State {
   items: Item[];
   commentsCounts: number[];
+  votes: Vote[];
 }
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
     const items = await getAllItems();
+    const score = (a: Item, b: Item) => {
+      const x = a.score;
+      const y = b.score;
+      if (x > y) {
+          return -1;
+      }
+      if (x < y) {
+          return 1;
+      }
+      return 0;
+  };
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
     );
-    return ctx.render({ ...ctx.state, items, commentsCounts });
+    items.sort(score);
+    const votes = await getVotesByUser(ctx.state.session?.user.id);
+    return ctx.render({ ...ctx.state, items, commentsCounts, votes });
   },
 };
 
@@ -32,6 +52,8 @@ export default function HomePage(props: PageProps<HomePageData>) {
             <ItemSummary
               item={item}
               commentsCount={props.data.commentsCounts[index]}
+              votes={props.data.votes}
+              curUserId={props.data.session?.user.id}
             />
           ))}
         </div>
