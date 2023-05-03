@@ -5,9 +5,7 @@ import { walk } from "../fs/walk.ts";
 import ts from "npm:typescript@5.0.2";
 const {
   createSourceFile,
-  ImportDeclaration,
   ScriptTarget,
-  StringLiteral,
   SyntaxKind,
 } = ts;
 
