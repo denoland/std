@@ -144,6 +144,10 @@ In your [Supabase dashboard](https://app.supabase.com/projects):
 2. Go to `Authentication` > `Providers` > click `Email`
 3. Disable `Confirm email`
 
+If you'd like to use additional social OAuth authentication strategies, please
+refer to the
+[Supabase Auth documentation](https://supabase.com/docs/guides/auth).
+
 ### Supabase Production Environmental Variables
 
 The following can be found in Dashboard Home -> Settings -> API -> API
@@ -176,8 +180,8 @@ Keep your user's customer information up-to-date with billing changes by
 - `STRIPE_WEBHOOK_SECRET`: Dashboard Home -> Developers (right side of page) ->
   Create webhook -> Click Add Endpoint
   - After Creation, redirected to new webhook page -> Signing Secret -> Reveal
-- `STRIPE_PREMIUM_PLAN_PRICE_ID`: (in constants.ts): Dashboard -> Products ->
-  Premium Tier -> Pricing/API ID
+- `STRIPE_PREMIUM_PLAN_PRICE_ID`: Dashboard -> Products -> Premium Tier ->
+  Pricing/API ID
 
 ### Stripe Customer Portal Branding
 
@@ -242,6 +246,7 @@ services:
      - SUPABASE_API_URL=${SUPABASE_API_URL}
      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+     - STRIPE_PREMIUM_PLAN_PRICE_ID=${STRIPE_PREMIUM_PLAN_PRICE_ID}
     ports:
       - "8000:8000"
 ```

@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { ItemValue } from "@/utils/db.ts";
+import type { Item } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -13,23 +13,28 @@ export function timeAgo(time: number | Date) {
   else return pluralize(~~(between / 86400), "day");
 }
 
-export default function ItemSummary(props: Deno.KvEntry<ItemValue>) {
+export interface ItemSummaryProps {
+  item: Item;
+  commentsCount: number;
+}
+
+export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
         <span class="cursor-pointer mr-2 text-gray-300">▲</span>
         <span class="mr-2">
-          <a href={props.value.url}>{props.value.title}</a>
+          <a href={props.item.url}>{props.item.title}</a>
         </span>
         <span class="text-gray-500">
-          {new URL(props.value.url).host}
+          {new URL(props.item.url).host}
         </span>
       </div>
       <div class="text-gray-500">
-        {pluralize(props.value.score, "point")} by {props.value.userId}{" "}
-        {timeAgo(new Date(props.value.createdAt))} ago •{" "}
-        <a href={`/item/${props.key.at(-1)}`}>
-          Comments
+        {pluralize(props.item.score, "point")} by {props.item.userId}{" "}
+        {timeAgo(new Date(props.item.createdAt))} ago •{" "}
+        <a href={`/item/${props.item.id}`}>
+          {pluralize(props.commentsCount, "comment")}
         </a>
       </div>
     </div>

@@ -2,10 +2,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import { Stripe } from "stripe";
-import {
-  getUserIdByStripeCustomerId,
-  setUserSubscription,
-} from "@/utils/db.ts";
+import { getUserByStripeCustomerId, setUserSubscription } from "@/utils/db.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
@@ -39,15 +36,15 @@ export const handler: Handlers = {
 
     switch (event.type) {
       case "customer.subscription.created": {
-        const userId = await getUserIdByStripeCustomerId(customer);
-        if (userId === null) return new Response(null, { status: 400 });
-        await setUserSubscription(userId, true);
+        const user = await getUserByStripeCustomerId(customer);
+        if (!user) return new Response(null, { status: 400 });
+        await setUserSubscription(user.id, true);
         return new Response(null, { status: 201 });
       }
       case "customer.subscription.deleted": {
-        const userId = await getUserIdByStripeCustomerId(customer);
-        if (userId === null) return new Response(null, { status: 400 });
-        await setUserSubscription(userId, false);
+        const user = await getUserByStripeCustomerId(customer);
+        if (!user) return new Response(null, { status: 400 });
+        await setUserSubscription(user.id, false);
         return new Response(null, { status: 202 });
       }
       default: {
