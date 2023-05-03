@@ -27,14 +27,12 @@ export const handler: Handlers<ItemPageData, State> = {
   async GET(_req, ctx) {
     const { id } = ctx.params;
 
-    let item = await getItemById(id);
+    const item = await getItemById(id);
     if (item === null) {
       return ctx.renderNotFound();
     }
 
     const comments = await getCommentsByItem(id);
-    const commentsCount = comments.length;
-    item = { commentsCount, ...item };
 
     return ctx.render({ ...ctx.state, item, comments });
   },
@@ -75,7 +73,10 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
       <Head title={props.data.item.title} />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
-          <ItemSummary {...props.data.item} />
+          <ItemSummary
+            item={props.data.item}
+            commentsCount={props.data.comments.length}
+          />
           <div class="divide-y">
             {props.data.comments.map((comment) => (
               <div class="py-4">
