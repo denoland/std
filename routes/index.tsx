@@ -7,11 +7,10 @@ import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import {
   getAllItems,
+  getItemCommentsCountsByIds,
   getUsersByIds,
   type Item,
   type User,
-  getItemCommentsCountsByIds,
-  type Item,
 } from "@/utils/db.ts";
 
 interface HomePageData extends State {
