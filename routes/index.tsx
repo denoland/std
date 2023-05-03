@@ -5,11 +5,7 @@ import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import {
-  getAllItems,
-  getItemCommentsCountsByIds,
-  type Item,
-} from "@/utils/db.ts";
+import { getAllItems, getItemCommentsCount, type Item } from "@/utils/db.ts";
 
 interface HomePageData extends State {
   items: Item[];
@@ -19,8 +15,8 @@ interface HomePageData extends State {
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
     const items = await getAllItems();
-    const commentsCounts = await getItemCommentsCountsByIds(
-      items.map((item) => item.id),
+    const commentsCounts = await Promise.all(
+      items.map((item) => getItemCommentsCount(item.id)),
     );
     return ctx.render({ ...ctx.state, items, commentsCounts });
   },
