@@ -15,7 +15,7 @@ template for building your SaaS quickly and easily.
   [linter](https://deno.land/manual/tools/linter) and
   [test runner](https://deno.land/manual/basics/testing) and TypeScript support.
 - User authentication with [Supabase Auth](https://supabase.com/auth), including
-  email/password and OAuth flows.
+  email/password, OAuth and reset password flows.
 - Session management
 - Database management with [Deno KV](https://deno.com/manual/runtime/kv), which
   provides zero config durable data storage. _Prefer using Supabase for data
@@ -141,8 +141,13 @@ These steps enable using email with Supabase Auth.
 In your [Supabase dashboard](https://app.supabase.com/projects):
 
 1. Go to your project
-2. Go to `Authentication` > `Providers` > click `Email`
-3. Disable `Confirm email`
+1. Go to `Authentication` > `Providers` > click `Email`
+1. Disable `Confirm email`
+1. Go to `Authentication` > `URL Configuration`
+1. Set the `Site URL` to be `https://{{ YOUR DOMAIN }}/login/success` and click
+   `Save`
+1. Click `Add URL` under `Redirect URLs` and set the `URL` to be
+   `https:// {{ YOUR DOMAIN }}/**`
 
 If you'd like to use additional social OAuth authentication strategies, please
 refer to the
