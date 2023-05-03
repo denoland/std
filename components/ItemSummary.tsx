@@ -13,23 +13,28 @@ export function timeAgo(time: number | Date) {
   else return pluralize(~~(between / 86400), "day");
 }
 
-export default function ItemSummary(props: Item) {
+export interface ItemSummaryProps {
+  item: Item;
+  commentsCount: number;
+}
+
+export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
         <span class="cursor-pointer mr-2 text-gray-300">▲</span>
         <span class="mr-2">
-          <a href={props.url}>{props.title}</a>
+          <a href={props.item.url}>{props.item.title}</a>
         </span>
         <span class="text-gray-500">
-          {new URL(props.url).host}
+          {new URL(props.item.url).host}
         </span>
       </div>
       <div class="text-gray-500">
-        {pluralize(props.score, "point")} by {props.userId}{" "}
-        {timeAgo(new Date(props.createdAt))} ago •{" "}
-        <a href={`/item/${props.id}`}>
-          Comments
+        {pluralize(props.item.score, "point")} by {props.item.userId}{" "}
+        {timeAgo(new Date(props.item.createdAt))} ago •{" "}
+        <a href={`/item/${props.item.id}`}>
+          {pluralize(props.commentsCount, "comment")}
         </a>
       </div>
     </div>

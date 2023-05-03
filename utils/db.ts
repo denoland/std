@@ -21,7 +21,12 @@ export async function createItem(initItem: InitItem) {
     const id = crypto.randomUUID();
     const itemKey = ["items", id];
     const itemsByUserKey = ["items_by_user", initItem.userId, id];
-    const item: Item = { ...initItem, id, score: 0, createdAt: new Date() };
+    const item: Item = {
+      ...initItem,
+      id,
+      score: 0,
+      createdAt: new Date(),
+    };
 
     res = await kv.atomic()
       .check({ key: itemKey, versionstamp: null })
@@ -86,6 +91,26 @@ export async function getCommentsByItem(
   const comments = [];
   for await (const res of iter) comments.push(res.value);
   return comments;
+}
+
+export async function getItemCommentsCountsByIds(
+  ids: string[],
+  options?: Deno.KvListOptions,
+) {
+  const keys = ids.map((id) => ["comments_by_item", id]);
+  const items: number[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    const iter = await kv.list<Comment>({
+      prefix: keys[i],
+    }, options);
+
+    let commentsCount = 0;
+    for await (const _ of iter) {
+      commentsCount++;
+    }
+    items.push(commentsCount);
+  }
+  return items;
 }
 
 interface InitUser {
