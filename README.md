@@ -237,6 +237,7 @@ services:
     container_name: deno-sasskit
     image: deno-image
    environment:
+     - DENO_DEPLOYMENT_ID=${DENO_DEPLOYMENT_ID}
      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
      - SUPABASE_API_URL=${SUPABASE_API_URL}
      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
@@ -244,6 +245,22 @@ services:
     ports:
       - "8000:8000"
 ```
+
+The environmental variable values are pulled from the `.env` file.
+
+The `DENO_DEPLOYMENT_ID` variable is needed for Docker deployment of a Deno
+Fresh app for caching to work properly. Its value needs to be a token reflecting
+the build that you will be deploying. The SHA1 commit hash is a suitable token
+that can be obtained from the following command run in the repo's root folder.
+Copy its results into the value of `DENO_DEPLOYMENT_ID`. Make sure you update
+this value every time you run a new docker compose build.
+
+```sh
+# get the SHA1 commit hash of the current branch
+git rev-parse HEAD
+```
+
+Make sure this command is run and value upgraded
 
 ### Automatic Deployment with Deno Deploy
 
