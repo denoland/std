@@ -141,8 +141,13 @@ These steps enable using email with Supabase Auth.
 In your [Supabase dashboard](https://app.supabase.com/projects):
 
 1. Go to your project
-2. Go to `Authentication` > `Providers` > click `Email`
-3. Disable `Confirm email`
+1. Go to `Authentication` > `Providers` > click `Email`
+1. Disable `Confirm email`
+1. Go to `Authentication` > `URL Configuration`
+1. Set the `Site URL` to be `https://{{ YOUR DOMAIN }}/login/success` and click
+   `Save`
+1. Click `Add URL` under `Redirect URLs` and set the `URL` to be
+   `https:// {{ YOUR DOMAIN }}/**`
 
 If you'd like to use additional social OAuth authentication strategies, please
 refer to the
