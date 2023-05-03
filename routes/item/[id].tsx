@@ -88,7 +88,11 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
       <Head title={props.data.item.title} />
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
-          <ItemSummary item={props.data.item} user={props.data.user} />
+          <ItemSummary
+            item={props.data.item}
+            commentsCount={props.data.comments.length}
+            user={props.data.user}
+          />
           <div class="divide-y">
             {props.data.comments.map((comment, index) => (
               <div class="py-4">

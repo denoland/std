@@ -10,18 +10,24 @@ import {
   getUsersByIds,
   type Item,
   type User,
+  getItemCommentsCountsByIds,
+  type Item,
 } from "@/utils/db.ts";
 
 interface HomePageData extends State {
   users: User[];
   items: Item[];
+  commentsCounts: number[];
 }
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
     const items = await getAllItems();
     const users = await getUsersByIds(items.map((item) => item.userId));
-    return ctx.render({ ...ctx.state, items, users });
+    const commentsCounts = await getItemCommentsCountsByIds(
+      items.map((item) => item.id),
+    );
+    return ctx.render({ ...ctx.state, items, commentsCounts, users });
   },
 };
 
@@ -32,7 +38,11 @@ export default function HomePage(props: PageProps<HomePageData>) {
       <Layout isLoggedIn={props.data.isLoggedIn}>
         <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
           {props.data.items.map((item, index) => (
-            <ItemSummary item={item} user={props.data.users[index]} />
+            <ItemSummary
+              item={item}
+              commentsCount={props.data.commentsCounts[index]}
+              user={props.data.users[index]}
+            />
           ))}
         </div>
       </Layout>
