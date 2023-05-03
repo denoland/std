@@ -1,7 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { comparatorIntersects, SemVerComparator } from "./comparator.ts";
 import { INVALID, SemVer } from "./semver.ts";
-import { gte, lte, sort } from "./operators/mod.ts";
+import { gte } from "./gte.ts";
+import { lte } from "./lte.ts";
+import { sort } from "./sort.ts";
 
 type SemVerRangeAnd = SemVerComparator[];
 type SemVerRangeOr = SemVerRangeAnd[];

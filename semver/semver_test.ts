@@ -1,7 +1,7 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { rsort, sort } from "./operators/sort.ts";
+import { rsort, sort } from "./sort.ts";
 import { parse, parseRange } from "./parse.ts";
 import { maxSatisfying, minSatisfying } from "./range.ts";
 import { MAX, MIN } from "./semver.ts";

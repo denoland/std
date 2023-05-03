@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../../testing/asserts.ts";
-import { parse } from "../parse.ts";
-import { gt } from "./gt.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { parse } from "./parse.ts";
+import { lt } from "./lt.ts";
 
 Deno.test({
   name: "comparison",
@@ -34,8 +34,8 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = gt(s0, s1);
-        assertEquals(actual, true, `${v0} > ${v1} : ${actual}`);
+        const actual = lt(s0, s1);
+        assertEquals(actual, false, `${v0} < ${v1} : ${actual}`);
       });
     }
   },

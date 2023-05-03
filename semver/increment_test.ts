@@ -1,10 +1,10 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../../testing/asserts.ts";
-import type { ReleaseType } from "../types.ts";
-import { parse } from "../parse.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import type { ReleaseType } from "./types.ts";
+import { parse } from "./parse.ts";
 import { increment } from "./increment.ts";
-import { format } from "../format.ts";
+import { format } from "./format.ts";
 
 Deno.test("increment", async (t) => {
   //  [version, inc, result, identifier]

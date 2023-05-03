@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "../semver.ts";
-import { ReleaseType } from "../types.ts";
+import { SemVer } from "./semver.ts";
+import { ReleaseType } from "./types.ts";
 
 /**
  * Returns the new version resulting from an increment by release type.

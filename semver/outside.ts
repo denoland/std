@@ -1,11 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { rangeTest, SemVerRange } from "../range.ts";
-import { ANY, SemVer } from "../semver.ts";
+import { rangeTest, SemVerRange } from "./range.ts";
+import { ANY, SemVer } from "./semver.ts";
 import { gt } from "./gt.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { lt } from "./lt.ts";
-import { ALL, SemVerComparator } from "../comparator.ts";
+import { ALL, SemVerComparator } from "./comparator.ts";
 
 /**
  * Returns true if the version is outside the bounds of the range in either the

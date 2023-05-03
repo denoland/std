@@ -1,8 +1,8 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../../testing/asserts.ts";
+import { assert } from "../testing/asserts.ts";
 import { gtr } from "./gtr.ts";
-import { parse, parseRange } from "../parse.ts";
+import { parse, parseRange } from "./parse.ts";
 
 Deno.test("gtr", async (t) => {
   // [range, version]

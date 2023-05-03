@@ -1,7 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Operator } from "./types.ts";
 import { ANY, INVALID, MAX, MIN, SemVer } from "./semver.ts";
-import { cmp, gt, gte, increment, lte } from "./operators/mod.ts";
+import { cmp } from "./cmp.ts";
+import { gt } from "./gt.ts";
+import { gte } from "./gte.ts";
+import { lte } from "./lte.ts";
+import { increment } from "./increment.ts";
 
 /**
  * A comparator which will span all valid semantic versions

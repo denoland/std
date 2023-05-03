@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../../testing/asserts.ts";
-import { parse } from "../parse.ts";
-import { lt } from "./lt.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { parse } from "./parse.ts";
+import { gte } from "./gte.ts";
 
 Deno.test({
   name: "comparison",
@@ -9,6 +9,7 @@ Deno.test({
     // [version1, version2]
     // version1 should be greater than version2
     const versions: [string, string][] = [
+      ["0.0.0", "0.0.0"],
       ["0.0.0", "0.0.0-foo"],
       ["0.0.1", "0.0.0"],
       ["1.0.0", "0.9.9"],
@@ -34,8 +35,8 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = lt(s0, s1);
-        assertEquals(actual, false, `${v0} < ${v1} : ${actual}`);
+        const actual = gte(s0, s1);
+        assertEquals(actual, true, `${v0} >= ${v1} : ${actual}`);
       });
     }
   },

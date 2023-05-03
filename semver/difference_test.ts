@@ -1,8 +1,8 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../../testing/asserts.ts";
-import { parse } from "../parse.ts";
-import { ReleaseType } from "../types.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { parse } from "./parse.ts";
+import { ReleaseType } from "./types.ts";
 import { difference } from "./difference.ts";
 
 Deno.test("diff", async (t) => {
