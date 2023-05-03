@@ -13,7 +13,6 @@ export interface Item extends InitItem {
   id: string;
   createdAt: Date;
   score: number;
-  commentsCount?: number;
 }
 
 export async function createItem(initItem: InitItem) {
