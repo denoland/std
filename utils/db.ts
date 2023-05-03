@@ -93,24 +93,11 @@ export async function getCommentsByItem(
   return comments;
 }
 
-export async function getItemCommentsCountsByIds(
-  ids: string[],
-  options?: Deno.KvListOptions,
-) {
-  const keys = ids.map((id) => ["comments_by_item", id]);
-  const items: number[] = [];
-  for (let i = 0; i < keys.length; i++) {
-    const iter = await kv.list<Comment>({
-      prefix: keys[i],
-    }, options);
-
-    let commentsCount = 0;
-    for await (const _ of iter) {
-      commentsCount++;
-    }
-    items.push(commentsCount);
-  }
-  return items;
+export async function getItemCommentsCount(itemId: string) {
+  const iter = kv.list<Comment>({ prefix: ["comments_by_item", itemId] });
+  let count = 0;
+  for await (const _ of iter) count++;
+  return count;
 }
 
 interface InitUser {
