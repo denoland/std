@@ -251,7 +251,7 @@ services:
       - "8000:8000"
 ```
 
-The environmental variable values are pulled from the `.env` file.
+The values of the environmental variables are pulled from the `.env` file.
 
 The `DENO_DEPLOYMENT_ID` variable is needed for Docker deployment of a Deno
 Fresh app for caching to work properly. Its value needs to be a token reflecting
