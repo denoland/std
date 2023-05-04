@@ -21,7 +21,7 @@ interface HomePageData extends State {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
-    const items = await getAllItems();
+    const items = (await getAllItems()).slice(0, 10);
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
