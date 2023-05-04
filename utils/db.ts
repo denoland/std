@@ -186,3 +186,18 @@ export async function getOrCreateUser(id: string, email: string) {
 export function getUserDisplayName(user: User) {
   return user.displayName || user.id;
 }
+
+export async function setUserDisplayName(
+  userId: User["id"],
+  displayName: User["displayName"],
+) {
+  const userKey = ["users", userId];
+  const userRes = await kv.get<User>(userKey);
+
+  if (!userRes.versionstamp) throw new Error("User does not exist");
+
+  await kv.atomic()
+    .check(userRes)
+    .set(userKey, { ...userRes.value, displayName })
+    .commit();
+}
