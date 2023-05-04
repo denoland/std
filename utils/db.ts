@@ -187,24 +187,17 @@ export function getUserDisplayName(user: User) {
   return user.displayName || user.id;
 }
 
-function entryExists<T>(entry: Deno.KvEntryMaybe<T>): entry is Deno.KvEntry<T> {
-  return entry.value !== null && entry.versionstamp !== null;
-}
-
 export async function setUserDisplayName(
   userId: User["id"],
-  newDisplayName: string,
+  displayName: User["displayName"],
 ) {
   const userKey = ["users", userId];
+  const userRes = await kv.get<User>(userKey);
 
-  let res = { ok: false };
-  while (!res.ok) {
-    const userRes = await kv.get<User>(userKey);
-    if (!entryExists<User>(userRes)) throw new Error("User does not exist");
+  if (!userRes.versionstamp) throw new Error("User does not exist");
 
-    res = await kv.atomic()
-      .check(userRes)
-      .set(userKey, { ...userRes.value, displayName: newDisplayName })
-      .commit();
-  }
+  await kv.atomic()
+    .check(userRes)
+    .set(userKey, { ...userRes.value, displayName })
+    .commit();
 }

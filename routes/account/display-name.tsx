@@ -28,27 +28,26 @@ export const handler: Handlers<DisplayNamePageData, AccountState> = {
     return ctx.render({ user });
   },
   async POST(req, ctx) {
-    const form = await req.formData();
-    const displayName = form.get("display_name");
-
-    if (typeof displayName !== "string") {
-      return new Response('"display_name must be a string"', { status: 400 });
-    }
-
     try {
+      const form = await req.formData();
+      const displayName = form.get("display_name");
+
+      if (typeof displayName !== "string") {
+        throw new Error("Display name must be a string");
+      }
+
       await setUserDisplayName(ctx.state.session.user.id, displayName);
+      return new Response(null, {
+        headers: { location: "/account" },
+        status: 303,
+      });
     } catch (error) {
       return new Response(error.message, { status: 400 });
     }
-
-    return new Response(null, {
-      headers: { location: "/account" },
-      status: 302,
-    });
   },
 };
 
-export default function ResetPassword(props: PageProps<DisplayNamePageData>) {
+export default function DisplayNamePage(props: PageProps<DisplayNamePageData>) {
   const errorMessage = props.url.searchParams.get("error");
 
   return (
