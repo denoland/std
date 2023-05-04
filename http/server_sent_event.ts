@@ -132,7 +132,9 @@ export class ServerSentEvent extends Event {
     try {
       this.#data = typeof data === "string"
         ? data
-        : JSON.stringify(data, replacer as (string | number)[], space);
+        : data !== undefined
+        ? JSON.stringify(data, replacer as (string | number)[], space)
+        : "";
     } catch (e) {
       assert(e instanceof Error);
       throw new TypeError(
