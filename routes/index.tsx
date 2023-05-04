@@ -34,7 +34,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
       <Head />
-      <Layout isLoggedIn={props.data.isLoggedIn}>
+      <Layout session={props.data.session}>
         <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
           {props.data.items.map((item, index) => (
             <ItemSummary

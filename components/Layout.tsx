@@ -7,6 +7,7 @@ import {
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
+import type { Session } from "@supabase/supabase-js";
 
 function Notice() {
   return (
@@ -82,7 +83,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
-  isLoggedIn: boolean;
+  session: Session | null;
 }
 
 export default function Layout(props: LayoutProps) {
@@ -91,7 +92,7 @@ export default function Layout(props: LayoutProps) {
       href: "/submit",
       inner: <span class={BUTTON_STYLES}>Submit</span>,
     },
-    props.isLoggedIn
+    props.session
       ? {
         href: "/account",
         inner: "Account",

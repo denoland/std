@@ -13,7 +13,6 @@ for await (const { name } of walk(STATIC_DIR_ROOT, { includeDirs: false })) {
 export interface State {
   session: Session | null;
   supabaseClient: ReturnType<typeof createSupabaseClient>;
-  isLoggedIn: boolean;
 }
 
 export async function handler(
@@ -33,7 +32,6 @@ export async function handler(
 
   ctx.state.session = session;
   ctx.state.supabaseClient = supabaseClient;
-  ctx.state.isLoggedIn = Boolean(session);
 
   const response = await ctx.next();
   /**
