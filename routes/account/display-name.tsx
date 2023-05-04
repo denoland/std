@@ -39,13 +39,25 @@ export const handler: Handlers<DisplayNamePageData, AccountState> = {
       await setUserDisplayName(ctx.state.session.user.id, displayName);
       return new Response(null, {
         headers: { location: "/account" },
-        status: 303,
+        status: 307,
       });
     } catch (error) {
-      return new Response(error.message, { status: 400 });
+      return new Response(null, {
+        headers: {
+          location: `/account/display-name?error=${
+            encodeURIComponent(error.message)
+          }`,
+        },
+        status: 307,
+      });
     }
   },
 };
+
+const POSSIBLE_ERROR_MESSAGES = [
+  "Display name must be a string",
+  "User does not exist",
+];
 
 export default function DisplayNamePage(props: PageProps<DisplayNamePageData>) {
   const errorMessage = props.url.searchParams.get("error");
@@ -61,7 +73,9 @@ export default function DisplayNamePage(props: PageProps<DisplayNamePageData>) {
           <h1 class="text-center my-8 text-2xl font-bold">
             Change display name
           </h1>
-          {errorMessage && <div class={NOTICE_STYLES}>{errorMessage}</div>}
+          {errorMessage && POSSIBLE_ERROR_MESSAGES.includes(errorMessage) && (
+            <div class={NOTICE_STYLES}>{errorMessage}</div>
+          )}
           <form method="POST" class="space-y-4">
             <input
               type="text"
