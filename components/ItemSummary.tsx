@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Item } from "@/utils/db.ts";
+import type { Item, User } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -15,6 +15,7 @@ export function timeAgo(time: number | Date) {
 
 export interface ItemSummaryProps {
   item: Item;
+  user: User;
   commentsCount: number;
 }
 
@@ -31,7 +32,8 @@ export default function ItemSummary(props: ItemSummaryProps) {
         </span>
       </div>
       <div class="text-gray-500">
-        {pluralize(props.item.score, "point")} by {props.item.userId}{" "}
+        {pluralize(props.item.score, "point")} by{" "}
+        {props.user.displayName || props.item.userId}{" "}
         {timeAgo(new Date(props.item.createdAt))} ago •{" "}
         <a href={`/item/${props.item.id}`}>
           {pluralize(props.commentsCount, "comment")}

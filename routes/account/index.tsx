@@ -42,6 +42,14 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
           <ul class="divide-y">
             <li class="py-4">
               <p>
+                <strong>Display name</strong>
+              </p>
+              <p>
+                {props.data.user.displayName}
+              </p>
+            </li>
+            <li class="py-4">
+              <p>
                 <strong>Email</strong>
               </p>
               <p>

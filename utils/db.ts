@@ -103,6 +103,7 @@ export async function getItemCommentsCount(itemId: string) {
 interface InitUser {
   id: string;
   stripeCustomerId: string;
+  displayName: string;
 }
 
 export interface User extends InitUser {
@@ -164,10 +165,20 @@ export async function setUserSubscription(
   }
 }
 
+export async function getUsersByIds(ids: string[]) {
+  const keys = ids.map((id) => ["users", id]);
+  const res = await kv.getMany<User[]>(keys);
+  return res.map((entry) => entry.value!);
+}
+
 export async function getOrCreateUser(id: string, email: string) {
   const user = await getUserById(id);
   if (user) return user;
 
   const customer = await stripe.customers.create({ email });
-  return await createUser({ id, stripeCustomerId: customer.id });
+  return await createUser({
+    id,
+    stripeCustomerId: customer.id,
+    displayName: "",
+  });
 }
