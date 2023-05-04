@@ -39,7 +39,7 @@ export const handler: Handlers<DisplayNamePageData, AccountState> = {
       await setUserDisplayName(ctx.state.session.user.id, displayName);
       return new Response(null, {
         headers: { location: "/account" },
-        status: 307,
+        status: 303,
       });
     } catch (error) {
       return new Response(null, {
@@ -48,7 +48,7 @@ export const handler: Handlers<DisplayNamePageData, AccountState> = {
             encodeURIComponent(error.message)
           }`,
         },
-        status: 307,
+        status: 303,
       });
     }
   },
