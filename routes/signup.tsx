@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
-import AuthForm from "@/components/AuthForm.tsx";
 import Logo from "@/components/Logo.tsx";
 import OAuthLoginButton from "@/components/OAuthLoginButton.tsx";
 import { NOTICE_STYLES } from "@/utils/constants.ts";
@@ -10,11 +9,13 @@ import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
 import { stripe } from "@/utils/payments.ts";
 import { createUser } from "@/utils/db.ts";
+import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
   async POST(req, ctx) {
     const form = await req.formData();
+    const displayName = form.get("display_name") as string;
     const email = form.get("email") as string;
     const password = form.get("password") as string;
 
@@ -32,6 +33,7 @@ export const handler: Handlers<any, State> = {
 
     const { id } = await stripe.customers.create({ email });
     await createUser({
+      displayName,
       id: data.user!.id,
       stripeCustomerId: id,
     });
@@ -71,7 +73,35 @@ export default function SignupPage(props: PageProps) {
           {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
             <div class={NOTICE_STYLES}>{errorMessage}</div>
           )}
-          <AuthForm type="Signup" />
+          <form
+            method="POST"
+            class="space-y-4"
+          >
+            <input
+              placeholder="Display name"
+              name="display_name"
+              type="text"
+              required
+              class={INPUT_STYLES}
+            />
+            <input
+              placeholder="Email"
+              name="email"
+              type="email"
+              required
+              class={INPUT_STYLES}
+            />
+            <input
+              placeholder="Password"
+              name="password"
+              type="password"
+              required
+              class={INPUT_STYLES}
+            />
+            <button type="submit" class={`${BUTTON_STYLES} w-full`}>
+              Signup
+            </button>
+          </form>
           <hr class="my-4" />
           <OAuthLoginButton
             provider="github"
