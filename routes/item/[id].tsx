@@ -87,7 +87,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
       <Head title={props.data.item.title} />
-      <Layout isLoggedIn={props.data.isLoggedIn}>
+      <Layout session={props.data.session}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
           <ItemSummary
             item={props.data.item}
