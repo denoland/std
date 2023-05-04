@@ -21,7 +21,7 @@ export const handler: Handlers<State, State> = {
     return ctx.render(ctx.state);
   },
   async POST(req, ctx) {
-    if (!ctx.state.isLoggedIn) {
+    if (!ctx.state.session) {
       await req.body?.cancel();
       return new Response(null, { status: 401 });
     }
@@ -82,7 +82,7 @@ export default function SubmitPage(props: PageProps<State>) {
   return (
     <>
       <Head title="Submit" />
-      <Layout isLoggedIn={props.data.isLoggedIn}>
+      <Layout session={props.data.session}>
         <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
           <h1 class="text-center text-2xl font-bold">Share your project</h1>
           <Form />
