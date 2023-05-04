@@ -4,7 +4,7 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
-import { getOrCreateUser, type User } from "@/utils/db.ts";
+import { getOrCreateUser, getUserDisplayName, type User } from "@/utils/db.ts";
 
 interface AccountPageData extends AccountState {
   user: User;
@@ -45,7 +45,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
                 <strong>Display name</strong>
               </p>
               <p>
-                {props.data.user.displayName}
+                {getUserDisplayName(props.data.user)}
               </p>
             </li>
             <li class="py-4">

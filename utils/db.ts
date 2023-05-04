@@ -182,3 +182,7 @@ export async function getOrCreateUser(id: string, email: string) {
     displayName: "",
   });
 }
+
+export function getUserDisplayName(user: User) {
+  return user.displayName || user.id;
+}
