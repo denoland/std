@@ -16,6 +16,7 @@ import {
   getCommentsByItem,
   getItemById,
   getUserById,
+  getUserDisplayName,
   getUsersByIds,
   type Item,
   type User,
@@ -97,8 +98,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
-                  {props.data.commentsUsers[index].displayName ||
-                    comment.userId}
+                  {getUserDisplayName(props.data.commentsUsers[index])}
                 </p>
                 <p class="text-gray-500">
                   {timeAgo(new Date(comment.createdAt))} ago
