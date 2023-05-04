@@ -186,3 +186,25 @@ export async function getOrCreateUser(id: string, email: string) {
 export function getUserDisplayName(user: User) {
   return user.displayName || user.id;
 }
+
+function entryExists<T>(entry: Deno.KvEntryMaybe<T>): entry is Deno.KvEntry<T> {
+  return entry.value !== null && entry.versionstamp !== null;
+}
+
+export async function setUserDisplayName(
+  userId: User["id"],
+  newDisplayName: string,
+) {
+  const userKey = ["users", userId];
+
+  let res = { ok: false };
+  while (!res.ok) {
+    const userRes = await kv.get<User>(userKey);
+    if (!entryExists<User>(userRes)) throw new Error("User does not exist");
+
+    res = await kv.atomic()
+      .check(userRes)
+      .set(userKey, { ...userRes.value, displayName: newDisplayName })
+      .commit();
+  }
+}
