@@ -8,4 +8,4 @@
  * @module
  */
 
-export * from "./regexp_escape.ts";
+export * from "./escape.ts";

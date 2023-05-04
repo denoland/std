@@ -65,17 +65,17 @@ const RX_REGEXP_ESCAPE = new RegExp(
  *
  * @example
  * ```ts
- * import { regExpEscape } from "https://deno.land/std@$STD_VERSION/regexp/mod.ts";
+ * import { escape } from "https://deno.land/std@$STD_VERSION/regexp/mod.ts";
  * import { assertEquals, assertMatch, assertNotMatch } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * const re = new RegExp(`^${regExpEscape(".")}$`, "u");
+ * const re = new RegExp(`^${escape(".")}$`, "u");
  *
  * assertEquals("^\\.$", re.source);
  * assertMatch(".", re);
  * assertNotMatch("a", re);
  * ```
  */
-export function regExpEscape(str: string) {
+export function escape(str: string) {
   return str.replaceAll(
     RX_REGEXP_ESCAPE,
     (m) => reservedCharMap[m as keyof typeof reservedCharMap],
