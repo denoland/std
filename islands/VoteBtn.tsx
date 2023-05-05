@@ -2,7 +2,7 @@
 import type { Item, Vote } from "@/utils/db.ts";
 
 export default function VoteBtn(
-  props: { item: Item; votes: Vote[] | []; curUserId?: string },
+  props: { item: Item; votes: Vote[] | [] },
 ) {
   const upvoted = !!props.votes.filter((item) => item.itemId === props.item.id)
     .length;
@@ -16,9 +16,13 @@ export default function VoteBtn(
       onClick={() => {
         const url = new URL("/api/vote", location.href);
         url.searchParams.set("to", props.item.id);
-        if (upvoted) url.searchParams.set("vote", voteId as string);
+        let method = "POST";
+        if (upvoted) {
+          url.searchParams.set("vote", voteId as string);
+          method = "DELETE";
+        }
         fetch(url, {
-          method: "POST",
+          method,
           credentials: "same-origin",
         }).then((res) => {
           if (res.ok) {

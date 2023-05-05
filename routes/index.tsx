@@ -22,22 +22,29 @@ interface HomePageData extends State {
   votes: Vote[];
 }
 
+/** @todo Accept property other than score */
+export const sortItems = (items: Item[], property: "score") => {
+  const fn = (a: Item, b: Item) => {
+    const x = Number(a[property]);
+    const y = Number(b[property]);
+    if (x > y) {
+      return -1;
+    }
+    if (x < y) {
+      return 1;
+    }
+    return 0;
+  };
+  return items.sort(fn);
+};
+
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
-    const score = (a: Item, b: Item) => {
-      const x = a.score;
-      const y = b.score;
-      if (x > y) {
-        return -1;
-      }
-      if (x < y) {
-        return 1;
-      }
-      return 0;
-    };
-    const votes = await getVotesByUser(ctx.state.session?.user.id);
-    const items = (await getAllItems()).slice(0, 10);
-    items.sort(score);
+    const votes = ctx.state.session
+      ? await getVotesByUser(ctx.state.session?.user.id)
+      : [];
+
+    const items = sortItems((await getAllItems()).slice(0, 10), "score");
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
@@ -57,7 +64,6 @@ export default function HomePage(props: PageProps<HomePageData>) {
               item={item}
               commentsCount={props.data.commentsCounts[index]}
               votes={props.data.votes}
-              curUserId={props.data.session?.user.id}
               user={props.data.users[index]}
             />
           ))}

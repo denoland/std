@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import VoteBtn from "@/islands/Vote.tsx";
+import VoteBtn from "@/islands/VoteBtn.tsx";
 import { getUserDisplayName, Item, User, type Vote } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
@@ -19,29 +19,12 @@ export interface ItemSummaryProps {
   user: User;
   commentsCount: number;
   votes: Vote[];
-  curUserId?: string;
 }
 
 export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
-        {
-          /* <button
-          class="cursor-pointer mr-2 text-gray-300"
-          type="submit"
-          onClick={() => {
-            console.log('click!');
-             fetch("/api/vote", {
-              method: "POST",
-              credentials: "same-origin",
-              body: JSON.stringify(props.item),
-            });
-          }}
-        >
-          ▲
-        </button> */
-        }
         <VoteBtn item={props.item} votes={props.votes} />
         <span class="mr-2">
           <a href={props.item.url}>{props.item.title}</a>

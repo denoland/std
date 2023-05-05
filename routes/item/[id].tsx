@@ -47,7 +47,9 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
-    const votes = await getVotesByUser(ctx.state.session?.user.id);
+    const votes = ctx.state.session
+      ? await getVotesByUser(ctx.state.session?.user.id)
+      : [];
 
     return ctx.render({
       ...ctx.state,

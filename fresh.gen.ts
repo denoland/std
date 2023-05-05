@@ -27,7 +27,7 @@ import * as $20 from "./routes/logout.ts";
 import * as $21 from "./routes/signup.tsx";
 import * as $22 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
-import * as $$1 from "./islands/Vote.tsx";
+import * as $$1 from "./islands/VoteBtn.tsx";
 
 const manifest = {
   routes: {
@@ -57,7 +57,7 @@ const manifest = {
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,
-    "./islands/Vote.tsx": $$1,
+    "./islands/VoteBtn.tsx": $$1,
   },
   baseUrl: import.meta.url,
   config,

@@ -103,7 +103,7 @@ export async function getItemCommentsCount(itemId: string) {
 interface InitVote {
   userId: string;
   itemId: string;
-  voteId: string | null;
+  voteId?: string;
 }
 
 export interface Vote extends InitVote {
@@ -111,22 +111,11 @@ export interface Vote extends InitVote {
   createdAt: Date;
 }
 
-export async function createOrDeleteVote(initVote: InitVote) {
+export async function createVote(initVote: InitVote) {
   let res = { ok: false };
   while (!res.ok) {
-    const id = initVote?.voteId || crypto.randomUUID();
+    const id = crypto.randomUUID();
     const votesByUserKey = ["vote_by_users", initVote.userId, id];
-    const { value } = await kv.get(votesByUserKey);
-    if (value) {
-      await kv.delete(votesByUserKey);
-      const itemKey = ["items", initVote.itemId];
-      const { value: item } = await kv.get<Item>(itemKey);
-      if (item) {
-        item.score && item.score--;
-        await kv.atomic().set(itemKey, item).commit();
-      }
-      return { status: 200 };
-    }
     const vote: Vote = { ...initVote, id, createdAt: new Date() };
     res = await kv.atomic()
       .check({ key: votesByUserKey, versionstamp: null })
@@ -145,21 +134,37 @@ export async function createOrDeleteVote(initVote: InitVote) {
   }
 }
 
+export async function deleteVote(initVote: InitVote) {
+  let res = { ok: false };
+  const id = initVote.voteId;
+  while (!res.ok && id) {
+    const votesByUserKey = ["vote_by_users", initVote.userId, id];
+    const { value } = await kv.get(votesByUserKey);
+    if (value) {
+      await kv.delete(votesByUserKey);
+      const itemKey = ["items", initVote.itemId];
+      const { value: item } = await kv.get<Item>(itemKey);
+      if (item) {
+        item.score && item.score--;
+        res = await kv.atomic().set(itemKey, item).commit();
+      }
+      return { status: 200 };
+    }
+  }
+}
+
 export async function getVotesByUser(
-  userId: string | undefined,
+  userId: string,
   options?: Deno.KvListOptions,
 ) {
-  if (userId) {
-    const iter = await kv.list<Vote>({
-      prefix: ["vote_by_users", userId],
-    }, options);
-    const votes = [];
-    for await (const res of iter) {
-      votes.push(res.value);
-    }
-    return votes;
+  const iter = await kv.list<Vote>({
+    prefix: ["vote_by_users", userId],
+  }, options);
+  const votes = [];
+  for await (const res of iter) {
+    votes.push(res.value);
   }
-  return [];
+  return votes;
 }
 
 interface InitUser {
