@@ -62,7 +62,7 @@ Deno.test("minSatisfying", async (t) => {
 
 Deno.test("sorting", function () {
   const list = ["1.2.3+1", "1.2.3+0", "1.2.3", "5.9.6", "0.1.2"];
-  const sorted = ["0.1.2", "1.2.3", "1.2.3+0", "1.2.3+1", "5.9.6"];
+  const sorted = ["0.1.2", "1.2.3+1", "1.2.3+0", "1.2.3", "5.9.6"];
   const rsorted = ["5.9.6", "1.2.3+1", "1.2.3+0", "1.2.3", "0.1.2"];
   assertEquals(sort(list.map((v) => parse(v))), sorted.map((v) => parse(v)));
   assertEquals(rsort(list.map((v) => parse(v))), rsorted.map((v) => parse(v)));

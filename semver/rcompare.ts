@@ -7,13 +7,20 @@ import { compare } from "./compare.ts";
  * `1` and `-1` are invertted.
  *
  * Sorts in descending order if passed to `Array.sort()`,
- * @param s0 Left side of the comparison
- * @param s1 Right side of the comparison
- * @returns True if s0 is greater than s1 otherwise false
  */
 export function rcompare(
   s0: SemVer,
   s1: SemVer,
+): 1 | 0 | -1;
+/** @deprecatd (will be removed after 0.189.0) Use `rcompare(s0: SemVer, s1: SemVer)` instead. */
+export function rcompare(
+  s0: string | SemVer,
+  s1: string | SemVer,
+): 1 | 0 | -1;
+export function rcompare(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): 1 | 0 | -1 {
-  return compare(s1, s0);
+  return compare(s1, s0, options);
 }
