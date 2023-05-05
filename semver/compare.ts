@@ -1,8 +1,53 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./semver.ts";
+import { parse } from "./parse.ts";
 
 /**
  * Compare two semantic version objects.
+ *
+ * Returns `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if `v2` is
+ * greater.
+ *
+ * Sorts in ascending order if passed to `Array.sort()`,
+ */
+export function compare(
+  s0: SemVer,
+  s1: SemVer,
+): 1 | 0 | -1;
+/**
+ * @deprecatd (will be removed after 0.189.0) Use `compare(s0: SemVer, s1: SemVer)` instead.
+ */
+export function compare(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): 1 | 0 | -1;
+export function compare(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): 1 | 0 | -1 {
+  const v0 = typeof s0 === "string" ? parse(s0) : s0;
+  const v1 = typeof s1 === "string" ? parse(s1) : s1;
+  const includePrerelease = options?.includePrerelease ?? true;
+  if (s0 === s1) return 0;
+  if (includePrerelease) {
+    return (
+      compareNumber(v0.major, v1.major) ||
+      compareNumber(v0.minor, v1.minor) ||
+      compareNumber(v0.patch, v1.patch) ||
+      checkIdentifier(v0.prerelease, v1.prerelease) ||
+      compareIdentifier(v0.prerelease, v1.prerelease)
+    );
+  } else {
+    return (compareNumber(v0.major, v1.major) ||
+      compareNumber(v0.minor, v1.minor) ||
+      compareNumber(v0.patch, v1.patch));
+  }
+}
+
+/**
+ * Compare two semantic version objects including build metadata.
  *
  * Returns `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if `v2` is
  * greater.
@@ -12,19 +57,34 @@ import { SemVer } from "./semver.ts";
  * @param s1
  * @returns
  */
-export function compare(
+export function compareBuild(
   s0: SemVer,
   s1: SemVer,
+): 1 | 0 | -1;
+/**
+ * @deprecatd (will be removed after 0.189.0) Use `compare(s0: SemVer, s1: SemVer)` instead.
+ */
+export function compareBuild(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): 1 | 0 | -1;
+export function compareBuild(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  _options?: { includePrerelease: boolean },
 ): 1 | 0 | -1 {
+  const v0 = typeof s0 === "string" ? parse(s0) : s0;
+  const v1 = typeof s1 === "string" ? parse(s1) : s1;
   if (s0 === s1) return 0;
   return (
-    compareNumber(s0.major, s1.major) ||
-    compareNumber(s0.minor, s1.minor) ||
-    compareNumber(s0.patch, s1.patch) ||
-    checkIdentifier(s0.prerelease, s1.prerelease) ||
-    compareIdentifier(s0.prerelease, s1.prerelease) ||
-    checkIdentifier(s1.build, s0.build) ||
-    compareIdentifier(s0.build, s1.build)
+    compareNumber(v0.major, v1.major) ||
+    compareNumber(v0.minor, v1.minor) ||
+    compareNumber(v0.patch, v1.patch) ||
+    checkIdentifier(v0.prerelease, v1.prerelease) ||
+    compareIdentifier(v0.prerelease, v1.prerelease) ||
+    checkIdentifier(v1.build, v0.build) ||
+    compareIdentifier(v0.build, v1.build)
   );
 }
 
@@ -89,4 +149,12 @@ function compareIdentifier(
   // It can't ever reach here, but typescript doesn't realize that so
   // add this line so the return type is inferred correctly.
   return 0;
+}
+
+/** @deprecated Use `compare` directly */
+export function compareIdentifiers(
+  a: string | number | null,
+  b: string | number | null,
+): 1 | 0 | -1 {
+  return compareIdentifier(a != null ? [a] : [], b != null ? [b] : []);
 }
