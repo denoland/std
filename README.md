@@ -259,11 +259,11 @@ services:
 The values of the environmental variables are pulled from the `.env` file.
 
 The `DENO_DEPLOYMENT_ID` variable is needed for Docker deployment of a Deno
-Fresh app for caching to work properly. Its value needs to be a token reflecting
-the build that you will be deploying. The SHA1 commit hash is a suitable token
-that can be obtained from the following command run in the repo's root folder.
-Copy its results into the value of `DENO_DEPLOYMENT_ID`. Make sure you update
-this value every time you run a new docker compose build.
+Fresh app for caching to work properly. Its value needs to be a unique id tied to the deployment. We recommend using the SHA1 commit hash, which can be obtained from the following command run in the repo's root folder:
+
+```sh
+# get the SHA1 commit hash of the current branch
+git rev-parse HEAD
 
 ```sh
 # get the SHA1 commit hash of the current branch
