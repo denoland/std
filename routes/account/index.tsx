@@ -47,6 +47,9 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
               <p>
                 {getUserDisplayName(props.data.user)}
               </p>
+              <p>
+                <a href="/account/display-name" class="underline">Edit</a>
+              </p>
             </li>
             <li class="py-4">
               <p>
