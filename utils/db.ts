@@ -119,22 +119,22 @@ export async function createOrDeleteVote(initVote: InitVote) {
     const { value } = await kv.get(votesByUserKey);
     if (value) {
       await kv.delete(votesByUserKey);
-      const itemKey = ["items", initVote.itemId]
+      const itemKey = ["items", initVote.itemId];
       const { value: item } = await kv.get<Item>(itemKey);
       if (item) {
         item.score && item.score--;
         await kv.atomic().set(itemKey, item).commit();
       }
-      return {status: 200};
-    }   
+      return { status: 200 };
+    }
     const vote: Vote = { ...initVote, id, createdAt: new Date() };
     res = await kv.atomic()
       .check({ key: votesByUserKey, versionstamp: null })
       .set(votesByUserKey, vote)
       .commit();
 
-    if(res.ok){
-      const itemKey = ["items", initVote.itemId]
+    if (res.ok) {
+      const itemKey = ["items", initVote.itemId];
       const { value: item } = await kv.get<Item>(itemKey);
       if (item) {
         item.score++;
@@ -165,6 +165,7 @@ export async function getVotesByUser(
 interface InitUser {
   id: string;
   stripeCustomerId: string;
+  displayName: string;
 }
 
 export interface User extends InitUser {
@@ -226,10 +227,39 @@ export async function setUserSubscription(
   }
 }
 
+export async function getUsersByIds(ids: string[]) {
+  const keys = ids.map((id) => ["users", id]);
+  const res = await kv.getMany<User[]>(keys);
+  return res.map((entry) => entry.value!);
+}
+
 export async function getOrCreateUser(id: string, email: string) {
   const user = await getUserById(id);
   if (user) return user;
 
   const customer = await stripe.customers.create({ email });
-  return await createUser({ id, stripeCustomerId: customer.id });
+  return await createUser({
+    id,
+    stripeCustomerId: customer.id,
+    displayName: "",
+  });
+}
+
+export function getUserDisplayName(user: User) {
+  return user.displayName || user.id;
+}
+
+export async function setUserDisplayName(
+  userId: User["id"],
+  displayName: User["displayName"],
+) {
+  const userKey = ["users", userId];
+  const userRes = await kv.get<User>(userKey);
+
+  if (!userRes.versionstamp) throw new Error("User does not exist");
+
+  await kv.atomic()
+    .check(userRes)
+    .set(userKey, { ...userRes.value, displayName })
+    .commit();
 }

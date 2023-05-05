@@ -7,22 +7,25 @@ import * as $0 from "./routes/_404.tsx";
 import * as $1 from "./routes/_500.tsx";
 import * as $2 from "./routes/_middleware.ts";
 import * as $3 from "./routes/account/_middleware.ts";
-import * as $4 from "./routes/account/index.tsx";
-import * as $5 from "./routes/account/manage.ts";
-import * as $6 from "./routes/account/upgrade.ts";
-import * as $7 from "./routes/api/stripe-webhooks.ts";
-import * as $8 from "./routes/api/vote.ts";
-import * as $9 from "./routes/blog/[slug].tsx";
-import * as $10 from "./routes/blog/index.tsx";
-import * as $11 from "./routes/feed.ts";
-import * as $12 from "./routes/index.tsx";
-import * as $13 from "./routes/item/[id].tsx";
-import * as $14 from "./routes/login/index.tsx";
-import * as $15 from "./routes/login/oauth.ts";
-import * as $16 from "./routes/login/success.tsx";
-import * as $17 from "./routes/logout.ts";
-import * as $18 from "./routes/signup.tsx";
-import * as $19 from "./routes/submit.tsx";
+import * as $4 from "./routes/account/display-name.tsx";
+import * as $5 from "./routes/account/index.tsx";
+import * as $6 from "./routes/account/manage.ts";
+import * as $7 from "./routes/account/reset-password.tsx";
+import * as $8 from "./routes/account/upgrade.ts";
+import * as $9 from "./routes/api/stripe-webhooks.ts";
+import * as $10 from "./routes/api/vote.ts";
+import * as $11 from "./routes/blog/[slug].tsx";
+import * as $12 from "./routes/blog/index.tsx";
+import * as $13 from "./routes/feed.ts";
+import * as $14 from "./routes/forgot-password.tsx";
+import * as $15 from "./routes/index.tsx";
+import * as $16 from "./routes/item/[id].tsx";
+import * as $17 from "./routes/login/index.tsx";
+import * as $18 from "./routes/login/oauth.ts";
+import * as $19 from "./routes/login/success.tsx";
+import * as $20 from "./routes/logout.ts";
+import * as $21 from "./routes/signup.tsx";
+import * as $22 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
 import * as $$1 from "./islands/Vote.tsx";
 
@@ -32,22 +35,25 @@ const manifest = {
     "./routes/_500.tsx": $1,
     "./routes/_middleware.ts": $2,
     "./routes/account/_middleware.ts": $3,
-    "./routes/account/index.tsx": $4,
-    "./routes/account/manage.ts": $5,
-    "./routes/account/upgrade.ts": $6,
-    "./routes/api/stripe-webhooks.ts": $7,
-    "./routes/api/vote.ts": $8,
-    "./routes/blog/[slug].tsx": $9,
-    "./routes/blog/index.tsx": $10,
-    "./routes/feed.ts": $11,
-    "./routes/index.tsx": $12,
-    "./routes/item/[id].tsx": $13,
-    "./routes/login/index.tsx": $14,
-    "./routes/login/oauth.ts": $15,
-    "./routes/login/success.tsx": $16,
-    "./routes/logout.ts": $17,
-    "./routes/signup.tsx": $18,
-    "./routes/submit.tsx": $19,
+    "./routes/account/display-name.tsx": $4,
+    "./routes/account/index.tsx": $5,
+    "./routes/account/manage.ts": $6,
+    "./routes/account/reset-password.tsx": $7,
+    "./routes/account/upgrade.ts": $8,
+    "./routes/api/stripe-webhooks.ts": $9,
+    "./routes/api/vote.ts": $10,
+    "./routes/blog/[slug].tsx": $11,
+    "./routes/blog/index.tsx": $12,
+    "./routes/feed.ts": $13,
+    "./routes/forgot-password.tsx": $14,
+    "./routes/index.tsx": $15,
+    "./routes/item/[id].tsx": $16,
+    "./routes/login/index.tsx": $17,
+    "./routes/login/oauth.ts": $18,
+    "./routes/login/success.tsx": $19,
+    "./routes/logout.ts": $20,
+    "./routes/signup.tsx": $21,
+    "./routes/submit.tsx": $22,
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,

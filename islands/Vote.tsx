@@ -6,7 +6,7 @@ export default function VoteBtn(
 ) {
   const upvoted = !!props.votes.filter((item) => item.itemId === props.item.id)
     .length;
-  const voteId = props.votes.find((item)=>item.itemId===props.item.id)?.id;
+  const voteId = props.votes.find((item) => item.itemId === props.item.id)?.id;
   return (
     <button
       class={`cursor-pointer mr-2 ${
