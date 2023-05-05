@@ -186,7 +186,6 @@ Deno.test({
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", "2.2.3"],
       ["1.2.3+asdf - 2.4.3+asdf", "1.2.3-pre.2"],
-      ["1.2.3+asdf - 2.4.3+asdf", "1.2.3"],
       ["^1.2.3+build", "2.0.0"],
       ["^1.2.3+build", "1.2.0"],
       ["1.2.3-pre+asdf - 2.4.3-pre+asdf", "2.4.3"],

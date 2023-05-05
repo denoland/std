@@ -151,7 +151,7 @@ function compareIdentifier(
   return 0;
 }
 
-/** @deprecated Use `compare` directly */
+/** @deprecated (will be removed after 0.189.0) Use `compare` or `compareBuild` directly */
 export function compareIdentifiers(
   a: string | number | null,
   b: string | number | null,
