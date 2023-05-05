@@ -303,7 +303,6 @@ export * from "./lt.ts";
 export * from "./lte.ts";
 export * from "./ltr.ts";
 export * from "./neq.ts";
-export * from "./outside.ts";
 export * from "./rcompare.ts";
 export * from "./sort.ts";
 export * from "./parse.ts";
@@ -358,3 +357,5 @@ export function maxVersion(
 ): SemVer {
   return comparatorMax(comparator.semver, comparator.operator);
 }
+
+export const SEMVER_SPEC_VERSION = "2.0.0";

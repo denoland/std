@@ -8,7 +8,7 @@ export function gte(
   s1: SemVer,
 ): boolean;
 /** @deprecated (will be removed after 0.189.0) Use `gte(s0: SemVer, s1: SemVer)` instead.
- * 
+ *
  * Greater than or equal to comparison */
 export function gte(
   s0: string | SemVer,

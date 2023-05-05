@@ -2,15 +2,24 @@
 import { SemVer } from "./semver.ts";
 import { compare } from "./compare.ts";
 
-/**
- * Not equal comparison
- * @param s0 Left side of the comparison
- * @param s1 Right side of the comparison
- * @returns True if s0 is not equal to s1 otherwise false
- */
+/** Not equal comparison */
 export function neq(
   s0: SemVer,
   s1: SemVer,
+): boolean;
+/**
+ * @deprecated (will be removed after 0.189.0) Use `neq(s0: SemVer, s1: SemVer)` instead.
+ *
+ * Not equal comparison */
+export function neq(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): boolean;
+export function neq(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  return compare(s0, s1) !== 0;
+  return compare(s0, s1, options) !== 0;
 }

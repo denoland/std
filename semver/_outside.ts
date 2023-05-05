@@ -8,6 +8,8 @@ import { lt } from "./lt.ts";
 import { ALL, SemVerComparator } from "./comparator.ts";
 
 /**
+ * @private
+ *
  * Returns true if the version is outside the bounds of the range in either the
  * high or low direction. The hilo argument must be either the string '>' or
  * '<'. (This is the function called by {@linkcode gtr} and {@linkcode ltr}.)

@@ -2,6 +2,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
+import { outside } from "./_outside.ts";
 
 Deno.test({
   name: "comparators",
@@ -235,7 +236,7 @@ Deno.test({
         fn: () => {
           const v = semver.parse(version);
           const r = semver.parseRange(range);
-          const actual = semver.outside(v, r);
+          const actual = outside(v, r);
           assertEquals(actual, expected);
         },
       });
