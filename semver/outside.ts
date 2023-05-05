@@ -49,7 +49,8 @@ export function outside(
   const range = typeof r === "string" ? parseRange(r) : r;
 
   if (!hilo) {
-    return outside(version, range, ">", options) || outside(version, range, "<", options);
+    return outside(version, range, ">", options) ||
+      outside(version, range, "<", options);
   }
 
   const [gtfn, ltefn, ltfn, comp, ecomp] = (() => {
@@ -93,7 +94,8 @@ export function outside(
     // If the lowest version comparator has an operator and our version
     // is less than it then it isn't higher than the range
     if (
-      (!low!.operator || low!.operator === comp) && ltefn(version, low!.semver, options)
+      (!low!.operator || low!.operator === comp) &&
+      ltefn(version, low!.semver, options)
     ) {
       return false;
     } else if (low!.operator === ecomp && ltfn(version, low!.semver, options)) {
