@@ -2,15 +2,23 @@
 import { SemVer } from "./semver.ts";
 import { compare } from "./compare.ts";
 
-/**
- * Greater than comparison
- * @param s0 Left side of the comparison
- * @param s1 Right side of the comparison
- * @returns True if s0 is greater than s1 otherwise false
- */
+/** Greater than comparison */
 export function gt(
   s0: SemVer,
   s1: SemVer,
+): boolean;
+/** @deprecated (will be removed after 0.189.0) Use `gt(s0: SemVer, s1: SemVer)` instead.
+ * 
+ * Greater than comparison */
+export function gt(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): boolean;
+export function gt(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  return compare(s0, s1) > 0;
+  return compare(s0, s1, options) > 0;
 }

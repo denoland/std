@@ -10,7 +10,7 @@ export function difference(
   s0: SemVer,
   s1: SemVer,
 ): ReleaseType | undefined;
-/** (will be removed after 0.189.0) Use `difference(s0: SemVer, s1: SemVer)` instead.
+/** @deprecated (will be removed after 0.189.0) Use `difference(s0: SemVer, s1: SemVer)` instead.
  *
  * Returns difference between two versions by the release type, or
  * `undefined` if the versions are the same. */
@@ -19,8 +19,6 @@ export function difference(
   s1: string | SemVer,
   options?: { includePrerelease: boolean },
 ): ReleaseType | undefined;
-/** Returns difference between two versions by the release type, or
- * `undefined` if the versions are the same. */
 export function difference(
   sv0: string | SemVer,
   sv1: string | SemVer,

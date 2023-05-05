@@ -2,15 +2,23 @@
 import { SemVer } from "./semver.ts";
 import { compare } from "./compare.ts";
 
-/**
- * Less than comparison
- * @param s0 Left side of the comparison
- * @param s1 Right side of the comparison
- * @returns True if s0 is less than s1 otherwise false
- */
+/** Less than comparison */
 export function lt(
-  v1: SemVer,
-  v2: SemVer,
+  s0: SemVer,
+  s1: SemVer,
+): boolean;
+/** @deprecated (will be removed after 0.189.0) Use `lt(s0: SemVer, s1: SemVer)` instead.
+ * 
+ * Less than comparison */
+export function lt(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): boolean;
+export function lt(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  return compare(v1, v2) < 0;
+  return compare(s0, s1, options) < 0;
 }

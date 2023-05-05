@@ -2,16 +2,22 @@
 import { compare } from "./compare.ts";
 import { SemVer } from "./semver.ts";
 
-/**
+/** Returns `true` if they're logically equivalent, even if they're not the exact
+ * same version object. */
+export function eq(s0: SemVer, s1: SemVer): boolean;
+/** @deprecated (will be removed after 0.189.0) Use `eq(s0: SemVer, s1: SemVer)` instead.
+ * 
  * Returns `true` if they're logically equivalent, even if they're not the exact
- * same version object.
- * @param s0 A semantic version
- * @param s1 A semantic version
- * @returns True if both are equal
- */
+ * same version object. */
 export function eq(
-  s0: SemVer,
-  s1: SemVer,
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
+): boolean;
+export function eq(
+  s0: string | SemVer,
+  s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  return compare(s0, s1) === 0;
+  return compare(s0, s1, options) === 0;
 }
