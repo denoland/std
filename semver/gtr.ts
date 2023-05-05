@@ -9,9 +9,9 @@ export function gtr(
   version: SemVer,
   range: SemVerRange,
 ): boolean;
-/** 
+/**
  * @deprecated (will be removed after 0.189.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
- * 
+ *
  * Checks to see if the version is greater than all possible versions of the range. */
 export function gtr(
   version: string | SemVer,
