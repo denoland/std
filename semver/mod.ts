@@ -303,6 +303,7 @@ export * from "./lt.ts";
 export * from "./lte.ts";
 export * from "./ltr.ts";
 export * from "./neq.ts";
+export * from "./outside.ts";
 export * from "./rcompare.ts";
 export * from "./sort.ts";
 export * from "./parse.ts";

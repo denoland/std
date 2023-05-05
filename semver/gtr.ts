@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
-import { outside } from "./_outside.ts";
+import { outside } from "./outside.ts";
 import { parse, parseRange } from "./parse.ts";
 
 /** Checks to see if the version is greater than all possible versions of the range. */

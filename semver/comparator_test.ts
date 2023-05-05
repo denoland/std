@@ -2,7 +2,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import * as semver from "./mod.ts";
-import { outside } from "./_outside.ts";
+import { outside } from "./outside.ts";
 
 Deno.test({
   name: "comparators",
