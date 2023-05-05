@@ -2,25 +2,25 @@
 import { SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
 import { outside } from "./outside.ts";
-import { parse, parseRange } from "./parse.ts";
 
 /** Greater than range comparison */
 export function ltr(
   version: SemVer,
   range: SemVerRange,
 ): boolean;
-/** Greater than range comparison */
+/**
+ * @deprecated (will be removed after 0.189.0) Use `ltr(version: SemVer, range: SemVerRange)` instead.
+ *
+ * Greater than range comparison */
 export function ltr(
   version: string | SemVer,
   range: string | SemVerRange,
   options?: { includePrerelease: boolean },
 ): boolean;
 export function ltr(
-  v: string | SemVer,
-  r: string | SemVerRange,
-  _options?: { includePrerelease: boolean },
+  version: string | SemVer,
+  range: string | SemVerRange,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  const version = typeof v === "string" ? parse(v) : v;
-  const range = typeof r === "string" ? parseRange(r) : r;
-  return outside(version, range, "<");
+  return outside(version, range, "<", options);
 }

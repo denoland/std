@@ -6,6 +6,7 @@ import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { lt } from "./lt.ts";
 import { ALL, SemVerComparator } from "./comparator.ts";
+import { parse, parseRange } from "./parse.ts";
 
 /**
  * Returns true if the version is outside the bounds of the range in either the
@@ -20,9 +21,35 @@ export function outside(
   version: SemVer,
   range: SemVerRange,
   hilo?: ">" | "<",
+): boolean;
+/**
+ * @deprecated (will be removed after 0.189.0) Use `outside(version: SemVer, range: SemVerRange, hilo?: ">" | "<",)` instead.
+ *
+ * Returns true if the version is outside the bounds of the range in either the
+ * high or low direction. The hilo argument must be either the string '>' or
+ * '<'. (This is the function called by {@linkcode gtr} and {@linkcode ltr}.)
+ * @param version The version to compare to the range
+ * @param range The range of possible versions
+ * @param hilo The operator for the comparison or both if undefined.
+ * @returns True if the version is outside of the range based on the operator
+ */
+export function outside(
+  version: string | SemVer,
+  range: string | SemVerRange,
+  hilo?: ">" | "<",
+  options?: { includePrerelease: boolean },
+): boolean;
+export function outside(
+  v: string | SemVer,
+  r: string | SemVerRange,
+  hilo?: ">" | "<",
+  options?: { includePrerelease: boolean },
 ): boolean {
+  const version = typeof v === "string" ? parse(v) : v;
+  const range = typeof r === "string" ? parseRange(r) : r;
+
   if (!hilo) {
-    return outside(version, range, ">") || outside(version, range, "<");
+    return outside(version, range, ">", options) || outside(version, range, "<", options);
   }
 
   const [gtfn, ltefn, ltfn, comp, ecomp] = (() => {
@@ -48,9 +75,9 @@ export function outside(
 
       high = high || comparator;
       low = low || comparator;
-      if (gtfn(comparator.semver, high.semver)) {
+      if (gtfn(comparator.semver, high.semver, options)) {
         high = comparator;
-      } else if (ltfn(comparator.semver, low.semver)) {
+      } else if (ltfn(comparator.semver, low.semver, options)) {
         low = comparator;
       }
     }
@@ -66,10 +93,10 @@ export function outside(
     // If the lowest version comparator has an operator and our version
     // is less than it then it isn't higher than the range
     if (
-      (!low!.operator || low!.operator === comp) && ltefn(version, low!.semver)
+      (!low!.operator || low!.operator === comp) && ltefn(version, low!.semver, options)
     ) {
       return false;
-    } else if (low!.operator === ecomp && ltfn(version, low!.semver)) {
+    } else if (low!.operator === ecomp && ltfn(version, low!.semver, options)) {
       return false;
     }
   }

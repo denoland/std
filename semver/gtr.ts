@@ -2,7 +2,6 @@
 import { SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
 import { outside } from "./outside.ts";
-import { parse, parseRange } from "./parse.ts";
 
 /** Checks to see if the version is greater than all possible versions of the range. */
 export function gtr(
@@ -10,7 +9,7 @@ export function gtr(
   range: SemVerRange,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
+ * @deprecated (will be removed after 0.189.0) Use `gtr(version: SemVer, range: SemVerRange)` instead.
  *
  * Checks to see if the version is greater than all possible versions of the range. */
 export function gtr(
@@ -19,11 +18,9 @@ export function gtr(
   options?: { includePrerelease: boolean },
 ): boolean;
 export function gtr(
-  v: string | SemVer,
-  r: string | SemVerRange,
-  _options?: { includePrerelease: boolean },
+  version: string | SemVer,
+  range: string | SemVerRange,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  const version = typeof v === "string" ? parse(v) : v;
-  const range = typeof r === "string" ? parseRange(r) : r;
-  return outside(version, range, ">");
+  return outside(version, range, ">", options);
 }
