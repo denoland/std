@@ -147,7 +147,7 @@ export async function serveFile(
     return createCommonResponse(Status.NotFound);
   }
 
-  const headers = setBaseHeaders();
+  const headers = createBaseHeaders();
 
   // Set date header if access timestamp is available
   if (fileInfo.atime) {
@@ -299,8 +299,8 @@ async function serveDirIndex(
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
   const page = dirViewerTemplate(formattedDirUrl, listEntry);
 
-  const headers = setBaseHeaders();
-  headers.set("content-type", "text/html");
+  const headers = createBaseHeaders();
+  headers.set("content-type", "text/html; charset=UTF-8");
 
   return createCommonResponse(Status.OK, page, { headers });
 }
@@ -326,15 +326,12 @@ function serverLog(req: Request, status: number) {
   console.debug(s);
 }
 
-function setBaseHeaders(): Headers {
-  const headers = new Headers();
-  headers.set("server", "deno");
-
-  // Set "accept-ranges" so that the client knows it can make range requests on future requests
-  headers.set("accept-ranges", "bytes");
-  headers.set("date", new Date().toUTCString());
-
-  return headers;
+function createBaseHeaders(): Headers {
+  return new Headers({
+    server: "deno",
+    // Set "accept-ranges" so that the client knows it can make range requests on future requests
+    "accept-ranges": "bytes",
+  });
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
