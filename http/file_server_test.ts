@@ -1429,6 +1429,33 @@ Deno.test(
 );
 
 Deno.test(
+  "serveDir redirects a file URL ending with a slash correctly even with a query string",
+  async () => {
+    const url = "http://localhost:4507/http/testdata/test%20file.txt/?test";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/test%20file.txt?test",
+    );
+  },
+);
+
+Deno.test(
+  "serveDir redirects non-canonical URLs",
+  async () => {
+    const url =
+      "http://localhost:4507/http/testdata//////test%20file.txt/////?test";
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost:4507/http/testdata/test%20file.txt/?test",
+    );
+  },
+);
+
+Deno.test(
   "file_server returns 304 for requests with if-none-match set with the etag but with W/ prefixed etag in request headers.",
   async () => {
     await startFileServer();

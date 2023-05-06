@@ -12,7 +12,6 @@ import { calculate, ifNoneMatch } from "./etag.ts";
 import { Status } from "./http_status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
 import { parse } from "../flags/mod.ts";
-import { assert } from "../_util/asserts.ts";
 import { red } from "../fmt/colors.ts";
 import { createCommonResponse } from "./util.ts";
 import { VERSION } from "../version.ts";
@@ -49,8 +48,6 @@ interface EntryInfo {
   url: string;
   name: string;
 }
-
-const encoder = new TextEncoder();
 
 const ENV_PERM_STATUS =
   Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
@@ -177,7 +174,7 @@ export async function serveFile(
     return createCommonResponse(Status.NotFound);
   }
 
-  const headers = setBaseHeaders();
+  const headers = createBaseHeaders();
 
   // Set date header if access timestamp is available
   if (fileInfo.atime) {
@@ -282,30 +279,30 @@ export async function serveFile(
   return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
-// TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
 async function serveDirIndex(
   dirPath: string,
   options: {
-    dotfiles: boolean;
+    showDotfiles: boolean;
     target: string;
   },
 ): Promise<Response> {
-  const showDotfiles = options.dotfiles;
+  const { showDotfiles } = options;
   const dirUrl = `/${posix.relative(options.target, dirPath)}`;
-  const listEntry: EntryInfo[] = [];
+  const listEntryPromise: Promise<EntryInfo>[] = [];
 
   // if ".." makes sense
   if (dirUrl !== "/") {
     const prevPath = posix.join(dirPath, "..");
-    const fileInfo = await Deno.stat(prevPath);
-    listEntry.push({
+    const entryInfo = Deno.stat(prevPath).then((fileInfo): EntryInfo => ({
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
       url: posix.join(dirUrl, ".."),
-    });
+    }));
+    listEntryPromise.push(entryInfo);
   }
 
+  // Read fileInfo in parallel
   for await (const entry of Deno.readDir(dirPath)) {
     if (!showDotfiles && entry.name[0] === ".") {
       continue;
@@ -313,54 +310,55 @@ async function serveDirIndex(
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
-    const fileInfo = await Deno.stat(filePath);
-    listEntry.push({
+    const entryInfo = Deno.stat(filePath).then((fileInfo): EntryInfo => ({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
       name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
       url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
-    });
+    }));
+    listEntryPromise.push(entryInfo);
   }
+
+  const listEntry = await Promise.all(listEntryPromise);
   listEntry.sort((a, b) =>
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
-  const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
+  const page = dirViewerTemplate(formattedDirUrl, listEntry);
 
-  const headers = setBaseHeaders();
-  headers.set("content-type", "text/html");
+  const headers = createBaseHeaders();
+  headers.set("content-type", "text/html; charset=UTF-8");
 
   return createCommonResponse(Status.OK, page, { headers });
 }
 
-function serveFallback(_req: Request, e: Error): Promise<Response> {
-  if (e instanceof URIError) {
-    return Promise.resolve(createCommonResponse(Status.BadRequest));
-  } else if (e instanceof Deno.errors.NotFound) {
-    return Promise.resolve(createCommonResponse(Status.NotFound));
+function serveFallback(maybeError: unknown): Response {
+  if (maybeError instanceof URIError) {
+    return createCommonResponse(Status.BadRequest);
   }
 
-  return Promise.resolve(createCommonResponse(Status.InternalServerError));
+  if (maybeError instanceof Deno.errors.NotFound) {
+    return createCommonResponse(Status.NotFound);
+  }
+
+  return createCommonResponse(Status.InternalServerError);
 }
 
 function serverLog(req: Request, status: number) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const normalizedUrl = normalizeURL(req.url);
-  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${status}`;
+  const url = new URL(req.url);
+  const s = `${dateFmt} [${req.method}] ${url.pathname}${url.search} ${status}`;
   // using console.debug instead of console.log so chrome inspect users can hide request logs
   console.debug(s);
 }
 
-function setBaseHeaders(): Headers {
-  const headers = new Headers();
-  headers.set("server", "deno");
-
-  // Set "accept-ranges" so that the client knows it can make range requests on future requests
-  headers.set("accept-ranges", "bytes");
-  headers.set("date", new Date().toUTCString());
-
-  return headers;
+function createBaseHeaders(): Headers {
+  return new Headers({
+    server: "deno",
+    // Set "accept-ranges" so that the client knows it can make range requests on future requests
+    "accept-ranges": "bytes",
+  });
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
@@ -568,74 +566,22 @@ export interface ServeDirOptions {
  * @param req The request to handle
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
-  let response: Response | undefined = undefined;
-  const target = opts.fsRoot || ".";
-  const urlRoot = opts.urlRoot;
-  const showIndex = opts.showIndex ?? true;
-
+  let response: Response;
   try {
-    let normalizedPath = normalizeURL(req.url);
-    if (urlRoot) {
-      if (normalizedPath.startsWith("/" + urlRoot)) {
-        normalizedPath = normalizedPath.replace(urlRoot, "");
-      } else {
-        throw new Deno.errors.NotFound();
-      }
+    response = await createServeDirResponse(req, opts);
+  } catch (error) {
+    if (!opts.quiet) {
+      console.error(
+        red(error instanceof Error ? error.message : "[non-error thrown]"),
+      );
     }
-
-    const fsPath = posix.join(target, normalizedPath);
-    const fileInfo = await Deno.stat(fsPath);
-
-    if (fileInfo.isDirectory) {
-      if (showIndex) {
-        try {
-          const path = posix.join(fsPath, "index.html");
-          const indexFileInfo = await Deno.lstat(path);
-          if (indexFileInfo.isFile) {
-            // If the current URL's pathname doesn't end with a slash, any
-            // relative URLs in the index file will resolve against the parent
-            // directory, rather than the current directory. To prevent that, we
-            // return a 301 redirect to the URL with a slash.
-            if (!fsPath.endsWith("/")) {
-              const url = new URL(req.url);
-              url.pathname += "/";
-              return Response.redirect(url, 301);
-            }
-            response = await serveFile(req, path, {
-              etagAlgorithm: opts.etagAlgorithm,
-              fileInfo: indexFileInfo,
-            });
-          }
-        } catch (e) {
-          if (!(e instanceof Deno.errors.NotFound)) {
-            throw e;
-          }
-          // pass
-        }
-      }
-      if (!response && opts.showDirListing) {
-        response = await serveDirIndex(fsPath, {
-          dotfiles: opts.showDotfiles || false,
-          target,
-        });
-      }
-      if (!response) {
-        throw new Deno.errors.NotFound();
-      }
-    } else {
-      response = await serveFile(req, fsPath, {
-        etagAlgorithm: opts.etagAlgorithm,
-        fileInfo,
-      });
-    }
-  } catch (e) {
-    const err = e instanceof Error ? e : new Error("[non-error thrown]");
-    if (!opts.quiet) console.error(red(err.message));
-    response = await serveFallback(req, err);
+    response = serveFallback(error);
   }
 
-  if (opts.enableCors) {
-    assert(response);
+  // Do not update the header if the response is a 301 redirect.
+  const isRedirectResponse = 300 <= response.status && response.status < 400;
+
+  if (opts.enableCors && !isRedirectResponse) {
     response.headers.append("access-control-allow-origin", "*");
     response.headers.append(
       "access-control-allow-headers",
@@ -643,9 +589,9 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     );
   }
 
-  if (!opts.quiet) serverLog(req, response!.status);
+  if (!opts.quiet) serverLog(req, response.status);
 
-  if (opts.headers) {
+  if (opts.headers && !isRedirectResponse) {
     for (const header of opts.headers) {
       const headerSplit = header.split(":");
       const name = headerSplit[0];
@@ -654,11 +600,97 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
     }
   }
 
-  return response!;
+  return response;
 }
 
-function normalizeURL(url: string): string {
-  return posix.normalize(decodeURIComponent(new URL(url).pathname));
+async function createServeDirResponse(
+  req: Request,
+  opts: ServeDirOptions,
+) {
+  const target = opts.fsRoot || ".";
+  const urlRoot = opts.urlRoot;
+  const showIndex = opts.showIndex ?? true;
+  const showDotfiles = opts.showDotfiles || false;
+  const { etagAlgorithm, showDirListing } = opts;
+
+  const url = new URL(req.url);
+  const decodedUrl = decodeURIComponent(url.pathname);
+  let normalizedPath = posix.normalize(decodedUrl);
+
+  if (urlRoot && !normalizedPath.startsWith("/" + urlRoot)) {
+    return createCommonResponse(Status.NotFound);
+  }
+
+  // Redirect paths like `/foo////bar` and `/foo/bar/////` to normalized paths.
+  if (normalizedPath !== decodedUrl) {
+    url.pathname = normalizedPath;
+    return Response.redirect(url, 301);
+  }
+
+  if (urlRoot) {
+    normalizedPath = normalizedPath.replace(urlRoot, "");
+  }
+
+  // Remove trailing slashes to avoid ENOENT errors
+  // when accessing a path to a file with a trailing slash.
+  if (normalizedPath.endsWith("/")) {
+    normalizedPath = normalizedPath.slice(0, -1);
+  }
+
+  const fsPath = posix.join(target, normalizedPath);
+  const fileInfo = await Deno.stat(fsPath);
+
+  // For files, remove the trailing slash from the path.
+  if (fileInfo.isFile && url.pathname.endsWith("/")) {
+    url.pathname = url.pathname.slice(0, -1);
+    return Response.redirect(url, 301);
+  }
+  // For directories, the path must have a trailing slash.
+  if (fileInfo.isDirectory && !url.pathname.endsWith("/")) {
+    // On directory listing pages,
+    // if the current URL's pathname doesn't end with a slash, any
+    // relative URLs in the index file will resolve against the parent
+    // directory, rather than the current directory. To prevent that, we
+    // return a 301 redirect to the URL with a slash.
+    url.pathname += "/";
+    return Response.redirect(url, 301);
+  }
+
+  // if target is file, serve file.
+  if (!fileInfo.isDirectory) {
+    return await serveFile(req, fsPath, {
+      etagAlgorithm,
+      fileInfo,
+    });
+  }
+
+  // if target is directory, serve index or dir listing.
+  if (showIndex) { // serve index.html
+    const indexPath = posix.join(fsPath, "index.html");
+
+    let indexFileInfo: Deno.FileInfo | undefined;
+    try {
+      indexFileInfo = await Deno.lstat(indexPath);
+    } catch (error) {
+      if (!(error instanceof Deno.errors.NotFound)) {
+        throw error;
+      }
+      // skip Not Found error
+    }
+
+    if (indexFileInfo?.isFile) {
+      return await serveFile(req, indexPath, {
+        etagAlgorithm,
+        fileInfo: indexFileInfo,
+      });
+    }
+  }
+
+  if (showDirListing) { // serve directory list
+    return await serveDirIndex(fsPath, { showDotfiles, target });
+  }
+
+  return createCommonResponse(Status.NotFound);
 }
 
 function main() {
