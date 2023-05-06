@@ -22,8 +22,6 @@ interface EntryInfo {
   name: string;
 }
 
-const encoder = new TextEncoder();
-
 const ENV_PERM_STATUS =
   Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
     .state ?? "granted"; // for deno deploy
@@ -254,7 +252,6 @@ export async function serveFile(
   return createCommonResponse(Status.OK, file.readable, { headers });
 }
 
-// TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
 async function serveDirIndex(
   dirPath: string,
   options: {
@@ -264,20 +261,21 @@ async function serveDirIndex(
 ): Promise<Response> {
   const { showDotfiles } = options;
   const dirUrl = `/${posix.relative(options.target, dirPath)}`;
-  const listEntry: EntryInfo[] = [];
+  const listEntryPromise: Promise<EntryInfo>[] = [];
 
   // if ".." makes sense
   if (dirUrl !== "/") {
     const prevPath = posix.join(dirPath, "..");
-    const fileInfo = await Deno.stat(prevPath);
-    listEntry.push({
+    const entryInfo = Deno.stat(prevPath).then((fileInfo): EntryInfo => ({
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
       url: posix.join(dirUrl, ".."),
-    });
+    }));
+    listEntryPromise.push(entryInfo);
   }
 
+  // Read fileInfo in parallel
   for await (const entry of Deno.readDir(dirPath)) {
     if (!showDotfiles && entry.name[0] === ".") {
       continue;
@@ -285,19 +283,21 @@ async function serveDirIndex(
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
-    const fileInfo = await Deno.stat(filePath);
-    listEntry.push({
+    const entryInfo = Deno.stat(filePath).then((fileInfo): EntryInfo => ({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
       name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
       url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
-    });
+    }));
+    listEntryPromise.push(entryInfo);
   }
+
+  const listEntry = await Promise.all(listEntryPromise);
   listEntry.sort((a, b) =>
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
-  const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
+  const page = dirViewerTemplate(formattedDirUrl, listEntry);
 
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
