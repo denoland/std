@@ -275,7 +275,7 @@ async function serveDirIndex(
         const fileInfo = await Deno.stat(filePath);
         return {
           mode: modeToString(entry.isDirectory, fileInfo.mode),
-          size: entry.isFile ? formatBytes(fileInfo?.size ?? 0) : "",
+          size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
           name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
           url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
