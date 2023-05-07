@@ -9,12 +9,14 @@ import { extname, posix } from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
-import { Status } from "./http_status.ts";
+import { isRedirectStatus, Status } from "./http_status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
 import { parse } from "../flags/mod.ts";
 import { red } from "../fmt/colors.ts";
 import { createCommonResponse } from "./util.ts";
 import { VERSION } from "../version.ts";
+import { format as formatBytes } from "../fmt/bytes.ts";
+
 interface EntryInfo {
   mode: string;
   size: string;
@@ -52,23 +54,6 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     });
   output = `${isDir ? "d" : "-"} ${output}`;
   return output;
-}
-
-function fileLenToString(len: number): string {
-  const multiplier = 1024;
-  let base = 1;
-  const suffix = ["B", "K", "M", "G", "T"];
-  let suffixIndex = 0;
-
-  while (base * multiplier < len) {
-    if (suffixIndex >= suffix.length - 1) {
-      break;
-    }
-    base *= multiplier;
-    suffixIndex++;
-  }
-
-  return `${(len / base).toFixed(2)}${suffix[suffixIndex]}`;
 }
 
 /**
@@ -285,7 +270,7 @@ async function serveDirIndex(
       .replaceAll("%2F", "/");
     const entryInfo = Deno.stat(filePath).then((fileInfo): EntryInfo => ({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
-      size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
+      size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
       name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
       url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
     }));
@@ -552,7 +537,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   }
 
   // Do not update the header if the response is a 301 redirect.
-  const isRedirectResponse = 300 <= response.status && response.status < 400;
+  const isRedirectResponse = isRedirectStatus(response.status);
 
   if (opts.enableCors && !isRedirectResponse) {
     response.headers.append("access-control-allow-origin", "*");
@@ -631,7 +616,7 @@ async function createServeDirResponse(
 
   // if target is file, serve file.
   if (!fileInfo.isDirectory) {
-    return await serveFile(req, fsPath, {
+    return serveFile(req, fsPath, {
       etagAlgorithm,
       fileInfo,
     });
@@ -652,7 +637,7 @@ async function createServeDirResponse(
     }
 
     if (indexFileInfo?.isFile) {
-      return await serveFile(req, indexPath, {
+      return serveFile(req, indexPath, {
         etagAlgorithm,
         fileInfo: indexFileInfo,
       });
@@ -660,7 +645,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return await serveDirIndex(fsPath, { showDotfiles, target });
+    return serveDirIndex(fsPath, { showDotfiles, target });
   }
 
   return createCommonResponse(Status.NotFound);
