@@ -50,6 +50,7 @@ export * from "./map_keys.ts";
 export * from "./map_not_nullish.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
+export * from "./partition_entries.ts";
 export * from "./permutations.ts";
 export * from "./find_single.ts";
 export * from "./sliding_windows.ts";
