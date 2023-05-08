@@ -34,16 +34,19 @@ const responseFn = async (
     userId,
     itemId,
   };
+  let status;
   switch (req.method) {
     case "DELETE":
+      status = 204;
       await deleteVote(data);
       break;
     case "POST":
+      status = 201;
       await createVote(data);
       break;
     default:
       return new Response(null, { status: 400 });
   }
 
-  return new Response(null, { status: 201 });
+  return new Response(null, { status });
 };
