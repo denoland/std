@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Item, Vote } from "@/utils/db.ts";
 
-export default function VoteBtn(
+export default function VoteButton(
   props: { item: Item; votes: Vote[] | [] },
 ) {
   const upvoted = !!props.votes.filter((item) => item.itemId === props.item.id)
@@ -14,22 +14,11 @@ export default function VoteBtn(
       }`}
       type="submit"
       onClick={() => {
-        const url = new URL("/api/vote", location.href);
-        url.searchParams.set("to", props.item.id);
-        let method = "POST";
-        if (upvoted) {
-          url.searchParams.set("vote", voteId as string);
-          method = "DELETE";
-        }
+        const url = `/api/vote?item_id=${props.item.id}`;
+        const method = upvoted ? "DELETE" : "POST";
         fetch(url, {
           method,
           credentials: "same-origin",
-        }).then((res) => {
-          if (res.ok) {
-            location.assign(window.location.href);
-          } else {
-            location.assign("/login");
-          }
         });
       }}
     >

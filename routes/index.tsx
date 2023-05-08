@@ -22,20 +22,16 @@ interface HomePageData extends State {
   votes: Vote[];
 }
 
-/** @todo Accept property other than score */
-export const sortItems = (items: Item[], property: "score") => {
-  const fn = (a: Item, b: Item) => {
-    const x = Number(a[property]);
-    const y = Number(b[property]);
-    if (x > y) {
-      return -1;
-    }
-    if (x < y) {
-      return 1;
-    }
-    return 0;
-  };
-  return items.sort(fn);
+const compareScore = (a: Item, b: Item) => {
+  const x = Number(a.score);
+  const y = Number(b.score);
+  if (x > y) {
+    return -1;
+  }
+  if (x < y) {
+    return 1;
+  }
+  return 0;
 };
 
 export const handler: Handlers<HomePageData, State> = {
@@ -44,7 +40,7 @@ export const handler: Handlers<HomePageData, State> = {
       ? await getVotesByUser(ctx.state.session?.user.id)
       : [];
     /** @todo Add pagination functionality */
-    const items = sortItems(await getAllItems({ limit: 10 }), "score");
+    const items = (await getAllItems({ limit: 10 })).sort(compareScore);
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),

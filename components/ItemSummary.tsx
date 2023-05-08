@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import VoteBtn from "@/islands/VoteBtn.tsx";
+import VoteButton from "@/islands/VoteButton.tsx";
 import { getUserDisplayName, Item, User, type Vote } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
@@ -25,7 +25,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
-        <VoteBtn item={props.item} votes={props.votes} />
+        <VoteButton item={props.item} votes={props.votes} />
         <span class="mr-2">
           <a href={props.item.url}>{props.item.title}</a>
         </span>

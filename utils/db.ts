@@ -115,7 +115,7 @@ export async function createVote(initVote: InitVote) {
   let res = { ok: false };
   while (!res.ok) {
     const id = crypto.randomUUID();
-    const votesByUserKey = ["votes_by_users", initVote.userId, id];
+    const votesByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
     const vote: Vote = { ...initVote, id, createdAt: new Date() };
     res = await kv.atomic()
       .check({ key: votesByUserKey, versionstamp: null })
@@ -136,9 +136,8 @@ export async function createVote(initVote: InitVote) {
 
 export async function deleteVote(initVote: InitVote) {
   let res = { ok: false };
-  const id = initVote.voteId;
-  while (!res.ok && id) {
-    const votesByUserKey = ["votes_by_users", initVote.userId, id];
+  while (!res.ok) {
+    const votesByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
     const { value } = await kv.get(votesByUserKey);
     if (value) {
       await kv.delete(votesByUserKey);

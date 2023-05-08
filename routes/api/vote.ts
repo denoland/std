@@ -10,16 +10,20 @@ export const handler: Handlers<PageProps, State> = {
     }
 
     const params = new URL(req.url).searchParams;
-    const itemId = params.get("to");
+    const itemId = params.get("item_id");
 
-    if (itemId) {
-      await createVote({
-        userId: ctx.state.session.user.id,
-        itemId,
-      });
+    if (!itemId) {
+      return new Response(null, { status: 400 });
     }
 
-    return Response.json({ ok: true });
+    const userId = ctx.state.session.user.id;
+
+    await createVote({
+      userId,
+      itemId,
+    });
+
+    return new Response(null, { status: 201 });
   },
 
   async DELETE(req, ctx) {
@@ -27,17 +31,19 @@ export const handler: Handlers<PageProps, State> = {
       return new Response(null, { status: 400 });
     }
     const params = new URL(req.url).searchParams;
-    const itemId = params.get("to");
-    const voteId = params.get("vote");
+    const itemId = params.get("item_id");
 
-    if (itemId && voteId) {
-      await deleteVote({
-        userId: ctx.state.session.user.id,
-        itemId,
-        voteId,
-      });
+    if (!itemId) {
+      return new Response(null, { status: 400 });
     }
 
-    return Response.json({ ok: true });
+    const userId = ctx.state.session.user.id;
+
+    await deleteVote({
+      userId,
+      itemId,
+    });
+
+    return new Response(null, { status: 204 });
   },
 };
