@@ -43,8 +43,8 @@ export const handler: Handlers<HomePageData, State> = {
     const votes = ctx.state.session
       ? await getVotesByUser(ctx.state.session?.user.id)
       : [];
-
-    const items = sortItems((await getAllItems()).slice(0, 10), "score");
+    /** @todo Add pagination functionality */
+    const items = sortItems(await getAllItems({ limit: 10 }), "score");
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
