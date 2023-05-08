@@ -3,7 +3,6 @@ import { Handlers } from "$fresh/server.ts";
 import { PageProps } from "$fresh/server.ts";
 import PostCard from "@/components/PostCard.tsx";
 import { getPosts, Post } from "@/utils/posts.ts";
-import { SITE_NAME } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
@@ -24,7 +23,7 @@ export default function BlogPage(props: PageProps<BlogPageData>) {
   return (
     <>
       <Head
-        title={`Blog | ${SITE_NAME}`}
+        title="Blog"
         description="This is the blog for Deno SaaSKit"
         href={props.url.href}
       />

@@ -64,7 +64,7 @@ export default function DisplayNamePage(props: PageProps<DisplayNamePageData>) {
 
   return (
     <>
-      <Head title="Change display name" />
+      <Head title="Change display name" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

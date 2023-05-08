@@ -34,7 +34,7 @@ export const handler: Handlers<HomePageData, State> = {
 export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
-      <Head />
+      <Head href={props.url.href} />
       <Layout session={props.data.session}>
         <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
           {props.data.items.map((item, index) => (
