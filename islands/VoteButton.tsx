@@ -30,7 +30,7 @@ export default function VoteButton(
           method,
           credentials: "same-origin",
         });
-        if(api.status === 201 || api.status === 204 ){
+        if (api.status === 201 || api.status === 204) {
           setISVoted(!isVoted);
           changePoint();
         }
