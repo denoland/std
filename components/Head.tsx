@@ -22,10 +22,11 @@ const DEFAULT_META_PROPS = {
 };
 
 export function Meta(props: MetaProps = DEFAULT_META_PROPS) {
-  const { title, description, imageUrl, href }: MetaProps = {
+  const { description, imageUrl, href }: MetaProps = {
     ...DEFAULT_META_PROPS,
     ...props,
   };
+  const title = props.title ? `${props.title} ▲ ${SITE_NAME}` : SITE_NAME;
 
   return (
     <>
