@@ -115,7 +115,7 @@ export async function createVote(initVote: InitVote) {
   let res = { ok: false };
   while (!res.ok) {
     const id = crypto.randomUUID();
-    const votesByUserKey = ["vote_by_users", initVote.userId, id];
+    const votesByUserKey = ["votes_by_users", initVote.userId, id];
     const vote: Vote = { ...initVote, id, createdAt: new Date() };
     res = await kv.atomic()
       .check({ key: votesByUserKey, versionstamp: null })
