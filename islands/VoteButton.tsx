@@ -10,11 +10,13 @@ export default function VoteButton(
       .length,
   );
   const changePoint = () => {
-    const scoreElem = document.getElementById(`score-${props.item.id}`);
-    if (scoreElem) {
-      const [point] = scoreElem.innerHTML.split(" ");
+    const scoreElement = document.getElementById(`score-${props.item.id}`);
+    if (scoreElement) {
+      const [point] = scoreElement.innerHTML.split(" ");
       const score = isVoted ? +point - 1 : +point + 1;
-      scoreElem.innerHTML = score === 1 ? `${score} point` : `${score} points`;
+      scoreElement.innerHTML = score === 1
+        ? `${score} point`
+        : `${score} points`;
     }
   };
   return (
