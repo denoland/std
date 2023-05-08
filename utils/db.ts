@@ -146,7 +146,6 @@ export async function deleteVote(initVote: InitVote) {
         item.score && item.score--;
         res = await kv.atomic().set(itemKey, item).commit();
       }
-      return { status: 200 };
     }
   }
 }
