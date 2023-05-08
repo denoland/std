@@ -22,12 +22,7 @@ export const handler: Handlers<BlogPostPageData, State> = {
 
 export default function PostPage(props: PageProps<BlogPostPageData>) {
   const { post } = props.data;
-
-  const date = new Date(post.publishedAt).toLocaleDateString("en-us", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const date = new Date(post.publishedAt).toLocaleDateString();
 
   return (
     <>

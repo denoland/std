@@ -28,11 +28,7 @@ function PostCard(props: Post) {
         </h3>
         {props.publishedAt.toString() !== "Invalid Date" && (
           <time class="text-gray-500">
-            {new Date(props.publishedAt).toLocaleDateString("en-us", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            {new Date(props.publishedAt).toLocaleDateString()}
           </time>
         )}
         <div class="mt-4 text-gray-900">
