@@ -3,16 +3,11 @@ import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote } from "@/utils/db.ts";
 
-export const handler: Handlers<PageProps, State> = {
- POST: responseFn,
- DELETE: responseFn,
-};
-
-const responseFn = async (
+async function responseFn(
   req: Request,
   // deno-lint-ignore no-explicit-any
   ctx: HandlerContext<PageProps<any>, State>,
-) => {
+) {
   if (!ctx.state.session) {
     return new Response(null, { status: 400 });
   }
@@ -43,4 +38,9 @@ const responseFn = async (
   }
 
   return new Response(null, { status });
+}
+
+export const handler: Handlers<PageProps, State> = {
+  POST: responseFn,
+  DELETE: responseFn,
 };

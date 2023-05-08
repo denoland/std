@@ -22,7 +22,7 @@ interface HomePageData extends State {
   votes: Vote[];
 }
 
-const compareScore = (a: Item, b: Item) => {
+export function compareScore(a: Item, b: Item) {
   const x = Number(a.score);
   const y = Number(b.score);
   if (x > y) {
@@ -32,7 +32,7 @@ const compareScore = (a: Item, b: Item) => {
     return 1;
   }
   return 0;
-};
+}
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
