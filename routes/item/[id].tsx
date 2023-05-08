@@ -94,7 +94,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             commentsCount={props.data.comments.length}
             user={props.data.user}
           />
-          <div class="divide-y">
+          <div>
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
