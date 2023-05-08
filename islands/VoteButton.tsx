@@ -1,25 +1,28 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Item, Vote } from "@/utils/db.ts";
+import { useState } from "preact/hooks";
 
 export default function VoteButton(
   props: { item: Item; votes: Vote[] | [] },
 ) {
-  const upvoted = !!props.votes.filter((item) => item.itemId === props.item.id)
-    .length;
-  const voteId = props.votes.find((item) => item.itemId === props.item.id)?.id;
+  const [isVoted, setISVoted] = useState(
+    !!props.votes.filter((item) => item.itemId === props.item.id)
+      .length,
+  );
   return (
     <button
       class={`cursor-pointer mr-2 ${
-        upvoted ? "text-pink-700" : "text-gray-300"
+        isVoted ? "text-pink-700" : "text-gray-300"
       }`}
       type="submit"
-      onClick={() => {
+      onClick={async () => {
         const url = `/api/vote?item_id=${props.item.id}`;
-        const method = upvoted ? "DELETE" : "POST";
-        fetch(url, {
+        const method = isVoted ? "DELETE" : "POST";
+        await fetch(url, {
           method,
           credentials: "same-origin",
         });
+        setISVoted(!isVoted);
       }}
     >
       ▲
