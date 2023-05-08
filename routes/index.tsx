@@ -21,7 +21,8 @@ interface HomePageData extends State {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
-    const items = (await getAllItems()).slice(0, 10);
+    /** @todo Add pagination functionality */
+    const items = await getAllItems({ limit: 10 });
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
