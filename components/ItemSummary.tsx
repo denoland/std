@@ -18,14 +18,17 @@ export interface ItemSummaryProps {
   item: Item;
   user: User;
   commentsCount: number;
-  votes: Vote[];
+  isVoted: boolean;
 }
 
 export default function ItemSummary(props: ItemSummaryProps) {
   return (
     <div class="py-2">
       <div>
-        <VoteButton item={props.item} votes={props.votes} />
+        <VoteButton
+          item={props.item}
+          isVoted={props.isVoted}
+        />
         <span class="mr-2">
           <a href={props.item.url}>{props.item.title}</a>
         </span>
@@ -37,7 +40,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
         <span id={`score-${props.item.id}`}>
           {pluralize(props.item.score, "point")}
         </span>{" "}
-        by{" "}{getUserDisplayName(props.user)}{" "}
+        by {getUserDisplayName(props.user)}{" "}
         {timeAgo(new Date(props.item.createdAt))} ago •{" "}
         <a href={`/item/${props.item.id}`}>
           {pluralize(props.commentsCount, "comment")}

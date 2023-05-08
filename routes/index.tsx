@@ -59,7 +59,9 @@ export default function HomePage(props: PageProps<HomePageData>) {
             <ItemSummary
               item={item}
               commentsCount={props.data.commentsCounts[index]}
-              votes={props.data.votes}
+              isVoted={!!props.data.votes.filter((vote) =>
+                vote.itemId === item.id
+              ).length}
               user={props.data.users[index]}
             />
           ))}

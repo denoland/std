@@ -100,7 +100,9 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
           <ItemSummary
             item={props.data.item}
             commentsCount={props.data.comments.length}
-            votes={props.data.votes}
+            isVoted={!!props.data.votes.filter((vote) =>
+              vote.itemId === props.data.item.id
+            ).length}
             user={props.data.user}
           />
           <div class="divide-y">
