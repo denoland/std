@@ -4,13 +4,8 @@ import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote } from "@/utils/db.ts";
 
 export const handler: Handlers<PageProps, State> = {
-  async POST(req, ctx) {
-    return await (responseFn(req, ctx));
-  },
-
-  async DELETE(req, ctx) {
-    return await (responseFn(req, ctx));
-  },
+ POST: responseFn,
+ DELETE: responseFn,
 };
 
 const responseFn = async (
