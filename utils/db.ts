@@ -138,7 +138,7 @@ export async function deleteVote(initVote: InitVote) {
   let res = { ok: false };
   const id = initVote.voteId;
   while (!res.ok && id) {
-    const votesByUserKey = ["vote_by_users", initVote.userId, id];
+    const votesByUserKey = ["votes_by_users", initVote.userId, id];
     const { value } = await kv.get(votesByUserKey);
     if (value) {
       await kv.delete(votesByUserKey);
@@ -158,7 +158,7 @@ export async function getVotesByUser(
   options?: Deno.KvListOptions,
 ) {
   const iter = await kv.list<Vote>({
-    prefix: ["vote_by_users", userId],
+    prefix: ["votes_by_users", userId],
   }, options);
   const votes = [];
   for await (const res of iter) {
