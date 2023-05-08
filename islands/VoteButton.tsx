@@ -13,16 +13,6 @@ export default function VoteButton(
   const [upVoted, setUpVoted] = useState(
     props.isVoted,
   );
-  const changePoint = () => {
-    const scoreElement = document.getElementById(`score-${props.item.id}`);
-    if (scoreElement) {
-      const [point] = scoreElement.innerHTML.split(" ");
-      const score = upVoted ? +point - 1 : +point + 1;
-      scoreElement.innerHTML = score === 1
-        ? `${score} point`
-        : `${score} points`;
-    }
-  };
   return (
     <button
       class={`cursor-pointer mr-2 ${
@@ -38,7 +28,6 @@ export default function VoteButton(
         });
         if (api.status === 201 || api.status === 204) {
           setUpVoted(!upVoted);
-          changePoint();
         }
       }}
     >

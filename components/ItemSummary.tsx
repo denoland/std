@@ -37,10 +37,8 @@ export default function ItemSummary(props: ItemSummaryProps) {
         </span>
       </div>
       <div class="text-gray-500">
-        <span id={`score-${props.item.id}`}>
-          {pluralize(props.item.score, "point")}
-        </span>{" "}
-        by {getUserDisplayName(props.user)}{" "}
+        {pluralize(props.item.score, "point")} by{" "}
+        {getUserDisplayName(props.user)}{" "}
         {timeAgo(new Date(props.item.createdAt))} ago •{" "}
         <a href={`/item/${props.item.id}`}>
           {pluralize(props.commentsCount, "comment")}
