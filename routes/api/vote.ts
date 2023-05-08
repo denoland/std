@@ -9,7 +9,7 @@ async function responseFn(
   ctx: HandlerContext<PageProps<any>, State>,
 ) {
   if (!ctx.state.session) {
-    return new Response(null, { status: 400 });
+    return new Response(null, { status: 401 });
   }
 
   const itemId = new URL(req.url).searchParams.get("item_id");

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import VoteButton from "@/islands/VoteButton.tsx";
-import { getUserDisplayName, Item, User, type Vote } from "@/utils/db.ts";
+import { getUserDisplayName, Item, User } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -23,26 +23,23 @@ export interface ItemSummaryProps {
 
 export default function ItemSummary(props: ItemSummaryProps) {
   return (
-    <div class="py-2">
+    <div class="py-2 flex gap-2 text-gray-500">
+      <VoteButton
+        item={props.item}
+        isVoted={props.isVoted}
+      />
       <div>
-        <VoteButton
-          item={props.item}
-          isVoted={props.isVoted}
-        />
-        <span class="mr-2">
+        <span class="mr-2 text-black">
           <a href={props.item.url}>{props.item.title}</a>
         </span>
-        <span class="text-gray-500">
-          {new URL(props.item.url).host}
-        </span>
-      </div>
-      <div class="text-gray-500">
-        {pluralize(props.item.score, "point")} by{" "}
-        {getUserDisplayName(props.user)}{" "}
-        {timeAgo(new Date(props.item.createdAt))} ago •{" "}
-        <a href={`/item/${props.item.id}`}>
-          {pluralize(props.commentsCount, "comment")}
-        </a>
+        {new URL(props.item.url).host}
+        <p>
+          {getUserDisplayName(props.user)} •{" "}
+          {timeAgo(new Date(props.item.createdAt))} ago •{" "}
+          <a href={`/item/${props.item.id}`}>
+            {pluralize(props.commentsCount, "comment")}
+          </a>
+        </p>
       </div>
     </div>
   );
