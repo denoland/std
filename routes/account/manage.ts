@@ -3,6 +3,7 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
 import { getOrCreateUser } from "@/utils/db.ts";
+import { redirect } from "../../utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, AccountState> = {
@@ -17,11 +18,6 @@ export const handler: Handlers<any, AccountState> = {
       return_url: new URL(req.url).origin + "/account",
     });
 
-    return new Response(null, {
-      headers: {
-        location: url,
-      },
-      status: 302,
-    });
+    return redirect(url);
   },
 };

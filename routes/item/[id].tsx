@@ -21,6 +21,7 @@ import {
   type Item,
   type User,
 } from "@/utils/db.ts";
+import { redirect } from "@/utils/http.ts";
 
 interface ItemPageData extends State {
   user: User;
@@ -54,13 +55,8 @@ export const handler: Handlers<ItemPageData, State> = {
   },
   async POST(req, ctx) {
     if (!ctx.state.session) {
-      return new Response(null, {
-        headers: {
-          /** @todo Figure out `redirect_to` query */
-          location: "/login",
-        },
-        status: 302,
-      });
+      /** @todo Figure out `redirect_to` query */
+      return redirect("/login");
     }
 
     const form = await req.formData();
@@ -76,10 +72,7 @@ export const handler: Handlers<ItemPageData, State> = {
       text,
     });
 
-    return new Response(null, {
-      headers: { location: `/item/${ctx.params.id}` },
-      status: 302,
-    });
+    return redirect(`/item/${ctx.params.id}`);
   },
 };
 

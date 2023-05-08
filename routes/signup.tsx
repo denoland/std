@@ -10,6 +10,7 @@ import type { State } from "./_middleware.ts";
 import { stripe } from "@/utils/payments.ts";
 import { createUser } from "@/utils/db.ts";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
+import { redirect } from "../utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
@@ -23,12 +24,7 @@ export const handler: Handlers<any, State> = {
       .auth.signUp({ email, password });
 
     if (error) {
-      return new Response(null, {
-        headers: {
-          location: `/signup?error=${encodeURIComponent(error.message)}`,
-        },
-        status: 302,
-      });
+      return redirect(`/signup?error=${encodeURIComponent(error.message)}`);
     }
 
     const { id } = await stripe.customers.create({ email });
@@ -40,10 +36,8 @@ export const handler: Handlers<any, State> = {
 
     const redirectUrl = new URL(req.url).searchParams.get("redirect_url") ??
       REDIRECT_PATH_AFTER_LOGIN;
-    return new Response(null, {
-      headers: { location: redirectUrl },
-      status: 302,
-    });
+
+    return redirect(redirectUrl);
   },
 };
 

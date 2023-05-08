@@ -3,6 +3,7 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
 import { getOrCreateUser } from "@/utils/db.ts";
+import { redirect } from "../../utils/http.ts";
 
 export const handler: Handlers<null, AccountState> = {
   async GET(req, ctx) {
@@ -27,11 +28,6 @@ export const handler: Handlers<null, AccountState> = {
       mode: "subscription",
     });
 
-    return new Response(null, {
-      headers: {
-        location: url!,
-      },
-      status: 302,
-    });
+    return redirect(url);
   },
 };
