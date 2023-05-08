@@ -22,8 +22,7 @@ const responseFn = async (
     return new Response(null, { status: 400 });
   }
 
-  const params = new URL(req.url).searchParams;
-  const itemId = params.get("item_id");
+  const itemId = new URL(req.url).searchParams.get("item_id");
 
   if (!itemId) {
     return new Response(null, { status: 400 });
