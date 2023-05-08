@@ -7,7 +7,7 @@ import { NOTICE_STYLES } from "@/utils/constants.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import { redirect } from "../../utils/http.ts";
+import { redirect } from "@/utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {

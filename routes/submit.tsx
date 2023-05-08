@@ -5,7 +5,7 @@ import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem } from "@/utils/db.ts";
-import { redirect } from "../utils/http.ts";
+import { redirect } from "@/utils/http.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {

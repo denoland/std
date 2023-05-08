@@ -8,7 +8,7 @@ import {
   INPUT_STYLES,
   NOTICE_STYLES,
 } from "@/utils/constants.ts";
-import { redirect } from "../../utils/http.ts";
+import { redirect } from "@/utils/http.ts";
 
 export const handler: Handlers = {
   async GET(request, ctx) {

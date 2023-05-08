@@ -2,7 +2,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import type { Provider } from "@supabase/supabase-js";
 import { State } from "@/routes/_middleware.ts";
-import { redirect } from "../../utils/http.ts";
+import { redirect } from "@/utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {

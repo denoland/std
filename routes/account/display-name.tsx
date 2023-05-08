@@ -14,7 +14,7 @@ import {
   type User,
 } from "@/utils/db.ts";
 import type { AccountState } from "./_middleware.ts";
-import { redirect } from "../../utils/http.ts";
+import { redirect } from "@/utils/http.ts";
 
 interface DisplayNamePageData {
   user: User;
