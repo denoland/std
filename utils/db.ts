@@ -103,7 +103,6 @@ export async function getItemCommentsCount(itemId: string) {
 interface InitVote {
   userId: string;
   itemId: string;
-  voteId?: string;
 }
 
 export interface Vote extends InitVote {
