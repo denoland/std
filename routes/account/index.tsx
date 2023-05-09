@@ -5,6 +5,7 @@ import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
 import { getOrCreateUser, getUserDisplayName, type User } from "@/utils/db.ts";
+import { ComponentChild } from "preact";
 
 interface AccountPageData extends AccountState {
   user: User;
@@ -19,6 +20,28 @@ export const handler: Handlers<AccountPageData, AccountState> = {
     return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
   },
 };
+
+interface RowProps {
+  title: string;
+  children?: ComponentChild;
+  text: string;
+}
+
+function Row(props: RowProps) {
+  return (
+    <li class="py-4">
+      <div class="flex flex-wrap justify-between">
+        <span>
+          <strong>{props.title}</strong>
+        </span>
+        {props.children && <span>{props.children}</span>}
+      </div>
+      <p>
+        {props.text}
+      </p>
+    </li>
+  );
+}
 
 export default function AccountPage(props: PageProps<AccountPageData>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
@@ -40,35 +63,24 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
             </div>
           )}
           <ul>
-            <li class="py-4">
-              <p>
-                <strong>Display name</strong>
-              </p>
-              <p>
-                {getUserDisplayName(props.data.user)}
-              </p>
-              <p>
-                <a href="/account/display-name" class="underline">Edit</a>
-              </p>
-            </li>
-            <li class="py-4">
-              <p>
-                <strong>Email</strong>
-              </p>
-              <p>
-                {props.data.session!.user.email}
-              </p>
-            </li>
-            <li class="py-4">
-              <p>
-                <strong>Subscription</strong>
-              </p>
-              <p>
-                <a class="underline" href={`/account/${action.toLowerCase()}`}>
-                  {action} subscription
-                </a>
-              </p>
-            </li>
+            <Row
+              title="Display name"
+              text={getUserDisplayName(props.data.user)}
+            >
+              <a href="/account/display-name" class="underline">Edit</a>
+            </Row>
+            <Row title="Email" text={props.data.session!.user.email!} />
+            <Row
+              title="Subscription"
+              text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}
+            >
+              <a
+                class="underline"
+                href={`/account/${action.toLowerCase()}`}
+              >
+                {action}
+              </a>
+            </Row>
           </ul>
           <a
             href="/logout"
