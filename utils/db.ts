@@ -157,8 +157,6 @@ export async function deleteVote(initVote: InitVote) {
 
     if (itemRes.value === null) throw new Error("Item does not exist");
 
-    if (itemRes.value === null) throw new Error("Item does not exist");
-
     const itemByUserKey = [
       "items_by_user",
       itemRes.value.userId,
