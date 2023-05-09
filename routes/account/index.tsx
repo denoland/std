@@ -39,7 +39,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
               Your password has successfully been reset
             </div>
           )}
-          <ul class="divide-y">
+          <ul>
             <li class="py-4">
               <p>
                 <strong>Display name</strong>
