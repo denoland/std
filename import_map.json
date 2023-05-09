@@ -16,7 +16,6 @@
     "stripe": "https://esm.sh/stripe@11.13.0",
     "@supabase/auth-helpers-shared": "https://esm.sh/@supabase/auth-helpers-shared@0.3.3?target=es2022",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.14.0",
-    "feed": "https://esm.sh/feed@4.2.2",
-    "tabler_icons_tsx/": "https://deno.land/x/tabler_icons_tsx@0.0.3/"
+    "feed": "https://esm.sh/feed@4.2.2"
   }
 }

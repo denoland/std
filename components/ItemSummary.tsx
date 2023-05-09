@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import VoteButton from "@/islands/VoteButton.tsx";
 import { getUserDisplayName, Item, User } from "@/utils/db.ts";
-import IconExternalLink from "tabler_icons_tsx/tsx/external-link.tsx";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -35,9 +34,8 @@ export default function ItemSummary(props: ItemSummaryProps) {
           </a>
         </span>
         <span>
-          <a class="hover:underline" href={props.item.url}>
-            {new URL(props.item.url).host}{" "}
-            <IconExternalLink class="w-4 h-4 align-middle inline-block" />
+          <a class="hover:underline" href={props.item.url} target="_blank">
+            {new URL(props.item.url).host} ↗
           </a>
         </span>
         <p>
