@@ -51,6 +51,11 @@ export async function getItemById(id: string) {
   return res.value;
 }
 
+export async function getItemByUser(userId: string, itemId: string) {
+  const res = await kv.get<Item>(["items_by_users", userId, itemId]);
+  return res.value;
+}
+
 interface InitComment {
   userId: string;
   itemId: string;
@@ -105,63 +110,76 @@ interface InitVote {
   itemId: string;
 }
 
-export interface Vote extends InitVote {
-  id: string;
-  createdAt: Date;
-}
-
 export async function createVote(initVote: InitVote) {
+  const itemByUserKey = ["items_by_user", initVote.userId, initVote.itemId];
+  const itemKey = ["items", initVote.itemId];
+  const voteByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
+
   let res = { ok: false };
   while (!res.ok) {
-    const id = crypto.randomUUID();
-    const votesByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
-    const vote: Vote = { ...initVote, id, createdAt: new Date() };
-    res = await kv.atomic()
-      .check({ key: votesByUserKey, versionstamp: null })
-      .set(votesByUserKey, vote)
-      .commit();
+    const itemByUserRes = await kv.get<Item>(itemByUserKey);
+    const itemRes = await kv.get<Item>(itemKey);
 
-    if (res.ok) {
-      const itemKey = ["items", initVote.itemId];
-      const { value: item } = await kv.get<Item>(itemKey);
-      if (item) {
-        item.score++;
-        await kv.atomic().set(itemKey, item).commit();
-      }
+    if (itemByUserRes.value === null) {
+      throw new Error("Item by user does not exist");
     }
-    return vote;
+    if (itemRes.value === null) throw new Error("Item does not exist");
+
+    itemByUserRes.value.score++;
+    itemRes.value.score++;
+
+    res = await kv.atomic()
+      .check({ key: voteByUserKey, versionstamp: null })
+      .check(itemByUserRes)
+      .check(itemRes)
+      .set(itemByUserRes.key, itemByUserRes.value)
+      .set(itemRes.key, itemRes.value)
+      .set(voteByUserKey, undefined)
+      .commit();
   }
 }
 
 export async function deleteVote(initVote: InitVote) {
+  const itemByUserKey = ["items_by_user", initVote.userId, initVote.itemId];
+  const itemKey = ["items", initVote.itemId];
+  const voteByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
+
   let res = { ok: false };
   while (!res.ok) {
-    const votesByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
-    const { value } = await kv.get(votesByUserKey);
-    if (value) {
-      await kv.delete(votesByUserKey);
-      const itemKey = ["items", initVote.itemId];
-      const { value: item } = await kv.get<Item>(itemKey);
-      if (item) {
-        item.score && item.score--;
-        res = await kv.atomic().set(itemKey, item).commit();
-      }
+    const itemByUserRes = await kv.get<Item>(itemByUserKey);
+    const itemRes = await kv.get<Item>(itemKey);
+    const voteByUserRes = await kv.get<Item>(voteByUserKey);
+
+    if (itemByUserRes.value === null) {
+      throw new Error("Item by user does not exist");
     }
+    if (itemRes.value === null) throw new Error("Item does not exist");
+    if (voteByUserRes.value === null) return;
+
+    itemByUserRes.value.score--;
+    itemRes.value.score--;
+
+    res = await kv.atomic()
+      .check(itemByUserRes)
+      .check(itemRes)
+      .check(voteByUserRes)
+      .set(itemByUserRes.key, itemByUserRes.value)
+      .set(itemRes.key, itemRes.value)
+      .delete(voteByUserKey)
+      .commit();
   }
 }
 
-export async function getVotesByUser(
+export async function getVotedItemIdsByUser(
   userId: string,
   options?: Deno.KvListOptions,
 ) {
-  const iter = await kv.list<Vote>({
+  const iter = await kv.list<undefined>({
     prefix: ["votes_by_users", userId],
   }, options);
-  const votes = [];
-  for await (const res of iter) {
-    votes.push(res.value);
-  }
-  return votes;
+  const voteItemIds = [];
+  for await (const res of iter) voteItemIds.push(res.key.at(-1));
+  return voteItemIds;
 }
 
 interface InitUser {

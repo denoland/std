@@ -34,7 +34,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
         </span>
         {new URL(props.item.url).host}
         <p>
-          {getUserDisplayName(props.user)} •{" "}
+          {getUserDisplayName(props.user)}{" "}
           {props.user.isSubscribed && (
             <span title="Deno Hunt premium user">🦕{" "}</span>
           )}

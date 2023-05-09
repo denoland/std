@@ -18,10 +18,9 @@ import {
   getUserById,
   getUserDisplayName,
   getUsersByIds,
-  getVotesByUser,
+  getVotedItemIdsByUser,
   type Item,
   type User,
-  type Vote,
 } from "@/utils/db.ts";
 
 interface ItemPageData extends State {
@@ -29,7 +28,7 @@ interface ItemPageData extends State {
   item: Item;
   comments: Comment[];
   commentsUsers: User[];
-  votes: Vote[];
+  isVoted: boolean;
 }
 
 export const handler: Handlers<ItemPageData, State> = {
@@ -47,9 +46,10 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
-    const votes = ctx.state.session
-      ? await getVotesByUser(ctx.state.session?.user.id)
+    const votedItemIds = ctx.state.session
+      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
       : [];
+    const isVoted = votedItemIds.includes(id);
 
     return ctx.render({
       ...ctx.state,
@@ -57,7 +57,7 @@ export const handler: Handlers<ItemPageData, State> = {
       comments,
       user: user!,
       commentsUsers,
-      votes,
+      isVoted,
     });
   },
   async POST(req, ctx) {
@@ -100,9 +100,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
           <ItemSummary
             item={props.data.item}
             commentsCount={props.data.comments.length}
-            isVoted={!!props.data.votes.filter((vote) =>
-              vote.itemId === props.data.item.id
-            ).length}
+            isVoted={props.data.isVoted}
             user={props.data.user}
           />
           <div>

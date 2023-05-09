@@ -9,17 +9,16 @@ import {
   getAllItems,
   getItemCommentsCount,
   getUsersByIds,
-  getVotesByUser,
+  getVotedItemIdsByUser,
   type Item,
   type User,
-  type Vote,
 } from "@/utils/db.ts";
 
 interface HomePageData extends State {
   users: User[];
   items: Item[];
   commentsCounts: number[];
-  votes: Vote[];
+  areVoted: boolean[];
 }
 
 export function compareScore(a: Item, b: Item) {
@@ -36,16 +35,18 @@ export function compareScore(a: Item, b: Item) {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(_req, ctx) {
-    const votes = ctx.state.session
-      ? await getVotesByUser(ctx.state.session?.user.id)
-      : [];
     /** @todo Add pagination functionality */
     const items = (await getAllItems({ limit: 10 })).sort(compareScore);
     const users = await getUsersByIds(items.map((item) => item.userId));
     const commentsCounts = await Promise.all(
       items.map((item) => getItemCommentsCount(item.id)),
     );
-    return ctx.render({ ...ctx.state, items, commentsCounts, users, votes });
+    const votedItemIds = ctx.state.session
+      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
+      : [];
+    /** @todo Optimise */
+    const areVoted = items.map((item) => votedItemIds.includes(item.id));
+    return ctx.render({ ...ctx.state, items, commentsCounts, users, areVoted });
   },
 };
 
@@ -59,9 +60,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
             <ItemSummary
               item={item}
               commentsCount={props.data.commentsCounts[index]}
-              isVoted={!!props.data.votes.filter((vote) =>
-                vote.itemId === item.id
-              ).length}
+              isVoted={props.data.areVoted[index]}
               user={props.data.users[index]}
             />
           ))}
