@@ -81,7 +81,7 @@ function Form() {
 export default function SubmitPage(props: PageProps<State>) {
   return (
     <>
-      <Head title="Submit" />
+      <Head title="Submit" href={props.url.href} />
       <Layout session={props.data.session}>
         <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
           <h1 class="text-center text-2xl font-bold">Share your project</h1>

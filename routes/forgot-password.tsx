@@ -46,7 +46,7 @@ export default function ForgotPassword(props: PageProps) {
 
   return (
     <>
-      <Head title="Forgot password" />
+      <Head title="Forgot password" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

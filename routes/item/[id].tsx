@@ -94,7 +94,7 @@ export const handler: Handlers<ItemPageData, State> = {
 export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
-      <Head title={props.data.item.title} />
+      <Head title={props.data.item.title} href={props.url.href} />
       <Layout session={props.data.session}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
           <ItemSummary
