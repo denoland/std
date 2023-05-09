@@ -5,17 +5,6 @@
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
-import { extname, posix } from "../path/mod.ts";
-import { contentType } from "../media_types/content_type.ts";
-import { serve, serveTls } from "./server.ts";
-import { calculate, ifNoneMatch } from "./etag.ts";
-import { Status } from "./http_status.ts";
-import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parse } from "../flags/mod.ts";
-import { red } from "../fmt/colors.ts";
-import { createCommonResponse } from "./util.ts";
-import { VERSION } from "../version.ts";
-
 /**
  * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for building a static file server.
  *
@@ -41,6 +30,17 @@ import { VERSION } from "../version.ts";
  *
  * @module
  */
+
+import { extname, posix } from "../path/mod.ts";
+import { contentType } from "../media_types/content_type.ts";
+import { serve, serveTls } from "./server.ts";
+import { calculate, ifNoneMatch } from "./etag.ts";
+import { Status } from "./http_status.ts";
+import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
+import { parse } from "../flags/mod.ts";
+import { red } from "../fmt/colors.ts";
+import { createCommonResponse } from "./util.ts";
+import { VERSION } from "../version.ts";
 
 interface EntryInfo {
   mode: string;
