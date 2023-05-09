@@ -35,6 +35,9 @@ export default function ItemSummary(props: ItemSummaryProps) {
         {new URL(props.item.url).host}
         <p>
           {getUserDisplayName(props.user)} •{" "}
+          {props.user.isSubscribed && (
+            <span title="Deno Hunt premium user">🦕{" "}</span>
+          )}
           {timeAgo(new Date(props.item.createdAt))} ago •{" "}
           <a href={`/item/${props.item.id}`}>
             {pluralize(props.commentsCount, "comment")}
