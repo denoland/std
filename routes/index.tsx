@@ -36,7 +36,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
     <>
       <Head />
       <Layout session={props.data.session}>
-        <div class={`${SITE_WIDTH_STYLES} divide-y flex-1 px-8`}>
+        <div class={`${SITE_WIDTH_STYLES} flex-1 px-8`}>
           {props.data.items.map((item, index) => (
             <ItemSummary
               item={item}
