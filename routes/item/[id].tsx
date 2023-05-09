@@ -18,6 +18,7 @@ import {
   getUserById,
   getUserDisplayName,
   getUsersByIds,
+  getVotedItemIdsByUser,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -28,6 +29,7 @@ interface ItemPageData extends State {
   item: Item;
   comments: Comment[];
   commentsUsers: User[];
+  isVoted: boolean;
 }
 
 export const handler: Handlers<ItemPageData, State> = {
@@ -45,12 +47,18 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
+    const votedItemIds = ctx.state.session
+      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
+      : [];
+    const isVoted = votedItemIds.includes(id);
+
     return ctx.render({
       ...ctx.state,
       item,
       comments,
       user: user!,
       commentsUsers,
+      isVoted,
     });
   },
   async POST(req, ctx) {
@@ -85,9 +93,10 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
           <ItemSummary
             item={props.data.item}
             commentsCount={props.data.comments.length}
+            isVoted={props.data.isVoted}
             user={props.data.user}
           />
-          <div class="divide-y">
+          <div>
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
