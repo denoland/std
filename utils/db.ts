@@ -111,19 +111,26 @@ interface InitVote {
 }
 
 export async function createVote(initVote: InitVote) {
-  const itemByUserKey = ["items_by_user", initVote.userId, initVote.itemId];
   const itemKey = ["items", initVote.itemId];
   const voteByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
 
   let res = { ok: false };
   while (!res.ok) {
-    const itemByUserRes = await kv.get<Item>(itemByUserKey);
     const itemRes = await kv.get<Item>(itemKey);
+
+    if (itemRes.value === null) throw new Error("Item does not exist");
+
+    const itemByUserKey = [
+      "items_by_user",
+      itemRes.value.userId,
+      itemRes.value.id,
+    ];
+
+    const itemByUserRes = await kv.get<Item>(itemByUserKey);
 
     if (itemByUserRes.value === null) {
       throw new Error("Item by user does not exist");
     }
-    if (itemRes.value === null) throw new Error("Item does not exist");
 
     itemByUserRes.value.score++;
     itemRes.value.score++;
@@ -140,20 +147,27 @@ export async function createVote(initVote: InitVote) {
 }
 
 export async function deleteVote(initVote: InitVote) {
-  const itemByUserKey = ["items_by_user", initVote.userId, initVote.itemId];
   const itemKey = ["items", initVote.itemId];
   const voteByUserKey = ["votes_by_users", initVote.userId, initVote.itemId];
 
   let res = { ok: false };
   while (!res.ok) {
-    const itemByUserRes = await kv.get<Item>(itemByUserKey);
     const itemRes = await kv.get<Item>(itemKey);
     const voteByUserRes = await kv.get<Item>(voteByUserKey);
+
+    if (itemRes.value === null) throw new Error("Item does not exist");
+
+    const itemByUserKey = [
+      "items_by_user",
+      itemRes.value.userId,
+      itemRes.value.id,
+    ];
+
+    const itemByUserRes = await kv.get<Item>(itemByUserKey);
 
     if (itemByUserRes.value === null) {
       throw new Error("Item by user does not exist");
     }
-    if (itemRes.value === null) throw new Error("Item does not exist");
     if (voteByUserRes.value === null) return;
 
     itemByUserRes.value.score--;
