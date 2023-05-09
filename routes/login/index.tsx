@@ -57,7 +57,7 @@ export default function LoginPage(props: PageProps) {
 
   return (
     <>
-      <Head title="Login" />
+      <Head title="Login" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

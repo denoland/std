@@ -1,9 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { CSS, render } from "$gfm";
-import { Head } from "$fresh/runtime.ts";
 import { getPost, Post } from "@/utils/posts.ts";
-import Meta from "@/components/Meta.tsx";
+import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
@@ -31,13 +30,8 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
 
   return (
     <>
-      <Head>
+      <Head title={post.title} description={post.summary} href={props.url.href}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
-        <Meta
-          title={post.title}
-          description={post.summary}
-          href={props.url.href}
-        />
       </Head>
       <Layout session={props.data.session}>
         <main class={`${SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>

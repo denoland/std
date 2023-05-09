@@ -2,11 +2,12 @@
 import Head from "@/components/Head.tsx";
 import Logo from "@/components/Logo.tsx";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import type { UnknownPageProps } from "$fresh/server.ts";
 
-export default function NotFoundPage() {
+export default function NotFoundPage(props: UnknownPageProps) {
   return (
     <>
-      <Head title="Page not found" />
+      <Head title="Page not found" href={props.url.href} />
       <div
         class={`h-screen flex flex-col justify-center ${SITE_WIDTH_STYLES} p-4 text-center space-y-4`}
       >

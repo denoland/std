@@ -58,7 +58,7 @@ export default function SignupPage(props: PageProps) {
 
   return (
     <>
-      <Head title="Signup" />
+      <Head title="Signup" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">
