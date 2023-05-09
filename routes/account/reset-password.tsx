@@ -8,6 +8,7 @@ import {
   INPUT_STYLES,
   NOTICE_STYLES,
 } from "@/utils/constants.ts";
+import { redirect } from "@/utils/http.ts";
 
 export const handler: Handlers = {
   async GET(request, ctx) {
@@ -16,10 +17,7 @@ export const handler: Handlers = {
       .auth.getSession();
 
     if (error) {
-      return new Response(null, {
-        headers: { location: `/reset-password?error=${error.message}` },
-        status: 302,
-      });
+      return redirect(`/reset-password?error=${error.message}`);
     }
 
     return ctx.render();
@@ -47,7 +45,7 @@ export default function ResetPassword(props: PageProps) {
 
   return (
     <>
-      <Head title="Login" />
+      <Head title="Reset password" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

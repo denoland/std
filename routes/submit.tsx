@@ -5,17 +5,12 @@ import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem } from "@/utils/db.ts";
+import { redirect } from "@/utils/http.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
     if (!ctx.state.session) {
-      return new Response(null, {
-        headers: {
-          location: `/login?redirect_url=${encodeURIComponent(req.url)}`,
-        },
-        /** @todo Confirm whether this HTTP redirect status code is correct */
-        status: 302,
-      });
+      return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
     }
 
     return ctx.render(ctx.state);
@@ -47,10 +42,7 @@ export const handler: Handlers<State, State> = {
       url,
     });
 
-    return new Response(null, {
-      headers: { location: `/item/${item!.id}` },
-      status: 302,
-    });
+    return redirect(`/item/${item!.id}`);
   },
 };
 
@@ -81,7 +73,7 @@ function Form() {
 export default function SubmitPage(props: PageProps<State>) {
   return (
     <>
-      <Head title="Submit" />
+      <Head title="Submit" href={props.url.href} />
       <Layout session={props.data.session}>
         <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
           <h1 class="text-center text-2xl font-bold">Share your project</h1>

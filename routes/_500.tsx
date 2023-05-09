@@ -7,7 +7,7 @@ import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 export default function Error500Page(props: ErrorPageProps) {
   return (
     <>
-      <Head title="Server error" />
+      <Head title="Server error" href={props.url.href} />
       <div
         class={`h-screen flex flex-col justify-center ${SITE_WIDTH_STYLES} p-4 text-center space-y-4`}
       >

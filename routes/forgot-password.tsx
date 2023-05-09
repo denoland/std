@@ -8,6 +8,7 @@ import {
   NOTICE_STYLES,
 } from "@/utils/constants.ts";
 import type { State } from "./_middleware.ts";
+import { redirect } from "@/utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
@@ -23,20 +24,12 @@ export const handler: Handlers<any, State> = {
     );
 
     if (error) {
-      return new Response(null, {
-        headers: {
-          location: `/forgot-password?error=${
-            encodeURIComponent(error.message)
-          }`,
-        },
-        status: 302,
-      });
+      return redirect(
+        `/forgot-password?error=${encodeURIComponent(error.message)}`,
+      );
     }
 
-    return new Response(null, {
-      headers: { location: "/forgot-password?success=1" },
-      status: 302,
-    });
+    return redirect("/forgot-password?success=1");
   },
 };
 
@@ -46,7 +39,7 @@ export default function ForgotPassword(props: PageProps) {
 
   return (
     <>
-      <Head title="Forgot password" />
+      <Head title="Forgot password" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

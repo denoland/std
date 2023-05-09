@@ -7,6 +7,7 @@ import { NOTICE_STYLES } from "@/utils/constants.ts";
 import { REDIRECT_PATH_AFTER_LOGIN } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
+import { redirect } from "@/utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
@@ -19,13 +20,7 @@ export const handler: Handlers<any, State> = {
       .getSession();
 
     if (session) {
-      return new Response(null, {
-        headers: {
-          location: "/",
-        },
-        /** @todo Confirm whether this HTTP redirect status code is correct */
-        status: 302,
-      });
+      return redirect("/");
     }
 
     return ctx.render();
@@ -44,10 +39,7 @@ export const handler: Handlers<any, State> = {
       redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
     }
 
-    return new Response(null, {
-      headers: { location: redirectUrl },
-      status: 302,
-    });
+    return redirect(redirectUrl);
   },
 };
 
@@ -65,7 +57,7 @@ export default function LoginPage(props: PageProps) {
 
   return (
     <>
-      <Head title="Login" />
+      <Head title="Login" href={props.url.href} />
       <div class="max-w-xs flex h-screen m-auto">
         <div class="m-auto w-72">
           <a href="/">

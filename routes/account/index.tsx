@@ -28,7 +28,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
 
   return (
     <>
-      <Head title="Account" />
+      <Head title="Account" href={props.url.href} />
       <Layout session={props.data.session}>
         <div class="max-w-lg m-auto w-full flex-1 p-8 flex flex-col justify-center">
           <h1 class="text-3xl mb-4">
