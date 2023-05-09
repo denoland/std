@@ -28,6 +28,6 @@ export const handler: Handlers<null, AccountState> = {
       mode: "subscription",
     });
 
-    return redirect(url || '/');
+    return redirect(url || "/");
   },
 };
