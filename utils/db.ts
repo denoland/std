@@ -117,13 +117,17 @@ export async function createVote(initVote: InitVote) {
   let res = { ok: false };
   while (!res.ok) {
     const itemRes = await kv.get<Item>(itemKey);
-    
+
     if (itemRes.value === null) throw new Error("Item does not exist");
 
-    const itemByUserKey = ["items_by_user", itemRes.value.userId, itemRes.value.id];
+    const itemByUserKey = [
+      "items_by_user",
+      itemRes.value.userId,
+      itemRes.value.id,
+    ];
 
     const itemByUserRes = await kv.get<Item>(itemByUserKey);
-    
+
     if (itemByUserRes.value === null) {
       throw new Error("Item by user does not exist");
     }
@@ -155,7 +159,11 @@ export async function deleteVote(initVote: InitVote) {
 
     if (itemRes.value === null) throw new Error("Item does not exist");
 
-    const itemByUserKey = ["items_by_user", itemRes.value.userId, itemRes.value.id];
+    const itemByUserKey = [
+      "items_by_user",
+      itemRes.value.userId,
+      itemRes.value.id,
+    ];
 
     const itemByUserRes = await kv.get<Item>(itemByUserKey);
 
