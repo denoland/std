@@ -5,17 +5,12 @@ import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem } from "@/utils/db.ts";
+import { redirect } from "@/utils/http.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
     if (!ctx.state.session) {
-      return new Response(null, {
-        headers: {
-          location: `/login?redirect_url=${encodeURIComponent(req.url)}`,
-        },
-        /** @todo Confirm whether this HTTP redirect status code is correct */
-        status: 302,
-      });
+      return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
     }
 
     return ctx.render(ctx.state);
@@ -47,10 +42,7 @@ export const handler: Handlers<State, State> = {
       url,
     });
 
-    return new Response(null, {
-      headers: { location: `/item/${item!.id}` },
-      status: 302,
-    });
+    return redirect(`/item/${item!.id}`);
   },
 };
 

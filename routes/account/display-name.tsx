@@ -14,6 +14,7 @@ import {
   type User,
 } from "@/utils/db.ts";
 import type { AccountState } from "./_middleware.ts";
+import { redirect } from "@/utils/http.ts";
 
 interface DisplayNamePageData {
   user: User;
@@ -37,19 +38,11 @@ export const handler: Handlers<DisplayNamePageData, AccountState> = {
       }
 
       await setUserDisplayName(ctx.state.session.user.id, displayName);
-      return new Response(null, {
-        headers: { location: "/account" },
-        status: 303,
-      });
+      return redirect("/account");
     } catch (error) {
-      return new Response(null, {
-        headers: {
-          location: `/account/display-name?error=${
-            encodeURIComponent(error.message)
-          }`,
-        },
-        status: 303,
-      });
+      return redirect(
+        `/account/display-name?error=${encodeURIComponent(error.message)}`,
+      );
     }
   },
 };

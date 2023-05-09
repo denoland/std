@@ -3,6 +3,7 @@ import type { MiddlewareHandlerContext } from "$fresh/server.ts";
 
 import { createServerSupabaseClient } from "@supabase/auth-helpers-shared";
 import { getCookies, setCookie } from "std/http/cookie.ts";
+import { redirect } from "./http.ts";
 
 export type SupabaseClient = ReturnType<typeof createSupabaseClient>;
 
@@ -37,13 +38,7 @@ export async function ensureLoggedInMiddleware(
   ctx: MiddlewareHandlerContext,
 ) {
   if (!ctx.state.session) {
-    return new Response(null, {
-      headers: {
-        location: `/login?redirect_url=${encodeURIComponent(req.url)}`,
-      },
-      /** @todo Confirm whether this HTTP redirect status code is correct */
-      status: 302,
-    });
+    return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
   }
 
   return await ctx.next();
