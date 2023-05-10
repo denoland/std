@@ -21,7 +21,9 @@ export const handler: Handlers<BlogPostPageData, State> = {
 
 export default function PostPage(props: PageProps<BlogPostPageData>) {
   const { post } = props.data;
-  const date = new Date(post.publishedAt).toLocaleDateString();
+  const date = new Date(post.publishedAt).toLocaleDateString("en-US", {
+    dateStyle: "long",
+  });
 
   return (
     <>
