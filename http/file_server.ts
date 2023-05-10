@@ -268,6 +268,7 @@ async function serveDirIndex(
   options: {
     showDotfiles: boolean;
     target: string;
+    quiet: boolean | undefined;
   },
 ): Promise<Response> {
   const { showDotfiles } = options;
@@ -294,13 +295,27 @@ async function serveDirIndex(
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
-    const entryInfo = Deno.stat(filePath).then((fileInfo): EntryInfo => ({
-      mode: modeToString(entry.isDirectory, fileInfo.mode),
-      size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
-      name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-      url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
-    }));
-    listEntryPromise.push(entryInfo);
+
+    listEntryPromise.push((async () => {
+      try {
+        const fileInfo = await Deno.stat(filePath);
+        return {
+          mode: modeToString(entry.isDirectory, fileInfo.mode),
+          size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
+          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
+          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+        };
+      } catch (error) {
+        // Note: Deno.stat for windows system files may be rejected with os error 32.
+        if (!options.quiet) logError(error);
+        return {
+          mode: "(unknown mode)",
+          size: "",
+          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
+          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+        };
+      }
+    })());
   }
 
   const listEntry = await Promise.all(listEntryPromise);
@@ -554,11 +569,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   try {
     response = await createServeDirResponse(req, opts);
   } catch (error) {
-    if (!opts.quiet) {
-      console.error(
-        red(error instanceof Error ? error.message : "[non-error thrown]"),
-      );
-    }
+    if (!opts.quiet) logError(error);
     response = serveFallback(error);
   }
 
@@ -595,7 +606,7 @@ async function createServeDirResponse(
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const showDotfiles = opts.showDotfiles || false;
-  const { etagAlgorithm, showDirListing } = opts;
+  const { etagAlgorithm, showDirListing, quiet } = opts;
 
   const url = new URL(req.url);
   const decodedUrl = decodeURIComponent(url.pathname);
@@ -671,10 +682,14 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target });
+    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
   }
 
   return createCommonResponse(Status.NotFound);
+}
+
+function logError(error: unknown) {
+  console.error(red(error instanceof Error ? error.message : `${error}`));
 }
 
 function main() {

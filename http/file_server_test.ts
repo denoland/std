@@ -4,6 +4,7 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
+import { stub } from "../testing/mock.ts";
 import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
@@ -57,7 +58,7 @@ async function startFileServer({
     ],
     cwd: moduleDir,
     stdout: "piped",
-    stderr: "null",
+    stderr: "inherit",
   });
   child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
@@ -280,6 +281,30 @@ Deno.test("serveDirIndex with filename including hash symbol", async function ()
     assertStringIncludes(page, "/testdata/file%232.txt");
   } finally {
     await killFileServer();
+  }
+});
+
+Deno.test("serveDirIndex returns a response even if fileinfo is inaccessible", async function () {
+  // Note: Deno.stat for windows system files may be rejected with os error 32.
+  // Mock Deno.stat to test that the dirlisting page can be generated
+  // even if the fileInfo for a particular file cannot be obtained.
+
+  // Assuming that fileInfo of `test file.txt` cannot be accessible
+  const denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
+    if (path.toString().includes("test file.txt")) {
+      return Promise.reject(new Error("__stubed_error__"));
+    }
+    return denoStatStub.original.call(Deno, path);
+  });
+
+  try {
+    const url = "http://localhost:4507/http/testdata/";
+    const res = await serveDir(new Request(url), { showDirListing: true });
+
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "/testdata/test%20file.txt");
+  } finally {
+    denoStatStub.restore();
   }
 });
 
