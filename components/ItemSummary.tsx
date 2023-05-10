@@ -17,7 +17,6 @@ export function timeAgo(time: number | Date) {
 export interface ItemSummaryProps {
   item: Item;
   user: User;
-  commentsCount: number;
   isVoted: boolean;
 }
 
@@ -29,19 +28,22 @@ export default function ItemSummary(props: ItemSummaryProps) {
         isVoted={props.isVoted}
       />
       <div>
-        <span class="mr-2 text-black">
-          <a href={props.item.url}>{props.item.title}</a>
+        <span class="mr-2">
+          <a class="text-black hover:underline" href={`/item/${props.item.id}`}>
+            {props.item.title}
+          </a>
         </span>
-        {new URL(props.item.url).host}
+        <span>
+          <a class="hover:underline" href={props.item.url} target="_blank">
+            {new URL(props.item.url).host} ↗
+          </a>
+        </span>
         <p>
           {getUserDisplayName(props.user)}{" "}
           {props.user.isSubscribed && (
             <span title="Deno Hunt premium user">🦕{" "}</span>
           )}
-          {timeAgo(new Date(props.item.createdAt))} ago •{" "}
-          <a href={`/item/${props.item.id}`}>
-            {pluralize(props.commentsCount, "comment")}
-          </a>
+          {timeAgo(new Date(props.item.createdAt))} ago
         </p>
       </div>
     </div>

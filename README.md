@@ -84,7 +84,7 @@ supabase start
 3. Listen locally to Stripe events:
 
 ```
-stripe listen --forward-to localhost:8000/api/stripe-webhooks
+stripe listen --forward-to localhost:8000/api/stripe-webhooks --events=customer.subscription.created,customer.subscription.deleted
 ```
 
 4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
