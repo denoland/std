@@ -7,7 +7,6 @@ import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import {
   getAllItems,
-  getItemCommentsCount,
   getUsersByIds,
   getVotedItemIdsByUser,
   type Item,
@@ -17,7 +16,6 @@ import {
 interface HomePageData extends State {
   users: User[];
   items: Item[];
-  commentsCounts: number[];
   areVoted: boolean[];
 }
 
@@ -38,15 +36,12 @@ export const handler: Handlers<HomePageData, State> = {
     /** @todo Add pagination functionality */
     const items = (await getAllItems({ limit: 10 })).sort(compareScore);
     const users = await getUsersByIds(items.map((item) => item.userId));
-    const commentsCounts = await Promise.all(
-      items.map((item) => getItemCommentsCount(item.id)),
-    );
     const votedItemIds = ctx.state.session
       ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
       : [];
     /** @todo Optimise */
     const areVoted = items.map((item) => votedItemIds.includes(item.id));
-    return ctx.render({ ...ctx.state, items, commentsCounts, users, areVoted });
+    return ctx.render({ ...ctx.state, items, users, areVoted });
   },
 };
 
@@ -59,7 +54,6 @@ export default function HomePage(props: PageProps<HomePageData>) {
           {props.data.items.map((item, index) => (
             <ItemSummary
               item={item}
-              commentsCount={props.data.commentsCounts[index]}
               isVoted={props.data.areVoted[index]}
               user={props.data.users[index]}
             />
