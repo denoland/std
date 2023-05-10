@@ -77,7 +77,7 @@ type Values<
   TNegatable extends Negatable,
   TDefault extends Record<string, unknown> | undefined,
   TAliases extends Aliases | undefined,
-> = UseTypes<TBooleans, TStrings, TCollectable> extends true ? 
+> = UseTypes<TBooleans, TStrings, TCollectable> extends true ?
     & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
@@ -128,7 +128,7 @@ type AliasNames<
  * **Result:** `{ foo: boolean | number, bar?: number }`
  */
 type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
-  : TArgs extends Record<string, unknown> ? 
+  : TArgs extends Record<string, unknown> ?
       & Omit<TArgs, keyof TDefaults>
       & {
         [Default in keyof TDefaults]: Default extends keyof TArgs
@@ -172,7 +172,7 @@ type CollectValues<
   TCollectable extends Collectable,
   TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  Extract<TArgNames, TCollectable> extends string ? 
+  Extract<TArgNames, TCollectable> extends string ?
       & (Exclude<TArgNames, TCollectable> extends never ? Record<never, never>
         : MapTypes<Exclude<TArgNames, TCollectable>, TType, TNegatable>)
       & (Extract<TArgNames, TCollectable> extends never ? Record<never, never>
