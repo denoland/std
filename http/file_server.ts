@@ -663,9 +663,7 @@ async function createServeDirResponse(
 }
 
 function logError(error: unknown) {
-  console.error(
-    red(error instanceof Error ? error.message : "[non-error thrown]"),
-  );
+  console.error(red(error instanceof Error ? error.message : `${error}`));
 }
 
 function main() {
