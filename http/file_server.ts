@@ -5,6 +5,32 @@
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
+/**
+ * Contains functions {@linkcode serveDir} and {@linkcode serveFile} for building a static file server.
+ *
+ * This module can also be used as a cli. If you want to run directly:
+ *
+ * ```shell
+ * > # start server
+ * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > # show help
+ * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts --help
+ * ```
+ *
+ * If you want to install and run:
+ *
+ * ```shell
+ * > # install
+ * > deno install --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > # start server
+ * > file_server
+ * > # show help
+ * > file_server --help
+ * ```
+ *
+ * @module
+ */
+
 import { extname, posix } from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
