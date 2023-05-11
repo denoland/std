@@ -23,6 +23,7 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
+import { pluralize } from "@/components/ItemSummary.tsx";
 
 interface ItemPageData extends State {
   user: User;
@@ -89,14 +90,18 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
     <>
       <Head title={props.data.item.title} href={props.url.href} />
       <Layout session={props.data.session}>
-        <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-4`}>
+        <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-8`}>
           <ItemSummary
             item={props.data.item}
-            commentsCount={props.data.comments.length}
             isVoted={props.data.isVoted}
             user={props.data.user}
           />
           <div>
+            <h2>
+              <strong>
+                {pluralize(props.data.comments.length, "comment")}
+              </strong>
+            </h2>
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
