@@ -26,3 +26,5 @@ jobs:
 
       - name: Run Lighthouse
         run: lhci autorun --collect.url="$URL" --collect.url="$URL/blog" --upload.target="temporary-public-storage"
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
