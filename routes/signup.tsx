@@ -65,7 +65,7 @@ export default function SignupPage(props: PageProps) {
             <Logo class="mb-8" />
           </a>
           {errorMessage && POSSIBLE_ERROR_MESSAGES.has(errorMessage) && (
-            <div class={NOTICE_STYLES}>{errorMessage}</div>
+            <div class={`${NOTICE_STYLES} mb-4`}>{errorMessage}</div>
           )}
           <form
             method="POST"

@@ -49,7 +49,7 @@ export default function BlogPage(props: PageProps<BlogPageData>) {
         href={props.url.href}
       />
       <Layout session={props.data.session}>
-        <main class={`${SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>
+        <main class={`${SITE_WIDTH_STYLES} px-4 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">Blog</h1>
           <div class="mt-8">
             {props.data.posts.map((post) => <PostCard {...post} />)}

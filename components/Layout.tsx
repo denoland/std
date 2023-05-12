@@ -12,7 +12,7 @@ import type { Session } from "@supabase/supabase-js";
 function Notice() {
   return (
     <div class={`${NOTICE_STYLES} rounded-none`}>
-      <div class={`text-center px-8`}>
+      <div class={`text-center px-4`}>
         Deno Hunt powered by Deno SaaSKit is currently in beta. Check out
         progress in the{" "}
         <a
@@ -53,7 +53,7 @@ function Header(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <header
       {...props}
-      class={`p-8 justify-between ${SITE_WIDTH_STYLES} flex z-10 ${
+      class={`p-4 justify-between ${SITE_WIDTH_STYLES} flex z-10 ${
         props.class ?? ""
       }`}
     >
@@ -69,7 +69,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <footer
       {...props}
-      class={`flex flex-col md:flex-row p-8 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
+      class={`flex flex-col md:flex-row p-4 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
       }`}
     >

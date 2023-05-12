@@ -13,5 +13,5 @@ export const BUTTON_STYLES =
 export const INPUT_STYLES =
   "px-4 py-2 bg-white rounded rounded-lg outline-none w-full border-1 border-gray-300 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed)";
 export const NOTICE_STYLES =
-  "px-4 py-2 rounded-lg bg-yellow-100 text-yellow-700 mb-4";
+  "px-4 py-2 rounded-lg bg-yellow-100 text-yellow-700";
 export const SITE_WIDTH_STYLES = "mx-auto max-w-7xl w-full";

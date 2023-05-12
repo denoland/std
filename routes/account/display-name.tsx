@@ -67,7 +67,7 @@ export default function DisplayNamePage(props: PageProps<DisplayNamePageData>) {
             Change display name
           </h1>
           {errorMessage && POSSIBLE_ERROR_MESSAGES.includes(errorMessage) && (
-            <div class={NOTICE_STYLES}>{errorMessage}</div>
+            <div class={`${NOTICE_STYLES} mb-4`}>{errorMessage}</div>
           )}
           <form method="POST" class="space-y-4">
             <input

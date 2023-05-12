@@ -31,7 +31,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
       </Head>
       <Layout session={props.data.session}>
-        <main class={`${SITE_WIDTH_STYLES} px-8 pt-16 flex-1`}>
+        <main class={`${SITE_WIDTH_STYLES} px-4 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">{post.title}</h1>
           <time class="text-gray-500">
             {date}
