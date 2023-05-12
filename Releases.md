@@ -1,3 +1,13 @@
+### 0.187.0 / 2023.05.12
+
+- feat(collections): add `partitionEntries` (#3365)
+- feat(regexp): add escape function (#3334)
+- fix(datetime): negative months, quarters, and years (#3367)
+- fix(http/file_server): dealing with dir listing view that contain system files
+  (#3371)
+- fix(http/file_server): redirect non-canonical URL to canonical URL (#3362)
+- perf(http/file_server): read fileinfo in parallel (#3363)
+
 ### 0.186.0 / 2023.05.04
 
 - BREAKING(path): deprecate path.sep (#3342)
