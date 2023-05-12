@@ -3,9 +3,9 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { State } from "@/routes/_middleware.ts";
-import { BUTTON_STYLES, SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/payments.ts";
-import Stripe from "npm:stripe";
+import Stripe from "stripe";
 import { ComponentChild } from "preact";
 import { getOrCreateUser, User } from "@/utils/db.ts";
 
