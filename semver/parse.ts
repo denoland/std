@@ -312,7 +312,8 @@ export function tryParseRange(
  * @returns A valid semantic version range
  */
 export function parseRange(range: string): SemVerRange {
-  range = range.trim();
+  // handle spaces around and between comparator and version
+  range = range.trim().replaceAll(/(?<=<|>|=) /g, "");
 
   if (range === "") {
     return { ranges: [[ALL]] };
