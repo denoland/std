@@ -89,6 +89,10 @@ interface LayoutProps {
 export default function Layout(props: LayoutProps) {
   const headerNavItems = [
     {
+      href: "/pricing",
+      inner: "Pricing",
+    },
+    {
       href: "/submit",
       inner: <span class={BUTTON_STYLES}>Submit</span>,
     },
