@@ -53,12 +53,12 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
     <>
       <Head title="Account" href={props.url.href} />
       <Layout session={props.data.session}>
-        <div class="max-w-lg m-auto w-full flex-1 p-8 flex flex-col justify-center">
+        <div class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
           <h1 class="text-3xl mb-4">
             <strong>Account</strong>
           </h1>
           {hasResetPassword && (
-            <div class={NOTICE_STYLES}>
+            <div class={`${NOTICE_STYLES} mb-4`}>
               Your password has successfully been reset
             </div>
           )}

@@ -52,7 +52,9 @@ export default function ResetPassword(props: PageProps) {
             <Logo class="mb-8" />
           </a>
           <h1 class="text-center my-8 text-2xl font-bold">Reset password</h1>
-          {errorMessage && <div class={NOTICE_STYLES}>{errorMessage}</div>}
+          {errorMessage && (
+            <div class={`${NOTICE_STYLES} mb-4`}>{errorMessage}</div>
+          )}
           <form method="POST" class="space-y-4">
             <input
               type="password"

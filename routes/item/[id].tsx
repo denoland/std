@@ -90,7 +90,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
     <>
       <Head title={props.data.item.title} href={props.url.href} />
       <Layout session={props.data.session}>
-        <div class={`${SITE_WIDTH_STYLES} flex-1 px-8 space-y-8`}>
+        <div class={`${SITE_WIDTH_STYLES} flex-1 px-4 space-y-8`}>
           <ItemSummary
             item={props.data.item}
             isVoted={props.data.isVoted}

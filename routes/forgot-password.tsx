@@ -47,11 +47,13 @@ export default function ForgotPassword(props: PageProps) {
           </a>
           <h1 class="text-center my-8 text-2xl font-bold">Forgot password</h1>
           {successMessage && (
-            <div class={NOTICE_STYLES}>
+            <div class={`${NOTICE_STYLES} mb-4`}>
               Reset password link sent to email
             </div>
           )}
-          {errorMessage && <div class={NOTICE_STYLES}>{errorMessage}</div>}
+          {errorMessage && (
+            <div class={`${NOTICE_STYLES} mb-4`}>{errorMessage}</div>
+          )}
           <form method="POST" class="space-y-4">
             <input
               placeholder="Email"
