@@ -1,0 +1,28 @@
+name: lighthouse
+
+on: [deployment_status]
+
+jobs:
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.creator.login == 'deno-deploy[bot]'
+
+    env:
+      URL: ${{ github.event.deployment_status.environment_url }}
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Run Lighthouse
+        run: lhci autorun --collect.url="$URL" --collect.url="$URL/blog" --upload.target="temporary-public-storage"
