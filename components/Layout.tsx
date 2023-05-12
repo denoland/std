@@ -92,10 +92,6 @@ export default function Layout(props: LayoutProps) {
       href: "/pricing",
       inner: "Pricing",
     },
-    {
-      href: "/submit",
-      inner: <span class={BUTTON_STYLES}>Submit</span>,
-    },
     props.session
       ? {
         href: "/account",
@@ -105,6 +101,10 @@ export default function Layout(props: LayoutProps) {
         href: "/login",
         inner: "Login",
       },
+    {
+      href: "/submit",
+      inner: <span class={BUTTON_STYLES}>Submit</span>,
+    },
   ];
 
   const footerNavItems = [
