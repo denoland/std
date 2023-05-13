@@ -1,13 +1,9 @@
-import {
-  type Cookie,
-  deleteCookie,
-  getCookies,
-  setCookie,
-} from "std/http/cookie.ts";
+import { deleteCookie, getCookies, setCookie } from "std/http/cookie.ts";
 import { OAuth2Client } from "https://deno.land/x/oauth2_client@v1.0.0/mod.ts";
 import { kv } from "./db.ts";
+import { redirect } from "./http.ts";
 
-const OAUTH_COOKIE_NAME = "oauth-session";
+const OAUTH_SESSION_COOKIE_NAME = "oauth-session";
 
 const oauth2Client = new OAuth2Client({
   clientId: Deno.env.get("GITHUB_CLIENT_ID")!,
@@ -24,18 +20,6 @@ interface OAuthSession {
   codeVerifier: string;
 }
 
-async function setOAuthSession(id: string, session: OAuthSession) {
-  await kv.set(["oauth_sessions", id], session);
-}
-
-function createOAuthSessionCookie(value: string) {
-  return {
-    name: OAUTH_COOKIE_NAME,
-    value,
-    httpOnly: true,
-  } as Cookie;
-}
-
 export async function redirectToOAuthLogin() {
   // Generate a random state
   const state = crypto.randomUUID();
@@ -44,45 +28,33 @@ export async function redirectToOAuthLogin() {
 
   // Associate the state and PKCE code verifier with a session cookie
   const oauthSessionId = crypto.randomUUID();
-  await setOAuthSession(oauthSessionId, { state, codeVerifier });
+  await kv.set(["oauth_sessions", oauthSessionId], { state, codeVerifier });
 
   const headers = new Headers({ location: uri.toString() });
-  setCookie(headers, createOAuthSessionCookie(oauthSessionId));
+  setCookie(headers, {
+    name: OAUTH_SESSION_COOKIE_NAME,
+    value: oauthSessionId,
+    httpOnly: true,
+  });
 
   // Redirect to the authorization endpoint
   return new Response(null, { status: 302, headers });
 }
 
-function getOAuthSessionCookie(headers: Headers) {
-  return getCookies(headers)[OAUTH_COOKIE_NAME];
-}
-
-async function getOAuthSession(id: string) {
-  const res = await kv.get<OAuthSession>(["oauth-sessions", id]);
-  return res.value;
-}
-
-async function deleteOAuthSession(id: string) {
-  await kv.delete(["oauth-sessions", id]);
-}
-
-export async function setUserWithSession(user: User, session: string) {
-  await kv.atomic()
-    .set(["users", user.id], user)
-    .set(["users_by_login", user.login], user)
-    .set(["users_by_session", session], user)
-    .commit();
-}
-
 export async function handleOAuthCallback(request: Request) {
-  const oauthSessionCookie = getOAuthSessionCookie(request.headers);
+  const oauthSessionCookie =
+    getCookies(request.headers)[OAUTH_SESSION_COOKIE_NAME];
 
   if (!oauthSessionCookie) {
     throw new Error();
   }
 
-  const oauthSession = await getOAuthSession(oauthSessionCookie);
-  await deleteOAuthSession(oauthSessionCookie);
+  const oauthSessionRes = await kv.get<OAuthSession>([
+    "oauth-sessions",
+    oauthSessionCookie,
+  ]);
+  const oauthSession = oauthSessionRes.value;
+  await await kv.delete(["oauth-sessions", oauthSessionCookie]);
 
   if (!oauthSession) {
     throw new Error();
@@ -90,24 +62,24 @@ export async function handleOAuthCallback(request: Request) {
 
   const tokens = await oauth2Client.code.getToken(request.url, oauthSession);
   const user = await getUser(tokens.accessToken);
-  const session = crypto.randomUUID();
-  await setUserWithSession(user, session);
+  const sessionId = crypto.randomUUID();
 
-  const resp = new Response("Logged in", {
-    headers: {
-      Location: "/",
-    },
-    status: 307,
-  });
-  deleteCookie(resp.headers, "oauth-session");
-  setCookie(resp.headers, {
+  await kv.atomic()
+    .set(["users", user.id], user)
+    .set(["users_by_login", user.login], user)
+    .set(["users_by_session", sessionId], user)
+    .commit();
+
+  const response = redirect("/");
+  deleteCookie(response.headers, "oauth-session");
+  setCookie(response.headers, {
     name: "session",
-    value: session,
+    value: sessionId,
     path: "/",
     httpOnly: true,
     maxAge: 60 * 60 * 24 * 365,
   });
-  return resp;
+  return response;
 }
 
 interface GitHubUser {
@@ -140,3 +112,9 @@ async function getUser(accessToken: string): Promise<User> {
     avatarUrl: data.avatar_url,
   };
 }
+
+export async function signout() {}
+
+export async function getSessionUser() {}
+
+export async function isSignedIn() {}
