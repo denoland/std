@@ -1,14 +1,19 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { redirect } from "@/utils/http.ts";
 import type { State } from "./_middleware.ts";
+import { deleteCookie } from "std/http/cookie.ts";
+import { kv } from "@/utils/db.ts";
+import { redirect } from "../utils/http.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
   async GET(_req, ctx) {
-    const { error } = await ctx.state.supabaseClient.auth.signOut();
-    if (error) throw error;
+    if (ctx.state.session) {
+      await await kv.delete(["users_by_session", ctx.state.session]);
+    }
 
-    return redirect("/");
+    const response = redirect("/");
+    deleteCookie(response.headers, "session");
+    return response;
   },
 };

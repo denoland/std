@@ -4,8 +4,9 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
-import { getOrCreateUser, getUserDisplayName, type User } from "@/utils/db.ts";
+import { getUserDisplayName, type User } from "@/utils/db.ts";
 import { ComponentChild } from "preact";
+import { getSessionUser } from "../../utils/auth.ts";
 
 interface AccountPageData extends AccountState {
   user: User;
@@ -13,10 +14,7 @@ interface AccountPageData extends AccountState {
 
 export const handler: Handlers<AccountPageData, AccountState> = {
   async GET(_request, ctx) {
-    const user = await getOrCreateUser(
-      ctx.state.session.user.id,
-      ctx.state.session.user.email!,
-    );
+    const user = await getSessionUser(ctx.state.session);
     return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
   },
 };
@@ -65,11 +63,11 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
           <ul>
             <Row
               title="Display name"
-              text={getUserDisplayName(props.data.user)}
+              text={props.data.user.login}
             >
               <a href="/account/display-name" class="underline">Edit</a>
             </Row>
-            <Row title="Email" text={props.data.session!.user.email!} />
+            {/* <Row title="Email" text={props.data.session!.user.email!} /> */}
             <Row
               title="Subscription"
               text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}

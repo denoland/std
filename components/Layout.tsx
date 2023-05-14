@@ -7,7 +7,6 @@ import {
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
-import type { Session } from "@supabase/supabase-js";
 
 function Notice() {
   return (
@@ -83,7 +82,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
-  session: Session | null;
+  session?: string;
 }
 
 export default function Layout(props: LayoutProps) {

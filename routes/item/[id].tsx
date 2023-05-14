@@ -24,6 +24,7 @@ import {
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { pluralize } from "@/components/ItemSummary.tsx";
+import { getSessionUser } from "../../utils/auth.ts";
 
 interface ItemPageData extends State {
   user: User;
@@ -48,8 +49,10 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
+    const sessionUser = await getSessionUser(ctx.state.session);
+
     const votedItemIds = ctx.state.session
-      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
+      ? await getVotedItemIdsByUser(sessionUser.id)
       : [];
     const isVoted = votedItemIds.includes(id);
 
@@ -75,8 +78,10 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
+    const user = await getSessionUser(ctx.state.session);
+
     await createComment({
-      userId: ctx.state.session.user.id,
+      userId: user!.id,
       itemId: ctx.params.id,
       text,
     });

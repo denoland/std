@@ -14,6 +14,7 @@
     "twind-preset-tailwind-colors": "https://esm.sh/@twind/preset-tailwind@1.1.4/colors",
     "std/": "https://deno.land/std@0.186.0/",
     "stripe": "https://esm.sh/stripe@12.4.0",
-    "feed": "https://esm.sh/feed@4.2.2"
+    "feed": "https://esm.sh/feed@4.2.2",
+    "oauth2_client": "https://deno.land/x/oauth2_client@v1.0.0/mod.ts"
   }
 }

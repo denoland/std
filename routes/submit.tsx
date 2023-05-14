@@ -6,6 +6,7 @@ import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
+import { getSessionUser } from "@/utils/auth.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
@@ -36,8 +37,10 @@ export const handler: Handlers<State, State> = {
       return new Response(null, { status: 400 });
     }
 
+    const user = await getSessionUser(ctx.state.session);
+
     const item = await createItem({
-      userId: ctx.state.session!.user.id,
+      userId: user!.id,
       title,
       url,
     });
