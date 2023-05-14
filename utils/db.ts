@@ -273,6 +273,8 @@ export async function getOrCreateUser(id: string, email: string) {
 }
 
 export function getUserDisplayName(user: User) {
+  /** @todo For troubleshooting (temporary) */
+  if (!user) return "(user not found)";
   return user.displayName || user.id;
 }
 
