@@ -739,11 +739,11 @@ export function parse<
 
   for (const [key, value] of Object.entries(defaults)) {
     if (!hasKey(argv, key.split("."))) {
-      setKey(argv, key, value);
+      setKey(argv, key, value, false);
 
       if (aliases[key]) {
         for (const x of aliases[key]) {
-          setKey(argv, x, value);
+          setKey(argv, x, value, false);
         }
       }
     }
