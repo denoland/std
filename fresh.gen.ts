@@ -24,8 +24,9 @@ import * as $17 from "./routes/login/index.tsx";
 import * as $18 from "./routes/login/oauth.ts";
 import * as $19 from "./routes/login/success.tsx";
 import * as $20 from "./routes/logout.ts";
-import * as $21 from "./routes/signup.tsx";
-import * as $22 from "./routes/submit.tsx";
+import * as $21 from "./routes/pricing.tsx";
+import * as $22 from "./routes/signup.tsx";
+import * as $23 from "./routes/submit.tsx";
 import * as $$0 from "./islands/AuthFragmentCatcher.tsx";
 import * as $$1 from "./islands/VoteButton.tsx";
 
@@ -52,8 +53,9 @@ const manifest = {
     "./routes/login/oauth.ts": $18,
     "./routes/login/success.tsx": $19,
     "./routes/logout.ts": $20,
-    "./routes/signup.tsx": $21,
-    "./routes/submit.tsx": $22,
+    "./routes/pricing.tsx": $21,
+    "./routes/signup.tsx": $22,
+    "./routes/submit.tsx": $23,
   },
   islands: {
     "./islands/AuthFragmentCatcher.tsx": $$0,

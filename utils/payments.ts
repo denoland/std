@@ -28,7 +28,7 @@ export function formatAmountForDisplay(
     navigator.language,
     {
       style: "currency",
-      currency: currency,
+      currency,
       currencyDisplay: "symbol",
     },
   );
