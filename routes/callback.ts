@@ -32,7 +32,6 @@ async function getUser(accessToken: string): Promise<GitHubUser> {
 
 export const handler: Handlers = {
   async GET(req) {
-    console.log(true);
     const oauthSessionId = getCookies(req.headers)[OAUTH_SESSION_COOKIE_NAME];
 
     if (!oauthSessionId) {
@@ -44,7 +43,7 @@ export const handler: Handlers = {
       oauthSessionId,
     ]);
     const oauthSession = oauthSessionRes.value;
-    await await kv.delete([OAUTH_SESSION_KV_PREFIX, oauthSessionId]);
+    // await kv.delete([OAUTH_SESSION_KV_PREFIX, oauthSessionId]);
 
     if (!oauthSession) {
       throw new Deno.errors.NotFound("No OAuth session found");

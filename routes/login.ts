@@ -30,7 +30,7 @@ export const handler: Handlers = {
     setCookie(headers, {
       name: OAUTH_SESSION_COOKIE_NAME,
       value: oauthSessionId,
-      // httpOnly: true,
+      httpOnly: true,
     });
 
     // Redirect to the authorization endpoint

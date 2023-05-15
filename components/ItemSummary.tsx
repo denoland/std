@@ -39,7 +39,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
           </a>
         </span>
         <p>
-          {props.user}{" "}
+          {props.user.login}{" "}
           {props.user.isSubscribed && (
             <span title="Deno Hunt premium user">🦕{" "}</span>
           )}
