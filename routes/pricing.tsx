@@ -7,7 +7,7 @@ import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/payments.ts";
 import Stripe from "stripe";
 import { ComponentChild } from "preact";
-import { getOrCreateUser, User } from "@/utils/db.ts";
+import { getUserBySessionId, type User } from "@/utils/db.ts";
 
 interface PricingPageData extends State {
   products: Stripe.Product[];
@@ -28,10 +28,7 @@ export const handler: Handlers<PricingPageData, State> = {
     const products = data.sort(comparePrices);
 
     const user = ctx.state.session
-      ? await getOrCreateUser(
-        ctx.state.session.user.id,
-        ctx.state.session.user.email!,
-      )
+      ? await getUserBySessionId(ctx.state.session)
       : null;
 
     return await ctx.render({ ...ctx.state, products, user });
