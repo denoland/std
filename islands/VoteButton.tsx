@@ -11,28 +11,27 @@ export interface VoteButtonProps {
 export default function VoteButton(props: VoteButtonProps) {
   const isVoted = useSignal(props.isVoted);
   const score = useSignal(props.item.score);
-  const voting = useSignal(false);
 
-  async function onClick() {
-    voting.value = true;
-    const url = `/api/vote?item_id=${props.item.id}`;
-    const method = isVoted.value ? "DELETE" : "POST";
-    const response = await fetch(url, { method, credentials: "same-origin" });
-
-    if (response.status === 401) {
-      window.location.href = "/login";
-      return;
+  async function onClick(event: MouseEvent) {
+    if(event.detail === 1){
+      const url = `/api/vote?item_id=${props.item.id}`;
+      const method = isVoted.value ? "DELETE" : "POST";
+      const response = await fetch(url, { method, credentials: "same-origin" });
+  
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      isVoted.value = !isVoted.value;
+      method === "POST" ? score.value++ : score.value--;
     }
-    isVoted.value = !isVoted.value;
-    method === "POST" ? score.value++ : score.value--;
-    voting.value = false;
   }
 
   return (
     <button
       class={isVoted.value ? "text-pink-700" : "text-inherit"}
       onClick={onClick}
-      disabled={!IS_BROWSER && !voting.value}
+      disabled={!IS_BROWSER}
     >
       <p>▲</p>
       <p>{score.value}</p>
