@@ -244,7 +244,7 @@ export async function getUserByStripeCustomerId(stripeCustomerId: string) {
 }
 
 function isEntry<T>(entry: Deno.KvEntryMaybe<T>) {
-  return entry.value !== null && entry.versionstamp !== null;
+  return entry.versionstamp !== null;
 }
 
 function assertIsEntry<T>(
@@ -255,9 +255,12 @@ function assertIsEntry<T>(
   }
 }
 
-export async function setUserSubscription(
+export async function updateUser(
   user: User,
-  isSubscribed: boolean,
+  newProps: {
+    isSubscribed?: boolean;
+    sessionId?: string;
+  },
 ) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
@@ -286,7 +289,7 @@ export async function setUserSubscription(
     userByStripeCustomerRes,
   ].forEach((res) => assertIsEntry<User>(res));
 
-  user = { ...user, isSubscribed };
+  user = { ...user, ...newProps } as User;
 
   const res = await kv.atomic()
     .check(userRes)
