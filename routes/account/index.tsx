@@ -64,10 +64,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
             <Row
               title="Username"
               text={props.data.user.login}
-            >
-              <a href="/account/display-name" class="underline">Edit</a>
-            </Row>
-            {/* <Row title="Email" text={props.data.session!.user.email!} /> */}
+            />
             <Row
               title="Subscription"
               text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}

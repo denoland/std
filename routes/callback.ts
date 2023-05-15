@@ -61,7 +61,8 @@ export const handler: Handlers = {
       login: user.login,
       avatarUrl: user.avatar_url,
       stripeCustomerId: customer.id,
-    }, sessionId);
+      sessionId,
+    });
 
     const res = redirect("/");
     deleteCookie(res.headers, "oauth-session");

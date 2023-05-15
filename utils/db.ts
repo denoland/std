@@ -192,22 +192,23 @@ interface InitUser {
   login: string;
   avatarUrl: string;
   stripeCustomerId: string;
+  sessionId: string;
 }
 
 export interface User extends InitUser {
   isSubscribed: boolean;
 }
 
-export async function createUser(initUser: InitUser, sessionId: string) {
-  const usersKey = ["users", initUser.id];
-  const usersByLoginKey = ["users_by_login", initUser.login];
-  const usersBySessionKey = ["users_by_session", sessionId];
+export async function createUser(user: InitUser) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
   const usersByStripeCustomerKey = [
     "users_by_stripe_customer",
-    initUser.stripeCustomerId,
+    user.stripeCustomerId,
   ];
 
-  const user: User = { ...initUser, isSubscribed: false };
+  user = { ...user, isSubscribed: false } as User;
 
   const res = await kv.atomic()
     .check({ key: usersKey, versionstamp: null })
@@ -241,21 +242,48 @@ export async function getUserByStripeCustomerId(stripeCustomerId: string) {
 }
 
 export async function setUserSubscription(
-  id: string,
+  user: User,
   isSubscribed: boolean,
 ) {
-  const key = ["users", id];
-  const userRes = await kv.get<User>(key);
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const userRes = await kv.get<User>(usersKey);
+  const userByLoginRes = await kv.get<User>(usersByLoginKey);
+  const userBySessionRes = await kv.get<User>(usersBySessionKey);
+  const userByStripeCustomerRes = await kv.get<User>(usersByStripeCustomerKey);
 
   if (userRes.value === null) throw new Error("User with ID does not exist");
+  if (userByLoginRes.value === null) {
+    throw new Error("User with login does not exist");
+  }
+  if (userBySessionRes.value === null) {
+    throw new Error("User with session ID does not exist");
+  }
+  if (userByStripeCustomerRes.value === null) {
+    throw new Error("User with Stripe Customer ID does not exist");
+  }
+
+  user = { ...user, isSubscribed };
 
   const res = await kv.atomic()
     .check(userRes)
-    .set(key, { ...userRes.value, isSubscribed } as User)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .set(usersKey, user)
+    .set(usersByLoginKey, user)
+    .set(usersBySessionKey, user)
+    .set(usersByStripeCustomerKey, user)
     .commit();
 
   if (!res.ok) {
-    throw new TypeError("Atomic operation has failed");
+    throw res;
   }
 }
 
