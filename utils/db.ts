@@ -1,3 +1,5 @@
+import { AssertionError } from "https://deno.land/std@0.186.0/testing/asserts.ts";
+
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const kv = await Deno.openKv();
 
@@ -241,6 +243,18 @@ export async function getUserByStripeCustomerId(stripeCustomerId: string) {
   return res.value;
 }
 
+function isEntry<T>(entry: Deno.KvEntryMaybe<T>) {
+  return entry.value !== null && entry.versionstamp !== null;
+}
+
+function assertIsEntry<T>(
+  entry: Deno.KvEntryMaybe<T>,
+): asserts entry is Deno.KvEntry<T> {
+  if (!isEntry(entry)) {
+    throw new AssertionError(`${entry.key} does not exist`);
+  }
+}
+
 export async function setUserSubscription(
   user: User,
   isSubscribed: boolean,
@@ -253,21 +267,24 @@ export async function setUserSubscription(
     user.stripeCustomerId,
   ];
 
-  const userRes = await kv.get<User>(usersKey);
-  const userByLoginRes = await kv.get<User>(usersByLoginKey);
-  const userBySessionRes = await kv.get<User>(usersBySessionKey);
-  const userByStripeCustomerRes = await kv.get<User>(usersByStripeCustomerKey);
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await Promise.all([
+    kv.get<User>(usersKey),
+    kv.get<User>(usersByLoginKey),
+    kv.get<User>(usersBySessionKey),
+    kv.get<User>(usersByStripeCustomerKey),
+  ]);
 
-  if (userRes.value === null) throw new Error("User with ID does not exist");
-  if (userByLoginRes.value === null) {
-    throw new Error("User with login does not exist");
-  }
-  if (userBySessionRes.value === null) {
-    throw new Error("User with session ID does not exist");
-  }
-  if (userByStripeCustomerRes.value === null) {
-    throw new Error("User with Stripe Customer ID does not exist");
-  }
+  [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ].forEach((res) => assertIsEntry<User>(res));
 
   user = { ...user, isSubscribed };
 
