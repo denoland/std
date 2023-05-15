@@ -48,7 +48,7 @@ export default function BlogPage(props: PageProps<BlogPageData>) {
         description="This is the blog for Deno SaaSKit"
         href={props.url.href}
       />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <main class={`${SITE_WIDTH_STYLES} px-4 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">Blog</h1>
           <div class="mt-8">

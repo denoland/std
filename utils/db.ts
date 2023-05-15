@@ -314,6 +314,55 @@ export async function setUserSubscription(
   }
 }
 
+export async function setUserSessionId(
+  user: Omit<User, "isSubscribed">,
+  sessionId: User["sessionId"],
+) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await Promise.all([
+    kv.get<User>(usersKey),
+    kv.get<User>(usersByLoginKey),
+    kv.get<User>(usersBySessionKey),
+    kv.get<User>(usersByStripeCustomerKey),
+  ]);
+
+  [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ].forEach((res) => assertIsEntry<User>(res));
+
+  user = { ...user, sessionId } as User;
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .set(usersKey, user)
+    .set(usersByLoginKey, user)
+    .set(usersBySessionKey, user)
+    .set(usersByStripeCustomerKey, user)
+    .commit();
+
+  if (!res.ok) {
+    throw res;
+  }
+}
+
 export async function deleteUser(user: User) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];

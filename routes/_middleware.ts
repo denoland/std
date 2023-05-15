@@ -1,10 +1,10 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { walk } from "std/fs/walk.ts";
-import { getCookies } from "std/http/cookie.ts";
+import { getSessionId } from "@/utils/deno_kv_auth.ts";
 
 export interface State {
-  session?: string;
+  sessionId?: string;
 }
 
 const STATIC_DIR_ROOT = new URL("../static", import.meta.url);
@@ -23,6 +23,7 @@ export async function handler(
     return await ctx.next();
   }
 
-  ctx.state.session = getCookies(req.headers).session;
+  ctx.state.sessionId = getSessionId(req.headers);
+
   return await ctx.next();
 }

@@ -4,20 +4,19 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
-import { createItem } from "@/utils/db.ts";
+import { createItem, getUserBySessionId } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
-import { getSessionUser } from "@/utils/auth.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
-    if (!ctx.state.session) {
+    if (!ctx.state.sessionId) {
       return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
     }
 
     return ctx.render(ctx.state);
   },
   async POST(req, ctx) {
-    if (!ctx.state.session) {
+    if (!ctx.state.sessionId) {
       await req.body?.cancel();
       return new Response(null, { status: 401 });
     }
@@ -37,7 +36,7 @@ export const handler: Handlers<State, State> = {
       return new Response(null, { status: 400 });
     }
 
-    const user = await getSessionUser(ctx.state.session);
+    const user = await getUserBySessionId(ctx.state.sessionId);
 
     const item = await createItem({
       userId: user!.id,
@@ -77,7 +76,7 @@ export default function SubmitPage(props: PageProps<State>) {
   return (
     <>
       <Head title="Submit" href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
           <h1 class="text-center text-2xl font-bold">Share your project</h1>
           <Form />

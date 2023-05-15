@@ -4,9 +4,8 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
-import type { User } from "@/utils/db.ts";
+import { getUserBySessionId, type User } from "@/utils/db.ts";
 import { ComponentChild } from "preact";
-import { getSessionUser } from "../../utils/auth.ts";
 
 interface AccountPageData extends AccountState {
   user: User;
@@ -14,7 +13,10 @@ interface AccountPageData extends AccountState {
 
 export const handler: Handlers<AccountPageData, AccountState> = {
   async GET(_request, ctx) {
-    const user = await getSessionUser(ctx.state.session);
+    if (!ctx.state.sessionId) {
+      return ctx.renderNotFound();
+    }
+    const user = await getUserBySessionId(ctx.state.sessionId);
     return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
   },
 };
@@ -50,7 +52,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
   return (
     <>
       <Head title="Account" href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
           <h1 class="text-3xl mb-4">
             <strong>Account</strong>

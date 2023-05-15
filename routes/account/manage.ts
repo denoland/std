@@ -3,12 +3,16 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
 import { redirect } from "@/utils/http.ts";
-import { getSessionUser } from "../../utils/auth.ts";
+import { getUserBySessionId } from "@/utils/db.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, AccountState> = {
   async GET(req, ctx) {
-    const user = await getSessionUser(ctx.state.session);
+    if (!ctx.state.sessionId) {
+      return ctx.renderNotFound();
+    }
+
+    const user = await getUserBySessionId(ctx.state.sessionId);
     if (!user) return ctx.renderNotFound();
 
     const { url } = await stripe.billingPortal.sessions.create({

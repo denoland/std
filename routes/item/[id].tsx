@@ -16,6 +16,7 @@ import {
   getCommentsByItem,
   getItemById,
   getUserById,
+  getUserBySessionId,
   getUsersByIds,
   getVotedItemIdsByUser,
   type Item,
@@ -23,7 +24,6 @@ import {
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { pluralize } from "@/components/ItemSummary.tsx";
-import { getSessionUser } from "../../utils/auth.ts";
 
 interface ItemPageData extends State {
   user: User;
@@ -49,8 +49,8 @@ export const handler: Handlers<ItemPageData, State> = {
     const user = await getUserById(item.userId);
 
     let votedItemIds: string[] = [];
-    if (ctx.state.session) {
-      const sessionUser = await getSessionUser(ctx.state.session);
+    if (ctx.state.sessionId) {
+      const sessionUser = await getUserBySessionId(ctx.state.sessionId);
       votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
     }
 
@@ -66,7 +66,7 @@ export const handler: Handlers<ItemPageData, State> = {
     });
   },
   async POST(req, ctx) {
-    if (!ctx.state.session) {
+    if (!ctx.state.sessionId) {
       /** @todo Figure out `redirect_to` query */
       return redirect("/login");
     }
@@ -78,7 +78,7 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
-    const user = await getSessionUser(ctx.state.session);
+    const user = await getUserBySessionId(ctx.state.sessionId);
 
     await createComment({
       userId: user!.id,
@@ -94,7 +94,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
       <Head title={props.data.item.title} href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4 space-y-8`}>
           <ItemSummary
             item={props.data.item}

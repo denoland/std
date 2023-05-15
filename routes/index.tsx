@@ -36,8 +36,8 @@ export const handler: Handlers<HomePageData, State> = {
     /** @todo Add pagination functionality */
     const items = (await getAllItems({ limit: 10 })).sort(compareScore);
     const users = await getUsersByIds(items.map((item) => item.userId));
-    /* const votedItemIds = ctx.state.session
-      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
+    /* const votedItemIds = ctx.state.sessionId
+      ? await getVotedItemIdsByUser(ctx.state.sessionId?.user.id)
       : []; */
     const votedItemIds: string[] = [];
     /** @todo Optimise */
@@ -50,7 +50,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
       <Head href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
           {props.data.items.map((item, index) => (
             <ItemSummary

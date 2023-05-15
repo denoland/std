@@ -1,16 +1,17 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { oauth2Client } from "@/utils/auth.ts";
-import { kv } from "@/utils/db.ts";
-import { deleteCookie, getCookies, setCookie } from "std/http/cookie.ts";
-import type { AuthorizationCodeTokenOptions } from "oauth2_client";
 import { redirect } from "@/utils/http.ts";
 import {
-  OAUTH_SESSION_COOKIE_NAME,
-  OAUTH_SESSION_KV_PREFIX,
-} from "@/utils/auth.ts";
-import { createUser } from "@/utils/db.ts";
-import { stripe } from "../utils/payments.ts";
+  createUser,
+  getUserById,
+  setUserSessionId,
+  type User,
+} from "@/utils/db.ts";
+import { stripe } from "@/utils/payments.ts";
+import { State } from "./_middleware.ts";
+import { getAccessToken, setCallbackHeaders } from "@/utils/deno_kv_auth.ts";
+import { oauth2Client } from "@/utils/oauth2_client.ts";
+import { assert } from "https://deno.land/std@0.178.0/_util/asserts.ts";
 
 interface GitHubUser {
   id: number;
@@ -30,47 +31,33 @@ async function getUser(accessToken: string): Promise<GitHubUser> {
   return await response.json() as GitHubUser;
 }
 
-export const handler: Handlers = {
+// deno-lint-ignore no-explicit-any
+export const handler: Handlers<any, State> = {
   async GET(req) {
-    const oauthSessionId = getCookies(req.headers)[OAUTH_SESSION_COOKIE_NAME];
-
-    if (!oauthSessionId) {
-      throw new Error();
-    }
-
-    const oauthSessionRes = await kv.get<AuthorizationCodeTokenOptions>([
-      OAUTH_SESSION_KV_PREFIX,
-      oauthSessionId,
-    ]);
-    const oauthSession = oauthSessionRes.value;
-    // await kv.delete([OAUTH_SESSION_KV_PREFIX, oauthSessionId]);
-
-    if (!oauthSession) {
-      throw new Deno.errors.NotFound("No OAuth session found");
-    }
-
-    const tokens = await oauth2Client.code.getToken(req.url, oauthSession);
-    const user = await getUser(tokens.accessToken);
+    const accessToken = await getAccessToken(req, oauth2Client);
+    const githubUser = await getUser(accessToken);
     const sessionId = crypto.randomUUID();
 
-    const customer = await stripe.customers.create({ email: user.email });
-
-    await createUser({
-      id: user.id.toString(),
-      login: user.login,
-      avatarUrl: user.avatar_url,
+    const customer = await stripe.customers.create({ email: githubUser.email });
+    let user: Omit<User, "isSubscribed"> | null = {
+      id: githubUser.id.toString(),
+      login: githubUser.login,
+      avatarUrl: githubUser.avatar_url,
       stripeCustomerId: customer.id,
       sessionId,
-    });
+    };
 
-    const res = redirect("/");
-    deleteCookie(res.headers, "oauth-session");
-    setCookie(res.headers, {
-      name: "session",
-      value: sessionId,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-    return res;
+    /** @todo Clean this up */
+    try {
+      await createUser(user);
+    } catch {
+      user = await getUserById(user.id);
+      assert(user, `User not found`);
+      await setUserSessionId(user, sessionId);
+    }
+
+    const response = redirect("/");
+    setCallbackHeaders(response.headers, sessionId);
+    return response;
   },
 };

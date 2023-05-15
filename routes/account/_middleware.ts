@@ -11,7 +11,7 @@ export async function handler(
   req: Request,
   ctx: MiddlewareHandlerContext,
 ) {
-  if (!ctx.state.session) {
+  if (!ctx.state.sessionId) {
     return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
   }
 

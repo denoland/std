@@ -3,18 +3,18 @@ import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
 import { redirect } from "@/utils/http.ts";
-import { getSessionUser } from "../../utils/auth.ts";
+import { getUserBySessionId } from "@/utils/db.ts";
 
 export const handler: Handlers<null, AccountState> = {
   async GET(req, ctx) {
     const STRIPE_PREMIUM_PLAN_PRICE_ID = Deno.env.get(
       "STRIPE_PREMIUM_PLAN_PRICE_ID",
     );
-    if (!STRIPE_PREMIUM_PLAN_PRICE_ID) {
+    if (!STRIPE_PREMIUM_PLAN_PRICE_ID || !ctx.state.sessionId) {
       return ctx.renderNotFound();
     }
 
-    const user = await getSessionUser(ctx.state.session);
+    const user = await getUserBySessionId(ctx.state.sessionId);
     if (!user) return ctx.renderNotFound();
 
     const { url } = await stripe.checkout.sessions.create({

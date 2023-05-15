@@ -27,8 +27,8 @@ export const handler: Handlers<PricingPageData, State> = {
     });
     const products = data.sort(comparePrices);
 
-    const user = ctx.state.session
-      ? await getUserBySessionId(ctx.state.session)
+    const user = ctx.state.sessionId
+      ? await getUserBySessionId(ctx.state.sessionId)
       : null;
 
     return await ctx.render({ ...ctx.state, products, user });
@@ -74,7 +74,7 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
   return (
     <>
       <Head title="Pricing" href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div
           class={`mx-auto max-w-4xl w-full flex-1 flex flex-col justify-center px-8`}
         >
