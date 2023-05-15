@@ -235,6 +235,16 @@ export async function getUserById(id: string) {
   return res.value;
 }
 
+export async function getUserByLogin(login: string) {
+  const res = await kv.get<User>(["users_by_login", login]);
+  return res.value;
+}
+
+export async function getUserBySessionId(sessionId: string) {
+  const res = await kv.get<User>(["users_by_session", sessionId]);
+  return res.value;
+}
+
 export async function getUserByStripeCustomerId(stripeCustomerId: string) {
   const res = await kv.get<User>([
     "users_by_stripe_customer",
@@ -255,12 +265,9 @@ function assertIsEntry<T>(
   }
 }
 
-export async function updateUser(
+export async function setUserSubscription(
   user: User,
-  newProps: {
-    isSubscribed?: boolean;
-    sessionId?: string;
-  },
+  isSubscribed: User["isSubscribed"],
 ) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
@@ -289,7 +296,7 @@ export async function updateUser(
     userByStripeCustomerRes,
   ].forEach((res) => assertIsEntry<User>(res));
 
-  user = { ...user, ...newProps } as User;
+  user = { ...user, isSubscribed } as User;
 
   const res = await kv.atomic()
     .check(userRes)
@@ -300,6 +307,43 @@ export async function updateUser(
     .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
     .set(usersByStripeCustomerKey, user)
+    .commit();
+
+  if (!res.ok) {
+    throw res;
+  }
+}
+
+export async function deleteUser(user: User) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await Promise.all([
+    kv.get<User>(usersKey),
+    kv.get<User>(usersByLoginKey),
+    kv.get<User>(usersBySessionKey),
+    kv.get<User>(usersByStripeCustomerKey),
+  ]);
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .delete(usersKey)
+    .delete(usersByLoginKey)
+    .delete(usersBySessionKey)
+    .delete(usersByStripeCustomerKey)
     .commit();
 
   if (!res.ok) {
