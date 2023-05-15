@@ -2,6 +2,7 @@
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote } from "@/utils/db.ts";
+import { getSessionUser } from "../../utils/auth.ts";
 
 async function sharedHandler(
   req: Request,
@@ -17,7 +18,8 @@ async function sharedHandler(
     return new Response(null, { status: 400 });
   }
 
-  const userId = ctx.state.session.user.id;
+  const user = await getSessionUser(ctx.state.session);
+  const userId = user!.id;
   const vote = { userId, itemId };
   let status;
   switch (req.method) {

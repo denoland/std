@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import VoteButton from "@/islands/VoteButton.tsx";
-import { getUserDisplayName, Item, User } from "@/utils/db.ts";
+import { Item, User } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
@@ -39,7 +39,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
           </a>
         </span>
         <p>
-          {getUserDisplayName(props.user)}{" "}
+          {props.user}{" "}
           {props.user.isSubscribed && (
             <span title="Deno Hunt premium user">🦕{" "}</span>
           )}

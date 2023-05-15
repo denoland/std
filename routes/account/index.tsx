@@ -4,7 +4,7 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
-import { getUserDisplayName, type User } from "@/utils/db.ts";
+import type { User } from "@/utils/db.ts";
 import { ComponentChild } from "preact";
 import { getSessionUser } from "../../utils/auth.ts";
 
@@ -62,7 +62,7 @@ export default function AccountPage(props: PageProps<AccountPageData>) {
           )}
           <ul>
             <Row
-              title="Display name"
+              title="Username"
               text={props.data.user.login}
             >
               <a href="/account/display-name" class="underline">Edit</a>

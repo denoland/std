@@ -11,10 +11,5 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
-  },
-  "fmt": {
-    "exclude": [
-      "supabase"
-    ]
   }
 }

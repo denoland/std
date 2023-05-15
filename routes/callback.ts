@@ -9,22 +9,17 @@ import {
   OAUTH_SESSION_COOKIE_NAME,
   OAUTH_SESSION_KV_PREFIX,
 } from "@/utils/auth.ts";
+import { createUser } from "@/utils/db.ts";
+import { stripe } from "../utils/payments.ts";
 
 interface GitHubUser {
   id: number;
   login: string;
-  name: string;
   avatar_url: string;
+  email: string;
 }
 
-interface User {
-  id: string;
-  login: string;
-  name: string;
-  avatarUrl: string;
-}
-
-async function getUser(accessToken: string): Promise<User> {
+async function getUser(accessToken: string): Promise<GitHubUser> {
   const response = await fetch("https://api.github.com/user", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
@@ -32,13 +27,7 @@ async function getUser(accessToken: string): Promise<User> {
     await response.body?.cancel();
     throw new Error();
   }
-  const data = await response.json() as GitHubUser;
-  return {
-    id: data.id.toString(),
-    login: data.login,
-    name: data.name,
-    avatarUrl: data.avatar_url,
-  };
+  return await response.json() as GitHubUser;
 }
 
 export const handler: Handlers = {
@@ -65,11 +54,14 @@ export const handler: Handlers = {
     const user = await getUser(tokens.accessToken);
     const sessionId = crypto.randomUUID();
 
-    await kv.atomic()
-      .set(["users", user.id], user)
-      .set(["users_by_login", user.login], user)
-      .set(["users_by_session", sessionId], user)
-      .commit();
+    const customer = await stripe.customers.create({ email: user.email });
+
+    await createUser({
+      id: user.id.toString(),
+      login: user.login,
+      avatarUrl: user.avatar_url,
+      stripeCustomerId: customer.id,
+    }, sessionId);
 
     const res = redirect("/");
     deleteCookie(res.headers, "oauth-session");

@@ -16,7 +16,6 @@ import {
   getCommentsByItem,
   getItemById,
   getUserById,
-  getUserDisplayName,
   getUsersByIds,
   getVotedItemIdsByUser,
   type Item,
@@ -49,11 +48,12 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
-    const sessionUser = await getSessionUser(ctx.state.session);
+    let votedItemIds: string[] = [];
+    if (ctx.state.session) {
+      const sessionUser = await getSessionUser(ctx.state.session);
+      votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
+    }
 
-    const votedItemIds = ctx.state.session
-      ? await getVotedItemIdsByUser(sessionUser.id)
-      : [];
     const isVoted = votedItemIds.includes(id);
 
     return ctx.render({
@@ -110,7 +110,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
-                  {getUserDisplayName(props.data.commentsUsers[index])}
+                  {props.data.commentsUsers[index].login}
                 </p>
                 <p class="text-gray-500">
                   {timeAgo(new Date(comment.createdAt))} ago
