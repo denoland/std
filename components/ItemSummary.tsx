@@ -40,7 +40,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
         </span>
         <p>
           {props.user.login}{" "}
-          {props.user.isSubscribed && (
+          {props.user?.isSubscribed && (
             <span title="Deno Hunt premium user">🦕{" "}</span>
           )}
           {timeAgo(new Date(props.item.createdAt))} ago
