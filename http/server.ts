@@ -540,7 +540,10 @@ function hostnameForDisplay(hostname: string) {
   return hostname === "0.0.0.0" ? "localhost" : hostname;
 }
 
-/** Serves HTTP requests with the given handler.
+/**
+ * @deprecated (will be removed after 0.192.0) Use `Deno.serve` instead.
+ *
+ * Serves HTTP requests with the given handler.
  *
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8000 on hostname "0.0.0.0".
@@ -634,7 +637,10 @@ export interface ServeTlsInit extends ServeInit {
   certFile?: string;
 }
 
-/** Serves HTTPS requests with the given handler.
+/**
+ * @deprecated (will be removed after 0.192.0) Use `Deno.serve` instead.
+ *
+ * Serves HTTPS requests with the given handler.
  *
  * You must specify `key` or `keyFile` and `cert` or `certFile` options.
  *
