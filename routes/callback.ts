@@ -9,7 +9,7 @@ import {
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/payments.ts";
 import { State } from "./_middleware.ts";
-import { getAccessToken, setCallbackHeaders } from "@/utils/deno_kv_auth.ts";
+import { getAccessToken, setCallbackHeaders } from "@/utils/deno_kv_oauth.ts";
 import { oauth2Client } from "@/utils/oauth2_client.ts";
 
 interface GitHubUser {

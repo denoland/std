@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { oauth2Client } from "@/utils/oauth2_client.ts";
-import { redirectToOAuthLogin } from "@/utils/deno_kv_auth.ts";
+import { redirectToOAuthLogin } from "@/utils/deno_kv_oauth.ts";
 import type { State } from "./_middleware.ts";
 import { redirect } from "@/utils/http.ts";
 
