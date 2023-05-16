@@ -52,7 +52,17 @@ cp .example.env .env
 
 ### Auth (OAuth)
 
-TODO
+1. [Register a new GitHub OAuth application](https://github.com/settings/applications/new)
+   with the following values:
+
+- `Application name` = a name of your own choosing
+- `Homepage URL` = `http://localhost:8000`
+- `Authorization callback URL` = `http://localhost:8000/callback`
+
+1. Once registered, copy the `Client ID` value to the `GITHUB_CLIENT_ID` value
+   in your `.env` file.
+1. Click `Generate a new client secret` and copy the resulting client secret to
+   the `GITHUB_CLIENT_SECRET` environment variable in your `.env` file.
 
 ### Payments and Subscriptions (Stripe)
 
@@ -120,7 +130,11 @@ This section assumes that a
 
 ### Authentication (OAuth)
 
-TODO
+1. [Change your OAuth app settings](https://github.com/settings/developers) to
+   the following:
+
+- `Homepage URL` = `https://{{ YOUR DOMAIN }}`
+- `Authorization callback URL` = `http://{{ YOUR DOMAIN }}/callback`
 
 ### Payments (Stripe)
 

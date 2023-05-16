@@ -6,6 +6,7 @@ import {
   getUserByLogin,
   getUserBySessionId,
   getUserByStripeCustomerId,
+  setUserSession,
   setUserSubscription,
   type User,
 } from "./db.ts";
@@ -28,7 +29,15 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
 
   await setUserSubscription(user, true);
-  user = { ...initUser, isSubscribed: true };
+  user = { ...user, isSubscribed: true };
+  assertEquals(await getUserById(user.id), user);
+  assertEquals(await getUserByLogin(user.login), user);
+  assertEquals(await getUserBySessionId(user.sessionId), user);
+  assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
+
+  const sessionId = crypto.randomUUID();
+  await setUserSession(user, sessionId);
+  user = { ...user, sessionId };
   assertEquals(await getUserById(user.id), user);
   assertEquals(await getUserByLogin(user.login), user);
   assertEquals(await getUserBySessionId(user.sessionId), user);
