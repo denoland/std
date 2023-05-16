@@ -10,12 +10,10 @@ export interface AccountState extends State {
 }
 
 export async function handler(
-  req: Request,
+  _req: Request,
   ctx: MiddlewareHandlerContext<State>,
 ) {
-  const redirectResponse = redirect(
-    `/login?redirect_url=${encodeURIComponent(req.url)}`,
-  );
+  const redirectResponse = redirect("/login");
 
   if (!ctx.state.sessionId) return redirectResponse;
   const user = await getUserBySessionId(ctx.state.sessionId);
