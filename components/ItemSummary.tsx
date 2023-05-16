@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import VoteButton from "@/islands/VoteButton.tsx";
-import { Item, User } from "@/utils/db.ts";
+import type { Item, User } from "@/utils/db.ts";
 
 export function pluralize(unit: number, label: string) {
   return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
