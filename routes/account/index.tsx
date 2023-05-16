@@ -4,17 +4,11 @@ import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
-import { getUserBySessionId, type User } from "@/utils/db.ts";
 import { ComponentChild } from "preact";
 
-interface AccountPageData extends AccountState {
-  user: User;
-}
-
-export const handler: Handlers<AccountPageData, AccountState> = {
-  async GET(_request, ctx) {
-    const user = await getUserBySessionId(ctx.state.sessionId);
-    return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
+export const handler: Handlers<AccountState, AccountState> = {
+  GET(_request, ctx) {
+    return ctx.render(ctx.state);
   },
 };
 
@@ -40,7 +34,7 @@ function Row(props: RowProps) {
   );
 }
 
-export default function AccountPage(props: PageProps<AccountPageData>) {
+export default function AccountPage(props: PageProps<AccountState>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
   const hasResetPassword = new URL(props.url).searchParams.get(
     "has_reset_password",
