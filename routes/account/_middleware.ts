@@ -4,16 +4,14 @@ import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { redirect } from "@/utils/http.ts";
 
 export interface AccountState extends State {
-  session: string;
+  sessionId: string;
 }
 
 export async function handler(
   req: Request,
   ctx: MiddlewareHandlerContext,
 ) {
-  if (!ctx.state.sessionId) {
-    return redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
-  }
-
-  return await ctx.next();
+  return ctx.state.sessionId
+    ? await ctx.next()
+    : redirect(`/login?redirect_url=${encodeURIComponent(req.url)}`);
 }

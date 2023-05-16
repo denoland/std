@@ -13,9 +13,6 @@ interface AccountPageData extends AccountState {
 
 export const handler: Handlers<AccountPageData, AccountState> = {
   async GET(_request, ctx) {
-    if (!ctx.state.sessionId) {
-      return ctx.renderNotFound();
-    }
     const user = await getUserBySessionId(ctx.state.sessionId);
     return user ? ctx.render({ ...ctx.state, user }) : ctx.renderNotFound();
   },

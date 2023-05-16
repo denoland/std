@@ -8,10 +8,6 @@ import { getUserBySessionId } from "@/utils/db.ts";
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, AccountState> = {
   async GET(req, ctx) {
-    if (!ctx.state.sessionId) {
-      return ctx.renderNotFound();
-    }
-
     const user = await getUserBySessionId(ctx.state.sessionId);
     if (!user) return ctx.renderNotFound();
 
