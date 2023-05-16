@@ -12,17 +12,20 @@ export default function VoteButton(props: VoteButtonProps) {
   const isVoted = useSignal(props.isVoted);
   const score = useSignal(props.item.score);
 
-  async function onClick() {
-    const url = `/api/vote?item_id=${props.item.id}`;
-    const method = isVoted.value ? "DELETE" : "POST";
-    const response = await fetch(url, { method, credentials: "same-origin" });
+  async function onClick(event: MouseEvent) {
+    if (event.detail === 1) {
+      const url = `/api/vote?item_id=${props.item.id}`;
+      const method = isVoted.value ? "DELETE" : "POST";
+      const response = await fetch(url, { method, credentials: "same-origin" });
 
-    if (response.status === 401) {
-      window.location.href = "/login";
-      return;
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      isVoted.value = !isVoted.value;
+      method === "POST" ? score.value++ : score.value--;
+      if (score.value < props.item.score) score.value = props.item.score;
     }
-    isVoted.value = !isVoted.value;
-    method === "POST" ? score.value++ : score.value--;
   }
 
   return (
