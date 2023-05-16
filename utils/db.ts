@@ -314,7 +314,8 @@ export async function setUserSubscription(
   }
 }
 
-export async function setUserSessionId(
+/** This assumes that the previous session has been cleared */
+export async function setUserSession(
   user: Omit<User, "isSubscribed">,
   sessionId: User["sessionId"],
 ) {
@@ -329,19 +330,16 @@ export async function setUserSessionId(
   const [
     userRes,
     userByLoginRes,
-    userBySessionRes,
     userByStripeCustomerRes,
   ] = await Promise.all([
     kv.get<User>(usersKey),
     kv.get<User>(usersByLoginKey),
-    kv.get<User>(usersBySessionKey),
     kv.get<User>(usersByStripeCustomerKey),
   ]);
 
   [
     userRes,
     userByLoginRes,
-    userBySessionRes,
     userByStripeCustomerRes,
   ].forEach((res) => assertIsEntry<User>(res));
 
@@ -350,7 +348,7 @@ export async function setUserSessionId(
   const res = await kv.atomic()
     .check(userRes)
     .check(userByLoginRes)
-    .check(userBySessionRes)
+    .check({ key: usersBySessionKey, versionstamp: null })
     .check(userByStripeCustomerRes)
     .set(usersKey, user)
     .set(usersByLoginKey, user)
@@ -398,6 +396,10 @@ export async function deleteUser(user: User) {
   if (!res.ok) {
     throw res;
   }
+}
+
+export async function deleteUserBySession(sessionId: string) {
+  await kv.delete(["users_by_session", sessionId]);
 }
 
 export async function getUsersByIds(ids: string[]) {
