@@ -34,8 +34,10 @@ export const handler: Handlers<State, State> = {
 
     const user = await getUserBySessionId(ctx.state.sessionId);
 
+    if (!user) return new Response(null, { status: 400 });
+
     const item = await createItem({
-      userId: user!.id,
+      userId: user.id,
       title,
       url,
     });

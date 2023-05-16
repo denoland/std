@@ -67,7 +67,6 @@ export const handler: Handlers<ItemPageData, State> = {
   },
   async POST(req, ctx) {
     if (!ctx.state.sessionId) {
-      /** @todo Figure out `redirect_to` query */
       return redirect("/login");
     }
 

@@ -19,8 +19,9 @@ async function sharedHandler(
   }
 
   const user = await getUserBySessionId(ctx.state.sessionId);
-  const userId = user!.id;
-  const vote = { userId, itemId };
+
+  if (!user) return new Response(null, { status: 400 });
+  const vote = { userId: user.id, itemId };
   let status;
   switch (req.method) {
     case "DELETE":

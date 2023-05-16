@@ -1,6 +1,6 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "https://deno.land/std@0.186.0/testing/asserts.ts";
 
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const kv = await Deno.openKv();
 
 interface InitItem {
