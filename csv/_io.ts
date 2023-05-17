@@ -55,27 +55,13 @@ export const defaultReadOptions: ReadOptions = {
 
 export interface LineReader {
   readLine(): Promise<string | null>;
-  isEOF(): Promise<boolean>;
-}
-
-export async function readRecord(
-  startLine: number,
-  reader: LineReader,
-  opt: ReadOptions = defaultReadOptions,
-): Promise<string[] | null> {
-  const line = await reader.readLine();
-  if (line === null) return null;
-  if (line.length === 0) {
-    return [];
-  }
-
-  return parseRecord(line, reader, opt, startLine, startLine + 1);
+  isEOF(): boolean;
 }
 
 export async function parseRecord(
   line: string,
   reader: LineReader,
-  opt: ReadOptions = defaultReadOptions,
+  opt: ReadOptions,
   startLine: number,
   lineIndex: number = startLine,
 ): Promise<Array<string> | null> {
@@ -167,7 +153,7 @@ export async function parseRecord(
             );
             break parseField;
           }
-        } else if (line.length > 0 || !(await reader.isEOF())) {
+        } else if (line.length > 0 || !reader.isEOF()) {
           // Hit end of line (copy all data so far).
           recordBuffer += line;
           const r = await reader.readLine();

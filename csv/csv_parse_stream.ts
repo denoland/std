@@ -41,8 +41,8 @@ class StreamLineReader implements LineReader {
     }
   }
 
-  isEOF(): Promise<boolean> {
-    return Promise.resolve(this.#done);
+  isEOF(): boolean {
+    return this.#done;
   }
 
   cancel() {
@@ -87,7 +87,7 @@ export class CsvParseStream<
 
   #headers: readonly string[] = [];
 
-  constructor(options: T = defaultReadOptions as T) {
+  constructor(options?: T) {
     this.#options = {
       ...defaultReadOptions,
       ...options,

@@ -794,6 +794,20 @@ Deno.test("collectArgsDefaultBehaviour", function () {
   });
 });
 
+Deno.test("collectArgsWithDefaultBehaviour", function () {
+  const argv = parse([], {
+    collect: ["foo"],
+    default: {
+      foo: ["bar", "baz"],
+    },
+  });
+
+  assertEquals(argv, {
+    foo: ["bar", "baz"],
+    _: [],
+  });
+});
+
 Deno.test("collectUnknownArgs", function () {
   const argv = parse([
     "--foo",
