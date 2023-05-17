@@ -241,7 +241,12 @@ export async function getUserByLogin(login: string) {
 }
 
 export async function getUserBySessionId(sessionId: string) {
-  const res = await kv.get<User>(["users_by_session", sessionId]);
+  let res = await kv.get<User>(["users_by_session", sessionId], {
+    consistency: "eventual",
+  });
+  if (!res.value) {
+    res = await kv.get<User>(["users_by_session", sessionId]);
+  }
   return res.value;
 }
 
@@ -282,11 +287,11 @@ export async function setUserSubscription(
     userByLoginRes,
     userBySessionRes,
     userByStripeCustomerRes,
-  ] = await Promise.all([
-    kv.get<User>(usersKey),
-    kv.get<User>(usersByLoginKey),
-    kv.get<User>(usersBySessionKey),
-    kv.get<User>(usersByStripeCustomerKey),
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersBySessionKey,
+    usersByStripeCustomerKey,
   ]);
 
   [
@@ -317,7 +322,7 @@ export async function setUserSubscription(
 /** This assumes that the previous session has been cleared */
 export async function setUserSession(
   user: Omit<User, "isSubscribed">,
-  sessionId: User["sessionId"],
+  sessionId: string,
 ) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
@@ -331,10 +336,10 @@ export async function setUserSession(
     userRes,
     userByLoginRes,
     userByStripeCustomerRes,
-  ] = await Promise.all([
-    kv.get<User>(usersKey),
-    kv.get<User>(usersByLoginKey),
-    kv.get<User>(usersByStripeCustomerKey),
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersByStripeCustomerKey,
   ]);
 
   [
@@ -375,11 +380,11 @@ export async function deleteUser(user: User) {
     userByLoginRes,
     userBySessionRes,
     userByStripeCustomerRes,
-  ] = await Promise.all([
-    kv.get<User>(usersKey),
-    kv.get<User>(usersByLoginKey),
-    kv.get<User>(usersBySessionKey),
-    kv.get<User>(usersByStripeCustomerKey),
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersBySessionKey,
+    usersByStripeCustomerKey,
   ]);
 
   const res = await kv.atomic()
