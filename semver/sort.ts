@@ -9,11 +9,11 @@ export function sort(
 /** @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` instead. */
 export function sort(
   list: (string | SemVer)[],
-  options?: { includePrerelease: boolean }
+  options?: { includePrerelease: boolean },
 ): (SemVer | string)[];
 export function sort(
   list: (string | SemVer)[],
-  options?: { includePrerelease: boolean }
+  options?: { includePrerelease: boolean },
 ): (SemVer | string)[] {
   return list.sort((a, b) => compare(a, b, options));
 }
@@ -25,11 +25,11 @@ export function rsort(
 /** @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` instead. */
 export function rsort(
   list: (string | SemVer)[],
-  options?: { includePrerelease: boolean }
+  options?: { includePrerelease: boolean },
 ): (SemVer | string)[];
 export function rsort(
   list: (string | SemVer)[],
-  options?: { includePrerelease: boolean }
+  options?: { includePrerelease: boolean },
 ): (SemVer | string)[] {
   return list.sort((a, b) => compare(b, a, options));
 }
