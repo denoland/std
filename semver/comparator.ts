@@ -2,10 +2,18 @@
 import { Operator } from "./types.ts";
 import { ANY, INVALID, MAX, MIN, SemVer } from "./semver.ts";
 import { cmp } from "./cmp.ts";
-import { gt } from "./gt.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
-import { increment } from "./increment.ts";
+
+/**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_min.ts` instead.
+ *
+ * The minimum semantic version that could match this comparator
+ * @param semver The semantic version of the comparator
+ * @param operator The operator of the comparator
+ * @returns The minimum valid semantic version
+ */
+export { comparatorMin } from "./comparator_min.ts";
 
 /**
  * A comparator which will span all valid semantic versions
@@ -36,37 +44,6 @@ export interface SemVerComparator {
   semver: SemVer;
   min: SemVer;
   max: SemVer;
-}
-
-/**
- * The minimum semantic version that could match this comparator
- * @param semver The semantic version of the comparator
- * @param operator The operator of the comparator
- * @returns The minimum valid semantic version
- */
-export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
-  if (semver === ANY) {
-    return MIN;
-  }
-
-  switch (operator) {
-    case ">":
-      return semver.prerelease.length > 0
-        ? increment(semver, "pre")
-        : increment(semver, "patch");
-    case "!=":
-    case "!==":
-    case "<=":
-    case "<":
-      // The min(<0.0.0) is MAX
-      return gt(semver, MIN) ? MIN : MAX;
-    case ">=":
-    case "":
-    case "=":
-    case "==":
-    case "===":
-      return semver;
-  }
 }
 
 /**

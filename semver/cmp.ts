@@ -9,7 +9,7 @@ import { lt } from "./lt.ts";
 import { lte } from "./lte.ts";
 
 /**
- * Do a comparison of two semantic version objets based on the given operator
+ * Do a comparison of two semantic version objects based on the given operator
  * @param s0 The left side of the comparison
  * @param operator The operator to use for the comparison
  * @param s1 The right side of the comparison
