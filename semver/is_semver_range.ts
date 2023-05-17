@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import type { SemVerRange } from "./types.ts";
 import { isSemVerComparator } from "./is_semver_comparator.ts";
 

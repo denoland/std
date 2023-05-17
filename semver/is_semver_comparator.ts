@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSemVer } from "./is_semver.ts";
 import { isValidOperator } from "./is_valid_operator.ts";
 import type { SemVerComparator } from "./types.ts";
