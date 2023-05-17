@@ -288,7 +288,8 @@ import {
 import { tryParse } from "./parse.ts";
 import { rangeTest, SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
-import { parse } from "./parse.ts";
+import { parse, parseRange } from "./parse.ts";
+import { includesNeedle } from "../bytes/includes_needle.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -330,10 +331,14 @@ export function valid(value: string | undefined): SemVer | undefined {
  * @deprecated (will be removed after 0.189.0) Use rangeTest instead
  */
 export function satisfies(
-  semver: SemVer,
-  range: SemVerRange,
+  semver: string | SemVer,
+  range: string | SemVerRange,
+  options?: { includePrerelease: boolean },
 ): boolean {
-  return rangeTest(semver, range);
+  return rangeTest(
+    parse(semver, options),
+    typeof range === "string" ? parseRange(range) : range,
+  );
 }
 
 /**

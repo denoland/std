@@ -156,3 +156,10 @@ export function compareIdentifiers(
 ): 1 | 0 | -1 {
   return compareIdentifier(a != null ? [a] : [], b != null ? [b] : []);
 }
+/** @deprecated (will be removed after 0.189.0) Use `compare` or `compareBuild` directly */
+export function rcompareIdentifiers(
+  a: string | number | null,
+  b: string | number | null,
+): 1 | 0 | -1 {
+  return compareIdentifiers(b, a);
+}
