@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVerRange } from "./range.ts";
-import { SemVer } from "./semver.ts";
+import type { SemVer, SemVerRange } from "./types.ts";
 import { outside } from "./outside.ts";
 
 /** Greater than range comparison */

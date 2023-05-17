@@ -1,15 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-
-/**
- * A SemVer object parsed into its consituent parts.
- */
-export interface SemVer {
-  major: number;
-  minor: number;
-  patch: number;
-  prerelease: (string | number)[];
-  build: string[];
-}
+import type { SemVer } from "./types.ts";
 
 /**
  * MAX is a sentinel value used by some range calculations.
@@ -71,3 +61,5 @@ export const ANY: SemVer = {
   prerelease: [],
   build: [],
 };
+
+export { SemVer };

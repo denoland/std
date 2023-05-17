@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./semver.ts";
+import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /** Not equal comparison */

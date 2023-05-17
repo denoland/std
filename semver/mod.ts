@@ -286,10 +286,10 @@ import {
   SemVerComparator,
 } from "./comparator.ts";
 import { tryParse } from "./parse.ts";
-import { rangeTest, SemVerRange } from "./range.ts";
-import { SemVer } from "./semver.ts";
+import { rangeTest } from "./range.ts";
 import { parse, parseRange } from "./parse.ts";
 import { format } from "./format.ts";
+import { SemVer, SemVerRange } from "./types.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -311,13 +311,14 @@ export * from "./sort.ts";
 export * from "./parse.ts";
 export * from "./range.ts";
 export * from "./semver.ts";
-export * from "./types.ts";
+export type { FormatStyle, Operator, ReleaseType } from "./types.ts";
 
 /**
+ * @deprecated (will be removed after 0.189.0) Use `parse()` or `tryParse()` instead
+ *
  * A compatibility function which checks that a string is a valid semver
  * @param value A string which may or may not contain a valid SemVer
  * @returns A valid SemVer or undefined
- * @deprecated (will be removed after 0.189.0) Use parse or tryParse instead
  */
 export function valid(value: string | SemVer | null): string | null {
   if (value == null) return null;
@@ -327,11 +328,12 @@ export function valid(value: string | SemVer | null): string | null {
 }
 
 /**
+ * @deprecated (will be removed after 0.189.0) Use `rangeTest()` instead
+ *
  * A compatibility function that calls rangeTest
  * @param semver A valid SemVer string
  * @param range A valid SemVerRange string
  * @returns True if the value is valid SemVer in the SemVerRange
- * @deprecated (will be removed after 0.189.0) Use rangeTest instead
  */
 export function satisfies(
   semver: string | SemVer,
@@ -345,10 +347,11 @@ export function satisfies(
 }
 
 /**
+ * @deprecated (will be removed after 0.189.0) Use comparatorMin instead
+ *
  * A compatibility function to get the minimum version of a range string.
  * @param comparator The comparator
  * @returns The minimum version for the given range
- * @deprecated (will be removed after 0.189.0) Use comparatorMin instead
  */
 export function minVersion(
   comparator: SemVerComparator,
@@ -357,10 +360,11 @@ export function minVersion(
 }
 
 /**
+ * @deprecated (will be removed after 0.189.0) Use `comparatorMax()` instead
+ *
  * A compatibility function to get the maximum version of a range string.
  * @param comparator The comparator
  * @returns The maximum version for the given range
- * @deprecated (will be removed after 0.189.0) Use comparatorMax instead
  */
 export function maxVersion(
   comparator: SemVerComparator,
@@ -371,30 +375,30 @@ export function maxVersion(
 /** @deprecated (will be removed after 0.189.0) Use parse(...).major instead. */
 export function major(
   v: string | SemVer,
-  optioins?: { includePrerelease: boolean },
+  options?: { includePrerelease: boolean },
 ) {
-  return parse(v, optioins).major;
+  return parse(v, options).major;
 }
 /** @deprecated (will be removed after 0.189.0) Use parse(...).minor instead. */
 export function minor(
   v: string | SemVer,
-  optioins?: { includePrerelease: boolean },
+  options?: { includePrerelease: boolean },
 ) {
-  return parse(v, optioins).minor;
+  return parse(v, options).minor;
 }
 /** @deprecated (will be removed after 0.189.0) Use parse(...).patch instead. */
 export function patch(
   v: string | SemVer,
-  optioins?: { includePrerelease: boolean },
+  options?: { includePrerelease: boolean },
 ) {
-  return parse(v, optioins).patch;
+  return parse(v, options).patch;
 }
 /** @deprecated (will be removed after 0.189.0) Use parse(...).prerelease.join(".") instead. */
 export function prerelease(
   v: string | SemVer,
-  optioins?: { includePrerelease: boolean },
+  options?: { includePrerelease: boolean },
 ) {
-  return parse(v, optioins).prerelease.join(".");
+  return parse(v, options).prerelease.join(".");
 }
 
 export const SEMVER_SPEC_VERSION = "2.0.0";

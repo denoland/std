@@ -6,9 +6,8 @@ import {
   NONE,
   SemVerComparator,
 } from "./comparator.ts";
-import { SemVerRange } from "./range.ts";
-import { ANY, SemVer } from "./semver.ts";
-import { Operator } from "./types.ts";
+import { ANY } from "./semver.ts";
+import { Operator, SemVer, SemVerRange } from "./types.ts";
 import { isSemVer, isValidNumber, MAX_LENGTH } from "./validity.ts";
 
 // The actual regexps

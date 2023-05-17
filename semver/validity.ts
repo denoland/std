@@ -1,12 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { ALL, NONE, SemVerComparator } from "./comparator.ts";
-import { SemVerRange } from "./range.ts";
-import { ANY, INVALID, SemVer } from "./semver.ts";
-import { Operator } from "./types.ts";
-
 export const MAX_LENGTH = 256;
 
 /**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver.ts` instead.
+ *
  * Checks to see if value is a valid SemVer object. It does a check
  * into each field including prerelease and build.
  *
@@ -21,34 +18,11 @@ export const MAX_LENGTH = 256;
  * @param value The value to check to see if its a valid SemVer object
  * @returns True if value is a valid SemVer otherwise false
  */
-export function isSemVer(value: unknown): value is SemVer {
-  if (value == null) return false;
-  if (Array.isArray(value)) return false;
-  if (typeof value !== "object") return false;
-  if (value === INVALID) return true;
-  if (value === ANY) return true;
-
-  const { major, minor, patch, build, prerelease } = value as Record<
-    string,
-    unknown
-  >;
-  const result = typeof major === "number" && isValidNumber(major) &&
-    typeof minor === "number" && isValidNumber(minor) &&
-    typeof patch === "number" && isValidNumber(patch) &&
-    Array.isArray(prerelease) &&
-    Array.isArray(build) &&
-    prerelease.every((v) => typeof v === "string" || typeof v === "number") &&
-    prerelease.filter((v) => typeof v === "string").every((v) =>
-      isValidString(v)
-    ) &&
-    prerelease.filter((v) => typeof v === "number").every((v) =>
-      isValidNumber(v)
-    ) &&
-    build.every((v) => typeof v === "string" && isValidString(v));
-  return result;
-}
+export { isSemVer } from "./is_semver.ts";
 
 /**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver_comparator.ts` instead.
+ *
  * Does a deep check on the value to see if it is a valid SemVerComparator object.
  *
  * Objects with extra fields are still considered valid if they have at
@@ -58,22 +32,11 @@ export function isSemVer(value: unknown): value is SemVer {
  * @param value The value to check if its a SemVerComparator
  * @returns True if the object is a SemVerComparator otherwise false
  */
-export function isSemVerComparator(value: unknown): value is SemVerComparator {
-  if (value == null) return false;
-  if (value === NONE) return true;
-  if (value === ALL) return true;
-  if (Array.isArray(value)) return false;
-  if (typeof value !== "object") return false;
-  const { operator, semver, min, max } = value as SemVerComparator;
-  return (
-    isValidOperator(operator) &&
-    isSemVer(semver) &&
-    isSemVer(min) &&
-    isSemVer(max)
-  );
-}
+export { isSemVerComparator } from "./is_semver_comparator.ts";
 
 /**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver_range.ts` instead.
+ *
  * Does a deep check on the object to determine if its a valid range.
  *
  * Objects with extra fields are still considered valid if they have at
@@ -83,46 +46,22 @@ export function isSemVerComparator(value: unknown): value is SemVerComparator {
  * @param value The value to check if its a valid SemVerRange
  * @returns True if its a valid SemVerRange otherwise false.
  */
-export function isSemVerRange(value: unknown): value is SemVerRange {
-  if (value == null) return false;
-  if (Array.isArray(value)) return false;
-  if (typeof value !== "object") return false;
-  const { ranges } = value as SemVerRange;
-  return (
-    Array.isArray(ranges),
-      ranges.every((r) =>
-        Array.isArray(r) && r.every((c) => isSemVerComparator(c))
-      )
-  );
-}
+export { isSemVerRange } from "./is_semver_range.ts";
 
 /**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_operator.ts` instead.
+ *
  * Checks to see if the value is a valid Operator string.
  *
  * Adds a type assertion if true.
  * @param value The value to check
  * @returns True if the value is a valid Operator string otherwise false.
  */
-export function isValidOperator(value: unknown): value is Operator {
-  if (typeof value !== "string") return false;
-  switch (value) {
-    case "":
-    case "=":
-    case "==":
-    case "===":
-    case "!==":
-    case "!=":
-    case ">":
-    case ">=":
-    case "<":
-    case "<=":
-      return true;
-    default:
-      return false;
-  }
-}
+export { isValidOperator } from "./is_valid_operator.ts";
 
 /**
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_number.ts` instead.
+ *
  * Returns true if the value is a valid SemVer number.
  *
  * Must be a number. Must not be NaN. Can be positive or negative infinity.
@@ -130,29 +69,16 @@ export function isValidOperator(value: unknown): value is Operator {
  * @param value The value to check
  * @returns True if its a valid semver number
  */
-export function isValidNumber(value: unknown): value is number {
-  return (
-    typeof value === "number" &&
-    !Number.isNaN(value) && (
-      !Number.isFinite(value) ||
-      (0 <= value && value <= Number.MAX_SAFE_INTEGER)
-    )
-  );
-}
+export { isValidNumber } from "./is_valid_number.ts";
 
 /**
- * Returns true if the value is a valid semver prerelase or build identifier.
+ * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_string.ts` instead.
+ *
+ * Returns true if the value is a valid semver pre-release or build identifier.
  *
  * Must be a string. Must be between 1 and 256 characters long. Must match
  * the regular expression /[0-9A-Za-z-]+/.
  * @param value The value to check
  * @returns True if the value is a valid semver string.
  */
-export function isValidString(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    value.length > 0 &&
-    value.length <= MAX_LENGTH &&
-    !!value.match(/[0-9A-Za-z-]+/)
-  );
-}
+export { isValidString } from "./is_valid_string.ts";

@@ -2,25 +2,18 @@
 import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
-/** Sorts a list of semantic versions in ascending order. */
-export function sort(
+/** Sorts a list of semantic versions in descending order. */
+export function rsort(
   list: SemVer[],
 ): SemVer[];
 /** @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` instead. */
-export function sort(
+export function rsort(
   list: (string | SemVer)[],
   options?: { includePrerelease: boolean },
 ): (SemVer | string)[];
-export function sort(
+export function rsort(
   list: (string | SemVer)[],
   options?: { includePrerelease: boolean },
 ): (SemVer | string)[] {
-  return list.sort((a, b) => compare(a, b, options));
+  return list.sort((a, b) => compare(b, a, options));
 }
-
-/**
- * @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
- *
- * Sorts a list of semantic versions in descending order.
- */
-export { rsort } from "./rsort.ts";
