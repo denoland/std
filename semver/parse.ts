@@ -180,7 +180,23 @@ export function tryParse(version?: string): SemVer | undefined {
  * @param version The version string to parse
  * @returns A valid SemVer
  */
-export function parse(version: string | SemVer): SemVer {
+export function parse(version: string | SemVer): SemVer;
+/** @deprecated (will be removed after 0.189.0) Use parse(version: string | SemVer) instead. */
+export function parse(
+  version: string | SemVer | null,
+  options?: { includePrerelease: boolean },
+): SemVer;
+/**
+ * Attempt to parse a string as a semantic version, returning either a `SemVer`
+ * object or throws a TypeError.
+ * @param version The version string to parse
+ * @returns A valid SemVer
+ */
+export function parse(
+  version: string | SemVer | null,
+  options?: { includePrerelease: boolean },
+): SemVer {
+  const includePrerelease = options?.includePrerelease ?? true;
   if (typeof version === "object") {
     if (isSemVer(version)) {
       return version;
@@ -240,13 +256,23 @@ export function parse(version: string | SemVer): SemVer {
     });
 
   const build = m[5]?.split(".")?.filter((m) => m) ?? [];
-  return {
-    major,
-    minor,
-    patch,
-    prerelease,
-    build,
-  };
+  if (includePrerelease) {
+    return {
+      major,
+      minor,
+      patch,
+      prerelease,
+      build,
+    };
+  } else {
+    return {
+      major,
+      minor,
+      patch,
+      prerelease: [],
+      build: [],
+    };
+  }
 }
 
 /**

@@ -288,6 +288,7 @@ import {
 import { tryParse } from "./parse.ts";
 import { rangeTest, SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
+import { parse } from "./parse.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -357,6 +358,35 @@ export function maxVersion(
   comparator: SemVerComparator,
 ): SemVer {
   return comparatorMax(comparator.semver, comparator.operator);
+}
+
+/** @deprecated (will be removed after 0.189.0) Use parse(...).major instead. */
+export function major(
+  v: string | SemVer,
+  optioins?: { includePrerelease: boolean },
+) {
+  return parse(v, optioins).major;
+}
+/** @deprecated (will be removed after 0.189.0) Use parse(...).minor instead. */
+export function minor(
+  v: string | SemVer,
+  optioins?: { includePrerelease: boolean },
+) {
+  return parse(v, optioins).minor;
+}
+/** @deprecated (will be removed after 0.189.0) Use parse(...).patch instead. */
+export function patch(
+  v: string | SemVer,
+  optioins?: { includePrerelease: boolean },
+) {
+  return parse(v, optioins).patch;
+}
+/** @deprecated (will be removed after 0.189.0) Use parse(...).prerelease.join(".") instead. */
+export function prerelease(
+  v: string | SemVer,
+  optioins?: { includePrerelease: boolean },
+) {
+  return parse(v, optioins).prerelease.join(".");
 }
 
 export const SEMVER_SPEC_VERSION = "2.0.0";

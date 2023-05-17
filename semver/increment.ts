@@ -50,21 +50,21 @@ export function increment(
   buildOrPrerelease?: string,
   buildOrUndefined?: string,
 ): string | SemVer {
-  let isLegacy = false;
-  if (typeof version === "string") {
-    version = parse(version);
-    isLegacy = true;
-  }
-  let _doptions: { includePrerelease: boolean };
+  let options: { includePrerelease: boolean } = { includePrerelease: true };
   let prerelease: string | undefined;
   let build: string | undefined;
   if (typeof optionsOrPrerelease === "object") {
-    _options = optionsOrPrerelease;
+    options = optionsOrPrerelease;
     prerelease = buildOrPrerelease;
     build = buildOrUndefined;
   } else {
     prerelease = optionsOrPrerelease;
     build = buildOrPrerelease;
+  }
+  let isLegacy = false;
+  if (typeof version === "string") {
+    version = parse(version, options);
+    isLegacy = true;
   }
   let result: SemVer;
   switch (release) {
@@ -106,7 +106,7 @@ export function increment(
           prerelease: pre(version.prerelease, prerelease),
           build: parseBuild(version.build, build),
         };
-        break
+        break;
       } else {
         result = {
           major: version.major,
