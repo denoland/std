@@ -289,7 +289,7 @@ import { tryParse } from "./parse.ts";
 import { rangeTest, SemVerRange } from "./range.ts";
 import { SemVer } from "./semver.ts";
 import { parse, parseRange } from "./parse.ts";
-import { includesNeedle } from "../bytes/includes_needle.ts";
+import { format } from "./format.ts";
 
 export * from "./comparator.ts";
 export * from "./format.ts";
@@ -319,8 +319,11 @@ export * from "./types.ts";
  * @returns A valid SemVer or undefined
  * @deprecated (will be removed after 0.189.0) Use parse or tryParse instead
  */
-export function valid(value: string | undefined): SemVer | undefined {
-  return tryParse(value);
+export function valid(value: string | SemVer | null): string | null {
+  if (value == null) return null;
+  const v = typeof value === "string" ? tryParse(value) : value;
+  if (v == null) return null;
+  return format(v);
 }
 
 /**
