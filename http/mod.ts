@@ -54,6 +54,25 @@
  * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
  * with the familiar `Map` interface.
  *
+ * ## User agent handling
+ *
+ * The {@linkcode UserAgent} class provides user agent string parsing, allowing
+ * a user agent flag to be semantically understood.
+ *
+ * For example to integrate the user agent provided in the header `User-Agent`
+ * in an http request would look like this:
+ *
+ * ```ts
+ * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/useragent.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * serve((req) => {
+ *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+ *   return new Response(`Hello, ${userAgent.browser.name}
+ *     on ${userAgent.os.name} ${userAgent.os.version}!`);
+ * });
+ * ```
+ *
  * @module
  */
 
@@ -66,3 +85,4 @@ export * from "./method.ts";
 export * from "./negotiation.ts";
 export * from "./server.ts";
 export * from "./server_sent_event.ts";
+export * from "./user_agent.ts";
