@@ -982,7 +982,7 @@ export class UserAgent {
    * determined lazily.
    *
    * ```ts
-   * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/useragent.ts";
+   * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
    * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
    * serve((req) => {
