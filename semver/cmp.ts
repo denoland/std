@@ -25,34 +25,36 @@ export function cmp(
   s0: string | SemVer,
   operator: Operator,
   s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean;
 export function cmp(
   s0: string | SemVer,
   operator: Operator,
   s1: string | SemVer,
+  options?: { includePrerelease: boolean },
 ): boolean {
   switch (operator) {
     case "":
     case "=":
     case "==":
     case "===":
-      return eq(s0, s1);
+      return eq(s0, s1, options);
 
     case "!=":
     case "!==":
-      return neq(s0, s1);
+      return neq(s0, s1, options);
 
     case ">":
-      return gt(s0, s1);
+      return gt(s0, s1, options);
 
     case ">=":
-      return gte(s0, s1);
+      return gte(s0, s1, options);
 
     case "<":
-      return lt(s0, s1);
+      return lt(s0, s1, options);
 
     case "<=":
-      return lte(s0, s1);
+      return lte(s0, s1, options);
 
     default:
       throw new TypeError(`Invalid operator: ${operator}`);

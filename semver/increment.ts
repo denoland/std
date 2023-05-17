@@ -1,7 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./semver.ts";
 import { ReleaseType } from "./types.ts";
-
+import { parse } from "./parse.ts";
+import { format } from "./format.ts";
 /**
  * Returns the new version resulting from an increment by release type.
  *
@@ -33,51 +34,88 @@ export function increment(
   release: ReleaseType,
   prerelease?: string,
   build?: string,
-): SemVer {
+): SemVer;
+/** @deprecated (will be removed after 0.189.0) Use `increment(version: SemVer, release: ReleaseType, prerelease?: string, build?: string)` instead. */
+export function increment(
+  version: string | SemVer,
+  release: ReleaseType,
+  options?: { includePrerelease: boolean },
+  prerelease?: string,
+  build?: string,
+): string;
+export function increment(
+  version: string | SemVer,
+  release: ReleaseType,
+  optionsOrPrerelease?: { includePrerelease: boolean } | string,
+  buildOrPrerelease?: string,
+  buildOrUndefined?: string,
+): string | SemVer {
+  let isLegacy = false;
+  if (typeof version === "string") {
+    version = parse(version);
+    isLegacy = true;
+  }
+  let _doptions: { includePrerelease: boolean };
+  let prerelease: string | undefined;
+  let build: string | undefined;
+  if (typeof optionsOrPrerelease === "object") {
+    _options = optionsOrPrerelease;
+    prerelease = buildOrPrerelease;
+    build = buildOrUndefined;
+  } else {
+    prerelease = optionsOrPrerelease;
+    build = buildOrPrerelease;
+  }
+  let result: SemVer;
   switch (release) {
     case "premajor":
-      return {
+      result = {
         major: version.major + 1,
         minor: 0,
         patch: 0,
         prerelease: pre(version.prerelease, prerelease),
         build: parseBuild(version.build, build),
       };
+      break;
     case "preminor":
-      return {
+      result = {
         major: version.major,
         minor: version.minor + 1,
         patch: 0,
         prerelease: pre(version.prerelease, prerelease),
         build: parseBuild(version.build, build),
       };
+      break;
     case "prepatch":
-      return {
+      result = {
         major: version.major,
         minor: version.minor,
         patch: version.patch + 1,
         prerelease: pre(version.prerelease, prerelease),
         build: parseBuild(version.build, build),
       };
+      break;
     // If the input is a non-prerelease version, this acts the same as
     // prepatch.
     case "prerelease":
       if (version.prerelease.length === 0) {
-        return {
+        result = {
           major: version.major,
           minor: version.minor,
           patch: version.patch + 1,
           prerelease: pre(version.prerelease, prerelease),
           build: parseBuild(version.build, build),
         };
+        break
       } else {
-        return {
+        result = {
           major: version.major,
           minor: version.minor,
           patch: version.patch,
           prerelease: pre(version.prerelease, prerelease),
           build: parseBuild(version.build, build),
         };
+        break;
       }
     case "major":
       // If this is a pre-major version, bump up to the same major version.
@@ -89,21 +127,23 @@ export function increment(
         version.patch !== 0 ||
         version.prerelease.length === 0
       ) {
-        return {
+        result = {
           major: version.major + 1,
           minor: 0,
           patch: 0,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       } else {
-        return {
+        result = {
           major: version.major,
           minor: 0,
           patch: 0,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       }
     case "minor":
       // If this is a pre-minor version, bump up to the same minor version.
@@ -114,21 +154,23 @@ export function increment(
         version.patch !== 0 ||
         version.prerelease.length === 0
       ) {
-        return {
+        result = {
           major: version.major,
           minor: version.minor + 1,
           patch: 0,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       } else {
-        return {
+        result = {
           major: version.major,
           minor: version.minor,
           patch: 0,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       }
     case "patch":
       // If this is not a pre-release version, it will increment the patch.
@@ -136,37 +178,44 @@ export function increment(
       // 1.2.0-5 patches to 1.2.0
       // 1.2.0 patches to 1.2.1
       if (version.prerelease.length === 0) {
-        return {
+        result = {
           major: version.major,
           minor: version.minor,
           patch: version.patch + 1,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       } else {
-        return {
+        result = {
           major: version.major,
           minor: version.minor,
           patch: version.patch,
           prerelease: [],
           build: parseBuild(version.build, build),
         };
+        break;
       }
     // 1.0.0 "pre" would become 1.0.0-0
     // 1.0.0-0 would become 1.0.0-1
     // 1.0.0-beta.0 would be come 1.0.0-beta.1
     // switching the pre identifier resets the number to 0
     case "pre":
-      return {
+      result = {
         major: version.major,
         minor: version.minor,
         patch: version.patch,
         prerelease: pre(version.prerelease, prerelease),
         build: parseBuild(version.build, build),
       };
+      break;
     default:
       throw new Error(`invalid increment argument: ${release}`);
   }
+  if (isLegacy) {
+    return format(result);
+  }
+  return result;
 }
 
 function pre(
