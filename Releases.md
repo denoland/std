@@ -1,3 +1,7 @@
+### 0.188.0 / 2023.05.18
+
+- fix(flags): correctly collect default value (#3380)
+
 ### 0.187.0 / 2023.05.12
 
 - feat(collections): add `partitionEntries` (#3365)
