@@ -8,7 +8,6 @@ const EXTENSIONS = [".ts", ".tsx"];
 const EXCLUDED_DIRS = [
   "data",
   "static",
-  "supabase",
 ];
 
 const ROOT = new URL("../", import.meta.url);

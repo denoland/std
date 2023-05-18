@@ -38,13 +38,13 @@ export const handler: Handlers = {
       case "customer.subscription.created": {
         const user = await getUserByStripeCustomerId(customer);
         if (!user) return new Response(null, { status: 400 });
-        await setUserSubscription(user.id, true);
+        await setUserSubscription(user, true);
         return new Response(null, { status: 201 });
       }
       case "customer.subscription.deleted": {
         const user = await getUserByStripeCustomerId(customer);
         if (!user) return new Response(null, { status: 400 });
-        await setUserSubscription(user.id, false);
+        await setUserSubscription(user, false);
         return new Response(null, { status: 202 });
       }
       default: {

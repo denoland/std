@@ -2,12 +2,13 @@
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote } from "@/utils/db.ts";
+import { getUserBySessionId } from "@/utils/db.ts";
 
 async function sharedHandler(
   req: Request,
   ctx: HandlerContext<PageProps<undefined>, State>,
 ) {
-  if (!ctx.state.session) {
+  if (!ctx.state.sessionId) {
     return new Response(null, { status: 401 });
   }
 
@@ -17,8 +18,10 @@ async function sharedHandler(
     return new Response(null, { status: 400 });
   }
 
-  const userId = ctx.state.session.user.id;
-  const vote = { userId, itemId };
+  const user = await getUserBySessionId(ctx.state.sessionId);
+
+  if (!user) return new Response(null, { status: 400 });
+  const vote = { userId: user.id, itemId };
   let status;
   switch (req.method) {
     case "DELETE":

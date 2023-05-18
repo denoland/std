@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { stripe } from "./payments.ts";
+import { AssertionError } from "https://deno.land/std@0.186.0/testing/asserts.ts";
 
 export const kv = await Deno.openKv();
 
@@ -185,33 +185,42 @@ export async function getVotedItemIdsByUser(
     prefix: ["votes_by_users", userId],
   }, options);
   const voteItemIds = [];
-  for await (const res of iter) voteItemIds.push(res.key.at(-1));
+  for await (const res of iter) voteItemIds.push(res.key.at(-1) as string);
   return voteItemIds;
 }
 
 interface InitUser {
   id: string;
+  login: string;
+  avatarUrl: string;
   stripeCustomerId: string;
-  displayName: string;
+  sessionId: string;
 }
 
 export interface User extends InitUser {
   isSubscribed: boolean;
 }
 
-export async function createUser(initUser: InitUser) {
-  const usersKey = ["users", initUser.id];
-  const stripeCustomersKey = [
-    "user_ids_by_stripe_customer",
-    initUser.stripeCustomerId,
+export async function createUser(user: InitUser) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
   ];
-  const user: User = { ...initUser, isSubscribed: false };
+
+  user = { ...user, isSubscribed: false } as User;
 
   const res = await kv.atomic()
     .check({ key: usersKey, versionstamp: null })
-    .check({ key: stripeCustomersKey, versionstamp: null })
+    .check({ key: usersByLoginKey, versionstamp: null })
+    .check({ key: usersBySessionKey, versionstamp: null })
+    .check({ key: usersByStripeCustomerKey, versionstamp: null })
     .set(usersKey, user)
-    .set(stripeCustomersKey, user.id)
+    .set(usersByLoginKey, user)
+    .set(usersBySessionKey, user)
+    .set(usersByStripeCustomerKey, user)
     .commit();
 
   if (!res.ok) {
@@ -226,69 +235,180 @@ export async function getUserById(id: string) {
   return res.value;
 }
 
+export async function getUserByLogin(login: string) {
+  const res = await kv.get<User>(["users_by_login", login]);
+  return res.value;
+}
+
+export async function getUserBySessionId(sessionId: string) {
+  let res = await kv.get<User>(["users_by_session", sessionId], {
+    consistency: "eventual",
+  });
+  if (!res.value) {
+    res = await kv.get<User>(["users_by_session", sessionId]);
+  }
+  return res.value;
+}
+
 export async function getUserByStripeCustomerId(stripeCustomerId: string) {
-  const res = await kv.get<string>([
-    "user_ids_by_stripe_customer",
+  const res = await kv.get<User>([
+    "users_by_stripe_customer",
     stripeCustomerId,
   ]);
-  if (!res.value) return null;
-  return await getUserById(res.value);
+  return res.value;
+}
+
+function isEntry<T>(entry: Deno.KvEntryMaybe<T>) {
+  return entry.versionstamp !== null;
+}
+
+function assertIsEntry<T>(
+  entry: Deno.KvEntryMaybe<T>,
+): asserts entry is Deno.KvEntry<T> {
+  if (!isEntry(entry)) {
+    throw new AssertionError(`${entry.key} does not exist`);
+  }
 }
 
 export async function setUserSubscription(
-  id: string,
-  isSubscribed: boolean,
+  user: User,
+  isSubscribed: User["isSubscribed"],
 ) {
-  const key = ["users", id];
-  const userRes = await kv.get<User>(key);
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
 
-  if (userRes.value === null) throw new Error("User with ID does not exist");
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersBySessionKey,
+    usersByStripeCustomerKey,
+  ]);
+
+  [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ].forEach((res) => assertIsEntry<User>(res));
+
+  user = { ...user, isSubscribed } as User;
 
   const res = await kv.atomic()
     .check(userRes)
-    .set(key, { ...userRes.value, isSubscribed } as User)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .set(usersKey, user)
+    .set(usersByLoginKey, user)
+    .set(usersBySessionKey, user)
+    .set(usersByStripeCustomerKey, user)
     .commit();
 
   if (!res.ok) {
-    throw new TypeError("Atomic operation has failed");
+    throw res;
   }
+}
+
+/** This assumes that the previous session has been cleared */
+export async function setUserSession(
+  user: Omit<User, "isSubscribed">,
+  sessionId: string,
+) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const [
+    userRes,
+    userByLoginRes,
+    userByStripeCustomerRes,
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersByStripeCustomerKey,
+  ]);
+
+  [
+    userRes,
+    userByLoginRes,
+    userByStripeCustomerRes,
+  ].forEach((res) => assertIsEntry<User>(res));
+
+  user = { ...user, sessionId } as User;
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .check(userByLoginRes)
+    .check({ key: usersBySessionKey, versionstamp: null })
+    .check(userByStripeCustomerRes)
+    .set(usersKey, user)
+    .set(usersByLoginKey, user)
+    .set(usersBySessionKey, user)
+    .set(usersByStripeCustomerKey, user)
+    .commit();
+
+  if (!res.ok) {
+    throw res;
+  }
+}
+
+export async function deleteUser(user: User) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersBySessionKey,
+    usersByStripeCustomerKey,
+  ]);
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .delete(usersKey)
+    .delete(usersByLoginKey)
+    .delete(usersBySessionKey)
+    .delete(usersByStripeCustomerKey)
+    .commit();
+
+  if (!res.ok) {
+    throw res;
+  }
+}
+
+export async function deleteUserBySession(sessionId: string) {
+  await kv.delete(["users_by_session", sessionId]);
 }
 
 export async function getUsersByIds(ids: string[]) {
   const keys = ids.map((id) => ["users", id]);
   const res = await kv.getMany<User[]>(keys);
   return res.map((entry) => entry.value!);
-}
-
-export async function getOrCreateUser(id: string, email: string) {
-  const user = await getUserById(id);
-  if (user) return user;
-
-  const customer = await stripe.customers.create({ email });
-  return await createUser({
-    id,
-    stripeCustomerId: customer.id,
-    displayName: "",
-  });
-}
-
-export function getUserDisplayName(user: User) {
-  /** @todo For troubleshooting (temporary) */
-  if (!user) return "(user not found)";
-  return user.displayName || user.id;
-}
-
-export async function setUserDisplayName(
-  userId: User["id"],
-  displayName: User["displayName"],
-) {
-  const userKey = ["users", userId];
-  const userRes = await kv.get<User>(userKey);
-
-  if (!userRes.versionstamp) throw new Error("User does not exist");
-
-  await kv.atomic()
-    .check(userRes)
-    .set(userKey, { ...userRes.value, displayName })
-    .commit();
 }

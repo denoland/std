@@ -14,8 +14,7 @@
     "twind-preset-tailwind-colors": "https://esm.sh/@twind/preset-tailwind@1.1.4/colors",
     "std/": "https://deno.land/std@0.186.0/",
     "stripe": "https://esm.sh/stripe@12.4.0",
-    "@supabase/auth-helpers-shared": "https://esm.sh/@supabase/auth-helpers-shared@0.3.4?target=es2022",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.21.0",
-    "feed": "https://esm.sh/feed@4.2.2"
+    "feed": "https://esm.sh/feed@4.2.2",
+    "oauth2_client/": "https://deno.land/x/oauth2_client@v1.0.0/"
   }
 }

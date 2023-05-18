@@ -3,7 +3,7 @@
   "tasks": {
     "init:stripe": "deno run --allow-read --allow-env --allow-net tools/init_stripe.ts ",
     "start": "deno run --unstable -A --watch=static/,routes/ dev.ts",
-    "test": "deno test -A",
+    "test": "deno test -A --unstable",
     "check:license": "deno run --allow-read --allow-write tools/check_license.ts",
     "ok": "deno fmt --check && deno lint && deno task check:license --check && deno check main.ts && deno task test"
   },
@@ -11,10 +11,5 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
-  },
-  "fmt": {
-    "exclude": [
-      "supabase"
-    ]
   }
 }

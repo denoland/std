@@ -16,7 +16,7 @@ import {
   getCommentsByItem,
   getItemById,
   getUserById,
-  getUserDisplayName,
+  getUserBySessionId,
   getUsersByIds,
   getVotedItemIdsByUser,
   type Item,
@@ -48,9 +48,12 @@ export const handler: Handlers<ItemPageData, State> = {
     );
     const user = await getUserById(item.userId);
 
-    const votedItemIds = ctx.state.session
-      ? await getVotedItemIdsByUser(ctx.state.session?.user.id)
-      : [];
+    let votedItemIds: string[] = [];
+    if (ctx.state.sessionId) {
+      const sessionUser = await getUserBySessionId(ctx.state.sessionId);
+      votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
+    }
+
     const isVoted = votedItemIds.includes(id);
 
     return ctx.render({
@@ -63,8 +66,7 @@ export const handler: Handlers<ItemPageData, State> = {
     });
   },
   async POST(req, ctx) {
-    if (!ctx.state.session) {
-      /** @todo Figure out `redirect_to` query */
+    if (!ctx.state.sessionId) {
       return redirect("/login");
     }
 
@@ -75,8 +77,10 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
+    const user = await getUserBySessionId(ctx.state.sessionId);
+
     await createComment({
-      userId: ctx.state.session.user.id,
+      userId: user!.id,
       itemId: ctx.params.id,
       text,
     });
@@ -89,7 +93,7 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
   return (
     <>
       <Head title={props.data.item.title} href={props.url.href} />
-      <Layout session={props.data.session}>
+      <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4 space-y-8`}>
           <ItemSummary
             item={props.data.item}
@@ -105,7 +109,10 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             {props.data.comments.map((comment, index) => (
               <div class="py-4">
                 <p>
-                  {getUserDisplayName(props.data.commentsUsers[index])}
+                  {props.data.commentsUsers[index].login}{" "}
+                  {props.data.commentsUsers[index].isSubscribed && (
+                    <span title="Deno Hunt premium user">🦕{" "}</span>
+                  )}
                 </p>
                 <p class="text-gray-500">
                   {timeAgo(new Date(comment.createdAt))} ago

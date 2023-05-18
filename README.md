@@ -14,12 +14,9 @@ template for building your SaaS quickly and easily.
 - Deno's built-in [formatter](https://deno.land/manual/tools/formatter),
   [linter](https://deno.land/manual/tools/linter) and
   [test runner](https://deno.land/manual/basics/testing) and TypeScript support.
-- User authentication with [Supabase Auth](https://supabase.com/auth), including
-  email/password, OAuth and reset password flows.
-- Session management
-- Database management with [Deno KV](https://deno.com/manual/runtime/kv), which
-  provides zero config durable data storage. _Prefer using Supabase for data
-  storage?
+- Database management and user authentication with
+  [Deno KV](https://deno.com/manual/runtime/kv), which provides zero config
+  durable data storage. _Prefer using Supabase for data storage?
   [Check out this version of SaaSKit](https://github.com/denoland/saaskit/tree/3b1b14a97eef8859596015b22557d575d3b63c09)._
 - Billing management with [Stripe](https://stripe.com/).
 - [Fresh](https://fresh.deno.dev/) as the web framework and
@@ -37,8 +34,6 @@ Want to know where Deno SaaSKit is headed? Check out
 - [Git](https://github.com/git-guides/install-git)
 - [A free Stripe account](https://stripe.com)
 - [Stripe CLI](https://stripe.com/docs/stripe-cli#install)
-- [A free Supabase account](https://supabase.com)
-- [Supabase CLI](https://supabase.com/docs/guides/cli)
 
 ### Setup the repo
 
@@ -55,20 +50,19 @@ cd saaskit
 cp .example.env .env
 ```
 
-### Auth (Supabase)
+### Auth (OAuth)
 
-The values of these environmental variables will be gathered in the following
-steps.
+1. [Register a new GitHub OAuth application](https://github.com/settings/applications/new)
+   with the following values:
 
-1. While Docker is running, start the Supabase services:
+- `Application name` = a name of your own choosing
+- `Homepage URL` = `http://localhost:8000`
+- `Authorization callback URL` = `http://localhost:8000/callback`
 
-```
-supabase start
-```
-
-2. Copy the values of the printed Supabase `API URL` and `anon key` variables
-   into the environmental variables in your `.env` file as `SUPABASE_URL` and
-   `SUPABASE_ANON_KEY`, respectively.
+1. Once registered, copy the `Client ID` value to the `GITHUB_CLIENT_ID` value
+   in your `.env` file.
+1. Click `Generate a new client secret` and copy the resulting client secret to
+   the `GITHUB_CLIENT_SECRET` environment variable in your `.env` file.
 
 ### Payments and Subscriptions (Stripe)
 
@@ -134,32 +128,13 @@ SaaSKit comes with `primary` and `secondary` colors predefined within
 This section assumes that a
 [local development environment](#getting-started-locally) has been set up.
 
-### Authentication (Supabase)
+### Authentication (OAuth)
 
-These steps enable using email with Supabase Auth.
+1. [Change your OAuth app settings](https://github.com/settings/developers) to
+   the following:
 
-In your [Supabase dashboard](https://app.supabase.com/projects):
-
-1. Go to your project
-1. Go to `Authentication` > `Providers` > click `Email`
-1. Disable `Confirm email`
-1. Go to `Authentication` > `URL Configuration`
-1. Set the `Site URL` to be `https://{{ YOUR DOMAIN }}/login/success` and click
-   `Save`
-1. Click `Add URL` under `Redirect URLs` and set the `URL` to be
-   `https:// {{ YOUR DOMAIN }}/**`
-
-If you'd like to use additional social OAuth authentication strategies, please
-refer to the
-[Supabase Auth documentation](https://supabase.com/docs/guides/auth).
-
-### Supabase Production Environmental Variables
-
-The following can be found in Dashboard Home -> Settings -> API -> API
-Settings/Project API Keys
-
-- `SUPABASE_ANON_KEY` under `anon public`
-- `SUPABASE_API_URL` under `URL`
+- `Homepage URL` = `https://{{ YOUR DOMAIN }}`
+- `Authorization callback URL` = `http://{{ YOUR DOMAIN }}/callback`
 
 ### Payments (Stripe)
 
@@ -247,8 +222,8 @@ services:
     image: deno-image
    environment:
      - DENO_DEPLOYMENT_ID=${DENO_DEPLOYMENT_ID}
-     - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-     - SUPABASE_API_URL=${SUPABASE_API_URL}
+     - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+     - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
      - STRIPE_PREMIUM_PLAN_PRICE_ID=${STRIPE_PREMIUM_PLAN_PRICE_ID}
