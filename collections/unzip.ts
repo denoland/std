@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { Arr } from "./_type_utils.ts";
+
 /**
  * Builds two separate arrays from the given array of 2-tuples, with the first
  * returned array holding all first tuple elements and the second one holding
@@ -22,6 +24,7 @@
  * assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
  * ```
  */
+export function unzip<T extends Zipped>(pairs: T): Unzip<T>;
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
   const ret: [T[], U[]] = [
@@ -36,3 +39,16 @@ export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
 
   return ret;
 }
+
+type Zipped = readonly (readonly [unknown, unknown])[];
+type ExtractFirstElements<T extends Zipped> = {
+  [K in keyof T]: T[K] extends readonly [infer U, unknown] ? U : never;
+};
+type ExtractSecondElements<T extends Zipped> = {
+  [K in keyof T]: T[K] extends readonly [unknown, infer U] ? U : never;
+};
+
+type Unzip<T extends Zipped> = [
+  ExtractFirstElements<T>,
+  ExtractSecondElements<T>,
+];

@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { Arr } from "./_type_utils.ts";
+
 /**
  * Returns all distinct elements in the given array, preserving order by first
  * occurrence.
@@ -16,8 +18,18 @@
  * assertEquals(distinctNumbers, [3, 2, 5]);
  * ```
  */
+export function distinct<const T extends Arr>(array: T): Distinct<T>;
 export function distinct<T>(array: readonly T[]): T[] {
   const set = new Set(array);
 
   return Array.from(set);
 }
+
+// https://github.com/type-challenges/type-challenges/issues/14151
+// deno-fmt-ignore
+type Distinct<T extends Arr, R extends Arr = []> =
+  T extends readonly [infer Head, ...infer Tail]
+    ? Distinct<Tail, Head extends R[number]
+      ? R
+      : [...R, Head]>
+  : R;

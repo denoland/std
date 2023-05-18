@@ -19,6 +19,14 @@
  * assertEquals(includesValue(input, 34), true);
  * ```
  */
+export function includesValue<
+  const T extends Readonly<Record<string, unknown>>,
+  const U,
+>(
+  record: T,
+  value: U,
+): IncludesValue<T, U>;
+
 export function includesValue<T>(
   record: Readonly<Record<string, T>>,
   value: T,
@@ -34,3 +42,7 @@ export function includesValue<T>(
 
   return false;
 }
+
+type IncludesValue<T extends Readonly<Record<string, unknown>>, U> = {
+  [K in keyof T]: T[K] extends U ? true : false;
+}[keyof T] extends false ? false : true;

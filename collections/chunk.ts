@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { Arr, IsLength, IsPositiveInteger } from "./_type_utils.ts";
+
 /**
  * Splits the given array into chunks of the given size and returns them.
  *
@@ -30,6 +32,11 @@
  * );
  * ```
  */
+export function chunk<const T extends Arr, const N extends number>(
+  array: T,
+  size: N,
+): IsPositiveInteger<N> extends true ? Chunk<T, N> : never;
+
 export function chunk<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
     throw new Error(
@@ -54,3 +61,18 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
 
   return ret;
 }
+
+// https://github.com/type-challenges/type-challenges/issues/5621
+// deno-fmt-ignore
+type Chunk<
+  T extends Arr,
+  N extends number,
+  CurChunk extends Arr = [],
+  Left extends Arr = [],
+> = T extends readonly [infer Head, ...infer Tail]
+      ? IsLength<CurChunk, N> extends true
+        ? Chunk<Tail, N, [Head], [...Left, CurChunk]>
+        : Chunk<Tail, N, [...CurChunk, Head], Left>
+      : CurChunk extends []
+        ? Left
+        : [...Left, CurChunk];

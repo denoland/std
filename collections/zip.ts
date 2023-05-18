@@ -26,7 +26,20 @@
  * ```
  */
 
+import { Arr } from "./_type_utils.ts";
 import { minOf } from "./min_of.ts";
+
+export function zip<const A extends Arr, const B extends Arr>(
+  ...arrays: [A, B]
+): Zip2<A, B>;
+
+export function zip<
+  const A extends Arr,
+  const B extends Arr,
+  const C extends Arr,
+>(
+  ...arrays: [A, B, C]
+): Zip3<A, B, C>;
 
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: T[K][] }
@@ -42,3 +55,13 @@ export function zip<T extends unknown[]>(
 
   return ret;
 }
+
+// https://github.com/type-challenges/type-challenges/issues/5619
+
+type Zip2<A extends Arr, B extends Arr, L extends Arr = []> =
+  L["length"] extends A["length"] | B["length"] ? L
+    : Zip2<A, B, [...L, [A[L["length"]], B[L["length"]]]]>;
+
+type Zip3<A extends Arr, B extends Arr, C extends Arr, L extends Arr = []> =
+  L["length"] extends A["length"] | B["length"] | C["length"] ? L
+    : Zip3<A, B, C, [...L, [A[L["length"]], B[L["length"]], C[L["length"]]]]>;

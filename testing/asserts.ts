@@ -10,6 +10,7 @@
  * @module
  */
 
+import { Equal, NotEqual } from "../collections/_type_utils.ts";
 import { red, stripColor } from "../fmt/colors.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";
 import { format } from "./_format.ts";
@@ -135,7 +136,14 @@ function constructorsEqual(a: object, b: object) {
     !a.constructor && b.constructor === Object;
 }
 
+type IsTruthy<T> = T extends Falsy ? false : true;
+type IsFalsy<T> = T extends Falsy ? true : false;
+
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
+export function assert<const T>(
+  expr: T,
+  msg?: string,
+): IsTruthy<T> extends true ? void : never;
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {
     throw new AssertionError(msg);
@@ -144,6 +152,10 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 
 /** Make an assertion, error will be thrown if `expr` have truthy value. */
 type Falsy = false | 0 | 0n | "" | null | undefined;
+export function assertFalse<const T>(
+  expr: T,
+  msg?: string,
+): IsFalsy<T> extends true ? void : never;
 export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {
     throw new AssertionError(msg);
@@ -166,6 +178,11 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
  * });
  * ```
  */
+export function assertEquals<const X, const Y>(
+  actual: X,
+  expected: Y,
+  msg?: string,
+): Equal<X, Y> extends true ? void : never;
 export function assertEquals<T>(actual: T, expected: T, msg?: string) {
   if (equal(actual, expected)) {
     return;
@@ -202,6 +219,11 @@ export function assertEquals<T>(actual: T, expected: T, msg?: string) {
  * assertNotEquals<number>(1, 2)
  * ```
  */
+export function assertNotEquals<const X, const Y>(
+  actual: X,
+  expected: Y,
+  msg?: string,
+): NotEqual<X, Y> extends true ? void : never;
 export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;
@@ -604,6 +626,7 @@ export function assertObjectMatch(
 /**
  * Forcefully throws a failed assertion
  */
+// @ts-expect-error
 export function fail(msg?: string): never {
   const msgSuffix = msg ? `: ${msg}` : ".";
   assert(false, `Failed assertion${msgSuffix}`);

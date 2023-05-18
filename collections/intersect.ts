@@ -31,3 +31,4 @@ export function intersect<T>(...arrays: (readonly T[])[]): T[] {
 
   return head;
 }
+z
