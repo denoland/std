@@ -100,13 +100,24 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             isVoted={props.data.isVoted}
             user={props.data.user}
           />
+          <form method="post">
+            <textarea
+              class={INPUT_STYLES}
+              type="text"
+              name="text"
+              required
+            />
+            <button type="submit" class={BUTTON_STYLES}>Comment</button>
+          </form>
           <div>
             <h2>
               <strong>
                 {pluralize(props.data.comments.length, "comment")}
               </strong>
             </h2>
-            {props.data.comments.map((comment, index) => (
+            {props.data.comments.sort((a, b) =>
+              b.createdAt.getTime() - a.createdAt.getTime()
+            ).map((comment, index) => (
               <div class="py-4">
                 <p>
                   {props.data.commentsUsers[index].login}{" "}
@@ -121,15 +132,6 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
               </div>
             ))}
           </div>
-          <form method="post">
-            <textarea
-              class={INPUT_STYLES}
-              type="text"
-              name="text"
-              required
-            />
-            <button type="submit" class={BUTTON_STYLES}>Comment</button>
-          </form>
         </div>
       </Layout>
     </>
