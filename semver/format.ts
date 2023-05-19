@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { ANY } from "./semver.ts";
+import { ANY } from "./constants.ts";
 import type { FormatStyle, SemVer } from "./types.ts";
 
 function formatNumber(value: number) {
@@ -56,22 +56,26 @@ export function format(semver: SemVer, style: FormatStyle = "full") {
   }
 }
 
-/**
- * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_format.ts` instead.
- *
- * Formats the comparator into a string
- * @example >=0.0.0
- * @param comparator
- * @returns A string representation of the comparator
- */
-export { comparatorFormat } from "./comparator_format.ts";
+export {
+  /**
+   * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_format.ts` instead.
+   *
+   * Formats the comparator into a string
+   * @example >=0.0.0
+   * @param comparator
+   * @returns A string representation of the comparator
+   */
+  comparatorFormat,
+} from "./comparator_format.ts";
 
-/**
- * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_format.ts` instead.
- *
- * Formats the range into a string
- * @example >=0.0.0 || <1.0.0
- * @param range The range to format
- * @returns A string representation of the range
- */
-export { rangeFormat } from "./range_format.ts";
+export {
+  /**
+   * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_format.ts` instead.
+   *
+   * Formats the range into a string
+   * @example >=0.0.0 || <1.0.0
+   * @param range The range to format
+   * @returns A string representation of the range
+   */
+  rangeFormat,
+} from "./range_format.ts";

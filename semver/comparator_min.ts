@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import type { Operator, SemVer } from "./types.ts";
-import { ANY, MAX, MIN } from "./semver.ts";
+import { ANY, MAX, MIN } from "./constants.ts";
 import { gt } from "./gt.ts";
 import { increment } from "./increment.ts";
 

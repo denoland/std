@@ -1,22 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { comparatorIntersects } from "./comparator.ts";
+import { comparatorIntersects } from "./comparator_intersects.ts";
 import type { SemVerComparator, SemVerRange } from "./types.ts";
-
-/**
- * The ranges intersect every range of AND comparators intersects with a least one range of OR ranges.
- * @param r0 range 0
- * @param r1 range 1
- * @returns returns true if any
- */
-export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
-  return rangesSatisfiable([r0, r1]) && r0.ranges.some((r00) => {
-    return r1.ranges.some((r11) => {
-      return r00.every((c0) => {
-        return r11.every((c1) => comparatorIntersects(c0, c1));
-      });
-    });
-  });
-}
 
 function rangesSatisfiable(ranges: SemVerRange[]): boolean {
   return ranges.every((r) => {
@@ -36,4 +20,20 @@ function comparatorsSatisfiable(comparators: SemVerComparator[]): boolean {
     }
   }
   return true;
+}
+
+/**
+ * The ranges intersect every range of AND comparators intersects with a least one range of OR ranges.
+ * @param r0 range 0
+ * @param r1 range 1
+ * @returns returns true if any
+ */
+export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
+  return rangesSatisfiable([r0, r1]) && r0.ranges.some((r00) => {
+    return r1.ranges.some((r11) => {
+      return r00.every((c0) => {
+        return r11.every((c1) => comparatorIntersects(c0, c1));
+      });
+    });
+  });
 }

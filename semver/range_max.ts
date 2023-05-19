@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { INVALID } from "./semver.ts";
+import { INVALID } from "./constants.ts";
 import { sort } from "./sort.ts";
 import type { SemVer, SemVerRange } from "./types.ts";
-import { rangeTest } from "./range.ts";
+import { inRange } from "./in_range.ts";
 
 /**
  * The maximum valid SemVer for a given range or INVALID
@@ -15,7 +15,7 @@ export function rangeMax(range: SemVerRange): SemVer | undefined {
   //[ [1 and 2] or [2 and 3] ] = [ 1 or 2 ] = 2
   return sort(
     range.ranges.map((r) =>
-      sort(r.filter((c) => rangeTest(c.max, range)).map((c) => c.max)).shift()!
+      sort(r.filter((c) => inRange(c.max, range)).map((c) => c.max)).shift()!
     ),
   ).filter((v) => v).pop() ?? INVALID;
 }

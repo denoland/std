@@ -2,6 +2,49 @@
 import type { ReleaseType, SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 import { format } from "./format.ts";
+
+function pre(
+  prerelease: ReadonlyArray<string | number>,
+  identifier: string | undefined,
+) {
+  let values = [...prerelease];
+
+  // In reality this will either be 0, 1 or 2 entries.
+  let i: number = values.length;
+  while (--i >= 0) {
+    if (typeof values[i] === "number") {
+      // deno-fmt-ignore
+      (values[i] as number)++;
+      i = -2;
+    }
+  }
+
+  if (i === -1) {
+    // didn't increment anything
+    values.push(0);
+  }
+
+  if (identifier) {
+    // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
+    // 1.2.0-beta.foobar or 1.2.0-beta bumps to 1.2.0-beta.0
+    if (values[0] === identifier) {
+      if (isNaN(values[1] as number)) {
+        values = [identifier, 0];
+      }
+    } else {
+      values = [identifier, 0];
+    }
+  }
+  return values;
+}
+
+function parseBuild(
+  build: string[],
+  metadata: string | undefined,
+) {
+  return metadata === undefined ? build : metadata.split(".").filter((m) => m);
+}
+
 /**
  * Returns the new version resulting from an increment by release type.
  *
@@ -215,46 +258,4 @@ export function increment(
     return format(result);
   }
   return result;
-}
-
-function pre(
-  prerelease: ReadonlyArray<string | number>,
-  identifier: string | undefined,
-) {
-  let values = [...prerelease];
-
-  // In reality this will either be 0, 1 or 2 entries.
-  let i: number = values.length;
-  while (--i >= 0) {
-    if (typeof values[i] === "number") {
-      // deno-fmt-ignore
-      (values[i] as number)++;
-      i = -2;
-    }
-  }
-
-  if (i === -1) {
-    // didn't increment anything
-    values.push(0);
-  }
-
-  if (identifier) {
-    // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-    // 1.2.0-beta.foobar or 1.2.0-beta bumps to 1.2.0-beta.0
-    if (values[0] === identifier) {
-      if (isNaN(values[1] as number)) {
-        values = [identifier, 0];
-      }
-    } else {
-      values = [identifier, 0];
-    }
-  }
-  return values;
-}
-
-function parseBuild(
-  build: string[],
-  metadata: string | undefined,
-) {
-  return metadata === undefined ? build : metadata.split(".").filter((m) => m);
 }

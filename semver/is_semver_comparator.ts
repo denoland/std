@@ -2,7 +2,7 @@
 import { isSemVer } from "./is_semver.ts";
 import { isValidOperator } from "./is_valid_operator.ts";
 import type { SemVerComparator } from "./types.ts";
-import { ALL, NONE } from "./comparator.ts";
+import { ALL, NONE } from "./constants.ts";
 
 /**
  * Does a deep check on the value to see if it is a valid SemVerComparator object.

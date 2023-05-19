@@ -35,8 +35,8 @@ export function compareBuild(
   s1: string | SemVer,
   _options?: { includePrerelease: boolean },
 ): 1 | 0 | -1 {
-  const v0 = typeof s0 === "string" ? parse(s0) : s0;
-  const v1 = typeof s1 === "string" ? parse(s1) : s1;
+  const v0 = parse(s0);
+  const v1 = parse(s1);
   if (s0 === s1) return 0;
   return (
     compareNumber(v0.major, v1.major) ||

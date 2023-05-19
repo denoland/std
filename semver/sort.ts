@@ -18,9 +18,11 @@ export function sort(
   return list.sort((a, b) => compare(a, b, options));
 }
 
-/**
- * @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
- *
- * Sorts a list of semantic versions in descending order.
- */
-export { rsort } from "./rsort.ts";
+export {
+  /**
+   * @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
+   *
+   * Sorts a list of semantic versions in descending order.
+   */
+  rsort,
+} from "./rsort.ts";
