@@ -1,12 +1,10 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { format, rangeFormat } from "./format.ts";
-import { eq } from "./eq.ts";
+import { rangeFormat } from "./range_format.ts";
 import { parse } from "./parse.ts";
-import { parseRange } from "./parse.ts";
-import { rangeIntersects, rangeMin, rangeTest } from "./range.ts";
-import { INVALID, SemVer } from "./semver.ts";
+import { parseRange } from "./parse_range.ts";
+import { inRange } from "./in_range.ts";
 
 Deno.test("range", async (t) => {
   const versions: [string, string][] = [
@@ -99,85 +97,9 @@ Deno.test("range", async (t) => {
     await t.step(`${r} ∋ ${v}`, () => {
       const range = parseRange(r);
       const s = parse(v);
-      assert(rangeTest(s, range));
+      assert(inRange(s, range));
     });
   }
-});
-
-Deno.test({
-  name: "rangeMin",
-  fn: async (t) => {
-    const versions: [string, string | SemVer][] = [
-      // Stars
-      ["*", "0.0.0"],
-      ["* || >=2", "0.0.0"],
-      [">=2 || *", "0.0.0"],
-      [">2 || *", "0.0.0"],
-
-      // equal
-      ["1.0.0", "1.0.0"],
-      ["1.0", "1.0.0"],
-      ["1.0.x", "1.0.0"],
-      ["1.0.*", "1.0.0"],
-      ["1", "1.0.0"],
-      ["1.x.x", "1.0.0"],
-      ["1.x.x", "1.0.0"],
-      ["1.*.x", "1.0.0"],
-      ["1.x.*", "1.0.0"],
-      ["1.x", "1.0.0"],
-      ["1.*", "1.0.0"],
-      ["=1.0.0", "1.0.0"],
-
-      // Tilde
-      ["~1.1.1", "1.1.1"],
-      ["~1.1.1-beta", "1.1.1-beta"],
-      ["~1.1.1 || >=2", "1.1.1"],
-
-      // Caret
-      ["^1.1.1", "1.1.1"],
-      ["^1.1.1-beta", "1.1.1-beta"],
-      ["^1.1.1 || >=2", "1.1.1"],
-
-      // '-' operator
-      ["1.1.1 - 1.8.0", "1.1.1"],
-      ["1.1 - 1.8.0", "1.1.0"],
-
-      // Less / less or equal
-      ["<2", "0.0.0"],
-      ["<0.0.0-beta", INVALID],
-      ["<0.0.1-beta", "0.0.0"],
-      ["<2 || >4", "0.0.0"],
-      [">4 || <2", "0.0.0"],
-      ["<=2 || >=4", "0.0.0"],
-      [">=4 || <=2", "0.0.0"],
-      ["<0.0.0-beta >0.0.0-alpha", INVALID],
-      [">0.0.0-alpha <0.0.0-beta", INVALID],
-
-      // Greater than or equal
-      [">=1.1.1 <2 || >=2.2.2 <2", "1.1.1"],
-      [">=2.2.2 <2 || >=1.1.1 <2", "1.1.1"],
-
-      // Greater than but not equal
-      [">1.0.0", "1.0.1"],
-      [">1.0.0-0", "1.0.0-1"],
-      [">1.0.0-beta", "1.0.0-beta.0"],
-      [">2 || >1.0.0", "1.0.1"],
-      [">2 || >1.0.0-0", "1.0.0-1"],
-      [">2 || >1.0.0-beta", "1.0.0-beta.0"],
-
-      // Impossible range
-      [">4 <3", INVALID],
-    ];
-
-    for (const [a, b] of versions) {
-      await t.step(a, () => {
-        const range = parseRange(a);
-        const version = parse(b);
-        const min = rangeMin(range);
-        assert(eq(min, version), `${format(min)} != ${format(version)}`);
-      });
-    }
-  },
 });
 
 Deno.test({
@@ -257,7 +179,7 @@ Deno.test({
       await t.step(`${r} ∌ ${v}`, () => {
         const range = parseRange(r);
         const s = parse(v);
-        const found = rangeTest(s, range);
+        const found = inRange(s, range);
         assert(!found);
       });
     }
@@ -276,7 +198,7 @@ Deno.test("unlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = rangeTest(s, range);
+    const found = inRange(s, range);
     assert(found, `${r} not satisfied by ${v}`);
   }
 });
@@ -291,7 +213,7 @@ Deno.test("negativeUnlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = rangeTest(s, range);
+    const found = inRange(s, range);
     assert(!found, `${v} satisfied by ${r} unexpectedly`);
   }
 });
@@ -358,89 +280,6 @@ Deno.test({
           const range = parseRange(r);
           const actual = rangeFormat(range);
           assertEquals(actual, expected);
-        },
-      });
-    }
-  },
-});
-
-Deno.test({
-  name: "rangesIntersect",
-  fn: async (t) => {
-    const versions: [string, string, boolean][] = [
-      ["1.3.0 || <1.0.0 >2.0.0", "1.3.0 || <1.0.0 >2.0.0", true],
-      [">0.0.0", "<1.0.0 >2.0.0", false],
-      ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0", false],
-      ["<1.0.0 >2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
-      [">1.0.0 <=2.0.0", "2.0.0", true],
-      ["<1.0.0 >=2.0.0", "2.1.0", false],
-      ["<1.0.0 >=2.0.0", ">1.4.0 <1.6.0 || 2.0.0", false],
-      ["1.5.x", "<1.5.0 || >=1.6.0", false],
-      ["<1.5.0 || >=1.6.0", "1.5.x", false],
-      [
-        "<1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
-        ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
-        false,
-      ],
-      [
-        "<=1.6.16 || >=1.7.0 <1.7.11 || >=1.8.0 <1.8.2",
-        ">=1.6.16 <1.7.0 || >=1.7.11 <1.8.0 || >=1.8.2",
-        true,
-      ],
-      [">=1.0.0", "<=1.0.0", true],
-      [">1.0.0 <1.0.0", "<=0.0.0", false],
-      ["*", "0.0.1", true],
-      ["*", ">=1.0.0", true],
-      ["*", ">1.0.0", true],
-      ["*", "~1.0.0", true],
-      ["*", "<1.6.0", true],
-      ["*", "<=1.6.0", true],
-      ["1.*", "0.0.1", false],
-      ["1.*", "2.0.0", false],
-      ["1.*", "1.0.0", true],
-      ["1.*", "<2.0.0", true],
-      ["1.*", ">1.0.0", true],
-      ["1.*", "<=1.0.0", true],
-      ["1.*", "^1.0.0", true],
-      ["1.0.*", "0.0.1", false],
-      ["1.0.*", "<0.0.1", false],
-      ["1.0.*", ">0.0.1", true],
-      ["*", "1.3.0 || <1.0.0 >2.0.0", true],
-      ["1.3.0 || <1.0.0 >2.0.0", "*", true],
-      ["1.*", "1.3.0 || <1.0.0 >2.0.0", true],
-      ["x", "0.0.1", true],
-      ["x", ">=1.0.0", true],
-      ["x", ">1.0.0", true],
-      ["x", "~1.0.0", true],
-      ["x", "<1.6.0", true],
-      ["x", "<=1.6.0", true],
-      ["1.x", "0.0.1", false],
-      ["1.x", "2.0.0", false],
-      ["1.x", "1.0.0", true],
-      ["1.x", "<2.0.0", true],
-      ["1.x", ">1.0.0", true],
-      ["1.x", "<=1.0.0", true],
-      ["1.x", "^1.0.0", true],
-      ["1.0.x", "0.0.1", false],
-      ["1.0.x", "<0.0.1", false],
-      ["1.0.x", ">0.0.1", true],
-      ["x", "1.3.0 || <1.0.0 >2.0.0", true],
-      ["1.3.0 || <1.0.0 >2.0.0", "x", true],
-      ["1.x", "1.3.0 || <1.0.0 >2.0.0", true],
-      ["*", "*", true],
-      ["x", "", true],
-    ];
-
-    for (const [r1, r2, expected] of versions) {
-      await t.step({
-        name: `${r1} ∩ ${r2}`,
-        fn: () => {
-          const range1 = parseRange(r1);
-          const range2 = parseRange(r2);
-          const actual1 = rangeIntersects(range1, range2);
-          const actual2 = rangeIntersects(range2, range1);
-          assertEquals(actual1, expected);
-          assertEquals(actual2, expected);
         },
       });
     }
