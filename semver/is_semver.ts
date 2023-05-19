@@ -4,8 +4,6 @@ import type { SemVer } from "./types.ts";
 import { isValidNumber } from "./is_valid_number.ts";
 import { isValidString } from "./is_valid_string.ts";
 
-export const MAX_LENGTH = 256;
-
 /**
  * Checks to see if value is a valid SemVer object. It does a check
  * into each field including prerelease and build.

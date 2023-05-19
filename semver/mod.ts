@@ -279,39 +279,59 @@
  *
  * @module
  */
-
-import {
-  comparatorMax,
-  comparatorMin,
-  SemVerComparator,
-} from "./comparator.ts";
-import { tryParse } from "./parse.ts";
-import { rangeTest } from "./range.ts";
-import { parse, parseRange } from "./parse.ts";
+import type { SemVer, SemVerComparator, SemVerRange } from "./types.ts";
+import { parse, tryParse } from "./parse.ts";
 import { format } from "./format.ts";
-import { SemVer, SemVerRange } from "./types.ts";
+import { parseRange } from "./parse_range.ts";
+import { inRange } from "./in_range.ts";
+import { comparatorMin } from "./comparator_min.ts";
+import { comparatorMax } from "./comparator_max.ts";
 
-export * from "./comparator.ts";
-export * from "./format.ts";
 export * from "./cmp.ts";
+export * from "./comparator_format.ts";
+export * from "./comparator_intersects.ts";
+export * from "./comparator_max.ts";
+export * from "./comparator_min.ts";
+export * from "./comparator.ts";
+export * from "./compare_build.ts";
 export * from "./compare.ts";
+export * from "./constants.ts";
 export * from "./difference.ts";
 export * from "./eq.ts";
+export * from "./format.ts";
 export * from "./gt.ts";
 export * from "./gte.ts";
 export * from "./gtr.ts";
+export * from "./in_comparator.ts";
+export * from "./in_range.ts";
 export * from "./increment.ts";
+export * from "./is_semver_comparator.ts";
+export * from "./is_semver_range.ts";
+export * from "./is_semver.ts";
+export * from "./is_valid_number.ts";
+export * from "./is_valid_operator.ts";
+export * from "./is_valid_string.ts";
 export * from "./lt.ts";
 export * from "./lte.ts";
 export * from "./ltr.ts";
+export * from "./max_satisfying.ts";
+export * from "./min_satisfying.ts";
 export * from "./neq.ts";
 export * from "./outside.ts";
-export * from "./rcompare.ts";
-export * from "./sort.ts";
+export * from "./parse_comparator.ts";
+export * from "./parse_range.ts";
 export * from "./parse.ts";
+export * from "./range_format.ts";
+export * from "./range_intersects.ts";
+export * from "./range_max.ts";
+export * from "./range_min.ts";
 export * from "./range.ts";
-export * from "./semver.ts";
-export type { FormatStyle, Operator, ReleaseType } from "./types.ts";
+export * from "./rcompare.ts";
+export * from "./rsort.ts";
+export * from "./sort.ts";
+export * from "./types.ts";
+export * from "./lte.ts";
+export * from "./lte.ts";
 
 /**
  * @deprecated (will be removed after 0.189.0) Use `parse()` or `tryParse()` instead
@@ -340,7 +360,7 @@ export function satisfies(
   range: string | SemVerRange,
   options?: { includePrerelease: boolean },
 ): boolean {
-  return rangeTest(
+  return inRange(
     parse(semver, options),
     typeof range === "string" ? parseRange(range) : range,
   );
