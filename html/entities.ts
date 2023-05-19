@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-export type EntityList = Record<string, { characters: string }>;
-export type DecodeOptions = { entityList: EntityList };
+export type EntityList = Record<string, string>;
 
 const rawToEntityEntries = [
   ["&", "&amp;"],
@@ -12,8 +12,8 @@ const rawToEntityEntries = [
 ] as const;
 
 const defaultEntityList: EntityList = Object.fromEntries([
-  ...rawToEntityEntries.map(([characters, entity]) => [entity, { characters }]),
-  ["&apos;", { characters: "'" }],
+  ...rawToEntityEntries.map(([raw, entity]) => [entity, raw]),
+  ["&apos;", "'"],
 ]);
 
 const rawToEntity = new Map<string, string>(rawToEntityEntries);
@@ -39,6 +39,8 @@ export function encode(str: string) {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
+export type DecodeOptions = { entityList: EntityList };
+
 const defaultDecodeOptions: DecodeOptions = {
   entityList: defaultEntityList,
 };
@@ -62,8 +64,8 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * assertEquals(decode("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
  * assertEquals(decode("&thorn;&eth;"), "&thorn;&eth;");
  *
- * // using the full named entity list from the HTML spec (~145KB unminified)
- * import entityList from "https://html.spec.whatwg.org/entities.json" assert { type: "json" };
+ * // using the full named entity list from the HTML spec (~47K unminified)
+ * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
  * assertEquals(decode("&thorn;&eth;", { entityList }), "þð");
  * ```
  */
@@ -89,7 +91,7 @@ export function decode(
   }
 
   return str
-    .replaceAll(entityRe, (m) => entityList[m]!.characters)
+    .replaceAll(entityRe, (m) => entityList[m])
     .replaceAll(RX_DEC_ENTITY, (_, dec) => codePointStrToChar(dec, 10))
     .replaceAll(RX_HEX_ENTITY, (_, hex) => codePointStrToChar(hex, 16));
 }

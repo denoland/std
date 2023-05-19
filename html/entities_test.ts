@@ -2,7 +2,7 @@
 
 import { decode, encode } from "./entities.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import entityList from "https://html.spec.whatwg.org/entities.json" assert {
+import entityList from "./named_entity_list.json" assert {
   type: "json",
 };
 

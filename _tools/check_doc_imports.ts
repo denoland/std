@@ -26,11 +26,6 @@ const RX_CODE_BLOCK = /`{3}([\w]*)\n([\S\s]+?)\n`{3}/gm;
 let shouldFail = false;
 let countChecked = 0;
 
-const allowedUrlPrefixes = [
-  "https://deno.land/std@$STD_VERSION/",
-  "https://html.spec.whatwg.org/",
-];
-
 function checkImportStatements(
   codeBlock: string,
   filePath: string,
@@ -49,14 +44,14 @@ function checkImportStatements(
     const { moduleSpecifier } = importDeclaration;
     const importPath = (moduleSpecifier as StringLiteral).text;
     const isRelative = importPath.startsWith(".");
-    const isAllowedUrl = allowedUrlPrefixes.some((prefix) =>
-      importPath.startsWith(prefix)
+    const isInternal = importPath.startsWith(
+      "https://deno.land/std@$STD_VERSION/",
     );
     const { line } = sourceFile.getLineAndCharacterOfPosition(
       moduleSpecifier.pos,
     );
 
-    if (isRelative || !isAllowedUrl) {
+    if (isRelative || !isInternal) {
       console.log(
         yellow("Warn ") +
           (isRelative
