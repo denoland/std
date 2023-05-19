@@ -24,8 +24,8 @@ export function difference(
   sv1: string | SemVer,
   options?: { includePrerelease: boolean },
 ): ReleaseType | undefined {
-  const s0 = typeof sv0 === "string" ? parse(sv0) : sv0;
-  const s1 = typeof sv1 === "string" ? parse(sv1) : sv1;
+  const s0 = parse(sv0);
+  const s1 = parse(sv1);
   const includePrerelease = options?.includePrerelease ?? true;
   if (eq(s0, s1)) {
     return undefined;
