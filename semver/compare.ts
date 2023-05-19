@@ -25,8 +25,8 @@ export function compare(
   s1: string | SemVer,
   options?: { includePrerelease: boolean },
 ): 1 | 0 | -1 {
-  const v0 = typeof s0 === "string" ? parse(s0, options) : s0;
-  const v1 = typeof s1 === "string" ? parse(s1, options) : s1;
+  const v0 = parse(s0, options);
+  const v1 = parse(s1, options);
   const includePrerelease = options?.includePrerelease ?? true;
   if (s0 === s1) return 0;
   if (includePrerelease) {
