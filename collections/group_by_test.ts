@@ -85,3 +85,31 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[collections/groupBy] callback index",
+  fn() {
+    const actual = groupBy(
+      ["a", "b", "c", "d"],
+      (_, i) => i % 2 === 0 ? "even" : "odd",
+    );
+
+    const expected = { even: ["a", "c"], odd: ["b", "d"] };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[collections/groupBy] iterable input",
+  fn() {
+    function* count(): Generator<number, void> {
+      for (let i = 0; i < 5; i += 1) yield i;
+    }
+
+    const actual = groupBy(count(), (n) => n % 2 === 0 ? "even" : "odd");
+    const expected = { even: [0, 2, 4], odd: [1, 3] };
+
+    assertEquals(actual, expected);
+  },
+});
