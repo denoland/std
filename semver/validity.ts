@@ -3,7 +3,7 @@ export const MAX_LENGTH = 256;
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_semver.ts` instead.
    *
    * Checks to see if value is a valid SemVer object. It does a check
    * into each field including prerelease and build.
@@ -24,7 +24,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver_comparator.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_semver_comparator.ts` instead.
    *
    * Does a deep check on the value to see if it is a valid SemVerComparator object.
    *
@@ -40,7 +40,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_semver_range.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_semver_range.ts` instead.
    *
    * Does a deep check on the object to determine if its a valid range.
    *
@@ -56,7 +56,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_operator.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_valid_operator.ts` instead.
    *
    * Checks to see if the value is a valid Operator string.
    *
@@ -69,7 +69,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_number.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_valid_number.ts` instead.
    *
    * Returns true if the value is a valid SemVer number.
    *
@@ -83,7 +83,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/is_valid_string.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/is_valid_string.ts` instead.
    *
    * Returns true if the value is a valid semver pre-release or build identifier.
    *

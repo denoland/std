@@ -3,7 +3,7 @@ import type { SemVerRange } from "./types.ts";
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/types.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/types.ts` instead.
    *
    * A type representing a semantic version range. The ranges consist of
    * a nested array, which represents a set of OR comparisons while the
@@ -14,7 +14,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_min.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/range_min.ts` instead.
    *
    * The minimum valid SemVer for a given range or INVALID
    * @param range The range to calculate the min for
@@ -25,7 +25,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_max.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/range_max.ts` instead.
    *
    * The maximum valid SemVer for a given range or INVALID
    * @param range The range to calculate the max for
@@ -36,7 +36,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import `inRange()` from `std/semver/in_range.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import `inRange()` from `std/semver/in_range.ts` instead.
    *
    * Test to see if the version satisfies the range.
    * @param version The version to test
@@ -48,7 +48,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_intersects.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/range_intersects.ts` instead.
    *
    * The ranges intersect every range of AND comparators intersects with a least one range of OR ranges.
    * @param r0 range 0
@@ -60,7 +60,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/max_satisfying.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/max_satisfying.ts` instead.
    *
    * Returns the highest version in the list that satisfies the range, or `undefined`
    * if none of them do.
@@ -73,7 +73,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/min_satisfying.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/min_satisfying.ts` instead.
    *
    * Returns the lowest version in the list that satisfies the range, or `undefined` if
    * none of them do.

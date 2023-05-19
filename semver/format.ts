@@ -58,7 +58,7 @@ export function format(semver: SemVer, style: FormatStyle = "full") {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_format.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/comparator_format.ts` instead.
    *
    * Formats the comparator into a string
    * @example >=0.0.0
@@ -70,7 +70,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/range_format.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/range_format.ts` instead.
    *
    * Formats the range into a string
    * @example >=0.0.0 || <1.0.0

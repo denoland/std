@@ -26,7 +26,7 @@ export function tryParse(version?: string): SemVer | undefined {
  * @returns A valid SemVer
  */
 export function parse(version: string | SemVer): SemVer;
-/** @deprecated (will be removed after 0.189.0) Use parse(version: string | SemVer) instead. */
+/** @deprecated (will be removed after 0.191.0) Use parse(version: string | SemVer) instead. */
 export function parse(
   version: string | SemVer | null,
   options?: { includePrerelease: boolean },
@@ -122,7 +122,7 @@ export function parse(
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/parse_comparator.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_comparator.ts` instead.
    *
    * Parses a comparator string into a valid SemVerComparator.
    * @param comparator
@@ -130,7 +130,7 @@ export {
    */
   parseComparator,
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/parse_comparator.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_comparator.ts` instead.
    *
    * Parses a comparator string into a valid SemVerComparator or returns undefined if not valid.
    * @param comparator
@@ -141,7 +141,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/parse_range.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_range.ts` instead.
    *
    * Parses a range string into a SemVerRange object or throws a TypeError.
    * @param range The range string
@@ -149,7 +149,7 @@ export {
    */
   parseRange,
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/parse_range.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_range.ts` instead.
    *
    * A tries to parse a valid SemVerRange string or returns undefined
    * @param range The range string

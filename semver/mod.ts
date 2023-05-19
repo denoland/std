@@ -334,7 +334,7 @@ export * from "./lte.ts";
 export * from "./lte.ts";
 
 /**
- * @deprecated (will be removed after 0.189.0) Use `parse()` or `tryParse()` instead
+ * @deprecated (will be removed after 0.191.0) Use `parse()` or `tryParse()` instead
  *
  * A compatibility function which checks that a string is a valid semver
  * @param value A string which may or may not contain a valid SemVer
@@ -348,7 +348,7 @@ export function valid(value: string | SemVer | null): string | null {
 }
 
 /**
- * @deprecated (will be removed after 0.189.0) Use `rangeTest()` instead
+ * @deprecated (will be removed after 0.191.0) Use `rangeTest()` instead
  *
  * A compatibility function that calls rangeTest
  * @param semver A valid SemVer string
@@ -367,7 +367,7 @@ export function satisfies(
 }
 
 /**
- * @deprecated (will be removed after 0.189.0) Use comparatorMin instead
+ * @deprecated (will be removed after 0.191.0) Use comparatorMin instead
  *
  * A compatibility function to get the minimum version of a range string.
  * @param comparator The comparator
@@ -380,7 +380,7 @@ export function minVersion(
 }
 
 /**
- * @deprecated (will be removed after 0.189.0) Use `comparatorMax()` instead
+ * @deprecated (will be removed after 0.191.0) Use `comparatorMax()` instead
  *
  * A compatibility function to get the maximum version of a range string.
  * @param comparator The comparator
@@ -392,28 +392,28 @@ export function maxVersion(
   return comparatorMax(comparator.semver, comparator.operator);
 }
 
-/** @deprecated (will be removed after 0.189.0) Use parse(...).major instead. */
+/** @deprecated (will be removed after 0.191.0) Use parse(...).major instead. */
 export function major(
   v: string | SemVer,
   options?: { includePrerelease: boolean },
 ) {
   return parse(v, options).major;
 }
-/** @deprecated (will be removed after 0.189.0) Use parse(...).minor instead. */
+/** @deprecated (will be removed after 0.191.0) Use parse(...).minor instead. */
 export function minor(
   v: string | SemVer,
   options?: { includePrerelease: boolean },
 ) {
   return parse(v, options).minor;
 }
-/** @deprecated (will be removed after 0.189.0) Use parse(...).patch instead. */
+/** @deprecated (will be removed after 0.191.0) Use parse(...).patch instead. */
 export function patch(
   v: string | SemVer,
   options?: { includePrerelease: boolean },
 ) {
   return parse(v, options).patch;
 }
-/** @deprecated (will be removed after 0.189.0) Use parse(...).prerelease.join(".") instead. */
+/** @deprecated (will be removed after 0.191.0) Use parse(...).prerelease.join(".") instead. */
 export function prerelease(
   v: string | SemVer,
   options?: { includePrerelease: boolean },

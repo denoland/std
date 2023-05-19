@@ -3,7 +3,7 @@ import type { SemVerComparator } from "./types.ts";
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_min.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/comparator_min.ts` instead.
    *
    * The minimum semantic version that could match this comparator
    * @param semver The semantic version of the comparator
@@ -15,13 +15,13 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/constants.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/constants.ts` instead.
    *
    * A comparator which will span all valid semantic versions
    */
   ALL,
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/constants.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/constants.ts` instead.
    *
    * A comparator which will not span any semantic versions
    */
@@ -30,7 +30,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_max.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/comparator_max.ts` instead.
    *
    * The maximum version that could match this comparator.
    *
@@ -43,7 +43,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import `inComparator()` from `std/semver/in_comparator.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import `inComparator()` from `std/semver/in_comparator.ts` instead.
    *
    * Test to see if a semantic version falls within the range of the comparator.
    * @param version The version to compare
@@ -55,7 +55,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/comparator_intersects.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/comparator_intersects.ts` instead.
    *
    * Returns true if the range of possible versions intersects with the other comparators set of possible versions
    * @param c0 The left side comparator
@@ -67,7 +67,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Import from `std/semver/types.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/types.ts` instead.
    *
    * The shape of a valid semantic version comparator
    * @example >=0.0.0

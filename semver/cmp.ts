@@ -19,7 +19,7 @@ export function cmp(
   operator: Operator,
   s1: SemVer,
 ): boolean;
-/** @deprecated (will be removed after 0.189.0) Use `cmp(s0: SemVer, operator: Operator, s1: SemVer)` instead. */
+/** @deprecated (will be removed after 0.191.0) Use `cmp(s0: SemVer, operator: Operator, s1: SemVer)` instead. */
 export function cmp(
   s0: string | SemVer,
   operator: Operator,

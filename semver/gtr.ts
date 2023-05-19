@@ -8,7 +8,7 @@ export function gtr(
   range: SemVerRange,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `gtr(version: SemVer, range: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.191.0) Use `gtr(version: SemVer, range: SemVerRange)` instead.
  *
  * Checks to see if the version is greater than all possible versions of the range. */
 export function gtr(

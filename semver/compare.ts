@@ -19,7 +19,7 @@ export function compare(
   s0: SemVer,
   s1: SemVer,
 ): 1 | 0 | -1;
-/** @deprecated (will be removed after 0.189.0) Use `compare(s0: SemVer, s1: SemVer)` instead. */
+/** @deprecated (will be removed after 0.191.0) Use `compare(s0: SemVer, s1: SemVer)` instead. */
 export function compare(
   s0: string | SemVer,
   s1: string | SemVer,
@@ -51,7 +51,7 @@ export function compare(
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Use `compare(s0: SemVer, s1: SemVer)` from `std/semver/compare_build.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Use `compare(s0: SemVer, s1: SemVer)` from `std/semver/compare_build.ts` instead.
    *
    * Compare two semantic version objects including build metadata.
    *
@@ -66,7 +66,7 @@ export {
   compareBuild,
 } from "./compare_build.ts";
 
-/** @deprecated (will be removed after 0.189.0) Use `compare` or `compareBuild` directly */
+/** @deprecated (will be removed after 0.191.0) Use `compare` or `compareBuild` directly */
 export function compareIdentifiers(
   a: string | number | null,
   b: string | number | null,
@@ -74,7 +74,7 @@ export function compareIdentifiers(
   return compareIdentifier(a != null ? [a] : [], b != null ? [b] : []);
 }
 
-/** @deprecated (will be removed after 0.189.0) Use `compare` or `compareBuild` directly */
+/** @deprecated (will be removed after 0.191.0) Use `compare` or `compareBuild` directly */
 export function rcompareIdentifiers(
   a: string | number | null,
   b: string | number | null,

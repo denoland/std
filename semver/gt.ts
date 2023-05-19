@@ -8,7 +8,7 @@ export function gt(
   s1: SemVer,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `gt(s0: SemVer, s1: SemVer)` instead.
+ * @deprecated (will be removed after 0.191.0) Use `gt(s0: SemVer, s1: SemVer)` instead.
  *
  * Greater than comparison */
 export function gt(

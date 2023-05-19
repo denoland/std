@@ -6,7 +6,7 @@ import { compare } from "./compare.ts";
 export function sort(
   list: SemVer[],
 ): SemVer[];
-/** @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` instead. */
+/** @deprecated (will be removed after 0.191.0) Use `sort(list: SemVer[])` instead. */
 export function sort(
   list: (string | SemVer)[],
   options?: { includePrerelease: boolean },
@@ -20,7 +20,7 @@ export function sort(
 
 export {
   /**
-   * @deprecated (will be removed after 0.189.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
+   * @deprecated (will be removed after 0.191.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
    *
    * Sorts a list of semantic versions in descending order.
    */
