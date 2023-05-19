@@ -28,14 +28,15 @@
  * ```
  */
 export function groupBy<T, K extends string>(
-  array: readonly T[],
-  selector: (el: T) => K,
+  iterable: Iterable<T>,
+  selector: (element: T, index: number) => K,
 ): Partial<Record<K, T[]>> {
   const ret: Partial<Record<K, T[]>> = {};
+  let i = 0;
 
-  for (const element of array) {
-    const key = selector(element);
-    const arr = ret[key] ??= [] as T[];
+  for (const element of iterable) {
+    const key = selector(element, i++);
+    const arr: T[] = ret[key] ??= [];
     arr.push(element);
   }
 
