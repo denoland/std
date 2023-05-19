@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 export type EntityList = Record<string, { characters: string }>;
-export type DecodeHtmlEntitiesOptions = { entityList: EntityList };
+export type DecodeOptions = { entityList: EntityList };
 
 const rawToEntityEntries = [
   ["&", "&amp;"],
@@ -25,21 +25,21 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  *
  * @example
  * ```ts
- * import { encodeHtmlEntities } from "https://deno.land/std@$STD_VERSION/html/html_entities.ts";
+ * import { encode } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(encodeHtmlEntities("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
+ * assertEquals(encode("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
  * // characters that don't need to be encoded will be left alone,
  * // even if named HTML entities exist for them
- * assertEquals(encodeHtmlEntities("þð"), "þð");
+ * assertEquals(encode("þð"), "þð");
  * ```
  */
-export function encodeHtmlEntities(str: string) {
+export function encode(str: string) {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
-const defaultDecodeHtmlEntitiesOptions: DecodeHtmlEntitiesOptions = {
+const defaultDecodeOptions: DecodeOptions = {
   entityList: defaultEntityList,
 };
 
@@ -55,23 +55,23 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * @example
  * ```ts
- * import { decodeHtmlEntities } from "https://deno.land/std@$STD_VERSION/html/html_entities.ts";
+ * import { decode } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * // default options (only handles &<>'" and numeric entities)
- * assertEquals(decodeHtmlEntities("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
- * assertEquals(decodeHtmlEntities("&thorn;&eth;"), "&thorn;&eth;");
+ * assertEquals(decode("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
+ * assertEquals(decode("&thorn;&eth;"), "&thorn;&eth;");
  *
  * // using the full named entity list from the HTML spec (~145KB unminified)
  * import entityList from "https://html.spec.whatwg.org/entities.json" assert { type: "json" };
- * assertEquals(decodeHtmlEntities("&thorn;&eth;", { entityList }), "þð");
+ * assertEquals(decode("&thorn;&eth;", { entityList }), "þð");
  * ```
  */
-export function decodeHtmlEntities(
+export function decode(
   str: string,
-  options: Partial<DecodeHtmlEntitiesOptions> = {},
+  options: Partial<DecodeOptions> = {},
 ) {
-  const { entityList } = { ...defaultDecodeHtmlEntitiesOptions, ...options };
+  const { entityList } = { ...defaultDecodeOptions, ...options };
 
   let entityRe = entityListRegexCache.get(entityList);
 

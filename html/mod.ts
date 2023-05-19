@@ -7,4 +7,4 @@
  * @module
  */
 
-export * from "./html_entities.ts";
+export * from "./entities.ts";
