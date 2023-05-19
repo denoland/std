@@ -46,7 +46,7 @@ export function outside(
   hilo?: ">" | "<",
   options?: { includePrerelease: boolean },
 ): boolean {
-  const version = typeof v === "string" ? parse(v) : v;
+  const version = parse(v);
   const range = typeof r === "string" ? parseRange(r) : r;
 
   if (!hilo) {
