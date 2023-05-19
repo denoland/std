@@ -5,29 +5,25 @@
     "noImplicitOverride": true
   },
   "fmt": {
-    "files": {
-      "exclude": [
-        ".git",
-        "crypto/_wasm/target",
-        "cov",
-        "jsonc/testdata",
-        "front_matter/testdata",
-        "wasi/testdata"
-      ]
-    }
+    "exclude": [
+      ".git",
+      "crypto/_wasm/target",
+      "cov",
+      "jsonc/testdata",
+      "front_matter/testdata",
+      "wasi/testdata"
+    ]
   },
   "importMap": "./test_import_map.json",
   "lint": {
-    "files": {
-      "exclude": [
-        ".git",
-        "crypto/_wasm/target",
-        "jsonc/testdata",
-        "front_matter/testdata",
-        "cov",
-        "wasi/testdata"
-      ]
-    }
+    "exclude": [
+      ".git",
+      "crypto/_wasm/target",
+      "jsonc/testdata",
+      "front_matter/testdata",
+      "cov",
+      "wasi/testdata"
+    ]
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --coverage=./cov",

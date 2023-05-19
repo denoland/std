@@ -548,7 +548,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
+      "invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
@@ -793,7 +793,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
+      "invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 

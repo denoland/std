@@ -1,3 +1,38 @@
+### 0.188.0 / 2023.05.18
+
+- fix(flags): correctly collect default value (#3380)
+
+### 0.187.0 / 2023.05.12
+
+- feat(collections): add `partitionEntries` (#3365)
+- feat(regexp): add escape function (#3334)
+- fix(datetime): negative months, quarters, and years (#3367)
+- fix(http/file_server): dealing with dir listing view that contain system files
+  (#3371)
+- fix(http/file_server): redirect non-canonical URL to canonical URL (#3362)
+- perf(http/file_server): read fileinfo in parallel (#3363)
+
+### 0.186.0 / 2023.05.04
+
+- BREAKING(path): deprecate path.sep (#3342)
+- feat(async): support `signal` on `deadline()` (#3347)
+- feat(async/pool): use browser compatible APIs (#3350)
+- feat(http): add HTTP_METHODS, HttpMethod, and isHttpMethod (#3309)
+- feat(uuid): add pre-defined namespace UUIDs (#3352)
+- fix(http/file_server): fix `Range` header handling (#3354)
+- fix(http/server): flaky 'address in use' error (#3333)
+- fix(http/server_sent_event): fix Uncaught TypeError if created without
+  optional EventInit (#3356)
+
+### 0.185.0 / 2023.04.27
+
+- feat(dotenv): allow reading from `.env` files without granting env access
+  (#3306)
+- feat(jsonc): annotate return types (#3327)
+- feat(uuid): uuid v3 (#3324)
+- perf(http/file_server): avoid calculating Content-Type when 304 Not Modified
+  response (#3323)
+
 ### 0.184.0 / 2023.04.18
 
 - BREAKING(encoding): remove deprecated APIs (#3303)

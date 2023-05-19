@@ -135,7 +135,7 @@ jobs:
           rust-version: 1.65.0
           targets: wasm32-unknown-unknown
           components: rustfmt
-    
+
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
         run: deno task build:${{ matrix.module }} --check

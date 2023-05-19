@@ -69,6 +69,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "ServerSentEvent - without eventInit",
+  fn() {
+    const evt = new ServerSentEvent("reload");
+    assertEquals(evt.type, "reload");
+    assertEquals(evt.data, "");
+    assertEquals(String(evt), `event: reload\ndata: \n\n`);
+  },
+});
+
+Deno.test({
   name: "ServerSentEventStreamTarget - construction",
   async fn() {
     const sse = new ServerSentEventStreamTarget();
