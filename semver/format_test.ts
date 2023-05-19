@@ -3,8 +3,8 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { format } from "./format.ts";
 import { parse } from "./parse.ts";
-import { INVALID, MAX, MIN, SemVer } from "./semver.ts";
-import { FormatStyle } from "./types.ts";
+import { INVALID, MAX, MIN } from "./constants.ts";
+import { FormatStyle, SemVer } from "./types.ts";
 
 Deno.test("format", async (t) => {
   const versions: [string | SemVer, FormatStyle | undefined, string][] = [

@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./semver.ts";
+import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /** Less than or equal to comparison */
@@ -8,7 +8,7 @@ export function lte(
   s1: SemVer,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
+ * @deprecated (will be removed after 0.191.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
  *
  * Less than or equal to comparison */
 export function lte(

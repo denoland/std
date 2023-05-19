@@ -41,3 +41,38 @@ export type FormatStyle =
   | "patch"
   | "minor"
   | "major";
+
+/**
+ * The shape of a valid semantic version comparator
+ * @example >=0.0.0
+ */
+export interface SemVerComparator {
+  operator: Operator;
+  semver: SemVer;
+  min: SemVer;
+  max: SemVer;
+}
+
+/**
+ * A SemVer object parsed into its constituent parts.
+ */
+export interface SemVer {
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease: (string | number)[];
+  build: string[];
+}
+
+type SemVerRangeAnd = SemVerComparator[];
+type SemVerRangeOr = SemVerRangeAnd[];
+
+/**
+ * A type representing a semantic version range. The ranges consist of
+ * a nested array, which represents a set of OR comparisons while the
+ * inner array represents AND comparisons.
+ */
+export interface SemVerRange {
+  // The outer array is OR while each inner array is AND
+  ranges: SemVerRangeOr;
+}

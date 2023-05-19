@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./semver.ts";
-import { ReleaseType } from "./types.ts";
+import type { ReleaseType, SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 import { eq } from "./eq.ts";
 
@@ -10,7 +9,8 @@ export function difference(
   s0: SemVer,
   s1: SemVer,
 ): ReleaseType | undefined;
-/** @deprecated (will be removed after 0.189.0) Use `difference(s0: SemVer, s1: SemVer)` instead.
+/**
+ * @deprecated (will be removed after 0.191.0) Use `difference(s0: SemVer, s1: SemVer)` instead.
  *
  * Returns difference between two versions by the release type, or
  * `undefined` if the versions are the same. */

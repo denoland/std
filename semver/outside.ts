@@ -1,12 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { rangeTest, SemVerRange } from "./range.ts";
-import { ANY, SemVer } from "./semver.ts";
 import { gt } from "./gt.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { lt } from "./lt.ts";
-import { ALL, SemVerComparator } from "./comparator.ts";
-import { parse, parseRange } from "./parse.ts";
+import { ALL, ANY } from "./constants.ts";
+import { parse } from "./parse.ts";
+import type { SemVer, SemVerComparator, SemVerRange } from "./types.ts";
+import { inRange } from "./in_range.ts";
+import { parseRange } from "./parse_range.ts";
 
 /**
  * Returns true if the version is outside the bounds of the range in either the
@@ -23,7 +24,7 @@ export function outside(
   hilo?: ">" | "<",
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `outside(version: SemVer, range: SemVerRange, hilo?: ">" | "<",)` instead.
+ * @deprecated (will be removed after 0.191.0) Use `outside(version: SemVer, range: SemVerRange, hilo?: ">" | "<",)` instead.
  *
  * Returns true if the version is outside the bounds of the range in either the
  * high or low direction. The hilo argument must be either the string '>' or
@@ -62,7 +63,7 @@ export function outside(
     }
   })();
 
-  if (rangeTest(version, range)) {
+  if (inRange(version, range)) {
     return false;
   }
 

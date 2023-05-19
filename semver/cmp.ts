@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./semver.ts";
-import { Operator } from "./types.ts";
+import type { Operator, SemVer } from "./types.ts";
 import { eq } from "./eq.ts";
 import { neq } from "./neq.ts";
 import { gte } from "./gte.ts";
@@ -20,7 +19,7 @@ export function cmp(
   operator: Operator,
   s1: SemVer,
 ): boolean;
-/** @deprecated (will be removed after 0.189.0) Use `cmp(s0: SemVer, operator: Operator, s1: SemVer)` instead. */
+/** @deprecated (will be removed after 0.191.0) Use `cmp(s0: SemVer, operator: Operator, s1: SemVer)` instead. */
 export function cmp(
   s0: string | SemVer,
   operator: Operator,

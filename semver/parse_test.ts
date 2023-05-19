@@ -112,3 +112,23 @@ Deno.test({
     }
   },
 });
+
+Deno.test("invalidVersion", async (t) => {
+  const versions = ["1.2.3.4", "NOT VALID", 1.2, null, "Infinity.NaN.Infinity"];
+
+  for (const v of versions) {
+    await t.step(`invalid ${v}`, () => {
+      assertThrows(
+        function () {
+          parse(v as string);
+        },
+        TypeError,
+      );
+    });
+  }
+});
+
+Deno.test("bigNumericPrerelease", function () {
+  const r = parse("1.2.3-beta." + Number.MAX_SAFE_INTEGER + "0");
+  assertEquals(r.prerelease, ["beta", "90071992547409910"]);
+});

@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVerRange } from "./range.ts";
-import { SemVer } from "./semver.ts";
+import type { SemVer, SemVerRange } from "./types.ts";
 import { outside } from "./outside.ts";
 
 /** Greater than range comparison */
@@ -9,7 +8,7 @@ export function ltr(
   range: SemVerRange,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.189.0) Use `ltr(version: SemVer, range: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.191.0) Use `ltr(version: SemVer, range: SemVerRange)` instead.
  *
  * Greater than range comparison */
 export function ltr(

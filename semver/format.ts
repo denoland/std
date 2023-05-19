@@ -1,8 +1,16 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { SemVerComparator } from "./comparator.ts";
-import { SemVerRange } from "./range.ts";
-import { ANY, SemVer } from "./semver.ts";
-import { FormatStyle } from "./types.ts";
+import { ANY } from "./constants.ts";
+import type { FormatStyle, SemVer } from "./types.ts";
+
+function formatNumber(value: number) {
+  if (value === Number.POSITIVE_INFINITY) {
+    return "∞";
+  } else if (value === Number.NEGATIVE_INFINITY) {
+    return "⧞";
+  } else {
+    return value.toFixed(0);
+  }
+}
 
 /**
  * Format a SemVer object into a string.
@@ -12,7 +20,7 @@ import { FormatStyle } from "./types.ts";
  * If any number is positive or negative infinity then '∞' or '⧞' will be printed instead.
  *
  * @param semver The semantic version to format
- * @returns The string representation of a smenatic version.
+ * @returns The string representation of a semantic version.
  */
 export function format(semver: SemVer, style: FormatStyle = "full") {
   if (semver === ANY) {
@@ -48,36 +56,26 @@ export function format(semver: SemVer, style: FormatStyle = "full") {
   }
 }
 
-/**
- * Formats the comparator into a string
- * @example >=0.0.0
- * @param comparator
- * @returns A string representation of the comparator
- */
-export function comparatorFormat(comparator: SemVerComparator) {
-  const { semver, operator } = comparator;
-  return `${operator}${format(semver)}`;
-}
+export {
+  /**
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/comparator_format.ts` instead.
+   *
+   * Formats the comparator into a string
+   * @example >=0.0.0
+   * @param comparator
+   * @returns A string representation of the comparator
+   */
+  comparatorFormat,
+} from "./comparator_format.ts";
 
-/**
- * Formats the range into a string
- * @example >=0.0.0 || <1.0.0
- * @param range The range to format
- * @returns A string representation of the range
- */
-export function rangeFormat(range: SemVerRange) {
-  return range.ranges.map((c) => c.map((c) => comparatorFormat(c)).join(" "))
-    .join(
-      "||",
-    );
-}
-
-function formatNumber(value: number) {
-  if (value === Number.POSITIVE_INFINITY) {
-    return "∞";
-  } else if (value === Number.NEGATIVE_INFINITY) {
-    return "⧞";
-  } else {
-    return value.toFixed(0);
-  }
-}
+export {
+  /**
+   * @deprecated (will be removed after 0.191.0) Import from `std/semver/range_format.ts` instead.
+   *
+   * Formats the range into a string
+   * @example >=0.0.0 || <1.0.0
+   * @param range The range to format
+   * @returns A string representation of the range
+   */
+  rangeFormat,
+} from "./range_format.ts";
