@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { assert } from "../_util/asserts.ts";
+
 export class RetryError extends Error {
   constructor(cause: unknown, count: number) {
     super(`Exceeded max retry count (${count})`);
@@ -20,7 +22,7 @@ export interface RetryOptions {
   minTimeout?: number;
 }
 
-const defaultRetryOptions = {
+const defaultRetryOptions: Required<RetryOptions> = {
   multiplier: 2,
   maxTimeout: 60000,
   maxAttempts: 5,
@@ -46,7 +48,7 @@ const defaultRetryOptions = {
  *  maxAttempts: 5,
  *  minTimeout: 100,
  * });
-```
+ * ```
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
@@ -57,9 +59,11 @@ export async function retry<T>(
     ...opts,
   };
 
-  if (options.maxTimeout >= 0 && options.minTimeout > options.maxTimeout) {
-    throw new RangeError("minTimeout is greater than maxTimeout");
-  }
+  assert(options.maxTimeout >= 0, "maxTimeout is less than 0");
+  assert(
+    options.minTimeout <= options.maxTimeout,
+    "minTimeout is greater than maxTimeout",
+  );
 
   let timeout = options.minTimeout;
   let error: unknown;
@@ -69,14 +73,26 @@ export async function retry<T>(
       return await fn();
     } catch (err) {
       await new Promise((r) => setTimeout(r, timeout));
-      timeout *= options.multiplier;
-      timeout = Math.max(timeout, options.minTimeout);
-      if (options.maxTimeout >= 0) {
-        timeout = Math.min(timeout, options.maxTimeout);
-      }
+
+      timeout = _exponentialBackoffWithJitter(
+        options.maxTimeout,
+        options.minTimeout,
+        i,
+        options.multiplier,
+      );
+
       error = err;
     }
   }
 
   throw new RetryError(error, options.maxAttempts);
+}
+
+export function _exponentialBackoffWithJitter(
+  cap: number,
+  base: number,
+  attempt: number,
+  multiplier: number,
+) {
+  return Math.random() * Math.min(cap, base * multiplier ** attempt);
 }
