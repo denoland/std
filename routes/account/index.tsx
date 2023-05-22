@@ -3,7 +3,7 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import Layout from "@/components/Layout.tsx";
 import type { AccountState } from "./_middleware.ts";
-import { BUTTON_STYLES, NOTICE_STYLES } from "@/utils/constants.ts";
+import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
 
 export const handler: Handlers<AccountState, AccountState> = {
@@ -36,23 +36,18 @@ function Row(props: RowProps) {
 
 export default function AccountPage(props: PageProps<AccountState>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
-  const hasResetPassword = new URL(props.url).searchParams.get(
-    "has_reset_password",
-  );
 
   return (
     <>
       <Head title="Account" href={props.url.href} />
       <Layout session={props.data.sessionId}>
         <div class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
-          <h1 class="text-3xl mb-4">
-            <strong>Account</strong>
-          </h1>
-          {hasResetPassword && (
-            <div class={`${NOTICE_STYLES} mb-4`}>
-              Your password has successfully been reset
-            </div>
-          )}
+          <img
+            src={props.data.user?.avatarUrl}
+            alt="User Avatar"
+            crossOrigin="anonymous"
+            class="max-w-[50%] self-center rounded-full aspect-square mb-4 md:mb-6"
+          />
           <ul>
             <Row
               title="Username"
