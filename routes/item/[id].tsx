@@ -9,7 +9,6 @@ import {
   INPUT_STYLES,
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
-import { timeAgo } from "@/components/ItemSummary.tsx";
 import {
   type Comment,
   createComment,
@@ -23,7 +22,8 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
-import { pluralize } from "@/components/ItemSummary.tsx";
+import UserPostedAt from "@/components/UserPostedAt.tsx";
+import { pluralize } from "@/utils/display.ts";
 
 interface ItemPageData extends State {
   user: User;
@@ -119,15 +119,10 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
               b.createdAt.getTime() - a.createdAt.getTime()
             ).map((comment, index) => (
               <div class="py-4">
-                <p>
-                  {props.data.commentsUsers[index].login}{" "}
-                  {props.data.commentsUsers[index].isSubscribed && (
-                    <span title="Deno Hunt premium user">🦕{" "}</span>
-                  )}
-                </p>
-                <p class="text-gray-500">
-                  {timeAgo(new Date(comment.createdAt))} ago
-                </p>
+                <UserPostedAt
+                  user={props.data.commentsUsers[index]}
+                  createdAt={comment.createdAt}
+                />
                 <p>{comment.text}</p>
               </div>
             ))}

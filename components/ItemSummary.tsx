@@ -1,18 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import VoteButton from "@/islands/VoteButton.tsx";
 import type { Item, User } from "@/utils/db.ts";
-
-export function pluralize(unit: number, label: string) {
-  return unit === 1 ? `${unit} ${label}` : `${unit} ${label}s`;
-}
-
-/** @todo Replace with https://deno.land/std@0.184.0/datetime/mod.ts?s=difference */
-export function timeAgo(time: number | Date) {
-  const between = (Date.now() - Number(time)) / 1000;
-  if (between < 3600) return pluralize(~~(between / 60), "minute");
-  else if (between < 86400) return pluralize(~~(between / 3600), "hour");
-  else return pluralize(~~(between / 86400), "day");
-}
+import UserPostedAt from "./UserPostedAt.tsx";
 
 export interface ItemSummaryProps {
   item: Item;
@@ -38,13 +27,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
             {new URL(props.item.url).host} ↗
           </a>
         </span>
-        <p>
-          {props.user.login}{" "}
-          {props.user?.isSubscribed && (
-            <span title="Deno Hunt premium user">🦕{" "}</span>
-          )}
-          {timeAgo(new Date(props.item.createdAt))} ago
-        </p>
+        <UserPostedAt user={props.user} createdAt={props.item.createdAt} />
       </div>
     </div>
   );
