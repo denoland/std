@@ -1,16 +1,53 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
   createUser,
-  deleteUser,
   getUserById,
   getUserByLogin,
   getUserBySessionId,
   getUserByStripeCustomerId,
+  kv,
   setUserSession,
   setUserSubscription,
   type User,
 } from "./db.ts";
 import { assertEquals } from "std/testing/asserts.ts";
+
+async function deleteUser(user: User) {
+  const usersKey = ["users", user.id];
+  const usersByLoginKey = ["users_by_login", user.login];
+  const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersByStripeCustomerKey = [
+    "users_by_stripe_customer",
+    user.stripeCustomerId,
+  ];
+
+  const [
+    userRes,
+    userByLoginRes,
+    userBySessionRes,
+    userByStripeCustomerRes,
+  ] = await kv.getMany<User[]>([
+    usersKey,
+    usersByLoginKey,
+    usersBySessionKey,
+    usersByStripeCustomerKey,
+  ]);
+
+  const res = await kv.atomic()
+    .check(userRes)
+    .check(userByLoginRes)
+    .check(userBySessionRes)
+    .check(userByStripeCustomerRes)
+    .delete(usersKey)
+    .delete(usersByLoginKey)
+    .delete(usersBySessionKey)
+    .delete(usersByStripeCustomerKey)
+    .commit();
+
+  if (!res.ok) {
+    throw res;
+  }
+}
 
 Deno.test("[db] user", async () => {
   const initUser = {
