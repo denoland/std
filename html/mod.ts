@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Functions for HTML tasks such as encoding or decoding HTML entities
+ * Functions for HTML tasks such as escaping or unescaping HTML entities
  *
  * @module
  */

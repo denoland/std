@@ -14,6 +14,7 @@ const rawToEntityEntries = [
 const defaultEntityList: EntityList = Object.fromEntries([
   ...rawToEntityEntries.map(([raw, entity]) => [entity, raw]),
   ["&apos;", "'"],
+  ["&nbsp;", "\xa0"],
 ]);
 
 const rawToEntity = new Map<string, string>(rawToEntityEntries);
@@ -21,59 +22,59 @@ const rawToEntity = new Map<string, string>(rawToEntityEntries);
 const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 
 /**
- * Encodes HTML entities for safe interpolation into HTML
+ * Escapes text for safe interpolation into HTML text content and quoted attributes
  *
  * @example
  * ```ts
- * import { encode } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
+ * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(encode("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
+ * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
- * // characters that don't need to be encoded will be left alone,
+ * // characters that don't need to be escaped will be left alone,
  * // even if named HTML entities exist for them
- * assertEquals(encode("þð"), "þð");
+ * assertEquals(escape("þð"), "þð");
  * ```
  */
-export function encode(str: string) {
+export function escape(str: string) {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
-export type DecodeOptions = { entityList: EntityList };
+export type UnescapeOptions = { entityList: EntityList };
 
-const defaultDecodeOptions: DecodeOptions = {
+const defaultUnescapeOptions: UnescapeOptions = {
   entityList: defaultEntityList,
 };
 
 const MAX_CODE_POINT = 0x10ffff;
 
-const RX_HEX_ENTITY = /&#x(\p{AHex}+);/gu;
 const RX_DEC_ENTITY = /&#([0-9]+);/g;
+const RX_HEX_ENTITY = /&#x(\p{AHex}+);/gu;
 
 const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 
 /**
- * Decodes HTML entities
+ * Unescapes HTML entities in text
  *
  * @example
  * ```ts
- * import { decode } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
+ * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * // default options (only handles &<>'" and numeric entities)
- * assertEquals(decode("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
- * assertEquals(decode("&thorn;&eth;"), "&thorn;&eth;");
+ * assertEquals(unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
+ * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
  *
  * // using the full named entity list from the HTML spec (~47K unminified)
  * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
- * assertEquals(decode("&thorn;&eth;", { entityList }), "þð");
+ * assertEquals(unescape("&thorn;&eth;", { entityList }), "þð");
  * ```
  */
-export function decode(
+export function unescape(
   str: string,
-  options: Partial<DecodeOptions> = {},
+  options: Partial<UnescapeOptions> = {},
 ) {
-  const { entityList } = { ...defaultDecodeOptions, ...options };
+  const { entityList } = { ...defaultUnescapeOptions, ...options };
 
   let entityRe = entityListRegexCache.get(entityList);
 
