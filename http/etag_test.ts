@@ -58,6 +58,10 @@ Deno.test({
       rdev: null,
       blksize: null,
       blocks: null,
+      isBlockDevice: null,
+      isCharDevice: null,
+      isFifo: null,
+      isSocket: null,
     };
     const actual = await calculate(fixture);
     assertEquals(actual, `W/"400-H0YzXysQPV20qNisAZMuvAEVuHV"`);
