@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
+import { AssertTrue, IsExact } from "../testing/types.ts";
 import { zip } from "./zip.ts";
 
 function zip1Test<T>(
@@ -165,5 +166,41 @@ Deno.test({
         [false, true],
       ],
     );
+  },
+});
+
+Deno.test({
+  name: "[collections/zip] typing",
+  fn() {
+    {
+      const zipped = zip([0], [1]);
+      type _ = AssertTrue<IsExact<typeof zipped, [[0, 1]]>>;
+      assertEquals(zipped, [[0, 1]]);
+    }
+    {
+      const zipped = zip([0, "a"], [1, "b"]);
+      type _ = AssertTrue<IsExact<typeof zipped, [[0, 1], ["a", "b"]]>>;
+      assertEquals(zipped, [[0, 1], ["a", "b"]]);
+    }
+    {
+      const zipped = zip([0, "a"], [1, "b", "x"]);
+      type _ = AssertTrue<IsExact<typeof zipped, [[0, 1], ["a", "b"]]>>;
+      assertEquals(zipped, [[0, 1], ["a", "b"]]);
+    }
+    {
+      const zipped = zip([0, "a"], [1, "b", "x"], [2]);
+      type _ = AssertTrue<IsExact<typeof zipped, [[0, 1, 2]]>>;
+      assertEquals(zipped, [[0, 1, 2]]);
+    }
+    {
+      const zipped = zip([], [], []);
+      type _ = AssertTrue<IsExact<typeof zipped, []>>;
+      assertEquals(zipped, []);
+    }
+    {
+      const zipped = zip();
+      type _ = AssertTrue<IsExact<typeof zipped, []>>;
+      assertEquals(zipped, []);
+    }
   },
 });
