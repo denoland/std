@@ -7,6 +7,12 @@ export default function UserPostedAt(
 ) {
   return (
     <p class="text-gray-500">
+      <img
+        src={props.user.avatarUrl}
+        alt={props.user.login}
+        crossOrigin="anonymous"
+        class="h-6 w-auto rounded-full aspect-square inline-block mr-1 align-bottom"
+      />
       {props.user.login}{" "}
       {props.user.isSubscribed && (
         <span title="Deno Hunt premium user">🦕{" "}</span>
