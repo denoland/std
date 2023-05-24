@@ -43,7 +43,10 @@ export async function getAllItems(options?: Deno.KvListOptions) {
   const iter = await kv.list<Item>({ prefix: ["items"] }, options);
   const items = [];
   for await (const res of iter) items.push(res.value);
-  return items;
+  return {
+    items,
+    cursor: iter.cursor,
+  };
 }
 
 export async function getItemById(id: string) {

@@ -83,6 +83,10 @@ stripe listen --forward-to localhost:8000/api/stripe-webhooks --events=customer.
 
 4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
 
+> Note: You can use
+> [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
+> payments while in Stripe's test mode.
+
 ### Running the Server
 
 Finally, start the server by running:
@@ -94,9 +98,34 @@ deno task start
 Go to [http://localhost:8000](http://localhost:8000) to begin playing with your
 new SaaS app.
 
-> Note: You can use
-> [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
-> payments while in Stripe's test mode.
+### Bootstrapping your local Database (Optional)
+
+If the home page is feeling a little empty, run
+
+```
+deno task db:seed
+```
+
+On execution, this script will fetch 20 (customizable) of the top HN posts using
+the [HackerNews API](https://github.com/HackerNews/API) to populate your home
+page.
+
+To see all the values in your local Deno KV database, run
+
+```
+deno task db:dump
+```
+
+And all kv pairs will be logged to stdout
+
+To reset your Deno KV database, run
+
+```
+deno task db:reset
+```
+
+Since this operation is not recoverable, you will be prompted to confirm
+deletion before proceeding.
 
 ## Customization
 
