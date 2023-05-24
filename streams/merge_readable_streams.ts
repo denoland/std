@@ -16,17 +16,17 @@ export function mergeReadableStreams<T>(
       Promise.all(resolvePromises).then(() => {
         controller.close();
       });
-      try {
-        for (const [key, stream] of Object.entries(streams)) {
-          (async () => {
+      for (const [key, stream] of Object.entries(streams)) {
+        (async () => {
+          try {
             for await (const data of stream) {
               controller.enqueue(data);
             }
             resolvePromises[+key].resolve();
-          })();
-        }
-      } catch (e) {
-        controller.error(e);
+          } catch (error) {
+            controller.error(error);
+          }
+        })();
       }
     },
   });
