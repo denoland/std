@@ -1,3 +1,9 @@
+### 0.189.0 / 2023.05.24
+
+- feat(async): add jitter to retry exponential backoff (#3379)
+- feat(collections/group_by): accept iterable input, add index param to callback
+  (#3390)
+
 ### 0.188.0 / 2023.05.18
 
 - fix(flags): correctly collect default value (#3380)
