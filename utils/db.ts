@@ -59,6 +59,13 @@ export async function getItemByUser(userId: string, itemId: string) {
   return res.value;
 }
 
+export async function getItemsByUserId(userId: string) {
+  const iter = await kv.list<Item>({ prefix: ["items_by_user", userId] });
+  const items = [];
+  for await (const res of iter) items.push(res.value);
+  return items;
+}
+
 interface InitComment {
   userId: string;
   itemId: string;

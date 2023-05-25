@@ -13,7 +13,9 @@ export default function UserPostedAt(
         crossOrigin="anonymous"
         class="h-6 w-auto rounded-full aspect-square inline-block mr-1 align-bottom"
       />
-      {props.user.login}{" "}
+      <a class="hover:underline" href={`/user/${props.user.login}`}>
+        {props.user.login}
+      </a>{" "}
       {props.user.isSubscribed && (
         <span title="Deno Hunt premium user">🦕{" "}</span>
       )}
