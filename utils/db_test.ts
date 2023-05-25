@@ -5,6 +5,8 @@ import {
   getUserByLogin,
   getUserBySessionId,
   getUserByStripeCustomerId,
+  getVisitsPerDay,
+  incrementVisitsPerDay,
   kv,
   setUserSession,
   setUserSubscription,
@@ -85,4 +87,16 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserByLogin(user.login), null);
   assertEquals(await getUserBySessionId(user.sessionId), null);
   assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), null);
+});
+
+Deno.test("[db] visit", async () => {
+  const date = new Date("2023-01-01");
+  const visitsKey = [
+    "visits",
+    `${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}`,
+  ];
+  await incrementVisitsPerDay(date);
+  assertEquals((await getVisitsPerDay(date))!.valueOf(), 1n);
+  await kv.delete(visitsKey);
+  assertEquals(await getVisitsPerDay(date), null);
 });

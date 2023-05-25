@@ -10,6 +10,7 @@ import {
   getUserBySessionId,
   getUsersByIds,
   getVotedItemIdsByUser,
+  incrementVisitsPerDay,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -47,6 +48,7 @@ export const handler: Handlers<HomePageData, State> = {
         votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
       }
     }
+    await incrementVisitsPerDay(new Date());
     /** @todo Optimise */
     const areVoted = items.map((item) => votedItemIds.includes(item.id));
     return ctx.render({ ...ctx.state, items, cursor, users, areVoted });
