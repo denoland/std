@@ -52,6 +52,7 @@ export type Zip<M extends Readonly2DArray> =
     ? UnknownLengthTuple<Transpose<M, ShortestArray<Writeable2DArray<M>>>>
     : Transpose<M, ShortestArray<Writeable2DArray<M>>>;
 
+// Note: inspired by https://github.com/type-challenges/type-challenges/issues/25297
 /**
  * Transpose the array.
  * If the array lengths vary, it will be aligned to the shortest array.
@@ -65,14 +66,16 @@ type Transpose<Target extends Readonly2DArray, ShortestArray> = {
   };
 };
 
-/** find the shortest Array */
+/** find the shortest Array. */
 type ShortestArray<T extends unknown[][]> = T extends [infer A] ? A
   : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
     ? Shorter<First, ShortestArray<Rest>> extends true ? First
     : ShortestArray<Rest>
   : [];
 
-/** whether the length of A is less than the length of B */
+/** whether the length of A is less than the length of B. */
+// Note: inspired by https://github.com/type-challenges/type-challenges/issues/14098
+// Recurse while decreasing the length of the array by 1, and the one that reaches 0 first is the shortest.
 type Shorter<A extends unknown[], B extends unknown[]> = A extends [] ? true
   : B extends [] ? false
   : A extends [unknown, ...infer Ra]
@@ -126,6 +129,7 @@ type IsNotTuple<T> = T extends readonly unknown[]
 type Readonly2DArray = ReadonlyArray<ReadonlyArray<unknown>>;
 
 /** Make the readonly 2D array type mutable. */
+// Note: inspired by https://github.com/microsoft/TypeScript/issues/35660
 type Writeable2DArray<T> = {
   -readonly [P in keyof T]: Writable<T[P]>;
 };
