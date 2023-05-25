@@ -223,8 +223,11 @@ class Dumper {
       const l = this.output[i];
       // we keep empty entry for array of objects
       if (l[0] === "[" && l[1] !== "[") {
-        // empty object
-        if (this.output[i + 1] === "") {
+        // non-empty object with only subobjects as properties
+        if (
+          this.output[i + 1] === "" &&
+          this.output[i + 2]?.slice(0, l.length) === l.slice(0, -1) + "."
+        ) {
           i += 1;
           continue;
         }
