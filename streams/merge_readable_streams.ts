@@ -13,18 +13,28 @@ export function mergeReadableStreams<T>(
   const resolvePromises = streams.map(() => deferred<void>());
   return new ReadableStream<T>({
     start(controller) {
-      Promise.all(resolvePromises).then(() => {
-        controller.close();
-      });
+      let mustClose = false;
+      Promise.all(resolvePromises)
+        .then(() => {
+          controller.close();
+        })
+        .catch((error) => {
+          mustClose = true;
+          controller.error(error);
+        });
       for (const [key, stream] of Object.entries(streams)) {
         (async () => {
           try {
             for await (const data of stream) {
+              if (mustClose) {
+                break;
+              }
               controller.enqueue(data);
             }
             resolvePromises[+key].resolve();
           } catch (error) {
-            controller.error(error);
+            mustClose = true;
+            resolvePromises[+key].reject(error);
           }
         })();
       }
