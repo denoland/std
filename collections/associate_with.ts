@@ -22,7 +22,7 @@
  * ```
  */
 export function associateWith<T>(
-  array: readonly string[],
+  array: Iterable<string>,
   selector: (key: string) => T,
 ): Record<string, T> {
   const ret: Record<string, T> = {};

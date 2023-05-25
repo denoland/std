@@ -20,16 +20,18 @@
  * ]);
  * ```
  */
-export function permutations<T>(inputArray: readonly T[]): T[][] {
+export function permutations<T>(inputArray: Iterable<T>): T[][] {
   const ret: T[][] = [];
-  const k = inputArray.length;
+
+  // Heap's Algorithm
+  const array = [...inputArray];
+
+  const k = array.length;
 
   if (k === 0) {
     return ret;
   }
 
-  // Heap's Algorithm
-  const array = [...inputArray];
   const c = new Array<number>(k).fill(0);
 
   ret.push([...array]);
