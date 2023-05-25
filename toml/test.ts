@@ -735,3 +735,14 @@ Deno.test({
     assertEquals(src, roundTrip);
   },
 });
+
+Deno.test({
+  name: "[TOML] stringify special keys in inline object",
+  fn() {
+    const src = {
+      "a": [{ "/": "b" }, "c"],
+    };
+    const roundTrip = parse(stringify(src));
+    assertEquals(src, roundTrip);
+  },
+});

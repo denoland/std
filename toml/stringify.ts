@@ -147,8 +147,9 @@ class Dumper {
         throw new Error("should never reach");
       }
       const str = Object.keys(value).map((key) => {
-        // deno-lint-ignore no-explicit-any
-        return `${key} = ${this.#printAsInlineValue((value as any)[key])}`;
+        return `${joinKeys([key])} = ${
+          // deno-lint-ignore no-explicit-any
+          this.#printAsInlineValue((value as any)[key])}`;
       }).join(",");
       return `{${str}}`;
     }
