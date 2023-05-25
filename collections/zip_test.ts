@@ -202,5 +202,58 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof zipped, []>>;
       assertEquals(zipped, []);
     }
+    {
+      // array (number[] and string[])
+      const zipped = zip([0, 1] as number[], ["a", "b"] as string[]);
+      type _ = AssertTrue<IsExact<typeof zipped, [number, string][]>>;
+    }
+    {
+      // array (readonly number[] and readonly string[])
+      const zipped = zip(
+        [0, 1] as readonly number[],
+        ["a", "b"] as readonly string[],
+      );
+      type _ = AssertTrue<IsExact<typeof zipped, [number, string][]>>;
+    }
+    {
+      // array + tuple ([0, 1, 2] and string[])
+      const zipped = zip(
+        [0, 1],
+        ["a", "b"] as string[],
+      );
+      // Note: In this case the length of the second argument cannot be inferred from the type.
+      // Possible return types are `[[0, string], [1, string]]`, `[[0, string]]`, and [].
+      type _ = AssertTrue<
+        IsExact<
+          typeof zipped,
+          | [[0, string], [1, string]]
+          | [[0, string]]
+          | []
+        >
+      >;
+    }
+    {
+      // array + tuple ([0, 1, 2] and readonly string[])
+      const zipped = zip([0, 1], ["a", "b"] as readonly string[]);
+      // Note: In this case the length of the second argument cannot be inferred from the type.
+      // Possible return types are `[[0, string], [1, string]]`, `[[0, string]]`, and [].
+      type _ = AssertTrue<
+        IsExact<
+          typeof zipped,
+          | [[0, string], [1, string]]
+          | [[0, string]]
+          | []
+        >
+      >;
+    }
+    {
+      // invalid parameter
+      // @ts-expect-error: for test
+      const _0 = zip("invalid");
+      // @ts-expect-error: for test
+      const _1 = zip(99999);
+      // @ts-expect-error: for test
+      const _2 = zip({});
+    }
   },
 });

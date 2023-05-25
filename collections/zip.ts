@@ -28,7 +28,7 @@
 
 import { minOf } from "./min_of.ts";
 
-export function zip<const T extends ReadonlyArray<ReadonlyArray<unknown>>>(
+export function zip<const T extends Readonly2DArray>(
   ...arrays: T
 ): Zip<T> {
   const minLength = minOf(arrays, (it) => it.length) ?? 0;
@@ -43,17 +43,34 @@ export function zip<const T extends ReadonlyArray<ReadonlyArray<unknown>>>(
   return ret as Zip<T>;
 }
 
-export type Zip<
-  M extends ReadonlyArray<ReadonlyArray<unknown>>,
-  R = ShortestArray<DeepWriteable<M>>,
-> = DeepWriteable<
-  { [X in keyof R]: { [Y in keyof M]: X extends keyof M[Y] ? M[Y][X] : never } }
->;
+/**
+ * zip the array.
+ * If all the arguments consist of tuples, the length can be determined, so a tuple is returned.
+ * If the length is undetermined, adjust for an appropriate return type.
+ */
+export type Zip<M extends Readonly2DArray> =
+  IncludesNonTuple<Writeable2DArray<M>> extends true
+    ? UnknownLengthTuple<Transpose<M, ShortestArray<Writeable2DArray<M>>>>
+    : Transpose<M, ShortestArray<Writeable2DArray<M>>>;
+
+/**
+ * Transpose the array.
+ * If the array lengths vary, it will be aligned to the shortest array.
+ */
+type Transpose<Target extends Readonly2DArray, ShortestArray> = {
+  -readonly [X in keyof ShortestArray]: {
+    -readonly [Y in keyof Target]: IsNotTuple<Target[Y]> extends true
+      ? Target[Y][number]
+      : X extends keyof Target[Y] ? Target[Y][X]
+      : never;
+  };
+};
 
 /** find the shortest Array */
 type ShortestArray<T extends unknown[][]> = T extends [infer A] ? A
-  : T extends [infer A extends unknown[], ...infer B extends unknown[][]]
-    ? Shorter<A, ShortestArray<B>> extends true ? A : ShortestArray<B>
+  : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
+    ? Shorter<First, ShortestArray<Rest>> extends true ? First
+    : ShortestArray<Rest>
   : [];
 
 /** whether the length of A is less than the length of B */
@@ -63,4 +80,56 @@ type Shorter<A extends unknown[], B extends unknown[]> = A extends [] ? true
     ? B extends [unknown, ...infer Rb] ? Shorter<Ra, Rb> : never
   : never;
 
-type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
+/**
+ * Determines whether everything consists of tuples or includes non-tuples (arrays).
+ *
+ * ```ts, ignore
+ * type Tuple_ = [0, 1, 2];
+ * type Array_ = string[];
+ *
+ * IncludesNonTuple<[Tuple_, Tuple_, Tuple_]>; //=> false
+ * IncludesNonTuple<[Tuple_, Tuple_, Array_]>; //=> true
+ * IncludesNonTuple<[Tuple_, Array_, Tuple_]>; //=> true
+ * ```
+ */
+type IncludesNonTuple<T extends unknown[][]> = T extends [] ? false
+  : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
+    ? IsNotTuple<First> extends true ? true
+    : IncludesNonTuple<Rest>
+  : never;
+
+/**
+ * Creates a union type consisting of tuples of length shorter than the given tuple.
+ *
+ * ```ts, ignore
+ * UnknownLengthTuple<[]>;        //=> []
+ * UnknownLengthTuple<[0]>;       //=> [] | [0]
+ * UnknownLengthTuple<[0, 1]>;    //=> [] | [0] | [0, 1]
+ * UnknownLengthTuple<[0, 1, 2]>; //=> [] | [0] | [0, 1] | [0, 1, 2]
+ * ```
+ */
+type UnknownLengthTuple<T> = IsNotTuple<T> extends true ? T
+  : T extends [...infer Rest, infer _Last] ? T | UnknownLengthTuple<Rest>
+  : [];
+
+/**
+ * Determines if the given argument is a tuple or something else.
+ *
+ * ```ts, ignore
+ * IsNotTuple<[0, 1, 2]>; //=> false
+ * IsNotTuple<number[]>; //=> true
+ * ```
+ */
+type IsNotTuple<T> = T extends readonly unknown[]
+  ? number extends T["length"] ? true : false
+  : false;
+
+type Readonly2DArray = ReadonlyArray<ReadonlyArray<unknown>>;
+
+/** Make the readonly 2D array type mutable. */
+type Writeable2DArray<T> = {
+  -readonly [P in keyof T]: Writable<T[P]>;
+};
+type Writable<T> = {
+  -readonly [P in keyof T]: T[P];
+};
