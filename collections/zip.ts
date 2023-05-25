@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { minOf } from "./min_of.ts";
+
 /**
  * Builds N-tuples of elements from the given N arrays with matching indices,
  * stopping when the smallest array's end is reached.
@@ -25,9 +27,6 @@
  * );
  * ```
  */
-
-import { minOf } from "./min_of.ts";
-
 export function zip<const T extends Readonly2DArray>(
   ...arrays: T
 ): Zip<T> {
