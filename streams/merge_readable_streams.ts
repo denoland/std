@@ -33,7 +33,6 @@ export function mergeReadableStreams<T>(
             }
             resolvePromises[+key].resolve();
           } catch (error) {
-            mustClose = true;
             resolvePromises[+key].reject(error);
           }
         })();
