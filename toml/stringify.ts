@@ -8,7 +8,9 @@ function joinKeys(keys: string[]): string {
   // This allows for grouping similar properties together:
   return keys
     .map((str: string): string => {
-      return str.match(/[^A-Za-z0-9_-]/) ? JSON.stringify(str) : str;
+      return str.length === 0 || str.match(/[^A-Za-z0-9_-]/)
+        ? JSON.stringify(str)
+        : str;
     })
     .join(".");
 }

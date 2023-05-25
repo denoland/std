@@ -711,3 +711,15 @@ aaaaa = 1
     assertEquals(actual, expected);
   },
 });
+
+Deno.test({
+  name: "[TOML] stringify empty key",
+  fn() {
+    const src = {
+      "": "a",
+      "b": { "": "c" },
+    };
+    const roundTrip = parse(stringify(src));
+    assertEquals(src, roundTrip);
+  },
+});
