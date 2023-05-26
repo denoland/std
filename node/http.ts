@@ -640,7 +640,7 @@ class ServerImpl extends EventEmitter {
       return;
     }
     this.#ac = ac;
-    DenoServe(
+    const s = DenoServe(
       {
         handler: handler as Deno.ServeHandler,
         ...this.#addr,
@@ -651,7 +651,14 @@ class ServerImpl extends EventEmitter {
           this.emit("listening");
         },
       },
-    ).then(() => this.#servePromise!.resolve());
+    );
+    
+    // Compatibility with Deno <v1.34
+    if (typeof s.then === "function") {
+      s.then(() => this.#servePromise!.resolve());
+    } else {
+      s.finished.then(() => this.#servePromise!.resolve());
+    }
   }
 
   setTimeout() {
