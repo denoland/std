@@ -58,17 +58,9 @@ Deno.test({
       rdev: null,
       blksize: null,
       blocks: null,
-      // @ts-ignore This ignore should be removed, but when cutting a 0.189.0
-      // release the available Deno canary still doesn't have these fields
       isBlockDevice: null,
-      // @ts-ignore This ignore should be removed, but when cutting a 0.189.0
-      // release the available Deno canary still doesn't have these fields
       isCharDevice: null,
-      // @ts-ignore This ignore should be removed, but when cutting a 0.189.0
-      // release the available Deno canary still doesn't have these fields
       isFifo: null,
-      // @ts-ignore This ignore should be removed, but when cutting a 0.189.0
-      // release the available Deno canary still doesn't have these fields
       isSocket: null,
     };
     const actual = await calculate(fixture);
