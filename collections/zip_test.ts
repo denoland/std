@@ -247,6 +247,20 @@ Deno.test({
       >;
     }
     {
+      const target: readonly (readonly [number, string])[] = [
+        [0, "a"],
+        [2, "b"],
+        [3, "c"],
+      ];
+      const zipped = zip(...target);
+      type _ = AssertTrue<IsExact<typeof zipped, [number[], string[]]>>;
+    }
+    {
+      const target: readonly (readonly number[])[] = [[0, 1], [2, 3]];
+      const zipped = zip(...target);
+      type _ = AssertTrue<IsExact<typeof zipped, number[][]>>;
+    }
+    {
       // invalid parameter
       // @ts-expect-error: for test
       const _0 = zip("invalid");

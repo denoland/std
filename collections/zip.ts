@@ -67,7 +67,9 @@ type Transpose<Target extends Readonly2DArray, ShortestArray> = {
 };
 
 /** find the shortest Array. */
-type ShortestArray<T extends unknown[][]> = T extends [infer A] ? A
+type ShortestArray<T extends unknown[][]> = IsNotTuple<T> extends true
+  ? T[number]
+  : T extends [infer A] ? A
   : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
     ? Shorter<First, ShortestArray<Rest>> extends true ? First
     : ShortestArray<Rest>
@@ -94,7 +96,9 @@ type Shorter<A extends unknown[], B extends unknown[]> = A extends [] ? true
  * IncludesNonTuple<[Tuple_, Array_, Tuple_]>; //=> true
  * ```
  */
-type IncludesNonTuple<T extends unknown[][]> = T extends [] ? false
+type IncludesNonTuple<T extends unknown[][]> = IsNotTuple<T> extends true
+  ? IsNotTuple<T[number]>
+  : T extends [] ? false
   : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
     ? IsNotTuple<First> extends true ? true
     : IncludesNonTuple<Rest>
