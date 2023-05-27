@@ -1050,7 +1050,7 @@ export class UserAgent {
     return this.#os;
   }
 
-  /** A read only version of */
+  /** A read only version of the user agent string related to the instance. */
   get ua(): string {
     return this.#ua;
   }
