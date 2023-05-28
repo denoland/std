@@ -108,6 +108,10 @@ export default function Layout(props: LayoutProps) {
 
   const footerNavItems = [
     {
+      href: "/stats",
+      inner: "Stats",
+    },
+    {
       href: "/blog",
       inner: "Blog",
     },
