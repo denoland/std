@@ -31,7 +31,7 @@ export const handler: Handlers<PricingPageData, State> = {
       ? await getUserBySessionId(ctx.state.sessionId)
       : null;
 
-    return await ctx.render({ ...ctx.state, products, user });
+    return ctx.render({ ...ctx.state, products, user });
   },
 };
 

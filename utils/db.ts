@@ -406,6 +406,22 @@ export async function getVisitsPerDay(date: Date) {
   return res.value;
 }
 
+/** @todo Optimise */
+export async function getVotedItemsBySessionUser(
+  items: Item[],
+  sessionId?: string,
+) {
+  let votedItemIds: string[] = [];
+
+  if (sessionId) {
+    const sessionUser = await getUserBySessionId(sessionId!);
+    if (sessionUser) {
+      votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
+    }
+  }
+  return items.map((item) => votedItemIds.includes(item.id));
+}
+
 export async function getAllVisitsPerDay(options?: Deno.KvListOptions) {
   const iter = await kv.list<bigint>({ prefix: ["visits"] }, options);
   const visits = [];
@@ -415,4 +431,8 @@ export async function getAllVisitsPerDay(options?: Deno.KvListOptions) {
     dates.push(String(res.key[1]));
   }
   return { visits, dates };
+}
+
+export function compareScore(a: Item, b: Item) {
+  return Number(b.score) - Number(a.score);
 }
