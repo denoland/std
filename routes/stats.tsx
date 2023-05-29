@@ -62,7 +62,7 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
   return (
     <>
       <Head title="Stats" href={props.url.href} />
-      <Layout session={props.data.sessionId}>
+      <Layout isSignedIn={props.data.isSignedIn}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
           <div class="p-4 mx-auto max-w-screen-md">
             <LineChart

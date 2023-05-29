@@ -82,7 +82,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 
 interface LayoutProps {
   children: ComponentChildren;
-  session?: string;
+  isSignedIn?: boolean;
 }
 
 export default function Layout(props: LayoutProps) {
@@ -91,14 +91,14 @@ export default function Layout(props: LayoutProps) {
       href: "/pricing",
       inner: "Pricing",
     },
-    props.session
+    props.isSignedIn
       ? {
         href: "/account",
         inner: "Account",
       }
       : {
-        href: "/login",
-        inner: "Login",
+        href: "/signin",
+        inner: "Sign in",
       },
     {
       href: "/submit",

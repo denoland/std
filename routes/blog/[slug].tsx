@@ -30,7 +30,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
       <Head title={post.title} description={post.summary} href={props.url.href}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
       </Head>
-      <Layout session={props.data.sessionId}>
+      <Layout isSignedIn={props.data.isSignedIn}>
         <main class={`${SITE_WIDTH_STYLES} px-4 pt-16 flex-1`}>
           <h1 class="text-5xl font-bold">{post.title}</h1>
           <time class="text-gray-500">
