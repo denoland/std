@@ -15,7 +15,7 @@ export async function handler(
 ) {
   const redirectResponse = redirect("/login");
 
-  if (!ctx.state.isSignedIn) return redirectResponse;
+  if (!ctx.state.sessionId) return redirectResponse;
   const user = await getUserBySessionId(ctx.state.sessionId);
   if (!user) return redirectResponse;
   ctx.state.user = user;

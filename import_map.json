@@ -15,7 +15,7 @@
     "std/": "https://deno.land/std@0.188.0/",
     "stripe": "https://esm.sh/stripe@12.6.0",
     "feed": "https://esm.sh/feed@4.2.2",
-    "deno_kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.1.1-beta/mod.ts",
+    "oauth2_client/": "https://deno.land/x/oauth2_client@v1.0.0/",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.2.1/"
   }
 }

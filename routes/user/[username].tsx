@@ -33,7 +33,6 @@ export const handler: Handlers<UserData, State> = {
 
     const items = await getItemsByUserId(user.id);
     items.sort(compareScore);
-    /** @todo (iuioiua): remove the need for `ctx.state.sessionId` */
     const areVoted = await getVotedItemsBySessionUser(
       items,
       ctx.state.sessionId,
@@ -81,7 +80,7 @@ export default function UserPage(props: PageProps<UserData>) {
   return (
     <>
       <Head title={props.data.user.login} href={props.url.href} />
-      <Layout isSignedIn={props.data.isSignedIn}>
+      <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
           <Row
             title={props.data.user.login}

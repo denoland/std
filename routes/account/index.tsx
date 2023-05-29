@@ -40,7 +40,7 @@ export default function AccountPage(props: PageProps<AccountState>) {
   return (
     <>
       <Head title="Account" href={props.url.href} />
-      <Layout isSignedIn={props.data.isSignedIn}>
+      <Layout session={props.data.sessionId}>
         <div class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
           <img
             src={props.data.user?.avatarUrl}
@@ -66,10 +66,10 @@ export default function AccountPage(props: PageProps<AccountState>) {
             </Row>
           </ul>
           <a
-            href="/signout"
+            href="/logout"
             class={`${BUTTON_STYLES} block text-center mt-8`}
           >
-            Sign out
+            Logout
           </a>
         </div>
       </Layout>

@@ -7,12 +7,7 @@ import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { formatAmountForDisplay, stripe } from "@/utils/payments.ts";
 import Stripe from "stripe";
 import { ComponentChild } from "preact";
-import type { User } from "@/utils/db.ts";
-import {
-  getUser,
-  isSignedIn,
-} from "https://deno.land/x/deno_kv_oauth@v0.1.1-beta/mod.ts";
-import { provider } from "../utils/provider.ts";
+import { getUserBySessionId, type User } from "@/utils/db.ts";
 
 interface PricingPageData extends State {
   products: Stripe.Product[];
@@ -25,14 +20,16 @@ function comparePrices(productA: Stripe.Product, productB: Stripe.Product) {
 }
 
 export const handler: Handlers<PricingPageData, State> = {
-  async GET(req, ctx) {
+  async GET(_req, ctx) {
     const { data } = await stripe.products.list({
       expand: ["data.default_price"],
       active: true,
     });
     const products = data.sort(comparePrices);
 
-    const user = isSignedIn(req) ? await getUser(req, provider) : null;
+    const user = ctx.state.sessionId
+      ? await getUserBySessionId(ctx.state.sessionId)
+      : null;
 
     return ctx.render({ ...ctx.state, products, user });
   },
@@ -77,7 +74,7 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
   return (
     <>
       <Head title="Pricing" href={props.url.href} />
-      <Layout isSignedIn={props.data.isSignedIn}>
+      <Layout session={props.data.sessionId}>
         <div
           class={`mx-auto max-w-4xl w-full flex-1 flex flex-col justify-center px-8`}
         >

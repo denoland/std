@@ -30,8 +30,6 @@ export const handler: Handlers<HomePageData, State> = {
     items.sort(compareScore);
     const users = await getUsersByIds(items.map((item) => item.userId));
     await incrementVisitsPerDay(new Date());
-
-    /** @todo (iuioiua): remove the need for `ctx.state.sessionId` */
     const areVoted = await getVotedItemsBySessionUser(
       items,
       ctx.state.sessionId,
@@ -46,7 +44,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
       <Head href={props.url.href} />
-      <Layout isSignedIn={props.data.isSignedIn}>
+      <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
           {props.data.items.map((item, index) => (
             <ItemSummary
