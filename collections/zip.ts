@@ -57,32 +57,35 @@ export type Zip<M extends Readonly2DArray> =
  * Transpose the array.
  * If the array lengths vary, it will be aligned to the shortest array.
  */
-type Transpose<Target extends Readonly2DArray, ShortestArray> = {
-  -readonly [X in keyof ShortestArray]: {
-    -readonly [Y in keyof Target]: IsNotTuple<Target[Y]> extends true
-      ? Target[Y][number]
-      : X extends keyof Target[Y] ? Target[Y][X]
-      : never;
-  };
-};
+type Transpose<Target extends Readonly2DArray, ShortestArray> = Target extends
+  Target ? {
+    -readonly [X in keyof ShortestArray]: {
+      -readonly [Y in keyof Target]: IsNotTuple<Target[Y]> extends true
+        ? Target[Y][number]
+        : X extends IndexOf<Target[Y]> ? Target[Y][X]
+        : never;
+    };
+  }
+  : never;
 
 /** find the shortest Array. */
 type ShortestArray<T extends unknown[][]> = IsNotTuple<T> extends true
   ? T[number]
   : T extends [infer A] ? A
   : T extends [infer First extends unknown[], ...infer Rest extends unknown[][]]
-    ? Shorter<First, ShortestArray<Rest>> extends true ? First
-    : ShortestArray<Rest>
+    ? Shorter<First, ShortestArray<Rest>> extends false ? ShortestArray<Rest>
+    : First
   : [];
 
 /** whether the length of A is less than the length of B. */
 // Note: inspired by https://github.com/type-challenges/type-challenges/issues/14098
 // Recurse while decreasing the length of the array by 1, and the one that reaches 0 first is the shortest.
-type Shorter<A extends unknown[], B extends unknown[]> = A extends [] ? true
-  : B extends [] ? false
-  : A extends [unknown, ...infer Ra]
-    ? B extends [unknown, ...infer Rb] ? Shorter<Ra, Rb> : never
-  : never;
+type Shorter<A extends unknown[], B extends unknown[]> = IsNotTuple<A> extends
+  true ? false : IsNotTuple<B> extends true ? true : A extends [] ? true
+: B extends [] ? false
+: A extends [unknown, ...infer Ra]
+  ? B extends [unknown, ...infer Rb] ? Shorter<Ra, Rb> : never
+: never;
 
 /**
  * Determines whether everything consists of tuples or includes non-tuples (arrays).
@@ -117,6 +120,20 @@ type IncludesNonTuple<T extends unknown[][]> = IsNotTuple<T> extends true
 type UnknownLengthTuple<T> = IsNotTuple<T> extends true ? T
   : T extends [...infer Rest, infer _Last] ? T | UnknownLengthTuple<Rest>
   : [];
+
+/**
+ * Like keyof, but only retrieves array or tuple indices.
+ *
+ * ```ts, ignore
+ * IndexOf<number[]>;                    //=> number
+ * IndexOf<[0, 1, 2]>;                   //=> number | "0" | "1" | "2"
+ * IndexOf<[0, 1, 2] | [0, 1, 2, 3, 4]>; //=> number | "0" | "1" | "2" | "3" | "4"
+ * ```
+ */
+type IndexOf<T> = T extends readonly unknown[]
+  ? IsNotTuple<T> extends true ? number
+  : { [K in keyof T]: K }[number] | number
+  : never;
 
 /**
  * Determines if the given argument is a tuple or something else.

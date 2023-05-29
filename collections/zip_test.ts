@@ -183,21 +183,25 @@ Deno.test({
       assertEquals(zipped, [[0, 1], ["a", "b"]]);
     }
     {
+      // align length to shortest array
       const zipped = zip([0, "a"], [1, "b", "x"]);
       type _ = AssertTrue<IsExact<typeof zipped, [[0, 1], ["a", "b"]]>>;
       assertEquals(zipped, [[0, 1], ["a", "b"]]);
     }
     {
+      // align length to shortest array
       const zipped = zip([0, "a"], [1, "b", "x"], [2]);
       type _ = AssertTrue<IsExact<typeof zipped, [[0, 1, 2]]>>;
       assertEquals(zipped, [[0, 1, 2]]);
     }
     {
+      // empty tuple
       const zipped = zip([], [], []);
       type _ = AssertTrue<IsExact<typeof zipped, []>>;
       assertEquals(zipped, []);
     }
     {
+      // empty
       const zipped = zip();
       type _ = AssertTrue<IsExact<typeof zipped, []>>;
       assertEquals(zipped, []);
@@ -217,23 +221,6 @@ Deno.test({
     }
     {
       // array + tuple ([0, 1, 2] and string[])
-      const zipped = zip(
-        [0, 1],
-        ["a", "b"] as string[],
-      );
-      // Note: In this case the length of the second argument cannot be inferred from the type.
-      // Possible return types are `[[0, string], [1, string]]`, `[[0, string]]`, and [].
-      type _ = AssertTrue<
-        IsExact<
-          typeof zipped,
-          | [[0, string], [1, string]]
-          | [[0, string]]
-          | []
-        >
-      >;
-    }
-    {
-      // array + tuple ([0, 1, 2] and readonly string[])
       const zipped = zip([0, 1], ["a", "b"] as readonly string[]);
       // Note: In this case the length of the second argument cannot be inferred from the type.
       // Possible return types are `[[0, string], [1, string]]`, `[[0, string]]`, and [].
@@ -247,6 +234,21 @@ Deno.test({
       >;
     }
     {
+      // array + tuple (readonly number[] and ["a", "b"])
+      const zipped = zip([0, 1] as readonly number[], ["a", "b"]);
+      // Note: In this case the length of the second argument cannot be inferred from the type.
+      // Possible return types are `[[0, string], [1, string]]`, `[[0, string]]`, and [].
+      type _ = AssertTrue<
+        IsExact<
+          typeof zipped,
+          | [[number, "a"], [number, "b"]]
+          | [[number, "a"]]
+          | []
+        >
+      >;
+    }
+    {
+      // [number, string][] -> [number[], string[]]
       const target: readonly (readonly [number, string])[] = [
         [0, "a"],
         [2, "b"],
@@ -256,9 +258,73 @@ Deno.test({
       type _ = AssertTrue<IsExact<typeof zipped, [number[], string[]]>>;
     }
     {
+      // number[][] -> number[][]
       const target: readonly (readonly number[])[] = [[0, 1], [2, 3]];
       const zipped = zip(...target);
       type _ = AssertTrue<IsExact<typeof zipped, number[][]>>;
+    }
+    {
+      // The length cannot be determined because it is a union type
+      const target: [
+        [0, 1] | [10, 11, 12, 13, 14],
+        ["a", "b", "c"] | ["m", "n", "o", "p"],
+      ] = [[0, 1], ["a", "b", "c"]];
+      const zipped = zip(...target);
+
+      // In this case, the length of the return value can be 2, 3 or 4.
+      // However, it is difficult to express it perfectly from type information.
+      // For return values, we try to set the type where possible.
+      // The types below are not entirely ideal, but should cover most use cases.
+      type _1 = AssertTrue<IsExact<typeof zipped[0], [0 | 10, "a" | "m"]>>;
+      type _2 = AssertTrue<IsExact<typeof zipped[1], [1 | 11, "b" | "n"]>>;
+      type _3 = AssertTrue<
+        IsExact<typeof zipped[2], [12 | undefined, "c" | "o"] | undefined>
+      >;
+      type _4 = AssertTrue<
+        IsExact<typeof zipped[3], [13 | undefined, "p" | undefined] | undefined>
+      >;
+      type _5 = AssertTrue<
+        IsExact<typeof zipped[4], [14 | undefined, never] | undefined>
+      >;
+      // @ts-expect-error: length less than 5
+      zipped[5];
+    }
+    {
+      // The length cannot be determined because it is a union type
+      const target: [
+        boolean[],
+        [0, 1] | [10, 11, 12, 13, 14],
+        ["a", "b", "c"] | ["m", "n", "o", "p"],
+      ] = [[], [0, 1], ["a", "b", "c"]];
+      const zipped = zip(...target);
+
+      // In this case, the length of the return value can be 2, 3 or 4.
+      // However, it is difficult to express it perfectly from type information.
+      // For return values, we try to set the type where possible.
+      // The types below are not entirely ideal, but should cover most use cases.
+      type _1 = AssertTrue<
+        IsExact<typeof zipped[0], [boolean, 0 | 10, "a" | "m"] | undefined>
+      >;
+      type _2 = AssertTrue<
+        IsExact<typeof zipped[1], [boolean, 1 | 11, "b" | "n"] | undefined>
+      >;
+      type _3 = AssertTrue<
+        IsExact<
+          typeof zipped[2],
+          [boolean, 12 | undefined, "c" | "o"] | undefined
+        >
+      >;
+      type _4 = AssertTrue<
+        IsExact<
+          typeof zipped[3],
+          [boolean, 13 | undefined, "p" | undefined] | undefined
+        >
+      >;
+      type _5 = AssertTrue<
+        IsExact<typeof zipped[4], [boolean, 14 | undefined, never] | undefined>
+      >;
+      // @ts-expect-error: length less than 5
+      zipped[5];
     }
     {
       // invalid parameter
