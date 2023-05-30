@@ -16,7 +16,7 @@
  * assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
  * ```
  */
-export function union<T>(...arrays: (readonly T[])[]): T[] {
+export function union<T>(...arrays: Iterable<T>[]): T[] {
   const set = new Set<T>();
 
   for (const array of arrays) {

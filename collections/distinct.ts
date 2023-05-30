@@ -16,7 +16,7 @@
  * assertEquals(distinctNumbers, [3, 2, 5]);
  * ```
  */
-export function distinct<T>(array: readonly T[]): T[] {
+export function distinct<T>(array: Iterable<T>): T[] {
   const set = new Set(array);
 
   return Array.from(set);

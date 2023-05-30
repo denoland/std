@@ -23,7 +23,7 @@
  * ```
  */
 export function mapNotNullish<T, O>(
-  array: readonly T[],
+  array: Iterable<T>,
   transformer: (el: T) => O,
 ): NonNullable<O>[] {
   const ret: NonNullable<O>[] = [];
