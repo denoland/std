@@ -8,7 +8,9 @@ function joinKeys(keys: string[]): string {
   // This allows for grouping similar properties together:
   return keys
     .map((str: string): string => {
-      return str.match(/[^A-Za-z0-9_-]/) ? JSON.stringify(str) : str;
+      return str.length === 0 || str.match(/[^A-Za-z0-9_-]/)
+        ? JSON.stringify(str)
+        : str;
     })
     .join(".");
 }
@@ -145,8 +147,9 @@ class Dumper {
         throw new Error("should never reach");
       }
       const str = Object.keys(value).map((key) => {
-        // deno-lint-ignore no-explicit-any
-        return `${key} = ${this.#printAsInlineValue((value as any)[key])}`;
+        return `${joinKeys([key])} = ${
+          // deno-lint-ignore no-explicit-any
+          this.#printAsInlineValue((value as any)[key])}`;
       }).join(",");
       return `{${str}}`;
     }
@@ -221,8 +224,11 @@ class Dumper {
       const l = this.output[i];
       // we keep empty entry for array of objects
       if (l[0] === "[" && l[1] !== "[") {
-        // empty object
-        if (this.output[i + 1] === "") {
+        // non-empty object with only subobjects as properties
+        if (
+          this.output[i + 1] === "" &&
+          this.output[i + 2]?.slice(0, l.length) === l.slice(0, -1) + "."
+        ) {
           i += 1;
           continue;
         }
