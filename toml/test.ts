@@ -719,8 +719,13 @@ Deno.test({
       "": "a",
       "b": { "": "c" },
     };
-    const roundTrip = parse(stringify(src));
-    assertEquals(src, roundTrip);
+    const actual = stringify(src);
+    const expected = `"" = "a"
+
+[b]
+"" = "c"
+`;
+    assertEquals(actual, expected);
   },
 });
 
@@ -731,8 +736,13 @@ Deno.test({
       "a": {},
       "b": { "c": {} },
     };
-    const roundTrip = parse(stringify(src));
-    assertEquals(src, roundTrip);
+    const actual = stringify(src);
+    const expected = `
+[a]
+
+[b.c]
+`;
+    assertEquals(actual, expected);
   },
 });
 
@@ -742,7 +752,8 @@ Deno.test({
     const src = {
       "a": [{ "/": "b" }, "c"],
     };
-    const roundTrip = parse(stringify(src));
-    assertEquals(src, roundTrip);
+    const actual = stringify(src);
+    const expected = 'a = [{"/" = "b"},"c"]\n';
+    assertEquals(actual, expected);
   },
 });
