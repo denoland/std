@@ -23,7 +23,6 @@
 export function permutations<T>(inputArray: Iterable<T>): T[][] {
   const ret: T[][] = [];
 
-  // Heap's Algorithm
   const array = [...inputArray];
 
   const k = array.length;
@@ -32,6 +31,7 @@ export function permutations<T>(inputArray: Iterable<T>): T[][] {
     return ret;
   }
 
+  // Heap's Algorithm
   const c = new Array<number>(k).fill(0);
 
   ret.push([...array]);
