@@ -8,7 +8,7 @@ export async function migrateKv() {
     promises.push(kv.delete(res.key));
     promises.push(
       kv.set(
-        ["items", res.value.createdAt.getTime(), res.key.at(-1)!],
+        ["items_by_time", res.value.createdAt.getTime(), res.key.at(-1)!],
         res.value,
       ),
     );
