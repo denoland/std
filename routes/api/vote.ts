@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
-import { createVote, deleteVote } from "@/utils/db.ts";
+import { createVote, deleteVote, getItemById } from "@/utils/db.ts";
 import { getUserBySessionId } from "@/utils/db.ts";
 
 async function sharedHandler(
@@ -18,10 +18,16 @@ async function sharedHandler(
     return new Response(null, { status: 400 });
   }
 
-  const user = await getUserBySessionId(ctx.state.sessionId);
+  const [item, user] = await Promise.all([
+    getItemById(itemId),
+    getUserBySessionId(ctx.state.sessionId),
+  ]);
 
-  if (!user) return new Response(null, { status: 400 });
-  const vote = { userId: user.id, itemId };
+  if (item === null || user === null) {
+    return new Response(null, { status: 404 });
+  }
+
+  const vote = { item, user };
   let status;
   switch (req.method) {
     case "DELETE":

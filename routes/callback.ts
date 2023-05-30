@@ -4,7 +4,7 @@ import { redirect } from "@/utils/http.ts";
 import {
   createUser,
   getUserById,
-  setUserSession,
+  setUserSessionId,
   type User,
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/payments.ts";
@@ -51,7 +51,7 @@ export const handler: Handlers<any, State> = {
       };
       await createUser(userInit);
     } else {
-      await setUserSession(user, sessionId);
+      await setUserSessionId(user, sessionId);
     }
 
     const response = redirect("/");

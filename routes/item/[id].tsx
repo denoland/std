@@ -14,10 +14,10 @@ import {
   createComment,
   getCommentsByItem,
   getItemById,
+  getManyUsers,
   getUserById,
   getUserBySessionId,
-  getUsersByIds,
-  getVotedItemIdsByUser,
+  getVotedItemsByUser,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -43,7 +43,7 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     const comments = await getCommentsByItem(id);
-    const commentsUsers = await getUsersByIds(
+    const commentsUsers = await getManyUsers(
       comments.map((comment) => comment.userId),
     );
     const user = await getUserById(item.userId);
@@ -51,7 +51,11 @@ export const handler: Handlers<ItemPageData, State> = {
     let votedItemIds: string[] = [];
     if (ctx.state.sessionId) {
       const sessionUser = await getUserBySessionId(ctx.state.sessionId);
-      votedItemIds = await getVotedItemIdsByUser(sessionUser!.id);
+
+      if (sessionUser) {
+        const votedItems = await getVotedItemsByUser(sessionUser?.id);
+        votedItemIds = votedItems.map((item) => item.id);
+      }
     }
 
     const isVoted = votedItemIds.includes(id);

@@ -7,40 +7,77 @@ import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import {
   compareScore,
-  getAllItems,
-  getUsersByIds,
-  getVotedItemsBySessionUser,
+  getAllItemsInPastWeek,
+  getAreVotedBySessionId,
+  getManyUsers,
   incrementVisitsPerDay,
   type Item,
   type User,
 } from "@/utils/db.ts";
 
+const PAGE_LENGTH = 10;
+
 interface HomePageData extends State {
-  users: User[];
+  itemsUsers: User[];
   items: Item[];
-  cursor?: string;
+  lastPage: number;
   areVoted: boolean[];
+}
+
+function calcPageNum(url: URL) {
+  return parseInt(url.searchParams.get("page") || "1");
+}
+
+function calcLastPage(total = 0, pageLength = PAGE_LENGTH): number {
+  return Math.ceil(total / pageLength);
 }
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(req, ctx) {
-    /** @todo Add pagination functionality */
-    const start = new URL(req.url).searchParams.get("page") || undefined;
-    const { items, cursor } = await getAllItems({ limit: 10, cursor: start });
-    items.sort(compareScore);
-    const users = await getUsersByIds(items.map((item) => item.userId));
     await incrementVisitsPerDay(new Date());
-    const areVoted = await getVotedItemsBySessionUser(
+
+    const pageNum = calcPageNum(new URL(req.url));
+    const allItems = await getAllItemsInPastWeek();
+    const items = allItems
+      .toSorted(compareScore)
+      .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
+
+    const itemsUsers = await getManyUsers(items.map((item) => item.userId));
+
+    const areVoted = await getAreVotedBySessionId(
       items,
       ctx.state.sessionId,
     );
-    return ctx.render({ ...ctx.state, items, cursor, users, areVoted });
+    const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
+
+    return ctx.render({ ...ctx.state, items, itemsUsers, areVoted, lastPage });
   },
 };
 
+function PageSelector(props: { currentPage: number; lastPage: number }) {
+  return (
+    <div class="flex justify-center py-4 mx-auto">
+      <form class="inline-flex items-center gap-x-2">
+        <input
+          id="current_page"
+          class={`bg-white rounded rounded-lg outline-none w-full border-1 border-gray-300 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed) rounded-md px-2 py-1`}
+          type="number"
+          name="page"
+          min="1"
+          max={props.lastPage}
+          value={props.currentPage}
+          // @ts-ignore: this is valid HTML
+          onchange="this.form.submit()"
+        />
+        <label for="current_page" class="whitespace-nowrap align-middle">
+          of {props.lastPage}
+        </label>
+      </form>
+    </div>
+  );
+}
+
 export default function HomePage(props: PageProps<HomePageData>) {
-  const nextPageUrl = new URL(props.url);
-  nextPageUrl.searchParams.set("page", props.data.cursor || "");
   return (
     <>
       <Head href={props.url.href} />
@@ -50,13 +87,14 @@ export default function HomePage(props: PageProps<HomePageData>) {
             <ItemSummary
               item={item}
               isVoted={props.data.areVoted[index]}
-              user={props.data.users[index]}
+              user={props.data.itemsUsers[index]}
             />
           ))}
-          {props.data?.cursor && (
-            <div class="mt-4 text-gray-500">
-              <a href={nextPageUrl.toString()}>More</a>
-            </div>
+          {props.data.lastPage > 1 && (
+            <PageSelector
+              currentPage={calcPageNum(props.url)}
+              lastPage={props.data.lastPage}
+            />
           )}
         </div>
       </Layout>

@@ -8,8 +8,8 @@ import {
   getVisitsPerDay,
   incrementVisitsPerDay,
   kv,
-  setUserSession,
-  setUserSubscription,
+  setUserSessionId,
+  updateUserIsSubscribed,
   type User,
 } from "./db.ts";
 import { assertEquals } from "std/testing/asserts.ts";
@@ -67,7 +67,7 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserBySessionId(user.sessionId), user);
   assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
 
-  await setUserSubscription(user, true);
+  await updateUserIsSubscribed(user, true);
   user = { ...user, isSubscribed: true };
   assertEquals(await getUserById(user.id), user);
   assertEquals(await getUserByLogin(user.login), user);
@@ -75,7 +75,7 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
 
   const sessionId = crypto.randomUUID();
-  await setUserSession(user, sessionId);
+  await setUserSessionId(user, sessionId);
   user = { ...user, sessionId };
   assertEquals(await getUserById(user.id), user);
   assertEquals(await getUserByLogin(user.login), user);

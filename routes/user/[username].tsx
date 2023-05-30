@@ -8,9 +8,9 @@ import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import {
   compareScore,
+  getAreVotedBySessionId,
   getItemsByUserId,
   getUserByLogin,
-  getVotedItemsBySessionUser,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -33,7 +33,7 @@ export const handler: Handlers<UserData, State> = {
 
     const items = await getItemsByUserId(user.id);
     items.sort(compareScore);
-    const areVoted = await getVotedItemsBySessionUser(
+    const areVoted = await getAreVotedBySessionId(
       items,
       ctx.state.sessionId,
     );
