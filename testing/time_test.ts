@@ -53,13 +53,18 @@ Deno.test("Fake Date.now returns current fake time", () => {
   const time: FakeTime = new FakeTime(9001);
   const now = spy(_internals.Date, "now");
   try {
-    assertEquals(Date.now(), 9001);
-    assertEquals(now.calls.length, 0);
-    time.tick(1523);
-    assertEquals(Date.now(), 10524);
-    assertEquals(now.calls.length, 0);
+    try {
+      assertEquals(Date.now(), 9001);
+      assertEquals(now.calls.length, 0);
+      time.tick(1523);
+      assertEquals(Date.now(), 10524);
+      assertEquals(now.calls.length, 0);
+    } finally {
+      time.restore();
+    }
+    assertNotEquals(Date.now(), 10524);
+    assertEquals(now.calls.length, 1);
   } finally {
-    time.restore();
     now.restore();
   }
 });
@@ -535,6 +540,23 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+  } finally {
+    time.restore();
+  }
+});
+
+const Date_ = Date;
+
+Deno.test("Date from FakeTime is structured cloneable", () => {
+  const time: FakeTime = new FakeTime();
+  try {
+    const date: Date = new Date();
+    assert(date instanceof Date);
+    assert(date instanceof Date_);
+    const cloned: Date = structuredClone(date);
+    assertEquals(cloned.getTime(), date.getTime());
+    assert(date instanceof Date);
+    assert(cloned instanceof Date_);
   } finally {
     time.restore();
   }
