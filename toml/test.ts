@@ -711,3 +711,49 @@ aaaaa = 1
     assertEquals(actual, expected);
   },
 });
+
+Deno.test({
+  name: "[TOML] stringify empty key",
+  fn() {
+    const src = {
+      "": "a",
+      "b": { "": "c" },
+    };
+    const actual = stringify(src);
+    const expected = `"" = "a"
+
+[b]
+"" = "c"
+`;
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[TOML] stringify empty object",
+  fn() {
+    const src = {
+      "a": {},
+      "b": { "c": {} },
+    };
+    const actual = stringify(src);
+    const expected = `
+[a]
+
+[b.c]
+`;
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[TOML] stringify special keys in inline object",
+  fn() {
+    const src = {
+      "a": [{ "/": "b" }, "c"],
+    };
+    const actual = stringify(src);
+    const expected = 'a = [{"/" = "b"},"c"]\n';
+    assertEquals(actual, expected);
+  },
+});

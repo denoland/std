@@ -21,7 +21,7 @@
  * ```
  */
 export function sumOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => number,
 ): number {
   let sum = 0;

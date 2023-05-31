@@ -26,7 +26,7 @@
  * ```
  */
 export function associateBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};
