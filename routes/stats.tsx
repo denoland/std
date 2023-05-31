@@ -67,7 +67,13 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
           <div class="p-4 mx-auto max-w-screen-md">
             <LineChart
               title="Visits"
-              x={props.data.dates!}
+              x={props.data.dates!.map((date) =>
+                new Date(date).toLocaleDateString("en-us", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              )}
               y={props.data.visits!}
             />
           </div>
