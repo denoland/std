@@ -34,7 +34,7 @@ function calcLastPage(total = 0, pageLength = PAGE_LENGTH): number {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(req, ctx) {
-    await incrementVisitsPerDay(new Date());
+    // await incrementVisitsPerDay(new Date());
 
     const pageNum = calcPageNum(new URL(req.url));
     const allItems = await getAllItemsInPastWeek();
