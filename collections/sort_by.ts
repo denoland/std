@@ -1,10 +1,18 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Order */
+export type Order = "asc" | "desc";
+
+/** Options for sortBy */
+export type SortByOptions = {
+  order: Order;
+};
+
 /**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
- * element.
+ * element. Ascending or descending order can be specified.
  *
  * @example
  * ```ts
@@ -23,23 +31,35 @@
  *   { name: "Anna", age: 34 },
  *   { name: "Kim", age: 42 },
  * ]);
+ *
+ * const sortedByAgeDesc = sortBy(people, (it) => it.age, { order: "desc" });
+ *
+ * assertEquals(sortedByAgeDesc, [
+ *   { name: "Kim", age: 42 },
+ *   { name: "Anna", age: 34 },
+ *   { name: "John", age: 23 },
+ * ]);
  * ```
  */
 export function sortBy<T>(
   array: readonly T[],
   selector: (el: T) => number,
+  options?: SortByOptions,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
   selector: (el: T) => string,
+  options?: SortByOptions,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
   selector: (el: T) => bigint,
+  options?: SortByOptions,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
   selector: (el: T) => Date,
+  options?: SortByOptions,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
@@ -48,10 +68,23 @@ export function sortBy<T>(
     | ((el: T) => string)
     | ((el: T) => bigint)
     | ((el: T) => Date),
+  options?: SortByOptions,
 ): T[] {
   const len = array.length;
   const indexes = new Array<number>(len);
   const selectors = new Array<ReturnType<typeof selector> | null>(len);
+  const order = options?.order ?? "asc";
+
+  const comparator = (() =>
+    order === "asc"
+      ? (
+        a: ReturnType<typeof selector>,
+        b: ReturnType<typeof selector>,
+      ) => a > b ? 1 : a < b ? -1 : 0
+      : (
+        a: ReturnType<typeof selector>,
+        b: ReturnType<typeof selector>,
+      ) => a > b ? -1 : a < b ? 1 : 0)();
 
   for (let i = 0; i < len; i++) {
     indexes[i] = i;
@@ -64,7 +97,7 @@ export function sortBy<T>(
     const b = selectors[bi];
     if (a === null) return 1;
     if (b === null) return -1;
-    return a > b ? 1 : a < b ? -1 : 0;
+    return comparator(a, b);
   });
 
   for (let i = 0; i < len; i++) {
