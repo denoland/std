@@ -47,9 +47,6 @@ export const {
   toNamespacedPath,
 } = path;
 
-/** @deprecated (will be removed after 0.188.0) Use SEP intead. */
-export const sep = path.sep;
-
 export * from "./common.ts";
 export { SEP, SEP_PATTERN } from "./separator.ts";
 export * from "./_interface.ts";
