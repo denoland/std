@@ -26,7 +26,7 @@ export function isSamePath(
 export function isSubdir(
   src: string | URL,
   dest: string | URL,
-  sep: string = path.sep,
+  sep: string = path.SEP,
 ): boolean {
   if (src === dest) {
     return false;
