@@ -43,7 +43,7 @@ export type JoinToStringOptions = {
  * ```
  */
 export function joinToString<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => string,
   {
     separator = ",",
@@ -56,8 +56,8 @@ export function joinToString<T>(
   let result = "";
 
   let index = -1;
-  while (++index < array.length) {
-    const el = array[index];
+  for (const el of array) {
+    index++;
 
     if (index > 0) {
       result += separator;

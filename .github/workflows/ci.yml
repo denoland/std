@@ -138,4 +138,4 @@ jobs:
 
       - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-        run: deno task build:${{ matrix.module }} --check
+        run: deno task --cwd ${{ matrix.module }} wasmbuild --check

@@ -17,7 +17,7 @@
  * ```
  */
 export function distinctBy<T, D>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => D,
 ): T[] {
   const selectedValues = new Set<D>();
