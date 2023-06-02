@@ -92,11 +92,14 @@ export function sortBy<T>(
     selectors[i] = Number.isNaN(s) ? null : s;
   }
 
+  const aIsNull = order === "asc" ? 1 : -1;
+  const bIsNull = order === "asc" ? -1 : 1;
+
   indexes.sort((ai, bi) => {
     const a = selectors[ai];
     const b = selectors[bi];
-    if (a === null) return 1;
-    if (b === null) return -1;
+    if (a === null) return aIsNull;
+    if (b === null) return bIsNull;
     return comparator(a, b);
   });
 
