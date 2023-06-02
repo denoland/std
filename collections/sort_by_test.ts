@@ -228,34 +228,53 @@ Deno.test({
       ],
     );
 
-    const testArray = [
-      { name: "hoisting", level: 1 },
-      { name: "promises", level: 3 },
-      { name: "callbacks", level: 4 },
-      { name: "closures", level: 2 },
-    ];
-
-    assertEquals(sortBy(testArray, (it) => it.level, { order: "desc" }), [
-      { name: "callbacks", level: 4 },
-      { name: "promises", level: 3 },
-      { name: "closures", level: 2 },
-      { name: "hoisting", level: 1 },
-    ]);
+    assertEquals(
+      sortBy(
+        [
+          Number.NaN,
+          1,
+          Number.POSITIVE_INFINITY,
+          Number.NaN,
+          7,
+          Number.NEGATIVE_INFINITY,
+          Number.NaN,
+          2,
+          6,
+          5,
+          9,
+        ],
+        (it) => it,
+        { order: "desc" },
+      ),
+      [
+        Number.NaN,
+        Number.NaN,
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+        9,
+        7,
+        6,
+        5,
+        2,
+        1,
+        Number.NEGATIVE_INFINITY,
+      ],
+    );
 
     assertEquals(
       sortBy(
         [
           "January 27, 1995",
           "November 26, 2020",
-          "June 1, 2023",
+          "January 27, 1995",
           "July 15, 1993",
         ],
         (it) => new Date(it),
         { order: "desc" },
       ),
       [
-        "June 1, 2023",
         "November 26, 2020",
+        "January 27, 1995",
         "January 27, 1995",
         "July 15, 1993",
       ],

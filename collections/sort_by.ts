@@ -75,32 +75,21 @@ export function sortBy<T>(
   const selectors = new Array<ReturnType<typeof selector> | null>(len);
   const order = options?.order ?? "asc";
 
-  const comparator = (() =>
-    order === "asc"
-      ? (
-        a: ReturnType<typeof selector>,
-        b: ReturnType<typeof selector>,
-      ) => a > b ? 1 : a < b ? -1 : 0
-      : (
-        a: ReturnType<typeof selector>,
-        b: ReturnType<typeof selector>,
-      ) => a > b ? -1 : a < b ? 1 : 0)();
-
   for (let i = 0; i < len; i++) {
     indexes[i] = i;
     const s = selector(array[i]);
     selectors[i] = Number.isNaN(s) ? null : s;
   }
 
-  const aIsNull = order === "asc" ? 1 : -1;
-  const bIsNull = order === "asc" ? -1 : 1;
-
   indexes.sort((ai, bi) => {
-    const a = selectors[ai];
-    const b = selectors[bi];
-    if (a === null) return aIsNull;
-    if (b === null) return bIsNull;
-    return comparator(a, b);
+    let a = selectors[ai];
+    let b = selectors[bi];
+    if (order === "desc") {
+      [a, b] = [b, a];
+    }
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a > b ? 1 : a < b ? -1 : 0;
   });
 
   for (let i = 0; i < len; i++) {
