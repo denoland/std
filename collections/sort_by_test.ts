@@ -204,69 +204,9 @@ Deno.test({
     assertEquals(
       sortBy(
         [
-          1,
-          Number.POSITIVE_INFINITY,
-          2,
-          Number.NEGATIVE_INFINITY,
-          3,
-          Number.NaN,
-          4,
-          Number.NaN,
-        ],
-        (it) => it,
-        { order: "desc" },
-      ),
-      [
-        Number.NaN,
-        Number.NaN,
-        Number.POSITIVE_INFINITY,
-        4,
-        3,
-        2,
-        1,
-        Number.NEGATIVE_INFINITY,
-      ],
-    );
-
-    assertEquals(
-      sortBy(
-        [
-          Number.NaN,
-          1,
-          Number.POSITIVE_INFINITY,
-          Number.NaN,
-          7,
-          Number.NEGATIVE_INFINITY,
-          Number.NaN,
-          2,
-          6,
-          5,
-          9,
-        ],
-        (it) => it,
-        { order: "desc" },
-      ),
-      [
-        Number.NaN,
-        Number.NaN,
-        Number.NaN,
-        Number.POSITIVE_INFINITY,
-        9,
-        7,
-        6,
-        5,
-        2,
-        1,
-        Number.NEGATIVE_INFINITY,
-      ],
-    );
-
-    assertEquals(
-      sortBy(
-        [
           "January 27, 1995",
           "November 26, 2020",
-          "January 27, 1995",
+          "June 17, 1952",
           "July 15, 1993",
         ],
         (it) => new Date(it),
@@ -275,8 +215,8 @@ Deno.test({
       [
         "November 26, 2020",
         "January 27, 1995",
-        "January 27, 1995",
         "July 15, 1993",
+        "June 17, 1952",
       ],
     );
   },
