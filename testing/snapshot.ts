@@ -334,17 +334,11 @@ class AssertSnapshotContext {
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
-    const contexts = Array.from(AssertSnapshotContext.contexts.values());
-    if (contexts[contexts.length - 1] === this) {
-      let updated = 0;
-      for (const context of contexts) {
-        updated += context.getUpdatedCount();
-      }
-      if (updated > 0) {
-        console.log(
-          green(bold(`\n > ${updated} snapshots updated.`)),
-        );
-      }
+    const updated = this.getUpdatedCount();
+    if (updated > 0) {
+      console.log(
+        green(bold(`\n > ${updated} snapshots updated.`)),
+      );
     }
   };
 
