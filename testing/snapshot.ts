@@ -399,7 +399,7 @@ class AssertSnapshotContext {
    * of snapshots updated after all tests have run.
    *
    * This method can safely be called more than once and will only register the teardown
-   * function once.
+   * function once in a context.
    */
   public registerTeardown() {
     if (!this.#teardownRegistered) {
