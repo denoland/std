@@ -31,7 +31,7 @@
  * @module
  */
 
-import { extname, posix } from "../path/mod.ts";
+import { extname, posix, resolve } from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
@@ -744,7 +744,7 @@ function main() {
   }
 
   const wild = serverArgs._ as string[];
-  const target = posix.resolve(wild[0] ?? "");
+  const target = resolve(wild[0] ?? "");
 
   const handler = (req: Request): Promise<Response> => {
     return serveDir(req, {
