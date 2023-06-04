@@ -10,7 +10,7 @@ import {
   getAllItemsInPastWeek,
   getAreVotedBySessionId,
   getManyUsers,
-  incrementVisitsPerDay,
+  incrementAnalyticsMetricPerDay,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -34,7 +34,7 @@ function calcLastPage(total = 0, pageLength = PAGE_LENGTH): number {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(req, ctx) {
-    await incrementVisitsPerDay(new Date());
+    await incrementAnalyticsMetricPerDay("visits_count", new Date());
 
     const pageNum = calcPageNum(new URL(req.url));
     const allItems = await getAllItemsInPastWeek();

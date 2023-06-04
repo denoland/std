@@ -4,23 +4,36 @@ import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
-import { getAllVisitsPerDay } from "@/utils/db.ts";
+import { getManyAnalyticsMetricsPerDay } from "@/utils/db.ts";
 import { Chart } from "fresh_charts/mod.ts";
 import { ChartColors } from "fresh_charts/utils.ts";
 
+interface AnalyticsByDay {
+  metricsValue: number[];
+  dates: string[];
+}
+
 interface StatsPageData extends State {
-  visits?: number[];
-  dates?: string[];
+  metricsByDay: AnalyticsByDay[];
+  metricsTitles: string[];
 }
 
 export const handler: Handlers<StatsPageData, State> = {
   async GET(_, ctx) {
     const daysBefore = 30;
-    const { visits, dates } = await getAllVisitsPerDay({
+
+    const metricsKeys = [
+      "visits_count",
+      "users_count",
+      "items_count",
+      "votes_count",
+    ];
+    const metricsTitles = ["Visits", "New Users", "New Items", "New Votes"];
+    const metricsByDay = await getManyAnalyticsMetricsPerDay(metricsKeys, {
       limit: daysBefore,
     });
 
-    return ctx.render({ ...ctx.state, visits, dates });
+    return ctx.render({ ...ctx.state, metricsByDay, metricsTitles });
   },
 };
 
@@ -28,11 +41,14 @@ function LineChart(
   props: { title: string; x: string[]; y: number[] },
 ) {
   return (
-    <>
+    <div class="py-4">
       <h3 class="py-4 text-2xl font-bold">{props.title}</h3>
       <Chart
+        width={550}
+        height={300}
         type="line"
         options={{
+          maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
           },
@@ -54,7 +70,7 @@ function LineChart(
           }],
         }}
       />
-    </>
+    </div>
   );
 }
 
@@ -64,18 +80,20 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
       <Head title="Stats" href={props.url.href} />
       <Layout session={props.data.sessionId}>
         <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-          <div class="p-4 mx-auto max-w-screen-md">
-            <LineChart
-              title="Visits"
-              x={props.data.dates!.map((date) =>
-                new Date(date).toLocaleDateString("en-us", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
-              )}
-              y={props.data.visits!}
-            />
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {props.data.metricsByDay.map((metric, index) => (
+              <LineChart
+                title={props.data.metricsTitles[index]}
+                x={metric.dates!.map((date) =>
+                  new Date(date).toLocaleDateString("en-us", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                )}
+                y={metric.metricsValue!}
+              />
+            ))}
           </div>
         </div>
       </Layout>
