@@ -70,7 +70,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
       {...props}
       class={`flex flex-col md:flex-row p-4 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
-      }`}
+      } `}
     >
       <span>
         <strong>{SITE_NAME}</strong>
@@ -133,7 +133,7 @@ export default function Layout(props: LayoutProps) {
   ];
 
   return (
-    <div class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-h-screen dark:bg-gray-900 dark:text-white">
       <Notice />
       <Header>
         <Nav items={headerNavItems} />

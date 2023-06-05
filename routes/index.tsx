@@ -60,7 +60,7 @@ function PageSelector(props: { currentPage: number; lastPage: number }) {
       <form class="inline-flex items-center gap-x-2">
         <input
           id="current_page"
-          class={`bg-white rounded rounded-lg outline-none w-full border-1 border-gray-300 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed) rounded-md px-2 py-1`}
+          class={`bg-transparent rounded rounded-lg outline-none w-full border-1 border-gray-500 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed) rounded-md px-2 py-1 dark:(hover:border-white)`}
           type="number"
           name="page"
           min="1"

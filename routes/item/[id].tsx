@@ -114,10 +114,8 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
             <button type="submit" class={BUTTON_STYLES}>Comment</button>
           </form>
           <div>
-            <h2>
-              <strong>
-                {pluralize(props.data.comments.length, "comment")}
-              </strong>
+            <h2 class="font-bold">
+              {pluralize(props.data.comments.length, "comment")}
             </h2>
             {props.data.comments.sort((a, b) =>
               b.createdAt.getTime() - a.createdAt.getTime()

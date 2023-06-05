@@ -76,7 +76,9 @@ export default function SubmitPage(props: PageProps<State>) {
       <Head title="Submit" href={props.url.href} />
       <Layout session={props.data.sessionId}>
         <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
-          <h1 class="text-center text-2xl font-bold">Share your project</h1>
+          <h1 class="text-center text-2xl font-bold">
+            Share your project
+          </h1>
           <Form />
         </div>
       </Layout>

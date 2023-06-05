@@ -44,7 +44,7 @@ interface PricingCardProps {
 
 function PricingCard(props: PricingCardProps) {
   return (
-    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-300 rounded-xl text-center">
+    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-300 rounded-xl text-center dark:bg-gray-700">
       <div>
         <h3 class="text-2xl font-bold">
           {props.name}
