@@ -286,6 +286,7 @@ import { parseRange } from "./parse_range.ts";
 import { inRange } from "./in_range.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { comparatorMax } from "./comparator_max.ts";
+import { lt } from "./lt.ts";
 
 export * from "./cmp.ts";
 export * from "./comparator_format.ts";
@@ -368,15 +369,22 @@ export function satisfies(
 
 /**
  * @deprecated (will be removed after 0.191.0) Use comparatorMin instead
- *
- * A compatibility function to get the minimum version of a range string.
- * @param comparator The comparator
- * @returns The minimum version for the given range
  */
 export function minVersion(
-  comparator: SemVerComparator,
-): SemVer {
-  return comparatorMin(comparator.semver, comparator.operator);
+  range: string | SemVerRange,
+  _options?: { includePrerelease: boolean },
+): SemVer | null {
+  const r = typeof range === "string" ? parseRange(range) : range;
+  let min: SemVer | null = null;
+  for (const rangeOr of r.ranges) {
+    for (const comparator of rangeOr) {
+      const compMin = comparatorMin(comparator.semver, comparator.operator);
+      if (!min || lt(compMin, min)) {
+        min = compMin;
+      }
+    }
+  }
+  return min;
 }
 
 /**

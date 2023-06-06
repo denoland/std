@@ -30,7 +30,9 @@ export function minSatisfying(
   options?: { includePrerelease: boolean },
 ): SemVer | undefined {
   const r = typeof range === "string" ? parseRange(range) : range;
-  const satisfying = versions.filter((v) => inRange(typeof v === "string" ? parse(v, options) : v, r));
+  const satisfying = versions.filter((v) =>
+    inRange(typeof v === "string" ? parse(v, options) : v, r)
+  );
   const sorted = sort(satisfying);
   return sorted.shift();
 }
