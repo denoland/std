@@ -124,5 +124,6 @@ export function _exponentialBackoffWithJitter(
   multiplier: number,
   jitter: number,
 ) {
-  return (1 - jitter + jitter * Math.random()) * Math.min(cap, base * multiplier ** attempt);
+  const exp = Math.min(cap, base * multiplier ** attempt);
+  return (1 - jitter * Math.random()) * exp;
 }
