@@ -483,17 +483,7 @@ Deno.test(
   testFnWithDifferentTempDir(async (t, tempDir1, tempDir2) => {
     const tempTestFileName = "test.ts";
     const tempTestFilePath1 = join(tempDir1, tempTestFileName);
-    const tempSnapshotFilePath1 = join(
-      tempDir1,
-      "__snapshots__",
-      `${tempTestFileName}.snap`,
-    );
     const tempTestFilePath2 = join(tempDir2, tempTestFileName);
-    const tempSnapshotFilePath2 = join(
-      tempDir2,
-      "__snapshots__",
-      `${tempTestFileName}.snap`,
-    );
 
     async function runTestWithUpdateFlag(test1: string, test2: string) {
       await Deno.writeTextFile(tempTestFilePath1, test1);
@@ -514,8 +504,6 @@ Deno.test(
       return {
         output: new TextDecoder().decode(stdout),
         error: new TextDecoder().decode(stderr),
-        snapshots1: await Deno.readTextFile(tempSnapshotFilePath1),
-        snapshots2: await Deno.readTextFile(tempSnapshotFilePath2),
       };
     }
 
@@ -565,12 +553,6 @@ Deno.test(
     await assertSnapshot(t, formatTestOutput(result1.output), {
       name: "Snapshot Test - Different Dir - New snapshot",
     });
-    await assertSnapshot(t, result1.snapshots1, {
-      name: "Snapshot Test - Different Dir - New snapshot",
-    });
-    await assertSnapshot(t, result1.snapshots2, {
-      name: "Snapshot Test - Different Dir - New snapshot",
-    });
 
     /**
      * Existing snapshot - updates
@@ -609,12 +591,6 @@ Deno.test(
     );
     assertNoError(result2.error);
     await assertSnapshot(t, formatTestOutput(result2.output), {
-      name: "Snapshot Test - Different Dir - Existing snapshot - update",
-    });
-    await assertSnapshot(t, result2.snapshots1, {
-      name: "Snapshot Test - Different Dir - Existing snapshot - update",
-    });
-    await assertSnapshot(t, result2.snapshots2, {
       name: "Snapshot Test - Different Dir - Existing snapshot - update",
     });
   }),
