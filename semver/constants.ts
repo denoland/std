@@ -31,7 +31,7 @@ export const MIN: SemVer = {
  * ```ts
  * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { INVALID } from "https://deno.land/std@$STD_VERSION/semver/semver.ts"
+ * import { INVALID } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
  * eq(parse("1.2.3"), INVALID);
  * ```
  */
@@ -50,7 +50,7 @@ export const INVALID: SemVer = {
  * ```ts
  * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { ANY } from "https://deno.land/std@$STD_VERSION/semver/semver.ts"
+ * import { ANY } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
  * eq(parse("1.2.3"), ANY); // false
  * ```
  */

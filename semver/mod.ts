@@ -267,7 +267,7 @@
  * const semver = parse("1.2.3");
  * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");
  * satisfies(semver, range); // true
- * minVersion(parseComparator(">=1.0.0")); // { major: 1, minor: 0 patch: 0, prerelease: [], build: [] }
+ * minVersion(parseRange(">=1.0.0")); // { major: 1, minor: 0 patch: 0, prerelease: [], build: [] }
  *
  * const s0 = parse("1.2.3");
  * const s1 = parse("9.8.7");
