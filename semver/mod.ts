@@ -348,7 +348,7 @@ export function valid(value: string | SemVer | null): string | null {
 }
 
 /**
- * @deprecated (will be removed after 0.191.0) Use `rangeTest()` instead
+ * @deprecated (will be removed after 0.191.0) Use `testRange()` instead
  *
  * A compatibility function that calls rangeTest
  * @param semver A valid SemVer string
