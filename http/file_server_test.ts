@@ -1533,3 +1533,34 @@ Deno.test(
     }
   },
 );
+
+Deno.test("file_server should resolve `path` correctly on Windows", {
+  ignore: Deno.build.os !== "windows",
+}, async () => {
+  const fileServer = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--no-check",
+      "--quiet",
+      "--allow-read",
+      "--allow-net",
+      "file_server.ts",
+      "c:/",
+      "--host",
+      "localhost",
+      "--port",
+      `4507`,
+    ],
+    cwd: moduleDir,
+    stdout: "null",
+    stderr: "null",
+  });
+  child = fileServer.spawn();
+  try {
+    const resp = await fetch("http://localhost:4507/");
+    assertEquals(resp.status, 200);
+    await resp.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
+});
