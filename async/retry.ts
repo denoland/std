@@ -65,27 +65,25 @@ export async function retry<T>(
     "minTimeout is greater than maxTimeout",
   );
 
-  let timeout = options.minTimeout;
-  let error: unknown;
-
-  for (let i = 0; i < options.maxAttempts; i++) {
+  let attempt = 0;
+  while (true) {
     try {
       return await fn();
-    } catch (err) {
-      await new Promise((r) => setTimeout(r, timeout));
+    } catch (error) {
+      if (attempt + 1 >= options.maxAttempts) {
+        throw new RetryError(error, options.maxAttempts);
+      }
 
-      timeout = _exponentialBackoffWithJitter(
+      const timeout = _exponentialBackoffWithJitter(
         options.maxTimeout,
         options.minTimeout,
-        i,
+        attempt,
         options.multiplier,
       );
-
-      error = err;
+      await new Promise((r) => setTimeout(r, timeout));
     }
+    attempt++;
   }
-
-  throw new RetryError(error, options.maxAttempts);
 }
 
 export function _exponentialBackoffWithJitter(

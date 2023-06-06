@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { _exponentialBackoffWithJitter, retry } from "./retry.ts";
+import { _exponentialBackoffWithJitter, retry, RetryError } from "./retry.ts";
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { FakeTime } from "../testing/time.ts";
 
 function generateErroringFunction(errorsBeforeSucceeds: number) {
   let errorCount = 0;
@@ -29,6 +30,32 @@ Deno.test("[async] retry fails after max errors is passed", async function () {
       minTimeout: 100,
     })
   );
+});
+
+Deno.test("[async] retry waits four times by default", async function () {
+  let callCount = 0;
+  const onlyErrors = function () {
+    callCount++;
+    throw new Error("Failure");
+  };
+  const time = new FakeTime();
+  const callCounts: Array<number> = [];
+  try {
+    const promise = retry(onlyErrors);
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await assertRejects(() => promise, RetryError);
+    assertEquals(callCounts, [1, 2, 3, 4, 5]);
+  } finally {
+    time.restore();
+  }
 });
 
 Deno.test(
