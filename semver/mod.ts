@@ -282,10 +282,12 @@
 import type { SemVer, SemVerComparator, SemVerRange } from "./types.ts";
 import { parse, tryParse } from "./parse.ts";
 import { format } from "./format.ts";
-import { parseRange } from "./parse_range.ts";
+import { parseRange, tryParseRange } from "./parse_range.ts";
 import { inRange } from "./in_range.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { comparatorMax } from "./comparator_max.ts";
+import { comparatorFormat } from "./comparator_format.ts";
+import { rangeFormat } from "./range_format.ts";
 import { lt } from "./lt.ts";
 
 export * from "./cmp.ts";
@@ -427,6 +429,27 @@ export function prerelease(
   options?: { includePrerelease: boolean },
 ) {
   return parse(v, options).prerelease.join(".");
+}
+
+/** @deprecated (will be removed after 0.191.0) Use `comparatorFormat` instead */
+export function toComparators(
+  range: string | SemVerRange,
+  _options?: { includePrerelease: boolean },
+) {
+  const r = typeof range === "string" ? parseRange(range) : range;
+  return r.ranges.map((comparators) =>
+    comparators.map((c) => comparatorFormat(c))
+  );
+}
+
+/** @deprecated (will be removed after 0.191.0) */
+export function validRange(
+  range: string | SemVerRange | null,
+  _options?: { includePrerelease: boolean },
+) {
+  const r = typeof range === "string" ? tryParseRange(range) : range;
+  if (!r) return null;
+  return rangeFormat(r);
 }
 
 export const SEMVER_SPEC_VERSION = "2.0.0";
