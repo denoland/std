@@ -81,6 +81,17 @@ Deno.test(
   },
 );
 
+Deno.test(
+  "[async] retry throws if jitter is bigger than 1",
+  async function () {
+    await assertRejects(() =>
+      retry(() => {}, {
+        jitter: 2,
+      })
+    );
+  },
+);
+
 // test util to ensure deterministic results during testing of backoff function by polyfilling Math.random
 function prngMulberry32(seed: number) {
   return function () {
@@ -112,6 +123,47 @@ const expectedTimings: readonly (readonly number[] & { length: 10 })[] & {
 Deno.test("[async] retry - backoff function timings", async (t) => {
   const originalMathRandom = Math.random;
 
+  await t.step("wait fixed times without jitter", async function () {
+    const time = new FakeTime();
+    let resolved = false;
+    const checkResolved = async () => {
+      try {
+        await retry(() => {
+          throw new Error("Failure");
+        }, { jitter: 0 });
+      } catch {
+        resolved = true;
+      }
+    };
+    try {
+      const promise = checkResolved();
+      const startTime = time.now;
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 1000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 3000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 7000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 15000);
+      assertEquals(resolved, false);
+
+      await time.runMicrotasks();
+      assertEquals(time.now - startTime, 15000);
+      assertEquals(resolved, true);
+
+      await time.runAllAsync();
+      assertEquals(time.now - startTime, 15000);
+      await promise;
+    } finally {
+      time.restore();
+    }
+  });
+
   await t.step("_exponentialBackoffWithJitter", () => {
     let nextSeed = INITIAL_SEED;
 
@@ -125,7 +177,7 @@ Deno.test("[async] retry - backoff function timings", async (t) => {
       const cap = Infinity;
 
       for (let i = 0; i < 10; ++i) {
-        const result = _exponentialBackoffWithJitter(cap, base, i, 2);
+        const result = _exponentialBackoffWithJitter(cap, base, i, 2, 1);
         results.push(Math.round(result));
       }
 
