@@ -44,7 +44,7 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if minTimeout is less than 0",
+  "[async] retry throws if maxTimeout is less than 0",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
