@@ -8,7 +8,7 @@ export function ltr(
   range: SemVerRange,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.191.0) Use `ltr(version: SemVer, range: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.195.0) Use `ltr(version: SemVer, range: SemVerRange)` instead.
  *
  * Greater than range comparison */
 export function ltr(

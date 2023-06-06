@@ -8,7 +8,7 @@ export function lte(
   s1: SemVer,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.191.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
+ * @deprecated (will be removed after 0.195.0) Use `lte(s0: SemVer, s1: SemVer)` instead.
  *
  * Less than or equal to comparison */
 export function lte(

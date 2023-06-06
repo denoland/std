@@ -77,7 +77,7 @@ export function increment(
   prerelease?: string,
   build?: string,
 ): SemVer;
-/** @deprecated (will be removed after 0.191.0) Use `increment(version: SemVer, release: ReleaseType, prerelease?: string, build?: string)` instead. */
+/** @deprecated (will be removed after 0.195.0) Use `increment(version: SemVer, release: ReleaseType, prerelease?: string, build?: string)` instead. */
 export function increment(
   version: string | SemVer,
   release: ReleaseType,

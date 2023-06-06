@@ -8,7 +8,7 @@ export function neq(
   s1: SemVer,
 ): boolean;
 /**
- * @deprecated (will be removed after 0.191.0) Use `neq(s0: SemVer, s1: SemVer)` instead.
+ * @deprecated (will be removed after 0.195.0) Use `neq(s0: SemVer, s1: SemVer)` instead.
  *
  * Not equal comparison */
 export function neq(

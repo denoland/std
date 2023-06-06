@@ -12,7 +12,7 @@ export function rcompare(
   s0: SemVer,
   s1: SemVer,
 ): 1 | 0 | -1;
-/** @deprecated (will be removed after 0.191.0) Use `rcompare(s0: SemVer, s1: SemVer)` instead. */
+/** @deprecated (will be removed after 0.195.0) Use `rcompare(s0: SemVer, s1: SemVer)` instead. */
 export function rcompare(
   s0: string | SemVer,
   s1: string | SemVer,
