@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import type { SemVer, SemVerRange } from "./types.ts";
 import { sort } from "./sort.ts";
-import { inRange } from "./in_range.ts";
+import { testRange } from "./test_range.ts";
 import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
 
@@ -31,7 +31,7 @@ export function maxSatisfying(
 ): SemVer | undefined {
   const r = typeof range === "string" ? parseRange(range) : range;
   const satisfying = versions.filter((v) =>
-    inRange(typeof v === "string" ? parse(v, options) : v, r)
+    testRange(typeof v === "string" ? parse(v, options) : v, r)
   );
   const sorted = sort(satisfying);
   return sorted.pop();

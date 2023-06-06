@@ -3,9 +3,9 @@
 import { assert } from "../testing/asserts.ts";
 import { parse } from "./parse.ts";
 import { parseComparator } from "./parse_comparator.ts";
-import { inComparator } from "./in_comparator.ts";
+import { testComparator } from "./test_comparator.ts";
 
 Deno.test("test", function () {
   const c = parseComparator(">=1.2.3");
-  assert(inComparator(parse("1.2.4"), c));
+  assert(testComparator(parse("1.2.4"), c));
 });

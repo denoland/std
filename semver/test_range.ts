@@ -9,7 +9,7 @@ import { lte } from "./lte.ts";
  * @param range The range to check
  * @returns true if the version is in the range
  */
-export function inRange(version: SemVer, range: SemVerRange): boolean {
+export function testRange(version: SemVer, range: SemVerRange): boolean {
   for (const r of range.ranges) {
     if (r.every((c) => gte(version, c.min) && lte(version, c.max))) {
       return true;

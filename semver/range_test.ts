@@ -4,7 +4,7 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import { rangeFormat } from "./range_format.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
-import { inRange } from "./in_range.ts";
+import { testRange } from "./test_range.ts";
 
 Deno.test("range", async (t) => {
   const versions: [string, string][] = [
@@ -97,7 +97,7 @@ Deno.test("range", async (t) => {
     await t.step(`${r} ∋ ${v}`, () => {
       const range = parseRange(r);
       const s = parse(v);
-      assert(inRange(s, range));
+      assert(testRange(s, range));
     });
   }
 });
@@ -179,7 +179,7 @@ Deno.test({
       await t.step(`${r} ∌ ${v}`, () => {
         const range = parseRange(r);
         const s = parse(v);
-        const found = inRange(s, range);
+        const found = testRange(s, range);
         assert(!found);
       });
     }
@@ -198,7 +198,7 @@ Deno.test("unlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = inRange(s, range);
+    const found = testRange(s, range);
     assert(found, `${r} not satisfied by ${v}`);
   }
 });
@@ -213,7 +213,7 @@ Deno.test("negativeUnlockedPrereleaseRange", function () {
   for (const [r, v] of versions) {
     const range = parseRange(r);
     const s = parse(v);
-    const found = inRange(s, range);
+    const found = testRange(s, range);
     assert(!found, `${v} satisfied by ${r} unexpectedly`);
   }
 });

@@ -6,7 +6,7 @@ import { lt } from "./lt.ts";
 import { ALL, ANY } from "./constants.ts";
 import { parse } from "./parse.ts";
 import type { SemVer, SemVerComparator, SemVerRange } from "./types.ts";
-import { inRange } from "./in_range.ts";
+import { testRange } from "./test_range.ts";
 import { parseRange } from "./parse_range.ts";
 
 /**
@@ -63,7 +63,7 @@ export function outside(
     }
   })();
 
-  if (inRange(version, range)) {
+  if (testRange(version, range)) {
     return false;
   }
 

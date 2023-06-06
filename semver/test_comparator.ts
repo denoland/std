@@ -8,7 +8,7 @@ import { cmp } from "./cmp.ts";
  * @param comparator The comparator
  * @returns True if the version is within the comparators set otherwise false
  */
-export function inComparator(
+export function testComparator(
   version: SemVer,
   comparator: SemVerComparator,
 ): boolean {

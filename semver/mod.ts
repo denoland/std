@@ -285,7 +285,7 @@ import { tryParse } from "./try_parse.ts";
 import { format } from "./format.ts";
 import { parseRange } from "./parse_range.ts";
 import { tryParseRange } from "./try_parse_range.ts";
-import { inRange } from "./in_range.ts";
+import { testRange } from "./test_range.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { comparatorMax } from "./comparator_max.ts";
 import { comparatorFormat } from "./comparator_format.ts";
@@ -306,8 +306,8 @@ export * from "./format.ts";
 export * from "./gt.ts";
 export * from "./gte.ts";
 export * from "./gtr.ts";
-export * from "./in_comparator.ts";
-export * from "./in_range.ts";
+export * from "./test_comparator.ts";
+export * from "./test_range.ts";
 export * from "./increment.ts";
 export * from "./is_semver_comparator.ts";
 export * from "./is_semver_range.ts";
@@ -360,7 +360,7 @@ export function satisfies(
   range: string | SemVerRange,
   options?: { includePrerelease: boolean },
 ): boolean {
-  return inRange(
+  return testRange(
     parse(semver, options),
     typeof range === "string" ? parseRange(range) : range,
   );
