@@ -265,23 +265,6 @@ function isX(id: string): boolean {
 }
 
 /**
- * A tries to parse a valid SemVerRange string or returns undefined
- * @param range The range string
- * @returns A SemVerRange object if valid otherwise `undefined`
- */
-export function tryParseRange(
-  range: string,
-): SemVerRange | undefined {
-  try {
-    // Return '*' instead of '' so that truthiness works.
-    // This will throw if it's invalid anyway
-    return parseRange(range);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Parses a range string into a SemVerRange object or throws a TypeError.
  * @param range The range string
  * @returns A valid semantic version range

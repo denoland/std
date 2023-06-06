@@ -48,36 +48,3 @@ export function compare(
       compareNumber(v0.patch, v1.patch));
   }
 }
-
-export {
-  /**
-   * @deprecated (will be removed after 0.191.0) Use `compare(s0: SemVer, s1: SemVer)` from `std/semver/compare_build.ts` instead.
-   *
-   * Compare two semantic version objects including build metadata.
-   *
-   * Returns `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if `v2` is
-   * greater.
-   *
-   * Sorts in ascending order if passed to `Array.sort()`,
-   * @param s0
-   * @param s1
-   * @returns
-   */
-  compareBuild,
-} from "./compare_build.ts";
-
-/** @deprecated (will be removed after 0.191.0) Use `compare` or `compareBuild` directly */
-export function compareIdentifiers(
-  a: string | number | null,
-  b: string | number | null,
-): 1 | 0 | -1 {
-  return compareIdentifier(a != null ? [a] : [], b != null ? [b] : []);
-}
-
-/** @deprecated (will be removed after 0.191.0) Use `compare` or `compareBuild` directly */
-export function rcompareIdentifiers(
-  a: string | number | null,
-  b: string | number | null,
-): 1 | 0 | -1 {
-  return compareIdentifiers(b, a);
-}

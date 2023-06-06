@@ -17,12 +17,3 @@ export function sort(
 ): (SemVer | string)[] {
   return list.sort((a, b) => compare(a, b, options));
 }
-
-export {
-  /**
-   * @deprecated (will be removed after 0.191.0) Use `sort(list: SemVer[])` from `std/semver/rsort.ts` instead.
-   *
-   * Sorts a list of semantic versions in descending order.
-   */
-  rsort,
-} from "./rsort.ts";

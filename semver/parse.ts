@@ -1,23 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { isSemVer, isValidNumber, MAX_LENGTH } from "./validity.ts";
-import { FULL, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
-
-/**
- * Returns the parsed version, or undefined if it's not valid.
- * @param version The version string to parse
- * @returns A valid SemVer or `undefined`
- */
-export function tryParse(version?: string): SemVer | undefined {
-  if (version == null) {
-    return undefined;
-  }
-  try {
-    return parse(version);
-  } catch {
-    return undefined;
-  }
-}
+import { isValidNumber } from "./_shared.ts";
+import { isSemVer } from "./is_semver.ts";
+import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
 
 /**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
@@ -119,41 +104,3 @@ export function parse(
     };
   }
 }
-
-export {
-  /**
-   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_comparator.ts` instead.
-   *
-   * Parses a comparator string into a valid SemVerComparator.
-   * @param comparator
-   * @returns A valid SemVerComparator
-   */
-  parseComparator,
-  /**
-   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_comparator.ts` instead.
-   *
-   * Parses a comparator string into a valid SemVerComparator or returns undefined if not valid.
-   * @param comparator
-   * @returns A valid SemVerComparator or undefined
-   */
-  tryParseComparator,
-} from "./parse_comparator.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_range.ts` instead.
-   *
-   * Parses a range string into a SemVerRange object or throws a TypeError.
-   * @param range The range string
-   * @returns A valid semantic version range
-   */
-  parseRange,
-  /**
-   * @deprecated (will be removed after 0.191.0) Import from `std/semver/parse_range.ts` instead.
-   *
-   * A tries to parse a valid SemVerRange string or returns undefined
-   * @param range The range string
-   * @returns A SemVerRange object if valid otherwise `undefined`
-   */
-  tryParseRange,
-} from "./parse_range.ts";

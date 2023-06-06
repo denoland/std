@@ -7,21 +7,6 @@ import { comparatorMin } from "./comparator_min.ts";
 import { ANY, NONE } from "./constants.ts";
 
 /**
- * Parses a comparator string into a valid SemVerComparator or returns undefined if not valid.
- * @param comparator
- * @returns A valid SemVerComparator or undefined
- */
-export function tryParseComparator(
-  comparator: string,
-): SemVerComparator | undefined {
-  try {
-    return parseComparator(comparator);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Parses a comparator string into a valid SemVerComparator.
  * @param comparator
  * @returns A valid SemVerComparator
