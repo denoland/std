@@ -30,8 +30,8 @@
 export function groupBy<T, K extends string>(
   iterable: Iterable<T>,
   selector: (element: T, index: number) => K,
-): Record<K, T[]> {
-  const ret: Record<K, T[]> = {} as Record<K, T[]>;
+): Partial<Record<K, T[]>> {
+  const ret: Partial<Record<K, T[]>> = {};
   let i = 0;
 
   for (const element of iterable) {
