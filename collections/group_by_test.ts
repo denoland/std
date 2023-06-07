@@ -2,6 +2,7 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { groupBy } from "./group_by.ts";
+import { mapValues } from "./map_values.ts";
 
 function groupByTest<T>(
   input: [Array<T>, (el: T) => string],
@@ -109,6 +110,17 @@ Deno.test({
 
     const actual = groupBy(count(), (n) => n % 2 === 0 ? "even" : "odd");
     const expected = { even: [0, 2, 4], odd: [1, 3] };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[collections/groupBy] output is accepted as [collections/mapValues] input",
+  fn() {
+    const grouped = groupBy(["a","b"], (s) => s);
+    const actual = mapValues(grouped, () => 'Ok');
+    const expected = { a: 'Ok', b: 'Ok' };
 
     assertEquals(actual, expected);
   },
