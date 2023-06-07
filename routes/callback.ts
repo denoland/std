@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { redirect } from "@/utils/http.ts";
 import {
   createUser,
   getUserById,
@@ -9,8 +8,8 @@ import {
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/payments.ts";
 import { State } from "./_middleware.ts";
-import { getAccessToken, setCallbackHeaders } from "@/utils/deno_kv_oauth.ts";
-import { oauth2Client } from "@/utils/oauth2_client.ts";
+import { handleCallback } from "deno_kv_oauth";
+import { client } from "@/utils/kv_oauth.ts";
 
 interface GitHubUser {
   id: number;
@@ -33,9 +32,9 @@ async function getUser(accessToken: string): Promise<GitHubUser> {
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
   async GET(req) {
-    const accessToken = await getAccessToken(req, oauth2Client);
-    const githubUser = await getUser(accessToken);
-    const sessionId = crypto.randomUUID();
+    const { response, tokens, sessionId } = await handleCallback(req, client);
+
+    const githubUser = await getUser(tokens.accessToken);
 
     const user = await getUserById(githubUser.id.toString());
     if (!user) {
@@ -54,8 +53,6 @@ export const handler: Handlers<any, State> = {
       await setUserSessionId(user, sessionId);
     }
 
-    const response = redirect("/");
-    setCallbackHeaders(response.headers, sessionId);
     return response;
   },
 };

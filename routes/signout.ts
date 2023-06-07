@@ -2,18 +2,15 @@
 import type { Handlers } from "$fresh/server.ts";
 import type { State } from "./_middleware.ts";
 import { deleteUserBySession } from "@/utils/db.ts";
-import { redirect } from "@/utils/http.ts";
-import { deleteSessionCookie } from "@/utils/deno_kv_oauth.ts";
+import { signOut } from "deno_kv_oauth";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
-  async GET(_req, ctx) {
+  async GET(req, ctx) {
     if (ctx.state.sessionId) {
       await deleteUserBySession(ctx.state.sessionId);
     }
 
-    const response = redirect("/");
-    deleteSessionCookie(response.headers);
-    return response;
+    return await signOut(req);
   },
 };

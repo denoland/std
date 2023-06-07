@@ -66,10 +66,10 @@ export default function AccountPage(props: PageProps<AccountState>) {
             </Row>
           </ul>
           <a
-            href="/logout"
+            href="/signout"
             class={`${BUTTON_STYLES} block text-center mt-8`}
           >
-            Logout
+            Sign out
           </a>
         </div>
       </Layout>
