@@ -334,17 +334,11 @@ class AssertSnapshotContext {
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
-    const contexts = Array.from(AssertSnapshotContext.contexts.values());
-    if (contexts[contexts.length - 1] === this) {
-      let updated = 0;
-      for (const context of contexts) {
-        updated += context.getUpdatedCount();
-      }
-      if (updated > 0) {
-        console.log(
-          green(bold(`\n > ${updated} snapshots updated.`)),
-        );
-      }
+    const updated = this.getUpdatedCount();
+    if (updated > 0) {
+      console.log(
+        green(bold(`\n > ${updated} snapshots updated.`)),
+      );
     }
   };
 
@@ -405,7 +399,7 @@ class AssertSnapshotContext {
    * of snapshots updated after all tests have run.
    *
    * This method can safely be called more than once and will only register the teardown
-   * function once.
+   * function once in a context.
    */
   public registerTeardown() {
     if (!this.#teardownRegistered) {

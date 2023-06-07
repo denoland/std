@@ -429,6 +429,76 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 2 2`] = `
 '
 `;
 
+snapshot[`Snapshot Test - Different Dir - New snapshot 1`] = `
+"running 2 tests from <tempDir>/test.ts
+" +
+  "Snapshot Test - First ... ok (--ms)
+" +
+  "Snapshot Test - Second ... ok (--ms)
+" +
+  "------- output -------
+" +
+  "
+" +
+  " > 2 snapshots updated.
+" +
+  "running 2 tests from <tempDir>/test.ts
+" +
+  "Snapshot Test - First ...----- output end -----
+" +
+  "Snapshot Test - First ... ok (--ms)
+" +
+  "Snapshot Test - Second ... ok (--ms)
+" +
+  "------- output -------
+" +
+  "
+" +
+  " > 2 snapshots updated.
+" +
+  "
+" +
+  "ok | 4 passed | 0 failed (--ms)
+" +
+  "
+"
+`;
+
+snapshot[`Snapshot Test - Different Dir - Existing snapshot - update 1`] = `
+"running 2 tests from <tempDir>/test.ts
+" +
+  "Snapshot Test - First ... ok (--ms)
+" +
+  "Snapshot Test - Second ... ok (--ms)
+" +
+  "------- output -------
+" +
+  "
+" +
+  " > 1 snapshots updated.
+" +
+  "running 2 tests from <tempDir>/test.ts
+" +
+  "Snapshot Test - First ...----- output end -----
+" +
+  "Snapshot Test - First ... ok (--ms)
+" +
+  "Snapshot Test - Second ... ok (--ms)
+" +
+  "------- output -------
+" +
+  "
+" +
+  " > 2 snapshots updated.
+" +
+  "
+" +
+  "ok | 4 passed | 0 failed (--ms)
+" +
+  "
+"
+`;
+
 snapshot[`Snapshot Test - Regression #2140 1`] = `
 {
   content: "

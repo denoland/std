@@ -26,7 +26,7 @@ function formatTestOutput(string: string) {
 function formatTestError(string: string) {
   // Strip colors and remove "Check file:///workspaces/deno_std/testing/.tmp/test.ts"
   // as this is always output to stderr
-  return stripColor(string).replace(/^Check file:\/\/(.+)\n/g, "");
+  return stripColor(string).replace(/^Check file:\/\/(.+)\n/gm, "");
 }
 
 function testFnWithTempDir(
@@ -38,6 +38,25 @@ function testFnWithTempDir(
       await fn(t, tempDir);
     } finally {
       await Deno.remove(tempDir, { recursive: true });
+    }
+  };
+}
+
+function testFnWithDifferentTempDir(
+  fn: (
+    t: Deno.TestContext,
+    tempDir1: string,
+    tempDir2: string,
+  ) => Promise<void>,
+) {
+  return async (t: Deno.TestContext) => {
+    const tempDir1 = await Deno.makeTempDir();
+    const tempDir2 = await Deno.makeTempDir();
+    try {
+      await fn(t, tempDir1, tempDir2);
+    } finally {
+      await Deno.remove(tempDir1, { recursive: true });
+      await Deno.remove(tempDir2, { recursive: true });
     }
   };
 }
@@ -455,6 +474,124 @@ Deno.test(
     });
     await assertSnapshot(t, result5.snapshots, {
       name: "Snapshot Test - Update - Existing snapshots - reverse order 2",
+    });
+  }),
+);
+
+Deno.test(
+  "Snapshot Test - Different Dir",
+  testFnWithDifferentTempDir(async (t, tempDir1, tempDir2) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath1 = join(tempDir1, tempTestFileName);
+    const tempTestFilePath2 = join(tempDir2, tempTestFileName);
+
+    async function runTestWithUpdateFlag(test1: string, test2: string) {
+      await Deno.writeTextFile(tempTestFilePath1, test1);
+      await Deno.writeTextFile(tempTestFilePath2, test2);
+
+      const command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "test",
+          "--allow-all",
+          tempTestFilePath1,
+          tempTestFilePath2,
+          "--",
+          "-u",
+        ],
+      });
+      const { stdout, stderr } = await command.output();
+
+      return {
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
+      };
+    }
+
+    function assertNoError(error: string) {
+      if (formatTestError(error)) {
+        throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+      }
+    }
+
+    /**
+     * New snapshot
+     */
+    const result1 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          4,
+        ]);
+      });`,
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          4,
+        ]);
+      });`,
+    );
+
+    assertNoError(result1.error);
+    await assertSnapshot(t, formatTestOutput(result1.output), {
+      name: "Snapshot Test - Different Dir - New snapshot",
+    });
+
+    /**
+     * Existing snapshot - updates
+     */
+    const result2 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          5,
+        ]);
+      });`,
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          6,
+          7,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          8,
+          9,
+        ]);
+      });`,
+    );
+    assertNoError(result2.error);
+    await assertSnapshot(t, formatTestOutput(result2.output), {
+      name: "Snapshot Test - Different Dir - Existing snapshot - update",
     });
   }),
 );
