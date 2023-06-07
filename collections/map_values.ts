@@ -26,12 +26,12 @@
  * );
  * ```
  */
-export function mapValues<T, O>(
-  record: Readonly<Record<string, T>>,
+export function mapValues<T, O, K extends string>(
+  record: Readonly<Partial<Record<K, T>>>,
   transformer: (value: T) => O,
-): Record<string, O> {
-  const ret: Record<string, O> = {};
-  const entries = Object.entries(record);
+): Partial<Record<K, O>> {
+  const ret: Partial<Record<K, O>> = {};
+  const entries = Object.entries(record) as [K, T][];
 
   for (const [key, value] of entries) {
     const mappedValue = transformer(value);
