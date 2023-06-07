@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { _exponentialBackoffWithJitter, retry } from "./retry.ts";
+import { _exponentialBackoffWithJitter, retry, RetryError } from "./retry.ts";
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { FakeTime } from "../testing/time.ts";
 
 function generateErroringFunction(errorsBeforeSucceeds: number) {
   let errorCount = 0;
@@ -31,6 +32,32 @@ Deno.test("[async] retry fails after max errors is passed", async function () {
   );
 });
 
+Deno.test("[async] retry waits four times by default", async function () {
+  let callCount = 0;
+  const onlyErrors = function () {
+    callCount++;
+    throw new Error("Failure");
+  };
+  const time = new FakeTime();
+  const callCounts: Array<number> = [];
+  try {
+    const promise = retry(onlyErrors);
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await time.next();
+    queueMicrotask(() => callCounts.push(callCount));
+    await assertRejects(() => promise, RetryError);
+    assertEquals(callCounts, [1, 2, 3, 4, 5]);
+  } finally {
+    time.restore();
+  }
+});
+
 Deno.test(
   "[async] retry throws if minTimeout is less than maxTimeout",
   async function () {
@@ -44,11 +71,22 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if minTimeout is less than 0",
+  "[async] retry throws if maxTimeout is less than 0",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
         maxTimeout: -1,
+      })
+    );
+  },
+);
+
+Deno.test(
+  "[async] retry throws if jitter is bigger than 1",
+  async function () {
+    await assertRejects(() =>
+      retry(() => {}, {
+        jitter: 2,
       })
     );
   },
@@ -70,20 +108,61 @@ const INITIAL_SEED = 3460544849;
 const expectedTimings: readonly (readonly number[] & { length: 10 })[] & {
   length: 10;
 } = [
-  [69, 83, 56, 791, 131, 2140, 5480, 7706, 6036, 17908],
-  [54, 16, 23, 381, 145, 2717, 3195, 4374, 3149, 21390],
-  [32, 183, 334, 155, 391, 2954, 2890, 8202, 25202, 38387],
-  [54, 89, 26, 174, 741, 1245, 1021, 12191, 19834, 17559],
-  [74, 71, 113, 43, 496, 3196, 3843, 7860, 8943, 44312],
-  [20, 129, 52, 555, 857, 3072, 3955, 7078, 5640, 1339],
-  [75, 154, 59, 302, 998, 851, 5034, 8401, 23920, 41925],
-  [86, 26, 211, 491, 139, 2263, 4502, 10713, 15976, 32328],
-  [35, 10, 18, 449, 774, 698, 743, 8833, 24537, 7446],
-  [11, 122, 178, 132, 573, 1803, 5107, 4505, 11523, 17598],
+  [31, 117, 344, 9, 1469, 1060, 920, 5094, 19564, 33292],
+  [46, 184, 377, 419, 1455, 483, 3205, 8426, 22451, 29810],
+  [68, 17, 66, 645, 1209, 246, 3510, 4598, 398, 12813],
+  [46, 111, 374, 626, 859, 1955, 5379, 609, 5766, 33641],
+  [26, 129, 287, 757, 1104, 4, 2557, 4940, 16657, 6888],
+  [80, 71, 348, 245, 743, 128, 2445, 5722, 19960, 49861],
+  [25, 46, 341, 498, 602, 2349, 1366, 4399, 1680, 9275],
+  [14, 174, 189, 309, 1461, 937, 1898, 2087, 9624, 18872],
+  [65, 190, 382, 351, 826, 2502, 5657, 3967, 1063, 43754],
+  [89, 78, 222, 668, 1027, 1397, 1293, 8295, 14077, 33602],
 ] as const;
 
 Deno.test("[async] retry - backoff function timings", async (t) => {
   const originalMathRandom = Math.random;
+
+  await t.step("wait fixed times without jitter", async function () {
+    const time = new FakeTime();
+    let resolved = false;
+    const checkResolved = async () => {
+      try {
+        await retry(() => {
+          throw new Error("Failure");
+        }, { jitter: 0 });
+      } catch {
+        resolved = true;
+      }
+    };
+    try {
+      const promise = checkResolved();
+      const startTime = time.now;
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 1000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 3000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 7000);
+
+      await time.nextAsync();
+      assertEquals(time.now - startTime, 15000);
+      assertEquals(resolved, false);
+
+      await time.runMicrotasks();
+      assertEquals(time.now - startTime, 15000);
+      assertEquals(resolved, true);
+
+      await time.runAllAsync();
+      assertEquals(time.now - startTime, 15000);
+      await promise;
+    } finally {
+      time.restore();
+    }
+  });
 
   await t.step("_exponentialBackoffWithJitter", () => {
     let nextSeed = INITIAL_SEED;
@@ -98,7 +177,7 @@ Deno.test("[async] retry - backoff function timings", async (t) => {
       const cap = Infinity;
 
       for (let i = 0; i < 10; ++i) {
-        const result = _exponentialBackoffWithJitter(cap, base, i, 2);
+        const result = _exponentialBackoffWithJitter(cap, base, i, 2, 1);
         results.push(Math.round(result));
       }
 
