@@ -197,3 +197,27 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[collections/sortBy] desc ordering",
+  fn() {
+    assertEquals(
+      sortBy(
+        [
+          "January 27, 1995",
+          "November 26, 2020",
+          "June 17, 1952",
+          "July 15, 1993",
+        ],
+        (it) => new Date(it),
+        { order: "desc" },
+      ),
+      [
+        "November 26, 2020",
+        "January 27, 1995",
+        "July 15, 1993",
+        "June 17, 1952",
+      ],
+    );
+  },
+});
