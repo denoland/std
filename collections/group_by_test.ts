@@ -2,7 +2,6 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { groupBy } from "./group_by.ts";
-import { mapValues } from "./map_values.ts";
 
 function groupByTest<T>(
   input: [Array<T>, (el: T) => string],
