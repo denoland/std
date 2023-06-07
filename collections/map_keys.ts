@@ -25,12 +25,12 @@
  * );
  * ```
  */
-export function mapKeys<T>(
-  record: Readonly<Record<string, T>>,
-  transformer: (key: string) => string,
-): Record<string, T> {
-  const ret: Record<string, T> = {};
-  const keys = Object.keys(record);
+export function mapKeys<T, KeyIn extends string, KeyOut extends string>(
+  record: Readonly<Partial<Record<KeyIn, T>>>,
+  transformer: (key: KeyIn) => KeyOut,
+): Partial<Record<KeyOut, T>> {
+  const ret: Partial<Record<KeyOut, T>> = {};
+  const keys = Object.keys(record) as KeyIn[];
 
   for (const key of keys) {
     const mappedKey = transformer(key);

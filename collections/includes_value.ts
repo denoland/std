@@ -20,7 +20,7 @@
  * ```
  */
 export function includesValue<T>(
-  record: Readonly<Record<string, T>>,
+  record: Readonly<Partial<Record<string, T>>>,
   value: T,
 ): boolean {
   for (const i in record) {

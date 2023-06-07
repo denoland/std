@@ -21,10 +21,10 @@
  * });
  * ```
  */
-export function associateWith<T>(
+export function associateWith<T, K extends string>(
   array: Iterable<string>,
   selector: (key: string) => T,
-): Record<string, T> {
+): Partial<Record<K, T>> {
   const ret: Record<string, T> = {};
 
   for (const element of array) {

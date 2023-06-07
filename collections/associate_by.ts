@@ -25,10 +25,10 @@
  * });
  * ```
  */
-export function associateBy<T>(
+export function associateBy<T, K extends string>(
   array: Iterable<T>,
-  selector: (el: T) => string,
-): Record<string, T> {
+  selector: (el: T) => K,
+): Partial<Record<K, T>> {
   const ret: Record<string, T> = {};
 
   for (const element of array) {

@@ -33,10 +33,10 @@ import { mapEntries } from "./map_entries.ts";
  * });
  * ```
  */
-export function aggregateGroups<T, A>(
-  record: Readonly<Record<string, Array<T>>>,
-  aggregator: (current: T, key: string, first: boolean, accumulator?: A) => A,
-): Record<string, A> {
+export function aggregateGroups<T, A, K extends string>(
+  record: Readonly<Partial<Record<K, Array<T>>>>,
+  aggregator: (current: T, key: K, first: boolean, accumulator?: A) => A,
+): Partial<Record<K, A>> {
   return mapEntries(
     record,
     ([key, values]) => [

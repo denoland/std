@@ -26,12 +26,12 @@
  * );
  * ```
  */
-export function filterValues<T>(
-  record: Readonly<Record<string, T>>,
+export function filterValues<T, K extends string>(
+  record: Readonly<Partial<Record<K, T>>>,
   predicate: (value: T) => boolean,
-): Record<string, T> {
-  const ret: Record<string, T> = {};
-  const entries = Object.entries(record);
+): Partial<Record<K, T>> {
+  const ret: Partial<Record<K, T>> = {};
+  const entries = Object.entries(record) as [K, T][];
 
   for (const [key, value] of entries) {
     if (predicate(value)) {

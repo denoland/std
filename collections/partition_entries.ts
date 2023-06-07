@@ -30,13 +30,13 @@
  * );
  * ```
  */
-export function partitionEntries<T>(
-  record: Readonly<Record<string, T>>,
-  predicate: (entry: [string, T]) => boolean,
-): [match: Record<string, T>, rest: Record<string, T>] {
-  const match: Record<string, T> = {};
-  const rest: Record<string, T> = {};
-  const entries = Object.entries(record);
+export function partitionEntries<T, K extends string>(
+  record: Readonly<Partial<Record<K, T>>>,
+  predicate: (entry: [K, T]) => boolean,
+): [match: Partial<Record<K, T>>, rest: Partial<Record<K, T>>] {
+  const match: Partial<Record<K, T>> = {};
+  const rest: Partial<Record<K, T>> = {};
+  const entries = Object.entries(record) as [K, T][];
 
   for (const [key, value] of entries) {
     if (predicate([key, value])) {
