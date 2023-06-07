@@ -239,13 +239,18 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
   });
   await t.step("should fulfill Cassini identity", () => {
     fc.assert(
-      fc.property(fc.integer({ min: 1, max: MaxN }), fc.integer({ min: 0, max: MaxN }), (p: number) => {
-        const sign = p % 2 === 0 ? 1n : -1n; // (-1)^p
-        assert(
-          fibonacci(p + 1) * fibonacci(p - 1) - fibonacci(p) * fibonacci(p) ===
-            sign,
-        );
-      }),
+      fc.property(
+        fc.integer({ min: 1, max: MaxN }),
+        fc.integer({ min: 0, max: MaxN }),
+        (p: number) => {
+          const sign = p % 2 === 0 ? 1n : -1n; // (-1)^p
+          assert(
+            fibonacci(p + 1) * fibonacci(p - 1) -
+                fibonacci(p) * fibonacci(p) ===
+              sign,
+          );
+        },
+      ),
     );
   });
   await t.step("should fibonacci(nk) divisible by fibonacci(n)", () => {
