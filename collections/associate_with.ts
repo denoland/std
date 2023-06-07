@@ -25,7 +25,7 @@ export function associateWith<T, K extends string>(
   array: Iterable<string>,
   selector: (key: string) => T,
 ): Partial<Record<K, T>> {
-  const ret: Record<string, T> = {};
+  const ret: Partial<Record<K, T>> = {};
 
   for (const element of array) {
     const selectedValue = selector(element);

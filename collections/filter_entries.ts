@@ -32,7 +32,7 @@ export function filterEntries<T, K extends string>(
   record: Readonly<Partial<Record<K, T>>>,
   predicate: (entry: [K, T]) => boolean,
 ): Partial<Record<K, T>> {
-  const ret: Record<string, T> = {};
+  const ret: Partial<Record<K, T>> = {};
   const entries = Object.entries(record) as [K, T][];
 
   for (const [key, value] of entries) {
