@@ -2,6 +2,7 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { mapValues } from "./map_values.ts";
+import { groupBy } from "./group_by.ts";
 
 function mapValuesTest<T, O>(
   input: [Record<string, T>, (value: T) => O],
@@ -107,5 +108,35 @@ Deno.test({
         "Rice": "3.50",
       },
     );
+  },
+});
+
+Deno.test({
+  name: "[collections/mapValues] accepts output of [collections/groupBy]",
+  fn() {
+    const iterable: string[] = ["a"];
+    const grouped: Partial<Record<string, string[]>> = groupBy(
+      iterable,
+      (s) => s,
+    );
+    const actual = mapValues(grouped, (s: string[]) => s[0].toUpperCase());
+    const expected = { a: "A" };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[collections/mapValues] preserves key type",
+  fn() {
+    type Variants = "a" | "b";
+    const input: Partial<Record<Variants, string>> = { a: "a" };
+    const actual: Partial<Record<Variants, number>> = mapValues(
+      input,
+      (_: string) => 1,
+    );
+    const expected = { a: 1 };
+
+    assertEquals(actual, expected);
   },
 });
