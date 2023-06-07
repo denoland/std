@@ -74,7 +74,6 @@ class FileReader implements Reader {
  */
 function clean(length: number): Uint8Array {
   const buffer = new Uint8Array(length);
-  buffer.fill(0, 0, length - 1);
   return buffer;
 }
 
