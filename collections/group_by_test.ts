@@ -119,8 +119,8 @@ Deno.test({
   name: "[collections/groupBy] output is accepted as [collections/mapValues] input",
   fn() {
     const grouped = groupBy(["a","b"], (s) => s);
-    const actual = mapValues(grouped, () => 'Ok');
-    const expected = { a: 'Ok', b: 'Ok' };
+    const actual = mapValues(grouped, (s: string[]) => s[0].toUpperCase());
+    const expected = { a: 'A', b: 'B' };
 
     assertEquals(actual, expected);
   },
