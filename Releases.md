@@ -1,3 +1,16 @@
+### 0.191.0 / 2023.06.08
+
+- BREAKING(csv,http,path): remove deprecated APIs (#3418)
+- feat(async/retry): introduce jitter option and fix retry bugs (#3427)
+- feat(collections): switch functions to take iterables when possible (#3401)
+- feat(collections/sort_by): descending order can be specified in options
+  (#3419)
+- feat(crypto): add BLAKE2B-224 hashing algorithm in crypto (#3392)
+- feat(html): add escape and unescape functions for HTML entities (#3335)
+- fix(http/file_server): use platform specific `resolve` (#3424)
+- fix(streams/mergeReadableStreams): better error handling (#3395)
+- fix(toml): various edge case fixes for `toml.stringify` (#3403)
+
 ### 0.190.0 / 2023.05.29
 
 ### 0.189.0 / 2023.05.24
