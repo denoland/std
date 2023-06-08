@@ -384,7 +384,7 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
 " +
   " > 1 snapshots removed.
 " +
-  "  - Snapshot Test - Update 1
+  "   • Snapshot Test - Update 1
 " +
   "
 " +
@@ -479,7 +479,7 @@ snapshot[`Snapshot Test - Remove - Existing snapshot - removed one 1`] = `
 " +
   " > 1 snapshots removed.
 " +
-  "  - Snapshot Test - Remove - Third 1
+  "   • Snapshot Test - Remove - Third 1
 " +
   "
 " +
@@ -500,11 +500,11 @@ snapshot[`Snapshot Test - Remove - Existing snapshot - removed several 1`] = `
 " +
   " > 3 snapshots removed.
 " +
-  "  - Snapshot Test - Remove - Second 1
+  "   • Snapshot Test - Remove - Second 1
 " +
-  "  - Snapshot Test - Remove - Fourth 1
+  "   • Snapshot Test - Remove - Fourth 1
 " +
-  "  - Snapshot Test - Remove - Fifth 1
+  "   • Snapshot Test - Remove - Fifth 1
 " +
   "
 " +

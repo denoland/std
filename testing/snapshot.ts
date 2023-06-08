@@ -351,7 +351,7 @@ class AssertSnapshotContext {
       );
       for (const snapshotName of removedSnapshotNames) {
         console.log(
-          red(bold(`  - ${snapshotName}`)),
+          red(bold(`   • ${snapshotName}`)),
         );
       }
     }
