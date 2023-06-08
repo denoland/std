@@ -22,8 +22,8 @@
  * ```
  */
 export function associateWith<T, K extends string>(
-  array: Iterable<string>,
-  selector: (key: string) => T,
+  array: Iterable<K>,
+  selector: (key: K) => T,
 ): Partial<Record<K, T>> {
   const ret: Partial<Record<K, T>> = {};
 
