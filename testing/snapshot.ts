@@ -308,6 +308,10 @@ class AssertSnapshotContext {
   #teardown = () => {
     const buf = ["export const snapshot = {};"];
     const currentSnapshots = this.#getCurrentSnapshotsInitialized();
+    const currentSnapshotNames = Array.from(currentSnapshots.keys());
+    const removedSnapshotNames = currentSnapshotNames.filter((name) =>
+      !this.snapshotUpdateQueue.includes(name)
+    );
     this.snapshotUpdateQueue.forEach((name) => {
       const updatedSnapshot = this.#updatedSnapshots.get(name);
       const currentSnapshot = currentSnapshots.get(name);
@@ -339,6 +343,17 @@ class AssertSnapshotContext {
       console.log(
         green(bold(`\n > ${updated} snapshots updated.`)),
       );
+    }
+    const removed = removedSnapshotNames.length;
+    if (removed > 0) {
+      console.log(
+        red(bold(`\n > ${removed} snapshots removed.`)),
+      );
+      for (const snapshotName of removedSnapshotNames) {
+        console.log(
+          red(bold(`  - ${snapshotName}`)),
+        );
+      }
     }
   };
 
