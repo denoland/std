@@ -32,9 +32,12 @@ async function getUser(accessToken: string): Promise<GitHubUser> {
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, State> = {
   async GET(req) {
-    const { response, tokens, sessionId } = await handleCallback(req, client);
+    const { response, accessToken, sessionId } = await handleCallback(
+      req,
+      client,
+    );
 
-    const githubUser = await getUser(tokens.accessToken);
+    const githubUser = await getUser(accessToken);
 
     const user = await getUserById(githubUser.id.toString());
     if (!user) {
