@@ -57,6 +57,34 @@ Deno.test("toSnakeCase: Convert a sentence into snake case", () => {
     );
 });
 
+Deno.test("toScreamingSnakeCase: Throws in invalid inputs", () => {
+    assertThrows(() => casing.toScreamingSnakeCase(undefined as any));
+    assertThrows(() => casing.toScreamingSnakeCase(NaN as any));
+    assertThrows(() => casing.toScreamingSnakeCase(Infinity as any));
+    assertThrows(() => casing.toScreamingSnakeCase(10 as any));
+});
+
+Deno.test("toScreamingSnakeCase: An empty string is already screaming snake case", () => {
+    assertEquals(casing.toScreamingSnakeCase(''), '');
+});
+
+Deno.test("toScreamingSnakeCase: Convert a single word to screaming snake case", () => {
+    const SINGLE_WORD = "shruberry";
+    const EXPECTED = "SHRUBERRY";
+    assertEquals(casing.toScreamingSnakeCase(SINGLE_WORD), EXPECTED);
+});
+
+Deno.test("toScreamingSnakeCase: Convert a sentence into screaming snake case", () => {
+    assertEquals(
+        casing.toScreamingSnakeCase("she turned me into a newt"), 
+        "SHE_TURNED_ME_INTO_A_NEWT"
+    );
+    assertEquals(
+        casing.toScreamingSnakeCase("tis But a Scratch"), 
+        "TIS_BUT_A_SCRATCH"
+    );
+});
+
 Deno.test("toKebabCase: Throws in invalid inputs", () => {
     assertThrows(() => casing.toKebabCase(undefined as any));
     assertThrows(() => casing.toKebabCase(NaN as any));

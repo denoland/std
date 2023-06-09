@@ -87,6 +87,24 @@ export function toSnakeCase(str: string): string {
 }
 
 /**
+ * Converts a str into SCREAMING_SNAKE_CASE
+ * 
+ * @example
+ * ```ts
+ * import {
+ *   toScreamingSnakeCase,
+ * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * assertEquals(toScreamingSnakeCase("deno is awesome"), "DENO_IS_AWESOME");
+ * ```
+ * 
+ * @param str is the string that is going to be converted into SCREAMING_SNAKE_CASE
+ * @returns The string as SCREAMING_SNAKE_CASE
+ */
+export function toScreamingSnakeCase(str: string): string {
+    return toSnakeCase(str).toLocaleUpperCase();
+}
+
+/**
  * Converts a str into kebab-case
  * 
  * @example
