@@ -25,6 +25,34 @@ export function toPascalCase(str: string): string {
     return str.split(" ").map(capitalizeWord).join("");
 }
 
+/**
+ * Converts a str into camelCase
+ * 
+ * @example
+ * ```ts
+ * import {
+ *  toCamelCase,
+ * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * 
+ * assertEquals(toCamelCase("deno is awesome"), "denoIsAwesome");
+ * ```
+ * 
+ * @param str The string that is going to be converted into camelCase
+ * @returns The string as camelCase
+ */
+export function toCamelCase(str: string): string {
+    if (typeof str !== "string") {
+        throw new TypeError("str must be a string");
+    }
+
+    if (str === "") {
+        return "";
+    }
+
+    const [firstWord, ...restOfWords] = str.split(" ");
+    return [firstWord, restOfWords.map(capitalizeWord)].flat(1).join("");
+}
+
 function capitalizeWord(word: string): string {
     const firstChar = word[0];
     const firstCharAsUpperCase = firstChar.toLocaleUpperCase();

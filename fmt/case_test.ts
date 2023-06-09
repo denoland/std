@@ -84,3 +84,31 @@ Deno.test("toKebabCase: Convert a sentence into snake case", () => {
         "tis-but-a-scratch"
     );
 });
+
+Deno.test("toCamelCase: Throws in invalid inputs", () => {
+    assertThrows(() => casing.toCamelCase(undefined as any));
+    assertThrows(() => casing.toCamelCase(NaN as any));
+    assertThrows(() => casing.toCamelCase(Infinity as any));
+    assertThrows(() => casing.toCamelCase(10 as any));
+});
+
+Deno.test("toCamelCase: An empty string is already camel case", () => {
+    assertEquals(casing.toCamelCase(''), '');
+});
+
+Deno.test("toCamelCase: Convert a single word to camel case", () => {
+    const SINGLE_WORD = "shruberry";
+    const EXPECTED = "shruberry";
+    assertEquals(casing.toCamelCase(SINGLE_WORD), EXPECTED);
+});
+
+Deno.test("toCamelCase: Convert a sentence into camel case", () => {
+    assertEquals(
+        casing.toCamelCase("she turned me into a newt"), 
+        "sheTurnedMeIntoANewt"
+    );
+    assertEquals(
+        casing.toCamelCase("tis But a Scratch"), 
+        "tisButAScratch"
+    );
+});
