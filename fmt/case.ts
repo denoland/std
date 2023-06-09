@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 /**
  * Converts a str into PascalCase
  *
@@ -6,6 +8,9 @@
  * import {
  *  toPascalCase,
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertEquals(toPascalCase("deno is awesome"), "DenoIsAwesome");
  * ```
@@ -33,6 +38,9 @@ export function toPascalCase(str: string): string {
  * import {
  *  toCamelCase,
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * assertEquals(toCamelCase("deno is awesome"), "denoIsAwesome");
  * ```
@@ -70,6 +78,9 @@ function capitalizeWord(word: string): string {
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
  * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
  * ```
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * @param str is the string that is going to be converted into snake_case
  * @returns The string as snake_case
@@ -94,6 +105,10 @@ export function toSnakeCase(str: string): string {
  * import {
  *   toScreamingSnakeCase,
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * 
  * assertEquals(toScreamingSnakeCase("deno is awesome"), "DENO_IS_AWESOME");
  * ```
  *
@@ -112,6 +127,10 @@ export function toScreamingSnakeCase(str: string): string {
  * import {
  *   toKebabCase,
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * 
  * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
  * ```
  *
@@ -128,4 +147,36 @@ export function toKebabCase(str: string): string {
   }
 
   return str.split(" ").join("-").toLocaleLowerCase();
+}
+
+/**
+ * Converts a str into Title Case
+ *
+ * @example
+ * ```ts
+ * import {
+ *   toTitleCase,
+ * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * import {
+ *   assertEquals,
+ * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * 
+ * assertEquals(toTitleCase("deno is awesome"), "Deno Is Awesome");
+ * ```
+ *
+ * @param str is the string that is going to be converted into Title Case
+ * @returns The string as Title Case
+ */
+export function toTitleCase(str: string): string {
+  if (typeof str !== "string") {
+    throw new TypeError("str must be a string");
+  }
+
+  if (str === "") {
+    return "";
+  }
+
+  return str.split(" ")
+    .map(capitalizeWord)
+    .join(" ");
 }

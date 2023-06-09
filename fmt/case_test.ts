@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import * as casing from "./case.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
@@ -158,5 +159,37 @@ Deno.test("toCamelCase: Convert a sentence into camel case", () => {
   assertEquals(
     casing.toCamelCase("tis But a Scratch"),
     "tisButAScratch",
+  );
+});
+
+Deno.test("toTitleCase: Throws in invalid inputs", () => {
+  // deno-lint-ignore no-explicit-any
+  assertThrows(() => casing.toTitleCase(undefined as any));
+  // deno-lint-ignore no-explicit-any
+  assertThrows(() => casing.toTitleCase(NaN as any));
+  // deno-lint-ignore no-explicit-any
+  assertThrows(() => casing.toTitleCase(Infinity as any));
+  // deno-lint-ignore no-explicit-any
+  assertThrows(() => casing.toTitleCase(10 as any));
+});
+
+Deno.test("toTitleCase: An empty string is already Title Case", () => {
+  assertEquals(casing.toTitleCase(""), "");
+});
+
+Deno.test("toTitleCase: Convert a single word to Title Case", () => {
+  const SINGLE_WORD = "shruberry";
+  const EXPECTED = "Shruberry";
+  assertEquals(casing.toTitleCase(SINGLE_WORD), EXPECTED);
+});
+
+Deno.test("toTitleCase: Convert a sentence into Title Case", () => {
+  assertEquals(
+    casing.toTitleCase("she turned me into a newt"),
+    "She Turned Me Into A Newt",
+  );
+  assertEquals(
+    casing.toTitleCase("tis But a Scratch"),
+    "Tis But A Scratch",
   );
 });
