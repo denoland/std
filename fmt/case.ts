@@ -40,7 +40,7 @@ function capitalizeWord(word: string): string {
  * import {
  *   toSnakeCase,
  * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
- * assertEquals(toPascalCase("deno is awesome"), "deno_is_awesome");
+ * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
  * ```
  * 
  * @param str is the string that is going to be converted into snake_case
@@ -56,4 +56,30 @@ export function toSnakeCase(str: string): string {
     }
     
     return str.split(" ").join("_").toLocaleLowerCase();
+}
+
+/**
+ * Converts a str into kebab-case
+ * 
+ * @example
+ * ```ts
+ * import {
+ *   toKebabCase,
+ * } from "https://deno.land/std@$STD_VERSION/fmt/case.ts";
+ * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
+ * ```
+ * 
+ * @param str is the string that is going to be converted into kebab-case
+ * @returns The string as kebab-case
+ */
+export function toKebabCase(str: string): string {
+    if (typeof str !== "string") {
+        throw new TypeError("str must be a string");
+    }
+
+    if (str === "") {
+        return "";
+    }
+    
+    return str.split(" ").join("-").toLocaleLowerCase();
 }
