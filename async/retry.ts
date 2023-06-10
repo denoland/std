@@ -4,8 +4,8 @@
 import { assert } from "../_util/asserts.ts";
 
 export class RetryError extends Error {
-  constructor(cause: unknown, count: number) {
-    super(`Exceeded max retry count (${count})`);
+  constructor(cause: unknown, attempts: number) {
+    super(`Retrying exceeded the maxAttempts (${attempts}).`);
     this.name = "RetryError";
     this.cause = cause;
   }
@@ -14,13 +14,13 @@ export class RetryError extends Error {
 export interface RetryOptions {
   /** How much to backoff after each retry. This is `2` by default. */
   multiplier?: number;
-  /** The maximum milliseconds between retries. This is `60000` by default. */
+  /** The maximum milliseconds between attempts. This is `60000` by default. */
   maxTimeout?: number;
-  /** The maximum amount of retries until failure. This is `5` by default. */
+  /** The maximum amount of attempts until failure. This is `5` by default. */
   maxAttempts?: number;
-  /** The inital and minimum amount of milliseconds between retries. This is `1000` by default. */
+  /** The inital and minimum amount of milliseconds between attempts. This is `1000` by default. */
   minTimeout?: number;
-  /** Amount of jitter to introduce to the time between retries. This is `1` for full jitter by default. */
+  /** Amount of jitter to introduce to the time between attempts. This is `1` for full jitter by default. */
   jitter?: number;
 }
 
@@ -41,7 +41,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * How long the actual delay is, depends on `jitter`.
  *
  * When `jitter` is the default value of `1`, waits between two attempts for a randomized amount between 0 and the backoff time.
- * With the default options the maximal delay will be `15s = 1s + 2s + 4s + 8s`. If all five retries are exhausted the mean delay will be `9.5s = ½(4s + 15s)`.
+ * With the default options the maximal delay will be `15s = 1s + 2s + 4s + 8s`. If all five attempts are exhausted the mean delay will be `9.5s = ½(4s + 15s)`.
  *
  * When `jitter` is `0`, waits the full backoff time.
  *
