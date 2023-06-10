@@ -479,6 +479,116 @@ Deno.test(
 );
 
 Deno.test(
+  "Snapshot Test - Remove",
+  testFnWithTempDir(async (t, tempDir) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath = join(tempDir, tempTestFileName);
+
+    async function runTestWithUpdateFlag(test: string) {
+      await Deno.writeTextFile(tempTestFilePath, test);
+
+      const command = new Deno.Command(Deno.execPath(), {
+        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
+      });
+      const { stdout, stderr } = await command.output();
+
+      return {
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
+      };
+    }
+
+    function assertNoError(error: string) {
+      if (formatTestError(error)) {
+        throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+      }
+    }
+
+    /**
+     * New snapshot
+     */
+    const result1 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+        await assertSnapshot(t, { c: 3, d: 4 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Third", async (t) => {
+        await assertSnapshot(t, { e: 5, f: 6 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+        await assertSnapshot(t, { g: 7, h: 8 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+        await assertSnapshot(t, { i: 9, j: 10 });
+      });
+      `,
+    );
+
+    assertNoError(result1.error);
+    await assertSnapshot(t, formatTestOutput(result1.output), {
+      name: "Snapshot Test - Remove - New snapshot",
+    });
+
+    /**
+     * Existing snapshot - removes one
+     */
+    const result2 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+        await assertSnapshot(t, { c: 3, d: 4 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+        await assertSnapshot(t, { g: 7, h: 8 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+        await assertSnapshot(t, { i: 9, j: 10 });
+      });
+      `,
+    );
+
+    assertNoError(result2.error);
+    await assertSnapshot(t, formatTestOutput(result2.output), {
+      name: "Snapshot Test - Remove - Existing snapshot - removed one",
+    });
+
+    /**
+     * Existing snapshot - removes several
+     */
+    const result3 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+      `,
+    );
+
+    assertNoError(result3.error);
+    await assertSnapshot(t, formatTestOutput(result3.output), {
+      name: "Snapshot Test - Remove - Existing snapshot - removed several",
+    });
+  }),
+);
+
+Deno.test(
   "Snapshot Test - Different Dir",
   testFnWithDifferentTempDir(async (t, tempDir1, tempDir2) => {
     const tempTestFileName = "test.ts";

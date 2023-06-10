@@ -18,75 +18,27 @@ export class TimeError extends Error {
   }
 }
 
-function isFakeDate(instance: unknown): instance is FakeDate {
-  return instance instanceof FakeDate;
+function FakeTimeNow() {
+  return time?.now ?? _internals.Date.now();
 }
 
-interface FakeDate extends Date {
-  date: Date;
-}
-
-function FakeDate(this: void): string;
-function FakeDate(this: FakeDate): void;
-function FakeDate(
-  this: FakeDate,
-  value: string | number | Date,
-): void;
-function FakeDate(
-  this: FakeDate,
-  year: number,
-  month: number,
-  date?: number,
-  hours?: number,
-  minutes?: number,
-  seconds?: number,
-  ms?: number,
-): void;
-function FakeDate(
-  this: FakeDate | void,
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-): string | void {
-  if (args.length === 0) args.push(FakeDate.now());
-  if (isFakeDate(this)) {
-    this.date = new _internals.Date(...(args as []));
-  } else {
-    return new _internals.Date(args[0]).toString();
-  }
-}
-
-FakeDate.parse = Date.parse;
-FakeDate.UTC = Date.UTC;
-FakeDate.now = () => time?.now ?? _internals.Date.now();
-Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
-  const propName: keyof Date = name as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
-});
-Object.getOwnPropertySymbols(Date.prototype).forEach((name: symbol) => {
-  const propName: keyof Date = name as unknown as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
+const FakeDate = new Proxy(Date, {
+  construct(_target, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return new _internals.Date(...args);
+  },
+  apply(_target, _thisArg, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return _internals.Date(...args);
+  },
+  get(target, prop, receiver) {
+    if (prop === "now") {
+      return FakeTimeNow;
+    }
+    return Reflect.get(target, prop, receiver);
+  },
 });
 
 interface Timer {
@@ -184,7 +136,7 @@ function setTimer(
 }
 
 function overrideGlobals() {
-  globalThis.Date = FakeDate as DateConstructor;
+  globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
