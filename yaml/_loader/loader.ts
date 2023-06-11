@@ -1788,7 +1788,7 @@ export function load(input: string, options?: LoaderStateOptions): unknown {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {
-    return;
+    return null;
   }
   if (documents.length === 1) {
     return documents[0];
