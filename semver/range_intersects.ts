@@ -40,7 +40,7 @@ export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
 }
 
 /**
- * @deprecated (will be removed after 0.195.0) Use `rangeIntersects(r0: SemVerRange, r1: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.200.0) Use `rangeIntersects(r0: SemVerRange, r1: SemVerRange)` instead.
  */
 export function intersects(
   range0: string | SemVerRange | SemVerComparator,

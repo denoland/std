@@ -6,7 +6,7 @@ import { compare } from "./compare.ts";
 export function sort(
   list: SemVer[],
 ): SemVer[];
-/** @deprecated (will be removed after 0.195.0) Use `sort(list: SemVer[])` instead. */
+/** @deprecated (will be removed after 0.200.0) Use `sort(list: SemVer[])` instead. */
 export function sort(
   list: (string | SemVer)[],
   options?: { includePrerelease: boolean },

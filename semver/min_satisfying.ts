@@ -17,7 +17,7 @@ export function minSatisfying(
   range: SemVerRange,
 ): SemVer | undefined;
 /**
- * @deprecated (will be removed after 0.195.0) Use `minSatisfying(versions: SemVer[], range: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.200.0) Use `minSatisfying(versions: SemVer[], range: SemVerRange)` instead.
  */
 export function minSatisfying<T extends string | SemVer>(
   versions: readonly T[],

@@ -11,7 +11,7 @@ import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
  * @returns A valid SemVer
  */
 export function parse(version: string | SemVer): SemVer;
-/** @deprecated (will be removed after 0.195.0) Use parse(version: string | SemVer) instead. */
+/** @deprecated (will be removed after 0.200.0) Use parse(version: string | SemVer) instead. */
 export function parse(
   version: string | SemVer | null,
   options?: { includePrerelease: boolean },

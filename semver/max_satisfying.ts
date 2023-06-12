@@ -17,7 +17,7 @@ export function maxSatisfying(
   range: SemVerRange,
 ): SemVer | undefined;
 /**
- * @deprecated (will be removed after 0.195.0) Use `maxSatisfying(versions: SemVer[], range: SemVerRange)` instead.
+ * @deprecated (will be removed after 0.200.0) Use `maxSatisfying(versions: SemVer[], range: SemVerRange)` instead.
  */
 export function maxSatisfying<T extends string | SemVer>(
   versions: readonly T[],

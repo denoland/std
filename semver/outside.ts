@@ -24,7 +24,7 @@ export function outside(
   hilo?: ">" | "<",
 ): boolean;
 /**
- * @deprecated (will be removed after 0.195.0) Use `outside(version: SemVer, range: SemVerRange, hilo?: ">" | "<",)` instead.
+ * @deprecated (will be removed after 0.200.0) Use `outside(version: SemVer, range: SemVerRange, hilo?: ">" | "<",)` instead.
  *
  * Returns true if the version is outside the bounds of the range in either the
  * high or low direction. The hilo argument must be either the string '>' or
