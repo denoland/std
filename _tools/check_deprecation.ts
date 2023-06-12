@@ -81,7 +81,9 @@ for await (
               DEPRECATION_AFTER_FORMAT_REGEX.exec(message)?.groups || {};
 
             if (afterVersion) {
-              if (semver.lt(afterVersion, VERSION)) {
+              if (
+                semver.lt(semver.parse(afterVersion), semver.parse(VERSION))
+              ) {
                 console.warn(
                   colors.yellow("Warn"),
                   `${
@@ -106,7 +108,7 @@ for await (
               continue;
             }
 
-            if (!semver.gt(inVersion, VERSION)) {
+            if (!semver.gt(semver.parse(inVersion), semver.parse(VERSION))) {
               console.error(
                 colors.red("Error"),
                 `${
