@@ -21,7 +21,7 @@ export function dayOfYear(date: Date): number {
 
   const yearStart = new Date(date);
 
-  yearStart.setUTCFullYear(date.getUTCFullYear(), 0, 0);
+  yearStart.setFullYear(date.getFullYear(), 0, 0);
   const diff = date.getTime() -
     yearStart.getTime();
 
