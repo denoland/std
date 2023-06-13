@@ -33,14 +33,14 @@ export function dayOfYear(date: Date): number {
  *
  * @example
  * ```ts
- * import { dayOfUtcYear } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
+ * import { dayOfYearUtc } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
  *
- * dayOfUtcYear(new Date("2019-03-11T03:24:00.000Z")) // output 70
+ * dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")) // output 70
  * ```
  *
  * @return Number of the day in the year in UTC time
  */
-export function dayOfUtcYear(date: Date): number {
+export function dayOfYearUtc(date: Date): number {
   // Values from 0 to 99 map to the years 1900 to 1999. All other values are the actual year. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)
   // Using setUTCFullYear as a workaround
 
