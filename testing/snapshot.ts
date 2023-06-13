@@ -140,7 +140,7 @@ import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
 import { assert, AssertionError, equal } from "./asserts.ts";
-import { buildMessage, diff, diffstr } from "./_diff.ts";
+import { buildMessage, diff, diffstr } from "../_util/diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
