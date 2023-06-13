@@ -10,7 +10,14 @@ import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
-import { dirname, fromFileUrl, join, resolve, toFileUrl } from "../path/mod.ts";
+import {
+  basename,
+  dirname,
+  fromFileUrl,
+  join,
+  resolve,
+  toFileUrl,
+} from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
@@ -1564,3 +1571,45 @@ Deno.test("file_server should resolve `path` correctly on Windows", {
     await killFileServer();
   }
 });
+
+Deno.test(
+  "file_server should resolve empty subdir correctly without asking for current directory read permission on Windows",
+  {
+    ignore: Deno.build.os !== "windows",
+  },
+  async () => {
+    const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
+    const fileServer = new Deno.Command(Deno.execPath(), {
+      // specifying a path for `--allow-read` this is essential for this test
+      // otherwise it won't trigger the edge case
+      args: [
+        "run",
+        "--no-check",
+        "--no-prompt",
+        "--quiet",
+        `--allow-read=${moduleDir}/testdata`,
+        "--allow-net",
+        "file_server.ts",
+        moduleDir,
+        "--host",
+        "localhost",
+        "--port",
+        "4507",
+      ],
+      cwd: moduleDir,
+      stdout: "null",
+      stderr: "null",
+    });
+    child = fileServer.spawn();
+    try {
+      const resp = await fetch(
+        `http://localhost:4507/testdata/${basename(tempDir)}`,
+      );
+      assertEquals(resp.status, 200);
+      await resp.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+      Deno.removeSync(tempDir);
+    }
+  },
+);
