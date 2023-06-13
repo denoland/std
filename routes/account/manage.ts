@@ -2,7 +2,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
-import { redirect } from "@/utils/http.ts";
+import { redirect } from "@/utils/redirect.ts";
 
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, AccountState> = {

@@ -5,11 +5,14 @@ import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem, getUserBySessionId } from "@/utils/db.ts";
-import { redirect } from "@/utils/http.ts";
+import { redirect } from "@/utils/redirect.ts";
+import { redirectToLogin } from "@/utils/redirect.ts";
 
 export const handler: Handlers<State, State> = {
-  GET(_req, ctx) {
-    return ctx.state.sessionId ? ctx.render(ctx.state) : redirect("/login");
+  GET(req, ctx) {
+    return ctx.state.sessionId
+      ? ctx.render(ctx.state)
+      : redirectToLogin(req.url);
   },
   async POST(req, ctx) {
     if (!ctx.state.sessionId) {

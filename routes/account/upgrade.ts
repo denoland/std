@@ -2,7 +2,7 @@
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { AccountState } from "./_middleware.ts";
-import { redirect } from "@/utils/http.ts";
+import { redirect } from "@/utils/redirect.ts";
 
 const STRIPE_PREMIUM_PLAN_PRICE_ID = Deno.env.get(
   "STRIPE_PREMIUM_PLAN_PRICE_ID",

@@ -2,6 +2,7 @@
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { walk } from "std/fs/walk.ts";
 import { getSessionId } from "deno_kv_oauth";
+import { setRedirectUrlCookie } from "@/utils/redirect.ts";
 
 export interface State {
   sessionId?: string;
@@ -25,5 +26,11 @@ export async function handler(
 
   ctx.state.sessionId = getSessionId(req);
 
-  return await ctx.next();
+  const res = await ctx.next();
+
+  if (ctx.destination === "route" && pathname === "/signin") {
+    setRedirectUrlCookie(req, res);
+  }
+
+  return res;
 }
