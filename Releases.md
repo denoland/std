@@ -1,3 +1,13 @@
+### 0.192.0 / 2023.06.15
+
+- BREAKING(semver): rewrite semver (#3385)
+- feat(testing): report the number of removed snapshots (#3435)
+- fix(datetime/day_of_year): respect time zone of date (#3443)
+- fix(http/file_server): resolve empty subdir correctly on Windows (#3439)
+- fix(testing/time): use real Date in FakeTime (#3414)
+- fix(yaml): parse always return null when file is empty, whitespace or only
+  comments (#3442)
+
 ### 0.191.0 / 2023.06.08
 
 - BREAKING(csv,http,path): remove deprecated APIs (#3418)
