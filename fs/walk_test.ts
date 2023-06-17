@@ -4,6 +4,7 @@ import { walk, WalkEntry, WalkError, WalkOptions, walkSync } from "./walk.ts";
 import {
   assert,
   assertEquals,
+  assertObjectMatch,
   assertRejects,
   assertThrows,
 } from "../assert/mod.ts";
@@ -33,7 +34,35 @@ function normalize({ path }: WalkEntry): string {
   return path.replace(/\\/g, "/");
 }
 
-export async function walkArray(
+/**
+ * Ensure that `walk()` and `walkSync()` return the same entries.
+ */
+export async function collectEntries(
+  root: string,
+  options: WalkOptions = {},
+): Promise<WalkEntry[]> {
+  const entries: WalkEntry[] = [];
+  for await (const w of walk(root, { ...options })) {
+    entries.push({
+      ...w,
+      path: normalize(w),
+    });
+  }
+  const entriesSync = Array.from(walkSync(root, options), (w) => {
+    return {
+      ...w,
+      path: normalize(w),
+    };
+  });
+  assertEquals(entries, entriesSync);
+  return entries;
+}
+
+/**
+ * Collect and compare the paths from `walk()` and `walkSync()` instead of the
+ * whole WalkEntry as in `collectEntries()`.
+ */
+export async function collectPaths(
   root: string,
   options: WalkOptions = {},
 ): Promise<string[]> {
@@ -55,7 +84,6 @@ export async function touch(path: string) {
 
 function assertReady(expectedLength: number) {
   const arr = Array.from(walkSync("."), normalize);
-
   assertEquals(arr.length, expectedLength);
 }
 
@@ -64,7 +92,7 @@ testWalk(
     await Deno.mkdir(d + "/empty");
   },
   async function emptyDir() {
-    const arr = await walkArray(".");
+    const arr = await collectPaths(".");
     assertEquals(arr, [".", "empty"]);
   },
 );
@@ -74,7 +102,7 @@ testWalk(
     await touch(d + "/x");
   },
   async function singleFile() {
-    const arr = await walkArray(".");
+    const arr = await collectPaths(".");
     assertEquals(arr, [".", "x"]);
   },
 );
@@ -102,7 +130,7 @@ testWalk(
     await touch(d + "/a/x");
   },
   async function nestedSingleFile() {
-    const arr = await walkArray(".");
+    const arr = await collectPaths(".");
     assertEquals(arr, [".", "a", "a/x"]);
   },
 );
@@ -114,9 +142,9 @@ testWalk(
   },
   async function depth() {
     assertReady(6);
-    const arr3 = await walkArray(".", { maxDepth: 3 });
+    const arr3 = await collectPaths(".", { maxDepth: 3 });
     assertEquals(arr3, [".", "a", "a/b", "a/b/c"]);
-    const arr5 = await walkArray(".", { maxDepth: 5 });
+    const arr5 = await collectPaths(".", { maxDepth: 5 });
     assertEquals(arr5, [".", "a", "a/b", "a/b/c", "a/b/c/d", "a/b/c/d/x"]);
   },
 );
@@ -129,7 +157,7 @@ testWalk(
   },
   async function includeDirs() {
     assertReady(4);
-    const arr = await walkArray(".", { includeDirs: false });
+    const arr = await collectPaths(".", { includeDirs: false });
     assertEquals(arr, ["a", "b/c"]);
   },
 );
@@ -142,7 +170,7 @@ testWalk(
   },
   async function includeFiles() {
     assertReady(4);
-    const arr = await walkArray(".", { includeFiles: false });
+    const arr = await collectPaths(".", { includeFiles: false });
     assertEquals(arr, [".", "b"]);
   },
 );
@@ -154,7 +182,7 @@ testWalk(
   },
   async function ext() {
     assertReady(3);
-    const arr = await walkArray(".", { exts: [".ts"] });
+    const arr = await collectPaths(".", { exts: [".ts"] });
     assertEquals(arr, ["x.ts"]);
   },
 );
@@ -167,7 +195,7 @@ testWalk(
   },
   async function extAny() {
     assertReady(4);
-    const arr = await walkArray(".", { exts: [".rs", ".ts"] });
+    const arr = await collectPaths(".", { exts: [".rs", ".ts"] });
     assertEquals(arr, ["x.ts", "y.rs"]);
   },
 );
@@ -179,7 +207,7 @@ testWalk(
   },
   async function match() {
     assertReady(3);
-    const arr = await walkArray(".", { match: [/x/] });
+    const arr = await collectPaths(".", { match: [/x/] });
     assertEquals(arr, ["x"]);
   },
 );
@@ -192,7 +220,7 @@ testWalk(
   },
   async function matchAny() {
     assertReady(4);
-    const arr = await walkArray(".", { match: [/x/, /y/] });
+    const arr = await collectPaths(".", { match: [/x/, /y/] });
     assertEquals(arr, ["x", "y"]);
   },
 );
@@ -204,7 +232,7 @@ testWalk(
   },
   async function skip() {
     assertReady(3);
-    const arr = await walkArray(".", { skip: [/x/] });
+    const arr = await collectPaths(".", { skip: [/x/] });
     assertEquals(arr, [".", "y"]);
   },
 );
@@ -217,7 +245,7 @@ testWalk(
   },
   async function skipAny() {
     assertReady(4);
-    const arr = await walkArray(".", { skip: [/x/, /y/] });
+    const arr = await collectPaths(".", { skip: [/x/, /y/] });
     assertEquals(arr, [".", "z"]);
   },
 );
@@ -232,7 +260,7 @@ testWalk(
   },
   async function subDir() {
     assertReady(6);
-    const arr = await walkArray("b");
+    const arr = await collectPaths("b");
     assertEquals(arr, ["b", "b/z"]);
   },
 );
@@ -241,8 +269,47 @@ testWalk(
   async (_d: string) => {},
   async function nonexistentRoot() {
     await assertRejects(async () => {
-      await walkArray("nonexistent");
+      await collectPaths("nonexistent");
     }, Deno.errors.NotFound);
+  },
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a");
+    await Deno.mkdir(d + "/b");
+    await touch(d + "/a/x");
+    await Deno.symlink(d + "/b", d + "/a/l2b");
+    await Deno.symlink(d + "/a/x", d + "/a/l2x", { type: "file" });
+  },
+  async function symlinks() {
+    assertReady(6);
+    const entries = await collectEntries("a");
+    assertEquals(entries.length, 4);
+    assertObjectMatch(entries[0], {
+      path: "a",
+      isSymlink: false,
+      isDirectory: true,
+      isFile: false,
+    });
+    assertObjectMatch(entries[1], {
+      path: "a/l2x",
+      isSymlink: true,
+      isDirectory: false,
+      isFile: false,
+    });
+    assertObjectMatch(entries[2], {
+      path: "a/l2b",
+      isSymlink: true,
+      isDirectory: false,
+      isFile: false,
+    });
+    assertObjectMatch(entries[3], {
+      path: "a/x",
+      isSymlink: false,
+      isDirectory: false,
+      isFile: true,
+    });
   },
 );
 
@@ -255,13 +322,13 @@ testWalk(
     await touch(d + "/b/z");
     await Deno.symlink(d + "/b", d + "/a/bb");
   },
-  async function symlink() {
-    assertReady(6);
-    const files = await walkArray("a");
-    assertEquals(files.length, 3);
+  async function followSymlinks() {
+    assertReady(7);
+    const files = await collectPaths("a");
+    assertEquals(files.length, 4);
     assert(!files.includes("a/bb/z"));
 
-    const arr = await walkArray("a", { followSymlinks: true });
+    const arr = await collectPaths("a", { followSymlinks: true });
     assertEquals(arr.length, 5);
     assert(arr.some((f): boolean => f.endsWith("/b/z")));
   },
@@ -292,8 +359,8 @@ testWalk(
     await Deno.symlink(d + "/b", d + "/a/bb");
   },
   async function symlinkPointsToFile() {
-    assertReady(5);
-    const files = await walkArray("a", { followSymlinks: true });
+    assertReady(6);
+    const files = await collectPaths("a", { followSymlinks: true });
     assertEquals(files.length, 4);
     assert(files.some((f): boolean => f.endsWith("/b")));
   },
@@ -306,7 +373,7 @@ testWalk(
   },
   async function unixSocket(listener: Deno.Listener) {
     assertReady(2);
-    const files = await walkArray(".", { followSymlinks: true });
+    const files = await collectPaths(".", { followSymlinks: true });
     assertEquals(files, [".", "a"]);
     listener.close();
   },
@@ -322,7 +389,7 @@ testWalk(
     try {
       await assertRejects(
         async () => {
-          await walkArray("a");
+          await collectPaths("a");
         },
         Deno.errors.PermissionDenied,
         'for path "a/b"',
@@ -364,7 +431,7 @@ testWalk(
   },
   async function fifo() {
     assertReady(2);
-    const files = await walkArray(".", { followSymlinks: true });
+    const files = await collectPaths(".", { followSymlinks: true });
     assertEquals(files, [".", "fifo"]);
   },
   Deno.build.os === "windows",

@@ -51,6 +51,7 @@ Deno.test("expandGlobWildcard", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -70,6 +71,7 @@ Deno.test("expandGlobParent", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -118,6 +120,7 @@ Deno.test("expandGlobGlobstarFalseWithGlob", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
