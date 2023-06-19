@@ -26,3 +26,12 @@ jobs:
 
       - name: Check formatting, linting, license headers, types and run tests
         run: deno task ok
+
+      - name: Create lcov file
+        run: deno task cov
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          name: ${{ matrix.os }}
+          files: cov.lcov
