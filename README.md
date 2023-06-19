@@ -208,50 +208,9 @@ AWS Lightsail and Digital Ocean.
 2. Create an account on [Docker Hub](https://hub.docker.com), a registry for
    Docker container images.
 
-3. Create a `Dockerfile` in the root of your repo:
-
-   ```docker
-   FROM denoland/deno:1.32.4
-   EXPOSE 8000
-   WORKDIR /app
-   ADD . /app
-
-   # Add dependencies to the container's Deno cache
-   RUN deno cache main.ts --import-map=import_map.json
-   CMD ["run", "--allow-run", "--allow-write", "--allow-read", "--allow-env", "--allow-net", "main.ts"]
-   ```
-
-4. Create a `.dockerignore` file in the root folder of your repo to make sure
-   certain files are not deployed to the docker container:
-
-   ```dockerignore
-   README.md
-   .example.env
-   .vscode/
-   .github/
-   ```
-
-5. A `docker-compose.yml` file will be needed to run the docker file on a VPS.
-   Here’s what that file in your repo's root folder will look like:
-
-   ```yml
-   version: '3'
-
-   services:
-     web:
-       build: .
-       container_name: deno-sasskit
-       image: deno-image
-     environment:
-        - DENO_DEPLOYMENT_ID=${DENO_DEPLOYMENT_ID}
-        - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-        - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-        - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-        - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-        - STRIPE_PREMIUM_PLAN_PRICE_ID=${STRIPE_PREMIUM_PLAN_PRICE_ID}
-     ports:
-         - "8000:8000"
-   ```
+> Note: the [`Dockerfile`](./Dockerfile), [`.dockerignore`](./.dockerignore) and
+> [`docker-compose.yml`](./docker-compose.yml) files come included with this
+> repo.
 
 The values of the environmental variables are pulled from the `.env` file.
 
