@@ -19,7 +19,7 @@ export default function VoteButton(props: VoteButtonProps) {
       const response = await fetch(url, { method, credentials: "same-origin" });
 
       if (response.status === 401) {
-        window.location.href = "/login";
+        window.location.href = "/signin";
         return;
       }
       isVoted.value = !isVoted.value;
