@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { WEEK } from "std/datetime/constants.ts";
+import { DAY, WEEK } from "std/datetime/constants.ts";
 
 export const kv = await Deno.openKv();
 
@@ -63,11 +63,23 @@ export async function createItem(initItem: InitItem) {
   return item;
 }
 
-export async function getAllItemsInPastWeek() {
-  return await getValues<Item>({
-    prefix: ["items_by_time"],
-    start: ["items_by_time", Date.now() - WEEK],
-  });
+export async function getAllItemsInTimeAgo(timeAgo: string) {
+  switch (timeAgo) {
+    case "month":
+      return await getValues<Item>({
+        prefix: ["items_by_time"],
+        start: ["items_by_time", Date.now() - DAY * 30],
+      });
+    case "all":
+      return await getValues<Item>({
+        prefix: ["items_by_time"],
+      });
+    default:
+      return await getValues<Item>({
+        prefix: ["items_by_time"],
+        start: ["items_by_time", Date.now() - WEEK],
+      });
+  }
 }
 
 export async function getItemById(id: string) {
