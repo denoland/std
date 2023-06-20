@@ -11,7 +11,7 @@ Deno.test("[fs] existsFile", async function () {
     await exists(path.join(testdataDir, "not_exist_file.ts")),
     false,
   );
-  assertEquals(await existsSync(path.join(testdataDir, "0.ts")), true);
+  assertEquals(existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
 Deno.test("[fs] existsFileSync", function () {
