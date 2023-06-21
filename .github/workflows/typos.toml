@@ -1,0 +1,18 @@
+[default]
+check-filename = false
+
+[default.extend-identifiers]
+# The typo also exists in https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/witx/typenames.witx.
+ERRNO_ACCES = "ERRNO_ACCES"
+
+# variable name used by node-semver
+_fpr = "_fpr"
+
+[files]
+extend-exclude = [
+  "*.json",
+  "*_test.ts",
+  "*.generated.mjs",
+  "media_types/vendor",
+  "http/testdata",
+]
