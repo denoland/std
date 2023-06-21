@@ -313,7 +313,7 @@ In order to deploy your Docker image to Amazon Lightsail you need to create an
 AWS account if you don’t already have one.
 
 1. The deployment process starts with a local Docker image build which requires
-   that the `Dockerfile` and `docker-compose.yml` have beed created
+   that the `Dockerfile` and `docker-compose.yml` have been created
    [as above](#setting-up-docker):
 
    ```sh
