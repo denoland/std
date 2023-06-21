@@ -12,6 +12,7 @@ export default function Logo(props: JSX.HTMLAttributes<HTMLImageElement>) {
       height={height}
       width={width}
       src="/logo.webp"
+      srcset="/logo-small.webp 96w"
       alt={`${SITE_NAME} logo`}
       class={`h-[${height}px] w-[${width}px] mx-auto ${props.class ?? ""}`}
     />
