@@ -83,7 +83,7 @@ testWalk(
   async (d: string) => {
     await touch(d + "/x");
   },
-  async function iteratable() {
+  async function iterable() {
     let count = 0;
     for (const _ of walkSync(".")) {
       count += 1;
