@@ -52,6 +52,17 @@ Deno.test("[redirect] setRedirectUrlCookie()", () => {
   );
 });
 
+Deno.test("[redirect] setRedirectUrlCookie() w/o searchParams", () => {
+  const referer = "/hello-there";
+  const request = new Request("http://example.com/signin", {
+    headers: { Referer: referer },
+  });
+  const response = new Response();
+  setRedirectUrlCookie(request, response);
+  const cookieHeader = response.headers.get("set-cookie");
+  assertEquals(cookieHeader, `${REDIRECT_URL_COOKIE_NAME}=${referer}; Path=/`);
+});
+
 Deno.test("[redirect] getRedirectUrlCookie()", () => {
   const headers = new Headers();
   const redirectUrl = "/hello-there";
@@ -65,14 +76,14 @@ Deno.test("[redirect] deleteRedirectUrlCookie()", () => {
   const response = new Response();
   setRedirectUrlCookie(request, response);
   assert(
-    !response.headers.get("set-cookie")?.includes(
-      `${REDIRECT_URL_COOKIE_NAME}=;`,
-    ),
+    !response.headers
+      .get("set-cookie")
+      ?.includes(`${REDIRECT_URL_COOKIE_NAME}=;`),
   );
   deleteRedirectUrlCookie(response.headers);
   assert(
-    response.headers.get("set-cookie")?.includes(
-      `${REDIRECT_URL_COOKIE_NAME}=;`,
-    ),
+    response.headers
+      .get("set-cookie")
+      ?.includes(`${REDIRECT_URL_COOKIE_NAME}=;`),
   );
 });

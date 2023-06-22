@@ -6,6 +6,8 @@ import { assert, assertEquals } from "std/testing/asserts.ts";
 Deno.test("[blog] getPost()", async () => {
   const post = await getPost("first-post");
   assert(post);
+  assertEquals(post.publishedAt, new Date("2022-11-04T15:00:00.000Z"));
+  assertEquals(post.summary, "This is an excerpt of my first blog post.");
   assertEquals(post.title, "This is my first blog post!");
 });
 
