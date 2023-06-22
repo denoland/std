@@ -24,6 +24,10 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
 
+      - name: Check typos
+        if: matrix.os == 'ubuntu-22.04'
+        uses: crate-ci/typos@master
+
       - name: Check formatting, linting, license headers, types and run tests
         run: deno task ok
 
