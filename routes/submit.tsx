@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
-import Layout from "@/components/Layout.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createItem, getUserBySessionId } from "@/utils/db.ts";
@@ -77,14 +76,12 @@ export default function SubmitPage(props: PageProps<State>) {
   return (
     <>
       <Head title="Submit" href={props.url.href} />
-      <Layout session={props.data.sessionId}>
-        <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
-          <h1 class="text-center text-2xl font-bold">
-            Share your project
-          </h1>
-          <Form />
-        </div>
-      </Layout>
+      <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
+        <h1 class="text-center text-2xl font-bold">
+          Share your project
+        </h1>
+        <Form />
+      </div>
     </>
   );
 }

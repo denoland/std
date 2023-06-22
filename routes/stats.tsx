@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
-import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import { getManyAnalyticsMetricsPerDay } from "@/utils/db.ts";
@@ -88,25 +87,23 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
           }}
         />
       </Head>
-      <Layout session={props.data.sessionId}>
-        <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {props.data.metricsByDay.map((metric, index) => (
-              <LineChart
-                title={props.data.metricsTitles[index]}
-                x={metric.dates!.map((date) =>
-                  new Date(date).toLocaleDateString("en-us", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })
-                )}
-                y={metric.metricsValue!}
-              />
-            ))}
-          </div>
+      <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {props.data.metricsByDay.map((metric, index) => (
+            <LineChart
+              title={props.data.metricsTitles[index]}
+              x={metric.dates!.map((date) =>
+                new Date(date).toLocaleDateString("en-us", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              )}
+              y={metric.metricsValue!}
+            />
+          ))}
         </div>
-      </Layout>
+      </div>
     </>
   );
 }

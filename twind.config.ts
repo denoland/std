@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Options } from "$fresh/plugins/twindv1.ts";
-import { defineConfig, Preset } from "twind";
+import { defineConfig, Preset } from "@twind/core";
 // twind preset
 import presetAutoPrefix from "twind-preset-autoprefix";
 import presetTailWind from "twind-preset-tailwind";
@@ -12,7 +12,7 @@ export default {
   // <BaseTheme, Preset<any>[]>
   ...defineConfig({
     presets: [
-      presetAutoPrefix() as Preset,
+      presetAutoPrefix(),
       presetTailWind({
         colors: {
           // This line is required. Otherwise, if removed, the values of other colors with be removed.

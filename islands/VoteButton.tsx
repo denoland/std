@@ -34,7 +34,6 @@ export default function VoteButton(props: VoteButtonProps) {
     <button
       class={(isVoted.value ? "text-pink-700" : "text-inherit") + " pr-2"}
       onClick={onClick}
-      disabled={!IS_BROWSER}
     >
       <p>▲</p>
       <p>{score.value}</p>

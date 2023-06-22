@@ -17,7 +17,7 @@ export default function PageSelector(
           max={props.lastPage}
           value={props.currentPage}
           // @ts-ignore: this is valid HTML
-          onchange="this.form.submit()"
+          onChange={() => this.form.submit()}
         />
         <label for="current_page" class="whitespace-nowrap align-middle">
           of {props.lastPage}

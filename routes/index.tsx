@@ -2,7 +2,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
-import Layout from "@/components/Layout.tsx";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -68,25 +67,23 @@ export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <>
       <Head href={props.url.href} />
-      <Layout session={props.data.sessionId}>
-        <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-          <TimeSelector />
-          {props.data.items.map((item, index) => (
-            <ItemSummary
-              item={item}
-              isVoted={props.data.areVoted[index]}
-              user={props.data.itemsUsers[index]}
-            />
-          ))}
-          {props.data.lastPage > 1 && (
-            <PageSelector
-              currentPage={calcPageNum(props.url)}
-              lastPage={props.data.lastPage}
-              timeSelector={calcTimeAgoFilter(props.url)}
-            />
-          )}
-        </div>
-      </Layout>
+      <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
+        <TimeSelector />
+        {props.data.items.map((item, index) => (
+          <ItemSummary
+            item={item}
+            isVoted={props.data.areVoted[index]}
+            user={props.data.itemsUsers[index]}
+          />
+        ))}
+        {props.data.lastPage > 1 && (
+          <PageSelector
+            currentPage={calcPageNum(props.url)}
+            lastPage={props.data.lastPage}
+            timeSelector={calcTimeAgoFilter(props.url)}
+          />
+        )}
+      </div>
     </>
   );
 }
