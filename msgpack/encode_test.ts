@@ -1,3 +1,5 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+
 import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { decode, encode } from "./mod.ts";

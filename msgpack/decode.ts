@@ -1,3 +1,5 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+
 export function decode(uint8: Uint8Array) {
   const { value, consumed } = decodeSlice(uint8);
 
