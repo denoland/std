@@ -11,6 +11,11 @@ export default {
   // <BaseTheme, Preset<any>[]>
   ...defineConfig({
     presets: [
+      /**
+       * Note: `presetAutoprefix()` was removed as it seemed to make no visual or functional difference to the website.
+       * If styling issues re-occur in the future, try adding `presetAutoprefix()` back here.
+       * @see {@link https://github.com/denoland/saaskit/pull/282}
+       */
       presetTailWind({
         colors: {
           // This line is required. Otherwise, if removed, the values of other colors with be removed.
