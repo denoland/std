@@ -61,7 +61,7 @@
  *
  * ## Permissions option
  *
- * Like `Deno.TestDefinition`, the `DescribeDefintion` and `ItDefinition` have a
+ * Like `Deno.TestDefinition`, the `DescribeDefinition` and `ItDefinition` have a
  * `permissions` option. They specify the permissions that should be used to run an
  * individual test case or test suite. Set this to `"inherit"` to keep the calling
  * thread's permissions. Set this to `"none"` to revoke all permissions.

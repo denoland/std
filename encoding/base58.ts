@@ -92,19 +92,19 @@ export function encode(data: ArrayBuffer | string): string {
  * @returns Decoded value
  */
 export function decode(b58: string): Uint8Array {
-  const splittedInput = b58.trim().split("");
+  const splitInput = b58.trim().split("");
 
   let length = 0;
   let ones = 0;
 
   // Counting leading ones
   let index = 0;
-  while (splittedInput[index] === "1") {
+  while (splitInput[index] === "1") {
     ones++;
     index++;
   }
 
-  const notZeroData = splittedInput.slice(index);
+  const notZeroData = splitInput.slice(index);
 
   const size = Math.round((b58.length * 733) / 1000 + 1);
   const output: number[] = [];

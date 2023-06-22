@@ -337,7 +337,7 @@ Deno.test("Can use fast-check to property test sort function", async (t) => {
     );
   });
   await t.step(
-    "should have exactly the same number of occurences as source for each item",
+    "should have exactly the same number of occurrences as source for each item",
     () => {
       fc.assert(
         fc.property(fc.array(fc.integer()), (data: Array<number>) => {

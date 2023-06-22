@@ -96,7 +96,7 @@
  * | `#`   |           | alternate format                                                           |
  * | `#`   | `b o x X` | prefix with `0b 0 0x`                                                      |
  * | `#`   | `g G`     | don't remove trailing zeros                                                |
- * | `#`   | `v`       | ues output of `inspect` instead of `toString`                              |
+ * | `#`   | `v`       | use output of `inspect` instead of `toString`                              |
  * | `' '` |           | space character                                                            |
  * | `' '` | `x X`     | leave spaces between bytes when printing string                            |
  * | `' '` | `d`       | insert space for missing `+` sign character                                |

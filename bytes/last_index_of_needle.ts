@@ -7,7 +7,7 @@
  * A start index can be specified as the third argument that begins the search
  * at that given index. The start index defaults to the end of the array.
  *
- * The complexity of this function is O(source.lenth * needle.length).
+ * The complexity of this function is O(source.length * needle.length).
  *
  * ```ts
  * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/last_index_of_needle.ts";

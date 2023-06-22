@@ -398,7 +398,7 @@ Deno.test({
       foo: { bar: "deno" },
       this: { is: { nested: "denonono" } },
       "https://deno.land/std": {
-        $: "doller",
+        $: "dollar",
       },
       "##": {
         deno: {
@@ -491,7 +491,7 @@ bar = "deno"
 nested = "denonono"
 
 ["https://deno.land/std"]
-"$" = "doller"
+"$" = "dollar"
 
 ["##".deno."https://deno.land"]
 proto = "https"

@@ -323,7 +323,7 @@ export interface ParseOptions extends ReadOptions {
  * @param input Input to parse.
  * @param opt options of the parser.
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
  */
 export function parse(input: string, opt?: undefined): string[][];
 export function parse<const T extends ParseOptions>(
