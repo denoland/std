@@ -52,7 +52,7 @@ function LineChart(
             legend: { display: false },
           },
           scales: {
-            y: { grid: { display: false } },
+            y: { grid: { display: false }, beginAtZero: true },
             x: { grid: { display: false } },
           },
         }}
