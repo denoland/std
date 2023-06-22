@@ -24,16 +24,12 @@
     "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.1.0",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.1.3",
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.2.3",
-    "twind": "https://esm.sh/twind@0.16.19",
-    "twind-preset-autoprefix": "https://esm.sh/@twind/preset-autoprefix@1.0.7",
-    "twind-preset-tailwind": "https://esm.sh/@twind/preset-tailwind@1.1.4/base",
-    "twind-preset-tailwind-colors": "https://esm.sh/@twind/preset-tailwind@1.1.4/colors",
+    "twind-preset-tailwind/": "https://esm.sh/@twind/preset-tailwind@1.1.4/",
     "std/": "https://deno.land/std@0.188.0/",
     "stripe": "https://esm.sh/stripe@12.6.0",
     "feed": "https://esm.sh/feed@4.2.2",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.2.1/",
     "deno_kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.1.8-beta/mod.ts",
-    "twind/": "https://esm.sh/twind@0.16.19/",
     "@twind/core": "https://esm.sh/@twind/core@1.1.3"
   }
 }
