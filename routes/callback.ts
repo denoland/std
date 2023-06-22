@@ -8,8 +8,8 @@ import {
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/payments.ts";
 import { State } from "./_middleware.ts";
-import { handleCallback } from "deno_kv_oauth";
-import { client } from "@/utils/kv_oauth.ts";
+import { handleCallback } from "kv_oauth";
+import { oauth2Client } from "@/utils/oauth2_client.ts";
 import {
   deleteRedirectUrlCookie,
   getRedirectUrlCookie,
@@ -38,7 +38,7 @@ export const handler: Handlers<any, State> = {
   async GET(req) {
     const { response, accessToken, sessionId } = await handleCallback(
       req,
-      client,
+      oauth2Client,
       getRedirectUrlCookie(req.headers),
     );
 

@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { walk } from "std/fs/walk.ts";
-import { getSessionId } from "deno_kv_oauth";
+import { getSessionId } from "kv_oauth";
 import { setRedirectUrlCookie } from "@/utils/redirect.ts";
 
 export interface State {
@@ -24,7 +24,8 @@ export async function handler(
     return await ctx.next();
   }
 
-  ctx.state.sessionId = getSessionId(req);
+  /** @todo Review once https://github.com/denoland/deno_kv_oauth/pull/126 is closed */
+  ctx.state.sessionId = await getSessionId(req) ?? undefined;
 
   const res = await ctx.next();
 

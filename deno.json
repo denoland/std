@@ -29,7 +29,7 @@
     "stripe": "https://esm.sh/stripe@12.6.0",
     "feed": "https://esm.sh/feed@4.2.2",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.2.1/",
-    "deno_kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.1.8-beta/mod.ts",
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.2.4/mod.ts",
     "@twind/core": "https://esm.sh/@twind/core@1.1.3"
   }
 }
