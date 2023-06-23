@@ -1,8 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
+  type Comment,
+  createComment,
   createItem,
   createUser,
   getAllItems,
+  getCommentsByItem,
   getItem,
   getItemsByUser,
   getItemsSince,
@@ -14,6 +17,7 @@ import {
   incrementVisitsPerDay,
   type Item,
   kv,
+  newCommentProps,
   newItemProps,
   setUserSessionId,
   updateUserIsSubscribed,
@@ -200,4 +204,33 @@ Deno.test("[db] visit", async () => {
   assertEquals((await getVisitsPerDay(date))!.valueOf(), 1n);
   await kv.delete(visitsKey);
   assertEquals(await getVisitsPerDay(date), null);
+});
+
+Deno.test("[db] newCommentProps()", () => {
+  const commentProps = newCommentProps();
+  assertAlmostEquals(commentProps.createdAt.getTime(), Date.now());
+  assertEquals(typeof commentProps.id, "string");
+});
+
+Deno.test("[db] createComment() + getCommentsByItem()", async () => {
+  const itemId = crypto.randomUUID();
+  const comment1: Comment = {
+    itemId,
+    userId: crypto.randomUUID(),
+    text: crypto.randomUUID(),
+    ...newCommentProps(),
+  };
+  const comment2: Comment = {
+    itemId,
+    userId: crypto.randomUUID(),
+    text: crypto.randomUUID(),
+    ...newCommentProps(),
+  };
+
+  assertEquals(await getCommentsByItem(itemId), []);
+
+  await createComment(comment1);
+  await createComment(comment2);
+  await assertRejects(async () => await createComment(comment2));
+  assertArrayIncludes(await getCommentsByItem(itemId), [comment1, comment2]);
 });

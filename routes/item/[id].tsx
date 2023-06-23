@@ -20,6 +20,7 @@ import {
   getUserById,
   getUserBySessionId,
   type Item,
+  newCommentProps,
   type User,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/redirect.ts";
@@ -88,11 +89,13 @@ export const handler: Handlers<ItemPageData, State> = {
 
     const user = await getUserBySessionId(ctx.state.sessionId);
 
-    await createComment({
+    const comment: Comment = {
       userId: user!.id,
       itemId: ctx.params.id,
       text,
-    });
+      ...newCommentProps(),
+    };
+    await createComment(comment);
 
     return redirect(`/item/${ctx.params.id}`);
   },

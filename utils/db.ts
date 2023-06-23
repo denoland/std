@@ -122,37 +122,31 @@ export async function getItemsSince(msAgo: number) {
 }
 
 // Comment
-interface InitComment {
+export interface Comment {
   userId: string;
   itemId: string;
   text: string;
-}
-
-export interface Comment extends InitComment {
+  // The below properties can be automatically generated upon comment creation
   id: string;
   createdAt: Date;
 }
 
-export async function createComment(initComment: InitComment) {
-  const comment: Comment = {
+export function newCommentProps(): Omit<Comment, "userId" | "itemId" | "text"> {
+  return {
     id: crypto.randomUUID(),
     createdAt: new Date(),
-    ...initComment,
   };
+}
 
+export async function createComment(comment: Comment) {
   const commentsByItemKey = ["comments_by_item", comment.itemId, comment.id];
-  const commentsByUserKey = ["comments_by_user", comment.userId, comment.id];
 
   const res = await kv.atomic()
     .check({ key: commentsByItemKey, versionstamp: null })
-    .check({ key: commentsByUserKey, versionstamp: null })
     .set(commentsByItemKey, comment)
-    .set(commentsByUserKey, comment)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to create comment: ${comment}`);
-
-  return comment;
 }
 
 export async function getCommentsByItem(itemId: string) {
