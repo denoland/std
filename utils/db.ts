@@ -40,7 +40,7 @@ export interface Item {
   score: number;
 }
 
-export function newItemProps(): Omit<Item, "userId" | "title" | "url"> {
+export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
   return {
     id: crypto.randomUUID(),
     score: 0,
@@ -131,7 +131,7 @@ export interface Comment {
   createdAt: Date;
 }
 
-export function newCommentProps(): Omit<Comment, "userId" | "itemId" | "text"> {
+export function newCommentProps(): Pick<Comment, "id" | "createdAt"> {
   return {
     id: crypto.randomUUID(),
     createdAt: new Date(),
@@ -249,86 +249,100 @@ export async function getVotedItemsByUser(userId: string) {
   return await getValues<Item>({ prefix: ["voted_items_by_user", userId] });
 }
 
-interface InitUser {
+// User
+export interface User {
   id: string;
   login: string;
   avatarUrl: string;
-  stripeCustomerId: string;
   sessionId: string;
-}
-
-export interface User extends InitUser {
+  stripeCustomerId?: string;
+  // The below properties can be automatically generated upon comment creation
   isSubscribed: boolean;
 }
 
-export async function createUser(initUser: InitUser) {
-  const user: User = {
+export function newUserProps(): Pick<User, "isSubscribed"> {
+  return {
     isSubscribed: false,
-    ...initUser,
   };
+}
 
+/**
+ * Creates a new user in KV. Throws if the user already exists.
+ *
+ * @example
+ * ```ts
+ * import { createUser, newUser } from "@/utils/db.ts";
+ *
+ * const user = {
+ *   id: "id",
+ *   login: "login",
+ *   avatarUrl: "https://example.com/avatar-url",
+ *   sessionId: "sessionId",
+ *   ...newUserProps(),
+ * };
+ * await createUser(user);
+ * await incrementAnalyticsMetricPerDay("users_count", new Date());
+ * ```
+ */
+export async function createUser(user: User) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
-  const usersByStripeCustomerKey = [
-    "users_by_stripe_customer",
-    user.stripeCustomerId,
-  ];
 
-  const res = await kv.atomic()
+  const atomicOp = kv.atomic();
+
+  if (user.stripeCustomerId !== undefined) {
+    const usersByStripeCustomerKey = [
+      "users_by_stripe_customer",
+      user.stripeCustomerId,
+    ];
+    atomicOp
+      .check({ key: usersByStripeCustomerKey, versionstamp: null })
+      .set(usersByStripeCustomerKey, user);
+  }
+
+  const res = await atomicOp
     .check({ key: usersKey, versionstamp: null })
     .check({ key: usersByLoginKey, versionstamp: null })
     .check({ key: usersBySessionKey, versionstamp: null })
-    .check({ key: usersByStripeCustomerKey, versionstamp: null })
     .set(usersKey, user)
     .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
-    .set(usersByStripeCustomerKey, user)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to create user: ${user}`);
-
-  await incrementAnalyticsMetricPerDay("users_count", new Date());
-
-  return user;
 }
 
 export async function updateUser(user: User) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
-  const usersByStripeCustomerKey = [
-    "users_by_stripe_customer",
-    user.stripeCustomerId,
-  ];
 
-  const res = await kv.atomic()
+  const atomicOp = kv.atomic();
+
+  if (user.stripeCustomerId !== undefined) {
+    const usersByStripeCustomerKey = [
+      "users_by_stripe_customer",
+      user.stripeCustomerId,
+    ];
+    atomicOp
+      .set(usersByStripeCustomerKey, user);
+  }
+
+  const res = await atomicOp
     .set(usersKey, user)
     .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
-    .set(usersByStripeCustomerKey, user)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to update user: ${user}`);
-}
-
-export async function updateUserIsSubscribed(
-  user: User,
-  isSubscribed: User["isSubscribed"],
-) {
-  await updateUser({ ...user, isSubscribed });
-}
-
-/** This assumes that the previous session has been cleared */
-export async function setUserSessionId(user: User, sessionId: string) {
-  await updateUser({ ...user, sessionId });
 }
 
 export async function deleteUserBySession(sessionId: string) {
   await kv.delete(["users_by_session", sessionId]);
 }
 
-export async function getUserById(id: string) {
+export async function getUser(id: string) {
   return await getValue<User>(["users", id]);
 }
 
@@ -336,14 +350,14 @@ export async function getUserByLogin(login: string) {
   return await getValue<User>(["users_by_login", login]);
 }
 
-export async function getUserBySessionId(sessionId: string) {
+export async function getUserBySession(sessionId: string) {
   const usersBySessionKey = ["users_by_session", sessionId];
   return await getValue<User>(usersBySessionKey, {
     consistency: "eventual",
   }) ?? await getValue<User>(usersBySessionKey);
 }
 
-export async function getUserByStripeCustomerId(stripeCustomerId: string) {
+export async function getUserByStripeCustomer(stripeCustomerId: string) {
   return await getValue<User>([
     "users_by_stripe_customer",
     stripeCustomerId,
@@ -361,7 +375,7 @@ export async function getAreVotedBySessionId(
   sessionId?: string,
 ) {
   if (!sessionId) return [];
-  const sessionUser = await getUserBySessionId(sessionId);
+  const sessionUser = await getUserBySession(sessionId);
   if (!sessionUser) return [];
   const votedItems = await getVotedItemsByUser(sessionUser.id);
   const votedItemIds = votedItems.map((item) => item.id);

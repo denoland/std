@@ -2,8 +2,11 @@
 import type { Handlers } from "$fresh/server.ts";
 import {
   createUser,
-  getUserById,
-  setUserSessionId,
+  deleteUserBySession,
+  getUser,
+  incrementAnalyticsMetricPerDay,
+  newUserProps,
+  updateUser,
   type User,
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/payments.ts";
@@ -22,7 +25,7 @@ interface GitHubUser {
   email: string;
 }
 
-async function getUser(accessToken: string): Promise<GitHubUser> {
+async function getGitHubUser(accessToken: string): Promise<GitHubUser> {
   const response = await fetch("https://api.github.com/user", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
@@ -44,23 +47,26 @@ export const handler: Handlers<any, State> = {
 
     deleteRedirectUrlCookie(response.headers);
 
-    const githubUser = await getUser(accessToken);
+    const githubUser = await getGitHubUser(accessToken);
 
-    const user = await getUserById(githubUser.id.toString());
+    const user = await getUser(githubUser.id.toString());
     if (!user) {
       const customer = await stripe.customers.create({
         email: githubUser.email,
       });
-      const userInit: Omit<User, "isSubscribed"> | null = {
+      const user: User = {
         id: githubUser.id.toString(),
         login: githubUser.login,
         avatarUrl: githubUser.avatar_url,
         stripeCustomerId: customer.id,
         sessionId,
+        ...newUserProps(),
       };
-      await createUser(userInit);
+      await createUser(user);
+      await incrementAnalyticsMetricPerDay("users_count", new Date());
     } else {
-      await setUserSessionId(user, sessionId);
+      await deleteUserBySession(sessionId);
+      await updateUser({ ...user, sessionId });
     }
     return response;
   },

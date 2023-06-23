@@ -2,7 +2,7 @@
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote, getItem } from "@/utils/db.ts";
-import { getUserBySessionId } from "@/utils/db.ts";
+import { getUserBySession } from "@/utils/db.ts";
 
 async function sharedHandler(
   req: Request,
@@ -20,7 +20,7 @@ async function sharedHandler(
 
   const [item, user] = await Promise.all([
     getItem(itemId),
-    getUserBySessionId(ctx.state.sessionId),
+    getUserBySession(ctx.state.sessionId),
   ]);
 
   if (item === null || user === null) {

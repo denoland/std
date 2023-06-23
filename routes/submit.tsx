@@ -5,7 +5,7 @@ import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import {
   createItem,
-  getUserBySessionId,
+  getUserBySession,
   incrementAnalyticsMetricPerDay,
   type Item,
   newItemProps,
@@ -40,7 +40,7 @@ export const handler: Handlers<State, State> = {
       return new Response(null, { status: 400 });
     }
 
-    const user = await getUserBySessionId(ctx.state.sessionId);
+    const user = await getUserBySession(ctx.state.sessionId);
 
     if (!user) return new Response(null, { status: 400 });
 

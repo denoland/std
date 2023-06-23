@@ -6,6 +6,8 @@ import {
   incrementAnalyticsMetricPerDay,
   type Item,
   newItemProps,
+  newUserProps,
+  User,
 } from "@/utils/db.ts";
 
 // Reference: https://github.com/HackerNews/API
@@ -94,15 +96,17 @@ async function main(limit = 20) {
 
   // Create dummy users to ensure each post has a corresponding user
   for (const batch of batchify(items)) {
-    await Promise.allSettled(batch.map(({ userId: id }) =>
-      createUser({
+    await Promise.allSettled(batch.map(({ userId: id }) => {
+      const user: User = {
         id, // id must match userId for post
         login: id,
         avatarUrl: "https://www.gravatar.com/avatar/?d=mp&s=64",
         stripeCustomerId: crypto.randomUUID(), // unique per userId
         sessionId: crypto.randomUUID(), // unique per userId
-      }) // ignore errors if dummy user already exists
-    ));
+        ...newUserProps(),
+      };
+      return createUser(user); // ignore errors if dummy user already exists
+    }));
   }
 }
 

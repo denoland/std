@@ -17,8 +17,8 @@ import {
   getCommentsByItem,
   getItem,
   getManyUsers,
-  getUserById,
-  getUserBySessionId,
+  getUser,
+  getUserBySession,
   type Item,
   newCommentProps,
   type User,
@@ -56,7 +56,7 @@ export const handler: Handlers<ItemPageData, State> = {
     const commentsUsers = await getManyUsers(
       comments.map((comment) => comment.userId),
     );
-    const user = await getUserById(item.userId);
+    const user = await getUser(item.userId);
 
     const [isVoted] = await getAreVotedBySessionId(
       [item],
@@ -87,7 +87,7 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
-    const user = await getUserBySessionId(ctx.state.sessionId);
+    const user = await getUserBySession(ctx.state.sessionId);
 
     const comment: Comment = {
       userId: user!.id,

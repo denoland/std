@@ -4,23 +4,25 @@ import {
   createComment,
   createItem,
   createUser,
+  deleteUserBySession,
   getAllItems,
   getCommentsByItem,
   getItem,
   getItemsByUser,
   getItemsSince,
-  getUserById,
+  getManyUsers,
+  getUser,
   getUserByLogin,
-  getUserBySessionId,
-  getUserByStripeCustomerId,
+  getUserBySession,
+  getUserByStripeCustomer,
   getVisitsPerDay,
   incrementVisitsPerDay,
   type Item,
   kv,
   newCommentProps,
   newItemProps,
-  setUserSessionId,
-  updateUserIsSubscribed,
+  newUserProps,
+  updateUser,
   type User,
 } from "./db.ts";
 import {
@@ -30,43 +32,6 @@ import {
   assertRejects,
 } from "std/testing/asserts.ts";
 import { DAY } from "std/datetime/constants.ts";
-
-async function deleteUser(user: User) {
-  const usersKey = ["users", user.id];
-  const usersByLoginKey = ["users_by_login", user.login];
-  const usersBySessionKey = ["users_by_session", user.sessionId];
-  const usersByStripeCustomerKey = [
-    "users_by_stripe_customer",
-    user.stripeCustomerId,
-  ];
-
-  const [
-    userRes,
-    userByLoginRes,
-    userBySessionRes,
-    userByStripeCustomerRes,
-  ] = await kv.getMany<User[]>([
-    usersKey,
-    usersByLoginKey,
-    usersBySessionKey,
-    usersByStripeCustomerKey,
-  ]);
-
-  const res = await kv.atomic()
-    .check(userRes)
-    .check(userByLoginRes)
-    .check(userBySessionRes)
-    .check(userByStripeCustomerRes)
-    .delete(usersKey)
-    .delete(usersByLoginKey)
-    .delete(usersBySessionKey)
-    .delete(usersByStripeCustomerKey)
-    .commit();
-
-  if (!res.ok) {
-    throw res;
-  }
-}
 
 Deno.test("[db] newItemProps()", () => {
   const itemProps = newItemProps();
@@ -155,42 +120,48 @@ Deno.test("[db] getItemsSince()", async () => {
   assertArrayIncludes(await getItemsSince(3 * DAY), [item1, item2]);
 });
 
-Deno.test("[db] user", async () => {
-  const initUser = {
+function genNewUser(): User {
+  return {
     id: crypto.randomUUID(),
     login: crypto.randomUUID(),
-    avatarUrl: "https://example.com",
-    stripeCustomerId: crypto.randomUUID(),
+    avatarUrl: `http://${crypto.randomUUID()}`,
     sessionId: crypto.randomUUID(),
+    stripeCustomerId: crypto.randomUUID(),
+    ...newUserProps(),
   };
+}
 
-  await createUser(initUser);
-  let user = { ...initUser, isSubscribed: false } as User;
-  assertEquals(await getUserById(user.id), user);
-  assertEquals(await getUserByLogin(user.login), user);
-  assertEquals(await getUserBySessionId(user.sessionId), user);
-  assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
+Deno.test("[db] user", async () => {
+  const user = genNewUser();
 
-  await updateUserIsSubscribed(user, true);
-  user = { ...user, isSubscribed: true };
-  assertEquals(await getUserById(user.id), user);
-  assertEquals(await getUserByLogin(user.login), user);
-  assertEquals(await getUserBySessionId(user.sessionId), user);
-  assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
-
-  const sessionId = crypto.randomUUID();
-  await setUserSessionId(user, sessionId);
-  user = { ...user, sessionId };
-  assertEquals(await getUserById(user.id), user);
-  assertEquals(await getUserByLogin(user.login), user);
-  assertEquals(await getUserBySessionId(user.sessionId), user);
-  assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), user);
-
-  await deleteUser(user);
-  assertEquals(await getUserById(user.id), null);
+  assertEquals(await getUser(user.id), null);
   assertEquals(await getUserByLogin(user.login), null);
-  assertEquals(await getUserBySessionId(user.sessionId), null);
-  assertEquals(await getUserByStripeCustomerId(user.stripeCustomerId), null);
+  assertEquals(await getUserBySession(user.sessionId), null);
+  assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), null);
+
+  await createUser(user);
+  await assertRejects(async () => await createUser(user));
+  assertEquals(await getUser(user.id), user);
+  assertEquals(await getUserByLogin(user.login), user);
+  assertEquals(await getUserBySession(user.sessionId), user);
+  assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), user);
+
+  const user1 = genNewUser();
+  await createUser(user1);
+  assertArrayIncludes(await getManyUsers([user.id, user1.id]), [user, user1]);
+
+  await deleteUserBySession(user.sessionId);
+  assertEquals(await getUserBySession(user.sessionId), null);
+
+  const newUser: User = { ...user, sessionId: crypto.randomUUID() };
+  await updateUser(newUser);
+  assertEquals(await getUser(newUser.id), newUser);
+  assertEquals(await getUserByLogin(newUser.login), newUser);
+  assertEquals(await getUserBySession(newUser.sessionId), newUser);
+  assertEquals(
+    await getUserByStripeCustomer(newUser.stripeCustomerId!),
+    newUser,
+  );
 });
 
 Deno.test("[db] visit", async () => {
