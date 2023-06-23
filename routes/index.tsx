@@ -8,13 +8,15 @@ import ItemSummary from "@/components/ItemSummary.tsx";
 import PageSelector from "@/components/PageSelector.tsx";
 import {
   compareScore,
-  getAllItemsInTimeAgo,
+  getAllItems,
   getAreVotedBySessionId,
+  getItemsSince,
   getManyUsers,
   incrementAnalyticsMetricPerDay,
   type Item,
   type User,
 } from "@/utils/db.ts";
+import { DAY, WEEK } from "std/datetime/constants.ts";
 
 interface HomePageData extends State {
   itemsUsers: User[];
@@ -24,7 +26,7 @@ interface HomePageData extends State {
 }
 
 function calcTimeAgoFilter(url: URL) {
-  return url.searchParams.get("time-ago") || "";
+  return url.searchParams.get("time-ago");
 }
 
 export const handler: Handlers<HomePageData, State> = {
@@ -32,9 +34,16 @@ export const handler: Handlers<HomePageData, State> = {
     await incrementAnalyticsMetricPerDay("visits_count", new Date());
 
     const url = new URL(req.url);
-    const timeAgo = calcTimeAgoFilter(url);
     const pageNum = calcPageNum(url);
-    const allItems = await getAllItemsInTimeAgo(timeAgo);
+    const timeAgo = calcTimeAgoFilter(url);
+    let allItems: Item[];
+    if (timeAgo === "week") {
+      allItems = await getItemsSince(WEEK);
+    } else if (timeAgo === "month") {
+      allItems = await getItemsSince(30 * DAY);
+    } else {
+      allItems = await getAllItems();
+    }
 
     const items = allItems
       .toSorted(compareScore)
@@ -80,7 +89,7 @@ export default function HomePage(props: PageProps<HomePageData>) {
           <PageSelector
             currentPage={calcPageNum(props.url)}
             lastPage={props.data.lastPage}
-            timeSelector={calcTimeAgoFilter(props.url)}
+            timeSelector={calcTimeAgoFilter(props.url) ?? undefined}
           />
         )}
       </div>

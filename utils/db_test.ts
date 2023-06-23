@@ -1,18 +1,31 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
+  createItem,
   createUser,
+  getAllItems,
+  getItem,
+  getItemsByUser,
+  getItemsSince,
   getUserById,
   getUserByLogin,
   getUserBySessionId,
   getUserByStripeCustomerId,
   getVisitsPerDay,
   incrementVisitsPerDay,
+  type Item,
   kv,
+  newItemProps,
   setUserSessionId,
   updateUserIsSubscribed,
   type User,
 } from "./db.ts";
-import { assertEquals } from "std/testing/asserts.ts";
+import {
+  assertAlmostEquals,
+  assertArrayIncludes,
+  assertEquals,
+  assertRejects,
+} from "std/testing/asserts.ts";
+import { DAY } from "std/datetime/constants.ts";
 
 async function deleteUser(user: User) {
   const usersKey = ["users", user.id];
@@ -50,6 +63,93 @@ async function deleteUser(user: User) {
     throw res;
   }
 }
+
+Deno.test("[db] newItemProps()", () => {
+  const itemProps = newItemProps();
+  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now());
+  assertEquals(typeof itemProps.id, "string");
+  assertEquals(itemProps.score, 0);
+});
+
+Deno.test("[db] getAllItems()", async () => {
+  const item1: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+  const item2: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+
+  assertEquals(await getAllItems(), []);
+
+  await createItem(item1);
+  await createItem(item2);
+  assertArrayIncludes(await getAllItems(), [item1, item2]);
+});
+
+Deno.test("[db] (get/create)Item()", async () => {
+  const item: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+
+  assertEquals(await getItem(item.id), null);
+
+  await createItem(item);
+  await assertRejects(async () => await createItem(item));
+  assertEquals(await getItem(item.id), item);
+});
+
+Deno.test("[db] getItemsByUser()", async () => {
+  const userId = crypto.randomUUID();
+  const item1: Item = {
+    userId,
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+  const item2: Item = {
+    userId,
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+
+  assertEquals(await getItemsByUser(userId), []);
+
+  await createItem(item1);
+  await createItem(item2);
+  assertArrayIncludes(await getItemsByUser(userId), [item1, item2]);
+});
+
+Deno.test("[db] getItemsSince()", async () => {
+  const item1: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+  };
+  const item2: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+    createdAt: new Date(Date.now() - (2 * DAY)),
+  };
+
+  await createItem(item1);
+  await createItem(item2);
+
+  assertArrayIncludes(await getItemsSince(DAY), [item1]);
+  assertArrayIncludes(await getItemsSince(3 * DAY), [item1, item2]);
+});
 
 Deno.test("[db] user", async () => {
   const initUser = {

@@ -8,7 +8,7 @@ import ItemSummary from "@/components/ItemSummary.tsx";
 import {
   compareScore,
   getAreVotedBySessionId,
-  getItemsByUserId,
+  getItemsByUser,
   getUserByLogin,
   type Item,
   type User,
@@ -30,7 +30,7 @@ export const handler: Handlers<UserData, State> = {
       return ctx.renderNotFound();
     }
 
-    const items = await getItemsByUserId(user.id);
+    const items = await getItemsByUser(user.id);
     items.sort(compareScore);
     const areVoted = await getAreVotedBySessionId(
       items,

@@ -1,6 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 // Description: Seeds the kv db with Hacker News stories
-import { createItem, createUser, type Item, kv } from "@/utils/db.ts";
+import {
+  createItem,
+  createUser,
+  incrementAnalyticsMetricPerDay,
+  type Item,
+  newItemProps,
+} from "@/utils/db.ts";
 
 // Reference: https://github.com/HackerNews/API
 const API_BASE_URL = `https://hacker-news.firebaseio.com/v0`;
@@ -54,18 +60,10 @@ async function fetchTopStories(limit = 10) {
   return stories;
 }
 
-async function createItemWithScore(item: Item) {
-  const res = await createItem(item);
-  return await kv.set(["items", res!.id], {
-    ...res,
-    score: item.score,
-    createdAt: item.createdAt,
-  });
-}
-
 async function seedSubmissions(stories: Story[]) {
   const items = stories.map(({ by: userId, title, url, score, time }) => {
     return {
+      ...newItemProps(),
       userId,
       title,
       url,
@@ -74,7 +72,14 @@ async function seedSubmissions(stories: Story[]) {
     } as Item;
   }).filter(({ url }) => url);
   for (const batch of batchify(items)) {
-    await Promise.all(batch.map((item) => createItemWithScore(item)));
+    await Promise.all(
+      batch.map((item) =>
+        Promise.all([
+          createItem(item),
+          incrementAnalyticsMetricPerDay("items_count", new Date()),
+        ])
+      ),
+    );
   }
   return items;
 }

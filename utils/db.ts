@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { DAY, WEEK } from "std/datetime/constants.ts";
 
 const KV_PATH_KEY = "KV_PATH";
 let path = undefined;
@@ -31,75 +30,95 @@ async function getValues<T>(
 }
 
 // Item
-interface InitItem {
+export interface Item {
   userId: string;
   title: string;
   url: string;
-}
-
-export interface Item extends InitItem {
+  // The below properties can be automatically generated upon item creation
   id: string;
   createdAt: Date;
   score: number;
 }
 
-export async function createItem(initItem: InitItem) {
-  const item: Item = {
+export function newItemProps(): Omit<Item, "userId" | "title" | "url"> {
+  return {
     id: crypto.randomUUID(),
     score: 0,
     createdAt: new Date(),
-    ...initItem,
   };
+}
 
-  const itemKey = ["items", item.id];
-  const itemByTime = ["items_by_time", item.createdAt.getTime(), item.id];
+/**
+ * Creates a new item in KV. Throws if the item already exists in one of the indexes.
+ *
+ * @example New item creation
+ * ```ts
+ * import { newItemProps, createItem, incrementAnalyticsMetricPerDay } from "@/utils/db.ts";
+ *
+ * const item: Item = {
+ *   userId: "example-user-id",
+ *   title: "example-title",
+ *   url: "https://example.com"
+ *   ..newItemProps(),
+ * };
+ *
+ * await createItem(item);
+ * await incrementAnalyticsMetricPerDay("items_count", item.createdAt);
+ * ```
+ */
+export async function createItem(item: Item) {
+  const itemsKey = ["items", item.id];
+  const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemsByUserKey = ["items_by_user", item.userId, item.id];
 
   const res = await kv.atomic()
-    .check({ key: itemKey, versionstamp: null })
-    .check({ key: itemByTime, versionstamp: null })
+    .check({ key: itemsKey, versionstamp: null })
+    .check({ key: itemsByTimeKey, versionstamp: null })
     .check({ key: itemsByUserKey, versionstamp: null })
-    .set(itemKey, item)
-    .set(itemByTime, item)
+    .set(itemsKey, item)
+    .set(itemsByTimeKey, item)
     .set(itemsByUserKey, item)
     .commit();
 
-  if (!res.ok) throw new Error(`Failed to set item: ${item}`);
-
-  await incrementAnalyticsMetricPerDay("items_count", new Date());
-
-  return item;
+  if (!res.ok) throw new Error(`Failed to create item: ${item}`);
 }
 
-export async function getAllItemsInTimeAgo(timeAgo: string) {
-  switch (timeAgo) {
-    case "month":
-      return await getValues<Item>({
-        prefix: ["items_by_time"],
-        start: ["items_by_time", Date.now() - DAY * 30],
-      });
-    case "all":
-      return await getValues<Item>({
-        prefix: ["items_by_time"],
-      });
-    default:
-      return await getValues<Item>({
-        prefix: ["items_by_time"],
-        start: ["items_by_time", Date.now() - WEEK],
-      });
-  }
-}
-
-export async function getItemById(id: string) {
+export async function getItem(id: string) {
   return await getValue<Item>(["items", id]);
 }
 
-export async function getItemByUser(userId: string, itemId: string) {
-  return await getValue<Item>(["items_by_user", userId, itemId]);
+export async function getItemsByUser(userId: string) {
+  return await getValues<Item>({ prefix: ["items_by_user", userId] });
 }
 
-export async function getItemsByUserId(userId: string) {
-  return await getValues<Item>({ prefix: ["items_by_user", userId] });
+export async function getAllItems() {
+  return await getValues<Item>({ prefix: ["items"] });
+}
+
+/**
+ * Gets all items since a given number of milliseconds ago from KV.
+ *
+ * @example Since a week ago
+ * ```ts
+ * import { WEEK } from "std/datetime/constants.ts";
+ * import { getItemsSince } from "@/utils/db.ts";
+ *
+ * const itemsSinceAllTime = await getItemsSince(WEEK);
+ * ```
+ *
+ * @example Since a month ago
+ * ```ts
+ * import { DAY } from "std/datetime/constants.ts";
+ * import { getItemsSince } from "@/utils/db.ts";
+ *
+ * const itemsSinceAllTime = await getItemsSince(DAY * 30);
+ * ```
+ */
+export async function getItemsSince(msAgo: number) {
+  return await getValues<Item>({
+    prefix: ["items_by_time"],
+    start: ["items_by_time", Date.now() - msAgo],
+  });
 }
 
 // Comment

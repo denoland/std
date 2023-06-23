@@ -15,7 +15,7 @@ import {
   createComment,
   getAreVotedBySessionId,
   getCommentsByItem,
-  getItemById,
+  getItem,
   getManyUsers,
   getUserById,
   getUserBySessionId,
@@ -42,7 +42,7 @@ export const handler: Handlers<ItemPageData, State> = {
     const url = new URL(req.url);
     const pageNum = calcPageNum(url);
 
-    const item = await getItemById(id);
+    const item = await getItem(id);
     if (item === null) {
       return ctx.renderNotFound();
     }
