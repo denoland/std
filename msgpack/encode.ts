@@ -39,7 +39,7 @@ function encodeNumber(num: number) {
   if (!Number.isInteger(num)) {
     const dataView = new DataView(new ArrayBuffer(9));
     dataView.setFloat64(1, num);
-    dataView.setUint8(0, 0xca);
+    dataView.setUint8(0, 0xcb);
     return new Uint8Array(dataView.buffer);
   }
 
@@ -100,7 +100,7 @@ function encodeNumber(num: number) {
   if (num < SIXTY_FOUR_BITS) { // uint64
     const dataView = new DataView(new ArrayBuffer(9));
     dataView.setBigUint64(1, BigInt(num));
-    dataView.setUint8(0, 0xcd);
+    dataView.setUint8(0, 0xcf);
     return new Uint8Array(dataView.buffer);
   }
 
@@ -108,10 +108,6 @@ function encodeNumber(num: number) {
 }
 
 function encodeSlice(object: EncodeType, byteList: BytesList) {
-  if (object === undefined) {
-    throw new Error("Cannot safely encode value 'undefined'");
-  }
-
   if (object === null) {
     byteList.add(new Uint8Array([0xc0]));
     return;
