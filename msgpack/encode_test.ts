@@ -8,19 +8,29 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("testdata", () => {
-  const one = Deno.readTextFileSync(path.join(testdataDir, "1.json"));
+  const one = JSON.parse(
+    Deno.readTextFileSync(path.join(testdataDir, "1.json")),
+  );
   assertEquals(decode(encode(one)), one);
 
-  const two = Deno.readTextFileSync(path.join(testdataDir, "2.json"));
+  const two = JSON.parse(
+    Deno.readTextFileSync(path.join(testdataDir, "2.json")),
+  );
   assertEquals(decode(encode(two)), two);
 
-  const three = Deno.readTextFileSync(path.join(testdataDir, "3.json"));
+  const three = JSON.parse(
+    Deno.readTextFileSync(path.join(testdataDir, "3.json")),
+  );
   assertEquals(decode(encode(three)), three);
 
-  const four = Deno.readTextFileSync(path.join(testdataDir, "4.json"));
+  const four = JSON.parse(
+    Deno.readTextFileSync(path.join(testdataDir, "4.json")),
+  );
   assertEquals(decode(encode(four)), four);
 
-  const five = Deno.readTextFileSync(path.join(testdataDir, "5.json"));
+  const five = JSON.parse(
+    Deno.readTextFileSync(path.join(testdataDir, "5.json")),
+  );
   assertEquals(decode(encode(five)), five);
 });
 
@@ -106,4 +116,29 @@ Deno.test("strings", () => {
     ]),
   );
   assertEquals(decode(encode(reallyLongString)), reallyLongString);
+});
+
+Deno.test("arrays", () => {
+  const arr0: never[] = [];
+  assertEquals(decode(encode(arr0)), arr0);
+
+  const arr1 = [1, 2, 3, 4, 5, 6];
+  assertEquals(decode(encode(arr1)), arr1);
+
+  const arr2 = new Array(256).fill(0);
+  assertEquals(decode(encode(arr2)), arr2);
+
+  const nestedArr = [[1, 2, 3], [1, 2], 5];
+  assertEquals(decode(encode(nestedArr)), nestedArr);
+});
+
+Deno.test("maps", () => {
+  const map0 = {};
+  assertEquals(decode(encode(map0)), map0);
+
+  const map1 = { "a": 0, "b": 2, "c": "three", "d": null };
+  assertEquals(decode(encode(map1)), map1);
+
+  const nestedMap = { "a": -1, "b": 2, "c": "three", "d": null, "e": map1 };
+  assertEquals(decode(encode(nestedMap)), nestedMap);
 });

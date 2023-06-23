@@ -36,7 +36,7 @@ export function encode(object: EncodeType) {
 }
 
 function encodeNumber(num: number) {
-  if (!Number.isInteger(num)) {
+  if (!Number.isInteger(num)) { // float 64
     const dataView = new DataView(new ArrayBuffer(9));
     dataView.setFloat64(1, num);
     dataView.setUint8(0, 0xcb);
@@ -72,6 +72,12 @@ function encodeNumber(num: number) {
       dataView.setUint8(0, 0xd3);
       return new Uint8Array(dataView.buffer);
     }
+
+    // float 64
+    const dataView = new DataView(new ArrayBuffer(9));
+    dataView.setFloat64(1, num);
+    dataView.setUint8(0, 0xcb);
+    return new Uint8Array(dataView.buffer);
   }
 
   // if the number fits within a positive fixint, use it
@@ -104,7 +110,11 @@ function encodeNumber(num: number) {
     return new Uint8Array(dataView.buffer);
   }
 
-  throw new Error("Unreachable");
+  // float 64
+  const dataView = new DataView(new ArrayBuffer(9));
+  dataView.setFloat64(1, num);
+  dataView.setUint8(0, 0xcb);
+  return new Uint8Array(dataView.buffer);
 }
 
 function encodeSlice(object: EncodeType, byteList: BytesList) {
@@ -250,6 +260,7 @@ function encodeSlice(object: EncodeType, byteList: BytesList) {
       encodeSlice(key, byteList);
       encodeSlice(value, byteList);
     }
+    return;
   }
 
   throw new Error("Cannot safely encode value into messagepack");

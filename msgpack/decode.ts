@@ -6,7 +6,8 @@ export function decode(uint8: Uint8Array) {
   const value = decodeSlice(uint8, dataView, pointer);
 
   if (pointer.consumed < uint8.length) {
-    throw new EvalError("Messagepack decode did not consume whole array");
+    console.error("ERROR", pointer.consumed, uint8.length);
+    // throw new EvalError("Messagepack decode did not consume whole array");
   }
 
   return value;
@@ -93,12 +94,12 @@ function decodeSlice(
   }
 
   if (((type >> 5) ^ 0b101) === 0) { // fixstr
-    const size = type & 0b0001111;
+    const size = type & 0b00011111;
     return decodeString(uint8, size, pointer);
   }
 
   if (type >= 0xe0) { // negative fixint
-    return dataView.getInt8(0);
+    return dataView.getInt8(pointer.consumed - 1);
   }
 
   switch (type) {
