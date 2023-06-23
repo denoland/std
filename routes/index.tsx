@@ -37,7 +37,7 @@ export const handler: Handlers<HomePageData, State> = {
     const pageNum = calcPageNum(url);
     const timeAgo = calcTimeAgoFilter(url);
     let allItems: Item[];
-    if (timeAgo === "week") {
+    if (timeAgo === "week" || timeAgo === null) {
       allItems = await getItemsSince(WEEK);
     } else if (timeAgo === "month") {
       allItems = await getItemsSince(30 * DAY);
