@@ -24,8 +24,7 @@ export async function handler(
     return await ctx.next();
   }
 
-  /** @todo Review once https://github.com/denoland/deno_kv_oauth/pull/126 is closed */
-  ctx.state.sessionId = await getSessionId(req) ?? undefined;
+  ctx.state.sessionId = await getSessionId(req);
 
   const res = await ctx.next();
 
