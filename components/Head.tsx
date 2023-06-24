@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Head as _Head, type HeadProps as _HeadProps } from "$fresh/runtime.ts";
+import { Head as _Head } from "$fresh/runtime.ts";
 import type { ComponentChildren } from "preact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";
 

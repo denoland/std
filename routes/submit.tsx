@@ -59,7 +59,7 @@ export const handler: Handlers<State, State> = {
 
 function Form() {
   return (
-    <form class=" space-y-2" method="post">
+    <form class="space-y-2" method="post">
       <input
         class={INPUT_STYLES}
         type="text"
