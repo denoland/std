@@ -1,66 +1,66 @@
 archive:
-- archive/**
+  - archive/**
 async:
-- async/**
+  - async/**
 bytes:
-- bytes/**
+  - bytes/**
 collections:
-- collections/**
+  - collections/**
 console:
-- console/**
+  - console/**
 crypto:
-- crypto/**
+  - crypto/**
 csv:
-- csv/**
+  - csv/**
 datetime:
-- datetime/**
+  - datetime/**
 dotenv:
-- dotenv/**
+  - dotenv/**
 encoding:
-- encoding/**
+  - encoding/**
 examples:
-- examples/**
+  - examples/**
 flags:
-- flags/**
+  - flags/**
 fmt:
-- fmt/**
+  - fmt/**
 front_matter:
-- front_matter/**
+  - front_matter/**
 fs:
-- fs/**
+  - fs/**
 html:
-- html/**
+  - html/**
 http:
-- http/**
+  - http/**
 io:
-- io/**
+  - io/**
 json:
-- json/**
+  - json/**
 jsonc:
-- jsonc/**
+  - jsonc/**
 log:
-- log/**
+  - log/**
 media_types:
-- media_types/**
+  - media_types/**
 path:
-- path/**
+  - path/**
 permission:
-- permission/**
+  - permission/**
 regexp:
-- regexp/**
+  - regexp/**
 semver:
-- semver/**
+  - semver/**
 signal:
-- signal/**
+  - signal/**
 streams:
-- streams/**
+  - streams/**
 testing:
-- testing/**
+  - testing/**
 toml:
-- toml/**
+  - toml/**
 uuid:
-- uuid/**
+  - uuid/**
 wasi:
-- wasi/**
+  - wasi/**
 yaml:
-- yaml/**
+  - yaml/**
