@@ -36,6 +36,9 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
         </time>
         <div
           class="mt-8 markdown-body"
+          data-color-mode="auto"
+          data-light-theme="light"
+          data-dark-theme="dark"
           dangerouslySetInnerHTML={{ __html: render(post.content) }}
         />
       </main>

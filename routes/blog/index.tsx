@@ -21,7 +21,7 @@ function PostCard(props: Post) {
   return (
     <div class="py-8 border(t gray-200)">
       <a class="sm:col-span-2" href={`/blog/${props.slug}`}>
-        <h3 class="text(3xl gray-900) font-bold">
+        <h3 class="text-3xl font-bold">
           {props.title}
         </h3>
         {props.publishedAt.toString() !== "Invalid Date" && (
@@ -31,7 +31,7 @@ function PostCard(props: Post) {
             })}
           </time>
         )}
-        <div class="mt-4 text-gray-900">
+        <div class="mt-4">
           {props.summary}
         </div>
       </a>
