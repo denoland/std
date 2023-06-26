@@ -20,9 +20,10 @@ export const handler: Handlers<BlogPostPageData, State> = {
 
 export default function PostPage(props: PageProps<BlogPostPageData>) {
   const { post } = props.data;
-  const date = new Date(post.publishedAt).toLocaleDateString("en-US", {
-    dateStyle: "long",
-  });
+  const date = post.publishedAt.toString() !== "Invalid Date" &&
+    new Date(post.publishedAt).toLocaleDateString("en-US", {
+      dateStyle: "long",
+    });
 
   return (
     <>
@@ -31,9 +32,11 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
       </Head>
       <main class={`${SITE_WIDTH_STYLES} px-4 pt-16 flex-1`}>
         <h1 class="text-5xl font-bold">{post.title}</h1>
-        <time class="text-gray-500">
-          {date}
-        </time>
+        {date && (
+          <time class="text-gray-500">
+            {date}
+          </time>
+        )}
         <div
           class="mt-8 markdown-body"
           data-color-mode="auto"

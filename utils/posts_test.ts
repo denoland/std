@@ -11,6 +11,14 @@ Deno.test("[blog] getPost()", async () => {
   assertEquals(post.title, "This is my first blog post!");
 });
 
+Deno.test("[blog] getPost() with missing frontmatter attributes", async () => {
+  const post = await getPost("second-post");
+  assert(post);
+  assertEquals(post.publishedAt, new Date(undefined as unknown as Date));
+  assertEquals(post.summary, "");
+  assertEquals(post.title, "Second post");
+});
+
 Deno.test("[blog] getPost() for non-existent post", async () => {
   const post = await getPost("third-post");
   assertEquals(post, null);

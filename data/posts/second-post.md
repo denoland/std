@@ -1,7 +1,5 @@
 ---
 title: Second post
-published_at: 2022-03-20
-summary: This is the second post.
 ---
 
 It was popularised in the 1960s with the release of Letraset sheets containing

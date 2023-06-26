@@ -4,7 +4,9 @@ import {
   createComment,
   createItem,
   createUser,
+  createVote,
   deleteUserBySession,
+  deleteVote,
   getAllItems,
   getCommentsByItem,
   getItem,
@@ -16,6 +18,7 @@ import {
   getUserBySession,
   getUserByStripeCustomer,
   getVisitsPerDay,
+  getVotedItemsByUser,
   incrementVisitsPerDay,
   type Item,
   kv,
@@ -33,92 +36,25 @@ import {
 } from "std/testing/asserts.ts";
 import { DAY } from "std/datetime/constants.ts";
 
-Deno.test("[db] newItemProps()", () => {
-  const itemProps = newItemProps();
-  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now());
-  assertEquals(typeof itemProps.id, "string");
-  assertEquals(itemProps.score, 0);
-});
+function genNewComment(comment?: Partial<Comment>): Comment {
+  return {
+    itemId: crypto.randomUUID(),
+    userId: crypto.randomUUID(),
+    text: crypto.randomUUID(),
+    ...newCommentProps(),
+    ...comment,
+  };
+}
 
-Deno.test("[db] getAllItems()", async () => {
-  const item1: Item = {
+function genNewItem(item?: Partial<Item>): Item {
+  return {
     userId: crypto.randomUUID(),
     title: crypto.randomUUID(),
     url: `http://${crypto.randomUUID()}.com`,
     ...newItemProps(),
+    ...item,
   };
-  const item2: Item = {
-    userId: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-  };
-
-  assertEquals(await getAllItems(), []);
-
-  await createItem(item1);
-  await createItem(item2);
-  assertArrayIncludes(await getAllItems(), [item1, item2]);
-});
-
-Deno.test("[db] (get/create)Item()", async () => {
-  const item: Item = {
-    userId: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-  };
-
-  assertEquals(await getItem(item.id), null);
-
-  await createItem(item);
-  await assertRejects(async () => await createItem(item));
-  assertEquals(await getItem(item.id), item);
-});
-
-Deno.test("[db] getItemsByUser()", async () => {
-  const userId = crypto.randomUUID();
-  const item1: Item = {
-    userId,
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-  };
-  const item2: Item = {
-    userId,
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-  };
-
-  assertEquals(await getItemsByUser(userId), []);
-
-  await createItem(item1);
-  await createItem(item2);
-  assertArrayIncludes(await getItemsByUser(userId), [item1, item2]);
-});
-
-Deno.test("[db] getItemsSince()", async () => {
-  const item1: Item = {
-    userId: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-  };
-  const item2: Item = {
-    userId: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    ...newItemProps(),
-    createdAt: new Date(Date.now() - (2 * DAY)),
-  };
-
-  await createItem(item1);
-  await createItem(item2);
-
-  assertArrayIncludes(await getItemsSince(DAY), [item1]);
-  assertArrayIncludes(await getItemsSince(3 * DAY), [item1, item2]);
-});
+}
 
 function genNewUser(): User {
   return {
@@ -130,6 +66,59 @@ function genNewUser(): User {
     ...newUserProps(),
   };
 }
+
+Deno.test("[db] newItemProps()", () => {
+  const itemProps = newItemProps();
+  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now());
+  assertEquals(typeof itemProps.id, "string");
+  assertEquals(itemProps.score, 0);
+});
+
+Deno.test("[db] getAllItems()", async () => {
+  const item1 = genNewItem();
+  const item2 = genNewItem();
+
+  assertEquals(await getAllItems(), []);
+
+  await createItem(item1);
+  await createItem(item2);
+  assertArrayIncludes(await getAllItems(), [item1, item2]);
+});
+
+Deno.test("[db] (get/create)Item()", async () => {
+  const item = genNewItem();
+
+  assertEquals(await getItem(item.id), null);
+
+  await createItem(item);
+  await assertRejects(async () => await createItem(item));
+  assertEquals(await getItem(item.id), item);
+});
+
+Deno.test("[db] getItemsByUser()", async () => {
+  const userId = crypto.randomUUID();
+  const item1 = genNewItem({ userId });
+  const item2 = genNewItem({ userId });
+
+  assertEquals(await getItemsByUser(userId), []);
+
+  await createItem(item1);
+  await createItem(item2);
+  assertArrayIncludes(await getItemsByUser(userId), [item1, item2]);
+});
+
+Deno.test("[db] getItemsSince()", async () => {
+  const item1 = genNewItem();
+  const item2 = genNewItem({
+    createdAt: new Date(Date.now() - (2 * DAY)),
+  });
+
+  await createItem(item1);
+  await createItem(item2);
+
+  assertArrayIncludes(await getItemsSince(DAY), [item1]);
+  assertArrayIncludes(await getItemsSince(3 * DAY), [item1, item2]);
+});
 
 Deno.test("[db] user", async () => {
   const user = genNewUser();
@@ -185,18 +174,12 @@ Deno.test("[db] newCommentProps()", () => {
 
 Deno.test("[db] createComment() + getCommentsByItem()", async () => {
   const itemId = crypto.randomUUID();
-  const comment1: Comment = {
+  const comment1 = genNewComment({
     itemId,
-    userId: crypto.randomUUID(),
-    text: crypto.randomUUID(),
-    ...newCommentProps(),
-  };
-  const comment2: Comment = {
+  });
+  const comment2 = genNewComment({
     itemId,
-    userId: crypto.randomUUID(),
-    text: crypto.randomUUID(),
-    ...newCommentProps(),
-  };
+  });
 
   assertEquals(await getCommentsByItem(itemId), []);
 
@@ -204,4 +187,20 @@ Deno.test("[db] createComment() + getCommentsByItem()", async () => {
   await createComment(comment2);
   await assertRejects(async () => await createComment(comment2));
   assertArrayIncludes(await getCommentsByItem(itemId), [comment1, comment2]);
+});
+
+Deno.test("[db] votes", async () => {
+  const user = genNewUser();
+  const item = genNewItem();
+
+  assertEquals(await getVotedItemsByUser(user.id), []);
+
+  await createVote({ item, user });
+  assertEquals(await getVotedItemsByUser(user.id), [item]);
+  await deleteVote({ item, user });
+  assertEquals(await getVotedItemsByUser(user.id), []);
+  await createVote({ item, user });
+  assertRejects(async () => await createVote({ item, user }));
+  await deleteVote({ item, user });
+  assertRejects(async () => await deleteVote({ item, user }));
 });
