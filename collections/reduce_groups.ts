@@ -25,10 +25,10 @@ import { mapValues } from "./map_values.ts";
  * });
  * ```
  */
-export function reduceGroups<T, A>(
-  record: Readonly<Record<string, Array<T>>>,
+export function reduceGroups<T, A, K extends string>(
+  record: Readonly<Partial<Record<K, Array<T>>>>,
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
-): Record<string, A> {
+): Partial<Record<K, A>> {
   return mapValues(record, (it) => it.reduce(reducer, initialValue));
 }
