@@ -23,7 +23,7 @@ import {
   stripSuffix,
   stripTrailingSeparators,
 } from "./_util.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../asserts/assert.ts";
 
 export const sep = "\\";
 export const delimiter = ";";

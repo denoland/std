@@ -9,7 +9,7 @@ import {
   SEP_PATTERN,
 } from "../path/mod.ts";
 import { walk, walkSync } from "./walk.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../asserts/assert.ts";
 import { isWindows } from "../_util/os.ts";
 import {
   createWalkEntry,

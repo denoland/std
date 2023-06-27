@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../asserts/assert.ts";
 
 export class RetryError extends Error {
   constructor(cause: unknown, attempts: number) {

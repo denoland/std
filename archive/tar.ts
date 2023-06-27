@@ -42,7 +42,7 @@ export { type TarInfo, type TarMeta, type TarOptions };
 
 import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../asserts/assert.ts";
 import { recordSize } from "./_common.ts";
 
 const ustar = "ustar\u000000";
