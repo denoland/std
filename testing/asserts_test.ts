@@ -227,22 +227,23 @@ Deno.test("Equal", function () {
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
-      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+      new (class<T extends Record<string, unknown>> extends WeakRef<T> {})({
+        hello: "world",
+      }),
     ),
   );
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
-      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+      new (class<T extends Record<string, unknown>> extends WeakRef<T> {})({
+        hello: "world",
+      }),
     ),
   );
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
-      new (class<T extends object> extends WeakRef<T> {
+      new (class<T extends Record<string, unknown>> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
     ),
@@ -250,8 +251,7 @@ Deno.test("Equal", function () {
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
-      new (class<T extends object> extends WeakRef<T> {
+      new (class<T extends Record<string, unknown>> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
     ),
@@ -1443,8 +1443,7 @@ Deno.test({
     assertArrayIncludes<boolean>([true, false], [true]);
     const value = { x: 1 };
     assertStrictEquals<typeof value>(value, value);
-    // deno-lint-ignore ban-types
-    assertNotStrictEquals<object>(value, { x: 1 });
+    assertNotStrictEquals<Record<string, unknown>>(value, { x: 1 });
   },
 });
 
