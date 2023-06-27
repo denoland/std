@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+import { EncodeType } from "./encode.ts";
+
 export function decode(uint8: Uint8Array) {
   const pointer = { consumed: 0 };
   const dataView = new DataView(uint8.buffer);
@@ -29,7 +31,7 @@ function decodeArray(
   size: number,
   pointer: { consumed: number },
 ) {
-  const arr: unknown[] = [];
+  const arr: EncodeType[] = [];
 
   for (let i = 0; i < size; i++) {
     const value = decodeSlice(uint8, dataView, pointer);
@@ -45,7 +47,7 @@ function decodeMap(
   size: number,
   pointer: { consumed: number },
 ) {
-  const map: Record<number | string, unknown> = {};
+  const map: Record<number | string, EncodeType> = {};
 
   for (let i = 0; i < size; i++) {
     const key = decodeSlice(uint8, dataView, pointer);
@@ -74,7 +76,7 @@ function decodeSlice(
   uint8: Uint8Array,
   dataView: DataView,
   pointer: { consumed: number },
-): unknown {
+): EncodeType {
   const type = dataView.getUint8(pointer.consumed);
   pointer.consumed++;
 
