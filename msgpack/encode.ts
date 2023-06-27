@@ -235,7 +235,7 @@ function encodeSlice(object: EncodeType, byteList: BytesList) {
   }
 
   // If object is a plain object
-  if (object.constructor === Object) {
+  if (Object.getPrototypeOf(object) === Object.prototype) {
     const numKeys = Object.keys(object).length;
 
     if (numKeys < FOUR_BITS) { // fixarray
