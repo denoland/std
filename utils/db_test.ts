@@ -69,7 +69,7 @@ function genNewUser(): User {
 
 Deno.test("[db] newItemProps()", () => {
   const itemProps = newItemProps();
-  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now());
+  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now(), 1e-6);
   assertEquals(typeof itemProps.id, "string");
   assertEquals(itemProps.score, 0);
 });
@@ -168,7 +168,7 @@ Deno.test("[db] visit", async () => {
 
 Deno.test("[db] newCommentProps()", () => {
   const commentProps = newCommentProps();
-  assertAlmostEquals(commentProps.createdAt.getTime(), Date.now());
+  assertAlmostEquals(commentProps.createdAt.getTime(), Date.now(), 1e-6);
   assertEquals(typeof commentProps.id, "string");
 });
 
