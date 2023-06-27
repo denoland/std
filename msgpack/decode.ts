@@ -100,7 +100,7 @@ function decodeSlice(
   }
 
   if (type >= 0xe0) { // negative fixint
-    return dataView.getInt8(pointer.consumed - 1);
+    return type - 256;
   }
 
   switch (type) {
