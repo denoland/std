@@ -7,7 +7,7 @@ import { assertIsError } from "./assert_is_error.ts";
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertRejects } from "https://deno.land/std@$STD_VERSION/asserts/assert_rejects.ts";
  *
  * Deno.test("doesThrow", async function () {
  *   await assertRejects(
@@ -43,7 +43,7 @@ export function assertRejects(
  *
  * @example
  * ```ts
- * import { assertRejects } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertRejects } from "https://deno.land/std@$STD_VERSION/asserts/assert_rejects.ts";
  *
  * Deno.test("doesThrow", async function () {
  *   await assertRejects(async () => {

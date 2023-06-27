@@ -7,7 +7,7 @@ import { format } from "./_format.ts";
  * If the values are strictly equal then throw.
  *
  * ```ts
- * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_not_strict_equals.ts";
  *
  * assertNotStrictEquals(1, 1)
  * ```

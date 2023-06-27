@@ -11,7 +11,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/asserts/assert_array_includes.ts";
  *
  * assertArrayIncludes<number>([1, 2], [2])
  * ```

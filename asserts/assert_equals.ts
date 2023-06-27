@@ -14,7 +14,7 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *
  * @example
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * Deno.test("example", function (): void {
  *   assertEquals("world", "world");
