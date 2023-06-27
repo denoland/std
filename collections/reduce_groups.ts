@@ -29,17 +29,6 @@ export function reduceGroups<T, A, K extends string>(
   record: Readonly<Partial<Record<K, Array<T>>>>,
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
-): Partial<Record<K, A>>;
-/** @deprecated (will be removed after 0.196.0) Use `reduceGroups<T, A, K extends string>(record: Readonly<Partial<Record<K, Array<T>>>>, reducer: (accumulator: A, current: T) => A, initialValue: A): Partial<Record<K, A>>` instead. */
-export function reduceGroups<T, A>(
-  record: Readonly<Record<string, Array<T>>>,
-  reducer: (accumulator: A, current: T) => A,
-  initialValue: A,
-): Record<string, A>;
-export function reduceGroups<T, A, K extends string>(
-  record: Readonly<Partial<Record<K, Array<T>>>>,
-  reducer: (accumulator: A, current: T) => A,
-  initialValue: A,
 ): Partial<Record<K, A>> {
   return mapValues(record, (it) => it.reduce(reducer, initialValue));
 }
