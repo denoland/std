@@ -6,8 +6,7 @@ export function decode(uint8: Uint8Array) {
   const value = decodeSlice(uint8, dataView, pointer);
 
   if (pointer.consumed < uint8.length) {
-    console.error("ERROR", pointer.consumed, uint8.length);
-    // throw new EvalError("Messagepack decode did not consume whole array");
+    throw new EvalError("Messagepack decode did not consume whole array");
   }
 
   return value;
