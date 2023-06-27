@@ -4,9 +4,13 @@ import type { JsonValue, ParseStreamOptions } from "./common.ts";
 import { parse } from "./_common.ts";
 
 const blank = new Set(" \t\r\n");
-function isBrankChar(char: string) {
+function isBlankChar(char: string) {
   return blank.has(char);
 }
+
+const primitives = new Map(
+  (["null", "true", "false"] as const).map((v) => [v[0], v]),
+);
 
 /**
  * Stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
@@ -53,10 +57,34 @@ export class ConcatenatedJsonParseStream
     let nestCount = 0;
     let readingString = false;
     let escapeNext = false;
+    let readingPrimitive: false | "null" | "true" | "false" = false;
+    let positionInPrimitive = 0;
     for await (const string of src) {
       let sliceStart = 0;
       for (let i = 0; i < string.length; i++) {
         const char = string[i];
+
+        // We're reading a primitive at the top level
+        if (readingPrimitive) {
+          if (char === readingPrimitive[positionInPrimitive]) {
+            positionInPrimitive++;
+
+            // Emit the primitive when done reading
+            if (positionInPrimitive === readingPrimitive.length) {
+              yield parse(targetString + string.slice(sliceStart, i + 1));
+              hasValue = false;
+              readingPrimitive = false;
+              positionInPrimitive = 0;
+              targetString = "";
+              sliceStart = i + 1;
+            }
+          } else {
+            // If the primitive is malformed, keep reading, maybe the next characters can be useful in the syntax error.
+            readingPrimitive = false;
+            positionInPrimitive = 0;
+          }
+          continue;
+        }
 
         if (readingString) {
           if (char === '"' && !escapeNext) {
@@ -74,12 +102,13 @@ export class ConcatenatedJsonParseStream
           continue;
         }
 
-        // Parses number, true, false, null with a nesting level of 0.
-        // example: 'null["foo"]' => null, ["foo"]
-        // example: 'false{"foo": "bar"}' => false, {foo: "bar"}
+        // Parses number with a nesting level of 0.
+        // example: '0["foo"]' => 0, ["foo"]
+        // example: '3.14{"foo": "bar"}' => 3.14, {foo: "bar"}
         if (
           hasValue && nestCount === 0 &&
-          (char === "{" || char === "[" || char === '"' || char === " ")
+          (char === "{" || char === "[" || char === '"' || char === " " ||
+            char === "n" || char === "t" || char === "f")
         ) {
           yield parse(targetString + string.slice(sliceStart, i));
           hasValue = false;
@@ -105,6 +134,12 @@ export class ConcatenatedJsonParseStream
             break;
         }
 
+        if (nestCount === 0 && primitives.has(char)) {
+          // The first letter of a primitive at top level was found
+          readingPrimitive = primitives.get(char)!;
+          positionInPrimitive = 1;
+        }
+
         // parse object or array
         if (
           hasValue && nestCount === 0 &&
@@ -117,7 +152,7 @@ export class ConcatenatedJsonParseStream
           continue;
         }
 
-        if (!hasValue && !isBrankChar(char)) {
+        if (!hasValue && !isBlankChar(char)) {
           // We want to ignore the character string with only blank, so if there is a character other than blank, record it.
           hasValue = true;
         }

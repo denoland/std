@@ -97,6 +97,11 @@ jobs:
       - name: Check non-test assertions
         run: deno task lint:check-assertions
 
+      - name: Spell-check
+        uses: crate-ci/typos@master
+        with:
+          config: ./.github/workflows/typos.toml
+
   wasm:
     name: wasm
     runs-on: ubuntu-22.04

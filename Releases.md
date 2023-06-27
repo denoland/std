@@ -1,3 +1,13 @@
+### 0.192.0 / 2023.06.15
+
+- BREAKING(semver): rewrite semver (#3385)
+- feat(testing): report the number of removed snapshots (#3435)
+- fix(datetime/day_of_year): respect time zone of date (#3443)
+- fix(http/file_server): resolve empty subdir correctly on Windows (#3439)
+- fix(testing/time): use real Date in FakeTime (#3414)
+- fix(yaml): parse always return null when file is empty, whitespace or only
+  comments (#3442)
+
 ### 0.191.0 / 2023.06.08
 
 - BREAKING(csv,http,path): remove deprecated APIs (#3418)
@@ -146,7 +156,7 @@
 ### 0.176.0 / 2023.02.02
 
 - fix(node): disable worker_threads (#3151)
-- fix(node): throw permisison error instead of unknown error (#3133)
+- fix(node): throw permission error instead of unknown error (#3133)
 - fix(node/util): stricter runtime type checking (#3122)
 - fix: make encoding/front_matter work in a browser (#3154)
 
@@ -893,7 +903,7 @@ new feature added setNoDelay.
 - feat(node): allow require with 'node:' prefix (#1438)
 - feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
 - feat(testing): add assertIsError (#1376)
-- fix(async): fix async/tee concurent .next calls error (#1425)
+- fix(async): fix async/tee concurrent .next calls error (#1425)
 - fix(crypto): support length option in crypto.subtle.digest (#1386)
 - fix(http/file_server): fix encoded url in dir html (#1442)
 - fix(http/file_server): fix leak file resource (#1443)
@@ -1173,7 +1183,7 @@ new feature added setNoDelay.
 ### 0.92.0 / 2021.04.02
 
 - feat: make bufio compatible to Deno Deploy (#831)
-- feat: add symlink adn symlinkSync to node/fs (#825)
+- feat: add symlink and symlinkSync to node/fs (#825)
 - feat: add format and improve deprecate in node/util (#693)
 - feat: add io/buffer and io/util module (#808) …
 - fix: handle upstream type changes (#834)
