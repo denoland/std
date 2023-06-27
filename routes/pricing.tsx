@@ -13,13 +13,18 @@ interface PricingPageData extends State {
   user: User | null;
 }
 
-function comparePrices(productA: Stripe.Product, productB: Stripe.Product) {
+function comparePrices(
+  productA: Stripe.Product,
+  productB: Stripe.Product,
+) {
   return ((productA.default_price as Stripe.Price).unit_amount || 0) -
     ((productB.default_price as Stripe.Price).unit_amount || 0);
 }
 
 export const handler: Handlers<PricingPageData, State> = {
   async GET(_req, ctx) {
+    if (stripe === undefined) return ctx.renderNotFound();
+
     const { data } = await stripe.products.list({
       expand: ["data.default_price"],
       active: true,

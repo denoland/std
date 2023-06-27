@@ -65,7 +65,10 @@ Want to know where Deno SaaSKit is headed? Check out
 3. Click `Generate a new client secret` and copy the resulting client secret to
    the `GITHUB_CLIENT_SECRET` environment variable in your `.env` file.
 
-### Payments and Subscriptions (Stripe)
+### Payments and Subscriptions using Stripe (optional)
+
+> Note: Stripe is only enabled if the `STRIPE_SECRET_KEY` environment variable
+> is set.
 
 1. Copy your Stripe secret key as `STRIPE_SECRET_KEY` into your `.env` file. We
    recommend using the test key for your development environment.

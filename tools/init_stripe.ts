@@ -55,6 +55,8 @@ async function createDefaultPortalConfiguration(
 }
 
 async function main() {
+  if (stripe === undefined) throw new Error("Stripe is disabled.");
+
   const product = await createPremiumTierProduct(stripe);
 
   if (typeof product.default_price !== "string") return;

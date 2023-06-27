@@ -7,6 +7,7 @@ import {
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
+import { stripe } from "../utils/payments.ts";
 
 function Notice() {
   return (
@@ -87,10 +88,6 @@ interface LayoutProps {
 
 export default function Layout(props: LayoutProps) {
   const headerNavItems = [
-    {
-      href: "/pricing",
-      inner: "Pricing",
-    },
     props.session
       ? {
         href: "/account",
@@ -105,6 +102,13 @@ export default function Layout(props: LayoutProps) {
       inner: <span class={BUTTON_STYLES}>Submit</span>,
     },
   ];
+
+  if (stripe !== undefined) {
+    headerNavItems.unshift({
+      href: "/pricing",
+      inner: "Pricing",
+    });
+  }
 
   const footerNavItems = [
     {

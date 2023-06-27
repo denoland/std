@@ -4,6 +4,7 @@ import Head from "@/components/Head.tsx";
 import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
+import { stripe } from "@/utils/payments.ts";
 
 export const handler: Handlers<AccountState, AccountState> = {
   GET(_request, ctx) {
@@ -55,12 +56,14 @@ export default function AccountPage(props: PageProps<AccountState>) {
             title="Subscription"
             text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}
           >
-            <a
-              class="underline"
-              href={`/account/${action.toLowerCase()}`}
-            >
-              {action}
-            </a>
+            {stripe && (
+              <a
+                class="underline"
+                href={`/account/${action.toLowerCase()}`}
+              >
+                {action}
+              </a>
+            )}
           </Row>
         </ul>
         <a

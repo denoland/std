@@ -10,7 +10,10 @@ const STRIPE_PREMIUM_PLAN_PRICE_ID = Deno.env.get(
 
 export const handler: Handlers<null, AccountState> = {
   async GET(req, ctx) {
-    if (!STRIPE_PREMIUM_PLAN_PRICE_ID || !ctx.state.sessionId) {
+    if (
+      !STRIPE_PREMIUM_PLAN_PRICE_ID || !ctx.state.sessionId ||
+      stripe === undefined
+    ) {
       return ctx.renderNotFound();
     }
 

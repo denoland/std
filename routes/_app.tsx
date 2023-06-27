@@ -5,7 +5,7 @@ import Layout from "@/components/Layout.tsx";
 export default function App({ Component, data }: AppProps) {
   return (
     <div>
-      <Layout session={data.sessionId}>
+      <Layout session={data?.sessionId}>
         <Component />
       </Layout>
     </div>

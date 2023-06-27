@@ -51,14 +51,18 @@ export const handler: Handlers<any, State> = {
 
     const user = await getUser(githubUser.id.toString());
     if (!user) {
-      const customer = await stripe.customers.create({
-        email: githubUser.email,
-      });
+      let stripeCustomerId = undefined;
+      if (stripe) {
+        const customer = await stripe.customers.create({
+          email: githubUser.email,
+        });
+        stripeCustomerId = customer.id;
+      }
       const user: User = {
         id: githubUser.id.toString(),
         login: githubUser.login,
         avatarUrl: githubUser.avatar_url,
-        stripeCustomerId: customer.id,
+        stripeCustomerId,
         sessionId,
         ...newUserProps(),
       };
