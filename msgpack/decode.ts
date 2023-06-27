@@ -106,7 +106,9 @@ function decodeSlice(
     case 0xc0: // nil
       return null;
     case 0xc1: // (never used)
-      throw new Error("Messagepack decode encounted a type that is never used");
+      throw new Error(
+        "Messagepack decode encountered a type that is never used",
+      );
     case 0xc2: // false
       return false;
     case 0xc3: // true
