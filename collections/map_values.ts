@@ -29,6 +29,15 @@
 export function mapValues<T, O, K extends string>(
   record: Readonly<Partial<Record<K, T>>>,
   transformer: (value: T) => O,
+): Partial<Record<K, O>>;
+/** @deprecated (will be removed after 0.196.0) Use `mapValues<T, O, K extends string>(record: Readonly<Partial<Record<K, T>>>, transformer: (value: T) => O): Partial<Record<K, O>>` instead. */
+export function mapValues<T, O>(
+  record: Readonly<Record<string, T>>,
+  transformer: (value: T) => O,
+): Record<string, O>;
+export function mapValues<T, O, K extends string>(
+  record: Readonly<Partial<Record<K, T>>>,
+  transformer: (value: T) => O,
 ): Partial<Record<K, O>> {
   const ret: Partial<Record<K, O>> = {};
   const entries = Object.entries(record) as [K, T][];
