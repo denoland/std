@@ -35,16 +35,20 @@ export function encode(object: EncodeType) {
   return byteList.concat();
 }
 
+function encodeFloat64(num: number) {
+  const dataView = new DataView(new ArrayBuffer(9));
+  dataView.setFloat64(1, num);
+  dataView.setUint8(0, 0xcb);
+  return new Uint8Array(dataView.buffer);
+}
+
 function encodeNumber(num: number) {
   if (!Number.isInteger(num)) { // float 64
-    const dataView = new DataView(new ArrayBuffer(9));
-    dataView.setFloat64(1, num);
-    dataView.setUint8(0, 0xcb);
-    return new Uint8Array(dataView.buffer);
+    return encodeFloat64(num);
   }
 
   if (num < 0) {
-    if (num <= -1 && num >= -FIVE_BITS) { // negative fixint
+    if (num >= -FIVE_BITS) { // negative fixint
       return new Uint8Array([num]);
     }
 
@@ -74,14 +78,11 @@ function encodeNumber(num: number) {
     }
 
     // float 64
-    const dataView = new DataView(new ArrayBuffer(9));
-    dataView.setFloat64(1, num);
-    dataView.setUint8(0, 0xcb);
-    return new Uint8Array(dataView.buffer);
+    return encodeFloat64(num);
   }
 
   // if the number fits within a positive fixint, use it
-  if (num >= 0 && num <= 0x7f) {
+  if (num <= 0x7f) {
     return new Uint8Array([num]);
   }
 
@@ -111,10 +112,7 @@ function encodeNumber(num: number) {
   }
 
   // float 64
-  const dataView = new DataView(new ArrayBuffer(9));
-  dataView.setFloat64(1, num);
-  dataView.setUint8(0, 0xcb);
-  return new Uint8Array(dataView.buffer);
+  return encodeFloat64(num);
 }
 
 function encodeSlice(object: EncodeType, byteList: BytesList) {
