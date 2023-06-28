@@ -5,6 +5,8 @@ import {
   createItem,
   createUser,
   createVote,
+  deleteComment,
+  deleteItem,
   deleteUserBySession,
   deleteVote,
   getAllItems,
@@ -85,7 +87,7 @@ Deno.test("[db] getAllItems()", async () => {
   assertArrayIncludes(await getAllItems(), [item1, item2]);
 });
 
-Deno.test("[db] (get/create)Item()", async () => {
+Deno.test("[db] (get/create/delete)Item()", async () => {
   const item = genNewItem();
 
   assertEquals(await getItem(item.id), null);
@@ -93,6 +95,9 @@ Deno.test("[db] (get/create)Item()", async () => {
   await createItem(item);
   await assertRejects(async () => await createItem(item));
   assertEquals(await getItem(item.id), item);
+
+  await deleteItem(item);
+  assertEquals(await getItem(item.id), null);
 });
 
 Deno.test("[db] getItemsByUser()", async () => {
@@ -172,7 +177,7 @@ Deno.test("[db] newCommentProps()", () => {
   assertEquals(typeof commentProps.id, "string");
 });
 
-Deno.test("[db] createComment() + getCommentsByItem()", async () => {
+Deno.test("[db] (create/delete)Comment() + getCommentsByItem()", async () => {
   const itemId = crypto.randomUUID();
   const comment1 = genNewComment({
     itemId,
@@ -187,6 +192,10 @@ Deno.test("[db] createComment() + getCommentsByItem()", async () => {
   await createComment(comment2);
   await assertRejects(async () => await createComment(comment2));
   assertArrayIncludes(await getCommentsByItem(itemId), [comment1, comment2]);
+
+  await deleteComment(comment1);
+  await deleteComment(comment2);
+  assertEquals(await getCommentsByItem(itemId), []);
 });
 
 Deno.test("[db] votes", async () => {
