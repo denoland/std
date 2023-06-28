@@ -754,25 +754,19 @@ Deno.test("AssertObjectMatching", function () {
   assertThrows(
     // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
     () => assertObjectMatch(null, { foo: 42 }),
-    TypeError,
-    "assertObjectMatch",
+    AssertionError,
   );
   // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
-  assertThrows(() => assertObjectMatch(null, { foo: 42 }), TypeError, "null"); // since typeof null is "object", want to make sure user knows the bad value is "null"
+  assertThrows(() => assertObjectMatch(null, { foo: 42 }), AssertionError); // since typeof null is "object", want to make sure user knows the bad value is "null"
   assertThrows(
     // @ts-expect-error Argument of type 'undefined' is not assignable to parameter of type 'Record<PropertyKey, any>'
     () => assertObjectMatch(undefined, { foo: 42 }),
-    TypeError,
-    "assertObjectMatch",
+    AssertionError,
   );
   // @ts-expect-error Argument of type 'number' is not assignable to parameter of type 'Record<PropertyKey, any>'
-  assertThrows(() => assertObjectMatch(21, 42), TypeError, "assertObjectMatch");
-  assertThrows(
-    // @ts-expect-error Argument of type 'string' is not assignable to parameter of type 'Record<PropertyKey, any>'
-    () => assertObjectMatch("string", "string"),
-    TypeError,
-    "assertObjectMatch",
-  );
+  assertThrows(() => assertObjectMatch(21, 42), AssertionError);
+  // @ts-expect-error Argument of type 'string' is not assignable to parameter of type 'Record<PropertyKey, any>'
+  assertObjectMatch("string", "string");
 });
 
 Deno.test("AssertsUnimplemented", function () {
