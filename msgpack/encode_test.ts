@@ -98,8 +98,8 @@ Deno.test("bigints", () => {
   );
   assertEquals(decode(encode(9999999999999999999n)), 9999999999999999999n);
 
-  assertThrows(()=>encode(99999999999999999999999n))
-  assertThrows(()=>encode(-99999999999999999999999n))
+  assertThrows(() => encode(99999999999999999999999n));
+  assertThrows(() => encode(-99999999999999999999999n));
 });
 
 Deno.test("strings", () => {

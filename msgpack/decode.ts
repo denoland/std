@@ -139,36 +139,56 @@ function decodeSlice(
     case 0xc8: // ext 16
     case 0xc9: // ext 32
       throw new Error("ext not implemented yet");
-    case 0xca: // float 32
+    case 0xca: { // float 32
+      const value = dataView.getFloat32(pointer.consumed);
       pointer.consumed += 4;
-      return dataView.getFloat32(pointer.consumed - 4);
-    case 0xcb: // float 64
+      return value;
+    }
+    case 0xcb: { // float 64
+      const value = dataView.getFloat64(pointer.consumed);
       pointer.consumed += 8;
-      return dataView.getFloat64(pointer.consumed - 8);
-    case 0xcc: // uint 8
+      return value;
+    }
+    case 0xcc: { // uint 8
+      const value = dataView.getUint8(pointer.consumed);
       pointer.consumed += 1;
-      return dataView.getUint8(pointer.consumed - 1);
-    case 0xcd: // uint 16
+      return value;
+    }
+    case 0xcd: { // uint 16
+      const value = dataView.getUint16(pointer.consumed);
       pointer.consumed += 2;
-      return dataView.getUint16(pointer.consumed - 2);
-    case 0xce: // uint 32
+      return value;
+    }
+    case 0xce: { // uint 32
+      const value = dataView.getUint32(pointer.consumed);
       pointer.consumed += 4;
-      return dataView.getUint32(pointer.consumed - 4);
-    case 0xcf: // uint 64
+      return value;
+    }
+    case 0xcf: { // uint 64
+      const value = dataView.getBigUint64(pointer.consumed);
       pointer.consumed += 8;
-      return dataView.getBigUint64(pointer.consumed - 8);
-    case 0xd0: // int 8
+      return value;
+    }
+    case 0xd0: { // int 8
+      const value = dataView.getInt8(pointer.consumed);
       pointer.consumed += 1;
-      return dataView.getInt8(pointer.consumed - 1);
-    case 0xd1: // int 16
+      return value;
+    }
+    case 0xd1: { // int 16
+      const value = dataView.getInt16(pointer.consumed);
       pointer.consumed += 2;
-      return dataView.getInt16(pointer.consumed - 2);
-    case 0xd2: // int 32
+      return value;
+    }
+    case 0xd2: { // int 32
+      const value = dataView.getInt32(pointer.consumed);
       pointer.consumed += 4;
-      return dataView.getInt32(pointer.consumed - 4);
-    case 0xd3: // int 64
+      return value;
+    }
+    case 0xd3: { // int 64
+      const value = dataView.getBigInt64(pointer.consumed);
       pointer.consumed += 8;
-      return dataView.getBigInt64(pointer.consumed - 8);
+      return value;
+    }
     case 0xd4: // fixext 1
     case 0xd5: // fixext 2
     case 0xd6: // fixext 4
