@@ -1,4 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { INPUT_STYLES } from "@/utils/constants.ts";
 
 export default function PageInput(
   props: { lastPage: number; currentPage: number },
@@ -6,7 +7,7 @@ export default function PageInput(
   return (
     <input
       id="current_page"
-      class={`bg-transparent rounded rounded-lg outline-none w-full border-1 border-gray-500 hover:border-black transition duration-300 disabled:(opacity-50 cursor-not-allowed) rounded-md px-2 py-1 dark:(hover:border-white)`}
+      class={INPUT_STYLES}
       type="number"
       name="page"
       min="1"

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
+import { INPUT_STYLES, SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
@@ -63,11 +63,11 @@ export const handler: Handlers<HomePageData, State> = {
 
 function TimeSelector() {
   return (
-    <div class="flex justify-center">
+    <div class="flex justify-center my-4 gap-2">
       {/* These links do not preserve current URL queries. E.g. if ?page=2, that'll be removed once one of these links is clicked */}
-      <a class="hover:underline mr-4" href="/?time-ago=week">Last Week</a>
-      <a class="hover:underline mr-4" href="/?time-ago=month">Last Month</a>
-      <a class="hover:underline mr-4" href="/?time-ago=all">All time</a>
+      <a class={INPUT_STYLES} href="/?time-ago=week">Last Week</a>
+      <a class={INPUT_STYLES} href="/?time-ago=month">Last Month</a>
+      <a class={INPUT_STYLES} href="/?time-ago=all">All time</a>
     </div>
   );
 }
