@@ -29,6 +29,11 @@ async function getValues<T>(
   return values;
 }
 
+/** Converts `Date` to ISO format that is zero UTC offset */
+export function formatDate(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
 // Item
 export interface Item {
   userId: string;
@@ -63,13 +68,13 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
  * };
  *
  * await createItem(item);
- * await incrementAnalyticsMetricPerDay("items_count", item.createdAt);
  * ```
  */
 export async function createItem(item: Item) {
   const itemsKey = ["items", item.id];
   const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemsByUserKey = ["items_by_user", item.userId, item.id];
+  const itemsCountKey = ["items_count", formatDate(new Date())];
 
   const res = await kv.atomic()
     .check({ key: itemsKey, versionstamp: null })
@@ -78,6 +83,7 @@ export async function createItem(item: Item) {
     .set(itemsKey, item)
     .set(itemsByTimeKey, item)
     .set(itemsByUserKey, item)
+    .sum(itemsCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to create item: ${item}`);
@@ -203,6 +209,7 @@ export async function createVote(vote: Vote) {
     vote.item.id,
     vote.user.id,
   ];
+  const votesCountKey = ["votes_count", formatDate(new Date())];
 
   const [itemRes, itemsByTimeRes, itemsByUserRes] = await kv.getMany([
     itemKey,
@@ -220,11 +227,10 @@ export async function createVote(vote: Vote) {
     .set(itemsByUserKey, vote.item)
     .set(votedItemsByUserKey, vote.item)
     .set(votedUsersByItemKey, vote.user)
+    .sum(votesCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to set vote: ${vote}`);
-
-  await incrementAnalyticsMetricPerDay("votes_count", new Date());
 
   return vote;
 }
@@ -305,13 +311,13 @@ export function newUserProps(): Pick<User, "isSubscribed"> {
  *   ...newUserProps(),
  * };
  * await createUser(user);
- * await incrementAnalyticsMetricPerDay("users_count", new Date());
  * ```
  */
 export async function createUser(user: User) {
   const usersKey = ["users", user.id];
   const usersByLoginKey = ["users_by_login", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
+  const usersCountKey = ["users_count", formatDate(new Date())];
 
   const atomicOp = kv.atomic();
 
@@ -332,6 +338,7 @@ export async function createUser(user: User) {
     .set(usersKey, user)
     .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
+    .sum(usersCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to create user: ${user}`);
@@ -411,24 +418,10 @@ export function compareScore(a: Item, b: Item) {
 }
 
 // Analytics
-export async function incrementAnalyticsMetricPerDay(
-  metric: string,
-  date: Date,
-) {
-  // convert to ISO format that is zero UTC offset
-  const metricKey = [
-    metric,
-    `${date.toISOString().split("T")[0]}`,
-  ];
-  await kv.atomic()
-    .sum(metricKey, 1n)
-    .commit();
-}
-
-export async function incrementVisitsPerDay(date: Date) {
+export async function incrVisitsCountByDay(date: Date) {
   // convert to ISO format that is zero UTC offset
   const visitsKey = [
-    "visits",
+    "visits_count",
     `${date.toISOString().split("T")[0]}`,
   ];
   await kv.atomic()
@@ -436,14 +429,79 @@ export async function incrementVisitsPerDay(date: Date) {
     .commit();
 }
 
-export async function getVisitsPerDay(date: Date) {
+export async function getVisitsCountByDay(date: Date) {
   return await getValue<bigint>([
-    "visits",
-    `${date.toISOString().split("T")[0]}`,
+    "visits_count",
+    formatDate(date),
   ]);
 }
 
-export async function getAnalyticsMetricsPerDay(
+export async function getItemsCountByDay(date: Date) {
+  return await getValue<bigint>([
+    "items_count",
+    formatDate(date),
+  ]);
+}
+
+export async function getVotesCountByDay(date: Date) {
+  return await getValue<bigint>([
+    "votes_count",
+    formatDate(date),
+  ]);
+}
+
+export async function getUsersCountByDay(date: Date) {
+  return await getValue<bigint>([
+    "users_count",
+    formatDate(date),
+  ]);
+}
+
+export async function getAllVisitsCountByDay(options?: Deno.KvListOptions) {
+  const iter = await kv.list<bigint>({ prefix: ["visits_count"] }, options);
+  const visits = [];
+  const dates = [];
+  for await (const res of iter) {
+    visits.push(Number(res.value));
+    dates.push(String(res.key[1]));
+  }
+  return { visits, dates };
+}
+
+export async function getAllItemsCountByDay(options?: Deno.KvListOptions) {
+  const iter = await kv.list<bigint>({ prefix: ["items_count"] }, options);
+  const visits = [];
+  const dates = [];
+  for await (const res of iter) {
+    visits.push(Number(res.value));
+    dates.push(String(res.key[1]));
+  }
+  return { visits, dates };
+}
+
+export async function getAllVotesCountByDay(options?: Deno.KvListOptions) {
+  const iter = await kv.list<bigint>({ prefix: ["votes_count"] }, options);
+  const visits = [];
+  const dates = [];
+  for await (const res of iter) {
+    visits.push(Number(res.value));
+    dates.push(String(res.key[1]));
+  }
+  return { visits, dates };
+}
+
+export async function getAllUsersCountByDay(options?: Deno.KvListOptions) {
+  const iter = await kv.list<bigint>({ prefix: ["users_count"] }, options);
+  const visits = [];
+  const dates = [];
+  for await (const res of iter) {
+    visits.push(Number(res.value));
+    dates.push(String(res.key[1]));
+  }
+  return { visits, dates };
+}
+
+export async function getAnalyticsMetricListPerDay(
   metric: string,
   options?: Deno.KvListOptions,
 ) {
@@ -462,19 +520,8 @@ export async function getManyAnalyticsMetricsPerDay(
   options?: Deno.KvListOptions,
 ) {
   const analyticsByDay = await Promise.all(
-    metrics.map((metric) => getAnalyticsMetricsPerDay(metric, options)),
+    metrics.map((metric) => getAnalyticsMetricListPerDay(metric, options)),
   );
 
   return analyticsByDay;
-}
-
-export async function getAllVisitsPerDay(options?: Deno.KvListOptions) {
-  const iter = await kv.list<bigint>({ prefix: ["visits"] }, options);
-  const visits = [];
-  const dates = [];
-  for await (const res of iter) {
-    visits.push(Number(res.value));
-    dates.push(String(res.key[1]));
-  }
-  return { visits, dates };
 }

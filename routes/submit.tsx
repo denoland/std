@@ -6,7 +6,6 @@ import type { State } from "@/routes/_middleware.ts";
 import {
   createItem,
   getUserBySession,
-  incrementAnalyticsMetricPerDay,
   type Item,
   newItemProps,
 } from "@/utils/db.ts";
@@ -51,7 +50,6 @@ export const handler: Handlers<State, State> = {
       ...newItemProps(),
     };
     await createItem(item);
-    await incrementAnalyticsMetricPerDay("items_count", new Date());
 
     return redirect(`/item/${item!.id}`);
   },
