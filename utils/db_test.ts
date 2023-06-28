@@ -24,6 +24,7 @@ import {
   getUsersCountByDay,
   getVisitsCountByDay,
   getVotedItemsByUser,
+  getVotesCountByDay,
   incrVisitsCountByDay,
   type Item,
   kv,
@@ -177,7 +178,7 @@ Deno.test("[db] visit", async () => {
   const date = new Date("2023-01-01");
   const visitsKey = [
     "visits_count",
-    `${date.toISOString().split("T")[0]}`,
+    formatDate(date),
   ];
   await incrVisitsCountByDay(date);
   assertEquals((await kv.get(visitsKey)).key[1], "2023-01-01");
@@ -219,7 +220,13 @@ Deno.test("[db] votes", async () => {
 
   assertEquals(await getVotedItemsByUser(user.id), []);
 
+  const votesCount = (await getVotesCountByDay(new Date()))?.valueOf() ??
+    0n;
   await createVote({ item, user });
+  assertEquals(
+    (await getVotesCountByDay(new Date()))!.valueOf(),
+    votesCount + 1n,
+  );
   assertEquals(await getVotedItemsByUser(user.id), [item]);
   await deleteVote({ item, user });
   assertEquals(await getVotedItemsByUser(user.id), []);
