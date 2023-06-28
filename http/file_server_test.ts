@@ -524,6 +524,16 @@ async function startTlsFileServer({
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
+
+  // Wait for fileServer to be ready.
+  await retry(async () => {
+    const conn = await Deno.connectTls({
+      hostname: "localhost",
+      port: +port,
+      certFile: join(testdataDir, "tls/RootCA.pem"),
+    });
+    conn.close();
+  });
 }
 
 Deno.test(
