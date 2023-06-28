@@ -80,26 +80,26 @@ function decodeSlice(
   const type = dataView.getUint8(pointer.consumed);
   pointer.consumed++;
 
-  if (type <= 0x7f) { // positive fixint
+  if (type <= 0x7f) { // positive fixint - really small positive number
     return type;
   }
 
-  if (((type >> 4) ^ 0b1000) === 0) { // fixmap
+  if (((type >> 4) ^ 0b1000) === 0) { // fixmap - small map
     const size = type & 0xF;
     return decodeMap(uint8, dataView, size, pointer);
   }
 
-  if (((type >> 4) ^ 0b1001) === 0) { // fixarray
+  if (((type >> 4) ^ 0b1001) === 0) { // fixarray - small array
     const size = type & 0xF;
     return decodeArray(uint8, dataView, size, pointer);
   }
 
-  if (((type >> 5) ^ 0b101) === 0) { // fixstr
+  if (((type >> 5) ^ 0b101) === 0) { // fixstr - small string
     const size = type & 0b00011111;
     return decodeString(uint8, size, pointer);
   }
 
-  if (type >= 0xe0) { // negative fixint
+  if (type >= 0xe0) { // negative fixint - really small negative number
     return type - 256;
   }
 
@@ -114,30 +114,30 @@ function decodeSlice(
       return false;
     case 0xc3: // true
       return true;
-    case 0xc4: { // bin 8
+    case 0xc4: { // bin 8 - small Uint8Array
       const length = dataView.getUint8(pointer.consumed);
       pointer.consumed++;
       const u8 = uint8.subarray(pointer.consumed, pointer.consumed + length);
       pointer.consumed += length;
       return u8;
     }
-    case 0xc5: { // bin 16
+    case 0xc5: { // bin 16 - medium Uint8Array
       const length = dataView.getUint16(pointer.consumed);
       pointer.consumed += 2;
       const u8 = uint8.subarray(pointer.consumed, pointer.consumed + length);
       pointer.consumed += length;
       return u8;
     }
-    case 0xc6: { // bin 32
+    case 0xc6: { // bin 32 - large Uint8Array
       const length = dataView.getUint32(pointer.consumed);
       pointer.consumed += 4;
       const u8 = uint8.subarray(pointer.consumed, pointer.consumed + length);
       pointer.consumed += length;
       return u8;
     }
-    case 0xc7: // ext 8
-    case 0xc8: // ext 16
-    case 0xc9: // ext 32
+    case 0xc7: // ext 8 - small extension type
+    case 0xc8: // ext 16 - medium extension type
+    case 0xc9: // ext 32 - large extension type
       throw new Error("ext not implemented yet");
     case 0xca: { // float 32
       const value = dataView.getFloat32(pointer.consumed);
@@ -189,43 +189,43 @@ function decodeSlice(
       pointer.consumed += 8;
       return value;
     }
-    case 0xd4: // fixext 1
-    case 0xd5: // fixext 2
-    case 0xd6: // fixext 4
-    case 0xd7: // fixext 8
-    case 0xd8: // fixext 16
+    case 0xd4: // fixext 1 - 1 byte extension type
+    case 0xd5: // fixext 2 - 2 byte extension type
+    case 0xd6: // fixext 4 - 4 byte extension type
+    case 0xd7: // fixext 8 - 8 byte extension type
+    case 0xd8: // fixext 16 - 16 byte extension type
       throw new Error("fixext not implemented yet");
-    case 0xd9: { // str 8
+    case 0xd9: { // str 8 - small string
       const length = dataView.getUint8(pointer.consumed);
       pointer.consumed += 1;
       return decodeString(uint8, length, pointer);
     }
-    case 0xda: { // str 16
+    case 0xda: { // str 16 - medium string
       const length = dataView.getUint16(pointer.consumed);
       pointer.consumed += 2;
       return decodeString(uint8, length, pointer);
     }
-    case 0xdb: { // str 32
+    case 0xdb: { // str 32 - large string
       const length = dataView.getUint32(pointer.consumed);
       pointer.consumed += 4;
       return decodeString(uint8, length, pointer);
     }
-    case 0xdc: { // array 16
+    case 0xdc: { // array 16 - medium array
       const length = dataView.getUint16(pointer.consumed);
       pointer.consumed += 2;
       return decodeArray(uint8, dataView, length, pointer);
     }
-    case 0xdd: { // array 32
+    case 0xdd: { // array 32 - large array
       const length = dataView.getUint32(pointer.consumed);
       pointer.consumed += 4;
       return decodeArray(uint8, dataView, length, pointer);
     }
-    case 0xde: { // map 16
+    case 0xde: { // map 16 - medium map
       const length = dataView.getUint16(pointer.consumed);
       pointer.consumed += 2;
       return decodeMap(uint8, dataView, length, pointer);
     }
-    case 0xdf: { // map 32
+    case 0xdf: { // map 32 - large map
       const length = dataView.getUint32(pointer.consumed);
       pointer.consumed += 4;
       return decodeMap(uint8, dataView, length, pointer);
