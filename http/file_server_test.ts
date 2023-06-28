@@ -526,10 +526,8 @@ async function startTlsFileServer({
   reader.releaseLock();
 }
 
-// TODO(bartlomieju): Somehow this test started failing on macOS for 0.192.0
 Deno.test(
   "serveDirIndex TLS",
-  { ignore: Deno.build.os === "darwin" },
   async function () {
     await startTlsFileServer();
     try {
