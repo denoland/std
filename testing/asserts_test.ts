@@ -750,7 +750,7 @@ Deno.test("AssertObjectMatching", function () {
     () => assertObjectMatch({ foo: undefined, bar: null }, { foo: null }),
     AssertionError,
   );
-  // Non mapable primative types should throw a readable type error
+  // Non mapable primative types should throw a readable assertion error
   assertThrows(
     // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
     () => assertObjectMatch(null, { foo: 42 }),
