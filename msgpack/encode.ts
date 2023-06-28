@@ -70,13 +70,6 @@ function encodeNumber(num: number) {
       return new Uint8Array(dataView.buffer);
     }
 
-    if (num >= -SIXTY_THREE_BITS) { // int 64
-      const dataView = new DataView(new ArrayBuffer(9));
-      dataView.setBigInt64(1, BigInt(num));
-      dataView.setUint8(0, 0xd3);
-      return new Uint8Array(dataView.buffer);
-    }
-
     // float 64
     return encodeFloat64(num);
   }
@@ -101,13 +94,6 @@ function encodeNumber(num: number) {
     const dataView = new DataView(new ArrayBuffer(5));
     dataView.setUint32(1, num);
     dataView.setUint8(0, 0xce);
-    return new Uint8Array(dataView.buffer);
-  }
-
-  if (num < SIXTY_FOUR_BITS) { // uint64
-    const dataView = new DataView(new ArrayBuffer(9));
-    dataView.setBigUint64(1, BigInt(num));
-    dataView.setUint8(0, 0xcf);
     return new Uint8Array(dataView.buffer);
   }
 
@@ -155,7 +141,7 @@ function encodeSlice(object: EncodeType, byteList: BytesList) {
 
     const dataView = new DataView(new ArrayBuffer(9));
     dataView.setBigUint64(1, object);
-    dataView.setUint8(0, 0xd3);
+    dataView.setUint8(0, 0xcf);
     byteList.add(new Uint8Array(dataView.buffer));
     return;
   }

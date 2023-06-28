@@ -49,9 +49,9 @@ Deno.test("positive numbers", () => {
 
   assertEquals(
     encode(20000000000),
-    Uint8Array.of(0xcf, 0, 0, 0, 4, 168, 23, 200, 0),
+    Uint8Array.of(0xcb, 66, 18, 160, 95, 32, 0, 0, 0),
   );
-  assertEquals(decode(encode(20000000000)), 20000000000n); // just a technicality of the decoder
+  assertEquals(decode(encode(20000000000)), 20000000000);
 });
 
 Deno.test("negative numbers", () => {
@@ -69,9 +69,9 @@ Deno.test("negative numbers", () => {
 
   assertEquals(
     encode(-600000000000),
-    Uint8Array.of(0xd3, 255, 255, 255, 116, 77, 54, 144, 0),
+    Uint8Array.of(0xcb, 194, 97, 118, 89, 46, 0, 0, 0),
   );
-  assertEquals(decode(encode(-600000000000)), -600000000000n); // see above
+  assertEquals(decode(encode(-600000000000)), -600000000000);
 });
 
 Deno.test("floats", () => {
@@ -80,6 +80,23 @@ Deno.test("floats", () => {
     Uint8Array.of(0xcb, 63, 211, 51, 51, 51, 51, 51, 51),
   );
   assertEquals(decode(encode(0.3)), 0.3);
+});
+
+Deno.test("bigints", () => {
+  assertEquals(encode(0n), Uint8Array.of(0xcf, 0, 0, 0, 0, 0, 0, 0, 0));
+  assertEquals(decode(encode(0n)), 0n);
+  assertEquals(
+    encode(-10n),
+    Uint8Array.of(0xd3, 255, 255, 255, 255, 255, 255, 255, 246),
+  );
+  assertEquals(decode(encode(-10n)), -10n);
+  assertEquals(encode(10n), Uint8Array.of(0xcf, 0, 0, 0, 0, 0, 0, 0, 10));
+  assertEquals(decode(encode(10n)), 10n);
+  assertEquals(
+    encode(9999999999999999999n),
+    Uint8Array.of(0xcf, 138, 199, 35, 4, 137, 231, 255, 255),
+  );
+  assertEquals(decode(encode(9999999999999999999n)), 9999999999999999999n);
 });
 
 Deno.test("strings", () => {
