@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { decode, encode } from "./mod.ts";
 
@@ -97,6 +97,9 @@ Deno.test("bigints", () => {
     Uint8Array.of(0xcf, 138, 199, 35, 4, 137, 231, 255, 255),
   );
   assertEquals(decode(encode(9999999999999999999n)), 9999999999999999999n);
+
+  assertThrows(()=>encode(99999999999999999999999n))
+  assertThrows(()=>encode(-99999999999999999999999n))
 });
 
 Deno.test("strings", () => {
