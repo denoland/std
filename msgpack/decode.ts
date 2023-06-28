@@ -67,6 +67,13 @@ function decodeMap(
 
 const decoder = new TextDecoder();
 
+const FIXMAP_BITS = 0b1000_0000;
+const FIXMAP_MASK = 0b1111_0000;
+const FIXARRAY_BITS = 0b1001_0000;
+const FIXARRAY_MASK = 0b1111_0000;
+const FIXSTR_BITS = 0b1010_0000;
+const FIXSTR_MASK = 0b1110_0000;
+
 /**
  * Given a uint8array which contains a msgpack object,
  * return the value of the object as well as how many bytes
@@ -84,18 +91,18 @@ function decodeSlice(
     return type;
   }
 
-  if (((type >> 4) ^ 0b1000) === 0) { // fixmap - small map
-    const size = type & 0xF;
+  if ((type & FIXMAP_MASK) === FIXMAP_BITS) { // fixmap - small map
+    const size = type & ~FIXMAP_MASK;
     return decodeMap(uint8, dataView, size, pointer);
   }
 
-  if (((type >> 4) ^ 0b1001) === 0) { // fixarray - small array
-    const size = type & 0xF;
+  if ((type & FIXARRAY_MASK) === FIXARRAY_BITS) { // fixarray - small array
+    const size = type & ~FIXARRAY_MASK;
     return decodeArray(uint8, dataView, size, pointer);
   }
 
-  if (((type >> 5) ^ 0b101) === 0) { // fixstr - small string
-    const size = type & 0b00011111;
+  if ((type & FIXSTR_MASK) === FIXSTR_BITS) { // fixstr - small string
+    const size = type & ~FIXSTR_MASK;
     return decodeString(uint8, size, pointer);
   }
 
