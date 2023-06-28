@@ -64,10 +64,7 @@ export function equal(c: unknown, d: unknown): boolean {
     if (a && typeof a === "object" && b && typeof b === "object") {
       if (
         a && b &&
-        !constructorsEqual(
-          a as unknown as Record<string, unknown>,
-          b as unknown as Record<string, unknown>,
-        )
+        !constructorsEqual(a, b)
       ) {
         return false;
       }
@@ -134,10 +131,7 @@ export function equal(c: unknown, d: unknown): boolean {
   })(c, d);
 }
 
-function constructorsEqual(
-  a: Record<string, unknown>,
-  b: Record<string, unknown>,
-) {
+function constructorsEqual(a: object, b: object) {
   return a.constructor === b.constructor ||
     a.constructor === Object && !b.constructor ||
     !a.constructor && b.constructor === Object;
