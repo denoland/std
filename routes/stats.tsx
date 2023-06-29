@@ -3,41 +3,49 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
-import { getManyAnalyticsMetricsPerDay } from "@/utils/db.ts";
+import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import { Chart } from "fresh_charts/mod.ts";
 import { ChartColors } from "fresh_charts/utils.ts";
-
-interface AnalyticsByDay {
-  metricsValue: number[];
-  dates: string[];
-}
+import { DAY } from "std/datetime/constants.ts";
 
 interface StatsPageData extends State {
-  metricsByDay: AnalyticsByDay[];
-  metricsTitles: string[];
+  dates: Date[];
+  visitsCounts: bigint[];
+  usersCounts: bigint[];
+  itemsCounts: bigint[];
+  votesCounts: bigint[];
 }
 
 export const handler: Handlers<StatsPageData, State> = {
-  async GET(_, ctx) {
-    const daysBefore = 30;
+  async GET(_req, ctx) {
+    const msAgo = 10 * DAY;
+    const dates = getDatesSince(msAgo).map((date) => new Date(date));
 
-    const metricsKeys = [
-      "visits_count",
-      "users_count",
-      "items_count",
-      "votes_count",
-    ];
-    const metricsTitles = ["Visits", "New Users", "New Items", "New Votes"];
-    const metricsByDay = await getManyAnalyticsMetricsPerDay(metricsKeys, {
-      limit: daysBefore,
+    const [
+      visitsCounts,
+      usersCounts,
+      itemsCounts,
+      votesCounts,
+    ] = await Promise.all([
+      getManyMetrics("visits_count", dates),
+      getManyMetrics("users_count", dates),
+      getManyMetrics("items_count", dates),
+      getManyMetrics("votes_count", dates),
+    ]);
+
+    return ctx.render({
+      ...ctx.state,
+      dates,
+      visitsCounts,
+      usersCounts,
+      itemsCounts,
+      votesCounts,
     });
-
-    return ctx.render({ ...ctx.state, metricsByDay, metricsTitles });
   },
 };
 
 function LineChart(
-  props: { title: string; x: string[]; y: number[] },
+  props: { title: string; x: string[]; y: bigint[] },
 ) {
   return (
     <div class="py-4 resize lg:chart">
@@ -60,7 +68,7 @@ function LineChart(
           labels: props.x,
           datasets: [{
             label: props.title,
-            data: props.y,
+            data: props.y.map((value) => Number(value)),
             borderColor: ChartColors.Blue,
             backgroundColor: ChartColors.Blue,
             borderWidth: 3,
@@ -74,6 +82,14 @@ function LineChart(
 }
 
 export default function StatsPage(props: PageProps<StatsPageData>) {
+  const x = props.data.dates.map((date) =>
+    new Date(date).toLocaleDateString("en-us", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  );
+
   return (
     <>
       <Head title="Stats" href={props.url.href}>
@@ -89,19 +105,26 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
       </Head>
       <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {props.data.metricsByDay.map((metric, index) => (
-            <LineChart
-              title={props.data.metricsTitles[index]}
-              x={metric.dates!.map((date) =>
-                new Date(date).toLocaleDateString("en-us", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
-              )}
-              y={metric.metricsValue!}
-            />
-          ))}
+          <LineChart
+            title="Visits"
+            x={x}
+            y={props.data.visitsCounts}
+          />
+          <LineChart
+            title="Users"
+            x={x}
+            y={props.data.usersCounts}
+          />
+          <LineChart
+            title="Items"
+            x={x}
+            y={props.data.itemsCounts}
+          />
+          <LineChart
+            title="Votes"
+            x={x}
+            y={props.data.votesCounts}
+          />
         </div>
       </div>
     </>
