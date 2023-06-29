@@ -12,7 +12,6 @@ import {
   getAreVotedBySessionId,
   getItemsSince,
   getManyUsers,
-  incrVisitsCountByDay,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -31,8 +30,6 @@ function calcTimeAgoFilter(url: URL) {
 
 export const handler: Handlers<HomePageData, State> = {
   async GET(req, ctx) {
-    await incrVisitsCountByDay(new Date());
-
     const url = new URL(req.url);
     const pageNum = calcPageNum(url);
     const timeAgo = calcTimeAgoFilter(url);
