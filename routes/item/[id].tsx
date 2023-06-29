@@ -105,7 +105,7 @@ function CommentInput() {
   return (
     <form method="post">
       <textarea
-        class={INPUT_STYLES}
+        class={`${INPUT_STYLES} w-full`}
         type="text"
         name="text"
         required
