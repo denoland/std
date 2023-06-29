@@ -545,7 +545,11 @@ export function assertObjectMatch(
         seen.set(a, b);
       } catch (err) {
         if (err instanceof TypeError) {
-          return a;
+          throw new TypeError(
+            `Cannot assertObjectMatch ${
+              a === null ? null : `type ${typeof a}`
+            }`,
+          );
         } else throw err;
       }
       // Filter keys and symbols which are present in both actual and expected
