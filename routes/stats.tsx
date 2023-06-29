@@ -6,7 +6,6 @@ import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import { Chart } from "fresh_charts/mod.ts";
-import { ChartColors } from "fresh_charts/utils.ts";
 
 interface StatsPageData extends State {
   dates: Date[];
@@ -45,11 +44,17 @@ export const handler: Handlers<StatsPageData, State> = {
 };
 
 function LineChart(
-  props: { title: string; x: string[]; y: bigint[] },
+  props: { title: string; x: string[]; y: bigint[]; color: string },
 ) {
+  const data = props.y.map((value) => Number(value));
+  const total = data.reduce((value, currentValue) => currentValue + value, 0);
+
   return (
     <div class="py-4 resize lg:chart">
-      <h3 class="py-4 text-2xl font-bold">{props.title}</h3>
+      <div class="py-4 text-center">
+        <h3>{props.title}</h3>
+        <p class="font-bold">{total}</p>
+      </div>
       <Chart
         width={550}
         height={300}
@@ -60,24 +65,23 @@ function LineChart(
             legend: { display: false },
           },
           scales: {
+            x: {
+              grid: { display: false },
+            },
             y: {
               beginAtZero: true,
               grid: { display: false },
               ticks: { stepSize: 1 },
             },
-            x: { grid: { display: false } },
           },
         }}
         data={{
           labels: props.x,
           datasets: [{
-            label: props.title,
-            data: props.y.map((value) => Number(value)),
-            borderColor: ChartColors.Blue,
-            backgroundColor: ChartColors.Blue,
-            borderWidth: 3,
+            data: data,
+            borderColor: props.color,
+            pointRadius: 0,
             cubicInterpolationMode: "monotone",
-            tension: 0.4,
           }],
         }}
       />
@@ -86,15 +90,31 @@ function LineChart(
 }
 
 export default function StatsPage(props: PageProps<StatsPageData>) {
-  const charts: [string, bigint[]][] = [
-    ["Visits", props.data.visitsCounts],
-    ["Users", props.data.usersCounts],
-    ["Items", props.data.itemsCounts],
-    ["Votes", props.data.votesCounts],
+  const charts = [
+    {
+      title: "Site visits",
+      values: props.data.visitsCounts,
+      color: "#be185d",
+    },
+    {
+      title: "Users created",
+      values: props.data.usersCounts,
+      color: "#e85d04",
+    },
+    {
+      title: "Items created",
+      values: props.data.itemsCounts,
+      color: "#219ebc",
+    },
+    {
+      title: "Votes",
+      values: props.data.votesCounts,
+      color: "#4338ca",
+    },
   ];
+
   const x = props.data.dates.map((date) =>
     new Date(date).toLocaleDateString("en-us", {
-      year: "numeric",
       month: "short",
       day: "numeric",
     })
@@ -115,11 +135,12 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
       </Head>
       <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {charts.map(([title, values]) => (
+          {charts.map((chart) => (
             <LineChart
-              title={title}
+              color={chart.color}
+              title={chart.title}
               x={x}
-              y={values}
+              y={chart.values}
             />
           ))}
         </div>
