@@ -215,6 +215,14 @@ Deno.test("[db] votes", async () => {
   assertRejects(async () => await deleteVote({ item, user }));
 });
 
+Deno.test("[db] getManyMetrics()", async () => {
+  const last5Days = getDatesSince(DAY * 5).map((date) => new Date(date));
+  const last30Days = getDatesSince(DAY * 30).map((date) => new Date(date));
+
+  assertEquals((await getManyMetrics("items_count", last5Days)).length, 5);
+  assertEquals((await getManyMetrics("items_count", last30Days)).length, 30);
+});
+
 Deno.test("[db] formatDate()", () => {
   assertEquals(formatDate(new Date("2023-01-01")), "2023-01-01");
   assertEquals(formatDate(new Date("2023-01-01T13:59:08.740Z")), "2023-01-01");

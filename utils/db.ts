@@ -1,4 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
 let path = undefined;
@@ -27,6 +28,35 @@ async function getValues<T>(
   const iter = kv.list<T>(selector, options);
   for await (const { value } of iter) values.push(value);
   return values;
+}
+
+/**
+ * Gets many values from KV. Uses batched requests to get values in chunks of 10.
+ */
+async function getManyValues<T>(
+  keys: Deno.KvKey[],
+): Promise<(T | null)[]> {
+  const promises = [];
+  for (const batch of chunk(keys, 10)) {
+    promises.push(kv.getMany<T[]>(batch));
+  }
+  return (await Promise.all(promises))
+    .flat()
+    .map((entry) => entry?.value);
+}
+
+/** Gets all dates since a given number of milliseconds ago */
+export function getDatesSince(msAgo: number) {
+  const dates = [];
+  const now = Date.now();
+  const start = new Date(now - msAgo);
+
+  while (+start < now) {
+    start.setDate(start.getDate() + 1);
+    dates.push(formatDate(new Date(start)));
+  }
+
+  return dates;
 }
 
 /** Converts `Date` to ISO format that is zero UTC offset */
@@ -58,7 +88,7 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
  *
  * @example New item creation
  * ```ts
- * import { newItemProps, createItem, incrementAnalyticsMetricPerDay } from "@/utils/db.ts";
+ * import { newItemProps, createItem } from "@/utils/db.ts";
  *
  * const item: Item = {
  *   userId: "example-user-id",
@@ -397,8 +427,8 @@ export async function getUserByStripeCustomer(stripeCustomerId: string) {
 
 export async function getManyUsers(ids: string[]) {
   const keys = ids.map((id) => ["users", id]);
-  const res = await kv.getMany<User[]>(keys);
-  return res.map((entry) => entry.value!);
+  const res = await getManyValues<User>(keys);
+  return res.filter(Boolean) as User[];
 }
 
 export async function getAreVotedBySessionId(
@@ -419,28 +449,10 @@ export function compareScore(a: Item, b: Item) {
 
 // Analytics
 export async function incrVisitsCountByDay(date: Date) {
-  // convert to ISO format that is zero UTC offset
-  const visitsKey = [
-    "visits_count",
-    formatDate(date),
-  ];
+  const visitsKey = ["visits_count", formatDate(date)];
   await kv.atomic()
     .sum(visitsKey, 1n)
     .commit();
-}
-
-/** Gets all dates since a given number of milliseconds ago */
-export function getDatesSince(msAgo: number) {
-  const dates = [];
-  const now = Date.now();
-  const start = new Date(now - msAgo);
-
-  while (+start < now) {
-    start.setDate(start.getDate() + 1);
-    dates.push(formatDate(new Date(start)));
-  }
-
-  return dates;
 }
 
 export async function getManyMetrics(
@@ -448,6 +460,6 @@ export async function getManyMetrics(
   dates: Date[],
 ) {
   const keys = dates.map((date) => [metric, formatDate(date)]);
-  const res = await kv.getMany<bigint[]>(keys);
-  return res.map(({ value }) => value?.valueOf() ?? 0n);
+  const res = await getManyValues<bigint>(keys);
+  return res.map((value) => value?.valueOf() ?? 0n);
 }
