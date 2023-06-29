@@ -57,7 +57,7 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
   return (
     <footer
       {...props}
-      class={`flex flex-col md:flex-row p-4 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
+      class={`flex flex-col md:flex-row mt-8 p-4 justify-between gap-y-4 ${SITE_WIDTH_STYLES} ${
         props.class ?? ""
       } `}
     >
