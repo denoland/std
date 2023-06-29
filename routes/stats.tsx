@@ -50,41 +50,41 @@ function LineChart(
   const total = data.reduce((value, currentValue) => currentValue + value, 0);
 
   return (
-    <div class="py-4 resize lg:chart">
+    <div class="py-4 resize lg:chart w-full">
       <div class="py-4 text-center">
         <h3>{props.title}</h3>
         <p class="font-bold">{total}</p>
       </div>
-      <Chart
-        width={550}
-        height={300}
-        type="line"
-        options={{
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-          },
-          scales: {
-            x: {
-              grid: { display: false },
+      <div class="overflow-auto">
+        <Chart
+          type="line"
+          options={{
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
             },
-            y: {
-              beginAtZero: true,
-              grid: { display: false },
-              ticks: { stepSize: 1 },
+            scales: {
+              x: {
+                grid: { display: false },
+              },
+              y: {
+                beginAtZero: true,
+                grid: { display: false },
+                ticks: { stepSize: 1 },
+              },
             },
-          },
-        }}
-        data={{
-          labels: props.x,
-          datasets: [{
-            data: data,
-            borderColor: props.color,
-            pointRadius: 0,
-            cubicInterpolationMode: "monotone",
-          }],
-        }}
-      />
+          }}
+          data={{
+            labels: props.x,
+            datasets: [{
+              data: data,
+              borderColor: props.color,
+              pointRadius: 0,
+              cubicInterpolationMode: "monotone",
+            }],
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -122,19 +122,9 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
 
   return (
     <>
-      <Head title="Stats" href={props.url.href}>
-        <style
-          type="text/css"
-          dangerouslySetInnerHTML={{
-            __html: `
-            .resize svg {
-              width:100%;
-            }`,
-          }}
-        />
-      </Head>
+      <Head title="Stats" href={props.url.href} />
       <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="gap-4">
           {charts.map((chart) => (
             <LineChart
               color={chart.color}
