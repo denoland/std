@@ -3,7 +3,6 @@
 import {
   createItem,
   createUser,
-  incrementAnalyticsMetricPerDay,
   type Item,
   newItemProps,
   newUserProps,
@@ -78,7 +77,6 @@ async function seedSubmissions(stories: Story[]) {
       batch.map((item) =>
         Promise.all([
           createItem(item),
-          incrementAnalyticsMetricPerDay("items_count", new Date()),
         ])
       ),
     );
