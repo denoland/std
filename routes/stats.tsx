@@ -50,13 +50,14 @@ function LineChart(
   const total = data.reduce((value, currentValue) => currentValue + value, 0);
 
   return (
-    <div class="py-4 resize lg:chart w-full">
+    <div class="py-4 resize lg:chart">
       <div class="py-4 text-center">
         <h3>{props.title}</h3>
         <p class="font-bold">{total}</p>
       </div>
       <div class="overflow-auto">
         <Chart
+          svgClass="m-auto"
           type="line"
           options={{
             maintainAspectRatio: false,
