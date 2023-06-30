@@ -5,6 +5,8 @@ import { ComponentChild } from "preact";
 import type { State } from "@/routes/_middleware.ts";
 import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
+import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
+import PageSelector from "@/components/PageSelector.tsx";
 import {
   compareScore,
   getAreVotedBySessionId,
@@ -19,25 +21,44 @@ export interface UserData extends State {
   user: User;
   items: Item[];
   areVoted: boolean[];
+  lastPage: number;
+  itemsCount: number;
 }
 
 export const handler: Handlers<UserData, State> = {
-  async GET(_request, ctx) {
+  async GET(req, ctx) {
     const { username } = ctx.params;
+    const url = new URL(req.url);
+    const pageNum = calcPageNum(url);
 
     const user = await getUserByLogin(username);
     if (user === null) {
       return ctx.renderNotFound();
     }
 
-    const items = await getItemsByUser(user.id);
-    items.sort(compareScore);
+    const allItems = await getItemsByUser(user.id);
+    const itemsCount = allItems.length;
+
+    const items = allItems.sort(compareScore).slice(
+      (pageNum - 1) * PAGE_LENGTH,
+      pageNum * PAGE_LENGTH,
+    );
+
     const areVoted = await getAreVotedBySessionId(
       items,
       ctx.state.sessionId,
     );
 
-    return ctx.render({ ...ctx.state, user, items, areVoted });
+    const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
+
+    return ctx.render({
+      ...ctx.state,
+      user,
+      items,
+      areVoted,
+      lastPage,
+      itemsCount,
+    });
   },
 };
 
@@ -82,7 +103,7 @@ export default function UserPage(props: PageProps<UserData>) {
       <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
         <Row
           title={props.data.user.login}
-          text={pluralize(props.data.items.length, "submission")}
+          text={pluralize(props.data.itemsCount, "submission")}
           img={props.data.user.avatarUrl}
         />
         {props.data.items.map((item, index) => (
@@ -92,6 +113,12 @@ export default function UserPage(props: PageProps<UserData>) {
             user={props.data.user}
           />
         ))}
+        {props.data.lastPage > 1 && (
+          <PageSelector
+            currentPage={calcPageNum(props.url)}
+            lastPage={props.data.lastPage}
+          />
+        )}
       </div>
     </>
   );
