@@ -1,6 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
   type Comment,
+  compareScore,
   createComment,
   createItem,
   createUser,
@@ -11,6 +12,7 @@ import {
   deleteVote,
   formatDate,
   getAllItems,
+  getAreVotedBySessionId,
   getCommentsByItem,
   getDatesSince,
   getItem,
@@ -234,5 +236,72 @@ Deno.test("[db] getDatesSince()", () => {
   assertEquals(getDatesSince(DAY * 2), [
     formatDate(new Date(Date.now() - DAY)),
     formatDate(new Date()),
+  ]);
+});
+
+Deno.test("[db] compareScore()", () => {
+  const item1: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+    score: 1,
+  };
+  const item2: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+    score: 2,
+  };
+  const item3: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+    score: 5,
+  };
+
+  const aa = [item2, item3, item1];
+  const sorted = aa.toSorted(compareScore);
+
+  assertArrayIncludes(sorted, [item1, item2, item3]);
+});
+
+Deno.test("[db] getAreVotedBySessionId()", async () => {
+  const item: Item = {
+    userId: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    ...newItemProps(),
+    score: 1,
+  };
+
+  const user = genNewUser();
+  const vote = { item, user };
+
+  assertEquals(await getUserBySession(user.sessionId), null);
+  assertEquals(await getItem(item.id), null);
+  assertEquals(await getAreVotedBySessionId([item], user.sessionId), []);
+  assertEquals(await getAreVotedBySessionId([item], undefined), []);
+  assertEquals(
+    await getAreVotedBySessionId([item], "not-a-session"),
+    [],
+  );
+  assertEquals(
+    await getAreVotedBySessionId([item], crypto.randomUUID()),
+    [],
+  );
+
+  await createItem(item);
+
+  await createUser(user);
+  await createVote(vote);
+
+  assertEquals(await getItem(item.id), item);
+  assertEquals(await getUserBySession(user.sessionId), user);
+
+  assertEquals(await getAreVotedBySessionId([item], user.sessionId), [
+    true,
   ]);
 });
