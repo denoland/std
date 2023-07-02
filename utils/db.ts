@@ -376,13 +376,6 @@ export async function createVote(vote: Vote) {
 export async function deleteVote(vote: Vote) {
   vote.item.score--;
 
-  const itemKey = ["items", vote.item.id];
-  const itemsByTimeKey = [
-    "items_by_time",
-    vote.item.createdAt.getTime(),
-    vote.item.id,
-  ];
-  const itemsByUserKey = ["items_by_user", vote.item.userId, vote.item.id];
   const votedItemsByUserKey = [
     "voted_items_by_user",
     vote.user.id,
@@ -394,11 +387,29 @@ export async function deleteVote(vote: Vote) {
     vote.user.id,
   ];
 
+  const [votedItemsByUserRes, votedUsersByItemRes] = await kv.getMany([
+    votedItemsByUserKey,
+    votedUsersByItemKey,
+  ]);
+
+  if (!votedItemsByUserRes.value || !votedUsersByItemRes.value) {
+    throw new Error(`Failed to delete vote: ${vote}`);
+  }
+
+  const itemKey = ["items", vote.item.id];
+  const itemsByTimeKey = [
+    "items_by_time",
+    vote.item.createdAt.getTime(),
+    vote.item.id,
+  ];
+  const itemsByUserKey = ["items_by_user", vote.item.userId, vote.item.id];
+
   const [itemRes, itemsByTimeRes, itemsByUserRes] = await kv.getMany([
     itemKey,
     itemsByTimeKey,
     itemsByUserKey,
   ]);
+
   const res = await kv.atomic()
     .check(itemRes)
     .check(itemsByTimeRes)

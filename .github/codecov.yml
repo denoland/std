@@ -7,3 +7,7 @@ coverage:
     patch:
       default:
         informational: true
+ignore:
+  - "components"
+  - "islands"
+  - "routes"
