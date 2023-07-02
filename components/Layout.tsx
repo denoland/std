@@ -6,7 +6,7 @@ import {
   SITE_WIDTH_STYLES,
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
-import { stripe } from "../utils/payments.ts";
+import { stripe } from "@/utils/payments.ts";
 import { Discord, GitHub } from "./Icons.tsx";
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {

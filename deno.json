@@ -26,7 +26,7 @@
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.2.3",
     "twind-preset-tailwind/": "https://esm.sh/@twind/preset-tailwind@1.1.4/",
     "std/": "https://deno.land/std@0.188.0/",
-    "stripe": "https://esm.sh/stripe@12.6.0",
+    "stripe": "./stripe.ts",
     "feed": "https://esm.sh/feed@4.2.2",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.2.2/",
     "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.2.5/mod.ts",

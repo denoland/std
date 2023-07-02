@@ -3,7 +3,12 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import type { State } from "@/routes/_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
-import { formatAmountForDisplay, stripe } from "@/utils/payments.ts";
+import {
+  formatAmountForDisplay,
+  isProductWithPrice,
+  stripe,
+  StripProductWithPrice,
+} from "@/utils/payments.ts";
 import Stripe from "stripe";
 import { ComponentChild } from "preact";
 import { getUserBySession, type User } from "@/utils/db.ts";
@@ -14,11 +19,11 @@ interface PricingPageData extends State {
 }
 
 function comparePrices(
-  productA: Stripe.Product,
-  productB: Stripe.Product,
+  productA: StripProductWithPrice,
+  productB: StripProductWithPrice,
 ) {
-  return ((productA.default_price as Stripe.Price).unit_amount || 0) -
-    ((productB.default_price as Stripe.Price).unit_amount || 0);
+  return (productA.default_price.unit_amount || 0) -
+    (productB.default_price.unit_amount || 0);
 }
 
 export const handler: Handlers<PricingPageData, State> = {
@@ -29,7 +34,16 @@ export const handler: Handlers<PricingPageData, State> = {
       expand: ["data.default_price"],
       active: true,
     });
-    const products = data.sort(comparePrices);
+
+    const productsWithPrice = data.filter(isProductWithPrice);
+
+    if (productsWithPrice.length !== data.length) {
+      throw new Error(
+        "Not all products have a default price. Please run the `deno task init:stripe` as the README instructs.",
+      );
+    }
+
+    const products = productsWithPrice.sort(comparePrices);
 
     const user = ctx.state.sessionId
       ? await getUserBySession(ctx.state.sessionId)

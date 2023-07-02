@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
-import { Stripe } from "stripe";
+import Stripe from "stripe";
 import { getUserByStripeCustomer, updateUser } from "@/utils/db.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
