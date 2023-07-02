@@ -264,19 +264,18 @@ export async function getNotification(id: string) {
   return await getValue<Notification>(["notifications", id]);
 }
 
-export async function getNotificationsByUser(
-  userId: string,
-  options?: Deno.KvListOptions,
-) {
+export async function getNotificationsByUser(userId: string) {
   return await getValues<Notification>({
     prefix: ["notifications_by_user", userId],
-  }, options);
+  });
 }
 
 export async function ifUserHasNotifications(userId: string) {
-  const notificationsCountByUser =
-    (await getNotificationsByUser(userId, { consistency: "eventual" })).length;
-  return notificationsCountByUser > 0;
+  const iter = kv.list({ prefix: ["notifications_by_user", userId] }, {
+    consistency: "eventual",
+  });
+  for await (const _entry of iter) return true;
+  return false;
 }
 
 // Comment
