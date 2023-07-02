@@ -114,6 +114,21 @@ Deno.test({
       ['null null"foo"'],
       [null, null, "foo"],
     );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["nullnull"],
+      [null, null],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["nullnull0"],
+      [null, null, 0],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ['nullnull"foo"'],
+      [null, null, "foo"],
+    );
 
     await assertValidParse(
       ConcatenatedJsonParseStream,
@@ -138,6 +153,21 @@ Deno.test({
     await assertValidParse(
       ConcatenatedJsonParseStream,
       ['true true"foo"'],
+      [true, true, "foo"],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["truetrue"],
+      [true, true],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["truetrue0"],
+      [true, true, 0],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ['truetrue"foo"'],
       [true, true, "foo"],
     );
 
@@ -165,6 +195,27 @@ Deno.test({
       ConcatenatedJsonParseStream,
       ['false false"foo"'],
       [false, false, "foo"],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["falsefalse"],
+      [false, false],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["falsefalse0"],
+      [false, false, 0],
+    );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ['falsefalse"foo"'],
+      [false, false, "foo"],
+    );
+
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ['nullfalsetrue0true"foo"falsenullnull'],
+      [null, false, true, 0, true, "foo", false, null, null],
     );
   },
 });
@@ -212,6 +263,11 @@ Deno.test({
       ['{"foo": "bar"}{', '"foo": "bar"}'],
       [{ foo: "bar" }, { foo: "bar" }],
     );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["tr", 'ue{"foo": "bar"}'],
+      [true, { foo: "bar" }],
+    );
   },
 });
 
@@ -233,6 +289,17 @@ Deno.test({
       ConcatenatedJsonParseStream,
       ['"[], {}"'],
       ["[], {}"],
+    );
+  },
+});
+
+Deno.test({
+  name: "[json] ConcatenatedJsonParseStream: primitives in containers",
+  async fn() {
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["[ true ]"],
+      [[true]],
     );
   },
 });
