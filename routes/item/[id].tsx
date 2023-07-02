@@ -13,6 +13,7 @@ import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
 import {
   type Comment,
   createComment,
+  createNotification,
   getAreVotedBySessionId,
   getCommentsByItem,
   getItem,
@@ -21,11 +22,12 @@ import {
   getUserBySession,
   type Item,
   newCommentProps,
+  newNotificationProps,
+  Notification,
   type User,
 } from "@/utils/db.ts";
-import { redirect } from "@/utils/redirect.ts";
 import UserPostedAt from "@/components/UserPostedAt.tsx";
-import { redirectToLogin } from "@/utils/redirect.ts";
+import { redirect, redirectToLogin } from "@/utils/redirect.ts";
 
 interface ItemPageData extends State {
   user: User;
@@ -96,6 +98,17 @@ export const handler: Handlers<ItemPageData, State> = {
       ...newCommentProps(),
     };
     await createComment(comment);
+
+    const item = await getItem(comment.itemId);
+
+    const notification: Notification = {
+      userId: item!.userId,
+      type: "comment",
+      text: `${user!.login} commented on your post: ${item!.title}`,
+      originUrl: `/item/${ctx.params.id}`,
+      ...newNotificationProps(),
+    };
+    await createNotification(notification);
 
     return redirect(`/item/${ctx.params.id}`);
   },

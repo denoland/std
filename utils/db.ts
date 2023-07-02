@@ -171,6 +171,114 @@ export async function getItemsSince(msAgo: number) {
   });
 }
 
+// Notification
+export interface Notification {
+  userId: string;
+  type: string;
+  text: string;
+  originUrl: string;
+  // The below properties can be automatically generated upon notification creation
+  id: string;
+  createdAt: Date;
+}
+
+export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
+  return {
+    id: crypto.randomUUID(),
+    createdAt: new Date(),
+  };
+}
+
+/**
+ * Creates a new notification in KV. Throws if the item already exists in one of the indexes.
+ *
+ * @example New notification creation
+ * ```ts
+ * import { newNotificationProps, createNotification } from "@/utils/db.ts";
+ *
+ * const notification: Notification = {
+ *   userId: "example-user-id",
+ *   type: "example-type",
+ *   userFromId: "example-user-from-id"
+ *   userFromLogin: "example-user-from-login"
+ *   originId: "example-origin-id"
+ *   originTitle: "example-origin-title"
+ *   ...newNotificationProps(),
+ * };
+ *
+ * await createNotification(notification);
+ * ```
+ */
+export async function createNotification(notification: Notification) {
+  const notificationsKey = ["notifications", notification.id];
+  const notificationsByTimeKey = [
+    "notifications_by_time",
+    notification.createdAt.getTime(),
+    notification.id,
+  ];
+  const notificationsByUserKey = [
+    "notifications_by_user",
+    notification.userId,
+    notification.id,
+  ];
+
+  const res = await kv.atomic()
+    .check({ key: notificationsKey, versionstamp: null })
+    .check({ key: notificationsByTimeKey, versionstamp: null })
+    .check({ key: notificationsByUserKey, versionstamp: null })
+    .set(notificationsKey, notification)
+    .set(notificationsByTimeKey, notification)
+    .set(notificationsByUserKey, notification)
+    .commit();
+
+  if (!res.ok) {
+    throw new Error(`Failed to create notification: ${notification}`);
+  }
+}
+
+export async function deleteNotification(notification: Notification) {
+  const notificationsKey = ["notifications", notification.id];
+  const notificationsByTimeKey = [
+    "notifications_by_time",
+    notification.createdAt.getTime(),
+    notification.id,
+  ];
+  const notificationsByUserKey = [
+    "notifications_by_user",
+    notification.userId,
+    notification.id,
+  ];
+
+  const res = await kv.atomic()
+    .delete(notificationsKey)
+    .delete(notificationsByTimeKey)
+    .delete(notificationsByUserKey)
+    .commit();
+
+  if (!res.ok) {
+    throw new Error(`Failed to delete notification: ${notification}`);
+  }
+}
+
+export async function getNotification(id: string) {
+  return await getValue<Notification>(["notifications", id]);
+}
+
+export async function getNotificationsByUser(
+  userId: string,
+  options?: Deno.KvListOptions,
+) {
+  return await getValues<Notification>({
+    prefix: ["notifications_by_user", userId],
+  }, options);
+}
+
+export async function ifUserHasNotifications(userId: string) {
+  const notificationsCountByUser =
+    (await getNotificationsByUser(userId, { consistency: "eventual" })).length;
+  return notificationsCountByUser > 0;
+}
+
 // Comment
 export interface Comment {
   userId: string;

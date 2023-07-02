@@ -4,10 +4,12 @@ import {
   compareScore,
   createComment,
   createItem,
+  createNotification,
   createUser,
   createVote,
   deleteComment,
   deleteItem,
+  deleteNotification,
   deleteUserBySession,
   deleteVote,
   formatDate,
@@ -20,16 +22,21 @@ import {
   getItemsSince,
   getManyMetrics,
   getManyUsers,
+  getNotification,
+  getNotificationsByUser,
   getUser,
   getUserByLogin,
   getUserBySession,
   getUserByStripeCustomer,
   getVotedItemsByUser,
+  ifUserHasNotifications,
   incrVisitsCountByDay,
   type Item,
   newCommentProps,
   newItemProps,
+  newNotificationProps,
   newUserProps,
+  Notification,
   updateUser,
   type User,
 } from "./db.ts";
@@ -237,6 +244,55 @@ Deno.test("[db] getDatesSince()", () => {
     formatDate(new Date(Date.now() - DAY)),
     formatDate(new Date()),
   ]);
+});
+
+function genNewNotification(
+  notification?: Partial<Notification>,
+): Notification {
+  return {
+    userId: crypto.randomUUID(),
+    type: crypto.randomUUID(),
+    text: crypto.randomUUID(),
+    originUrl: crypto.randomUUID(),
+    ...newNotificationProps(),
+    ...notification,
+  };
+}
+
+Deno.test("[db] newNotificationProps()", () => {
+  const notificationProps = newNotificationProps();
+  assertAlmostEquals(notificationProps.createdAt.getTime(), Date.now(), 1e-6);
+  assertEquals(typeof notificationProps.id, "string");
+});
+
+Deno.test("[db] (get/create/delete)Notification()", async () => {
+  const notification = genNewNotification();
+
+  assertEquals(await getNotification(notification.id), null);
+
+  await createNotification(notification);
+  await assertRejects(async () => await createNotification(notification));
+  assertEquals(await getNotification(notification.id), notification);
+
+  await deleteNotification(notification);
+  assertEquals(await getItem(notification.id), null);
+});
+
+Deno.test("[db] getNotificationsByUser()", async () => {
+  const userId = crypto.randomUUID();
+  const notification1 = genNewNotification({ userId });
+  const notification2 = genNewNotification({ userId });
+
+  assertEquals(await getNotificationsByUser(userId), []);
+  assertEquals(await ifUserHasNotifications(userId), false);
+
+  await createNotification(notification1);
+  await createNotification(notification2);
+  assertArrayIncludes(await getNotificationsByUser(userId), [
+    notification1,
+    notification2,
+  ]);
+  assertEquals(await ifUserHasNotifications(userId), true);
 });
 
 Deno.test("[db] compareScore()", () => {

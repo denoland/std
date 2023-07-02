@@ -7,7 +7,7 @@ import {
 } from "@/utils/constants.ts";
 import Logo from "./Logo.tsx";
 import { stripe } from "@/utils/payments.ts";
-import { Discord, GitHub } from "./Icons.tsx";
+import { Bell, CircleFilled, Discord, GitHub } from "./Icons.tsx";
 
 interface NavProps extends JSX.HTMLAttributes<HTMLElement> {
   active?: string;
@@ -70,10 +70,19 @@ function Footer(props: JSX.HTMLAttributes<HTMLElement>) {
 interface LayoutProps {
   children: ComponentChildren;
   session?: string;
+  hasNotifications?: boolean;
 }
 
+interface NavItem {
+  href: string;
+  inner: string | JSX.Element;
+}
+
+const notificationsStyle =
+  "px-2 py-1 bg-red-600 text-white text-xs rounded-full border-1 border-red-600 transition duration-300 disabled:(opacity-50 cursor-not-allowed) hover:(bg-transparent text-red-600)";
+
 export default function Layout(props: LayoutProps) {
-  const headerNavItems = [
+  const headerNavItems: NavItem[] = [
     props.session
       ? {
         href: "/account",
@@ -83,11 +92,26 @@ export default function Layout(props: LayoutProps) {
         href: "/signin",
         inner: "Sign in",
       },
-    {
-      href: "/submit",
-      inner: <span class={BUTTON_STYLES}>Submit</span>,
-    },
   ];
+
+  headerNavItems.push({
+    href: "/account/notifications",
+    inner: (
+      <div class="relative">
+        <Bell class="w-6 h-6" />
+        {props.hasNotifications!
+          ? (
+            <CircleFilled class="absolute top-0.5 right-0.5 text-pink-700 w-2 h-2" />
+          )
+          : ""}
+      </div>
+    ),
+  });
+
+  headerNavItems.push({
+    href: "/submit",
+    inner: <span class={BUTTON_STYLES}>Submit</span>,
+  });
 
   if (stripe !== undefined) {
     headerNavItems.unshift({
@@ -96,7 +120,7 @@ export default function Layout(props: LayoutProps) {
     });
   }
 
-  const footerNavItems = [
+  const footerNavItems: NavItem[] = [
     {
       href: "/stats",
       inner: "Stats",
