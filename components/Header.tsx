@@ -32,7 +32,7 @@ export default function Header(
             <CircleFilled class="absolute top-0.5 right-0.5 text-pink-700 w-2 h-2" />
           )}
         </a>
-        <a href="Submit" class={BUTTON_STYLES}>Submit</a>
+        <a href="/submit" class={BUTTON_STYLES}>Submit</a>
       </nav>
     </header>
   );
