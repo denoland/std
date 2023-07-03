@@ -1,25 +1,14 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";
-
 export interface MetaProps {
-  title?: string;
-  description?: string;
+  title: string;
+  description: string;
+  href: string;
   imageUrl?: string;
-  href?: string;
 }
 
-const DEFAULT_META_PROPS = {
-  title: SITE_NAME,
-  description: SITE_DESCRIPTION,
-};
-
-export default function Meta(props: MetaProps = DEFAULT_META_PROPS) {
-  const { description, imageUrl, href }: MetaProps = {
-    ...DEFAULT_META_PROPS,
-    ...props,
-  };
-  const title = props.title ? `${props.title} ▲ ${SITE_NAME}` : SITE_NAME;
-
+export default function Meta(
+  { title, description, imageUrl, href }: MetaProps,
+) {
   return (
     <>
       {/* HTML Meta Tags */}
@@ -38,7 +27,7 @@ export default function Meta(props: MetaProps = DEFAULT_META_PROPS) {
       <meta property="og:type" content="website" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      {href && <meta property="og:url" content={href} />}
+      <meta property="og:url" content={href} />
       {imageUrl && <meta property="og:image" content={imageUrl} />}
 
       {/* Twitter Meta Tags */}

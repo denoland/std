@@ -22,9 +22,9 @@ function PostCard(props: Post) {
   return (
     <div class="py-8 border(t gray-200)">
       <a class="sm:col-span-2" href={`/blog/${props.slug}`}>
-        <h3 class="text-3xl font-bold">
+        <h2 class="text-3xl font-bold">
           {props.title}
-        </h3>
+        </h2>
         {props.publishedAt.toString() !== "Invalid Date" && (
           <time class="text-gray-500">
             {new Date(props.publishedAt).toLocaleDateString("en-US", {
