@@ -541,7 +541,17 @@ export function assertObjectMatch(
       if ((seen.has(a)) && (seen.get(a) === b)) {
         return a;
       }
-      seen.set(a, b);
+      try {
+        seen.set(a, b);
+      } catch (err) {
+        if (err instanceof TypeError) {
+          throw new TypeError(
+            `Cannot assertObjectMatch ${
+              a === null ? null : `type ${typeof a}`
+            }`,
+          );
+        } else throw err;
+      }
       // Filter keys and symbols which are present in both actual and expected
       const filtered = {} as loose;
       const entries = [
@@ -563,7 +573,7 @@ export function assertObjectMatch(
           filtered[key] = value;
           continue;
         } // On nested objects references, build a filtered object recursively
-        else if (typeof value === "object") {
+        else if (typeof value === "object" && value !== null) {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
             // When both operands are maps, build a filtered map with common keys and filter nested objects inside

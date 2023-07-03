@@ -524,12 +524,20 @@ async function startTlsFileServer({
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
+
+  // Wait for fileServer to be ready.
+  await retry(async () => {
+    const conn = await Deno.connectTls({
+      hostname: "localhost",
+      port: +port,
+      certFile: join(testdataDir, "tls/RootCA.pem"),
+    });
+    conn.close();
+  });
 }
 
-// TODO(bartlomieju): Somehow this test started failing on macOS for 0.192.0
 Deno.test(
   "serveDirIndex TLS",
-  { ignore: Deno.build.os === "darwin" },
   async function () {
     await startTlsFileServer();
     try {
