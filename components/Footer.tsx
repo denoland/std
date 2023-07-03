@@ -19,7 +19,7 @@ export default function Footer() {
         <a
           href="https://discord.gg/deno"
           target="_blank"
-          alt="Deno SaaSKit on Discord"
+          aria-label="Deno SaaSKit on Discord"
           class={LINK_STYLES}
         >
           <Discord class="h-6 w-6" />
@@ -27,7 +27,7 @@ export default function Footer() {
         <a
           href="https://github.com/denoland/saaskit"
           target="_blank"
-          alt="GitHub icon"
+          aria-label="Deno SaaSKit repo on GitHub"
           class={LINK_STYLES}
         >
           <GitHub class="h-6 w-6" />

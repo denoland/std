@@ -25,7 +25,7 @@ export default function Header(
         <a
           href="/account/notifications"
           class={LINK_STYLES}
-          alt="Notifications icon"
+          aria-label="Notifications"
         >
           <Bell class="w-6 h-6" />
           {props.hasNotifications && (
