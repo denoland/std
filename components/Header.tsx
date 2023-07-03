@@ -24,7 +24,7 @@ export default function Header(
           : <a href="/signin" class={LINK_STYLES}>Sign in</a>}
         <a
           href="/account/notifications"
-          class={LINK_STYLES}
+          class={LINK_STYLES + " relative"}
           aria-label="Notifications"
         >
           <Bell class="w-6 h-6" />
