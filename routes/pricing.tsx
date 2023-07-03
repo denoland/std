@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import Head from "@/components/Head.tsx";
 import type { State } from "@/routes/_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import {
@@ -42,6 +41,8 @@ export const handler: Handlers<PricingPageData, State> = {
         "Not all products have a default price. Please run the `deno task init:stripe` as the README instructs.",
       );
     }
+
+    ctx.state.title = "Pricing";
 
     const products = productsWithPrice.sort(comparePrices);
 
@@ -90,56 +91,52 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
   const [product] = props.data.products;
 
   return (
-    <>
-      <Head title="Pricing" href={props.url.href} />
-
-      <div
-        class={`mx-auto max-w-4xl w-full flex-1 flex flex-col justify-center px-8`}
-      >
-        <div class="mb-8 text-center">
-          <h1 class="text-3xl font-bold">Pricing</h1>
-          <p class="text-lg">Choose the plan that suites you</p>
-        </div>
-        <div class="flex flex-col md:flex-row gap-4">
-          <PricingCard
-            name="Free tier"
-            description="Share, comment on and vote for your favorite posts"
-            pricePerInterval="Free"
-          >
-            <a
-              href="/account/manage"
-              class={`${BUTTON_STYLES} w-full rounded-md block`}
-            >
-              Manage
-            </a>
-          </PricingCard>
-          <PricingCard
-            name={product.name}
-            description={product.description!}
-            pricePerInterval={toPricePerInterval(
-              product.default_price as Stripe.Price,
-            )}
-          >
-            {props.data.user?.isSubscribed
-              ? (
-                <a
-                  class={`${BUTTON_STYLES} w-full rounded-md block`}
-                  href="/account/manage"
-                >
-                  Manage
-                </a>
-              )
-              : (
-                <a
-                  class={`${BUTTON_STYLES} w-full rounded-md block`}
-                  href="/account/upgrade"
-                >
-                  Upgrade
-                </a>
-              )}
-          </PricingCard>
-        </div>
+    <main
+      class={`mx-auto max-w-4xl w-full flex-1 flex flex-col justify-center px-8`}
+    >
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold">Pricing</h1>
+        <p class="text-lg">Choose the plan that suites you</p>
       </div>
-    </>
+      <div class="flex flex-col md:flex-row gap-4">
+        <PricingCard
+          name="Free tier"
+          description="Share, comment on and vote for your favorite posts"
+          pricePerInterval="Free"
+        >
+          <a
+            href="/account/manage"
+            class={`${BUTTON_STYLES} w-full rounded-md block`}
+          >
+            Manage
+          </a>
+        </PricingCard>
+        <PricingCard
+          name={product.name}
+          description={product.description!}
+          pricePerInterval={toPricePerInterval(
+            product.default_price as Stripe.Price,
+          )}
+        >
+          {props.data.user?.isSubscribed
+            ? (
+              <a
+                class={`${BUTTON_STYLES} w-full rounded-md block`}
+                href="/account/manage"
+              >
+                Manage
+              </a>
+            )
+            : (
+              <a
+                class={`${BUTTON_STYLES} w-full rounded-md block`}
+                href="/account/upgrade"
+              >
+                Upgrade
+              </a>
+            )}
+        </PricingCard>
+      </div>
+    </main>
   );
 }

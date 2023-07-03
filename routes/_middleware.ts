@@ -6,8 +6,9 @@ import { redirect, setRedirectUrlCookie } from "@/utils/redirect.ts";
 import { Status } from "std/http/http_status.ts";
 import { getUserBySession, ifUserHasNotifications } from "@/utils/db.ts";
 import { incrVisitsCountByDay } from "@/utils/db.ts";
+import type { MetaProps } from "@/components/Meta.tsx";
 
-export interface State {
+export interface State extends MetaProps {
   sessionId?: string;
   hasNotifications?: boolean;
 }

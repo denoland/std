@@ -1,16 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Head as _Head } from "$fresh/runtime.ts";
-import type { ComponentChildren } from "preact";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";
 
-interface MetaProps {
-  /**
-   * @default {string} `SITE_NAME` in `@/utils/constants.ts`
-   */
+export interface MetaProps {
   title?: string;
-  /**
-   * @default {string} `SITE_DESCRIPTION` in `@/utils/constants.ts`
-   */
   description?: string;
   imageUrl?: string;
   href?: string;
@@ -21,7 +13,7 @@ const DEFAULT_META_PROPS = {
   description: SITE_DESCRIPTION,
 };
 
-export function Meta(props: MetaProps = DEFAULT_META_PROPS) {
+export default function Meta(props: MetaProps = DEFAULT_META_PROPS) {
   const { description, imageUrl, href }: MetaProps = {
     ...DEFAULT_META_PROPS,
     ...props,
@@ -55,18 +47,5 @@ export function Meta(props: MetaProps = DEFAULT_META_PROPS) {
       <meta name="twitter:description" content={description} />
       {imageUrl && <meta name="twitter:image" content={imageUrl} />}
     </>
-  );
-}
-
-export interface HeadProps extends MetaProps {
-  children?: ComponentChildren;
-}
-
-export default function Head(props: HeadProps) {
-  return (
-    <_Head>
-      <Meta {...props} />
-      {props.children}
-    </_Head>
   );
 }

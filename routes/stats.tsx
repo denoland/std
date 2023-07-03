@@ -1,8 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { DAY } from "std/datetime/constants.ts";
-import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
-import Head from "@/components/Head.tsx";
 import type { State } from "./_middleware.ts";
 import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import { Chart } from "fresh_charts/mod.ts";
@@ -17,6 +15,8 @@ interface StatsPageData extends State {
 
 export const handler: Handlers<StatsPageData, State> = {
   async GET(_req, ctx) {
+    ctx.state.title = "Stats";
+
     const msAgo = 30 * DAY;
     const dates = getDatesSince(msAgo).map((date) => new Date(date));
 
@@ -122,20 +122,17 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
   );
 
   return (
-    <>
-      <Head title="Stats" href={props.url.href} />
-      <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-        <div class="gap-4">
-          {charts.map((chart) => (
-            <LineChart
-              color={chart.color}
-              title={chart.title}
-              x={x}
-              y={chart.values}
-            />
-          ))}
-        </div>
+    <main class="flex-1 p-4">
+      <div class="gap-4">
+        {charts.map((chart) => (
+          <LineChart
+            color={chart.color}
+            title={chart.title}
+            x={x}
+            y={chart.values}
+          />
+        ))}
       </div>
-    </>
+    </main>
   );
 }

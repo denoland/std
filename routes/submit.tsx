@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import Head from "@/components/Head.tsx";
+import type { Handlers } from "$fresh/server.ts";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import {
@@ -14,6 +13,8 @@ import { redirectToLogin } from "@/utils/redirect.ts";
 
 export const handler: Handlers<State, State> = {
   GET(req, ctx) {
+    ctx.state.title = "Submit";
+
     return ctx.state.sessionId
       ? ctx.render(ctx.state)
       : redirectToLogin(req.url);
@@ -55,40 +56,31 @@ export const handler: Handlers<State, State> = {
   },
 };
 
-function Form() {
+export default function SubmitPage() {
   return (
-    <form class="space-y-2" method="post">
-      <input
-        class={`${INPUT_STYLES} w-full`}
-        type="text"
-        name="title"
-        required
-        placeholder="Title"
-      />
-      <input
-        class={`${INPUT_STYLES} w-full`}
-        type="url"
-        name="url"
-        required
-        placeholder="URL"
-      />
-      <button class={`${BUTTON_STYLES} block w-full`} type="submit">
-        Submit
-      </button>
-    </form>
-  );
-}
-
-export default function SubmitPage(props: PageProps<State>) {
-  return (
-    <>
-      <Head title="Submit" href={props.url.href} />
-      <div class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
-        <h1 class="text-center text-2xl font-bold">
-          Share your project
-        </h1>
-        <Form />
-      </div>
-    </>
+    <main class="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full space-y-8">
+      <h1 class="text-center text-2xl font-bold">
+        Share your project
+      </h1>
+      <form class="space-y-2" method="post">
+        <input
+          class={`${INPUT_STYLES} w-full`}
+          type="text"
+          name="title"
+          required
+          placeholder="Title"
+        />
+        <input
+          class={`${INPUT_STYLES} w-full`}
+          type="url"
+          name="url"
+          required
+          placeholder="URL"
+        />
+        <button class={`${BUTTON_STYLES} block w-full`} type="submit">
+          Submit
+        </button>
+      </form>
+    </main>
   );
 }

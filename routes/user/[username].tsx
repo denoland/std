@@ -1,9 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import Head from "@/components/Head.tsx";
 import { ComponentChild } from "preact";
 import type { State } from "@/routes/_middleware.ts";
-import { SITE_WIDTH_STYLES } from "@/utils/constants.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
 import PageSelector from "@/components/PageSelector.tsx";
@@ -50,6 +48,8 @@ export const handler: Handlers<UserData, State> = {
     );
 
     const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
+
+    ctx.state.title = user.login;
 
     return ctx.render({
       ...ctx.state,
@@ -98,28 +98,25 @@ function Row(props: RowProps) {
 
 export default function UserPage(props: PageProps<UserData>) {
   return (
-    <>
-      <Head title={props.data.user.login} href={props.url.href} />
-      <div class={`${SITE_WIDTH_STYLES} flex-1 px-4`}>
-        <Row
-          title={props.data.user.login}
-          text={pluralize(props.data.itemsCount, "submission")}
-          img={props.data.user.avatarUrl}
+    <main class="flex-1 p-4">
+      <Row
+        title={props.data.user.login}
+        text={pluralize(props.data.itemsCount, "submission")}
+        img={props.data.user.avatarUrl}
+      />
+      {props.data.items.map((item, index) => (
+        <ItemSummary
+          item={item}
+          isVoted={props.data.areVoted[index]}
+          user={props.data.user}
         />
-        {props.data.items.map((item, index) => (
-          <ItemSummary
-            item={item}
-            isVoted={props.data.areVoted[index]}
-            user={props.data.user}
-          />
-        ))}
-        {props.data.lastPage > 1 && (
-          <PageSelector
-            currentPage={calcPageNum(props.url)}
-            lastPage={props.data.lastPage}
-          />
-        )}
-      </div>
-    </>
+      ))}
+      {props.data.lastPage > 1 && (
+        <PageSelector
+          currentPage={calcPageNum(props.url)}
+          lastPage={props.data.lastPage}
+        />
+      )}
+    </main>
   );
 }

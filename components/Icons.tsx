@@ -1,9 +1,10 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import type { JSX } from "preact";
 
-export function GitHub(props: { class?: string }) {
+export function GitHub(props: JSX.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
-      class={`h-6 w-6 ${props.class ?? ""}`}
+      {...props}
       fill="currentColor"
       viewBox="0 0 24 24"
     >
@@ -16,10 +17,10 @@ export function GitHub(props: { class?: string }) {
   );
 }
 
-export function Discord(props: { class?: string }) {
+export function Discord(props: JSX.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
-      class={`h-6 w-6 ${props.class ?? ""}`}
+      {...props}
       fill="currentColor"
       viewBox="0 0 24 24"
     >
@@ -33,11 +34,11 @@ export function Discord(props: { class?: string }) {
   );
 }
 
-export function Bell(props: { class?: string }) {
+export function Bell(props: JSX.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
+      {...props}
       xmlns="http://www.w3.org/2000/svg"
-      class={props.class ?? ""}
       viewBox="0 0 24 24"
       stroke-width="2"
       stroke="currentColor"
@@ -52,11 +53,11 @@ export function Bell(props: { class?: string }) {
   );
 }
 
-export function CircleFilled(props: { class?: string }) {
+export function CircleFilled(props: JSX.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
+      {...props}
       xmlns="http://www.w3.org/2000/svg"
-      class={props.class ?? ""}
       viewBox="0 0 24 24"
       stroke-width="2"
       stroke="currentColor"
