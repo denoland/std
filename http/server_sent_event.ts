@@ -345,10 +345,11 @@ export class ServerSentEventStreamTarget extends EventTarget
    * {@linkcode ResponseInit} needed to create a response that will establish
    * a SSE connection with the client. */
   asResponseInit(responseInit: ResponseInit = {}): [BodyInit, ResponseInit] {
-    responseInit.headers = new Headers(responseInit.headers);
+    const headers = new Headers(responseInit.headers);
     for (const [key, value] of RESPONSE_HEADERS) {
-      responseInit.headers.set(key, value);
+      headers.set(key, value);
     }
+    responseInit.headers = headers;
     return [this.#bodyInit, responseInit];
   }
 
