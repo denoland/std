@@ -4,26 +4,8 @@
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true
   },
-  "fmt": {
-    "exclude": [
-      ".git",
-      "crypto/_wasm/target",
-      "cov",
-      "jsonc/testdata",
-      "front_matter/testdata",
-      "wasi/testdata"
-    ]
-  },
-  "importMap": "./test_import_map.json",
-  "lint": {
-    "exclude": [
-      ".git",
-      "crypto/_wasm/target",
-      "jsonc/testdata",
-      "front_matter/testdata",
-      "cov",
-      "wasi/testdata"
-    ]
+  "imports": {
+    "https://deno.land/std@$STD_VERSION/": "./"
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --coverage=./cov",
@@ -36,5 +18,13 @@
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.10.3/main.ts --js-ext mjs --sync"
-  }
+  },
+  "exclude": [
+    ".git",
+    "crypto/_wasm/target",
+    "cov",
+    "jsonc/testdata",
+    "front_matter/testdata",
+    "wasi/testdata"
+  ]
 }
