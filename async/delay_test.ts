@@ -1,6 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { assert, assertRejects } from "../testing/asserts.ts";
+import {
+  assert,
+  assertRejects,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 
 Deno.test("[async] delay", async function () {
   const start = new Date();
@@ -17,12 +21,26 @@ Deno.test("[async] delay with abort", async function () {
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
   setTimeout(() => abort.abort(), 0);
+  // https://github.com/denoland/deno/blob/v1.34.3/ext/web/03_abort_signal.js#L83
   await assertRejects(
     () => delayedPromise,
     DOMException,
-    "Delay was aborted",
+    "The signal has been aborted",
   );
 
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 100);
+});
+
+Deno.test("[async] delay with abort reason", async function () {
+  const start = new Date();
+  const abort = new AbortController();
+  const { signal } = abort;
+  const delayedPromise = delay(100, { signal });
+  const reason = new Error("Timeout cancelled");
+  setTimeout(() => abort.abort(reason), 0);
+  const cause = await assertRejects(() => delayedPromise, Error);
+  assertStrictEquals(reason, cause);
   const diff = new Date().getTime() - start.getTime();
   assert(diff < 100);
 });
@@ -32,7 +50,6 @@ Deno.test("[async] delay with non-aborted signal", async function () {
   const abort = new AbortController();
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
-  // abort.abort()
   const result = await delayedPromise;
   const diff = new Date().getTime() - start.getTime();
   assert(result === undefined);
@@ -57,10 +74,11 @@ Deno.test("[async] delay with already aborted signal", async function () {
   abort.abort();
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
+  // https://github.com/denoland/deno/blob/v1.34.3/ext/web/03_abort_signal.js#L83
   await assertRejects(
     () => delayedPromise,
     DOMException,
-    "Delay was aborted",
+    "The signal has been aborted",
   );
 
   const diff = new Date().getTime() - start.getTime();
