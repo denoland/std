@@ -15,7 +15,6 @@ Deno.test({
     assertArrayIncludes<boolean>([true, false], [true]);
     const value = { x: 1 };
     assertStrictEquals<typeof value>(value, value);
-    // deno-lint-ignore ban-types
     assertNotStrictEquals<object>(value, { x: 1 });
   },
 });

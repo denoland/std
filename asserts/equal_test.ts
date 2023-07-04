@@ -202,21 +202,18 @@ Deno.test("Equal", function () {
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
     ),
   );
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
     ),
   );
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
@@ -225,7 +222,6 @@ Deno.test("Equal", function () {
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
