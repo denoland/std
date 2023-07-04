@@ -70,7 +70,7 @@ export type { WalkEntry };
  * @example
  * ```ts
  * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/asserts/assert.ts";
  *
  * for await (const entry of walk(".")) {
  *   console.log(entry.path);

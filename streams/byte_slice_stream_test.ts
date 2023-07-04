@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../asserts/mod.ts";
 import { ByteSliceStream } from "./byte_slice_stream.ts";
 
 Deno.test("[streams] ByteSliceStream", async function () {

@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/map_values.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * const usersById = {
  *   "a5ec": { name: "Mischa" },

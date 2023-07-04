@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { equals } from "./equals.ts";
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../asserts/mod.ts";
 
 Deno.test("[bytes] equals", () => {
   const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));

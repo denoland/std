@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import { permutations } from "./permutations.ts";
 
 function permutationsTest<T>(

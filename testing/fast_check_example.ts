@@ -23,10 +23,7 @@
 
 import fc from "https://cdn.skypack.dev/fast-check@3.10.0";
 import { groupBy } from "../collections/group_by.ts";
-import {
-  assert,
-  assertEquals,
-} from "https://deno.land/std@0.90.0/testing/asserts.ts";
+import { assert, assertEquals } from "../asserts/mod.ts";
 
 /********************** contains() *************************************/
 const contains = (text: string, pattern: string): boolean =>

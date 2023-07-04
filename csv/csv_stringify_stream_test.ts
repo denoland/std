@@ -2,7 +2,7 @@
 import { CsvStringifyStream } from "./csv_stringify_stream.ts";
 import { StringifyError } from "./stringify.ts";
 import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../asserts/mod.ts";
 
 Deno.test({
   name: "[csv/csv_stringify_stream] CsvStringifyStream",

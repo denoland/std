@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import { firstNotNullishOf } from "./first_not_nullish_of.ts";
 
 function firstNotNullishOfTest<T, O>(

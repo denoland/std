@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 
 Deno.test("[streams] readerFromIterable()", async function () {

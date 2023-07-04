@@ -20,7 +20,7 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  * import { readRange } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file
@@ -58,7 +58,7 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file

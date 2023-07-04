@@ -10,7 +10,7 @@ import { mapEntries } from "./map_entries.ts";
  * @example
  * ```ts
  * import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/aggregate_groups.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * const foodProperties = {
  *   "Curry": ["spicy", "vegan"],

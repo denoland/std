@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/running_reduce.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * const numbers = [1, 2, 3, 4, 5];
  * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);

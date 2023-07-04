@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import * as JSONC from "../../parse.ts";
-import { assertEquals } from "../../../testing/asserts.ts";
+import { assertEquals } from "../../../asserts/mod.ts";
 import { walk } from "../../../fs/mod.ts";
 import { fromFileUrl } from "../../../path/mod.ts";
 

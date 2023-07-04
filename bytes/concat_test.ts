@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../asserts/mod.ts";
 import { concat } from "./concat.ts";
 
 Deno.test("[bytes] concat", () => {

@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertInstanceOf } from "../testing/asserts.ts";
+import { assert, assertEquals, assertInstanceOf } from "../asserts/mod.ts";
 
 import { type ErrorStatus, Status, STATUS_TEXT } from "./http_status.ts";
 

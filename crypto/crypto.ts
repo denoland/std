@@ -86,7 +86,7 @@
  *
  * ```ts
  * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/asserts/assert.ts";
  *
  * const a = await crypto.subtle.digest(
  *   "SHA-384",
@@ -110,7 +110,7 @@
  *
  * ```ts
  * import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/asserts/assert.ts";
  *
  * const a = await crypto.subtle.digest(
  *   "SHA-384",

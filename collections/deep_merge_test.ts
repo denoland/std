@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
+import { assertEquals, assertStrictEquals } from "../asserts/mod.ts";
 import { deepMerge } from "./deep_merge.ts";
 
 Deno.test("deepMerge: simple merge", () => {

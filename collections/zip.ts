@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { zip } from "https://deno.land/std@$STD_VERSION/collections/zip.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * const numbers = [1, 2, 3, 4];
  * const letters = ["a", "b", "c", "d"];

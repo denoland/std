@@ -1,9 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertStringIncludes } from "../asserts/mod.ts";
 import { stub } from "../testing/mock.ts";
 import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
@@ -1364,7 +1360,7 @@ Deno.test(
     const code = `
       import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
       import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-      import { assertEquals } from "${import.meta.resolve("../testing/asserts.ts")}";
+      import { assertEquals } from "${import.meta.resolve("../asserts/assert_equals.ts")}";
       const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
       const fileInfo = await Deno.stat(new URL(testdataPath));
       fileInfo.mtime = null;

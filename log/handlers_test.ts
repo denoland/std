@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertNotEquals,
   assertRejects,
-} from "../testing/asserts.ts";
+} from "../asserts/mod.ts";
 import {
   getLevelByName,
   getLevelName,

@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import { readShort } from "./read_short.ts";
 import { BufReader } from "./buf_reader.ts";
 import { BinaryReader } from "./_test_common.ts";

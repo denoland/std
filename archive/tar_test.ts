@@ -9,7 +9,7 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../asserts/mod.ts";
 import { resolve } from "../path/mod.ts";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";

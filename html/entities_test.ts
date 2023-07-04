@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { escape, unescape } from "./entities.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import entityList from "./named_entity_list.json" assert { type: "json" };
 
 Deno.test("escape", async (t) => {

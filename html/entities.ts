@@ -27,7 +27,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * @example
  * ```ts
  * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
@@ -59,7 +59,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * @example
  * ```ts
  * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * // default options (only handles &<>'" and numeric entities)
  * assertEquals(unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");

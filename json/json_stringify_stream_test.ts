@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../asserts/mod.ts";
 import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
 import {
   JsonStringifyStream,

@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
+import { assertEquals, assertStringIncludes } from "../asserts/mod.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
 

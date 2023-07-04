@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { permutations } from "https://deno.land/std@$STD_VERSION/collections/permutations.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
  *
  * const numbers = [ 1, 2 ];
  * const windows = permutations(numbers);

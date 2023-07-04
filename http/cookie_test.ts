@@ -5,7 +5,7 @@ import {
   getSetCookies,
   setCookie,
 } from "./cookie.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../asserts/mod.ts";
 
 Deno.test({
   name: "Cookie parser",

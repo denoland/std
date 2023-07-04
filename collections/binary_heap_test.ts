@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../asserts/mod.ts";
 import { assert } from "../asserts/assert.ts";
 import { ascend, BinaryHeap, descend } from "./binary_heap.ts";
 import { Container, MyMath } from "./_test_utils.ts";

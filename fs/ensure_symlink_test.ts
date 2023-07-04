@@ -1,10 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-import {
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../testing/asserts.ts";
+import { assertEquals, assertRejects, assertThrows } from "../asserts/mod.ts";
 import * as path from "../path/mod.ts";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
