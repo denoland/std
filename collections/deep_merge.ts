@@ -69,7 +69,7 @@ function deepMergeInternal<
 >(
   record: Readonly<T>,
   other: Readonly<U>,
-  seen: Set<NonNullable<object>>,
+  seen: Set<NonNullable<unknown>>,
   options?: Readonly<Options>,
 ) {
   // Extract options
@@ -119,15 +119,15 @@ function deepMergeInternal<
 }
 
 function mergeObjects(
-  left: Readonly<NonNullable<object>>,
-  right: Readonly<NonNullable<object>>,
-  seen: Set<NonNullable<object>>,
+  left: Readonly<NonNullable<Record<string, unknown>>>,
+  right: Readonly<NonNullable<Record<string, unknown>>>,
+  seen: Set<NonNullable<unknown>>,
   options: Readonly<DeepMergeOptions> = {
     arrays: "merge",
     sets: "merge",
     maps: "merge",
   },
-): Readonly<NonNullable<object>> {
+): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
     return deepMergeInternal(left, right, seen, options);
@@ -177,22 +177,24 @@ function mergeObjects(
  * are not considered mergeable (it means that reference will be copied)
  */
 function isMergeable(
-  value: NonNullable<object>,
+  value: NonNullable<unknown>,
 ): value is Record<PropertyKey, unknown> {
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 
 function isIterable(
-  value: NonNullable<object>,
+  value: NonNullable<unknown>,
 ): value is Iterable<unknown> {
   return typeof (value as Iterable<unknown>)[Symbol.iterator] === "function";
 }
 
-function isNonNullObject(value: unknown): value is NonNullable<object> {
+function isNonNullObject(
+  value: unknown,
+): value is NonNullable<Record<string, unknown>> {
   return value !== null && typeof value === "object";
 }
 
-function getKeys<T extends object>(record: T): Array<keyof T> {
+function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
   const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
   filterInPlace(
     ret,
