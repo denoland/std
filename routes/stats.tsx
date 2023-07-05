@@ -7,10 +7,10 @@ import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 
 interface StatsPageData extends State {
   dates: Date[];
-  visitsCounts: bigint[];
-  usersCounts: bigint[];
-  itemsCounts: bigint[];
-  votesCounts: bigint[];
+  visitsCounts: number[];
+  usersCounts: number[];
+  itemsCounts: number[];
+  votesCounts: number[];
 }
 
 export const handler: Handlers<StatsPageData, State> = {
@@ -35,39 +35,41 @@ export const handler: Handlers<StatsPageData, State> = {
     return ctx.render({
       ...ctx.state,
       dates,
-      visitsCounts,
-      usersCounts,
-      itemsCounts,
-      votesCounts,
+      visitsCounts: visitsCounts.map(Number),
+      usersCounts: usersCounts.map(Number),
+      itemsCounts: itemsCounts.map(Number),
+      votesCounts: votesCounts.map(Number),
     });
   },
 };
 
 export default function StatsPage(props: PageProps<StatsPageData>) {
-  const charts = [
+  const datasets = [
     {
-      title: "Site visits",
-      values: props.data.visitsCounts,
-      color: "#be185d",
+      label: "Site visits",
+      data: props.data.visitsCounts,
+      borderColor: "#be185d",
     },
     {
-      title: "Users created",
-      values: props.data.usersCounts,
-      color: "#e85d04",
+      label: "Users created",
+      data: props.data.usersCounts,
+      borderColor: "#e85d04",
     },
     {
-      title: "Items created",
-      values: props.data.itemsCounts,
-      color: "#219ebc",
+      label: "Items created",
+      data: props.data.itemsCounts,
+      borderColor: "#219ebc",
     },
     {
-      title: "Votes",
-      values: props.data.votesCounts,
-      color: "#4338ca",
+      label: "Votes",
+      data: props.data.votesCounts,
+      borderColor: "#4338ca",
     },
   ];
 
-  const x = props.data.dates.map((date) =>
+  const max = Math.max(...datasets[0].data);
+
+  const labels = props.data.dates.map((date) =>
     new Date(date).toLocaleDateString("en-us", {
       month: "short",
       day: "numeric",
@@ -75,58 +77,39 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
   );
 
   return (
-    <main class="flex-1 p-4 grid gap-12 md:grid-cols-2">
-      {charts.map(({ color, title, values }) => {
-        const data = values.map((value) => Number(value));
-        const total = data.reduce(
-          (value, currentValue) => currentValue + value,
-          0,
-        );
-
-        return (
-          <div class="py-4">
-            <div class="text-center">
-              <h3>{title}</h3>
-              <p class="font-bold">{total}</p>
-            </div>
-            <Chart
-              container={{
-                class: "aspect-[2/1] mx-auto relative max-w-[100vw]",
-              }}
-              type="line"
-              options={{
-                plugins: {
-                  legend: { display: false },
-                },
-                interaction: {
-                  intersect: false,
-                },
-                scales: {
-                  x: {
-                    grid: { display: false },
-                  },
-                  y: {
-                    beginAtZero: true,
-                    grid: { display: false },
-                    max: Math.ceil(Math.max(...data) * 1.1),
-                    ticks: { stepSize: 1 },
-                  },
-                },
-              }}
-              data={{
-                labels: x,
-                datasets: [{
-                  label: title,
-                  data,
-                  borderColor: color,
-                  pointRadius: 0,
-                  cubicInterpolationMode: "monotone",
-                }],
-              }}
-            />
-          </div>
-        );
-      })}
+    <main class="flex-1 p-4 flex flex-col">
+      <h1 class="text-3xl font-bold">Stats</h1>
+      <div class="flex-1 relative">
+        <Chart
+          type="line"
+          options={{
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: "index",
+            },
+            scales: {
+              x: {
+                max,
+                grid: { display: false },
+              },
+              y: {
+                beginAtZero: true,
+                grid: { display: false },
+                ticks: { precision: 0 },
+              },
+            },
+          }}
+          data={{
+            labels,
+            datasets: datasets.map((dataset) => ({
+              ...dataset,
+              pointRadius: 0,
+              cubicInterpolationMode: "monotone",
+            })),
+          }}
+        />
+      </div>
     </main>
   );
 }

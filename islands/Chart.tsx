@@ -5,7 +5,7 @@ import {
   type ChartType,
   type DefaultDataPoint,
 } from "chart.js";
-import { type MutableRef, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import type { JSX } from "preact";
 
 type ChartOptions<
@@ -20,7 +20,6 @@ type ChartProps<
   Label = unknown,
 > = ChartOptions<Type, Data, Label> & {
   canvas?: JSX.HTMLAttributes<HTMLCanvasElement>;
-  container?: JSX.HTMLAttributes<HTMLDivElement>;
 };
 
 function useChart<
@@ -28,7 +27,6 @@ function useChart<
   Data = DefaultDataPoint<Type>,
   Label = unknown,
 >(options: ChartOptions<Type, Data, Label>) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartRef = useRef<ChartJS<Type, Data, Label> | null>(null);
 
@@ -46,52 +44,21 @@ function useChart<
     };
   }, [options]);
 
-  return { canvasRef, chartRef, containerRef };
+  return { canvasRef, chartRef };
 }
 
-function useResizeObserver<T extends HTMLElement | null>(
-  ref: MutableRef<T>,
-  callback: ResizeObserverCallback,
+export default function Chart<Type extends ChartType>(
+  options: ChartProps<Type>,
 ) {
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new ResizeObserver(callback);
-    observer.observe(ref.current as HTMLElement);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [ref]);
-}
-
-export default function Chart<
-  Type extends ChartType,
->(
-  { canvas, container, ...options }: ChartProps<Type>,
-) {
-  const { canvasRef, chartRef, containerRef } = useChart(options);
-
-  useResizeObserver(containerRef, (entries) => {
-    if (!Array.isArray(entries)) return;
-    const entry = entries?.[0];
-    if (!entry) return;
-
-    chartRef.current?.resize(entry.contentRect.width, entry.contentRect.height);
-  });
+  const { canvasRef, chartRef } = useChart(options);
 
   useEffect(() => {
     chartRef.current?.render();
   }, []);
 
   return (
-    <div
-      {...container}
-      ref={containerRef}
-    >
-      <canvas
-        {...canvas}
-        ref={canvasRef}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+    />
   );
 }
