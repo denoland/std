@@ -2,8 +2,8 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { DAY } from "std/datetime/constants.ts";
 import type { State } from "./_middleware.ts";
+import Chart from "@/islands/Chart.tsx";
 import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
-import { Chart } from "fresh_charts/mod.ts";
 
 interface StatsPageData extends State {
   dates: Date[];
@@ -43,53 +43,6 @@ export const handler: Handlers<StatsPageData, State> = {
   },
 };
 
-function LineChart(
-  props: { title: string; x: string[]; y: bigint[]; color: string },
-) {
-  const data = props.y.map((value) => Number(value));
-  const total = data.reduce((value, currentValue) => currentValue + value, 0);
-
-  return (
-    <div class="py-4 resize lg:chart">
-      <div class="py-4 text-center">
-        <h3>{props.title}</h3>
-        <p class="font-bold">{total}</p>
-      </div>
-      <div class="overflow-auto">
-        <Chart
-          svgClass="m-auto"
-          type="line"
-          options={{
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-            },
-            scales: {
-              x: {
-                grid: { display: false },
-              },
-              y: {
-                beginAtZero: true,
-                grid: { display: false },
-                ticks: { stepSize: 1 },
-              },
-            },
-          }}
-          data={{
-            labels: props.x,
-            datasets: [{
-              data: data,
-              borderColor: props.color,
-              pointRadius: 0,
-              cubicInterpolationMode: "monotone",
-            }],
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function StatsPage(props: PageProps<StatsPageData>) {
   const charts = [
     {
@@ -122,17 +75,58 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
   );
 
   return (
-    <main class="flex-1 p-4">
-      <div class="gap-4">
-        {charts.map((chart) => (
-          <LineChart
-            color={chart.color}
-            title={chart.title}
-            x={x}
-            y={chart.values}
-          />
-        ))}
-      </div>
+    <main class="flex-1 p-4 grid gap-12 md:grid-cols-2">
+      {charts.map(({ color, title, values }) => {
+        const data = values.map((value) => Number(value));
+        const total = data.reduce(
+          (value, currentValue) => currentValue + value,
+          0,
+        );
+
+        return (
+          <div class="py-4">
+            <div class="text-center">
+              <h3>{title}</h3>
+              <p class="font-bold">{total}</p>
+            </div>
+            <Chart
+              container={{
+                class: "aspect-[2/1] mx-auto relative max-w-[100vw]",
+              }}
+              type="line"
+              options={{
+                plugins: {
+                  legend: { display: false },
+                },
+                interaction: {
+                  intersect: false,
+                },
+                scales: {
+                  x: {
+                    grid: { display: false },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    grid: { display: false },
+                    max: Math.ceil(Math.max(...data) * 1.1),
+                    ticks: { stepSize: 1 },
+                  },
+                },
+              }}
+              data={{
+                labels: x,
+                datasets: [{
+                  label: title,
+                  data,
+                  borderColor: color,
+                  pointRadius: 0,
+                  cubicInterpolationMode: "monotone",
+                }],
+              }}
+            />
+          </div>
+        );
+      })}
     </main>
   );
 }
