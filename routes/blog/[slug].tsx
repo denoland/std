@@ -41,7 +41,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
           </time>
         )}
         <div
-          class="mt-8 markdown-body"
+          class="mt-8 markdown-body !bg-transparent !dark:text-white"
           data-color-mode="auto"
           data-light-theme="light"
           data-dark-theme="dark"

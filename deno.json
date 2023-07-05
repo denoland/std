@@ -18,7 +18,7 @@
   "imports": {
     "@/": "./",
     "$fresh/": "https://deno.land/x/fresh@1.2.0/",
-    "$gfm": "https://deno.land/x/gfm@0.2.3/mod.ts",
+    "$gfm": "https://deno.land/x/gfm@0.2.4/mod.ts",
     "preact": "https://esm.sh/preact@10.15.1",
     "preact/": "https://esm.sh/preact@10.15.1/",
     "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.1.0",
