@@ -36,3 +36,35 @@ Deno.test("[streams] mergeReadableStreams", async () => {
     "qwertzuiopasd",
   ]);
 });
+
+Deno.test("[streams] mergeReadableStreams - handling errors", async () => {
+  const textStream = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("1");
+      controller.enqueue("3");
+      controller.close();
+    },
+  });
+
+  const textStream2 = new ReadableStream<string>({
+    start(controller) {
+      controller.enqueue("2");
+      controller.enqueue("4");
+      controller.close();
+    },
+  });
+
+  const buf = [];
+  try {
+    for await (const s of mergeReadableStreams(textStream, textStream2)) {
+      buf.push(s);
+      if (s === "2") {
+        throw new Error("error");
+      }
+    }
+    throw new Error("should not be here");
+  } catch (error) {
+    assertEquals((error as Error).message, "error");
+    assertEquals(buf, ["1", "2"]);
+  }
+});

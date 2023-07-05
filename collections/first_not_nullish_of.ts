@@ -22,7 +22,7 @@
  * ```
  */
 export function firstNotNullishOf<T, O>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (item: T) => O | undefined | null,
 ): NonNullable<O> | undefined {
   for (const current of array) {

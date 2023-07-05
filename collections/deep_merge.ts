@@ -1,8 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-// deno-lint-ignore-file ban-types
-
 import { filterInPlace } from "./_utils.ts";
 
 const { hasOwn } = Object;

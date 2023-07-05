@@ -70,7 +70,7 @@ class MockFile
   seek(offset: number, whence: Deno.SeekMode): Promise<number> {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      return Promise.reject(new RangeError("seeked pass end"));
+      return Promise.reject(new RangeError("attempted to seek past end"));
     }
     this.#offset = offset;
     return Promise.resolve(this.#offset);
@@ -79,7 +79,7 @@ class MockFile
   seekSync(offset: number, whence: Deno.SeekMode): number {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      throw new RangeError("seeked pass end");
+      throw new RangeError("attempted to seek past end");
     }
     this.#offset = offset;
     return this.#offset;

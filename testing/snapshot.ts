@@ -93,7 +93,7 @@
  * When configuring default options like this, the resulting `assertSnapshot`
  * function will function the same as the default function exported from the
  * snapshot module. If passed an optional options object, this will take precedence
- * over the default options, where the value provded for an option differs.
+ * over the default options, where the value provided for an option differs.
  *
  * It is possible to "extend" an `assertSnapshot` function which has been
  * configured with default options.
@@ -127,7 +127,7 @@
  *
  * ## Version Control:
  *
- * Snapshot testing works best when changes to snapshot files are comitted
+ * Snapshot testing works best when changes to snapshot files are committed
  * alongside other code changes. This allows for changes to reference snapshots to
  * be reviewed along side the code changes that caused them, and ensures that when
  * others pull your changes, their tests will pass without needing to update
@@ -174,7 +174,7 @@ export type SnapshotOptions<T = unknown> = {
    */
   name?: string;
   /**
-   * Snapshot output path. The shapshot will be written to this file. This can be
+   * Snapshot output path. The snapshot will be written to this file. This can be
    * a path relative to the test directory or an absolute path.
    *
    * If both `dir` and `path` are specified, the `dir` option will be ignored and
@@ -308,6 +308,10 @@ class AssertSnapshotContext {
   #teardown = () => {
     const buf = ["export const snapshot = {};"];
     const currentSnapshots = this.#getCurrentSnapshotsInitialized();
+    const currentSnapshotNames = Array.from(currentSnapshots.keys());
+    const removedSnapshotNames = currentSnapshotNames.filter((name) =>
+      !this.snapshotUpdateQueue.includes(name)
+    );
     this.snapshotUpdateQueue.forEach((name) => {
       const updatedSnapshot = this.#updatedSnapshots.get(name);
       const currentSnapshot = currentSnapshots.get(name);
@@ -334,15 +338,20 @@ class AssertSnapshotContext {
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
-    const contexts = Array.from(AssertSnapshotContext.contexts.values());
-    if (contexts[contexts.length - 1] === this) {
-      let updated = 0;
-      for (const context of contexts) {
-        updated += context.getUpdatedCount();
-      }
-      if (updated > 0) {
+    const updated = this.getUpdatedCount();
+    if (updated > 0) {
+      console.log(
+        green(bold(`\n > ${updated} snapshots updated.`)),
+      );
+    }
+    const removed = removedSnapshotNames.length;
+    if (removed > 0) {
+      console.log(
+        red(bold(`\n > ${removed} snapshots removed.`)),
+      );
+      for (const snapshotName of removedSnapshotNames) {
         console.log(
-          green(bold(`\n > ${updated} snapshots updated.`)),
+          red(bold(`   • ${snapshotName}`)),
         );
       }
     }
@@ -405,7 +414,7 @@ class AssertSnapshotContext {
    * of snapshots updated after all tests have run.
    *
    * This method can safely be called more than once and will only register the teardown
-   * function once.
+   * function once in a context.
    */
   public registerTeardown() {
     if (!this.#teardownRegistered) {

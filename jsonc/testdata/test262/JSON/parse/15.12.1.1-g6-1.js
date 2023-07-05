@@ -5,7 +5,7 @@
 /*---
 es5id: 15.12.1.1-g6-1
 description: >
-    The JSON lexical grammer allows '/' as a JSONEscapeCharacter after
+    The JSON lexical grammar allows '/' as a JSONEscapeCharacter after
     '' in a JSONString
 ---*/
 

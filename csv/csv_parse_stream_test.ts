@@ -401,7 +401,7 @@ Deno.test({
     }
     {
       // `skipFirstRow` may be `true` or `false`.
-      // `coloums` may be `undefined` or `string[]`.
+      // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
       // the return type is ReadableStream<string[] | Record<string, string | undefined>>
       const options: CsvParseStreamOptions = {};

@@ -52,7 +52,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * //   days: 730,
  * //   weeks: 104,
  * //   months: 23,
- * //   quarters: 5,
+ * //   quarters: 7,
  * //   years: 1
  * // }
  * ```

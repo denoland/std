@@ -4,7 +4,7 @@
 
 /*---
 es5id: 15.12.1.1-0-1
-description: The JSON lexical grammar treats whitespace as a token seperator
+description: The JSON lexical grammar treats whitespace as a token separator
 ---*/
 
 assert.throws(SyntaxError, function() {
