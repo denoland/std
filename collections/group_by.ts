@@ -27,7 +27,7 @@
  * );
  * ```
  */
-export function groupBy<T, K extends string>(
+export function groupBy<T, K extends PropertyKey>(
   iterable: Iterable<T>,
   selector: (element: T, index: number) => K,
 ): Partial<Record<K, T[]>> {
