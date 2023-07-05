@@ -9,8 +9,8 @@ import {
   StripProductWithPrice,
 } from "@/utils/payments.ts";
 import Stripe from "stripe";
-import { ComponentChild } from "preact";
 import { getUserBySession, type User } from "@/utils/db.ts";
+import { Check } from "@/components/Icons.tsx";
 
 interface PricingPageData extends State {
   products: Stripe.Product[];
@@ -54,36 +54,153 @@ export const handler: Handlers<PricingPageData, State> = {
   },
 };
 
-interface PricingCardProps {
-  name: string;
-  description: string;
-  pricePerInterval: string;
-  children: ComponentChild;
-}
+const CARD_STYLES =
+  "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
+const CHECK_STYLES = "w-6 h-6 text-pink-500 shrink-0 inline-block mr-2";
 
-function PricingCard(props: PricingCardProps) {
+function FreePlanCard() {
   return (
-    <div class="flex-1 space-y-4 p-4 ring-1 ring-gray-300 rounded-xl text-center dark:bg-gray-700">
-      <div>
-        <h3 class="text-2xl font-bold">
-          {props.name}
-        </h3>
-        <p>{props.description}</p>
+    <div class={CARD_STYLES}>
+      <div class="flex-1 space-y-4">
+        <div>
+          <h3 class="text-xl font-bold">
+            Free
+          </h3>
+          <p class="text-gray-500">
+            Discover and share your favorite Deno projects.
+          </p>
+        </div>
+        <p>
+          <span class="text-4xl font-bold">Free</span>
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Share
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Comment
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Vote
+        </p>
       </div>
-      <p class="text-xl">
-        {props.pricePerInterval}
-      </p>
-      {props.children}
+
+      <div class="text-center">
+        <a
+          href="/account/manage"
+          class={`${BUTTON_STYLES} w-full rounded-md block`}
+        >
+          Manage
+        </a>
+      </div>
     </div>
   );
 }
 
-function toPricePerInterval(defaultPrice: Stripe.Price) {
-  const amount = formatAmountForDisplay(
-    defaultPrice?.unit_amount ?? 0,
-    defaultPrice?.currency ?? "usd",
+function PremiumPlanCard(
+  props: { product: Stripe.Product; isSubscribed?: boolean },
+) {
+  const defaultPrice = props.product.default_price as Stripe.Price;
+  return (
+    <div class={CARD_STYLES + " border-primary border"}>
+      <div class="flex-1 space-y-4">
+        <div>
+          <h3 class="text-xl font-bold">
+            {props.product.name}
+          </h3>
+          <p class="text-gray-500">
+            {props.product.description}
+          </p>
+        </div>
+        <p>
+          <span class="text-4xl font-bold">
+            {formatAmountForDisplay(
+              defaultPrice.unit_amount! / 100,
+              defaultPrice?.currency,
+            )}
+          </span>
+          <span>{" "}/ {defaultPrice.recurring?.interval}</span>
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Your comments appear first
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Downvoting
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Official pro user badge 🦕
+        </p>
+      </div>
+
+      <div class="text-center">
+        {props.isSubscribed
+          ? (
+            <a
+              class={`${BUTTON_STYLES} w-full rounded-md block`}
+              href="/account/manage"
+            >
+              Manage
+            </a>
+          )
+          : (
+            <a
+              class={`${BUTTON_STYLES} w-full rounded-md block`}
+              href="/account/upgrade"
+            >
+              Upgrade
+            </a>
+          )}
+      </div>
+    </div>
   );
-  return `${amount} / ${defaultPrice.recurring?.interval}`;
+}
+
+function EnterprisePricingCard() {
+  return (
+    <div class={CARD_STYLES}>
+      <div class="flex-1 space-y-4">
+        <div>
+          <h3 class="text-xl font-bold">
+            Enterprise
+          </h3>
+          <p class="text-gray-500">
+            Make the Deno Hunt experience yours.
+          </p>
+        </div>
+        <p>
+          <span class="text-4xl font-bold">Contact us</span>
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Advanced reporting
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Direct line to{" "}
+          <a href="/users/lambtron" class="text-secondary">Andy</a> and{" "}
+          <a href="/user/iuioiua" class="text-secondary">Asher</a>
+        </p>
+        <p>
+          <Check class={CHECK_STYLES} />
+          Complimentary Deno merch
+        </p>
+      </div>
+
+      <div class="text-center">
+        <a
+          href="mailto:andy@deno.com"
+          class={`${BUTTON_STYLES} w-full rounded-md block`}
+        >
+          Contact us
+        </a>
+      </div>
+    </div>
+  );
 }
 
 export default function PricingPage(props: PageProps<PricingPageData>) {
@@ -91,51 +208,18 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
   const [product] = props.data.products;
 
   return (
-    <main
-      class={`mx-auto max-w-4xl w-full flex-1 flex flex-col justify-center px-8`}
-    >
+    <main class="mx-auto max-w-5xl w-full flex-1 flex flex-col justify-center px-4">
       <div class="mb-8 text-center">
         <h1 class="text-3xl font-bold">Pricing</h1>
-        <p class="text-lg">Choose the plan that suites you</p>
+        <p class="text-lg text-gray-500">Choose the plan that suites you</p>
       </div>
       <div class="flex flex-col md:flex-row gap-4">
-        <PricingCard
-          name="Free tier"
-          description="Share, comment on and vote for your favorite posts"
-          pricePerInterval="Free"
-        >
-          <a
-            href="/account/manage"
-            class={`${BUTTON_STYLES} w-full rounded-md block`}
-          >
-            Manage
-          </a>
-        </PricingCard>
-        <PricingCard
-          name={product.name}
-          description={product.description!}
-          pricePerInterval={toPricePerInterval(
-            product.default_price as Stripe.Price,
-          )}
-        >
-          {props.data.user?.isSubscribed
-            ? (
-              <a
-                class={`${BUTTON_STYLES} w-full rounded-md block`}
-                href="/account/manage"
-              >
-                Manage
-              </a>
-            )
-            : (
-              <a
-                class={`${BUTTON_STYLES} w-full rounded-md block`}
-                href="/account/upgrade"
-              >
-                Upgrade
-              </a>
-            )}
-        </PricingCard>
+        <FreePlanCard />
+        <PremiumPlanCard
+          product={product}
+          isSubscribed={props.data.user?.isSubscribed}
+        />
+        <EnterprisePricingCard />
       </div>
     </main>
   );

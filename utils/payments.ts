@@ -50,11 +50,8 @@ export function formatAmountForDisplay(
       style: "currency",
       currency,
       currencyDisplay: "symbol",
+      maximumFractionDigits: 0,
     },
   );
-  const parts = numberFormat.formatToParts(amount);
-  const amountToFormat = parts.some((part) => part.type === "decimal")
-    ? amount / 100
-    : amount;
-  return numberFormat.format(amountToFormat);
+  return numberFormat.format(amount);
 }

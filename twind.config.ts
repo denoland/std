@@ -22,7 +22,7 @@ export default {
           ...colors,
           // Modify primary and secondary colors according to your color-scheme
           primary: "#be185d",
-          secondary: "#170139",
+          secondary: "#4338ca",
         },
         // deno-lint-ignore no-explicit-any
       }) as Preset<any>,
