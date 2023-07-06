@@ -4,7 +4,11 @@ import { EncodeType } from "./encode.ts";
 
 export function decode(uint8: Uint8Array) {
   const pointer = { consumed: 0 };
-  const dataView = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
+  const dataView = new DataView(
+    uint8.buffer,
+    uint8.byteOffset,
+    uint8.byteLength,
+  );
   const value = decodeSlice(uint8, dataView, pointer);
 
   if (pointer.consumed < uint8.length) {
