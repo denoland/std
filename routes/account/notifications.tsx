@@ -62,7 +62,7 @@ function Row(props: RowProps) {
           value={props.notification.id}
         />
         <button class="text-left" type="submit">
-          <strong>New comment!</strong>
+          <strong>New {props.notification.type}!</strong>
           <span class="text-gray-500 text-sm">
             {" " + timeAgo(new Date(props.notification.createdAt))} ago
           </span>

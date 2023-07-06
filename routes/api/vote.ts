@@ -2,7 +2,12 @@
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { createVote, deleteVote, getItem } from "@/utils/db.ts";
-import { getUserBySession } from "@/utils/db.ts";
+import {
+  createNotification,
+  getUserBySession,
+  newNotificationProps,
+  Notification,
+} from "@/utils/db.ts";
 
 async function sharedHandler(
   req: Request,
@@ -34,10 +39,22 @@ async function sharedHandler(
       status = 204;
       await deleteVote(vote);
       break;
-    case "POST":
+    case "POST": {
       status = 201;
       await createVote(vote);
+
+      if (item.userId !== user.id) {
+        const notification: Notification = {
+          userId: item.userId,
+          type: "vote",
+          text: `${user.login} upvoted your post: ${item.title}`,
+          originUrl: `/item/${itemId}`,
+          ...newNotificationProps(),
+        };
+        await createNotification(notification);
+      }
       break;
+    }
     default:
       return new Response(null, { status: 400 });
   }
