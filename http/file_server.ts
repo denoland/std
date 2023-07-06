@@ -31,7 +31,14 @@
  * @module
  */
 
-import { extname, posix, resolve } from "../path/mod.ts";
+import {
+  extname,
+  join,
+  posix,
+  relative,
+  resolve,
+  SEP_PATTERN,
+} from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
@@ -272,12 +279,17 @@ async function serveDirIndex(
   },
 ): Promise<Response> {
   const { showDotfiles } = options;
-  const dirUrl = `/${posix.relative(options.target, dirPath)}`;
+  const dirUrl = `/${
+    relative(options.target, dirPath).replaceAll(
+      new RegExp(SEP_PATTERN, "g"),
+      "/",
+    )
+  }`;
   const listEntryPromise: Promise<EntryInfo>[] = [];
 
   // if ".." makes sense
   if (dirUrl !== "/") {
-    const prevPath = posix.join(dirPath, "..");
+    const prevPath = join(dirPath, "..");
     const entryInfo = Deno.stat(prevPath).then((fileInfo): EntryInfo => ({
       mode: modeToString(true, fileInfo.mode),
       size: "",
@@ -292,7 +304,7 @@ async function serveDirIndex(
     if (!showDotfiles && entry.name[0] === ".") {
       continue;
     }
-    const filePath = posix.join(dirPath, entry.name);
+    const filePath = join(dirPath, entry.name);
     const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
 
@@ -632,7 +644,7 @@ async function createServeDirResponse(
     normalizedPath = normalizedPath.slice(0, -1);
   }
 
-  const fsPath = posix.join(target, normalizedPath);
+  const fsPath = join(target, normalizedPath);
   const fileInfo = await Deno.stat(fsPath);
 
   // For files, remove the trailing slash from the path.
@@ -661,7 +673,7 @@ async function createServeDirResponse(
 
   // if target is directory, serve index or dir listing.
   if (showIndex) { // serve index.html
-    const indexPath = posix.join(fsPath, "index.html");
+    const indexPath = join(fsPath, "index.html");
 
     let indexFileInfo: Deno.FileInfo | undefined;
     try {

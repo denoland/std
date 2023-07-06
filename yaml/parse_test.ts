@@ -216,3 +216,17 @@ merge_test:
     assert(success);
   },
 });
+
+Deno.test({
+  name: "parse returns `null` when yaml is empty or only comments",
+  fn() {
+    const expected = null;
+
+    const yaml1 = ``;
+    assertEquals(parse(yaml1), expected);
+    const yaml2 = ` \n\n `;
+    assertEquals(parse(yaml2), expected);
+    const yaml3 = `# just a bunch of comments \n # in this file`;
+    assertEquals(parse(yaml3), expected);
+  },
+});

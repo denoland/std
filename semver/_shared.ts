@@ -144,7 +144,7 @@ const GTLT: number = R++;
 src[GTLT] = "((?:<|>)?=?)";
 
 // Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
+// Note that "x.x" is a valid xRange identifier, meaning "any version"
 // Only the first item is strictly required.
 const XRANGEIDENTIFIER: number = R++;
 src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + "|x|X|\\*";

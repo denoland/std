@@ -7,8 +7,8 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * Checks to see if value is a valid SemVer object. It does a check
  * into each field including prerelease and build.
  *
- * Some invalid SemVer sentinals can still return true such as ANY and INVALID.
- * An object which has the same value as a sentinal but isn't reference equal
+ * Some invalid SemVer sentinels can still return true such as ANY and INVALID.
+ * An object which has the same value as a sentinel but isn't reference equal
  * will still fail.
  *
  * Objects which are valid SemVer objects but have _extra_ fields are still

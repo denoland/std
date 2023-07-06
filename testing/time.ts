@@ -55,7 +55,7 @@ export interface FakeTimeOptions {
   /**
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
-   * Set to 1 to have the fake time automatically tick foward at the same rate in milliseconds as real time.
+   * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
    */
   advanceRate: number;
   /**
