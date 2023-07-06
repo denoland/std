@@ -86,28 +86,34 @@ export const handler: Handlers<ItemPageData, State> = {
       return new Response(null, { status: 400 });
     }
 
+    const itemId = ctx.params.id;
     const user = await getUserBySession(ctx.state.sessionId);
+    const item = await getItem(itemId);
+
+    if (item === null || user === null) {
+      return new Response(null, { status: 404 });
+    }
 
     const comment: Comment = {
-      userId: user!.id,
-      itemId: ctx.params.id,
+      userId: user.id,
+      itemId: itemId,
       text,
       ...newCommentProps(),
     };
     await createComment(comment);
 
-    const item = await getItem(comment.itemId);
+    if (item.userId !== user.id) {
+      const notification: Notification = {
+        userId: item.userId,
+        type: "comment",
+        text: `${user.login} commented on your post: ${item.title}`,
+        originUrl: `/item/${itemId}`,
+        ...newNotificationProps(),
+      };
+      await createNotification(notification);
+    }
 
-    const notification: Notification = {
-      userId: item!.userId,
-      type: "comment",
-      text: `${user!.login} commented on your post: ${item!.title}`,
-      originUrl: `/item/${ctx.params.id}`,
-      ...newNotificationProps(),
-    };
-    await createNotification(notification);
-
-    return redirect(`/item/${ctx.params.id}`);
+    return redirect(`/item/${itemId}`);
   },
 };
 
