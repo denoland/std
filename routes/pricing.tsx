@@ -182,7 +182,7 @@ function EnterprisePricingCard() {
         <p>
           <Check class={CHECK_STYLES} />
           Direct line to{" "}
-          <a href="/users/lambtron" class="text-secondary">Andy</a> and{" "}
+          <a href="/user/lambtron" class="text-secondary">Andy</a> and{" "}
           <a href="/user/iuioiua" class="text-secondary">Asher</a>
         </p>
         <p>
