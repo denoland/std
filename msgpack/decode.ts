@@ -1,7 +1,19 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { EncodeType } from "./encode.ts";
+import { ValueType } from "./encode.ts";
 
+/**
+ * Decode a value from the MessagePack binary format.
+ *
+ * @example
+ * ```ts
+ * import { decode } from "https://deno.land/std@$STD_VERSION/msgpack/decode.ts";
+ *
+ * const encoded = Uint8Array.of(1, 2, 3)
+ *
+ * console.log(decode(encoded))
+ * ```
+ */
 export function decode(uint8: Uint8Array) {
   const pointer = { consumed: 0 };
   const dataView = new DataView(
@@ -35,7 +47,7 @@ function decodeArray(
   size: number,
   pointer: { consumed: number },
 ) {
-  const arr: EncodeType[] = [];
+  const arr: ValueType[] = [];
 
   for (let i = 0; i < size; i++) {
     const value = decodeSlice(uint8, dataView, pointer);
@@ -51,7 +63,7 @@ function decodeMap(
   size: number,
   pointer: { consumed: number },
 ) {
-  const map: Record<number | string, EncodeType> = {};
+  const map: Record<number | string, ValueType> = {};
 
   for (let i = 0; i < size; i++) {
     const key = decodeSlice(uint8, dataView, pointer);
@@ -87,7 +99,7 @@ function decodeSlice(
   uint8: Uint8Array,
   dataView: DataView,
   pointer: { consumed: number },
-): EncodeType {
+): ValueType {
   const type = dataView.getUint8(pointer.consumed);
   pointer.consumed++;
 

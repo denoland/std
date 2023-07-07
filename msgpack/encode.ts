@@ -2,18 +2,18 @@
 
 import { BytesList } from "../bytes/bytes_list.ts";
 
-export type EncodeType =
+export type ValueType =
   | number
   | bigint
   | string
   | boolean
   | null
   | Uint8Array
-  | EncodeType[]
-  | EncodeMap;
+  | ValueType[]
+  | ValueMap;
 
-interface EncodeMap {
-  [index: string | number]: EncodeType;
+interface ValueMap {
+  [index: string | number]: ValueType;
 }
 
 const FOUR_BITS = 16;
@@ -29,7 +29,25 @@ const SIXTY_FOUR_BITS = 18446744073709551616n;
 
 const encoder = new TextEncoder();
 
-export function encode(object: EncodeType) {
+/**
+ * Encode a value to MessagePack binary format.
+ *
+ * @example
+ * ```ts
+ * import { encode } from "https://deno.land/std@$STD_VERSION/msgpack/encode.ts";
+ *
+ * const obj = {
+ *   str: "deno",
+ *   arr: [1, 2, 3],
+ *   map: {
+ *     foo: "bar"
+ *   }
+ * }
+ *
+ * console.log(encode(obj))
+ * ```
+ */
+export function encode(object: ValueType) {
   const byteList = new BytesList();
   encodeSlice(object, byteList);
   return byteList.concat();
@@ -101,7 +119,7 @@ function encodeNumber(num: number) {
   return encodeFloat64(num);
 }
 
-function encodeSlice(object: EncodeType, byteList: BytesList) {
+function encodeSlice(object: ValueType, byteList: BytesList) {
   if (object === null) {
     byteList.add(new Uint8Array([0xc0]));
     return;
