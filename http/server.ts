@@ -541,7 +541,7 @@ function hostnameForDisplay(hostname: string) {
 }
 
 /**
- * @deprecated (will be removed after 0.192.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 0.196.0) Use `Deno.serve` instead.
  *
  * Serves HTTP requests with the given handler.
  *
@@ -623,6 +623,9 @@ export async function serve(
   return await s;
 }
 
+/**
+ * @deprecated (will be removed after 0.196.0) Use `Deno.serve` instead.
+ */
 export interface ServeTlsInit extends ServeInit {
   /** Server private key in PEM format */
   key?: string;
@@ -638,7 +641,7 @@ export interface ServeTlsInit extends ServeInit {
 }
 
 /**
- * @deprecated (will be removed after 0.192.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 0.196.0) Use `Deno.serve` instead.
  *
  * Serves HTTPS requests with the given handler.
  *
