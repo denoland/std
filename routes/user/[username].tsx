@@ -14,6 +14,8 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { pluralize } from "@/utils/display.ts";
+import { GitHub } from "@/components/Icons.tsx";
+import { LINK_STYLES } from "@/utils/constants.ts";
 
 export interface UserData extends State {
   user: User;
@@ -86,7 +88,7 @@ function Row(props: RowProps) {
           <span>
             <strong>{props.title}</strong>
           </span>
-          {props.children && <span>{props.children}</span>}
+          {props.children && <span class="ml-2">{props.children}</span>}
         </div>
         <p>
           {props.text}
@@ -103,7 +105,17 @@ export default function UserPage(props: PageProps<UserData>) {
         title={props.data.user.login}
         text={pluralize(props.data.itemsCount, "submission")}
         img={props.data.user.avatarUrl}
-      />
+      >
+        <a
+          href={`https://github.com/${props.data.user.login}`}
+          alt={`to ${props.data.user.login}'s GitHub profile`}
+          aria-label={`${props.data.user.login}'s GitHub profile`}
+          class={LINK_STYLES}
+          target="_blank"
+        >
+          <GitHub class="text-sm w-6" />
+        </a>
+      </Row>
       {props.data.items.map((item, index) => (
         <ItemSummary
           item={item}
