@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
-import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
 import {
   JsonStringifyStream,
   StringifyStreamOptions,
@@ -13,7 +12,7 @@ async function assertValidStringify(
   expect: string[],
   options?: StringifyStreamOptions,
 ) {
-  const r = readableStreamFromIterable(chunks);
+  const r = ReadableStream.from(chunks);
   const res = [];
   for await (const data of r.pipeThrough(new transformer(options))) {
     res.push(data);
@@ -29,7 +28,7 @@ async function assertInvalidStringify(
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
-  const r = readableStreamFromIterable(chunks);
+  const r = ReadableStream.from(chunks);
   await assertRejects(
     async () => {
       for await (const _ of r.pipeThrough(new transformer(options)));

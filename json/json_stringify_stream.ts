@@ -27,12 +27,11 @@ export interface StringifyStreamOptions {
  *
  * @example
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
- * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
+ * ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream()) // convert to JSON lines (ndjson)
  *   .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
  *   .pipeTo(file.writable)
@@ -43,12 +42,11 @@ export interface StringifyStreamOptions {
  * To convert to [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), set the
  * prefix to the delimiter "\x1E" as options.
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
- * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
+ * ReadableStream.from([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JsonStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeTo(file.writable)

@@ -2,7 +2,6 @@
 import { CsvParseStream } from "./csv_parse_stream.ts";
 import type { CsvParseStreamOptions } from "./csv_parse_stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
-import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
 import { readableStreamFromReader } from "../streams/readable_stream_from_reader.ts";
 import {
   assert,
@@ -42,7 +41,7 @@ Deno.test({
 Deno.test({
   name: "[csv/csv_parse_stream] CsvParseStream with invalid csv",
   fn: async () => {
-    const readable = readableStreamFromIterable([
+    const readable = ReadableStream.from([
       encoder.encode("id,name\n"),
       encoder.encode("\n"),
       encoder.encode("1,foo\n"),
