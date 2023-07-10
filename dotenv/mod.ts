@@ -116,7 +116,7 @@ export interface LoadOptions {
 
   /**
    * Set to `true` to export all `.env` variables to the current processes
-   * environment. Variables are then accessable via `Deno.env.get(<key>)`.
+   * environment. Variables are then accessible via `Deno.env.get(<key>)`.
    *
    * @default {false}
    */

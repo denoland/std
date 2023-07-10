@@ -379,7 +379,7 @@ export interface ContextOptions {
   preopens?: { [key: string]: string };
 
   /**
-   * Determines if calls to exit from within the WebAssembly module will terminate the proess or return.
+   * Determines if calls to exit from within the WebAssembly module will terminate the process or return.
    */
   exitOnReturn?: boolean;
 
@@ -1740,14 +1740,14 @@ export default class Context {
     const { _start, _initialize, memory } = instance.exports;
 
     if (!(memory instanceof WebAssembly.Memory)) {
-      throw new TypeError("WebAsembly.instance must provide a memory export");
+      throw new TypeError("WebAssembly.instance must provide a memory export");
     }
 
     this.#memory = memory;
 
     if (typeof _initialize == "function") {
       throw new TypeError(
-        "WebAsembly.instance export _initialize must not be a function",
+        "WebAssembly.instance export _initialize must not be a function",
       );
     }
 
@@ -1789,7 +1789,7 @@ export default class Context {
     const { _start, _initialize, memory } = instance.exports;
 
     if (!(memory instanceof WebAssembly.Memory)) {
-      throw new TypeError("WebAsembly.instance must provide a memory export");
+      throw new TypeError("WebAssembly.instance must provide a memory export");
     }
 
     this.#memory = memory;

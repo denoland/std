@@ -227,21 +227,18 @@ Deno.test("Equal", function () {
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
     ),
   );
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
     ),
   );
   assert(
     !equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
@@ -250,7 +247,6 @@ Deno.test("Equal", function () {
   assertFalse(
     equal(
       new WeakRef({ hello: "world" }),
-      // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
@@ -742,6 +738,40 @@ Deno.test("AssertObjectMatching", function () {
   assertThrows(
     () => assertObjectMatch(n, { baz: new Map([["a", { baz: true }]]) }),
     AssertionError,
+  );
+  // null in the first argument throws an assertion error, rather than a TypeError: Invalid value used as weak map key
+  assertThrows(
+    () => assertObjectMatch({ foo: null }, { foo: { bar: 42 } }),
+    AssertionError,
+  );
+  assertObjectMatch({ foo: null, bar: null }, { foo: null });
+  assertObjectMatch({ foo: undefined, bar: null }, { foo: undefined });
+  assertThrows(
+    () => assertObjectMatch({ foo: undefined, bar: null }, { foo: null }),
+    AssertionError,
+  );
+  // Non mapable primative types should throw a readable type error
+  assertThrows(
+    // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
+    () => assertObjectMatch(null, { foo: 42 }),
+    TypeError,
+    "assertObjectMatch",
+  );
+  // @ts-expect-error Argument of type 'null' is not assignable to parameter of type 'Record<PropertyKey, any>'
+  assertThrows(() => assertObjectMatch(null, { foo: 42 }), TypeError, "null"); // since typeof null is "object", want to make sure user knows the bad value is "null"
+  assertThrows(
+    // @ts-expect-error Argument of type 'undefined' is not assignable to parameter of type 'Record<PropertyKey, any>'
+    () => assertObjectMatch(undefined, { foo: 42 }),
+    TypeError,
+    "assertObjectMatch",
+  );
+  // @ts-expect-error Argument of type 'number' is not assignable to parameter of type 'Record<PropertyKey, any>'
+  assertThrows(() => assertObjectMatch(21, 42), TypeError, "assertObjectMatch");
+  assertThrows(
+    // @ts-expect-error Argument of type 'string' is not assignable to parameter of type 'Record<PropertyKey, any>'
+    () => assertObjectMatch("string", "string"),
+    TypeError,
+    "assertObjectMatch",
   );
 });
 
@@ -1409,7 +1439,6 @@ Deno.test({
     assertArrayIncludes<boolean>([true, false], [true]);
     const value = { x: 1 };
     assertStrictEquals<typeof value>(value, value);
-    // deno-lint-ignore ban-types
     assertNotStrictEquals<object>(value, { x: 1 });
   },
 });

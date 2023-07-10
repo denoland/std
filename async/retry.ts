@@ -18,7 +18,7 @@ export interface RetryOptions {
   maxTimeout?: number;
   /** The maximum amount of attempts until failure. This is `5` by default. */
   maxAttempts?: number;
-  /** The inital and minimum amount of milliseconds between attempts. This is `1000` by default. */
+  /** The initial and minimum amount of milliseconds between attempts. This is `1000` by default. */
   minTimeout?: number;
   /** Amount of jitter to introduce to the time between attempts. This is `1` for full jitter by default. */
   jitter?: number;

@@ -71,6 +71,8 @@ Before opening a PR make sure to:
 - `deno task test` passes.
 - `deno fmt --check` passes.
 - `deno task lint` passes.
+- (optionally) check for typos with `deno task typos` (requires
+  [typos](https://github.com/crate-ci/typos#install) to be installed)
 
 Give the PR a descriptive title.
 
