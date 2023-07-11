@@ -1,3 +1,10 @@
+### 0.193.0 / 2023.07.04
+
+- feat: add http/user_agent (#3387)
+- fix(json): allow primitives at top level without separator (#3466)
+- fix(testing/asserts): handle primitive/null values better in assertObjectMatch
+  (#3468)
+
 ### 0.192.0 / 2023.06.15
 
 - BREAKING(semver): rewrite semver (#3385)
@@ -174,6 +181,7 @@
 
 ### 0.173.0 / 2023.01.16
 
+- BREAKING(streams, archive): remove deprecated exports (#3107)
 - fix(fs): change globstar default to true for expandGlob and expandGlobSync
   (#3115)
 - fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
