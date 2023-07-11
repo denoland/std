@@ -76,6 +76,10 @@ let enabled = !noColor;
  * @param value
  */
 export function setColorEnabled(value: boolean) {
+  if (Deno?.noColor) {
+    return;
+  }
+
   enabled = value;
 }
 
