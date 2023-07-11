@@ -6,7 +6,7 @@
 //   BSD: Copyright (c) 2009 The Go Authors. All rights reserved.
 
 import { sprintf } from "./printf.ts";
-import { assertEquals } from "../asserts/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 const S = sprintf;
 

@@ -35,7 +35,7 @@ function getParentIndex(index: number) {
  *   BinaryHeap,
  *   descend,
  * } from "https://deno.land/std@$STD_VERSION/collections/binary_heap.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const maxHeap = new BinaryHeap<number>();
  * maxHeap.push(4, 1, 3, 5, 2);

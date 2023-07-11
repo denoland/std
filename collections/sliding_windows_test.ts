@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../asserts/mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { slidingWindows } from "./sliding_windows.ts";
 
 function slidingWindowsTest<T>(

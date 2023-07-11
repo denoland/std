@@ -6,7 +6,7 @@ import {
   assertStrictEquals,
   assertStringIncludes,
   assertThrows,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 import {
   load,
   type LoadOptions,

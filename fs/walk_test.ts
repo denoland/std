@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 
 export function testWalk(
   setup: (arg0: string) => any | Promise<any>,

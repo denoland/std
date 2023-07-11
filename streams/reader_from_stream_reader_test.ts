@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../asserts/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import { copy } from "./copy.ts";
 import { readerFromStreamReader } from "./reader_from_stream_reader.ts";
 import { Buffer } from "../io/buffer.ts";

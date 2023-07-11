@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../asserts/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import { readableStreamFromIterable } from "./readable_stream_from_iterable.ts";
 
 // N controls how many iterations of certain checks are performed.

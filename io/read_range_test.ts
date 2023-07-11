@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 import { readRange, readRangeSync } from "./read_range.ts";
 import type { Closer, Reader, ReaderSync } from "../types.d.ts";
 

@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 
 Deno.test("[async] pooledMap", async function () {
   const start = new Date();

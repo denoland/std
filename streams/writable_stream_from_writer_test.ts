@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../asserts/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { writableStreamFromWriter } from "./writable_stream_from_writer.ts";
 import type { Closer, Writer } from "../types.d.ts";
 

@@ -9,7 +9,7 @@ import {
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import { StringReader } from "../io/string_reader.ts";

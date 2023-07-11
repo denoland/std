@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/first_not_nullish_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const tables = [
  *   { number: 11, order: null },

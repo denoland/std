@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../asserts/mod.ts";
+import { assert } from "../assert/mod.ts";
 import { startsWith } from "./starts_with.ts";
 
 Deno.test("[bytes] startsWith", () => {

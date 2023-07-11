@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../asserts/mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { FakeTime } from "../testing/time.ts";
 import { parse } from "./parse.ts";
 

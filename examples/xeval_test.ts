@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { xeval } from "./xeval.ts";
-import { assertEquals, assertStringIncludes } from "../asserts/mod.ts";
+import { assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));

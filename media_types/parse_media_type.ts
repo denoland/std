@@ -20,7 +20,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * @example
  * ```ts
  * import { parseMediaType } from "https://deno.land/std@$STD_VERSION/media_types/parse_media_type.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * assertEquals(
  *   parseMediaType("application/JSON"),

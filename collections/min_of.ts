@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },

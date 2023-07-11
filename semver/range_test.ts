@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../asserts/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import { rangeFormat } from "./range_format.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";

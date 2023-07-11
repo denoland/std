@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna" },

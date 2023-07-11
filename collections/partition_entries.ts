@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { partitionEntries } from "https://deno.land/std@$STD_VERSION/collections/partition_entries.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const menu = {
  *   "Salad": 11,

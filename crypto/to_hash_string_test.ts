@@ -2,7 +2,7 @@
 import { crypto, type DigestAlgorithm } from "./mod.ts";
 import { toHashString } from "./to_hash_string.ts";
 import { repeat } from "../bytes/repeat.ts";
-import { assertEquals } from "../asserts/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 const encoder = new TextEncoder();
 

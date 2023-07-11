@@ -4,7 +4,7 @@
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
-import { assert } from "../asserts/assert.ts";
+import { assert } from "../assert/assert.ts";
 import { isWindows } from "../_util/os.ts";
 
 export interface CopyOptions {

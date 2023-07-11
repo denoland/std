@@ -4,7 +4,7 @@ import {
   assertRejects,
   assertStringIncludes,
   assertThrows,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 

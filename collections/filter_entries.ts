@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/filter_entries.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const menu = {
  *   "Salad": 11,

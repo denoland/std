@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertRejects } from "../asserts/mod.ts";
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { delay } from "./delay.ts";
 import { deadline, DeadlineError } from "./deadline.ts";
 

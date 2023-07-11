@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertExists } from "../asserts/mod.ts";
+import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { resolve } from "../path/mod.ts";
 import { Tar, type TarMeta } from "./tar.ts";
 import { TarEntry, type TarHeader, Untar } from "./untar.ts";

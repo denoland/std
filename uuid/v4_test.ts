@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../asserts/mod.ts";
+import { assert } from "../assert/mod.ts";
 import { validate } from "./v4.ts";
 
 Deno.test("[UUID] is_valid_uuid_v4", () => {

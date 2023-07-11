@@ -8,7 +8,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/asserts/assert_throws.ts";
+ * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
  *
  * Deno.test("doesThrow", function (): void {
  *   assertThrows((): void => {
@@ -35,7 +35,7 @@ export function assertThrows(
  *
  * @example
  * ```ts
- * import { assertThrows } from "https://deno.land/std@$STD_VERSION/asserts/assert_throws.ts";
+ * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
  *
  * Deno.test("doesThrow", function (): void {
  *   assertThrows((): void => {

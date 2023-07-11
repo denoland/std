@@ -23,7 +23,7 @@ export type JoinToStringOptions = {
  * @example
  * ```ts
  * import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/join_to_string.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const users = [
  *   { name: "Kim" },

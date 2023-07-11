@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/max_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/asserts/assert_equals.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna", age: 34 },

@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
-import { assertEquals } from "../asserts/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { getFileInfoType, isSamePath, isSubdir, PathType } from "./_util.ts";
 import { ensureFileSync } from "./ensure_file.ts";

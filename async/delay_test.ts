@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { assert, assertRejects } from "../asserts/mod.ts";
+import { assert, assertRejects } from "../assert/mod.ts";
 
 Deno.test("[async] delay", async function () {
   const start = new Date();

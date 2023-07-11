@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../asserts/mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 import { Operator } from "./types.ts";
 import { cmp } from "./cmp.ts";

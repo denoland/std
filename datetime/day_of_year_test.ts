@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../asserts/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { dayOfYear, dayOfYearUtc } from "./day_of_year.ts";
 
 Deno.test({

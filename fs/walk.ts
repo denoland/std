@@ -2,7 +2,7 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../asserts/assert.ts";
+import { assert } from "../assert/assert.ts";
 import { join, normalize } from "../path/mod.ts";
 import {
   createWalkEntry,
@@ -70,7 +70,7 @@ export type { WalkEntry };
  * @example
  * ```ts
  * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/asserts/assert.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
  *
  * for await (const entry of walk(".")) {
  *   console.log(entry.path);

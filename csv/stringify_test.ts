@@ -9,7 +9,7 @@ import {
   assertEquals,
   assertStringIncludes,
   assertThrows,
-} from "../asserts/mod.ts";
+} from "../assert/mod.ts";
 import { stringify, StringifyError } from "./stringify.ts";
 
 const CRLF = "\r\n";

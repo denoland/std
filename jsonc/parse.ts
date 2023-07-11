@@ -10,7 +10,7 @@
  * @module
  */
 
-import { assert } from "../asserts/assert.ts";
+import { assert } from "../assert/assert.ts";
 
 import type { JsonValue } from "../json/common.ts";
 export type { JsonValue } from "../json/common.ts";
