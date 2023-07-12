@@ -9,19 +9,12 @@ import {
 
 export async function migrateKv() {
   const itemIds = [
-    "58306d42-c17c-448c-aba0-31e43f68ca03",
-    "588169af-73e3-4383-a98b-257d4a20d9fd",
-    "7c05abda-67dd-4d11-a98e-6c03bf4a74b7",
-    "8d9f15a8-10b8-43e4-b3d5-0714ae585cc2",
-    "a3fa1164-28a3-461e-be5d-8625eb55e760",
-    "b11890b5-851e-4ba7-8f13-1befd0e43c46",
-    "e1416f18-f3a0-41d5-ae17-388b5d257aac",
-    "33c0a21d-752b-4222-9b92-8c20efa1e644",
-    "19299bbe-f508-4115-b105-892978271493",
-    "5b3a0604-8f9e-46cc-9653-ea376a7f13df",
-    "15d30182-fbb9-4385-a23b-70ce3dcb27ee",
-    "7c47b301-17b5-4864-b7c5-e970d428877f",
-    "d8358836-305c-4221-ab20-ca928095011a",
+    "cb38b1d5-7ce8-4885-a8e4-e7832da6a162",
+    "3b9a3780-800a-4d26-b63d-cd5ac307e60a",
+    "e72e1416-e288-40b1-971c-fd29f0df6443",
+    "59bb2275-03c8-4513-855d-d77f86e54d91",
+    "562f25a5-7579-4e53-9fdd-2d292acf0650",
+    "2f0f8ac1-a7c9-4489-b806-da30853c94dc",
   ];
   const promises = [];
   for (const itemId of itemIds) {
