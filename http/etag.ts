@@ -118,12 +118,11 @@ export async function calculate(
  *   calculate,
  *   ifMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const body = "hello deno!";
  *
- * await serve(async (req) => {
+ * Deno.serve(async (req) => {
  *   const ifMatchValue = req.headers.get("if-match");
  *   const etag = await calculate(body);
  *   assert(etag);
@@ -162,12 +161,11 @@ export function ifMatch(
  *   calculate,
  *   ifNoneMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const body = "hello deno!";
  *
- * await serve(async (req) => {
+ * Deno.serve(async (req) => {
  *   const ifNoneMatchValue = req.headers.get("if-none-match");
  *   const etag = await calculate(body);
  *   assert(etag);

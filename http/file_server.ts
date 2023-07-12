@@ -544,10 +544,9 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
  *
- * serve((req) => {
+ * Deno.serve((req) => {
  *   const pathname = new URL(req.url).pathname;
  *   if (pathname.startsWith("/static")) {
  *     return serveDir(req, {
