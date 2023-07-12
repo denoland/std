@@ -32,7 +32,14 @@ export default function Header(
             <CircleFilled class="absolute top-0.5 right-0.5 text-pink-700 w-2 h-2" />
           )}
         </a>
-        <a href="/submit" class={BUTTON_STYLES}>Submit</a>
+        <div class="rounded-lg bg-gradient-to-tr from-secondary to-primary p-px">
+          <a
+            href="/submit"
+            class="text-white rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))"
+          >
+            Submit
+          </a>
+        </div>
       </nav>
     </header>
   );
