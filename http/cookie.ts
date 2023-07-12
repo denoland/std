@@ -388,12 +388,7 @@ function parseSetCookie(value: string): Cookie | null {
  * @return List of cookies
  */
 export function getSetCookies(headers: Headers): Cookie[] {
-  if (!headers.has("set-cookie")) {
-    return [];
-  }
-  return [...headers.entries()]
-    .filter(([key]) => key === "set-cookie")
-    .map(([_, value]) => value)
+  return headers.getSetCookie()
     /** Parse each `set-cookie` header separately */
     .map(parseSetCookie)
     /** Skip empty cookies */
