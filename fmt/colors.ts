@@ -54,7 +54,7 @@
 const { Deno } = globalThis as any;
 const noColor = typeof Deno?.noColor === "boolean"
   ? Deno.noColor as boolean
-  : true;
+  : false;
 
 interface Code {
   open: string;
