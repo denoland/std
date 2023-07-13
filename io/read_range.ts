@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { copy as copyBytes } from "../bytes/copy.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -20,7 +20,7 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { readRange } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file
@@ -58,7 +58,7 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file

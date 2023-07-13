@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/mod.ts";
 import { MAX, MIN } from "./constants.ts";
 import { isSemVer } from "./is_semver.ts";
 

@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../../testing/asserts.ts";
+import { assert, assertEquals } from "../../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
 
 const moduleDir = resolve(dirname(fromFileUrl(import.meta.url)));

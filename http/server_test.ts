@@ -13,7 +13,7 @@ import {
   assertStrictEquals,
   assertThrows,
   unreachable,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
