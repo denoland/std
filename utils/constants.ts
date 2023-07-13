@@ -16,4 +16,5 @@ export const SITE_BAR_STYLES = "flex justify-between p-4 gap-4";
 export const NAV_STYLES =
   "flex flex-wrap justify-start gap-x-8 gap-y-4 items-center justify-between h-full";
 export const LINK_STYLES =
-  "text-gray-500 transition duration-300 hover:text-black dark:hover:text-white";
+  "text-gray-500 transition duration-300 hover:(text-black dark:text-white)";
+export const ACTIVE_LINK_STYLES = "!text-black !dark:text-white";

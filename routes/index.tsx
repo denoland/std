@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import { INPUT_STYLES } from "@/utils/constants.ts";
 import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
 import type { State } from "./_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -15,6 +14,8 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { DAY, WEEK } from "std/datetime/constants.ts";
+import { getToggledStyles } from "@/utils/display.ts";
+import { ACTIVE_LINK_STYLES, LINK_STYLES } from "@/utils/constants.ts";
 
 interface HomePageData extends State {
   itemsUsers: User[];
@@ -57,13 +58,41 @@ export const handler: Handlers<HomePageData, State> = {
   },
 };
 
-function TimeSelector() {
+function TimeSelector(props: { url: URL }) {
+  const timeAgo = props.url.searchParams.get("time-ago");
   return (
-    <div class="flex justify-center my-4 gap-2">
+    <div class="flex justify-center my-4 gap-8">
       {/* These links do not preserve current URL queries. E.g. if ?page=2, that'll be removed once one of these links is clicked */}
-      <a class={INPUT_STYLES} href="/?time-ago=week">Last Week</a>
-      <a class={INPUT_STYLES} href="/?time-ago=month">Last Month</a>
-      <a class={INPUT_STYLES} href="/?time-ago=all">All time</a>
+      <a
+        class={getToggledStyles(
+          LINK_STYLES,
+          ACTIVE_LINK_STYLES,
+          timeAgo === null || timeAgo === "week",
+        )}
+        href="/?time-ago=week"
+      >
+        Last Week
+      </a>
+      <a
+        class={getToggledStyles(
+          LINK_STYLES,
+          ACTIVE_LINK_STYLES,
+          timeAgo === "month",
+        )}
+        href="/?time-ago=month"
+      >
+        Last Month
+      </a>
+      <a
+        class={getToggledStyles(
+          LINK_STYLES,
+          ACTIVE_LINK_STYLES,
+          timeAgo === "all",
+        )}
+        href="/?time-ago=all"
+      >
+        All time
+      </a>
     </div>
   );
 }
@@ -71,7 +100,7 @@ function TimeSelector() {
 export default function HomePage(props: PageProps<HomePageData>) {
   return (
     <main class="flex-1 p-4">
-      <TimeSelector />
+      <TimeSelector url={props.url} />
       {props.data.items.map((item, index) => (
         <ItemSummary
           item={item}
