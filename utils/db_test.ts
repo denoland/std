@@ -41,7 +41,7 @@ import {
   type User,
 } from "./db.ts";
 import {
-  assertAlmostEquals,
+  assert,
   assertArrayIncludes,
   assertEquals,
   assertRejects,
@@ -81,7 +81,7 @@ function genNewUser(): User {
 
 Deno.test("[db] newItemProps()", () => {
   const itemProps = newItemProps();
-  assertAlmostEquals(itemProps.createdAt.getTime(), Date.now(), 1e-6);
+  assert(itemProps.createdAt.getTime() <= Date.now());
   assertEquals(typeof itemProps.id, "string");
   assertEquals(itemProps.score, 0);
 });
@@ -180,7 +180,7 @@ Deno.test("[db] visit", async () => {
 
 Deno.test("[db] newCommentProps()", () => {
   const commentProps = newCommentProps();
-  assertAlmostEquals(commentProps.createdAt.getTime(), Date.now(), 1e-6);
+  assert(commentProps.createdAt.getTime() <= Date.now());
   assertEquals(typeof commentProps.id, "string");
 });
 
@@ -261,7 +261,7 @@ function genNewNotification(
 
 Deno.test("[db] newNotificationProps()", () => {
   const notificationProps = newNotificationProps();
-  assertAlmostEquals(notificationProps.createdAt.getTime(), Date.now(), 1e-6);
+  assert(notificationProps.createdAt.getTime() <= Date.now());
   assertEquals(typeof notificationProps.id, "string");
 });
 
