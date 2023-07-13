@@ -2,7 +2,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
-import { assert } from "../../_util/asserts.ts";
+import { assert } from "../../assert/assert.ts";
 import { runLengthEncode } from "../_rle.ts";
 
 // change this line and re-run the script to update for new Unicode versions

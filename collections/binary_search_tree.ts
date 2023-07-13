@@ -29,7 +29,7 @@ export * from "./_comparators.ts";
  *   BinarySearchTree,
  *   descend,
  * } from "https://deno.land/std@$STD_VERSION/collections/binary_search_tree.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new BinarySearchTree<number>();

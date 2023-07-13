@@ -5,7 +5,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import { KeyStack } from "../crypto/keystack.ts";
 
 import {
