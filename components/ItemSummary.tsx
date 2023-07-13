@@ -16,7 +16,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
         item={props.item}
         isVoted={props.isVoted}
       />
-      <div>
+      <div class="space-y-1">
         <span class="mr-2">
           <a
             class="hover:underline"

@@ -63,9 +63,9 @@ function FreePlanCard() {
     <div class={CARD_STYLES}>
       <div class="flex-1 space-y-4">
         <div>
-          <h3 class="text-xl font-bold">
+          <h2 class="text-xl font-bold">
             Free
-          </h3>
+          </h2>
           <p class="text-gray-500">
             Discover and share your favorite Deno projects.
           </p>
@@ -107,9 +107,9 @@ function PremiumPlanCard(
     <div class={CARD_STYLES + " border-primary border"}>
       <div class="flex-1 space-y-4">
         <div>
-          <h3 class="text-xl font-bold">
+          <h2 class="text-xl font-bold">
             {props.product.name}
-          </h3>
+          </h2>
           <p class="text-gray-500">
             {props.product.description}
           </p>
@@ -165,9 +165,9 @@ function EnterprisePricingCard() {
     <div class={CARD_STYLES}>
       <div class="flex-1 space-y-4">
         <div>
-          <h3 class="text-xl font-bold">
+          <h2 class="text-xl font-bold">
             Enterprise
-          </h3>
+          </h2>
           <p class="text-gray-500">
             Make the Deno Hunt experience yours.
           </p>
