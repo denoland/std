@@ -158,4 +158,19 @@ Deno.test("[http]", async (test) => {
     assertFalse(response.body);
     assertEquals(response.status, 401);
   });
+
+  await test.step("GET /feed", async () => {
+    const response = await handler(
+      new Request("http://localhost/feed"),
+      CONN_INFO,
+    );
+
+    assert(response.ok);
+    assertInstanceOf(response.body, ReadableStream);
+    assertEquals(
+      response.headers.get("content-type"),
+      "application/atom+xml; charset=utf-8",
+    );
+    assertEquals(response.status, 200);
+  });
 });

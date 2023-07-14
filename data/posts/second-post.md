@@ -1,5 +1,7 @@
 ---
 title: Second post
+published_at: 2022-11-04T15:00:00.000Z
+summary: Lorem Ipsum is simply dummy text of the printing and typesetting industry.
 ---
 
 It was popularised in the 1960s with the release of Letraset sheets containing

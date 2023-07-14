@@ -2,12 +2,13 @@
 import { Feed, Item as FeedItem } from "feed";
 import { getPosts } from "@/utils/posts.ts";
 import { SITE_NAME } from "@/utils/constants.ts";
+import { Handlers } from "$fresh/server.ts";
 
 const copyright = `Copyright ${new Date().getFullYear()} ${SITE_NAME}`;
 
-export const handler = {
+export const handler: Handlers = {
   // Use https://validator.w3.org/feed/ to validate RSS feed syntax.
-  GET: async (req: Request) => {
+  async GET(req) {
     const { origin } = new URL(req.url);
     const feed = new Feed({
       title: "Deno",

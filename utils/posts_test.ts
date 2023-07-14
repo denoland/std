@@ -14,8 +14,11 @@ Deno.test("[blog] getPost()", async () => {
 Deno.test("[blog] getPost() with missing frontmatter attributes", async () => {
   const post = await getPost("second-post");
   assert(post);
-  assertEquals(post.publishedAt, new Date(undefined as unknown as Date));
-  assertEquals(post.summary, "");
+  assertEquals(post.publishedAt, new Date("2022-11-04T15:00:00.000Z"));
+  assertEquals(
+    post.summary,
+    "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+  );
   assertEquals(post.title, "Second post");
 });
 
