@@ -11,21 +11,19 @@ export interface ItemSummaryProps {
 
 export default function ItemSummary(props: ItemSummaryProps) {
   return (
-    <div class="py-2 flex gap-2">
+    <div class="py-2 flex gap-4">
       <VoteButton
         item={props.item}
         isVoted={props.isVoted}
       />
       <div class="space-y-1">
-        <span class="mr-2">
+        <p>
           <a
-            class="hover:underline"
+            class="hover:underline mr-4"
             href={`/item/${props.item.id}`}
           >
             {props.item.title}
           </a>
-        </span>
-        <span>
           <a
             class="hover:underline text-gray-500"
             href={props.item.url}
@@ -33,7 +31,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
           >
             {new URL(props.item.url).host} ↗
           </a>
-        </span>
+        </p>
         <UserPostedAt user={props.user} createdAt={props.item.createdAt} />
       </div>
     </div>

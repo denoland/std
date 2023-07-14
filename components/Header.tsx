@@ -65,7 +65,7 @@ export default function Header(
         >
           <Bell class="w-6 h-6" />
           {props.hasNotifications && (
-            <CircleFilled class="absolute top-0.5 right-0.5 text-pink-700 w-2 h-2" />
+            <CircleFilled class="absolute top-0.5 right-0.5 text-primary w-2 h-2" />
           )}
         </a>
         <div class="rounded-lg bg-gradient-to-tr from-secondary to-primary p-px">

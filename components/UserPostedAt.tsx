@@ -8,11 +8,12 @@ export default function UserPostedAt(
   return (
     <p class="text-gray-500">
       <img
-        //adding the extra parameter to resize the github avatar
-        src={props.user.avatarUrl + "&s=36"}
+        // Resize the avatar image to be 24x24 px
+        src={props.user.avatarUrl + "&s=24"}
         alt={props.user.login}
         crossOrigin="anonymous"
-        class="h-6 w-auto rounded-full aspect-square inline-block mr-1 align-bottom"
+        class="h-6 w-auto rounded-full inline-block mr-2"
+        loading="lazy"
       />
       <a class="hover:underline" href={`/user/${props.user.login}`}>
         {props.user.login}
