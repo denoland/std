@@ -6,7 +6,7 @@ import {
   SITE_BAR_STYLES,
   SITE_NAME,
 } from "@/utils/constants.ts";
-import { Discord, GitHub } from "./Icons.tsx";
+import { Discord, GitHub, Rss } from "./Icons.tsx";
 import { getToggledStyles } from "@/utils/display.ts";
 
 export default function Footer(props: { url: URL }) {
@@ -35,6 +35,9 @@ export default function Footer(props: { url: URL }) {
           )}
         >
           Blog
+        </a>
+        <a href="/feed" aria-label="Deno Hunt RSS Feed" class={LINK_STYLES}>
+          <Rss class="h-6 w-6" />
         </a>
         <a
           href="https://discord.gg/deno"
