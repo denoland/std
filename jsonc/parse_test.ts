@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 
 // The test code for the jsonc module can also be found in the testcode directory.
 

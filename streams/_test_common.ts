@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;

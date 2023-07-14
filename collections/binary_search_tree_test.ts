@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import { ascend, BinarySearchTree, descend } from "./binary_search_tree.ts";
 
 class MyMath {

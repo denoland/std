@@ -4,7 +4,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YAMLError } from "./_error.ts";
 import { Type } from "./type.ts";
