@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { diff, diffstr, DiffType } from "./_diff.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { diff, diffstr, DiffType } from "./diff.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 Deno.test({
   name: "empty",

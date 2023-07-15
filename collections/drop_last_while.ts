@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/drop_last_while.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const numbers = [22, 30, 44];
  *

@@ -3,7 +3,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { toIMF } from "../datetime/to_imf.ts";
 
 export interface Cookie {

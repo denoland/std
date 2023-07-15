@@ -4,7 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { parse, ParseError, ParseOptions } from "./parse.ts";
 import type { AssertTrue, IsExact } from "../testing/types.ts";
 

@@ -10,7 +10,7 @@ import { mapValues } from "./map_values.ts";
  * @example
  * ```ts
  * import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/reduce_groups.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const votes = {
  *   "Woody": [2, 3, 1, 4],
