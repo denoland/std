@@ -4,9 +4,12 @@ export interface MatcherContext {
   customMessage: string | undefined;
 }
 
-export type Matcher = (context: MatcherContext, ...args: unknown[]) => MatchResult
+export type Matcher = (
+  context: MatcherContext,
+  ...args: unknown[]
+) => MatchResult;
 
 export type Matchers = {
-  [key: string]: Matcher
-}
+  [key: string]: Matcher;
+};
 export type MatchResult = void | Promise<void>;
