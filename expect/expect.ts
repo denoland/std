@@ -109,7 +109,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
 // to return a promise and not properties.
 type Fn = (...args: unknown[]) => unknown;
 
-// converts all the menthods in an interface to be async functions
+// converts all the methods in an interface to be async functions
 export type Async<T> = {
   [K in keyof T]: T[K] extends Fn
     ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
