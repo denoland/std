@@ -1,6 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { parseComparator } from "./parse_comparator.ts";
 import { comparatorIntersects } from "./comparator_intersects.ts";
 import { rangeIntersects } from "./range_intersects.ts";

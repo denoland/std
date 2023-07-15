@@ -3,7 +3,7 @@
 // Ported from https://github.com/browserify/path-browserify/
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { posix, win32 } from "./mod.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];

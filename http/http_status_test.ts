@@ -10,7 +10,7 @@ import {
   Status,
   STATUS_TEXT,
 } from "./http_status.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
 Deno.test({
   name: "http/http_status - Status",

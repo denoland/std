@@ -83,7 +83,7 @@ async function calcFileInfo(
  *
  * ```ts
  * import { calculate } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
@@ -118,7 +118,7 @@ export async function calculate(
  *   calculate,
  *   ifMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
@@ -161,7 +161,7 @@ export function ifMatch(
  *   calculate,
  *   ifNoneMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
