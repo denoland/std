@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 import { MatcherContext, MatchResult } from "../types.ts";
 import { assertNotEquals } from "../../assert/assert_not_equals.ts";
 import { assertEquals } from "../../assert/assert_equals.ts";
