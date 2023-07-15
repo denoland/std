@@ -14,9 +14,8 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-
 import * as builtInMatchers from "./matchers/mod.ts";
-import type { Matcher, Matchers, MatcherContext } from "./types.ts";
+import type { Matcher, MatcherContext, Matchers } from "./types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
 export interface Expected {
@@ -31,12 +30,11 @@ const matchers: Record<string | symbol, Matcher> = {
   ...builtInMatchers,
 };
 
-
 export function expect(value: unknown, customMessage?: string): Expected {
   let isNot = false;
   let isPromised = false;
   const self: Expected = new Proxy<Expected>(
-    <Expected>{},
+    <Expected> {},
     {
       get(_, name) {
         if (name === "not") {
@@ -81,7 +79,11 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
         return (...args: unknown[]) => {
           function applyMatcher(value: unknown, args: unknown[]) {
-            const context: MatcherContext = { value, isNot: false, customMessage };
+            const context: MatcherContext = {
+              value,
+              isNot: false,
+              customMessage,
+            };
             if (isNot) {
               context.isNot = true;
             }
@@ -89,7 +91,9 @@ export function expect(value: unknown, customMessage?: string): Expected {
           }
 
           return isPromised
-            ? (value as Promise<unknown>).then((value: unknown) => applyMatcher(value, args))
+            ? (value as Promise<unknown>).then((value: unknown) =>
+              applyMatcher(value, args)
+            )
             : applyMatcher(value, args);
         };
       },
@@ -105,18 +109,19 @@ type Fn = (...args: unknown[]) => unknown;
 
 // converts all the menthods in an interface to be async functions
 export type Async<T> = {
-  [K in keyof T]: T[K] extends Fn ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>> : T[K];
-}
+  [K in keyof T]: T[K] extends Fn
+    ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
+    : T[K];
+};
 
 export function addMatchers(newMatchers: Matchers): void {
   Object.assign(matchers, newMatchers);
 }
 
-
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   if (value == null) {
     return false;
   } else {
-    return typeof((value as Record<string, unknown>).then) === 'function';
+    return typeof ((value as Record<string, unknown>).then) === "function";
   }
 }

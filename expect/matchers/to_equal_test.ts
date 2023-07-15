@@ -1,6 +1,13 @@
 //Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { bold, gray, green, red, stripColor, yellow } from "../../fmt/colors.ts";
+import {
+  bold,
+  gray,
+  green,
+  red,
+  stripColor,
+  yellow,
+} from "../../fmt/colors.ts";
 import { assertThrows } from "../../assert/assert_throws.ts";
 import { AssertionError } from "../../assert/assertion_error.ts";
 
@@ -27,11 +34,11 @@ Deno.test({
   name: "pass case",
   fn() {
     expect({ a: 10 }).toEqual({ a: 10 });
-    expect(true).toEqual( true);
+    expect(true).toEqual(true);
     expect(10).toEqual(10);
     expect("abc").toEqual("abc");
     expect({ a: 10, b: { c: "1" } }).toEqual({ a: 10, b: { c: "1" } });
-    expect(new Date("invalid")).toEqual( new Date("invalid"));
+    expect(new Date("invalid")).toEqual(new Date("invalid"));
   },
 });
 
@@ -110,7 +117,7 @@ Deno.test({
   fn() {
     assertThrows(
       () =>
-          expect(new Date(2019, 0, 3, 4, 20, 1, 10)).toEqual(
+        expect(new Date(2019, 0, 3, 4, 20, 1, 10)).toEqual(
           new Date(2019, 0, 3, 4, 20, 1, 20),
         ),
       AssertionError,
@@ -124,7 +131,7 @@ Deno.test({
     );
     assertThrows(
       () =>
-        expect(new Date("invalid")).toEqual( new Date(2019, 0, 3, 4, 20, 1, 20)),
+        expect(new Date("invalid")).toEqual(new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
         "Values are not equal.",
@@ -176,7 +183,6 @@ Deno.test("expect().toEqual diff for differently ordered objects", () => {
         bbbbbbbbbbbbbbbbbbbbbbbb: 0,
         ccccccccccccccccccccccc: 0,
       }).toEqual(
-
         {
           ccccccccccccccccccccccc: 1,
           aaaaaaaaaaaaaaaaaaaaaaaa: 0,
@@ -211,5 +217,5 @@ Deno.test("expect().toEqual same Set with object keys", () => {
     },
   ];
   expect(data).toEqual(data);
-  expect(new Set(data), ).toEqual(new Set(data));
+  expect(new Set(data)).toEqual(new Set(data));
 });
