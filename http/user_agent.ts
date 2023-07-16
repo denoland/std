@@ -11,7 +11,7 @@
  * @module
  */
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
 const ARCHITECTURE = "architecture";
 const MODEL = "model";

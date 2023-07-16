@@ -7,7 +7,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as JSONC from "../../parse.ts";
-import { assertEquals, assertThrows } from "../../../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../../../assert/mod.ts";
 function assertValidParse(
   text: string,
   expected: unknown,

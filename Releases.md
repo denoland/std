@@ -1,3 +1,8 @@
+### 0.194.0 / 2023.07.12
+
+- feat(collections): allow PropertyKey for groupBy key (#3461)
+- feat: msgpack encoding (#3460)
+
 ### 0.193.0 / 2023.07.04
 
 - feat: add http/user_agent (#3387)

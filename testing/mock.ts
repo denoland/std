@@ -41,7 +41,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   multiply,
  *   square,
@@ -94,7 +94,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   square,
@@ -178,7 +178,7 @@
  *   returnsNext,
  *   stub,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   randomMultiple,

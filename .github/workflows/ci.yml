@@ -96,9 +96,6 @@ jobs:
       - name: Check Import paths in Docs
         run: "deno task lint:doc-imports"
 
-      - name: Check non-test assertions
-        run: deno task lint:check-assertions
-
       - name: Spell-check
         uses: crate-ci/typos@master
         with:
