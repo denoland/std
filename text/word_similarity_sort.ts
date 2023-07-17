@@ -5,15 +5,15 @@ import { levenshteinDistance } from "./levenshtein_distance.ts";
  *
  * @example
  * ```ts
+ * import { wordSimilaritySort } from "https://deno.land/std@$STD_VERSION/text/word_similarity_sort.ts";
+ * 
  * const possibleWords: string[] = [ "length", "size", "blah", "help", ]
- * const badArg = "hep"
  *
  * // case-insensitve by default
- * const suggestions = wordSimilaritySort(badArg, possibleWords).join(", ")
- * throw new Error(`${badArg} isn't a valid argument, did you mean one of ${suggestions}?`)
+ * const suggestions = wordSimilaritySort("hep", possibleWords).join(", ")
  *
  * // force case sensitive 
- * wordSimilaritySort(badArg, possibleWords, { caseSensitive: true })
+ * wordSimilaritySort("hep", possibleWords, { caseSensitive: true })
  * ```
  *
  * @param {string} givenWord - The string to measure distance against
