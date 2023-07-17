@@ -4,6 +4,7 @@ import { defineConfig, Preset } from "@twind/core";
 // twind preset
 import presetTailWind from "twind-preset-tailwind/base";
 import * as colors from "twind-preset-tailwind/colors";
+import ext from "twind-preset-ext";
 
 /** @todo Remove the need for type-assertions */
 export default {
@@ -26,6 +27,7 @@ export default {
         },
         // deno-lint-ignore no-explicit-any
       }) as Preset<any>,
+      ext() as Preset,
     ],
   }),
 } as Options;
