@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertThrows } from "../testing/asserts.ts";
-import { assertDidYouMean, DidYouMeanError } from "./did_you_mean.ts";
+import { assertDidYouMean, DidYouMeanError } from "./mod.ts";
 
 const possibleWords: string[] = ["length", "help", "Help", "size", "blah"];
 

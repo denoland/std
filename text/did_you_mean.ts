@@ -1,6 +1,6 @@
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 import { assert } from "../testing/asserts.ts";
-import { wordSimilaritySort } from "./word_similarity_sort.ts";
+import { wordSimilaritySort } from "./word_similarity.ts";
 
 export class DidYouMeanError extends Error {
   override name = "DidYouMeanError";
