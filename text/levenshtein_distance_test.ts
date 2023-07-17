@@ -6,12 +6,12 @@ Deno.test("levenshteinDistanceAbove0", function () {
   assertEquals(
     levenshteinDistance("aa", "bb"),
     2,
-  )
+  );
 });
 
 Deno.test("levenshteinDistance0", function () {
   assertEquals(
     levenshteinDistance("aa", "aa"),
     0,
-  )
+  );
 });

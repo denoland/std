@@ -10,8 +10,6 @@ export class DidYouMeanError extends Error {
 }
 
 /**
- * 
- *
  * @example
  * ```ts
  * import { assertDidYouMean } from "https://deno.land/std@$STD_VERSION/text/did_you_mean.ts";
@@ -21,10 +19,10 @@ export class DidYouMeanError extends Error {
  * // (no output)
  * assertDidYouMean("HELP", possibleWords)
  * // >>> DidYouMeanError(`For "HELP" did you mean one of ["help","Help","size","blah","length"]?`)
- * 
+ *
  * assertDidYouMean("hep", possibleWords, { suggestionLimit: 1 })
  * // >>> DidYouMeanError(`For "hep" did you mean "help"?`)
- * 
+ *
  * assertDidYouMean("HELP", possibleWords, { caseSensitiveDistance: true, suggestionLimit: 1 })
  * // >>> DidYouMeanError(`For "HELP" did you mean "Help"?`)
  * ```
@@ -41,15 +39,28 @@ export function assertDidYouMean(
     suggestionLimit?: number;
   },
 ): any {
-  const { caseSensitiveDistance, suggestionLimit } = { ...options, caseSensitiveDistance: false, suggestionLimit: Infinity }
-  assert(possibleWords.length > 0, `Call to assertDidYouMean() had empty array for possibleWords (there needs to be at least one possible word to perform a didYouMean)`);
+  const { caseSensitiveDistance, suggestionLimit } = {
+    ...options,
+    caseSensitiveDistance: false,
+    suggestionLimit: Infinity,
+  };
+  assert(
+    possibleWords.length > 0,
+    `Call to assertDidYouMean() had empty array for possibleWords (there needs to be at least one possible word to perform a didYouMean)`,
+  );
   if (!possibleWords.includes(givenWord)) {
     // try to be helpful when given an empty string
     if (givenWord.length == 0) {
-        throw new DidYouMeanError(`An empty string was provided where one of the following strings was expected: ${JSON.stringify(possibleWords)}`)
+      throw new DidYouMeanError(
+        `An empty string was provided where one of the following strings was expected: ${
+          JSON.stringify(possibleWords)
+        }`,
+      );
     }
-    
-    const suggestions: string[] = wordSimilaritySort(givenWord, possibleWords, { caseSensitive: caseSensitiveDistance }).slice(0, suggestionLimit)
+
+    const suggestions: string[] = wordSimilaritySort(givenWord, possibleWords, {
+      caseSensitive: caseSensitiveDistance,
+    }).slice(0, suggestionLimit);
     if (suggestionLimit == 1) {
       throw new DidYouMeanError(
         `For ${JSON.stringify(givenWord)}, did you mean ${

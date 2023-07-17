@@ -6,13 +6,13 @@ import { levenshteinDistance } from "./levenshtein_distance.ts";
  * @example
  * ```ts
  * import { wordSimilaritySort } from "https://deno.land/std@$STD_VERSION/text/word_similarity_sort.ts";
- * 
+ *
  * const possibleWords: string[] = [ "length", "size", "blah", "help", ]
  *
  * // case-insensitve by default
  * const suggestions = wordSimilaritySort("hep", possibleWords).join(", ")
  *
- * // force case sensitive 
+ * // force case sensitive
  * wordSimilaritySort("hep", possibleWords, { caseSensitive: true })
  * ```
  *
@@ -28,15 +28,19 @@ export function wordSimilaritySort(
     caseSensitive?: boolean;
   },
 ): string[] {
-  const { caseSensitive } = {...options}
-  let compare
+  const { caseSensitive } = { ...options };
+  let compare;
   if (!caseSensitive) {
     givenWord = givenWord.toLowerCase();
-    compare = (a: string, b: string) => levenshteinDistance(givenWord, a.toLowerCase()) - levenshteinDistance(givenWord, b.toLowerCase())
+    compare = (a: string, b: string) =>
+      levenshteinDistance(givenWord, a.toLowerCase()) -
+      levenshteinDistance(givenWord, b.toLowerCase());
   } else {
-    compare = (a: string, b: string) => levenshteinDistance(givenWord, a) - levenshteinDistance(givenWord, b)
+    compare = (a: string, b: string) =>
+      levenshteinDistance(givenWord, a) - 
+      levenshteinDistance(givenWord, b);
   }
-  
+
   // this distance metric could be swapped/improved in the future
   return [...possibleWords].sort(compare);
 }
