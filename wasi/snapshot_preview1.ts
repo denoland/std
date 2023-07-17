@@ -379,7 +379,7 @@ export interface ContextOptions {
   preopens?: { [key: string]: string };
 
   /**
-   * Determines if calls to exit from within the WebAssembly module will terminate the proess or return.
+   * Determines if calls to exit from within the WebAssembly module will terminate the process or return.
    */
   exitOnReturn?: boolean;
 

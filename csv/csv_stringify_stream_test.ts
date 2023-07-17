@@ -1,15 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { CsvStringifyStream } from "./csv_stringify_stream.ts";
 import { StringifyError } from "./stringify.ts";
-import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test({
   name: "[csv/csv_stringify_stream] CsvStringifyStream",
   permissions: "none",
   fn: async (t) => {
     await t.step("with arrays", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         ["id", "name"],
         [1, "foo"],
         [2, "bar"],
@@ -26,7 +25,7 @@ Deno.test({
     });
 
     await t.step("with arrays, columns", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         [1, "foo"],
         [2, "bar"],
       ]);
@@ -41,7 +40,7 @@ Deno.test({
     });
 
     await t.step("with `separator`", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         [1, "one"],
         [2, "two"],
         [3, "three"],
@@ -62,7 +61,7 @@ Deno.test({
     });
 
     await t.step("with invalid `separator`", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         ["one", "two", "three"],
       ]);
       await assertRejects(async () => {
@@ -75,7 +74,7 @@ Deno.test({
     });
 
     await t.step("with objects", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         { id: 1, name: "foo" },
         { id: 2, name: "bar" },
         { id: 3, name: "baz" },
@@ -97,7 +96,7 @@ Deno.test({
     });
 
     await t.step("with objects, no columns", async () => {
-      const readable = readableStreamFromIterable([
+      const readable = ReadableStream.from([
         { id: 1, name: "foo" },
         { id: 2, name: "bar" },
         { id: 3, name: "baz" },

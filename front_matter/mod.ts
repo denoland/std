@@ -253,7 +253,7 @@ function _extract<T>(
  *
  * ```ts
  * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
  * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
  * const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
@@ -315,7 +315,7 @@ export function createExtractor(
  *
  * ```ts
  * import { test, Format } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
  *
  * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
  * assert(test("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"));
@@ -351,7 +351,7 @@ export function test(str: string, formats?: Format[]): boolean {
  *
  * ```ts
  * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), Format.YAML);
  * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), Format.TOML);

@@ -106,13 +106,6 @@ _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.
 
-### Internal Assertions
-
-All internal non-test code, that is files that do not have `test` or `bench` in
-the name, must use the assertion functions within `_utils/asserts.ts` and not
-`testing/asserts.ts`. This is to create a separation of concerns between
-internal and testing assertions.
-
 ### Types
 
 Deno is moving away from non-native IO functions and interfaces in favor of the

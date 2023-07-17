@@ -1,3 +1,8 @@
+### 0.194.0 / 2023.07.12
+
+- feat(collections): allow PropertyKey for groupBy key (#3461)
+- feat: msgpack encoding (#3460)
+
 ### 0.193.0 / 2023.07.04
 
 - feat: add http/user_agent (#3387)
@@ -181,6 +186,7 @@
 
 ### 0.173.0 / 2023.01.16
 
+- BREAKING(streams, archive): remove deprecated exports (#3107)
 - fix(fs): change globstar default to true for expandGlob and expandGlobSync
   (#3115)
 - fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
