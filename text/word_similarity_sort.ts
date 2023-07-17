@@ -24,7 +24,7 @@ import { levenshteinDistance } from "./levenshtein_distance.ts";
 export function wordSimilaritySort(
   givenWord: string,
   possibleWords: string[],
-  options: null| {
+  options?: {
     caseSensitive?: boolean;
   },
 ): string[] {
@@ -32,9 +32,9 @@ export function wordSimilaritySort(
   let compare
   if (!caseSensitive) {
     givenWord = givenWord.toLowerCase();
-    compare = (a, b) => levenshteinDistance(givenWord, a.toLowerCase()) - levenshteinDistance(givenWord, b.toLowerCase())
+    compare = (a: string, b: string) => levenshteinDistance(givenWord, a.toLowerCase()) - levenshteinDistance(givenWord, b.toLowerCase())
   } else {
-    compare = (a, b) => levenshteinDistance(givenWord, a) - levenshteinDistance(givenWord, b)
+    compare = (a: string, b: string) => levenshteinDistance(givenWord, a) - levenshteinDistance(givenWord, b)
   }
   
   // this distance metric could be swapped/improved in the future
