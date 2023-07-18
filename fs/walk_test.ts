@@ -92,9 +92,14 @@ Deno.test({
   name: "[fs/walk] unix socket",
   ignore: Deno.build.os === "windows",
   async fn() {
+    const listener = Deno.listen({
+      path: resolve(testdataDir, "socket", "a.sock"),
+      transport: "unix",
+    });
     await assertWalkPaths("socket", [".", "a.sock", ".gitignore"], {
       followSymlinks: true,
     });
+    listener.close();
   },
 });
 
