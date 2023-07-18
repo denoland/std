@@ -1,8 +1,12 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { walk, WalkEntry, WalkError, WalkOptions, walkSync } from "./walk.ts";
-import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
+import {
+  assertArrayIncludes,
+  assertEquals,
+  assertRejects,
+  assertThrows,
+} from "../assert/mod.ts";
 import { fromFileUrl, resolve } from "../path/mod.ts";
-import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/assert/assert_array_includes.ts";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 
