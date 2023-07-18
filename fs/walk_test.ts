@@ -2,6 +2,7 @@
 import { walk, WalkEntry, WalkError, WalkOptions, walkSync } from "./walk.ts";
 import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
 import { fromFileUrl, resolve } from "../path/mod.ts";
+import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/assert/assert_array_includes.ts";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 
@@ -24,11 +25,16 @@ async function assertWalkPaths(
 
   const expected = expectedPaths.map((path) => resolve(root, path));
   assertEquals(entries, entriesSync);
-  assertEquals(entries.map(({ path }) => path), expected);
+  assertEquals(entries.length, expected.length);
+  assertArrayIncludes(entries.map(({ path }) => path), expected);
 }
 
-Deno.test("[fs/walk] empty dir", async () =>
-  await assertWalkPaths("empty_dir", ["."]));
+Deno.test("[fs/walk] empty dir", async () => {
+  const emptyDir = resolve(testdataDir, "empty_dir");
+  await Deno.mkdir(emptyDir);
+  await assertWalkPaths("empty_dir", ["."]);
+  await Deno.remove(emptyDir);
+});
 
 Deno.test("[fs/walk] single file", async () =>
   await assertWalkPaths("single_file", [".", "x"]));
@@ -82,7 +88,7 @@ Deno.test({
   name: "[fs/walk] unix socket",
   ignore: Deno.build.os === "windows",
   async fn() {
-    await assertWalkPaths("socket", [".", "a.sock"], {
+    await assertWalkPaths("socket", [".", "a.sock", ".gitignore"], {
       followSymlinks: true,
     });
   },
@@ -92,23 +98,13 @@ Deno.test({
   name: "[fs/walk] fifo",
   ignore: Deno.build.os === "windows",
   async fn() {
-    const root = resolve(testdataDir, "fifo");
-    const options = { followSymlinks: true };
-
     const command = new Deno.Command("mkfifo", {
-      args: [resolve(root, "fifo")],
+      args: [resolve(testdataDir, "fifo", "fifo")],
     });
     await command.output();
-
-    const entries = await toArray(walk(root, options));
-    const entriesSync = Array.from(walkSync(root, options));
-
-    const expected = [
-      resolve(root),
-      resolve(root, "fifo"),
-    ];
-    assertEquals(entries, entriesSync);
-    assertEquals(entries.map(({ path }) => path), expected);
+    await assertWalkPaths("fifo", [".", "fifo", ".gitignore"], {
+      followSymlinks: true,
+    });
   },
 });
 
