@@ -31,7 +31,7 @@
     "feed": "https://esm.sh/feed@4.2.2",
     "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.2.5/mod.ts",
     "@twind/core": "https://esm.sh/@twind/core@1.1.3",
-    "chart.js": "https://esm.sh/stable/chart.js@4.3.0/auto?target=es2022"
+    "fresh_charts/": "https://deno.land/x/fresh_charts@0.3.1/"
   },
   "exclude": ["cov/"]
 }
