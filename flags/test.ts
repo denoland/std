@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
-import { Args, parse, ParseOptions, didYouMean } from "./mod.ts";
+import { Args, parse, ParseOptions } from "./mod.ts";
 import { assertType, IsExact } from "../testing/types.ts";
 
 // flag boolean true (default all --args to boolean)
@@ -1905,42 +1905,4 @@ Deno.test("typesOfParseOptionsGenericDefaults", function () {
       }
     >
   >(true);
-});
-
-Deno.test("basicDidYouMean", function () {
-  const possibleWords: string[] = [ "length", "size", "blah", "help", ]
-  const badArg = "hep"
-
-  assertEquals(
-    didYouMean({ givenWord: badArg, possibleWords }).join(", "),
-    "help, size, blah, length",
-  )
-});
-
-Deno.test("autothrowSingleSuggestDidYouMean", function () {
-  const possibleWords: string[] = [ "length", "size", "blah", "help", ]
-  const badArg = "hep"
-  
-  try {
-    didYouMean({ givenWord: badArg, possibleWords, autoThrow: true, suggestionLimit: 1 })
-  } catch (error) {
-    assertEquals(
-        error.message,
-        'For "hep", did you mean "help"?'
-    )
-  } 
-});
-
-Deno.test("autothrowMultiSuggestDidYouMean", function () {
-  const possibleWords: string[] = [ "length", "size", "blah", "help", ]
-  const badArg = "hep"
-  
-  try {
-    didYouMean({ givenWord: badArg, possibleWords, autoThrow: true })
-  } catch (error) {
-    assertEquals(
-        error.message,
-        'For "hep", did you mean one of ["help","size","blah","length"]?'
-    )
-  } 
 });
