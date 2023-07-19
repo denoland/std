@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
-import * as builtInMatchers from "./matchers/mod.ts";
-import type { Matcher, MatcherContext, Matchers } from "./types.ts";
+import * as builtInMatchers from "./_matchers/mod.ts";
+import type { Matcher, MatcherContext, Matchers } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
 export interface Expected {
