@@ -490,9 +490,25 @@ export class Server {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeInit` instead.
+ *
  * Additional serve options.
  */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
+  /** An AbortSignal to close the server and all connections. */
+  signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: unknown) => Response | Promise<Response>;
+
+  /** The callback which is called when the server started listening */
+  onListen?: (params: { hostname: string; port: number }) => void;
+}
+
+/**
+ * Additional serve listener options.
+ */
+export interface ServeListenerOptions {
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
 
@@ -530,7 +546,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">,
+  options?: ServeListenerOptions,
 ) {
   const server = new Server({ handler, onError: options?.onError });
 
