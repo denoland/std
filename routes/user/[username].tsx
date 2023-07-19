@@ -16,6 +16,7 @@ import {
 import { pluralize } from "@/utils/display.ts";
 import { GitHub } from "@/components/Icons.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
+import Head from "@/components/Head.tsx";
 
 export interface UserData extends State {
   user: User;
@@ -50,8 +51,6 @@ export const handler: Handlers<UserData, State> = {
     );
 
     const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
-
-    ctx.state.title = user.login;
 
     return ctx.render({
       ...ctx.state,
@@ -100,35 +99,38 @@ function Row(props: RowProps) {
 
 export default function UserPage(props: PageProps<UserData>) {
   return (
-    <main class="flex-1 p-4">
-      <Row
-        title={props.data.user.login}
-        text={pluralize(props.data.itemsCount, "submission")}
-        img={props.data.user.avatarUrl}
-      >
-        <a
-          href={`https://github.com/${props.data.user.login}`}
-          alt={`to ${props.data.user.login}'s GitHub profile`}
-          aria-label={`${props.data.user.login}'s GitHub profile`}
-          class={LINK_STYLES}
-          target="_blank"
+    <>
+      <Head title={props.data.user.login} href={props.url.href} />
+      <main class="flex-1 p-4">
+        <Row
+          title={props.data.user.login}
+          text={pluralize(props.data.itemsCount, "submission")}
+          img={props.data.user.avatarUrl}
         >
-          <GitHub class="text-sm w-6" />
-        </a>
-      </Row>
-      {props.data.items.map((item, index) => (
-        <ItemSummary
-          item={item}
-          isVoted={props.data.areVoted[index]}
-          user={props.data.user}
-        />
-      ))}
-      {props.data.lastPage > 1 && (
-        <PageSelector
-          currentPage={calcPageNum(props.url)}
-          lastPage={props.data.lastPage}
-        />
-      )}
-    </main>
+          <a
+            href={`https://github.com/${props.data.user.login}`}
+            alt={`to ${props.data.user.login}'s GitHub profile`}
+            aria-label={`${props.data.user.login}'s GitHub profile`}
+            class={LINK_STYLES}
+            target="_blank"
+          >
+            <GitHub class="text-sm w-6" />
+          </a>
+        </Row>
+        {props.data.items.map((item, index) => (
+          <ItemSummary
+            item={item}
+            isVoted={props.data.areVoted[index]}
+            user={props.data.user}
+          />
+        ))}
+        {props.data.lastPage > 1 && (
+          <PageSelector
+            currentPage={calcPageNum(props.url)}
+            lastPage={props.data.lastPage}
+          />
+        )}
+      </main>
+    </>
   );
 }

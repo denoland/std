@@ -4,11 +4,10 @@ import type { AccountState } from "./_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
 import { stripe } from "@/utils/payments.ts";
+import Head from "@/components/Head.tsx";
 
 export const handler: Handlers<AccountState, AccountState> = {
   GET(_request, ctx) {
-    ctx.state.title = "Account";
-
     return ctx.render(ctx.state);
   },
 };
@@ -39,38 +38,41 @@ export default function AccountPage(props: PageProps<AccountState>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
 
   return (
-    <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
-      <img
-        src={props.data.user?.avatarUrl}
-        alt="User Avatar"
-        crossOrigin="anonymous"
-        class="max-w-[50%] self-center rounded-full aspect-square mb-4 md:mb-6"
-      />
-      <ul>
-        <Row
-          title="Username"
-          text={props.data.user.login}
+    <>
+      <Head title="Account" href={props.url.href} />
+      <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
+        <img
+          src={props.data.user?.avatarUrl}
+          alt="User Avatar"
+          crossOrigin="anonymous"
+          class="max-w-[50%] self-center rounded-full aspect-square mb-4 md:mb-6"
         />
-        <Row
-          title="Subscription"
-          text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}
+        <ul>
+          <Row
+            title="Username"
+            text={props.data.user.login}
+          />
+          <Row
+            title="Subscription"
+            text={props.data.user.isSubscribed ? "Premium 🦕" : "Free"}
+          >
+            {stripe && (
+              <a
+                class="underline"
+                href={`/account/${action.toLowerCase()}`}
+              >
+                {action}
+              </a>
+            )}
+          </Row>
+        </ul>
+        <a
+          href="/signout"
+          class={`${BUTTON_STYLES} block text-center mt-8`}
         >
-          {stripe && (
-            <a
-              class="underline"
-              href={`/account/${action.toLowerCase()}`}
-            >
-              {action}
-            </a>
-          )}
-        </Row>
-      </ul>
-      <a
-        href="/signout"
-        class={`${BUTTON_STYLES} block text-center mt-8`}
-      >
-        Sign out
-      </a>
-    </main>
+          Sign out
+        </a>
+      </main>
+    </>
   );
 }

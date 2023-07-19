@@ -16,6 +16,7 @@ import {
 import { DAY, WEEK } from "std/datetime/constants.ts";
 import { getToggledStyles } from "@/utils/display.ts";
 import { ACTIVE_LINK_STYLES, LINK_STYLES } from "@/utils/constants.ts";
+import Head from "@/components/Head.tsx";
 
 interface HomePageData extends State {
   itemsUsers: User[];
@@ -99,22 +100,25 @@ function TimeSelector(props: { url: URL }) {
 
 export default function HomePage(props: PageProps<HomePageData>) {
   return (
-    <main class="flex-1 p-4">
-      <TimeSelector url={props.url} />
-      {props.data.items.map((item, index) => (
-        <ItemSummary
-          item={item}
-          isVoted={props.data.areVoted[index]}
-          user={props.data.itemsUsers[index]}
-        />
-      ))}
-      {props.data.lastPage > 1 && (
-        <PageSelector
-          currentPage={calcPageNum(props.url)}
-          lastPage={props.data.lastPage}
-          timeSelector={calcTimeAgoFilter(props.url) ?? undefined}
-        />
-      )}
-    </main>
+    <>
+      <Head href={props.url.href} />
+      <main class="flex-1 p-4">
+        <TimeSelector url={props.url} />
+        {props.data.items.map((item, index) => (
+          <ItemSummary
+            item={item}
+            isVoted={props.data.areVoted[index]}
+            user={props.data.itemsUsers[index]}
+          />
+        ))}
+        {props.data.lastPage > 1 && (
+          <PageSelector
+            currentPage={calcPageNum(props.url)}
+            lastPage={props.data.lastPage}
+            timeSelector={calcTimeAgoFilter(props.url) ?? undefined}
+          />
+        )}
+      </main>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/redirect.ts";
 import { timeAgo } from "@/utils/display.ts";
+import Head from "@/components/Head.tsx";
 
 export interface NotificationState extends AccountState {
   notifications: Notification[];
@@ -22,8 +23,6 @@ export const handler: Handlers<NotificationState, AccountState> = {
   async GET(_request, ctx) {
     const notifications = (await getNotificationsByUser(ctx.state.user.id))!
       .toSorted(compareCreatedAt);
-
-    ctx.state.title = "Notifications";
 
     return ctx.render({ ...ctx.state, notifications });
   },
@@ -77,17 +76,20 @@ function Row(props: RowProps) {
 
 export default function NotificationPage(props: PageProps<NotificationState>) {
   return (
-    <main class="flex-1 p-4">
-      <h1 class="text-3xl font-bold py-4">Notification Center</h1>
-      <ul>
-        {props.data.notifications.length > 0
-          ? props.data.notifications.map((notification) => (
-            <Row
-              notification={notification}
-            />
-          ))
-          : "No notifications yet"}
-      </ul>
-    </main>
+    <>
+      <Head title="Notifications" href={props.url.href} />
+      <main class="flex-1 p-4">
+        <h1 class="text-3xl font-bold py-4">Notification Center</h1>
+        <ul>
+          {props.data.notifications.length > 0
+            ? props.data.notifications.map((notification) => (
+              <Row
+                notification={notification}
+              />
+            ))
+            : "No notifications yet"}
+        </ul>
+      </main>
+    </>
   );
 }

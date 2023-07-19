@@ -11,6 +11,7 @@ import {
 import Stripe from "stripe";
 import { getUserBySession, type User } from "@/utils/db.ts";
 import { Check } from "@/components/Icons.tsx";
+import Head from "@/components/Head.tsx";
 
 interface PricingPageData extends State {
   products: Stripe.Product[];
@@ -41,8 +42,6 @@ export const handler: Handlers<PricingPageData, State> = {
         "Not all products have a default price. Please run the `deno task init:stripe` as the README instructs.",
       );
     }
-
-    ctx.state.title = "Pricing";
 
     const products = productsWithPrice.sort(comparePrices);
 
@@ -208,19 +207,22 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
   const [product] = props.data.products;
 
   return (
-    <main class="mx-auto max-w-5xl w-full flex-1 flex flex-col justify-center px-4">
-      <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold">Pricing</h1>
-        <p class="text-gray-500">Choose the plan that suites you</p>
-      </div>
-      <div class="flex flex-col md:flex-row gap-4">
-        <FreePlanCard />
-        <PremiumPlanCard
-          product={product}
-          isSubscribed={props.data.user?.isSubscribed}
-        />
-        <EnterprisePricingCard />
-      </div>
-    </main>
+    <>
+      <Head title="Pricing" href={props.url.href} />
+      <main class="mx-auto max-w-5xl w-full flex-1 flex flex-col justify-center px-4">
+        <div class="mb-8 text-center">
+          <h1 class="text-3xl font-bold">Pricing</h1>
+          <p class="text-gray-500">Choose the plan that suites you</p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4">
+          <FreePlanCard />
+          <PremiumPlanCard
+            product={product}
+            isSubscribed={props.data.user?.isSubscribed}
+          />
+          <EnterprisePricingCard />
+        </div>
+      </main>
+    </>
   );
 }
