@@ -1,3 +1,10 @@
+### 0.195.0 / 2023.07.19
+
+- BREAKING(streams): deprecate readableStreamFromIterable (#3486)
+- BREAKING(testing, assert): move `std/testing/asserts` to `std/assert` (#3445)
+- feat(fmt): enable `setColorEnabled` in browsers (#3485)
+- fix(async/delay): reject with existing AbortSignal reason (#3479)
+
 ### 0.194.0 / 2023.07.12
 
 - feat(collections): allow PropertyKey for groupBy key (#3461)
