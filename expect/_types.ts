@@ -30,4 +30,4 @@ export type Matcher = (
 export type Matchers = {
   [key: string]: Matcher;
 };
-export type MatchResult = void | Promise<void>;
+export type MatchResult = void | Promise<void> | boolean;
