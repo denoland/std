@@ -6,7 +6,7 @@
     "db:seed": "deno run --allow-read --allow-env --allow-net --unstable tools/seed_submissions.ts",
     "db:reset": "deno run --allow-read --allow-env --unstable tools/reset_kv.ts",
     "start": "deno run --unstable -A --watch=static/,routes/ dev.ts",
-    "test": "KV_PATH=:memory: deno test -A --unstable --coverage=./cov",
+    "test": "KV_PATH=:memory: deno test -A --unstable --parallel --coverage=./cov",
     "check:license": "deno run --allow-read --allow-write tools/check_license.ts",
     "ok": "deno fmt --check && deno lint && deno task check:license --check && deno check main.ts && deno task test",
     "cov": "deno coverage ./cov/ --lcov --exclude='test.ts' > cov.lcov"
