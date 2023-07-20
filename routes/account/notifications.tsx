@@ -74,7 +74,9 @@ function Row(props: RowProps) {
   );
 }
 
-export default function NotificationPage(props: PageProps<NotificationState>) {
+export default function AccountNotificationsPage(
+  props: PageProps<NotificationState>,
+) {
   return (
     <>
       <Head title="Notifications" href={props.url.href} />
