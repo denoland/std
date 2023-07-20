@@ -5,6 +5,7 @@ import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
 import { stripe } from "@/utils/payments.ts";
 import Head from "@/components/Head.tsx";
+import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
 export const handler: Handlers<AccountState, AccountState> = {
   GET(_request, ctx) {
@@ -41,11 +42,10 @@ export default function AccountPage(props: PageProps<AccountState>) {
     <>
       <Head title="Account" href={props.url.href} />
       <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
-        <img
-          src={props.data.user?.avatarUrl}
-          alt="User Avatar"
-          crossOrigin="anonymous"
-          class="max-w-[50%] self-center rounded-full aspect-square mb-4 md:mb-6"
+        <GitHubAvatarImg
+          login={props.data.user.login}
+          size={240}
+          class="m-auto"
         />
         <ul>
           <Row

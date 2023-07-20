@@ -72,7 +72,6 @@ function genNewUser(): User {
   return {
     id: crypto.randomUUID(),
     login: crypto.randomUUID(),
-    avatarUrl: `http://${crypto.randomUUID()}`,
     sessionId: crypto.randomUUID(),
     stripeCustomerId: crypto.randomUUID(),
     ...newUserProps(),

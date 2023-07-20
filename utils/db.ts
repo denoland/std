@@ -431,7 +431,6 @@ export async function getVotedItemsByUser(userId: string) {
 export interface User {
   id: string;
   login: string;
-  avatarUrl: string;
   sessionId: string;
   stripeCustomerId?: string;
   // The below properties can be automatically generated upon comment creation
@@ -454,7 +453,6 @@ export function newUserProps(): Pick<User, "isSubscribed"> {
  * const user = {
  *   id: "id",
  *   login: "login",
- *   avatarUrl: "https://example.com/avatar-url",
  *   sessionId: "sessionId",
  *   ...newUserProps(),
  * };

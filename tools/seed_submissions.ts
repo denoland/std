@@ -98,7 +98,6 @@ async function main(limit = 20) {
       const user: User = {
         id, // id must match userId for post
         login: id,
-        avatarUrl: "https://www.gravatar.com/avatar/?d=mp&s=64",
         stripeCustomerId: crypto.randomUUID(), // unique per userId
         sessionId: crypto.randomUUID(), // unique per userId
         ...newUserProps(),

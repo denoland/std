@@ -18,7 +18,6 @@ import {
 interface GitHubUser {
   id: number;
   login: string;
-  avatar_url: string;
   email: string;
 }
 
@@ -56,7 +55,6 @@ export default async function CallbackPage(req: Request) {
     const user: User = {
       id: githubUser.id.toString(),
       login: githubUser.login,
-      avatarUrl: githubUser.avatar_url,
       stripeCustomerId,
       sessionId,
       ...newUserProps(),
