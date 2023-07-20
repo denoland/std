@@ -9,12 +9,13 @@ import {
 
 export async function migrateKv() {
   const itemIds = [
-    "cb38b1d5-7ce8-4885-a8e4-e7832da6a162",
-    "3b9a3780-800a-4d26-b63d-cd5ac307e60a",
-    "e72e1416-e288-40b1-971c-fd29f0df6443",
-    "59bb2275-03c8-4513-855d-d77f86e54d91",
-    "562f25a5-7579-4e53-9fdd-2d292acf0650",
-    "2f0f8ac1-a7c9-4489-b806-da30853c94dc",
+    "3064e1e4-1934-461a-adbe-e6e2a30f73ae",
+    "eace50d0-dc57-4dd1-a8f9-0f59535d48c9",
+    "ff47e677-e9d6-4e7f-8592-acd5c7688c8a",
+    "c7096c2b-3df0-4d80-a996-0d247be4aee6",
+    "6e268bb3-72c4-4ad7-8102-44aed8809feb",
+    "acc8822c-69ec-475e-9f60-4a00213d9a60",
+    "425ad977-8f3f-4966-a262-2aff44572686",
   ];
   const promises = [];
   for (const itemId of itemIds) {
