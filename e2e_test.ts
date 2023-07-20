@@ -106,18 +106,18 @@ Deno.test("[http]", async (test) => {
     assertEquals(response.status, 302);
   });
 
-  await test.step("GET /stats", async () => {
+  await test.step("GET /dashboard/stats", async () => {
     const response = await handler(
-      new Request("http://localhost/stats"),
+      new Request("http://localhost/dashboard/stats"),
     );
 
-    assert(response.ok);
-    assertInstanceOf(response.body, ReadableStream);
+    assertFalse(response.ok);
+    assertFalse(response.body);
     assertEquals(
-      response.headers.get("content-type"),
-      "text/html; charset=utf-8",
+      response.headers.get("location"),
+      "/signin?from=http://localhost/dashboard/stats",
     );
-    assertEquals(response.status, 200);
+    assertEquals(response.status, 303);
   });
 
   await test.step("GET /submit", async () => {

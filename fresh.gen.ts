@@ -16,15 +16,16 @@ import * as $10 from "./routes/api/vote.ts";
 import * as $11 from "./routes/blog/[slug].tsx";
 import * as $12 from "./routes/blog/index.tsx";
 import * as $13 from "./routes/callback.ts";
-import * as $14 from "./routes/feed.ts";
-import * as $15 from "./routes/index.tsx";
-import * as $16 from "./routes/item/[id].tsx";
-import * as $17 from "./routes/pricing.tsx";
-import * as $18 from "./routes/signin.ts";
-import * as $19 from "./routes/signout.ts";
-import * as $20 from "./routes/stats.tsx";
-import * as $21 from "./routes/submit.tsx";
-import * as $22 from "./routes/user/[username].tsx";
+import * as $14 from "./routes/dashboard/_middleware.ts";
+import * as $15 from "./routes/dashboard/stats.tsx";
+import * as $16 from "./routes/feed.ts";
+import * as $17 from "./routes/index.tsx";
+import * as $18 from "./routes/item/[id].tsx";
+import * as $19 from "./routes/pricing.tsx";
+import * as $20 from "./routes/signin.ts";
+import * as $21 from "./routes/signout.ts";
+import * as $22 from "./routes/submit.tsx";
+import * as $23 from "./routes/user/[username].tsx";
 import * as $$0 from "./islands/Chart.tsx";
 import * as $$1 from "./islands/PageInput.tsx";
 import * as $$2 from "./islands/VoteButton.tsx";
@@ -45,15 +46,16 @@ const manifest = {
     "./routes/blog/[slug].tsx": $11,
     "./routes/blog/index.tsx": $12,
     "./routes/callback.ts": $13,
-    "./routes/feed.ts": $14,
-    "./routes/index.tsx": $15,
-    "./routes/item/[id].tsx": $16,
-    "./routes/pricing.tsx": $17,
-    "./routes/signin.ts": $18,
-    "./routes/signout.ts": $19,
-    "./routes/stats.tsx": $20,
-    "./routes/submit.tsx": $21,
-    "./routes/user/[username].tsx": $22,
+    "./routes/dashboard/_middleware.ts": $14,
+    "./routes/dashboard/stats.tsx": $15,
+    "./routes/feed.ts": $16,
+    "./routes/index.tsx": $17,
+    "./routes/item/[id].tsx": $18,
+    "./routes/pricing.tsx": $19,
+    "./routes/signin.ts": $20,
+    "./routes/signout.ts": $21,
+    "./routes/submit.tsx": $22,
+    "./routes/user/[username].tsx": $23,
   },
   islands: {
     "./islands/Chart.tsx": $$0,
