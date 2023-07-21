@@ -106,16 +106,16 @@ Deno.test("[http]", async (test) => {
     assertEquals(response.status, 302);
   });
 
-  await test.step("GET /dashboard/stats", async () => {
+  await test.step("GET /dashboard", async () => {
     const response = await handler(
-      new Request("http://localhost/dashboard/stats"),
+      new Request("http://localhost/dashboard"),
     );
 
     assertFalse(response.ok);
     assertFalse(response.body);
     assertEquals(
       response.headers.get("location"),
-      "/signin?from=http://localhost/dashboard/stats",
+      "/signin?from=http://localhost/dashboard",
     );
     assertEquals(response.status, 303);
   });

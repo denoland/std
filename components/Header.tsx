@@ -62,6 +62,17 @@ export default function Header(
       <nav
         class={"hidden flex-col gap-x-4 divide-y divide-solid sm:(flex items-center flex-row divide-y-0)"}
       >
+        <a
+          href="/dashboard"
+          class={cx(
+            props.url.pathname === "/dashboard"
+              ? ACTIVE_LINK_STYLES
+              : LINK_STYLES,
+            NAV_ITEM,
+          )}
+        >
+          Dashboard
+        </a>
         {stripe
           ? (
             <a
@@ -93,9 +104,9 @@ export default function Header(
           )
           : <a href="/signin" class={cx(LINK_STYLES, NAV_ITEM)}>Sign in</a>}
         <a
-          href="/account/notifications"
+          href="/notifications"
           class={cx(
-            props.url.pathname === "/account/notifications"
+            props.url.pathname === "/notifications"
               ? ACTIVE_LINK_STYLES
               : LINK_STYLES,
             NAV_ITEM,

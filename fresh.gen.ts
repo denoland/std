@@ -9,23 +9,24 @@ import * as $3 from "./routes/_middleware.ts";
 import * as $4 from "./routes/account/_middleware.ts";
 import * as $5 from "./routes/account/index.tsx";
 import * as $6 from "./routes/account/manage.ts";
-import * as $7 from "./routes/account/notifications.tsx";
-import * as $8 from "./routes/account/upgrade.ts";
-import * as $9 from "./routes/api/stripe-webhooks.ts";
-import * as $10 from "./routes/api/vote.ts";
-import * as $11 from "./routes/blog/[slug].tsx";
-import * as $12 from "./routes/blog/index.tsx";
-import * as $13 from "./routes/callback.ts";
-import * as $14 from "./routes/dashboard/_middleware.ts";
-import * as $15 from "./routes/dashboard/stats.tsx";
-import * as $16 from "./routes/feed.ts";
-import * as $17 from "./routes/index.tsx";
-import * as $18 from "./routes/item/[id].tsx";
-import * as $19 from "./routes/pricing.tsx";
-import * as $20 from "./routes/signin.ts";
-import * as $21 from "./routes/signout.ts";
-import * as $22 from "./routes/submit.tsx";
-import * as $23 from "./routes/user/[login].tsx";
+import * as $7 from "./routes/account/upgrade.ts";
+import * as $8 from "./routes/api/stripe-webhooks.ts";
+import * as $9 from "./routes/api/vote.ts";
+import * as $10 from "./routes/blog/[slug].tsx";
+import * as $11 from "./routes/blog/index.tsx";
+import * as $12 from "./routes/callback.ts";
+import * as $13 from "./routes/dashboard/_middleware.ts";
+import * as $14 from "./routes/dashboard/index.tsx";
+import * as $15 from "./routes/feed.ts";
+import * as $16 from "./routes/index.tsx";
+import * as $17 from "./routes/item/[id].tsx";
+import * as $18 from "./routes/notifications/_middleware.ts";
+import * as $19 from "./routes/notifications/notifications.tsx";
+import * as $20 from "./routes/pricing.tsx";
+import * as $21 from "./routes/signin.ts";
+import * as $22 from "./routes/signout.ts";
+import * as $23 from "./routes/submit.tsx";
+import * as $24 from "./routes/user/[login].tsx";
 import * as $$0 from "./islands/Chart.tsx";
 import * as $$1 from "./islands/PageInput.tsx";
 import * as $$2 from "./islands/VoteButton.tsx";
@@ -39,23 +40,24 @@ const manifest = {
     "./routes/account/_middleware.ts": $4,
     "./routes/account/index.tsx": $5,
     "./routes/account/manage.ts": $6,
-    "./routes/account/notifications.tsx": $7,
-    "./routes/account/upgrade.ts": $8,
-    "./routes/api/stripe-webhooks.ts": $9,
-    "./routes/api/vote.ts": $10,
-    "./routes/blog/[slug].tsx": $11,
-    "./routes/blog/index.tsx": $12,
-    "./routes/callback.ts": $13,
-    "./routes/dashboard/_middleware.ts": $14,
-    "./routes/dashboard/stats.tsx": $15,
-    "./routes/feed.ts": $16,
-    "./routes/index.tsx": $17,
-    "./routes/item/[id].tsx": $18,
-    "./routes/pricing.tsx": $19,
-    "./routes/signin.ts": $20,
-    "./routes/signout.ts": $21,
-    "./routes/submit.tsx": $22,
-    "./routes/user/[login].tsx": $23,
+    "./routes/account/upgrade.ts": $7,
+    "./routes/api/stripe-webhooks.ts": $8,
+    "./routes/api/vote.ts": $9,
+    "./routes/blog/[slug].tsx": $10,
+    "./routes/blog/index.tsx": $11,
+    "./routes/callback.ts": $12,
+    "./routes/dashboard/_middleware.ts": $13,
+    "./routes/dashboard/index.tsx": $14,
+    "./routes/feed.ts": $15,
+    "./routes/index.tsx": $16,
+    "./routes/item/[id].tsx": $17,
+    "./routes/notifications/_middleware.ts": $18,
+    "./routes/notifications/notifications.tsx": $19,
+    "./routes/pricing.tsx": $20,
+    "./routes/signin.ts": $21,
+    "./routes/signout.ts": $22,
+    "./routes/submit.tsx": $23,
+    "./routes/user/[login].tsx": $24,
   },
   islands: {
     "./islands/Chart.tsx": $$0,

@@ -17,16 +17,6 @@ export default function Footer(props: { url: URL }) {
       <p>© {SITE_NAME}</p>
       <nav class={NAV_STYLES}>
         <a
-          href="/dashboard/stats"
-          class={getToggledStyles(
-            LINK_STYLES,
-            ACTIVE_LINK_STYLES,
-            props.url.pathname === "/dashboard/stats",
-          )}
-        >
-          Stats
-        </a>
-        <a
           href="/blog"
           class={getToggledStyles(
             LINK_STYLES,

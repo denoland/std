@@ -6,7 +6,7 @@ import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import Head from "@/components/Head.tsx";
 import type { SignedInState } from "@/utils/middleware.ts";
 
-interface StatsPageData extends SignedInState {
+interface DashboardPageData extends SignedInState {
   dates: Date[];
   visitsCounts: number[];
   usersCounts: number[];
@@ -14,7 +14,7 @@ interface StatsPageData extends SignedInState {
   votesCounts: number[];
 }
 
-export const handler: Handlers<StatsPageData, SignedInState> = {
+export const handler: Handlers<DashboardPageData, SignedInState> = {
   async GET(_req, ctx) {
     const msAgo = 30 * DAY;
     const dates = getDatesSince(msAgo).map((date) => new Date(date));
@@ -42,7 +42,7 @@ export const handler: Handlers<StatsPageData, SignedInState> = {
   },
 };
 
-export default function StatsPage(props: PageProps<StatsPageData>) {
+export default function DashboardPage(props: PageProps<DashboardPageData>) {
   const datasets = [
     {
       label: "Site visits",
@@ -77,9 +77,9 @@ export default function StatsPage(props: PageProps<StatsPageData>) {
 
   return (
     <>
-      <Head title="Stats" href={props.url.href} />
+      <Head title="Dashboard" href={props.url.href} />
       <main class="flex-1 p-4 flex flex-col">
-        <h1 class="text-3xl font-bold">Stats</h1>
+        <h1 class="text-3xl font-bold">Dashboard</h1>
         <div class="flex-1 relative">
           <Chart
             type="line"
