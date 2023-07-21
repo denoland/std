@@ -40,7 +40,6 @@ import {
   SEP_PATTERN,
 } from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
-import { serve, serveTls } from "./server.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import { isRedirectStatus, Status } from "./http_status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
@@ -545,10 +544,9 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
  *
- * serve((req) => {
+ * Deno.serve((req) => {
  *   const pathname = new URL(req.url).pathname;
  *   if (pathname.startsWith("/static")) {
  *     return serveDir(req, {
@@ -772,14 +770,17 @@ function main() {
   const useTls = !!(keyFile && certFile);
 
   if (useTls) {
-    serveTls(handler, {
+    Deno.serve({
       port,
       hostname: host,
-      certFile,
-      keyFile,
-    });
+      cert: Deno.readTextFileSync(certFile),
+      key: Deno.readTextFileSync(keyFile),
+    }, handler);
   } else {
-    serve(handler, { port, hostname: host });
+    Deno.serve({
+      port,
+      hostname: host,
+    }, handler);
   }
 }
 
