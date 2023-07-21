@@ -51,7 +51,7 @@ import { DAY } from "std/datetime/constants.ts";
 function genNewComment(comment?: Partial<Comment>): Comment {
   return {
     itemId: crypto.randomUUID(),
-    userId: crypto.randomUUID(),
+    userLogin: crypto.randomUUID(),
     text: crypto.randomUUID(),
     ...newCommentProps(),
     ...comment,

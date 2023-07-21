@@ -280,7 +280,7 @@ export async function ifUserHasNotifications(userId: string) {
 
 // Comment
 export interface Comment {
-  userId: string;
+  userLogin: string;
   itemId: string;
   text: string;
   // The below properties can be automatically generated upon comment creation

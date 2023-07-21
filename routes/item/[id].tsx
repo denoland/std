@@ -12,7 +12,6 @@ import {
   getAreVotedBySessionId,
   getCommentsByItem,
   getItem,
-  getManyUsers,
   getUser,
   getUserBySession,
   type Item,
@@ -29,7 +28,6 @@ interface ItemPageData extends State {
   user: User;
   item: Item;
   comments: Comment[];
-  commentsUsers: User[];
   isVoted: boolean;
   lastPage: number;
 }
@@ -51,9 +49,6 @@ export const handler: Handlers<ItemPageData, State> = {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
 
-    const commentsUsers = await getManyUsers(
-      comments.map((comment) => comment.userId),
-    );
     const user = await getUser(item.userId);
 
     const [isVoted] = await getAreVotedBySessionId(
@@ -68,7 +63,6 @@ export const handler: Handlers<ItemPageData, State> = {
       item,
       comments,
       user: user!,
-      commentsUsers,
       isVoted,
       lastPage,
     });
@@ -94,7 +88,7 @@ export const handler: Handlers<ItemPageData, State> = {
     }
 
     const comment: Comment = {
-      userId: user.id,
+      userLogin: user.login,
       itemId: itemId,
       text,
       ...newCommentProps(),
@@ -130,16 +124,14 @@ function CommentInput() {
   );
 }
 
-function CommentSummary(
-  props: { user: User; comment: Comment },
-) {
+function CommentSummary(comment: Comment) {
   return (
     <div class="py-4">
       <UserPostedAt
-        userLogin={props.user.login}
-        createdAt={props.comment.createdAt}
+        userLogin={comment.userLogin}
+        createdAt={comment.createdAt}
       />
-      <p>{props.comment.text}</p>
+      <p>{comment.text}</p>
     </div>
   );
 }
@@ -156,10 +148,9 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
         />
         <CommentInput />
         <div>
-          {props.data.comments.map((comment, index) => (
+          {props.data.comments.map((comment) => (
             <CommentSummary
-              user={props.data.commentsUsers[index]}
-              comment={comment}
+              {...comment}
             />
           ))}
         </div>
