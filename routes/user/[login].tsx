@@ -28,11 +28,10 @@ export interface UserData extends State {
 
 export const handler: Handlers<UserData, State> = {
   async GET(req, ctx) {
-    const { username } = ctx.params;
     const url = new URL(req.url);
     const pageNum = calcPageNum(url);
 
-    const user = await getUserByLogin(username);
+    const user = await getUserByLogin(ctx.params.login);
     if (user === null) {
       return ctx.renderNotFound();
     }
