@@ -1,13 +1,13 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { AccountState } from "./_middleware.ts";
+import type { SignedInState } from "@/utils/middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
 import { stripe } from "@/utils/payments.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
-export const handler: Handlers<AccountState, AccountState> = {
+export const handler: Handlers<SignedInState, SignedInState> = {
   GET(_request, ctx) {
     return ctx.render(ctx.state);
   },
@@ -35,7 +35,7 @@ function Row(props: RowProps) {
   );
 }
 
-export default function AccountPage(props: PageProps<AccountState>) {
+export default function AccountPage(props: PageProps<SignedInState>) {
   const action = props.data.user.isSubscribed ? "Manage" : "Upgrade";
 
   return (

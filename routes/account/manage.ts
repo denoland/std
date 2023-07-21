@@ -1,11 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
-import type { AccountState } from "./_middleware.ts";
+import type { SignedInState } from "@/utils/middleware.ts";
 import { redirect } from "@/utils/redirect.ts";
 
 // deno-lint-ignore no-explicit-any
-export const handler: Handlers<any, AccountState> = {
+export const handler: Handlers<any, SignedInState> = {
   async GET(req, ctx) {
     if (stripe === undefined || ctx.state.user.stripeCustomerId === undefined) {
       return ctx.renderNotFound();

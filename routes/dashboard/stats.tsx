@@ -1,12 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { DAY } from "std/datetime/constants.ts";
-import type { DashState } from "./_middleware.ts";
 import Chart from "@/islands/Chart.tsx";
 import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import Head from "@/components/Head.tsx";
+import type { SignedInState } from "@/utils/middleware.ts";
 
-interface StatsPageData extends DashState {
+interface StatsPageData extends SignedInState {
   dates: Date[];
   visitsCounts: number[];
   usersCounts: number[];
@@ -14,7 +14,7 @@ interface StatsPageData extends DashState {
   votesCounts: number[];
 }
 
-export const handler: Handlers<StatsPageData, DashState> = {
+export const handler: Handlers<StatsPageData, SignedInState> = {
   async GET(_req, ctx) {
     const msAgo = 30 * DAY;
     const dates = getDatesSince(msAgo).map((date) => new Date(date));

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { AccountState } from "./_middleware.ts";
+import type { SignedInState } from "@/utils/middleware.ts";
 import {
   deleteNotification,
   getNotification,
@@ -11,7 +11,7 @@ import { redirect } from "@/utils/redirect.ts";
 import { timeAgo } from "@/utils/display.ts";
 import Head from "@/components/Head.tsx";
 
-export interface NotificationState extends AccountState {
+export interface NotificationState extends SignedInState {
   notifications: Notification[];
 }
 
@@ -19,7 +19,7 @@ export function compareCreatedAt(a: Notification, b: Notification) {
   return Number(b.createdAt) - Number(a.createdAt);
 }
 
-export const handler: Handlers<NotificationState, AccountState> = {
+export const handler: Handlers<NotificationState, SignedInState> = {
   async GET(_request, ctx) {
     const notifications = (await getNotificationsByUser(ctx.state.user.id))!
       .toSorted(compareCreatedAt);
