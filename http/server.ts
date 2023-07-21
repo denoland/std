@@ -16,7 +16,9 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 /** Max backoff delay of 1s following a temporary accept failure. */
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
-/** Information about the connection a request arrived on. */
+/**
+ * Information about the connection a request arrived on.
+ */
 export interface ConnInfo {
   /** The local address of the connection. */
   readonly localAddr: Deno.Addr;
@@ -37,7 +39,9 @@ export type Handler = (
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
-/** Options for running an HTTP server. */
+/**
+ * Options for running an HTTP server.
+ */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
   handler: Handler;
@@ -50,7 +54,9 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
   onError?: (error: unknown) => Response | Promise<Response>;
 }
 
-/** Used to construct an HTTP server. */
+/**
+ * Used to construct an HTTP server.
+ */
 export class Server {
   #port?: number;
   #host?: string;
@@ -483,8 +489,26 @@ export class Server {
   }
 }
 
-/** Additional serve options. */
+/**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeInit` instead.
+ *
+ * Additional serve options.
+ */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
+  /** An AbortSignal to close the server and all connections. */
+  signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: unknown) => Response | Promise<Response>;
+
+  /** The callback which is called when the server started listening */
+  onListen?: (params: { hostname: string; port: number }) => void;
+}
+
+/**
+ * Additional serve listener options.
+ */
+export interface ServeListenerOptions {
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
 
@@ -522,7 +546,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">,
+  options?: ServeListenerOptions,
 ) {
   const server = new Server({ handler, onError: options?.onError });
 
@@ -540,7 +564,10 @@ function hostnameForDisplay(hostname: string) {
   return hostname === "0.0.0.0" ? "localhost" : hostname;
 }
 
-/** Serves HTTP requests with the given handler.
+/**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ *
+ * Serves HTTP requests with the given handler.
  *
  * You can specify an object with a port and hostname option, which is the
  * address to listen on. The default is port 8000 on hostname "0.0.0.0".
@@ -620,6 +647,9 @@ export async function serve(
   return await s;
 }
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeTlsOptions` instead.
+ */
 export interface ServeTlsInit extends ServeInit {
   /** Server private key in PEM format */
   key?: string;
@@ -634,7 +664,10 @@ export interface ServeTlsInit extends ServeInit {
   certFile?: string;
 }
 
-/** Serves HTTPS requests with the given handler.
+/**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ *
+ * Serves HTTPS requests with the given handler.
  *
  * You must specify `key` or `keyFile` and `cert` or `certFile` options.
  *

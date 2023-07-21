@@ -56,11 +56,10 @@ export interface StringifyStreamOptions {
  * @example
  * If you want to stream [JSON lines](https://jsonlines.org/) from the server:
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { JsonStringifyStream } from "https://deno.land/std@$STD_VERSION/json/json_stringify_stream.ts";
  *
  * // A server that streams one line of JSON every second
- * serve(() => {
+ * Deno.serve(() => {
  *   let intervalId: number | undefined;
  *   const readable = new ReadableStream({
  *     start(controller) {
