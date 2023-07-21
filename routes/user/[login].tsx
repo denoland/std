@@ -62,16 +62,21 @@ export const handler: Handlers<UserData, State> = {
   },
 };
 
-function Profile(props: { login: string; itemsCount: number }) {
+function Profile(
+  props: { login: string; itemsCount: number; isSubscribed: boolean },
+) {
   return (
     <div class="flex flex-wrap py-8">
       <GitHubAvatarImg login={props.login} size={48} />
       <div class="px-4">
-        <div class="flex flex-wrap justify-between">
+        <div class="flex gap-x-2">
           <span>
             <strong>{props.login}</strong>
           </span>
-          <span class="ml-2">
+          {props.isSubscribed && (
+            <span title="Deno Hunt premium user">🦕{" "}</span>
+          )}
+          <span>
             <a
               href={`https://github.com/${props.login}`}
               aria-label={`${props.login}'s GitHub profile`}
@@ -96,6 +101,7 @@ export default function UserPage(props: PageProps<UserData>) {
       <Head title={props.data.user.login} href={props.url.href} />
       <main class="flex-1 p-4">
         <Profile
+          isSubscribed={props.data.user.isSubscribed}
           login={props.data.user.login}
           itemsCount={props.data.itemsCount}
         />

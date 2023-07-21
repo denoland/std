@@ -32,7 +32,10 @@ export default function ItemSummary(props: ItemSummaryProps) {
             {new URL(props.item.url).host} ↗
           </a>
         </p>
-        <UserPostedAt user={props.user} createdAt={props.item.createdAt} />
+        <UserPostedAt
+          userLogin={props.user.login}
+          createdAt={props.item.createdAt}
+        />
       </div>
     </div>
   );

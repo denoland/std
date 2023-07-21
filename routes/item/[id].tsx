@@ -136,7 +136,7 @@ function CommentSummary(
   return (
     <div class="py-4">
       <UserPostedAt
-        user={props.user}
+        userLogin={props.user.login}
         createdAt={props.comment.createdAt}
       />
       <p>{props.comment.text}</p>
