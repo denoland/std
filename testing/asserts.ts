@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/asserts` instead.
+ * @deprecated (will be removed after 1.0.0) Import from `std/assert/mod.ts` instead.
  *
  * A library of assertion functions.
  * If the assertion is false an `AssertionError` will be thrown which will
