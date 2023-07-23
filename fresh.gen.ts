@@ -21,7 +21,7 @@ import * as $15 from "./routes/feed.ts";
 import * as $16 from "./routes/index.tsx";
 import * as $17 from "./routes/item/[id].tsx";
 import * as $18 from "./routes/notifications/_middleware.ts";
-import * as $19 from "./routes/notifications/notifications.tsx";
+import * as $19 from "./routes/notifications/index.tsx";
 import * as $20 from "./routes/pricing.tsx";
 import * as $21 from "./routes/signin.ts";
 import * as $22 from "./routes/signout.ts";
@@ -52,7 +52,7 @@ const manifest = {
     "./routes/index.tsx": $16,
     "./routes/item/[id].tsx": $17,
     "./routes/notifications/_middleware.ts": $18,
-    "./routes/notifications/notifications.tsx": $19,
+    "./routes/notifications/index.tsx": $19,
     "./routes/pricing.tsx": $20,
     "./routes/signin.ts": $21,
     "./routes/signout.ts": $22,
