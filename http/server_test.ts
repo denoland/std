@@ -1608,3 +1608,29 @@ Deno.test("serveTls - cert, key can be injected directly from memory rather than
     signal: abortController.signal,
   });
 });
+
+Deno.test("serve - doesn't throw with string port number", () => {
+  const ac = new AbortController();
+  return serve((_) => new Response("hello"), {
+    // deno-lint-ignore no-explicit-any
+    port: "0" as any,
+    onListen() {
+      ac.abort();
+    },
+    signal: ac.signal,
+  });
+});
+
+Deno.test("serveTls - doesn't throw with string port number", () => {
+  const ac = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    // deno-lint-ignore no-explicit-any
+    port: "0" as any,
+    cert: Deno.readTextFileSync(join(testdataDir, "tls/localhost.crt")),
+    key: Deno.readTextFileSync(join(testdataDir, "tls/localhost.key")),
+    onListen() {
+      ac.abort();
+    },
+    signal: ac.signal,
+  });
+});
