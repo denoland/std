@@ -616,6 +616,10 @@ export async function serve(
   options: ServeInit = {},
 ) {
   let port = options.port ?? 8000;
+  if (typeof port !== "number") {
+    port = Number(port);
+  }
+
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
@@ -738,6 +742,10 @@ export async function serveTls(
   }
 
   let port = options.port ?? 8443;
+  if (typeof port !== "number") {
+    port = Number(port);
+  }
+
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
