@@ -1,11 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { MatcherContext, MatchResult } from "../_types.ts";
-import { AssertionError } from '../../assert/assertion_error';
+import { AssertionError } from "../../assert/assertion_error";
 
 /* Similar to assertEqual(!!value) */
 export function toBeTruthy(
-  context: MatcherContext
+  context: MatcherContext,
 ): MatchResult {
   const isTruthy = !!(context.value);
   if (context.isNot) {
