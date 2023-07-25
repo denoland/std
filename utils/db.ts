@@ -199,10 +199,8 @@ export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
  * const notification: Notification = {
  *   userId: "example-user-id",
  *   type: "example-type",
- *   userFromId: "example-user-from-id"
- *   userFromLogin: "example-user-from-login"
- *   originId: "example-origin-id"
- *   originTitle: "example-origin-title"
+ *   text: "Hello, world!",
+ *   originUrl: "https://hunt.deno.land"
  *   ...newNotificationProps(),
  * };
  *
@@ -211,11 +209,6 @@ export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
  */
 export async function createNotification(notification: Notification) {
   const notificationsKey = ["notifications", notification.id];
-  const notificationsByTimeKey = [
-    "notifications_by_time",
-    notification.createdAt.getTime(),
-    notification.id,
-  ];
   const notificationsByUserKey = [
     "notifications_by_user",
     notification.userId,
@@ -224,10 +217,8 @@ export async function createNotification(notification: Notification) {
 
   const res = await kv.atomic()
     .check({ key: notificationsKey, versionstamp: null })
-    .check({ key: notificationsByTimeKey, versionstamp: null })
     .check({ key: notificationsByUserKey, versionstamp: null })
     .set(notificationsKey, notification)
-    .set(notificationsByTimeKey, notification)
     .set(notificationsByUserKey, notification)
     .commit();
 
@@ -238,11 +229,6 @@ export async function createNotification(notification: Notification) {
 
 export async function deleteNotification(notification: Notification) {
   const notificationsKey = ["notifications", notification.id];
-  const notificationsByTimeKey = [
-    "notifications_by_time",
-    notification.createdAt.getTime(),
-    notification.id,
-  ];
   const notificationsByUserKey = [
     "notifications_by_user",
     notification.userId,
@@ -251,7 +237,6 @@ export async function deleteNotification(notification: Notification) {
 
   const res = await kv.atomic()
     .delete(notificationsKey)
-    .delete(notificationsByTimeKey)
     .delete(notificationsByUserKey)
     .commit();
 
