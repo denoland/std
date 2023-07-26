@@ -1,3 +1,8 @@
+### 0.196.0 / 2023.07.26
+
+- BREAKING(http/server): deprecate serve and serveTls (#3381)
+- fix(http): fix handling of string port number (#3499)
+
 ### 0.195.0 / 2023.07.19
 
 - BREAKING(streams): deprecate readableStreamFromIterable (#3486)
