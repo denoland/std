@@ -6,6 +6,7 @@ import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import Head from "@/components/Head.tsx";
 import type { SignedInState } from "@/utils/middleware.ts";
 import TabsBar from "@/components/TabsBar.tsx";
+import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 
 interface DashboardPageData extends SignedInState {
   dates: Date[];
@@ -80,7 +81,7 @@ export default function DashboardPage(props: PageProps<DashboardPageData>) {
     <>
       <Head title="Dashboard" href={props.url.href} />
       <main class="flex-1 p-4 flex flex-col">
-        <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+        <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
         <TabsBar
           links={[{
             path: "/dashboard/stats",

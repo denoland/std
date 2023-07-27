@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import { INPUT_STYLES } from "@/utils/constants.ts";
+import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import type { State } from "@/routes/_middleware.ts";
 import {
   createItem,
@@ -62,7 +62,7 @@ export default function SubmitPage(props: PageProps) {
       <Head title="Submit" href={props.url.href} />
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
-          <h1 class="text-center text-3xl font-bold">
+          <h1 class={HEADING_STYLES}>
             Share your project
           </h1>
           <p class="text-gray-500">

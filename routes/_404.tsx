@@ -1,10 +1,12 @@
+import { HEADING_WITH_MARGIN_STYLES, LINK_STYLES } from "@/utils/constants.ts";
+
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export default function NotFoundPage() {
   return (
-    <main class="flex-1 flex flex-col justify-center p-4 text-center space-y-4">
-      <h1 class="text-4xl inline-block font-bold">Page not found</h1>
-      <p class="text-xl text-blue-900">
-        <a href="/">Return home</a>
+    <main class="flex-1 p-4 flex flex-col justify-center text-center">
+      <h1 class={HEADING_WITH_MARGIN_STYLES}>Page not found</h1>
+      <p>
+        <a href="/" class={LINK_STYLES}>Return home ›</a>
       </p>
     </main>
   );

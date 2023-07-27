@@ -5,6 +5,7 @@ import type { State } from "@/routes/_middleware.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
+import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 
 interface UsersState extends State {
   users: User[];
@@ -62,7 +63,7 @@ export default function UsersPage(props: PageProps<UsersState>) {
     <>
       <Head title="Users" href={props.url.href} />
       <main class="flex-1 p-4">
-        <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+        <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
         <TabsBar
           links={[{
             path: "/dashboard/stats",

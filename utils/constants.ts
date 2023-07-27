@@ -18,3 +18,5 @@ export const NAV_STYLES =
 export const LINK_STYLES =
   "text-gray-500 transition duration-300 hover:(text-black dark:text-white)";
 export const ACTIVE_LINK_STYLES = "!text-black !dark:text-white";
+export const HEADING_STYLES = "text-3xl font-bold";
+export const HEADING_WITH_MARGIN_STYLES = HEADING_STYLES + " mb-8";

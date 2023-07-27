@@ -4,6 +4,7 @@ import { getNotificationsByUser, Notification } from "@/utils/db.ts";
 import { timeAgo } from "@/utils/display.ts";
 import Head from "@/components/Head.tsx";
 import type { SignedInState } from "@/utils/middleware.ts";
+import { HEADING_STYLES } from "@/utils/constants.ts";
 
 interface NotificationsState extends SignedInState {
   notifications: Notification[];
@@ -46,7 +47,7 @@ export default function NotificationsPage(
     <>
       <Head title="Notifications" href={props.url.href} />
       <main class="flex-1 p-4">
-        <h1 class="text-3xl font-bold py-4">Notifications</h1>
+        <h1 class={HEADING_STYLES}>Notifications</h1>
         <ul class="divide-y">
           {props.data.notifications.length > 0
             ? props.data.notifications
