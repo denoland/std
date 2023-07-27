@@ -1,10 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
-
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("[fs] existsNotExist", async function () {
   const tempDirPath = await Deno.makeTempDir();
@@ -327,101 +324,3 @@ Deno.test("[fs] existsDirLinkSync", function () {
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
-
-/**
- * Scenes control additional permission tests by spawning new Deno processes with and without --allow-read flag.
- */
-interface Scene {
-  read: boolean; // true to test with --allow-read
-  sync: boolean; // true to test sync
-  exists: boolean; // true to test on existing file
-  output: string; // required string include of stdout to succeed
-}
-
-const scenes: Scene[] = [
-  {
-    read: false,
-    sync: false,
-    exists: false,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: false,
-    sync: true,
-    exists: false,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: true,
-    sync: false,
-    exists: false,
-    output: "not exist",
-  },
-  {
-    read: true,
-    sync: true,
-    exists: false,
-    output: "not exist",
-  },
-  {
-    read: false,
-    sync: false,
-    exists: true,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: false,
-    sync: true,
-    exists: true,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: true,
-    sync: false,
-    exists: true,
-    output: "exist",
-  },
-  {
-    read: true,
-    sync: true,
-    exists: true,
-    output: "exist",
-  },
-];
-
-for (const s of scenes) {
-  let title = `test ${!s.sync ? "exists" : "existsSync"} on`;
-  title += ` ${s.exists ? "existing" : "non-existing"} file`;
-  title += ` ${s.read ? "with" : "without"} --allow-read`;
-  Deno.test(`[fs] existsPermission ${title}`, async function () {
-    const args = ["run", "--quiet", "--no-prompt"];
-
-    if (s.read) {
-      args.push("--allow-read");
-    }
-    args.push(path.join(testdataDir, !s.sync ? "exists.ts" : "exists_sync.ts"));
-
-    let tempFilePath = "does_not_exist.ts";
-    let tempDirPath: string | null = null;
-    let tempFile: Deno.FsFile | null = null;
-    if (s.exists) {
-      tempDirPath = await Deno.makeTempDir();
-      tempFilePath = path.join(tempDirPath, "0.ts");
-      tempFile = await Deno.create(tempFilePath);
-    }
-    args.push(tempFilePath);
-
-    const command = new Deno.Command(Deno.execPath(), {
-      args,
-    });
-    const { stdout } = await command.output();
-
-    if (tempFile != null) {
-      tempFile.close();
-      await Deno.remove(tempDirPath!, { recursive: true });
-    }
-
-    assertStringIncludes(new TextDecoder().decode(stdout), s.output);
-  });
-  // done
-}

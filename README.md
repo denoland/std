@@ -71,6 +71,8 @@ Before opening a PR make sure to:
 - `deno task test` passes.
 - `deno fmt --check` passes.
 - `deno task lint` passes.
+- (optionally) check for typos with `deno task typos` (requires
+  [typos](https://github.com/crate-ci/typos#install) to be installed)
 
 Give the PR a descriptive title.
 
@@ -103,13 +105,6 @@ accepted.
 _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.
-
-### Internal Assertions
-
-All internal non-test code, that is files that do not have `test` or `bench` in
-the name, must use the assertion functions within `_utils/asserts.ts` and not
-`testing/asserts.ts`. This is to create a separation of concerns between
-internal and testing assertions.
 
 ### Types
 

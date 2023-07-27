@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna" },
@@ -27,7 +27,7 @@
  * );
  * ```
  */
-export function groupBy<T, K extends string>(
+export function groupBy<T, K extends PropertyKey>(
   iterable: Iterable<T>,
   selector: (element: T, index: number) => K,
 ): Partial<Record<K, T[]>> {

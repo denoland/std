@@ -1,9 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
 import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
@@ -130,7 +126,7 @@ async function fetchExactPath(
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
-  let conn: void | Deno.Conn;
+  let conn: undefined | Deno.Conn;
   try {
     conn = await Deno.connect(
       { hostname: hostname, port: port, transport: "tcp" },
@@ -524,12 +520,20 @@ async function startTlsFileServer({
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
+
+  // Wait for fileServer to be ready.
+  await retry(async () => {
+    const conn = await Deno.connectTls({
+      hostname: "localhost",
+      port: +port,
+      certFile: join(testdataDir, "tls/RootCA.pem"),
+    });
+    conn.close();
+  });
 }
 
-// TODO(bartlomieju): Somehow this test started failing on macOS for 0.192.0
 Deno.test(
   "serveDirIndex TLS",
-  { ignore: Deno.build.os === "darwin" },
   async function () {
     await startTlsFileServer();
     try {
@@ -1356,7 +1360,7 @@ Deno.test(
     const code = `
       import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
       import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-      import { assertEquals } from "${import.meta.resolve("../testing/asserts.ts")}";
+      import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
       const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
       const fileInfo = await Deno.stat(new URL(testdataPath));
       fileInfo.mtime = null;

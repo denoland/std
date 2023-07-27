@@ -1,3 +1,27 @@
+### 0.196.0 / 2023.07.26
+
+- BREAKING(http/server): deprecate serve and serveTls (#3381)
+- fix(http): fix handling of string port number (#3499)
+
+### 0.195.0 / 2023.07.19
+
+- BREAKING(streams): deprecate readableStreamFromIterable (#3486)
+- BREAKING(testing, assert): move `std/testing/asserts` to `std/assert` (#3445)
+- feat(fmt): enable `setColorEnabled` in browsers (#3485)
+- fix(async/delay): reject with existing AbortSignal reason (#3479)
+
+### 0.194.0 / 2023.07.12
+
+- feat(collections): allow PropertyKey for groupBy key (#3461)
+- feat: msgpack encoding (#3460)
+
+### 0.193.0 / 2023.07.04
+
+- feat: add http/user_agent (#3387)
+- fix(json): allow primitives at top level without separator (#3466)
+- fix(testing/asserts): handle primitive/null values better in assertObjectMatch
+  (#3468)
+
 ### 0.192.0 / 2023.06.15
 
 - BREAKING(semver): rewrite semver (#3385)
@@ -174,6 +198,7 @@
 
 ### 0.173.0 / 2023.01.16
 
+- BREAKING(streams, archive): remove deprecated exports (#3107)
 - fix(fs): change globstar default to true for expandGlob and expandGlobSync
   (#3115)
 - fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)

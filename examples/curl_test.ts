@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { serve } from "../http/server.ts";
-import { assertStrictEquals } from "../testing/asserts.ts";
+import { assertStrictEquals } from "../assert/mod.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -9,10 +8,10 @@ Deno.test({
   name: "[examples/curl] send a request to a specified url",
   fn: async () => {
     const abortController = new AbortController();
-    const serverPromise = serve(
-      () => new Response("Hello world"),
+    const serverPromise = Deno.serve(
       { signal: abortController.signal, port: 8081 },
-    );
+      () => new Response("Hello world"),
+    ).finished;
     const decoder = new TextDecoder();
     const command = new Deno.Command(Deno.execPath(), {
       args: [

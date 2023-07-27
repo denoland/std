@@ -21,9 +21,8 @@
  *   ServerSentEvent,
  *   ServerSentEventStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
- * await serve((request) => {
+ * Deno.serve({ port: 8000 }, (request) => {
  *   const target = new ServerSentEventStreamTarget();
  *   let counter = 0;
  *
@@ -38,13 +37,13 @@
  *
  *   target.addEventListener("close", () => clearInterval(id));
  *   return target.asResponse();
- * }, { port: 8000 });
+ * });
  * ```
  *
  * @module
  */
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
 const encoder = new TextEncoder();
 
@@ -101,9 +100,8 @@ class CloseEvent extends Event {
  *   ServerSentEvent,
  *   ServerSentEventStreamTarget,
  * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
- * await serve((request) => {
+ * Deno.serve({ port: 8000 }, (request) => {
  *   const target = new ServerSentEventStreamTarget();
  *   const evt = new ServerSentEvent("message", {
  *     data: { hello: "world" },
@@ -111,7 +109,7 @@ class CloseEvent extends Event {
  *   });
  *   target.dispatchEvent(evt);
  *   return target.asResponse();
- * }, { port: 8000 });
+ * });
  * ```
  */
 export class ServerSentEvent extends Event {
@@ -189,13 +187,12 @@ export interface ServerSentEventTarget extends EventTarget {
    *
    * ```ts
    * import { ServerSentEventStreamTarget } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
-   * await serve((request) => {
+   * Deno.serve({ port: 8000 }, (request) => {
    *   const target = new ServerSentEventStreamTarget();
    *   target.dispatchComment("this is a comment");
    *   return target.asResponse();
-   * }, { port: 8000 });
+   * });
    * ```
    */
   dispatchComment(comment: string): boolean;
@@ -217,14 +214,13 @@ export interface ServerSentEventTarget extends EventTarget {
    *   ServerSentEvent,
    *   ServerSentEventStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
-   * await serve((request) => {
+   * Deno.serve({ port: 8000 }, (request) => {
    *   const target = new ServerSentEventStreamTarget();
    *   const evt = new ServerSentEvent("ping", { data: "hello" });
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
-   * }, { port: 8000 });
+   * });
    * ```
    */
   dispatchEvent(event: ServerSentEvent): boolean;
@@ -241,14 +237,13 @@ export interface ServerSentEventTarget extends EventTarget {
    *   ServerSentEvent,
    *   ServerSentEventStreamTarget,
    * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
-   * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
    *
-   * await serve((request) => {
+   * Deno.serve({ port: 8000 }, (request) => {
    *   const target = new ServerSentEventStreamTarget();
    *   const evt = new ServerSentEvent("ping", { data: "hello" });
    *   target.dispatchEvent(evt);
    *   return target.asResponse();
-   * }, { port: 8000 });
+   * });
    * ```
    */
   dispatchEvent(event: CloseEvent | ErrorEvent): boolean;
@@ -345,10 +340,11 @@ export class ServerSentEventStreamTarget extends EventTarget
    * {@linkcode ResponseInit} needed to create a response that will establish
    * a SSE connection with the client. */
   asResponseInit(responseInit: ResponseInit = {}): [BodyInit, ResponseInit] {
-    responseInit.headers = new Headers(responseInit.headers);
+    const headers = new Headers(responseInit.headers);
     for (const [key, value] of RESPONSE_HEADERS) {
-      responseInit.headers.set(key, value);
+      headers.set(key, value);
     }
+    responseInit.headers = headers;
     return [this.#bodyInit, responseInit];
   }
 

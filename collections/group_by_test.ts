@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { groupBy } from "./group_by.ts";
 
 function groupByTest<T>(
-  input: [Array<T>, (el: T) => string],
+  input: [Array<T>, (el: T) => PropertyKey],
   expected: { [x: string]: Array<T> },
   message?: string,
 ) {
@@ -38,6 +38,27 @@ Deno.test({
     groupByTest(
       [[1, 3, 5, 6], () => "a"],
       { a: [1, 3, 5, 6] },
+    );
+  },
+});
+Deno.test({
+  name: "[collections/groupBy] non-string key",
+  fn() {
+    groupByTest(
+      [
+        [
+          { number: 1, name: "a" },
+          { number: 1, name: "b" },
+          { number: 2, name: "c" },
+          { number: 3, name: "d" },
+        ],
+        ({ number }) => number,
+      ],
+      {
+        1: [{ number: 1, name: "a" }, { number: 1, name: "b" }],
+        2: [{ number: 2, name: "c" }],
+        3: [{ number: 3, name: "d" }],
+      },
     );
   },
 });

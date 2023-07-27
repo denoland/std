@@ -3,7 +3,7 @@
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/concat.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { crypto } from "../crypto/crypto.ts";
 
 const UUID_RE =
