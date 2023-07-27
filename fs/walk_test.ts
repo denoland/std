@@ -78,6 +78,12 @@ Deno.test("[fs/walk] symlink", async () =>
     followSymlinks: true,
   }));
 
+Deno.test("[fs/walk] symlink without followSymlink", async () => {
+  await assertWalkPaths("symlink", [".", "x", "y"], {
+    followSymlinks: false,
+  });
+});
+
 Deno.test("[fs/walk] non-existent root", async () => {
   const root = resolve(testdataDir, "non_existent");
   await assertRejects(

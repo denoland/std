@@ -55,6 +55,8 @@ export interface WalkOptions {
   includeFiles?: boolean;
   /** @default {true} */
   includeDirs?: boolean;
+  /** @default {true} */
+  includeSymlinks?: boolean;
   /** @default {false} */
   followSymlinks?: boolean;
   exts?: string[];
@@ -84,6 +86,7 @@ export async function* walk(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -108,7 +111,12 @@ export async function* walk(
       let { isSymlink, isDirectory } = entry;
 
       if (isSymlink) {
-        if (!followSymlinks) continue;
+        if (!followSymlinks) {
+          if (includeSymlinks && include(path, exts, match, skip)) {
+            yield { path, ...entry };
+          }
+          continue;
+        }
         path = await Deno.realPath(path);
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
@@ -121,6 +129,7 @@ export async function* walk(
           maxDepth: maxDepth - 1,
           includeFiles,
           includeDirs,
+          includeSymlinks,
           followSymlinks,
           exts,
           match,
@@ -142,6 +151,7 @@ export function* walkSync(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -171,7 +181,12 @@ export function* walkSync(
     let { isSymlink, isDirectory } = entry;
 
     if (isSymlink) {
-      if (!followSymlinks) continue;
+      if (!followSymlinks) {
+        if (includeSymlinks && include(path, exts, match, skip)) {
+          yield { path, ...entry };
+        }
+        continue;
+      }
       path = Deno.realPathSync(path);
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
@@ -184,6 +199,7 @@ export function* walkSync(
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
+        includeSymlinks,
         followSymlinks,
         exts,
         match,
