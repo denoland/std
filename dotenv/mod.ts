@@ -47,6 +47,10 @@
  * hello world
  * ```
  *
+ * Default values can be placed in a local `.env.defaults` file. If present,
+ * `load.ts` will automatically fallback to default values if a value is not
+ * present in the local `.env` file.
+ *
  * ## Parsing Rules
  *
  * The parsing engine currently supports the following rules:
