@@ -532,6 +532,10 @@ export async function getManyUsers(ids: string[]) {
   return res.filter(Boolean) as User[];
 }
 
+export async function getUsers() {
+  return await getValues<User>({ prefix: ["users"] });
+}
+
 export async function getAreVotedBySessionId(
   items: Item[],
   sessionId?: string,

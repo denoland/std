@@ -5,7 +5,7 @@ import Footer from "@/components/Footer.tsx";
 
 export default function App(props: AppProps) {
   return (
-    <div class="dark:bg-gray-900 text-lg">
+    <div class="dark:bg-gray-900">
       <div class="flex flex-col min-h-screen mx-auto max-w-7xl w-full dark:text-white">
         <Header
           url={props.url}
