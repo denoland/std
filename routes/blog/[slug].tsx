@@ -4,7 +4,7 @@ import { CSS, render } from "$gfm";
 import { getPost, Post } from "@/utils/posts.ts";
 import type { State } from "@/routes/_middleware.ts";
 import Head from "@/components/Head.tsx";
-import { HEADING_STYLES } from "@/utils/constants.ts";
+import Share from "@/components/Share.tsx";
 
 interface BlogPostPageData extends State {
   post: Post;
@@ -38,6 +38,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
             {date}
           </time>
         )}
+        <Share url={new URL("https://google.com")} title={post.title} />
         <div
           class="mt-8 markdown-body !bg-transparent !dark:text-white"
           data-color-mode="auto"
