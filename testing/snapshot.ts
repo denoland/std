@@ -204,6 +204,7 @@ export function serialize(actual: unknown): string {
     compact: false,
     iterableLimit: Infinity,
     strAbbreviateSize: Infinity,
+    breakLength: Infinity,
   }).replace(/\\n/g, "\n");
 }
 
