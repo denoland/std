@@ -741,6 +741,10 @@ export function InlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   scanner.nextUntilChar();
+  if (scanner.char(1) === "}") {
+    scanner.next(2);
+    return success({});
+  }
   const pairs = surround(
     "{",
     join(Pair, ","),

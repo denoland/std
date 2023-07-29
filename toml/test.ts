@@ -301,6 +301,7 @@ Deno.test({
             ],
           },
         },
+        empty: {},
       },
     };
     const actual = parseFile(path.join(testdataDir, "inlineTable.toml"));
