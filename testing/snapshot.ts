@@ -205,7 +205,8 @@ export function serialize(actual: unknown): string {
     iterableLimit: Infinity,
     strAbbreviateSize: Infinity,
     breakLength: Infinity,
-  }).replace(/\\n/g, "\n");
+    escapeSequences: false,
+  });
 }
 
 /**
