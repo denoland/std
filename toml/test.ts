@@ -132,6 +132,10 @@ Deno.test({
           ["gamma", "delta"],
           [1, 2],
         ],
+        floats: [
+          0.1,
+          -1.25,
+        ],
         hosts: ["alpha", "omega"],
         profiles: [
           {
