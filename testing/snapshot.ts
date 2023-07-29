@@ -204,7 +204,8 @@ export function serialize(actual: unknown): string {
     compact: false,
     iterableLimit: Infinity,
     strAbbreviateSize: Infinity,
-  }).replace(/\\n/g, "\n").replace(/\\t/g, "\t");
+    escapeSequences: false,
+  });
 }
 
 /**
