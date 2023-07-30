@@ -81,7 +81,6 @@ export function similarityCompare(
   options?: { caseSensitive?: boolean },
 ) {
   const { caseSensitive } = { ...options };
-  let compare;
   if (!caseSensitive) {
     givenWord = givenWord.toLowerCase();
     return (a: string, b: string) =>

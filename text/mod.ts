@@ -6,4 +6,4 @@ export {
   similarityCompare,
   wordSimilaritySort,
 } from "./word_similarity.ts";
-export { assertDidYouMean, DidYouMeanError } from "./did_you_mean.ts";
+export { didYouMean, DidYouMeanError } from "./did_you_mean.ts";

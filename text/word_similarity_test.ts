@@ -40,3 +40,22 @@ Deno.test("similarityCompare", function () {
     '["help","hi","hello"]',
   );
 });
+
+Deno.test("closest", function () {
+  const words = ["hi", "hello", "help"];
+
+  assertEquals(
+    JSON.stringify(closest("hep", words)),
+    '"hi"',
+  );
+});
+
+Deno.test("closest", function () {
+  const words = ["hi", "hello", "help"];
+  
+  // this is why caseSensitive is OFF by default; very unintuitive until something better than levenshtein_distance is used
+  assertEquals(
+    JSON.stringify(closest("HELP", words, { caseSensitive: true })),
+    '"hi"',
+  );
+});

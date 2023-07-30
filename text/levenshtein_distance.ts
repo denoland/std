@@ -22,8 +22,8 @@ export function levenshteinDistance(str1: string, str2: string): number {
   for (let str2Index = 0; str2Index < str2.length; str2Index++) {
     const tempDistances: number[] = [str2Index + 1];
     for (let str1Index = 0; str1Index < str1.length; str1Index++) {
-      let char1 = str1[str1Index];
-      let char2 = str2[str2Index];
+      const char1 = str1[str1Index];
+      const char2 = str2[str2Index];
       if (char1 === char2) {
         tempDistances.push(distances[str1Index]);
       } else {
