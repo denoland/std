@@ -354,7 +354,7 @@ function character(str: string) {
 const Patterns = {
   BARE_KEY: /[A-Za-z0-9_-]/,
   FLOAT: /[0-9_\.e+\-]/i,
-  END_OF_VALUE: /[ \t\r\n#,}]/,
+  END_OF_VALUE: /[ \t\r\n#,}\]]/,
 };
 
 export function BareKey(scanner: Scanner): ParseResult<string> {
@@ -741,6 +741,10 @@ export function InlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   scanner.nextUntilChar();
+  if (scanner.char(1) === "}") {
+    scanner.next(2);
+    return success({});
+  }
   const pairs = surround(
     "{",
     join(Pair, ","),
