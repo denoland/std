@@ -1,9 +1,6 @@
 import { encodeWhitespace } from "./_util.ts";
 
 function posixToFileUrl(path: string) {
-  if (!isAbsolute(path)) {
-    throw new TypeError("Must be an absolute path.");
-  }
   const url = new URL("file:///");
   url.pathname = encodeWhitespace(
     path.replace(/%/g, "%25").replace(/\\/g, "%5C"),
@@ -12,9 +9,6 @@ function posixToFileUrl(path: string) {
 }
 
 function windowsToFileUrl(path: string): URL {
-  if (!isAbsolute(path)) {
-    throw new TypeError("Must be an absolute path.");
-  }
   const [, hostname, pathname] = path.match(
     /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
   )!;
@@ -46,7 +40,11 @@ function windowsToFileUrl(path: string): URL {
  * @param path to convert to file URL
  */
 export function toFileUrl(path: string): URL {
-  if(Deno.build.os === "windows") {
+  if (!isAbsolute(path)) {
+    throw new TypeError("Must be an absolute path.");
+  }
+
+  if (Deno.build.os === "windows") {
     return windowsToFileUrl(path);
   }
   return posixToFileUrl(path);

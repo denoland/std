@@ -1,10 +1,14 @@
 import { CHAR_COLON, CHAR_DOT } from "./_constants.ts";
 import { ParsedPath } from "./_interface.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot, stripTrailingSeparators } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+  stripTrailingSeparators,
+} from "./_util.ts";
 
 function posixParse(path: string): ParsedPath {
-  assertPath(path);
-
   const ret: ParsedPath = { root: "", dir: "", base: "", ext: "", name: "" };
   if (path.length === 0) return ret;
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
@@ -93,8 +97,6 @@ function posixParse(path: string): ParsedPath {
 }
 
 function windowsParse(path: string): ParsedPath {
-  assertPath(path);
-
   const ret: ParsedPath = { root: "", dir: "", base: "", ext: "", name: "" };
 
   const len = path.length;
@@ -251,7 +253,9 @@ function windowsParse(path: string): ParsedPath {
  * @param path to process
  */
 export function parse(path: string): ParsedPath {
-  if(Deno.build.os === "windows") {
+  assertPath(path);
+
+  if (Deno.build.os === "windows") {
     return windowsParse(path);
   }
   return posixParse(path);

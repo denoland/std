@@ -1,5 +1,10 @@
 import { CHAR_COLON } from "./_constants.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+} from "./_util.ts";
 
 function windowsIsAbsolute(path: string): boolean {
   const len = path.length;
@@ -24,7 +29,7 @@ function windowsIsAbsolute(path: string): boolean {
  */
 export function isAbsolute(path: string): boolean {
   assertPath(path);
-  if(Deno.build.os === "windows") {
+  if (Deno.build.os === "windows") {
     return windowsIsAbsolute(path);
   }
   return path.length > 0 && isPosixPathSeparator(path.charCodeAt(0));

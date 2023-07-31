@@ -2,11 +2,6 @@ import { CHAR_BACKWARD_SLASH } from "https://deno.land/std@$STD_VERSION/path/_co
 import { assertPath, isPosixPathSeparator } from "./_util.ts";
 
 function posixRelative(from: string, to: string): string {
-  assertPath(from);
-  assertPath(to);
-
-  if (from === to) return "";
-
   from = resolve(from);
   to = resolve(to);
 
@@ -84,11 +79,6 @@ function posixRelative(from: string, to: string): string {
 }
 
 function windowsRelative(from: string, to: string): string {
-  assertPath(from);
-  assertPath(to);
-
-  if (from === to) return "";
-
   const fromOrig = resolve(from);
   const toOrig = resolve(to);
 
@@ -199,7 +189,11 @@ function windowsRelative(from: string, to: string): string {
  * @param to path in current working directory
  */
 export function relative(from: string, to: string): string {
-  if(Deno.build.os === "windows") {
+  assertPath(from);
+  assertPath(to);
+  if (from === to) return "";
+
+  if (Deno.build.os === "windows") {
     return windowsRelative(from, to);
   }
   return posixRelative(from, to);

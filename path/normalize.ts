@@ -1,9 +1,13 @@
 import { CHAR_COLON } from "./_constants.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot, normalizeString } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+  normalizeString,
+} from "./_util.ts";
 
 function posixNormalize(path: string): string {
-  if (path.length === 0) return ".";
-
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
   const trailingSeparator = isPosixPathSeparator(
     path.charCodeAt(path.length - 1),
@@ -20,8 +24,6 @@ function posixNormalize(path: string): string {
 }
 
 function windowsNormalize(path: string): string {
-  const len = path.length;
-  if (len === 0) return ".";
   let rootEnd = 0;
   let device: string | undefined;
   let isAbsolute = false;
@@ -140,7 +142,9 @@ function windowsNormalize(path: string): string {
  */
 export function normalize(path: string): string {
   assertPath(path);
-  if(Deno.build.os === "windows") {
+  if (path.length === 0) return ".";
+
+  if (Deno.build.os === "windows") {
     return windowsNormalize(path);
   }
   return posixNormalize(path);

@@ -2,7 +2,6 @@ import { assert } from "../assert/assert.ts";
 import { assertPath, isPathSeparator } from "./_util.ts";
 
 function posixJoin(...paths: string[]): string {
-  if (paths.length === 0) return ".";
   let joined: string | undefined;
   for (let i = 0, len = paths.length; i < len; ++i) {
     const path = paths[i];
@@ -17,9 +16,6 @@ function posixJoin(...paths: string[]): string {
 }
 
 function windowsJoin(...paths: string[]): string {
-  const pathsCount = paths.length;
-  if (pathsCount === 0) return ".";
-
   let joined: string | undefined;
   let firstPart: string | null = null;
   for (let i = 0; i < pathsCount; ++i) {
@@ -85,7 +81,9 @@ function windowsJoin(...paths: string[]): string {
  * @param paths to be joined and normalized
  */
 export function join(...paths: string[]): string {
-  if(Deno.build.os === "windows") {
+  if (paths.length === 0) return ".";
+
+  if (Deno.build.os === "windows") {
     return windowsJoin(...paths);
   }
   return posixJoin(...paths);

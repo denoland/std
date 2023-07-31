@@ -1,9 +1,13 @@
 import { CHAR_COLON } from "./_constants.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot, stripTrailingSeparators } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+  stripTrailingSeparators,
+} from "./_util.ts";
 
 function posixDirname(path: string): string {
-  if (path.length === 0) return ".";
-
   let end = -1;
   let matchedNonSeparator = false;
 
@@ -36,9 +40,6 @@ function posixDirname(path: string): string {
 }
 
 function windowsDirname(path: string): string {
-  assertPath(path);
-  const len = path.length;
-  if (len === 0) return ".";
   let rootEnd = -1;
   let end = -1;
   let matchedSlash = true;
@@ -128,7 +129,10 @@ function windowsDirname(path: string): string {
  * @param path - path to extract the directory from.
  */
 export function dirname(path: string): string {
-  if(Deno.build.os === "windows") {
+  assertPath(path);
+  if (path.length === 0) return ".";
+
+  if (Deno.build.os === "windows") {
     return windowsDirname(path);
   }
   return posixDirname(path);

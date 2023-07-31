@@ -1,8 +1,12 @@
 import { CHAR_COLON, CHAR_DOT } from "./_constants.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+} from "./_util.ts";
 
 function posixExtname(path: string): string {
-  assertPath(path);
   let startDot = -1;
   let startPart = 0;
   let end = -1;
@@ -52,7 +56,6 @@ function posixExtname(path: string): string {
 }
 
 function windowsExtname(path: string): string {
-  assertPath(path);
   let start = 0;
   let startDot = -1;
   let startPart = 0;
@@ -123,7 +126,9 @@ function windowsExtname(path: string): string {
  * @returns extension (ex. for `file.ts` returns `.ts`)
  */
 export function extname(path: string): string {
-  if(Deno.build.os === "windows") {
+  assertPath(path);
+
+  if (Deno.build.os === "windows") {
     return windowsExtname(path);
   }
   return posixExtname(path);

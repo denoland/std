@@ -1,18 +1,10 @@
-function posixFromFileUrl(url: string | URL): string {
-  url = url instanceof URL ? url : new URL(url);
-  if (url.protocol != "file:") {
-    throw new TypeError("Must be a file URL.");
-  }
+function posixFromFileUrl(url: URL): string {
   return decodeURIComponent(
     url.pathname.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
   );
 }
 
-function windowsFromFileUrl(url: string | URL): string {
-  url = url instanceof URL ? url : new URL(url);
-  if (url.protocol != "file:") {
-    throw new TypeError("Must be a file URL.");
-  }
+function windowsFromFileUrl(url: URL): string {
   let path = decodeURIComponent(
     url.pathname.replace(/\//g, "\\").replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
   ).replace(/^\\*([A-Za-z]:)(\\|$)/, "$1\\");
@@ -42,7 +34,12 @@ function windowsFromFileUrl(url: string | URL): string {
  * @param url of a file URL
  */
 export function fromFileUrl(url: string | URL): string {
-  if(Deno.build.os === "windows") {
+  url = url instanceof URL ? url : new URL(url);
+  if (url.protocol != "file:") {
+    throw new TypeError("Must be a file URL.");
+  }
+
+  if (Deno.build.os === "windows") {
     return windowsFromFileUrl(url);
   }
   return posixFromFileUrl(url);

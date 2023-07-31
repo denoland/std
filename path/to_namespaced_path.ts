@@ -1,4 +1,9 @@
-import { CHAR_BACKWARD_SLASH, CHAR_COLON, CHAR_DOT, CHAR_QUESTION_MARK } from "./_constants.ts";
+import {
+  CHAR_BACKWARD_SLASH,
+  CHAR_COLON,
+  CHAR_DOT,
+  CHAR_QUESTION_MARK,
+} from "./_constants.ts";
 import { isWindowsDeviceRoot } from "./_util.ts";
 
 function windowsToNamespacedPath(path: string): string {
@@ -40,7 +45,7 @@ function windowsToNamespacedPath(path: string): string {
  * @param path to resolve to namespace
  */
 export function toNamespacedPath(path: string): string {
-  if(Deno.build.os === "windows") {
+  if (Deno.build.os === "windows") {
     return windowsToNamespacedPath(path);
   }
 

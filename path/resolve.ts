@@ -1,5 +1,11 @@
 import { CHAR_COLON } from "./_constants.ts";
-import { assertPath, isPathSeparator, isPosixPathSeparator, isWindowsDeviceRoot, normalizeString } from "./_util.ts";
+import {
+  assertPath,
+  isPathSeparator,
+  isPosixPathSeparator,
+  isWindowsDeviceRoot,
+  normalizeString,
+} from "./_util.ts";
 
 function posixResolve(...pathSegments: string[]): string {
   let resolvedPath = "";
@@ -202,7 +208,7 @@ function windowsResolve(...pathSegments: string[]): string {
  * @param pathSegments to process to path
  */
 export function resolve(...pathSegments: string[]): string {
-  if(Deno.build.os === "windows") {
+  if (Deno.build.os === "windows") {
     return windowsResolve(...pathSegments);
   }
   return posixResolve(...pathSegments);
