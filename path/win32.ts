@@ -29,8 +29,6 @@ export const sep = "\\";
 export const delimiter = ";";
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/resolve.ts` instead.
- *
  * Resolves path segments into a `path`
  * @param pathSegments to process to path
  */
@@ -185,8 +183,6 @@ export function resolve(...pathSegments: string[]): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/normalize.ts` instead.
- *
  * Normalizes a `path`
  * @param path to normalize
  */
@@ -305,8 +301,6 @@ export function normalize(path: string): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/is_absolute.ts` instead.
- *
  * Verifies whether path is absolute
  * @param path to verify
  */
@@ -329,8 +323,6 @@ export function isAbsolute(path: string): boolean {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/join.ts` instead.
- *
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  * @param paths to be joined and normalized
  */
@@ -397,8 +389,6 @@ export function join(...paths: string[]): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/relative.ts` instead.
- *
  * It will solve the relative path from `from` to `to`, for instance:
  *  from = 'C:\\orandea\\test\\aaa'
  *  to = 'C:\\orandea\\impl\\bbb'
@@ -511,8 +501,6 @@ export function relative(from: string, to: string): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/to_namespaced_path.ts` instead.
- *
  * Resolves path to a namespace path
  * @param path to resolve to namespace
  */
@@ -551,8 +539,6 @@ export function toNamespacedPath(path: string): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/dirname.ts` instead.
- *
  * Return the directory path of a `path`.
  * @param path - path to extract the directory from.
  */
@@ -645,8 +631,6 @@ export function dirname(path: string): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/basename.ts` instead.
- *
  * Return the last portion of a `path`.
  * Trailing directory separators are ignored, and optional suffix is removed.
  *
@@ -681,8 +665,6 @@ export function basename(path: string, suffix = ""): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/extname.ts` instead.
- *
  * Return the extension of the `path` with leading period.
  * @param path with extension
  * @returns extension (ex. for `file.ts` returns `.ts`)
@@ -752,8 +734,6 @@ export function extname(path: string): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/format.ts` instead.
- *
  * Generate a path from `FormatInputPathObject` object.
  * @param pathObject with path
  */
@@ -767,8 +747,6 @@ export function format(pathObject: FormatInputPathObject): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/parse.ts` instead.
- *
  * Return a `ParsedPath` object of the `path`.
  * @param path to process
  */
@@ -927,8 +905,6 @@ export function parse(path: string): ParsedPath {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/from_file_url.ts` instead.
- *
  * Converts a file URL to a path string.
  *
  * ```ts
@@ -957,8 +933,6 @@ export function fromFileUrl(url: string | URL): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/to_file_url.ts` instead.
- *
  * Converts a path string to a file URL.
  *
  * ```ts
