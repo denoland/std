@@ -1,4 +1,6 @@
-import { CHAR_BACKWARD_SLASH } from "https://deno.land/std@$STD_VERSION/path/_constants.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+import { CHAR_BACKWARD_SLASH } from "./_constants.ts";
 import { assertPath, isPosixPathSeparator } from "./_util.ts";
 
 function posixRelative(from: string, to: string): string {

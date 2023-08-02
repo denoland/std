@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 function posixFromFileUrl(url: URL): string {
   return decodeURIComponent(
     url.pathname.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),

@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 import { CHAR_COLON, CHAR_DOT } from "./_constants.ts";
 import { ParsedPath } from "./_interface.ts";
 import {

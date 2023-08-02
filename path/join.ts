@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 import { assert } from "../assert/assert.ts";
 import { assertPath, isPathSeparator } from "./_util.ts";
 
@@ -75,12 +77,10 @@ function windowsJoin(...paths: string[]): string {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/path/join.ts` instead.
- *
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  * @param paths to be joined and normalized
  */
-export function join(...paths: string[]): string {
+export function join(...paths: string[]) {
   if (paths.length === 0) return ".";
 
   if (Deno.build.os === "windows") {
