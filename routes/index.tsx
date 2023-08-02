@@ -14,9 +14,8 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { DAY, WEEK } from "std/datetime/constants.ts";
-import { getToggledStyles } from "@/utils/display.ts";
-import { ACTIVE_LINK_STYLES, LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
+import { TabItem } from "@/components/TabsBar.tsx";
 
 interface HomePageData extends State {
   itemsUsers: User[];
@@ -62,38 +61,23 @@ export const handler: Handlers<HomePageData, State> = {
 function TimeSelector(props: { url: URL }) {
   const timeAgo = props.url.searchParams.get("time-ago");
   return (
-    <div class="flex justify-center my-4 gap-8">
+    <div class="flex justify-center my-4 gap-2">
       {/* These links do not preserve current URL queries. E.g. if ?page=2, that'll be removed once one of these links is clicked */}
-      <a
-        class={getToggledStyles(
-          LINK_STYLES,
-          ACTIVE_LINK_STYLES,
-          timeAgo === null || timeAgo === "week",
-        )}
-        href="/?time-ago=week"
-      >
-        Last Week
-      </a>
-      <a
-        class={getToggledStyles(
-          LINK_STYLES,
-          ACTIVE_LINK_STYLES,
-          timeAgo === "month",
-        )}
-        href="/?time-ago=month"
-      >
-        Last Month
-      </a>
-      <a
-        class={getToggledStyles(
-          LINK_STYLES,
-          ACTIVE_LINK_STYLES,
-          timeAgo === "all",
-        )}
-        href="/?time-ago=all"
-      >
-        All time
-      </a>
+      <TabItem
+        path="/?time-ago=week"
+        innerText="Last Week"
+        active={timeAgo === null || timeAgo === "week"}
+      />
+      <TabItem
+        path="/?time-ago=month"
+        innerText="Last Month"
+        active={timeAgo === "month"}
+      />
+      <TabItem
+        path="/?time-ago=all"
+        innerText="All time"
+        active={timeAgo === "all"}
+      />
     </div>
   );
 }
