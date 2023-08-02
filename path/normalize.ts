@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_COLON } from "./_constants.ts";
 import {
   assertPath,
@@ -147,7 +149,7 @@ export function normalize(path: string): string {
   assertPath(path);
   if (path.length === 0) return ".";
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsNormalize(path);
   }
   return posixNormalize(path);

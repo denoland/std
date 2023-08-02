@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_BACKWARD_SLASH } from "./_constants.ts";
 import { assertPath, isPosixPathSeparator } from "./_util.ts";
 import { resolve } from "./resolve.ts";
@@ -198,7 +200,7 @@ export function relative(from: string, to: string): string {
   assertPath(to);
   if (from === to) return "";
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsRelative(from, to);
   }
   return posixRelative(from, to);

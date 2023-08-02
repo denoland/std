@@ -1,4 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { isWindows } from "../_util/os.ts";
 
 function posixFromFileUrl(url: URL): string {
   return decodeURIComponent(
@@ -41,7 +44,7 @@ export function fromFileUrl(url: string | URL): string {
     throw new TypeError("Must be a file URL.");
   }
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsFromFileUrl(url);
   }
   return posixFromFileUrl(url);

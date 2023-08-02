@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import {
   CHAR_BACKWARD_SLASH,
   CHAR_COLON,
@@ -49,7 +51,7 @@ function windowsToNamespacedPath(path: string): string {
  * @param path to resolve to namespace
  */
 export function toNamespacedPath(path: string): string {
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsToNamespacedPath(path);
   }
 

@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_COLON, CHAR_DOT } from "./_constants.ts";
 import {
   assertPath,
@@ -130,7 +132,7 @@ function windowsExtname(path: string): string {
 export function extname(path: string): string {
   assertPath(path);
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsExtname(path);
   }
   return posixExtname(path);

@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { FormatInputPathObject } from "./_interface.ts";
 import { _format } from "./_util.ts";
 
@@ -14,7 +16,7 @@ export function format(pathObject: FormatInputPathObject): string {
     );
   }
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return _format("\\", pathObject);
   }
   return _format("/", pathObject);

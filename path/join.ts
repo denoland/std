@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { assert } from "../assert/assert.ts";
 import { assertPath, isPathSeparator } from "./_util.ts";
 import { normalize } from "./normalize.ts";
@@ -86,7 +88,7 @@ function windowsJoin(...paths: string[]): string {
 export function join(...paths: string[]) {
   if (paths.length === 0) return ".";
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsJoin(...paths);
   }
   return posixJoin(...paths);

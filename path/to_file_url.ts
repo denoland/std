@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { encodeWhitespace } from "./_util.ts";
 import { isAbsolute } from "./is_absolute.ts";
 
@@ -47,7 +49,7 @@ export function toFileUrl(path: string): URL {
     throw new TypeError("Must be an absolute path.");
   }
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsToFileUrl(path);
   }
   return posixToFileUrl(path);

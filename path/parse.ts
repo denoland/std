@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_COLON, CHAR_DOT } from "./_constants.ts";
 import { ParsedPath } from "./_interface.ts";
 import {
@@ -257,7 +259,7 @@ function windowsParse(path: string): ParsedPath {
 export function parse(path: string): ParsedPath {
   assertPath(path);
 
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsParse(path);
   }
   return posixParse(path);

@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_COLON } from "./_constants.ts";
 import {
   assertPath,
@@ -31,7 +33,7 @@ function windowsIsAbsolute(path: string): boolean {
  */
 export function isAbsolute(path: string): boolean {
   assertPath(path);
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsIsAbsolute(path);
   }
   return path.length > 0 && isPosixPathSeparator(path.charCodeAt(0));

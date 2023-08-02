@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
+import { isWindows } from "../_util/os.ts";
 import { CHAR_COLON } from "./_constants.ts";
 import {
   assertPath,
@@ -210,7 +212,7 @@ function windowsResolve(...pathSegments: string[]): string {
  * @param pathSegments to process to path
  */
 export function resolve(...pathSegments: string[]): string {
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return windowsResolve(...pathSegments);
   }
   return posixResolve(...pathSegments);
