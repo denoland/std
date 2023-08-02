@@ -26,26 +26,23 @@ import { isWindows } from "../_util/os.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
 
-const path = isWindows ? _win32 : _posix;
-
 export const win32 = _win32;
 export const posix = _posix;
-export const {
-  basename,
-  delimiter,
-  dirname,
-  extname,
-  format,
-  fromFileUrl,
-  isAbsolute,
-  join,
-  normalize,
-  parse,
-  relative,
-  resolve,
-  toFileUrl,
-  toNamespacedPath,
-} = path;
+export const delimiter = isWindows ? win32.delimiter : posix.delimiter;
+
+export { basename } from "./basename.ts";
+export { dirname } from "./dirname.ts";
+export { extname } from "./extname.ts";
+export { format } from "./format.ts";
+export { fromFileUrl } from "./from_file_url.ts";
+export { isAbsolute } from "./is_absolute.ts";
+export { join } from "./join.ts";
+export { normalize } from "./normalize.ts";
+export { parse } from "./parse.ts";
+export { relative } from "./relative.ts";
+export { resolve } from "./resolve.ts";
+export { toFileUrl } from "./to_file_url.ts";
+export { toNamespacedPath } from "./to_namespaced_path.ts";
 
 export * from "./common.ts";
 export { SEP, SEP_PATTERN } from "./separator.ts";
