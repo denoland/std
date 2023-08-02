@@ -15,6 +15,7 @@ import {
 } from "@/utils/db.ts";
 import { DAY, WEEK } from "std/datetime/constants.ts";
 import Head from "@/components/Head.tsx";
+import { Info } from "@/components/Icons.tsx";
 import { TabItem } from "@/components/TabsBar.tsx";
 
 interface HomePageData extends State {
@@ -88,6 +89,24 @@ export default function HomePage(props: PageProps<HomePageData>) {
       <Head href={props.url.href} />
       <main class="flex-1 p-4">
         <TimeSelector url={props.url} />
+        {props.data.items.length === 0 && (
+          <>
+            <div class="flex flex-col justify-center items-center gap-2">
+              <div class="flex flex-col items-center gap-2 pt-16">
+                <Info class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+                <p class="text-center font-medium">No items found</p>
+              </div>
+
+              <a
+                href="/submit"
+                class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-primary hover:underline"
+              >
+                Submit your project
+              </a>
+            </div>
+          </>
+        )}
+
         {props.data.items.map((item, index) => (
           <ItemSummary
             item={item}
