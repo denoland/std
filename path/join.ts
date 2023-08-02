@@ -2,6 +2,7 @@
 
 import { assert } from "../assert/assert.ts";
 import { assertPath, isPathSeparator } from "./_util.ts";
+import { normalize } from "./normalize.ts";
 
 function posixJoin(...paths: string[]): string {
   let joined: string | undefined;
@@ -14,13 +15,14 @@ function posixJoin(...paths: string[]): string {
     }
   }
   if (!joined) return ".";
+  // TODO(lino-levan): specify posix as OS
   return normalize(joined);
 }
 
 function windowsJoin(...paths: string[]): string {
   let joined: string | undefined;
   let firstPart: string | null = null;
-  for (let i = 0; i < pathsCount; ++i) {
+  for (let i = 0; i < paths.length; ++i) {
     const path = paths[i];
     assertPath(path);
     if (path.length > 0) {
@@ -73,6 +75,7 @@ function windowsJoin(...paths: string[]): string {
     if (slashCount >= 2) joined = `\\${joined.slice(slashCount)}`;
   }
 
+  // TODO(lino-levan): specify windows as OS
   return normalize(joined);
 }
 

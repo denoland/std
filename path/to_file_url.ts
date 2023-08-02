@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { encodeWhitespace } from "./_util.ts";
+import { isAbsolute } from "./is_absolute.ts";
 
 function posixToFileUrl(path: string) {
   const url = new URL("file:///");

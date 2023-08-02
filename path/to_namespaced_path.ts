@@ -7,12 +7,14 @@ import {
   CHAR_QUESTION_MARK,
 } from "./_constants.ts";
 import { isWindowsDeviceRoot } from "./_util.ts";
+import { resolve } from "./resolve.ts";
 
 function windowsToNamespacedPath(path: string): string {
   // Note: this will *probably* throw somewhere.
   if (typeof path !== "string") return path;
   if (path.length === 0) return "";
 
+  // TODO(lino-levan): specify windows as OS
   const resolvedPath = resolve(path);
 
   if (resolvedPath.length >= 3) {

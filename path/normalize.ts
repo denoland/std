@@ -26,6 +26,7 @@ function posixNormalize(path: string): string {
 }
 
 function windowsNormalize(path: string): string {
+  const len = path.length;
   let rootEnd = 0;
   let device: string | undefined;
   let isAbsolute = false;

@@ -42,6 +42,7 @@ function posixDirname(path: string): string {
 }
 
 function windowsDirname(path: string): string {
+  const len = path.length;
   let rootEnd = -1;
   let end = -1;
   let matchedSlash = true;

@@ -2,8 +2,10 @@
 
 import { CHAR_BACKWARD_SLASH } from "./_constants.ts";
 import { assertPath, isPosixPathSeparator } from "./_util.ts";
+import { resolve } from "./resolve.ts";
 
 function posixRelative(from: string, to: string): string {
+  // TODO(lino-levan): specify posix as OS
   from = resolve(from);
   to = resolve(to);
 
@@ -81,6 +83,7 @@ function posixRelative(from: string, to: string): string {
 }
 
 function windowsRelative(from: string, to: string): string {
+  // TODO(lino-levan): specify windows as OS
   const fromOrig = resolve(from);
   const toOrig = resolve(to);
 
