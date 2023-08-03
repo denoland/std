@@ -1,3 +1,11 @@
+### 0.197.0 / 2023.08.03
+
+- BREAKING(testing/snapshot): change tab char serialization (#3447)
+- BREAKING(testing/snapshot): fix regression of serialization of long strings
+  (#3507)
+- feat(fs/walk): include symlink option (#3464)
+- fix(toml/parse): fix edge cases (#3509)
+
 ### 0.196.0 / 2023.07.26
 
 - BREAKING(http/server): deprecate serve and serveTls (#3381)
