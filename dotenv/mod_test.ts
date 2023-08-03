@@ -875,7 +875,7 @@ Deno.test(
       assertThrows(
         () => loadSync(optsOnlyEnvPath),
         Deno.errors.PermissionDenied,
-        `Requires env access to, run again with the --allow-env flag`,
+        `Requires env access, run again with the --allow-env flag`,
       );
     });
   },
