@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { isValidNumber } from "./_shared.ts";
+import { FULL, isValidNumber } from "./_shared.ts";
 import { isSemVer } from "./is_semver.ts";
-import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
+import { MAX_LENGTH } from "./_shared.ts";
 
 /**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
@@ -48,7 +48,7 @@ export function parse(
 
   version = version.trim();
 
-  const r = re[FULL];
+  const r = FULL;
   const m = version.match(r);
   if (!m) {
     throw new TypeError(`Invalid Version: ${version}`);
@@ -72,7 +72,7 @@ export function parse(
   }
 
   // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^${src[NUMERICIDENTIFIER]}$`);
+  const numericIdentifier = new RegExp(`^0|[1-9]\\d*$`);
   const prerelease = (m[4] ?? "")
     .split(".")
     .filter((id) => id)

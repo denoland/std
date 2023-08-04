@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import { CARET, HYPHENRANGE, re, STAR, TILDE, XRANGE } from "./_shared.ts";
+import { CARET, HYPHENRANGE, STAR, TILDE, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 // ~, ~> --> * (any, kinda silly)
@@ -19,7 +19,7 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  const r: RegExp = re[TILDE];
+  const r: RegExp = TILDE;
   return comp.replace(
     r,
     (_: string, M: string, m: string, p: string, pr: string) => {
@@ -71,7 +71,7 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  const r: RegExp = re[CARET];
+  const r: RegExp = CARET;
   return comp.replace(r, (_: string, M, m, p, pr) => {
     let ret: string;
 
@@ -147,7 +147,7 @@ function replaceXRanges(comp: string): string {
 
 function replaceXRange(comp: string): string {
   comp = comp.trim();
-  const r: RegExp = re[XRANGE];
+  const r: RegExp = XRANGE;
   return comp.replace(r, (ret: string, gtlt, M, m, p, _pr) => {
     const xM: boolean = isX(M);
     const xm: boolean = xM || isX(m);
@@ -212,7 +212,7 @@ function replaceXRange(comp: string): string {
 // Because * is AND-ed with everything else in the comparator,
 // and '' means "any version", just remove the *s entirely.
 function replaceStars(comp: string): string {
-  return comp.trim().replace(re[STAR], "");
+  return comp.trim().replace(STAR, "");
 }
 
 // This function is passed to string.replace(re[HYPHENRANGE])
@@ -283,7 +283,7 @@ export function parseRange(range: string): SemVerRange {
     .split(/\s*\|\|\s*/)
     .map((range) => {
       // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
-      const hr: RegExp = re[HYPHENRANGE];
+      const hr: RegExp = HYPHENRANGE;
       range = range.replace(hr, hyphenReplace);
       range = replaceCarets(range);
       range = replaceTildes(range);
