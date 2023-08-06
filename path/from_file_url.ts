@@ -2,25 +2,7 @@
 // This module is browser compatible.
 
 import { isWindows } from "../_util/os.ts";
-
-function posixFromFileUrl(url: URL): string {
-  return decodeURIComponent(
-    url.pathname.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
-  );
-}
-
-function windowsFromFileUrl(url: URL): string {
-  let path = decodeURIComponent(
-    url.pathname.replace(/\//g, "\\").replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
-  ).replace(/^\\*([A-Za-z]:)(\\|$)/, "$1\\");
-  if (url.hostname != "") {
-    // Note: The `URL` implementation guarantees that the drive letter and
-    // hostname are mutually exclusive. Otherwise it would not have been valid
-    // to append the hostname and path like this.
-    path = `\\\\${url.hostname}${path}`;
-  }
-  return path;
-}
+import { posixFromFileUrl, windowsFromFileUrl } from "./_from_file_url.ts";
 
 /**
  * Converts a file URL to a path string.
@@ -39,13 +21,5 @@ function windowsFromFileUrl(url: URL): string {
  * @param url of a file URL
  */
 export function fromFileUrl(url: string | URL): string {
-  url = url instanceof URL ? url : new URL(url);
-  if (url.protocol != "file:") {
-    throw new TypeError("Must be a file URL.");
-  }
-
-  if (isWindows) {
-    return windowsFromFileUrl(url);
-  }
-  return posixFromFileUrl(url);
+  return isWindows ? windowsFromFileUrl(url) : posixFromFileUrl(url);
 }

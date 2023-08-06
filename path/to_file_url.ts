@@ -2,31 +2,7 @@
 // This module is browser compatible.
 
 import { isWindows } from "../_util/os.ts";
-import { encodeWhitespace } from "./_util.ts";
-import { isAbsolute } from "./is_absolute.ts";
-
-function posixToFileUrl(path: string) {
-  const url = new URL("file:///");
-  url.pathname = encodeWhitespace(
-    path.replace(/%/g, "%25").replace(/\\/g, "%5C"),
-  );
-  return url;
-}
-
-function windowsToFileUrl(path: string): URL {
-  const [, hostname, pathname] = path.match(
-    /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
-  )!;
-  const url = new URL("file:///");
-  url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
-  if (hostname != null && hostname != "localhost") {
-    url.hostname = hostname;
-    if (!url.hostname) {
-      throw new TypeError("Invalid hostname.");
-    }
-  }
-  return url;
-}
+import { posixToFileUrl, windowsToFileUrl } from "./_to_file_url.ts";
 
 /**
  * Converts a path string to a file URL.
@@ -45,12 +21,5 @@ function windowsToFileUrl(path: string): URL {
  * @param path to convert to file URL
  */
 export function toFileUrl(path: string): URL {
-  if (!isAbsolute(path)) {
-    throw new TypeError("Must be an absolute path.");
-  }
-
-  if (isWindows) {
-    return windowsToFileUrl(path);
-  }
-  return posixToFileUrl(path);
+  return isWindows ? windowsToFileUrl(path) : posixToFileUrl(path);
 }
