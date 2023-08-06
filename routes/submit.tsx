@@ -45,7 +45,7 @@ export const handler: Handlers<State, State> = {
     if (!user) return new Response(null, { status: 400 });
 
     const item: Item = {
-      userId: user.id,
+      userLogin: user.login,
       title,
       url,
       ...newItemProps(),

@@ -5,7 +5,6 @@ import UserPostedAt from "./UserPostedAt.tsx";
 
 export interface ItemSummaryProps {
   item: Item;
-  user: User;
   isVoted: boolean;
 }
 
@@ -33,7 +32,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
           </a>
         </p>
         <UserPostedAt
-          userLogin={props.user.login}
+          userLogin={props.item.userLogin}
           createdAt={props.item.createdAt}
         />
       </div>

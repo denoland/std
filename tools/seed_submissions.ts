@@ -62,10 +62,10 @@ async function fetchTopStories(limit = 10) {
 }
 
 async function seedSubmissions(stories: Story[]) {
-  const items = stories.map(({ by: userId, title, url, score, time }) => {
+  const items = stories.map(({ by: userLogin, title, url, score, time }) => {
     return {
       ...newItemProps(),
-      userId,
+      userLogin,
       title,
       url,
       score,
@@ -94,12 +94,11 @@ async function main(limit = 20) {
 
   // Create dummy users to ensure each post has a corresponding user
   for (const batch of batchify(items)) {
-    await Promise.allSettled(batch.map(({ userId: id }) => {
+    await Promise.allSettled(batch.map(({ userLogin }) => {
       const user: User = {
-        id, // id must match userId for post
-        login: id,
-        stripeCustomerId: crypto.randomUUID(), // unique per userId
-        sessionId: crypto.randomUUID(), // unique per userId
+        login: userLogin,
+        stripeCustomerId: crypto.randomUUID(), // unique per user
+        sessionId: crypto.randomUUID(), // unique per user
         ...newUserProps(),
       };
       return createUser(user); // ignore errors if dummy user already exists

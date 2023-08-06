@@ -16,7 +16,6 @@ import {
 } from "@/utils/redirect.ts";
 
 interface GitHubUser {
-  id: number;
   login: string;
   email: string;
 }
@@ -43,7 +42,7 @@ export default async function CallbackPage(req: Request) {
 
   const githubUser = await getGitHubUser(accessToken);
 
-  const user = await getUser(githubUser.id.toString());
+  const user = await getUser(githubUser.login);
   if (!user) {
     let stripeCustomerId = undefined;
     if (stripe) {
@@ -53,7 +52,6 @@ export default async function CallbackPage(req: Request) {
       stripeCustomerId = customer.id;
     }
     const user: User = {
-      id: githubUser.id.toString(),
       login: githubUser.login,
       stripeCustomerId,
       sessionId,

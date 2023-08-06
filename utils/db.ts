@@ -1,4 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { assertNotEquals } from "std/testing/asserts.ts";
 import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
@@ -45,6 +46,12 @@ async function getManyValues<T>(
     .map((entry) => entry?.value);
 }
 
+export function assertIsEntry<T>(
+  entry: Deno.KvEntryMaybe<T>,
+): asserts entry is Deno.KvEntry<T> {
+  assertNotEquals(entry.value, null, `KV entry not found: ${entry.key}`);
+}
+
 /** Gets all dates since a given number of milliseconds ago */
 export function getDatesSince(msAgo: number) {
   const dates = [];
@@ -66,7 +73,7 @@ export function formatDate(date: Date) {
 
 // Item
 export interface Item {
-  userId: string;
+  userLogin: string;
   title: string;
   url: string;
   // The below properties can be automatically generated upon item creation
@@ -91,7 +98,7 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
  * import { newItemProps, createItem } from "@/utils/db.ts";
  *
  * const item: Item = {
- *   userId: "example-user-id",
+ *   userLogin: "example-user-login",
  *   title: "example-title",
  *   url: "https://example.com"
  *   ..newItemProps(),
@@ -103,8 +110,8 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
 export async function createItem(item: Item) {
   const itemsKey = ["items", item.id];
   const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
-  const itemsByUserKey = ["items_by_user", item.userId, item.id];
-  const itemsCountKey = ["items_count", formatDate(new Date())];
+  const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
+  const itemsCountKey = ["items_count", formatDate(item.createdAt)];
 
   const res = await kv.atomic()
     .check({ key: itemsKey, versionstamp: null })
@@ -122,7 +129,7 @@ export async function createItem(item: Item) {
 export async function deleteItem(item: Item) {
   const itemsKey = ["items", item.id];
   const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
-  const itemsByUserKey = ["items_by_user", item.userId, item.id];
+  const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
 
   const res = await kv.atomic()
     .delete(itemsKey)
@@ -137,8 +144,8 @@ export async function getItem(id: string) {
   return await getValue<Item>(["items", id]);
 }
 
-export async function getItemsByUser(userId: string) {
-  return await getValues<Item>({ prefix: ["items_by_user", userId] });
+export async function getItemsByUser(userLogin: string) {
+  return await getValues<Item>({ prefix: ["items_by_user", userLogin] });
 }
 
 export async function getAllItems() {
@@ -173,7 +180,7 @@ export async function getItemsSince(msAgo: number) {
 
 // Notification
 export interface Notification {
-  userId: string;
+  userLogin: string;
   type: string;
   text: string;
   originUrl: string;
@@ -197,7 +204,7 @@ export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
  * import { newNotificationProps, createNotification } from "@/utils/db.ts";
  *
  * const notification: Notification = {
- *   userId: "example-user-id",
+ *   userLogin: "example-user-login",
  *   type: "example-type",
  *   text: "Hello, world!",
  *   originUrl: "https://hunt.deno.land"
@@ -211,7 +218,7 @@ export async function createNotification(notification: Notification) {
   const notificationsKey = ["notifications", notification.id];
   const notificationsByUserKey = [
     "notifications_by_user",
-    notification.userId,
+    notification.userLogin,
     notification.id,
   ];
 
@@ -231,7 +238,7 @@ export async function deleteNotification(notification: Notification) {
   const notificationsKey = ["notifications", notification.id];
   const notificationsByUserKey = [
     "notifications_by_user",
-    notification.userId,
+    notification.userLogin,
     notification.id,
   ];
 
@@ -249,14 +256,14 @@ export async function getNotification(id: string) {
   return await getValue<Notification>(["notifications", id]);
 }
 
-export async function getNotificationsByUser(userId: string) {
+export async function getNotificationsByUser(userLogin: string) {
   return await getValues<Notification>({
-    prefix: ["notifications_by_user", userId],
+    prefix: ["notifications_by_user", userLogin],
   });
 }
 
-export async function ifUserHasNotifications(userId: string) {
-  const iter = kv.list({ prefix: ["notifications_by_user", userId] }, {
+export async function ifUserHasNotifications(userLogin: string) {
+  const iter = kv.list({ prefix: ["notifications_by_user", userLogin] }, {
     consistency: "eventual",
   });
   for await (const _entry of iter) return true;
@@ -306,9 +313,19 @@ export async function getCommentsByItem(itemId: string) {
 }
 
 // Vote
-interface Vote {
+export interface Vote {
+  userLogin: string;
   item: Item;
-  user: User;
+  // The below property can be automatically generated upon vote creation
+  id: string;
+  createdAt: Date;
+}
+
+export function newVoteProps(): Pick<Vote, "id" | "createdAt"> {
+  return {
+    id: crypto.randomUUID(),
+    createdAt: new Date(),
+  };
 }
 
 export async function createVote(vote: Vote) {
@@ -320,65 +337,42 @@ export async function createVote(vote: Vote) {
     vote.item.createdAt.getTime(),
     vote.item.id,
   ];
-  const itemsByUserKey = ["items_by_user", vote.item.userId, vote.item.id];
-  const votedItemsByUserKey = [
-    "voted_items_by_user",
-    vote.user.id,
-    vote.item.id,
-  ];
-  const votedUsersByItemKey = [
-    "voted_users_by_item",
-    vote.item.id,
-    vote.user.id,
-  ];
-  const votesCountKey = ["votes_count", formatDate(new Date())];
-
+  const itemsByUserKey = ["items_by_user", vote.item.userLogin, vote.item.id];
   const [itemRes, itemsByTimeRes, itemsByUserRes] = await kv.getMany([
     itemKey,
     itemsByTimeKey,
     itemsByUserKey,
   ]);
+  assertIsEntry(itemRes);
+  assertIsEntry(itemsByTimeRes);
+  assertIsEntry(itemsByUserRes);
+
+  const votesKey = ["votes", vote.id];
+  const votesByItemKey = ["votes_by_item", vote.item.id, vote.id];
+  const votesByUserKey = ["votes_by_user", vote.userLogin, vote.id];
+  const votesCountKey = ["votes_count", formatDate(vote.createdAt)];
+
   const res = await kv.atomic()
     .check(itemRes)
     .check(itemsByTimeRes)
     .check(itemsByUserRes)
-    .check({ key: votedItemsByUserKey, versionstamp: null })
-    .check({ key: votedUsersByItemKey, versionstamp: null })
+    .check({ key: votesKey, versionstamp: null })
+    .check({ key: votesByItemKey, versionstamp: null })
+    .check({ key: votesByUserKey, versionstamp: null })
     .set(itemKey, vote.item)
     .set(itemsByTimeKey, vote.item)
     .set(itemsByUserKey, vote.item)
-    .set(votedItemsByUserKey, vote.item)
-    .set(votedUsersByItemKey, vote.user)
+    .set(votesKey, vote)
+    .set(votesByItemKey, vote)
+    .set(votesByUserKey, vote)
     .sum(votesCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to set vote: ${vote}`);
-
-  return vote;
 }
 
 export async function deleteVote(vote: Vote) {
   vote.item.score--;
-
-  const votedItemsByUserKey = [
-    "voted_items_by_user",
-    vote.user.id,
-    vote.item.id,
-  ];
-  const votedUsersByItemKey = [
-    "voted_users_by_item",
-    vote.item.id,
-    vote.user.id,
-  ];
-
-  const [votedItemsByUserRes, votedUsersByItemRes] = await kv.getMany([
-    votedItemsByUserKey,
-    votedUsersByItemKey,
-  ]);
-
-  if (!votedItemsByUserRes.value || !votedUsersByItemRes.value) {
-    throw new Error(`Failed to delete vote: ${vote}`);
-  }
 
   const itemKey = ["items", vote.item.id];
   const itemsByTimeKey = [
@@ -386,13 +380,19 @@ export async function deleteVote(vote: Vote) {
     vote.item.createdAt.getTime(),
     vote.item.id,
   ];
-  const itemsByUserKey = ["items_by_user", vote.item.userId, vote.item.id];
-
+  const itemsByUserKey = ["items_by_user", vote.item.userLogin, vote.item.id];
   const [itemRes, itemsByTimeRes, itemsByUserRes] = await kv.getMany([
     itemKey,
     itemsByTimeKey,
     itemsByUserKey,
   ]);
+  assertIsEntry(itemRes);
+  assertIsEntry(itemsByTimeRes);
+  assertIsEntry(itemsByUserRes);
+
+  const votesKey = ["votes", vote.id];
+  const votesByItemKey = ["votes_by_item", vote.item.id, vote.id];
+  const votesByUserKey = ["votes_by_user", vote.userLogin, vote.id];
 
   const res = await kv.atomic()
     .check(itemRes)
@@ -401,20 +401,21 @@ export async function deleteVote(vote: Vote) {
     .set(itemKey, vote.item)
     .set(itemsByTimeKey, vote.item)
     .set(itemsByUserKey, vote.item)
-    .delete(votedItemsByUserKey)
-    .delete(votedUsersByItemKey)
+    .delete(votesKey)
+    .delete(votesByItemKey)
+    .delete(votesByUserKey)
     .commit();
 
   if (!res.ok) throw new Error(`Failed to delete vote: ${vote}`);
 }
 
-export async function getVotedItemsByUser(userId: string) {
-  return await getValues<Item>({ prefix: ["voted_items_by_user", userId] });
+export async function getVotesByUser(userLogin: string) {
+  return await getValues<Vote>({ prefix: ["votes_by_user", userLogin] });
 }
 
 // User
 export interface User {
-  id: string;
+  // AKA username
   login: string;
   sessionId: string;
   stripeCustomerId?: string;
@@ -436,7 +437,6 @@ export function newUserProps(): Pick<User, "isSubscribed"> {
  * import { createUser, newUser } from "@/utils/db.ts";
  *
  * const user = {
- *   id: "id",
  *   login: "login",
  *   sessionId: "sessionId",
  *   ...newUserProps(),
@@ -445,8 +445,7 @@ export function newUserProps(): Pick<User, "isSubscribed"> {
  * ```
  */
 export async function createUser(user: User) {
-  const usersKey = ["users", user.id];
-  const usersByLoginKey = ["users_by_login", user.login];
+  const usersKey = ["users", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
   const usersCountKey = ["users_count", formatDate(new Date())];
 
@@ -464,10 +463,8 @@ export async function createUser(user: User) {
 
   const res = await atomicOp
     .check({ key: usersKey, versionstamp: null })
-    .check({ key: usersByLoginKey, versionstamp: null })
     .check({ key: usersBySessionKey, versionstamp: null })
     .set(usersKey, user)
-    .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
     .sum(usersCountKey, 1n)
     .commit();
@@ -476,8 +473,7 @@ export async function createUser(user: User) {
 }
 
 export async function updateUser(user: User) {
-  const usersKey = ["users", user.id];
-  const usersByLoginKey = ["users_by_login", user.login];
+  const usersKey = ["users", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
 
   const atomicOp = kv.atomic();
@@ -493,7 +489,6 @@ export async function updateUser(user: User) {
 
   const res = await atomicOp
     .set(usersKey, user)
-    .set(usersByLoginKey, user)
     .set(usersBySessionKey, user)
     .commit();
 
@@ -504,12 +499,8 @@ export async function deleteUserBySession(sessionId: string) {
   await kv.delete(["users_by_session", sessionId]);
 }
 
-export async function getUser(id: string) {
-  return await getValue<User>(["users", id]);
-}
-
-export async function getUserByLogin(login: string) {
-  return await getValue<User>(["users_by_login", login]);
+export async function getUser(login: string) {
+  return await getValue<User>(["users", login]);
 }
 
 export async function getUserBySession(sessionId: string) {
@@ -526,12 +517,6 @@ export async function getUserByStripeCustomer(stripeCustomerId: string) {
   ]);
 }
 
-export async function getManyUsers(ids: string[]) {
-  const keys = ids.map((id) => ["users", id]);
-  const res = await getManyValues<User>(keys);
-  return res.filter(Boolean) as User[];
-}
-
 export async function getUsers() {
   return await getValues<User>({ prefix: ["users"] });
 }
@@ -543,9 +528,9 @@ export async function getAreVotedBySessionId(
   if (!sessionId) return [];
   const sessionUser = await getUserBySession(sessionId);
   if (!sessionUser) return [];
-  const votedItems = await getVotedItemsByUser(sessionUser.id);
-  const votedItemIds = votedItems.map((item) => item.id);
-  return items.map((item) => votedItemIds.includes(item.id));
+  const votes = await getVotesByUser(sessionUser.login);
+  const votesItemsIds = votes.map((vote) => vote.item.id);
+  return items.map((item) => votesItemsIds.includes(item.id));
 }
 
 export function compareScore(a: Item, b: Item) {

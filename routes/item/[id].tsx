@@ -49,7 +49,7 @@ export const handler: Handlers<ItemPageData, State> = {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
 
-    const user = await getUser(item.userId);
+    const user = await getUser(item.userLogin);
 
     const [isVoted] = await getAreVotedBySessionId(
       [item],
@@ -95,9 +95,9 @@ export const handler: Handlers<ItemPageData, State> = {
     };
     await createComment(comment);
 
-    if (item.userId !== user.id) {
+    if (item.userLogin !== user.login) {
       const notification: Notification = {
-        userId: item.userId,
+        userLogin: item.userLogin,
         type: "comment",
         text: `${user.login} commented on your post: ${item.title}`,
         originUrl: `/item/${itemId}`,
@@ -144,7 +144,6 @@ export default function ItemPage(props: PageProps<ItemPageData>) {
         <ItemSummary
           item={props.data.item}
           isVoted={props.data.isVoted}
-          user={props.data.user}
         />
         <CommentInput />
         <div>

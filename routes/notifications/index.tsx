@@ -13,7 +13,7 @@ interface NotificationsState extends SignedInState {
 // deno-lint-ignore no-explicit-any
 export const handler: Handlers<any, NotificationsState> = {
   async GET(_req, ctx) {
-    const notifications = await getNotificationsByUser(ctx.state.user.id);
+    const notifications = await getNotificationsByUser(ctx.state.user.login);
 
     return await ctx.render({ ...ctx.state, notifications });
   },

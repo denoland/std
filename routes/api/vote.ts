@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { HandlerContext, Handlers, PageProps } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
-import { createVote, deleteVote, getItem } from "@/utils/db.ts";
+import { createVote, deleteVote, getItem, newVoteProps } from "@/utils/db.ts";
 import {
   createNotification,
   getUserBySession,
@@ -18,7 +18,6 @@ async function sharedHandler(
   }
 
   const itemId = new URL(req.url).searchParams.get("item_id");
-
   if (!itemId) {
     return new Response(null, { status: 400 });
   }
@@ -27,12 +26,15 @@ async function sharedHandler(
     getItem(itemId),
     getUserBySession(ctx.state.sessionId),
   ]);
-
   if (item === null || user === null) {
     return new Response(null, { status: 404 });
   }
 
-  const vote = { item, user };
+  const vote = {
+    item,
+    userLogin: user.login,
+    ...newVoteProps(),
+  };
   let status;
   switch (req.method) {
     case "DELETE":
@@ -43,9 +45,9 @@ async function sharedHandler(
       status = 201;
       await createVote(vote);
 
-      if (item.userId !== user.id) {
+      if (item.userLogin !== user.login) {
         const notification: Notification = {
-          userId: item.userId,
+          userLogin: item.userLogin,
           type: "vote",
           text: `${user.login} upvoted your post: ${item.title}`,
           originUrl: `/item/${itemId}`,

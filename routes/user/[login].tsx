@@ -8,7 +8,7 @@ import {
   compareScore,
   getAreVotedBySessionId,
   getItemsByUser,
-  getUserByLogin,
+  getUser,
   type Item,
   type User,
 } from "@/utils/db.ts";
@@ -31,12 +31,12 @@ export const handler: Handlers<UserData, State> = {
     const url = new URL(req.url);
     const pageNum = calcPageNum(url);
 
-    const user = await getUserByLogin(ctx.params.login);
+    const user = await getUser(ctx.params.login);
     if (user === null) {
       return ctx.renderNotFound();
     }
 
-    const allItems = await getItemsByUser(user.id);
+    const allItems = await getItemsByUser(user.login);
     const itemsCount = allItems.length;
 
     const items = allItems.sort(compareScore).slice(
@@ -109,7 +109,6 @@ export default function UserPage(props: PageProps<UserData>) {
           <ItemSummary
             item={item}
             isVoted={props.data.areVoted[index]}
-            user={props.data.user}
           />
         ))}
         {props.data.lastPage > 1 && (
