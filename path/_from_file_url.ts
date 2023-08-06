@@ -13,15 +13,9 @@ function assertArg(url: URL | string) {
  * Converts a file URL to a path string.
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix.ts";
  *
- * // posix
  * fromFileUrl("file:///home/foo"); // "/home/foo"
- *
- * // win32
- * fromFileUrl("file:///home/foo"); // "\\home\\foo"
- * fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
- * fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
  * ```
  * @param url of a file URL
  */
@@ -36,12 +30,8 @@ export function posixFromFileUrl(url: URL | string): string {
  * Converts a file URL to a path string.
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/win32.ts";
  *
- * // posix
- * fromFileUrl("file:///home/foo"); // "/home/foo"
- *
- * // win32
  * fromFileUrl("file:///home/foo"); // "\\home\\foo"
  * fromFileUrl("file:///C:/Users/foo"); // "C:\\Users\\foo"
  * fromFileUrl("file://localhost/home/foo"); // "\\\\localhost\\home\\foo"
