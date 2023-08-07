@@ -33,7 +33,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * assertEquals(
  *   parseMediaType("text/html; charset=UTF-8"),
  *   [
- *     "application/json",
+ *     "text/html",
  *     { charset: "UTF-8" },
  *   ]
  * );
