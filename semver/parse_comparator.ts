@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { parse } from "./parse.ts";
 import type { Operator, SemVerComparator } from "./types.ts";
-import { COMPARATOR } from "./_shared.ts";
+import { COMPARATOR_REGEXP } from "./_shared.ts";
 import { comparatorMax } from "./comparator_max.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { ANY, NONE } from "./constants.ts";
@@ -12,7 +12,7 @@ import { ANY, NONE } from "./constants.ts";
  * @returns A valid SemVerComparator
  */
 export function parseComparator(comparator: string): SemVerComparator {
-  const r = COMPARATOR;
+  const r = COMPARATOR_REGEXP;
   const m = comparator.match(r);
 
   if (!m) {

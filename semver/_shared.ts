@@ -70,19 +70,19 @@ export function compareIdentifier(
 // capturing group, because it should not ever be used in version
 // comparison.
 
-export const FULL =
+export const FULL_REGEXP =
   /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*))?(?:\+([\dA-Z-]+(?:\.[\da-z-]+)*))?$/i;
-export const XRANGE =
+export const XRANGE_REGEXP =
   /^((?:<|>)?=?)\s*[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
-export const TILDE =
+export const TILDE_REGEXP =
   /^(?:~>?)[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
-export const CARET =
+export const CARET_REGEXP =
   /^(?:\^)[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
-export const COMPARATOR =
+export const COMPARATOR_REGEXP =
   /^((?:<|>)?=?)\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)$|^$/i;
-export const HYPHENRANGE =
+export const HYPHENRANGE_REGEXP =
   /^\s*([v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?)\s+-\s+([v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z0-9-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z0-9-]*))*)))?(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)?)?)\s*$/i;
-export const STAR = /(<|>)?=?\s*\*/;
+export const STAR_REGEXP = /(<|>)?=?\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.

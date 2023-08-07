@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { FULL, isValidNumber } from "./_shared.ts";
+import { FULL_REGEXP, isValidNumber } from "./_shared.ts";
 import { isSemVer } from "./is_semver.ts";
 import { MAX_LENGTH } from "./_shared.ts";
 
@@ -48,7 +48,7 @@ export function parse(
 
   version = version.trim();
 
-  const r = FULL;
+  const r = FULL_REGEXP;
   const m = version.match(r);
   if (!m) {
     throw new TypeError(`Invalid Version: ${version}`);
