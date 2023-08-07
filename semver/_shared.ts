@@ -77,7 +77,7 @@ let R = 0;
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
 const NUMERICIDENTIFIER: number = R++;
-src[NUMERICIDENTIFIER] = "0|[1-9]\\d*";
+src[NUMERICIDENTIFIER] = "[0-9]\\d*";
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or

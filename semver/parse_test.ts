@@ -74,6 +74,7 @@ Deno.test("prerelease", async (t) => {
     ["v0.5.4-pre", ["pre"]],
     ["1.2.2-alpha.1", ["alpha", 1]],
     ["2.0.0", []],
+    ["v2.296.2-ubuntu-20.04", ["ubuntu-20", 4]],
   ];
 
   for (const [v, expected] of versions) {
