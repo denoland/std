@@ -25,48 +25,36 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  const r: RegExp = TILDE_REGEXP;
-  return comp.replace(
-    r,
-    (
-      _: string,
-      _operator: string,
-      M: string,
-      m: string,
-      p: string,
-      pr: string,
-    ) => {
-      let ret: string;
+  const groups = TILDE_REGEXP.exec(comp)?.groups;
+  if (!groups) return comp;
+  const { major, minor, patch, prerelease } = groups;
 
-      if (isX(M)) {
-        ret = "";
-      } else if (isX(m)) {
-        ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
-      } else if (isX(p)) {
-        // ~1.2 == >=1.2.0 <1.3.0
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
-      } else if (pr) {
-        ret = ">=" +
-          M +
-          "." +
-          m +
-          "." +
-          p +
-          "-" +
-          pr +
-          " <" +
-          M +
-          "." +
-          (+m + 1) +
-          ".0";
-      } else {
-        // ~1.2.3 == >=1.2.3 <1.3.0
-        ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
-      }
-
-      return ret;
-    },
-  );
+  if (isX(major)) {
+    return "";
+  } else if (isX(minor)) {
+    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+  } else if (isX(patch)) {
+    // ~1.2 == >=1.2.0 <1.3.0
+    return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
+      ".0";
+  } else if (prerelease) {
+    return ">=" +
+      major +
+      "." +
+      minor +
+      "." +
+      patch +
+      "-" +
+      prerelease +
+      " <" +
+      major +
+      "." +
+      (+minor + 1) +
+      ".0";
+  }
+  // ~1.2.3 == >=1.2.3 <1.3.0
+  return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
+    (+minor + 1) + ".0";
 }
 
 // ^ --> * (any, kinda silly)
@@ -84,71 +72,79 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  const r: RegExp = CARET_REGEXP;
-  return comp.replace(r, (_: string, _operator: string, M, m, p, pr) => {
-    let ret: string;
+  const groups = CARET_REGEXP.exec(comp)?.groups;
+  if (!groups) return comp;
+  const {
+    major,
+    minor,
+    patch,
+    prerelease,
+  } = groups;
 
-    if (isX(M)) {
-      ret = "";
-    } else if (isX(m)) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
-    } else if (isX(p)) {
-      if (M === "0") {
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+  if (isX(major)) {
+    return "";
+  } else if (isX(minor)) {
+    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+  } else if (isX(patch)) {
+    if (major === "0") {
+      return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
+        ".0";
+    } else {
+      return ">=" + major + "." + minor + ".0 <" + (+major + 1) + ".0.0";
+    }
+  } else if (prerelease) {
+    if (major === "0") {
+      if (minor === "0") {
+        return ">=" +
+          major +
+          "." +
+          minor +
+          "." +
+          patch +
+          "-" +
+          prerelease +
+          " <" +
+          major +
+          "." +
+          minor +
+          "." +
+          (+patch + 1);
       } else {
-        ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
-      }
-    } else if (pr) {
-      if (M === "0") {
-        if (m === "0") {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            m +
-            "." +
-            (+p + 1);
-        } else {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            (+m + 1) +
-            ".0";
-        }
-      } else {
-        ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) +
-          ".0.0";
+        return ">=" +
+          major +
+          "." +
+          minor +
+          "." +
+          patch +
+          "-" +
+          prerelease +
+          " <" +
+          major +
+          "." +
+          (+minor + 1) +
+          ".0";
       }
     } else {
-      if (M === "0") {
-        if (m === "0") {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." +
-            (+p + 1);
-        } else {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
-        }
-      } else {
-        ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
-      }
+      return ">=" + major + "." + minor + "." + patch + "-" + prerelease +
+        " <" +
+        (+major + 1) +
+        ".0.0";
     }
-
-    return ret;
-  });
+  } else {
+    if (major === "0") {
+      if (minor === "0") {
+        return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
+          minor + "." +
+          (+patch + 1);
+      } else {
+        return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
+          (+minor + 1) + ".0";
+      }
+    } else {
+      return ">=" + major + "." + minor + "." + patch + " <" + (+major + 1) +
+        ".0.0";
+    }
+  }
 }
 
 function replaceXRanges(comp: string): string {
@@ -160,66 +156,71 @@ function replaceXRanges(comp: string): string {
 
 function replaceXRange(comp: string): string {
   comp = comp.trim();
-  const r: RegExp = XRANGE_REGEXP;
-  return comp.replace(r, (ret: string, gtlt, M, m, p, _pr) => {
-    const xM: boolean = isX(M);
-    const xm: boolean = xM || isX(m);
-    const xp: boolean = xm || isX(p);
-    const anyX: boolean = xp;
+  const groups = XRANGE_REGEXP.exec(comp)?.groups;
+  if (!groups) return comp;
+  let { operator } = groups;
+  const xM: boolean = isX(groups.major);
+  const xm: boolean = xM || isX(groups.minor);
+  const xp: boolean = xm || isX(groups.patch);
 
-    if (gtlt === "=" && anyX) {
-      gtlt = "";
+  let major = +groups.major;
+  let minor = +groups.minor;
+  let patch = +groups.patch;
+
+  const anyX: boolean = xp;
+
+  if (operator === "=" && anyX) {
+    operator = "";
+  }
+
+  if (xM) {
+    if (operator === ">" || operator === "<") {
+      // nothing is allowed
+      return "<0.0.0";
+    } else {
+      // nothing is forbidden
+      return "*";
     }
+  } else if (operator && anyX) {
+    // we know patch is an x, because we have any x at all.
+    // replace X with 0
+    if (xm) {
+      minor = 0;
+    }
+    patch = 0;
 
-    if (xM) {
-      if (gtlt === ">" || gtlt === "<") {
-        // nothing is allowed
-        ret = "<0.0.0";
-      } else {
-        // nothing is forbidden
-        ret = "*";
-      }
-    } else if (gtlt && anyX) {
-      // we know patch is an x, because we have any x at all.
-      // replace X with 0
+    if (operator === ">") {
+      // >1 => >=2.0.0
+      // >1.2 => >=1.3.0
+      // >1.2.3 => >= 1.2.4
+      operator = ">=";
       if (xm) {
-        m = 0;
+        major = +major + 1;
+        minor = 0;
+        patch = 0;
+      } else {
+        minor = +minor + 1;
+        patch = 0;
       }
-      p = 0;
-
-      if (gtlt === ">") {
-        // >1 => >=2.0.0
-        // >1.2 => >=1.3.0
-        // >1.2.3 => >= 1.2.4
-        gtlt = ">=";
-        if (xm) {
-          M = +M + 1;
-          m = 0;
-          p = 0;
-        } else {
-          m = +m + 1;
-          p = 0;
-        }
-      } else if (gtlt === "<=") {
-        // <=0.7.x is actually <0.8.0, since any 0.7.x should
-        // pass.  Similarly, <=7.x is actually <8.0.0, etc.
-        gtlt = "<";
-        if (xm) {
-          M = +M + 1;
-        } else {
-          m = +m + 1;
-        }
+    } else if (operator === "<=") {
+      // <=0.7.x is actually <0.8.0, since any 0.7.x should
+      // pass.  Similarly, <=7.x is actually <8.0.0, etc.
+      operator = "<";
+      if (xm) {
+        major = +major + 1;
+      } else {
+        minor = +minor + 1;
       }
-
-      ret = gtlt + M + "." + m + "." + p;
-    } else if (xm) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
-    } else if (xp) {
-      ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
     }
 
-    return ret;
-  });
+    return operator + major + "." + minor + "." + patch;
+  } else if (xm) {
+    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+  } else if (xp) {
+    return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
+      ".0";
+  }
+  return comp;
 }
 
 // Because * is AND-ed with everything else in the comparator,
