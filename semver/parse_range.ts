@@ -28,7 +28,14 @@ function replaceTilde(comp: string): string {
   const r: RegExp = TILDE_REGEXP;
   return comp.replace(
     r,
-    (_: string, M: string, m: string, p: string, pr: string) => {
+    (
+      _: string,
+      _operator: string,
+      M: string,
+      m: string,
+      p: string,
+      pr: string,
+    ) => {
       let ret: string;
 
       if (isX(M)) {
@@ -78,7 +85,7 @@ function replaceCarets(comp: string): string {
 
 function replaceCaret(comp: string): string {
   const r: RegExp = CARET_REGEXP;
-  return comp.replace(r, (_: string, M, m, p, pr) => {
+  return comp.replace(r, (_: string, _operator: string, M, m, p, pr) => {
     let ret: string;
 
     if (isX(M)) {

@@ -65,24 +65,19 @@ export function compareIdentifier(
   return 0;
 }
 
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-
 export const FULL_REGEXP =
-  /^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*))?(?:\+([\dA-Z-]+(?:\.[\da-z-]+)*))?$/i;
+  /^v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 export const XRANGE_REGEXP =
-  /^((?:<|>)?=?)\s*[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
+  /^(?<operator>(?:<|>)?=?)\s*[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?)?)?$/;
 export const TILDE_REGEXP =
-  /^(?:~>?)[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
+  /^(?<operator>~>?)[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?)?)?$/;
 export const CARET_REGEXP =
-  /^(?:\^)[v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?$/i;
+  /^(?<operator>\^)[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?)?)?$/;
 export const COMPARATOR_REGEXP =
-  /^((?:<|>)?=?)\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)$|^$/i;
+  /^(?<operator>(?:<|>)?=?)\s*(v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*))?(?:\+(?<buildmetadata>[\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?)$|^$/;
 export const HYPHENRANGE_REGEXP =
-  /^\s*([v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*)))?(?:\+([\da-z-]+(?:\.[\da-z-]+)*))?)?)?)\s+-\s+([v=\s]*(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:\.(0|[1-9]\d*|x|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-z-][a-z0-9-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z0-9-]*))*)))?(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)?)?)\s*$/i;
-export const STAR_REGEXP = /(<|>)?=?\s*\*/;
+  /^\s*([v=\s]*(?<semver>0|[1-9]\d*|x|X|\*)(?:\.(0|[1-9]\d*|x|X|\*)(?:\.(0|[1-9]\d*|x|X|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+([\da-zA-Z-]+(?:\.[\da-zA-Z-]+)*))?)?)?)\s+-\s+([v=\s]*(0|[1-9]\d*|x|X|\*)(?:\.(0|[1-9]\d*|x|X|\*)(?:\.(0|[1-9]\d*|x|X|\*)(?:(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z0-9-]*))*)))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?)\s*$/;
+export const STAR_REGEXP = /(?<operator>(<|>)?=?)\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.
@@ -108,7 +103,7 @@ export const MAX_LENGTH = 256;
  * Returns true if the value is a valid semver pre-release or build identifier.
  *
  * Must be a string. Must be between 1 and 256 characters long. Must match
- * the regular expression /[0-9A-Z-]+/.i
+ * the regular expression /[0-9A-Z-]+/
  * @param value The value to check
  * @returns True if the value is a valid semver string.
  */
@@ -117,7 +112,7 @@ export function isValidString(value: unknown): value is string {
     typeof value === "string" &&
     value.length > 0 &&
     value.length <= MAX_LENGTH &&
-    !!value.match(/[a-z0-9-]+/i)
+    !!value.match(/[a-zA-Z0-9-]+/)
   );
 }
 
