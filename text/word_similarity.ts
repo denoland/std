@@ -81,16 +81,14 @@ export function similarityCompare(
   options?: { caseSensitive?: boolean },
 ) {
   const { caseSensitive } = { ...options };
-  if (!caseSensitive) {
-    givenWord = givenWord.toLowerCase();
+  if (caseSensitive) {
     return (a: string, b: string) =>
-      getWordDistance(givenWord, a.toLowerCase()) -
-      getWordDistance(givenWord, b.toLowerCase());
-  } else {
-    return (a: string, b: string) =>
-      getWordDistance(givenWord, a) -
-      getWordDistance(givenWord, b);
+      getWordDistance(givenWord, a) - getWordDistance(givenWord, b);
   }
+  givenWord = givenWord.toLowerCase();
+  return (a: string, b: string) =>
+    getWordDistance(givenWord, a.toLowerCase()) -
+    getWordDistance(givenWord, b.toLowerCase());
 }
 
 /**
