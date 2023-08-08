@@ -12,6 +12,10 @@ const TESTSUITE = [
     "https://deno.land///std//assert////mod.ts?foo=bar",
     new URL("https://deno.land/std/assert/mod.ts?foo=bar"),
   ],
+  [
+    "https://deno.land///std//assert////mod.ts#header",
+    new URL("https://deno.land/std/assert/mod.ts#header"),
+  ],
   ["https:/deno.land//", new URL("https://deno.land")],
 ];
 
