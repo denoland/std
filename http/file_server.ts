@@ -43,7 +43,7 @@ import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import { isRedirectStatus, Status } from "./http_status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parse } from "../flags/mod.ts";
+import { parse } from "../cli/flags.ts";
 import { red } from "../fmt/colors.ts";
 import { createCommonResponse } from "./util.ts";
 import { VERSION } from "../version.ts";

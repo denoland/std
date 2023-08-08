@@ -13,7 +13,7 @@
  * @module
  */
 
-import { parse } from "../flags/mod.ts";
+import { parse } from "../cli/flags.ts";
 
 function pathBase(p: string): string {
   const parts = p.split("/");

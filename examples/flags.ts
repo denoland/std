@@ -5,7 +5,7 @@
  * @module
  */
 
-import { parse } from "../flags/mod.ts";
+import { parse } from "../cli/flags.ts";
 
 if (import.meta.main) {
   console.dir(parse(Deno.args));

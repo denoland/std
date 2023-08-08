@@ -5,7 +5,7 @@
  * @module
  */
 
-import { parse } from "../flags/mod.ts";
+import { parse } from "../cli/flags.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.

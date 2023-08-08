@@ -16,7 +16,7 @@
  * @module
  */
 
-import { parse } from "../flags/mod.ts";
+import { parse } from "../cli/flags.ts";
 import * as colors from "../fmt/colors.ts";
 import { readAll } from "../streams/read_all.ts";
 
