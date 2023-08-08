@@ -4,7 +4,7 @@
 import { posixNormalize } from "../path/_normalize.ts";
 
 /**
- * Normalize the `url`, resolving mutiple `'/'`s into `'//'` after protocol and remaining into `'/'`.
+ * Normalize the `url`, resolving `'..'` and `'.'` segments and mutiple `'/'`s into `'//'` after protocol and remaining into `'/'`.
  * @param url to be normalized
  */
 export function normalize(url: string | URL) {
