@@ -56,7 +56,7 @@ export function assertObjectMatch(
         } // On nested objects references, build a filtered object recursively
         else if (typeof value === "object" && value !== null) {
           const subset = (b as loose)[key];
-          if ((typeof subset === "object") && (subset)) {
+          if ((typeof subset === "object") && subset) {
             // When both operands are maps, build a filtered map with common keys and filter nested objects inside
             if ((value instanceof Map) && (subset instanceof Map)) {
               filtered[key] = new Map(
