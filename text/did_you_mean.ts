@@ -40,9 +40,9 @@ export function didYouMean(
   },
 ): void {
   const { caseSensitiveDistance, suggestionLimit } = {
-    ...options,
     caseSensitiveDistance: false,
     suggestionLimit: Infinity,
+    ...options,
   };
   assert(
     possibleWords.length > 0,
