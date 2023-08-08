@@ -647,9 +647,9 @@ export function assertIsError<E extends Error = Error>(
     msgIncludes && (!(error instanceof Error) ||
       !stripColor(error.message).includes(stripColor(msgIncludes)))
   ) {
-    msg = `Expected error message to include "${msgIncludes}", but got "${
-      error instanceof Error ? error.message : "[not an Error]"
-    }"${msgSuffix}`;
+    msg = `Expected error message to include ${JSON.stringify(msgIncludes)}, but got ${
+      error instanceof Error ? JSON.stringify(error.message) : "[not an Error]"
+    }${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
