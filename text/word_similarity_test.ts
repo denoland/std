@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { closest, similarityCompare, wordSimilaritySort } from "./mod.ts";
 
 Deno.test("basicWordSimilaritySort", function () {
@@ -57,5 +57,14 @@ Deno.test("closest", function () {
   assertEquals(
     JSON.stringify(closest("HELP", words, { caseSensitive: true })),
     '"hi"',
+  );
+});
+
+Deno.test("closest", function () {
+  const words = ["HI", "HELLO", "HELP"];
+
+  assertEquals(
+    JSON.stringify(closest("he", words, { caseSensitive: true })),
+    '"HI"',
   );
 });

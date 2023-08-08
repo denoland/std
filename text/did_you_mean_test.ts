@@ -61,6 +61,6 @@ Deno.test("didYouMean8", function () {
         suggestionLimit: 1,
       }),
     DidYouMeanError,
-    'For "HELP", did you mean one of ["help","Help","size","blah","length"]?',
+    'For "HELP", did you mean "Help"?',
   );
 });
