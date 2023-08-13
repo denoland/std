@@ -863,10 +863,10 @@ Deno.test(
 
     await t.step("load", async () => {
       assertEnv(await load(optsNoEnvAccess));
-      assertRejects(
+      await assertRejects(
         () => load(optsOnlyEnvPath),
         Deno.errors.PermissionDenied,
-        `Requires env access to all, run again with the --allow-env flag`,
+        `Requires env access, run again with the --allow-env flag`,
       );
     });
 
