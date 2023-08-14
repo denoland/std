@@ -350,16 +350,18 @@ Deno.test("FakeTime restoreFor returns promise that rejected to error in callbac
 
   try {
     await assertRejects(
-      () => FakeTime.restoreFor(() => {
-        throw new Error("Error in sync callback");
-      }),
+      () =>
+        FakeTime.restoreFor(() => {
+          throw new Error("Error in sync callback");
+        }),
       Error,
       "Error in sync callback",
     );
     await assertRejects(
-      () => FakeTime.restoreFor(() => {
-        return Promise.reject(new Error("Error in async callback"));
-      }),
+      () =>
+        FakeTime.restoreFor(() => {
+          return Promise.reject(new Error("Error in async callback"));
+        }),
       Error,
       "Error in async callback",
     );
