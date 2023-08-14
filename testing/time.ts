@@ -252,21 +252,26 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    */
-  static async restoreFor<T>(
+  static restoreFor<T>(
     // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<T> | T,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) throw new TimeError("no fake time");
-    let result: T;
+    if (!time) return Promise.reject(new TimeError("no fake time"));
     restoreGlobals();
     try {
-      result = await callback.apply(null, args);
-    } finally {
+      const result = callback.apply(null, args);
+      if (result instanceof Promise) {
+        return result.finally(() => overrideGlobals());
+      } else {
+        overrideGlobals();
+        return Promise.resolve(result);
+      }
+    } catch (e) {
       overrideGlobals();
+      return Promise.reject(e);
     }
-    return result;
   }
 
   /**
