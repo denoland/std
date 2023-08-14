@@ -682,9 +682,8 @@ async function createServeDirResponse(
     // If fallback file doesn't exist, an error will be thrown.
     const fallbackFileInfo = await Deno.lstat(fallbackPath);
     if (fallbackFileInfo?.isFile) {
-      return serveFile(req, fallbackPath, {
-        etagAlgorithm,
-        fileInfo: fallbackFileInfo,
+      return new Response((await Deno.open(fallbackPath)).readable, {
+        status: Status.NotFound,
       });
     }
   }

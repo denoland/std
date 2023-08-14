@@ -1629,7 +1629,7 @@ Deno.test("serveDir serves 404.html when resource is not found", async () => {
   const res = await serveDir(new Request(url), {
     fsRoot: "./http/testdata",
   });
-  assertEquals(res.status, 200);
+  assertEquals(res.status, 404);
   assertStringIncludes(await res.text(), expectedText);
 });
 
