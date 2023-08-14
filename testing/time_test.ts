@@ -7,7 +7,7 @@ import {
   assertRejects,
   assertStrictEquals,
 } from "./asserts.ts";
-import { FakeTime } from "./time.ts";
+import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, SpyCall } from "./mock.ts";
 
@@ -368,6 +368,14 @@ Deno.test("FakeTime restoreFor returns promise that rejected to error in callbac
   } finally {
     time.restore();
   }
+});
+
+Deno.test("FakeTime restoreFor returns promise that rejected to TimeError if FakeTime is uninitialized", async () => {
+  await assertRejects(
+    () => FakeTime.restoreFor(() => {}),
+    TimeError,
+    "no fake time",
+  );
 });
 
 Deno.test("delay uses real time", async () => {

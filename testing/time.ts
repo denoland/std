@@ -258,7 +258,7 @@ export class FakeTime {
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) throw new TimeError("no fake time");
+    if (!time) return Promise.reject(new TimeError("no fake time"));
     restoreGlobals();
     try {
       const result = callback.apply(null, args);
