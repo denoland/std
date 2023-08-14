@@ -442,18 +442,6 @@ installed and validated locally.
 The URL will be visible once the command completes. Use the droplet's IP address
 with port `8000` to browse to your application deployed on Digital Ocean.
 
-## Contributing
-
-When submitting a pull request, please follow the
-[Deno Style Guide](https://deno.land/manual/references/contributing/style_guide).
-
-Before submitting, run the following to check the formatting, linting, licenses,
-and types and run tests in one hit:
-
-```
-deno task ok
-```
-
 ## Goals and Philosophy
 
 For the user, the website should be fast, secure and have a design with clear
