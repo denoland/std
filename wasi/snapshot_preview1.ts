@@ -73,8 +73,7 @@
  * @module
  */
 
-import { relative } from "../path/relative.ts";
-import { resolve } from "../path/resolve.ts";
+import { relative, resolve } from "../path/mod.ts";
 
 const CLOCKID_REALTIME = 0;
 const CLOCKID_MONOTONIC = 1;

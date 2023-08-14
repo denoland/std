@@ -31,13 +31,14 @@
  * @module
  */
 
-import { posixJoin } from "../path/_join.ts";
-import { posixNormalize } from "../path/_normalize.ts";
-import { extname } from "../path/extname.ts";
-import { join } from "../path/join.ts";
-import { relative } from "../path/relative.ts";
-import { resolve } from "../path/resolve.ts";
-import { SEP_PATTERN } from "../path/separator.ts";
+import {
+  extname,
+  join,
+  posix,
+  relative,
+  resolve,
+  SEP_PATTERN,
+} from "../path/mod.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import { isRedirectStatus, Status } from "./http_status.ts";
@@ -292,7 +293,7 @@ async function serveDirIndex(
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
-      url: posixJoin(dirUrl, ".."),
+      url: posix.join(dirUrl, ".."),
     }));
     listEntryPromise.push(entryInfo);
   }
@@ -303,7 +304,7 @@ async function serveDirIndex(
       continue;
     }
     const filePath = join(dirPath, entry.name);
-    const fileUrl = encodeURIComponent(posixJoin(dirUrl, entry.name))
+    const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
       .replaceAll("%2F", "/");
 
     listEntryPromise.push((async () => {
@@ -625,7 +626,7 @@ async function createServeDirResponse(
 
   const url = new URL(req.url);
   const decodedUrl = decodeURIComponent(url.pathname);
-  let normalizedPath = posixNormalize(decodedUrl);
+  let normalizedPath = posix.normalize(decodedUrl);
 
   if (urlRoot && !normalizedPath.startsWith("/" + urlRoot)) {
     return createCommonResponse(Status.NotFound);

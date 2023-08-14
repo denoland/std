@@ -1,8 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { GlobOptions, globToRegExp, isGlob, joinGlobs } from "../path/glob.ts";
-import { isAbsolute } from "../path/is_absolute.ts";
-import { resolve } from "../path/resolve.ts";
-import { SEP_PATTERN } from "../path/separator.ts";
+import {
+  GlobOptions,
+  globToRegExp,
+  isAbsolute,
+  isGlob,
+  joinGlobs,
+  resolve,
+  SEP_PATTERN,
+} from "../path/mod.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
 import { isWindows } from "../_util/os.ts";
