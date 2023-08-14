@@ -13,7 +13,7 @@ import {
 } from "@/utils/db.ts";
 import { DAY, WEEK } from "std/datetime/constants.ts";
 import Head from "@/components/Head.tsx";
-import { ArrowRight, Info } from "@/components/Icons.tsx";
+import { Info } from "@/components/Icons.tsx";
 import { TabItem } from "@/components/TabsBar.tsx";
 
 interface HomePageData extends State {
@@ -96,8 +96,7 @@ function SetupInstruction() {
           href="https://github.com/denoland/saaskit#auth-oauth"
           class="inline-flex gap-2 text-green-600 dark:text-green-400 hover:underline cursor-pointer"
         >
-          See the guide
-          <ArrowRight class="w-4 h-4 inline-block" />
+          See the guide ›
         </a>
       </p>
 
