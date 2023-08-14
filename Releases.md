@@ -1,3 +1,7 @@
+### 0.198.0 / 2023.08.10
+
+- feat(path): single file exports (#3510)
+
 ### 0.197.0 / 2023.08.03
 
 - BREAKING(testing/snapshot): change tab char serialization (#3447)
