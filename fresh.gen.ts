@@ -29,7 +29,7 @@ import * as $23 from "./routes/pricing.tsx";
 import * as $24 from "./routes/signin.ts";
 import * as $25 from "./routes/signout.ts";
 import * as $26 from "./routes/submit.tsx";
-import * as $27 from "./routes/user/[login].tsx";
+import * as $27 from "./routes/users/[login].tsx";
 import * as $$0 from "./islands/Chart.tsx";
 import * as $$1 from "./islands/PageInput.tsx";
 import * as $$2 from "./islands/VoteButton.tsx";
@@ -63,7 +63,7 @@ const manifest = {
     "./routes/signin.ts": $24,
     "./routes/signout.ts": $25,
     "./routes/submit.tsx": $26,
-    "./routes/user/[login].tsx": $27,
+    "./routes/users/[login].tsx": $27,
   },
   islands: {
     "./islands/Chart.tsx": $$0,

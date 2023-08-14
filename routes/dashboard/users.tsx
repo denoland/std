@@ -39,7 +39,7 @@ function UsersTable(props: { users: User[] }) {
                 <GitHubAvatarImg login={user.login} size={32} />
                 <a
                   class="hover:underline ml-4 align-middle"
-                  href={"/user/" + user.login}
+                  href={"/users/" + user.login}
                 >
                   {user.login}
                 </a>
