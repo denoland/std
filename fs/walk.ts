@@ -3,8 +3,7 @@
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { assert } from "../assert/assert.ts";
-import { join } from "../path/join.ts";
-import { normalize } from "../path/normalize.ts";
+import { join, normalize } from "../path/mod.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,

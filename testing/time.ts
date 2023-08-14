@@ -7,7 +7,7 @@
  */
 
 import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
-import type { DelayOptions } from "../async/delay.ts";
+import { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */

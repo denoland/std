@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { dirname } from "../path/dirname.ts";
+import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
 
@@ -31,7 +31,7 @@ export async function ensureFile(filePath: string | URL) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      await ensureDir(dirname(toPathString(filePath)));
+      await ensureDir(path.dirname(toPathString(filePath)));
       // create file
       await Deno.writeFile(filePath, new Uint8Array());
       return;
@@ -69,7 +69,7 @@ export function ensureFileSync(filePath: string | URL) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      ensureDirSync(dirname(toPathString(filePath)));
+      ensureDirSync(path.dirname(toPathString(filePath)));
       // create file
       Deno.writeFileSync(filePath, new Uint8Array());
       return;
