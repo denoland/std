@@ -532,7 +532,7 @@ export interface ServeDirOptions {
    *
    * @default {true}
    */
-  fallback?: boolean | string;
+  fallback?: boolean;
   /** The algorithm to use for generating the ETag.
    *
    * @default {"SHA-256"}
@@ -677,10 +677,8 @@ async function createServeDirResponse(
   } catch (error) {
     // If fallback is disabled, throw error and return Not Found status.
     if (!fallback) throw error;
-    // If a fallback file is specified, use the specified fallback file.
-    // Otherwise, use "404.html" as the default.
-    const fallbackFile = typeof fallback === "boolean" ? "404.html" : fallback;
-    const fallbackPath = join(target, fallbackFile);
+    // Use "404.html" as the default.
+    const fallbackPath = join(target, "404.html");
     // If fallback file doesn't exist, an error will be thrown.
     const fallbackFileInfo = await Deno.lstat(fallbackPath);
     if (fallbackFileInfo?.isFile) {
@@ -726,8 +724,16 @@ function logError(error: unknown) {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key", "header", "fallback"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
+    string: ["port", "host", "cert", "key", "header"],
+    boolean: [
+      "help",
+      "dir-listing",
+      "fallback",
+      "dotfiles",
+      "cors",
+      "verbose",
+      "version",
+    ],
     negatable: ["dir-listing", "dotfiles", "cors", "fallback"],
     collect: ["header"],
     default: {
@@ -749,7 +755,6 @@ function main() {
       h: "help",
       v: "verbose",
       V: "version",
-      f: "fallback",
       H: "header",
     },
   });
@@ -786,8 +791,8 @@ function main() {
       showDirListing: serverArgs["dir-listing"],
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
-      quiet: !serverArgs.verbose,
       fallback: serverArgs.fallback,
+      quiet: !serverArgs.verbose,
       headers,
     });
   };
@@ -829,7 +834,7 @@ OPTIONS:
   -H, --header <HEADER> Sets a header on every request.
                         (e.g. --header "Cache-Control: no-cache")
                         This option can be specified multiple times.
-  -f, --fallback <FILE> Serve the specified file when a requested resource cannot be found.
+ 
   --no-fallback         Disable fallback
   --no-dir-listing      Disable directory listing
   --no-dotfiles         Do not show dotfiles
