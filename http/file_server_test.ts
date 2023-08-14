@@ -1622,3 +1622,40 @@ Deno.test(
     }
   },
 );
+
+Deno.test("serveDir serves 404.html when resource is not found", async () => {
+  const url = "http://localhost:4507/not-found.html";
+  const expectedText = "This-is-the-content-of-the-fallback-file/404.html";
+  const res = await serveDir(new Request(url), {
+    fsRoot: "./http/testdata",
+  });
+  assertEquals(res.status, 200);
+  assertStringIncludes(await res.text(), expectedText);
+});
+
+Deno.test(
+  "serveDir serves custom fallback file when resource is not found",
+  async () => {
+    const url = "http://localhost:4507/not-found.html";
+    const expectedText =
+      "This-is-the-content-of-the-specified-fallback-file/custom-404.html";
+    const res = await serveDir(new Request(url), {
+      fsRoot: "./http/testdata",
+      fallback: "custom-404.html",
+    });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), expectedText);
+  },
+);
+
+Deno.test(
+  "returns 404 when resource is not found and fallback is false",
+  async () => {
+    const url = "http://localhost:4507/not-found.html";
+    const res = await serveDir(new Request(url), {
+      fsRoot: "./http/testdata",
+      fallback: false,
+    });
+    assertEquals(res.status, 404);
+  },
+);
