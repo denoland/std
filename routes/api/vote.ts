@@ -50,7 +50,7 @@ async function sharedHandler(
           userLogin: item.userLogin,
           type: "vote",
           text: `${user.login} upvoted your post: ${item.title}`,
-          originUrl: `/item/${itemId}`,
+          originUrl: `/items/${itemId}`,
           ...newNotificationProps(),
         };
         await createNotification(notification);

@@ -19,7 +19,7 @@ export default function ItemSummary(props: ItemSummaryProps) {
         <p>
           <a
             class="visited:(text-[purple] dark:text-[lightpink]) hover:underline mr-4"
-            href={`/item/${props.item.id}`}
+            href={`/items/${props.item.id}`}
           >
             {props.item.title}
           </a>

@@ -100,13 +100,13 @@ export const handler: Handlers<ItemPageData, State> = {
         userLogin: item.userLogin,
         type: "comment",
         text: `${user.login} commented on your post: ${item.title}`,
-        originUrl: `/item/${itemId}`,
+        originUrl: `/items/${itemId}`,
         ...newNotificationProps(),
       };
       await createNotification(notification);
     }
 
-    return redirect(`/item/${itemId}`);
+    return redirect(`/items/${itemId}`);
   },
 };
 

@@ -52,7 +52,7 @@ export const handler: Handlers<State, State> = {
     };
     await createItem(item);
 
-    return redirect(`/item/${item!.id}`);
+    return redirect(`/items/${item!.id}`);
   },
 };
 
