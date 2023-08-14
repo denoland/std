@@ -528,6 +528,11 @@ export interface ServeDirOptions {
    * @default {false}
    */
   quiet?: boolean;
+  /** Serves fallback file when the requested resource is not found.
+   *
+   * @default {true}
+   */
+  fallback?: boolean | string;
   /** The algorithm to use for generating the ETag.
    *
    * @default {"SHA-256"}
@@ -615,6 +620,7 @@ async function createServeDirResponse(
   const target = opts.fsRoot || ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
+  const fallback = opts.fallback ?? true;
   const showDotfiles = opts.showDotfiles || false;
   const { etagAlgorithm, showDirListing, quiet } = opts;
 
@@ -643,30 +649,46 @@ async function createServeDirResponse(
   }
 
   const fsPath = join(target, normalizedPath);
-  const fileInfo = await Deno.stat(fsPath);
-
-  // For files, remove the trailing slash from the path.
-  if (fileInfo.isFile && url.pathname.endsWith("/")) {
-    url.pathname = url.pathname.slice(0, -1);
-    return Response.redirect(url, 301);
-  }
-  // For directories, the path must have a trailing slash.
-  if (fileInfo.isDirectory && !url.pathname.endsWith("/")) {
-    // On directory listing pages,
-    // if the current URL's pathname doesn't end with a slash, any
-    // relative URLs in the index file will resolve against the parent
-    // directory, rather than the current directory. To prevent that, we
-    // return a 301 redirect to the URL with a slash.
-    url.pathname += "/";
-    return Response.redirect(url, 301);
-  }
-
-  // if target is file, serve file.
-  if (!fileInfo.isDirectory) {
-    return serveFile(req, fsPath, {
-      etagAlgorithm,
-      fileInfo,
-    });
+  let fileInfo: Deno.FileInfo | undefined;
+  try {
+    fileInfo = await Deno.stat(fsPath);
+    // For files, remove the trailing slash from the path.
+    if (fileInfo.isFile && url.pathname.endsWith("/")) {
+      url.pathname = url.pathname.slice(0, -1);
+      return Response.redirect(url, 301);
+    }
+    // For directories, the path must have a trailing slash.
+    if (fileInfo.isDirectory && !url.pathname.endsWith("/")) {
+      // On directory listing pages,
+      // if the current URL's pathname doesn't end with a slash, any
+      // relative URLs in the index file will resolve against the parent
+      // directory, rather than the current directory. To prevent that, we
+      // return a 301 redirect to the URL with a slash.
+      url.pathname += "/";
+      return Response.redirect(url, 301);
+    }
+    // if target is file, serve file.
+    if (!fileInfo.isDirectory) {
+      return serveFile(req, fsPath, {
+        etagAlgorithm,
+        fileInfo,
+      });
+    }
+  } catch (error) {
+    // If fallback is disabled, throw error and return Not Found status.
+    if (!fallback) throw error;
+    // If a fallback file is specified, use the specified fallback file.
+    // Otherwise, use "404.html" as the default.
+    const fallbackFile = typeof fallback === "boolean" ? "404.html" : fallback;
+    const fallbackPath = join(target, fallbackFile);
+    // If fallback file doesn't exist, an error will be thrown.
+    const fallbackFileInfo = await Deno.lstat(fallbackPath);
+    if (fallbackFileInfo?.isFile) {
+      return serveFile(req, fallbackPath, {
+        etagAlgorithm,
+        fileInfo: fallbackFileInfo,
+      });
+    }
   }
 
   // if target is directory, serve index or dir listing.
@@ -704,9 +726,9 @@ function logError(error: unknown) {
 
 function main() {
   const serverArgs = parse(Deno.args, {
-    string: ["port", "host", "cert", "key", "header"],
+    string: ["port", "host", "cert", "key", "header", "fallback"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
-    negatable: ["dir-listing", "dotfiles", "cors"],
+    negatable: ["dir-listing", "dotfiles", "cors", "fallback"],
     collect: ["header"],
     default: {
       "dir-listing": true,
@@ -714,6 +736,7 @@ function main() {
       cors: true,
       verbose: false,
       version: false,
+      fallback: true,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -726,6 +749,7 @@ function main() {
       h: "help",
       v: "verbose",
       V: "version",
+      f: "fallback",
       H: "header",
     },
   });
@@ -763,6 +787,7 @@ function main() {
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
       quiet: !serverArgs.verbose,
+      fallback: serverArgs.fallback,
       headers,
     });
   };
@@ -804,6 +829,8 @@ OPTIONS:
   -H, --header <HEADER> Sets a header on every request.
                         (e.g. --header "Cache-Control: no-cache")
                         This option can be specified multiple times.
+  -f, --fallback <FILE> Serve the specified file when a requested resource cannot be found.
+  --no-fallback         Disable fallback
   --no-dir-listing      Disable directory listing
   --no-dotfiles         Do not show dotfiles
   --no-cors             Disable cross-origin resource sharing
