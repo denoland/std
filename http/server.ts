@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { delay } from "../async/mod.ts";
+import { delay } from "../async/delay.ts";
 
 /** Thrown by Server after it has been closed. */
 const ERROR_SERVER_CLOSED = "Server closed";

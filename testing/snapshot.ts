@@ -136,10 +136,15 @@
  * @module
  */
 
-import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
-import { ensureFile, ensureFileSync } from "../fs/mod.ts";
+import { fromFileUrl } from "../path/from_file_url.ts";
+import { parse } from "../path/parse.ts";
+import { resolve } from "../path/resolve.ts";
+import { toFileUrl } from "../path/to_file_url.ts";
+import { ensureFile, ensureFileSync } from "../fs/ensure_file.ts";
 import { bold, green, red } from "../fmt/colors.ts";
-import { assert, AssertionError, equal } from "./asserts.ts";
+import { assert } from "../assert/assert.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { equal } from "../assert/equal.ts";
 import { buildMessage, diff, diffstr } from "../_util/diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
