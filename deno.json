@@ -8,7 +8,8 @@
     "start": "deno run --unstable -A --watch=static/,routes/ dev.ts",
     "test": "KV_PATH=:memory: deno test -A --unstable --parallel --coverage=./cov",
     "check:license": "deno run --allow-read --allow-write tools/check_license.ts",
-    "ok": "deno fmt --check && deno lint && deno task check:license --check && deno check main.ts && deno task test",
+    "check:types": "deno check **/*.ts && deno check **/*.tsx",
+    "ok": "deno fmt --check && deno lint && deno task check:license --check && deno task check:types && deno task test",
     "cov": "deno coverage ./cov/ --lcov --exclude='test.ts' > cov.lcov",
     "update": "deno run -A -r https://fresh.deno.dev/update ."
   },
