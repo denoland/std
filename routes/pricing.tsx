@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Handlers, PageProps } from "$fresh/server.ts";
+import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import {
@@ -9,14 +9,9 @@ import {
   StripProductWithPrice,
 } from "@/utils/payments.ts";
 import Stripe from "stripe";
-import { getUserBySession, type User } from "@/utils/db.ts";
+import { getUserBySession } from "@/utils/db.ts";
 import { CheckCircle } from "@/components/Icons.tsx";
 import Head from "@/components/Head.tsx";
-
-interface PricingPageData extends State {
-  products: Stripe.Product[];
-  user: User | null;
-}
 
 function comparePrices(
   productA: StripProductWithPrice,
@@ -25,33 +20,6 @@ function comparePrices(
   return (productA.default_price.unit_amount || 0) -
     (productB.default_price.unit_amount || 0);
 }
-
-export const handler: Handlers<PricingPageData, State> = {
-  async GET(_req, ctx) {
-    if (stripe === undefined) return ctx.renderNotFound();
-
-    const { data } = await stripe.products.list({
-      expand: ["data.default_price"],
-      active: true,
-    });
-
-    const productsWithPrice = data.filter(isProductWithPrice);
-
-    if (productsWithPrice.length !== data.length) {
-      throw new Error(
-        "Not all products have a default price. Please run the `deno task init:stripe` as the README instructs.",
-      );
-    }
-
-    const products = productsWithPrice.sort(comparePrices);
-
-    const user = ctx.state.sessionId
-      ? await getUserBySession(ctx.state.sessionId)
-      : null;
-
-    return ctx.render({ ...ctx.state, products, user });
-  },
-};
 
 const CARD_STYLES =
   "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
@@ -202,13 +170,34 @@ function EnterprisePricingCard() {
   );
 }
 
-export default function PricingPage(props: PageProps<PricingPageData>) {
+export default async function PricingPage(
+  _req: Request,
+  ctx: RouteContext<undefined, State>,
+) {
+  if (stripe === undefined) return await ctx.renderNotFound();
+
+  const { data } = await stripe.products.list({
+    expand: ["data.default_price"],
+    active: true,
+  });
+
+  const productsWithPrice = data.filter(isProductWithPrice);
+  if (productsWithPrice.length !== data.length) {
+    throw new Error(
+      "Not all products have a default price. Please run the `deno task init:stripe` as the README instructs.",
+    );
+  }
+
   /** @todo Maybe just retrieve a single product within the handler. Documentation may have to be adjusted. */
-  const [product] = props.data.products;
+  const [product] = productsWithPrice.sort(comparePrices);
+
+  const user = ctx.state.sessionId
+    ? await getUserBySession(ctx.state.sessionId)
+    : null;
 
   return (
     <>
-      <Head title="Pricing" href={props.url.href} />
+      <Head title="Pricing" href={ctx.url.href} />
       <main class="mx-auto max-w-5xl w-full flex-1 flex flex-col justify-center px-4">
         <div class="mb-8 text-center">
           <h1 class="text-3xl font-bold">Pricing</h1>
@@ -218,7 +207,7 @@ export default function PricingPage(props: PageProps<PricingPageData>) {
           <FreePlanCard />
           <PremiumPlanCard
             product={product}
-            isSubscribed={props.data.user?.isSubscribed}
+            isSubscribed={user?.isSubscribed}
           />
           <EnterprisePricingCard />
         </div>

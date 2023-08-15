@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { State } from "@/routes/_middleware.ts";
+import type { Handlers, RouteContext } from "$fresh/server.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import PageSelector from "@/components/PageSelector.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
@@ -12,66 +11,18 @@ import {
   getAreVotedBySessionId,
   getCommentsByItem,
   getItem,
-  getUser,
   getUserBySession,
-  type Item,
   newCommentProps,
   newNotificationProps,
   Notification,
-  type User,
 } from "@/utils/db.ts";
 import UserPostedAt from "@/components/UserPostedAt.tsx";
-import { redirect, redirectToLogin } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/redirect.ts";
 import Head from "@/components/Head.tsx";
+import { SignedInState } from "@/utils/middleware.ts";
 
-interface ItemPageData extends State {
-  user: User;
-  item: Item;
-  comments: Comment[];
-  isVoted: boolean;
-  lastPage: number;
-}
-
-export const handler: Handlers<ItemPageData, State> = {
-  async GET(req, ctx) {
-    const { id } = ctx.params;
-
-    const url = new URL(req.url);
-    const pageNum = calcPageNum(url);
-
-    const item = await getItem(id);
-    if (item === null) {
-      return ctx.renderNotFound();
-    }
-
-    const allComments = await getCommentsByItem(id);
-    const comments = allComments
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
-
-    const user = await getUser(item.userLogin);
-
-    const [isVoted] = await getAreVotedBySessionId(
-      [item],
-      ctx.state.sessionId,
-    );
-
-    const lastPage = calcLastPage(allComments.length, PAGE_LENGTH);
-
-    return ctx.render({
-      ...ctx.state,
-      item,
-      comments,
-      user: user!,
-      isVoted,
-      lastPage,
-    });
-  },
+export const handler: Handlers<unknown, SignedInState> = {
   async POST(req, ctx) {
-    if (!ctx.state.sessionId) {
-      return redirectToLogin(req.url);
-    }
-
     const form = await req.formData();
     const text = form.get("text");
 
@@ -136,27 +87,47 @@ function CommentSummary(comment: Comment) {
   );
 }
 
-export default function ItemPage(props: PageProps<ItemPageData>) {
+export default async function ItemsItemPage(
+  _req: Request,
+  ctx: RouteContext<undefined, SignedInState>,
+) {
+  const { id } = ctx.params;
+  const item = await getItem(id);
+  if (item === null) return await ctx.renderNotFound();
+
+  const pageNum = calcPageNum(ctx.url);
+  const allComments = await getCommentsByItem(id);
+  const comments = allComments
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
+
+  const [isVoted] = await getAreVotedBySessionId(
+    [item],
+    ctx.state.sessionId,
+  );
+
+  const lastPage = calcLastPage(allComments.length, PAGE_LENGTH);
+
   return (
     <>
-      <Head title={props.data.item.title} href={props.url.href} />
+      <Head title={item.title} href={ctx.url.href} />
       <main class="flex-1 p-4 space-y-8">
         <ItemSummary
-          item={props.data.item}
-          isVoted={props.data.isVoted}
+          item={item}
+          isVoted={isVoted}
         />
         <CommentInput />
         <div>
-          {props.data.comments.map((comment) => (
+          {comments.map((comment) => (
             <CommentSummary
               {...comment}
             />
           ))}
         </div>
-        {props.data.lastPage > 1 && (
+        {lastPage > 1 && (
           <PageSelector
-            currentPage={calcPageNum(props.url)}
-            lastPage={props.data.lastPage}
+            currentPage={calcPageNum(ctx.url)}
+            lastPage={lastPage}
           />
         )}
       </main>

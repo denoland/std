@@ -13,7 +13,7 @@ export const handler: Handlers = {
    * 2. customer.subscription.deleted (when a user cancels the premium plan)
    */
   async POST(req, ctx) {
-    if (stripe === undefined) return ctx.renderNotFound();
+    if (stripe === undefined) return await ctx.renderNotFound();
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature")!;

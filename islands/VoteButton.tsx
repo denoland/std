@@ -15,9 +15,9 @@ export default function VoteButton(props: VoteButtonProps) {
     if (event.detail === 1) {
       const url = `/api/vote?item_id=${props.item.id}`;
       const method = isVoted.value ? "DELETE" : "POST";
-      const response = await fetch(url, { method, credentials: "same-origin" });
+      const resp = await fetch(url, { method, credentials: "same-origin" });
 
-      if (response.status === 401) {
+      if (resp.status === 401) {
         window.location.href = "/signin";
         return;
       }

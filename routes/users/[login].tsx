@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Handlers, PageProps } from "$fresh/server.ts";
+import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
 import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
@@ -9,58 +9,12 @@ import {
   getAreVotedBySessionId,
   getItemsByUser,
   getUser,
-  type Item,
-  type User,
 } from "@/utils/db.ts";
 import { pluralize } from "@/utils/display.ts";
 import { GitHub } from "@/components/Icons.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
-
-export interface UserData extends State {
-  user: User;
-  items: Item[];
-  areVoted: boolean[];
-  lastPage: number;
-  itemsCount: number;
-}
-
-export const handler: Handlers<UserData, State> = {
-  async GET(req, ctx) {
-    const url = new URL(req.url);
-    const pageNum = calcPageNum(url);
-
-    const user = await getUser(ctx.params.login);
-    if (user === null) {
-      return ctx.renderNotFound();
-    }
-
-    const allItems = await getItemsByUser(user.login);
-    const itemsCount = allItems.length;
-
-    const items = allItems.sort(compareScore).slice(
-      (pageNum - 1) * PAGE_LENGTH,
-      pageNum * PAGE_LENGTH,
-    );
-
-    const areVoted = await getAreVotedBySessionId(
-      items,
-      ctx.state.sessionId,
-    );
-
-    const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
-
-    return ctx.render({
-      ...ctx.state,
-      user,
-      items,
-      areVoted,
-      lastPage,
-      itemsCount,
-    });
-  },
-};
 
 function Profile(
   props: { login: string; itemsCount: number; isSubscribed: boolean },
@@ -95,26 +49,50 @@ function Profile(
   );
 }
 
-export default function UserPage(props: PageProps<UserData>) {
+export default async function UsersUserPage(
+  _req: Request,
+  ctx: RouteContext<undefined, State>,
+) {
+  const { login } = ctx.params;
+  const user = await getUser(login);
+  if (user === null) return await ctx.renderNotFound();
+
+  const pageNum = calcPageNum(ctx.url);
+
+  const allItems = await getItemsByUser(login);
+  const itemsCount = allItems.length;
+
+  const items = allItems.sort(compareScore).slice(
+    (pageNum - 1) * PAGE_LENGTH,
+    pageNum * PAGE_LENGTH,
+  );
+
+  const areVoted = await getAreVotedBySessionId(
+    items,
+    ctx.state.sessionId,
+  );
+
+  const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
+
   return (
     <>
-      <Head title={props.data.user.login} href={props.url.href} />
+      <Head title={user.login} href={ctx.url.href} />
       <main class="flex-1 p-4">
         <Profile
-          isSubscribed={props.data.user.isSubscribed}
-          login={props.data.user.login}
-          itemsCount={props.data.itemsCount}
+          isSubscribed={user.isSubscribed}
+          login={user.login}
+          itemsCount={itemsCount}
         />
-        {props.data.items.map((item, index) => (
+        {items.map((item, index) => (
           <ItemSummary
             item={item}
-            isVoted={props.data.areVoted[index]}
+            isVoted={areVoted[index]}
           />
         ))}
-        {props.data.lastPage > 1 && (
+        {lastPage > 1 && (
           <PageSelector
-            currentPage={calcPageNum(props.url)}
-            lastPage={props.data.lastPage}
+            currentPage={calcPageNum(ctx.url)}
+            lastPage={lastPage}
           />
         )}
       </main>

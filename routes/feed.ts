@@ -2,12 +2,13 @@
 import { Feed, Item as FeedItem } from "feed";
 import { getPosts } from "@/utils/posts.ts";
 import { SITE_NAME } from "@/utils/constants.ts";
+import { RouteContext } from "$fresh/server.ts";
 
 const copyright = `Copyright ${new Date().getFullYear()} ${SITE_NAME}`;
 
 // Use https://validator.w3.org/feed/ to validate RSS feed syntax.
-export default async function FeedPage(req: Request) {
-  const { origin } = new URL(req.url);
+export default async function FeedPage(_req: Request, ctx: RouteContext) {
+  const { origin } = ctx.url;
   const feed = new Feed({
     title: "Deno",
     description: `The latest news from ${SITE_NAME}`,
@@ -28,7 +29,7 @@ export default async function FeedPage(req: Request) {
       id: `${origin}/blog/${post.slug}`,
       title: post.title,
       description: post.summary,
-      date: new Date(post.publishedAt),
+      date: post.publishedAt,
       link: `${origin}/blog/${post.slug}`,
       author: [{ name: "The Deno Authors" }],
       copyright,

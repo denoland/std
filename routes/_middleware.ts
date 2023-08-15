@@ -9,7 +9,7 @@ import type { MetaProps } from "@/components/Meta.tsx";
 
 export interface State extends MetaProps {
   sessionId?: string;
-  hasNotifications?: boolean;
+  hasNotifications: boolean;
 }
 
 async function redirectToNewOrigin(
@@ -27,7 +27,7 @@ async function setState(req: Request, ctx: MiddlewareHandlerContext<State>) {
 
   const sessionId = await getSessionId(req);
   ctx.state.sessionId = sessionId;
-
+  ctx.state.hasNotifications = false;
   if (sessionId) {
     const user = await getUserBySession(sessionId);
     ctx.state.hasNotifications = await ifUserHasNotifications(user!.login);

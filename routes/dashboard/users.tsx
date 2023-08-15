@@ -1,22 +1,10 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { getUsers, User } from "@/utils/db.ts";
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { State } from "@/routes/_middleware.ts";
+import type { RouteContext } from "$fresh/server.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
 import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
-
-interface UsersState extends State {
-  users: User[];
-}
-
-export const handler: Handlers<UsersState, State> = {
-  async GET(_req, ctx) {
-    const users = await getUsers();
-    return await ctx.render({ ...ctx.state, users });
-  },
-};
 
 const TH_STYLES = "p-4 text-left";
 const TD_STYLES = "p-4";
@@ -58,10 +46,15 @@ function UsersTable(props: { users: User[] }) {
   );
 }
 
-export default function UsersPage(props: PageProps<UsersState>) {
+export default async function DashboardUsersPage(
+  _req: Request,
+  ctx: RouteContext,
+) {
+  const users = await getUsers();
+
   return (
     <>
-      <Head title="Users" href={props.url.href} />
+      <Head title="Users" href={ctx.url.href} />
       <main class="flex-1 p-4">
         <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
         <TabsBar
@@ -72,9 +65,9 @@ export default function UsersPage(props: PageProps<UsersState>) {
             path: "/dashboard/users",
             innerText: "Users",
           }]}
-          currentPath={props.url.pathname}
+          currentPath={ctx.url.pathname}
         />
-        <UsersTable users={props.data.users} />
+        <UsersTable users={users} />
       </main>
     </>
   );

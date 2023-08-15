@@ -21,14 +21,14 @@ interface GitHubUser {
 }
 
 async function getGitHubUser(accessToken: string): Promise<GitHubUser> {
-  const response = await fetch("https://api.github.com/user", {
+  const resp = await fetch("https://api.github.com/user", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
-  if (!response.ok) {
-    await response.body?.cancel();
+  if (!resp.ok) {
+    await resp.body?.cancel();
     throw new Error();
   }
-  return await response.json() as GitHubUser;
+  return await resp.json() as GitHubUser;
 }
 
 export default async function CallbackPage(req: Request) {

@@ -12,40 +12,40 @@ import { assert, assertEquals } from "std/testing/asserts.ts";
 Deno.test("[redirect] redirect() defaults", () => {
   const location = "/hello-there";
 
-  const response = redirect(location);
-  assert(!response.ok);
-  assertEquals(response.body, null);
-  assertEquals(response.headers.get("location"), location);
-  assertEquals(response.status, 303);
+  const resp = redirect(location);
+  assert(!resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.headers.get("location"), location);
+  assertEquals(resp.status, 303);
 });
 
 Deno.test("[redirect] redirect()", () => {
   const location = "/hello-there";
   const status = 302;
 
-  const response = redirect(location, status);
-  assert(!response.ok);
-  assertEquals(response.body, null);
-  assertEquals(response.headers.get("location"), location);
-  assertEquals(response.status, status);
+  const resp = redirect(location, status);
+  assert(!resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.headers.get("location"), location);
+  assertEquals(resp.status, status);
 });
 
 Deno.test("[redirect] redirectToLogin()", () => {
   const from = "/hello-there";
-  const response = redirectToLogin(from);
+  const resp = redirectToLogin(from);
   const location = `/signin?from=${from}`;
-  assert(!response.ok);
-  assertEquals(response.body, null);
-  assertEquals(response.headers.get("location"), location);
-  assertEquals(response.status, 303);
+  assert(!resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.headers.get("location"), location);
+  assertEquals(resp.status, 303);
 });
 
 Deno.test("[redirect] setRedirectUrlCookie()", () => {
   const redirectUrl = "/hello-there";
-  const request = new Request(`http://example.com/signin?from=${redirectUrl}`);
-  const response = new Response();
-  setRedirectUrlCookie(request, response);
-  const cookieHeader = response.headers.get("set-cookie");
+  const req = new Request(`http://example.com/signin?from=${redirectUrl}`);
+  const resp = new Response();
+  setRedirectUrlCookie(req, resp);
+  const cookieHeader = resp.headers.get("set-cookie");
   assertEquals(
     cookieHeader,
     `${REDIRECT_URL_COOKIE_NAME}=${redirectUrl}; Path=/`,
@@ -54,12 +54,12 @@ Deno.test("[redirect] setRedirectUrlCookie()", () => {
 
 Deno.test("[redirect] setRedirectUrlCookie() w/o searchParams", () => {
   const referer = "/hello-there";
-  const request = new Request("http://example.com/signin", {
+  const req = new Request("http://example.com/signin", {
     headers: { Referer: referer },
   });
-  const response = new Response();
-  setRedirectUrlCookie(request, response);
-  const cookieHeader = response.headers.get("set-cookie");
+  const resp = new Response();
+  setRedirectUrlCookie(req, resp);
+  const cookieHeader = resp.headers.get("set-cookie");
   assertEquals(cookieHeader, `${REDIRECT_URL_COOKIE_NAME}=${referer}; Path=/`);
 });
 
@@ -72,17 +72,17 @@ Deno.test("[redirect] getRedirectUrlCookie()", () => {
 
 Deno.test("[redirect] deleteRedirectUrlCookie()", () => {
   const redirectUrl = "/hello-there";
-  const request = new Request(`http://example.com/signin?from=${redirectUrl}`);
-  const response = new Response();
-  setRedirectUrlCookie(request, response);
+  const req = new Request(`http://example.com/signin?from=${redirectUrl}`);
+  const resp = new Response();
+  setRedirectUrlCookie(req, resp);
   assert(
-    !response.headers
+    !resp.headers
       .get("set-cookie")
       ?.includes(`${REDIRECT_URL_COOKIE_NAME}=;`),
   );
-  deleteRedirectUrlCookie(response.headers);
+  deleteRedirectUrlCookie(resp.headers);
   assert(
-    response.headers
+    resp.headers
       .get("set-cookie")
       ?.includes(`${REDIRECT_URL_COOKIE_NAME}=;`),
   );

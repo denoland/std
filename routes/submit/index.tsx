@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import type { State } from "@/routes/_middleware.ts";
 import {
   createItem,
   getUserBySession,
@@ -9,22 +8,12 @@ import {
   newItemProps,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/redirect.ts";
-import { redirectToLogin } from "@/utils/redirect.ts";
 import Head from "@/components/Head.tsx";
 import { CheckCircle, XCircle } from "@/components/Icons.tsx";
+import { SignedInState } from "@/utils/middleware.ts";
 
-export const handler: Handlers<State, State> = {
-  GET(req, ctx) {
-    return ctx.state.sessionId
-      ? ctx.render(ctx.state)
-      : redirectToLogin(req.url);
-  },
+export const handler: Handlers<SignedInState, SignedInState> = {
   async POST(req, ctx) {
-    if (!ctx.state.sessionId) {
-      await req.body?.cancel();
-      return new Response(null, { status: 401 });
-    }
-
     const form = await req.formData();
     const title = form.get("title");
     const url = form.get("url");

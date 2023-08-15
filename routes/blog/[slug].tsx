@@ -1,26 +1,14 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Handlers, PageProps } from "$fresh/server.ts";
+import type { RouteContext } from "$fresh/server.ts";
 import { CSS, render } from "$gfm";
-import { getPost, Post } from "@/utils/posts.ts";
-import type { State } from "@/routes/_middleware.ts";
+import { getPost } from "@/utils/posts.ts";
 import Head from "@/components/Head.tsx";
 import Share from "@/components/Share.tsx";
 
-interface BlogPostPageData extends State {
-  post: Post;
-}
+export default async function BlogPostPage(_req: Request, ctx: RouteContext) {
+  const post = await getPost(ctx.params.slug);
+  if (post === null) return await ctx.renderNotFound();
 
-export const handler: Handlers<BlogPostPageData, State> = {
-  async GET(_req, ctx) {
-    const post = await getPost(ctx.params.slug);
-    if (post === null) return ctx.renderNotFound();
-
-    return ctx.render({ ...ctx.state, post });
-  },
-};
-
-export default function PostPage(props: PageProps<BlogPostPageData>) {
-  const { post } = props.data;
   const date = post.publishedAt.toString() !== "Invalid Date" &&
     new Date(post.publishedAt).toLocaleDateString("en-US", {
       dateStyle: "long",
@@ -28,7 +16,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
 
   return (
     <>
-      <Head title={post.title} href={props.url.href}>
+      <Head title={post.title} href={ctx.url.href}>
         <style dangerouslySetInnerHTML={{ __html: CSS }} />
       </Head>
       <main class="p-4 flex-1">
@@ -38,7 +26,7 @@ export default function PostPage(props: PageProps<BlogPostPageData>) {
             {date}
           </time>
         )}
-        <Share url={new URL("https://google.com")} title={post.title} />
+        <Share url={ctx.url} title={post.title} />
         <div
           class="mt-8 markdown-body !bg-transparent !dark:text-white"
           data-color-mode="auto"
