@@ -15,7 +15,6 @@ import {
   formatDate,
   getAllItems,
   getAreVotedBySessionId,
-  getCommentsByItem,
   getDatesSince,
   getItem,
   getItemsByUser,
@@ -30,6 +29,7 @@ import {
   ifUserHasNotifications,
   incrVisitsCountByDay,
   type Item,
+  listCommentsByItem,
   newCommentProps,
   newItemProps,
   newNotificationProps,
@@ -38,6 +38,7 @@ import {
   Notification,
   updateUser,
   type User,
+  valuesFromIter,
 } from "./db.ts";
 import {
   assert,
@@ -191,16 +192,19 @@ Deno.test("[db] (create/delete)Comment() + getCommentsByItem()", async () => {
   const comment1 = { ...genNewComment(), itemId };
   const comment2 = { ...genNewComment(), itemId };
 
-  assertEquals(await getCommentsByItem(itemId), []);
+  assertEquals(await valuesFromIter(listCommentsByItem(itemId)), []);
 
   await createComment(comment1);
   await createComment(comment2);
   await assertRejects(async () => await createComment(comment2));
-  assertArrayIncludes(await getCommentsByItem(itemId), [comment1, comment2]);
+  assertArrayIncludes(await valuesFromIter(listCommentsByItem(itemId)), [
+    comment1,
+    comment2,
+  ]);
 
   await deleteComment(comment1);
   await deleteComment(comment2);
-  assertEquals(await getCommentsByItem(itemId), []);
+  assertEquals(await valuesFromIter(listCommentsByItem(itemId)), []);
 });
 
 Deno.test("[db] votes", async () => {

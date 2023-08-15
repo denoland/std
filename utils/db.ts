@@ -27,7 +27,7 @@ async function getValues<T>(
 ) {
   const values = [];
   const iter = kv.list<T>(selector, options);
-  for await (const { value } of iter) values.push(value);
+  for await (const entry of iter) values.push(entry.value);
   return values;
 }
 
@@ -50,6 +50,12 @@ export function assertIsEntry<T>(
   entry: Deno.KvEntryMaybe<T>,
 ): asserts entry is Deno.KvEntry<T> {
   assertNotEquals(entry.value, null, `KV entry not found: ${entry.key}`);
+}
+
+export async function valuesFromIter<T>(iter: Deno.KvListIterator<T>) {
+  const values = [];
+  for await (const result of iter) values.push(result.value);
+  return values;
 }
 
 /** Gets all dates since a given number of milliseconds ago */
@@ -288,7 +294,12 @@ export function newCommentProps(): Pick<Comment, "id" | "createdAt"> {
 }
 
 export async function createComment(comment: Comment) {
-  const commentsByItemKey = ["comments_by_item", comment.itemId, comment.id];
+  const commentsByItemKey = [
+    "comments_by_item",
+    comment.itemId,
+    comment.createdAt.getTime(),
+    comment.id,
+  ];
 
   const res = await kv.atomic()
     .check({ key: commentsByItemKey, versionstamp: null })
@@ -299,7 +310,12 @@ export async function createComment(comment: Comment) {
 }
 
 export async function deleteComment(comment: Comment) {
-  const commentsByItemKey = ["comments_by_item", comment.itemId, comment.id];
+  const commentsByItemKey = [
+    "comments_by_item",
+    comment.itemId,
+    comment.createdAt.getTime(),
+    comment.id,
+  ];
 
   const res = await kv.atomic()
     .delete(commentsByItemKey)
@@ -308,8 +324,15 @@ export async function deleteComment(comment: Comment) {
   if (!res.ok) throw new Error(`Failed to delete comment: ${comment}`);
 }
 
-export async function getCommentsByItem(itemId: string) {
-  return await getValues<Comment>({ prefix: ["comments_by_item", itemId] });
+export function listCommentsByItem(
+  itemId: string,
+  options?: Deno.KvListOptions,
+) {
+  return kv.list<Comment>({ prefix: ["comments_by_item", itemId] }, {
+    limit: 10,
+    reverse: true,
+    ...options,
+  });
 }
 
 // Vote

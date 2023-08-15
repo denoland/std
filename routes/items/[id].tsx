@@ -1,25 +1,25 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers, RouteContext } from "$fresh/server.ts";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import PageSelector from "@/components/PageSelector.tsx";
 import { BUTTON_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
 import {
   type Comment,
   createComment,
   createNotification,
   getAreVotedBySessionId,
-  getCommentsByItem,
   getItem,
   getUserBySession,
+  listCommentsByItem,
   newCommentProps,
   newNotificationProps,
   Notification,
+  valuesFromIter,
 } from "@/utils/db.ts";
 import UserPostedAt from "@/components/UserPostedAt.tsx";
 import { redirect } from "@/utils/redirect.ts";
 import Head from "@/components/Head.tsx";
 import { SignedInState } from "@/utils/middleware.ts";
+import PaginationLink from "@/components/PaginationLink.tsx";
 
 export const handler: Handlers<unknown, SignedInState> = {
   async POST(req, ctx) {
@@ -75,14 +75,11 @@ function CommentInput() {
   );
 }
 
-function CommentSummary(comment: Comment) {
+function CommentSummary(props: Comment) {
   return (
     <div class="py-4">
-      <UserPostedAt
-        userLogin={comment.userLogin}
-        createdAt={comment.createdAt}
-      />
-      <p>{comment.text}</p>
+      <UserPostedAt {...props} />
+      <p>{props.text}</p>
     </div>
   );
 }
@@ -91,22 +88,18 @@ export default async function ItemsItemPage(
   _req: Request,
   ctx: RouteContext<undefined, SignedInState>,
 ) {
-  const { id } = ctx.params;
-  const item = await getItem(id);
+  const itemId = ctx.params.id;
+  const item = await getItem(itemId);
   if (item === null) return await ctx.renderNotFound();
 
-  const pageNum = calcPageNum(ctx.url);
-  const allComments = await getCommentsByItem(id);
-  const comments = allComments
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .slice((pageNum - 1) * PAGE_LENGTH, pageNum * PAGE_LENGTH);
+  const cursor = ctx.url.searchParams.get("cursor") ?? undefined;
+  const iter = listCommentsByItem(itemId, { cursor });
+  const comments = await valuesFromIter(iter);
 
   const [isVoted] = await getAreVotedBySessionId(
     [item],
     ctx.state.sessionId,
   );
-
-  const lastPage = calcLastPage(allComments.length, PAGE_LENGTH);
 
   return (
     <>
@@ -124,12 +117,11 @@ export default async function ItemsItemPage(
             />
           ))}
         </div>
-        {lastPage > 1 && (
-          <PageSelector
-            currentPage={calcPageNum(ctx.url)}
-            lastPage={lastPage}
-          />
-        )}
+        <PaginationLink
+          url={ctx.url}
+          cursor={iter.cursor}
+          class="text-centre my-8"
+        />
       </main>
     </>
   );
