@@ -43,7 +43,7 @@ export function posixResolve(...pathSegments: string[]): string {
   }
 
   // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
+  // handle relative paths to be safe (might happen when Deno.cwd() fails)
 
   // Normalize the path
   resolvedPath = normalizeString(
@@ -200,7 +200,7 @@ export function windowsResolve(...pathSegments: string[]): string {
   }
 
   // At this point the path should be resolved to a full absolute path,
-  // but handle relative paths to be safe (might happen when process.cwd()
+  // but handle relative paths to be safe (might happen when Deno.cwd()
   // fails)
 
   // Normalize the tail path
