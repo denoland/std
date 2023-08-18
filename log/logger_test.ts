@@ -241,15 +241,24 @@ Deno.test(
       payload: "data",
       other: 123,
     });
+    const data19: { payload: string; other: bigint } = logger.error({
+      payload: "data",
+      other: 123n,
+    });
+    assertEquals(data19, {
+      payload: "data",
+      other: 123n,
+    });
     assertEquals(handler.messages[16], 'ERROR {"payload":"data","other":123}');
     assertEquals(handler.messages[17], 'ERROR {"payload":"data","other":123}');
+    assertEquals(handler.messages[18], 'ERROR {"payload":"data","other":"123"}');
 
     // error
     const error = new RangeError("Uh-oh!");
-    const data19: RangeError = logger.error(error);
-    assertEquals(data19, error);
-    const messages19 = handler.messages[18].split("\n");
-    assertEquals(messages19[0], `ERROR ${error.name}: ${error.message}`);
-    assertMatch(messages19[1], /^\s+at file:.*\d+:\d+$/);
+    const data20: RangeError = logger.error(error);
+    assertEquals(data20, error);
+    const messages20 = handler.messages[19].split("\n");
+    assertEquals(messages20[0], `ERROR ${error.name}: ${error.message}`);
+    assertMatch(messages20[1], /^\s+at file:.*\d+:\d+$/);
   },
 );

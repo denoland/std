@@ -138,7 +138,10 @@ export class Logger {
     } else if (data instanceof Error) {
       return data.stack!;
     } else if (typeof data === "object") {
-      return JSON.stringify(data);
+      return JSON.stringify(
+        data,
+        (_, v) => typeof v === "bigint" ? v.toString() : v,
+      );
     }
     return "undefined";
   }
