@@ -251,7 +251,10 @@ Deno.test(
     });
     assertEquals(handler.messages[16], 'ERROR {"payload":"data","other":123}');
     assertEquals(handler.messages[17], 'ERROR {"payload":"data","other":123}');
-    assertEquals(handler.messages[18], 'ERROR {"payload":"data","other":"123"}');
+    assertEquals(
+      handler.messages[18],
+      'ERROR {"payload":"data","other":"123"}',
+    );
 
     // error
     const error = new RangeError("Uh-oh!");
