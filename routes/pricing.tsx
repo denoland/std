@@ -10,7 +10,7 @@ import {
 } from "@/utils/payments.ts";
 import Stripe from "stripe";
 import { getUserBySession } from "@/utils/db.ts";
-import { CheckCircle } from "@/components/Icons.tsx";
+import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
 
 function comparePrices(
@@ -41,15 +41,15 @@ function FreePlanCard() {
           <span class="text-4xl font-bold">Free</span>
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Share
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Comment
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Vote
         </p>
       </div>
@@ -91,15 +91,15 @@ function PremiumPlanCard(
           <span>{" "}/ {defaultPrice.recurring?.interval}</span>
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Your comments appear first
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Downvoting
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Official pro user badge 🦕
         </p>
       </div>
@@ -143,17 +143,17 @@ function EnterprisePricingCard() {
           <span class="text-4xl font-bold">Contact us</span>
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Advanced reporting
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Direct line to{" "}
           <a href="/users/lambtron" class="text-secondary">Andy</a> and{" "}
           <a href="/users/iuioiua" class="text-secondary">Asher</a>
         </p>
         <p>
-          <CheckCircle class={CHECK_STYLES} />
+          <IconCheckCircle class={CHECK_STYLES} />
           Complimentary Deno merch
         </p>
       </div>

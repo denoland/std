@@ -1,5 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Facebook, LinkedIn, Reddit, Twitter } from "./Icons.tsx";
+import IconBrandFacebook from "tabler_icons_tsx/brand-facebook.tsx";
+import IconBrandLinkedin from "tabler_icons_tsx/brand-linkedin.tsx";
+import IconBrandReddit from "tabler_icons_tsx/brand-reddit.tsx";
+import IconBrandTwitter from "tabler_icons_tsx/brand-twitter.tsx";
 
 /**
  * Dynamically generates links for sharing the current content on the major social media platforms.
@@ -21,28 +24,28 @@ export default function Share(props: { url: URL; title: string }) {
         target="_blank"
         aria-label={`Share ${props.title} on Facebook`}
       >
-        <Facebook />
+        <IconBrandFacebook />
       </a>
       <a
         href={`https://www.linkedin.com/shareArticle?url=${props.url.href}&title=${props.title}`}
         target="_blank"
         aria-label={`Share ${props.title} on LinkedIn`}
       >
-        <LinkedIn />
+        <IconBrandLinkedin />
       </a>
       <a
         href={`https://reddit.com/submit?url=${props.url.href}&title=${props.title}`}
         target="_blank"
         aria-label={`Share ${props.title} on Reddit`}
       >
-        <Reddit />
+        <IconBrandReddit />
       </a>
       <a
         href={`https://twitter.com/share?url=${props.url.href}&text=${props.title}`}
         target="_blank"
         aria-label={`Share ${props.title} on Twitter`}
       >
-        <Twitter />
+        <IconBrandTwitter />
       </a>
     </div>
   );

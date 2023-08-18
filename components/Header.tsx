@@ -6,7 +6,9 @@ import {
   SITE_NAME,
 } from "@/utils/constants.ts";
 import { stripe } from "@/utils/payments.ts";
-import { Bell, Menu, X } from "./Icons.tsx";
+import IconX from "tabler_icons_tsx/x.tsx";
+import IconMenu from "tabler_icons_tsx/menu-2.tsx";
+import IconBell from "tabler_icons_tsx/bell.tsx";
 import { cx } from "@twind/core";
 
 export default function Header(
@@ -43,8 +45,8 @@ export default function Header(
             id="nav-toggle-label"
             htmlFor="nav-toggle"
           >
-            <Menu class="w-6 h-6" />
-            <X class="hidden w-6 h-6" />
+            <IconMenu class="w-6 h-6" />
+            <IconX class="hidden w-6 h-6" />
           </label>
         </div>
       </div>
@@ -114,7 +116,7 @@ export default function Header(
           )}
           aria-label="Notifications"
         >
-          <Bell class="hidden sm:block w-6 h-6" />
+          <IconBell class="hidden sm:block w-6 h-6" />
           <div class="sm:hidden">
             Notifications
           </div>

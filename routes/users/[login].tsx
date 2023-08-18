@@ -11,7 +11,7 @@ import {
   getUser,
 } from "@/utils/db.ts";
 import { pluralize } from "@/utils/display.ts";
-import { GitHub } from "@/components/Icons.tsx";
+import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
@@ -37,7 +37,7 @@ function Profile(
               class={LINK_STYLES}
               target="_blank"
             >
-              <GitHub class="text-sm w-6" />
+              <IconBrandGithub class="text-sm w-6" />
             </a>
           </span>
         </div>

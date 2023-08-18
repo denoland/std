@@ -9,7 +9,8 @@ import {
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/redirect.ts";
 import Head from "@/components/Head.tsx";
-import { CheckCircle, XCircle } from "@/components/Icons.tsx";
+import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
+import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
 import { SignedInState } from "@/utils/middleware.ts";
 
 export const handler: Handlers<SignedInState, SignedInState> = {
@@ -62,15 +63,15 @@ export default function SubmitPage(props: PageProps) {
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 md:items-center">
           <div class="flex-1 space-y-6">
             <p>
-              <XCircle class="inline-block mr-2" />
+              <IconCircleX class="inline-block mr-2" />
               <strong>Don't</strong> post duplicate content
             </p>
             <p>
-              <XCircle class="inline-block mr-2" />
+              <IconCircleX class="inline-block mr-2" />
               <strong>Don't</strong> share dummy or test posts
             </p>
             <div>
-              <CheckCircle class="inline-block mr-2" />
+              <IconCheckCircle class="inline-block mr-2" />
               <strong>Do</strong> include a description with your title.
 
               <div class="text-sm text-gray-500">

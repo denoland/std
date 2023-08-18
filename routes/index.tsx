@@ -13,7 +13,7 @@ import {
 } from "@/utils/db.ts";
 import { DAY, WEEK } from "std/datetime/constants.ts";
 import Head from "@/components/Head.tsx";
-import { Info } from "@/components/Icons.tsx";
+import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import { TabItem } from "@/components/TabsBar.tsx";
 
 const NEEDS_SETUP = Deno.env.get("GITHUB_CLIENT_ID") === undefined ||
@@ -115,7 +115,7 @@ export default async function HomePage(
           <>
             <div class="flex flex-col justify-center items-center gap-2">
               <div class="flex flex-col items-center gap-2 pt-16">
-                <Info class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+                <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
                 <p class="text-center font-medium">No items found</p>
               </div>
 

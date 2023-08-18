@@ -6,7 +6,9 @@ import {
   SITE_BAR_STYLES,
   SITE_NAME,
 } from "@/utils/constants.ts";
-import { Discord, GitHub, Rss } from "./Icons.tsx";
+import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
+import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
+import IconRss from "tabler_icons_tsx/rss.tsx";
 import { getToggledStyles } from "@/utils/display.ts";
 
 export default function Footer(props: { url: URL }) {
@@ -27,7 +29,7 @@ export default function Footer(props: { url: URL }) {
           Blog
         </a>
         <a href="/feed" aria-label="Deno Hunt RSS Feed" class={LINK_STYLES}>
-          <Rss class="h-6 w-6" />
+          <IconRss class="h-6 w-6" />
         </a>
         <a
           href="https://discord.gg/deno"
@@ -35,7 +37,7 @@ export default function Footer(props: { url: URL }) {
           aria-label="Deno SaaSKit on Discord"
           class={LINK_STYLES}
         >
-          <Discord class="h-6 w-6" />
+          <IconBrandDiscord class="h-6 w-6" />
         </a>
         <a
           href="https://github.com/denoland/saaskit"
@@ -43,7 +45,7 @@ export default function Footer(props: { url: URL }) {
           aria-label="Deno SaaSKit repo on GitHub"
           class={LINK_STYLES}
         >
-          <GitHub class="h-6 w-6" />
+          <IconBrandGithub class="h-6 w-6" />
         </a>
         <a href="https://fresh.deno.dev">
           <img
