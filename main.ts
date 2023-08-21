@@ -25,7 +25,7 @@ if (Deno.env.get("RESET_DENO_KV") === "1") {
 /**
  * @todo Remove at v1. This is a quick way to migrate Deno KV, as database changes are likely to occur and require adjustment.
  */
-if (Deno.env.get("MIGRATE_DENO_KEY") === "1") {
+if (Deno.env.get("MIGRATE_DENO_KV") === "1") {
   await migrateKv();
 }
 

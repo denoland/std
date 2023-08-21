@@ -27,7 +27,7 @@ async function getValues<T>(
 ) {
   const values = [];
   const iter = kv.list<T>(selector, options);
-  for await (const { value } of iter) values.push(value);
+  for await (const entry of iter) values.push(entry.value);
   return values;
 }
 
@@ -333,10 +333,6 @@ export async function deleteComment(comment: Comment) {
     .commit();
 
   if (!res.ok) throw new Error(`Failed to delete comment: ${comment}`);
-}
-
-export async function getCommentsByItem(itemId: string) {
-  return await getValues<Comment>({ prefix: ["comments_by_item", itemId] });
 }
 
 export function listCommentsByItem(
