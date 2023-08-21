@@ -8,15 +8,28 @@ import {
   assertEquals,
   assertFalse,
   assertInstanceOf,
+  assertNotEquals,
   assertStringIncludes,
 } from "std/testing/asserts.ts";
-import { genNewItem, genNewUser } from "@/utils/db_test.ts";
-import { createItem, createUser, type Item } from "@/utils/db.ts";
+import { genNewComment, genNewItem, genNewUser } from "@/utils/db_test.ts";
+import {
+  type Comment,
+  createComment,
+  createItem,
+  createUser,
+  type Item,
+} from "@/utils/db.ts";
 
 function assertResponseNotFound(resp: Response) {
   assertFalse(resp.ok);
   assertEquals(resp.body, null);
   assertEquals(resp.status, Status.NotFound);
+}
+
+function assertResponseJson(resp: Response) {
+  assert(resp.ok);
+  assertNotEquals(resp.body, null);
+  assertEquals(resp.headers.get("content-type"), "application/json");
 }
 
 Deno.test("[http]", async (test) => {
@@ -167,6 +180,55 @@ Deno.test("[http]", async (test) => {
     assertEquals(resp.status, 200);
   });
 
+  await test.step("GET /api/items", async () => {
+    const item1 = genNewItem();
+    const item2 = genNewItem();
+    await createItem(item1);
+    await createItem(item2);
+
+    const req = new Request("http://localhost/api/items");
+    const resp = await handler(req);
+
+    const { items } = await resp.json();
+    assertResponseJson(resp);
+    assertArrayIncludes(items, [
+      JSON.parse(JSON.stringify(item1)),
+      JSON.parse(JSON.stringify(item2)),
+    ]);
+  });
+
+  await test.step("GET /api/items/[id]", async () => {
+    const item = genNewItem();
+    const req = new Request("http://localhost/api/items/" + item.id);
+
+    const resp1 = await handler(req);
+    assertResponseNotFound(resp1);
+
+    await createItem(item);
+    const resp2 = await handler(req);
+    assertResponseJson(resp2);
+    assertEquals(await resp2.json(), JSON.parse(JSON.stringify(item)));
+  });
+
+  await test.step("GET /api/items/[id]/comments", async () => {
+    const item = genNewItem();
+    const comment: Comment = {
+      ...genNewComment(),
+      itemId: item.id,
+    };
+    const req = new Request(`http://localhost/api/items/${item.id}/comments`);
+
+    const resp1 = await handler(req);
+    assertResponseNotFound(resp1);
+
+    await createItem(item);
+    await createComment(comment);
+    const resp2 = await handler(req);
+    const { comments } = await resp2.json();
+    assertResponseJson(resp2);
+    assertEquals(comments, JSON.parse(JSON.stringify(comments)));
+  });
+
   await test.step("GET /api/users", async () => {
     const user1 = genNewUser();
     const user2 = genNewUser();
@@ -177,8 +239,7 @@ Deno.test("[http]", async (test) => {
     const resp = await handler(req);
 
     const { users } = await resp.json();
-    assert(resp.ok);
-    assertEquals(resp.headers.get("content-type"), "application/json");
+    assertResponseJson(resp);
     assertArrayIncludes(users, [user1, user2]);
   });
 
@@ -191,8 +252,7 @@ Deno.test("[http]", async (test) => {
 
     await createUser(user);
     const resp2 = await handler(req);
-    assert(resp2.ok);
-    assertEquals(resp2.headers.get("content-type"), "application/json");
+    assertResponseJson(resp2);
     assertEquals(await resp2.json(), user);
   });
 
@@ -212,8 +272,7 @@ Deno.test("[http]", async (test) => {
 
     const resp2 = await handler(req);
     const { items } = await resp2.json();
-    assert(resp2.ok);
-    assertEquals(resp2.headers.get("content-type"), "application/json");
+    assertResponseJson(resp2);
     assertArrayIncludes(items, [JSON.parse(JSON.stringify(item))]);
   });
 });

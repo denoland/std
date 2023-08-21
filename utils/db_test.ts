@@ -47,7 +47,7 @@ import {
 } from "std/testing/asserts.ts";
 import { DAY } from "std/datetime/constants.ts";
 
-function genNewComment(): Comment {
+export function genNewComment(): Comment {
   return {
     itemId: crypto.randomUUID(),
     userLogin: crypto.randomUUID(),

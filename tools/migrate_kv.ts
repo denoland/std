@@ -1,25 +1,16 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { kv, updateUser, User } from "@/utils/db.ts";
-
-type MaybeOldUser = User & {
-  id?: string;
-  avatarUrl?: string;
-};
+import { type Comment, createComment, kv } from "@/utils/db.ts";
 
 export async function migrateKv() {
   const promises = [];
-  const iter = kv.list<MaybeOldUser>({ prefix: ["users"] });
+  const iter = kv.list<Comment>({ prefix: ["comments_by_item"] });
   for await (const entry of iter) {
-    const user = entry.value;
-    if (user.id) {
-      promises.push(kv.delete(["users", user.id]));
-      delete user.id;
-      delete user.avatarUrl;
-      promises.push(updateUser(user));
+    if (entry.key.length === 3) {
+      promises.push(kv.delete(entry.key));
+      promises.push(createComment(entry.value));
     }
   }
   await Promise.all(promises);
-
   console.log("KV migration complete");
 }
 

@@ -161,6 +161,10 @@ export function listItemsByUser(
   return kv.list<Item>({ prefix: ["items_by_user", userLogin] }, options);
 }
 
+export function listItemsByTime(options?: Deno.KvListOptions) {
+  return kv.list<Item>({ prefix: ["items_by_time"] }, options);
+}
+
 export async function getAllItems() {
   return await getValues<Item>({ prefix: ["items"] });
 }
@@ -301,7 +305,12 @@ export function newCommentProps(): Pick<Comment, "id" | "createdAt"> {
 }
 
 export async function createComment(comment: Comment) {
-  const commentsByItemKey = ["comments_by_item", comment.itemId, comment.id];
+  const commentsByItemKey = [
+    "comments_by_item",
+    comment.itemId,
+    comment.createdAt.getTime(),
+    comment.id,
+  ];
 
   const res = await kv.atomic()
     .check({ key: commentsByItemKey, versionstamp: null })
@@ -312,7 +321,12 @@ export async function createComment(comment: Comment) {
 }
 
 export async function deleteComment(comment: Comment) {
-  const commentsByItemKey = ["comments_by_item", comment.itemId, comment.id];
+  const commentsByItemKey = [
+    "comments_by_item",
+    comment.itemId,
+    comment.createdAt.getTime(),
+    comment.id,
+  ];
 
   const res = await kv.atomic()
     .delete(commentsByItemKey)
@@ -323,6 +337,13 @@ export async function deleteComment(comment: Comment) {
 
 export async function getCommentsByItem(itemId: string) {
   return await getValues<Comment>({ prefix: ["comments_by_item", itemId] });
+}
+
+export function listCommentsByItem(
+  itemId: string,
+  options?: Deno.KvListOptions,
+) {
+  return kv.list<Comment>({ prefix: ["comments_by_item", itemId] }, options);
 }
 
 // Vote
