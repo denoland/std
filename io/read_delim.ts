@@ -25,7 +25,11 @@ function createLPS(pat: Uint8Array): Uint8Array {
   return lps;
 }
 
-/** Read delimited bytes from a Reader. */
+/**
+ * Read delimited bytes from a Reader.
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ */
 export async function* readDelim(
   reader: Reader,
   delim: Uint8Array,

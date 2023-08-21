@@ -39,6 +39,8 @@ abstract class AbstractBufBase {
  * After all data has been written, the client should call the
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -130,6 +132,8 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * After all data has been written, the client should call the
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;

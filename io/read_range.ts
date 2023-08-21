@@ -6,6 +6,9 @@ import type { Reader, ReaderSync } from "../types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
   start: number;
@@ -28,6 +31,8 @@ export interface ByteRange {
  * const bytes = await readRange(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -66,6 +71,8 @@ export async function readRange(
  * const bytes = readRangeSync(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,
