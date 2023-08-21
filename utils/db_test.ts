@@ -22,7 +22,6 @@ import {
   getItemsSince,
   getManyMetrics,
   getNotification,
-  getNotificationsByUser,
   getUser,
   getUserBySession,
   getUserByStripeCustomer,
@@ -31,6 +30,7 @@ import {
   incrVisitsCountByDay,
   type Item,
   listCommentsByItem,
+  listNotificationsByUser,
   newCommentProps,
   newItemProps,
   newNotificationProps,
@@ -75,7 +75,7 @@ export function genNewUser(): User {
   };
 }
 
-function genNewNotification(): Notification {
+export function genNewNotification(): Notification {
   return {
     userLogin: crypto.randomUUID(),
     type: crypto.randomUUID(),
@@ -279,12 +279,12 @@ Deno.test("[db] getNotificationsByUser()", async () => {
   const notification1 = { ...genNewNotification(), userLogin };
   const notification2 = { ...genNewNotification(), userLogin };
 
-  assertEquals(await getNotificationsByUser(userLogin), []);
+  assertEquals(await collectValues(listNotificationsByUser(userLogin)), []);
   assertEquals(await ifUserHasNotifications(userLogin), false);
 
   await createNotification(notification1);
   await createNotification(notification2);
-  assertArrayIncludes(await getNotificationsByUser(userLogin), [
+  assertArrayIncludes(await collectValues(listNotificationsByUser(userLogin)), [
     notification1,
     notification2,
   ]);

@@ -11,13 +11,20 @@ import {
   assertNotEquals,
   assertStringIncludes,
 } from "std/testing/asserts.ts";
-import { genNewComment, genNewItem, genNewUser } from "@/utils/db_test.ts";
+import {
+  genNewComment,
+  genNewItem,
+  genNewNotification,
+  genNewUser,
+} from "@/utils/db_test.ts";
 import {
   type Comment,
   createComment,
   createItem,
+  createNotification,
   createUser,
   type Item,
+  type Notification,
 } from "@/utils/db.ts";
 
 function assertResponseNotFound(resp: Response) {
@@ -274,5 +281,29 @@ Deno.test("[http]", async (test) => {
     const { items } = await resp2.json();
     assertResponseJson(resp2);
     assertArrayIncludes(items, [JSON.parse(JSON.stringify(item))]);
+  });
+
+  await test.step("GET /api/users/[login]/notifications", async () => {
+    const user = genNewUser();
+    const notification: Notification = {
+      ...genNewNotification(),
+      userLogin: user.login,
+    };
+    const req = new Request(
+      `http://localhost/api/users/${user.login}/notifications`,
+    );
+
+    const resp1 = await handler(req);
+    assertResponseNotFound(resp1);
+
+    await createUser(user);
+    await createNotification(notification);
+
+    const resp2 = await handler(req);
+    const { notifications } = await resp2.json();
+    assertResponseJson(resp2);
+    assertArrayIncludes(notifications, [
+      JSON.parse(JSON.stringify(notification)),
+    ]);
   });
 });

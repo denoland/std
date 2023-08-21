@@ -236,6 +236,7 @@ export async function createNotification(notification: Notification) {
   const notificationsByUserKey = [
     "notifications_by_user",
     notification.userLogin,
+    notification.createdAt.getTime(),
     notification.id,
   ];
 
@@ -256,6 +257,7 @@ export async function deleteNotification(notification: Notification) {
   const notificationsByUserKey = [
     "notifications_by_user",
     notification.userLogin,
+    notification.createdAt.getTime(),
     notification.id,
   ];
 
@@ -273,10 +275,13 @@ export async function getNotification(id: string) {
   return await getValue<Notification>(["notifications", id]);
 }
 
-export async function getNotificationsByUser(userLogin: string) {
-  return await getValues<Notification>({
+export function listNotificationsByUser(
+  userLogin: string,
+  options?: Deno.KvListOptions,
+) {
+  return kv.list<Notification>({
     prefix: ["notifications_by_user", userLogin],
-  });
+  }, options);
 }
 
 export async function ifUserHasNotifications(userLogin: string) {
