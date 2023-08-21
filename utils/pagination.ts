@@ -10,3 +10,7 @@ export function calcPageNum(url: URL) {
 export function calcLastPage(total = 0, pageLength = PAGE_LENGTH): number {
   return Math.ceil(total / pageLength);
 }
+
+export function getCursor(url: URL) {
+  return url.searchParams.get("cursor") ?? "";
+}

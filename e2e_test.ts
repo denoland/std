@@ -1,14 +1,23 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 
-import { createHandler } from "$fresh/server.ts";
+import { createHandler, Status } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
   assert,
+  assertArrayIncludes,
   assertEquals,
   assertFalse,
   assertInstanceOf,
   assertStringIncludes,
 } from "std/testing/asserts.ts";
+import { genNewItem, genNewUser } from "@/utils/db_test.ts";
+import { createItem, createUser, type Item } from "@/utils/db.ts";
+
+function assertResponseNotFound(resp: Response) {
+  assertFalse(resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.status, Status.NotFound);
+}
 
 Deno.test("[http]", async (test) => {
   const handler = await createHandler(manifest);
@@ -156,5 +165,55 @@ Deno.test("[http]", async (test) => {
       "application/atom+xml; charset=utf-8",
     );
     assertEquals(resp.status, 200);
+  });
+
+  await test.step("GET /api/users", async () => {
+    const user1 = genNewUser();
+    const user2 = genNewUser();
+    await createUser(user1);
+    await createUser(user2);
+
+    const req = new Request("http://localhost/api/users");
+    const resp = await handler(req);
+
+    const { users } = await resp.json();
+    assert(resp.ok);
+    assertEquals(resp.headers.get("content-type"), "application/json");
+    assertArrayIncludes(users, [user1, user2]);
+  });
+
+  await test.step("GET /api/users/[login]", async () => {
+    const user = genNewUser();
+    const req = new Request("http://localhost/api/users/" + user.login);
+
+    const resp1 = await handler(req);
+    assertResponseNotFound(resp1);
+
+    await createUser(user);
+    const resp2 = await handler(req);
+    assert(resp2.ok);
+    assertEquals(resp2.headers.get("content-type"), "application/json");
+    assertEquals(await resp2.json(), user);
+  });
+
+  await test.step("GET /api/users/[login]/items", async () => {
+    const user = genNewUser();
+    const item: Item = {
+      ...genNewItem(),
+      userLogin: user.login,
+    };
+    const req = new Request(`http://localhost/api/users/${user.login}/items`);
+
+    const resp1 = await handler(req);
+    assertResponseNotFound(resp1);
+
+    await createUser(user);
+    await createItem(item);
+
+    const resp2 = await handler(req);
+    const { items } = await resp2.json();
+    assert(resp2.ok);
+    assertEquals(resp2.headers.get("content-type"), "application/json");
+    assertArrayIncludes(items, [JSON.parse(JSON.stringify(item))]);
   });
 });

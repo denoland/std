@@ -56,7 +56,7 @@ function genNewComment(): Comment {
   };
 }
 
-function genNewItem(): Item {
+export function genNewItem(): Item {
   return {
     userLogin: crypto.randomUUID(),
     title: crypto.randomUUID(),
@@ -65,7 +65,7 @@ function genNewItem(): Item {
   };
 }
 
-function genNewUser(): User {
+export function genNewUser(): User {
   return {
     login: crypto.randomUUID(),
     sessionId: crypto.randomUUID(),
