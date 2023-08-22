@@ -21,6 +21,8 @@
  * console.log(Deno.env.get("GREETING")); // hello world
  * ```
  *
+ * Run this with `deno run --allow-read --allow-env app.ts`.
+ * 
  * .env files support blank lines, comments, multi-line values and more.
  * See Parsing Rules below for more detail.
  *
@@ -41,10 +43,8 @@
  * |File|Purpose|
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
- * |.env.example|this file does not set any values, but specifies env
- * variables which must be present in the environment after loading dotenv
- * |.env.defaults|specify default values for env variables to be used when
- * there is no entry in the `.env` file
+ * |.env.example|this file does not set any values, but specifies env variables which must be present in the environment after loading dotenv
+ * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
  *
  * ### Example file
  *
