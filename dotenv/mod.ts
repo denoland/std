@@ -22,7 +22,7 @@
  * ```
  *
  * Run this with `deno run --allow-read --allow-env app.ts`.
- * 
+ *
  * .env files support blank lines, comments, multi-line values and more.
  * See Parsing Rules below for more detail.
  *
