@@ -5,13 +5,14 @@ import { resolve } from "../path/resolve.ts";
 import { SEP_PATTERN } from "../path/separator.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
-import { isWindows } from "../_util/os.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
   toPathString,
   WalkEntry,
 } from "./_util.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   root?: string;
