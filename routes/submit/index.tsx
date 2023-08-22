@@ -12,6 +12,7 @@ import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
 import { SignedInState } from "@/utils/middleware.ts";
+import { isPublicUrl, isValidUrl } from "@/utils/url_validation.ts";
 
 export const handler: Handlers<SignedInState, SignedInState> = {
   async POST(req, ctx) {
@@ -24,8 +25,9 @@ export const handler: Handlers<SignedInState, SignedInState> = {
     }
 
     try {
-      // Throws if an invalid URL
-      new URL(url);
+      if (!isValidUrl(url) || !isPublicUrl(url)) {
+        return new Response(null, { status: 400 });
+      }
     } catch {
       return new Response(null, { status: 400 });
     }
