@@ -2,7 +2,7 @@
 /**
  * Load environment variables from a `.env` file.
  *
- * Inspired by the node modules [`dotenv`](https://github.com/motdotla/dotenv) 
+ * Inspired by the node modules [`dotenv`](https://github.com/motdotla/dotenv)
  * and [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
  *
  * ## Basic usage
@@ -21,11 +21,11 @@
  * console.log(Deno.env.get("GREETING")); // hello world
  * ```
  *
- * .env files support blank lines, comments, multi-line values and more. 
+ * .env files support blank lines, comments, multi-line values and more.
  * See Parsing Rules below for more detail.
  *
  * ## Auto loading
- * Import the `load.ts` module to auto-import from the `.env` file and into 
+ * Import the `load.ts` module to auto-import from the `.env` file and into
  * the process environment.
  *
  * ```ts
@@ -41,16 +41,16 @@
  * |File|Purpose|
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
- * |.env.example|this file does not set any values, but specifies env 
+ * |.env.example|this file does not set any values, but specifies env
  * variables which must be present in the environment after loading dotenv
  * |.env.defaults|specify default values for env variables to be used when
  * there is no entry in the `.env` file
  *
  * ### Example file
  *
- * The purpose of the example file is to provide a list of environment 
- * variables which must be set or an exception will be thrown.  These 
- * variables may be set externally or loaded via the `.env` or 
+ * The purpose of the example file is to provide a list of environment
+ * variables which must be set or an exception will be thrown.  These
+ * variables may be set externally or loaded via the `.env` or
  * `.env.defaults` files.  A description may also be provided to help
  * understand the purpose of the env variable. The values in this file
  * are for documentation only and are not set in the environment. Example:
@@ -65,8 +65,8 @@
  * DATA_URL=
  * ```
  *
- * When the above file is present, after dotenv is loaded, if either 
- * DATA_KEY or DATA_URL is not present in the environment an exception 
+ * When the above file is present, after dotenv is loaded, if either
+ * DATA_KEY or DATA_URL is not present in the environment an exception
  * is thrown.
  *
  * ### Defaults
