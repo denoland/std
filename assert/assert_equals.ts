@@ -3,7 +3,7 @@ import { equal } from "./equal.ts";
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 import { red } from "../fmt/colors.ts";
-import { buildMessage, diff, diffstr } from "../_util/diff.ts";
+import { buildMessage, diff, diffstr } from "./_diff.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 
 /**
@@ -21,19 +21,27 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *   assertEquals({ hello: "world" }, { hello: "world" });
  * });
  * ```
+ *
+ * Note: `serialized` parameter is experimental and may be removed in the future.
  */
-export function assertEquals<T>(actual: T, expected: T, msg?: string) {
+export function assertEquals<T>(
+  actual: T,
+  expected: T,
+  msg?: string,
+  serialized = false,
+) {
   if (equal(actual, expected)) {
     return;
   }
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = format(actual);
-  const expectedString = format(expected);
+  const actualString = serialized ? actual as string : format(actual);
+  const expectedString = serialized ? expected as string : format(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
-      (typeof expected === "string");
+      (typeof expected === "string") &&
+      (!serialized || !actualString.includes("\n"));
     const diffResult = stringDiff
       ? diffstr(actual as string, expected as string)
       : diff(actualString.split("\n"), expectedString.split("\n"));
