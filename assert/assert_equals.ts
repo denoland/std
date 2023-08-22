@@ -22,26 +22,26 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  * });
  * ```
  *
- * Note: `serialized` parameter is experimental and may be removed in the future.
+ * Note: formatter option is experimental and may be removed in the future.
  */
 export function assertEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-  serialized = false,
+  options: { formatter?: (value: unknown) => string } = {},
 ) {
   if (equal(actual, expected)) {
     return;
   }
+  const { formatter = format } = options;
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = serialized ? actual as string : format(actual);
-  const expectedString = serialized ? expected as string : format(expected);
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
-      (typeof expected === "string") &&
-      (!serialized || !actualString.includes("\n"));
+      (typeof expected === "string");
     const diffResult = stringDiff
       ? diffstr(actual as string, expected as string)
       : diff(actualString.split("\n"), expectedString.split("\n"));

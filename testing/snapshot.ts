@@ -560,7 +560,14 @@ export async function assertSnapshot(
     }
     let message = "";
     try {
-      assertEquals(_actual, snapshot, undefined, true);
+      const usesMultilineDiff = _actual.includes("\n");
+      if (usesMultilineDiff) {
+        assertEquals(true, false, undefined, {
+          formatter: (v) => v ? _actual : snapshot,
+        });
+      } else {
+        assertEquals(_actual, snapshot);
+      }
     } catch (e) {
       if (e instanceof AssertionError) {
         message = e.message.replace(
