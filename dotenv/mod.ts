@@ -1,55 +1,120 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /**
- * Load environment variables from `.env` files.
- * Inspired by the node module [`dotenv`](https://github.com/motdotla/dotenv) and
- * [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
+ * Load environment variables from a `.env` file.
  *
+ * Inspired by the node modules [`dotenv`](https://github.com/motdotla/dotenv)
+ * and [`dotenv-expand`](https://github.com/motdotla/dotenv-expand).
+ *
+ * ## Basic usage
  * ```sh
  * # .env
  * GREETING=hello world
  * ```
  *
- * Then import the configuration using the `load` function.
+ * Then import the environment variables using the `load` function.
  *
  * ```ts
  * // app.ts
  * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
  *
- * console.log(await load());
+ * console.log(await load({export: true})); // { GREETING: "hello world" }
+ * console.log(Deno.env.get("GREETING")); // hello world
  * ```
  *
- * Then run your app.
+ * Run this with `deno run --allow-read --allow-env app.ts`.
  *
- * ```sh
- * > deno run --allow-env --allow-read app.ts
- * { GREETING: "hello world" }
- * ```
+ * .env files support blank lines, comments, multi-line values and more.
+ * See Parsing Rules below for more detail.
  *
  * ## Auto loading
- *
- * `load.ts` automatically loads the local `.env` file on import and exports it to
- * the process environment:
- *
- * ```sh
- * # .env
- * GREETING=hello world
- * ```
+ * Import the `load.ts` module to auto-import from the `.env` file and into
+ * the process environment.
  *
  * ```ts
  * // app.ts
  * import "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
  *
- * console.log(Deno.env.get("GREETING"));
+ * console.log(Deno.env.get("GREETING")); // hello world
  * ```
+ *
+ * ## Files
+ * Dotenv supports a number of different files, all of which are optional.
+ *
+ * |File|Purpose|
+ * |----|-------|
+ * |.env|primary file for storing key-value environment entries
+ * |.env.example|this file does not set any values, but specifies env variables which must be present in the environment after loading dotenv
+ * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
+ *
+ * ### Example file
+ *
+ * The purpose of the example file is to provide a list of environment
+ * variables which must be set or an exception will be thrown.  These
+ * variables may be set externally or loaded via the `.env` or
+ * `.env.defaults` files.  A description may also be provided to help
+ * understand the purpose of the env variable. The values in this file
+ * are for documentation only and are not set in the environment. Example:
  *
  * ```sh
- * > deno run --allow-env --allow-read app.ts
- * hello world
+ * # .env.example
+ *
+ * # With optional description (this is not set in the environment)
+ * DATA_KEY=API key for the api.data.com service.
+ *
+ * # Without description
+ * DATA_URL=
  * ```
  *
- * Default values can be placed in a local `.env.defaults` file. If present,
- * `load.ts` will automatically fallback to default values if a value is not
- * present in the local `.env` file.
+ * When the above file is present, after dotenv is loaded, if either
+ * DATA_KEY or DATA_URL is not present in the environment an exception
+ * is thrown.
+ *
+ * ### Defaults
+ *
+ * This file is used to provide a list of default environment variables
+ * which will be used if there is no overriding variable in the `.env`
+ * file.
+ *
+ * ```sh
+ * # .env.defaults
+ * KEY_1=DEFAULT_VALUE
+ * KEY_2=ANOTHER_DEFAULT_VALUE
+ * ```
+ * ```sh
+ * # .env
+ * KEY_1=ABCD
+ * ```
+ * The environment variables set after dotenv loads are:
+ * ```sh
+ * KEY_1=ABCD
+ * KEY_2=ANOTHER_DEFAULT_VALUE
+ * ```
+ *
+ * ## Configuration
+ *
+ * Loading environment files comes with a number of options passed into
+ * the `load()` function, all of which are optional.
+ *
+ * |Option|Default|Description
+ * |------|-------|-----------
+ * |envPath|./.env|Path and filename of the `.env` file
+ * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file
+ * |examplePath|./.env.example|Path and filename of the `.env.example` file
+ * |export|false|This will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
+ * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
+ * |restrictEnvAccessTo||List of Env variables to read from process. By default, the complete Env is looked up. This allows to permit access to only specific Env variables with `--allow-env=ENV_VAR_NAME`
+ *
+ * ### Example configuration
+ * ```ts
+ * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
+ * const conf = await load({
+ *     envPath: "./.env_prod",
+ *     examplePath: "./.env_required",
+ *     export: true,
+ *     allowEmptyValues: true,
+ *   });
+ * ```
  *
  * ## Parsing Rules
  *
