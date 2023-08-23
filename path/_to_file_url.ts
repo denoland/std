@@ -62,7 +62,7 @@ export function windowsToFileUrl(path: string): URL {
   )!;
   const url = new URL("file:///");
   url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
-  if (hostname !== "localhost") {
+  if (hostname !== undefined && hostname !== "localhost") {
     url.hostname = hostname;
     if (!url.hostname) {
       throw new TypeError("Invalid hostname.");
