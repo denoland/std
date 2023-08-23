@@ -13,7 +13,7 @@
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
     "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",
-    "lint:circular": "deno run --allow-env --allow-read ./_tools/check_circular_submodule_dependencies.ts",
+    "lint:circular": "deno run --allow-env --allow-read --allow-net=deno.land ./_tools/check_circular_submodule_dependencies.ts",
     "lint": "deno lint && deno task fmt:licence-headers --check && deno task lint:deprecations && deno task lint:doc-imports && deno task lint:circular",
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
