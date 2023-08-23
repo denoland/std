@@ -172,7 +172,7 @@ export function globToRegExp(
         } else if (glob[i + 1] === ":") {
           let k = i + 1;
           let value = "";
-          while (glob[k + 1] != null && glob[k + 1] != ":") {
+          while (glob[k + 1] !== undefined && glob[k + 1] !== ":") {
             value += glob[k + 1];
             k++;
           }
@@ -215,13 +215,13 @@ export function globToRegExp(
 
       if (
         glob[i] === ")" && groupStack.length > 0 &&
-        groupStack[groupStack.length - 1] != "BRACE"
+        groupStack[groupStack.length - 1] !== "BRACE"
       ) {
         segment += ")";
         const type = groupStack.pop()!;
         if (type === "!") {
           segment += wildcard;
-        } else if (type != "@") {
+        } else if (type !== "@") {
           segment += type;
         }
         continue;
@@ -229,7 +229,7 @@ export function globToRegExp(
 
       if (
         glob[i] === "|" && groupStack.length > 0 &&
-        groupStack[groupStack.length - 1] != "BRACE"
+        groupStack[groupStack.length - 1] !== "BRACE"
       ) {
         segment += "|";
         continue;

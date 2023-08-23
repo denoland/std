@@ -137,7 +137,6 @@ export async function* walk(
   }
   try {
     for await (const entry of Deno.readDir(root)) {
-      assert(entry.name != null);
       let path = join(root, entry.name);
 
       let { isSymlink, isDirectory } = entry;
@@ -207,7 +206,6 @@ export function* walkSync(
     throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
-    assert(entry.name != null);
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;

@@ -208,12 +208,12 @@ function validateDomain(domain: string) {
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
-  if (cookie != null) {
+  if (cookie !== null) {
     const out: Record<string, string> = {};
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
-      assert(cookieKey != null);
+      assert(cookieKey !== undefined);
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
     }

@@ -6,7 +6,7 @@ import { getFileInfoType, toPathString } from "./_util.ts";
 import { isWindows } from "../_util/os.ts";
 
 function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
-  if (typeof target != "string") return target; // URL is always absolute path
+  if (typeof target !== "string") return target; // URL is always absolute path
   if (typeof linkName === "string") {
     return resolve(dirname(linkName), target);
   } else {

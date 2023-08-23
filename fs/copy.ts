@@ -228,7 +228,6 @@ function copyDirSync(
   dest = toPathString(dest);
 
   for (const entry of Deno.readDirSync(src)) {
-    assert(entry.name != null, "file.name must be set");
     const srcPath = join(src, entry.name);
     const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {

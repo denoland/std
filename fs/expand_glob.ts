@@ -97,11 +97,11 @@ export async function* expandGlob(
   } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? winRoot != undefined ? winRoot : "/"
+    ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
-    assert(seg != null);
+    assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -144,7 +144,7 @@ export async function* expandGlob(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path &&
+        walkEntry.path !== walkInfo.path &&
         walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;
@@ -219,11 +219,11 @@ export function* expandGlobSync(
   } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? winRoot != undefined ? winRoot : "/"
+    ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
-    assert(seg != null);
+    assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -266,7 +266,7 @@ export function* expandGlobSync(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path &&
+        walkEntry.path !== walkInfo.path &&
         walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;

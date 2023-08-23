@@ -70,7 +70,7 @@ export async function parseRecord(
     return [];
   }
 
-  assert(opt.separator != null);
+  assert(opt.separator !== undefined);
 
   let fullLine = line;
   let quoteError: ParseError | null = null;

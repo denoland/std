@@ -87,7 +87,7 @@ export function decode2331Encoding(v: string): string | undefined {
   if (!charset) {
     return undefined;
   }
-  if (charset != "us-ascii" && charset != "utf-8") {
+  if (charset !== "us-ascii" && charset !== "utf-8") {
     return undefined;
   }
   const encv = decodeURI(sv[2]);

@@ -1189,7 +1189,7 @@ export default class Context {
 
         const memoryView = new DataView(this.#memory.buffer);
 
-        const info = (flags & LOOKUPFLAGS_SYMLINK_FOLLOW) != 0
+        const info = (flags & LOOKUPFLAGS_SYMLINK_FOLLOW) !== 0
           ? Deno.statSync(path)
           : Deno.lstatSync(path);
 
@@ -1428,7 +1428,7 @@ export default class Context {
         const read = RIGHTS_FD_READ |
           RIGHTS_FD_READDIR;
 
-        if ((rightsBase & read) != 0n) {
+        if ((rightsBase & read) !== 0n) {
           options.read = true;
         }
 
@@ -1437,27 +1437,27 @@ export default class Context {
           RIGHTS_FD_ALLOCATE |
           RIGHTS_FD_FILESTAT_SET_SIZE;
 
-        if ((rightsBase & write) != 0n) {
+        if ((rightsBase & write) !== 0n) {
           options.write = true;
         }
 
-        if ((fdflags & FDFLAGS_APPEND) != 0) {
+        if ((fdflags & FDFLAGS_APPEND) !== 0) {
           options.append = true;
         }
 
-        if ((fdflags & FDFLAGS_DSYNC) != 0) {
+        if ((fdflags & FDFLAGS_DSYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_NONBLOCK) != 0) {
+        if ((fdflags & FDFLAGS_NONBLOCK) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_RSYNC) != 0) {
+        if ((fdflags & FDFLAGS_RSYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_SYNC) != 0) {
+        if ((fdflags & FDFLAGS_SYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
@@ -1752,7 +1752,7 @@ export default class Context {
       );
     }
 
-    if (typeof _start != "function") {
+    if (typeof _start !== "function") {
       throw new TypeError(
         "WebAssembly.Instance export _start must be a function",
       );
@@ -1801,7 +1801,7 @@ export default class Context {
       );
     }
 
-    if (_initialize && typeof _initialize != "function") {
+    if (_initialize && typeof _initialize !== "function") {
       throw new TypeError(
         "WebAssembly.Instance export _initialize must be a function or not be defined",
       );
