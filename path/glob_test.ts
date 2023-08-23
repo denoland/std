@@ -14,7 +14,7 @@ function match(
   path: string,
   opts: GlobToRegExpOptions = {},
 ): boolean {
-  if (opts.os === null) {
+  if (opts.os === undefined) {
     const matchDarwin = path.match(
       globToRegExp(glob, { ...opts, os: "darwin" }),
     );
