@@ -791,11 +791,11 @@ export default class Context {
           return ERRNO_INVAL;
         }
 
-        if ((flags & FSTFLAGS_ATIM_NOW) == FSTFLAGS_ATIM_NOW) {
+        if ((flags & FSTFLAGS_ATIM_NOW) === FSTFLAGS_ATIM_NOW) {
           atim = BigInt(Date.now() * 1e6);
         }
 
-        if ((flags & FSTFLAGS_MTIM_NOW) == FSTFLAGS_MTIM_NOW) {
+        if ((flags & FSTFLAGS_MTIM_NOW) === FSTFLAGS_MTIM_NOW) {
           mtim = BigInt(Date.now() * 1e6);
         }
 
@@ -812,7 +812,7 @@ export default class Context {
         nreadOffset: number,
       ): number => {
         const entry = this.#fds[fd];
-        if (entry == null) {
+        if (entry === null) {
           return ERRNO_BADF;
         }
 
@@ -1285,11 +1285,11 @@ export default class Context {
         );
         const path = resolve(entry.path!, textDecoder.decode(data));
 
-        if ((fstflags & FSTFLAGS_ATIM_NOW) == FSTFLAGS_ATIM_NOW) {
+        if ((fstflags & FSTFLAGS_ATIM_NOW) === FSTFLAGS_ATIM_NOW) {
           atim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        if ((fstflags & FSTFLAGS_MTIM_NOW) == FSTFLAGS_MTIM_NOW) {
+        if ((fstflags & FSTFLAGS_MTIM_NOW) === FSTFLAGS_MTIM_NOW) {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
@@ -1370,7 +1370,7 @@ export default class Context {
 
         let path;
         if (
-          (dirflags & LOOKUPFLAGS_SYMLINK_FOLLOW) == LOOKUPFLAGS_SYMLINK_FOLLOW
+          (dirflags & LOOKUPFLAGS_SYMLINK_FOLLOW) === LOOKUPFLAGS_SYMLINK_FOLLOW
         ) {
           try {
             path = Deno.realPathSync(resolvedPath);
@@ -1746,7 +1746,7 @@ export default class Context {
 
     this.#memory = memory;
 
-    if (typeof _initialize == "function") {
+    if (typeof _initialize === "function") {
       throw new TypeError(
         "WebAssembly.instance export _initialize must not be a function",
       );
@@ -1795,7 +1795,7 @@ export default class Context {
 
     this.#memory = memory;
 
-    if (typeof _start == "function") {
+    if (typeof _start === "function") {
       throw new TypeError(
         "WebAssembly.Instance export _start must not be a function",
       );

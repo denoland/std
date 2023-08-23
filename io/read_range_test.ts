@@ -15,7 +15,7 @@ const N = 100;
 let testBytes: Uint8Array | null;
 
 export function init() {
-  if (testBytes == null) {
+  if (testBytes === null) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       testBytes[i] = "a".charCodeAt(0) + (i % 26);

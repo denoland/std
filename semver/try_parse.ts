@@ -8,7 +8,7 @@ import { parse } from "./parse.ts";
  * @returns A valid SemVer or `undefined`
  */
 export function tryParse(version?: string): SemVer | undefined {
-  if (version == null) {
+  if (version === undefined) {
     return undefined;
   }
   try {

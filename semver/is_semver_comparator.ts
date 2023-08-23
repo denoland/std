@@ -15,7 +15,7 @@ import { ALL, NONE } from "./constants.ts";
  * @returns True if the object is a SemVerComparator otherwise false
  */
 export function isSemVerComparator(value: unknown): value is SemVerComparator {
-  if (value == null) return false;
+  if (value === null) return false;
   if (value === NONE) return true;
   if (value === ALL) return true;
   if (Array.isArray(value)) return false;

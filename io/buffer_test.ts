@@ -21,7 +21,7 @@ let testString: string | null;
 const ignoreMaxSizeTests = true;
 
 function init() {
-  if (testBytes == null) {
+  if (testBytes === null) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       testBytes[i] = "a".charCodeAt(0) + (i % 26);

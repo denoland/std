@@ -131,13 +131,14 @@ function validateName(name: string | undefined | null) {
  * @param path Path value.
  */
 function validatePath(path: string | null) {
-  if (path == null) {
+  if (path === null) {
     return;
   }
   for (let i = 0; i < path.length; i++) {
     const c = path.charAt(i);
     if (
-      c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) || c == ";"
+      c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) ||
+      c === ";"
     ) {
       throw new Error(
         path + ": Invalid cookie path char '" + c + "'",
@@ -152,13 +153,13 @@ function validatePath(path: string | null) {
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null) {
-  if (value == null || name == null) return;
+  if (value === null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
     if (
-      c < String.fromCharCode(0x21) || c == String.fromCharCode(0x22) ||
-      c == String.fromCharCode(0x2c) || c == String.fromCharCode(0x3b) ||
-      c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
+      c < String.fromCharCode(0x21) || c === String.fromCharCode(0x22) ||
+      c === String.fromCharCode(0x2c) || c === String.fromCharCode(0x3b) ||
+      c === String.fromCharCode(0x5c) || c === String.fromCharCode(0x7f)
     ) {
       throw new Error(
         "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
@@ -179,12 +180,9 @@ function validateValue(name: string, value: string | null) {
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string) {
-  if (domain == null) {
-    return;
-  }
   const char1 = domain.charAt(0);
   const charN = domain.charAt(domain.length - 1);
-  if (char1 == "-" || charN == "." || charN == "-") {
+  if (char1 === "-" || charN === "." || charN === "-") {
     throw new Error(
       "Invalid first/last char in cookie domain: " + domain,
     );

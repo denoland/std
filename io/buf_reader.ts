@@ -289,7 +289,7 @@ export class BufReader implements Reader {
       return { line, more: false };
     }
 
-    if (line[line.byteLength - 1] == LF) {
+    if (line[line.byteLength - 1] === LF) {
       let drop = 1;
       if (line.byteLength > 1 && line[line.byteLength - 2] === CR) {
         drop = 2;

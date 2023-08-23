@@ -42,7 +42,7 @@ export class BaseHandler {
       const value = logRecord[p1 as keyof LogRecord];
 
       // do not interpolate missing values
-      if (value == null) {
+      if (value === null) {
         return match;
       }
 

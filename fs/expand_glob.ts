@@ -118,7 +118,7 @@ export async function* expandGlob(
   ): AsyncIterableIterator<WalkEntry> {
     if (!walkInfo.isDirectory) {
       return;
-    } else if (globSegment == "..") {
+    } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
@@ -128,7 +128,7 @@ export async function* expandGlob(
         throwUnlessNotFound(error);
       }
       return;
-    } else if (globSegment == "**") {
+    } else if (globSegment === "**") {
       return yield* walk(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
@@ -240,7 +240,7 @@ export function* expandGlobSync(
   ): IterableIterator<WalkEntry> {
     if (!walkInfo.isDirectory) {
       return;
-    } else if (globSegment == "..") {
+    } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
@@ -250,7 +250,7 @@ export function* expandGlobSync(
         throwUnlessNotFound(error);
       }
       return;
-    } else if (globSegment == "**") {
+    } else if (globSegment === "**") {
       return yield* walkSync(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
