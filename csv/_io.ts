@@ -38,7 +38,7 @@ export interface ReadOptions {
    * Enabling checking number of expected fields for each row.
    *
    * If positive, each record is required to have the given number of fields.
-   * If == 0, it will be set to the number of fields in the first row, so that
+   * If === 0, it will be set to the number of fields in the first row, so that
    * future rows must have the same field count.
    * If negative, no check is made and records may have a variable number of
    * fields.
