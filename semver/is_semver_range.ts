@@ -13,7 +13,7 @@ import { isSemVerComparator } from "./is_semver_comparator.ts";
  * @returns True if its a valid SemVerRange otherwise false.
  */
 export function isSemVerRange(value: unknown): value is SemVerRange {
-  if (value === null) return false;
+  if (value === null || value === undefined) return false;
   if (Array.isArray(value)) return false;
   if (typeof value !== "object") return false;
   const { ranges } = value as SemVerRange;
