@@ -41,7 +41,7 @@ Deno.test("didYouMean6", function () {
   assertThrows(
     () => didYouMean("hep", possibleWords, { suggestionLimit: 1 }),
     DidYouMeanError,
-    'For "hep", did you mean one of ["help","Help","size","blah","length"]?',
+    "For \"hep\", did you mean \"help\"?",
   );
 });
 
@@ -49,7 +49,7 @@ Deno.test("didYouMean7", function () {
   assertThrows(
     () => didYouMean("hep", possibleWords, { suggestionLimit: 1 }),
     DidYouMeanError,
-    'For "hep", did you mean one of ["help","Help","size","blah","length"]?',
+    "For \"hep\", did you mean \"help\"?",
   );
 });
 
