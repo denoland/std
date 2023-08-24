@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { move, moveSync, SubdirectoryMoveError } from "./move.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";

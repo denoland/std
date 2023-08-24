@@ -54,7 +54,7 @@
 const { Deno } = globalThis as any;
 const noColor = typeof Deno?.noColor === "boolean"
   ? Deno.noColor as boolean
-  : true;
+  : false;
 
 interface Code {
   open: string;
@@ -76,7 +76,7 @@ let enabled = !noColor;
  * @param value
  */
 export function setColorEnabled(value: boolean) {
-  if (noColor) {
+  if (Deno?.noColor) {
     return;
   }
 

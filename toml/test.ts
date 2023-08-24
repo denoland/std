@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
 import { parse, stringify } from "./mod.ts";
@@ -131,6 +131,10 @@ Deno.test({
         data: [
           ["gamma", "delta"],
           [1, 2],
+        ],
+        floats: [
+          0.1,
+          -1.25,
         ],
         hosts: ["alpha", "omega"],
         profiles: [
@@ -297,6 +301,7 @@ Deno.test({
             ],
           },
         },
+        empty: {},
       },
     };
     const actual = parseFile(path.join(testdataDir, "inlineTable.toml"));

@@ -108,6 +108,10 @@ Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
   await assertSnapshot(t, "\\ ` ${}");
 });
 
+Deno.test("Snapshot Test - Default serializer", async (t) => {
+  await assertSnapshot(t, "a\nb\tc");
+});
+
 Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
   await t.step("string", async (t) => {
     await assertSnapshot(

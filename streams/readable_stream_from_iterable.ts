@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Create a `ReadableStream` from any kind of iterable.
+/**
+ * @deprecated (will be removed after 0.196.0) Use `ReadableStream.from` instead.
+ *
+ * Create a `ReadableStream` from any kind of iterable.
  *
  * ```ts
  *      import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";

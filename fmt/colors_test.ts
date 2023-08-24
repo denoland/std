@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import * as c from "./colors.ts";
-import "../examples/colors.ts";
 
 Deno.test("reset", function () {
   assertEquals(c.reset("foo bar"), "[0mfoo bar[0m");

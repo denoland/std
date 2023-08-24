@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../testing/asserts.ts";
-import { readableStreamFromIterable } from "./readable_stream_from_iterable.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
@@ -25,7 +24,7 @@ export async function testTransformStream<T, U>(
   inputs: Iterable<T> | AsyncIterable<T>,
   outputs: Iterable<U> | AsyncIterable<U>,
 ) {
-  const reader = readableStreamFromIterable(inputs)
+  const reader = ReadableStream.from(inputs)
     .pipeThrough(transform)
     .getReader();
   for await (const output of outputs) {

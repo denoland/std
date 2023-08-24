@@ -1,9 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import {
   fromFileUrl,
   join,
@@ -55,6 +51,7 @@ Deno.test("expandGlobWildcard", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -74,6 +71,7 @@ Deno.test("expandGlobParent", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -122,6 +120,7 @@ Deno.test("expandGlobGlobstarFalseWithGlob", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
