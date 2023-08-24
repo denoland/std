@@ -1,4 +1,4 @@
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/mod.ts";
 import { wordSimilaritySort } from "./word_similarity.ts";
 
 export class DidYouMeanError extends Error {

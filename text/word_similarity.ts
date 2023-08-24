@@ -1,5 +1,5 @@
 import { levenshteinDistance } from "./levenshtein_distance.ts";
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/mod.ts";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
 const getWordDistance = levenshteinDistance;
