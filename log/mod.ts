@@ -337,7 +337,7 @@ export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");
     assert(
-      d != null,
+      d !== undefined,
       `"default" logger must be set for getting logger without name`,
     );
     return d;

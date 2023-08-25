@@ -205,7 +205,7 @@ export class BufReader implements Reader {
    * If ReadString encounters an error before finding a delimiter,
    * it returns the data read before the error and the error itself
    * (often `null`).
-   * ReadString returns err != nil if and only if the returned data does not end
+   * ReadString returns err !== null if and only if the returned data does not end
    * in delim.
    * For simple uses, a Scanner may be more convenient.
    */
@@ -289,7 +289,7 @@ export class BufReader implements Reader {
       return { line, more: false };
     }
 
-    if (line[line.byteLength - 1] == LF) {
+    if (line[line.byteLength - 1] === LF) {
       let drop = 1;
       if (line.byteLength > 1 && line[line.byteLength - 2] === CR) {
         drop = 2;

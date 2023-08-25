@@ -325,7 +325,7 @@ Deno.test({
       [`{${"foo".repeat(100)}}`],
       {},
       SyntaxError,
-      `Expected property name or '}' in JSON at position 1 (line 1 column 2) (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
+      `Expected property name or '}' in JSON at position 1 (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
     );
   },
 });

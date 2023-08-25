@@ -240,7 +240,7 @@ export function parse(rawDotenv: string): Record<string, string> {
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KeyValue.exec(rawDotenv)) != null) {
+  while ((match = RE_KeyValue.exec(rawDotenv)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 

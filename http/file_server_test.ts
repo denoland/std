@@ -14,9 +14,10 @@ import {
   resolve,
   toFileUrl,
 } from "../path/mod.ts";
-import { isWindows } from "../_util/os.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 let child: Deno.ChildProcess;
 

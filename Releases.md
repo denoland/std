@@ -1,3 +1,7 @@
+### 0.200.0 / 2023.08.24
+
+- doc: add complete docs for all dotenv functionality (#3560)
+
 ### 0.199.0 / 2023.08.21
 
 - fix(collections): redblack tree and bst not being exported from mod (#3528)
