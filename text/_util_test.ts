@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { closest, similarityCompare, wordSimilaritySort } from "./_util.ts";
 
 Deno.test("basicWordSimilaritySort", function () {
@@ -41,7 +41,18 @@ Deno.test("similarityCompare", function () {
   );
 });
 
-Deno.test("closest", function () {
+Deno.test("similarityCompare", function () {
+  const words = ["hi", "hello", "help", "HOWDY"];
+
+  assertEquals(
+    JSON.stringify(
+      words.sort(similarityCompare("HI", { caseSensitive: true })),
+    ),
+    '["hi","help","HOWDY","hello"]',
+  );
+});
+
+Deno.test("closest - basic", function () {
   const words = ["hi", "hello", "help"];
 
   assertEquals(
@@ -50,7 +61,7 @@ Deno.test("closest", function () {
   );
 });
 
-Deno.test("closest", function () {
+Deno.test("closest - caseSensitive1", function () {
   const words = ["hi", "hello", "help"];
 
   // this is why caseSensitive is OFF by default; very unintuitive until something better than levenshtein_distance is used
@@ -60,11 +71,19 @@ Deno.test("closest", function () {
   );
 });
 
-Deno.test("closest", function () {
+Deno.test("closest - caseSensitive2", function () {
   const words = ["HI", "HELLO", "HELP"];
 
   assertEquals(
     JSON.stringify(closest("he", words, { caseSensitive: true })),
     '"HI"',
+  );
+});
+
+Deno.test("closest - empty input", function () {
+  assertThrows(
+    () => closest("he", []),
+    Error,
+    "When using closest(), the possibleWords array must contain at least one word",
   );
 });
