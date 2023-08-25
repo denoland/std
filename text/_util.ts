@@ -10,12 +10,12 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { closest } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
+ * import { closestString } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
  *
  * const possibleWords: string[] = ["length", "size", "blah", "help"];
  *
  * // case-insensitive by default
- * const word = closest("hep", possibleWords);
+ * const word = closestString("hep", possibleWords);
  * ```
  *
  * @param givenWord - The string to measure distance against
@@ -28,7 +28,7 @@ const getWordDistance = levenshteinDistance;
  * use a named-distance (e.g. levenshteinDistance) to
  * guarantee a particular ordering
  */
-export function closest(
+export function closestString(
   givenWord: string,
   possibleWords: string[],
   options?: {
@@ -37,7 +37,7 @@ export function closest(
 ): string {
   assert(
     possibleWords.length > 0,
-    `When using closest(), the possibleWords array must contain at least one word`,
+    `When using closestString(), the possibleWords array must contain at least one word`,
   );
   const { caseSensitive } = { ...options };
 
@@ -46,14 +46,14 @@ export function closest(
   }
 
   let nearestWord = possibleWords[0];
-  let closestDistance = 0;
+  let closestStringDistance = 0;
   for (const each of possibleWords) {
     const distance = caseSensitive
       ? getWordDistance(givenWord, each)
       : getWordDistance(givenWord, each.toLowerCase());
-    if (distance < closestDistance) {
+    if (distance < closestStringDistance) {
       nearestWord = each;
-      closestDistance = distance;
+      closestStringDistance = distance;
     }
   }
   // this distance metric could be swapped/improved in the future
