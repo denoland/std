@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 import { assert } from "../assert/mod.ts";
 
@@ -9,23 +10,23 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { closest } from "https://deno.land/std@$STD_VERSION/text/word_similarity.ts";
+ * import { closest } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
  *
- * const possibleWords: string[] = [ "length", "size", "blah", "help", ]
+ * const possibleWords: string[] = ["length", "size", "blah", "help"];
  *
- * // case-insensitve by default
- * const word = closest("hep", possibleWords)
+ * // case-insensitive by default
+ * const word = closest("hep", possibleWords);
  * ```
  *
- * @param {string} givenWord - The string to measure distance against
- * @param {string[]} possibleWords - The string-array that will be sorted
- * @param {boolean} [options.caseSensitive=false] - Flag indicating whether the distance should include case. Default is false.
- * @returns {string} A sorted copy of possibleWords
+ * @param givenWord - The string to measure distance against
+ * @param possibleWords - The string-array that will be sorted
+ * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
+ * @returns A sorted copy of possibleWords
  * @note
- * the ordering of words may change with verion-updates
+ * the ordering of words may change with version-updates
  * e.g. word-distance metric may change (improve)
  * use a named-distance (e.g. levenshteinDistance) to
- * guarentee a particular ordering
+ * guarantee a particular ordering
  */
 export function closest(
   givenWord: string,
@@ -64,17 +65,17 @@ export function closest(
  *
  * @example
  * ```ts
- * import { similarityCompare } from "https://deno.land/std@$STD_VERSION/text/word_similarity.ts";
- * const words = [ "hi", "hello", "help" ]
+ * import { similarityCompare } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
+ * const words = ["hi", "hello", "help"];
  *
  * // words most-similar to "hep" will be at the front
- * words.sort(similarityCompare("hep"))
+ * words.sort(similarityCompare("hep"));
  * ```
  * @note
- * the ordering of words may change with verion-updates
+ * the ordering of words may change with version-updates
  * e.g. word-distance metric may change (improve)
  * use a named-distance (e.g. levenshteinDistance) to
- * guarentee a particular ordering
+ * guarantee a particular ordering
  */
 export function similarityCompare(
   givenWord: string,
@@ -96,20 +97,20 @@ export function similarityCompare(
  *
  * @example
  * ```ts
- * import { wordSimilaritySort } from "https://deno.land/std@$STD_VERSION/text/word_similarity.ts";
+ * import { wordSimilaritySort } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
  *
- * const possibleWords: string[] = [ "length", "size", "blah", "help", ]
+ * const possibleWords = ["length", "size", "blah", "help"];
  *
- * // case-insensitve by default
- * const suggestions = wordSimilaritySort("hep", possibleWords).join(", ")
+ * // case-insensitive by default
+ * const suggestions = wordSimilaritySort("hep", possibleWords).join(", ");
  *
  * // force case sensitive
- * wordSimilaritySort("hep", possibleWords, { caseSensitive: true })
+ * wordSimilaritySort("hep", possibleWords, { caseSensitive: true });
  * ```
  *
- * @param {string} givenWord - The string to measure distance against
- * @param {string[]} possibleWords - The string-array that will be sorted
- * @param {boolean} [options.caseSensitive=false] - Flag indicating whether the distance should include case. Default is false.
+ * @param givenWord - The string to measure distance against
+ * @param possibleWords - The string-array that will be sorted
+ * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
  * @returns {string[]} A sorted copy of possibleWords
  */
 export function wordSimilaritySort(

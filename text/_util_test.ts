@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { closest, similarityCompare, wordSimilaritySort } from "./mod.ts";
+import { closest, similarityCompare, wordSimilaritySort } from "./_util.ts";
 
 Deno.test("basicWordSimilaritySort", function () {
   const possibleWords: string[] = ["length", "size", "blah", "help"];

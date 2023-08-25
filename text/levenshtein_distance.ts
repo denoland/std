@@ -1,14 +1,16 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 /**
  * Calculates the Levenshtein distance between two strings.
  *
  * @example
  * ```ts
  * import { levenshteinDistance } from "https://deno.land/std@$STD_VERSION/text/levenshtein_distance.ts";
- * levenshteinDistance("aa", "bb") // 2
+ * levenshteinDistance("aa", "bb"); // 2
  * ```
- * @param {string} str1 - The first string.
- * @param {string} str2 - The second string.
- * @returns {number} The Levenshtein distance between the two strings.
+ * @param str1 - The first string.
+ * @param str2 - The second string.
+ * @returns The Levenshtein distance between the two strings.
  */
 export function levenshteinDistance(str1: string, str2: string): number {
   if (str1.length > str2.length) {

@@ -1,19 +1,19 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows, AssertionError } from "../assert/mod.ts";
+import { AssertionError, assertThrows } from "../assert/mod.ts";
 import { didYouMean, DidYouMeanError } from "./mod.ts";
 
-const possibleWords: string[] = ["length", "help", "Help", "size", "blah"];
+const possibleWords = ["length", "help", "Help", "size", "blah"];
 
-Deno.test("didYouMean1", function () {
+Deno.test("didYouMean - no error", function () {
   // e.g. asserTheFollowingDoensError()
   didYouMean("help", possibleWords);
 });
 
-Deno.test("didYouMean2", function () {
+Deno.test("didYouMean - empty string is in possible words", function () {
   didYouMean("", [""]);
 });
 
-Deno.test("didYouMean3", function () {
+Deno.test("didYouMean - empty string with non empty possbile words", function () {
   assertThrows(
     () => didYouMean("", possibleWords),
     DidYouMeanError,
@@ -21,7 +21,7 @@ Deno.test("didYouMean3", function () {
   );
 });
 
-Deno.test("didYouMean4", function () {
+Deno.test("didYouMean - empty possible words", function () {
   assertThrows(
     () => didYouMean("hi", []),
     AssertionError,
@@ -29,7 +29,7 @@ Deno.test("didYouMean4", function () {
   );
 });
 
-Deno.test("didYouMean5", function () {
+Deno.test("didYouMean - case sensitive comparison by default", function () {
   assertThrows(
     () => didYouMean("HELP", possibleWords),
     DidYouMeanError,
@@ -37,23 +37,15 @@ Deno.test("didYouMean5", function () {
   );
 });
 
-Deno.test("didYouMean6", function () {
+Deno.test("didYouMean - suggestionLimit 1", function () {
   assertThrows(
     () => didYouMean("hep", possibleWords, { suggestionLimit: 1 }),
     DidYouMeanError,
-    "For \"hep\", did you mean \"help\"?",
+    'For "hep", did you mean "help"?',
   );
 });
 
-Deno.test("didYouMean7", function () {
-  assertThrows(
-    () => didYouMean("hep", possibleWords, { suggestionLimit: 1 }),
-    DidYouMeanError,
-    "For \"hep\", did you mean \"help\"?",
-  );
-});
-
-Deno.test("didYouMean8", function () {
+Deno.test("didYouMean - case sensitive distance", function () {
   assertThrows(
     () =>
       didYouMean("HELP", possibleWords, {
