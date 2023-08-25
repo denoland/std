@@ -278,9 +278,9 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
                 b = temp;
               }
               while (true) {
-                if (b == zero) return a;
+                if (b === zero) return a;
                 a = (a % b) as T;
-                if (a == zero) return b;
+                if (a === zero) return b;
                 b = (b % a) as T;
               }
             };

@@ -56,7 +56,7 @@ export function readableStreamFromIterable<T>(
       }
     },
     async cancel(reason) {
-      if (typeof iterator.throw == "function") {
+      if (typeof iterator.throw === "function") {
         try {
           await iterator.throw(reason);
         } catch { /* `iterator.throw()` always throws on site. We catch it. */ }

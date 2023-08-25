@@ -93,12 +93,12 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
         if (this.#matchIndex === this.#delimLen) {
           // Full match
           const start = this.#inspectIndex - this.#delimLen;
-          const end = this.#disp == "suffix" ? this.#inspectIndex : start;
+          const end = this.#disp === "suffix" ? this.#inspectIndex : start;
           const copy = this.#bufs.slice(0, end);
           controller.enqueue(copy);
-          const shift = this.#disp == "prefix" ? start : this.#inspectIndex;
+          const shift = this.#disp === "prefix" ? start : this.#inspectIndex;
           this.#bufs.shift(shift);
-          this.#inspectIndex = this.#disp == "prefix" ? this.#delimLen : 0;
+          this.#inspectIndex = this.#disp === "prefix" ? this.#delimLen : 0;
           this.#matchIndex = 0;
         }
       } else {
