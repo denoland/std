@@ -6,7 +6,7 @@
  * @example
  * ```ts
  * import { levenshteinDistance } from "https://deno.land/std@$STD_VERSION/text/levenshtein_distance.ts";
- * levenshteinDistance("aa", "bb") // 2
+ * levenshteinDistance("aa", "bb"); // 2
  * ```
  * @param str1 - The first string.
  * @param str2 - The second string.

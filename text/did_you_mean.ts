@@ -13,18 +13,18 @@ export class DidYouMeanError extends Error {
  * @example
  * ```ts
  * import { didYouMean } from "https://deno.land/std@$STD_VERSION/text/did_you_mean.ts";
- * const possibleWords: string[] = [ "length", "help", "Help", "size", "blah", ]
+ * const possibleWords = ["length", "help", "Help", "size", "blah"];
  *
- * didYouMean("help", possibleWords)
+ * didYouMean("help", possibleWords);
  * // ^ doesn't throw because "help" is valid
  *
- * didYouMean("HELP", possibleWords)
+ * didYouMean("HELP", possibleWords);
  * // ^ throws: DidYouMeanError(`For "HELP" did you mean one of ["help","Help","size","blah","length"]?`)
  *
- * didYouMean("hep", possibleWords, { suggestionLimit: 1 })
+ * didYouMean("hep", possibleWords, { suggestionLimit: 1 });
  * // ^ throws DidYouMeanError(`For "hep" did you mean "help"?`)
  *
- * didYouMean("HELP", possibleWords, { caseSensitiveDistance: true, suggestionLimit: 1 })
+ * didYouMean("HELP", possibleWords, { caseSensitiveDistance: true, suggestionLimit: 1 });
  * // ^ DidYouMeanError(`For "HELP" did you mean "Help"?`)
  * ```
  * @param {string} givenWord - The word to be checked for possible corrections.
