@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../assert/mod.ts";
+import { assert } from "../assert/assert.ts";
 import { wordSimilaritySort } from "./_util.ts";
 
 export class DidYouMeanError extends Error {
