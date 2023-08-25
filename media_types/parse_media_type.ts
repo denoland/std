@@ -67,7 +67,7 @@ export function parseMediaType(
 
     let pmap = params;
     const [baseName, rest2] = key.split("*");
-    if (baseName && rest2 != null) {
+    if (baseName && rest2 !== undefined) {
       if (!continuation.has(baseName)) {
         continuation.set(baseName, {});
       }

@@ -21,7 +21,7 @@ export class LimitedReader implements Reader {
       p = p.subarray(0, this.limit);
     }
     const n = await this.reader.read(p);
-    if (n == null) {
+    if (n === null) {
       return null;
     }
 

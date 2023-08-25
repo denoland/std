@@ -306,7 +306,7 @@ export const cookieMapHeadersInitSymbol = Symbol.for(
 );
 
 function isMergeable(value: unknown): value is Mergeable {
-  return value != null && typeof value === "object" &&
+  return value !== null && value !== undefined && typeof value === "object" &&
     cookieMapHeadersInitSymbol in value;
 }
 

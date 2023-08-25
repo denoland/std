@@ -102,7 +102,7 @@
  * |examplePath|./.env.example|Path and filename of the `.env.example` file
  * |export|false|This will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
  * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
- * |restrictEnvAccessTo||List of Env variables to read from process. By default, the complete Env is looked up. This allows to permit access to only specific Env variables with `--allow-env=ENV_VAR_NAME`
+ * |restrictEnvAccessTo||Restrict which process environment variables are accessible in the `.env` or `.env.default` files
  *
  * ### Example configuration
  * ```ts
@@ -254,7 +254,7 @@ export function parse(
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KeyValue.exec(rawDotenv)) != null) {
+  while ((match = RE_KeyValue.exec(rawDotenv)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 

@@ -7,7 +7,7 @@
  *
  * The comparator is expected to work exactly like one passed to `Array.sort`,
  * which means that `comparator(a, b)` should return a negative number if `a < b`,
- * a positive number if `a > b` and `0` if `a == b`.
+ * a positive number if `a > b` and `0` if `a === b`.
  *
  * @example
  * ```ts
