@@ -14,7 +14,7 @@ const getWordDistance = levenshteinDistance;
  *
  * const possibleWords: string[] = ["length", "size", "blah", "help"];
  *
- * // case-insensitve by default
+ * // case-insensitive by default
  * const word = closest("hep", possibleWords);
  * ```
  *
@@ -23,10 +23,10 @@ const getWordDistance = levenshteinDistance;
  * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
  * @returns A sorted copy of possibleWords
  * @note
- * the ordering of words may change with verion-updates
+ * the ordering of words may change with version-updates
  * e.g. word-distance metric may change (improve)
  * use a named-distance (e.g. levenshteinDistance) to
- * guarentee a particular ordering
+ * guarantee a particular ordering
  */
 export function closest(
   givenWord: string,
@@ -72,10 +72,10 @@ export function closest(
  * words.sort(similarityCompare("hep"));
  * ```
  * @note
- * the ordering of words may change with verion-updates
+ * the ordering of words may change with version-updates
  * e.g. word-distance metric may change (improve)
  * use a named-distance (e.g. levenshteinDistance) to
- * guarentee a particular ordering
+ * guarantee a particular ordering
  */
 export function similarityCompare(
   givenWord: string,
@@ -101,7 +101,7 @@ export function similarityCompare(
  *
  * const possibleWords = ["length", "size", "blah", "help"];
  *
- * // case-insensitve by default
+ * // case-insensitive by default
  * const suggestions = wordSimilaritySort("hep", possibleWords).join(", ");
  *
  * // force case sensitive
