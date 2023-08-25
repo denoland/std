@@ -2,7 +2,7 @@
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 import { didYouMean, DidYouMeanError } from "./mod.ts";
 
-const possibleWords: string[] = ["length", "help", "Help", "size", "blah"];
+const possibleWords = ["length", "help", "Help", "size", "blah"];
 
 Deno.test("didYouMean - no error", function () {
   // e.g. asserTheFollowingDoensError()
@@ -45,7 +45,7 @@ Deno.test("didYouMean - suggestionLimit 1", function () {
   );
 });
 
-Deno.test("didYouMean - case ", function () {
+Deno.test("didYouMean - case sensitive distance", function () {
   assertThrows(
     () =>
       didYouMean("HELP", possibleWords, {

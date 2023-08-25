@@ -27,10 +27,10 @@ export class DidYouMeanError extends Error {
  * didYouMean("HELP", possibleWords, { caseSensitiveDistance: true, suggestionLimit: 1 });
  * // ^ DidYouMeanError(`For "HELP" did you mean "Help"?`)
  * ```
- * @param {string} givenWord - The word to be checked for possible corrections.
- * @param {string[]} possibleWords - An array of possible words to compare against.
- * @param {boolean} [options.caseSensitiveDistance=false] - Flag indicating whether the spell check should be case sensitive. Default is false.
- * @param {number} [options.suggestionLimit=Infinity] - Number of suggestions to mention
+ * @param givenWord - The word to be checked for possible corrections.
+ * @param possibleWords - An array of possible words to compare against.
+ * @param options.caseSensitiveDistance - Flag indicating whether the spell check should be case sensitive. Default is false.
+ * @param options.suggestionLimit - Number of suggestions to mention. Default is Infinity.
  */
 export function didYouMean(
   givenWord: string,
