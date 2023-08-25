@@ -22,7 +22,7 @@
  * @module
  */
 
-import { isWindows } from "../_util/os.ts";
+import { isWindows } from "./_os.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
 
