@@ -1,5 +1,6 @@
-import { assert } from "../testing/asserts.ts";
-import { wordSimilaritySort } from "./word_similarity.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert } from "../assert/assert.ts";
+import { wordSimilaritySort } from "./_util.ts";
 
 export class DidYouMeanError extends Error {
   override name = "DidYouMeanError";

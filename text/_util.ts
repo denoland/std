@@ -1,5 +1,6 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
 // NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
 const getWordDistance = levenshteinDistance;
@@ -17,10 +18,10 @@ const getWordDistance = levenshteinDistance;
  * const word = closest("hep", possibleWords)
  * ```
  *
- * @param {string} givenWord - The string to measure distance against
- * @param {string[]} possibleWords - The string-array that will be sorted
- * @param {boolean} [options.caseSensitive=false] - Flag indicating whether the distance should include case. Default is false.
- * @returns {string} A sorted copy of possibleWords
+ * @param givenWord - The string to measure distance against
+ * @param possibleWords - The string-array that will be sorted
+ * @param [options.caseSensitive=false] - Flag indicating whether the distance should include case. Default is false.
+ * @returns A sorted copy of possibleWords
  * @note
  * the ordering of words may change with verion-updates
  * e.g. word-distance metric may change (improve)
@@ -107,10 +108,10 @@ export function similarityCompare(
  * wordSimilaritySort("hep", possibleWords, { caseSensitive: true })
  * ```
  *
- * @param {string} givenWord - The string to measure distance against
- * @param {string[]} possibleWords - The string-array that will be sorted
- * @param {boolean} [options.caseSensitive=false] - Flag indicating whether the distance should include case. Default is false.
- * @returns {string[]} A sorted copy of possibleWords
+ * @param givenWord - The string to measure distance against
+ * @param possibleWords - The string-array that will be sorted
+ * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
+ * @returns A sorted copy of possibleWords
  */
 export function wordSimilaritySort(
   givenWord: string,
