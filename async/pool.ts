@@ -49,7 +49,7 @@ export function pooledMap<T, R>(
       } catch (e) {
         if (
           e instanceof AggregateError &&
-          e.message == ERROR_WHILE_MAPPING_MESSAGE
+          e.message === ERROR_WHILE_MAPPING_MESSAGE
         ) {
           controller.error(e as unknown);
         }
@@ -83,7 +83,7 @@ export function pooledMap<T, R>(
     } catch {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
-        if (result.status == "rejected") {
+        if (result.status === "rejected") {
           errors.push(result.reason);
         }
       }

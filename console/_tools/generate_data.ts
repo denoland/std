@@ -246,7 +246,7 @@ class Table {
 
     this.entries = this.entries.map((i) => {
       const width = this.indexed[i].width();
-      if (width == null) throw new TypeError("width cannot be null");
+      if (width === null) throw new TypeError("width cannot be null");
       return width;
     });
 

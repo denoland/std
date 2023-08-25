@@ -341,9 +341,9 @@ export * from "./lte.ts";
  * @returns A valid SemVer or undefined
  */
 export function valid(value: string | SemVer | null): string | null {
-  if (value == null) return null;
+  if (value === null) return null;
   const v = typeof value === "string" ? tryParse(value) : value;
-  if (v == null) return null;
+  if (v === undefined) return null;
   return format(v);
 }
 

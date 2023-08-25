@@ -6,7 +6,8 @@ import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
 import { assert } from "../assert/assert.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 export interface CopyOptions {
   /**
@@ -228,7 +229,6 @@ function copyDirSync(
   dest = toPathString(dest);
 
   for (const entry of Deno.readDirSync(src)) {
-    assert(entry.name != null, "file.name must be set");
     const srcPath = join(src, entry.name);
     const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {

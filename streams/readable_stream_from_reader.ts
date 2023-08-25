@@ -5,7 +5,8 @@ import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
 import type { Closer, Reader } from "../types.d.ts";
 
 function isCloser(value: unknown): value is Closer {
-  return typeof value === "object" && value != null && "close" in value &&
+  return typeof value === "object" && value !== null && value !== undefined &&
+    "close" in value &&
     // deno-lint-ignore no-explicit-any
     typeof (value as Record<string, any>)["close"] === "function";
 }

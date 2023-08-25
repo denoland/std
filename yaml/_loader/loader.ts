@@ -742,8 +742,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
   if (
     state.anchor !== null &&
-    typeof state.anchor != "undefined" &&
-    typeof state.anchorMap != "undefined"
+    typeof state.anchor !== "undefined" &&
+    typeof state.anchorMap !== "undefined"
   ) {
     state.anchorMap[state.anchor] = result;
   }

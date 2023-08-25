@@ -188,7 +188,7 @@ export class Tar {
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
       } else {
-        assert(fileNamePrefix != null);
+        assert(fileNamePrefix !== undefined);
         if (fileNamePrefix.length > 155) {
           throw new Error(errMsg);
         }
@@ -226,7 +226,7 @@ export class Tar {
     }
 
     const fileSize = info?.size ?? opts.contentSize;
-    assert(fileSize != null, "fileSize must be set");
+    assert(fileSize !== undefined, "fileSize must be set");
 
     const type = opts.type
       ? FileTypes[opts.type as keyof typeof FileTypes]
@@ -274,13 +274,13 @@ export class Tar {
       const headerArr = formatHeader(tarData);
       readers.push(new Buffer(headerArr));
       if (!reader) {
-        assert(filePath != null);
+        assert(filePath !== undefined);
         reader = new FileReader(filePath);
       }
       readers.push(reader);
 
       // to the nearest multiple of recordSize
-      assert(tarData.fileSize != null, "fileSize must be set");
+      assert(tarData.fileSize !== undefined, "fileSize must be set");
       readers.push(
         new Buffer(
           clean(

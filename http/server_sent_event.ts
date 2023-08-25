@@ -306,7 +306,7 @@ export class ServerSentEventStreamTarget extends EventTarget
 
     this.addEventListener("close", () => {
       this.#closed = true;
-      if (this.#keepAliveId != null) {
+      if (this.#keepAliveId !== null && this.#keepAliveId !== undefined) {
         clearInterval(this.#keepAliveId);
         this.#keepAliveId = undefined;
       }

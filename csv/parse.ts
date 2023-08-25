@@ -104,8 +104,6 @@ class Parser {
       return [];
     }
 
-    assert(this.#options.separator != null);
-
     let fullLine = line;
     let quoteError: ParseError | null = null;
     const quote = '"';
@@ -342,7 +340,7 @@ export function parse<const T extends ParseOptions>(
 
     if (opt.skipFirstRow) {
       const head = r.shift();
-      assert(head != null);
+      assert(head !== undefined);
       headers = head;
     }
 

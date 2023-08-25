@@ -12,10 +12,10 @@ import type { Closer, Reader, ReaderSync } from "../types.d.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
-let testBytes: Uint8Array | null;
+let testBytes: Uint8Array | undefined;
 
 export function init() {
-  if (testBytes == null) {
+  if (testBytes === undefined) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       testBytes[i] = "a".charCodeAt(0) + (i % 26);
