@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../assert/mod.ts";
-import { closestString, similarityCompare, wordSimilaritySort } from "./_util.ts";
+import { closestString, compareSimilarity, wordSimilaritySort } from "./_util.ts";
 
 Deno.test("basicWordSimilaritySort", function () {
   const possibleWords: string[] = ["length", "size", "blah", "help"];
@@ -32,21 +32,21 @@ Deno.test("emptyArraySimilaritySort", function () {
   );
 });
 
-Deno.test("similarityCompare", function () {
+Deno.test("compareSimilarity", function () {
   const words = ["hi", "hello", "help"];
 
   assertEquals(
-    JSON.stringify(words.sort(similarityCompare("hep"))),
+    JSON.stringify(words.sort(compareSimilarity("hep"))),
     '["help","hi","hello"]',
   );
 });
 
-Deno.test("similarityCompare", function () {
+Deno.test("compareSimilarity", function () {
   const words = ["hi", "hello", "help", "HOWDY"];
 
   assertEquals(
     JSON.stringify(
-      words.sort(similarityCompare("HI", { caseSensitive: true })),
+      words.sort(compareSimilarity("HI", { caseSensitive: true })),
     ),
     '["hi","help","HOWDY","hello"]',
   );

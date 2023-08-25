@@ -65,11 +65,11 @@ export function closestString(
  *
  * @example
  * ```ts
- * import { similarityCompare } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
+ * import { compareSimilarity } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
  * const words = ["hi", "hello", "help"];
  *
  * // words most-similar to "hep" will be at the front
- * words.sort(similarityCompare("hep"));
+ * words.sort(compareSimilarity("hep"));
  * ```
  * @note
  * the ordering of words may change with version-updates
@@ -77,7 +77,7 @@ export function closestString(
  * use a named-distance (e.g. levenshteinDistance) to
  * guarantee a particular ordering
  */
-export function similarityCompare(
+export function compareSimilarity(
   givenWord: string,
   options?: { caseSensitive?: boolean },
 ) {
@@ -124,6 +124,6 @@ export function wordSimilaritySort(
 
   // this distance metric could be swapped/improved in the future
   return [...possibleWords].sort(
-    similarityCompare(givenWord, { caseSensitive }),
+    compareSimilarity(givenWord, { caseSensitive }),
   );
 }
