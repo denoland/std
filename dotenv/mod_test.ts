@@ -16,7 +16,6 @@ import {
 } from "./mod.ts";
 import * as path from "../path/mod.ts";
 import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
-import { validate } from "https://deno.land/std@$STD_VERSION/uuid/v5.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
