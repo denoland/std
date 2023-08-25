@@ -109,7 +109,7 @@ function indexOf<T>(s: Iterable<T>, fn: (s: T) => boolean): number {
 }
 
 export function isIterator<T>(obj: unknown): obj is Iterable<T> {
-  if (obj === null) {
+  if (obj === null || obj === undefined) {
     return false;
   }
   // deno-lint-ignore no-explicit-any
