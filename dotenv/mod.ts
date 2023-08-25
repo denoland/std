@@ -120,13 +120,13 @@
  *     allowEmptyValues: true,
  *   });
  * ```
- * 
+ *
  * ## Permissions
- * 
+ *
  * At a minimum, loading the `.env` related files requires the `--allow-read` permission.  Additionally, if
  * you access the process environment, either through exporting your configuration or expanding variables
  * in your `.env` file, you will need the `--allow-env` permission.
- * 
+ *
  * ## Parsing Rules
  *
  * The parsing engine currently supports the following rules:
