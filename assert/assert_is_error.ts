@@ -22,18 +22,18 @@ export function assertIsError<E extends Error = Error>(
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
-    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-      typeof error === "object" ? error?.constructor?.name : "[not an object]"
-    }"${msgSuffix}`;
+    msg = `Expected error to be instance of ${JSON.stringify(ErrorClass.name)}, but was ${
+      typeof error === "object" ? JSON.stringify(error?.constructor?.name) : "[not an object]"
+    }${msgSuffix}`;
     throw new AssertionError(msg);
   }
   if (
     msgIncludes && (!(error instanceof Error) ||
       !stripColor(error.message).includes(stripColor(msgIncludes)))
   ) {
-    msg = `Expected error message to include "${msgIncludes}", but got "${
-      error instanceof Error ? error.message : "[not an Error]"
-    }"${msgSuffix}`;
+    msg = `Expected error message to include ${JSON.stringify(msgIncludes)}, but got ${
+      error instanceof Error ? JSON.stringify(error.message) : "[not an Error]"
+    }${msgSuffix}`;
     throw new AssertionError(msg);
   }
 }
