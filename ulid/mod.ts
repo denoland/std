@@ -3,6 +3,27 @@
 // Copyright 2017 Alizain Feerasta. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/**
+ * @module
+ * @example
+ * ```ts
+ * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * ulid(); // 01ARZ3NDEKTSV4RRFFQ69G5FAV
+ * ```
+ */
+
+import {
+  detectPrng,
+  encodeRandom,
+  encodeTime,
+  ENCODING,
+  ENCODING_LEN,
+  incrementBase32,
+  RANDOM_LEN,
+  TIME_LEN,
+  TIME_MAX,
+} from "./_util.ts";
+
 export interface PRNG {
   (): number;
 }
@@ -11,86 +32,12 @@ export interface ULID {
   (seedTime?: number): string;
 }
 
-export interface LibError extends Error {
-  source: string;
-}
-
-function createError(message: string): LibError {
-  const err = new Error(message) as LibError;
-  err.source = "ulid";
-  return err;
-}
-
-// These values should NEVER change. If
-// they do, we're no longer making ulids!
-const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford's Base32
-const ENCODING_LEN = ENCODING.length;
-const TIME_MAX = Math.pow(2, 48) - 1;
-const TIME_LEN = 10;
-const RANDOM_LEN = 16;
-
-export function replaceCharAt(str: string, index: number, char: string) {
-  return str.substring(0, index) + char + str.substring(index + 1);
-}
-
-export function incrementBase32(str: string): string {
-  let index = str.length;
-  let char;
-  let charIndex;
-  const maxCharIndex = ENCODING_LEN - 1;
-  while (index-- >= 0) {
-    char = str[index];
-    charIndex = ENCODING.indexOf(char);
-    if (charIndex === -1) {
-      throw createError("incorrectly encoded string");
-    }
-    if (charIndex === maxCharIndex) {
-      str = replaceCharAt(str, index, ENCODING[0]);
-      continue;
-    }
-    return replaceCharAt(str, index, ENCODING[charIndex + 1]);
-  }
-  throw createError("cannot increment this string");
-}
-
-export function randomChar(prng: PRNG): string {
-  let rand = Math.floor(prng() * ENCODING_LEN);
-  if (rand === ENCODING_LEN) {
-    rand = ENCODING_LEN - 1;
-  }
-  return ENCODING.charAt(rand);
-}
-
-export function encodeTime(now: number, len: number = TIME_LEN): string {
-  if (now > TIME_MAX) {
-    throw createError("cannot encode time greater than " + TIME_MAX);
-  }
-  if (now < 0) {
-    throw createError("time must be positive");
-  }
-  if (Number.isInteger(now) === false) {
-    throw createError("time must be an integer");
-  }
-  let str = "";
-  for (; len > 0; len--) {
-    const mod = now % ENCODING_LEN;
-    str = ENCODING[mod] + str;
-    now = (now - mod) / ENCODING_LEN;
-  }
-  return str;
-}
-
-export function encodeRandom(len: number, prng: PRNG): string {
-  let str = "";
-  for (; len > 0; len--) {
-    str = randomChar(prng) + str;
-  }
-  return str;
-}
-
+/**
+ * Extracts the timestamp given a ULID
+ */
 export function decodeTime(id: string): number {
   if (id.length !== TIME_LEN + RANDOM_LEN) {
-    throw createError("malformed ulid");
+    throw new Error("malformed ulid");
   }
   const time = id
     .substring(0, TIME_LEN)
@@ -99,30 +46,62 @@ export function decodeTime(id: string): number {
     .reduce((carry, char, index) => {
       const encodingIndex = ENCODING.indexOf(char);
       if (encodingIndex === -1) {
-        throw createError("invalid character found: " + char);
+        throw new Error("invalid character found: " + char);
       }
       return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
     }, 0);
   if (time > TIME_MAX) {
-    throw createError("malformed ulid, timestamp too large");
+    throw new Error("malformed ulid, timestamp too large");
   }
   return time;
 }
 
-export function detectPrng(): PRNG {
-  return () => {
-    const buffer = new Uint8Array(1);
-    crypto.getRandomValues(buffer);
-    return buffer[0] / 0xff;
-  };
-}
-
+/**
+ * Generates a ULID function given a PRNG
+ *
+ * @example To use your own pseudo-random number generator, import the factory, and pass it your generator function.
+ * ```ts
+ * import { factory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * import prng from "somewhere";
+ *
+ * const ulid = factory(prng);
+ * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
+ * ```
+ */
 export function factory(prng: PRNG = detectPrng()): ULID {
   return function ulid(seedTime: number = Date.now()): string {
     return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN, prng);
   };
 }
 
+/**
+ * Generates a monotonically increasing ULID, optionally given a PRNG.
+ *
+ * @example To generate monotonically increasing ULIDs, create a monotonic counter.
+ * ```ts
+ * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ *
+ * const ulid = monotonicFactory();
+ * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
+ * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVR8
+ * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVR9
+ * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRA
+ * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRB
+ * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRC
+ *
+ * // Even if a lower timestamp is passed (or generated), it will preserve sort order
+ * ulid(100000); // 000XAL6S41ACTAV9WEVGEMMVRD
+ * ```
+ *
+ * @example You can also pass in a prng to the monotonicFactory function.
+ * ```ts
+ * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * import prng from "somewhere";
+ *
+ * const ulid = monotonicFactory(prng);
+ * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
+ * ```
+ */
 export function monotonicFactory(prng: PRNG = detectPrng()): ULID {
   let lastTime = 0;
   let lastRandom: string;
@@ -137,4 +116,14 @@ export function monotonicFactory(prng: PRNG = detectPrng()): ULID {
   };
 }
 
+/**
+ * @example
+ * ```ts
+ * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ * ulid(); // 01ARZ3NDEKTSV4RRFFQ69G5FAV
+ *
+ * // You can also input a seed time which will consistently give you the same string for the time component
+ * ulid(1469918176385); // 01ARYZ6S41TSV4RRFFQ69G5FAV
+ * ```
+ */
 export const ulid = factory();
