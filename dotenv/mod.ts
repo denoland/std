@@ -103,9 +103,9 @@
  *
  * |Option|Default|Description
  * |------|-------|-----------
- * |envPath|./.env|Path and filename of the `.env` file
- * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file
- * |examplePath|./.env.example|Path and filename of the `.env.example` file
+ * |envPath|./.env|Path and filename of the `.env` file.  Use null to prevent the .env file from being loaded.
+ * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file. Use null to prevent the .env.defaults file from being loaded.
+ * |examplePath|./.env.example|Path and filename of the `.env.example` file. Use null to prevent the .env.example file from being loaded.
  * |export|false|When true, this will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
  * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
  *
@@ -125,7 +125,11 @@
  *
  * At a minimum, loading the `.env` related files requires the `--allow-read` permission.  Additionally, if
  * you access the process environment, either through exporting your configuration or expanding variables
- * in your `.env` file, you will need the `--allow-env` permission.
+ * in your `.env` file, you will need the `--allow-env` permission.  E.g.
+ *
+ * ```sh
+ * deno run --allow-read=.env,.env.defaults,.env.example --allow-env=ENV1,ENV2 app.ts
+ * ```
  *
  * ## Parsing Rules
  *
