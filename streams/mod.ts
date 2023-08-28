@@ -18,7 +18,6 @@ export * from "./limited_bytes_transform_stream.ts";
 export * from "./limited_transform_stream.ts";
 export * from "./merge_readable_streams.ts";
 export * from "./read_all.ts";
-export * from "./readable_stream_from_iterable.ts";
 export * from "./readable_stream_from_reader.ts";
 export * from "./reader_from_iterable.ts";
 export * from "./reader_from_stream_reader.ts";
