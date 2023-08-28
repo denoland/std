@@ -15,7 +15,7 @@ import {
   stringify,
 } from "./mod.ts";
 import * as path from "../path/mod.ts";
-import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
+import { assert } from "../assert/assert.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
