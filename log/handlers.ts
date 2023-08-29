@@ -2,7 +2,7 @@
 import { getLevelByName, LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
-import { exists, existsSync } from "../fs/exists.ts";
+import { existsSync } from "../fs/exists.ts";
 import { BufWriterSync } from "../io/buf_writer.ts";
 import type { Writer } from "../types.d.ts";
 
@@ -235,7 +235,7 @@ export class RotatingFileHandler extends FileHandler {
     this.#maxBackupCount = options.maxBackupCount;
   }
 
-  override async setup() {
+  override setup() {
     if (this.#maxBytes < 1) {
       this.destroy();
       throw new Error("maxBytes cannot be less than 1");
@@ -244,14 +244,14 @@ export class RotatingFileHandler extends FileHandler {
       this.destroy();
       throw new Error("maxBackupCount cannot be less than 1");
     }
-    await super.setup();
+    super.setup();
 
     if (this._mode === "w") {
       // Remove old backups too as it doesn't make sense to start with a clean
       // log file, but old backups
       for (let i = 1; i <= this.#maxBackupCount; i++) {
         try {
-          await Deno.remove(this._filename + "." + i);
+          Deno.removeSync(this._filename + "." + i);
         } catch (error) {
           if (!(error instanceof Deno.errors.NotFound)) {
             throw error;
@@ -261,7 +261,7 @@ export class RotatingFileHandler extends FileHandler {
     } else if (this._mode === "x") {
       // Throw if any backups also exist
       for (let i = 1; i <= this.#maxBackupCount; i++) {
-        if (await exists(this._filename + "." + i)) {
+        if (existsSync(this._filename + "." + i)) {
           this.destroy();
           throw new Deno.errors.AlreadyExists(
             "Backup log file " + this._filename + "." + i + " already exists",
@@ -269,7 +269,7 @@ export class RotatingFileHandler extends FileHandler {
         }
       }
     } else {
-      this.#currentFileSize = (await Deno.stat(this._filename)).size;
+      this.#currentFileSize = (Deno.statSync(this._filename)).size;
     }
   }
 
