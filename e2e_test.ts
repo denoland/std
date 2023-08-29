@@ -196,9 +196,9 @@ Deno.test("[http]", async (test) => {
     const req = new Request("http://localhost/api/items");
     const resp = await handler(req);
 
-    const { items } = await resp.json();
+    const { values } = await resp.json();
     assertResponseJson(resp);
-    assertArrayIncludes(items, [
+    assertArrayIncludes(values, [
       JSON.parse(JSON.stringify(item1)),
       JSON.parse(JSON.stringify(item2)),
     ]);
@@ -231,9 +231,9 @@ Deno.test("[http]", async (test) => {
     await createItem(item);
     await createComment(comment);
     const resp2 = await handler(req);
-    const { comments } = await resp2.json();
+    const { values } = await resp2.json();
     assertResponseJson(resp2);
-    assertEquals(comments, JSON.parse(JSON.stringify(comments)));
+    assertEquals(values, [JSON.parse(JSON.stringify(comment))]);
   });
 
   await test.step("GET /api/users", async () => {
@@ -245,9 +245,9 @@ Deno.test("[http]", async (test) => {
     const req = new Request("http://localhost/api/users");
     const resp = await handler(req);
 
-    const { users } = await resp.json();
+    const { values } = await resp.json();
     assertResponseJson(resp);
-    assertArrayIncludes(users, [user1, user2]);
+    assertArrayIncludes(values, [user1, user2]);
   });
 
   await test.step("GET /api/users/[login]", async () => {
@@ -278,9 +278,9 @@ Deno.test("[http]", async (test) => {
     await createItem(item);
 
     const resp2 = await handler(req);
-    const { items } = await resp2.json();
+    const { values } = await resp2.json();
     assertResponseJson(resp2);
-    assertArrayIncludes(items, [JSON.parse(JSON.stringify(item))]);
+    assertArrayIncludes(values, [JSON.parse(JSON.stringify(item))]);
   });
 
   await test.step("GET /api/users/[login]/notifications", async () => {
@@ -300,9 +300,9 @@ Deno.test("[http]", async (test) => {
     await createNotification(notification);
 
     const resp2 = await handler(req);
-    const { notifications } = await resp2.json();
+    const { values } = await resp2.json();
     assertResponseJson(resp2);
-    assertArrayIncludes(notifications, [
+    assertArrayIncludes(values, [
       JSON.parse(JSON.stringify(notification)),
     ]);
   });

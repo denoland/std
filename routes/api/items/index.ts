@@ -11,7 +11,7 @@ export const handler: Handlers = {
       limit: 10,
       reverse: true,
     });
-    const items = await collectValues(iter);
-    return Response.json({ items, cursor: iter.cursor });
+    const values = await collectValues(iter);
+    return Response.json({ values, cursor: iter.cursor });
   },
 };

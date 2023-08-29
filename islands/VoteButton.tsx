@@ -10,23 +10,21 @@ export interface VoteButtonProps {
 export default function VoteButton(props: VoteButtonProps) {
   const isVoted = useSignal(props.isVoted);
   const score = useSignal(props.item.score);
+  const url = `/api/items/${props.item.id}/vote`;
 
   async function onClick(event: MouseEvent) {
-    if (event.detail === 1) {
-      const url = `/api/vote?item_id=${props.item.id}`;
-      const method = isVoted.value ? "DELETE" : "POST";
-      const resp = await fetch(url, { method, credentials: "same-origin" });
+    if (event.detail !== 1) return;
+    const method = isVoted.value ? "DELETE" : "POST";
+    const resp = await fetch(url, { method });
 
-      if (resp.status === 401) {
-        window.location.href = "/signin";
-        return;
-      }
-      isVoted.value = !isVoted.value;
-      method === "POST" ? score.value++ : score.value--;
-      if (score.value < (props.item.score - 1) || score.value < 0) {
-        score.value = props.item.score;
-      }
+    if (resp.status === 401) {
+      window.location.href = "/signin";
+      return;
     }
+    if (!resp.ok) throw new Error(`Request failed: ${method} ${url}`);
+
+    isVoted.value = !isVoted.value;
+    method === "POST" ? score.value++ : score.value--;
   }
 
   return (
@@ -37,7 +35,7 @@ export default function VoteButton(props: VoteButtonProps) {
     >
       ▲
       <br />
-      {score.value}
+      {score}
     </button>
   );
 }

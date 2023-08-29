@@ -1,23 +1,15 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/routes/_middleware.ts";
-import ItemSummary from "@/components/ItemSummary.tsx";
-import { calcLastPage, calcPageNum, PAGE_LENGTH } from "@/utils/pagination.ts";
-import PageSelector from "@/components/PageSelector.tsx";
-import {
-  compareScore,
-  getAreVotedBySessionId,
-  getItemsByUser,
-  getUser,
-} from "@/utils/db.ts";
-import { pluralize } from "@/utils/display.ts";
+import { getUser } from "@/utils/db.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
+import ItemsList from "@/islands/ItemsList.tsx";
 
 function Profile(
-  props: { login: string; itemsCount: number; isSubscribed: boolean },
+  props: { login: string; isSubscribed: boolean },
 ) {
   return (
     <div class="flex flex-wrap py-8">
@@ -41,9 +33,6 @@ function Profile(
             </a>
           </span>
         </div>
-        <p>
-          {pluralize(props.itemsCount, "submission")}
-        </p>
       </div>
     </div>
   );
@@ -57,23 +46,6 @@ export default async function UsersUserPage(
   const user = await getUser(login);
   if (user === null) return await ctx.renderNotFound();
 
-  const pageNum = calcPageNum(ctx.url);
-
-  const allItems = await getItemsByUser(login);
-  const itemsCount = allItems.length;
-
-  const items = allItems.sort(compareScore).slice(
-    (pageNum - 1) * PAGE_LENGTH,
-    pageNum * PAGE_LENGTH,
-  );
-
-  const areVoted = await getAreVotedBySessionId(
-    items,
-    ctx.state.sessionId,
-  );
-
-  const lastPage = calcLastPage(allItems.length, PAGE_LENGTH);
-
   return (
     <>
       <Head title={user.login} href={ctx.url.href} />
@@ -81,20 +53,8 @@ export default async function UsersUserPage(
         <Profile
           isSubscribed={user.isSubscribed}
           login={user.login}
-          itemsCount={itemsCount}
         />
-        {items.map((item, index) => (
-          <ItemSummary
-            item={item}
-            isVoted={areVoted[index]}
-          />
-        ))}
-        {lastPage > 1 && (
-          <PageSelector
-            currentPage={calcPageNum(ctx.url)}
-            lastPage={lastPage}
-          />
-        )}
+        <ItemsList endpoint={`/api/users/${login}/items`} />
       </main>
     </>
   );

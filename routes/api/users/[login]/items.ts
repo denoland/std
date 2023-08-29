@@ -13,7 +13,7 @@ export const handler: Handlers = {
       cursor: getCursor(url),
       limit: 10,
     });
-    const items = await collectValues(iter);
-    return Response.json({ items, cursor: iter.cursor });
+    const values = await collectValues(iter);
+    return Response.json({ values, cursor: iter.cursor });
   },
 };
