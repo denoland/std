@@ -62,7 +62,7 @@ export function decodeTime(id: string): number {
  * @example To use your own pseudo-random number generator, import the factory, and pass it your generator function.
  * ```ts
  * import { factory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- * import prng from "somewhere";
+ * const prng = () => Math.random();
  *
  * const ulid = factory(prng);
  * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
@@ -96,7 +96,7 @@ export function factory(prng: PRNG = detectPrng()): ULID {
  * @example You can also pass in a prng to the monotonicFactory function.
  * ```ts
  * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- * import prng from "somewhere";
+ * const prng = () => Math.random();
  *
  * const ulid = monotonicFactory(prng);
  * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
