@@ -34,7 +34,7 @@ Deno.test("prng", async (t) => {
   });
 });
 
-Deno.test("incremenet base32", async (t) => {
+Deno.test("increment base32", async (t) => {
   await t.step("increments correctly", () => {
     assertEquals("A109D", incrementBase32("A109C"));
   });
