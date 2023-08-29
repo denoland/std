@@ -2,10 +2,11 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import {
+  collectValues,
   createItem,
-  getItemsByUser,
   getUserBySession,
   type Item,
+  listItemsByUser,
   newItemProps,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/redirect.ts";
@@ -47,7 +48,7 @@ export const handler: Handlers<SignedInState, SignedInState> = {
       });
     }
 
-    const items = await getItemsByUser(user.login);
+    const items = await collectValues(listItemsByUser(user.login));
 
     if (items.some((item) => item.url === url || item.title === title)) {
       return new Response(
