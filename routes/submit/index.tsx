@@ -3,6 +3,7 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import {
   createItem,
+  getItemsByUser,
   getUserBySession,
   type Item,
   newItemProps,
@@ -21,20 +22,39 @@ export const handler: Handlers<SignedInState, SignedInState> = {
     const url = form.get("url");
 
     if (typeof title !== "string" || typeof url !== "string") {
-      return new Response(null, { status: 400 });
+      return new Response("Item URL or title are either invalid or missing.", {
+        status: 400,
+      });
     }
 
     try {
       if (!isValidUrl(url) || !isPublicUrl(url)) {
-        return new Response(null, { status: 400 });
+        return new Response("Item URL must be valid and publicly available.", {
+          status: 400,
+        });
       }
     } catch {
-      return new Response(null, { status: 400 });
+      return new Response("An error occurred while validating the URL.", {
+        status: 500,
+      });
     }
 
     const user = await getUserBySession(ctx.state.sessionId);
 
-    if (!user) return new Response(null, { status: 400 });
+    if (user === null) {
+      return new Response("You must be logged in to submit a new item.", {
+        status: 401,
+      });
+    }
+
+    const items = await getItemsByUser(user.login);
+
+    if (items.some((item) => item.url === url || item.title === title)) {
+      return new Response(
+        "You already submitted an item which contains the same title or URL.",
+        { status: 409 },
+      );
+    }
 
     const item: Item = {
       userLogin: user.login,
