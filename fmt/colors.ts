@@ -562,9 +562,19 @@ const ANSI_PATTERN = new RegExp(
 );
 
 /**
+ * @deprecated (will be removed in 1.0.0) Use `stripAnsiCode` instead.
+ *
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
 export function stripColor(string: string): string {
+  return string.replace(ANSI_PATTERN, "");
+}
+
+/**
+ * Remove ANSI escape codes from the string.
+ * @param string to remove ANSI escape codes from
+ */
+export function stripAnsiCode(string: string): string {
   return string.replace(ANSI_PATTERN, "");
 }
