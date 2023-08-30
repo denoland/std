@@ -2,7 +2,7 @@
 import type { RouteContext } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
 import type { SignedInState } from "@/utils/middleware.ts";
-import { redirect } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/http.ts";
 
 const STRIPE_PREMIUM_PLAN_PRICE_ID = Deno.env.get(
   "STRIPE_PREMIUM_PLAN_PRICE_ID",

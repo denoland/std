@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
 import { deleteNotification, getNotification } from "@/utils/db.ts";
-import { redirect } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/http.ts";
 import { SignedInState } from "@/utils/middleware.ts";
 
 export default async function NotificationsNotificationPage(

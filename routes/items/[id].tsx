@@ -13,7 +13,7 @@ import {
   newNotificationProps,
   Notification,
 } from "@/utils/db.ts";
-import { redirect } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import { SignedInState } from "@/utils/middleware.ts";
 import CommentsList from "@/islands/CommentsList.tsx";

@@ -2,7 +2,7 @@
 import type { State } from "@/routes/_middleware.ts";
 import type { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { getUserBySession, User } from "@/utils/db.ts";
-import { redirect } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/http.ts";
 
 export interface SignedInState extends State {
   sessionId: string;

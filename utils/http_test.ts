@@ -1,9 +1,29 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { isPublicUrl, isValidUrl, redirect } from "./http.ts";
+import { assert, assertEquals } from "std/testing/asserts.ts";
 
-import { assertEquals } from "std/testing/asserts.ts";
-import { isPublicUrl, isValidUrl } from "./url_validation.ts";
+Deno.test("[http] redirect() defaults", () => {
+  const location = "/hello-there";
 
-Deno.test("[url_validation] isValidUrl()", () => {
+  const resp = redirect(location);
+  assert(!resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.headers.get("location"), location);
+  assertEquals(resp.status, 303);
+});
+
+Deno.test("[http] redirect()", () => {
+  const location = "/hello-there";
+  const status = 302;
+
+  const resp = redirect(location, status);
+  assert(!resp.ok);
+  assertEquals(resp.body, null);
+  assertEquals(resp.headers.get("location"), location);
+  assertEquals(resp.status, status);
+});
+
+Deno.test("[http] isValidUrl()", () => {
   assertEquals(isValidUrl("https://hunt.deno.land/"), true);
   assertEquals(isValidUrl("http://hunt.deno.land/"), true);
   assertEquals(isValidUrl("ws://hunt.deno.land/"), false);
@@ -11,7 +31,7 @@ Deno.test("[url_validation] isValidUrl()", () => {
   assertEquals(isValidUrl("invalidurl"), false);
 });
 
-Deno.test("[url_validation] isPublicUrl()", () => {
+Deno.test("[http] isPublicUrl()", () => {
   assertEquals(isPublicUrl("https://hunt.deno.land/"), true);
   assertEquals(isPublicUrl("http://hunt.deno.land/"), true);
   assertEquals(isPublicUrl("ws://hunt.deno.land/"), true);

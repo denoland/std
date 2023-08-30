@@ -9,12 +9,11 @@ import {
   listItemsByUser,
   newItemProps,
 } from "@/utils/db.ts";
-import { redirect } from "@/utils/redirect.ts";
+import { isPublicUrl, isValidUrl, redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
 import { SignedInState } from "@/utils/middleware.ts";
-import { isPublicUrl, isValidUrl } from "@/utils/url_validation.ts";
 
 export const handler: Handlers<SignedInState, SignedInState> = {
   async POST(req, ctx) {
