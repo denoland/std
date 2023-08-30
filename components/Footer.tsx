@@ -9,7 +9,6 @@ import {
 import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import IconRss from "tabler_icons_tsx/rss.tsx";
-import { getToggledStyles } from "@/utils/display.ts";
 
 export default function Footer(props: { url: URL }) {
   return (
@@ -20,11 +19,9 @@ export default function Footer(props: { url: URL }) {
       <nav class={NAV_STYLES}>
         <a
           href="/blog"
-          class={getToggledStyles(
-            LINK_STYLES,
-            ACTIVE_LINK_STYLES,
-            props.url.pathname === "/blog",
-          )}
+          class={props.url.pathname === "/blog"
+            ? ACTIVE_LINK_STYLES
+            : LINK_STYLES}
         >
           Blog
         </a>
