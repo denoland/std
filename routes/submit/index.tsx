@@ -1,15 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { Handlers, PageProps } from "$fresh/server.ts";
+import { type Handlers, type PageProps, Status } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import {
-  collectValues,
-  createItem,
-  getUserBySession,
-  type Item,
-  listItemsByUser,
-  newItemProps,
-} from "@/utils/db.ts";
-import { isPublicUrl, isValidUrl, redirect } from "@/utils/http.ts";
+import { createItem, type Item, newItemProps } from "@/utils/db.ts";
+import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
@@ -21,50 +14,25 @@ export const handler: Handlers<SignedInState, SignedInState> = {
     const title = form.get("title");
     const url = form.get("url");
 
-    if (typeof title !== "string" || typeof url !== "string") {
-      return new Response("Item URL or title are either invalid or missing.", {
-        status: 400,
-      });
+    if (typeof title !== "string") {
+      return new Response("Title is missing", { status: Status.BadRequest });
     }
 
-    try {
-      if (!isValidUrl(url) || !isPublicUrl(url)) {
-        return new Response("Item URL must be valid and publicly available.", {
-          status: 400,
-        });
-      }
-    } catch {
-      return new Response("An error occurred while validating the URL.", {
-        status: 500,
+    if (!(typeof url === "string" && URL.canParse(url))) {
+      return new Response("URL is invalid or missing", {
+        status: Status.BadRequest,
       });
-    }
-
-    const user = await getUserBySession(ctx.state.sessionId);
-
-    if (user === null) {
-      return new Response("You must be logged in to submit a new item.", {
-        status: 401,
-      });
-    }
-
-    const items = await collectValues(listItemsByUser(user.login));
-
-    if (items.some((item) => item.url === url || item.title === title)) {
-      return new Response(
-        "You already submitted an item which contains the same title or URL.",
-        { status: 409 },
-      );
     }
 
     const item: Item = {
-      userLogin: user.login,
+      userLogin: ctx.state.user.login,
       title,
       url,
       ...newItemProps(),
     };
     await createItem(item);
 
-    return redirect(`/items/${item!.id}`);
+    return redirect("/items/" + item.id);
   },
 };
 

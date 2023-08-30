@@ -15,7 +15,7 @@ export default function UserPostedAt(
       <a class="hover:underline" href={`/users/${props.userLogin}`}>
         {props.userLogin}
       </a>{" "}
-      {timeAgo(new Date(props.createdAt))} ago
+      {timeAgo(new Date(props.createdAt))}
     </p>
   );
 }

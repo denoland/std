@@ -5,7 +5,7 @@ import {
   getUserBySession,
   listNotificationsByUser,
 } from "@/utils/db.ts";
-import { getCursor } from "@/utils/pagination.ts";
+import { getCursor } from "@/utils/http.ts";
 import { State } from "@/routes/_middleware.ts";
 
 export const handler: Handlers<undefined, State> = {

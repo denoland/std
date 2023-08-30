@@ -4,7 +4,7 @@ import { useEffect } from "preact/hooks";
 import type { Notification } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import { timeAgo } from "@/utils/display.ts";
-import { fetchValues } from "@/utils/http.ts";
+import { fetchValues } from "@/utils/islands.ts";
 
 function NotificationSummary(props: Notification) {
   return (
@@ -14,7 +14,7 @@ function NotificationSummary(props: Notification) {
           <strong>New {props.type}!</strong>
         </span>
         <span class="text-gray-500">
-          {" " + timeAgo(new Date(props.createdAt))} ago
+          {" " + timeAgo(new Date(props.createdAt))}
         </span>
         <br />
         <span>{props.text}</span>

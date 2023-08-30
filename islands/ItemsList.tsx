@@ -5,7 +5,7 @@ import type { Item } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
-import { fetchValues } from "@/utils/http.ts";
+import { fetchValues } from "@/utils/islands.ts";
 
 async function fetchVotedItems() {
   const url = "/api/me/votes";

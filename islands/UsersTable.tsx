@@ -4,7 +4,7 @@ import { useEffect } from "preact/hooks";
 import type { User } from "@/utils/db.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
-import { fetchValues } from "@/utils/http.ts";
+import { fetchValues } from "@/utils/islands.ts";
 
 const TH_STYLES = "p-4 text-left";
 const TD_STYLES = "p-4";

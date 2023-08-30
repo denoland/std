@@ -10,15 +10,18 @@ Deno.test("[display] pluralize()", () => {
 });
 
 Deno.test("[display] timeAgo()", () => {
-  assertEquals(timeAgo(new Date(Date.now())), "Now");
-  assertEquals(timeAgo(new Date(Date.now() - SECOND * 30)), "30 seconds");
-  assertEquals(timeAgo(new Date(Date.now() - MINUTE)), "1 minute");
-  assertEquals(timeAgo(new Date(Date.now() - MINUTE * 2)), "2 minutes");
-  assertEquals(timeAgo(new Date(Date.now() - MINUTE * 59)), "59 minutes");
-  assertEquals(timeAgo(new Date(Date.now() - HOUR)), "1 hour");
-  assertEquals(timeAgo(new Date(Date.now() - HOUR - MINUTE * 35)), "1 hour");
-  assertEquals(timeAgo(new Date(Date.now() - HOUR * 2)), "2 hours");
-  assertEquals(timeAgo(new Date(Date.now() - DAY)), "1 day");
-  assertEquals(timeAgo(new Date(Date.now() - DAY - HOUR * 12)), "1 day");
-  assertEquals(timeAgo(new Date(Date.now() - DAY * 5)), "5 days");
+  assertEquals(timeAgo(new Date(Date.now())), "just now");
+  assertEquals(timeAgo(new Date(Date.now() - SECOND * 30)), "30 seconds ago");
+  assertEquals(timeAgo(new Date(Date.now() - MINUTE)), "1 minute ago");
+  assertEquals(timeAgo(new Date(Date.now() - MINUTE * 2)), "2 minutes ago");
+  assertEquals(timeAgo(new Date(Date.now() - MINUTE * 59)), "59 minutes ago");
+  assertEquals(timeAgo(new Date(Date.now() - HOUR)), "1 hour ago");
+  assertEquals(
+    timeAgo(new Date(Date.now() - HOUR - MINUTE * 35)),
+    "1 hour ago",
+  );
+  assertEquals(timeAgo(new Date(Date.now() - HOUR * 2)), "2 hours ago");
+  assertEquals(timeAgo(new Date(Date.now() - DAY)), "1 day ago");
+  assertEquals(timeAgo(new Date(Date.now() - DAY - HOUR * 12)), "1 day ago");
+  assertEquals(timeAgo(new Date(Date.now() - DAY * 5)), "5 days ago");
 });

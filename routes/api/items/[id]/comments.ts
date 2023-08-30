@@ -1,6 +1,6 @@
 import { Handlers, Status } from "$fresh/server.ts";
 import { collectValues, getItem, listCommentsByItem } from "@/utils/db.ts";
-import { getCursor } from "@/utils/pagination.ts";
+import { getCursor } from "@/utils/http.ts";
 
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const handler: Handlers = {
