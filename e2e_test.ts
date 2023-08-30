@@ -280,17 +280,21 @@ Deno.test("[http]", async (test) => {
       ...genNewNotification(),
       userLogin: user.login,
     };
-    const req = new Request(
-      `http://localhost/api/users/${user.login}/notifications`,
-    );
+    const url = "http://localhost/api/me/notifications";
 
-    const resp1 = await handler(req);
-    assertResponseNotFound(resp1);
+    const resp1 = await handler(new Request(url));
+    assertFalse(resp1.ok);
+    assertEquals(resp1.body, null);
+    assertEquals(resp1.status, Status.Unauthorized);
 
     await createUser(user);
     await createNotification(notification);
 
-    const resp2 = await handler(req);
+    const resp2 = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
     const { values } = await resp2.json();
     assertResponseJson(resp2);
     assertArrayIncludes(values, [

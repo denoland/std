@@ -1,12 +1,20 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { type Handlers, Status } from "$fresh/server.ts";
-import { collectValues, getUser, listNotificationsByUser } from "@/utils/db.ts";
+import {
+  collectValues,
+  getUserBySession,
+  listNotificationsByUser,
+} from "@/utils/db.ts";
 import { getCursor } from "@/utils/pagination.ts";
+import { State } from "@/routes/_middleware.ts";
 
-/** @todo(iuioiua) Move to GET /api/me/notifications */
-export const handler: Handlers = {
+export const handler: Handlers<undefined, State> = {
   async GET(req, ctx) {
-    const user = await getUser(ctx.params.login);
+    if (ctx.state.sessionId === undefined) {
+      return new Response(null, { status: Status.Unauthorized });
+    }
+
+    const user = await getUserBySession(ctx.state.sessionId);
     if (user === null) return new Response(null, { status: Status.NotFound });
 
     const url = new URL(req.url);

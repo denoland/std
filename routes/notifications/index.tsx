@@ -15,7 +15,7 @@ export default async function NotificationsPage(
       <Head title="Notifications" href={ctx.url.href} />
       <main class="flex-1 p-4">
         <h1 class={HEADING_WITH_MARGIN_STYLES}>Notifications</h1>
-        <NotificationsList userLogin={ctx.state.user.login} />
+        <NotificationsList />
       </main>
     </>
   );

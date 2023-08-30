@@ -23,11 +23,11 @@ function NotificationSummary(props: Notification) {
   );
 }
 
-export default function NotificationsList(props: { userLogin: string }) {
+export default function NotificationsList() {
   const notificationsSig = useSignal<Notification[]>([]);
   const cursorSig = useSignal("");
   const isLoadingSig = useSignal(false);
-  const endpoint = `/api/users/${props.userLogin}/notifications`;
+  const endpoint = `/api/me/notifications`;
 
   async function loadMoreNotifications() {
     isLoadingSig.value = true;

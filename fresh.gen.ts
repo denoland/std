@@ -14,11 +14,11 @@ import * as $8 from "./routes/api/items/[id]/comments.ts";
 import * as $9 from "./routes/api/items/[id]/index.ts";
 import * as $10 from "./routes/api/items/[id]/vote.ts";
 import * as $11 from "./routes/api/items/index.ts";
-import * as $12 from "./routes/api/me/votes.ts";
-import * as $13 from "./routes/api/stripe-webhooks.ts";
-import * as $14 from "./routes/api/users/[login]/index.ts";
-import * as $15 from "./routes/api/users/[login]/items.ts";
-import * as $16 from "./routes/api/users/[login]/notifications.ts";
+import * as $12 from "./routes/api/me/notifications.ts";
+import * as $13 from "./routes/api/me/votes.ts";
+import * as $14 from "./routes/api/stripe-webhooks.ts";
+import * as $15 from "./routes/api/users/[login]/index.ts";
+import * as $16 from "./routes/api/users/[login]/items.ts";
 import * as $17 from "./routes/api/users/index.ts";
 import * as $18 from "./routes/blog/[slug].tsx";
 import * as $19 from "./routes/blog/index.tsx";
@@ -60,11 +60,11 @@ const manifest = {
     "./routes/api/items/[id]/index.ts": $9,
     "./routes/api/items/[id]/vote.ts": $10,
     "./routes/api/items/index.ts": $11,
-    "./routes/api/me/votes.ts": $12,
-    "./routes/api/stripe-webhooks.ts": $13,
-    "./routes/api/users/[login]/index.ts": $14,
-    "./routes/api/users/[login]/items.ts": $15,
-    "./routes/api/users/[login]/notifications.ts": $16,
+    "./routes/api/me/notifications.ts": $12,
+    "./routes/api/me/votes.ts": $13,
+    "./routes/api/stripe-webhooks.ts": $14,
+    "./routes/api/users/[login]/index.ts": $15,
+    "./routes/api/users/[login]/items.ts": $16,
     "./routes/api/users/index.ts": $17,
     "./routes/blog/[slug].tsx": $18,
     "./routes/blog/index.tsx": $19,
