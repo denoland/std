@@ -232,7 +232,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse bianry type",
+  name: "parse binary type",
   fn() {
     const yaml = `message: !!binary "SGVsbG8="`;
     assertEquals(parse(yaml), {
