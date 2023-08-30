@@ -10,10 +10,6 @@ import {
 import { stripe } from "@/utils/payments.ts";
 import { handleCallback } from "kv_oauth";
 import { oauth2Client } from "@/utils/oauth2_client.ts";
-import {
-  deleteRedirectUrlCookie,
-  getRedirectUrlCookie,
-} from "@/utils/redirect.ts";
 
 interface GitHubUser {
   login: string;
@@ -35,10 +31,7 @@ export default async function CallbackPage(req: Request) {
   const { response, accessToken, sessionId } = await handleCallback(
     req,
     oauth2Client,
-    getRedirectUrlCookie(req.headers),
   );
-
-  deleteRedirectUrlCookie(response.headers);
 
   const githubUser = await getGitHubUser(accessToken);
 

@@ -8,6 +8,8 @@ export default async function SignOutPage(
   req: Request,
   ctx: RouteContext<undefined, State>,
 ) {
-  if (ctx.state.sessionId) await deleteUserBySession(ctx.state.sessionId);
+  if (ctx.state.sessionId !== undefined) {
+    await deleteUserBySession(ctx.state.sessionId);
+  }
   return await signOut(req);
 }

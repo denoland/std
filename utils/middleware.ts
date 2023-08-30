@@ -2,7 +2,7 @@
 import type { State } from "@/routes/_middleware.ts";
 import type { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { getUserBySession, User } from "@/utils/db.ts";
-import { redirectToLogin } from "@/utils/redirect.ts";
+import { redirect } from "@/utils/redirect.ts";
 
 export interface SignedInState extends State {
   sessionId: string;
@@ -10,14 +10,13 @@ export interface SignedInState extends State {
 }
 
 export async function ensureSignedInMiddleware(
-  req: Request,
+  _req: Request,
   ctx: MiddlewareHandlerContext<SignedInState>,
 ) {
-  const redirectResponse = redirectToLogin(req.url);
-  if (ctx.state.sessionId === undefined) return redirectResponse;
+  if (ctx.state.sessionId === undefined) return redirect("/signin");
 
   const user = await getUserBySession(ctx.state.sessionId);
-  if (user === null) return redirectResponse;
+  if (user === null) return redirect("/signin");
 
   ctx.state.user = user;
   return await ctx.next();

@@ -61,10 +61,7 @@ Deno.test("[http]", async (test) => {
 
     assertFalse(resp.ok);
     assertFalse(resp.body);
-    assertEquals(
-      resp.headers.get("location"),
-      "/signin?from=http://localhost/account",
-    );
+    assertEquals(resp.headers.get("location"), "/signin");
     assertEquals(resp.status, 303);
   });
 
@@ -142,10 +139,7 @@ Deno.test("[http]", async (test) => {
 
     assertFalse(resp.ok);
     assertFalse(resp.body);
-    assertEquals(
-      resp.headers.get("location"),
-      "/signin?from=http://localhost/dashboard",
-    );
+    assertEquals(resp.headers.get("location"), "/signin");
     assertEquals(resp.status, 303);
   });
 
@@ -156,10 +150,7 @@ Deno.test("[http]", async (test) => {
 
     assertFalse(resp.ok);
     assertFalse(resp.body);
-    assertEquals(
-      resp.headers.get("location"),
-      "/signin?from=http://localhost/submit",
-    );
+    assertEquals(resp.headers.get("location"), "/signin");
     assertEquals(resp.status, 303);
   });
 

@@ -28,9 +28,11 @@ async function setState(req: Request, ctx: MiddlewareHandlerContext<State>) {
   const sessionId = await getSessionId(req);
   ctx.state.sessionId = sessionId;
   ctx.state.hasNotifications = false;
-  if (sessionId) {
+  if (sessionId !== undefined) {
     const user = await getUserBySession(sessionId);
-    ctx.state.hasNotifications = await ifUserHasNotifications(user!.login);
+    if (user !== null) {
+      ctx.state.hasNotifications = await ifUserHasNotifications(user!.login);
+    }
   }
 
   return await ctx.next();

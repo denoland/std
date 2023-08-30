@@ -62,7 +62,7 @@ export default async function AccountPage(
           </Row>
         </ul>
         <a
-          href="/signout"
+          href="/signout?success_url=/"
           class={`${BUTTON_STYLES} block text-center mt-8`}
         >
           Sign out
