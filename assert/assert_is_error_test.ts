@@ -35,3 +35,17 @@ Deno.test("Assert Is Error with custom Error", () => {
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
 });
+
+Deno.test("assertIsError throws with message diff, where messages contain double quotes", () => {
+  class CustomError extends Error {}
+  assertThrows(
+    () =>
+      assertIsError(
+        new CustomError('error with "double quotes"'),
+        CustomError,
+        'doesn\'t include "this message"',
+      ),
+    AssertionError,
+    `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\"".`,
+  );
+});
