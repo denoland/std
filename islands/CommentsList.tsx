@@ -22,6 +22,7 @@ export default function CommentsList(props: { itemId: string }) {
   const endpoint = `/api/items/${props.itemId}/comments`;
 
   async function loadMoreComments() {
+    if (isLoadingSig.value) return;
     isLoadingSig.value = true;
     try {
       const { values, cursor } = await fetchValues<Comment>(
@@ -46,9 +47,9 @@ export default function CommentsList(props: { itemId: string }) {
       {commentsSig.value.map((comment) => (
         <CommentSummary key={comment.id} {...comment} />
       ))}
-      {cursorSig.value !== "" && !isLoadingSig.value && (
+      {cursorSig.value !== "" && (
         <button onClick={loadMoreComments} class={LINK_STYLES}>
-          Load more
+          {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}
     </div>

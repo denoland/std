@@ -30,6 +30,7 @@ export default function NotificationsList() {
   const endpoint = `/api/me/notifications`;
 
   async function loadMoreNotifications() {
+    if (isLoadingSig.value) return;
     isLoadingSig.value = true;
     try {
       const { values, cursor } = await fetchValues<Notification>(
@@ -56,9 +57,9 @@ export default function NotificationsList() {
           <NotificationSummary key={notification.id} {...notification} />
         ))
         : "No notifications yet"}
-      {cursorSig.value !== "" && !isLoadingSig.value && (
+      {cursorSig.value !== "" && (
         <button onClick={loadMoreNotifications} class={LINK_STYLES}>
-          Load more
+          {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}
     </div>

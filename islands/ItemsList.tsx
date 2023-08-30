@@ -44,6 +44,7 @@ export default function ItemsList(props: { endpoint: string }) {
   );
 
   async function loadMoreItems() {
+    if (isLoadingSig.value) return;
     isLoadingSig.value = true;
     try {
       const { values, cursor } = await fetchValues<Item>(
@@ -80,9 +81,9 @@ export default function ItemsList(props: { endpoint: string }) {
           );
         })
         : <EmptyItemsList />}
-      {cursorSig.value !== "" && !isLoadingSig.value && (
+      {cursorSig.value !== "" && (
         <button onClick={loadMoreItems} class={LINK_STYLES}>
-          Load more
+          {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}
     </div>

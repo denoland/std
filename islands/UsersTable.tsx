@@ -38,6 +38,7 @@ export default function UsersTable() {
   const endpoint = "/api/users";
 
   async function loadMoreUsers() {
+    if (isLoadingSig.value) return;
     isLoadingSig.value = true;
     try {
       const { values, cursor } = await fetchValues<User>(
@@ -71,12 +72,12 @@ export default function UsersTable() {
           {usersSig.value.map((user) => <UserTableRow {...user} />)}
         </tbody>
       </table>
-      {cursorSig.value !== "" && !isLoadingSig.value && (
+      {cursorSig.value !== "" && (
         <button
           onClick={loadMoreUsers}
           class={LINK_STYLES + " p-4"}
         >
-          Load more
+          {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}
     </div>
