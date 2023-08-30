@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
+ * @deprecated (will be removed after 0.205.0)
+ *
  * Functions for encoding binary data in array buffers.
  *
  * @module
@@ -10,12 +12,19 @@ import type { Reader, Writer } from "../types.d.ts";
 type RawBaseType = "int8" | "int16" | "int32" | "uint8" | "uint16" | "uint32";
 type RawNumberType = RawBaseType | "float32" | "float64";
 type RawBigType = RawBaseType | "int64" | "uint64";
+/**  * @deprecated (will be removed after 0.205.0) */
 export type DataType = RawNumberType | RawBigType;
 
-/** How encoded binary data is ordered. */
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * How encoded binary data is ordered.
+ */
 export type Endianness = "little" | "big";
 
-/** Options for working with the `number` type. */
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Options for working with the `number` type.
+ */
 export interface VarnumOptions {
   /** The binary format used. */
   dataType?: RawNumberType;
@@ -23,7 +32,10 @@ export interface VarnumOptions {
   endian?: Endianness;
 }
 
-/** Options for working with the `bigint` type. */
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Options for working with the `bigint` type.
+ */
 export interface VarbigOptions {
   /** The binary format used. */
   dataType?: RawBigType;
@@ -44,12 +56,17 @@ const rawTypeSizes: Record<DataType, number> = {
   float64: 8,
 } as const;
 
-/** Number of bytes required to store `dataType`. */
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Number of bytes required to store `dataType`.
+ */
 export function sizeof(dataType: DataType): number {
   return rawTypeSizes[dataType];
 }
 
-/** Reads the exact number of bytes from `r` required to fill `b`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Reads the exact number of bytes from `r` required to fill `b`.
  *
  * Throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
 export async function readExact(
@@ -66,7 +83,9 @@ export async function readExact(
   } while (totalRead < b.length);
 }
 
-/** Reads exactly `n` bytes from `r`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Reads exactly `n` bytes from `r`.
  *
  * Resolves it in a `Uint8Array`, or throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
 export async function getNBytes(
@@ -78,7 +97,9 @@ export async function getNBytes(
   return scratch;
 }
 
-/** Decodes a number from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Decodes a number from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
  *
  * `o.dataType` defaults to `"int32"`. */
 export function varnum(b: Uint8Array, o: VarnumOptions = {}): number | null {
@@ -106,7 +127,9 @@ export function varnum(b: Uint8Array, o: VarnumOptions = {}): number | null {
   }
 }
 
-/** Decodes a bigint from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Decodes a bigint from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
  *
  * `o.dataType` defaults to `"int64"`. */
 export function varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null {
@@ -134,7 +157,9 @@ export function varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null {
   }
 }
 
-/** Encodes number `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes number `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
  *
  * `o.dataType` defaults to `"int32"`. */
 export function putVarnum(
@@ -175,7 +200,9 @@ export function putVarnum(
   return sizeof(o.dataType);
 }
 
-/** Encodes bigint `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes bigint `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
  *
  * `o.dataType` defaults to `"int64"`. */
 export function putVarbig(
@@ -216,7 +243,9 @@ export function putVarbig(
   return sizeof(o.dataType);
 }
 
-/** Decodes a number from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Decodes a number from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
  *
  * `o.dataType` defaults to `"int32"`. */
 export async function readVarnum(
@@ -228,7 +257,9 @@ export async function readVarnum(
   return varnum(scratch, o) as number;
 }
 
-/** Decodes a bigint from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Decodes a bigint from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
  *
  * `o.dataType` defaults to `"int64"`. */
 export async function readVarbig(
@@ -240,7 +271,9 @@ export async function readVarbig(
   return varbig(scratch, o) as bigint;
 }
 
-/** Encodes and writes `x` to `w`. Resolves to the number of bytes written.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes and writes `x` to `w`. Resolves to the number of bytes written.
  *
  * `o.dataType` defaults to `"int32"`. */
 export function writeVarnum(
@@ -254,7 +287,9 @@ export function writeVarnum(
   return w.write(scratch);
 }
 
-/** Encodes and writes `x` to `w`. Resolves to the number of bytes written.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes and writes `x` to `w`. Resolves to the number of bytes written.
  *
  * `o.dataType` defaults to `"int64"`. */
 export function writeVarbig(
@@ -268,7 +303,9 @@ export function writeVarbig(
   return w.write(scratch);
 }
 
-/** Encodes `x` into a new `Uint8Array`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes `x` into a new `Uint8Array`.
  *
  * `o.dataType` defaults to `"int32"` */
 export function varnumBytes(x: number, o: VarnumOptions = {}): Uint8Array {
@@ -278,7 +315,9 @@ export function varnumBytes(x: number, o: VarnumOptions = {}): Uint8Array {
   return b;
 }
 
-/** Encodes `x` into a new `Uint8Array`.
+/**
+ * @deprecated (will be removed after 0.205.0)
+ * Encodes `x` into a new `Uint8Array`.
  *
  * `o.dataType` defaults to `"int64"` */
 export function varbigBytes(x: bigint, o: VarbigOptions = {}): Uint8Array {
