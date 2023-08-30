@@ -230,3 +230,13 @@ Deno.test({
     assertEquals(parse(yaml3), expected);
   },
 });
+
+Deno.test({
+  name: "parse bianry type",
+  fn() {
+    const yaml = `message: !!binary "SGVsbG8="`;
+    assertEquals(parse(yaml), {
+      message: new Uint8Array([72, 101, 108, 108, 111]),
+    });
+  },
+});
