@@ -14,7 +14,7 @@ function NotificationSummary(props: Notification) {
           <strong>New {props.type}!</strong>
         </span>
         <span class="text-gray-500">
-          {" " + timeAgo(props.createdAt)} ago
+          {" " + timeAgo(new Date(props.createdAt))} ago
         </span>
         <br />
         <span>{props.text}</span>
