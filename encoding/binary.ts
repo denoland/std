@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use ReadableStream and WritableStream instead of Reader and Writer.
  *
  * Functions for encoding binary data in array buffers.
  *
@@ -65,7 +65,8 @@ export function sizeof(dataType: DataType): number {
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use ReadableStreamBYOBReader to read exact number of bytes.
+ *
  * Reads the exact number of bytes from `r` required to fill `b`.
  *
  * Throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
@@ -84,7 +85,8 @@ export async function readExact(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use ReadableStreamBYOBReader to read exact number of bytes.
+ *
  * Reads exactly `n` bytes from `r`.
  *
  * Resolves it in a `Uint8Array`, or throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
@@ -98,7 +100,8 @@ export async function getNBytes(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use DataView instead.
+ *
  * Decodes a number from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
  *
  * `o.dataType` defaults to `"int32"`. */
@@ -128,7 +131,8 @@ export function varnum(b: Uint8Array, o: VarnumOptions = {}): number | null {
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) use DataView instead.
+ *
  * Decodes a bigint from `b`. If `o.bytes` is shorter than `sizeof(o.dataType)`, returns `null`.
  *
  * `o.dataType` defaults to `"int64"`. */
@@ -158,7 +162,8 @@ export function varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null {
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use DataView instead.
+ *
  * Encodes number `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
  *
  * `o.dataType` defaults to `"int32"`. */
@@ -201,7 +206,8 @@ export function putVarnum(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use DataView instead.
+ *
  * Encodes bigint `x` into `b`. Returns the number of bytes used, or `0` if `b` is shorter than `sizeof(o.dataType)`.
  *
  * `o.dataType` defaults to `"int64"`. */
@@ -244,7 +250,8 @@ export function putVarbig(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use ReadableStreamBYOBReader and DataView instead.
+ *
  * Decodes a number from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
  *
  * `o.dataType` defaults to `"int32"`. */
@@ -258,7 +265,8 @@ export async function readVarnum(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use ReadableStreamBYOBReader and DataView instead.
+ *
  * Decodes a bigint from `r`, consuming `sizeof(o.dataType)` bytes. If less than `sizeof(o.dataType)` bytes were read, throws `Deno.errors.unexpectedEof`.
  *
  * `o.dataType` defaults to `"int64"`. */
@@ -272,7 +280,8 @@ export async function readVarbig(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use WritableStream and DataView instead.
+ *
  * Encodes and writes `x` to `w`. Resolves to the number of bytes written.
  *
  * `o.dataType` defaults to `"int32"`. */
@@ -288,7 +297,8 @@ export function writeVarnum(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use WritableStream and DataView instead.
+ *
  * Encodes and writes `x` to `w`. Resolves to the number of bytes written.
  *
  * `o.dataType` defaults to `"int64"`. */
@@ -304,7 +314,8 @@ export function writeVarbig(
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use DataView instead.
+ *
  * Encodes `x` into a new `Uint8Array`.
  *
  * `o.dataType` defaults to `"int32"` */
@@ -316,7 +327,8 @@ export function varnumBytes(x: number, o: VarnumOptions = {}): Uint8Array {
 }
 
 /**
- * @deprecated (will be removed after 0.205.0)
+ * @deprecated (will be removed after 0.205.0) Use DataView instead.
+ *
  * Encodes `x` into a new `Uint8Array`.
  *
  * `o.dataType` defaults to `"int64"` */
