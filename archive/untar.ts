@@ -1,15 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import {
-  FileTypes,
-  readBlock,
-  recordSize,
-  type TarMeta,
-  ustarStructure,
-} from "./_common.ts";
-import { readAll } from "../streams/read_all.ts";
-import type { Reader } from "../types.d.ts";
-
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -38,6 +28,16 @@ import type { Reader } from "../types.d.ts";
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+import {
+  FileTypes,
+  HEADER_LENGTH,
+  readBlock,
+  type TarMeta,
+  ustarStructure,
+} from "./_common.ts";
+import { readAll } from "../streams/read_all.ts";
+import type { Reader } from "../types.d.ts";
 
 export interface TarHeader {
   [key: string]: Uint8Array;
@@ -94,8 +94,8 @@ export class TarEntry implements Reader {
     // File Size
     this.#size = this.fileSize || 0;
     // Entry Size
-    const blocks = Math.ceil(this.#size / recordSize);
-    this.#entrySize = blocks * recordSize;
+    const blocks = Math.ceil(this.#size / HEADER_LENGTH);
+    this.#entrySize = blocks * HEADER_LENGTH;
   }
 
   get consumed(): boolean {
@@ -151,7 +151,25 @@ export class TarEntry implements Reader {
 }
 
 /**
- * A class to extract a tar archive
+ * ### Overview
+ * A class to extract from a tar archive.  Tar archives allow for storing multiple
+ * files in a single file (called an archive, or sometimes a tarball).  These
+ * archives typically have the '.tar' extension.
+ *
+ * ### Supported file formats
+ * Only the ustar file format is supported.  This is the most common format. The
+ * pax file format may also be read, but additional features, such as longer
+ * filenames may be ignored.
+ *
+ * ### Usage
+ * The workflow is to create a Untar instance referencing the source of the tar file.
+ * You can then use the untar reference to extract files one at a time. See the worked
+ * example below for details.
+ *
+ * ### Understanding compression
+ * A tar archive may be compressed, often identified by the `.tar.gz` extension.
+ * This utility does not support decompression which must be done before extracting
+ * the files.
  *
  * @example
  * ```ts
@@ -186,12 +204,12 @@ export class Untar {
 
   constructor(reader: Reader) {
     this.reader = reader;
-    this.block = new Uint8Array(recordSize);
+    this.block = new Uint8Array(HEADER_LENGTH);
   }
 
   #checksum(header: Uint8Array): number {
     let sum = initialChecksum;
-    for (let i = 0; i < 512; i++) {
+    for (let i = 0; i < HEADER_LENGTH; i++) {
       if (i >= 148 && i < 156) {
         // Ignore checksum header
         continue;
@@ -201,7 +219,7 @@ export class Untar {
     return sum;
   }
 
-  async #getHeader(): Promise<TarHeader | null> {
+  async #getAndValidateHeader(): Promise<TarHeader | null> {
     await readBlock(this.reader, this.block);
     const header = parseHeader(this.block);
 
@@ -262,6 +280,12 @@ export class Untar {
     return meta;
   }
 
+  /**
+   * Extract the next entry of the tar archive.
+   *
+   * @returns A TarEntry with header metadata and a reader to the entry's
+   *          body, or null if there are no more entries to extract.
+   */
   async extract(): Promise<TarEntry | null> {
     if (this.#entry && !this.#entry.consumed) {
       // If entry body was not read, discard the body
@@ -269,7 +293,7 @@ export class Untar {
       await this.#entry.discard();
     }
 
-    const header = await this.#getHeader();
+    const header = await this.#getAndValidateHeader();
     if (header === null) return null;
 
     const meta = this.#getMetadata(header);
@@ -279,6 +303,11 @@ export class Untar {
     return this.#entry;
   }
 
+  /**
+   * Iterate over all entries of the tar archive.
+   *
+   * @yields A TarEntry with tar header metadata and a reader to the entry's body.
+   */
   async *[Symbol.asyncIterator](): AsyncIterableIterator<TarEntry> {
     while (true) {
       const entry = await this.extract();
