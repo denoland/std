@@ -28,6 +28,9 @@ import {
 } from "@/utils/db.ts";
 import options from "./fresh.config.ts";
 
+/**
+ * @see {@link https://fresh.deno.dev/docs/examples/writing-tests|Writing tests} example on how to write tests for Fresh projects.
+ */
 const handler = await createHandler(manifest, options);
 
 function assertResponseNotFound(resp: Response) {
@@ -42,7 +45,7 @@ function assertResponseJson(resp: Response) {
   assertEquals(resp.headers.get("content-type"), "application/json");
 }
 
-Deno.test("[http]", async (test) => {
+Deno.test("[e2e]", async (test) => {
   await test.step("GET /", async () => {
     const resp = await handler(new Request("http://localhost"));
 
