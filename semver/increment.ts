@@ -1,7 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import type { ReleaseType, SemVer } from "./types.ts";
-import { parse } from "./parse.ts";
-import { format } from "./format.ts";
 
 function pre(
   prerelease: ReadonlyArray<string | number>,
@@ -76,38 +74,7 @@ export function increment(
   release: ReleaseType,
   prerelease?: string,
   build?: string,
-): SemVer;
-/** @deprecated (will be removed after 0.200.0) Use `increment(version: SemVer, release: ReleaseType, prerelease?: string, build?: string)` instead. */
-export function increment(
-  version: string | SemVer,
-  release: ReleaseType,
-  options?: { includePrerelease: boolean },
-  prerelease?: string,
-  build?: string,
-): string;
-export function increment(
-  version: string | SemVer,
-  release: ReleaseType,
-  optionsOrPrerelease?: { includePrerelease: boolean } | string,
-  buildOrPrerelease?: string,
-  buildOrUndefined?: string,
-): string | SemVer {
-  let options: { includePrerelease: boolean } = { includePrerelease: true };
-  let prerelease: string | undefined;
-  let build: string | undefined;
-  if (typeof optionsOrPrerelease === "object") {
-    options = optionsOrPrerelease;
-    prerelease = buildOrPrerelease;
-    build = buildOrUndefined;
-  } else {
-    prerelease = optionsOrPrerelease;
-    build = buildOrPrerelease;
-  }
-  let isLegacy = false;
-  if (typeof version === "string") {
-    version = parse(version, options);
-    isLegacy = true;
-  }
+): SemVer {
   let result: SemVer;
   switch (release) {
     case "premajor":
@@ -253,9 +220,6 @@ export function increment(
       break;
     default:
       throw new Error(`invalid increment argument: ${release}`);
-  }
-  if (isLegacy) {
-    return format(result);
   }
   return result;
 }

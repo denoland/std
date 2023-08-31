@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { comparatorIntersects } from "./comparator_intersects.ts";
-import { parseRange } from "./parse_range.ts";
 import type { SemVerComparator, SemVerRange } from "./types.ts";
 
 function rangesSatisfiable(ranges: SemVerRange[]): boolean {
@@ -37,27 +36,4 @@ export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
       });
     });
   });
-}
-
-/**
- * @deprecated (will be removed after 0.200.0) Use `rangeIntersects(r0: SemVerRange, r1: SemVerRange)` instead.
- */
-export function intersects(
-  range0: string | SemVerRange | SemVerComparator,
-  range1: string | SemVerRange | SemVerComparator,
-  _options?: { includePrerelease: boolean },
-) {
-  let r0: SemVerRange;
-  let r1: SemVerRange;
-  if (typeof range0 === "string") {
-    r0 = parseRange(range0);
-  } else {
-    r0 = range0 as SemVerRange;
-  }
-  if (typeof range1 === "string") {
-    r1 = parseRange(range1);
-  } else {
-    r1 = range1 as SemVerRange;
-  }
-  return rangeIntersects(r0, r1);
 }
