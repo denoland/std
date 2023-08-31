@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { BytesList } from "../bytes/bytes_list.ts";
+import { concat } from "../bytes/concat.ts";
 
 export type ValueType =
   | number
@@ -48,9 +48,9 @@ const encoder = new TextEncoder();
  * ```
  */
 export function encode(object: ValueType) {
-  const byteList = new BytesList();
-  encodeSlice(object, byteList);
-  return byteList.concat();
+  const byteParts: Uint8Array[] = [];
+  encodeSlice(object, byteParts);
+  return concat(...byteParts);
 }
 
 function encodeFloat64(num: number) {
@@ -119,24 +119,24 @@ function encodeNumber(num: number) {
   return encodeFloat64(num);
 }
 
-function encodeSlice(object: ValueType, byteList: BytesList) {
+function encodeSlice(object: ValueType, byteParts: Uint8Array[]) {
   if (object === null) {
-    byteList.add(new Uint8Array([0xc0]));
+    byteParts.push(new Uint8Array([0xc0]));
     return;
   }
 
   if (object === false) {
-    byteList.add(new Uint8Array([0xc2]));
+    byteParts.push(new Uint8Array([0xc2]));
     return;
   }
 
   if (object === true) {
-    byteList.add(new Uint8Array([0xc3]));
+    byteParts.push(new Uint8Array([0xc3]));
     return;
   }
 
   if (typeof object === "number") {
-    byteList.add(encodeNumber(object));
+    byteParts.push(encodeNumber(object));
     return;
   }
 
@@ -149,7 +149,7 @@ function encodeSlice(object: ValueType, byteList: BytesList) {
       const dataView = new DataView(new ArrayBuffer(9));
       dataView.setBigInt64(1, object);
       dataView.setUint8(0, 0xd3);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
       return;
     }
 
@@ -160,7 +160,7 @@ function encodeSlice(object: ValueType, byteList: BytesList) {
     const dataView = new DataView(new ArrayBuffer(9));
     dataView.setBigUint64(1, object);
     dataView.setUint8(0, 0xcf);
-    byteList.add(new Uint8Array(dataView.buffer));
+    byteParts.push(new Uint8Array(dataView.buffer));
     return;
   }
 
@@ -169,63 +169,63 @@ function encodeSlice(object: ValueType, byteList: BytesList) {
     const len = encoded.length;
 
     if (len < FIVE_BITS) { // fixstr
-      byteList.add(new Uint8Array([0xa0 | len]));
+      byteParts.push(new Uint8Array([0xa0 | len]));
     } else if (len < EIGHT_BITS) { // str 8
-      byteList.add(new Uint8Array([0xd9, len]));
+      byteParts.push(new Uint8Array([0xd9, len]));
     } else if (len < SIXTEEN_BITS) { // str 16
       const dataView = new DataView(new ArrayBuffer(3));
       dataView.setUint16(1, len);
       dataView.setUint8(0, 0xda);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else if (len < THIRTY_TWO_BITS) { // str 32
       const dataView = new DataView(new ArrayBuffer(5));
       dataView.setUint32(1, len);
       dataView.setUint8(0, 0xdb);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else {
       throw new Error(
         "Cannot safely encode string with size larger than 32 bits",
       );
     }
-    byteList.add(encoded);
+    byteParts.push(encoded);
     return;
   }
 
   if (object instanceof Uint8Array) {
     if (object.length < EIGHT_BITS) { // bin 8
-      byteList.add(new Uint8Array([0xc4, object.length]));
+      byteParts.push(new Uint8Array([0xc4, object.length]));
     } else if (object.length < SIXTEEN_BITS) { // bin 16
       const dataView = new DataView(new ArrayBuffer(3));
       dataView.setUint16(1, object.length);
       dataView.setUint8(0, 0xc5);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else if (object.length < THIRTY_TWO_BITS) { // bin 32
       const dataView = new DataView(new ArrayBuffer(5));
       dataView.setUint32(1, object.length);
       dataView.setUint8(0, 0xc6);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else {
       throw new Error(
         "Cannot safely encode Uint8Array with size larger than 32 bits",
       );
     }
-    byteList.add(object);
+    byteParts.push(object);
     return;
   }
 
   if (Array.isArray(object)) {
     if (object.length < FOUR_BITS) { // fixarray
-      byteList.add(new Uint8Array([0x90 | object.length]));
+      byteParts.push(new Uint8Array([0x90 | object.length]));
     } else if (object.length < SIXTEEN_BITS) { // array 16
       const dataView = new DataView(new ArrayBuffer(3));
       dataView.setUint16(1, object.length);
       dataView.setUint8(0, 0xdc);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else if (object.length < THIRTY_TWO_BITS) { // array 32
       const dataView = new DataView(new ArrayBuffer(5));
       dataView.setUint32(1, object.length);
       dataView.setUint8(0, 0xdd);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else {
       throw new Error(
         "Cannot safely encode array with size larger than 32 bits",
@@ -233,7 +233,7 @@ function encodeSlice(object: ValueType, byteList: BytesList) {
     }
 
     for (const obj of object) {
-      encodeSlice(obj, byteList);
+      encodeSlice(obj, byteParts);
     }
     return;
   }
@@ -243,24 +243,24 @@ function encodeSlice(object: ValueType, byteList: BytesList) {
     const numKeys = Object.keys(object).length;
 
     if (numKeys < FOUR_BITS) { // fixarray
-      byteList.add(new Uint8Array([0x80 | numKeys]));
+      byteParts.push(new Uint8Array([0x80 | numKeys]));
     } else if (numKeys < SIXTEEN_BITS) { // map 16
       const dataView = new DataView(new ArrayBuffer(3));
       dataView.setUint16(1, numKeys);
       dataView.setUint8(0, 0xde);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else if (numKeys < THIRTY_TWO_BITS) { // map 32
       const dataView = new DataView(new ArrayBuffer(5));
       dataView.setUint32(1, numKeys);
       dataView.setUint8(0, 0xdf);
-      byteList.add(new Uint8Array(dataView.buffer));
+      byteParts.push(new Uint8Array(dataView.buffer));
     } else {
       throw new Error("Cannot safely encode map with size larger than 32 bits");
     }
 
     for (const [key, value] of Object.entries(object)) {
-      encodeSlice(key, byteList);
-      encodeSlice(value, byteList);
+      encodeSlice(key, byteParts);
+      encodeSlice(value, byteParts);
     }
     return;
   }
