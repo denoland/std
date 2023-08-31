@@ -567,9 +567,7 @@ const ANSI_PATTERN = new RegExp(
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
-export function stripColor(string: string): string {
-  return string.replace(ANSI_PATTERN, "");
-}
+export const stripColor = stripAnsiCode;
 
 /**
  * Remove ANSI escape codes from the string.
