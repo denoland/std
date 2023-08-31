@@ -22,23 +22,20 @@ import * as $16 from "./routes/api/users/[login]/items.ts";
 import * as $17 from "./routes/api/users/index.ts";
 import * as $18 from "./routes/blog/[slug].tsx";
 import * as $19 from "./routes/blog/index.tsx";
-import * as $20 from "./routes/callback.ts";
-import * as $21 from "./routes/dashboard/_middleware.ts";
-import * as $22 from "./routes/dashboard/index.tsx";
-import * as $23 from "./routes/dashboard/stats.tsx";
-import * as $24 from "./routes/dashboard/users.tsx";
-import * as $25 from "./routes/feed.ts";
-import * as $26 from "./routes/index.tsx";
-import * as $27 from "./routes/items/[id].tsx";
-import * as $28 from "./routes/notifications/[id].ts";
-import * as $29 from "./routes/notifications/_middleware.ts";
-import * as $30 from "./routes/notifications/index.tsx";
-import * as $31 from "./routes/pricing.tsx";
-import * as $32 from "./routes/signin.ts";
-import * as $33 from "./routes/signout.ts";
-import * as $34 from "./routes/submit/_middleware.tsx";
-import * as $35 from "./routes/submit/index.tsx";
-import * as $36 from "./routes/users/[login].tsx";
+import * as $20 from "./routes/dashboard/_middleware.ts";
+import * as $21 from "./routes/dashboard/index.tsx";
+import * as $22 from "./routes/dashboard/stats.tsx";
+import * as $23 from "./routes/dashboard/users.tsx";
+import * as $24 from "./routes/feed.ts";
+import * as $25 from "./routes/index.tsx";
+import * as $26 from "./routes/items/[id].tsx";
+import * as $27 from "./routes/notifications/[id].ts";
+import * as $28 from "./routes/notifications/_middleware.ts";
+import * as $29 from "./routes/notifications/index.tsx";
+import * as $30 from "./routes/pricing.tsx";
+import * as $31 from "./routes/submit/_middleware.tsx";
+import * as $32 from "./routes/submit/index.tsx";
+import * as $33 from "./routes/users/[login].tsx";
 import * as $$0 from "./islands/Chart.tsx";
 import * as $$1 from "./islands/CommentsList.tsx";
 import * as $$2 from "./islands/ItemsList.tsx";
@@ -68,23 +65,20 @@ const manifest = {
     "./routes/api/users/index.ts": $17,
     "./routes/blog/[slug].tsx": $18,
     "./routes/blog/index.tsx": $19,
-    "./routes/callback.ts": $20,
-    "./routes/dashboard/_middleware.ts": $21,
-    "./routes/dashboard/index.tsx": $22,
-    "./routes/dashboard/stats.tsx": $23,
-    "./routes/dashboard/users.tsx": $24,
-    "./routes/feed.ts": $25,
-    "./routes/index.tsx": $26,
-    "./routes/items/[id].tsx": $27,
-    "./routes/notifications/[id].ts": $28,
-    "./routes/notifications/_middleware.ts": $29,
-    "./routes/notifications/index.tsx": $30,
-    "./routes/pricing.tsx": $31,
-    "./routes/signin.ts": $32,
-    "./routes/signout.ts": $33,
-    "./routes/submit/_middleware.tsx": $34,
-    "./routes/submit/index.tsx": $35,
-    "./routes/users/[login].tsx": $36,
+    "./routes/dashboard/_middleware.ts": $20,
+    "./routes/dashboard/index.tsx": $21,
+    "./routes/dashboard/stats.tsx": $22,
+    "./routes/dashboard/users.tsx": $23,
+    "./routes/feed.ts": $24,
+    "./routes/index.tsx": $25,
+    "./routes/items/[id].tsx": $26,
+    "./routes/notifications/[id].ts": $27,
+    "./routes/notifications/_middleware.ts": $28,
+    "./routes/notifications/index.tsx": $29,
+    "./routes/pricing.tsx": $30,
+    "./routes/submit/_middleware.tsx": $31,
+    "./routes/submit/index.tsx": $32,
+    "./routes/users/[login].tsx": $33,
   },
   islands: {
     "./islands/Chart.tsx": $$0,

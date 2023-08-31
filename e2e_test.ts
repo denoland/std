@@ -26,6 +26,9 @@ import {
   type Item,
   type Notification,
 } from "@/utils/db.ts";
+import options from "./fresh.config.ts";
+
+const handler = await createHandler(manifest, options);
 
 function assertResponseNotFound(resp: Response) {
   assertFalse(resp.ok);
@@ -40,8 +43,6 @@ function assertResponseJson(resp: Response) {
 }
 
 Deno.test("[http]", async (test) => {
-  const handler = await createHandler(manifest);
-
   await test.step("GET /", async () => {
     const resp = await handler(new Request("http://localhost"));
 
