@@ -10,12 +10,14 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 
-import { decodeTime, factory, monotonicFactory } from "./mod.ts";
+import { decodeTime } from "./mod.ts";
 import {
   detectPrng,
   encodeRandom,
   encodeTime,
+  factory,
   incrementBase32,
+  monotonicFactory,
   randomChar,
 } from "./_util.ts";
 

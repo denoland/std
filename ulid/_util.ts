@@ -20,7 +20,7 @@ function replaceCharAt(str: string, index: number, char: string) {
   return str.substring(0, index) + char + str.substring(index + 1);
 }
 
-function randomChar(prng: PRNG): string {
+export function randomChar(prng: PRNG): string {
   let rand = Math.floor(prng() * ENCODING_LEN);
   if (rand === ENCODING_LEN) {
     rand = ENCODING_LEN - 1;
@@ -28,7 +28,7 @@ function randomChar(prng: PRNG): string {
   return ENCODING.charAt(rand);
 }
 
-function encodeTime(now: number, len: number = TIME_LEN): string {
+export function encodeTime(now: number, len: number = TIME_LEN): string {
   if (now > TIME_MAX) {
     throw new Error("cannot encode time greater than " + TIME_MAX);
   }
@@ -47,7 +47,7 @@ function encodeTime(now: number, len: number = TIME_LEN): string {
   return str;
 }
 
-function encodeRandom(len: number, prng: PRNG): string {
+export function encodeRandom(len: number, prng: PRNG): string {
   let str = "";
   for (; len > 0; len--) {
     str = randomChar(prng) + str;
@@ -55,7 +55,7 @@ function encodeRandom(len: number, prng: PRNG): string {
   return str;
 }
 
-function detectPrng(): PRNG {
+export function detectPrng(): PRNG {
   return () => {
     const buffer = new Uint8Array(1);
     crypto.getRandomValues(buffer);
@@ -63,7 +63,7 @@ function detectPrng(): PRNG {
   };
 }
 
-function incrementBase32(str: string): string {
+export function incrementBase32(str: string): string {
   let index = str.length;
   let char;
   let charIndex;
