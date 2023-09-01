@@ -10,21 +10,4 @@ import { start } from "$fresh/server.ts";
 import manifest from "./fresh.gen.ts";
 import config from "./fresh.config.ts";
 
-/**
- * @todo Remove at v1. This is a quick way to reset Deno KV, as database changes are likely to occur and require reset.
- */
-import { resetKv } from "./tools/reset_kv.ts";
-import { migrateKv } from "./tools/migrate_kv.ts";
-
-if (Deno.env.get("RESET_DENO_KV") === "1") {
-  await resetKv();
-}
-
-/**
- * @todo Remove at v1. This is a quick way to migrate Deno KV, as database changes are likely to occur and require adjustment.
- */
-if (Deno.env.get("MIGRATE_DENO_KV") === "1") {
-  await migrateKv();
-}
-
 await start(manifest, config);
