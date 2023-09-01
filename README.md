@@ -24,9 +24,6 @@ template for building your SaaS quickly and easily.
 - [Fresh](https://fresh.deno.dev/) as the web framework and
   [Tailwind CSS](https://tailwindcss.com/) as the CSS framework.
 
-Want to know where Deno SaaSKit is headed? Check out
-**[our roadmap](https://github.com/denoland/saaskit/issues/60)**.
-
 ## Getting Started Locally
 
 ### Prerequisites
