@@ -88,7 +88,6 @@ function incrementBase32(str: string): string {
  *
  * @example To use your own pseudo-random number generator, import the factory, and pass it your generator function.
  * ```ts
- * import { factory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
  * const prng = () => Math.random();
  *
  * const ulid = factory(prng);
@@ -106,8 +105,6 @@ export function factory(prng: PRNG = detectPrng()): ULID {
  *
  * @example To generate monotonically increasing ULIDs, create a monotonic counter.
  * ```ts
- * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- *
  * const ulid = monotonicFactory();
  * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
  * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVR8
@@ -122,7 +119,6 @@ export function factory(prng: PRNG = detectPrng()): ULID {
  *
  * @example You can also pass in a prng to the monotonicFactory function.
  * ```ts
- * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
  * const prng = () => Math.random();
  *
  * const ulid = monotonicFactory(prng);
