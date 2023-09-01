@@ -31,7 +31,7 @@ export function readerFromIterable(
   const buffer = new Buffer();
   return {
     async read(p: Uint8Array): Promise<number | null> {
-      if (buffer.length == 0) {
+      if (buffer.length === 0) {
         const result = await iterator.next();
         if (result.done) {
           return null;
@@ -46,7 +46,7 @@ export function readerFromIterable(
         }
       } else {
         const n = await buffer.read(p);
-        if (n == null) {
+        if (n === null) {
           return this.read(p);
         }
         return n;

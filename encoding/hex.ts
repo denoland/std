@@ -73,7 +73,7 @@ export function decode(src: Uint8Array): Uint8Array {
     dst[i] = (a << 4) | b;
   }
 
-  if (src.length % 2 == 1) {
+  if (src.length % 2 === 1) {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
     fromHexChar(src[dst.length * 2]);

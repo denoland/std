@@ -16,7 +16,7 @@ Deno.test("[streams] readerFromIterable()", async function () {
   const p = new Uint8Array(4);
   while (true) {
     const n = await reader.read(p);
-    if (n == null) {
+    if (n === null) {
       break;
     }
     readStrings.push(decoder.decode(p.slice(0, n)));

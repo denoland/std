@@ -2,8 +2,8 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../assert/assert.ts";
-import { join, normalize } from "../path/mod.ts";
+import { join } from "../path/join.ts";
+import { normalize } from "../path/normalize.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
@@ -49,18 +49,49 @@ function wrapErrorWithPath(err: unknown, root: string) {
 }
 
 export interface WalkOptions {
-  /** @default {Infinity} */
+  /**
+   * The maximum depth of the file tree to be walked recursively.
+   * @default {Infinity}
+   */
   maxDepth?: number;
-  /** @default {true} */
+  /**
+   * Indicates whether file entries should be included or not.
+   * @default {true}
+   */
   includeFiles?: boolean;
-  /** @default {true} */
+  /**
+   * Indicates whether directory entries should be included or not.
+   * @default {true}
+   */
   includeDirs?: boolean;
-  /** @default {true} */
+  /**
+   * Indicates whether symlink entries should be included or not.
+   * This option is meaningful only if `followSymlinks` is set to `false`.
+   * @default {true}
+   */
   includeSymlinks?: boolean;
-  /** @default {false} */
+  /**
+   * Indicates whether symlinks should be resolved or not.
+   * @default {false}
+   */
   followSymlinks?: boolean;
+  /**
+   * List of file extensions used to filter entries.
+   * If specified, entries without the file extension specified by this option are excluded.
+   * @default {undefined}
+   */
   exts?: string[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries that do not match the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   match?: RegExp[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries matching the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   skip?: RegExp[];
 }
 export type { WalkEntry };
@@ -105,7 +136,6 @@ export async function* walk(
   }
   try {
     for await (const entry of Deno.readDir(root)) {
-      assert(entry.name != null);
       let path = join(root, entry.name);
 
       let { isSymlink, isDirectory } = entry;
@@ -175,7 +205,6 @@ export function* walkSync(
     throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
-    assert(entry.name != null);
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;

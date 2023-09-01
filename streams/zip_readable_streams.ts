@@ -15,7 +15,7 @@ export function zipReadableStreams<T>(
     async start(controller) {
       try {
         let resolved = 0;
-        while (resolved != streams.length) {
+        while (resolved !== streams.length) {
           for (const [key, reader] of Object.entries(readers)) {
             const { value, done } = await reader.read();
             if (!done) {

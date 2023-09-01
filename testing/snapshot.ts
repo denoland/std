@@ -136,13 +136,17 @@
  * @module
  */
 
-import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
-import { ensureFile, ensureFileSync } from "../fs/mod.ts";
+import { fromFileUrl } from "../path/from_file_url.ts";
+import { parse } from "../path/parse.ts";
+import { resolve } from "../path/resolve.ts";
+import { toFileUrl } from "../path/to_file_url.ts";
+import { ensureFile, ensureFileSync } from "../fs/ensure_file.ts";
 import { bold, green, red } from "../fmt/colors.ts";
-import { assert, AssertionError, equal } from "./asserts.ts";
-import { buildMessage, diff, diffstr } from "../_util/diff.ts";
+import { assert } from "../assert/assert.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { equal } from "../assert/equal.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
 
-const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
@@ -556,14 +560,21 @@ export async function assertSnapshot(
     }
     let message = "";
     try {
-      const stringDiff = !_actual.includes("\n");
-      const diffResult = stringDiff
-        ? diffstr(_actual, snapshot)
-        : diff(_actual.split("\n"), snapshot.split("\n"));
-      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-      message = `Snapshot does not match:\n${diffMsg}`;
-    } catch {
-      message = `Snapshot does not match:\n${red(CAN_NOT_DISPLAY)} \n\n`;
+      const usesMultilineDiff = _actual.includes("\n");
+      if (usesMultilineDiff) {
+        assertEquals(true, false, undefined, {
+          formatter: (v) => v ? _actual : snapshot,
+        });
+      } else {
+        assertEquals(_actual, snapshot);
+      }
+    } catch (e) {
+      if (e instanceof AssertionError) {
+        message = e.message.replace(
+          "Values are not equal.",
+          "Snapshot does not match:",
+        );
+      }
     }
     throw new AssertionError(
       getErrorMessage(message, options),

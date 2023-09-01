@@ -269,12 +269,10 @@
  * @module
  */
 
-import {
-  assertEquals,
-  AssertionError,
-  assertIsError,
-  assertRejects,
-} from "./asserts.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
+import { assertIsError } from "../assert/assert_is_error.ts";
+import { assertRejects } from "../assert/assert_rejects.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {

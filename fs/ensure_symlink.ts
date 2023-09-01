@@ -1,13 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
+import { dirname } from "../path/dirname.ts";
+import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
-  if (typeof target != "string") return target; // URL is always absolute path
-  if (typeof linkName == "string") {
-    return path.resolve(path.dirname(linkName), target);
+  if (typeof target !== "string") return target; // URL is always absolute path
+  if (typeof linkName === "string") {
+    return resolve(dirname(linkName), target);
   } else {
     return new URL(target, linkName);
   }
@@ -28,7 +30,7 @@ export async function ensureSymlink(
   const srcStatInfo = await Deno.lstat(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  await ensureDir(path.dirname(toPathString(linkName)));
+  await ensureDir(dirname(toPathString(linkName)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
@@ -60,7 +62,7 @@ export function ensureSymlinkSync(
   const srcStatInfo = Deno.lstatSync(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  ensureDirSync(path.dirname(toPathString(linkName)));
+  ensureDirSync(dirname(toPathString(linkName)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {

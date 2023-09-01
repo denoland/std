@@ -17,7 +17,7 @@ export class VersionFile {
 
   get version() {
     const version = VersionFile.#versionRe.exec(this.#fileText);
-    if (version == null) {
+    if (version === null) {
       throw new Error(`Could not find version in text: ${this.#fileText}`);
     } else {
       return semver.parse(version[1])!;

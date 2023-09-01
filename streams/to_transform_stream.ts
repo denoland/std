@@ -60,7 +60,7 @@ export function toTransformStream<I, O>(
       },
       async cancel(reason) {
         // Propagate cancellation to readable and iterator
-        if (typeof iterator.throw == "function") {
+        if (typeof iterator.throw === "function") {
           try {
             await iterator.throw(reason);
           } catch {

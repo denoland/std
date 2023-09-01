@@ -6,20 +6,6 @@ import { compare } from "./compare.ts";
 export function gt(
   s0: SemVer,
   s1: SemVer,
-): boolean;
-/**
- * @deprecated (will be removed after 0.200.0) Use `gt(s0: SemVer, s1: SemVer)` instead.
- *
- * Greater than comparison */
-export function gt(
-  s0: string | SemVer,
-  s1: string | SemVer,
-  options?: { includePrerelease: boolean },
-): boolean;
-export function gt(
-  s0: string | SemVer,
-  s1: string | SemVer,
-  options?: { includePrerelease: boolean },
 ): boolean {
-  return compare(s0, s1, options) > 0;
+  return compare(s0, s1) > 0;
 }

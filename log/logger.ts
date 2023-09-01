@@ -123,8 +123,9 @@ export class Logger {
     return msg instanceof Function ? fnResult : msg;
   }
 
-  asString(data: unknown): string {
+  asString(data: unknown, isProperty = false): string {
     if (typeof data === "string") {
+      if (isProperty) return `"${data}"`;
       return data;
     } else if (
       data === null ||
@@ -138,7 +139,11 @@ export class Logger {
     } else if (data instanceof Error) {
       return data.stack!;
     } else if (typeof data === "object") {
-      return JSON.stringify(data);
+      return `{${
+        Object.entries(data)
+          .map(([k, v]) => `"${k}":${this.asString(v, true)}`)
+          .join(",")
+      }}`;
     }
     return "undefined";
   }
