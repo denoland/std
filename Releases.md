@@ -1,3 +1,21 @@
+### 0.201.0 / 2023.09.01
+
+- BREAKING(bytes): deprecate BytesList class (#3589)
+- BREAKING(crypto): deprecate crypto.subtle.timingSafeEqual() (#3596)
+- BREAKING(dotenv): fix dotenv permissions (#3578)
+- BREAKING(encoding): deprecate encoding/binary (#3584)
+- BREAKING(fmt): rename stripColor to stripAnsiCode (#3588)
+- BREAKING(permissions): deprecate permissions module (#3567)
+- BREAKING(semver): remove deprecated APIs (#3591)
+- BREAKING(signal): deprecate signal module (#3568)
+- BREAKING(streams): remove readable_stream_from_iterable (#3579)
+- BREAKING(yaml): change binary handling (#3586)
+- feat(assert): add inequality asserts (#3496)
+- feat(std): add `std/url` module. (#3527)
+- fix(assert): properly quote strings in assertIsError (#3577)
+- fix(fmt): make printf respect NO_COLOR (#3595)
+- fix(log): rotating file handler sync setup and destroy (#3543)
+
 ### 0.200.0 / 2023.08.24
 
 - doc: add complete docs for all dotenv functionality (#3560)
