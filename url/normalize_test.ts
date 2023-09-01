@@ -26,7 +26,7 @@ const TESTSUITE = [
   ],
   [
     "https:/deno.land//..",
-    new URL("https://deno.land")
+    new URL("https://deno.land"),
   ],
 ];
 

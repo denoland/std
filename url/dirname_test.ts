@@ -22,7 +22,7 @@ const TESTSUITE = [
   ],
   [
     new URL("https://deno.land///"),
-    new URL("https://deno.land")
+    new URL("https://deno.land"),
   ],
 ];
 
