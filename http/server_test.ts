@@ -126,13 +126,13 @@ Deno.test(
     };
     const listenerTwoOptions = {
       hostname: "127.0.0.1",
-      port: 8080,
+      port: 18080,
     };
     const listenerOne = Deno.listen(listenerOneOptions);
     const listenerTwo = Deno.listen(listenerTwoOptions);
 
     const addrHostname = "0.0.0.0";
-    const addrPort = 3000;
+    const addrPort = 13000;
     const handler = () => new Response();
 
     const server = new Server({
