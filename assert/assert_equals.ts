@@ -3,7 +3,7 @@ import { equal } from "./equal.ts";
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 import { red } from "../fmt/colors.ts";
-import { buildMessage, diff, diffstr } from "../_util/diff.ts";
+import { buildMessage, diff, diffstr } from "./_diff.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 
 /**
@@ -21,16 +21,24 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *   assertEquals({ hello: "world" }, { hello: "world" });
  * });
  * ```
+ *
+ * Note: formatter option is experimental and may be removed in the future.
  */
-export function assertEquals<T>(actual: T, expected: T, msg?: string) {
+export function assertEquals<T>(
+  actual: T,
+  expected: T,
+  msg?: string,
+  options: { formatter?: (value: unknown) => string } = {},
+) {
   if (equal(actual, expected)) {
     return;
   }
+  const { formatter = format } = options;
   const msgSuffix = msg ? `: ${msg}` : ".";
   let message = `Values are not equal${msgSuffix}`;
 
-  const actualString = format(actual);
-  const expectedString = format(expected);
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
       (typeof expected === "string");

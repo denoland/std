@@ -94,6 +94,9 @@ jobs:
       - name: Check Import paths in Docs
         run: "deno task lint:doc-imports"
 
+      - name: Check circular dependencies between modules
+        run: "deno task lint:circular"
+
       - name: Spell-check
         uses: crate-ci/typos@master
         with:

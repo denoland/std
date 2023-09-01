@@ -234,7 +234,7 @@ const STYLE_PLAIN = 1,
 // Post-conditions:
 //  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
 //  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
-//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth != -1).
+//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth !== -1).
 function chooseScalarStyle(
   string: string,
   singleLineOnly: boolean,

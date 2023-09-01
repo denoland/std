@@ -11,7 +11,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
   let prefixEnd = 0;
   let i = 1;
   while (i < lps.length) {
-    if (pat[i] == pat[prefixEnd]) {
+    if (pat[i] === pat[prefixEnd]) {
       prefixEnd++;
       lps[i] = prefixEnd;
       i++;

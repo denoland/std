@@ -3,11 +3,12 @@ import { dirname } from "../path/dirname.ts";
 import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
-  if (typeof target != "string") return target; // URL is always absolute path
-  if (typeof linkName == "string") {
+  if (typeof target !== "string") return target; // URL is always absolute path
+  if (typeof linkName === "string") {
     return resolve(dirname(linkName), target);
   } else {
     return new URL(target, linkName);

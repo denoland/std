@@ -4,7 +4,8 @@ import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { copy } from "../fs/copy.ts";
 import * as path from "../path/mod.ts";
 import { writeAll } from "../streams/write_all.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 const tests = [
   "testdata/std_env_args.wasm",

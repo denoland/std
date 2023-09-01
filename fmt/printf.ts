@@ -371,7 +371,7 @@ class Printf {
                 this.state = State.PERCENT;
                 return;
               }
-              flags.width = flags.width == -1 ? 0 : flags.width;
+              flags.width = flags.width === -1 ? 0 : flags.width;
               flags.width *= 10;
               flags.width += val;
             }
@@ -710,7 +710,7 @@ class Printf {
         esign = r < 0 ? "-" : "+";
       }
     }
-    e = e.length == 1 ? "0" + e : e;
+    e = e.length === 1 ? "0" + e : e;
     const val = `${mantissa}.${fractional}${upcase ? "E" : "e"}${esign}${e}`;
     return this.padNum(val, n < 0);
   }
