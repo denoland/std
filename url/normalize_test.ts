@@ -17,10 +17,17 @@ const TESTSUITE = [
     new URL("https://deno.land/std/assert/mod.ts#header"),
   ],
   [
-    new URL("https://deno.land/std/assert/../async/retry.ts"),
-    new URL("https://deno.land/std/async/retry.ts"),
+    "https:///deno.land/std/assert/mod.ts/..",
+    new URL("https://deno.land/std/assert/"),
   ],
-  ["https:/deno.land//..", new URL("https://deno.land")],
+  [
+    new URL("https://deno.land/std/assert/../async/retry.ts/"),
+    new URL("https://deno.land/std/async/retry.ts/"),
+  ],
+  [
+    "https:/deno.land//..",
+    new URL("https://deno.land")
+  ],
 ];
 
 Deno.test("normalize", function () {

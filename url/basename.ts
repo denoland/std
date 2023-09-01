@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { posixBasename } from "../path/_basename.ts";
+import { strip } from "./strip.ts";
 
 /**
  * Return the last portion of a `url`.
@@ -12,6 +13,6 @@ import { posixBasename } from "../path/_basename.ts";
  */
 export function basename(url: string | URL, suffix?: string) {
   url = new URL(url);
-  const basename = posixBasename(url.pathname, suffix);
-  return basename === "/" ? url.origin : basename;
+  strip(url);
+  return posixBasename(url.href, suffix);
 }
