@@ -4,7 +4,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { Type } from "../type.ts";
 import type { Any } from "../_utils.ts";
-import { Buffer } from "../../io/buffer.ts";
 
 // [ 64, 65, 66 ] -> [ padding, CR, LF ]
 const BASE64_MAP =
@@ -35,7 +34,7 @@ function resolveYamlBinary(data: Any): boolean {
   return bitlen % 8 === 0;
 }
 
-function constructYamlBinary(data: string): Buffer {
+function constructYamlBinary(data: string): Uint8Array {
   // remove CR/LF & padding to simplify scan
   const input = data.replace(/[\r\n=]/g, "");
   const max = input.length;
@@ -70,7 +69,7 @@ function constructYamlBinary(data: string): Buffer {
     result.push((bits >> 4) & 0xff);
   }
 
-  return new Buffer(new Uint8Array(result));
+  return new Uint8Array(result);
 }
 
 function representYamlBinary(object: Uint8Array): string {
@@ -116,19 +115,8 @@ function representYamlBinary(object: Uint8Array): string {
   return result;
 }
 
-function isBinary(obj: Any): obj is Buffer {
-  if (typeof obj?.readSync !== "function") {
-    return false;
-  }
-  const buf = new Buffer();
-  try {
-    if (0 > buf.readFromSync(obj as Buffer)) return true;
-    return false;
-  } catch {
-    return false;
-  } finally {
-    buf.reset();
-  }
+function isBinary(obj: Any): obj is Uint8Array {
+  return obj instanceof Uint8Array;
 }
 
 export const binary = new Type("tag:yaml.org,2002:binary", {
