@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { posixDirname } from "../path/_dirname.ts";
-import { strip } from "./strip.ts";
+import { strip } from "./_strip.ts";
 
 /**
  * Return the directory path of a `url`.

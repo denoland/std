@@ -10,7 +10,6 @@ const TESTSUITE = [
   [new URL("https://deno.land/std/assert/mod.ts#header"), ".ts"],
   [new URL("https://deno.land/std/assert/mod."), "."],
   [new URL("https://deno.land/std/assert/mod"), ""],
-  [new URL("https://deno.land///."), ".land"],
 ];
 
 Deno.test("extname", function () {

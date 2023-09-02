@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { posixBasename } from "../path/_basename.ts";
-import { strip } from "./strip.ts";
+import { strip } from "./_strip.ts";
 
 /**
  * Return the last portion of a `url`.

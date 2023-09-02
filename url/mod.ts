@@ -14,4 +14,3 @@ export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./join.ts";
 export * from "./normalize.ts";
-export * from "./strip.ts";
