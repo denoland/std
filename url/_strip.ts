@@ -5,7 +5,7 @@
  * Strips any hash (eg. `#header`) or search parameters (eg. `?foo=bar`) from the provided URL.
  *
  * (Mutates the original url provided)
- * @param url url to be stripped.
+ * @param url to be stripped.
  */
 export function strip(url: URL) {
   url.hash = "";

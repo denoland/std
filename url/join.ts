@@ -4,7 +4,7 @@
 import { posixJoin } from "../path/_join.ts";
 
 /**
- * Join all given a sequence of a `url` and `paths`,then normalizes the resulting url.
+ * Join all given a sequence of a `url` and `paths`, then normalizes the resulting url.
  * @param url to be joined with the paths and normalized
  * @param paths to be joined
  */
