@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { assertNotEquals } from "std/testing/asserts.ts";
 import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
@@ -34,12 +33,6 @@ async function getManyValues<T>(
   return (await Promise.all(promises))
     .flat()
     .map((entry) => entry?.value);
-}
-
-export function assertIsEntry<T>(
-  entry: Deno.KvEntryMaybe<T>,
-): asserts entry is Deno.KvEntry<T> {
-  assertNotEquals(entry.value, null, `KV entry not found: ${entry.key}`);
 }
 
 /** Gets all dates since a given number of milliseconds ago */
