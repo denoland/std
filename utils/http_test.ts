@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { redirect } from "./http.ts";
+import { getCursor, redirect } from "./http.ts";
 import { assert, assertEquals } from "std/testing/asserts.ts";
 
 Deno.test("[http] redirect() defaults", () => {
@@ -21,4 +21,9 @@ Deno.test("[http] redirect()", () => {
   assertEquals(resp.body, null);
   assertEquals(resp.headers.get("location"), location);
   assertEquals(resp.status, status);
+});
+
+Deno.test("[http] getCursor()", () => {
+  assertEquals(getCursor(new URL("http://example.com")), "");
+  assertEquals(getCursor(new URL("http://example.com?cursor=here")), "here");
 });
