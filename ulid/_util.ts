@@ -21,14 +21,8 @@ function replaceCharAt(str: string, index: number, char: string) {
 }
 
 export function encodeTime(now: number, len: number = TIME_LEN): string {
-  if (now > TIME_MAX) {
-    throw new Error("cannot encode time greater than " + TIME_MAX);
-  }
-  if (now < 0) {
-    throw new Error("time must be positive");
-  }
-  if (Number.isInteger(now) === false) {
-    throw new Error("time must be an integer");
+  if (!Number.isInteger(now) || now < 0 || now > TIME_MAX) {
+    throw new Error("Time must be a positive integer less than " + TIME_MAX);
   }
   let str = "";
   for (; len > 0; len--) {
