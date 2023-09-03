@@ -4,9 +4,6 @@ interface ULID {
   (seedTime?: number): string;
 }
 
-interface PRNG {
-  (): number;
-}
 
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
