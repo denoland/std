@@ -13,10 +13,13 @@ const TESTSUITE: [[string | URL, ...string[]], URL][] = [
     new URL("https://deno.land/std/assert/mod.ts"),
   ],
   [
-    [new URL("https://deno.land//"), "/std/", "/assert/", "//mod.ts"],
+    [new URL("https:///deno.land//std//"), "/", "/assert/", "//mod.ts"],
     new URL("https://deno.land/std/assert/mod.ts"),
   ],
-  [["https://deno.land/"], new URL("https://deno.land/")],
+  [
+    ["https://deno.land///", "/"],
+    new URL("https://deno.land/"),
+  ],
 ];
 
 Deno.test("join", function () {

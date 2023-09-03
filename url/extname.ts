@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { posixExtname } from "../path/_extname.ts";
+import { strip } from "./_strip.ts";
 
 /**
  * Return the extension of the `url` with leading period.
@@ -10,5 +11,6 @@ import { posixExtname } from "../path/_extname.ts";
  */
 export function extname(url: string | URL) {
   url = new URL(url);
+  strip(url);
   return posixExtname(url.pathname);
 }
