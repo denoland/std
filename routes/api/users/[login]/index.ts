@@ -1,12 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Handlers, Status } from "$fresh/server.ts";
+import type { Handlers } from "$fresh/server.ts";
 import { getUser } from "@/utils/db.ts";
+import { errors } from "std/http/http_errors.ts";
 
 export const handler: Handlers = {
   async GET(_req, ctx) {
     const user = await getUser(ctx.params.login);
-    return user === null
-      ? new Response(null, { status: Status.NotFound })
-      : Response.json(user);
+    if (user === null) throw new errors.NotFound("User not found");
+    return Response.json(user);
   },
 };

@@ -35,7 +35,6 @@ const handler = await createHandler(manifest, options);
 
 function assertResponseNotFound(resp: Response) {
   assertFalse(resp.ok);
-  assertEquals(resp.body, null);
   assertEquals(resp.status, Status.NotFound);
 }
 
@@ -204,7 +203,9 @@ Deno.test("[e2e]", async (test) => {
     const req = new Request("http://localhost/api/items/" + item.id);
 
     const resp1 = await handler(req);
-    assertResponseNotFound(resp1);
+    assertFalse(resp1.ok);
+    assertEquals(await resp1.text(), "Item not found");
+    assertEquals(resp1.status, Status.NotFound);
 
     await createItem(item);
     const resp2 = await handler(req);
@@ -221,7 +222,9 @@ Deno.test("[e2e]", async (test) => {
     const req = new Request(`http://localhost/api/items/${item.id}/comments`);
 
     const resp1 = await handler(req);
-    assertResponseNotFound(resp1);
+    assertFalse(resp1.ok);
+    assertEquals(await resp1.text(), "Item not found");
+    assertEquals(resp1.status, Status.NotFound);
 
     await createItem(item);
     await createComment(comment);
@@ -250,7 +253,9 @@ Deno.test("[e2e]", async (test) => {
     const req = new Request("http://localhost/api/users/" + user.login);
 
     const resp1 = await handler(req);
-    assertResponseNotFound(resp1);
+    assertFalse(resp1.ok);
+    assertEquals(await resp1.text(), "User not found");
+    assertEquals(resp1.status, Status.NotFound);
 
     await createUser(user);
     const resp2 = await handler(req);
@@ -288,7 +293,6 @@ Deno.test("[e2e]", async (test) => {
 
     const resp1 = await handler(new Request(url));
     assertFalse(resp1.ok);
-    assertEquals(resp1.body, null);
     assertEquals(resp1.status, Status.Unauthorized);
 
     await createUser(user);

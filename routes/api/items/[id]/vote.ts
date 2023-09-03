@@ -10,18 +10,19 @@ import {
   newNotificationProps,
   newVoteProps,
 } from "@/utils/db.ts";
+import { errors } from "std/http/http_errors.ts";
 
 export const handler: Handlers<undefined, State> = {
   async POST(_req, ctx) {
     const itemId = ctx.params.id;
     const item = await getItem(itemId);
-    if (item === null) return new Response(null, { status: Status.NotFound });
+    if (item === null) throw new errors.NotFound("Item not found");
 
     if (ctx.state.sessionId === undefined) {
-      return new Response(null, { status: Status.Unauthorized });
+      throw new errors.Unauthorized("User must be signed in");
     }
     const user = await getUserBySession(ctx.state.sessionId);
-    if (user === null) return new Response(null, { status: Status.NotFound });
+    if (user === null) throw new errors.NotFound("User not found");
 
     await createVote({
       itemId,
@@ -44,13 +45,13 @@ export const handler: Handlers<undefined, State> = {
   async DELETE(_req, ctx) {
     const itemId = ctx.params.id;
     const item = await getItem(itemId);
-    if (item === null) return new Response(null, { status: Status.NotFound });
+    if (item === null) throw new errors.NotFound("Item not found");
 
     if (ctx.state.sessionId === undefined) {
-      return new Response(null, { status: Status.Unauthorized });
+      throw new errors.Unauthorized("User must be signed in");
     }
     const user = await getUserBySession(ctx.state.sessionId);
-    if (user === null) return new Response(null, { status: Status.NotFound });
+    if (user === null) throw new errors.NotFound("User not found");
 
     await deleteVote({ itemId, userLogin: user.login });
 
