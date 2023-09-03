@@ -4,7 +4,6 @@ interface ULID {
   (seedTime?: number): string;
 }
 
-
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
 export const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford's Base32
@@ -57,15 +56,6 @@ export function incrementBase32(str: string): string {
     return replaceCharAt(str, index, ENCODING[charIndex + 1]);
   }
   throw new Error("cannot increment this string");
-}
-
-/**
- * Generates a ULID function
- */
-export function factory(): ULID {
-  return function ulid(seedTime: number = Date.now()): string {
-    return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
-  };
 }
 
 /**

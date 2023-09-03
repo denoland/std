@@ -13,9 +13,10 @@
  */
 
 import {
+  encodeRandom,
+  encodeTime,
   ENCODING,
   ENCODING_LEN,
-  factory,
   monotonicFactory,
   RANDOM_LEN,
   TIME_LEN,
@@ -74,4 +75,6 @@ export const monotonicUlid = monotonicFactory();
  * ulid(1469918176385); // 01ARYZ6S41TSV4RRFFQ69G5FAV
  * ```
  */
-export const ulid = factory();
+export function ulid(seedTime: number = Date.now()): string {
+  return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
+}

@@ -9,18 +9,15 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 
-import { decodeTime } from "./mod.ts";
+import { decodeTime, ulid } from "./mod.ts";
 import {
   encodeRandom,
   encodeTime,
   ENCODING,
   ENCODING_LEN,
-  factory,
   incrementBase32,
   monotonicFactory,
 } from "./_util.ts";
-
-const ulid = factory();
 
 Deno.test("increment base32", async (t) => {
   await t.step("increments correctly", () => {
