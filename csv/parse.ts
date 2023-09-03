@@ -14,9 +14,13 @@ import {
 import { assert } from "../assert/assert.ts";
 
 export {
+  /** @deprecated (will be removed in 0.205.0) */
   ERR_BARE_QUOTE,
+  /** @deprecated (will be removed in 0.205.0) */
   ERR_FIELD_COUNT,
+  /** @deprecated (will be removed in 0.205.0) */
   ERR_INVALID_DELIM,
+  /** @deprecated (will be removed in 0.205.0) */
   ERR_QUOTE,
   ParseError,
   ReadOptions,

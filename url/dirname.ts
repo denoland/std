@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { posixDirname } from "../path/_dirname.ts";
+import { strip } from "./_strip.ts";
 
 /**
  * Return the directory path of a `URL`.  A directory path is the portion of a
@@ -24,8 +25,7 @@ import { posixDirname } from "../path/_dirname.ts";
  */
 export function dirname(url: string | URL): URL {
   url = new URL(url);
+  strip(url);
   url.pathname = posixDirname(url.pathname);
-  url.search = "";
-  url.hash = "";
   return url;
 }

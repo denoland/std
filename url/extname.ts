@@ -2,12 +2,12 @@
 // This module is browser compatible.
 
 import { posixExtname } from "../path/_extname.ts";
+import { strip } from "./_strip.ts";
 
 /**
  * Return the extension of the `URL` with leading period. The extension is
- * sourced from the path portion of the `URL`, or where there is no path,
- * the extension of the hostname is used.  If there is no extension, an
- * empty string is returned.
+ * sourced from the path portion of the `URL`.  If there is no extension,
+ * an empty string is returned.
  *
  * @example
  * ```ts
@@ -16,7 +16,7 @@ import { posixExtname } from "../path/_extname.ts";
  * console.log(extname("https://deno.land/std/path/mod.ts")); // ".ts"
  * console.log(extname("https://deno.land/std/path/mod")); // ""
  * console.log(extname("https://deno.land/std/path/mod.ts?a=b")); // ".ts"
- * console.log(extname("https://deno.land/")); // ".land"
+ * console.log(extname("https://deno.land/")); // ""
  * ```
  *
  * @param url with extension
@@ -24,5 +24,6 @@ import { posixExtname } from "../path/_extname.ts";
  */
 export function extname(url: string | URL): string {
   url = new URL(url);
+  strip(url);
   return posixExtname(url.pathname);
 }

@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { normalize } from "./normalize.ts";
+import { posixJoin } from "../path/_join.ts";
 
 /**
- * Join all given a sequence of a `URL` and `paths`, then normalizes the resulting URL.
+ * Join a base `URL` and a series of `paths`, then normalizes the resulting URL.
  *
  * @example
  * ```ts
@@ -22,5 +22,7 @@ import { normalize } from "./normalize.ts";
  * @returns a complete URL string containing the base URL joined with the paths
  */
 export function join(url: string | URL, ...paths: string[]): URL {
-  return normalize(url.toString() + "/" + paths.join("/"));
+  url = new URL(url);
+  url.pathname = posixJoin(url.pathname, ...paths);
+  return url;
 }
