@@ -14,7 +14,7 @@ import {
   deleteUserBySession,
   deleteVote,
   formatDate,
-  getAreVotedBySessionId,
+  getAreVotedByUser,
   getDatesSince,
   getItem,
   getManyMetrics,
@@ -310,7 +310,7 @@ Deno.test("[db] compareScore()", () => {
   assertArrayIncludes(sorted, [item1, item2, item3]);
 });
 
-Deno.test("[db] getAreVotedBySessionId()", async () => {
+Deno.test("[db] getAreVotedByUser()", async () => {
   const item = genNewItem();
   const user = genNewUser();
   const vote = {
@@ -319,18 +319,9 @@ Deno.test("[db] getAreVotedBySessionId()", async () => {
     ...newVoteProps(),
   };
 
-  assertEquals(await getUserBySession(user.sessionId), null);
   assertEquals(await getItem(item.id), null);
-  assertEquals(await getAreVotedBySessionId([item], user.sessionId), []);
-  assertEquals(await getAreVotedBySessionId([item], undefined), []);
-  assertEquals(
-    await getAreVotedBySessionId([item], "not-a-session"),
-    [],
-  );
-  assertEquals(
-    await getAreVotedBySessionId([item], crypto.randomUUID()),
-    [],
-  );
+  assertEquals(await getUser(user.login), null);
+  assertEquals(await getAreVotedByUser([item], user.login), [false]);
 
   await createItem(item);
   await createUser(user);
@@ -338,9 +329,6 @@ Deno.test("[db] getAreVotedBySessionId()", async () => {
   item.score++;
 
   assertEquals(await getItem(item.id), item);
-  assertEquals(await getUserBySession(user.sessionId), user);
-
-  assertEquals(await getAreVotedBySessionId([item], user.sessionId), [
-    true,
-  ]);
+  assertEquals(await getUser(user.login), user);
+  assertEquals(await getAreVotedByUser([item], user.login), [true]);
 });

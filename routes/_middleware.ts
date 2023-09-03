@@ -1,16 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { getSessionId } from "kv_oauth";
 import { redirect } from "@/utils/http.ts";
 import { Status } from "std/http/http_status.ts";
-import { getUserBySession, ifUserHasNotifications } from "@/utils/db.ts";
 import { incrVisitsCountByDay } from "@/utils/db.ts";
-import type { MetaProps } from "@/components/Meta.tsx";
-
-export interface State extends MetaProps {
-  sessionId?: string;
-  hasNotifications: boolean;
-}
+import {
+  handleNotSignedInWebpage,
+  setSessionState,
+} from "@/middleware/session.ts";
 
 async function redirectToNewOrigin(
   req: Request,
@@ -20,22 +16,6 @@ async function redirectToNewOrigin(
   return hostname === "saaskit.deno.dev"
     ? redirect("https://hunt.deno.land", Status.Found)
     : await ctx.next();
-}
-
-async function setState(req: Request, ctx: MiddlewareHandlerContext<State>) {
-  if (ctx.destination !== "route") return await ctx.next();
-
-  const sessionId = await getSessionId(req);
-  ctx.state.sessionId = sessionId;
-  ctx.state.hasNotifications = false;
-  if (sessionId !== undefined) {
-    const user = await getUserBySession(sessionId);
-    if (user !== null) {
-      ctx.state.hasNotifications = await ifUserHasNotifications(user!.login);
-    }
-  }
-
-  return await ctx.next();
 }
 
 async function recordVisit(
@@ -50,6 +30,7 @@ async function recordVisit(
 
 export const handler = [
   redirectToNewOrigin,
-  setState,
+  setSessionState,
+  handleNotSignedInWebpage,
   recordVisit,
 ];

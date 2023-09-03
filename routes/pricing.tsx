@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
-import type { State } from "@/routes/_middleware.ts";
+import type { State } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import {
   formatAmountForDisplay,
@@ -9,7 +9,6 @@ import {
   StripProductWithPrice,
 } from "@/utils/payments.ts";
 import Stripe from "stripe";
-import { getUserBySession } from "@/utils/db.ts";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
 
@@ -191,10 +190,6 @@ export default async function PricingPage(
   /** @todo Maybe just retrieve a single product within the handler. Documentation may have to be adjusted. */
   const [product] = productsWithPrice.sort(comparePrices);
 
-  const user = ctx.state.sessionId
-    ? await getUserBySession(ctx.state.sessionId)
-    : null;
-
   return (
     <>
       <Head title="Pricing" href={ctx.url.href} />
@@ -207,7 +202,7 @@ export default async function PricingPage(
           <FreePlanCard />
           <PremiumPlanCard
             product={product}
-            isSubscribed={user?.isSubscribed}
+            isSubscribed={ctx.state.sessionUser?.isSubscribed}
           />
           <EnterprisePricingCard />
         </div>

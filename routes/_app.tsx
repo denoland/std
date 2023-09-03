@@ -2,7 +2,7 @@
 import { AppProps } from "$fresh/server.ts";
 import Header from "@/components/Header.tsx";
 import Footer from "@/components/Footer.tsx";
-import type { State } from "./_middleware.ts";
+import type { State } from "@/middleware/session.ts";
 
 export default function App(props: AppProps<undefined, State>) {
   return (
@@ -10,7 +10,7 @@ export default function App(props: AppProps<undefined, State>) {
       <div class="flex flex-col min-h-screen mx-auto max-w-7xl w-full dark:text-white">
         <Header
           url={props.url}
-          sessionId={props.state?.sessionId}
+          sessionUser={props.state?.sessionUser}
           hasNotifications={props.state?.hasNotifications}
         />
         <props.Component />

@@ -10,9 +10,10 @@ import IconX from "tabler_icons_tsx/x.tsx";
 import IconMenu from "tabler_icons_tsx/menu-2.tsx";
 import IconBell from "tabler_icons_tsx/bell.tsx";
 import { cx } from "@twind/core";
+import { User } from "@/utils/db.ts";
 
 export default function Header(
-  props: { sessionId?: string; hasNotifications: boolean; url: URL },
+  props: { sessionUser?: User; hasNotifications: boolean; url: URL },
 ) {
   const NAV_ITEM = "text-gray-500 px-3 py-4 sm:py-2";
   return (
@@ -90,7 +91,7 @@ export default function Header(
             </a>
           )
           : null}
-        {props.sessionId
+        {props.sessionUser
           ? (
             <a
               href="/account"

@@ -1,8 +1,9 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
 import { stripe } from "@/utils/payments.ts";
-import type { SignedInState } from "@/utils/middleware.ts";
+import type { SignedInState } from "@/middleware/session.ts";
 import { redirect } from "@/utils/http.ts";
+import { errors } from "std/http/http_errors.ts";
 
 const STRIPE_PREMIUM_PLAN_PRICE_ID = Deno.env.get(
   "STRIPE_PREMIUM_PLAN_PRICE_ID",
@@ -12,16 +13,16 @@ export default async function AccountUpgradePage(
   _req: Request,
   ctx: RouteContext<undefined, SignedInState>,
 ) {
-  if (
-    !STRIPE_PREMIUM_PLAN_PRICE_ID || !ctx.state.sessionId ||
-    stripe === undefined
-  ) {
-    return await ctx.renderNotFound();
+  if (stripe === undefined) throw new errors.NotFound();
+  if (STRIPE_PREMIUM_PLAN_PRICE_ID === undefined) {
+    throw new Error(
+      '"STRIPE_PREMIUM_PLAN_PRICE_ID" environment variable not set',
+    );
   }
 
   const { url } = await stripe.checkout.sessions.create({
     success_url: ctx.url.origin + "/account",
-    customer: ctx.state.user.stripeCustomerId,
+    customer: ctx.state.sessionUser.stripeCustomerId,
     line_items: [
       {
         price: STRIPE_PREMIUM_PLAN_PRICE_ID,

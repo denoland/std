@@ -6,7 +6,7 @@ import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
-import { SignedInState } from "@/utils/middleware.ts";
+import type { SignedInState } from "@/middleware/session.ts";
 
 export const handler: Handlers<SignedInState, SignedInState> = {
   async POST(req, ctx) {
@@ -25,7 +25,7 @@ export const handler: Handlers<SignedInState, SignedInState> = {
     }
 
     const item: Item = {
-      userLogin: ctx.state.user.login,
+      userLogin: ctx.state.sessionUser.login,
       title,
       url,
       ...newItemProps(),

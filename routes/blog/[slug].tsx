@@ -10,7 +10,7 @@ export default async function BlogPostPage(_req: Request, ctx: RouteContext) {
   if (post === null) return await ctx.renderNotFound();
 
   const date = post.publishedAt.toString() !== "Invalid Date" &&
-    new Date(post.publishedAt).toLocaleDateString("en-US", {
+    post.publishedAt.toLocaleDateString("en-US", {
       dateStyle: "long",
     });
 

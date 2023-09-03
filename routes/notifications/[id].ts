@@ -2,7 +2,7 @@
 import type { RouteContext } from "$fresh/server.ts";
 import { deleteNotification, getNotification } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
-import { SignedInState } from "@/utils/middleware.ts";
+import { SignedInState } from "@/middleware/session.ts";
 
 export default async function NotificationsNotificationPage(
   _req: Request,

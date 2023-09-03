@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
-import type { State } from "./_middleware.ts";
+import type { State } from "@/middleware/session.ts";
 import Head from "@/components/Head.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
 

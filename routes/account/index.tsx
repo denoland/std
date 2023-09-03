@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
-import type { SignedInState } from "@/utils/middleware.ts";
+import type { SignedInState } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
 import { stripe } from "@/utils/payments.ts";
@@ -30,26 +30,26 @@ export default async function AccountPage(
   _req: Request,
   ctx: RouteContext<undefined, SignedInState>,
 ) {
-  const { user } = ctx.state;
-  const action = user.isSubscribed ? "Manage" : "Upgrade";
+  const { sessionUser } = ctx.state;
+  const action = sessionUser.isSubscribed ? "Manage" : "Upgrade";
 
   return (
     <>
       <Head title="Account" href={ctx.url.href} />
       <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
         <GitHubAvatarImg
-          login={user.login}
+          login={sessionUser.login}
           size={240}
           class="m-auto"
         />
         <ul>
           <Row
             title="Username"
-            text={user.login}
+            text={sessionUser.login}
           />
           <Row
             title="Subscription"
-            text={user.isSubscribed ? "Premium 🦕" : "Free"}
+            text={sessionUser.isSubscribed ? "Premium 🦕" : "Free"}
           >
             {stripe && (
               <a

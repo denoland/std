@@ -6,48 +6,49 @@ import {
   type Comment,
   createComment,
   createNotification,
-  getAreVotedBySessionId,
+  getAreVotedByUser,
   getItem,
-  getUserBySession,
   newCommentProps,
   newNotificationProps,
   Notification,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
-import { SignedInState } from "@/utils/middleware.ts";
+import { assertSignedIn, State } from "@/middleware/session.ts";
 import CommentsList from "@/islands/CommentsList.tsx";
+import { errors } from "std/http/http_errors.ts";
 
-export const handler: Handlers<unknown, SignedInState> = {
+/** @todo Move to `POST /api/comments` */
+export const handler: Handlers<unknown, State> = {
   async POST(req, ctx) {
+    assertSignedIn(ctx);
+
     const form = await req.formData();
     const text = form.get("text");
 
     if (typeof text !== "string") {
-      return new Response(null, { status: 400 });
+      throw new errors.BadRequest("Title must be a string");
     }
 
     const itemId = ctx.params.id;
-    const user = await getUserBySession(ctx.state.sessionId);
     const item = await getItem(itemId);
 
-    if (item === null || user === null) {
-      return new Response(null, { status: 404 });
-    }
+    if (item === null) throw new errors.NotFound("Item not found");
 
+    const { sessionUser } = ctx.state;
     const comment: Comment = {
-      userLogin: user.login,
+      userLogin: sessionUser.login,
       itemId: itemId,
       text,
       ...newCommentProps(),
     };
     await createComment(comment);
 
-    if (item.userLogin !== user.login) {
+    if (item.userLogin !== sessionUser.login) {
       const notification: Notification = {
         userLogin: item.userLogin,
         type: "comment",
-        text: `${user.login} commented on your post: ${item.title}`,
+        text: `${sessionUser.login} commented on your post: ${item.title}`,
         originUrl: `/items/${itemId}`,
         ...newNotificationProps(),
       };
@@ -74,16 +75,20 @@ function CommentInput() {
 
 export default async function ItemsItemPage(
   _req: Request,
-  ctx: RouteContext<undefined, SignedInState>,
+  ctx: RouteContext<undefined, State>,
 ) {
   const itemId = ctx.params.id;
   const item = await getItem(itemId);
   if (item === null) return await ctx.renderNotFound();
 
-  const [isVoted] = await getAreVotedBySessionId(
-    [item],
-    ctx.state.sessionId,
-  );
+  let isVoted = false;
+  if (ctx.state.sessionUser !== undefined) {
+    const areVoted = await getAreVotedByUser(
+      [item],
+      ctx.state.sessionUser.login,
+    );
+    isVoted = areVoted[0];
+  }
 
   return (
     <>
