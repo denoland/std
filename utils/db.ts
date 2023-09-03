@@ -338,9 +338,8 @@ export async function createVote(vote: Vote) {
   const res = await kv.atomic()
     .check(itemRes)
     .check(userRes)
-    /** @todo(iuioiua) Enable these checks once the migration is complete */
-    // .check({ key: itemVotedByUserKey, versionstamp: null })
-    // .check({ key: userVotedForItemKey, versionstamp: null })
+    .check({ key: itemVotedByUserKey, versionstamp: null })
+    .check({ key: userVotedForItemKey, versionstamp: null })
     .set(itemKey, item)
     .set(itemByTimeKey, item)
     .set(itemByUserKey, item)

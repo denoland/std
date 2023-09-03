@@ -61,11 +61,11 @@ export default function ItemsList(props: { endpoint: string }) {
   }
 
   useEffect(() => {
-    loadMoreItems();
     fetchVotedItems()
       .then((votedItems) =>
         votedItemsIdsSig.value = votedItems.map(({ id }) => id)
-      );
+      )
+      .finally(() => loadMoreItems());
   }, []);
 
   return (
