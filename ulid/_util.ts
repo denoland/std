@@ -72,7 +72,7 @@ export function factory(): ULID {
 }
 
 /**
- * Generates a monotonically increasing ULID, optionally given a PRNG.
+ * Generates a monotonically increasing ULID.
  *
  * @example To generate monotonically increasing ULIDs, create a monotonic counter.
  * ```ts
