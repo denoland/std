@@ -11,10 +11,10 @@ import {
 
 import { decodeTime } from "./mod.ts";
 import {
-ENCODING,
-  ENCODING_LEN,
   encodeRandom,
   encodeTime,
+  ENCODING,
+  ENCODING_LEN,
   factory,
   incrementBase32,
   monotonicFactory,
