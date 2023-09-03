@@ -69,17 +69,7 @@ export function incrementBase32(str: string): string {
 }
 
 /**
- * Generates a ULID function given a PRNG
- *
- * @example To use your own pseudo-random number generator, import the factory, and pass it your generator function.
- * ```ts
- * import { factory } from "https://deno.land/std@$STD_VERSION/ulid/_util.ts";
- *
- * const prng = () => Math.random();
- *
- * const ulid = factory(prng);
- * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
- * ```
+ * Generates a ULID function
  */
 export function factory(): ULID {
   return function ulid(seedTime: number = Date.now()): string {
@@ -104,15 +94,6 @@ export function factory(): ULID {
  *
  * // Even if a lower timestamp is passed (or generated), it will preserve sort order
  * ulid(100000); // 000XAL6S41ACTAV9WEVGEMMVRD
- * ```
- *
- * @example You can also pass in a prng to the monotonicFactory function.
- * ```ts
- * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/_util.ts";
- * const prng = () => Math.random();
- *
- * const ulid = monotonicFactory(prng);
- * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
  * ```
  */
 export function monotonicFactory(encodeRand = encodeRandom): ULID {
