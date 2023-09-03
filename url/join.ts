@@ -8,7 +8,7 @@ import { posixJoin } from "../path/_join.ts";
  *
  * @example
  * ```ts
- * import { join } from "https://deno.land/std@$STD_VERSION/url/join";
+ * import { join } from "https://deno.land/std@$STD_VERSION/url/join.ts";
  *
  * console.log(join("https://deno.land/", "std", "path", "mod.ts").href);
  * // Outputs: "https://deno.land/std/path/mod.ts"
