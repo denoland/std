@@ -4,7 +4,6 @@
 
 import { FakeTime } from "../testing/time.ts";
 import {
-  assert,
   assertEquals,
   assertStrictEquals,
   assertThrows,
@@ -12,29 +11,16 @@ import {
 
 import { decodeTime } from "./mod.ts";
 import {
-  detectPrng,
+ENCODING,
+  ENCODING_LEN,
   encodeRandom,
   encodeTime,
   factory,
   incrementBase32,
   monotonicFactory,
-  randomChar,
 } from "./_util.ts";
 
 const ulid = factory();
-
-Deno.test("prng", async (t) => {
-  const prng = detectPrng();
-
-  await t.step("should produce a number", () => {
-    assertEquals(false, isNaN(prng()));
-  });
-
-  await t.step("should be between 0 and 1", () => {
-    const num = prng();
-    assert(num >= 0 && num <= 1);
-  });
-});
 
 Deno.test("increment base32", async (t) => {
   await t.step("increments correctly", () => {
@@ -56,27 +42,6 @@ Deno.test("increment base32", async (t) => {
     assertThrows(() => {
       incrementBase32("ZZZ");
     });
-  });
-});
-
-Deno.test("randomChar", async (t) => {
-  const sample: Record<string, number> = {};
-  const prng = detectPrng();
-
-  for (let x = 0; x < 320000; x++) {
-    const char = String(randomChar(prng)); // for if it were to ever return undefined
-    if (sample[char] === undefined) {
-      sample[char] = 0;
-    }
-    sample[char] += 1;
-  }
-
-  await t.step("should never return undefined", () => {
-    assertEquals(undefined, sample["undefined"]);
-  });
-
-  await t.step("should never return an empty string", () => {
-    assertEquals(undefined, sample[""]);
   });
 });
 
@@ -128,10 +93,8 @@ Deno.test("encodeTime", async (t) => {
 });
 
 Deno.test("encodeRandom", async (t) => {
-  const prng = detectPrng();
-
   await t.step("should return correct length", () => {
-    assertEquals(12, encodeRandom(12, prng).length);
+    assertEquals(12, encodeRandom(12).length);
   });
 });
 
@@ -184,12 +147,17 @@ Deno.test("ulid", async (t) => {
 });
 
 Deno.test("monotonicity", async (t) => {
-  function stubbedPrng() {
-    return 0.96;
+  function encodeRandom(len: number): string {
+    let str = "";
+    const randomBytes = new Array(len).fill(30);
+    for (let i = 0; i < len; i++) {
+      str += ENCODING[randomBytes[i] % ENCODING_LEN];
+    }
+    return str;
   }
 
   await t.step("without seedTime", async (t) => {
-    const stubbedUlid = monotonicFactory(stubbedPrng);
+    const stubbedUlid = monotonicFactory(encodeRandom);
 
     const time = new FakeTime(1469918176385);
 
@@ -213,7 +181,7 @@ Deno.test("monotonicity", async (t) => {
   });
 
   await t.step("with seedTime", async (t) => {
-    const stubbedUlid = monotonicFactory(stubbedPrng);
+    const stubbedUlid = monotonicFactory(encodeRandom);
 
     await t.step("first call", () => {
       assertEquals("01ARYZ6S41YYYYYYYYYYYYYYYY", stubbedUlid(1469918176385));

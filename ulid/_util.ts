@@ -20,14 +20,6 @@ function replaceCharAt(str: string, index: number, char: string) {
   return str.substring(0, index) + char + str.substring(index + 1);
 }
 
-export function randomChar(prng: PRNG): string {
-  let rand = Math.floor(prng() * ENCODING_LEN);
-  if (rand === ENCODING_LEN) {
-    rand = ENCODING_LEN - 1;
-  }
-  return ENCODING.charAt(rand);
-}
-
 export function encodeTime(now: number, len: number = TIME_LEN): string {
   if (now > TIME_MAX) {
     throw new Error("cannot encode time greater than " + TIME_MAX);
@@ -47,20 +39,13 @@ export function encodeTime(now: number, len: number = TIME_LEN): string {
   return str;
 }
 
-export function encodeRandom(len: number, prng: PRNG): string {
+export function encodeRandom(len: number): string {
   let str = "";
-  for (; len > 0; len--) {
-    str = randomChar(prng) + str;
+  const randomBytes = crypto.getRandomValues(new Uint8Array(len));
+  for (let i = 0; i < len; i++) {
+    str += ENCODING[randomBytes[i] % ENCODING_LEN];
   }
   return str;
-}
-
-export function detectPrng(): PRNG {
-  return () => {
-    const buffer = new Uint8Array(1);
-    crypto.getRandomValues(buffer);
-    return buffer[0] / 0xff;
-  };
 }
 
 export function incrementBase32(str: string): string {
@@ -96,9 +81,9 @@ export function incrementBase32(str: string): string {
  * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
  * ```
  */
-export function factory(prng: PRNG = detectPrng()): ULID {
+export function factory(): ULID {
   return function ulid(seedTime: number = Date.now()): string {
-    return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN, prng);
+    return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
   };
 }
 
@@ -130,7 +115,7 @@ export function factory(prng: PRNG = detectPrng()): ULID {
  * ulid(); // 01BXAVRG61YJ5YSBRM51702F6M
  * ```
  */
-export function monotonicFactory(prng: PRNG = detectPrng()): ULID {
+export function monotonicFactory(encodeRand = encodeRandom): ULID {
   let lastTime = 0;
   let lastRandom: string;
   return function ulid(seedTime: number = Date.now()): string {
@@ -139,7 +124,7 @@ export function monotonicFactory(prng: PRNG = detectPrng()): ULID {
       return encodeTime(lastTime, TIME_LEN) + incrementedRandom;
     }
     lastTime = seedTime;
-    const newRandom = (lastRandom = encodeRandom(RANDOM_LEN, prng));
+    const newRandom = (lastRandom = encodeRand(RANDOM_LEN));
     return encodeTime(seedTime, TIME_LEN) + newRandom;
   };
 }
