@@ -78,3 +78,24 @@ Deno.test("[streams] DelimiterStream, prefix", async () => {
   ].map((s) => new TextEncoder().encode(s));
   await testTransformStream(delimStream, DELIMITER_STREAM_INPUTS, outputs);
 });
+
+Deno.test("[streams] DelimiterStream, regression 3609", async () => {
+  const delimStream = new DelimiterStream(new TextEncoder().encode(";"));
+  const inputs = [
+    ";ab;fg;hn;j",
+    "k;lr;op;rt;;",
+  ].map((s) => new TextEncoder().encode(s));
+  const outputs = [
+    "",
+    "ab",
+    "fg",
+    "hn",
+    "jk",
+    "lr",
+    "op",
+    "rt",
+    "",
+    "",
+  ].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(delimStream, inputs, outputs);
+});
