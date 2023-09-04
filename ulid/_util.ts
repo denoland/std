@@ -43,7 +43,7 @@ export function incrementBase32(str: string): string {
   let char;
   let charIndex;
   const maxCharIndex = ENCODING_LEN - 1;
-  while (index-- >= 0) {
+  while (--index >= 0) {
     char = str[index];
     charIndex = ENCODING.indexOf(char);
     if (charIndex === -1) {

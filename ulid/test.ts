@@ -40,6 +40,12 @@ Deno.test("increment base32", async (t) => {
       incrementBase32("ZZZ");
     });
   });
+
+  await t.step("throws when given an invalid string", () => {
+    assertThrows(() => {
+      incrementBase32("./_--=-`,.");
+    });
+  });
 });
 
 Deno.test("encodeTime", async (t) => {
