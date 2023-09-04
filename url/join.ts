@@ -4,11 +4,24 @@
 import { posixJoin } from "../path/_join.ts";
 
 /**
- * Join all given a sequence of a `url` and `paths`, then normalizes the resulting url.
- * @param url to be joined with the paths and normalized
- * @param paths to be joined
+ * Join a base `URL` and a series of `paths`, then normalizes the resulting URL.
+ *
+ * @example
+ * ```ts
+ * import { join } from "https://deno.land/std@$STD_VERSION/url/join.ts";
+ *
+ * console.log(join("https://deno.land/", "std", "path", "mod.ts").href);
+ * // Outputs: "https://deno.land/std/path/mod.ts"
+ *
+ * console.log(join("https://deno.land", "//std", "path/", "/mod.ts").href);
+ * // Outputs: "https://deno.land/path/mod.ts"
+ * ```
+ *
+ * @param url the base URL to be joined with the paths and normalized
+ * @param paths array of path segments to be joined to the base URL
+ * @returns a complete URL string containing the base URL joined with the paths
  */
-export function join(url: string | URL, ...paths: string[]) {
+export function join(url: string | URL, ...paths: string[]): URL {
   url = new URL(url);
   url.pathname = posixJoin(url.pathname, ...paths);
   return url;
