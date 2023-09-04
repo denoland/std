@@ -6,9 +6,9 @@ import {
   createVote,
   deleteVote,
   getItem,
-  newNotificationProps,
   newVoteProps,
 } from "@/utils/db.ts";
+import { monotonicUlid } from "std/ulid/mod.ts";
 import { errors } from "std/http/http_errors.ts";
 
 export const handler: Handlers<undefined, State> = {
@@ -28,11 +28,11 @@ export const handler: Handlers<undefined, State> = {
 
     if (item.userLogin !== sessionUser.login) {
       await createNotification({
+        id: monotonicUlid(),
         userLogin: item.userLogin,
         type: "vote",
         text: `${sessionUser.login} upvoted your post: ${item.title}`,
         originUrl: `/items/${itemId}`,
-        ...newNotificationProps(),
       });
     }
 

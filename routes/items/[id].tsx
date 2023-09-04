@@ -9,13 +9,13 @@ import {
   getAreVotedByUser,
   getItem,
   newCommentProps,
-  newNotificationProps,
   Notification,
 } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import { assertSignedIn, State } from "@/middleware/session.ts";
 import CommentsList from "@/islands/CommentsList.tsx";
+import { monotonicUlid } from "std/ulid/mod.ts";
 import { errors } from "std/http/http_errors.ts";
 
 /** @todo Move to `POST /api/comments` */
@@ -46,11 +46,11 @@ export const handler: Handlers<unknown, State> = {
 
     if (item.userLogin !== sessionUser.login) {
       const notification: Notification = {
+        id: monotonicUlid(),
         userLogin: item.userLogin,
         type: "comment",
         text: `${sessionUser.login} commented on your post: ${item.title}`,
         originUrl: `/items/${itemId}`,
-        ...newNotificationProps(),
       };
       await createNotification(notification);
     }

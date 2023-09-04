@@ -144,20 +144,12 @@ export function listItemsByTime(options?: Deno.KvListOptions) {
 
 // Notification
 export interface Notification {
+  // Uses ULID
+  id: string;
   userLogin: string;
   type: string;
   text: string;
   originUrl: string;
-  // The below properties can be automatically generated upon notification creation
-  id: string;
-  createdAt: Date;
-}
-
-export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
-  return {
-    id: crypto.randomUUID(),
-    createdAt: new Date(),
-  };
 }
 
 /**
@@ -165,62 +157,65 @@ export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
  *
  * @example
  * ```ts
- * import { newNotificationProps, createNotification } from "@/utils/db.ts";
+ * import { createNotification } from "@/utils/db.ts";
+ * import { monotonicUlid } from "std/ulid/mod.ts";
  *
  * await createNotification({
+ *   id: monotonicUlid(),
  *   userLogin: "john_doe",
  *   type: "example-type",
  *   text: "Hello, world!",
  *   originUrl: "https://hunt.deno.land",
- *   ...newNotificationProps(),
  * });
  * ```
  */
 export async function createNotification(notification: Notification) {
-  const notificationsKey = ["notifications", notification.id];
-  const notificationsByUserKey = [
+  const key = [
     "notifications_by_user",
     notification.userLogin,
-    notification.createdAt.getTime(),
     notification.id,
   ];
 
   const res = await kv.atomic()
-    .check({ key: notificationsKey, versionstamp: null })
-    .check({ key: notificationsByUserKey, versionstamp: null })
-    .set(notificationsKey, notification)
-    .set(notificationsByUserKey, notification)
+    .check({ key: key, versionstamp: null })
+    .set(key, notification)
     .commit();
 
-  if (!res.ok) {
-    throw new Error(`Failed to create notification: ${notification}`);
-  }
+  if (!res.ok) throw new Error("Failed to create notification");
 }
 
-export async function deleteNotification(notification: Notification) {
-  const notificationsKey = ["notifications", notification.id];
-  const notificationsByUserKey = [
+export async function deleteNotification(
+  notification: Pick<Notification, "id" | "userLogin">,
+) {
+  const key = [
     "notifications_by_user",
     notification.userLogin,
-    notification.createdAt.getTime(),
     notification.id,
   ];
+  const notificationRes = await kv.get<Notification>(key);
+  if (notificationRes.value === null) {
+    throw new Deno.errors.NotFound("Notification not found");
+  }
 
   const res = await kv.atomic()
-    .delete(notificationsKey)
-    .delete(notificationsByUserKey)
+    .check(notificationRes)
+    .delete(key)
     .commit();
 
-  if (!res.ok) {
-    throw new Error(`Failed to delete notification: ${notification}`);
-  }
+  if (!res.ok) throw new Error("Failed to delete notification");
 }
 
-export async function getNotification(id: string) {
-  return await getValue<Notification>(["notifications", id]);
+export async function getNotification(
+  notification: Pick<Notification, "id" | "userLogin">,
+) {
+  return await getValue<Notification>([
+    "notifications_by_user",
+    notification.userLogin,
+    notification.id,
+  ]);
 }
 
-export function listNotificationsByUser(
+export function listNotifications(
   userLogin: string,
   options?: Deno.KvListOptions,
 ) {
