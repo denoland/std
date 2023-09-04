@@ -2,8 +2,9 @@
 import twindPlugin from "$fresh/plugins/twindv1.ts";
 import twindConfig from "./twind.config.ts";
 import kvOAuthPlugin from "./plugins/kv_oauth.ts";
+import protectedRoutes from "./plugins/protected_routes.ts";
 import { FreshOptions } from "$fresh/server.ts";
 
 export default {
-  plugins: [twindPlugin(twindConfig), kvOAuthPlugin],
+  plugins: [kvOAuthPlugin, protectedRoutes, twindPlugin(twindConfig)],
 } as FreshOptions;

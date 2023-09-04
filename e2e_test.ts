@@ -146,6 +146,28 @@ Deno.test("[e2e]", async (test) => {
     assertEquals(resp.status, 303);
   });
 
+  await test.step("GET /dashboard/stats", async () => {
+    const resp = await handler(
+      new Request("http://localhost/dashboard/stats"),
+    );
+
+    assertFalse(resp.ok);
+    assertFalse(resp.body);
+    assertEquals(resp.headers.get("location"), "/signin");
+    assertEquals(resp.status, 303);
+  });
+
+  await test.step("GET /dashboard/users", async () => {
+    const resp = await handler(
+      new Request("http://localhost/dashboard/users"),
+    );
+
+    assertFalse(resp.ok);
+    assertFalse(resp.body);
+    assertEquals(resp.headers.get("location"), "/signin");
+    assertEquals(resp.status, 303);
+  });
+
   await test.step("GET /submit", async () => {
     const resp = await handler(
       new Request("http://localhost/submit"),
