@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { common } from "./mod.ts";
 
 Deno.test({
-  name: "path - common - basic usage",
+  name: "[path] common - basic usage",
   fn() {
     const actual = common(
       [
@@ -18,7 +18,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "path - common - no shared",
+  name: "[path] common - no shared",
   fn() {
     const actual = common(
       ["file://deno/cli/js/deno.ts", "https://deno.land/std/path/mod.ts"],
@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "path - common - windows sep",
+  name: "[path] common - windows sep",
   fn() {
     const actual = common(
       [

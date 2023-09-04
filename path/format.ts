@@ -1,14 +1,20 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "./_os.ts";
+import { checkWindows } from "./_os.ts";
 import { posixFormat, windowsFormat } from "./_format.ts";
 import { FormatInputPathObject } from "./_interface.ts";
+import type { PathOptions } from "./_interface.ts";
 
 /**
  * Generate a path from `FormatInputPathObject` object.
  * @param pathObject with path
  */
-export function format(pathObject: FormatInputPathObject): string {
-  return isWindows ? windowsFormat(pathObject) : posixFormat(pathObject);
+export function format(
+  pathObject: FormatInputPathObject,
+  options?: PathOptions,
+): string {
+  return checkWindows(options?.os)
+    ? windowsFormat(pathObject)
+    : posixFormat(pathObject);
 }

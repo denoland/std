@@ -1,7 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export type OSType = "windows" | "linux" | "darwin" | "freebsd";
+export type OSType =
+  | "windows"
+  | "linux"
+  | "darwin"
+  | "freebsd"
+  | "netbsd"
+  | "aix"
+  | "solaris"
+  | "illumos";
 
 export const osType: OSType = (() => {
   // deno-lint-ignore no-explicit-any
@@ -20,4 +28,7 @@ export const osType: OSType = (() => {
 })();
 
 export const isWindows = osType === "windows";
-export const isLinux = osType === "linux";
+
+export function checkWindows(os?: OSType) {
+  return os ? os === "windows" : isWindows;
+}

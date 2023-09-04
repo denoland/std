@@ -2,7 +2,7 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import { extname, posix, win32 } from "./mod.ts";
 
 const slashRE = /\//g;
 
@@ -51,39 +51,58 @@ const pairs = [
   ["file.//", "."],
 ];
 
-Deno.test("extname", function () {
-  pairs.forEach(function (p) {
+Deno.test("[path] extname - posix", () => {
+  pairs.forEach((p) => {
     const input = p[0];
     const expected = p[1];
-    assertEquals(expected, path.posix.extname(input));
+    assertEquals(expected, posix.extname(input));
+    assertEquals(expected, extname(input, { os: "linux" }));
   });
 
   // On *nix, backslash is a valid name component like any other character.
-  assertEquals(path.posix.extname(".\\"), "");
-  assertEquals(path.posix.extname("..\\"), ".\\");
-  assertEquals(path.posix.extname("file.ext\\"), ".ext\\");
-  assertEquals(path.posix.extname("file.ext\\\\"), ".ext\\\\");
-  assertEquals(path.posix.extname("file\\"), "");
-  assertEquals(path.posix.extname("file\\\\"), "");
-  assertEquals(path.posix.extname("file.\\"), ".\\");
-  assertEquals(path.posix.extname("file.\\\\"), ".\\\\");
+  assertEquals(posix.extname(".\\"), "");
+  assertEquals(posix.extname("..\\"), ".\\");
+  assertEquals(posix.extname("file.ext\\"), ".ext\\");
+  assertEquals(posix.extname("file.ext\\\\"), ".ext\\\\");
+  assertEquals(posix.extname("file\\"), "");
+  assertEquals(posix.extname("file\\\\"), "");
+  assertEquals(posix.extname("file.\\"), ".\\");
+  assertEquals(posix.extname("file.\\\\"), ".\\\\");
+  assertEquals(extname(".\\", { os: "linux" }), "");
+  assertEquals(extname("..\\", { os: "linux" }), ".\\");
+  assertEquals(extname("file.ext\\", { os: "linux" }), ".ext\\");
+  assertEquals(extname("file.ext\\\\", { os: "linux" }), ".ext\\\\");
+  assertEquals(extname("file\\", { os: "linux" }), "");
+  assertEquals(extname("file\\\\", { os: "linux" }), "");
+  assertEquals(extname("file.\\", { os: "linux" }), ".\\");
+  assertEquals(extname("file.\\\\", { os: "linux" }), ".\\\\");
 });
 
-Deno.test("extnameWin32", function () {
+Deno.test("[path] extname - windows", () => {
   pairs.forEach(function (p) {
     const input = p[0].replace(slashRE, "\\");
     const expected = p[1];
-    assertEquals(expected, path.win32.extname(input));
-    assertEquals(expected, path.win32.extname("C:" + input));
+    assertEquals(expected, win32.extname(input));
+    assertEquals(expected, win32.extname("C:" + input));
+    assertEquals(expected, extname(input, { os: "windows" }));
+    assertEquals(expected, extname("C:" + input, { os: "windows" }));
   });
 
   // On Windows, backslash is a path separator.
-  assertEquals(path.win32.extname(".\\"), "");
-  assertEquals(path.win32.extname("..\\"), "");
-  assertEquals(path.win32.extname("file.ext\\"), ".ext");
-  assertEquals(path.win32.extname("file.ext\\\\"), ".ext");
-  assertEquals(path.win32.extname("file\\"), "");
-  assertEquals(path.win32.extname("file\\\\"), "");
-  assertEquals(path.win32.extname("file.\\"), ".");
-  assertEquals(path.win32.extname("file.\\\\"), ".");
+  assertEquals(win32.extname(".\\"), "");
+  assertEquals(win32.extname("..\\"), "");
+  assertEquals(win32.extname("file.ext\\"), ".ext");
+  assertEquals(win32.extname("file.ext\\\\"), ".ext");
+  assertEquals(win32.extname("file\\"), "");
+  assertEquals(win32.extname("file\\\\"), "");
+  assertEquals(win32.extname("file.\\"), ".");
+  assertEquals(win32.extname("file.\\\\"), ".");
+  assertEquals(extname(".\\", { os: "windows" }), "");
+  assertEquals(extname("..\\", { os: "windows" }), "");
+  assertEquals(extname("file.ext\\", { os: "windows" }), ".ext");
+  assertEquals(extname("file.ext\\\\", { os: "windows" }), ".ext");
+  assertEquals(extname("file\\", { os: "windows" }), "");
+  assertEquals(extname("file\\\\", { os: "windows" }), "");
+  assertEquals(extname("file.\\", { os: "windows" }), ".");
+  assertEquals(extname("file.\\\\", { os: "windows" }), ".");
 });

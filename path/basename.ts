@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "./_os.ts";
+import { checkWindows } from "./_os.ts";
 import { posixBasename, windowsBasename } from "./_basename.ts";
+import type { PathOptions } from "./_interface.ts";
 
 /**
  * Return the last portion of a `path`.
@@ -11,8 +12,12 @@ import { posixBasename, windowsBasename } from "./_basename.ts";
  * @param path - path to extract the name from.
  * @param [suffix] - suffix to remove from extracted name.
  */
-export function basename(path: string, suffix = ""): string {
-  return isWindows
+export function basename(
+  path: string,
+  suffix = "",
+  options?: PathOptions,
+): string {
+  return checkWindows(options?.os)
     ? windowsBasename(path, suffix)
     : posixBasename(path, suffix);
 }

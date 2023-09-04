@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "./_os.ts";
+import { checkWindows } from "./_os.ts";
 import { posixToFileUrl, windowsToFileUrl } from "./_to_file_url.ts";
+import type { PathOptions } from "./_interface.ts";
 
 /**
  * Converts a path string to a file URL.
@@ -20,6 +21,8 @@ import { posixToFileUrl, windowsToFileUrl } from "./_to_file_url.ts";
  * ```
  * @param path to convert to file URL
  */
-export function toFileUrl(path: string): URL {
-  return isWindows ? windowsToFileUrl(path) : posixToFileUrl(path);
+export function toFileUrl(path: string, options?: PathOptions): URL {
+  return checkWindows(options?.os)
+    ? windowsToFileUrl(path)
+    : posixToFileUrl(path);
 }

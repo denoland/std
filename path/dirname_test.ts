@@ -2,7 +2,7 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import { dirname, posix, win32 } from "./mod.ts";
 
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/dirname.pl
@@ -69,33 +69,43 @@ const WIN32_TESTSUITE = [
   ["foo", "."],
 ];
 
-Deno.test("dirname", function () {
+Deno.test("[path] dirname", () => {
   for (const [name, expected] of COREUTILS_TESTSUITE) {
-    assertEquals(path.dirname(name), expected);
+    assertEquals(dirname(name), expected);
   }
+});
 
+Deno.test("[path] dirname - posix", () => {
   for (const [name, expected] of POSIX_TESTSUITE) {
-    assertEquals(path.posix.dirname(name), expected);
+    assertEquals(posix.dirname(name), expected);
+    assertEquals(dirname(name, { os: "linux" }), expected);
   }
 
   // POSIX treats backslash as any other character.
-  assertEquals(path.posix.dirname("\\foo/bar"), "\\foo");
-  assertEquals(path.posix.dirname("\\/foo/bar"), "\\/foo");
-  assertEquals(path.posix.dirname("/foo/bar\\baz/qux"), "/foo/bar\\baz");
-  assertEquals(path.posix.dirname("/foo/bar/baz\\"), "/foo/bar");
+  assertEquals(posix.dirname("\\foo/bar"), "\\foo");
+  assertEquals(posix.dirname("\\/foo/bar"), "\\/foo");
+  assertEquals(posix.dirname("/foo/bar\\baz/qux"), "/foo/bar\\baz");
+  assertEquals(posix.dirname("/foo/bar/baz\\"), "/foo/bar");
+  assertEquals(dirname("\\foo/bar", { os: "linux" }), "\\foo");
+  assertEquals(dirname("\\/foo/bar", { os: "linux" }), "\\/foo");
+  assertEquals(dirname("/foo/bar\\baz/qux", { os: "linux" }), "/foo/bar\\baz");
+  assertEquals(dirname("/foo/bar/baz\\", { os: "linux" }), "/foo/bar");
 });
 
-Deno.test("dirnameWin32", function () {
+Deno.test("[path] dirname - windows", () => {
   for (const [name, expected] of WIN32_TESTSUITE) {
-    assertEquals(path.win32.dirname(name), expected);
+    assertEquals(win32.dirname(name), expected);
+    assertEquals(dirname(name, { os: "windows" }), expected);
   }
 
   // path.win32 should pass all "forward slash" posix tests as well.
   for (const [name, expected] of COREUTILS_TESTSUITE) {
-    assertEquals(path.win32.dirname(name), expected);
+    assertEquals(win32.dirname(name), expected);
+    assertEquals(dirname(name, { os: "windows" }), expected);
   }
 
   for (const [name, expected] of POSIX_TESTSUITE) {
-    assertEquals(path.win32.dirname(name), expected);
+    assertEquals(win32.dirname(name), expected);
+    assertEquals(dirname(name, { os: "windows" }), expected);
   }
 });

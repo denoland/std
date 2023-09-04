@@ -2,46 +2,65 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import {
+  isAbsolute,
+  join,
+  normalize,
+  posix,
+  relative,
+  resolve,
+  win32,
+} from "./mod.ts";
 
 const pwd = Deno.cwd();
 
-Deno.test("joinZeroLength", function () {
+Deno.test("[path] joinZeroLength", () => {
   // join will internally ignore all the zero-length strings and it will return
   // '.' if the joined string is a zero-length string.
-  assertEquals(path.posix.join(""), ".");
-  assertEquals(path.posix.join("", ""), ".");
-  if (path.win32) assertEquals(path.win32.join(""), ".");
-  if (path.win32) assertEquals(path.win32.join("", ""), ".");
-  assertEquals(path.join(pwd), pwd);
-  assertEquals(path.join(pwd, ""), pwd);
+  assertEquals(posix.join(""), ".");
+  assertEquals(posix.join("", ""), ".");
+  assertEquals(join("", { os: "linux" }), ".");
+  assertEquals(join("", "", { os: "linux" }), ".");
+
+  assertEquals(win32.join(""), ".");
+  assertEquals(win32.join("", ""), ".");
+  assertEquals(join("", { os: "windows" }), ".");
+  assertEquals(join("", "", { os: "windows" }), ".");
+
+  assertEquals(join(pwd), pwd);
+  assertEquals(join(pwd, ""), pwd);
 });
 
-Deno.test("normalizeZeroLength", function () {
+Deno.test("[path] normalizeZeroLength", () => {
   // normalize will return '.' if the input is a zero-length string
-  assertEquals(path.posix.normalize(""), ".");
-  if (path.win32) assertEquals(path.win32.normalize(""), ".");
-  assertEquals(path.normalize(pwd), pwd);
+  assertEquals(posix.normalize(""), ".");
+  assertEquals(normalize("", { os: "linux" }), ".");
+  assertEquals(win32.normalize(""), ".");
+  assertEquals(normalize("", { os: "windows" }), ".");
+  assertEquals(normalize(pwd), pwd);
 });
 
-Deno.test("isAbsoluteZeroLength", function () {
+Deno.test("[path] isAbsoluteZeroLength", () => {
   // Since '' is not a valid path in any of the common environments,
   // return false
-  assertEquals(path.posix.isAbsolute(""), false);
-  if (path.win32) assertEquals(path.win32.isAbsolute(""), false);
+  assertEquals(posix.isAbsolute(""), false);
+  assertEquals(isAbsolute("", { os: "linux" }), false);
+  assertEquals(win32.isAbsolute(""), false);
+  assertEquals(isAbsolute("", { os: "windows" }), false);
+  assertEquals(isAbsolute(""), false);
 });
 
-Deno.test("resolveZeroLength", function () {
+Deno.test("[path] resolveZeroLength", () => {
   // resolve, internally ignores all the zero-length strings and returns the
   // current working directory
-  assertEquals(path.resolve(""), pwd);
-  assertEquals(path.resolve("", ""), pwd);
+  assertEquals(resolve(""), pwd);
+  assertEquals(resolve("", ""), pwd);
 });
 
-Deno.test("relativeZeroLength", function () {
+Deno.test("[path] relativeZeroLength", () => {
   // relative, internally calls resolve. So, '' is actually the current
   // directory
-  assertEquals(path.relative("", pwd), "");
-  assertEquals(path.relative(pwd, ""), "");
-  assertEquals(path.relative(pwd, pwd), "");
+  assertEquals(relative("", pwd), "");
+  assertEquals(relative(pwd, ""), "");
+  assertEquals(relative(pwd, pwd), "");
 });

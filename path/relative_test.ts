@@ -2,7 +2,7 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import { posix, relative, win32 } from "./mod.ts";
 
 const relativeTests = {
   // arguments                     result
@@ -49,18 +49,18 @@ const relativeTests = {
   ],
 };
 
-Deno.test("relative", function () {
-  relativeTests.posix.forEach(function (p) {
+Deno.test("[path] relative - posix", () => {
+  relativeTests.posix.forEach((p) => {
     const expected = p[2];
-    const actual = path.posix.relative(p[0], p[1]);
-    assertEquals(actual, expected);
+    assertEquals(posix.relative(p[0], p[1]), expected);
+    assertEquals(relative(p[0], p[1], { os: "linux" }), expected);
   });
 });
 
-Deno.test("relativeWin32", function () {
-  relativeTests.win32.forEach(function (p) {
+Deno.test("[path] relative - windows", () => {
+  relativeTests.win32.forEach((p) => {
     const expected = p[2];
-    const actual = path.win32.relative(p[0], p[1]);
-    assertEquals(actual, expected);
+    assertEquals(win32.relative(p[0], p[1]), expected);
+    assertEquals(relative(p[0], p[1], { os: "windows" }), expected);
   });
 });

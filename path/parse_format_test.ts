@@ -4,7 +4,7 @@
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
 
 import { assertEquals } from "../assert/mod.ts";
-import { posix, win32 } from "./mod.ts";
+import { parse, posix, win32 } from "./mod.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];
 type ParseTestCase = [string, ParsedPath];
@@ -131,20 +131,20 @@ function checkFormat(
   });
 }
 
-Deno.test("parseWin32", function () {
+Deno.test("[path] parse - windows", () => {
   checkParseFormat(win32, winPaths);
   checkSpecialCaseParseFormat(win32, winSpecialCaseParseTests);
 });
 
-Deno.test("parse", function () {
+Deno.test("[path] parse - posix", () => {
   checkParseFormat(posix, unixPaths);
 });
 
-Deno.test("formatWin32", function () {
+Deno.test("[path] format - windows", () => {
   checkFormat(win32, winSpecialCaseFormatTests);
 });
 
-Deno.test("format", function () {
+Deno.test("[path] format - posix", () => {
   checkFormat(posix, unixSpecialCaseFormatTests);
 });
 
@@ -180,18 +180,18 @@ const posixTrailingTests: ParseTestCase[] = [
   ],
 ];
 
-Deno.test("parseTrailingWin32", function () {
-  windowsTrailingTests.forEach(function (p) {
-    const actual = win32.parse(p[0]);
+Deno.test("[path] parseTrailing - windows", () => {
+  windowsTrailingTests.forEach((p) => {
     const expected = p[1];
-    assertEquals(actual, expected);
+    assertEquals(win32.parse(p[0]), expected);
+    assertEquals(parse(p[0], { os: "windows" }), expected);
   });
 });
 
-Deno.test("parseTrailing", function () {
-  posixTrailingTests.forEach(function (p) {
-    const actual = posix.parse(p[0]);
+Deno.test("[path] parseTrailing - posix", () => {
+  posixTrailingTests.forEach((p) => {
     const expected = p[1];
-    assertEquals(actual, expected);
+    assertEquals(posix.parse(p[0]), expected);
+    assertEquals(parse(p[0], { os: "linux" }), expected);
   });
 });
