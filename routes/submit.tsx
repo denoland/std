@@ -1,40 +1,9 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { type Handlers, type PageProps, Status } from "$fresh/server.ts";
+import type { PageProps } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
-import { createItem, type Item, newItemProps } from "@/utils/db.ts";
-import { redirect } from "@/utils/http.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
-import type { SignedInState } from "@/middleware/session.ts";
-
-export const handler: Handlers<SignedInState, SignedInState> = {
-  async POST(req, ctx) {
-    const form = await req.formData();
-    const title = form.get("title");
-    const url = form.get("url");
-
-    if (typeof title !== "string") {
-      return new Response("Title is missing", { status: Status.BadRequest });
-    }
-
-    if (!(typeof url === "string" && URL.canParse(url))) {
-      return new Response("URL is invalid or missing", {
-        status: Status.BadRequest,
-      });
-    }
-
-    const item: Item = {
-      userLogin: ctx.state.sessionUser.login,
-      title,
-      url,
-      ...newItemProps(),
-    };
-    await createItem(item);
-
-    return redirect("/items/" + item.id);
-  },
-};
 
 export default function SubmitPage(props: PageProps) {
   return (
@@ -74,6 +43,7 @@ export default function SubmitPage(props: PageProps) {
           <form
             class="flex-1 flex flex-col justify-center"
             method="post"
+            action="/api/items"
           >
             <div class="mt-4">
               <label

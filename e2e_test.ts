@@ -179,14 +179,14 @@ Deno.test("[e2e]", async (test) => {
     assertEquals(resp.status, 303);
   });
 
-  await test.step("POST /submit", async () => {
+  await test.step("POST /api/items", async () => {
     const resp = await handler(
-      new Request("http://localhost/submit", { method: "POST" }),
+      new Request("http://localhost/api/items", { method: "POST" }),
     );
 
     assertFalse(resp.ok);
-    assertFalse(resp.body);
-    assertEquals(resp.status, 303);
+    assertEquals(await resp.text(), "User must be signed in");
+    assertEquals(resp.status, Status.Unauthorized);
   });
 
   await test.step("GET /feed", async () => {
