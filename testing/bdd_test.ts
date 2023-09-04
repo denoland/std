@@ -668,6 +668,10 @@ Deno.test("global", async (t) => {
             );
           }));
       });
+
+      await t.step(".skip is an alias of .ignore", () => {
+        assertEquals(it.ignore, it.skip);
+      });
     });
   });
 
@@ -1310,6 +1314,10 @@ Deno.test("global", async (t) => {
               assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
             }),
         );
+      });
+
+      await t.step(".skip is an alias of .ignore", () => {
+        assertEquals(describe.ignore, describe.skip);
       });
     });
 

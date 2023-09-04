@@ -1,9 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import {
   fromFileUrl,
   join,
@@ -55,13 +51,17 @@ Deno.test("expandGlobWildcard", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
 
 Deno.test("expandGlobTrailingSeparator", async function () {
   const options = EG_OPTIONS;
-  assertEquals(await expandGlobArray("*/", options), ["a[b]c", "subdir"]);
+  assertEquals(await expandGlobArray("*/", options), [
+    "a[b]c",
+    "subdir",
+  ]);
 });
 
 Deno.test("expandGlobParent", async function () {
@@ -71,6 +71,7 @@ Deno.test("expandGlobParent", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -119,6 +120,7 @@ Deno.test("expandGlobGlobstarFalseWithGlob", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -144,4 +146,13 @@ Deno.test("expandGlobPermError", async function () {
 Deno.test("expandGlobRootIsNotGlob", async function () {
   const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
   assertEquals(await expandGlobArray("*", options), ["foo"]);
+});
+
+Deno.test("expandGlobFollowSymlink", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "link"),
+    followSymlinks: true,
+  };
+  assertEquals(await expandGlobArray("*", options), ["abc"]);
 });

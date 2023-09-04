@@ -1,6 +1,7 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Port of the Go
  * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
@@ -72,7 +73,7 @@ export function decode(src: Uint8Array): Uint8Array {
     dst[i] = (a << 4) | b;
   }
 
-  if (src.length % 2 == 1) {
+  if (src.length % 2 === 1) {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
     fromHexChar(src[dst.length * 2]);

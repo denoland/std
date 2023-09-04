@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { difference } from "./difference.ts";
 
 Deno.test({
@@ -7,6 +7,13 @@ Deno.test({
   fn() {
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");
+
+    // The order of the dates does not matter
+    assertEquals(
+      difference(denoInit, denoReleaseV1),
+      difference(denoReleaseV1, denoInit),
+    );
+
     let diff = difference(denoReleaseV1, denoInit, {
       units: ["days", "weeks", "months", "years", "quarters"],
     });

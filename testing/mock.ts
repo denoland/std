@@ -41,7 +41,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   multiply,
  *   square,
@@ -94,7 +94,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   square,
@@ -178,7 +178,7 @@
  *   returnsNext,
  *   stub,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   randomMultiple,
@@ -269,12 +269,10 @@
  * @module
  */
 
-import {
-  assertEquals,
-  AssertionError,
-  assertIsError,
-  assertRejects,
-} from "./asserts.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
+import { assertIsError } from "../assert/assert_is_error.ts";
+import { assertRejects } from "../assert/assert_rejects.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {

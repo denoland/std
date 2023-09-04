@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -22,17 +22,17 @@
  * ```
  */
 export function minOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => number,
 ): number | undefined;
 
 export function minOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => bigint,
 ): bigint | undefined;
 
 export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
   let minimumValue: ReturnType<S> | undefined = undefined;

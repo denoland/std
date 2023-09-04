@@ -3,7 +3,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go
 // This module is browser compatible.
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { toIMF } from "../datetime/to_imf.ts";
 
 export interface Cookie {
@@ -131,13 +131,14 @@ function validateName(name: string | undefined | null) {
  * @param path Path value.
  */
 function validatePath(path: string | null) {
-  if (path == null) {
+  if (path === null) {
     return;
   }
   for (let i = 0; i < path.length; i++) {
     const c = path.charAt(i);
     if (
-      c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) || c == ";"
+      c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) ||
+      c === ";"
     ) {
       throw new Error(
         path + ": Invalid cookie path char '" + c + "'",
@@ -152,13 +153,13 @@ function validatePath(path: string | null) {
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null) {
-  if (value == null || name == null) return;
+  if (value === null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
     if (
-      c < String.fromCharCode(0x21) || c == String.fromCharCode(0x22) ||
-      c == String.fromCharCode(0x2c) || c == String.fromCharCode(0x3b) ||
-      c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
+      c < String.fromCharCode(0x21) || c === String.fromCharCode(0x22) ||
+      c === String.fromCharCode(0x2c) || c === String.fromCharCode(0x3b) ||
+      c === String.fromCharCode(0x5c) || c === String.fromCharCode(0x7f)
     ) {
       throw new Error(
         "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
@@ -179,12 +180,9 @@ function validateValue(name: string, value: string | null) {
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string) {
-  if (domain == null) {
-    return;
-  }
   const char1 = domain.charAt(0);
   const charN = domain.charAt(domain.length - 1);
-  if (char1 == "-" || charN == "." || charN == "-") {
+  if (char1 === "-" || charN === "." || charN === "-") {
     throw new Error(
       "Invalid first/last char in cookie domain: " + domain,
     );
@@ -210,12 +208,12 @@ function validateDomain(domain: string) {
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
-  if (cookie != null) {
+  if (cookie !== null) {
     const out: Record<string, string> = {};
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
-      assert(cookieKey != null);
+      assert(cookieKey !== undefined);
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
     }
@@ -291,12 +289,10 @@ export function deleteCookie(
 function parseSetCookie(value: string): Cookie | null {
   const attrs = value
     .split(";")
-    .map((attr) =>
-      attr
-        .trim()
-        .split("=")
-        .map((keyOrValue) => keyOrValue.trim())
-    );
+    .map((attr) => {
+      const [key, ...values] = attr.trim().split("=");
+      return [key, values.join("=")];
+    });
   const cookie: Cookie = {
     name: attrs[0][0],
     value: attrs[0][1],
@@ -390,12 +386,9 @@ function parseSetCookie(value: string): Cookie | null {
  * @return List of cookies
  */
 export function getSetCookies(headers: Headers): Cookie[] {
-  if (!headers.has("set-cookie")) {
-    return [];
-  }
-  return [...headers.entries()]
-    .filter(([key]) => key === "set-cookie")
-    .map(([_, value]) => value)
+  // TODO(lino-levan): remove this ts-ignore when Typescript 5.2 lands in Deno
+  // @ts-ignore Typescript's TS Dom types will be out of date until 5.2
+  return headers.getSetCookie()
     /** Parse each `set-cookie` header separately */
     .map(parseSetCookie)
     /** Skip empty cookies */

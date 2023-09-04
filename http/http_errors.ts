@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** A collection of HTTP errors and utilities.
  *
@@ -187,7 +188,7 @@ for (const [key, value] of Object.entries(ERROR_STATUS_MAP)) {
 /**
  * A factory function which provides a way to create errors. It takes up to 3
  * arguments, the error `Status`, an message, which defaults to the status text
- * and error options, which incudes the `expose` property to set the `.expose`
+ * and error options, which includes the `expose` property to set the `.expose`
  * value on the error.
  */
 export function createHttpError(

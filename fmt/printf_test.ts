@@ -6,7 +6,7 @@
 //   BSD: Copyright (c) 2009 The Go Authors. All rights reserved.
 
 import { sprintf } from "./printf.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 const S = sprintf;
 
@@ -610,12 +610,27 @@ Deno.test("testWeirdos", function () {
 Deno.test("formatV", function () {
   const a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   assertEquals(S("%v", a), "[object Object]");
-  assertEquals(S("%#v", a), `{ a: { a: { a: { a: [Object] } } } }`);
+  assertEquals(
+    S("%#v", a),
+    `{
+  a: {
+    a: { a: { a: { a: [Object] } } }
+  }
+}`,
+  );
   assertEquals(
     S("%#.8v", a),
-    "{ a: { a: { a: { a: { a: { a: { a: {} } } } } } } }",
+    `{
+  a: {
+    a: {
+      a: {
+        a: { a: { a: { a: {} } } }
+      }
+    }
+  }
+}`,
   );
-  assertEquals(S("%#.1v", a), `{ a: [Object] }`);
+  assertEquals(S("%#.1v", a), `{ a: { a: [Object] } }`);
 });
 
 Deno.test("formatJ", function () {
@@ -640,7 +655,7 @@ Deno.test("flagLessThan", function () {
   const aArray = [a, a, a];
   assertEquals(
     S("%<#.1v", aArray),
-    `[ { a: [Object] }, { a: [Object] }, { a: [Object] } ]`,
+    `[ { a: { a: [Object] } }, { a: { a: [Object] } }, { a: { a: [Object] } } ]`,
   );
   const fArray = [1.2345, 0.98765, 123456789.5678];
   assertEquals(S("%<.2f", fArray), "[ 1.23, 0.99, 123456789.57 ]");

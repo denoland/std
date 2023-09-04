@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
 import type { Reader } from "../types.d.ts";
 
@@ -180,13 +181,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = p.subarray(0, bytesRead);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = p.subarray(0, bytesRead);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -211,7 +205,7 @@ export class BufReader implements Reader {
    * If ReadString encounters an error before finding a delimiter,
    * it returns the data read before the error and the error itself
    * (often `null`).
-   * ReadString returns err != nil if and only if the returned data does not end
+   * ReadString returns err !== null if and only if the returned data does not end
    * in delim.
    * For simple uses, a Scanner may be more convenient.
    */
@@ -295,7 +289,7 @@ export class BufReader implements Reader {
       return { line, more: false };
     }
 
-    if (line[line.byteLength - 1] == LF) {
+    if (line[line.byteLength - 1] === LF) {
       let drop = 1;
       if (line.byteLength > 1 && line[line.byteLength - 2] === CR) {
         drop = 2;
@@ -363,13 +357,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = slice;
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = slice;
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -408,13 +395,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = this.#buf.subarray(this.#r, this.#w);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = this.#buf.subarray(this.#r, this.#w);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }

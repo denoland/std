@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-/** This module is browser compatible. */
+// This module is browser compatible.
 
 import { ascend, BinarySearchTree } from "./binary_search_tree.ts";
 import { Direction, RedBlackNode } from "./red_black_node.ts";
@@ -30,7 +30,7 @@ export * from "./_comparators.ts";
  *   descend,
  *   RedBlackTree,
  * } from "https://deno.land/std@$STD_VERSION/collections/red_black_tree.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new RedBlackTree<number>();

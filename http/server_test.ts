@@ -13,7 +13,7 @@ import {
   assertStrictEquals,
   assertThrows,
   unreachable,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -126,13 +126,13 @@ Deno.test(
     };
     const listenerTwoOptions = {
       hostname: "127.0.0.1",
-      port: 8080,
+      port: 18080,
     };
     const listenerOne = Deno.listen(listenerOneOptions);
     const listenerTwo = Deno.listen(listenerTwoOptions);
 
     const addrHostname = "0.0.0.0";
-    const addrPort = 3000;
+    const addrPort = 13000;
     const handler = () => new Response();
 
     const server = new Server({
@@ -548,7 +548,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
+      "invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
@@ -793,7 +793,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
+      "invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
@@ -1606,5 +1606,31 @@ Deno.test("serveTls - cert, key can be injected directly from memory rather than
       abortController.abort();
     },
     signal: abortController.signal,
+  });
+});
+
+Deno.test("serve - doesn't throw with string port number", () => {
+  const ac = new AbortController();
+  return serve((_) => new Response("hello"), {
+    // deno-lint-ignore no-explicit-any
+    port: "0" as any,
+    onListen() {
+      ac.abort();
+    },
+    signal: ac.signal,
+  });
+});
+
+Deno.test("serveTls - doesn't throw with string port number", () => {
+  const ac = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    // deno-lint-ignore no-explicit-any
+    port: "0" as any,
+    cert: Deno.readTextFileSync(join(testdataDir, "tls/localhost.crt")),
+    key: Deno.readTextFileSync(join(testdataDir, "tls/localhost.key")),
+    onListen() {
+      ac.abort();
+    },
+    signal: ac.signal,
   });
 });

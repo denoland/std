@@ -9,25 +9,25 @@
  * @example
  * ```ts
  * import { partition } from "https://deno.land/std@$STD_VERSION/collections/partition.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (it) => it % 2 == 0);
+ * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
  *
  * assertEquals(even, [6, 8]);
  * assertEquals(odd, [5, 7, 9]);
  * ```
  */
 export function partition<T, U extends T>(
-  array: readonly T[],
+  array: Iterable<T>,
   predicate: (el: T) => el is U,
 ): [U[], Exclude<T, U>[]];
 export function partition<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   predicate: (el: T) => boolean,
 ): [T[], T[]];
 export function partition(
-  array: readonly unknown[],
+  array: Iterable<unknown>,
   predicate: (el: unknown) => boolean,
 ): [unknown[], unknown[]] {
   const matches: Array<unknown> = [];

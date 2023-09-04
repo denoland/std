@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/min_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna", age: 34 },
@@ -22,23 +22,23 @@
  * ```
  */
 export function minBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => number,
 ): T | undefined;
 export function minBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => string,
 ): T | undefined;
 export function minBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => bigint,
 ): T | undefined;
 export function minBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => Date,
 ): T | undefined;
 export function minBy<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector:
     | ((el: T) => number)
     | ((el: T) => string)

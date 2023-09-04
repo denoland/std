@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for
@@ -91,19 +92,19 @@ export function encode(data: ArrayBuffer | string): string {
  * @returns Decoded value
  */
 export function decode(b58: string): Uint8Array {
-  const splittedInput = b58.trim().split("");
+  const splitInput = b58.trim().split("");
 
   let length = 0;
   let ones = 0;
 
   // Counting leading ones
   let index = 0;
-  while (splittedInput[index] === "1") {
+  while (splitInput[index] === "1") {
     ones++;
     index++;
   }
 
-  const notZeroData = splittedInput.slice(index);
+  const notZeroData = splitInput.slice(index);
 
   const size = Math.round((b58.length * 733) / 1000 + 1);
   const output: number[] = [];
@@ -118,11 +119,11 @@ export function decode(b58: string): Uint8Array {
 
     for (
       let reverse_iterator = size - 1;
-      (carry > 0 || i < length) && reverse_iterator !== 0;
-      --reverse_iterator, ++i
+      (carry > 0 || i < length) && reverse_iterator !== -1;
+      reverse_iterator--, i++
     ) {
-      carry += 58 * (output[reverse_iterator - 1] || 0);
-      output[reverse_iterator - 1] = Math.round(carry % 256);
+      carry += 58 * (output[reverse_iterator] || 0);
+      output[reverse_iterator] = Math.round(carry % 256);
       carry = Math.floor(carry / 256);
     }
 

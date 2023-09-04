@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * {@linkcode encode} and {@linkcode decode} for
@@ -75,7 +76,7 @@ export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
     uint8 = new Uint8Array(tmp.length + difference);
     uint8.set(tmp);
   }
-  const view = new DataView(uint8.buffer);
+  const view = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
   for (let i = 0, len = uint8.length; i < len; i += 4) {
     v = view.getUint32(i);
     // Adobe and btoa standards compress 4 zeroes to single "z" character

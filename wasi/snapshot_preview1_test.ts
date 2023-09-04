@@ -1,10 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import Context from "./snapshot_preview1.ts";
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { copy } from "../fs/copy.ts";
 import * as path from "../path/mod.ts";
 import { writeAll } from "../streams/write_all.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 const tests = [
   "testdata/std_env_args.wasm",

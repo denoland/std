@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import {
   globToRegExp,
   GlobToRegExpOptions,
@@ -14,7 +14,7 @@ function match(
   path: string,
   opts: GlobToRegExpOptions = {},
 ): boolean {
-  if (opts.os == null) {
+  if (opts.os === undefined) {
     const matchDarwin = path.match(
       globToRegExp(glob, { ...opts, os: "darwin" }),
     );

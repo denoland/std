@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * Command line arguments parser based on
  * [minimist](https://github.com/minimistjs/minimist).
@@ -31,7 +33,7 @@
  *
  * @module
  */
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
 /** Combines recursively all intersection types and returns a new single type. */
 type Id<TRecord> = TRecord extends Record<string, unknown>
@@ -75,7 +77,7 @@ type Values<
   TNegatable extends Negatable,
   TDefault extends Record<string, unknown> | undefined,
   TAliases extends Aliases | undefined,
-> = UseTypes<TBooleans, TStrings, TCollectable> extends true ? 
+> = UseTypes<TBooleans, TStrings, TCollectable> extends true ?
     & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
@@ -126,7 +128,7 @@ type AliasNames<
  * **Result:** `{ foo: boolean | number, bar?: number }`
  */
 type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
-  : TArgs extends Record<string, unknown> ? 
+  : TArgs extends Record<string, unknown> ?
       & Omit<TArgs, keyof TDefaults>
       & {
         [Default in keyof TDefaults]: Default extends keyof TArgs
@@ -170,7 +172,7 @@ type CollectValues<
   TCollectable extends Collectable,
   TNegatable extends Negatable = undefined,
 > = UnionToIntersection<
-  Extract<TArgNames, TCollectable> extends string ? 
+  Extract<TArgNames, TCollectable> extends string ?
       & (Exclude<TArgNames, TCollectable> extends never ? Record<never, never>
         : MapTypes<Exclude<TArgNames, TCollectable>, TType, TNegatable>)
       & (Extract<TArgNames, TCollectable> extends never ? Record<never, never>
@@ -370,7 +372,7 @@ function get<TValue>(
 
 function getForce<TValue>(obj: Record<string, TValue>, key: string): TValue {
   const v = get(obj, key);
-  assert(v != null);
+  assert(v !== undefined);
   return v;
 }
 
@@ -636,7 +638,7 @@ export function parse<
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
-      assert(m != null);
+      assert(m !== null);
       const [, key, value] = m;
 
       if (flags.bools[key]) {
@@ -649,11 +651,11 @@ export function parse<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m != null);
+      assert(m !== null);
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m != null);
+      assert(m !== null);
       const [, key] = m;
       const next = args[i + 1];
       if (
@@ -737,11 +739,11 @@ export function parse<
 
   for (const [key, value] of Object.entries(defaults)) {
     if (!hasKey(argv, key.split("."))) {
-      setKey(argv, key, value);
+      setKey(argv, key, value, false);
 
       if (aliases[key]) {
         for (const x of aliases[key]) {
-          setKey(argv, x, value);
+          setKey(argv, x, value, false);
         }
       }
     }

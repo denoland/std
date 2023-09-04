@@ -7,7 +7,7 @@
  * @example
  * ```ts
  * import { union } from "https://deno.land/std@$STD_VERSION/collections/union.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const soupIngredients = ["Pepper", "Carrots", "Leek"];
  * const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
@@ -16,7 +16,7 @@
  * assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
  * ```
  */
-export function union<T>(...arrays: (readonly T[])[]): T[] {
+export function union<T>(...arrays: Iterable<T>[]): T[] {
   const set = new Set<T>();
 
   for (const array of arrays) {

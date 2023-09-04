@@ -1,4 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
 export type Unit =
@@ -19,9 +21,9 @@ export type DifferenceOptions = {
 };
 
 function calculateMonthsDifference(from: Date, to: Date): number {
-  let months = (from.getFullYear() - to.getFullYear()) * 12 +
-    (from.getMonth() - to.getMonth());
-  if (from.getDate() < to.getDate()) {
+  let months = (to.getFullYear() - from.getFullYear()) * 12 +
+    (to.getMonth() - from.getMonth());
+  if (to.getDate() < from.getDate()) {
     months--;
   }
   return months;
@@ -50,7 +52,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * //   days: 730,
  * //   weeks: 104,
  * //   months: 23,
- * //   quarters: 5,
+ * //   quarters: 7,
  * //   years: 1
  * // }
  * ```
@@ -64,6 +66,7 @@ export function difference(
   to: Date,
   options?: DifferenceOptions,
 ): DifferenceFormat {
+  [from, to] = from < to ? [from, to] : [to, from];
   const uniqueUnits = options?.units ? [...new Set(options?.units)] : [
     "milliseconds",
     "seconds",

@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Functions for specific common tasks around collection types like `Array` and
  * `Record`. This module is heavily inspired by `kotlin`s stdlib.
@@ -22,15 +23,6 @@
  * @module
  */
 
-// Not sure what's causing this warning? Run `deno info <entry-point-path>` to
-// analyze the module graph. It's not recommended to import directly from
-// mod.ts here because it adds a lot of bloat.
-console.warn(
-  "%c[WARN] deno_std: prefer importing collections/<function_name_in_snake_case>.ts " +
-    "instead of collections/mod.ts",
-  "color: yellow;",
-);
-
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
 export * from "./associate_with.ts";
@@ -49,6 +41,7 @@ export * from "./map_keys.ts";
 export * from "./map_not_nullish.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
+export * from "./partition_entries.ts";
 export * from "./permutations.ts";
 export * from "./find_single.ts";
 export * from "./sliding_windows.ts";
@@ -74,3 +67,5 @@ export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
 export * from "./binary_heap.ts";
+export * from "./binary_search_tree.ts";
+export * from "./red_black_tree.ts";

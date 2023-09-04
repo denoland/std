@@ -7,7 +7,7 @@ import {
   assertRejects,
   assertStrictEquals,
 } from "./asserts.ts";
-import { FakeTime } from "./time.ts";
+import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, SpyCall } from "./mock.ts";
 
@@ -53,13 +53,18 @@ Deno.test("Fake Date.now returns current fake time", () => {
   const time: FakeTime = new FakeTime(9001);
   const now = spy(_internals.Date, "now");
   try {
-    assertEquals(Date.now(), 9001);
-    assertEquals(now.calls.length, 0);
-    time.tick(1523);
-    assertEquals(Date.now(), 10524);
-    assertEquals(now.calls.length, 0);
+    try {
+      assertEquals(Date.now(), 9001);
+      assertEquals(now.calls.length, 0);
+      time.tick(1523);
+      assertEquals(Date.now(), 10524);
+      assertEquals(now.calls.length, 0);
+    } finally {
+      time.restore();
+    }
+    assertNotEquals(Date.now(), 10524);
+    assertEquals(now.calls.length, 1);
   } finally {
-    time.restore();
     now.restore();
   }
 });
@@ -299,6 +304,80 @@ Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
   }
 });
 
+Deno.test("FakeTime restoreFor restores real time and re-overridden atomically", async () => {
+  const time: FakeTime = new FakeTime();
+  const fakeSetTimeout = setTimeout;
+  const actualSetTimeouts: (typeof setTimeout)[] = [];
+
+  try {
+    const asyncFn = async () => {
+      actualSetTimeouts.push(setTimeout);
+      await Promise.resolve();
+      actualSetTimeouts.push(setTimeout);
+      await Promise.resolve();
+      actualSetTimeouts.push(setTimeout);
+    };
+    const promise = asyncFn();
+    await new Promise((resolve) => {
+      FakeTime.restoreFor(() => setTimeout(resolve, 0));
+    });
+    await promise;
+    assertEquals(actualSetTimeouts, [
+      fakeSetTimeout,
+      fakeSetTimeout,
+      fakeSetTimeout,
+    ]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that resolved to result of callback", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    const resultSync = await FakeTime.restoreFor(() => "a");
+    assertEquals(resultSync, "a");
+    const resultAsync = await FakeTime.restoreFor(() => Promise.resolve("b"));
+    assertEquals(resultAsync, "b");
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that rejected to error in callback", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    await assertRejects(
+      () =>
+        FakeTime.restoreFor(() => {
+          throw new Error("Error in sync callback");
+        }),
+      Error,
+      "Error in sync callback",
+    );
+    await assertRejects(
+      () =>
+        FakeTime.restoreFor(() => {
+          return Promise.reject(new Error("Error in async callback"));
+        }),
+      Error,
+      "Error in async callback",
+    );
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that rejected to TimeError if FakeTime is uninitialized", async () => {
+  await assertRejects(
+    () => FakeTime.restoreFor(() => {}),
+    TimeError,
+    "no fake time",
+  );
+});
+
 Deno.test("delay uses real time", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
@@ -535,6 +614,23 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+  } finally {
+    time.restore();
+  }
+});
+
+const Date_ = Date;
+
+Deno.test("Date from FakeTime is structured cloneable", () => {
+  const time: FakeTime = new FakeTime();
+  try {
+    const date: Date = new Date();
+    assert(date instanceof Date);
+    assert(date instanceof Date_);
+    const cloned: Date = structuredClone(date);
+    assertEquals(cloned.getTime(), date.getTime());
+    assert(date instanceof Date);
+    assert(cloned instanceof Date_);
   } finally {
     time.restore();
   }

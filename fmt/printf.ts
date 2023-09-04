@@ -96,7 +96,7 @@
  * | `#`   |           | alternate format                                                           |
  * | `#`   | `b o x X` | prefix with `0b 0 0x`                                                      |
  * | `#`   | `g G`     | don't remove trailing zeros                                                |
- * | `#`   | `v`       | ues output of `inspect` instead of `toString`                              |
+ * | `#`   | `v`       | use output of `inspect` instead of `toString`                              |
  * | `' '` |           | space character                                                            |
  * | `' '` | `x X`     | leave spaces between bytes when printing string                            |
  * | `' '` | `d`       | insert space for missing `+` sign character                                |
@@ -371,7 +371,7 @@ class Printf {
                 this.state = State.PERCENT;
                 return;
               }
-              flags.width = flags.width == -1 ? 0 : flags.width;
+              flags.width = flags.width === -1 ? 0 : flags.width;
               flags.width *= 10;
               flags.width += val;
             }
@@ -710,7 +710,7 @@ class Printf {
         esign = r < 0 ? "-" : "+";
       }
     }
-    e = e.length == 1 ? "0" + e : e;
+    e = e.length === 1 ? "0" + e : e;
     const val = `${mantissa}.${fractional}${upcase ? "E" : "e"}${esign}${e}`;
     return this.padNum(val, n < 0);
   }
@@ -907,7 +907,7 @@ class Printf {
    */
   fmtI(val: unknown, compact: boolean): string {
     return Deno.inspect(val, {
-      colors: true,
+      colors: !Deno?.noColor,
       compact,
       depth: Infinity,
       iterableLimit: Infinity,

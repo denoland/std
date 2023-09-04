@@ -61,7 +61,7 @@
  *
  * ## Permissions option
  *
- * Like `Deno.TestDefinition`, the `DescribeDefintion` and `ItDefinition` have a
+ * Like `Deno.TestDefinition`, the `DescribeDefinition` and `ItDefinition` have a
  * `permissions` option. They specify the permissions that should be used to run an
  * individual test case or test suite. Set this to `"inherit"` to keep the calling
  * thread's permissions. Set this to `"none"` to revoke all permissions.
@@ -92,7 +92,7 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
  *
  * Deno.test("User.users initially empty", () => {
@@ -137,7 +137,7 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   afterEach,
  *   beforeEach,
@@ -199,7 +199,7 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   describe,
  *   it,
@@ -259,7 +259,7 @@
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   describe,
  *   it,
@@ -439,6 +439,12 @@ export interface it {
 
   /** Registers an individual test case with ignore set to true. */
   ignore<T>(...args: ItArgs<T>): void;
+
+  /**
+   * Registers an individual test case with ignore set to true. Alias of
+   * `.ignore()`.
+   */
+  skip<T>(...args: ItArgs<T>): void;
 }
 
 /** Registers an individual test case. */
@@ -503,6 +509,8 @@ it.ignore = function itIgnore<T>(...args: ItArgs<T>) {
     ignore: true,
   });
 };
+
+it.skip = it.ignore;
 
 function addHook<T>(
   name: HookNames,
@@ -684,6 +692,9 @@ export interface describe {
 
   /** Registers a test suite with ignore set to true. */
   ignore<T>(...args: DescribeArgs<T>): TestSuite<T>;
+
+  /** Registers a test suite with ignore set to true. Alias of `.ignore()`. */
+  skip<T>(...args: ItArgs<T>): void;
 }
 
 /** Registers a test suite. */
@@ -720,3 +731,5 @@ describe.ignore = function describeIgnore<T>(
     ignore: true,
   });
 };
+
+describe.skip = describe.ignore;

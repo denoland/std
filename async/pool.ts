@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
@@ -48,7 +49,7 @@ export function pooledMap<T, R>(
       } catch (e) {
         if (
           e instanceof AggregateError &&
-          e.message == ERROR_WHILE_MAPPING_MESSAGE
+          e.message === ERROR_WHILE_MAPPING_MESSAGE
         ) {
           controller.error(e as unknown);
         }
@@ -82,7 +83,7 @@ export function pooledMap<T, R>(
     } catch {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
-        if (result.status == "rejected") {
+        if (result.status === "rejected") {
           errors.push(result.reason);
         }
       }
@@ -91,5 +92,17 @@ export function pooledMap<T, R>(
       )).catch(() => {});
     }
   })();
-  return res.readable[Symbol.asyncIterator]();
+  // Feature test until browser coverage is adequate
+  return Symbol.asyncIterator in res.readable &&
+      typeof res.readable[Symbol.asyncIterator] === "function"
+    ? (res.readable[Symbol.asyncIterator] as () => AsyncIterableIterator<R>)()
+    : (async function* () {
+      const reader = res.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        yield value;
+      }
+      reader.releaseLock();
+    })();
 }

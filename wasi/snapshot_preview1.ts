@@ -73,7 +73,8 @@
  * @module
  */
 
-import { relative, resolve } from "../path/mod.ts";
+import { relative } from "../path/relative.ts";
+import { resolve } from "../path/resolve.ts";
 
 const CLOCKID_REALTIME = 0;
 const CLOCKID_MONOTONIC = 1;
@@ -379,7 +380,7 @@ export interface ContextOptions {
   preopens?: { [key: string]: string };
 
   /**
-   * Determines if calls to exit from within the WebAssembly module will terminate the proess or return.
+   * Determines if calls to exit from within the WebAssembly module will terminate the process or return.
    */
   exitOnReturn?: boolean;
 
@@ -790,11 +791,11 @@ export default class Context {
           return ERRNO_INVAL;
         }
 
-        if ((flags & FSTFLAGS_ATIM_NOW) == FSTFLAGS_ATIM_NOW) {
+        if ((flags & FSTFLAGS_ATIM_NOW) === FSTFLAGS_ATIM_NOW) {
           atim = BigInt(Date.now() * 1e6);
         }
 
-        if ((flags & FSTFLAGS_MTIM_NOW) == FSTFLAGS_MTIM_NOW) {
+        if ((flags & FSTFLAGS_MTIM_NOW) === FSTFLAGS_MTIM_NOW) {
           mtim = BigInt(Date.now() * 1e6);
         }
 
@@ -811,7 +812,7 @@ export default class Context {
         nreadOffset: number,
       ): number => {
         const entry = this.#fds[fd];
-        if (entry == null) {
+        if (entry === null) {
           return ERRNO_BADF;
         }
 
@@ -1188,7 +1189,7 @@ export default class Context {
 
         const memoryView = new DataView(this.#memory.buffer);
 
-        const info = (flags & LOOKUPFLAGS_SYMLINK_FOLLOW) != 0
+        const info = (flags & LOOKUPFLAGS_SYMLINK_FOLLOW) !== 0
           ? Deno.statSync(path)
           : Deno.lstatSync(path);
 
@@ -1284,11 +1285,11 @@ export default class Context {
         );
         const path = resolve(entry.path!, textDecoder.decode(data));
 
-        if ((fstflags & FSTFLAGS_ATIM_NOW) == FSTFLAGS_ATIM_NOW) {
+        if ((fstflags & FSTFLAGS_ATIM_NOW) === FSTFLAGS_ATIM_NOW) {
           atim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        if ((fstflags & FSTFLAGS_MTIM_NOW) == FSTFLAGS_MTIM_NOW) {
+        if ((fstflags & FSTFLAGS_MTIM_NOW) === FSTFLAGS_MTIM_NOW) {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
@@ -1369,7 +1370,7 @@ export default class Context {
 
         let path;
         if (
-          (dirflags & LOOKUPFLAGS_SYMLINK_FOLLOW) == LOOKUPFLAGS_SYMLINK_FOLLOW
+          (dirflags & LOOKUPFLAGS_SYMLINK_FOLLOW) === LOOKUPFLAGS_SYMLINK_FOLLOW
         ) {
           try {
             path = Deno.realPathSync(resolvedPath);
@@ -1427,7 +1428,7 @@ export default class Context {
         const read = RIGHTS_FD_READ |
           RIGHTS_FD_READDIR;
 
-        if ((rightsBase & read) != 0n) {
+        if ((rightsBase & read) !== 0n) {
           options.read = true;
         }
 
@@ -1436,27 +1437,27 @@ export default class Context {
           RIGHTS_FD_ALLOCATE |
           RIGHTS_FD_FILESTAT_SET_SIZE;
 
-        if ((rightsBase & write) != 0n) {
+        if ((rightsBase & write) !== 0n) {
           options.write = true;
         }
 
-        if ((fdflags & FDFLAGS_APPEND) != 0) {
+        if ((fdflags & FDFLAGS_APPEND) !== 0) {
           options.append = true;
         }
 
-        if ((fdflags & FDFLAGS_DSYNC) != 0) {
+        if ((fdflags & FDFLAGS_DSYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_NONBLOCK) != 0) {
+        if ((fdflags & FDFLAGS_NONBLOCK) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_RSYNC) != 0) {
+        if ((fdflags & FDFLAGS_RSYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
-        if ((fdflags & FDFLAGS_SYNC) != 0) {
+        if ((fdflags & FDFLAGS_SYNC) !== 0) {
           // TODO(caspervonb): review if we can emulate this.
         }
 
@@ -1740,18 +1741,18 @@ export default class Context {
     const { _start, _initialize, memory } = instance.exports;
 
     if (!(memory instanceof WebAssembly.Memory)) {
-      throw new TypeError("WebAsembly.instance must provide a memory export");
+      throw new TypeError("WebAssembly.instance must provide a memory export");
     }
 
     this.#memory = memory;
 
-    if (typeof _initialize == "function") {
+    if (typeof _initialize === "function") {
       throw new TypeError(
-        "WebAsembly.instance export _initialize must not be a function",
+        "WebAssembly.instance export _initialize must not be a function",
       );
     }
 
-    if (typeof _start != "function") {
+    if (typeof _start !== "function") {
       throw new TypeError(
         "WebAssembly.Instance export _start must be a function",
       );
@@ -1789,18 +1790,18 @@ export default class Context {
     const { _start, _initialize, memory } = instance.exports;
 
     if (!(memory instanceof WebAssembly.Memory)) {
-      throw new TypeError("WebAsembly.instance must provide a memory export");
+      throw new TypeError("WebAssembly.instance must provide a memory export");
     }
 
     this.#memory = memory;
 
-    if (typeof _start == "function") {
+    if (typeof _start === "function") {
       throw new TypeError(
         "WebAssembly.Instance export _start must not be a function",
       );
     }
 
-    if (_initialize && typeof _initialize != "function") {
+    if (_initialize && typeof _initialize !== "function") {
       throw new TypeError(
         "WebAssembly.Instance export _initialize must be a function or not be defined",
       );

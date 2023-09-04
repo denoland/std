@@ -1,4 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Merge multiple streams into a single one, taking order into account, and each stream
@@ -14,7 +15,7 @@ export function zipReadableStreams<T>(
     async start(controller) {
       try {
         let resolved = 0;
-        while (resolved != streams.length) {
+        while (resolved !== streams.length) {
           for (const [key, reader] of Object.entries(readers)) {
             const { value, done } = await reader.read();
             if (!done) {

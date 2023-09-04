@@ -5,7 +5,8 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
+import { FakeTime } from "../testing/time.ts";
 import { KeyStack } from "../crypto/keystack.ts";
 
 import {
@@ -115,6 +116,24 @@ Deno.test({
     assertEquals(
       response.get("set-cookie"),
       "foo=bar; path=/foo; expires=Wed, 01 Jan 2020 00:00:00 GMT; domain=*.example.com; samesite=strict",
+    );
+  },
+});
+
+Deno.test({
+  name: "CookieMap - set cookie with maxAge instead of expires",
+  fn() {
+    const time = new FakeTime(0);
+    const request = createHeaders();
+    const response = createHeaders();
+    const cookies = new CookieMap(request, { response });
+    cookies.set("foo", "bar", {
+      maxAge: 1,
+    });
+    time.restore();
+    assertEquals(
+      response.get("set-cookie"),
+      "foo=bar; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; httponly",
     );
   },
 });

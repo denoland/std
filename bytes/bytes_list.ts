@@ -3,6 +3,8 @@
 
 /**
  * An abstraction of multiple Uint8Arrays
+ *
+ * @deprecated (will be removed in 0.205.0) Use a plain array of Uint8Arrays instead.
  */
 export class BytesList {
   #len = 0;
@@ -16,12 +18,20 @@ export class BytesList {
 
   /**
    * Total size of bytes
+   *
+   * @deprecated
    */
   size() {
     return this.#len;
   }
   /**
    * Push bytes with given offset infos
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
+   * Adding into the array can be done with {@linkcode Array#push}.
+   * If {@linkcode start} or {@linkcode end} parameters are
+   * used then use {@linkcode Uint8Array#subarray}
+   * to slice the needed part without copying.
    */
   add(value: Uint8Array, start = 0, end = value.byteLength) {
     if (value.byteLength === 0 || end - start === 0) {
@@ -39,6 +49,16 @@ export class BytesList {
 
   /**
    * Drop head `n` bytes.
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
+   * Shifting from the array can be done using conditional
+   * {@linkcode Array#shift}s against the number of bytes left
+   * to be dropped.
+   *
+   * If the next item in the array is longer than the number
+   * of bytes left to be dropped, then instead of shifting it out
+   * it should be replaced in-place with a subarray of itself that
+   * drops the remaining bytes from the front.
    */
   shift(n: number) {
     if (n === 0) {
@@ -67,6 +87,12 @@ export class BytesList {
   /**
    * Find chunk index in which `pos` locates by binary-search
    * returns -1 if out of range
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
+   * Finding the index of a chunk in the array can be
+   * done using {@linkcode Array#findIndex} with a counter
+   * for the number of bytes already encountered from past
+   * chunks' {@linkcode Uint8Array#byteLength}.
    */
   getChunkIndex(pos: number): number {
     let max = this.#chunks.length;
@@ -90,6 +116,10 @@ export class BytesList {
 
   /**
    * Get indexed byte from chunks
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
+   * See {@linkcode getChunkIndex} for finding a chunk
+   * by number of bytes.
    */
   get(i: number): number {
     if (i < 0 || this.#len <= i) {
@@ -102,6 +132,8 @@ export class BytesList {
 
   /**
    * Iterator of bytes from given position
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
    */
   *iterator(start = 0): IterableIterator<number> {
     const startIdx = this.getChunkIndex(start);
@@ -119,6 +151,13 @@ export class BytesList {
 
   /**
    * Returns subset of bytes copied
+   *
+   * @deprecated Use a plain array of Uint8Arrays instead.
+   * For copying the whole list see {@linkcode concat}.
+   * For copying subarrays find the start and end chunk indexes
+   * and the internal indexes within those Uint8Arrays, prepare
+   * a Uint8Array of size `end - start` and set the chunks (or
+   * chunk subarrays) into that at proper offsets.
    */
   slice(start: number, end: number = this.#len): Uint8Array {
     if (end === start) {
@@ -129,19 +168,25 @@ export class BytesList {
     const startIdx = this.getChunkIndex(start);
     const endIdx = this.getChunkIndex(end - 1);
     let written = 0;
-    for (let i = startIdx; i < endIdx; i++) {
-      const chunk = this.#chunks[i];
-      const len = chunk.end - chunk.start;
-      result.set(chunk.value.subarray(chunk.start, chunk.end), written);
+    for (let i = startIdx; i <= endIdx; i++) {
+      const {
+        value: chunkValue,
+        start: chunkStart,
+        end: chunkEnd,
+        offset: chunkOffset,
+      } = this.#chunks[i];
+      const readStart = chunkStart + (i === startIdx ? start - chunkOffset : 0);
+      const readEnd = i === endIdx ? end - chunkOffset + chunkStart : chunkEnd;
+      const len = readEnd - readStart;
+      result.set(chunkValue.subarray(readStart, readEnd), written);
       written += len;
     }
-    const last = this.#chunks[endIdx];
-    const rest = end - start - written;
-    result.set(last.value.subarray(last.start, last.start + rest), written);
     return result;
   }
   /**
    * Concatenate chunks into single Uint8Array copied.
+   *
+   * @deprecated Use a plain array of Uint8Arrays and the `concat.ts` module  instead.
    */
   concat(): Uint8Array {
     const result = new Uint8Array(this.#len);

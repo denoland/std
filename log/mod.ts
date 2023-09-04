@@ -64,7 +64,7 @@
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  * import { sum } from "<the-awesome-module>/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *   },
@@ -108,7 +108,7 @@
  * log.critical("500 Internal server error");
  *
  * // custom configuration with 2 loggers (the default and `tasks` loggers).
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *
@@ -157,7 +157,7 @@
  * ```ts
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
  *       formatter: "[{levelName}] {msg}",
@@ -225,7 +225,7 @@
  * ```ts
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *   },
@@ -259,7 +259,7 @@ import {
   RotatingFileHandler,
   WriterHandler,
 } from "./handlers.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import type { LevelName } from "./levels.ts";
 
 export { LogLevels } from "./levels.ts";
@@ -337,7 +337,7 @@ export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");
     assert(
-      d != null,
+      d !== undefined,
       `"default" logger must be set for getting logger without name`,
     );
     return d;

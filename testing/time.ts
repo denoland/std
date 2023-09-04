@@ -7,7 +7,7 @@
  */
 
 import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
-import { DelayOptions } from "../async/delay.ts";
+import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
@@ -18,75 +18,27 @@ export class TimeError extends Error {
   }
 }
 
-function isFakeDate(instance: unknown): instance is FakeDate {
-  return instance instanceof FakeDate;
+function FakeTimeNow() {
+  return time?.now ?? _internals.Date.now();
 }
 
-interface FakeDate extends Date {
-  date: Date;
-}
-
-function FakeDate(this: void): string;
-function FakeDate(this: FakeDate): void;
-function FakeDate(
-  this: FakeDate,
-  value: string | number | Date,
-): void;
-function FakeDate(
-  this: FakeDate,
-  year: number,
-  month: number,
-  date?: number,
-  hours?: number,
-  minutes?: number,
-  seconds?: number,
-  ms?: number,
-): void;
-function FakeDate(
-  this: FakeDate | void,
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-): string | void {
-  if (args.length === 0) args.push(FakeDate.now());
-  if (isFakeDate(this)) {
-    this.date = new _internals.Date(...(args as []));
-  } else {
-    return new _internals.Date(args[0]).toString();
-  }
-}
-
-FakeDate.parse = Date.parse;
-FakeDate.UTC = Date.UTC;
-FakeDate.now = () => time?.now ?? _internals.Date.now();
-Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
-  const propName: keyof Date = name as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
-});
-Object.getOwnPropertySymbols(Date.prototype).forEach((name: symbol) => {
-  const propName: keyof Date = name as unknown as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
+const FakeDate = new Proxy(Date, {
+  construct(_target, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return new _internals.Date(...args);
+  },
+  apply(_target, _thisArg, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return _internals.Date(...args);
+  },
+  get(target, prop, receiver) {
+    if (prop === "now") {
+      return FakeTimeNow;
+    }
+    return Reflect.get(target, prop, receiver);
+  },
 });
 
 interface Timer {
@@ -103,7 +55,7 @@ export interface FakeTimeOptions {
   /**
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
-   * Set to 1 to have the fake time automatically tick foward at the same rate in milliseconds as real time.
+   * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
    */
   advanceRate: number;
   /**
@@ -184,7 +136,7 @@ function setTimer(
 }
 
 function overrideGlobals() {
-  globalThis.Date = FakeDate as DateConstructor;
+  globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
@@ -300,21 +252,26 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    */
-  static async restoreFor<T>(
+  static restoreFor<T>(
     // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<T> | T,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) throw new TimeError("no fake time");
-    let result: T;
+    if (!time) return Promise.reject(new TimeError("no fake time"));
     restoreGlobals();
     try {
-      result = await callback.apply(null, args);
-    } finally {
+      const result = callback.apply(null, args);
+      if (result instanceof Promise) {
+        return result.finally(() => overrideGlobals());
+      } else {
+        overrideGlobals();
+        return Promise.resolve(result);
+      }
+    } catch (e) {
       overrideGlobals();
+      return Promise.reject(e);
     }
-    return result;
   }
 
   /**

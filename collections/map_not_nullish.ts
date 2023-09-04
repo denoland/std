@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { mapNotNullish } from "https://deno.land/std@$STD_VERSION/collections/map_not_nullish.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { middleName: null },
@@ -23,7 +23,7 @@
  * ```
  */
 export function mapNotNullish<T, O>(
-  array: readonly T[],
+  array: Iterable<T>,
   transformer: (el: T) => O,
 ): NonNullable<O>[] {
   const ret: NonNullable<O>[] = [];

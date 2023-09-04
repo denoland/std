@@ -2,14 +2,28 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../_util/asserts.ts";
-import { join, normalize } from "../path/mod.ts";
+import { join } from "../path/join.ts";
+import { normalize } from "../path/normalize.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
   toPathString,
   WalkEntry,
 } from "./_util.ts";
+
+export class WalkError extends Error {
+  override cause: unknown;
+  override name = "WalkError";
+  path: string;
+
+  constructor(cause: unknown, path: string) {
+    super(
+      `${cause instanceof Error ? cause.message : cause} for path "${path}"`,
+    );
+    this.path = path;
+    this.cause = cause;
+  }
+}
 
 function include(
   path: string,
@@ -29,29 +43,55 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: unknown, root: string) {
-  if (err instanceof Error && "root" in err) return err;
-  const e = new Error() as Error & { root: string };
-  e.root = root;
-  e.message = err instanceof Error
-    ? `${err.message} for path "${root}"`
-    : `[non-error thrown] for path "${root}"`;
-  e.stack = err instanceof Error ? err.stack : undefined;
-  e.cause = err instanceof Error ? err.cause : undefined;
-  return e;
+function wrapErrorWithPath(err: unknown, root: string) {
+  if (err instanceof WalkError) return err;
+  return new WalkError(err, root);
 }
 
 export interface WalkOptions {
-  /** @default {Infinity} */
+  /**
+   * The maximum depth of the file tree to be walked recursively.
+   * @default {Infinity}
+   */
   maxDepth?: number;
-  /** @default {true} */
+  /**
+   * Indicates whether file entries should be included or not.
+   * @default {true}
+   */
   includeFiles?: boolean;
-  /** @default {true} */
+  /**
+   * Indicates whether directory entries should be included or not.
+   * @default {true}
+   */
   includeDirs?: boolean;
-  /** @default {false} */
+  /**
+   * Indicates whether symlink entries should be included or not.
+   * This option is meaningful only if `followSymlinks` is set to `false`.
+   * @default {true}
+   */
+  includeSymlinks?: boolean;
+  /**
+   * Indicates whether symlinks should be resolved or not.
+   * @default {false}
+   */
   followSymlinks?: boolean;
+  /**
+   * List of file extensions used to filter entries.
+   * If specified, entries without the file extension specified by this option are excluded.
+   * @default {undefined}
+   */
   exts?: string[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries that do not match the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   match?: RegExp[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries matching the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   skip?: RegExp[];
 }
 export type { WalkEntry };
@@ -63,7 +103,7 @@ export type { WalkEntry };
  * @example
  * ```ts
  * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
  *
  * for await (const entry of walk(".")) {
  *   console.log(entry.path);
@@ -77,6 +117,7 @@ export async function* walk(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -95,13 +136,17 @@ export async function* walk(
   }
   try {
     for await (const entry of Deno.readDir(root)) {
-      assert(entry.name != null);
       let path = join(root, entry.name);
 
       let { isSymlink, isDirectory } = entry;
 
       if (isSymlink) {
-        if (!followSymlinks) continue;
+        if (!followSymlinks) {
+          if (includeSymlinks && include(path, exts, match, skip)) {
+            yield { path, ...entry };
+          }
+          continue;
+        }
         path = await Deno.realPath(path);
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
@@ -114,6 +159,7 @@ export async function* walk(
           maxDepth: maxDepth - 1,
           includeFiles,
           includeDirs,
+          includeSymlinks,
           followSymlinks,
           exts,
           match,
@@ -124,7 +170,7 @@ export async function* walk(
       }
     }
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
 }
 
@@ -135,6 +181,7 @@ export function* walkSync(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -155,16 +202,20 @@ export function* walkSync(
   try {
     entries = Deno.readDirSync(root);
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
-    assert(entry.name != null);
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;
 
     if (isSymlink) {
-      if (!followSymlinks) continue;
+      if (!followSymlinks) {
+        if (includeSymlinks && include(path, exts, match, skip)) {
+          yield { path, ...entry };
+        }
+        continue;
+      }
       path = Deno.realPathSync(path);
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
@@ -177,6 +228,7 @@ export function* walkSync(
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
+        includeSymlinks,
         followSymlinks,
         exts,
         match,

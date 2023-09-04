@@ -1,3 +1,201 @@
+### 0.201.0 / 2023.09.01
+
+- BREAKING(bytes): deprecate BytesList class (#3589)
+- BREAKING(crypto): deprecate crypto.subtle.timingSafeEqual() (#3596)
+- BREAKING(dotenv): fix dotenv permissions (#3578)
+- BREAKING(encoding): deprecate encoding/binary (#3584)
+- BREAKING(fmt): rename stripColor to stripAnsiCode (#3588)
+- BREAKING(permissions): deprecate permissions module (#3567)
+- BREAKING(semver): remove deprecated APIs (#3591)
+- BREAKING(signal): deprecate signal module (#3568)
+- BREAKING(streams): remove readable_stream_from_iterable (#3579)
+- BREAKING(yaml): change binary handling (#3586)
+- feat(assert): add inequality asserts (#3496)
+- feat(std): add `std/url` module. (#3527)
+- fix(assert): properly quote strings in assertIsError (#3577)
+- fix(fmt): make printf respect NO_COLOR (#3595)
+- fix(log): rotating file handler sync setup and destroy (#3543)
+
+### 0.200.0 / 2023.08.24
+
+- doc: add complete docs for all dotenv functionality (#3560)
+
+### 0.199.0 / 2023.08.21
+
+- fix(collections): redblack tree and bst not being exported from mod (#3528)
+- fix(http/cookie_map): add maxAge to set/delete options (#3524)
+- fix(log): fix serializing BigInt value in object (#3550)
+- fix(path): typo in comment in _resolve (#3545)
+- fix(testing/time): fix FakeTime.restoreFor accuracy for sync callbacks (#3531)
+- perf: repoint internal imports to single-export files (#3537)
+
+### 0.198.0 / 2023.08.10
+
+- feat(path): single file exports (#3510)
+
+### 0.197.0 / 2023.08.03
+
+- BREAKING(testing/snapshot): change tab char serialization (#3447)
+- BREAKING(testing/snapshot): fix regression of serialization of long strings
+  (#3507)
+- feat(fs/walk): include symlink option (#3464)
+- fix(toml/parse): fix edge cases (#3509)
+
+### 0.196.0 / 2023.07.26
+
+- BREAKING(http/server): deprecate serve and serveTls (#3381)
+- fix(http): fix handling of string port number (#3499)
+
+### 0.195.0 / 2023.07.19
+
+- BREAKING(streams): deprecate readableStreamFromIterable (#3486)
+- BREAKING(testing, assert): move `std/testing/asserts` to `std/assert` (#3445)
+- feat(fmt): enable `setColorEnabled` in browsers (#3485)
+- fix(async/delay): reject with existing AbortSignal reason (#3479)
+
+### 0.194.0 / 2023.07.12
+
+- feat(collections): allow PropertyKey for groupBy key (#3461)
+- feat: msgpack encoding (#3460)
+
+### 0.193.0 / 2023.07.04
+
+- feat: add http/user_agent (#3387)
+- fix(json): allow primitives at top level without separator (#3466)
+- fix(testing/asserts): handle primitive/null values better in assertObjectMatch
+  (#3468)
+
+### 0.192.0 / 2023.06.15
+
+- BREAKING(semver): rewrite semver (#3385)
+- feat(testing): report the number of removed snapshots (#3435)
+- fix(datetime/day_of_year): respect time zone of date (#3443)
+- fix(http/file_server): resolve empty subdir correctly on Windows (#3439)
+- fix(testing/time): use real Date in FakeTime (#3414)
+- fix(yaml): parse always return null when file is empty, whitespace or only
+  comments (#3442)
+
+### 0.191.0 / 2023.06.08
+
+- BREAKING(csv,http,path): remove deprecated APIs (#3418)
+- feat(async/retry): introduce jitter option and fix retry bugs (#3427)
+- feat(collections): switch functions to take iterables when possible (#3401)
+- feat(collections/sort_by): descending order can be specified in options
+  (#3419)
+- feat(crypto): add BLAKE2B-224 hashing algorithm in crypto (#3392)
+- feat(html): add escape and unescape functions for HTML entities (#3335)
+- fix(http/file_server): use platform specific `resolve` (#3424)
+- fix(streams/mergeReadableStreams): better error handling (#3395)
+- fix(toml): various edge case fixes for `toml.stringify` (#3403)
+
+### 0.190.0 / 2023.05.29
+
+### 0.189.0 / 2023.05.24
+
+- feat(async): add jitter to retry exponential backoff (#3379)
+- feat(collections/group_by): accept iterable input, add index param to callback
+  (#3390)
+
+### 0.188.0 / 2023.05.18
+
+- fix(flags): correctly collect default value (#3380)
+
+### 0.187.0 / 2023.05.12
+
+- feat(collections): add `partitionEntries` (#3365)
+- feat(regexp): add escape function (#3334)
+- fix(datetime): negative months, quarters, and years (#3367)
+- fix(http/file_server): dealing with dir listing view that contain system files
+  (#3371)
+- fix(http/file_server): redirect non-canonical URL to canonical URL (#3362)
+- perf(http/file_server): read fileinfo in parallel (#3363)
+
+### 0.186.0 / 2023.05.04
+
+- BREAKING(path): deprecate path.sep (#3342)
+- feat(async): support `signal` on `deadline()` (#3347)
+- feat(async/pool): use browser compatible APIs (#3350)
+- feat(http): add HTTP_METHODS, HttpMethod, and isHttpMethod (#3309)
+- feat(uuid): add pre-defined namespace UUIDs (#3352)
+- fix(http/file_server): fix `Range` header handling (#3354)
+- fix(http/server): flaky 'address in use' error (#3333)
+- fix(http/server_sent_event): fix Uncaught TypeError if created without
+  optional EventInit (#3356)
+
+### 0.185.0 / 2023.04.27
+
+- feat(dotenv): allow reading from `.env` files without granting env access
+  (#3306)
+- feat(jsonc): annotate return types (#3327)
+- feat(uuid): uuid v3 (#3324)
+- perf(http/file_server): avoid calculating Content-Type when 304 Not Modified
+  response (#3323)
+
+### 0.184.0 / 2023.04.18
+
+- BREAKING(encoding): remove deprecated APIs (#3303)
+- BREAKING(encoding): remove deprecated APIs (#3315)
+- feat(console): add unicodeWidth for TTY text layout (#3297)
+- feat(testing): add .skip alias to bdd test API (#3300)
+- fix(http): move deno deploy specific logic from `etag.ts` to `file_server.ts`
+  (#3316)
+- fix(http/file_server.ts): respond to Range requests with correct byte length
+  (#3319)
+
+### 0.183.0 / 2023.04.12
+
+- BREAKING(csv): rename `CsvStream` to `CsvParseStream` (#3287)
+- BREAKING(encoding/varint): remove deprecated APIs (#3282)
+- feat(datetime): add isUtcLeap (#3295)
+- feat: add http/etag (#3245)
+- fix(bytes): correct slice() of BytesList (#3292)
+- fix(csv): improve typing for CSV parser (#3267)
+- fix(dotenv): allow `null` for `*path` values (#3221)
+- fix(encoding/ascii85): fix `encode()` returns a wrong result with a subarray
+  (#3310)
+- fix(fs): fix NotFound error when moving src to itself with overwrite: true
+  (#3289)
+
+### 0.182.0 / 2023.03.31
+
+- feat(csv): add `CsvStringifyStream` (#3270)
+- feat(fs): undo deprecation of `exists` and add permission and type check to it
+  (#2785)
+- feat(fs/walk): WalkError class (#3054)
+- feat: disposition on TextDelimiterStream (#3273)
+- fix(csv/csv_stringify_stream): output headers based on `columns` option
+  (#3293)
+- fix(encoding/base58): fix base58 decoding missing the first byte (#3275)
+
+### 0.181.0 / 2023.03.22
+
+- feat(front_matter): support +++ for TOML block (#3254)
+- feat(testing/asserts): include `msg` in assertion errors (#3253)
+
+### 0.180.0 / 2023.03.16
+
+- BREAKING(csv): move `encoding/csv` to own top-level folder and towards
+  single-export files (#3228)
+- BREAKING(front_matter): move to top-level folder (#3252)
+- BREAKING(json): move to top-level folder and towards single-export files
+  (#3236)
+- BREAKING(jsonc): move to top-level folder and single-export files (#3243)
+- BREAKING(toml): move to top-level folder and towards single-export files
+  (#3241)
+- BREAKING(yaml): move to top-level folder (#3251)
+- feat(http): add http/server_sent_event (#3239)
+
+### 0.179.0 / 2023.03.10
+
+- BREAKING(encoding/varint): deprecate Wasm implementation in favour of native
+  TypeScript (#3215)
+- feat(fs): add followSymlink to expandGlob (#3093)
+- fix(fs/ensureDir): fix racy ensureDir (#3242)
+- fix(fs/ensure_symlink): lstat relative symlink properly (#3216)
+- fix(http/cookie): accept cookies with value containing = character (#3152)
+- fix(http/file_server): redirect directory URLs that don't end with a slash
+  (#3220)
+
 ### 0.178.0 / 2023.02.23
 
 - Remove std/node, it was merged into Deno itself (#3206)
@@ -25,7 +223,7 @@
 ### 0.176.0 / 2023.02.02
 
 - fix(node): disable worker_threads (#3151)
-- fix(node): throw permisison error instead of unknown error (#3133)
+- fix(node): throw permission error instead of unknown error (#3133)
 - fix(node/util): stricter runtime type checking (#3122)
 - fix: make encoding/front_matter work in a browser (#3154)
 
@@ -43,6 +241,7 @@
 
 ### 0.173.0 / 2023.01.16
 
+- BREAKING(streams, archive): remove deprecated exports (#3107)
 - fix(fs): change globstar default to true for expandGlob and expandGlobSync
   (#3115)
 - fix(streams): prevent artificial terminal newline in `TextLineStream` (#3103)
@@ -772,7 +971,7 @@ new feature added setNoDelay.
 - feat(node): allow require with 'node:' prefix (#1438)
 - feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
 - feat(testing): add assertIsError (#1376)
-- fix(async): fix async/tee concurent .next calls error (#1425)
+- fix(async): fix async/tee concurrent .next calls error (#1425)
 - fix(crypto): support length option in crypto.subtle.digest (#1386)
 - fix(http/file_server): fix encoded url in dir html (#1442)
 - fix(http/file_server): fix leak file resource (#1443)
@@ -1052,7 +1251,7 @@ new feature added setNoDelay.
 ### 0.92.0 / 2021.04.02
 
 - feat: make bufio compatible to Deno Deploy (#831)
-- feat: add symlink adn symlinkSync to node/fs (#825)
+- feat: add symlink and symlinkSync to node/fs (#825)
 - feat: add format and improve deprecate in node/util (#693)
 - feat: add io/buffer and io/util module (#808) …
 - fix: handle upstream type changes (#834)

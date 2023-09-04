@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { Args, parse, ParseOptions } from "./mod.ts";
 import { assertType, IsExact } from "../testing/types.ts";
 
@@ -790,6 +790,20 @@ Deno.test("collectArgsDefaultBehaviour", function () {
     foo: "baz",
     beep: "boop",
     bool: true,
+    _: [],
+  });
+});
+
+Deno.test("collectArgsWithDefaultBehaviour", function () {
+  const argv = parse([], {
+    collect: ["foo"],
+    default: {
+      foo: ["bar", "baz"],
+    },
+  });
+
+  assertEquals(argv, {
+    foo: ["bar", "baz"],
     _: [],
   });
 });
