@@ -82,18 +82,16 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
 /**
  * Creates a new item in KV. Throws if the item already exists in one of the indexes.
  *
- * @example New item creation
+ * @example
  * ```ts
  * import { newItemProps, createItem } from "@/utils/db.ts";
  *
- * const item: Item = {
- *   userLogin: "example-user-login",
+ * await createItem({
+ *   userLogin: "john_doe",
  *   title: "example-title",
- *   url: "https://example.com"
- *   ..newItemProps(),
- * };
- *
- * await createItem(item);
+ *   url: "https://example.com",
+ *   ...newItemProps(),
+ * });
  * ```
  */
 export async function createItem(item: Item) {
@@ -165,19 +163,17 @@ export function newNotificationProps(): Pick<Item, "id" | "createdAt"> {
 /**
  * Creates a new notification in KV. Throws if the item already exists in one of the indexes.
  *
- * @example New notification creation
+ * @example
  * ```ts
  * import { newNotificationProps, createNotification } from "@/utils/db.ts";
  *
- * const notification: Notification = {
- *   userLogin: "example-user-login",
+ * await createNotification({
+ *   userLogin: "john_doe",
  *   type: "example-type",
  *   text: "Hello, world!",
- *   originUrl: "https://hunt.deno.land"
+ *   originUrl: "https://hunt.deno.land",
  *   ...newNotificationProps(),
- * };
- *
- * await createNotification(notification);
+ * });
  * ```
  */
 export async function createNotification(notification: Notification) {
@@ -424,14 +420,13 @@ export function newUserProps(): Pick<User, "isSubscribed"> {
  *
  * @example
  * ```ts
- * import { createUser, newUser } from "@/utils/db.ts";
+ * import { createUser, newUserProps } from "@/utils/db.ts";
  *
- * const user = {
- *   login: "login",
- *   sessionId: "sessionId",
+ * await createUser({
+ *   login: "john-doe",
+ *   sessionId: crypto.randomUUID(),
  *   ...newUserProps(),
- * };
- * await createUser(user);
+ * });
  * ```
  */
 export async function createUser(user: User) {

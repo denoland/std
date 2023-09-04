@@ -13,16 +13,6 @@ import { ensureSignedIn, type State } from "@/middleware/session.ts";
  * {@linkcode handleNotSignedInRest}, if the request is made to a REST API
  * endpoint.
  *
- * @example
- * ```ts
- * import { FreshOptions } from "$fresh/server.ts";
- * import protectedRoutes from "@/plugins/protected_routes.ts";
- *
- * const options: FreshOptions = {
- *   plugins: [protectedRoutes]
- * }
- * ```
- *
  * @see {@link https://fresh.deno.dev/docs/concepts/plugins|Plugins documentation}
  * for more information on Fresh's plugin functionality.
  */

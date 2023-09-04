@@ -23,7 +23,7 @@ export function pluralize(amount: number, unit: string) {
  * @example
  * ```ts
  * import { timeAgo } from "@/utils/display.ts";
- * import { SECOND, MINUTE, HOUR } from ""std/datetime/constants.ts""
+ * import { SECOND, MINUTE, HOUR } from "std/datetime/constants.ts";
  *
  * timeAgo(new Date()); // Returns "just now"
  * timeAgo(new Date(Date.now() - MINUTE)); // Returns "2 minutes ago"
