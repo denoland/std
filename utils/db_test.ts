@@ -42,7 +42,7 @@ import {
   assertArrayIncludes,
   assertEquals,
   assertRejects,
-} from "std/testing/asserts.ts";
+} from "std/assert/mod.ts";
 import { DAY } from "std/datetime/constants.ts";
 import { monotonicUlid } from "std/ulid/mod.ts";
 

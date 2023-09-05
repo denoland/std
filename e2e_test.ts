@@ -10,7 +10,7 @@ import {
   assertInstanceOf,
   assertNotEquals,
   assertStringIncludes,
-} from "std/testing/asserts.ts";
+} from "std/assert/mod.ts";
 import {
   genNewComment,
   genNewItem,
