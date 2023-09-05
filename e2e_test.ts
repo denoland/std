@@ -179,16 +179,6 @@ Deno.test("[e2e]", async (test) => {
     assertEquals(resp.status, 303);
   });
 
-  await test.step("POST /api/items", async () => {
-    const resp = await handler(
-      new Request("http://localhost/api/items", { method: "POST" }),
-    );
-
-    assertFalse(resp.ok);
-    assertEquals(await resp.text(), "User must be signed in");
-    assertEquals(resp.status, Status.Unauthorized);
-  });
-
   await test.step("GET /feed", async () => {
     const resp = await handler(
       new Request("http://localhost/feed"),
@@ -254,6 +244,16 @@ Deno.test("[e2e]", async (test) => {
     const { values } = await resp2.json();
     assertResponseJson(resp2);
     assertEquals(values, [JSON.parse(JSON.stringify(comment))]);
+  });
+
+  await test.step("POST /api/items", async () => {
+    const resp = await handler(
+      new Request("http://localhost/api/items", { method: "POST" }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User must be signed in");
+    assertEquals(resp.status, Status.Unauthorized);
   });
 
   await test.step("GET /api/users", async () => {
