@@ -18,7 +18,7 @@ import {
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
-let port = 4505;
+let port = 4800;
 function getPort() {
   return port++;
 }
