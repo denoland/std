@@ -103,51 +103,15 @@ function toString(cookie: Cookie): string {
   }
   if (cookie.expires) {
     const { expires } = cookie;
-    const dateString = toIMF(
-      typeof expires === "number" ? new Date(expires) : expires,
-    );
-    out.push(`Expires=${dateString}`);
+    const date = typeof expires === "number"
+      ? new Date(expires)
+      : expires;
+    out.push(`Expires=${date.toUTCString()}`);
   }
   if (cookie.unparsed) {
     out.push(cookie.unparsed.join("; "));
   }
   return out.join("; ");
-}
-
-/**
- * Formats the given date to IMF date time format.
- * (Reference: https://tools.ietf.org/html/rfc7231#section-7.1.1.1).
- *
- * @param date Date to parse
- * @returns IMF date formatted string
- */
-function toIMF(date: Date): string {
-  function dtPad(v: number, lPad = 2): string {
-    return v.toString().padStart(lPad, "0");
-  }
-  const d = dtPad(date.getUTCDate());
-  const h = dtPad(date.getUTCHours());
-  const min = dtPad(date.getUTCMinutes());
-  const s = dtPad(date.getUTCSeconds());
-  const y = date.getUTCFullYear();
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${days[date.getUTCDay()]}, ${d} ${
-    months[date.getUTCMonth()]
-  } ${y} ${h}:${min}:${s} GMT`;
 }
 
 /**
