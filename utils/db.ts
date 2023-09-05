@@ -228,50 +228,45 @@ export async function ifUserHasNotifications(userLogin: string) {
 
 // Comment
 export interface Comment {
+  // Uses ULID
+  id: string;
   userLogin: string;
   itemId: string;
   text: string;
-  // The below properties can be automatically generated upon comment creation
-  id: string;
-  createdAt: Date;
-}
-
-export function newCommentProps(): Pick<Comment, "id" | "createdAt"> {
-  return {
-    id: crypto.randomUUID(),
-    createdAt: new Date(),
-  };
 }
 
 export async function createComment(comment: Comment) {
-  const commentsByItemKey = [
+  const key = [
     "comments_by_item",
     comment.itemId,
-    comment.createdAt.getTime(),
     comment.id,
   ];
 
   const res = await kv.atomic()
-    .check({ key: commentsByItemKey, versionstamp: null })
-    .set(commentsByItemKey, comment)
+    .check({ key, versionstamp: null })
+    .set(key, comment)
     .commit();
 
-  if (!res.ok) throw new Error(`Failed to create comment: ${comment}`);
+  if (!res.ok) throw new Error("Failed to create comment");
 }
 
 export async function deleteComment(comment: Comment) {
-  const commentsByItemKey = [
+  const key = [
     "comments_by_item",
     comment.itemId,
-    comment.createdAt.getTime(),
     comment.id,
   ];
+  const commentRes = await kv.get<Comment>(key);
+  if (commentRes.value === null) {
+    throw new Deno.errors.NotFound("Comment not found");
+  }
 
   const res = await kv.atomic()
-    .delete(commentsByItemKey)
+    .check(commentRes)
+    .delete(key)
     .commit();
 
-  if (!res.ok) throw new Error(`Failed to delete comment: ${comment}`);
+  if (!res.ok) throw new Error("Failed to delete comment");
 }
 
 export function listCommentsByItem(

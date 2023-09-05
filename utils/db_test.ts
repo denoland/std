@@ -30,7 +30,6 @@ import {
   listItemsByUser,
   listItemsVotedByUser,
   listNotifications,
-  newCommentProps,
   newItemProps,
   newUserProps,
   newVoteProps,
@@ -49,10 +48,10 @@ import { monotonicUlid } from "std/ulid/mod.ts";
 
 export function genNewComment(): Comment {
   return {
+    id: monotonicUlid(),
     itemId: crypto.randomUUID(),
     userLogin: crypto.randomUUID(),
     text: crypto.randomUUID(),
-    ...newCommentProps(),
   };
 }
 
@@ -169,13 +168,7 @@ Deno.test("[db] visit", async () => {
   assertEquals(await getManyMetrics("visits_count", [date]), [1n]);
 });
 
-Deno.test("[db] newCommentProps()", () => {
-  const commentProps = newCommentProps();
-  assert(commentProps.createdAt.getTime() <= Date.now());
-  assertEquals(typeof commentProps.id, "string");
-});
-
-Deno.test("[db] (create/delete)Comment() + getCommentsByItem()", async () => {
+Deno.test("[db] comments", async () => {
   const itemId = crypto.randomUUID();
   const comment1 = { ...genNewComment(), itemId };
   const comment2 = { ...genNewComment(), itemId };
@@ -192,6 +185,10 @@ Deno.test("[db] (create/delete)Comment() + getCommentsByItem()", async () => {
 
   await deleteComment(comment1);
   await deleteComment(comment2);
+  await assertRejects(
+    async () => await deleteComment(comment1),
+    "Comment not found",
+  );
   assertEquals(await collectValues(listCommentsByItem(itemId)), []);
 });
 

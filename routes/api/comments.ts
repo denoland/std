@@ -1,12 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { errors } from "std/http/http_errors.ts";
-import {
-  createComment,
-  createNotification,
-  getItem,
-  newCommentProps,
-} from "@/utils/db.ts";
+import { createComment, createNotification, getItem } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { assertSignedIn, State } from "@/middleware/session.ts";
 import { monotonicUlid } from "std/ulid/mod.ts";
@@ -30,10 +25,10 @@ export const handler: Handlers<undefined, State> = {
 
     const { sessionUser } = ctx.state;
     await createComment({
+      id: monotonicUlid(),
       userLogin: sessionUser.login,
       itemId: itemId,
       text,
-      ...newCommentProps(),
     });
 
     if (item.userLogin !== sessionUser.login) {
