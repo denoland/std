@@ -24,105 +24,103 @@ template for building your SaaS quickly and easily.
 - [Fresh](https://fresh.deno.dev/) as the web framework and
   [Tailwind CSS](https://tailwindcss.com/) as the CSS framework.
 
-## Getting Started Locally
+## Get Started
 
-### Prerequisites
+### Get Started Locally
 
-- [Deno](https://deno.com/manual/getting_started/installation)
-- [Git](https://github.com/git-guides/install-git)
-- [A free Stripe account](https://stripe.com)
-- [Stripe CLI](https://stripe.com/docs/stripe-cli#install)
+Before starting, you'll need:
 
-### Setup the repo
+- A GitHub account
+- The [Deno CLI](https://deno.com/manual/getting_started/installation) and
+  [Git](https://github.com/git-guides/install-git) installed on your machine
 
-1. Clone the repo:
+To get started:
 
+1. Clone this repo:
    ```bash
    git clone https://github.com/denoland/saaskit.git
    cd saaskit
    ```
-
-2. Create a `.env` file to store environmental variables:
-
+1. Create a new `.env` file.
+1. Navigate to GitHub's
+   [**New OAuth Application** page](https://github.com/settings/applications/new).
+1. Set **Application name** to your desired application name. E.g. `ACME, Inc`.
+1. Set **Homepage URL** to `http://localhost:8000`.
+1. Set **Authorization callback URL** to `http://localhost:8000/callback`.
+1. Click **Register application**.
+1. Copy the **Client ID** value to the `.env` file:
    ```
-   cp .example.env .env
+   GITHUB_CLIENT_ID=<GitHub OAuth application client ID>
    ```
+1. On the same web page, click **Generate a new client secret**.
+1. Copy the **Client secret** value to the `.env` file on a new line:
+   ```
+   GITHUB_CLIENT_SECRET=<GitHub OAuth application client secret>
+   ```
+1. Start the server:
+   ```bash
+   deno task start
+   ```
+1. Navigate to `http://localhost:8000` to start playing with your new SaaS app.
 
-### Auth (OAuth)
+### Set-Up Stripe (Optional)
 
-1. [Register a new GitHub OAuth application](https://github.com/settings/applications/new)
-   with the following values:
+This guide will enable test Stripe payments, the pricing page, and "Premium
+user" functionality.
 
-   - `Application name` = a name of your own choosing
-   - `Homepage URL` = `http://localhost:8000`
-   - `Authorization callback URL` = `http://localhost:8000/callback`
+Before starting, you'll need:
 
-2. Once registered, copy the `Client ID` value to the `GITHUB_CLIENT_ID` value
-   in your `.env` file.
-3. Click `Generate a new client secret` and copy the resulting client secret to
-   the `GITHUB_CLIENT_SECRET` environment variable in your `.env` file.
+- A [Stripe](https://stripe.com) account
+- The [Stripe CLI](https://stripe.com/docs/stripe-cli#install) installed and
+  signed-in on your machine
 
-### Payments and Subscriptions using Stripe (optional)
+To get started:
 
-> Note: Stripe is only enabled if the `STRIPE_SECRET_KEY` environment variable
-> is set.
-
-1. Copy your Stripe secret key as `STRIPE_SECRET_KEY` into your `.env` file. We
-   recommend using the test key for your development environment.
-2. Run `deno task init:stripe` and follow the instructions. This automatically
-   creates your "Premium tier" product and configures the Stripe customer
-   portal.
-   > Note: go to [tools/init_stripe.ts](tools/init_stripe.ts) if you'd like to
-   > learn more about how the `init:stripe` task works.
-3. Listen locally to Stripe events:
+1. Navigate to the
+   [**API keys** page](https://dashboard.stripe.com/test/apikeys) on the
+   **Developers** dashboard.
+1. In the **Standard keys** section, click **Reveal test key** on the **Secret
+   key** table row.
+1. Click to copy the value and paste to the `.env` file:
+   ```
+   STRIPE_SECRET_KEY=<Stripe secret key>
+   ```
+1. Run the Stripe initialization script:
+   ```bash
+   deno task init:stripe
+   ```
+1. Copy the Stripe "Premium Plan" price ID to the `.env` file:
+   ```
+   STRIPE_PREMIUM_PLAN_PRICE_ID=<Stripe "Premium Plan" price ID>
+   ```
+1. Begin
+   [listening locally to Stripe events](https://stripe.com/docs/cli/listen):
    ```
    stripe listen --forward-to localhost:8000/api/stripe-webhooks --events=customer.subscription.created,customer.subscription.deleted
    ```
-4. Copy the webhook signing secret to [.env](.env) as `STRIPE_WEBHOOK_SECRET`.
+1. Copy the **webhook signing secret** to the `.env` file:
+   ```
+   STRIPE_WEBHOOK_SECRET=<Stripe webhook signing secret>
+   ```
+1. Start the server:
+   ```bash
+   deno task start
+   ```
+1. Navigate to `http://localhost:8000` to start playing with your new SaaS app
+   with Stripe enabled.
 
 > Note: You can use
 > [Stripe's test credit cards](https://stripe.com/docs/testing) to make test
 > payments while in Stripe's test mode.
 
-### Running the Server
+### Bootstrap the Database (Optional)
 
-Finally, start the server by running:
+Use the following commands to work with your local Deno KV database:
 
-```
-deno task start
-```
-
-Go to [http://localhost:8000](http://localhost:8000) to begin playing with your
-new SaaS app.
-
-### Bootstrapping your local Database (Optional)
-
-If the home page is feeling a little empty, run
-
-```
-deno task db:seed
-```
-
-On execution, this script will fetch 20 (customizable) of the top HN posts using
-the [HackerNews API](https://github.com/HackerNews/API) to populate your home
-page.
-
-To see all the values in your local Deno KV database, run
-
-```
-deno task db:dump
-```
-
-And all kv pairs will be logged to stdout
-
-To reset your Deno KV database, run
-
-```
-deno task db:reset
-```
-
-Since this operation is not recoverable, you will be prompted to confirm
-deletion before proceeding.
+- `deno task db:seed` - Populate the database with data from the
+  [Hacker News API](https://github.com/HackerNews/API).
+- `deno task db:dump` - Print all database values.
+- `deno task db:reset` - Reset the database. This is not recoverable.
 
 ## Customization
 
