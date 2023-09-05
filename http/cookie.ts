@@ -103,9 +103,7 @@ function toString(cookie: Cookie): string {
   }
   if (cookie.expires) {
     const { expires } = cookie;
-    const date = typeof expires === "number"
-      ? new Date(expires)
-      : expires;
+    const date = typeof expires === "number" ? new Date(expires) : expires;
     out.push(`Expires=${date.toUTCString()}`);
   }
   if (cookie.unparsed) {
