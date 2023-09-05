@@ -12,14 +12,6 @@ if (
 export const kv = await Deno.openKv(path);
 
 // Helpers
-async function getValue<T>(
-  key: Deno.KvKey,
-  options?: { consistency?: Deno.KvConsistencyLevel },
-) {
-  const res = await kv.get<T>(key, options);
-  return res.value;
-}
-
 /**
  * Gets many values from KV. Uses batched requests to get values in chunks of 10.
  */
@@ -128,7 +120,8 @@ export async function deleteItem(item: Item) {
 }
 
 export async function getItem(id: string) {
-  return await getValue<Item>(["items", id]);
+  const res = await kv.get<Item>(["items", id]);
+  return res.value;
 }
 
 export function listItemsByUser(
@@ -208,11 +201,12 @@ export async function deleteNotification(
 export async function getNotification(
   notification: Pick<Notification, "id" | "userLogin">,
 ) {
-  return await getValue<Notification>([
+  const res = await kv.get<Notification>([
     "notifications_by_user",
     notification.userLogin,
     notification.id,
   ]);
+  return res.value;
 }
 
 export function listNotifications(
@@ -481,21 +475,26 @@ export async function deleteUserBySession(sessionId: string) {
 
 /** @todo Migrate to ["users", login] key */
 export async function getUser(login: string) {
-  return await getValue<User>(["users", login]);
+  const res = await kv.get<User>(["users", login]);
+  return res.value;
 }
 
 export async function getUserBySession(sessionId: string) {
-  const usersBySessionKey = ["users_by_session", sessionId];
-  return await getValue<User>(usersBySessionKey, {
+  const key = ["users_by_session", sessionId];
+  const eventualRes = await kv.get<User>(key, {
     consistency: "eventual",
-  }) ?? await getValue<User>(usersBySessionKey);
+  });
+  if (eventualRes.value !== null) return eventualRes.value;
+  const res = await kv.get<User>(key);
+  return res.value;
 }
 
 export async function getUserByStripeCustomer(stripeCustomerId: string) {
-  return await getValue<User>([
+  const res = await kv.get<User>([
     "users_by_stripe_customer",
     stripeCustomerId,
   ]);
+  return res.value;
 }
 
 export function listUsers(options?: Deno.KvListOptions) {
