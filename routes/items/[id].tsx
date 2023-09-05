@@ -7,17 +7,20 @@ import Head from "@/components/Head.tsx";
 import type { State } from "@/middleware/session.ts";
 import CommentsList from "@/islands/CommentsList.tsx";
 
-function CommentInput(props: { itemId: string }) {
+function CommentInput(props: { isSignedIn: boolean; itemId: string }) {
   return (
     <form method="post" action="/api/comments">
       <input type="hidden" name="item_id" value={props.itemId} />
       <textarea
         class={`${INPUT_STYLES} w-full`}
+        disabled={!props.isSignedIn}
         type="text"
         name="text"
         required
       />
-      <button type="submit" class={BUTTON_STYLES}>Comment</button>
+      <button class={BUTTON_STYLES} disabled={!props.isSignedIn} type="submit">
+        {props.isSignedIn ? "Comment" : "Sign in to comment"}
+      </button>
     </form>
   );
 }
@@ -30,11 +33,13 @@ export default async function ItemsItemPage(
   const item = await getItem(itemId);
   if (item === null) return await ctx.renderNotFound();
 
+  const isSignedIn = ctx.state.sessionUser !== undefined;
   let isVoted = false;
-  if (ctx.state.sessionUser !== undefined) {
+
+  if (isSignedIn) {
     const areVoted = await getAreVotedByUser(
       [item],
-      ctx.state.sessionUser.login,
+      ctx.state.sessionUser!.login,
     );
     isVoted = areVoted[0];
   }
@@ -47,7 +52,7 @@ export default async function ItemsItemPage(
           item={item}
           isVoted={isVoted}
         />
-        <CommentInput itemId={ctx.params.id} />
+        <CommentInput isSignedIn={isSignedIn} itemId={ctx.params.id} />
         <CommentsList itemId={ctx.params.id} />
       </main>
     </>
