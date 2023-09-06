@@ -3,14 +3,15 @@
 import {
   createItem,
   createUser,
-  type Item,
   newItemProps,
   newUserProps,
-  User,
 } from "@/utils/db.ts";
 
 // Reference: https://github.com/HackerNews/API
 const API_BASE_URL = `https://hacker-news.firebaseio.com/v0`;
+const API_ITEM_URL = `${API_BASE_URL}/item`;
+const API_TOP_STORIES_URL = `${API_BASE_URL}/topstories.json`;
+const TOP_STORIES_COUNT = 10;
 
 interface Story {
   id: number;
@@ -21,91 +22,43 @@ interface Story {
   url: string;
 }
 
-function* batchify<T>(arr: T[], n = 5): Generator<T[], void> {
-  for (let i = 0; i < arr.length; i += n) {
-    yield arr.slice(i, i + n);
-  }
+const resp = await fetch(API_TOP_STORIES_URL);
+const allTopStories = await resp.json() as number[];
+const topStories = allTopStories.slice(0, TOP_STORIES_COUNT);
+const storiesPromises = [];
+
+for (const id of topStories) {
+  storiesPromises.push(fetch(`${API_ITEM_URL}/${id}.json`));
 }
 
-// Fetches the top 500 HN stories to seed the db
-async function fetchTopStoryIds() {
-  const resp = await fetch(`${API_BASE_URL}/topstories.json`);
-  if (!resp.ok) {
-    console.error(`Failed to fetchTopStoryIds - status: ${resp.status}`);
-    return;
-  }
-  return await resp.json();
-}
+const storiesResponses = await Promise.all(storiesPromises);
+const stories = await Promise.all(
+  storiesResponses.map((r) => r.json()),
+) as Story[];
+const items = stories.map(({ by: userLogin, title, url, score, time }) => ({
+  ...newItemProps(),
+  userLogin,
+  title,
+  url,
+  score,
+  createdAt: new Date(time * 1000),
+})).filter(({ url }) => url);
 
-async function fetchStory(id: number | string) {
-  const resp = await fetch(`${API_BASE_URL}/item/${id}.json`);
-  if (!resp.ok) {
-    console.error(`Failed to fetchStory (${id}) - status: ${resp.status}`);
-    return;
-  }
-  return await resp.json();
+const itemPromises = [];
+for (const item of items) {
+  itemPromises.push(createItem(item));
 }
+await Promise.all(itemPromises);
 
-async function fetchTopStories(limit = 10) {
-  const ids = await fetchTopStoryIds();
-  if (!(ids && ids.length)) {
-    console.error(`No ids to fetch!`);
-    return;
-  }
-  const filtered: [number] = ids.slice(0, limit);
-  const stories: Story[] = [];
-  for (const batch of batchify(filtered)) {
-    stories.push(...(await Promise.all(batch.map((id) => fetchStory(id))))
-      .filter((v) => Boolean(v)) as Story[]);
-  }
-  return stories;
+const userPromises = [];
+for (const { userLogin } of items) {
+  userPromises.push(
+    createUser({
+      login: userLogin,
+      stripeCustomerId: crypto.randomUUID(),
+      sessionId: crypto.randomUUID(),
+      ...newUserProps(),
+    }),
+  );
 }
-
-async function seedSubmissions(stories: Story[]) {
-  const items = stories.map(({ by: userLogin, title, url, score, time }) => {
-    return {
-      ...newItemProps(),
-      userLogin,
-      title,
-      url,
-      score,
-      createdAt: new Date(time * 1000),
-    } as Item;
-  }).filter(({ url }) => url);
-  for (const batch of batchify(items)) {
-    await Promise.all(
-      batch.map((item) =>
-        Promise.all([
-          createItem(item),
-        ])
-      ),
-    );
-  }
-  return items;
-}
-
-async function main(limit = 20) {
-  const stories = await fetchTopStories(limit);
-  if (!(stories && stories.length)) {
-    console.error(`No stories to seed!`);
-    return;
-  }
-  const items = await seedSubmissions(stories);
-
-  // Create dummy users to ensure each post has a corresponding user
-  for (const batch of batchify(items)) {
-    await Promise.allSettled(batch.map(({ userLogin }) => {
-      const user: User = {
-        login: userLogin,
-        stripeCustomerId: crypto.randomUUID(), // unique per user
-        sessionId: crypto.randomUUID(), // unique per user
-        ...newUserProps(),
-      };
-      return createUser(user); // ignore errors if dummy user already exists
-    }));
-  }
-}
-
-if (import.meta.main) {
-  await main();
-}
+await Promise.all(userPromises);
