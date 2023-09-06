@@ -347,13 +347,25 @@ class AssertSnapshotContext {
     const updated = this.getUpdatedCount();
     if (updated > 0) {
       console.log(
-        green(bold(`\n > ${updated} snapshots updated.`)),
+        green(
+          bold(
+            `\n > ${updated} ${
+              updated === 1 ? "snapshot" : "snapshots"
+            } updated.`,
+          ),
+        ),
       );
     }
     const removed = removedSnapshotNames.length;
     if (removed > 0) {
       console.log(
-        red(bold(`\n > ${removed} snapshots removed.`)),
+        red(
+          bold(
+            `\n > ${removed} ${
+              removed === 1 ? "snapshot" : "snapshots"
+            } removed.`,
+          ),
+        ),
       );
       for (const snapshotName of removedSnapshotNames) {
         console.log(
