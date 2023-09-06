@@ -9,6 +9,7 @@ import {
 import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import IconRss from "tabler_icons_tsx/rss.tsx";
+import MadeWithFreshBadge from "@/components/MadeWithFreshBadge.tsx";
 
 export default function Footer(props: { url: URL }) {
   return (
@@ -45,12 +46,7 @@ export default function Footer(props: { url: URL }) {
           <IconBrandGithub class="h-6 w-6" />
         </a>
         <a href="https://fresh.deno.dev">
-          <img
-            width="197"
-            height="37"
-            src="https://fresh.deno.dev/fresh-badge.svg"
-            alt="Made with Fresh"
-          />
+          <MadeWithFreshBadge />
         </a>
       </nav>
     </footer>
