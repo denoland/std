@@ -31,11 +31,10 @@ function UserTableRow(props: User) {
   );
 }
 
-export default function UsersTable() {
+export default function UsersTable({ endpoint }: { endpoint: string }) {
   const usersSig = useSignal<User[]>([]);
   const cursorSig = useSignal("");
   const isLoadingSig = useSignal(false);
-  const endpoint = "/api/users";
 
   async function loadMoreUsers() {
     if (isLoadingSig.value) return;

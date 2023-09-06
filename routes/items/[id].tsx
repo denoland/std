@@ -33,6 +33,7 @@ export default async function ItemsItemPage(
   const item = await getItem(itemId);
   if (item === null) return await ctx.renderNotFound();
 
+  const endpoint = `/api/items/${ctx.params.id}/comments`;
   const isSignedIn = ctx.state.sessionUser !== undefined;
   let isVoted = false;
 
@@ -46,14 +47,21 @@ export default async function ItemsItemPage(
 
   return (
     <>
-      <Head title={item.title} href={ctx.url.href} />
+      <Head title={item.title} href={ctx.url.href}>
+        <link
+          as="fetch"
+          crossOrigin="anonymous"
+          href={endpoint}
+          rel="preload"
+        />
+      </Head>
       <main class="flex-1 p-4 space-y-8">
         <ItemSummary
           item={item}
           isVoted={isVoted}
         />
         <CommentInput isSignedIn={isSignedIn} itemId={ctx.params.id} />
-        <CommentsList itemId={ctx.params.id} />
+        <CommentsList endpoint={endpoint} />
       </main>
     </>
   );

@@ -45,12 +45,21 @@ export default async function HomePage(
   _req: Request,
   ctx: RouteContext<undefined, State>,
 ) {
+  const endpoint = "/api/items";
+
   return (
     <>
-      <Head href={ctx.url.href} />
+      <Head href={ctx.url.href}>
+        <link
+          as="fetch"
+          crossOrigin="anonymous"
+          href={endpoint}
+          rel="preload"
+        />
+      </Head>
       <main class="flex-1 p-4">
         {NEEDS_SETUP && <SetupInstruction />}
-        <ItemsList endpoint={"/api/items"} />
+        <ItemsList endpoint={endpoint} />
       </main>
     </>
   );

@@ -16,11 +16,10 @@ function CommentSummary(props: Comment) {
   );
 }
 
-export default function CommentsList(props: { itemId: string }) {
+export default function CommentsList({ endpoint }: { endpoint: string }) {
   const commentsSig = useSignal<Comment[]>([]);
   const cursorSig = useSignal("");
   const isLoadingSig = useSignal(false);
-  const endpoint = `/api/items/${props.itemId}/comments`;
 
   async function loadMoreComments() {
     if (isLoadingSig.value) return;

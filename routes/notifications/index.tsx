@@ -10,12 +10,21 @@ export default async function NotificationsPage(
   _req: Request,
   ctx: RouteContext<undefined, SignedInState>,
 ) {
+  const endpoint = "/api/me/notifications";
+
   return (
     <>
-      <Head title="Notifications" href={ctx.url.href} />
+      <Head title="Notifications" href={ctx.url.href}>
+        <link
+          as="fetch"
+          crossOrigin="anonymous"
+          href={endpoint}
+          rel="preload"
+        />
+      </Head>
       <main class="flex-1 p-4">
         <h1 class={HEADING_WITH_MARGIN_STYLES}>Notifications</h1>
-        <NotificationsList />
+        <NotificationsList endpoint={endpoint} />
       </main>
     </>
   );

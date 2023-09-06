@@ -24,11 +24,10 @@ function NotificationSummary(props: Notification) {
   );
 }
 
-export default function NotificationsList() {
+export default function NotificationsList({ endpoint }: { endpoint: string }) {
   const notificationsSig = useSignal<Notification[]>([]);
   const cursorSig = useSignal("");
   const isLoadingSig = useSignal(false);
-  const endpoint = `/api/me/notifications`;
 
   async function loadMoreNotifications() {
     if (isLoadingSig.value) return;
