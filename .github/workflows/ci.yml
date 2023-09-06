@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: false
           persist-credentials: false
@@ -110,7 +110,7 @@ jobs:
         module: [ crypto/_wasm ]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # required to check for changes
           fetch-depth: 2
@@ -133,7 +133,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
+        uses: hecrj/setup-rust-action@v2
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
