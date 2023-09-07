@@ -63,7 +63,7 @@ To get started:
    ```
 1. Navigate to `http://localhost:8000` to start playing with your new SaaS app.
 
-### Set-Up Stripe (Optional)
+### Set Up Stripe (Optional)
 
 This guide will enable test Stripe payments, the pricing page, and "Premium
 user" functionality.
@@ -140,23 +140,29 @@ needs.
    then [Markdown](https://www.markdownguide.org/cheat-sheet/) text to define
    the properties and content of the blog post.
 
-````md
----
-title: This is my first blog post!
-published_at: 2022-11-04T15:00:00.000Z
-summary: This is an excerpt of my first blog post.
----
+   ````md
+   ---
+   title: This is my first blog post!
+   published_at: 2022-11-04T15:00:00.000Z
+   summary: This is an excerpt of my first blog post.
+   ---
 
-# Heading 1
+   # Heading 1
 
-Hello, world!
+   Hello, world!
 
-```javascript
-console.log("Hello World");
-```
-````
+   ```javascript
+   console.log("Hello World");
+   ```
+   ````
+1. Start the server:
+   ```
+   deno task start
+   ```
+1. Navigate to the URL of the newly created blog post. E.g.
+   `http://localhost:8000/blog/hello-there`.
 
-See other examples in `/data/posts`.
+See other examples of blog post files in `/data/posts`.
 
 ### Themes
 
@@ -224,7 +230,7 @@ Refer to these guides for using Docker to deploy Deno to specific platforms:
 - [Digital Ocean](https://deno.land/manual/advanced/deploying_deno/digital_ocean)
 - [Google Cloud Run](https://deno.land/manual/advanced/deploying_deno/google_cloud_run)
 
-### Set-Up Stripe for Production (Optional)
+### Set Up Stripe for Production (Optional)
 
 1. [Activate your Stripe account](https://stripe.com/docs/account/activate).
 1. Navigate to the
