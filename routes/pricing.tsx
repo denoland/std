@@ -8,7 +8,7 @@ import {
   stripe,
   StripProductWithPrice,
 } from "@/utils/stripe.ts";
-import { formatAmountForDisplay } from "@/utils/display.ts";
+import { formatCurrency } from "@/utils/display.ts";
 import Stripe from "stripe";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
@@ -83,7 +83,7 @@ function PremiumPlanCard(
         </div>
         <p>
           <span class="text-4xl font-bold">
-            {formatAmountForDisplay(
+            {formatCurrency(
               defaultPrice.unit_amount! / 100,
               defaultPrice?.currency,
             )}

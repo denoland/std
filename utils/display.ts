@@ -10,7 +10,6 @@ import { difference } from "std/datetime/difference.ts";
  *
  * pluralize(0, "meow"); // Returns "0 meows"
  * pluralize(1, "meow"); // Returns "1 meow"
- * pluralize(2, "meow"); // Returns "2 meows"
  * ```
  */
 export function pluralize(amount: number, unit: string) {
@@ -26,7 +25,6 @@ export function pluralize(amount: number, unit: string) {
  * import { SECOND, MINUTE, HOUR } from "std/datetime/constants.ts";
  *
  * timeAgo(new Date()); // Returns "just now"
- * timeAgo(new Date(Date.now() - MINUTE)); // Returns "2 minutes ago"
  * timeAgo(new Date(Date.now() - 3 * HOUR)); // Returns "3 hours ago"
  * ```
  */
@@ -55,11 +53,24 @@ export function timeAgo(date: Date) {
   return pluralize(amount, unit.slice(0, -1)) + " ago";
 }
 
-export function formatAmountForDisplay(
+/**
+ * Returns a formatted string based on the given amount of currency and the
+ * machine's preferred language.
+ *
+ * @see {@linkcode Intl.NumberFormat}
+ *
+ * @example
+ * ```ts
+ * import { formatCurrency } from "@/utils/display.ts";
+ *
+ * formatCurrency(4, "USD"); // Returns "$5"
+ * ```
+ */
+export function formatCurrency(
   amount: number,
   currency: string,
 ): string {
-  const numberFormat = new Intl.NumberFormat(
+  return new Intl.NumberFormat(
     navigator.language,
     {
       style: "currency",
@@ -67,6 +78,8 @@ export function formatAmountForDisplay(
       currencyDisplay: "symbol",
       maximumFractionDigits: 0,
     },
-  );
-  return numberFormat.format(amount);
+  ).format(amount)
+    // Issue: https://stackoverflow.com/questions/44533919/space-after-symbol-with-js-intl
+    .replace(/^(\D+)/, "$1")
+    .replace(/\s+/, "");
 }
