@@ -68,7 +68,7 @@ export default function Header(
         <a
           href="/dashboard"
           class={cx(
-            props.url.pathname === "/dashboard"
+            props.url.pathname.startsWith("/dashboard")
               ? ACTIVE_LINK_STYLES
               : LINK_STYLES,
             NAV_ITEM,
