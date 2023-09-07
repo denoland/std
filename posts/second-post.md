@@ -1,6 +1,6 @@
 ---
 title: Second post
-published_at: 2022-11-04T15:00:00.000Z
+publishedAt: 2022-11-04T15:00:00.000Z
 summary: Lorem Ipsum is simply dummy text of the printing and typesetting industry.
 ---
 

@@ -132,8 +132,8 @@ needs.
 
 ### Create a Blog Post
 
-1. Create a `.md` file in `/data/posts` with the filename as the slug of the
-   blog post URL. E.g. a file with path `/data/posts/hello-there.md` will have
+1. Create a `.md` file in the [/posts](/posts) with the filename as the slug of
+   the blog post URL. E.g. a file with path `/posts/hello-there.md` will have
    path `/blog/hello-there`.
 1. Write the
    [Front Matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
@@ -143,7 +143,7 @@ needs.
    ````md
    ---
    title: This is my first blog post!
-   published_at: 2022-11-04T15:00:00.000Z
+   publishedAt: 2022-11-04T15:00:00.000Z
    summary: This is an excerpt of my first blog post.
    ---
 
@@ -162,7 +162,7 @@ needs.
 1. Navigate to the URL of the newly created blog post. E.g.
    `http://localhost:8000/blog/hello-there`.
 
-See other examples of blog post files in `/data/posts`.
+See other examples of blog post files in [/posts](/posts).
 
 ### Themes
 
