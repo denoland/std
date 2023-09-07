@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { type Handlers, Status } from "$fresh/server.ts";
-import { stripe } from "@/utils/payments.ts";
+import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import Stripe from "stripe";
 import { getUserByStripeCustomer, updateUser } from "@/utils/db.ts";
 import { errors } from "std/http/http_errors.ts";
@@ -14,7 +14,7 @@ export const handler: Handlers = {
    * 2. customer.subscription.deleted (when a user cancels the premium plan)
    */
   async POST(req) {
-    if (stripe === undefined) throw new errors.NotFound();
+    if (!isStripeEnabled()) throw new errors.NotFound();
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature")!;
@@ -30,8 +30,8 @@ export const handler: Handlers = {
         cryptoProvider,
       );
     } catch (error) {
-      console.error(error.message);
-      return new Response(error.message, { status: 400 });
+      console.error(error);
+      throw new errors.BadRequest();
     }
 
     // @ts-ignore: Property 'customer' actually does exist on type 'Object'

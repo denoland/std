@@ -96,12 +96,13 @@ Deno.test("[e2e] GET /blog", async () => {
 });
 
 Deno.test("[e2e] GET /pricing", async () => {
-  const resp = await handler(
-    new Request("http://localhost/pricing"),
-  );
+  const req = new Request("http://localhost/pricing");
+
+  Deno.env.delete("STRIPE_SECRET_KEY");
+  const resp = await handler(req);
 
   assertFalse(resp.ok);
-  assertInstanceOf(resp.body, ReadableStream);
+  assertEquals(typeof await resp.text(), "string");
   assertEquals(
     resp.headers.get("content-type"),
     "text/html; charset=utf-8",

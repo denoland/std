@@ -14,7 +14,7 @@ import {
   updateUser,
   type User,
 } from "@/utils/db.ts";
-import { stripe } from "@/utils/payments.ts";
+import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 
 const oauth2Client = createGitHubOAuth2Client();
 
@@ -55,7 +55,7 @@ export default {
         const user = await getUser(githubUser.login);
         if (!user) {
           let stripeCustomerId = undefined;
-          if (stripe) {
+          if (isStripeEnabled()) {
             const customer = await stripe.customers.create({
               email: githubUser.email,
             });

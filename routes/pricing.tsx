@@ -3,11 +3,12 @@ import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import {
-  formatAmountForDisplay,
   isProductWithPrice,
+  isStripeEnabled,
   stripe,
   StripProductWithPrice,
-} from "@/utils/payments.ts";
+} from "@/utils/stripe.ts";
+import { formatAmountForDisplay } from "@/utils/display.ts";
 import Stripe from "stripe";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
@@ -173,7 +174,7 @@ export default async function PricingPage(
   _req: Request,
   ctx: RouteContext<undefined, State>,
 ) {
-  if (stripe === undefined) return await ctx.renderNotFound();
+  if (!isStripeEnabled()) return await ctx.renderNotFound();
 
   const { data } = await stripe.products.list({
     expand: ["data.default_price"],

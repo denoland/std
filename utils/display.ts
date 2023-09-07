@@ -54,3 +54,19 @@ export function timeAgo(date: Date) {
   // Remove the last character which is an "s"
   return pluralize(amount, unit.slice(0, -1)) + " ago";
 }
+
+export function formatAmountForDisplay(
+  amount: number,
+  currency: string,
+): string {
+  const numberFormat = new Intl.NumberFormat(
+    navigator.language,
+    {
+      style: "currency",
+      currency,
+      currencyDisplay: "symbol",
+      maximumFractionDigits: 0,
+    },
+  );
+  return numberFormat.format(amount);
+}

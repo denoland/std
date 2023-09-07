@@ -3,7 +3,7 @@ import type { RouteContext } from "$fresh/server.ts";
 import type { SignedInState } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { ComponentChild } from "preact";
-import { stripe } from "@/utils/payments.ts";
+import { isStripeEnabled } from "@/utils/stripe.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
@@ -51,7 +51,7 @@ export default async function AccountPage(
             title="Subscription"
             text={sessionUser.isSubscribed ? "Premium 🦕" : "Free"}
           >
-            {stripe && (
+            {isStripeEnabled() && (
               <a
                 class="underline"
                 href={`/account/${action.toLowerCase()}`}

@@ -2,7 +2,7 @@
 import type Stripe from "stripe";
 import { SITE_DESCRIPTION } from "@/utils/constants.ts";
 import "std/dotenv/load.ts";
-import { stripe } from "@/utils/payments.ts";
+import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 
 async function createPremiumTierProduct(stripe: Stripe) {
   /**
@@ -54,7 +54,7 @@ async function createDefaultPortalConfiguration(
 }
 
 async function main() {
-  if (stripe === undefined) throw new Error("Stripe is disabled.");
+  if (!isStripeEnabled()) throw new Error("Stripe is disabled.");
 
   const product = await createPremiumTierProduct(stripe);
 
