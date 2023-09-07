@@ -122,7 +122,7 @@ Use the following commands to work with your local Deno KV database:
 - `deno task db:dump` - Print all database values.
 - `deno task db:reset` - Reset the database. This is not recoverable.
 
-## Customization
+## Customize and Extend
 
 ### Global Constants
 
@@ -130,16 +130,33 @@ The [utils/constants.ts](utils/constants.ts) file includes global values used
 across various aspects of the codebase. Update these values according to your
 needs.
 
-### Blog
+### Create a Blog Post
 
-To create a new blog post, create a Markdown (`.md`) file within
-[`/data/posts/`](data/posts) with the filename as the slug. E.g.
-`/data/posts/hello-there.md` file will correspond to the `/blog/hello-there`
-route. See [`/data/posts/`](data/posts) for examples.
+1. Create a `.md` file in `/data/posts` with the filename as the slug of the
+   blog post URL. E.g. a file with path `/data/posts/hello-there.md` will have
+   path `/blog/hello-there`.
+1. Write the
+   [Front Matter](https://daily-dev-tips.com/posts/what-exactly-is-frontmatter/)
+   then [Markdown](https://www.markdownguide.org/cheat-sheet/) text to define
+   the properties and content of the blog post.
 
-Post properties are to be added to the starting Front Matter section of the
-Markdown file. See the `Post` interface in [`/utils/posts.ts`](utils/posts.ts)
-for a full list of properties and their types.
+````md
+---
+title: This is my first blog post!
+published_at: 2022-11-04T15:00:00.000Z
+summary: This is an excerpt of my first blog post.
+---
+
+# Heading 1
+
+Hello, world!
+
+```javascript
+console.log("Hello World");
+```
+````
+
+See other examples in `/data/posts`.
 
 ### Themes
 
