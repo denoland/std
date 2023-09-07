@@ -147,68 +147,33 @@ You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
 `twind.config.ts`. Change these values to match your desired color scheme.
 
-## Deploying to Production
+## Deploy to Production
 
 This section assumes that a
-[local development environment](#getting-started-locally) has been set up.
+[local development environment](#getting-started-locally) is already set up.
 
-### Authentication (OAuth)
+1. Navigate to your
+   [GitHub OAuth application settings page](https://github.com/settings/developers).
+1. Set the **Homepage URL** to your production URL. E.g.
+   `https://hunt.deno.land`.
+1. Set the **Authorization callback URL** to your production URL with the
+   `/callback` path. E.g. `https://hunt.deno.land/callback`.
+1. Copy all the environment variables in your `.env` file to your production
+   environment.
 
-1. [Change your OAuth app settings](https://github.com/settings/developers) to
-   the following:
-
-- `Homepage URL` = `https://{{ YOUR DOMAIN }}`
-- `Authorization callback URL` = `http://{{ YOUR DOMAIN }}/callback`
-
-### Payments (Stripe)
-
-In order to use Stripe in production, you'll have to
-[activate your Stripe account](https://stripe.com/docs/account/activate).
-
-Once your Stripe account is activated, simply grab the production version of the
-Stripe Secret Key. That will be the value of `STRIPE_SECRET_KEY` in prod.
-
-### Automate Stripe Subscription Updates via Webhooks
-
-Keep your user's customer information up-to-date with billing changes by
-[registering a webhook endpoint in Stripe](https://stripe.com/docs/development/dashboard/register-webhook).
-
-- Endpoint URL: `https://{{ YOUR DOMAIN }}/api/stripe-webhooks`
-- Listen to `Events on your account`
-- Select `customer.subscription.created` and `customer.subscription.deleted`
-
-### Stripe Production Environmental Variables
-
-- `STRIPE_SECRET_KEY`: Dashboard Home (Right Side of Page) -> Secret Key (only
-  revealed once)
-- `STRIPE_WEBHOOK_SECRET`: Dashboard Home -> Developers (right side of page) ->
-  Create webhook -> Click Add Endpoint
-  - After Creation, redirected to new webhook page -> Signing Secret -> Reveal
-- `STRIPE_PREMIUM_PLAN_PRICE_ID`: Dashboard -> Products -> Premium Tier ->
-  Pricing/API ID
-
-### Stripe Customer Portal Branding
-
-[Set up your branding on Stripe](https://dashboard.stripe.com/settings/branding),
-as the user will be taken to Stripe's checkout page when they upgrade to a
-subscription.
-
-## Deploy to Deno Deploy
-
-Deploy your SaaS app close to your users at the edge with
-[Deno Deploy](https://deno.com/deploy):
+### Deploy to [Deno Deploy](https://deno.com/deploy)
 
 1. Clone this repository for your SaaSKit project.
 1. Sign into [Deno Deploy](https://dash.deno.com) with your GitHub account.
 1. Select your GitHub organization or user, repository, and branch.
-1. Select "Automatic" deployment mode and `main.ts` as the entry point.
-1. Click "Link", which will start the deployment.
-1. Once the deployment is complete, click on "Settings" and add the production
-   environmental variables, then hit "Save".
+1. Select **Automatic** deployment mode and `main.ts` as the entry point.
+1. Click **Link**, which will start the deployment.
+1. Once the deployment is complete, click on **Settings** and add the production
+   environmental variables, then hit **Save**.
 
 You should now be able to visit your newly deployed SaaS.
 
-## Deploy to any VPS with Docker
+### Deploy to any VPS with Docker
 
 [Docker](https://docker.com) makes it easy to deploy and run your Deno app to
 any virtual private server (VPS). This section will show you how to do that with
@@ -217,8 +182,7 @@ AWS Lightsail and Digital Ocean.
 1. [Install Docker](https://docker.com) on your machine, which should also
    install
    [the `docker` CLI](https://docs.docker.com/engine/reference/commandline/cli/).
-
-2. Create an account on [Docker Hub](https://hub.docker.com), a registry for
+1. Create an account on [Docker Hub](https://hub.docker.com), a registry for
    Docker container images.
 
 > Note: the [`Dockerfile`](./Dockerfile), [`.dockerignore`](./.dockerignore) and
@@ -242,6 +206,32 @@ Refer to these guides for using Docker to deploy Deno to specific platforms:
 - [Amazon Lightsail](https://deno.land/manual/advanced/deploying_deno/aws_lightsail)
 - [Digital Ocean](https://deno.land/manual/advanced/deploying_deno/digital_ocean)
 - [Google Cloud Run](https://deno.land/manual/advanced/deploying_deno/google_cloud_run)
+
+### Set-Up Stripe for Production (Optional)
+
+1. [Activate your Stripe account](https://stripe.com/docs/account/activate).
+1. Navigate to the
+   [**API keys** page](https://dashboard.stripe.com/test/apikeys) on the
+   **Developers** dashboard.
+1. In the **Standard keys** section, click **Reveal test key** on the **Secret
+   key** table row.
+1. Click to copy the value and paste to your `STRIPE_SECRET_KEY` environment
+   variable in your production environment.
+   ```
+   STRIPE_SECRET_KEY=<Stripe secret key>
+   ```
+1. Navigate to the [**Webhooks** page](https://dashboard.stripe.com/webhooks) to
+   register your webhook endpoint.
+1. Click **Add endpoint**.
+1. Set **Endpoint URL** to your production URL with the `/api/stripe-webhooks`
+   path. E.g. `https://hunt.deno.land/api/stripe-webhooks`.
+1. Set **Listen to** to `Events on your account`.
+1. Set `customer.subscription.created` and `customer.subscription.deleted` as
+   events to listen to.
+1. Click **Add endpoint**.
+1. Optionally,
+   [set up your Stripe branding](https://dashboard.stripe.com/settings/branding)
+   to customize the look and feel of your Stripe checkout page.
 
 ## Goals and Philosophy
 
