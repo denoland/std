@@ -4,7 +4,7 @@
 import * as builtInMatchers from "./_matchers/mod.ts";
 import type { Matcher, MatcherContext, Matchers } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { AnyConstructor } from '../assert/assert_instance_of.ts';
+import { AnyConstructor } from "../assert/assert_instance_of.ts";
 
 export interface Expected {
   /* Similar to assertEqual */
@@ -25,7 +25,8 @@ export interface Expected {
   toBeUndefined(): void;
   toMatch(expected: RegExp): void;
   toMatchObject(expected: Record<PropertyKey, unknown>): void;
-  toThrow<E extends Error = Error>(expected: new (...args: any[]) => E,): void;
+  // deno-lint-ignore no-explicit-any
+  toThrow<E extends Error = Error>(expected: new (...args: any[]) => E): void;
   not: Expected;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
