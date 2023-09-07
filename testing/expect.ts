@@ -4,10 +4,28 @@
 import * as builtInMatchers from "./_matchers/mod.ts";
 import type { Matcher, MatcherContext, Matchers } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
+import { AnyConstructor } from '../assert/assert_instance_of.ts';
 
 export interface Expected {
   /* Similar to assertEqual */
   toEqual(candidate: unknown): void;
+  toStrictEqual(candidate: unknown): void;
+  toBe(candidate: unknown): void;
+  toBeCloseTo(candidate: number, tolerance?: number): void;
+  toBeDefined(): void;
+  toBeFalsy(): void;
+  toBeGreater(expected: number): void;
+  toBeGreaterOrEqual(expected: number): void;
+  toBeInstanceOf<T extends AnyConstructor>(expected: T): void;
+  toBeLess(expected: number): void;
+  toBeLessOrEqual(expected: number): void;
+  toBeNan(): void;
+  toBeNull(): void;
+  toBeTruthy(): void;
+  toBeUndefined(): void;
+  toMatch(expected: RegExp): void;
+  toMatchObject(expected: Record<PropertyKey, unknown>): void;
+  toThrow<E extends Error = Error>(expected: new (...args: any[]) => E,): void;
   not: Expected;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
