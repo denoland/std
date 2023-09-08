@@ -12,7 +12,10 @@ function PostCard(props: Post) {
           {props.title}
         </h2>
         {props.publishedAt.toString() !== "Invalid Date" && (
-          <time class="text-gray-500">
+          <time
+            dateTime={props.publishedAt.toISOString()}
+            class="text-gray-500"
+          >
             {props.publishedAt.toLocaleDateString("en-US", {
               dateStyle: "long",
             })}

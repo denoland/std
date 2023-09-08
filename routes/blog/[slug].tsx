@@ -22,7 +22,10 @@ export default async function BlogPostPage(_req: Request, ctx: RouteContext) {
       <main class="p-4 flex-1">
         <h1 class="text-4xl font-bold">{post.title}</h1>
         {date && (
-          <time class="text-gray-500">
+          <time
+            dateTime={post.publishedAt.toISOString()}
+            class="text-gray-500"
+          >
             {date}
           </time>
         )}
