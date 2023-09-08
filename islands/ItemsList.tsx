@@ -34,12 +34,9 @@ function EmptyItemsList() {
   );
 }
 
-interface ItemListProps {
-  endpoint: string;
-  isSignedIn: boolean;
-}
-
-export default function ItemsList(props: ItemListProps) {
+export default function ItemsList(
+  props: { endpoint: string; isSignedIn: boolean },
+) {
   const itemsSig = useSignal<Item[]>([]);
   const votedItemsIdsSig = useSignal<string[]>([]);
   const cursorSig = useSignal("");
@@ -66,6 +63,11 @@ export default function ItemsList(props: ItemListProps) {
   }
 
   useEffect(() => {
+    if (!props.isSignedIn) {
+      loadMoreItems();
+      return;
+    }
+
     fetchVotedItems()
       .then((votedItems) =>
         votedItemsIdsSig.value = votedItems.map(({ id }) => id)
