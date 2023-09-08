@@ -2,7 +2,7 @@
 
 import { MatcherContext, MatchResult } from "../_types.ts";
 import { assertAlmostEquals } from "../../assert/assert_almost_equals.ts";
-import { AssertionError } from "../../assert/assertion_error";
+import { AssertionError } from "../../assert/assertion_error.ts";
 
 /* Similar to assertStrictEquals(value, undefined) and  assertNotStrictEquals(value, undefined)*/
 export function toBeCloseTo(
