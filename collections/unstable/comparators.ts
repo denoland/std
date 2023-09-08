@@ -1,4 +1,3 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
 /** Compares its two arguments for ascending order using JavaScript's built in comparison operators. */
