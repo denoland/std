@@ -62,10 +62,8 @@ for await (const oldItemEntry of iter1) {
 }
 
 const iter3 = kv.list<OldItem>({ prefix: ["items_by_user"] });
-const promises = [];
 for await (const { key, value } of iter3) {
-  if (value.createdAt) promises.push(kv.delete(key));
+  if (value.createdAt) await kv.delete(key);
 }
-await Promise.all(promises);
 
 kv.close();
