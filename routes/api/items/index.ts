@@ -1,16 +1,17 @@
-import { collectValues, listItemsByTime } from "@/utils/db.ts";
+import { collectValues, listItems } from "@/utils/db.ts";
 import { getCursor } from "@/utils/http.ts";
 import { type Handlers } from "$fresh/server.ts";
-import { createItem, type Item, newItemProps } from "@/utils/db.ts";
+import { createItem, type Item } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { assertSignedIn, State } from "@/middleware/session.ts";
 import { errors } from "std/http/http_errors.ts";
+import { ulid } from "std/ulid/mod.ts";
 
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const handler: Handlers<undefined, State> = {
   async GET(req) {
     const url = new URL(req.url);
-    const iter = listItemsByTime({
+    const iter = listItems({
       cursor: getCursor(url),
       limit: 10,
       reverse: true,
@@ -33,10 +34,11 @@ export const handler: Handlers<undefined, State> = {
     }
 
     const item: Item = {
+      id: ulid(),
       userLogin: ctx.state.sessionUser.login,
       title,
       url,
-      ...newItemProps(),
+      score: 0,
     };
     await createItem(item);
     return redirect("/items/" + item.id);

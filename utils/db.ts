@@ -1,4 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { decodeTime } from "std/ulid/mod.ts";
 import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
@@ -54,21 +55,12 @@ export function formatDate(date: Date) {
 
 // Item
 export interface Item {
+  // Uses ULID
+  id: string;
   userLogin: string;
   title: string;
   url: string;
-  // The below properties can be automatically generated upon item creation
-  id: string;
-  createdAt: Date;
   score: number;
-}
-
-export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
-  return {
-    id: crypto.randomUUID(),
-    score: 0,
-    createdAt: new Date(),
-  };
 }
 
 /**
@@ -76,47 +68,57 @@ export function newItemProps(): Pick<Item, "id" | "score" | "createdAt"> {
  *
  * @example
  * ```ts
- * import { newItemProps, createItem } from "@/utils/db.ts";
+ * import { createItem } from "@/utils/db.ts";
+ * import { ulid } from "std/ulid/mod.ts";
  *
  * await createItem({
+ *   id: ulid(),
  *   userLogin: "john_doe",
  *   title: "example-title",
  *   url: "https://example.com",
- *   ...newItemProps(),
+ *   score: 0,
  * });
  * ```
  */
 export async function createItem(item: Item) {
   const itemsKey = ["items", item.id];
-  const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
-  const itemsCountKey = ["items_count", formatDate(item.createdAt)];
+  const itemsCountKey = [
+    "items_count",
+    formatDate(new Date(decodeTime(item.id))),
+  ];
 
   const res = await kv.atomic()
     .check({ key: itemsKey, versionstamp: null })
-    .check({ key: itemsByTimeKey, versionstamp: null })
     .check({ key: itemsByUserKey, versionstamp: null })
     .set(itemsKey, item)
-    .set(itemsByTimeKey, item)
     .set(itemsByUserKey, item)
     .sum(itemsCountKey, 1n)
     .commit();
 
-  if (!res.ok) throw new Error(`Failed to create item: ${item}`);
+  if (!res.ok) throw new Error("Failed to create item");
 }
 
 export async function deleteItem(item: Item) {
   const itemsKey = ["items", item.id];
-  const itemsByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
+  const [itemsRes, itemsByUserRes] = await kv.getMany<Item[]>([
+    itemsKey,
+    itemsByUserKey,
+  ]);
+  if (itemsRes.value === null) throw new Deno.errors.NotFound("Item not found");
+  if (itemsByUserRes.value === null) {
+    throw new Deno.errors.NotFound("Item by user not found");
+  }
 
   const res = await kv.atomic()
+    .check(itemsRes)
+    .check(itemsByUserRes)
     .delete(itemsKey)
-    .delete(itemsByTimeKey)
     .delete(itemsByUserKey)
     .commit();
 
-  if (!res.ok) throw new Error(`Failed to delete item: ${item}`);
+  if (!res.ok) throw new Error("Failed to delete item");
 }
 
 export async function getItem(id: string) {
@@ -124,15 +126,15 @@ export async function getItem(id: string) {
   return res.value;
 }
 
+export function listItems(options?: Deno.KvListOptions) {
+  return kv.list<Item>({ prefix: ["items"] }, options);
+}
+
 export function listItemsByUser(
   userLogin: string,
   options?: Deno.KvListOptions,
 ) {
   return kv.list<Item>({ prefix: ["items_by_user", userLogin] }, options);
-}
-
-export function listItemsByTime(options?: Deno.KvListOptions) {
-  return kv.list<Item>({ prefix: ["items_by_time"] }, options);
 }
 
 // Notification
@@ -151,10 +153,10 @@ export interface Notification {
  * @example
  * ```ts
  * import { createNotification } from "@/utils/db.ts";
- * import { monotonicUlid } from "std/ulid/mod.ts";
+ * import { ulid } from "std/ulid/mod.ts";
  *
  * await createNotification({
- *   id: monotonicUlid(),
+ *   id: ulid(),
  *   userLogin: "john_doe",
  *   type: "example-type",
  *   text: "Hello, world!",
@@ -309,7 +311,6 @@ export async function createVote(vote: Vote) {
     vote.itemId,
     vote.userLogin,
   ];
-  const itemByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemByUserKey = ["items_by_user", item.userLogin, item.id];
   const votesCountKey = ["votes_count", formatDate(vote.createdAt)];
 
@@ -321,7 +322,6 @@ export async function createVote(vote: Vote) {
     .check({ key: itemVotedByUserKey, versionstamp: null })
     .check({ key: userVotedForItemKey, versionstamp: null })
     .set(itemKey, item)
-    .set(itemByTimeKey, item)
     .set(itemByUserKey, item)
     .set(itemVotedByUserKey, item)
     .set(userVotedForItemKey, user)
@@ -352,14 +352,14 @@ export async function deleteVote(vote: Omit<Vote, "createdAt">) {
   const user = userRes.value;
   if (item === null) throw new Deno.errors.NotFound("Item not found");
   if (user === null) throw new Deno.errors.NotFound("User not found");
-  if (itemVotedByUserRes.value === null) {
+  /** @todo Uncomment after ULID-items migration */
+  /* if (itemVotedByUserRes.value === null) {
     throw new Deno.errors.NotFound("Item voted by user not found");
   }
   if (userVotedForItemRes.value === null) {
     throw new Deno.errors.NotFound("User voted for item not found");
-  }
+  } */
 
-  const itemByTimeKey = ["items_by_time", item.createdAt.getTime(), item.id];
   const itemByUserKey = ["items_by_user", item.userLogin, item.id];
 
   item.score--;
@@ -370,7 +370,6 @@ export async function deleteVote(vote: Omit<Vote, "createdAt">) {
     .check(itemVotedByUserRes)
     .check(userVotedForItemRes)
     .set(itemKey, item)
-    .set(itemByTimeKey, item)
     .set(itemByUserKey, item)
     .delete(itemVotedByUserKey)
     .delete(userVotedForItemKey)

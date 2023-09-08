@@ -12,32 +12,60 @@
  * deno task db:migrate
  * ```
  */
-import { type Comment, createComment, kv } from "@/utils/db.ts";
-import { monotonicUlid } from "std/ulid/mod.ts";
+import {
+  createItem,
+  createVote,
+  deleteVote,
+  type Item,
+  kv,
+  User,
+} from "@/utils/db.ts";
+import { ulid } from "std/ulid/mod.ts";
 
-interface OldComment extends Comment {
+interface OldItem extends Item {
   createdAt: Date;
 }
 
 if (!confirm("WARNING: The database will be migrated. Continue?")) Deno.exit();
 
-const promises = [];
-
-const iter = kv.list<OldComment>({ prefix: ["comments_by_item"] });
-for await (const { key, value } of iter) {
-  if (!value.createdAt) continue;
-  promises.push(kv.delete(key));
-  promises.push(createComment({
-    id: monotonicUlid(value.createdAt.getTime()),
-    userLogin: value.userLogin,
-    itemId: value.itemId,
-    text: value.text,
-  }));
+const iter1 = kv.list<OldItem>({ prefix: ["items"] });
+for await (const oldItemEntry of iter1) {
+  if (oldItemEntry.value.createdAt) {
+    const newItem = {
+      id: ulid(new Date(oldItemEntry.value.createdAt).getTime()),
+      userLogin: oldItemEntry.value.userLogin,
+      url: oldItemEntry.value.url,
+      title: oldItemEntry.value.title,
+      score: oldItemEntry.value.score,
+    };
+    await createItem(newItem);
+    const iter2 = kv.list<User>({
+      prefix: ["users_voted_for_item", oldItemEntry.value.id],
+    });
+    for await (const userEntry of iter2) {
+      await deleteVote({
+        itemId: oldItemEntry.value.id,
+        userLogin: userEntry.value.login,
+      });
+      await deleteVote({
+        itemId: newItem.id,
+        userLogin: userEntry.value.login,
+      });
+      await createVote({
+        itemId: newItem.id,
+        userLogin: userEntry.value.login,
+        createdAt: new Date(),
+      });
+    }
+    await kv.delete(oldItemEntry.key);
+  }
 }
 
-const results = await Promise.allSettled(promises);
-results.forEach((result) => {
-  if (result.status === "rejected") console.error(result);
-});
+const iter3 = kv.list<OldItem>({ prefix: ["items_by_user"] });
+const promises = [];
+for await (const { key, value } of iter3) {
+  if (value.createdAt) promises.push(kv.delete(key));
+}
+await Promise.all(promises);
 
 kv.close();

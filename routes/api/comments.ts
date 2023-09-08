@@ -4,7 +4,7 @@ import { errors } from "std/http/http_errors.ts";
 import { createComment, createNotification, getItem } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { assertSignedIn, State } from "@/middleware/session.ts";
-import { monotonicUlid } from "std/ulid/mod.ts";
+import { ulid } from "std/ulid/mod.ts";
 
 export const handler: Handlers<undefined, State> = {
   async POST(req, ctx) {
@@ -25,7 +25,7 @@ export const handler: Handlers<undefined, State> = {
 
     const { sessionUser } = ctx.state;
     await createComment({
-      id: monotonicUlid(),
+      id: ulid(),
       userLogin: sessionUser.login,
       itemId: itemId,
       text,
@@ -33,7 +33,7 @@ export const handler: Handlers<undefined, State> = {
 
     if (item.userLogin !== sessionUser.login) {
       await createNotification({
-        id: monotonicUlid(),
+        id: ulid(),
         userLogin: item.userLogin,
         type: "comment",
         text: `${sessionUser.login} commented on your post: ${item.title}`,
