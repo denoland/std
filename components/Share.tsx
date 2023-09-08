@@ -20,28 +20,36 @@ export default function Share(props: { url: URL; title: string }) {
     <div class="flex flex-row gap-4 my-4">
       <span class="align-middle">Share</span>
       <a
-        href={`https://www.facebook.com/sharer/sharer.php?u=${props.url.href}`}
+        href={`https://www.facebook.com/sharer/sharer.php?u=${
+          encodeURIComponent(props.url.href)
+        }`}
         target="_blank"
         aria-label={`Share ${props.title} on Facebook`}
       >
         <IconBrandFacebook />
       </a>
       <a
-        href={`https://www.linkedin.com/shareArticle?url=${props.url.href}&title=${props.title}`}
+        href={`https://www.linkedin.com/shareArticle?url=${
+          encodeURIComponent(props.url.href)
+        }&title=${encodeURIComponent(props.title)}`}
         target="_blank"
         aria-label={`Share ${props.title} on LinkedIn`}
       >
         <IconBrandLinkedin />
       </a>
       <a
-        href={`https://reddit.com/submit?url=${props.url.href}&title=${props.title}`}
+        href={`https://reddit.com/submit?url=${
+          encodeURIComponent(props.url.href)
+        }&title=${encodeURIComponent(props.title)}`}
         target="_blank"
         aria-label={`Share ${props.title} on Reddit`}
       >
         <IconBrandReddit />
       </a>
       <a
-        href={`https://twitter.com/share?url=${props.url.href}&text=${props.title}`}
+        href={`https://twitter.com/share?url=${
+          encodeURIComponent(props.url.href)
+        }&text=${encodeURIComponent(props.title)}`}
         target="_blank"
         aria-label={`Share ${props.title} on Twitter`}
       >
