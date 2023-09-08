@@ -3,6 +3,7 @@
   "tasks": {
     "init:stripe": "deno run --allow-read --allow-env --allow-net tasks/init_stripe.ts",
     "db:dump": "deno run --allow-read --allow-env --unstable tasks/db_dump.ts",
+    "db:restore": "deno run --allow-read --allow-env --unstable tasks/db_restore.ts",
     "db:seed": "deno run --allow-read --allow-env --allow-net --unstable tasks/db_seed.ts",
     "db:migrate": "deno run --allow-read --allow-env --allow-net --unstable tasks/db_migrate.ts",
     "db:reset": "deno run --allow-read --allow-env --unstable tasks/db_reset.ts",
@@ -49,14 +50,6 @@
         "fresh",
         "recommended"
       ]
-    },
-    "exclude": [
-      "_fresh"
-    ]
-  },
-  "fmt": {
-    "exclude": [
-      "_fresh"
-    ]
+    }
   }
 }
