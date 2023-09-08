@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { useComputed, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import type { Item } from "@/utils/db.ts";
+import type { Item, User } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -34,7 +34,12 @@ function EmptyItemsList() {
   );
 }
 
-export default function ItemsList(props: { endpoint: string }) {
+interface ItemListProps {
+  endpoint: string;
+  isSignedIn: boolean;
+}
+
+export default function ItemsList(props: ItemListProps) {
   const itemsSig = useSignal<Item[]>([]);
   const votedItemsIdsSig = useSignal<string[]>([]);
   const cursorSig = useSignal("");
@@ -77,6 +82,7 @@ export default function ItemsList(props: { endpoint: string }) {
               key={item.id}
               item={item}
               isVoted={itemsAreVotedSig.value[id]}
+              isSignedIn={props.isSignedIn}
             />
           );
         })

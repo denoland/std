@@ -45,6 +45,7 @@ export default async function HomePage(
   _req: Request,
   ctx: RouteContext<undefined, State>,
 ) {
+  const isSignedIn = ctx.state.sessionUser !== undefined;
   const endpoint = "/api/items";
 
   return (
@@ -59,7 +60,10 @@ export default async function HomePage(
       </Head>
       <main class="flex-1 p-4">
         {NEEDS_SETUP && <SetupInstruction />}
-        <ItemsList endpoint={endpoint} />
+        <ItemsList
+          endpoint={endpoint}
+          isSignedIn={isSignedIn}
+        />
       </main>
     </>
   );
