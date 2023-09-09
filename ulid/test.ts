@@ -9,7 +9,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 
-import { decodeTime, ulid } from "./mod.ts";
+import { decodeTime, monotonicUlid, ulid } from "./mod.ts";
 import {
   encodeRandom,
   encodeTime,
@@ -208,5 +208,16 @@ Deno.test("monotonicity", async (t) => {
     await t.step("fifth call with 1 greater than", () => {
       assertEquals("01ARYZ6S42YYYYYYYYYYYYYYYY", stubbedUlid(1469918176386));
     });
+  });
+
+  await t.step("seed time is decoded correctly", () => {
+    assertEquals(
+      decodeTime(monotonicUlid(1000)),
+      1000
+    );
+    assertEquals(
+      decodeTime(monotonicUlid(1469918176386)),
+      1469918176386
+    );
   });
 });
