@@ -6,8 +6,5 @@ import { textFromReadableStream } from "./text_from_readable_stream.ts";
 export function jsonFromReadableStream(
   readableStream: ReadableStream,
 ): Promise<unknown> {
-  return textFromReadableStream(readableStream).then((res) => {
-    console.log(res);
-    return JSON.parse(res);
-  });
+  return textFromReadableStream(readableStream).then(JSON.parse);
 }
