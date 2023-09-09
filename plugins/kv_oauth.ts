@@ -18,8 +18,27 @@ import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 
 const oauth2Client = createGitHubOAuth2Client();
 
-// deno-lint-ignore no-explicit-any
-async function getGitHubUser(accessToken: string): Promise<any> {
+interface GitHubUser {
+  login: string;
+  email: string;
+}
+
+/**
+ * Returns the GitHub profile information of the user with the given access
+ * token.
+ *
+ * @see {@link https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user}
+ *
+ * @example
+ * ```ts
+ * import { getGitHubUser } from "@/plugins/kv_oauth.ts";
+ *
+ * const user = await getGitHubUser("<access token>");
+ * user.login; // Returns "octocat"
+ * user.email; // Returns "octocat@github.com"
+ * ```
+ */
+export async function getGitHubUser(accessToken: string) {
   const response = await fetch("https://api.github.com/user", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
@@ -27,13 +46,16 @@ async function getGitHubUser(accessToken: string): Promise<any> {
     const { message } = await response.json();
     throw new Error(message);
   }
-  return await response.json();
+  return await response.json() as Promise<GitHubUser>;
 }
 
 /**
- * This custom plugin centralizes all authentication logic using the {@link https://deno.land/x/deno_kv_oauth|Deno KV OAuth} module.
+ * This custom plugin centralizes all authentication logic using the
+ * {@link https://deno.land/x/deno_kv_oauth|Deno KV OAuth} module.
  *
- * The implementation is based off Deno KV OAuth's own {@link https://deno.land/x/deno_kv_oauth/src/fresh_plugin.ts?source|Fresh plugin implementation}.
+ * The implementation is based off Deno KV OAuth's own
+ * {@link https://deno.land/x/deno_kv_oauth/src/fresh_plugin.ts?source|Fresh plugin}
+ * implementation.
  */
 export default {
   name: "kv-oauth",
