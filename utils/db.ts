@@ -179,7 +179,24 @@ export async function createNotification(notification: Notification) {
   if (!res.ok) throw new Error("Failed to create notification");
 }
 
-export async function deleteNotification(
+export function listNotifications(
+  userLogin: string,
+  options?: Deno.KvListOptions,
+) {
+  return kv.list<Notification>({
+    prefix: ["notifications_by_user", userLogin],
+  }, options);
+}
+
+export async function ifUserHasNotifications(userLogin: string) {
+  const iter = kv.list({ prefix: ["notifications_by_user", userLogin] }, {
+    consistency: "eventual",
+  });
+  for await (const _entry of iter) return true;
+  return false;
+}
+
+export async function getAndDeleteNotification(
   notification: Pick<Notification, "id" | "userLogin">,
 ) {
   const key = [
@@ -198,34 +215,8 @@ export async function deleteNotification(
     .commit();
 
   if (!res.ok) throw new Error("Failed to delete notification");
-}
 
-export async function getNotification(
-  notification: Pick<Notification, "id" | "userLogin">,
-) {
-  const res = await kv.get<Notification>([
-    "notifications_by_user",
-    notification.userLogin,
-    notification.id,
-  ]);
-  return res.value;
-}
-
-export function listNotifications(
-  userLogin: string,
-  options?: Deno.KvListOptions,
-) {
-  return kv.list<Notification>({
-    prefix: ["notifications_by_user", userLogin],
-  }, options);
-}
-
-export async function ifUserHasNotifications(userLogin: string) {
-  const iter = kv.list({ prefix: ["notifications_by_user", userLogin] }, {
-    consistency: "eventual",
-  });
-  for await (const _entry of iter) return true;
-  return false;
+  return notificationRes.value;
 }
 
 // Comment

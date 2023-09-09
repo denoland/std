@@ -10,15 +10,14 @@ import {
   createVote,
   deleteComment,
   deleteItem,
-  deleteNotification,
   deleteUserBySession,
   deleteVote,
   formatDate,
+  getAndDeleteNotification,
   getAreVotedByUser,
   getDatesSince,
   getItem,
   getManyMetrics,
-  getNotification,
   getUser,
   getUserBySession,
   getUserByStripeCustomer,
@@ -284,12 +283,17 @@ Deno.test("[db] notifications", async () => {
     id: ulid(Date.now() + 1_000),
   };
 
-  assertEquals(await getNotification(notification1), null);
-  assertEquals(await getNotification(notification2), null);
   await assertRejects(
-    async () => await deleteNotification(notification1),
+    async () => await getAndDeleteNotification(notification1),
+    Deno.errors.NotFound,
     "Notification not found",
   );
+  await assertRejects(
+    async () => await getAndDeleteNotification(notification2),
+    Deno.errors.NotFound,
+    "Notification not found",
+  );
+
   assertEquals(await collectValues(listNotifications(userLogin)), []);
   assertEquals(await ifUserHasNotifications(userLogin), false);
 
@@ -300,25 +304,26 @@ Deno.test("[db] notifications", async () => {
     "Failed to create notification",
   );
 
-  await assertEquals(await getNotification(notification1), notification1);
-  assertEquals(await getNotification(notification2), notification2);
+  assertEquals(await ifUserHasNotifications(userLogin), true);
   assertEquals(await collectValues(listNotifications(userLogin)), [
     notification1,
     notification2,
   ]);
-  assertEquals(await ifUserHasNotifications(userLogin), true);
+  assertEquals(await getAndDeleteNotification(notification1), notification1);
+  assertEquals(await getAndDeleteNotification(notification2), notification2);
 
-  await deleteNotification(notification1);
-  await deleteNotification(notification2);
-  await assertRejects(
-    async () => await deleteNotification(notification1),
-    "Failed to delete notification",
-  );
-
-  assertEquals(await getNotification(notification1), null);
-  assertEquals(await getNotification(notification2), null);
   assertEquals(await collectValues(listNotifications(userLogin)), []);
   assertEquals(await ifUserHasNotifications(userLogin), false);
+  await assertRejects(
+    async () => await getAndDeleteNotification(notification1),
+    Deno.errors.NotFound,
+    "Notification not found",
+  );
+  await assertRejects(
+    async () => await getAndDeleteNotification(notification2),
+    Deno.errors.NotFound,
+    "Notification not found",
+  );
 });
 
 Deno.test("[db] compareScore()", () => {
