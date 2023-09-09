@@ -9,18 +9,14 @@ import { decodeTime } from "std/ulid/mod.ts";
 
 function NotificationSummary(props: Notification) {
   return (
-    <li class="py-4 space-y-1">
+    <div class="py-4 space-y-1">
       <a href={"/notifications/" + props.id}>
-        <span class="mr-4">
-          <strong>New {props.type}!</strong>
-        </span>
-        <span class="text-gray-500">
-          {" " + timeAgo(new Date(decodeTime(props.id)))}
-        </span>
-        <br />
-        <span>{props.text}</span>
+        <p class="mr-4">New {props.type}</p>
+        <p class="text-gray-500">
+          {props.text + " " + timeAgo(new Date(decodeTime(props.id)))}
+        </p>
       </a>
-    </li>
+    </div>
   );
 }
 
@@ -51,17 +47,19 @@ export default function NotificationsList({ endpoint }: { endpoint: string }) {
   }, []);
 
   return (
-    <div>
-      {notificationsSig.value.length > 0
-        ? notificationsSig.value?.map((notification) => (
-          <NotificationSummary key={notification.id} {...notification} />
-        ))
-        : "No notifications yet"}
-      {cursorSig.value !== "" && (
-        <button onClick={loadMoreNotifications} class={LINK_STYLES}>
-          {isLoadingSig.value ? "Loading..." : "Load more"}
-        </button>
-      )}
-    </div>
+    notificationsSig.value.length === 0
+      ? <p>No notifications yet</p>
+      : (
+        <div class="divide-y">
+          {notificationsSig.value?.map((notification) => (
+            <NotificationSummary key={notification.id} {...notification} />
+          ))}
+          {cursorSig.value !== "" && (
+            <button onClick={loadMoreNotifications} class={LINK_STYLES}>
+              {isLoadingSig.value ? "Loading..." : "Load more"}
+            </button>
+          )}
+        </div>
+      )
   );
 }
