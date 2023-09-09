@@ -213,11 +213,11 @@ Deno.test("monotonicity", async (t) => {
   await t.step("seed time is decoded correctly", () => {
     assertEquals(
       decodeTime(monotonicUlid(1000)),
-      1000
+      1000,
     );
     assertEquals(
       decodeTime(monotonicUlid(1469918176386)),
-      1469918176386
+      1469918176386,
     );
   });
 });
