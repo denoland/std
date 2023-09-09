@@ -2,12 +2,13 @@
 import type { Handlers } from "$fresh/server.ts";
 import { collectValues, getUser, listItemsByUser } from "@/utils/db.ts";
 import { getCursor } from "@/utils/http.ts";
-import { errors } from "std/http/http_errors.ts";
+import { Status } from "std/http/http_status.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 
 export const handler: Handlers = {
   async GET(req, ctx) {
     const user = await getUser(ctx.params.login);
-    if (user === null) throw new errors.NotFound("User not found");
+    if (user === null) throw createHttpError(Status.NotFound, "User not found");
 
     const url = new URL(req.url);
     const iter = listItemsByUser(ctx.params.login, {

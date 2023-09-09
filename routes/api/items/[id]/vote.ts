@@ -8,7 +8,7 @@ import {
   getItem,
 } from "@/utils/db.ts";
 import { ulid } from "std/ulid/mod.ts";
-import { errors } from "std/http/http_errors.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 
 export const handler: Handlers<undefined, State> = {
   async POST(_req, ctx) {
@@ -16,7 +16,7 @@ export const handler: Handlers<undefined, State> = {
 
     const itemId = ctx.params.id;
     const item = await getItem(itemId);
-    if (item === null) throw new errors.NotFound("Item not found");
+    if (item === null) throw createHttpError(Status.NotFound, "Item not found");
 
     const { sessionUser } = ctx.state;
     await createVote({
@@ -42,7 +42,7 @@ export const handler: Handlers<undefined, State> = {
 
     const itemId = ctx.params.id;
     const item = await getItem(itemId);
-    if (item === null) throw new errors.NotFound("Item not found");
+    if (item === null) throw createHttpError(Status.NotFound, "Item not found");
 
     await deleteVote({ itemId, userLogin: ctx.state.sessionUser.login });
 

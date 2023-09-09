@@ -1,10 +1,11 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
-import { errors } from "std/http/http_errors.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 import { createComment, createNotification, getItem } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { assertSignedIn, State } from "@/middleware/session.ts";
 import { ulid } from "std/ulid/mod.ts";
+import { Status } from "std/http/http_status.ts";
 
 export const handler: Handlers<undefined, State> = {
   async POST(req, ctx) {
@@ -14,14 +15,14 @@ export const handler: Handlers<undefined, State> = {
     const text = form.get("text");
     const itemId = form.get("item_id");
     if (typeof text !== "string") {
-      throw new errors.BadRequest("Text must be a string");
+      throw createHttpError(Status.BadRequest, "Text must be a string");
     }
     if (typeof itemId !== "string") {
-      throw new errors.BadRequest("Item ID must be a string");
+      throw createHttpError(Status.BadRequest, "Item ID must be a string");
     }
 
     const item = await getItem(itemId);
-    if (item === null) throw new errors.NotFound("Item not found");
+    if (item === null) throw createHttpError(Status.NotFound, "Item not found");
 
     const { sessionUser } = ctx.state;
     await createComment({

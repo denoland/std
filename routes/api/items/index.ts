@@ -4,8 +4,9 @@ import { type Handlers } from "$fresh/server.ts";
 import { createItem, type Item } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
 import { assertSignedIn, State } from "@/middleware/session.ts";
-import { errors } from "std/http/http_errors.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 import { ulid } from "std/ulid/mod.ts";
+import { Status } from "std/http/http_status.ts";
 
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const handler: Handlers<undefined, State> = {
@@ -27,10 +28,10 @@ export const handler: Handlers<undefined, State> = {
     const url = form.get("url");
 
     if (typeof title !== "string") {
-      throw new errors.BadRequest("Title is missing");
+      throw createHttpError(Status.BadRequest, "Title is missing");
     }
     if (typeof url !== "string" || !URL.canParse(url)) {
-      throw new errors.BadRequest("URL is invalid or missing");
+      throw createHttpError(Status.BadRequest, "URL is invalid or missing");
     }
 
     const item: Item = {
