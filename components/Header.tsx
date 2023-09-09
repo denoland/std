@@ -112,7 +112,7 @@ export default function Header(
               ? ACTIVE_LINK_STYLES
               : LINK_STYLES,
             NAV_ITEM,
-            "relative flex gap-2 items-center",
+            "relative flex items-center",
           )}
           aria-label="Notifications"
         >
@@ -121,9 +121,9 @@ export default function Header(
             Notifications
           </div>
           {props.hasNotifications && (
-            <span class="absolute top-0.5 right-0.5 text-primary w-2 h-2">
+            <sup class="text-primary">
               ●
-            </span>
+            </sup>
           )}
         </a>
         <div class="rounded-lg bg-gradient-to-tr from-secondary to-primary p-px">
