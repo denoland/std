@@ -282,16 +282,26 @@ export function listCommentsByItem(
 export interface Vote {
   itemId: string;
   userLogin: string;
-  // The below property can be automatically generated upon vote creation
+  // Only used for updating values in the `votes_count` index.
   createdAt: Date;
 }
 
-export function newVoteProps(): Pick<Vote, "createdAt"> {
-  return {
-    createdAt: new Date(),
-  };
-}
-
+/**
+ * Creates a vote in the database for a given item and user. An error is thrown
+ * if the given item or user doesn't exist or the vote already exists. The
+ * item's score increments by 1 upon commit.
+ *
+ * @example
+ * ```ts
+ * import { createVote } from "@/utils/db.ts";
+ *
+ * await createVote({
+ *   itemId: "13f34b7e-5563-4001-98ed-9ee04d7af717",
+ *   userLogin: "pedro",
+ *   createdAt: new Date()
+ * });
+ * ```
+ */
 export async function createVote(vote: Vote) {
   const itemKey = ["items", vote.itemId];
   const userKey = ["users", vote.userLogin];
@@ -328,9 +338,24 @@ export async function createVote(vote: Vote) {
     .sum(votesCountKey, 1n)
     .commit();
 
-  if (!res.ok) throw new Error("Failed to set vote", { cause: vote });
+  if (!res.ok) throw new Error("Failed to create vote");
 }
 
+/**
+ * Deletes a vote in the database for a given item and user. An error is throw
+ * if the item, user or vote doesn't exist. The item's score decrements by 1
+ * upon commit.
+ *
+ * @example
+ * ```ts
+ * import { deleteVote } from "@/utils/db.ts";
+ *
+ * await deleteVote({
+ *   itemId: "13f34b7e-5563-4001-98ed-9ee04d7af717",
+ *   userLogin: "pedro"
+ * });
+ * ```
+ */
 export async function deleteVote(vote: Omit<Vote, "createdAt">) {
   const itemKey = ["items", vote.itemId];
   const userKey = ["users", vote.userLogin];
@@ -352,13 +377,12 @@ export async function deleteVote(vote: Omit<Vote, "createdAt">) {
   const user = userRes.value;
   if (item === null) throw new Deno.errors.NotFound("Item not found");
   if (user === null) throw new Deno.errors.NotFound("User not found");
-  /** @todo Uncomment after ULID-items migration */
-  /* if (itemVotedByUserRes.value === null) {
+  if (itemVotedByUserRes.value === null) {
     throw new Deno.errors.NotFound("Item voted by user not found");
   }
   if (userVotedForItemRes.value === null) {
     throw new Deno.errors.NotFound("User voted for item not found");
-  } */
+  }
 
   const itemByUserKey = ["items_by_user", item.userLogin, item.id];
 
@@ -378,6 +402,22 @@ export async function deleteVote(vote: Omit<Vote, "createdAt">) {
   if (!res.ok) throw new Error("Failed to delete vote");
 }
 
+/**
+ * Returns a {@linkcode Deno.KvListIterator} which can be used to iterate over
+ * the items voted by a given user in the database.
+ *
+ * @example
+ * ```
+ * import { listItemsVotedByUser } from "@/utils/db.ts";
+ *
+ * for await (const entry of listItemsVotedByUser("john")) {
+ *   entry.value.itemId; // Returns "13f34b7e-5563-4001-98ed-9ee04d7af717"
+ *   entry.value.userLogin; // Returns "pedro"
+ *   entry.key; // Returns ["items_voted_by_user", "13f34b7e-5563-4001-98ed-9ee04d7af717", "pedro"]
+ *   entry.versionstamp; // Returns "00000000000000010000"
+ * }
+ * ```
+ */
 export function listItemsVotedByUser(userLogin: string) {
   return kv.list<Item>({ prefix: ["items_voted_by_user", userLogin] });
 }

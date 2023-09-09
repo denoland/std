@@ -6,7 +6,6 @@ import {
   createVote,
   deleteVote,
   getItem,
-  newVoteProps,
 } from "@/utils/db.ts";
 import { ulid } from "std/ulid/mod.ts";
 import { errors } from "std/http/http_errors.ts";
@@ -23,7 +22,7 @@ export const handler: Handlers<undefined, State> = {
     await createVote({
       itemId,
       userLogin: sessionUser.login,
-      ...newVoteProps(),
+      createdAt: new Date(),
     });
 
     if (item.userLogin !== sessionUser.login) {
