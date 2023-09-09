@@ -8,12 +8,15 @@
  * @module
  */
 
+export * from "./array_buffer_from_readable_stream.ts";
+export * from "./blob_from_readable_stream.ts";
 export * from "./buffer.ts";
 export * from "./byte_slice_stream.ts";
 export * from "./copy.ts";
 export * from "./delimiter_stream.ts";
 export * from "./early_zip_readable_streams.ts";
 export * from "./iterate_reader.ts";
+export * from "./json_from_readable_stream.ts";
 export * from "./limited_bytes_transform_stream.ts";
 export * from "./limited_transform_stream.ts";
 export * from "./merge_readable_streams.ts";
@@ -22,6 +25,7 @@ export * from "./readable_stream_from_reader.ts";
 export * from "./reader_from_iterable.ts";
 export * from "./reader_from_stream_reader.ts";
 export * from "./text_delimiter_stream.ts";
+export * from "./text_from_readable_stream.ts";
 export * from "./text_line_stream.ts";
 export * from "./to_transform_stream.ts";
 export * from "./writable_stream_from_writer.ts";
