@@ -6,19 +6,32 @@ import { getUserByStripeCustomer, updateUser } from "@/utils/db.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
-
 export const handler: Handlers = {
   /**
-   * This handler handles Stripe webhooks for the following events:
-   * 1. customer.subscription.created (when a user subscribes to the premium plan)
-   * 2. customer.subscription.deleted (when a user cancels the premium plan)
+   * Handles Stripe webhooks requests when a user subscribes
+   * (`customer.subscription.created`) or cancels
+   * (`customer.subscription.deleted`) the "Premium Plan".
+   *
+   * @see {@link https://github.com/stripe-samples/stripe-node-deno-samples/blob/2d571b20cd88f1c1f02185483729a37210484c68/webhook-signing/main.js}
    */
   async POST(req) {
     if (!isStripeEnabled()) throw createHttpError(Status.NotFound);
 
+    /** @see {@link https://stripe.com/docs/webhooks#verify-events} */
     const body = await req.text();
-    const signature = req.headers.get("stripe-signature")!;
-    const signingSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
+    const signature = req.headers.get("stripe-signature");
+    if (signature === null) {
+      throw createHttpError(
+        Status.BadRequest,
+        "`Stripe-Signature` header is missing",
+      );
+    }
+    const signingSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    if (signingSecret === undefined) {
+      throw new Error(
+        "`STRIPE_WEBHOOK_SECRET` environment variable is not set",
+      );
+    }
 
     let event!: Stripe.Event;
     try {

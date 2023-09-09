@@ -331,3 +331,59 @@ Deno.test("[e2e] GET /api/users/[login]/notifications", async () => {
     JSON.parse(JSON.stringify(notification)),
   ]);
 });
+
+Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
+  const url = "http://localhost/api/stripe-webhooks";
+
+  await test.step("returns HTTP 404 Not Found response if Stripe is disabled", async () => {
+    Deno.env.delete("STRIPE_SECRET_KEY");
+    const resp = await handler(new Request(url, { method: "POST" }));
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "Not Found");
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if `Stripe-Signature` header is missing", async () => {
+    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    const resp = await handler(new Request(url, { method: "POST" }));
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "`Stripe-Signature` header is missing");
+    assertEquals(resp.status, Status.BadRequest);
+  });
+
+  await test.step("returns HTTP 500 Internal Server Error response if `STRIPE_WEBHOOK_SECRET` environment variable is not set", async () => {
+    Deno.env.delete("STRIPE_WEBHOOK_SECRET");
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(
+      await resp.text(),
+      "`STRIPE_WEBHOOK_SECRET` environment variable is not set",
+    );
+    assertEquals(resp.status, Status.InternalServerError);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if the event payload is invalid", async () => {
+    Deno.env.set("STRIPE_WEBHOOK_SECRET", crypto.randomUUID());
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(
+      await resp.text(),
+      "No webhook payload was provided.",
+    );
+    assertEquals(resp.status, Status.BadRequest);
+  });
+});
