@@ -4,7 +4,7 @@ import { useEffect } from "preact/hooks";
 import { Comment } from "@/utils/db.ts";
 import UserPostedAt from "@/components/UserPostedAt.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
-import { fetchValues } from "@/utils/islands.ts";
+import { fetchValues } from "@/utils/http.ts";
 import { decodeTime } from "std/ulid/mod.ts";
 
 function CommentSummary(props: Comment) {

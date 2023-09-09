@@ -4,7 +4,7 @@ import { useEffect } from "preact/hooks";
 import type { Notification } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import { timeAgo } from "@/utils/display.ts";
-import { fetchValues } from "@/utils/islands.ts";
+import { fetchValues } from "@/utils/http.ts";
 import { decodeTime } from "std/ulid/mod.ts";
 
 function NotificationSummary(props: Notification) {
