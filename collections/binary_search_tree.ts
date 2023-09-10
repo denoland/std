@@ -3,5 +3,5 @@
 
 import { BinarySearchTree as BinarySearchTree_ } from "./unstable/binary_search_tree.ts";
 
-/** @deprecated (will be removed after v0.206.0) import from `collections/unstable/binary_search_tree.ts instead */
+/** @deprecated (will be removed after 0.206.0) import from `collections/unstable/binary_search_tree.ts instead */
 export class BinarySearchTree<T> extends BinarySearchTree_<T> {}

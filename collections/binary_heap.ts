@@ -7,9 +7,9 @@ import {
   descend as descend_,
 } from "./unstable/comparators.ts";
 
-/** @deprecated (will be removed after v0.206.0) import from `collections/unstable/binary_heap.ts` instead */
+/** @deprecated (will be removed after 0.206.0) import from `collections/unstable/binary_heap.ts` instead */
 export const ascend = ascend_;
-/** @deprecated (will be removed after v0.206.0) import from `collections/unstable/binary_heap.ts` instead */
+/** @deprecated (will be removed after 0.206.0) import from `collections/unstable/binary_heap.ts` instead */
 export const descend = descend_;
-/** @deprecated (will be removed after v0.206.0) import from `collections/unstable/binary_heap.ts` instead */
+/** @deprecated (will be removed after 0.206.0) import from `collections/unstable/binary_heap.ts` instead */
 export class BinaryHeap<T> extends BinaryHeap_<T> {}
