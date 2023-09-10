@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { useComputed, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import type { Item, User } from "@/utils/db.ts";
+import { type Item } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import ItemSummary from "@/components/ItemSummary.tsx";
@@ -40,7 +40,7 @@ export default function ItemsList(
   const itemsSig = useSignal<Item[]>([]);
   const votedItemsIdsSig = useSignal<string[]>([]);
   const cursorSig = useSignal("");
-  const isLoadingSig = useSignal(false);
+  const isLoadingSig = useSignal<boolean | undefined>(undefined);
   const itemsAreVotedSig = useComputed(() =>
     itemsSig.value.map((item) => votedItemsIdsSig.value.includes(item.id))
   );
@@ -74,6 +74,10 @@ export default function ItemsList(
       )
       .finally(() => loadMoreItems());
   }, []);
+
+  if (isLoadingSig.value === undefined) {
+    return <p class={LINK_STYLES}>Loading...</p>;
+  }
 
   return (
     <div>
