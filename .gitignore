@@ -5,3 +5,4 @@ cov.lcov
 .idea
 _fresh/
 backup.json
+html_cov/
