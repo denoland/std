@@ -8,9 +8,14 @@ export default async function NotificationPage(
   _req: Request,
   ctx: RouteContext<undefined, SignedInState>,
 ) {
-  const notification = await getAndDeleteNotification({
-    id: ctx.params.id,
-    userLogin: ctx.state.sessionUser.login,
-  });
-  return redirect(notification.originUrl);
+  try {
+    const notification = await getAndDeleteNotification({
+      id: ctx.params.id,
+      userLogin: ctx.state.sessionUser.login,
+    });
+    return redirect(notification.originUrl);
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) return ctx.renderNotFound();
+    throw error;
+  }
 }

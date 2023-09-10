@@ -9,6 +9,7 @@ import {
   createNotification,
   createUser,
   type Item,
+  kv,
   type Notification,
 } from "@/utils/db.ts";
 import {
@@ -547,5 +548,79 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       "No webhook payload was provided.",
     );
     assertEquals(resp.status, Status.BadRequest);
+  });
+});
+
+Deno.test("[e2e] GET /notifications/[id]", async (test) => {
+  const notificationNotFoundUrl = "http://localhost/notifications/1";
+
+  await test.step("returns redirect response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(notificationNotFoundUrl));
+    assertFalse(resp.ok);
+    assertEquals(resp.body, null);
+    assertEquals(resp.headers.get("location"), "/signin");
+    assertEquals(resp.status, Status.SeeOther);
+  });
+
+  const user = genNewUser();
+  await createUser(user);
+
+  await test.step("returns HTTP 404 Not Found response if the notification does not exist", async () => {
+    const resp = await handler(
+      new Request(notificationNotFoundUrl, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertResponseNotFound(resp);
+  });
+
+  const notification: Notification = {
+    ...genNewNotification(),
+    userLogin: user.login,
+  };
+  await createNotification(notification);
+  const url = `http://localhost/notifications/${notification.id}`;
+
+  await test.step("returns HTTP 500 Internal Server Error response if the db throws an error while deleting notification key", async () => {
+    const kvAtomicStub = stub(
+      kv,
+      "atomic",
+      () => {
+        throw new Error(
+          "Stubbed error thrown when KV attempts to delete notification",
+        );
+      },
+    );
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertEquals(resp.status, Status.InternalServerError);
+    kvAtomicStub.restore();
+  });
+
+  await test.step("returns redirect response to the notification that was found", async () => {
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+    assertEquals(resp.headers.get("location"), notification.originUrl);
+    assertEquals(resp.status, Status.SeeOther);
+  });
+
+  await test.step("returns HTTP 404 Not Found response after the notification was visited and the key was deleted", async () => {
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertResponseNotFound(resp);
   });
 });
