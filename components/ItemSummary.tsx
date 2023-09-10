@@ -31,11 +31,11 @@ export default function ItemSummary(props: ItemSummaryProps) {
             {props.item.title}
           </a>
           <a
-            class="hover:underline text-gray-500"
+            class="hover:underline text-gray-500 after:content-['_↗']"
             href={props.item.url}
             target="_blank"
           >
-            {new URL(props.item.url).host} ↗
+            {new URL(props.item.url).host}
           </a>
         </p>
         <UserPostedAt
