@@ -1,10 +1,9 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { MiddlewareHandlerContext } from "$fresh/server.ts";
+import type { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { redirect } from "@/utils/http.ts";
 import { Status } from "std/http/http_status.ts";
 import { incrVisitsCountByDay } from "@/utils/db.ts";
 import { setSessionState } from "@/middleware/session.ts";
-import { handleWebPageErrors } from "@/middleware/errors.ts";
 
 async function redirectToNewOrigin(
   req: Request,
@@ -29,6 +28,5 @@ async function recordVisit(
 export const handler = [
   redirectToNewOrigin,
   setSessionState,
-  handleWebPageErrors,
   recordVisit,
 ];

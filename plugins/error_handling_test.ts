@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { createHttpError } from "std/http/http_errors.ts";
-import { toErrorResponse } from "./errors.ts";
+import { toErrorResponse } from "./error_handling.ts";
 import { Status } from "std/http/http_status.ts";
 import { assertEquals } from "std/assert/assert_equals.ts";
 import { assertFalse } from "std/assert/assert_false.ts";
