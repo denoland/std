@@ -9,6 +9,7 @@ import {
   createItem,
   createNotification,
   createUser,
+  createVote,
   ifUserHasNotifications,
   type Item,
   kv,
@@ -832,4 +833,30 @@ Deno.test("[e2e] POST /api/comments", async (test) => {
     // Deep partial match since the comment ID is a ULID generated at runtime
     assertObjectMatch(comments[0], comment);
   });
+});
+
+Deno.test("[e2e] GET /api/me/votes", async () => {
+  const user = genNewUser();
+  await createUser(user);
+  const item1 = genNewItem();
+  const item2 = genNewItem();
+  await createItem(item1);
+  await createItem(item2);
+  await createVote({
+    userLogin: user.login,
+    itemId: item1.id,
+    createdAt: new Date(),
+  });
+  await createVote({
+    userLogin: user.login,
+    itemId: item2.id,
+    createdAt: new Date(),
+  });
+  const resp = await handler(
+    new Request("http://localhost/api/me/votes", {
+      headers: { cookie: "site-session=" + user.sessionId },
+    }),
+  );
+  const body = await resp.json();
+  assertArrayIncludes(body, [{ ...item1, score: 1 }, { ...item2, score: 1 }]);
 });
