@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 // Description: Seeds the kv db with Hacker News stories
-import { createItem, createUser, newUserProps } from "@/utils/db.ts";
+import { createItem, createUser } from "@/utils/db.ts";
 import { ulid } from "std/ulid/mod.ts";
 
 // Reference: https://github.com/HackerNews/API
@@ -53,7 +53,7 @@ for (const { userLogin } of items) {
       login: userLogin,
       stripeCustomerId: crypto.randomUUID(),
       sessionId: crypto.randomUUID(),
-      ...newUserProps(),
+      isSubscribed: false,
     }),
   );
 }

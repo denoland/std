@@ -10,7 +10,6 @@ import {
   createUser,
   deleteUserBySession,
   getUser,
-  newUserProps,
   updateUser,
   type User,
 } from "@/utils/db.ts";
@@ -73,27 +72,24 @@ export default {
         );
 
         const githubUser = await getGitHubUser(accessToken);
-
         const user = await getUser(githubUser.login);
-        if (!user) {
-          let stripeCustomerId = undefined;
-          if (isStripeEnabled()) {
-            const customer = await stripe.customers.create({
-              email: githubUser.email,
-            });
-            stripeCustomerId = customer.id;
-          }
+
+        if (user === null) {
           const user: User = {
             login: githubUser.login,
-            stripeCustomerId,
             sessionId,
-            ...newUserProps(),
+            isSubscribed: false,
           };
+          if (isStripeEnabled()) {
+            const customer = await stripe.customers.create();
+            user.stripeCustomerId = customer.id;
+          }
           await createUser(user);
         } else {
-          await deleteUserBySession(sessionId);
+          await deleteUserBySession(user.sessionId);
           await updateUser({ ...user, sessionId });
         }
+
         return response;
       },
     },
