@@ -3,13 +3,16 @@
 import { createHandler, Status } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
+  collectValues,
   type Comment,
   createComment,
   createItem,
   createNotification,
   createUser,
+  ifUserHasNotifications,
   type Item,
   kv,
+  listCommentsByItem,
   type Notification,
 } from "@/utils/db.ts";
 import {
@@ -26,6 +29,7 @@ import {
   assertFalse,
   assertInstanceOf,
   assertNotEquals,
+  assertObjectMatch,
   assertStringIncludes,
 } from "std/assert/mod.ts";
 import { assertSpyCall, resolvesNext, stub } from "std/testing/mock.ts";
@@ -622,5 +626,109 @@ Deno.test("[e2e] GET /notifications/[id]", async (test) => {
 
     assertFalse(resp.ok);
     assertResponseNotFound(resp);
+  });
+});
+
+Deno.test("[e2e] POST /api/comments", async (test) => {
+  const url = "http://localhost/api/comments";
+  const user = genNewUser();
+  await createUser(user);
+
+  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+    const resp = await handler(
+      new Request(url, { method: "POST" }),
+    );
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.Unauthorized);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if comment is missing text", async () => {
+    const body = new FormData();
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp.text(), "Text must be a string");
+    assertEquals(resp.status, Status.BadRequest);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if comment is missing item_id", async () => {
+    const body = new FormData();
+    body.set("text", "Comment text");
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp.text(), "Item ID must be a string");
+    assertEquals(resp.status, Status.BadRequest);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
+    const body = new FormData();
+    body.set("text", "Comment text");
+    body.set("item_id", "not-found-item-id");
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp.text(), "Item not found");
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("creates a comment but not a new notification if for one's own item", async () => {
+    const item = { ...genNewItem(), userLogin: user.login };
+    const comment = { text: "Comment text", itemId: item.id };
+    await createItem(item);
+    const body = new FormData();
+    body.set("text", comment.text);
+    body.set("item_id", comment.itemId);
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+    const comments = await collectValues(listCommentsByItem(item.id));
+
+    assertEquals(resp.status, Status.SeeOther);
+    assertEquals(await ifUserHasNotifications(user.login), false);
+    // Deep partial match since the comment ID is a ULID generated at runtime
+    assertObjectMatch(comments[0], comment);
+  });
+
+  await test.step("creates a comment and notification if for someone elses item", async () => {
+    const item = genNewItem();
+    const comment = { text: "Comment text", itemId: item.id };
+    await createItem(item);
+    const body = new FormData();
+    body.set("text", comment.text);
+    body.set("item_id", comment.itemId);
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+    const comments = await collectValues(listCommentsByItem(item.id));
+
+    assertEquals(resp.status, Status.SeeOther);
+    assertEquals(await ifUserHasNotifications(item.userLogin), true);
+    assertEquals(await ifUserHasNotifications(user.login), false);
+    // Deep partial match since the comment ID is a ULID generated at runtime
+    assertObjectMatch(comments[0], comment);
   });
 });
