@@ -3,21 +3,6 @@
 import { createHandler, Status } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
-  assert,
-  assertArrayIncludes,
-  assertEquals,
-  assertFalse,
-  assertInstanceOf,
-  assertNotEquals,
-  assertStringIncludes,
-} from "std/assert/mod.ts";
-import {
-  genNewComment,
-  genNewItem,
-  genNewNotification,
-  genNewUser,
-} from "@/utils/db_test.ts";
-import {
   type Comment,
   createComment,
   createItem,
@@ -26,6 +11,24 @@ import {
   type Item,
   type Notification,
 } from "@/utils/db.ts";
+import {
+  genNewComment,
+  genNewItem,
+  genNewNotification,
+  genNewUser,
+} from "@/utils/db_test.ts";
+import { stripe } from "@/utils/stripe.ts";
+import {
+  assert,
+  assertArrayIncludes,
+  assertEquals,
+  assertFalse,
+  assertInstanceOf,
+  assertNotEquals,
+  assertStringIncludes,
+} from "std/assert/mod.ts";
+import { assertSpyCall, resolvesNext, stub } from "std/testing/mock.ts";
+import Stripe from "stripe";
 import options from "./fresh.config.ts";
 
 /**
@@ -65,6 +68,165 @@ Deno.test("[e2e] GET /account", async () => {
   assertFalse(resp.body);
   assertEquals(resp.headers.get("location"), "/signin");
   assertEquals(resp.status, 303);
+});
+
+Deno.test("[e2e] GET /account/manage", async (test) => {
+  const url = "http://localhost/account/manage";
+  Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+
+  await test.step("returns redirect response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(url));
+    assertFalse(resp.ok);
+    assertFalse(resp.body);
+    assertEquals(resp.headers.get("location"), "/signin");
+    assertEquals(resp.status, 303);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the session user does not have a Stripe customer ID", async () => {
+    const user = genNewUser();
+    await createUser({ ...user, stripeCustomerId: undefined });
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("returns redirect response to the URL returned by Stripe after creating a billing portal session", async () => {
+    const user = genNewUser();
+    await createUser(user);
+
+    const session = { url: "https://stubbing-returned-url" } as Stripe.Response<
+      Stripe.BillingPortal.Session
+    >;
+    const sessionsCreateStub = stub(
+      stripe.billingPortal.sessions,
+      "create",
+      resolvesNext([session]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.SeeOther);
+    assertSpyCall(sessionsCreateStub, 0, {
+      args: [{
+        customer: user.stripeCustomerId!,
+        return_url: "http://localhost/account",
+      }],
+    });
+    sessionsCreateStub.restore();
+  });
+});
+
+Deno.test("[e2e] GET /account/upgrade", async (test) => {
+  const url = "http://localhost/account/upgrade";
+
+  await test.step("returns redirect response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(url));
+    assertFalse(resp.ok);
+    assertFalse(resp.body);
+    assertEquals(resp.headers.get("location"), "/signin");
+    assertEquals(resp.status, 303);
+  });
+
+  const user = genNewUser();
+  await createUser(user);
+
+  await test.step("returns HTTP 500 Internal Server Error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
+    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    Deno.env.delete("STRIPE_PREMIUM_PLAN_PRICE_ID");
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.InternalServerError);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if Stripe is disabled", async () => {
+    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
+    Deno.env.delete("STRIPE_SECRET_KEY");
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if Stripe returns a `null` URL", async () => {
+    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
+    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+
+    const session = { url: null } as Stripe.Response<
+      Stripe.Checkout.Session
+    >;
+    const sessionsCreateStub = stub(
+      stripe.checkout.sessions,
+      "create",
+      resolvesNext([session]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.NotFound);
+    sessionsCreateStub.restore();
+  });
+
+  await test.step("returns redirect response to the URL returned by Stripe after creating a checkout session", async () => {
+    const priceId = crypto.randomUUID();
+    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", priceId);
+    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+
+    const session = { url: "https://stubbing-returned-url" } as Stripe.Response<
+      Stripe.Checkout.Session
+    >;
+    const sessionsCreateStub = stub(
+      stripe.checkout.sessions,
+      "create",
+      resolvesNext([session]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(resp.status, Status.SeeOther);
+    assertSpyCall(sessionsCreateStub, 0, {
+      args: [{
+        customer: user.stripeCustomerId!,
+        success_url: "http://localhost/account",
+        mode: "subscription",
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+      }],
+    });
+    sessionsCreateStub.restore();
+  });
 });
 
 Deno.test("[e2e] GET /callback", async () => {
