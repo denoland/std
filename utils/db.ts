@@ -532,10 +532,6 @@ export async function getAreVotedByUser(items: Item[], userLogin: string) {
   return items.map((item) => votedItemsIds.includes(item.id));
 }
 
-export function compareScore(a: Item, b: Item) {
-  return Number(b.score) - Number(a.score);
-}
-
 // Analytics
 export async function incrVisitsCountByDay(date: Date) {
   const visitsKey = ["visits_count", formatDate(date)];

@@ -2,7 +2,6 @@
 import {
   collectValues,
   type Comment,
-  compareScore,
   createComment,
   createItem,
   createNotification,
@@ -324,35 +323,6 @@ Deno.test("[db] notifications", async () => {
     Deno.errors.NotFound,
     "Notification not found",
   );
-});
-
-Deno.test("[db] compareScore()", () => {
-  const item1: Item = {
-    id: ulid(),
-    userLogin: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    score: 1,
-  };
-  const item2: Item = {
-    id: ulid(),
-    userLogin: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    score: 3,
-  };
-  const item3: Item = {
-    id: ulid(),
-    userLogin: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    score: 5,
-  };
-
-  const aa = [item2, item3, item1];
-  const sorted = aa.toSorted(compareScore);
-
-  assertArrayIncludes(sorted, [item1, item2, item3]);
 });
 
 Deno.test("[db] getAreVotedByUser()", async () => {
