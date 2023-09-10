@@ -8,4 +8,5 @@ coverage:
       default:
         informational: true
 ignore:
-  - "**/*.tsx"
+  - "components"
+  - "islands"
