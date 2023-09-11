@@ -165,16 +165,17 @@ Deno.test("[db] visit", async () => {
 });
 
 Deno.test("[db] comments", async () => {
-  const itemId = crypto.randomUUID();
-  const comment1 = { ...genNewComment(), itemId };
-  const comment2 = { ...genNewComment(), itemId };
+  const item = genNewItem();
+  await createItem(item);
+  const comment1: Comment = { ...genNewComment(), itemId: item.id };
+  const comment2: Comment = { ...genNewComment(), itemId: item.id };
 
-  assertEquals(await collectValues(listCommentsByItem(itemId)), []);
+  assertEquals(await collectValues(listCommentsByItem(item.id)), []);
 
   await createComment(comment1);
   await createComment(comment2);
   await assertRejects(async () => await createComment(comment2));
-  assertArrayIncludes(await collectValues(listCommentsByItem(itemId)), [
+  assertArrayIncludes(await collectValues(listCommentsByItem(item.id)), [
     comment1,
     comment2,
   ]);
@@ -185,7 +186,7 @@ Deno.test("[db] comments", async () => {
     async () => await deleteComment(comment1),
     "Comment not found",
   );
-  assertEquals(await collectValues(listCommentsByItem(itemId)), []);
+  assertEquals(await collectValues(listCommentsByItem(item.id)), []);
 });
 
 Deno.test("[db] votes", async () => {

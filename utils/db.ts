@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { decodeTime } from "std/ulid/mod.ts";
+import { decodeTime, ulid } from "std/ulid/mod.ts";
 import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
@@ -229,17 +229,41 @@ export interface Comment {
 }
 
 export async function createComment(comment: Comment) {
-  const key = [
+  const itemKey = ["items", comment.itemId];
+  const itemRes = await kv.get<Item>(itemKey);
+  const item = itemRes.value;
+  if (item === null) throw new Deno.errors.NotFound("Item not found");
+
+  const commentKey = [
     "comments_by_item",
     comment.itemId,
     comment.id,
   ];
 
-  const res = await kv.atomic()
-    .check({ key, versionstamp: null })
-    .set(key, comment)
-    .commit();
+  const atomicOp = kv.atomic()
+    .check({ key: commentKey, versionstamp: null })
+    .set(commentKey, comment);
 
+  // Create a notification if the item doesn't belong to the user who commented.
+  if (comment.userLogin !== item.userLogin) {
+    const notification: Notification = {
+      id: ulid(decodeTime(comment.id)),
+      userLogin: item.userLogin,
+      type: "comment",
+      text: `${comment.userLogin} commented on your post: ${item.title}`,
+      originUrl: `/items/${item.id}`,
+    };
+    const notificationKey = [
+      "notifications_by_user",
+      notification.userLogin,
+      notification.id,
+    ];
+    atomicOp
+      .check({ key: notificationKey, versionstamp: null })
+      .set(notificationKey, notification);
+  }
+
+  const res = await atomicOp.commit();
   if (!res.ok) throw new Error("Failed to create comment");
 }
 
