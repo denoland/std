@@ -1,10 +1,10 @@
 version: '3'
 
- services:
-   web:
-     build: .
-     container_name: deno-saaskit
-     image: deno-image
+services:
+  web:
+    build: .
+    container_name: deno-saaskit
+    image: deno-image
     environment:
       - DENO_DEPLOYMENT_ID=${DENO_DEPLOYMENT_ID}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -12,5 +12,5 @@ version: '3'
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - STRIPE_PREMIUM_PLAN_PRICE_ID=${STRIPE_PREMIUM_PLAN_PRICE_ID}
-     ports:
-       - "8000:8000"
+    ports:
+      - "8000:8000"
