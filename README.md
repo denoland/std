@@ -226,7 +226,11 @@ obtained from the following command run in the repo's root folder:
 git rev-parse HEAD
 ```
 
-Refer to these guides for using Docker to deploy Deno to specific platforms:
+Then, copy the output of the above and paste it as `DENO_DEPLOYMENT_ID` in your
+.env file.
+
+Finally, refer to these guides for using Docker to deploy Deno to specific
+platforms:
 
 - [Amazon Lightsail](https://deno.land/manual/advanced/deploying_deno/aws_lightsail)
 - [Digital Ocean](https://deno.land/manual/advanced/deploying_deno/digital_ocean)
