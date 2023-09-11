@@ -14,13 +14,16 @@ import {
   type Item,
   kv,
   listCommentsByItem,
+  listItemsByUser,
   type Notification,
+  Vote,
 } from "@/utils/db.ts";
 import {
   genNewComment,
   genNewItem,
   genNewNotification,
   genNewUser,
+  genNewVote,
 } from "@/utils/db_test.ts";
 import { stripe } from "@/utils/stripe.ts";
 import {
@@ -249,6 +252,80 @@ Deno.test("[e2e] GET /api/items", async () => {
   ]);
 });
 
+Deno.test("[e2e] POST /api/items", async (test) => {
+  const url = "http://localhost/api/items";
+  const user = genNewUser();
+  await createUser(user);
+
+  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(url, { method: "POST" }));
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User must be signed in");
+    assertEquals(resp.status, Status.Unauthorized);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if item is missing title", async () => {
+    const body = new FormData();
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp.text(), "Title is missing");
+    assertEquals(resp.status, Status.BadRequest);
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if item has an invalid or missing url", async () => {
+    const body = new FormData();
+    body.set("title", "Title text");
+    const resp1 = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp1.text(), "URL is invalid or missing");
+    assertEquals(resp1.status, Status.BadRequest);
+
+    body.set("url", "invalid-url");
+    const resp2 = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+
+    assertEquals(await resp2.text(), "URL is invalid or missing");
+    assertEquals(resp2.status, Status.BadRequest);
+  });
+
+  await test.step("creates an item and redirects to the item page", async () => {
+    const item = { title: "Title text", url: "http://bobross.com" };
+    const body = new FormData();
+    body.set("title", item.title);
+    body.set("url", item.url);
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+        body,
+      }),
+    );
+    const items = await collectValues(listItemsByUser(user.login));
+
+    assertEquals(resp.status, Status.SeeOther);
+    assertEquals(resp.headers.get("location"), `/items/${items[0].id}`);
+    // Deep partial match since the item ID is a ULID generated at runtime
+    assertObjectMatch(items[0], item);
+  });
+});
+
 Deno.test("[e2e] GET /api/items/[id]", async () => {
   const item = genNewItem();
   const req = new Request("http://localhost/api/items/" + item.id);
@@ -283,16 +360,6 @@ Deno.test("[e2e] GET /api/items/[id]/comments", async () => {
   const { values } = await resp2.json();
   assertResponseJson(resp2);
   assertEquals(values, [JSON.parse(JSON.stringify(comment))]);
-});
-
-Deno.test("[e2e] POST /api/items", async () => {
-  const resp = await handler(
-    new Request("http://localhost/api/items", { method: "POST" }),
-  );
-
-  assertFalse(resp.ok);
-  assertEquals(await resp.text(), "User must be signed in");
-  assertEquals(resp.status, Status.Unauthorized);
 });
 
 Deno.test("[e2e] GET /api/users", async () => {
@@ -369,6 +436,106 @@ Deno.test("[e2e] GET /api/users/[login]/notifications", async () => {
   assertArrayIncludes(values, [
     JSON.parse(JSON.stringify(notification)),
   ]);
+});
+
+Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
+  const item = genNewItem();
+  const user = genNewUser();
+  await createItem(item);
+  await createUser(user);
+  const vote: Vote = {
+    ...genNewVote(),
+    itemId: item.id,
+    userLogin: user.login,
+    createdAt: new Date(),
+  };
+  await createVote(vote);
+  const url = `http://localhost/api/items/${item.id}/vote`;
+
+  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(url, { method: "DELETE" }));
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User must be signed in");
+    assertEquals(resp.status, Status.Unauthorized);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
+    const resp = await handler(
+      new Request("http://localhost/api/items/bob-ross/vote", {
+        method: "DELETE",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "Item not found");
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("returns HTTP 204 No Content when it deletes a vote", async () => {
+    const resp = await handler(
+      new Request(url, {
+        method: "DELETE",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+    assert(resp.ok);
+    assertEquals(resp.body, null);
+    assertEquals(resp.status, Status.NoContent);
+  });
+});
+
+Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
+  const item = genNewItem();
+  const user = genNewUser();
+  await createItem(item);
+  await createUser(user);
+  const url = `http://localhost/api/items/${item.id}/vote`;
+
+  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+    const resp = await handler(new Request(url, { method: "POST" }));
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User must be signed in");
+    assertEquals(resp.status, Status.Unauthorized);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
+    const resp = await handler(
+      new Request("http://localhost/api/items/bob-ross/vote", {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "Item not found");
+    assertEquals(resp.status, Status.NotFound);
+  });
+
+  await test.step("creates a vote but not a new notification if for one's own item", async () => {
+    const item = { ...genNewItem(), userLogin: user.login };
+    await createItem(item);
+    const url = `http://localhost/api/items/${item.id}/vote`;
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertEquals(resp.status, Status.Created);
+    assertEquals(await ifUserHasNotifications(user.login), false);
+  });
+
+  await test.step("creates a vote and notification if for someone elses item", async () => {
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+    assertEquals(resp.status, Status.Created);
+    assertEquals(await ifUserHasNotifications(item.userLogin), true);
+    assertEquals(await ifUserHasNotifications(user.login), false);
+  });
 });
 
 Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {

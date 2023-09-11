@@ -1,5 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
+  assertArrayIncludes,
+  assertEquals,
+  assertRejects,
+} from "std/assert/mod.ts";
+import { DAY } from "std/datetime/constants.ts";
+import { ulid } from "std/ulid/mod.ts";
+import {
   collectValues,
   type Comment,
   createComment,
@@ -32,14 +39,8 @@ import {
   Notification,
   updateUser,
   type User,
+  Vote,
 } from "./db.ts";
-import {
-  assertArrayIncludes,
-  assertEquals,
-  assertRejects,
-} from "std/assert/mod.ts";
-import { DAY } from "std/datetime/constants.ts";
-import { ulid } from "std/ulid/mod.ts";
 
 export function genNewComment(): Comment {
   return {
@@ -76,6 +77,14 @@ export function genNewNotification(): Notification {
     type: crypto.randomUUID(),
     text: crypto.randomUUID(),
     originUrl: crypto.randomUUID(),
+  };
+}
+
+export function genNewVote(): Vote {
+  return {
+    itemId: crypto.randomUUID(),
+    userLogin: crypto.randomUUID(),
+    createdAt: new Date(),
   };
 }
 
