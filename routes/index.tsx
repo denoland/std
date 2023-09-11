@@ -57,6 +57,14 @@ export default async function HomePage(
           href={endpoint}
           rel="preload"
         />
+        {isSignedIn && (
+          <link
+            as="fetch"
+            crossOrigin="anonymous"
+            href="/api/me/votes"
+            rel="preload"
+          />
+        )}
       </Head>
       <main class="flex-1 p-4">
         {NEEDS_SETUP && <SetupInstruction />}

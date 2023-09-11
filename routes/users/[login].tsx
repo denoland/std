@@ -42,6 +42,7 @@ export default async function UsersUserPage(
   const user = await getUser(login);
   if (user === null) return await ctx.renderNotFound();
   const isSignedIn = ctx.state.sessionUser !== undefined;
+  const endpoint = `/api/users/${login}/items`;
 
   return (
     <>
@@ -49,16 +50,24 @@ export default async function UsersUserPage(
         <link
           as="fetch"
           crossOrigin="anonymous"
-          href={`/api/users/${login}/items`}
+          href={endpoint}
           rel="preload"
         />
+        {isSignedIn && (
+          <link
+            as="fetch"
+            crossOrigin="anonymous"
+            href="/api/me/votes"
+            rel="preload"
+          />
+        )}
       </Head>
       <main class="flex-1 p-4 flex flex-col md:flex-row gap-8">
         <div class="flex justify-center p-4">
           <Profile isSubscribed={user.isSubscribed} login={user.login} />
         </div>
         <ItemsList
-          endpoint={`/api/users/${user.login}/items`}
+          endpoint={endpoint}
           isSignedIn={isSignedIn}
         />
       </main>

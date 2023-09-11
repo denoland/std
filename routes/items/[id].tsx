@@ -54,6 +54,14 @@ export default async function ItemsItemPage(
           href={endpoint}
           rel="preload"
         />
+        {isSignedIn && (
+          <link
+            as="fetch"
+            crossOrigin="anonymous"
+            href="/api/me/votes"
+            rel="preload"
+          />
+        )}
       </Head>
       <main class="flex-1 p-4 space-y-8">
         <ItemSummary
