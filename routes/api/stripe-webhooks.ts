@@ -33,7 +33,7 @@ export const handler: Handlers = {
       );
     }
 
-    let event!: Stripe.Event;
+    let event: Stripe.Event;
     try {
       event = await stripe.webhooks.constructEventAsync(
         body,

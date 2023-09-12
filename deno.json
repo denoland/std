@@ -12,7 +12,7 @@
     "check:license": "deno run --allow-read --allow-write tasks/check_license.ts",
     "check:types": "deno check **/*.ts && deno check **/*.tsx",
     "ok": "deno fmt --check && deno lint && deno task check:license --check && deno task check:types && deno task test",
-    "cov:gen": "deno coverage ./cov/ --lcov --exclude='test.ts' > cov.lcov",
+    "cov:gen": "deno coverage ./cov/ --lcov --exclude='test.ts' --output=cov.lcov",
     "cov:view": "genhtml -o html_cov cov.lcov && open html_cov/index.html",
     "update": "deno run -A -r https://fresh.deno.dev/update .",
     "build": "deno run -A --unstable dev.ts build",

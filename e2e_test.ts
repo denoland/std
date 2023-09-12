@@ -7,8 +7,10 @@ import {
   createItem,
   createUser,
   createVote,
+  getUser,
   type Item,
   listItemsByUser,
+  User,
   Vote,
 } from "@/utils/db.ts";
 import { genNewItem, genNewUser, genNewVote } from "@/utils/db_test.ts";
@@ -23,7 +25,12 @@ import {
   assertObjectMatch,
   assertStringIncludes,
 } from "std/assert/mod.ts";
-import { assertSpyCall, resolvesNext, stub } from "std/testing/mock.ts";
+import {
+  assertSpyCall,
+  resolvesNext,
+  returnsNext,
+  stub,
+} from "std/testing/mock.ts";
 import Stripe from "stripe";
 import options from "./fresh.config.ts";
 
@@ -463,6 +470,27 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
   });
 });
 
+function createStripeEvent(
+  type: Stripe.Event.Type,
+  customer: string,
+): Promise<Stripe.Event> {
+  return Promise.resolve({
+    id: "123",
+    object: "event",
+    api_version: null,
+    created: 0,
+    livemode: false,
+    pending_webhooks: 0,
+    type,
+    request: null,
+    data: {
+      object: {
+        customer,
+      },
+    },
+  });
+}
+
 Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   const url = "http://localhost/api/stripe-webhooks";
 
@@ -516,6 +544,135 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       "No webhook payload was provided.",
     );
     assertEquals(resp.status, Status.BadRequest);
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the user is not found for subscription creation", async () => {
+    const constructEventAsyncStub = stub(
+      stripe.webhooks,
+      "constructEventAsync",
+      returnsNext([
+        createStripeEvent("customer.subscription.created", "x"),
+      ]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User not found");
+    assertEquals(resp.status, Status.NotFound);
+
+    constructEventAsyncStub.restore();
+  });
+
+  await test.step("returns HTTP 201 Created response if the subscription is created", async () => {
+    const user = genNewUser();
+    await createUser(user);
+
+    const constructEventAsyncStub = stub(
+      stripe.webhooks,
+      "constructEventAsync",
+      returnsNext([
+        createStripeEvent(
+          "customer.subscription.created",
+          user.stripeCustomerId!,
+        ),
+      ]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertEquals(await getUser(user.login), { ...user, isSubscribed: true });
+    assert(resp.ok);
+    assertEquals(resp.body, null);
+    assertEquals(resp.status, Status.Created);
+
+    constructEventAsyncStub.restore();
+  });
+
+  await test.step("returns HTTP 404 Not Found response if the user is not found for subscription deletion", async () => {
+    const constructEventAsyncStub = stub(
+      stripe.webhooks,
+      "constructEventAsync",
+      returnsNext([
+        createStripeEvent("customer.subscription.deleted", "x"),
+      ]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "User not found");
+    assertEquals(resp.status, Status.NotFound);
+
+    constructEventAsyncStub.restore();
+  });
+
+  await test.step("returns HTTP 202 Accepted response if the subscription is deleted", async () => {
+    const user: User = { ...genNewUser(), isSubscribed: true };
+    await createUser(user);
+
+    const constructEventAsyncStub = stub(
+      stripe.webhooks,
+      "constructEventAsync",
+      returnsNext([
+        createStripeEvent(
+          "customer.subscription.deleted",
+          user.stripeCustomerId!,
+        ),
+      ]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertEquals(await getUser(user.login), { ...user, isSubscribed: false });
+    assert(resp.ok);
+    assertEquals(resp.body, null);
+    assertEquals(resp.status, Status.Accepted);
+
+    constructEventAsyncStub.restore();
+  });
+
+  await test.step("returns HTTP 400 Bad Request response if the event type is not supported", async () => {
+    const constructEventAsyncStub = stub(
+      stripe.webhooks,
+      "constructEventAsync",
+      returnsNext([
+        createStripeEvent("account.application.authorized", "x"),
+      ]),
+    );
+
+    const resp = await handler(
+      new Request(url, {
+        method: "POST",
+        headers: { "Stripe-Signature": crypto.randomUUID() },
+      }),
+    );
+
+    assertFalse(resp.ok);
+    assertEquals(await resp.text(), "Event type not supported");
+    assertEquals(resp.status, Status.BadRequest);
+
+    constructEventAsyncStub.restore();
   });
 });
 
