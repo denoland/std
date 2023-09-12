@@ -1,6 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import Stripe from "stripe";
 import "std/dotenv/load.ts";
+import { AssertionError } from "std/assert/assertion_error.ts";
 
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 
@@ -20,18 +21,10 @@ export const stripe = new Stripe(STRIPE_SECRET_KEY!, {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-/**
- * We assume that the product has a default price.
- * The official types allow for the default_price to be `undefined | null | string`
- */
-export type StripProductWithPrice = Stripe.Product & {
-  default_price: Stripe.Price;
-};
-
-export function isProductWithPrice(
-  product: Stripe.Product,
-): product is StripProductWithPrice {
-  return product.default_price !== undefined &&
-    product.default_price !== null &&
-    typeof product.default_price !== "string";
+export function assertIsPrice(value: unknown): asserts value is Stripe.Price {
+  if (value === undefined || value === null || typeof value === "string") {
+    throw new AssertionError(
+      "Default price must be of type `Stripe.Price`. Please run the `deno task init:stripe` as the README instructs.",
+    );
+  }
 }

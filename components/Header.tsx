@@ -8,13 +8,20 @@ import {
 import { isStripeEnabled } from "@/utils/stripe.ts";
 import IconX from "tabler_icons_tsx/x.tsx";
 import IconMenu from "tabler_icons_tsx/menu-2.tsx";
-import IconBell from "tabler_icons_tsx/bell.tsx";
 import { cx } from "@twind/core";
 import { User } from "@/utils/db.ts";
 
-export default function Header(
-  props: { sessionUser?: User; url: URL },
-) {
+export interface HeaderProps {
+  /** Currently signed-in user */
+  sessionUser?: User;
+  /**
+   * URL of the current page. This is used for highlighting the currently
+   * active page in navigation.
+   */
+  url: URL;
+}
+
+export default function Header(props: HeaderProps) {
   const NAV_ITEM = "text-gray-500 px-3 py-4 sm:py-2";
   return (
     <header

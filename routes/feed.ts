@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Feed, Item as FeedItem } from "feed";
+import { Feed } from "feed";
 import { getPosts } from "@/utils/posts.ts";
 import { SITE_NAME } from "@/utils/constants.ts";
 import { RouteContext } from "$fresh/server.ts";
@@ -16,7 +16,7 @@ export default async function FeedPage(_req: Request, ctx: RouteContext) {
     link: `${origin}/blog`,
     language: "en",
     favicon: `${origin}/favicon.ico`,
-    copyright: copyright,
+    copyright,
     generator: "Feed (https://github.com/jpmonette/feed) for Deno",
     feedLinks: {
       atom: `${origin}/feed`,
@@ -25,7 +25,7 @@ export default async function FeedPage(_req: Request, ctx: RouteContext) {
 
   const posts = await getPosts();
   for (const post of posts) {
-    const item: FeedItem = {
+    feed.addItem({
       id: `${origin}/blog/${post.slug}`,
       title: post.title,
       description: post.summary,
@@ -34,8 +34,7 @@ export default async function FeedPage(_req: Request, ctx: RouteContext) {
       author: [{ name: "The Deno Authors" }],
       copyright,
       published: new Date(post.publishedAt),
-    };
-    feed.addItem(item);
+    });
   }
 
   const atomFeed = feed.atom1();

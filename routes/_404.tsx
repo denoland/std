@@ -1,6 +1,6 @@
+// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { HEADING_STYLES, LINK_STYLES } from "@/utils/constants.ts";
 
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export default function NotFoundPage() {
   return (
     <main class="flex-1 p-4 flex flex-col justify-center text-center">

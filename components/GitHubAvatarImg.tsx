@@ -1,13 +1,14 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-export default function GitHubAvatarImg(
-  props: {
-    // AKA GitHub user's username.
-    login: string;
-    // Defines the rended height and width of the image, in pixels.
-    size: number;
-    class?: string;
-  },
-) {
+export interface GitHubAvatarImgProps {
+  /** The GitHub user's username */
+  login: string;
+  /** The height and width (1:1 ratio) of the image, in pixels */
+  size: number;
+  /** Additional classes */
+  class?: string;
+}
+
+export default function GitHubAvatarImg(props: GitHubAvatarImgProps) {
   return (
     <img
       height={props.size}

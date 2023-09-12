@@ -8,9 +8,12 @@ import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
 
-function Profile(
-  props: { login: string; isSubscribed: boolean },
-) {
+interface UserProfileProps {
+  login: string;
+  isSubscribed: boolean;
+}
+
+function UserProfile(props: UserProfileProps) {
   return (
     <div class="flex flex-col items-center w-[16rem]">
       <GitHubAvatarImg login={props.login} size={200} />
@@ -34,13 +37,14 @@ function Profile(
   );
 }
 
-export default async function UsersUserPage(
+export default async function UserPage(
   _req: Request,
   ctx: RouteContext<undefined, State>,
 ) {
   const { login } = ctx.params;
   const user = await getUser(login);
   if (user === null) return await ctx.renderNotFound();
+
   const isSignedIn = ctx.state.sessionUser !== undefined;
   const endpoint = `/api/users/${login}/items`;
 
@@ -64,7 +68,7 @@ export default async function UsersUserPage(
       </Head>
       <main class="flex-1 p-4 flex flex-col md:flex-row gap-8">
         <div class="flex justify-center p-4">
-          <Profile isSubscribed={user.isSubscribed} login={user.login} />
+          <UserProfile {...user} />
         </div>
         <ItemsList
           endpoint={endpoint}

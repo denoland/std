@@ -4,8 +4,10 @@ import { useEffect } from "preact/hooks";
 import { type Item } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
-import ItemSummary from "@/components/ItemSummary.tsx";
 import { fetchValues } from "@/utils/http.ts";
+import { decodeTime } from "std/ulid/mod.ts";
+import { timeAgo } from "@/utils/display.ts";
+import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
 async function fetchVotedItems() {
   const url = "/api/me/votes";
@@ -34,9 +36,123 @@ function EmptyItemsList() {
   );
 }
 
-export default function ItemsList(
-  props: { endpoint: string; isSignedIn: boolean },
-) {
+interface StaticVoteButton {
+  /** Number of votes for the item */
+  score: number;
+}
+
+function StaticVoteButton(props: StaticVoteButton) {
+  return (
+    <a
+      class="text-inherit pr-2 text-center"
+      title="Sign in to vote"
+      href="/signin"
+    >
+      ▲
+      <br />
+      {props.score}
+    </a>
+  );
+}
+
+interface VoteButtonProps {
+  item: Item;
+  /** Whether the item has been voted-for by the signed-in user */
+  isVoted: boolean;
+}
+
+function VoteButton(props: VoteButtonProps) {
+  const isVoted = useSignal(props.isVoted);
+  const score = useSignal(props.item.score);
+  const url = `/api/items/${props.item.id}/vote`;
+
+  async function onClick(event: MouseEvent) {
+    if (event.detail !== 1) return;
+    const method = isVoted.value ? "DELETE" : "POST";
+    const resp = await fetch(url, { method });
+
+    if (resp.status === 401) {
+      window.location.href = "/signin";
+      return;
+    }
+    if (!resp.ok) throw new Error(`Request failed: ${method} ${url}`);
+
+    isVoted.value = !isVoted.value;
+    method === "POST" ? score.value++ : score.value--;
+  }
+
+  return (
+    <button
+      class={(isVoted.value ? "text-primary" : "text-inherit") +
+        " pr-2 text-center"}
+      onClick={onClick}
+    >
+      ▲
+      <br />
+      {score}
+    </button>
+  );
+}
+
+interface ItemSummaryProps {
+  item: Item;
+  /** Whether the item has been voted-for by the signed-in user */
+  isVoted: boolean;
+  /** Whether the user is signed-in */
+  isSignedIn: boolean;
+}
+
+function ItemSummary(props: ItemSummaryProps) {
+  return (
+    <div class="py-2 flex gap-4">
+      {props.isSignedIn
+        ? (
+          <VoteButton
+            item={props.item}
+            isVoted={props.isVoted}
+          />
+        )
+        : <StaticVoteButton score={props.item.score} />}
+      <div class="space-y-1">
+        <p>
+          <a
+            class="visited:(text-[purple] dark:text-[lightpink]) hover:underline mr-4"
+            href={props.item.url}
+          >
+            {props.item.title}
+          </a>
+          <a
+            class="hover:underline text-gray-500 after:content-['_↗']"
+            href={props.item.url}
+            target="_blank"
+          >
+            {new URL(props.item.url).host}
+          </a>
+        </p>
+        <p class="text-gray-500">
+          <GitHubAvatarImg
+            login={props.item.userLogin}
+            size={24}
+            class="mr-2"
+          />
+          <a class="hover:underline" href={`/users/${props.item.userLogin}`}>
+            {props.item.userLogin}
+          </a>{" "}
+          {timeAgo(new Date(decodeTime(props.item.id)))}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export interface ItemsListProps {
+  /** Endpoint URL of the REST API to make the fetch request to */
+  endpoint: string;
+  /** Whether the user is signed-in */
+  isSignedIn: boolean;
+}
+
+export default function ItemsList(props: ItemsListProps) {
   const itemsSig = useSignal<Item[]>([]);
   const votedItemsIdsSig = useSignal<string[]>([]);
   const cursorSig = useSignal("");

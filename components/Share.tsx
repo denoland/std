@@ -5,15 +5,10 @@ import IconBrandReddit from "tabler_icons_tsx/brand-reddit.tsx";
 import IconBrandTwitter from "tabler_icons_tsx/brand-twitter.tsx";
 
 /**
- * Dynamically generates links for sharing the current content on the major social media platforms.
+ * Dynamically generates links for sharing the current content on the major
+ * social media platforms.
  *
- * Inspired by https://schier.co/blog/pure-html-share-buttons
- *
- * Features:
- * - Each link provides the title, where possible
- * - Links are opened in a new page
- * - Accessible labels are provided, as logos are used as the content for each link
- * - Each logo respects the branding color of the respective social media platform.
+ * @see {@link https://schier.co/blog/pure-html-share-buttons}
  */
 export default function Share(props: { url: URL; title: string }) {
   return (

@@ -31,7 +31,12 @@ function UserTableRow(props: User) {
   );
 }
 
-export default function UsersTable({ endpoint }: { endpoint: string }) {
+export interface UsersTableProps {
+  /** Endpoint URL of the REST API to make the fetch request to */
+  endpoint: string;
+}
+
+export default function UsersTable(props: UsersTableProps) {
   const usersSig = useSignal<User[]>([]);
   const cursorSig = useSignal("");
   const isLoadingSig = useSignal(false);
@@ -41,7 +46,7 @@ export default function UsersTable({ endpoint }: { endpoint: string }) {
     isLoadingSig.value = true;
     try {
       const { values, cursor } = await fetchValues<User>(
-        endpoint,
+        props.endpoint,
         cursorSig.value,
       );
       usersSig.value = [...usersSig.value, ...values];

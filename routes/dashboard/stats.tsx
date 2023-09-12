@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { RouteContext } from "$fresh/server.ts";
+import type { PageProps } from "$fresh/server.ts";
 import Chart from "@/islands/Chart.tsx";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
@@ -9,11 +9,7 @@ function randomNumbers(length: number) {
   return Array.from({ length }, () => Math.floor(Math.random() * 1000));
 }
 
-// deno-lint-ignore require-await
-export default async function DashboardStatsPage(
-  _req: Request,
-  ctx: RouteContext,
-) {
+export default function DashboardStatsPage(props: PageProps) {
   const labels = [
     "Monday",
     "Tuesday",
@@ -48,7 +44,7 @@ export default async function DashboardStatsPage(
 
   return (
     <>
-      <Head title="Dashboard" href={ctx.url.href} />
+      <Head title="Dashboard" href={props.url.href} />
       <main class="flex-1 p-4 flex flex-col">
         <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
         <TabsBar
@@ -59,7 +55,7 @@ export default async function DashboardStatsPage(
             path: "/dashboard/users",
             innerText: "Users",
           }]}
-          currentPath={ctx.url.pathname}
+          currentPath={props.url.pathname}
         />
         <div class="flex-1 relative">
           <Chart

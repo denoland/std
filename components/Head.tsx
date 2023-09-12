@@ -4,15 +4,14 @@ import Meta, { type MetaProps } from "./Meta.tsx";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";
 import { ComponentChildren } from "preact";
 
-/**
- * This acts as a wrapper around Fresh's `<Head />`.
- * It includes HTML metadata from the `<Meta />` with defaults specifically for Deno Hunt.
- */
-export default function Head(
-  props: Partial<Omit<MetaProps, "href">> & Pick<MetaProps, "href"> & {
+export type HeadProps =
+  & Partial<Omit<MetaProps, "href">>
+  & Pick<MetaProps, "href">
+  & {
     children?: ComponentChildren;
-  },
-) {
+  };
+
+export default function Head(props: HeadProps) {
   return (
     <_Head>
       <Meta

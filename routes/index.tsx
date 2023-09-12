@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { RouteContext } from "$fresh/server.ts";
+import type { PageProps, RouteContext } from "$fresh/server.ts";
 import type { State } from "@/middleware/session.ts";
 import Head from "@/components/Head.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
@@ -40,17 +40,13 @@ function SetupInstruction() {
   );
 }
 
-// deno-lint-ignore require-await
-export default async function HomePage(
-  _req: Request,
-  ctx: RouteContext<undefined, State>,
-) {
-  const isSignedIn = ctx.state.sessionUser !== undefined;
+export default function HomePage(props: PageProps<undefined, State>) {
+  const isSignedIn = props.state.sessionUser !== undefined;
   const endpoint = "/api/items";
 
   return (
     <>
-      <Head href={ctx.url.href}>
+      <Head href={props.url.href}>
         <link
           as="fetch"
           crossOrigin="anonymous"

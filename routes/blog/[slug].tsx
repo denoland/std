@@ -9,11 +9,6 @@ export default async function BlogPostPage(_req: Request, ctx: RouteContext) {
   const post = await getPost(ctx.params.slug);
   if (post === null) return await ctx.renderNotFound();
 
-  const date = post.publishedAt.toString() !== "Invalid Date" &&
-    post.publishedAt.toLocaleDateString("en-US", {
-      dateStyle: "long",
-    });
-
   return (
     <>
       <Head title={post.title} href={ctx.url.href}>
@@ -21,12 +16,14 @@ export default async function BlogPostPage(_req: Request, ctx: RouteContext) {
       </Head>
       <main class="p-4 flex-1">
         <h1 class="text-4xl font-bold">{post.title}</h1>
-        {date && (
+        {post.publishedAt.toString() !== "Invalid Date" && (
           <time
             dateTime={post.publishedAt.toISOString()}
             class="text-gray-500"
           >
-            {date}
+            {post.publishedAt.toLocaleDateString("en-US", {
+              dateStyle: "long",
+            })}
           </time>
         )}
         <Share url={ctx.url} title={post.title} />
