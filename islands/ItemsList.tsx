@@ -103,6 +103,15 @@ interface ItemSummaryProps {
 }
 
 function ItemSummary(props: ItemSummaryProps) {
+  let createdTimeAgo: string;
+
+  try {
+    createdTimeAgo = timeAgo(new Date(decodeTime(props.item.id)));
+  } catch (err) {
+    // @ts-ignore old items, which still have a `uuid`, also have a `createdAt` property
+    createdTimeAgo = timeAgo(new Date(props.item?.createdAt));
+  }
+
   return (
     <div class="py-2 flex gap-4">
       {props.isSignedIn
@@ -138,7 +147,7 @@ function ItemSummary(props: ItemSummaryProps) {
           <a class="hover:underline" href={`/users/${props.item.userLogin}`}>
             {props.item.userLogin}
           </a>{" "}
-          {timeAgo(new Date(decodeTime(props.item.id)))}
+          {createdTimeAgo}
         </p>
       </div>
     </div>
