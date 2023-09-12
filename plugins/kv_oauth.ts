@@ -14,6 +14,7 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
+import { createHttpError } from "std/http/http_errors.ts";
 
 const oauth2Client = createGitHubOAuth2Client();
 
@@ -38,14 +39,14 @@ interface GitHubUser {
  * ```
  */
 export async function getGitHubUser(accessToken: string) {
-  const response = await fetch("https://api.github.com/user", {
+  const resp = await fetch("https://api.github.com/user", {
     headers: { authorization: `Bearer ${accessToken}` },
   });
-  if (!response.ok) {
-    const { message } = await response.json();
-    throw new Error(message);
+  if (!resp.ok) {
+    const { message } = await resp.json();
+    throw createHttpError(resp.status, message);
   }
-  return await response.json() as Promise<GitHubUser>;
+  return await resp.json() as Promise<GitHubUser>;
 }
 
 /**
