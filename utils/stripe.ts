@@ -21,6 +21,18 @@ export const stripe = new Stripe(STRIPE_SECRET_KEY!, {
   httpClient: Stripe.createFetchHttpClient(),
 });
 
+/**
+ * Asserts that the value is strictly a {@linkcode Stripe.Price} object.
+ *
+ * @example
+ * ```ts
+ * import { assertIsPrice } from "@/utils/stripe.ts";
+ *
+ * assertIsPrice(undefined); // Throws AssertionError
+ * assertIsPrice(null); // Throws AssertionError
+ * assertIsPrice("not a price"); // Throws AssertionError
+ * ```
+ */
 export function assertIsPrice(value: unknown): asserts value is Stripe.Price {
   if (value === undefined || value === null || typeof value === "string") {
     throw new AssertionError(
