@@ -137,61 +137,6 @@ export function listItemsByUser(
   return kv.list<Item>({ prefix: ["items_by_user", userLogin] }, options);
 }
 
-// Comment
-export interface Comment {
-  // Uses ULID
-  id: string;
-  userLogin: string;
-  itemId: string;
-  text: string;
-}
-
-export async function createComment(comment: Comment) {
-  const itemKey = ["items", comment.itemId];
-  const itemRes = await kv.get<Item>(itemKey);
-  const item = itemRes.value;
-  if (item === null) throw new Deno.errors.NotFound("Item not found");
-
-  const commentKey = [
-    "comments_by_item",
-    comment.itemId,
-    comment.id,
-  ];
-
-  const atomicOp = kv.atomic()
-    .check({ key: commentKey, versionstamp: null })
-    .set(commentKey, comment);
-
-  const res = await atomicOp.commit();
-  if (!res.ok) throw new Error("Failed to create comment");
-}
-
-export async function deleteComment(comment: Comment) {
-  const key = [
-    "comments_by_item",
-    comment.itemId,
-    comment.id,
-  ];
-  const commentRes = await kv.get<Comment>(key);
-  if (commentRes.value === null) {
-    throw new Deno.errors.NotFound("Comment not found");
-  }
-
-  const res = await kv.atomic()
-    .check(commentRes)
-    .delete(key)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete comment");
-}
-
-export function listCommentsByItem(
-  itemId: string,
-  options?: Deno.KvListOptions,
-) {
-  return kv.list<Comment>({ prefix: ["comments_by_item", itemId] }, options);
-}
-
 // Vote
 export interface Vote {
   itemId: string;

@@ -1,19 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assertArrayIncludes,
-  assertEquals,
-  assertRejects,
-} from "std/assert/mod.ts";
+import { assertEquals, assertRejects } from "std/assert/mod.ts";
 import { DAY } from "std/datetime/constants.ts";
 import { ulid } from "std/ulid/mod.ts";
 import {
   collectValues,
-  type Comment,
-  createComment,
   createItem,
   createUser,
   createVote,
-  deleteComment,
   deleteItem,
   deleteUserBySession,
   deleteVote,
@@ -28,7 +21,6 @@ import {
   incrVisitsCountByDay,
   type Item,
   kv,
-  listCommentsByItem,
   listItems,
   listItemsByUser,
   listItemsVotedByUser,
@@ -36,15 +28,6 @@ import {
   type User,
   Vote,
 } from "./db.ts";
-
-export function genNewComment(): Comment {
-  return {
-    id: ulid(),
-    itemId: crypto.randomUUID(),
-    userLogin: crypto.randomUUID(),
-    text: crypto.randomUUID(),
-  };
-}
 
 export function genNewItem(): Item {
   return {
@@ -147,31 +130,6 @@ Deno.test("[db] visit", async () => {
   const date = new Date();
   await incrVisitsCountByDay(date);
   assertEquals(await getManyMetrics("visits_count", [date]), [1n]);
-});
-
-Deno.test("[db] comments", async () => {
-  const item = genNewItem();
-  await createItem(item);
-  const comment1: Comment = { ...genNewComment(), itemId: item.id };
-  const comment2: Comment = { ...genNewComment(), itemId: item.id };
-
-  assertEquals(await collectValues(listCommentsByItem(item.id)), []);
-
-  await createComment(comment1);
-  await createComment(comment2);
-  await assertRejects(async () => await createComment(comment2));
-  assertArrayIncludes(await collectValues(listCommentsByItem(item.id)), [
-    comment1,
-    comment2,
-  ]);
-
-  await deleteComment(comment1);
-  await deleteComment(comment2);
-  await assertRejects(
-    async () => await deleteComment(comment1),
-    "Comment not found",
-  );
-  assertEquals(await collectValues(listCommentsByItem(item.id)), []);
 });
 
 Deno.test("[db] votes", async () => {

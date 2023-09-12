@@ -4,22 +4,14 @@ import { createHandler, Status } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
   collectValues,
-  type Comment,
-  createComment,
   createItem,
   createUser,
   createVote,
   type Item,
-  listCommentsByItem,
   listItemsByUser,
   Vote,
 } from "@/utils/db.ts";
-import {
-  genNewComment,
-  genNewItem,
-  genNewUser,
-  genNewVote,
-} from "@/utils/db_test.ts";
+import { genNewItem, genNewUser, genNewVote } from "@/utils/db_test.ts";
 import { stripe } from "@/utils/stripe.ts";
 import {
   assert,
@@ -336,27 +328,6 @@ Deno.test("[e2e] GET /api/items/[id]", async () => {
   assertEquals(await resp2.json(), JSON.parse(JSON.stringify(item)));
 });
 
-Deno.test("[e2e] GET /api/items/[id]/comments", async () => {
-  const item = genNewItem();
-  const comment: Comment = {
-    ...genNewComment(),
-    itemId: item.id,
-  };
-  const req = new Request(`http://localhost/api/items/${item.id}/comments`);
-
-  const resp1 = await handler(req);
-  assertFalse(resp1.ok);
-  assertEquals(await resp1.text(), "Item not found");
-  assertEquals(resp1.status, Status.NotFound);
-
-  await createItem(item);
-  await createComment(comment);
-  const resp2 = await handler(req);
-  const { values } = await resp2.json();
-  assertResponseJson(resp2);
-  assertEquals(values, [JSON.parse(JSON.stringify(comment))]);
-});
-
 Deno.test("[e2e] GET /api/users", async () => {
   const user1 = genNewUser();
   const user2 = genNewUser();
@@ -546,39 +517,6 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       "No webhook payload was provided.",
     );
     assertEquals(resp.status, Status.BadRequest);
-  });
-});
-
-Deno.test("[e2e] GET /items/[id]", async (test) => {
-  await test.step("returns HTTP 404 Not Found response if the item does not exist", async () => {
-    const resp = await handler(new Request("http://localhost/items/1"));
-
-    assertFalse(resp.ok);
-    assertResponseNotFound(resp);
-  });
-
-  const user = genNewUser();
-  await createUser(user);
-  const item: Item = {
-    ...genNewItem(),
-    userLogin: user.login,
-  };
-  await createItem(item);
-  const url = `http://localhost/items/${item.id}`;
-
-  await test.step("renders the item page with commenting enabled for signed in user", async () => {
-    const resp = await handler(
-      new Request(url, {
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertFalse((await resp.text()).includes("Sign in to comment"));
-  });
-
-  await test.step("renders the item page directing an anonymous user to sign in to comment", async () => {
-    const resp = await handler(new Request(url));
-    assertStringIncludes(await resp.text(), "Sign in to comment");
   });
 });
 
@@ -776,86 +714,6 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
       }],
     });
     sessionsCreateStub.restore();
-  });
-});
-
-Deno.test("[e2e] POST /api/comments", async (test) => {
-  const url = "http://localhost/api/comments";
-  const user = genNewUser();
-  await createUser(user);
-
-  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
-    const resp = await handler(
-      new Request(url, { method: "POST" }),
-    );
-    assertFalse(resp.ok);
-    assertEquals(resp.status, Status.Unauthorized);
-  });
-
-  await test.step("returns HTTP 400 Bad Request response if comment is missing text", async () => {
-    const body = new FormData();
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-        body,
-      }),
-    );
-
-    assertEquals(await resp.text(), "Text must be a string");
-    assertEquals(resp.status, Status.BadRequest);
-  });
-
-  await test.step("returns HTTP 400 Bad Request response if comment is missing item_id", async () => {
-    const body = new FormData();
-    body.set("text", "Comment text");
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-        body,
-      }),
-    );
-
-    assertEquals(await resp.text(), "Item ID must be a string");
-    assertEquals(resp.status, Status.BadRequest);
-  });
-
-  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
-    const body = new FormData();
-    body.set("text", "Comment text");
-    body.set("item_id", "not-found-item-id");
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-        body,
-      }),
-    );
-
-    assertEquals(await resp.text(), "Item not found");
-    assertEquals(resp.status, Status.NotFound);
-  });
-
-  await test.step("creates a comment", async () => {
-    const item = { ...genNewItem(), userLogin: user.login };
-    const comment = { text: "Comment text", itemId: item.id };
-    await createItem(item);
-    const body = new FormData();
-    body.set("text", comment.text);
-    body.set("item_id", comment.itemId);
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-        body,
-      }),
-    );
-    const comments = await collectValues(listCommentsByItem(item.id));
-
-    assertEquals(resp.status, Status.SeeOther);
-    // Deep partial match since the comment ID is a ULID generated at runtime
-    assertObjectMatch(comments[0], comment);
   });
 });
 
