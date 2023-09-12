@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { decodeTime, ulid } from "std/ulid/mod.ts";
+import { decodeTime } from "std/ulid/mod.ts";
 import { chunk } from "std/collections/chunk.ts";
 
 const KV_PATH_KEY = "KV_PATH";
@@ -137,88 +137,6 @@ export function listItemsByUser(
   return kv.list<Item>({ prefix: ["items_by_user", userLogin] }, options);
 }
 
-// Notification
-export interface Notification {
-  // Uses ULID
-  id: string;
-  userLogin: string;
-  type: string;
-  text: string;
-  originUrl: string;
-}
-
-/**
- * Creates a new notification in KV. Throws if the item already exists in one of the indexes.
- *
- * @example
- * ```ts
- * import { createNotification } from "@/utils/db.ts";
- * import { ulid } from "std/ulid/mod.ts";
- *
- * await createNotification({
- *   id: ulid(),
- *   userLogin: "john_doe",
- *   type: "example-type",
- *   text: "Hello, world!",
- *   originUrl: "https://hunt.deno.land",
- * });
- * ```
- */
-export async function createNotification(notification: Notification) {
-  const key = [
-    "notifications_by_user",
-    notification.userLogin,
-    notification.id,
-  ];
-
-  const res = await kv.atomic()
-    .check({ key: key, versionstamp: null })
-    .set(key, notification)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to create notification");
-}
-
-export function listNotifications(
-  userLogin: string,
-  options?: Deno.KvListOptions,
-) {
-  return kv.list<Notification>({
-    prefix: ["notifications_by_user", userLogin],
-  }, options);
-}
-
-export async function ifUserHasNotifications(userLogin: string) {
-  const iter = kv.list({ prefix: ["notifications_by_user", userLogin] }, {
-    consistency: "eventual",
-  });
-  for await (const _entry of iter) return true;
-  return false;
-}
-
-export async function getAndDeleteNotification(
-  notification: Pick<Notification, "id" | "userLogin">,
-) {
-  const key = [
-    "notifications_by_user",
-    notification.userLogin,
-    notification.id,
-  ];
-  const notificationRes = await kv.get<Notification>(key);
-  if (notificationRes.value === null) {
-    throw new Deno.errors.NotFound("Notification not found");
-  }
-
-  const res = await kv.atomic()
-    .check(notificationRes)
-    .delete(key)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete notification");
-
-  return notificationRes.value;
-}
-
 // Comment
 export interface Comment {
   // Uses ULID
@@ -243,25 +161,6 @@ export async function createComment(comment: Comment) {
   const atomicOp = kv.atomic()
     .check({ key: commentKey, versionstamp: null })
     .set(commentKey, comment);
-
-  // Create a notification if the item doesn't belong to the user who commented.
-  if (comment.userLogin !== item.userLogin) {
-    const notification: Notification = {
-      id: ulid(decodeTime(comment.id)),
-      userLogin: item.userLogin,
-      type: "comment",
-      text: `${comment.userLogin} commented on your post: ${item.title}`,
-      originUrl: `/items/${item.id}`,
-    };
-    const notificationKey = [
-      "notifications_by_user",
-      notification.userLogin,
-      notification.id,
-    ];
-    atomicOp
-      .check({ key: notificationKey, versionstamp: null })
-      .set(notificationKey, notification);
-  }
 
   const res = await atomicOp.commit();
   if (!res.ok) throw new Error("Failed to create comment");

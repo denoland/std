@@ -11,7 +11,6 @@ export default function App(props: AppProps<undefined, State>) {
         <Header
           url={props.url}
           sessionUser={props.state?.sessionUser}
-          hasNotifications={props.state?.hasNotifications}
         />
         <props.Component />
         <Footer url={props.url} />

@@ -11,7 +11,6 @@ import {
   type Comment,
   createComment,
   createItem,
-  createNotification,
   createUser,
   createVote,
   deleteComment,
@@ -19,7 +18,6 @@ import {
   deleteUserBySession,
   deleteVote,
   formatDate,
-  getAndDeleteNotification,
   getAreVotedByUser,
   getDatesSince,
   getItem,
@@ -27,7 +25,6 @@ import {
   getUser,
   getUserBySession,
   getUserByStripeCustomer,
-  ifUserHasNotifications,
   incrVisitsCountByDay,
   type Item,
   kv,
@@ -35,8 +32,6 @@ import {
   listItems,
   listItemsByUser,
   listItemsVotedByUser,
-  listNotifications,
-  Notification,
   updateUser,
   type User,
   Vote,
@@ -67,16 +62,6 @@ export function genNewUser(): User {
     sessionId: crypto.randomUUID(),
     isSubscribed: false,
     stripeCustomerId: crypto.randomUUID(),
-  };
-}
-
-export function genNewNotification(): Notification {
-  return {
-    id: ulid(),
-    userLogin: crypto.randomUUID(),
-    type: crypto.randomUUID(),
-    text: crypto.randomUUID(),
-    originUrl: crypto.randomUUID(),
   };
 }
 
@@ -280,58 +265,6 @@ Deno.test("[db] getDatesSince()", () => {
     formatDate(new Date(Date.now() - DAY)),
     formatDate(new Date()),
   ]);
-});
-
-Deno.test("[db] notifications", async () => {
-  const userLogin = crypto.randomUUID();
-  const notification1 = { ...genNewNotification(), userLogin };
-  const notification2 = {
-    ...genNewNotification(),
-    userLogin,
-    id: ulid(Date.now() + 1_000),
-  };
-
-  await assertRejects(
-    async () => await getAndDeleteNotification(notification1),
-    Deno.errors.NotFound,
-    "Notification not found",
-  );
-  await assertRejects(
-    async () => await getAndDeleteNotification(notification2),
-    Deno.errors.NotFound,
-    "Notification not found",
-  );
-
-  assertEquals(await collectValues(listNotifications(userLogin)), []);
-  assertEquals(await ifUserHasNotifications(userLogin), false);
-
-  await createNotification(notification1);
-  await createNotification(notification2);
-  await assertRejects(
-    async () => await createNotification(notification1),
-    "Failed to create notification",
-  );
-
-  assertEquals(await ifUserHasNotifications(userLogin), true);
-  assertEquals(await collectValues(listNotifications(userLogin)), [
-    notification1,
-    notification2,
-  ]);
-  assertEquals(await getAndDeleteNotification(notification1), notification1);
-  assertEquals(await getAndDeleteNotification(notification2), notification2);
-
-  assertEquals(await collectValues(listNotifications(userLogin)), []);
-  assertEquals(await ifUserHasNotifications(userLogin), false);
-  await assertRejects(
-    async () => await getAndDeleteNotification(notification1),
-    Deno.errors.NotFound,
-    "Notification not found",
-  );
-  await assertRejects(
-    async () => await getAndDeleteNotification(notification2),
-    Deno.errors.NotFound,
-    "Notification not found",
-  );
 });
 
 Deno.test("[db] getAreVotedByUser()", async () => {

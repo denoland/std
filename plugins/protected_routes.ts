@@ -29,10 +29,6 @@ export default {
       middleware,
     },
     {
-      path: "/notifications",
-      middleware,
-    },
-    {
       path: "/submit",
       middleware,
     },

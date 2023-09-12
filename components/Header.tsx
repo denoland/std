@@ -13,7 +13,7 @@ import { cx } from "@twind/core";
 import { User } from "@/utils/db.ts";
 
 export default function Header(
-  props: { sessionUser?: User; hasNotifications: boolean; url: URL },
+  props: { sessionUser?: User; url: URL },
 ) {
   const NAV_ITEM = "text-gray-500 px-3 py-4 sm:py-2";
   return (
@@ -105,27 +105,6 @@ export default function Header(
             </a>
           )
           : <a href="/signin" class={cx(LINK_STYLES, NAV_ITEM)}>Sign in</a>}
-        <a
-          href="/notifications"
-          class={cx(
-            props.url.pathname === "/notifications"
-              ? ACTIVE_LINK_STYLES
-              : LINK_STYLES,
-            NAV_ITEM,
-            "relative flex items-center",
-          )}
-          aria-label="Notifications"
-        >
-          <IconBell class="hidden sm:block w-6 h-6" />
-          <div class="sm:hidden">
-            Notifications
-          </div>
-          {props.hasNotifications && (
-            <sup class="text-primary">
-              ●
-            </sup>
-          )}
-        </a>
         <div class="rounded-lg bg-gradient-to-tr from-secondary to-primary p-px">
           <a
             href="/submit"

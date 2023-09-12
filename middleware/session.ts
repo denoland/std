@@ -1,17 +1,12 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { MiddlewareHandlerContext } from "$fresh/server.ts";
 import { getSessionId } from "kv_oauth";
-import {
-  getUserBySession,
-  ifUserHasNotifications,
-  type User,
-} from "@/utils/db.ts";
+import { getUserBySession, type User } from "@/utils/db.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 import { Status } from "std/http/http_status.ts";
 
 export interface State {
   sessionUser?: User;
-  hasNotifications: boolean;
 }
 
 export type SignedInState = Required<State>;
@@ -24,7 +19,6 @@ export async function setSessionState(
 
   // Initial state
   ctx.state.sessionUser = undefined;
-  ctx.state.hasNotifications = false;
 
   const sessionId = getSessionId(req);
   if (sessionId === undefined) return await ctx.next();
@@ -32,7 +26,6 @@ export async function setSessionState(
   if (user === null) return await ctx.next();
 
   ctx.state.sessionUser = user;
-  ctx.state.hasNotifications = await ifUserHasNotifications(user.login);
 
   return await ctx.next();
 }

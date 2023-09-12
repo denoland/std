@@ -7,21 +7,16 @@ import {
   type Comment,
   createComment,
   createItem,
-  createNotification,
   createUser,
   createVote,
-  ifUserHasNotifications,
   type Item,
-  kv,
   listCommentsByItem,
   listItemsByUser,
-  type Notification,
   Vote,
 } from "@/utils/db.ts";
 import {
   genNewComment,
   genNewItem,
-  genNewNotification,
   genNewUser,
   genNewVote,
 } from "@/utils/db_test.ts";
@@ -411,33 +406,6 @@ Deno.test("[e2e] GET /api/users/[login]/items", async () => {
   assertArrayIncludes(values, [JSON.parse(JSON.stringify(item))]);
 });
 
-Deno.test("[e2e] GET /api/users/[login]/notifications", async () => {
-  const user = genNewUser();
-  const notification: Notification = {
-    ...genNewNotification(),
-    userLogin: user.login,
-  };
-  const url = "http://localhost/api/me/notifications";
-
-  const resp1 = await handler(new Request(url));
-  assertFalse(resp1.ok);
-  assertEquals(resp1.status, Status.Unauthorized);
-
-  await createUser(user);
-  await createNotification(notification);
-
-  const resp2 = await handler(
-    new Request(url, {
-      headers: { cookie: "site-session=" + user.sessionId },
-    }),
-  );
-  const { values } = await resp2.json();
-  assertResponseJson(resp2);
-  assertArrayIncludes(values, [
-    JSON.parse(JSON.stringify(notification)),
-  ]);
-});
-
 Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
   const item = genNewItem();
   const user = genNewUser();
@@ -510,7 +478,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
     assertEquals(resp.status, Status.NotFound);
   });
 
-  await test.step("creates a vote but not a new notification if for one's own item", async () => {
+  await test.step("creates a vote", async () => {
     const item = { ...genNewItem(), userLogin: user.login };
     await createItem(item);
     const url = `http://localhost/api/items/${item.id}/vote`;
@@ -522,19 +490,6 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
     );
 
     assertEquals(resp.status, Status.Created);
-    assertEquals(await ifUserHasNotifications(user.login), false);
-  });
-
-  await test.step("creates a vote and notification if for someone elses item", async () => {
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-    assertEquals(resp.status, Status.Created);
-    assertEquals(await ifUserHasNotifications(item.userLogin), true);
-    assertEquals(await ifUserHasNotifications(user.login), false);
   });
 });
 
@@ -591,80 +546,6 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       "No webhook payload was provided.",
     );
     assertEquals(resp.status, Status.BadRequest);
-  });
-});
-
-Deno.test("[e2e] GET /notifications/[id]", async (test) => {
-  const notificationNotFoundUrl = "http://localhost/notifications/1";
-
-  await test.step("returns redirect response if the session user is not signed in", async () => {
-    const resp = await handler(new Request(notificationNotFoundUrl));
-    assertFalse(resp.ok);
-    assertEquals(resp.body, null);
-    assertEquals(resp.headers.get("location"), "/signin");
-    assertEquals(resp.status, Status.SeeOther);
-  });
-
-  const user = genNewUser();
-  await createUser(user);
-
-  await test.step("returns HTTP 404 Not Found response if the notification does not exist", async () => {
-    const resp = await handler(
-      new Request(notificationNotFoundUrl, {
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertFalse(resp.ok);
-    assertResponseNotFound(resp);
-  });
-
-  const notification: Notification = {
-    ...genNewNotification(),
-    userLogin: user.login,
-  };
-  await createNotification(notification);
-  const url = `http://localhost/notifications/${notification.id}`;
-
-  await test.step("returns HTTP 500 Internal Server Error response if the db throws an error while deleting notification key", async () => {
-    const kvAtomicStub = stub(
-      kv,
-      "atomic",
-      () => {
-        throw new Error(
-          "Stubbed error thrown when KV attempts to delete notification",
-        );
-      },
-    );
-    const resp = await handler(
-      new Request(url, {
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertEquals(resp.status, Status.InternalServerError);
-    kvAtomicStub.restore();
-  });
-
-  await test.step("returns redirect response to the notification that was found", async () => {
-    const resp = await handler(
-      new Request(url, {
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-    assertEquals(resp.headers.get("location"), notification.originUrl);
-    assertEquals(resp.status, Status.SeeOther);
-  });
-
-  await test.step("returns HTTP 404 Not Found response after the notification was visited and the key was deleted", async () => {
-    const resp = await handler(
-      new Request(url, {
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertFalse(resp.ok);
-    assertResponseNotFound(resp);
   });
 });
 
@@ -956,7 +837,7 @@ Deno.test("[e2e] POST /api/comments", async (test) => {
     assertEquals(resp.status, Status.NotFound);
   });
 
-  await test.step("creates a comment but not a new notification if for one's own item", async () => {
+  await test.step("creates a comment", async () => {
     const item = { ...genNewItem(), userLogin: user.login };
     const comment = { text: "Comment text", itemId: item.id };
     await createItem(item);
@@ -973,30 +854,6 @@ Deno.test("[e2e] POST /api/comments", async (test) => {
     const comments = await collectValues(listCommentsByItem(item.id));
 
     assertEquals(resp.status, Status.SeeOther);
-    assertEquals(await ifUserHasNotifications(user.login), false);
-    // Deep partial match since the comment ID is a ULID generated at runtime
-    assertObjectMatch(comments[0], comment);
-  });
-
-  await test.step("creates a comment and notification if for someone elses item", async () => {
-    const item = genNewItem();
-    const comment = { text: "Comment text", itemId: item.id };
-    await createItem(item);
-    const body = new FormData();
-    body.set("text", comment.text);
-    body.set("item_id", comment.itemId);
-    const resp = await handler(
-      new Request(url, {
-        method: "POST",
-        headers: { cookie: "site-session=" + user.sessionId },
-        body,
-      }),
-    );
-    const comments = await collectValues(listCommentsByItem(item.id));
-
-    assertEquals(resp.status, Status.SeeOther);
-    assertEquals(await ifUserHasNotifications(item.userLogin), true);
-    assertEquals(await ifUserHasNotifications(user.login), false);
     // Deep partial match since the comment ID is a ULID generated at runtime
     assertObjectMatch(comments[0], comment);
   });

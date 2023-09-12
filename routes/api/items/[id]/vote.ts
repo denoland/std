@@ -1,13 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { type Handlers, Status } from "$fresh/server.ts";
 import { assertSignedIn, type State } from "@/middleware/session.ts";
-import {
-  createNotification,
-  createVote,
-  deleteVote,
-  getItem,
-} from "@/utils/db.ts";
-import { ulid } from "std/ulid/mod.ts";
+import { createVote, deleteVote, getItem } from "@/utils/db.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 
 export const handler: Handlers<undefined, State> = {
@@ -24,16 +18,6 @@ export const handler: Handlers<undefined, State> = {
       userLogin: sessionUser.login,
       createdAt: new Date(),
     });
-
-    if (item.userLogin !== sessionUser.login) {
-      await createNotification({
-        id: ulid(),
-        userLogin: item.userLogin,
-        type: "vote",
-        text: `${sessionUser.login} upvoted your post: ${item.title}`,
-        originUrl: `/items/${itemId}`,
-      });
-    }
 
     return new Response(null, { status: Status.Created });
   },
