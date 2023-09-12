@@ -68,4 +68,4 @@ export * from "./sample.ts";
 export * from "./running_reduce.ts";
 export * from "./binary_heap.ts";
 export * from "./binary_search_tree.ts";
-export * from "./red_black_tree.ts";
+export { RedBlackTree } from "./red_black_tree.ts";
