@@ -1,11 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export async function blobFromReadableStream(
+const textDecoder = new TextDecoder();
+
+export async function toText(
   readableStream: ReadableStream,
-): Promise<Blob> {
+): Promise<string> {
   const reader = readableStream.getReader();
-  const chunks: Uint8Array[] = [];
+  let result = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -14,8 +16,8 @@ export async function blobFromReadableStream(
       break;
     }
 
-    chunks.push(value);
+    result += typeof value === "string" ? value : textDecoder.decode(value);
   }
 
-  return new Blob(chunks);
+  return result;
 }

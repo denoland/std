@@ -1,11 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { concat } from "../bytes/concat.ts";
-
-export async function arrayBufferFromReadableStream(
+export async function toBlob(
   readableStream: ReadableStream,
-): Promise<ArrayBuffer> {
+): Promise<Blob> {
   const reader = readableStream.getReader();
   const chunks: Uint8Array[] = [];
 
@@ -19,5 +17,5 @@ export async function arrayBufferFromReadableStream(
     chunks.push(value);
   }
 
-  return concat(...chunks).buffer;
+  return new Blob(chunks);
 }

@@ -1,13 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-const textDecoder = new TextDecoder();
+import { concat } from "../bytes/concat.ts";
 
-export async function textFromReadableStream(
-  readableStream: ReadableStream,
-): Promise<string> {
+export async function toArrayBuffer(
+  readableStream: ReadableStream<Uint8Array>,
+): Promise<ArrayBuffer> {
   const reader = readableStream.getReader();
-  let result = "";
+  const chunks: Uint8Array[] = [];
 
   while (true) {
     const { done, value } = await reader.read();
@@ -16,8 +16,8 @@ export async function textFromReadableStream(
       break;
     }
 
-    result += typeof value === "string" ? value : textDecoder.decode(value);
+    chunks.push(value);
   }
 
-  return result;
+  return concat(...chunks).buffer;
 }

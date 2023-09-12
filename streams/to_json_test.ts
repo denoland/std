@@ -1,11 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/assert_equals.ts";
-import { jsonFromReadableStream } from "./json_from_readable_stream.ts";
+import { toJson } from "./to_json.ts";
 
 const textEncoder = new TextEncoder();
 
-Deno.test("[streams] textFromReadableStream", async () => {
+Deno.test("[streams] toJson", async () => {
   const byteStream = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(textEncoder.encode("["));
@@ -15,7 +15,7 @@ Deno.test("[streams] textFromReadableStream", async () => {
     },
   });
 
-  assertEquals(await jsonFromReadableStream(byteStream), [1, 2, 3, 4]);
+  assertEquals(await toJson(byteStream), [1, 2, 3, 4]);
 
   const stringStream = new ReadableStream<string>({
     start(controller) {
@@ -26,7 +26,7 @@ Deno.test("[streams] textFromReadableStream", async () => {
     },
   });
 
-  assertEquals(await jsonFromReadableStream(stringStream), {
+  assertEquals(await toJson(stringStream), {
     a: 2,
     b: 3,
     c: 4,

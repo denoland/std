@@ -2,9 +2,9 @@
 
 import { assert } from "../assert/assert.ts";
 import { assertEquals } from "../assert/assert_equals.ts";
-import { blobFromReadableStream } from "./blob_from_readable_stream.ts";
+import { toBlob } from "./to_blob.ts";
 
-Deno.test("[streams] blobFromReadableStream", async () => {
+Deno.test("[streams] toBlob", async () => {
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(Uint8Array.of(1, 2, 3, 4, 5));
@@ -14,7 +14,7 @@ Deno.test("[streams] blobFromReadableStream", async () => {
     },
   });
 
-  const blob = await blobFromReadableStream(stream);
+  const blob = await toBlob(stream);
   assert(blob instanceof Blob);
   assertEquals(
     await blob.arrayBuffer(),
