@@ -7,7 +7,7 @@ import {
   createUser,
   createVote,
   deleteItem,
-  deleteUserBySession,
+  deleteUserSession,
   deleteVote,
   getAreVotedByUser,
   getItem,
@@ -106,7 +106,7 @@ Deno.test("[db] user", async () => {
   const user1 = genNewUser();
   await createUser(user1);
 
-  await deleteUserBySession(user.sessionId);
+  await deleteUserSession(user.sessionId);
   assertEquals(await getUserBySession(user.sessionId), null);
 
   const newUser: User = { ...user, sessionId: crypto.randomUUID() };

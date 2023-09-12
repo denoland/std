@@ -8,7 +8,7 @@ import {
 } from "kv_oauth";
 import {
   createUser,
-  deleteUserBySession,
+  deleteUserSession,
   getUser,
   updateUser,
   type User,
@@ -87,7 +87,7 @@ export default {
           }
           await createUser(user);
         } else {
-          await deleteUserBySession(user.sessionId);
+          await deleteUserSession(user.sessionId);
           await updateUser({ ...user, sessionId });
         }
 
