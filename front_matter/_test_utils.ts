@@ -2,7 +2,7 @@
 
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { Format } from "./mod.ts";
+import { Format } from "./formats.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
