@@ -4,7 +4,6 @@
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
-import { toIMF } from "../datetime/to_imf.ts";
 
 export interface Cookie {
   /** Name of the cookie. */
@@ -104,10 +103,8 @@ function toString(cookie: Cookie): string {
   }
   if (cookie.expires) {
     const { expires } = cookie;
-    const dateString = toIMF(
-      typeof expires === "number" ? new Date(expires) : expires,
-    );
-    out.push(`Expires=${dateString}`);
+    const date = typeof expires === "number" ? new Date(expires) : expires;
+    out.push(`Expires=${date.toUTCString()}`);
   }
   if (cookie.unparsed) {
     out.push(cookie.unparsed.join("; "));
