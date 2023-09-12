@@ -16,7 +16,6 @@ export const handler: Handlers<undefined, State> = {
     await createVote({
       itemId,
       userLogin: sessionUser.login,
-      createdAt: new Date(),
     });
 
     return new Response(null, { status: Status.Created });

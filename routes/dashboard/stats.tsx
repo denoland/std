@@ -1,62 +1,50 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { RouteContext } from "$fresh/server.ts";
-import { DAY } from "std/datetime/constants.ts";
 import Chart from "@/islands/Chart.tsx";
-import { getDatesSince, getManyMetrics } from "@/utils/db.ts";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
 import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 
+function randomNumbers(length: number) {
+  return Array.from({ length }, () => Math.floor(Math.random() * 1000));
+}
+
+// deno-lint-ignore require-await
 export default async function DashboardStatsPage(
   _req: Request,
   ctx: RouteContext,
 ) {
-  const msAgo = 30 * DAY;
-  const dates = getDatesSince(msAgo).map((date) => new Date(date));
-
-  const [
-    visitsCounts,
-    usersCounts,
-    itemsCounts,
-    votesCounts,
-  ] = await Promise.all([
-    getManyMetrics("visits_count", dates),
-    getManyMetrics("users_count", dates),
-    getManyMetrics("items_count", dates),
-    getManyMetrics("votes_count", dates),
-  ]);
-
+  const labels = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
   const datasets = [
     {
       label: "Site visits",
-      data: visitsCounts.map(Number),
+      data: randomNumbers(labels.length),
       borderColor: "#be185d",
     },
     {
       label: "Users created",
-      data: usersCounts.map(Number),
+      data: randomNumbers(labels.length),
       borderColor: "#e85d04",
     },
     {
       label: "Items created",
-      data: itemsCounts.map(Number),
+      data: randomNumbers(labels.length),
       borderColor: "#219ebc",
     },
     {
       label: "Votes",
-      data: votesCounts.map(Number),
+      data: randomNumbers(labels.length),
       borderColor: "#4338ca",
     },
   ];
-
-  const max = Math.max(...datasets[0].data);
-
-  const labels = dates.map((date) =>
-    new Date(date).toLocaleDateString("en-us", {
-      month: "short",
-      day: "numeric",
-    })
-  );
 
   return (
     <>
@@ -84,7 +72,6 @@ export default async function DashboardStatsPage(
               },
               scales: {
                 x: {
-                  max,
                   grid: { display: false },
                 },
                 y: {

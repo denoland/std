@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertRejects } from "std/assert/mod.ts";
-import { DAY } from "std/datetime/constants.ts";
 import { ulid } from "std/ulid/mod.ts";
 import {
   collectValues,
@@ -10,15 +9,11 @@ import {
   deleteItem,
   deleteUserBySession,
   deleteVote,
-  formatDate,
   getAreVotedByUser,
-  getDatesSince,
   getItem,
-  getManyMetrics,
   getUser,
   getUserBySession,
   getUserByStripeCustomer,
-  incrVisitsCountByDay,
   type Item,
   kv,
   listItems,
@@ -52,7 +47,6 @@ export function genNewVote(): Vote {
   return {
     itemId: crypto.randomUUID(),
     userLogin: crypto.randomUUID(),
-    createdAt: new Date(),
   };
 }
 
@@ -105,7 +99,6 @@ Deno.test("[db] user", async () => {
 
   await createUser(user);
   await assertRejects(async () => await createUser(user));
-  assertEquals(await getManyMetrics("users_count", [new Date()]), [1n]);
   assertEquals(await getUser(user.login), user);
   assertEquals(await getUserBySession(user.sessionId), user);
   assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), user);
@@ -126,12 +119,6 @@ Deno.test("[db] user", async () => {
   );
 });
 
-Deno.test("[db] visit", async () => {
-  const date = new Date();
-  await incrVisitsCountByDay(date);
-  assertEquals(await getManyMetrics("visits_count", [date]), [1n]);
-});
-
 Deno.test("[db] votes", async () => {
   const item = genNewItem();
   const user = genNewUser();
@@ -141,8 +128,6 @@ Deno.test("[db] votes", async () => {
     createdAt: new Date(),
   };
 
-  const dates = [vote.createdAt];
-  assertEquals(await getManyMetrics("votes_count", dates), [0n]);
   assertEquals(await collectValues(listItemsVotedByUser(user.login)), []);
 
   await assertRejects(
@@ -160,7 +145,6 @@ Deno.test("[db] votes", async () => {
   await createVote(vote);
   item.score++;
 
-  assertEquals(await getManyMetrics("votes_count", dates), [1n]);
   assertEquals(await collectValues(listItemsVotedByUser(user.login)), [item]);
   await assertRejects(async () => await createVote(vote));
 
@@ -199,30 +183,7 @@ Deno.test("[db] votes", async () => {
   await kv.set(["users_voted_for_item", item.id, user.login], user);
 
   await deleteVote(vote);
-  assertEquals(await getManyMetrics("votes_count", dates), [1n]);
   assertEquals(await collectValues(listItemsVotedByUser(user.login)), []);
-});
-
-Deno.test("[db] getManyMetrics()", async () => {
-  const last5Days = getDatesSince(DAY * 5).map((date) => new Date(date));
-  const last30Days = getDatesSince(DAY * 30).map((date) => new Date(date));
-
-  assertEquals((await getManyMetrics("items_count", last5Days)).length, 5);
-  assertEquals((await getManyMetrics("items_count", last30Days)).length, 30);
-});
-
-Deno.test("[db] formatDate()", () => {
-  assertEquals(formatDate(new Date("2023-01-01")), "2023-01-01");
-  assertEquals(formatDate(new Date("2023-01-01T13:59:08.740Z")), "2023-01-01");
-});
-
-Deno.test("[db] getDatesSince()", () => {
-  assertEquals(getDatesSince(0), []);
-  assertEquals(getDatesSince(DAY), [formatDate(new Date())]);
-  assertEquals(getDatesSince(DAY * 2), [
-    formatDate(new Date(Date.now() - DAY)),
-    formatDate(new Date()),
-  ]);
 });
 
 Deno.test("[db] getAreVotedByUser()", async () => {

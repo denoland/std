@@ -54,7 +54,6 @@ for await (const oldItemEntry of iter1) {
       await createVote({
         itemId: newItem.id,
         userLogin: userEntry.value.login,
-        createdAt: new Date(),
       });
     }
     await kv.delete(oldItemEntry.key);

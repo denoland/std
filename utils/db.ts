@@ -1,7 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { decodeTime } from "std/ulid/mod.ts";
-import { chunk } from "std/collections/chunk.ts";
-
 const KV_PATH_KEY = "KV_PATH";
 let path = undefined;
 if (
@@ -13,44 +10,10 @@ if (
 export const kv = await Deno.openKv(path);
 
 // Helpers
-/**
- * Gets many values from KV. Uses batched requests to get values in chunks of 10.
- */
-async function getManyValues<T>(
-  keys: Deno.KvKey[],
-): Promise<(T | null)[]> {
-  const promises = [];
-  for (const batch of chunk(keys, 10)) {
-    promises.push(kv.getMany<T[]>(batch));
-  }
-  return (await Promise.all(promises))
-    .flat()
-    .map((entry) => entry?.value);
-}
-
-/** Gets all dates since a given number of milliseconds ago */
-export function getDatesSince(msAgo: number) {
-  const dates = [];
-  const now = Date.now();
-  const start = new Date(now - msAgo);
-
-  while (+start < now) {
-    start.setDate(start.getDate() + 1);
-    dates.push(formatDate(new Date(start)));
-  }
-
-  return dates;
-}
-
 export async function collectValues<T>(iter: Deno.KvListIterator<T>) {
   const values = [];
   for await (const { value } of iter) values.push(value);
   return values;
-}
-
-/** Converts `Date` to ISO format that is zero UTC offset */
-export function formatDate(date: Date) {
-  return date.toISOString().split("T")[0];
 }
 
 // Item
@@ -83,17 +46,12 @@ export interface Item {
 export async function createItem(item: Item) {
   const itemsKey = ["items", item.id];
   const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
-  const itemsCountKey = [
-    "items_count",
-    formatDate(new Date(decodeTime(item.id))),
-  ];
 
   const res = await kv.atomic()
     .check({ key: itemsKey, versionstamp: null })
     .check({ key: itemsByUserKey, versionstamp: null })
     .set(itemsKey, item)
     .set(itemsByUserKey, item)
-    .sum(itemsCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error("Failed to create item");
@@ -141,8 +99,6 @@ export function listItemsByUser(
 export interface Vote {
   itemId: string;
   userLogin: string;
-  // Only used for updating values in the `votes_count` index.
-  createdAt: Date;
 }
 
 /**
@@ -157,7 +113,6 @@ export interface Vote {
  * await createVote({
  *   itemId: "13f34b7e-5563-4001-98ed-9ee04d7af717",
  *   userLogin: "pedro",
- *   createdAt: new Date()
  * });
  * ```
  */
@@ -181,7 +136,6 @@ export async function createVote(vote: Vote) {
     vote.userLogin,
   ];
   const itemByUserKey = ["items_by_user", item.userLogin, item.id];
-  const votesCountKey = ["votes_count", formatDate(vote.createdAt)];
 
   item.score++;
 
@@ -194,7 +148,6 @@ export async function createVote(vote: Vote) {
     .set(itemByUserKey, item)
     .set(itemVotedByUserKey, item)
     .set(userVotedForItemKey, user)
-    .sum(votesCountKey, 1n)
     .commit();
 
   if (!res.ok) throw new Error("Failed to create vote");
@@ -311,14 +264,12 @@ export interface User {
 export async function createUser(user: User) {
   const usersKey = ["users", user.login];
   const usersBySessionKey = ["users_by_session", user.sessionId];
-  const usersCountKey = ["users_count", formatDate(new Date())];
 
   const atomicOp = kv.atomic()
     .check({ key: usersKey, versionstamp: null })
     .check({ key: usersBySessionKey, versionstamp: null })
     .set(usersKey, user)
-    .set(usersBySessionKey, user)
-    .sum(usersCountKey, 1n);
+    .set(usersBySessionKey, user);
 
   if (user.stripeCustomerId !== undefined) {
     const usersByStripeCustomerKey = [
@@ -490,21 +441,4 @@ export async function getAreVotedByUser(items: Item[], userLogin: string) {
   const votedItems = await collectValues(listItemsVotedByUser(userLogin));
   const votedItemsIds = votedItems.map((item) => item.id);
   return items.map((item) => votedItemsIds.includes(item.id));
-}
-
-// Analytics
-export async function incrVisitsCountByDay(date: Date) {
-  const visitsKey = ["visits_count", formatDate(date)];
-  await kv.atomic()
-    .sum(visitsKey, 1n)
-    .commit();
-}
-
-export async function getManyMetrics(
-  metric: "visits_count" | "items_count" | "votes_count" | "users_count",
-  dates: Date[],
-) {
-  const keys = dates.map((date) => [metric, formatDate(date)]);
-  const res = await getManyValues<bigint>(keys);
-  return res.map((value) => value?.valueOf() ?? 0n);
 }

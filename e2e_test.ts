@@ -386,7 +386,6 @@ Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
     ...genNewVote(),
     itemId: item.id,
     userLogin: user.login,
-    createdAt: new Date(),
   };
   await createVote(vote);
   const url = `http://localhost/api/items/${item.id}/vote`;
@@ -727,12 +726,10 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
   await createVote({
     userLogin: user.login,
     itemId: item1.id,
-    createdAt: new Date(),
   });
   await createVote({
     userLogin: user.login,
     itemId: item2.id,
-    createdAt: new Date(),
   });
   const resp = await handler(
     new Request("http://localhost/api/me/votes", {
