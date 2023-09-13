@@ -2,7 +2,15 @@
 // This module is browser compatible.
 
 // Keep this up-to-date with Deno.build.os
-export type OSType = "darwin" | "linux" | "windows" | "freebsd" | "netbsd" | "aix" | "solaris" | "illumos";
+export type OSType =
+  | "darwin"
+  | "linux"
+  | "windows"
+  | "freebsd"
+  | "netbsd"
+  | "aix"
+  | "solaris"
+  | "illumos";
 
 export const osType: OSType = (() => {
   // deno-lint-ignore no-explicit-any
