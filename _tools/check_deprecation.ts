@@ -37,7 +37,7 @@ let shouldFail = false;
 const DEFAULT_DEPRECATED_VERSION = semver.increment(
   semver.increment(
     semver.increment(
-      VERSION,
+      semver.parse(VERSION),
       "minor",
     )!,
     "minor",
