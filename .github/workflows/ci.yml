@@ -83,19 +83,7 @@ jobs:
         run: deno fmt --check
 
       - name: Lint
-        run: deno lint
-
-      - name: Check License headers
-        run: deno task fmt:licence-headers --check
-
-      - name: Check Deprecations
-        run: "deno task lint:deprecations"
-
-      - name: Check Import paths in Docs
-        run: "deno task lint:doc-imports"
-
-      - name: Check circular dependencies between modules
-        run: "deno task lint:circular"
+        run: deno task lint
 
       - name: Spell-check
         uses: crate-ci/typos@master
