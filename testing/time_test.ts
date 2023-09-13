@@ -483,7 +483,7 @@ Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", asy
   }
 });
 
-Deno.test("runNext runs next timer without running microtasks", async () => {
+Deno.test("next runs next timer without running microtasks", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
@@ -516,7 +516,7 @@ Deno.test("runNext runs next timer without running microtasks", async () => {
   }
 });
 
-Deno.test("runNextAsync runs all microtasks and next timer", async () => {
+Deno.test("nextAsync runs all microtasks and next timer", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
