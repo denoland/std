@@ -494,8 +494,10 @@ Deno.test("next runs next timer without running microtasks", async () => {
     queueMicrotask(() => seq.push(3));
     queueMicrotask(() => seq.push(4));
     seq.push(1);
-    time.next();
+    const hasNextTimer = time.next();
     seq.push(2);
+
+    assertEquals(hasNextTimer, true);
     const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
@@ -504,13 +506,29 @@ Deno.test("next runs next timer without running microtasks", async () => {
     queueMicrotask(() => seq.push(7));
     queueMicrotask(() => seq.push(8));
     seq.push(5);
-    time.next();
+    const hasNextTimerAfterCalled = time.next();
     seq.push(6);
     await time.runMicrotasks();
 
+    assertEquals(hasNextTimerAfterCalled, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+
+    const id1 = setTimeout(cb, 1000);
+    const id2 = setTimeout(cb, 2000);
+    clearTimeout(id1);
+    clearTimeout(id2);
+    queueMicrotask(() => seq.push(11));
+    queueMicrotask(() => seq.push(12));
+    seq.push(9);
+    const hasNextTimerAfterCleared = time.next();
+    seq.push(10);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterCleared, false);
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   } finally {
     time.restore();
   }
@@ -527,8 +545,10 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
     queueMicrotask(() => seq.push(2));
     queueMicrotask(() => seq.push(3));
     seq.push(1);
-    await time.nextAsync();
+    const hasNextTimer = await time.nextAsync();
     seq.push(4);
+
+    assertEquals(hasNextTimer, true);
     const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
@@ -536,12 +556,27 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
     queueMicrotask(() => seq.push(6));
     queueMicrotask(() => seq.push(7));
     seq.push(5);
-    await time.nextAsync();
+    const hasNextTimerAfterCalled = await time.nextAsync();
     seq.push(8);
 
+    assertEquals(hasNextTimerAfterCalled, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+
+    const id1 = setTimeout(cb, 1000);
+    const id2 = setTimeout(cb, 2000);
+    clearTimeout(id1);
+    clearTimeout(id2);
+    queueMicrotask(() => seq.push(10));
+    queueMicrotask(() => seq.push(11));
+    seq.push(9);
+    const hasNextTimerAfterCleared = await time.nextAsync();
+    seq.push(12);
+
+    assertEquals(hasNextTimerAfterCleared, false);
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   } finally {
     time.restore();
   }
