@@ -155,6 +155,6 @@
  * @module
  */
 
-export * from "./createExtractor.ts";
+export * from "./create_extractor.ts";
 export * from "./test.ts";
-export { Format } from "./formats.ts";
+export { Format } from "./_formats.ts";

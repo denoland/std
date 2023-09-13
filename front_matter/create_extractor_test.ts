@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertThrows } from "../assert/mod.ts";
-import { Format } from "./formats.ts";
+import { Format } from "./_formats.ts";
 import { parse as parseYAML } from "../yaml/parse.ts";
 import { parse as parseTOML } from "../toml/parse.ts";
 import {
@@ -12,7 +12,7 @@ import {
   runExtractYAMLTests1,
   runExtractYAMLTests2,
 } from "./_test_utils.ts";
-import { createExtractor, Parser } from "./createExtractor.ts";
+import { createExtractor, Parser } from "./create_extractor.ts";
 
 const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
 const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });

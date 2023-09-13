@@ -6,7 +6,7 @@ import {
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-import { Format } from "./formats.ts";
+import { Format } from "./_formats.ts";
 import { test } from "./test.ts";
 
 // GENERAL TESTS //

@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { Format, MAP_FORMAT_TO_EXTRACTOR_RX } from "./formats.ts";
+import { Format, MAP_FORMAT_TO_EXTRACTOR_RX } from "./_formats.ts";
 
 /**
  * Tests if a string has valid front matter. Supports YAML, TOML and JSON.

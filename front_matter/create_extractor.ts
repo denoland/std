@@ -4,7 +4,7 @@ import {
   Format,
   MAP_FORMAT_TO_EXTRACTOR_RX,
   MAP_FORMAT_TO_RECOGNIZER_RX,
-} from "./formats.ts";
+} from "./_formats.ts";
 
 export type Extract<T> = {
   frontMatter: string;
