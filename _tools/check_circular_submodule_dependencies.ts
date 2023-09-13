@@ -80,13 +80,13 @@ deps["archive"] = await check("archive", "not ready");
 deps["assert"] = await check("assert", "ready");
 deps["async"] = await check("async", "ready");
 deps["bytes"] = await check("bytes", "ready");
-deps["collections"] = await check("collections", "needs clean up");
+deps["collections"] = await check("collections", "ready");
 deps["console"] = await check("console", "not ready");
 deps["crypto"] = await check("crypto", "needs clean up");
 deps["csv"] = await check("csv", "ready");
 deps["datetime"] = await check("datetime", "deprecated");
 deps["dotenv"] = await check("dotenv", "not ready");
-deps["encoding"] = await check("encoding", "ready", [
+deps["encoding"] = await check("encoding", "needs clean up", [
   "ascii85.ts",
   "base32.ts",
   "base58.ts",
@@ -111,7 +111,7 @@ deps["io"] = await check("io", "deprecated");
 deps["json"] = await check("json", "ready");
 deps["jsonc"] = await check("jsonc", "ready");
 deps["log"] = await check("log", "not ready");
-deps["media_types"] = await check("media_types", "needs clean up");
+deps["media_types"] = await check("media_types", "ready");
 deps["msgpack"] = await check("msgpack", "not ready");
 deps["path"] = await check("path", "needs clean up");
 deps["permissions"] = await check("permissions", "deprecated");
@@ -119,7 +119,7 @@ deps["regexp"] = await check("regexp", "not ready");
 deps["semver"] = await check("semver", "not ready");
 deps["signal"] = await check("signal", "deprecated");
 deps["streams"] = await check("streams", "needs clean up");
-deps["testing"] = await check("testing", "needs clean up", [
+deps["testing"] = await check("testing", "ready", [
   "bdd.ts",
   "mock.ts",
   "snapshot.ts",
@@ -127,6 +127,7 @@ deps["testing"] = await check("testing", "needs clean up", [
   "types.ts",
 ]);
 deps["toml"] = await check("toml", "ready");
+deps["ulid"] = await check("ulid", "not ready");
 deps["url"] = await check("url", "not ready");
 deps["uuid"] = await check("uuid", "ready");
 deps["wasi"] = await check("wasi", "not ready", ["snapshot_preview1.ts"]);
