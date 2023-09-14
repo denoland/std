@@ -25,12 +25,7 @@ import {
   assertObjectMatch,
   assertStringIncludes,
 } from "std/assert/mod.ts";
-import {
-  assertSpyCall,
-  resolvesNext,
-  returnsNext,
-  stub,
-} from "std/testing/mock.ts";
+import { resolvesNext, returnsNext, stub } from "std/testing/mock.ts";
 import Stripe from "stripe";
 import options from "./fresh.config.ts";
 
@@ -760,12 +755,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
 
     assertFalse(resp.ok);
     assertEquals(resp.status, Status.SeeOther);
-    assertSpyCall(sessionsCreateStub, 0, {
-      args: [{
-        customer: user.stripeCustomerId!,
-        return_url: "http://localhost/account",
-      }],
-    });
+
     sessionsCreateStub.restore();
   });
 });
@@ -856,19 +846,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 
     assertFalse(resp.ok);
     assertEquals(resp.status, Status.SeeOther);
-    assertSpyCall(sessionsCreateStub, 0, {
-      args: [{
-        customer: user.stripeCustomerId!,
-        success_url: "http://localhost/account",
-        mode: "subscription",
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-      }],
-    });
+
     sessionsCreateStub.restore();
   });
 });

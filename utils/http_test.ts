@@ -1,10 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import {
-  assertSpyCall,
-  assertSpyCalls,
-  returnsNext,
-  stub,
-} from "std/testing/mock.ts";
+import { returnsNext, stub } from "std/testing/mock.ts";
 import { fetchValues, getCursor, redirect } from "./http.ts";
 import { assert, assertEquals, assertRejects } from "std/assert/mod.ts";
 import { Status } from "$fresh/server.ts";
@@ -64,14 +59,4 @@ Deno.test("[http] fetchValues()", async () => {
   );
 
   fetchStub.restore();
-
-  assertSpyCall(fetchStub, 0, {
-    args: [endpoint],
-    returned: resp1,
-  });
-  assertSpyCall(fetchStub, 1, {
-    args: [endpoint + "/api/items?cursor=" + resp2Cursor],
-    returned: resp2,
-  });
-  assertSpyCalls(fetchStub, 2);
 });

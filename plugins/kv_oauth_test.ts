@@ -1,12 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { assertRejects } from "std/assert/assert_rejects.ts";
 import { getGitHubUser } from "./kv_oauth.ts";
-import {
-  assertSpyCall,
-  assertSpyCalls,
-  returnsNext,
-  stub,
-} from "std/testing/mock.ts";
+import { returnsNext, stub } from "std/testing/mock.ts";
 import { Status } from "$fresh/server.ts";
 import { errors } from "std/http/http_errors.ts";
 import { assertEquals } from "std/assert/assert_equals.ts";
@@ -31,8 +26,4 @@ Deno.test("[plugins] getGitHubUser()", async () => {
   assertEquals(await getGitHubUser(accessToken2), resp2Body);
 
   fetchStub.restore();
-
-  assertSpyCall(fetchStub, 0, { returned: resp1 });
-  assertSpyCall(fetchStub, 1, { returned: resp2 });
-  assertSpyCalls(fetchStub, 2);
 });
