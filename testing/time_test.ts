@@ -490,6 +490,7 @@ Deno.test("next runs next timer without running microtasks", async () => {
   const seq: number[] = [];
 
   try {
+    // Callback is called by `next`.
     setTimeout(cb, 1000);
     queueMicrotask(() => seq.push(3));
     queueMicrotask(() => seq.push(4));
@@ -503,6 +504,7 @@ Deno.test("next runs next timer without running microtasks", async () => {
     assertEquals(Date.now(), start + 1000);
     await time.runMicrotasks();
 
+    // Callback is already called before `next` called.
     queueMicrotask(() => seq.push(7));
     queueMicrotask(() => seq.push(8));
     seq.push(5);
@@ -514,6 +516,7 @@ Deno.test("next runs next timer without running microtasks", async () => {
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
+    // Callbacks are cleared before `next` called.
     const id1 = setTimeout(cb, 1000);
     const id2 = setTimeout(cb, 2000);
     clearTimeout(id1);
@@ -528,7 +531,27 @@ Deno.test("next runs next timer without running microtasks", async () => {
     assertEquals(hasNextTimerAfterCleared, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+    // Callback is partially cleared before `next` called.
+    const id3 = setTimeout(cb, 1500);
+    setTimeout(cb, 1500);
+    clearTimeout(id3);
+    queueMicrotask(() => seq.push(15));
+    queueMicrotask(() => seq.push(16));
+    seq.push(13);
+    const hasNextTimerAfterPartiallyCleared = time.next();
+    seq.push(14);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterPartiallyCleared, true);
+    const expectedCalls2 = [
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1000 + 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls2);
+    assertEquals(Date.now(), start + 1000 + 1500);
+
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   } finally {
     time.restore();
   }
@@ -541,6 +564,7 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
   const seq: number[] = [];
 
   try {
+    // Callback is called by `nextAsync`.
     setTimeout(cb, 1000);
     queueMicrotask(() => seq.push(2));
     queueMicrotask(() => seq.push(3));
@@ -553,6 +577,7 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
+    // Callback is already called before `nextAsync` called.
     queueMicrotask(() => seq.push(6));
     queueMicrotask(() => seq.push(7));
     seq.push(5);
@@ -563,6 +588,7 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
+    // Callbacks are cleared before `nextAsync` called.
     const id1 = setTimeout(cb, 1000);
     const id2 = setTimeout(cb, 2000);
     clearTimeout(id1);
@@ -576,7 +602,27 @@ Deno.test("nextAsync runs all microtasks and next timer", async () => {
     assertEquals(hasNextTimerAfterCleared, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+
+    // Callback is partially cleared before `nextAsync` called.
+    const id3 = setTimeout(cb, 1500);
+    setTimeout(cb, 1500);
+    clearTimeout(id3);
+    queueMicrotask(() => seq.push(14));
+    queueMicrotask(() => seq.push(15));
+    seq.push(13);
+    const hasNextTimerAfterPartiallyCleared = await time.nextAsync();
+    seq.push(16);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterPartiallyCleared, true);
+    const expectedCalls2 = [
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1000 + 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls2);
+    assertEquals(Date.now(), start + 1000 + 1500);
+
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   } finally {
     time.restore();
   }
