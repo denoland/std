@@ -40,6 +40,8 @@ const items = stories.map(({ by: userLogin, title, url, score, time }) => ({
   createdAt: new Date(time * 1000),
 })).filter(({ url }) => url);
 
+const users = new Set(items.map((user) => user.userLogin));
+
 const itemPromises = [];
 for (const item of items) {
   itemPromises.push(createItem(item));
@@ -47,10 +49,10 @@ for (const item of items) {
 await Promise.all(itemPromises);
 
 const userPromises = [];
-for (const { userLogin } of items) {
+for (const login of users) {
   userPromises.push(
     createUser({
-      login: userLogin,
+      login,
       stripeCustomerId: crypto.randomUUID(),
       sessionId: crypto.randomUUID(),
       isSubscribed: false,
