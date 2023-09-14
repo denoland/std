@@ -42,6 +42,6 @@ export const handler: Handlers<undefined, State> = {
       score: 0,
     };
     await createItem(item);
-    return redirect("/items/" + item.id);
+    return redirect("/");
   },
 };

@@ -299,7 +299,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
     assertEquals(resp2.status, Status.BadRequest);
   });
 
-  await test.step("creates an item and redirects to the item page", async () => {
+  await test.step("creates an item and redirects to the home page", async () => {
     const item = { title: "Title text", url: "http://bobross.com" };
     const body = new FormData();
     body.set("title", item.title);
@@ -314,7 +314,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
     const items = await collectValues(listItemsByUser(user.login));
 
     assertEquals(resp.status, Status.SeeOther);
-    assertEquals(resp.headers.get("location"), `/items/${items[0].id}`);
+    assertEquals(resp.headers.get("location"), `/`);
     // Deep partial match since the item ID is a ULID generated at runtime
     assertObjectMatch(items[0], item);
   });
