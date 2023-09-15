@@ -10,8 +10,6 @@ export enum Format {
   UNKNOWN = "unknown",
 }
 
-type FormatType = "yaml" | "toml" | "json" | "unknown";
-
 const { isArray } = Array;
 
 function getBeginToken(delimiter: Delimiter): string {
