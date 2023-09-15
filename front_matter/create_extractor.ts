@@ -1,10 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import {
-  Format,
   MAP_FORMAT_TO_EXTRACTOR_RX,
   MAP_FORMAT_TO_RECOGNIZER_RX,
 } from "./_formats.ts";
+
+type Format = "yaml" | "toml" | "json" | "unknown";
 
 export type Extract<T> = {
   frontMatter: string;
@@ -40,15 +41,15 @@ function _extract<T>(
  * @param formats A list of formats to recognize. Defaults to all supported formats.
  *
  * ```ts
- * import { recognize, Format } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * import { recognize } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
- * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), Format.YAML);
- * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), Format.TOML);
- * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), Format.JSON);
- * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), Format.UNKNOWN);
+ * assertEquals(recognize("---\ntitle: Three dashes marks the spot\n---\n"), "yaml");
+ * assertEquals(recognize("---toml\ntitle = 'Three dashes followed by format marks the spot'\n---\n"), "toml");
+ * assertEquals(recognize("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n"), "json");
+ * assertEquals(recognize("---xml\n<title>Three dashes marks the spot</title>\n---\n"), "unknown");
  *
- * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", [Format.YAML]), Format.UNKNOWN);
+ * assertEquals(recognize("---json\n<title>Three dashes marks the spot</title>\n---\n", ["yaml"]), "unknown");
  */
 function recognize(str: string, formats?: Format[]): Format {
   if (!formats) {
@@ -58,7 +59,7 @@ function recognize(str: string, formats?: Format[]): Format {
   const [firstLine] = str.split(/(\r?\n)/);
 
   for (const format of formats) {
-    if (format === Format.UNKNOWN) {
+    if (format === "unknown") {
       continue;
     }
 
@@ -67,7 +68,7 @@ function recognize(str: string, formats?: Format[]): Format {
     }
   }
 
-  return Format.UNKNOWN;
+  return "unknown";
 }
 
 /**
@@ -78,16 +79,16 @@ function recognize(str: string, formats?: Format[]): Format {
  * @returns A function that extracts front matter from a string with the given parsers.
  *
  * ```ts
- * import { createExtractor, Format, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
+ * import { createExtractor, Parser } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { parse as parseYAML } from "https://deno.land/std@$STD_VERSION/yaml/parse.ts";
  * import { parse as parseTOML } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
- * const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
- * const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });
- * const extractJSON = createExtractor({ [Format.JSON]: JSON.parse as Parser });
+ * const extractYAML = createExtractor({ yaml: parseYAML as Parser });
+ * const extractTOML = createExtractor({ toml: parseTOML as Parser });
+ * const extractJSON = createExtractor({ json: JSON.parse as Parser });
  * const extractYAMLOrJSON = createExtractor({
- *     [Format.YAML]: parseYAML as Parser,
- *     [Format.JSON]: JSON.parse as Parser,
+ *     yaml: parseYAML as Parser,
+ *     json: JSON.parse as Parser,
  * });
  *
  * let { attrs, body, frontMatter } = extractYAML<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\nferret");
@@ -125,7 +126,7 @@ export function createExtractor(
     const format = recognize(str, formatKeys);
     const parser = formats[format];
 
-    if (format === Format.UNKNOWN || !parser) {
+    if (format === "unknown" || !parser) {
       throw new TypeError(`Unsupported front matter format`);
     }
 

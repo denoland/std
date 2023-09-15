@@ -2,12 +2,15 @@
 
 type Delimiter = string | [begin: string, end: string];
 
+/** @deprecated (will be removed after 1.0.0) Use literal types "yaml" | "toml" | "json" | "unknwon" */
 export enum Format {
   YAML = "yaml",
   TOML = "toml",
   JSON = "json",
   UNKNOWN = "unknown",
 }
+
+type FormatType = "yaml" | "toml" | "json" | "unknown";
 
 const { isArray } = Array;
 
@@ -51,20 +54,14 @@ const [RX_RECOGNIZE_JSON, RX_JSON] = createRegExp(
   "= json =",
 );
 
-export const MAP_FORMAT_TO_RECOGNIZER_RX: Omit<
-  Record<Format, RegExp>,
-  Format.UNKNOWN
-> = {
-  [Format.YAML]: RX_RECOGNIZE_YAML,
-  [Format.TOML]: RX_RECOGNIZE_TOML,
-  [Format.JSON]: RX_RECOGNIZE_JSON,
-};
+export const MAP_FORMAT_TO_RECOGNIZER_RX = {
+  yaml: RX_RECOGNIZE_YAML,
+  toml: RX_RECOGNIZE_TOML,
+  json: RX_RECOGNIZE_JSON,
+} as const;
 
-export const MAP_FORMAT_TO_EXTRACTOR_RX: Omit<
-  Record<Format, RegExp>,
-  Format.UNKNOWN
-> = {
-  [Format.YAML]: RX_YAML,
-  [Format.TOML]: RX_TOML,
-  [Format.JSON]: RX_JSON,
-};
+export const MAP_FORMAT_TO_EXTRACTOR_RX = {
+  yaml: RX_YAML,
+  toml: RX_TOML,
+  json: RX_JSON,
+} as const;
