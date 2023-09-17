@@ -1,8 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps, RouteContext } from "$fresh/server.ts";
 import type { State } from "@/middleware/session.ts";
 import Head from "@/components/Head.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
+import { defineRoute } from "$fresh/server.ts";
 
 const NEEDS_SETUP = Deno.env.get("GITHUB_CLIENT_ID") === undefined ||
   Deno.env.get("GITHUB_CLIENT_SECRET") === undefined;
@@ -40,13 +40,13 @@ function SetupInstruction() {
   );
 }
 
-export default function HomePage(props: PageProps<undefined, State>) {
-  const isSignedIn = props.state.sessionUser !== undefined;
+export default defineRoute<State>((_req, ctx) => {
+  const isSignedIn = ctx.state.sessionUser !== undefined;
   const endpoint = "/api/items";
 
   return (
     <>
-      <Head href={props.url.href}>
+      <Head href={ctx.url.href}>
         <link
           as="fetch"
           crossOrigin="anonymous"
@@ -71,4 +71,4 @@ export default function HomePage(props: PageProps<undefined, State>) {
       </main>
     </>
   );
-}
+});

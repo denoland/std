@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { RouteContext } from "$fresh/server.ts";
+import { defineRoute } from "$fresh/server.ts";
 import { getPosts, type Post } from "@/utils/posts.ts";
 import Head from "@/components/Head.tsx";
 import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
@@ -29,7 +29,7 @@ function PostCard(props: Post) {
   );
 }
 
-export default async function BlogPage(_req: Request, ctx: RouteContext) {
+export default defineRoute(async (_req, ctx) => {
   const posts = await getPosts();
 
   return (
@@ -43,4 +43,4 @@ export default async function BlogPage(_req: Request, ctx: RouteContext) {
       </main>
     </>
   );
-}
+});

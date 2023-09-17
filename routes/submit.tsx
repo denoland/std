@@ -1,14 +1,14 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps } from "$fresh/server.ts";
 import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
+import { defineRoute } from "$fresh/server.ts";
 
-export default function SubmitPage(props: PageProps) {
+export default defineRoute((_req, ctx) => {
   return (
     <>
-      <Head title="Submit" href={props.url.href} />
+      <Head title="Submit" href={ctx.url.href} />
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
           <h1 class={HEADING_STYLES}>
@@ -87,4 +87,4 @@ export default function SubmitPage(props: PageProps) {
       </main>
     </>
   );
-}
+});

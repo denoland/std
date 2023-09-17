@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/middleware/session.ts";
 import { getUser } from "@/utils/db.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
@@ -7,6 +6,7 @@ import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
+import { defineRoute } from "$fresh/server.ts";
 
 interface UserProfileProps {
   login: string;
@@ -37,44 +37,43 @@ function UserProfile(props: UserProfileProps) {
   );
 }
 
-export default async function UserPage(
-  _req: Request,
-  ctx: RouteContext<undefined, State>,
-) {
-  const { login } = ctx.params;
-  const user = await getUser(login);
-  if (user === null) return await ctx.renderNotFound();
+export default defineRoute<State>(
+  async (_req, ctx) => {
+    const { login } = ctx.params;
+    const user = await getUser(login);
+    if (user === null) return await ctx.renderNotFound();
 
-  const isSignedIn = ctx.state.sessionUser !== undefined;
-  const endpoint = `/api/users/${login}/items`;
+    const isSignedIn = ctx.state.sessionUser !== undefined;
+    const endpoint = `/api/users/${login}/items`;
 
-  return (
-    <>
-      <Head title={user.login} href={ctx.url.href}>
-        <link
-          as="fetch"
-          crossOrigin="anonymous"
-          href={endpoint}
-          rel="preload"
-        />
-        {isSignedIn && (
+    return (
+      <>
+        <Head title={user.login} href={ctx.url.href}>
           <link
             as="fetch"
             crossOrigin="anonymous"
-            href="/api/me/votes"
+            href={endpoint}
             rel="preload"
           />
-        )}
-      </Head>
-      <main class="flex-1 p-4 flex flex-col md:flex-row gap-8">
-        <div class="flex justify-center p-4">
-          <UserProfile {...user} />
-        </div>
-        <ItemsList
-          endpoint={endpoint}
-          isSignedIn={isSignedIn}
-        />
-      </main>
-    </>
-  );
-}
+          {isSignedIn && (
+            <link
+              as="fetch"
+              crossOrigin="anonymous"
+              href="/api/me/votes"
+              rel="preload"
+            />
+          )}
+        </Head>
+        <main class="flex-1 p-4 flex flex-col md:flex-row gap-8">
+          <div class="flex justify-center p-4">
+            <UserProfile {...user} />
+          </div>
+          <ItemsList
+            endpoint={endpoint}
+            isSignedIn={isSignedIn}
+          />
+        </main>
+      </>
+    );
+  },
+);

@@ -1,15 +1,15 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps } from "$fresh/server.ts";
 import Chart from "@/islands/Chart.tsx";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
 import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
+import { defineRoute } from "$fresh/server.ts";
 
 function randomNumbers(length: number) {
   return Array.from({ length }, () => Math.floor(Math.random() * 1000));
 }
 
-export default function DashboardStatsPage(props: PageProps) {
+export default defineRoute((_req, ctx) => {
   const labels = [
     "Monday",
     "Tuesday",
@@ -44,7 +44,7 @@ export default function DashboardStatsPage(props: PageProps) {
 
   return (
     <>
-      <Head title="Dashboard" href={props.url.href} />
+      <Head title="Dashboard" href={ctx.url.href} />
       <main class="flex-1 p-4 flex flex-col">
         <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
         <TabsBar
@@ -55,7 +55,7 @@ export default function DashboardStatsPage(props: PageProps) {
             path: "/dashboard/users",
             innerText: "Users",
           }]}
-          currentPath={props.url.pathname}
+          currentPath={ctx.url.pathname}
         />
         <div class="flex-1 relative">
           <Chart
@@ -90,4 +90,4 @@ export default function DashboardStatsPage(props: PageProps) {
       </main>
     </>
   );
-}
+});

@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { RouteContext } from "$fresh/server.ts";
 import type { State } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { assertIsPrice, isStripeEnabled, stripe } from "@/utils/stripe.ts";
@@ -7,6 +6,7 @@ import { formatCurrency } from "@/utils/display.ts";
 import Stripe from "stripe";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
+import { defineRoute } from "$fresh/server.ts";
 
 const CARD_STYLES =
   "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
@@ -160,10 +160,7 @@ function EnterprisePricingCard() {
   );
 }
 
-export default async function PricingPage(
-  _req: Request,
-  ctx: RouteContext<undefined, State>,
-) {
+export default defineRoute<State>(async (_req, ctx) => {
   if (!isStripeEnabled()) return await ctx.renderNotFound();
 
   const { data } = await stripe.products.list({
@@ -190,4 +187,4 @@ export default async function PricingPage(
       </main>
     </>
   );
-}
+});

@@ -1,20 +1,18 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps } from "$fresh/server.ts";
+import { defineRoute } from "$fresh/server.ts";
 import type { SignedInState } from "@/middleware/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { isStripeEnabled } from "@/utils/stripe.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
-export default function AccountPage(
-  props: PageProps<undefined, SignedInState>,
-) {
-  const { sessionUser } = props.state;
+export default defineRoute<SignedInState>((_req, ctx) => {
+  const { sessionUser } = ctx.state;
   const action = sessionUser.isSubscribed ? "Manage" : "Upgrade";
 
   return (
     <>
-      <Head title="Account" href={props.url.href} />
+      <Head title="Account" href={ctx.url.href} />
       <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
         <GitHubAvatarImg
           login={sessionUser.login}
@@ -60,4 +58,4 @@ export default function AccountPage(
       </main>
     </>
   );
-}
+});

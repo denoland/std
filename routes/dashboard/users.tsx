@@ -1,16 +1,16 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { PageProps } from "$fresh/server.ts";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
 import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 import UsersTable from "@/islands/UsersTable.tsx";
+import { defineRoute } from "$fresh/server.ts";
 
-export default function DashboardUsersPage(props: PageProps) {
+export default defineRoute((_req, ctx) => {
   const endpoint = "/api/users";
 
   return (
     <>
-      <Head title="Users" href={props.url.href}>
+      <Head title="Users" href={ctx.url.href}>
         <link
           as="fetch"
           crossOrigin="anonymous"
@@ -28,10 +28,10 @@ export default function DashboardUsersPage(props: PageProps) {
             path: "/dashboard/users",
             innerText: "Users",
           }]}
-          currentPath={props.url.pathname}
+          currentPath={ctx.url.pathname}
         />
         <UsersTable endpoint={endpoint} />
       </main>
     </>
   );
-}
+});

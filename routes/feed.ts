@@ -2,12 +2,12 @@
 import { Feed } from "feed";
 import { getPosts } from "@/utils/posts.ts";
 import { SITE_NAME } from "@/utils/constants.ts";
-import { RouteContext } from "$fresh/server.ts";
+import { defineRoute } from "$fresh/server.ts";
 
 const copyright = `Copyright ${new Date().getFullYear()} ${SITE_NAME}`;
 
 // Use https://validator.w3.org/feed/ to validate RSS feed syntax.
-export default async function FeedPage(_req: Request, ctx: RouteContext) {
+export default defineRoute(async (_req, ctx) => {
   const { origin } = ctx.url;
   const feed = new Feed({
     title: "Deno",
@@ -43,4 +43,4 @@ export default async function FeedPage(_req: Request, ctx: RouteContext) {
       "content-type": "application/atom+xml; charset=utf-8",
     },
   });
-}
+});
