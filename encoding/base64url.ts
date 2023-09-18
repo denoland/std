@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
+ * {@linkcode encodeBase64Url} and {@linkcode decodeBase64Url} for
  * [base64 URL safe](https://en.wikipedia.org/wiki/Base64#URL_applications) encoding.
  *
  * This module is browser compatible.
@@ -10,16 +10,16 @@
  * @example
  * ```ts
  * import {
- *   decode,
- *   encode,
+ *   decodeBase64Url,
+ *   encodeBase64Url,
  * } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
  *
  * const binary = new TextEncoder().encode("foobar");
- * const encoded = encode(binary);
+ * const encoded = encodeBase64Url(binary);
  * console.log(encoded);
  * // => "Zm9vYmFy"
  *
- * console.log(decode(encoded));
+ * console.log(decodeBase64Url(encoded));
  * // => Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
  * ```
  *
@@ -68,4 +68,22 @@ export function encode(data: ArrayBuffer | string): string {
  */
 export function decode(b64url: string): Uint8Array {
   return base64.decode(convertBase64urlToBase64(b64url));
+}
+
+/**
+ * Encodes a given ArrayBuffer or string into a base64url representation
+ * @param data
+ */
+export function encodeBase64Url(
+  data: ArrayBuffer | Uint8Array | string,
+): string {
+  return convertBase64ToBase64url(base64.encodeBase64(data));
+}
+
+/**
+ * Converts given base64url encoded data back to original
+ * @param b64url
+ */
+export function decodeBase64Url(b64url: string): Uint8Array {
+  return base64.decodeBase64(convertBase64urlToBase64(b64url));
 }
