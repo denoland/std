@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { posixJoin } from "../path/_join.ts";
+import { join as posixJoin } from "../path/posix/join.ts";
 
 /**
  * Join a base `URL` and a series of `paths`, then normalizes the resulting URL.

@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { _common } from "./_common/common.ts";
+import { _common } from "../_common/common.ts";
 import { SEP } from "./separator.ts";
 
 /** Determines the common path from a set of paths, using an optional separator,

@@ -1,9 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { FormatInputPathObject } from "./_interface.ts";
+import type { FormatInputPathObject } from "../_interface.ts";
 
-function _format(
+export function _format(
   sep: string,
   pathObject: FormatInputPathObject,
 ): string {
@@ -16,28 +16,10 @@ function _format(
   return dir + sep + base;
 }
 
-function assertArg(pathObject: FormatInputPathObject) {
+export function assertArg(pathObject: FormatInputPathObject) {
   if (pathObject === null || typeof pathObject !== "object") {
     throw new TypeError(
       `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,
     );
   }
-}
-
-/**
- * Generate a path from `FormatInputPathObject` object.
- * @param pathObject with path
- */
-export function posixFormat(pathObject: FormatInputPathObject): string {
-  assertArg(pathObject);
-  return _format("/", pathObject);
-}
-
-/**
- * Generate a path from `FormatInputPathObject` object.
- * @param pathObject with path
- */
-export function windowsFormat(pathObject: FormatInputPathObject): string {
-  assertArg(pathObject);
-  return _format("\\", pathObject);
 }
