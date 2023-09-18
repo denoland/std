@@ -7,7 +7,7 @@ import { encode as base64Encode } from "../encoding/base64.ts";
 const decoder = new TextDecoder();
 
 /**
- * @deprecated (will be removed in 0.209.0) Use `std/encoding/hex.ts` or `std/encoding/base64.ts` instead.
+ * @deprecated (will be removed after 0.209.0) Use `std/encoding/hex.ts` or `std/encoding/base64.ts` instead.
  *
  * Converts a hash to a string with a given encoding.
  * @example
