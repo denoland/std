@@ -20,6 +20,7 @@ import { retry } from "../async/retry.ts";
 const isWindows = Deno.build.os === "windows";
 
 let child: Deno.ChildProcess;
+let stdout: ReadableStream<string>;
 
 interface FileServerCfg {
   port?: string;
@@ -66,10 +67,10 @@ async function startFileServer({
   });
   child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-    new TextLineStream(),
-  );
-  const reader = r.getReader();
+  stdout = child.stdout
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextLineStream());
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
@@ -90,10 +91,10 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
     stderr: "null",
   });
   child = fileServer.spawn();
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  stdout = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
-  const reader = r.getReader();
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Server running..."));
   reader.releaseLock();
@@ -116,6 +117,7 @@ async function killFileServer() {
     }
   });
   await child.status;
+  for await (const _line of stdout) { /* noop */ } // wait until stdout closes
 }
 
 /* HTTP GET request allowing arbitrary paths */
