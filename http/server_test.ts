@@ -762,6 +762,8 @@ Deno.test(`serve should handle websocket requests`, async () => {
     abortController.abort();
     await servePromise;
   }
+  // FIXME(kt3k): op_sleep and op_ws_next_event leak without the below delay.
+  await delay(1);
 });
 
 Deno.test(`Server.listenAndServeTls should handle requests`, async () => {

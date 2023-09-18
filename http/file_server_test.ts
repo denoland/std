@@ -16,6 +16,7 @@ import {
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
+import { delay } from "../async/delay.ts";
 
 const isWindows = Deno.build.os === "windows";
 
@@ -116,6 +117,7 @@ async function killFileServer() {
     }
   });
   await child.status;
+  await delay(1);
 }
 
 /* HTTP GET request allowing arbitrary paths */
