@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { extname as posixExtname } from "./posix/extname.ts";
-import { extname as windowsExtname } from "./posix/extname.ts";
+import { extname as posixExtname } from "../path_posix/extname.ts";
+import { extname as windowsExtname } from "../path_windows/extname.ts";
 /**
  * Return the extension of the `path` with leading period.
  * @param path with extension

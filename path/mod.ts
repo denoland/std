@@ -16,7 +16,7 @@
  * Example, for `posix`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path_posix/from_file_url.ts";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "/home/foo"
  * ```
@@ -24,7 +24,7 @@
  * or, for `windows`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/windows/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path_windows/from_file_url.ts";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "\\home\\foo"
  * ```
@@ -35,13 +35,10 @@
  */
 
 import { isWindows } from "./_os.ts";
-import * as _windows from "./windows/mod.ts";
-import * as _posix from "./posix/mod.ts";
+import * as _windows from "../path_windows/mod.ts";
+import * as _posix from "../path_posix/mod.ts";
 
-/** @deprecated */
 export const win32 = _windows;
-
-/** @deprecated */
 export const posix = _posix;
 
 export const sep = isWindows ? _windows.sep : _posix.sep;
@@ -62,5 +59,5 @@ export * from "./to_file_url.ts";
 export * from "./to_namespaced_path.ts";
 export * from "./common.ts";
 export * from "./separator.ts";
-export * from "./_interface.ts";
+export * from "../_path_common/interface.ts";
 export * from "./glob.ts";

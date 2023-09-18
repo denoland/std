@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { toNamespacedPath as posixToNamespacedPath } from "./posix/to_namespaced_path.ts";
-import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namespaced_path.ts";
+import { toNamespacedPath as posixToNamespacedPath } from "../path_posix/to_namespaced_path.ts";
+import { toNamespacedPath as windowsToNamespacedPath } from "../path_windows/to_namespaced_path.ts";
 
 /**
  * Resolves path to a namespace path

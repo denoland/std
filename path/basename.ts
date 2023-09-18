@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { basename as posixBasename } from "./posix/basename.ts";
-import { basename as windowsBasename } from "./windows/basename.ts";
+import { basename as posixBasename } from "../path_posix/basename.ts";
+import { basename as windowsBasename } from "../path_windows/basename.ts";
 
 /**
  * Return the last portion of a `path`.

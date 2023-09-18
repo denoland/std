@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { normalize as posixNormalize } from "./posix/normalize.ts";
-import { normalize as windowsNormalize } from "./windows/normalize.ts";
+import { normalize as posixNormalize } from "../path_posix/normalize.ts";
+import { normalize as windowsNormalize } from "../path_windows/normalize.ts";
 /**
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
  * Note that resolving these segments does not necessarily mean that all will be eliminated.

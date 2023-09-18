@@ -1,4 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
-export * from "./posix/mod.ts";
+export * from "../path_posix/mod.ts";

@@ -31,8 +31,8 @@
  * @module
  */
 
-import { join as posixJoin } from "../path/posix/join.ts";
-import { normalize as posixNormalize } from "../path/posix/normalize.ts";
+import { join as posixJoin } from "../path_posix/join.ts";
+import { normalize as posixNormalize } from "../path_posix/normalize.ts";
 import { extname } from "../path/extname.ts";
 import { join } from "../path/join.ts";
 import { relative } from "../path/relative.ts";

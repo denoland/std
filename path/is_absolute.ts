@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { isAbsolute as posixIsAbsolute } from "./posix/is_absolute.ts";
-import { isAbsolute as windowsIsAbsolute } from "./windows/is_absolute.ts";
+import { isAbsolute as posixIsAbsolute } from "../path_posix/is_absolute.ts";
+import { isAbsolute as windowsIsAbsolute } from "../path_windows/is_absolute.ts";
 
 /**
  * Verifies whether provided path is absolute

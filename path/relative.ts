@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { relative as posixRelative } from "./posix/relative.ts";
-import { relative as windowsRelative } from "./windows/relative.ts";
+import { relative as posixRelative } from "../path_posix/relative.ts";
+import { relative as windowsRelative } from "../path_windows/relative.ts";
 
 /**
  * Return the relative path from `from` to `to` based on current working directory.

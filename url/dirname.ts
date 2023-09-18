@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { dirname as posixDirname } from "../path/posix/dirname.ts";
+import { dirname as posixDirname } from "../path_posix/dirname.ts";
 import { strip } from "./_strip.ts";
 
 /**

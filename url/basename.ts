@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { basename as posixBasename } from "../path/posix/basename.ts";
+import { basename as posixBasename } from "../path_posix/basename.ts";
 import { strip } from "./_strip.ts";
 
 /**
