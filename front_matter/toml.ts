@@ -7,6 +7,7 @@ import { parse } from "../toml/parse.ts";
 
 export { Format } from "./_formats.ts";
 
+/* @deprecated (will be removed after 0.210.0) Import test from test.ts and use `test(str, ["toml"])`. */
 export function test(str: string): boolean {
   return _test(str, [Format.TOML]);
 }
