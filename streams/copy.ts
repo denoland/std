@@ -4,7 +4,10 @@
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, Writer } from "../types.d.ts";
 
-/** Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
+/**
+ * @deprecated (will be removed after 1.0.0) Use ReadableStream and WritableStream for inputs and outputs, and call `input.pipeTo(output)` instead.
+ *
+ * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
