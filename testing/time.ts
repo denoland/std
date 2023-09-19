@@ -157,6 +157,16 @@ function* timerIdGen() {
   while (true) yield i++;
 }
 
+function nextDueNode(): DueNode | null {
+  for (;;) {
+    const dueNode = dueTree.min();
+    if (!dueNode) return null;
+    const hasTimer = dueNode.timers.some((timer) => dueNodes.has(timer.id));
+    if (hasTimer) return dueNode;
+    dueTree.remove(dueNode);
+  }
+}
+
 let startedAt: number;
 let now: number;
 let initializedAt: number;
@@ -375,7 +385,7 @@ export class FakeTime {
    * Returns true when there is a scheduled timer and false when there is not.
    */
   next(): boolean {
-    const next = dueTree.min();
+    const next = nextDueNode();
     if (next) this.now = next.due;
     return !!next;
   }

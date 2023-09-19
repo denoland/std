@@ -751,6 +751,9 @@ Deno.test(`serve should handle websocket requests`, async () => {
   );
 
   const ws = new WebSocket(url);
+  const closePromise = new Promise((resolve) => {
+    ws.onclose = resolve;
+  });
   try {
     ws.onopen = () => ws.send(message);
     const response = await new Promise((resolve) => {
@@ -761,6 +764,7 @@ Deno.test(`serve should handle websocket requests`, async () => {
     ws.close();
     abortController.abort();
     await servePromise;
+    await closePromise;
   }
 });
 
