@@ -3,7 +3,10 @@
 
 import type { Writer } from "../types.d.ts";
 
-/** Create a `Writer` from a `WritableStreamDefaultWriter`.
+/**
+ * @deprecated (will be removed after 1.0.0) Use WritableStreamDefaultWriter directly.
+ *
+ * Create a `Writer` from a `WritableStreamDefaultWriter`.
  *
  * @example
  * ```ts

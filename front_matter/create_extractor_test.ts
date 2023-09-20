@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertThrows } from "../assert/mod.ts";
-import { createExtractor, Format, Parser, test } from "./mod.ts";
+import { assertThrows } from "../assert/mod.ts";
+import { Format } from "./_formats.ts";
 import { parse as parseYAML } from "../yaml/parse.ts";
 import { parse as parseTOML } from "../toml/parse.ts";
 import {
@@ -11,9 +11,8 @@ import {
   runExtractTypeErrorTests,
   runExtractYAMLTests1,
   runExtractYAMLTests2,
-  runTestInvalidInputTests,
-  runTestValidInputTests,
 } from "./_test_utils.ts";
+import { createExtractor, Parser } from "./create_extractor.ts";
 
 const extractYAML = createExtractor({ [Format.YAML]: parseYAML as Parser });
 const extractTOML = createExtractor({ [Format.TOML]: parseTOML as Parser });
@@ -28,25 +27,7 @@ const extractAny = createExtractor({
   [Format.TOML]: parseTOML as Parser,
 });
 
-// GENERAL TESTS //
-
-Deno.test("[ANY] try to test for unknown format", () => {
-  assertThrows(
-    () => test("foo", [Format.UNKNOWN]),
-    TypeError,
-    "Unable to test for unknown front matter format",
-  );
-});
-
 // YAML //
-
-Deno.test("[YAML] test valid input true", () => {
-  runTestValidInputTests(Format.YAML, test);
-});
-
-Deno.test("[YAML] test invalid input false", () => {
-  runTestInvalidInputTests(Format.YAML, test);
-});
 
 Deno.test("[YAML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.YAML, extractYAML);
@@ -67,7 +48,6 @@ Deno.test({
       resolveTestDataPath("./horizontal_rules.md"),
     );
 
-    assert(!test(str));
     assertThrows(
       () => {
         extractAny(str);
@@ -80,14 +60,6 @@ Deno.test({
 
 // JSON //
 
-Deno.test("[JSON] test valid input true", () => {
-  runTestValidInputTests(Format.JSON, test);
-});
-
-Deno.test("[JSON] test invalid input false", () => {
-  runTestInvalidInputTests(Format.JSON, test);
-});
-
 Deno.test("[JSON] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.JSON, extractJSON);
 });
@@ -97,14 +69,6 @@ Deno.test("[JSON] parse json delineate by ---json", async () => {
 });
 
 // TOML //
-
-Deno.test("[TOML] test valid input true", () => {
-  runTestValidInputTests(Format.TOML, test);
-});
-
-Deno.test("[TOML] test invalid input false", () => {
-  runTestInvalidInputTests(Format.TOML, test);
-});
 
 Deno.test("[TOML] extract type error on invalid input", () => {
   runExtractTypeErrorTests(Format.TOML, extractTOML);

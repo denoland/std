@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: false
           persist-credentials: false
@@ -83,19 +83,7 @@ jobs:
         run: deno fmt --check
 
       - name: Lint
-        run: deno lint
-
-      - name: Check License headers
-        run: deno task fmt:licence-headers --check
-
-      - name: Check Deprecations
-        run: "deno task lint:deprecations"
-
-      - name: Check Import paths in Docs
-        run: "deno task lint:doc-imports"
-
-      - name: Check circular dependencies between modules
-        run: "deno task lint:circular"
+        run: deno task lint
 
       - name: Spell-check
         uses: crate-ci/typos@master
@@ -110,7 +98,7 @@ jobs:
         module: [ crypto/_wasm ]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # required to check for changes
           fetch-depth: 2
@@ -133,7 +121,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
+        uses: hecrj/setup-rust-action@v2
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder

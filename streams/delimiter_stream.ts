@@ -105,6 +105,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             // Our chunk started with a delimiter and no previous chunks exist:
             // Enqueue an empty chunk.
             controller.enqueue(new Uint8Array());
+            chunkStart = disposition === "prefix" ? 0 : inspectIndex;
           } else if (delimitedChunkEnd > 0 && bufs.length === 0) {
             // No previous chunks, slice from current chunk.
             controller.enqueue(chunk.subarray(chunkStart, delimitedChunkEnd));
@@ -130,6 +131,8 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
               // for a suffix disposition this branch would mean that the previous
               // chunk ended with a full match but was not enqueued.
               chunkStart = inspectIndex;
+            } else {
+              chunkStart = 0;
             }
           } else if (delimitedChunkEnd < 0 && bufs.length > 0) {
             // Our chunk started by finishing a partial delimiter match.
@@ -147,6 +150,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             if (disposition === "prefix") {
               // Must keep last bytes of last chunk.
               bufs.push(last.subarray(lastSliceIndex));
+              chunkStart = 0;
             } else {
               chunkStart = inspectIndex;
             }
@@ -155,10 +159,10 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             const chunkSliced = chunk.subarray(chunkStart, delimitedChunkEnd);
             const result = concat(...bufs, chunkSliced);
             bufs.length = 0;
+            controller.enqueue(result);
             chunkStart = disposition === "prefix"
               ? delimitedChunkEnd
               : inspectIndex;
-            controller.enqueue(result);
           } else {
             throw new Error("unreachable");
           }
@@ -179,7 +183,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     this.#matchIndex = matchIndex;
     if (chunkStart === 0) {
       bufs.push(chunk);
-    } else if (chunkStart !== length - 1) {
+    } else if (chunkStart < length) {
       // If we matched partially somewhere in the middle of our chunk
       // then the remnants should be pushed into buffers.
       bufs.push(chunk.subarray(chunkStart));
