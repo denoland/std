@@ -5,6 +5,8 @@
  * Slice number into 64bit big endian byte array
  * @param d The number to be sliced
  * @param dest The sliced array
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export function sliceLongToBytes(
   d: number,

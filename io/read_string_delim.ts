@@ -19,6 +19,8 @@ import { readDelim } from "./read_delim.ts";
  *   console.log(line);
  * }
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function* readStringDelim(
   reader: Reader,
