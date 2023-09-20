@@ -55,20 +55,20 @@ function convertBase64ToBase64url(b64: string): string {
 }
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeBase64Url` instead.
+ *
  * Encodes a given ArrayBuffer or string into a base64url representation
  * @param data
  */
-export function encode(data: ArrayBuffer | string): string {
-  return convertBase64ToBase64url(base64.encode(data));
-}
+export const encode = encodeBase64Url;
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeBase64Url` instead.
+ *
  * Converts given base64url encoded data back to original
  * @param b64url
  */
-export function decode(b64url: string): Uint8Array {
-  return base64.decode(convertBase64urlToBase64(b64url));
-}
+export const decode = decodeBase64Url;
 
 /**
  * Encodes a given ArrayBuffer or string into a base64url representation
