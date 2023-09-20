@@ -7,6 +7,7 @@
  * utilities are also deprecated. Consider using web streams instead.
  *
  * @module
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 
 export * from "./buf_reader.ts";
