@@ -5,6 +5,8 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { deepMerge } from "../collections/deep_merge.ts";
 
 /**
+ * @deprecated (will be removed after 0.210.0)
+ *
  * Internal utility for returning a standardized response, automatically defining the body, status code and status text, according to the response type.
  */
 export function createCommonResponse(

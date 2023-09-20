@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
-import { mockConn as createMockConn } from "./_mock_conn.ts";
-import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { writeAll } from "../streams/write_all.ts";
-import { readAll } from "../streams/read_all.ts";
-import { deferred, delay } from "../async/mod.ts";
+import { mockConn as createMockConn } from "../_mock_conn.ts";
+import { dirname, fromFileUrl, join, resolve } from "../../path/mod.ts";
+import { writeAll } from "../../streams/write_all.ts";
+import { readAll } from "../../streams/read_all.ts";
+import { deferred, delay } from "../../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -13,7 +13,7 @@ import {
   assertStrictEquals,
   assertThrows,
   unreachable,
-} from "../assert/mod.ts";
+} from "../../assert/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");

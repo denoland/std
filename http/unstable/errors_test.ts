@@ -1,15 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertInstanceOf } from "../assert/mod.ts";
+import { assert, assertEquals, assertInstanceOf } from "../../assert/mod.ts";
 
-import { type ErrorStatus, Status, STATUS_TEXT } from "./http_status.ts";
+import { type ErrorStatus, Status, STATUS_TEXT } from "../status.ts";
 
 import {
   createHttpError,
   errors,
   type ErrorStatusKeys,
   HttpError,
-} from "./http_errors.ts";
+} from "./errors.ts";
 
 const clientErrorStatus: ErrorStatus[] = [
   Status.BadRequest,
