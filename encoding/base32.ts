@@ -13,17 +13,17 @@
  * @example
  * ```ts
  * import {
- *   decode,
- *   encode,
+ *   decodeBase32,
+ *   encodeBase32,
  * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
  *
  * const b32Repr = "RC2E6GA=";
  *
- * const binaryData = decode(b32Repr);
+ * const binaryData = decodeBase32(b32Repr);
  * console.log(binaryData);
  * // => Uint8Array [ 136, 180, 79, 24 ]
  *
- * console.log(encode(binaryData));
+ * console.log(encodeBase32(binaryData));
  * // => RC2E6GA=
  * ```
  *
@@ -78,10 +78,18 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 }
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeBase32` instead.
+ *
  * Decodes a given RFC4648 base32 encoded string.
  * @param b32
  */
-export function decode(b32: string): Uint8Array {
+export const decode = decodeBase32;
+
+/**
+ * Decodes a given RFC4648 base32 encoded string.
+ * @param b32
+ */
+export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
   const [validLen, placeHoldersLen] = getLens(b32);
 
@@ -172,10 +180,23 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeBase32` instead.
+ *
  * Encodes a given Uint8Array into RFC4648 base32 representation
  * @param uint8
  */
-export function encode(uint8: Uint8Array): string {
+export const encode = encodeBase32;
+
+/**
+ * Encodes a given Uint8Array into RFC4648 base32 representation
+ */
+export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
+  const uint8 = typeof data === "string"
+    ? new TextEncoder().encode(data)
+    : data instanceof Uint8Array
+    ? data
+    : new Uint8Array(data);
+
   let tmp: number;
   const len = uint8.length;
   const extraBytes = len % 5;

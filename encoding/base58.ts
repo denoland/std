@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
+ * {@linkcode encodeBase58} and {@linkcode decodeBase58} for
  * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
  *
  * This module is browser compatible.
@@ -24,6 +24,8 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeBase58` instead.
+ *
  * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
  *
@@ -31,7 +33,25 @@ const base58alphabet =
  *
  * @returns Encoded value
  */
-export function encode(data: ArrayBuffer | string): string {
+export const encode = encodeBase58;
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeBase58` instead.
+ *
+ * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
+ * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ *
+ * @param b58
+ *
+ * @returns Decoded value
+ */
+export const decode = decodeBase58;
+
+/**
+ * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
+ * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ */
+export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
   const uint8tData = typeof data === "string"
     ? new TextEncoder().encode(data)
     : data instanceof Uint8Array
@@ -86,12 +106,8 @@ export function encode(data: ArrayBuffer | string): string {
 /**
  * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
- *
- * @param b58
- *
- * @returns Decoded value
  */
-export function decode(b58: string): Uint8Array {
+export function decodeBase58(b58: string): Uint8Array {
   const splitInput = b58.trim().split("");
 
   let length = 0;
