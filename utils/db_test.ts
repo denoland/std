@@ -19,46 +19,21 @@ import {
   listItems,
   listItemsByUser,
   listItemsVotedByUser,
+  randomItem,
+  randomUser,
   updateUser,
   type User,
-  Vote,
 } from "./db.ts";
 
-export function genNewItem(): Item {
-  return {
-    id: ulid(),
-    userLogin: crypto.randomUUID(),
-    title: crypto.randomUUID(),
-    url: `http://${crypto.randomUUID()}.com`,
-    score: 0,
-  };
-}
-
-export function genNewUser(): User {
-  return {
-    login: crypto.randomUUID(),
-    sessionId: crypto.randomUUID(),
-    isSubscribed: false,
-    stripeCustomerId: crypto.randomUUID(),
-  };
-}
-
-export function genNewVote(): Vote {
-  return {
-    itemId: crypto.randomUUID(),
-    userLogin: crypto.randomUUID(),
-  };
-}
-
 Deno.test("[db] items", async () => {
-  const user = genNewUser();
+  const user = randomUser();
   const item1: Item = {
-    ...genNewItem(),
+    ...randomItem(),
     id: ulid(),
     userLogin: user.login,
   };
   const item2: Item = {
-    ...genNewItem(),
+    ...randomItem(),
     id: ulid(Date.now() + 1_000),
     userLogin: user.login,
   };
@@ -91,7 +66,7 @@ Deno.test("[db] items", async () => {
 });
 
 Deno.test("[db] user", async () => {
-  const user = genNewUser();
+  const user = randomUser();
 
   assertEquals(await getUser(user.login), null);
   assertEquals(await getUserBySession(user.sessionId), null);
@@ -103,7 +78,7 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserBySession(user.sessionId), user);
   assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), user);
 
-  const user1 = genNewUser();
+  const user1 = randomUser();
   await createUser(user1);
 
   await deleteUserSession(user.sessionId);
@@ -120,8 +95,8 @@ Deno.test("[db] user", async () => {
 });
 
 Deno.test("[db] votes", async () => {
-  const item = genNewItem();
-  const user = genNewUser();
+  const item = randomItem();
+  const user = randomUser();
   const vote = {
     itemId: item.id,
     userLogin: user.login,
@@ -187,8 +162,8 @@ Deno.test("[db] votes", async () => {
 });
 
 Deno.test("[db] getAreVotedByUser()", async () => {
-  const item = genNewItem();
-  const user = genNewUser();
+  const item = randomItem();
+  const user = randomUser();
   const vote = {
     itemId: item.id,
     userLogin: user.login,

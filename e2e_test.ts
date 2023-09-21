@@ -10,10 +10,12 @@ import {
   getUser,
   type Item,
   listItemsByUser,
+  randomItem,
+  randomUser,
+  randomVote,
   User,
   Vote,
 } from "@/utils/db.ts";
-import { genNewItem, genNewUser, genNewVote } from "@/utils/db_test.ts";
 import { stripe } from "@/utils/stripe.ts";
 import {
   assert,
@@ -127,7 +129,7 @@ Deno.test("[e2e] GET /signout", async () => {
 
 Deno.test("[e2e] GET /dashboard", async (test) => {
   const url = "http://localhost/dashboard";
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
 
   await test.step("returns redirect response if the session user is not signed in", async () => {
@@ -155,7 +157,7 @@ Deno.test("[e2e] GET /dashboard", async (test) => {
 
 Deno.test("[e2e] GET /dashboard/stats", async (test) => {
   const url = "http://localhost/dashboard/stats";
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
 
   await test.step("returns redirect response if the session user is not signed in", async () => {
@@ -178,7 +180,7 @@ Deno.test("[e2e] GET /dashboard/stats", async (test) => {
 
 Deno.test("[e2e] GET /dashboard/users", async (test) => {
   const url = "http://localhost/dashboard/users";
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
 
   await test.step("returns redirect response if the session user is not signed in", async () => {
@@ -225,8 +227,8 @@ Deno.test("[e2e] GET /feed", async () => {
 });
 
 Deno.test("[e2e] GET /api/items", async () => {
-  const item1 = genNewItem();
-  const item2 = genNewItem();
+  const item1 = randomItem();
+  const item2 = randomItem();
   await createItem(item1);
   await createItem(item2);
 
@@ -243,7 +245,7 @@ Deno.test("[e2e] GET /api/items", async () => {
 
 Deno.test("[e2e] POST /api/items", async (test) => {
   const url = "http://localhost/api/items";
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
 
   await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
@@ -316,7 +318,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/items/[id]", async () => {
-  const item = genNewItem();
+  const item = randomItem();
   const req = new Request("http://localhost/api/items/" + item.id);
 
   const resp1 = await handler(req);
@@ -331,8 +333,8 @@ Deno.test("[e2e] GET /api/items/[id]", async () => {
 });
 
 Deno.test("[e2e] GET /api/users", async () => {
-  const user1 = genNewUser();
-  const user2 = genNewUser();
+  const user1 = randomUser();
+  const user2 = randomUser();
   await createUser(user1);
   await createUser(user2);
 
@@ -345,7 +347,7 @@ Deno.test("[e2e] GET /api/users", async () => {
 });
 
 Deno.test("[e2e] GET /api/users/[login]", async () => {
-  const user = genNewUser();
+  const user = randomUser();
   const req = new Request("http://localhost/api/users/" + user.login);
 
   const resp1 = await handler(req);
@@ -360,9 +362,9 @@ Deno.test("[e2e] GET /api/users/[login]", async () => {
 });
 
 Deno.test("[e2e] GET /api/users/[login]/items", async () => {
-  const user = genNewUser();
+  const user = randomUser();
   const item: Item = {
-    ...genNewItem(),
+    ...randomItem(),
     userLogin: user.login,
   };
   const req = new Request(`http://localhost/api/users/${user.login}/items`);
@@ -380,12 +382,12 @@ Deno.test("[e2e] GET /api/users/[login]/items", async () => {
 });
 
 Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
-  const item = genNewItem();
-  const user = genNewUser();
+  const item = randomItem();
+  const user = randomUser();
   await createItem(item);
   await createUser(user);
   const vote: Vote = {
-    ...genNewVote(),
+    ...randomVote(),
     itemId: item.id,
     userLogin: user.login,
   };
@@ -425,8 +427,8 @@ Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
 });
 
 Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
-  const item = genNewItem();
-  const user = genNewUser();
+  const item = randomItem();
+  const user = randomUser();
   await createItem(item);
   await createUser(user);
   const url = `http://localhost/api/items/${item.id}/vote`;
@@ -451,7 +453,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
   });
 
   await test.step("creates a vote", async () => {
-    const item = { ...genNewItem(), userLogin: user.login };
+    const item = { ...randomItem(), userLogin: user.login };
     await createItem(item);
     const url = `http://localhost/api/items/${item.id}/vote`;
     const resp = await handler(
@@ -565,7 +567,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("returns HTTP 201 Created response if the subscription is created", async () => {
-    const user = genNewUser();
+    const user = randomUser();
     await createUser(user);
 
     const constructEventAsyncStub = stub(
@@ -618,7 +620,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("returns HTTP 202 Accepted response if the subscription is deleted", async () => {
-    const user: User = { ...genNewUser(), isSubscribed: true };
+    const user: User = { ...randomUser(), isSubscribed: true };
     await createUser(user);
 
     const constructEventAsyncStub = stub(
@@ -683,7 +685,7 @@ Deno.test("[e2e] GET /account", async (test) => {
   });
 
   await test.step("renders the account page as a free user", async () => {
-    const user = genNewUser();
+    const user = randomUser();
     await createUser(user);
 
     const resp = await handler(
@@ -696,7 +698,7 @@ Deno.test("[e2e] GET /account", async (test) => {
   });
 
   await test.step("renders the account page as a premium user", async () => {
-    const user = genNewUser();
+    const user = randomUser();
     await createUser({ ...user, isSubscribed: true });
 
     const resp = await handler(
@@ -722,7 +724,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
   });
 
   await test.step("returns HTTP 404 Not Found response if the session user does not have a Stripe customer ID", async () => {
-    const user = genNewUser();
+    const user = randomUser();
     await createUser({ ...user, stripeCustomerId: undefined });
     const resp = await handler(
       new Request(url, {
@@ -735,7 +737,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
   });
 
   await test.step("returns redirect response to the URL returned by Stripe after creating a billing portal session", async () => {
-    const user = genNewUser();
+    const user = randomUser();
     await createUser(user);
 
     const session = { url: "https://stubbing-returned-url" } as Stripe.Response<
@@ -771,7 +773,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
     assertEquals(resp.status, 303);
   });
 
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
 
   await test.step("returns HTTP 500 Internal Server Error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
@@ -852,10 +854,10 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/me/votes", async () => {
-  const user = genNewUser();
+  const user = randomUser();
   await createUser(user);
-  const item1 = genNewItem();
-  const item2 = genNewItem();
+  const item1 = randomItem();
+  const item2 = randomItem();
   await createItem(item1);
   await createItem(item2);
   await createVote({

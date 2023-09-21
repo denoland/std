@@ -3,8 +3,7 @@ import { returnsNext, stub } from "std/testing/mock.ts";
 import { fetchValues, getCursor, redirect } from "./http.ts";
 import { assert, assertEquals, assertRejects } from "std/assert/mod.ts";
 import { Status } from "$fresh/server.ts";
-import { genNewItem } from "@/utils/db_test.ts";
-import { Item } from "@/utils/db.ts";
+import { Item, randomItem } from "@/utils/db.ts";
 
 Deno.test("[http] redirect() defaults", () => {
   const location = "/hello-there";
@@ -37,7 +36,7 @@ Deno.test("[http] fetchValues()", async () => {
     new Response(null, { status: Status.NotFound }),
   );
   const resp2Body = {
-    values: [genNewItem(), genNewItem()],
+    values: [randomItem(), randomItem()],
     cursor: crypto.randomUUID(),
   };
   const resp2Cursor = crypto.randomUUID();

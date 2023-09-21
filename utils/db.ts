@@ -1,4 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
+import { ulid } from "std/ulid/mod.ts";
+
 const KV_PATH_KEY = "KV_PATH";
 let path = undefined;
 if (
@@ -39,6 +41,17 @@ export interface Item {
   title: string;
   url: string;
   score: number;
+}
+
+/** For testing */
+export function randomItem(): Item {
+  return {
+    id: ulid(),
+    userLogin: crypto.randomUUID(),
+    title: crypto.randomUUID(),
+    url: `http://${crypto.randomUUID()}.com`,
+    score: 0,
+  };
 }
 
 /**
@@ -175,6 +188,14 @@ export function listItemsByUser(
 export interface Vote {
   itemId: string;
   userLogin: string;
+}
+
+/** For testing */
+export function randomVote(): Vote {
+  return {
+    itemId: crypto.randomUUID(),
+    userLogin: crypto.randomUUID(),
+  };
 }
 
 /**
@@ -319,6 +340,16 @@ export interface User {
    */
   isSubscribed: boolean;
   stripeCustomerId?: string;
+}
+
+/** For testing */
+export function randomUser(): User {
+  return {
+    login: crypto.randomUUID(),
+    sessionId: crypto.randomUUID(),
+    isSubscribed: false,
+    stripeCustomerId: crypto.randomUUID(),
+  };
 }
 
 /**
