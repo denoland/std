@@ -3,7 +3,7 @@ import { getCursor } from "@/utils/http.ts";
 import { type Handlers } from "$fresh/server.ts";
 import { createItem, type Item } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
-import { assertSignedIn, State } from "@/middleware/session.ts";
+import { assertSignedIn, State } from "@/plugins/session.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 import { ulid } from "std/ulid/mod.ts";
 import { Status } from "std/http/http_status.ts";

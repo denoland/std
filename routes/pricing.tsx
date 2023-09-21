@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { State } from "@/middleware/session.ts";
+import type { State } from "@/plugins/session.ts";
 import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { assertIsPrice, isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import { formatCurrency } from "@/utils/display.ts";

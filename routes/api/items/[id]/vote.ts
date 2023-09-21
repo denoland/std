@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { type Handlers, Status } from "$fresh/server.ts";
-import { assertSignedIn, type State } from "@/middleware/session.ts";
+import { assertSignedIn, type State } from "@/plugins/session.ts";
 import { createVote, deleteVote, getItem } from "@/utils/db.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 

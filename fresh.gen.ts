@@ -5,28 +5,27 @@
 import * as $0 from "./routes/_404.tsx";
 import * as $1 from "./routes/_500.tsx";
 import * as $2 from "./routes/_app.tsx";
-import * as $3 from "./routes/_middleware.ts";
-import * as $4 from "./routes/account/index.tsx";
-import * as $5 from "./routes/account/manage.ts";
-import * as $6 from "./routes/account/upgrade.ts";
-import * as $7 from "./routes/api/items/[id]/index.ts";
-import * as $8 from "./routes/api/items/[id]/vote.ts";
-import * as $9 from "./routes/api/items/index.ts";
-import * as $10 from "./routes/api/me/votes.ts";
-import * as $11 from "./routes/api/stripe-webhooks.ts";
-import * as $12 from "./routes/api/users/[login]/index.ts";
-import * as $13 from "./routes/api/users/[login]/items.ts";
-import * as $14 from "./routes/api/users/index.ts";
-import * as $15 from "./routes/blog/[slug].tsx";
-import * as $16 from "./routes/blog/index.tsx";
-import * as $17 from "./routes/dashboard/index.tsx";
-import * as $18 from "./routes/dashboard/stats.tsx";
-import * as $19 from "./routes/dashboard/users.tsx";
-import * as $20 from "./routes/feed.ts";
-import * as $21 from "./routes/index.tsx";
-import * as $22 from "./routes/pricing.tsx";
-import * as $23 from "./routes/submit.tsx";
-import * as $24 from "./routes/users/[login].tsx";
+import * as $3 from "./routes/account/index.tsx";
+import * as $4 from "./routes/account/manage.ts";
+import * as $5 from "./routes/account/upgrade.ts";
+import * as $6 from "./routes/api/items/[id]/index.ts";
+import * as $7 from "./routes/api/items/[id]/vote.ts";
+import * as $8 from "./routes/api/items/index.ts";
+import * as $9 from "./routes/api/me/votes.ts";
+import * as $10 from "./routes/api/stripe-webhooks.ts";
+import * as $11 from "./routes/api/users/[login]/index.ts";
+import * as $12 from "./routes/api/users/[login]/items.ts";
+import * as $13 from "./routes/api/users/index.ts";
+import * as $14 from "./routes/blog/[slug].tsx";
+import * as $15 from "./routes/blog/index.tsx";
+import * as $16 from "./routes/dashboard/index.tsx";
+import * as $17 from "./routes/dashboard/stats.tsx";
+import * as $18 from "./routes/dashboard/users.tsx";
+import * as $19 from "./routes/feed.ts";
+import * as $20 from "./routes/index.tsx";
+import * as $21 from "./routes/pricing.tsx";
+import * as $22 from "./routes/submit.tsx";
+import * as $23 from "./routes/users/[login].tsx";
 import * as $$0 from "./islands/Chart.tsx";
 import * as $$1 from "./islands/ItemsList.tsx";
 import * as $$2 from "./islands/UsersTable.tsx";
@@ -36,28 +35,27 @@ const manifest = {
     "./routes/_404.tsx": $0,
     "./routes/_500.tsx": $1,
     "./routes/_app.tsx": $2,
-    "./routes/_middleware.ts": $3,
-    "./routes/account/index.tsx": $4,
-    "./routes/account/manage.ts": $5,
-    "./routes/account/upgrade.ts": $6,
-    "./routes/api/items/[id]/index.ts": $7,
-    "./routes/api/items/[id]/vote.ts": $8,
-    "./routes/api/items/index.ts": $9,
-    "./routes/api/me/votes.ts": $10,
-    "./routes/api/stripe-webhooks.ts": $11,
-    "./routes/api/users/[login]/index.ts": $12,
-    "./routes/api/users/[login]/items.ts": $13,
-    "./routes/api/users/index.ts": $14,
-    "./routes/blog/[slug].tsx": $15,
-    "./routes/blog/index.tsx": $16,
-    "./routes/dashboard/index.tsx": $17,
-    "./routes/dashboard/stats.tsx": $18,
-    "./routes/dashboard/users.tsx": $19,
-    "./routes/feed.ts": $20,
-    "./routes/index.tsx": $21,
-    "./routes/pricing.tsx": $22,
-    "./routes/submit.tsx": $23,
-    "./routes/users/[login].tsx": $24,
+    "./routes/account/index.tsx": $3,
+    "./routes/account/manage.ts": $4,
+    "./routes/account/upgrade.ts": $5,
+    "./routes/api/items/[id]/index.ts": $6,
+    "./routes/api/items/[id]/vote.ts": $7,
+    "./routes/api/items/index.ts": $8,
+    "./routes/api/me/votes.ts": $9,
+    "./routes/api/stripe-webhooks.ts": $10,
+    "./routes/api/users/[login]/index.ts": $11,
+    "./routes/api/users/[login]/items.ts": $12,
+    "./routes/api/users/index.ts": $13,
+    "./routes/blog/[slug].tsx": $14,
+    "./routes/blog/index.tsx": $15,
+    "./routes/dashboard/index.tsx": $16,
+    "./routes/dashboard/stats.tsx": $17,
+    "./routes/dashboard/users.tsx": $18,
+    "./routes/feed.ts": $19,
+    "./routes/index.tsx": $20,
+    "./routes/pricing.tsx": $21,
+    "./routes/submit.tsx": $22,
+    "./routes/users/[login].tsx": $23,
   },
   islands: {
     "./islands/Chart.tsx": $$0,

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type { Plugin } from "$fresh/server.ts";
-import type { State } from "@/middleware/session.ts";
+import type { State } from "@/plugins/session.ts";
 import { Status } from "$fresh/server.ts";
 import { errors, isHttpError } from "std/http/http_errors.ts";
 import { redirect } from "@/utils/http.ts";

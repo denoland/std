@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import type { State } from "@/middleware/session.ts";
+import type { State } from "@/plugins/session.ts";
 import { getUser } from "@/utils/db.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
