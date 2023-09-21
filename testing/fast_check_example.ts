@@ -22,7 +22,6 @@
  */
 
 import fc from "https://cdn.skypack.dev/fast-check@3.10.0";
-import { groupBy } from "../collections/group_by.ts";
 import { assert, assertEquals } from "../assert/mod.ts";
 
 /********************** contains() *************************************/
@@ -341,8 +340,8 @@ Deno.test("Can use fast-check to property test sort function", async (t) => {
           const sorted = sort(data);
           const keyCreatorFn = (item: number) => item.toString();
           assertEquals(
-            groupBy(data, keyCreatorFn),
-            groupBy(sorted, keyCreatorFn),
+            Object.groupBy(data, keyCreatorFn),
+            Object.groupBy(sorted, keyCreatorFn),
           );
         }),
       );

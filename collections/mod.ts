@@ -13,11 +13,11 @@
  * will likely include a lot of code that you might not use.
  *
  * Consider importing the function directly. For example to import
- * {@linkcode groupBy} import the module using the snake cased version of the
+ * {@linkcode distinctBy} import the module using the snake cased version of the
  * module:
  *
  * ```ts
- * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
+ * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
  * ```
  *
  * @module

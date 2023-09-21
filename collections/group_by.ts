@@ -2,6 +2,8 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated Use `Object.groupBy` instead.
+ *
  * Applies the given selector to each element in the given array, returning a
  * Record containing the results as keys and all values that produced that key
  * as values.
