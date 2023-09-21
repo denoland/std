@@ -18,6 +18,7 @@ export default function Head(props: HeadProps) {
         title={props?.title ? `${props.title} ▲ ${SITE_NAME}` : SITE_NAME}
         description={props?.description ?? SITE_DESCRIPTION}
         href={props.href}
+        imageUrl="/cover.png"
       />
       {props.children}
     </_Head>

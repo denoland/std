@@ -7,7 +7,7 @@ export interface MetaProps {
   /** URL of the current page */
   href: string;
   /** URL of the cover image */
-  imageUrl?: string;
+  imageUrl: string;
 }
 
 export default function Meta(props: MetaProps) {
@@ -30,13 +30,13 @@ export default function Meta(props: MetaProps) {
       <meta property="og:title" content={props.title} />
       <meta property="og:description" content={props.description} />
       <meta property="og:url" content={props.href} />
-      {props.imageUrl && <meta property="og:image" content={props.imageUrl} />}
+      <meta property="og:image" content={props.imageUrl} />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={props.title} />
       <meta name="twitter:description" content={props.description} />
-      {props.imageUrl && <meta name="twitter:image" content={props.imageUrl} />}
+      <meta name="twitter:image" content={props.imageUrl} />
     </>
   );
 }

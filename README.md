@@ -172,6 +172,12 @@ You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
 `twind.config.ts`. Change these values to match your desired color scheme.
 
+### Cover Image
+
+To replace the cover image, replace the [/static/cover.png](/static/cover.png)
+file. If you'd like to change the filename, also be sure to change the
+`imageUrl` property in the [`<Head />`](/components/Head.tsx) component.
+
 ## Deploy to Production
 
 This section assumes that a
