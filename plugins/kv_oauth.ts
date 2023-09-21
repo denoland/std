@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Plugin } from "$fresh/server.ts";
 import {
-  createGitHubOAuth2Client,
+  createGitHubOAuthConfig,
   handleCallback,
   signIn,
   signOut,
@@ -16,7 +16,7 @@ import {
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import { createHttpError } from "std/http/http_errors.ts";
 
-const oauth2Client = createGitHubOAuth2Client();
+const oauthConfig = createGitHubOAuthConfig();
 
 interface GitHubUser {
   login: string;
@@ -62,14 +62,14 @@ export default {
   routes: [
     {
       path: "/signin",
-      handler: async (req) => await signIn(req, oauth2Client),
+      handler: async (req) => await signIn(req, oauthConfig),
     },
     {
       path: "/callback",
       handler: async (req) => {
         const { response, accessToken, sessionId } = await handleCallback(
           req,
-          oauth2Client,
+          oauthConfig,
         );
 
         const githubUser = await getGitHubUser(accessToken);
