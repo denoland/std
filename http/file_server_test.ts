@@ -23,7 +23,7 @@ let child: Deno.ChildProcess;
 let stdout: ReadableStream<string>;
 
 interface FileServerCfg {
-  port?: string;
+  port?: number;
   cors?: boolean;
   "dir-listing"?: boolean;
   dotfiles?: boolean;
@@ -40,7 +40,7 @@ const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = "4507",
+  port = 4507,
   "dir-listing": dirListing = true,
   dotfiles = true,
   headers = [],
@@ -489,7 +489,7 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = "4577",
+  port = 4577,
 }: FileServerCfg = {}) {
   const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
@@ -528,7 +528,7 @@ async function startTlsFileServer({
   await retry(async () => {
     const conn = await Deno.connectTls({
       hostname: "localhost",
-      port: +port,
+      port,
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
     conn.close();
