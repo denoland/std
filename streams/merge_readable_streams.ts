@@ -22,7 +22,7 @@ export function mergeReadableStreams<T>(
           mustClose = true;
           controller.error(error);
         });
-      for (const [key, stream] of Object.entries(streams)) {
+      for (const [index, stream] of streams.entries()) {
         (async () => {
           try {
             for await (const data of stream) {
@@ -31,9 +31,9 @@ export function mergeReadableStreams<T>(
               }
               controller.enqueue(data);
             }
-            resolvePromises[+key].resolve();
+            resolvePromises[index].resolve();
           } catch (error) {
-            resolvePromises[+key].reject(error);
+            resolvePromises[index].reject(error);
           }
         })();
       }

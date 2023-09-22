@@ -57,6 +57,18 @@ const rfc1924 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
 const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeAscii85` instead.
+ *
+ * Encodes a given Uint8Array into ascii85, supports multiple standards
+ * @param uint8 input to encode
+ * @param [options] encoding options
+ * @param [options.standard=Adobe] encoding standard (Adobe, btoa, RFC 1924 or Z85)
+ * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
+ */
+export const encode = encodeAscii85;
+
 /**
  * Encodes a given Uint8Array into ascii85, supports multiple standards
  * @param uint8 input to encode
@@ -64,7 +76,16 @@ const Z85 =
  * @param [options.standard=Adobe] encoding standard (Adobe, btoa, RFC 1924 or Z85)
  * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
  */
-export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
+export function encodeAscii85(
+  data: ArrayBuffer | Uint8Array | string,
+  options?: Ascii85Options,
+): string {
+  let uint8 = typeof data === "string"
+    ? new TextEncoder().encode(data)
+    : data instanceof Uint8Array
+    ? data
+    : new Uint8Array(data);
+
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],
     v: number,
@@ -123,13 +144,27 @@ export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
   }
   return output.slice(0, output.length - difference).join("");
 }
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeAscii85` instead.
+ *
+ * Decodes a given ascii85 encoded string.
+ * @param ascii85 input to decode
+ * @param [options] decoding options
+ * @param [options.standard=Adobe] encoding standard used in the input string (Adobe, btoa, RFC 1924 or Z85)
+ */
+export const decode = decodeAscii85;
+
 /**
  * Decodes a given ascii85 encoded string.
  * @param ascii85 input to decode
  * @param [options] decoding options
  * @param [options.standard=Adobe] encoding standard used in the input string (Adobe, btoa, RFC 1924 or Z85)
  */
-export function decode(ascii85: string, options?: Ascii85Options): Uint8Array {
+export function decodeAscii85(
+  ascii85: string,
+  options?: Ascii85Options,
+): Uint8Array {
   const encoding = options?.standard ?? "Adobe";
   // translate all encodings to most basic adobe/btoa one and decompress some special characters ("z" and "y")
   switch (encoding) {
