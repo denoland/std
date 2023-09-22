@@ -13,14 +13,14 @@ export default defineRoute<SignedInState>((_req, ctx) => {
   return (
     <>
       <Head title="Account" href={ctx.url.href} />
-      <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center">
+      <main class="max-w-lg m-auto w-full flex-1 p-4 flex flex-col justify-center gap-8">
         <GitHubAvatarImg
           login={sessionUser.login}
           size={240}
-          class="m-auto"
+          class="mx-auto"
         />
-        <ul>
-          <li class="py-4">
+        <ul class="space-y-4">
+          <li>
             <p>
               <strong>Username</strong>
             </p>
@@ -28,7 +28,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
               {sessionUser.login}
             </p>
           </li>
-          <li class="py-4">
+          <li>
             <p class="flex flex-wrap justify-between">
               <span>
                 <strong>Subscription</strong>
@@ -51,7 +51,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
         </ul>
         <a
           href="/signout?success_url=/"
-          class={`${BUTTON_STYLES} block text-center mt-8`}
+          class={`${BUTTON_STYLES} block text-center`}
         >
           Sign out
         </a>
