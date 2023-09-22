@@ -5,6 +5,7 @@ import { BUTTON_STYLES, LINK_STYLES } from "@/utils/constants.ts";
 import { isStripeEnabled } from "@/utils/stripe.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
+import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
 export default defineRoute<SignedInState>((_req, ctx) => {
   const { sessionUser } = ctx.state;
@@ -34,7 +35,15 @@ export default defineRoute<SignedInState>((_req, ctx) => {
           <li>
             <strong>Subscription</strong>
             <p class="flex flex-wrap justify-between">
-              <span>{sessionUser.isSubscribed ? "Premium 🦕" : "Free"}</span>
+              <span>
+                {sessionUser.isSubscribed
+                  ? (
+                    <>
+                      Premium <PremiumBadge class="w-5 h-5 inline" />
+                    </>
+                  )
+                  : "Free"}
+              </span>
               {isStripeEnabled() && (
                 <span>
                   <a

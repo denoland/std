@@ -7,6 +7,7 @@ import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
 import { defineRoute } from "$fresh/server.ts";
+import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
 interface UserProfileProps {
   login: string;
@@ -17,13 +18,11 @@ function UserProfile(props: UserProfileProps) {
   return (
     <div class="flex flex-col items-center w-[16rem]">
       <GitHubAvatarImg login={props.login} size={200} />
-      <div class="flex gap-x-2 px-4 mt-4">
+      <div class="flex gap-x-2 px-4 mt-4 items-center">
         <div class="font-semibold text-xl">
           {props.login}
         </div>
-        {props.isSubscribed && (
-          <span title="Deno Hunt premium user">🦕{" "}</span>
-        )}
+        {props.isSubscribed && <PremiumBadge class="w-6 h-6 inline" />}
         <a
           href={`https://github.com/${props.login}`}
           aria-label={`${props.login}'s GitHub profile`}

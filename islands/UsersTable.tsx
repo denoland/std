@@ -5,6 +5,7 @@ import type { User } from "@/utils/db.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import { LINK_STYLES } from "@/utils/constants.ts";
 import { fetchValues } from "@/utils/http.ts";
+import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
 const TH_STYLES = "p-4 text-left";
 const TD_STYLES = "p-4";
@@ -22,7 +23,14 @@ function UserTableRow(props: User) {
         </a>
       </td>
       <td scope="col" class={TD_STYLES + " text-gray-500"}>
-        {props.isSubscribed ? "Premium 🦕" : "Basic"}
+        {props.isSubscribed
+          ? (
+            <>
+              "Premium "
+              <PremiumBadge class="w-5 h-5 inline" />
+            </>
+          )
+          : "Basic"}
       </td>
       <td scope="col" class={TD_STYLES + " text-gray-500"}>
         ${(Math.random() * 100).toFixed(2)}

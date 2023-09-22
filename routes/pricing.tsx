@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import Head from "@/components/Head.tsx";
 import { defineRoute } from "$fresh/server.ts";
+import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
 const CARD_STYLES =
   "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
@@ -90,7 +91,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Official pro user badge 🦕
+          Official pro user badge <PremiumBadge class="w-5 h-5 inline" />
         </p>
       </div>
 
