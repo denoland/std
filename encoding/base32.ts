@@ -2,6 +2,8 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /**
  * {@linkcode encode} and {@linkcode decode} for
  * [base32](https://en.wikipedia.org/wiki/Base32) encoding.
@@ -191,11 +193,7 @@ export const encode = encodeBase32;
  * Encodes a given Uint8Array into RFC4648 base32 representation
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
-  const uint8 = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+  const uint8 = validateBinaryLike(data);
 
   let tmp: number;
   const len = uint8.length;
