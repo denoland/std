@@ -12,17 +12,20 @@ template for building your SaaS quickly and easily.
 
 ## Features
 
-- [No build step](https://deno.com/blog/you-dont-need-a-build-step#non-building-with-deno-and-fresh)
 - Deno's built-in [formatter](https://deno.land/manual/tools/formatter),
   [linter](https://deno.land/manual/tools/linter) and
-  [test runner](https://deno.land/manual/basics/testing) and TypeScript support.
-- Database management and user authentication with
-  [Deno KV](https://deno.com/manual/runtime/kv), which provides zero config
-  durable data storage. _Prefer using Supabase for data storage?
-  [Check out this version of SaaSKit](https://github.com/denoland/saaskit/tree/3b1b14a97eef8859596015b22557d575d3b63c09)._
-- Billing management with [Stripe](https://stripe.com/).
-- [Fresh](https://fresh.deno.dev/) as the web framework and
-  [Tailwind CSS](https://tailwindcss.com/) as the CSS framework.
+  [test runner](https://deno.land/manual/basics/testing) and TypeScript support
+- Next-gen web framework with [Fresh](https://fresh.deno.dev/)
+- In-built data persistence with [Deno KV](https://deno.com/kv)
+- High-level OAuth with [Deno KV OAuth](https://deno.land/x/deno_kv_oauth)
+- Modern CSS framework with [Tailwind CSS](https://tailwindcss.com/)
+- Responsive, SaaS-oriented design
+- Dashboard with users view and statistics chart
+- Stripe integration (optional)
+- First-class web performance
+- REST API
+- Blog with RSS feed and social sharing icons
+- HTTP security headers
 
 ## Get Started
 
