@@ -7,6 +7,10 @@ Deno.test({
   fn: () => {
     // 00 hours
     assertEquals(
+      "00:00:00",
+      format(new Date("2019-01-01T00:00:00"), "HH:mm:ss"),
+    );
+    assertEquals(
       "01:00:00",
       format(new Date("2019-01-01T01:00:00"), "HH:mm:ss"),
     );
@@ -16,6 +20,10 @@ Deno.test({
     );
 
     // 12 hours
+    assertEquals(
+      "12:00:00",
+      format(new Date("2019-01-01T00:00:00"), "hh:mm:ss"),
+    );
     assertEquals(
       "01:00:00",
       format(new Date("2019-01-01T01:00:00"), "hh:mm:ss"),
@@ -40,6 +48,14 @@ Deno.test({
     );
 
     // day period
+    assertEquals(
+      "00:00:00 AM",
+      format(new Date("2019-01-01T00:00:00"), "HH:mm:ss a"),
+    );
+    assertEquals(
+      "12:00:00 AM",
+      format(new Date("2019-01-01T00:00:00"), "hh:mm:ss a"),
+    );
     assertEquals(
       "01:00:00 AM",
       format(new Date("2019-01-01T01:00:00"), "HH:mm:ss a"),
