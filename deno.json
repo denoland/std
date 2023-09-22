@@ -34,7 +34,7 @@
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.2.3",
     "twind-preset-tailwind/": "https://esm.sh/@twind/preset-tailwind@1.1.4/",
     "twind-preset-ext": "https://esm.sh/@twind/preset-ext@1.0.7/",
-    "std/": "https://raw.githubusercontent.com/lino-levan/deno_std/feat-ulid/",
+    "std/": "https://deno.land/std@0.202.0/",
     "stripe": "npm:/stripe@13.5.0",
     "feed": "npm:/feed@4.2.2",
     "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.7.0/mod.ts",
