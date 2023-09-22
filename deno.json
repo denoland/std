@@ -25,7 +25,7 @@
   },
   "imports": {
     "@/": "./",
-    "$fresh/": "https://deno.land/x/fresh@1.4.3/",
+    "$fresh/": "https://raw.githubusercontent.com/denoland/fresh/738a51ad526e4d5cc74871927a4888bda54f897c/",
     "$gfm": "https://deno.land/x/gfm@0.2.4/mod.ts",
     "preact": "https://esm.sh/preact@10.15.1",
     "preact/": "https://esm.sh/preact@10.15.1/",
