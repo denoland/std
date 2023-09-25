@@ -23,7 +23,7 @@ template for building your SaaS quickly and easily.
 - Dashboard with users view and statistics chart
 - Stripe integration (optional)
 - First-class web performance
-- REST API
+- [REST API](#rest-api-reference)
 - Blog with RSS feed and social sharing icons
 - HTTP security headers
 
@@ -270,6 +270,177 @@ platforms:
 1. Optionally,
    [set up your Stripe branding](https://dashboard.stripe.com/settings/branding)
    to customize the look and feel of your Stripe checkout page.
+
+## REST API Reference
+
+### `GET /api/items`
+
+Get all items in chronological order. Add `?cursor=<cursor>` URL parameter for
+pagination. Limited to 10 items per page.
+
+Example 1:
+
+```jsonc
+// https://hunt.deno.land/api/items
+{
+  "values": [
+    {
+      "id": "01HAY7A4ZD737BHJKXW20H59NH",
+      "userLogin": "Deniswarui4",
+      "title": "czxdczs",
+      "url": "https://wamufx.co.ke/",
+      "score": 0
+    },
+    {
+      "id": "01HAD9KYMCC5RS2FNPQBMYFRSK",
+      "userLogin": "jlucaso1",
+      "title": "Ok",
+      "url": "https://github.com/jlucaso1/crunchyroll-quasar",
+      "score": 0
+    },
+    {
+      "id": "01HA7YJJ2T66MSEP78NAG8910A",
+      "userLogin": "BrunoBernardino",
+      "title": "LockDB: Handle process/event locking",
+      "url": "https://lockdb.com",
+      "score": 2
+    }
+    // 7 more items...
+  ],
+  "cursor": "AjAxSDdUNTBBUkY0QzhEUjRXWjkyVDJZSFhZAA=="
+}
+```
+
+Example 2 (using `cursor` field from page 1):
+
+```jsonc
+// https://hunt.deno.land/api/items?cursor=AjAxSDdUNTBBUkY0QzhEUjRXWjkyVDJZSFhZAA==
+{
+  "values": [
+    {
+      "id": "01H777YG17VY8HANDHE84ZXKGW",
+      "userLogin": "BrunoBernardino",
+      "url": "https://asksoph.com",
+      "title": "Ask Soph about a dead philosopher",
+      "score": 2
+    },
+    {
+      "id": "01H6RG2V3AV82FJA2VY6NJD9EP",
+      "userLogin": "retraigo",
+      "url": "https://github.com/retraigo/appraisal",
+      "title": "Appraisal: Feature Extraction, Feature Conversion in TypeScript",
+      "score": 0
+    },
+    {
+      "id": "01H64TZ3TNKFWS35MJ9PSGNWE1",
+      "userLogin": "lambtron",
+      "url": "https://www.zaynetro.com/post/2023-how-deno-works",
+      "title": "How Deno works (blog post)",
+      "score": 2
+    }
+    // 7 more items...
+  ],
+  "cursor": "AjAxSDJUSlBYWUJRM1g0OEo2UlIzSFgyQUQ0AA=="
+}
+```
+
+### `GET /api/items/:id`
+
+Get the item with the given ID.
+
+Example:
+
+```jsonc
+// https://hunt.deno.land/api/items/01H5379J1VZ7EB54KSCSQSCRJC
+{
+  "id": "01H5379J1VZ7EB54KSCSQSCRJC",
+  "userLogin": "lambtron",
+  "url": "https://github.com/Savory/saaskit-danet",
+  "title": "saaskit-danet: a modern SaaS template built for Fresh for SSR and Danet for the API",
+  "score": 10
+}
+```
+
+### `GET /api/users`
+
+Get all users in alphabetical order by GitHub login. Add `?cursor=<cursor>` URL
+parameter for pagination. Limited to 10 users per page.
+
+Example 1:
+
+```jsonc
+// https://hunt.deno.land/api/users
+{
+  "values": [
+    {
+      "login": "51chengxu",
+      "sessionId": "9a6745a1-3a46-45c8-a265-c7469ff73678",
+      "isSubscribed": false,
+      "stripeCustomerId": "cus_OgWU0R42bolJtm"
+    },
+    {
+      "login": "AiridasSal",
+      "sessionId": "adb25cac-9be7-494f-864b-8f05b80f7168",
+      "isSubscribed": false,
+      "stripeCustomerId": "cus_OcJW6TadIjjjT5"
+    },
+    {
+      "login": "ArkhamCookie",
+      "stripeCustomerId": "cus_ObVcWCSYwYOnWS",
+      "sessionId": "fd8e7aec-2701-44ae-925b-25e17ff288c4",
+      "isSubscribed": false
+    }
+    // 7 more users...
+  ],
+  "cursor": "AkVob3ItZGV2ZWxvcGVyAA=="
+}
+```
+
+Example 2 (using `cursor` field from page 1):
+
+```jsonc
+// https://hunt.deno.land/api/users?cursor=AkVob3ItZGV2ZWxvcGVyAA==
+{
+  "values": [
+    {
+      "login": "EthanThatOneKid",
+      "sessionId": "ae7425c1-7932-412a-9956-e456787d557f",
+      "isSubscribed": false,
+      "stripeCustomerId": "cus_OeYA2oTJRlZBIA"
+    },
+    {
+      "login": "Fleury99",
+      "sessionId": "2e4920a3-f386-43e1-8c0d-61b5e0edfc0d",
+      "isSubscribed": false,
+      "stripeCustomerId": "cus_OcOUJAYmyxZlDR"
+    },
+    {
+      "login": "FriendlyUser",
+      "stripeCustomerId": "cus_ObLbqu5gxp0qnl",
+      "sessionId": "508ff291-7d1c-4a67-b19f-447ad73b5914",
+      "isSubscribed": false
+    }
+    // 7 more users...
+  ],
+  "cursor": "Ak5ld1lhbmtvAA=="
+}
+```
+
+### `GET /api/users/:login`
+
+Get the user with the given GitHub login.
+
+Example:
+
+```jsonc
+// https://hunt.deno.land/api/users/hashrock
+{
+  "login": "hashrock",
+  "stripeCustomerId": "cus_ObqbLXkRtsKy70",
+  "sessionId": "97eec97a-6636-485e-9b14-253bfa3ce1de",
+  "isSubscribed": true
+}
+```
 
 ## Goals and Philosophy
 
