@@ -54,7 +54,11 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
-/** Encodes `src` into `src.length * 2` bytes. */
+/**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeHex` instead.
+ *
+ * Encodes `src` into `src.length * 2` bytes.
+ */
 export function encode(src: Uint8Array): Uint8Array {
   const dst = new Uint8Array(src.length * 2);
   for (let i = 0; i < dst.length; i++) {
@@ -79,6 +83,8 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
 }
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeHex` instead.
+ *
  * Decodes `src` into `src.length / 2` bytes.
  * If the input is malformed, an error will be thrown.
  */
