@@ -6,12 +6,21 @@ import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
 import { defineRoute, Handlers } from "$fresh/server.ts";
 import { createItem } from "@/utils/db.ts";
 import { redirect } from "@/utils/http.ts";
-import type { SignedInState } from "@/plugins/session.ts";
+import {
+  assertSignedIn,
+  type SignedInState,
+  State,
+} from "@/plugins/session.ts";
 import { ulid } from "std/ulid/mod.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 
+const SUBMIT_STYLES =
+  "w-full text-white text-center rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))";
+
 export const handler: Handlers<undefined, SignedInState> = {
   async POST(req, ctx) {
+    assertSignedIn(ctx);
+
     const form = await req.formData();
     const title = form.get("title");
     const url = form.get("url");
@@ -34,7 +43,7 @@ export const handler: Handlers<undefined, SignedInState> = {
   },
 };
 
-export default defineRoute((_req, ctx) => {
+export default defineRoute<State>((_req, ctx) => {
   return (
     <>
       <Head title="Submit" href={ctx.url.href} />
@@ -87,6 +96,7 @@ export default defineRoute((_req, ctx) => {
                 name="title"
                 required
                 placeholder="Deno Hunt: the best place to share your Deno project"
+                disabled={!ctx.state.sessionUser}
               />
             </div>
 
@@ -103,6 +113,7 @@ export default defineRoute((_req, ctx) => {
                 name="url"
                 required
                 placeholder="https://my-awesome-project.com"
+                disabled={!ctx.state.sessionUser}
               />
             </div>
             {ctx.url.searchParams.has("error") && (
@@ -112,9 +123,17 @@ export default defineRoute((_req, ctx) => {
               </div>
             )}
             <div class="w-full rounded-lg bg-gradient-to-tr from-secondary to-primary p-px mt-8">
-              <button class="w-full text-white text-center rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))">
-                Submit
-              </button>
+              {!ctx.state.sessionUser
+                ? (
+                  <a href="/signin" class={SUBMIT_STYLES}>
+                    Sign in to submit &#8250;
+                  </a>
+                )
+                : (
+                  <button class={SUBMIT_STYLES}>
+                    Submit
+                  </button>
+                )}
             </div>
           </form>
         </div>

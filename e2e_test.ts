@@ -202,7 +202,8 @@ Deno.test("[e2e] GET /submit", async () => {
     new Request("http://localhost/submit"),
   );
 
-  assertRedirect(resp, "/signin");
+  assertEquals(resp.status, Status.OK);
+  assertHtml(resp);
 });
 
 Deno.test("[e2e] GET /feed", async () => {

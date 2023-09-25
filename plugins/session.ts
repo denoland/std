@@ -78,11 +78,11 @@ export default {
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/submit",
+      path: "/api/me",
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/api/me",
+      path: "/api/items/[id]/vote",
       middleware: { handler: ensureSignedIn },
     },
   ],
