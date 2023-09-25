@@ -101,7 +101,6 @@ Deno.test("[e2e] GET /blog", async () => {
 });
 
 Deno.test("[e2e] GET /pricing", async () => {
-  Deno.env.delete("STRIPE_SECRET_KEY");
   const req = new Request("http://localhost/pricing");
   const resp = await handler(req);
 
@@ -133,13 +132,13 @@ Deno.test("[e2e] GET /dashboard", async (test) => {
   const user = randomUser();
   await createUser(user);
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
   });
 
-  await test.step("returns redirect response to /dashboard/stats from root route when the session user is signed in", async () => {
+  await test.step("redirects to `/dashboard/stats` when the session user is signed in", async () => {
     const resp = await handler(
       new Request(url, {
         headers: { cookie: "site-session=" + user.sessionId },
@@ -155,7 +154,7 @@ Deno.test("[e2e] GET /dashboard/stats", async (test) => {
   const user = randomUser();
   await createUser(user);
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
@@ -179,7 +178,7 @@ Deno.test("[e2e] GET /dashboard/users", async (test) => {
   const user = randomUser();
   await createUser(user);
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
@@ -220,18 +219,13 @@ Deno.test("[e2e] GET /api/items", async () => {
   const item2 = randomItem();
   await createItem(item1);
   await createItem(item2);
-
   const req = new Request("http://localhost/api/items");
   const resp = await handler(req);
-
   const { values } = await resp.json();
 
   assertEquals(resp.status, Status.OK);
   assertJson(resp);
-  assertArrayIncludes(values, [
-    JSON.parse(JSON.stringify(item1)),
-    JSON.parse(JSON.stringify(item2)),
-  ]);
+  assertArrayIncludes(values, [item1, item2]);
 });
 
 Deno.test("[e2e] POST /api/items", async (test) => {
@@ -239,7 +233,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
   const user = randomUser();
   await createUser(user);
 
-  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+  await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
 
     assertEquals(resp.status, Status.Unauthorized);
@@ -247,7 +241,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
     assertEquals(await resp.text(), "User must be signed in");
   });
 
-  await test.step("returns HTTP 400 Bad Request response if item is missing title", async () => {
+  await test.step("serves bad request response if item is missing title", async () => {
     const body = new FormData();
     const resp = await handler(
       new Request(url, {
@@ -262,10 +256,10 @@ Deno.test("[e2e] POST /api/items", async (test) => {
     assertEquals(await resp.text(), "Title is missing");
   });
 
-  await test.step("returns HTTP 400 Bad Request response if item has an invalid or missing url", async () => {
+  await test.step("serves bad request response if item is missing URL", async () => {
     const body = new FormData();
     body.set("title", "Title text");
-    const resp1 = await handler(
+    const resp = await handler(
       new Request(url, {
         method: "POST",
         headers: { cookie: "site-session=" + user.sessionId },
@@ -273,12 +267,16 @@ Deno.test("[e2e] POST /api/items", async (test) => {
       }),
     );
 
-    assertEquals(resp1.status, Status.BadRequest);
-    assertText(resp1);
-    assertEquals(await resp1.text(), "URL is invalid or missing");
+    assertEquals(resp.status, Status.BadRequest);
+    assertText(resp);
+    assertEquals(await resp.text(), "URL is invalid or missing");
+  });
 
+  await test.step("serves bad request response if item has an invalid URL", async () => {
+    const body = new FormData();
+    body.set("title", "Title text");
     body.set("url", "invalid-url");
-    const resp2 = await handler(
+    const resp = await handler(
       new Request(url, {
         method: "POST",
         headers: { cookie: "site-session=" + user.sessionId },
@@ -286,9 +284,9 @@ Deno.test("[e2e] POST /api/items", async (test) => {
       }),
     );
 
-    assertEquals(resp2.status, Status.BadRequest);
-    assertText(resp2);
-    assertEquals(await resp2.text(), "URL is invalid or missing");
+    assertEquals(resp.status, Status.BadRequest);
+    assertText(resp);
+    assertEquals(await resp.text(), "URL is invalid or missing");
   });
 
   await test.step("creates an item and redirects to the home page", async () => {
@@ -311,21 +309,25 @@ Deno.test("[e2e] POST /api/items", async (test) => {
   });
 });
 
-Deno.test("[e2e] GET /api/items/[id]", async () => {
+Deno.test("[e2e] GET /api/items/[id]", async (test) => {
   const item = randomItem();
   const req = new Request("http://localhost/api/items/" + item.id);
 
-  const resp1 = await handler(req);
+  await test.step("serves not found response if item not found", async () => {
+    const resp = await handler(req);
 
-  assertEquals(resp1.status, Status.NotFound);
-  assertEquals(await resp1.text(), "Item not found");
+    assertEquals(resp.status, Status.NotFound);
+    assertEquals(await resp.text(), "Item not found");
+  });
 
-  await createItem(item);
-  const resp2 = await handler(req);
+  await test.step("serves item as JSON", async () => {
+    await createItem(item);
+    const resp = await handler(req);
 
-  assertEquals(resp2.status, Status.OK);
-  assertJson(resp2);
-  assertEquals(await resp2.json(), JSON.parse(JSON.stringify(item)));
+    assertEquals(resp.status, Status.OK);
+    assertJson(resp);
+    assertEquals(await resp.json(), item);
+  });
 });
 
 Deno.test("[e2e] GET /api/users", async () => {
@@ -344,25 +346,29 @@ Deno.test("[e2e] GET /api/users", async () => {
   assertArrayIncludes(values, [user1, user2]);
 });
 
-Deno.test("[e2e] GET /api/users/[login]", async () => {
+Deno.test("[e2e] GET /api/users/[login]", async (test) => {
   const user = randomUser();
   const req = new Request("http://localhost/api/users/" + user.login);
 
-  const resp1 = await handler(req);
+  await test.step("serves not found response if user not found", async () => {
+    const resp = await handler(req);
 
-  assertEquals(resp1.status, Status.NotFound);
-  assertText(resp1);
-  assertEquals(await resp1.text(), "User not found");
+    assertEquals(resp.status, Status.NotFound);
+    assertText(resp);
+    assertEquals(await resp.text(), "User not found");
+  });
 
-  await createUser(user);
-  const resp2 = await handler(req);
+  await test.step("serves user as JSON", async () => {
+    await createUser(user);
+    const resp = await handler(req);
 
-  assertEquals(resp2.status, Status.OK);
-  assertJson(resp2);
-  assertEquals(await resp2.json(), user);
+    assertEquals(resp.status, Status.OK);
+    assertJson(resp);
+    assertEquals(await resp.json(), user);
+  });
 });
 
-Deno.test("[e2e] GET /api/users/[login]/items", async () => {
+Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
   const user = randomUser();
   const item: Item = {
     ...randomItem(),
@@ -370,21 +376,24 @@ Deno.test("[e2e] GET /api/users/[login]/items", async () => {
   };
   const req = new Request(`http://localhost/api/users/${user.login}/items`);
 
-  const resp1 = await handler(req);
+  await test.step("serves not found response if user not found", async () => {
+    const resp = await handler(req);
 
-  assertEquals(resp1.status, Status.NotFound);
-  assertText(resp1);
-  assertEquals(await resp1.text(), "User not found");
+    assertEquals(resp.status, Status.NotFound);
+    assertText(resp);
+    assertEquals(await resp.text(), "User not found");
+  });
 
-  await createUser(user);
-  await createItem(item);
+  await test.step("serves items as JSON", async () => {
+    await createUser(user);
+    await createItem(item);
+    const resp = await handler(req);
+    const { values } = await resp.json();
 
-  const resp2 = await handler(req);
-  const { values } = await resp2.json();
-
-  assertEquals(resp2.status, Status.OK);
-  assertJson(resp2);
-  assertArrayIncludes(values, [JSON.parse(JSON.stringify(item))]);
+    assertEquals(resp.status, Status.OK);
+    assertJson(resp);
+    assertArrayIncludes(values, [item]);
+  });
 });
 
 Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
@@ -400,7 +409,7 @@ Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
   await createVote(vote);
   const url = `http://localhost/api/items/${item.id}/vote`;
 
-  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+  await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "DELETE" }));
 
     assertEquals(resp.status, Status.Unauthorized);
@@ -408,7 +417,7 @@ Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
     assertEquals(await resp.text(), "User must be signed in");
   });
 
-  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
+  await test.step("serves not found response if the item is not found", async () => {
     const resp = await handler(
       new Request("http://localhost/api/items/bob-ross/vote", {
         method: "DELETE",
@@ -421,7 +430,7 @@ Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
     assertEquals(await resp.text(), "Item not found");
   });
 
-  await test.step("returns HTTP 204 No Content when it deletes a vote", async () => {
+  await test.step("serves no content when it deletes a vote", async () => {
     const resp = await handler(
       new Request(url, {
         method: "DELETE",
@@ -440,7 +449,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
   await createUser(user);
   const url = `http://localhost/api/items/${item.id}/vote`;
 
-  await test.step("returns HTTP 401 Unauthorized response if the session user is not signed in", async () => {
+  await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
 
     assertEquals(resp.status, Status.Unauthorized);
@@ -448,7 +457,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
     assertEquals(await resp.text(), "User must be signed in");
   });
 
-  await test.step("returns HTTP 404 Not Found response if the item is not found", async () => {
+  await test.step("serves not found response if the item is not found", async () => {
     const resp = await handler(
       new Request("http://localhost/api/items/bob-ross/vote", {
         method: "POST",
@@ -500,7 +509,7 @@ function createStripeEvent(
 Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   const url = "http://localhost/api/stripe-webhooks";
 
-  await test.step("returns HTTP 404 Not Found response if Stripe is disabled", async () => {
+  await test.step("serves not found response if Stripe is disabled", async () => {
     Deno.env.delete("STRIPE_SECRET_KEY");
     const resp = await handler(new Request(url, { method: "POST" }));
 
@@ -509,7 +518,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(await resp.text(), "Not Found");
   });
 
-  await test.step("returns HTTP 400 Bad Request response if `Stripe-Signature` header is missing", async () => {
+  await test.step("serves bad request response if `Stripe-Signature` header is missing", async () => {
     Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
     const resp = await handler(new Request(url, { method: "POST" }));
 
@@ -518,7 +527,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(await resp.text(), "`Stripe-Signature` header is missing");
   });
 
-  await test.step("returns HTTP 500 Internal Server Error response if `STRIPE_WEBHOOK_SECRET` environment variable is not set", async () => {
+  await test.step("serves internal server error response if `STRIPE_WEBHOOK_SECRET` environment variable is not set", async () => {
     Deno.env.delete("STRIPE_WEBHOOK_SECRET");
     const resp = await handler(
       new Request(url, {
@@ -535,7 +544,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     );
   });
 
-  await test.step("returns HTTP 400 Bad Request response if the event payload is invalid", async () => {
+  await test.step("serves bad request response if the event payload is invalid", async () => {
     Deno.env.set("STRIPE_WEBHOOK_SECRET", crypto.randomUUID());
     const resp = await handler(
       new Request(url, {
@@ -552,7 +561,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     );
   });
 
-  await test.step("returns HTTP 404 Not Found response if the user is not found for subscription creation", async () => {
+  await test.step("serves not found response if the user is not found for subscription creation", async () => {
     const constructEventAsyncStub = stub(
       stripe.webhooks,
       "constructEventAsync",
@@ -575,7 +584,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(await resp.text(), "User not found");
   });
 
-  await test.step("returns HTTP 201 Created response if the subscription is created", async () => {
+  await test.step("creates a subscription", async () => {
     const user = randomUser();
     await createUser(user);
 
@@ -603,7 +612,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(await getUser(user.login), { ...user, isSubscribed: true });
   });
 
-  await test.step("returns HTTP 404 Not Found response if the user is not found for subscription deletion", async () => {
+  await test.step("serves not found response if the user is not found for subscription deletion", async () => {
     const constructEventAsyncStub = stub(
       stripe.webhooks,
       "constructEventAsync",
@@ -626,7 +635,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(await resp.text(), "User not found");
   });
 
-  await test.step("returns HTTP 202 Accepted response if the subscription is deleted", async () => {
+  await test.step("deletes a subscription", async () => {
     const user: User = { ...randomUser(), isSubscribed: true };
     await createUser(user);
 
@@ -654,7 +663,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     assertEquals(resp.status, Status.Accepted);
   });
 
-  await test.step("returns HTTP 400 Bad Request response if the event type is not supported", async () => {
+  await test.step("serves bad request response if the event type is not supported", async () => {
     const constructEventAsyncStub = stub(
       stripe.webhooks,
       "constructEventAsync",
@@ -681,13 +690,13 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 Deno.test("[e2e] GET /account", async (test) => {
   const url = "http://localhost/account";
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
   });
 
-  await test.step("renders the account page as a free user", async () => {
+  await test.step("serves a web page for signed-in free user", async () => {
     const user = randomUser();
     await createUser(user);
 
@@ -702,7 +711,7 @@ Deno.test("[e2e] GET /account", async (test) => {
     assertStringIncludes(await resp.text(), 'href="/account/upgrade"');
   });
 
-  await test.step("renders the account page as a premium user", async () => {
+  await test.step("serves a web page for signed-in premium user", async () => {
     const user = randomUser();
     await createUser({ ...user, isSubscribed: true });
 
@@ -722,13 +731,13 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
   const url = "http://localhost/account/manage";
   Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
   });
 
-  await test.step("returns HTTP 404 Not Found response if the session user does not have a Stripe customer ID", async () => {
+  await test.step("serves not found response if the session user does not have a Stripe customer ID", async () => {
     const user = randomUser();
     await createUser({ ...user, stripeCustomerId: undefined });
     const resp = await handler(
@@ -741,7 +750,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
     assertHtml(resp);
   });
 
-  await test.step("returns redirect response to the URL returned by Stripe after creating a billing portal session", async () => {
+  await test.step("redirects to the URL returned by Stripe after creating a billing portal session", async () => {
     const user = randomUser();
     await createUser(user);
 
@@ -769,7 +778,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
 Deno.test("[e2e] GET /account/upgrade", async (test) => {
   const url = "http://localhost/account/upgrade";
 
-  await test.step("returns redirect response if the session user is not signed in", async () => {
+  await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
 
     assertRedirect(resp, "/signin");
@@ -778,7 +787,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
   const user = randomUser();
   await createUser(user);
 
-  await test.step("returns HTTP 500 Internal Server Error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
+  await test.step("serves internal server error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
     Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
     Deno.env.delete("STRIPE_PREMIUM_PLAN_PRICE_ID");
     const resp = await handler(
@@ -791,7 +800,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
     assertHtml(resp);
   });
 
-  await test.step("returns HTTP 404 Not Found response if Stripe is disabled", async () => {
+  await test.step("serves not found response if Stripe is disabled", async () => {
     Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
     Deno.env.delete("STRIPE_SECRET_KEY");
     const resp = await handler(
@@ -804,7 +813,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
     assertHtml(resp);
   });
 
-  await test.step("returns HTTP 404 Not Found response if Stripe returns a `null` URL", async () => {
+  await test.step("serves not found response if Stripe returns a `null` URL", async () => {
     Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
     Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
 
@@ -829,7 +838,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
     assertHtml(resp);
   });
 
-  await test.step("returns redirect response to the URL returned by Stripe after creating a checkout session", async () => {
+  await test.step("redirects to the URL returned by Stripe after creating a checkout session", async () => {
     const priceId = crypto.randomUUID();
     Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", priceId);
     Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
