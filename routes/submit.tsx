@@ -3,7 +3,36 @@ import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
-import { defineRoute } from "$fresh/server.ts";
+import { defineRoute, Handlers } from "$fresh/server.ts";
+import { createItem } from "@/utils/db.ts";
+import { redirect } from "@/utils/http.ts";
+import type { SignedInState } from "@/plugins/session.ts";
+import { ulid } from "std/ulid/mod.ts";
+import IconInfo from "tabler_icons_tsx/info-circle.tsx";
+
+export const handler: Handlers<undefined, SignedInState> = {
+  async POST(req, ctx) {
+    const form = await req.formData();
+    const title = form.get("title");
+    const url = form.get("url");
+
+    if (
+      typeof url !== "string" || !URL.canParse(url) ||
+      typeof title !== "string" || title === ""
+    ) {
+      return redirect("/submit?error");
+    }
+
+    await createItem({
+      id: ulid(),
+      userLogin: ctx.state.sessionUser.login,
+      title,
+      url,
+      score: 0,
+    });
+    return redirect("/");
+  },
+};
 
 export default defineRoute((_req, ctx) => {
   return (
@@ -43,9 +72,8 @@ export default defineRoute((_req, ctx) => {
           <form
             class="flex-1 flex flex-col justify-center"
             method="post"
-            action="/api/items"
           >
-            <div class="mt-4">
+            <div>
               <label
                 htmlFor="submit_title"
                 class="block text-sm font-medium leading-6 text-gray-900"
@@ -77,6 +105,12 @@ export default defineRoute((_req, ctx) => {
                 placeholder="https://my-awesome-project.com"
               />
             </div>
+            {ctx.url.searchParams.has("error") && (
+              <div class="w-full text-red-500 mt-4">
+                <IconInfo class="inline-block" />{" "}
+                Title and valid URL are required
+              </div>
+            )}
             <div class="w-full rounded-lg bg-gradient-to-tr from-secondary to-primary p-px mt-8">
               <button class="w-full text-white text-center rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))">
                 Submit

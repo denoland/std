@@ -228,20 +228,12 @@ Deno.test("[e2e] GET /api/items", async () => {
   assertArrayIncludes(values, [item1, item2]);
 });
 
-Deno.test("[e2e] POST /api/items", async (test) => {
-  const url = "http://localhost/api/items";
+Deno.test("[e2e] POST /submit", async (test) => {
+  const url = "http://localhost/submit";
   const user = randomUser();
   await createUser(user);
 
-  await test.step("serves unauthorized response if the session user is not signed in", async () => {
-    const resp = await handler(new Request(url, { method: "POST" }));
-
-    assertEquals(resp.status, Status.Unauthorized);
-    assertText(resp);
-    assertEquals(await resp.text(), "User must be signed in");
-  });
-
-  await test.step("serves bad request response if item is missing title", async () => {
+  await test.step("redirects to `/submit?error` if item is missing title", async () => {
     const body = new FormData();
     const resp = await handler(
       new Request(url, {
@@ -251,12 +243,10 @@ Deno.test("[e2e] POST /api/items", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
-    assertText(resp);
-    assertEquals(await resp.text(), "Title is missing");
+    assertRedirect(resp, "/submit?error");
   });
 
-  await test.step("serves bad request response if item is missing URL", async () => {
+  await test.step("redirects to `/submit?error` if item is missing URL", async () => {
     const body = new FormData();
     body.set("title", "Title text");
     const resp = await handler(
@@ -267,12 +257,10 @@ Deno.test("[e2e] POST /api/items", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
-    assertText(resp);
-    assertEquals(await resp.text(), "URL is invalid or missing");
+    assertRedirect(resp, "/submit?error");
   });
 
-  await test.step("serves bad request response if item has an invalid URL", async () => {
+  await test.step("redirects to `/submit?error` if item has an invalid URL", async () => {
     const body = new FormData();
     body.set("title", "Title text");
     body.set("url", "invalid-url");
@@ -284,9 +272,7 @@ Deno.test("[e2e] POST /api/items", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
-    assertText(resp);
-    assertEquals(await resp.text(), "URL is invalid or missing");
+    assertRedirect(resp, "/submit?error");
   });
 
   await test.step("creates an item and redirects to the home page", async () => {
