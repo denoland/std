@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertSpyCall, assertSpyCalls, returnsNext, stub } from "../mock.ts";
-import { assertEquals } from "../asserts.ts";
+import { assertEquals } from "../../assert/mod.ts";
 import { _internals, randomMultiple } from "./random.ts";
 
 Deno.test("randomMultiple uses randomInt to generate random multiples between -10 and 10 times the value", () => {

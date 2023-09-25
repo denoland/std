@@ -5,7 +5,7 @@ import { aggregateGroups } from "./aggregate_groups.ts";
 
 function aggregateGroupsTest<T, A>(
   input: [
-    Record<string, Array<T>>,
+    Record<string, ReadonlyArray<T>>,
     (current: T, key: string, first: boolean, accumulator?: A) => A,
   ],
   expected: Record<string, A>,

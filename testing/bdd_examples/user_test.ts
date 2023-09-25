@@ -1,5 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals, assertThrows } from "../asserts.ts";
+import {
+  assertEquals,
+  assertStrictEquals,
+  assertThrows,
+} from "../../assert/mod.ts";
 import { User } from "./user.ts";
 
 Deno.test("User.users initially empty", () => {

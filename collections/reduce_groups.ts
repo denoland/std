@@ -4,9 +4,11 @@
 import { mapValues } from "./map_values.ts";
 
 /**
- * Applies the given reducer to each group in the given Grouping, returning the
+ * Applies the given reducer to each group in the given grouping, returning the
  * results together with the respective group keys.
  *
+ * @template T input type of an item in a group in the given grouping.
+ * @template A type of the accumulator value, which will match the returned record's values.
  * @example
  * ```ts
  * import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/reduce_groups.ts";
@@ -26,7 +28,7 @@ import { mapValues } from "./map_values.ts";
  * ```
  */
 export function reduceGroups<T, A>(
-  record: Readonly<Record<string, Array<T>>>,
+  record: Readonly<Record<string, ReadonlyArray<T>>>,
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
 ): Record<string, A> {
