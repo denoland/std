@@ -157,7 +157,7 @@ export async function* walk(
         }
         const realPath = await Deno.realPath(path);
         if (useRealPath) {
-          path = realPath
+          path = realPath;
         }
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
@@ -230,7 +230,7 @@ export function* walkSync(
       }
       const realPath = Deno.realPathSync(path);
       if (useRealPath) {
-        path = realPath
+        path = realPath;
       }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system

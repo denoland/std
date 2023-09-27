@@ -175,6 +175,6 @@ Deno.test("expandGlobFollowSymlink without useRealPath", async function () {
   };
   assertEquals(
     await expandGlobArray("**/abc", options),
-     ["abc", "link/abc", "subdir/abc"]
+    ["abc", "link/abc", "subdir/abc"],
   );
 });
