@@ -76,6 +76,13 @@ export interface WalkOptions {
    */
   followSymlinks?: boolean;
   /**
+   * Indicates whether the followed symlink's path should be resolved as
+   * the real path.
+   * This option works only if `followSymlinks` is not `false`.
+   * @default {true}
+   */
+  useRealPath?: boolean;
+  /**
    * List of file extensions used to filter entries.
    * If specified, entries without the file extension specified by this option are excluded.
    * @default {undefined}
@@ -119,6 +126,7 @@ export async function* walk(
     includeDirs = true,
     includeSymlinks = true,
     followSymlinks = false,
+    useRealPath = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
@@ -147,11 +155,14 @@ export async function* walk(
           }
           continue;
         }
-        path = await Deno.realPath(path);
+        const realPath = await Deno.realPath(path);
+        if (useRealPath) {
+          path = realPath
+        }
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
         // entity with a different type of entity before we call lstat().
-        ({ isSymlink, isDirectory } = await Deno.lstat(path));
+        ({ isSymlink, isDirectory } = await Deno.lstat(realPath));
       }
 
       if (isSymlink || isDirectory) {
@@ -183,6 +194,7 @@ export function* walkSync(
     includeDirs = true,
     includeSymlinks = true,
     followSymlinks = false,
+    useRealPath = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
@@ -216,11 +228,14 @@ export function* walkSync(
         }
         continue;
       }
-      path = Deno.realPathSync(path);
+      const realPath = Deno.realPathSync(path);
+      if (useRealPath) {
+        path = realPath
+      }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
       // entity with a different type of entity before we call lstat().
-      ({ isSymlink, isDirectory } = Deno.lstatSync(path));
+      ({ isSymlink, isDirectory } = Deno.lstatSync(realPath));
     }
 
     if (isSymlink || isDirectory) {
