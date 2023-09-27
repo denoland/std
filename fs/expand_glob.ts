@@ -25,7 +25,7 @@ export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
    * This option works only if `followSymlinks` is not `false`.
    * @default {true}
    */
-  useRealPath?: boolean;
+  resolveSymlinksToRealPaths?: boolean;
 }
 
 interface SplitPath {
@@ -87,7 +87,7 @@ export async function* expandGlob(
     globstar = true,
     caseInsensitive,
     followSymlinks,
-    useRealPath,
+    resolveSymlinksToRealPaths,
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -142,7 +142,7 @@ export async function* expandGlob(
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
         followSymlinks,
-        useRealPath,
+        resolveSymlinksToRealPaths,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
@@ -211,7 +211,7 @@ export function* expandGlobSync(
     globstar = true,
     caseInsensitive,
     followSymlinks,
-    useRealPath,
+    resolveSymlinksToRealPaths,
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -266,7 +266,7 @@ export function* expandGlobSync(
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
         followSymlinks,
-        useRealPath,
+        resolveSymlinksToRealPaths,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
