@@ -156,3 +156,25 @@ Deno.test("expandGlobFollowSymlink", async function () {
   };
   assertEquals(await expandGlobArray("*", options), ["abc"]);
 });
+
+Deno.test("expandGlobFollowSymlink with useRealPath", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+  };
+  assertEquals(await expandGlobArray("**/abc", options), ["abc", "subdir/abc"]);
+});
+
+Deno.test("expandGlobFollowSymlink without useRealPath", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+    useRealPath: false,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+     ["abc", "link/abc", "subdir/abc"]
+  );
+});
