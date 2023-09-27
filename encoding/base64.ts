@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /**
  * {@linkcode encodeBase64} and {@linkcode decodeBase64} for
  * [base64](https://en.wikipedia.org/wiki/Base64) encoding.
@@ -116,11 +118,7 @@ export const decode = decodeBase64;
  */
 export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
   // CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
-  const uint8 = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+  const uint8 = validateBinaryLike(data);
   let result = "",
     i;
   const l = uint8.length;

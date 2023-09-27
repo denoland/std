@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /**
  * {@linkcode encode} and {@linkcode decode} for
  * [Ascii85/base85](https://en.wikipedia.org/wiki/Ascii85) encoding.
@@ -80,11 +82,7 @@ export function encodeAscii85(
   data: ArrayBuffer | Uint8Array | string,
   options?: Ascii85Options,
 ): string {
-  let uint8 = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+  let uint8 = validateBinaryLike(data);
 
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],

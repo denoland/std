@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /**
  * {@linkcode encodeBase58} and {@linkcode decodeBase58} for
  * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
@@ -52,11 +54,7 @@ export const decode = decodeBase58;
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
  */
 export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
-  const uint8tData = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+  const uint8tData = validateBinaryLike(data);
 
   let length = 0;
   let zeroes = 0;
