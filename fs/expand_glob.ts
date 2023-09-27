@@ -1,22 +1,18 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  GlobOptions,
-  globToRegExp,
-  isAbsolute,
-  isGlob,
-  joinGlobs,
-  resolve,
-  SEP_PATTERN,
-} from "../path/mod.ts";
+import { GlobOptions, globToRegExp, isGlob, joinGlobs } from "../path/glob.ts";
+import { isAbsolute } from "../path/is_absolute.ts";
+import { resolve } from "../path/resolve.ts";
+import { SEP_PATTERN } from "../path/separator.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
-import { isWindows } from "../_util/os.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
   toPathString,
   WalkEntry,
 } from "./_util.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   root?: string;
@@ -102,11 +98,11 @@ export async function* expandGlob(
   } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? winRoot != undefined ? winRoot : "/"
+    ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
-    assert(seg != null);
+    assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -123,7 +119,7 @@ export async function* expandGlob(
   ): AsyncIterableIterator<WalkEntry> {
     if (!walkInfo.isDirectory) {
       return;
-    } else if (globSegment == "..") {
+    } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
@@ -133,7 +129,7 @@ export async function* expandGlob(
         throwUnlessNotFound(error);
       }
       return;
-    } else if (globSegment == "**") {
+    } else if (globSegment === "**") {
       return yield* walk(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
@@ -149,7 +145,7 @@ export async function* expandGlob(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path &&
+        walkEntry.path !== walkInfo.path &&
         walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;
@@ -224,11 +220,11 @@ export function* expandGlobSync(
   } = split(toPathString(glob));
 
   let fixedRoot = isGlobAbsolute
-    ? winRoot != undefined ? winRoot : "/"
+    ? winRoot !== undefined ? winRoot : "/"
     : absRoot;
   while (segments.length > 0 && !isGlob(segments[0])) {
     const seg = segments.shift();
-    assert(seg != null);
+    assert(seg !== undefined);
     fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
   }
 
@@ -245,7 +241,7 @@ export function* expandGlobSync(
   ): IterableIterator<WalkEntry> {
     if (!walkInfo.isDirectory) {
       return;
-    } else if (globSegment == "..") {
+    } else if (globSegment === "..") {
       const parentPath = joinGlobs([walkInfo.path, ".."], globOptions);
       try {
         if (shouldInclude(parentPath)) {
@@ -255,7 +251,7 @@ export function* expandGlobSync(
         throwUnlessNotFound(error);
       }
       return;
-    } else if (globSegment == "**") {
+    } else if (globSegment === "**") {
       return yield* walkSync(walkInfo.path, {
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
@@ -271,7 +267,7 @@ export function* expandGlobSync(
       })
     ) {
       if (
-        walkEntry.path != walkInfo.path &&
+        walkEntry.path !== walkInfo.path &&
         walkEntry.name.match(globPattern)
       ) {
         yield walkEntry;

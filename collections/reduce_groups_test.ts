@@ -4,7 +4,11 @@ import { assertEquals } from "../assert/mod.ts";
 import { reduceGroups } from "./reduce_groups.ts";
 
 function reduceGroupsTest<T, A>(
-  input: [Record<string, Array<T>>, (accumulator: A, current: T) => A, A],
+  input: [
+    record: Record<string, ReadonlyArray<T>>,
+    reducer: (accumulator: A, current: T) => A,
+    initialValue: A,
+  ],
   expected: Record<string, A>,
   message?: string,
 ) {

@@ -2,8 +2,8 @@
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../assert/assert.ts";
-import { join, normalize } from "../path/mod.ts";
+import { join } from "../path/join.ts";
+import { normalize } from "../path/normalize.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
@@ -49,16 +49,49 @@ function wrapErrorWithPath(err: unknown, root: string) {
 }
 
 export interface WalkOptions {
-  /** @default {Infinity} */
+  /**
+   * The maximum depth of the file tree to be walked recursively.
+   * @default {Infinity}
+   */
   maxDepth?: number;
-  /** @default {true} */
+  /**
+   * Indicates whether file entries should be included or not.
+   * @default {true}
+   */
   includeFiles?: boolean;
-  /** @default {true} */
+  /**
+   * Indicates whether directory entries should be included or not.
+   * @default {true}
+   */
   includeDirs?: boolean;
-  /** @default {false} */
+  /**
+   * Indicates whether symlink entries should be included or not.
+   * This option is meaningful only if `followSymlinks` is set to `false`.
+   * @default {true}
+   */
+  includeSymlinks?: boolean;
+  /**
+   * Indicates whether symlinks should be resolved or not.
+   * @default {false}
+   */
   followSymlinks?: boolean;
+  /**
+   * List of file extensions used to filter entries.
+   * If specified, entries without the file extension specified by this option are excluded.
+   * @default {undefined}
+   */
   exts?: string[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries that do not match the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   match?: RegExp[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries matching the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
   skip?: RegExp[];
 }
 export type { WalkEntry };
@@ -84,6 +117,7 @@ export async function* walk(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -102,13 +136,17 @@ export async function* walk(
   }
   try {
     for await (const entry of Deno.readDir(root)) {
-      assert(entry.name != null);
       let path = join(root, entry.name);
 
       let { isSymlink, isDirectory } = entry;
 
       if (isSymlink) {
-        if (!followSymlinks) continue;
+        if (!followSymlinks) {
+          if (includeSymlinks && include(path, exts, match, skip)) {
+            yield { path, ...entry };
+          }
+          continue;
+        }
         path = await Deno.realPath(path);
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
@@ -121,6 +159,7 @@ export async function* walk(
           maxDepth: maxDepth - 1,
           includeFiles,
           includeDirs,
+          includeSymlinks,
           followSymlinks,
           exts,
           match,
@@ -142,6 +181,7 @@ export function* walkSync(
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
     exts = undefined,
     match = undefined,
@@ -165,13 +205,17 @@ export function* walkSync(
     throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
-    assert(entry.name != null);
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;
 
     if (isSymlink) {
-      if (!followSymlinks) continue;
+      if (!followSymlinks) {
+        if (includeSymlinks && include(path, exts, match, skip)) {
+          yield { path, ...entry };
+        }
+        continue;
+      }
       path = Deno.realPathSync(path);
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
@@ -184,6 +228,7 @@ export function* walkSync(
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
+        includeSymlinks,
         followSymlinks,
         exts,
         match,

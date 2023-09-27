@@ -556,15 +556,23 @@ export function bgRgb24(str: string, color: number | Rgb): string {
 const ANSI_PATTERN = new RegExp(
   [
     "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
-    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))",
+    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TXZcf-nq-uy=><~]))",
   ].join("|"),
   "g",
 );
 
 /**
+ * @deprecated (will be removed in 1.0.0) Use `stripAnsiCode` instead.
+ *
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
-export function stripColor(string: string): string {
+export const stripColor = stripAnsiCode;
+
+/**
+ * Remove ANSI escape codes from the string.
+ * @param string to remove ANSI escape codes from
+ */
+export function stripAnsiCode(string: string): string {
   return string.replace(ANSI_PATTERN, "");
 }

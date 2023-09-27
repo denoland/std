@@ -33,7 +33,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
  * assertEquals(
  *   parseMediaType("text/html; charset=UTF-8"),
  *   [
- *     "application/json",
+ *     "text/html",
  *     { charset: "UTF-8" },
  *   ]
  * );
@@ -67,7 +67,7 @@ export function parseMediaType(
 
     let pmap = params;
     const [baseName, rest2] = key.split("*");
-    if (baseName && rest2 != null) {
+    if (baseName && rest2 !== undefined) {
       if (!continuation.has(baseName)) {
         continuation.set(baseName, {});
       }

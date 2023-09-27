@@ -23,10 +23,9 @@ export interface CsvStringifyStreamOptions {
  * @example
  * ```ts
  * import { CsvStringifyStream } from "https://deno.land/std@$STD_VERSION/csv/csv_stringify_stream.ts";
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  *
  * const file = await Deno.open("data.csv", { create: true, write: true });
- * const readable = readableStreamFromIterable([
+ * const readable = ReadableStream.from([
  *   { id: 1, name: "one" },
  *   { id: 2, name: "two" },
  *   { id: 3, name: "three" },

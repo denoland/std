@@ -372,7 +372,7 @@ function get<TValue>(
 
 function getForce<TValue>(obj: Record<string, TValue>, key: string): TValue {
   const v = get(obj, key);
-  assert(v != null);
+  assert(v !== undefined);
   return v;
 }
 
@@ -638,7 +638,7 @@ export function parse<
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
-      assert(m != null);
+      assert(m !== null);
       const [, key, value] = m;
 
       if (flags.bools[key]) {
@@ -651,11 +651,11 @@ export function parse<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m != null);
+      assert(m !== null);
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m != null);
+      assert(m !== null);
       const [, key] = m;
       const next = args[i + 1];
       if (

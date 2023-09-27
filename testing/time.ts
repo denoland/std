@@ -6,8 +6,9 @@
  * @module
  */
 
-import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
-import { DelayOptions } from "../async/delay.ts";
+import { RedBlackTree } from "../collections/unstable/red_black_tree.ts";
+import { ascend } from "../collections/unstable/comparators.ts";
+import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
@@ -156,6 +157,16 @@ function* timerIdGen() {
   while (true) yield i++;
 }
 
+function nextDueNode(): DueNode | null {
+  for (;;) {
+    const dueNode = dueTree.min();
+    if (!dueNode) return null;
+    const hasTimer = dueNode.timers.some((timer) => dueNodes.has(timer.id));
+    if (hasTimer) return dueNode;
+    dueTree.remove(dueNode);
+  }
+}
+
 let startedAt: number;
 let now: number;
 let initializedAt: number;
@@ -252,21 +263,26 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    */
-  static async restoreFor<T>(
+  static restoreFor<T>(
     // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<T> | T,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) throw new TimeError("no fake time");
-    let result: T;
+    if (!time) return Promise.reject(new TimeError("no fake time"));
     restoreGlobals();
     try {
-      result = await callback.apply(null, args);
-    } finally {
+      const result = callback.apply(null, args);
+      if (result instanceof Promise) {
+        return result.finally(() => overrideGlobals());
+      } else {
+        overrideGlobals();
+        return Promise.resolve(result);
+      }
+    } catch (e) {
       overrideGlobals();
+      return Promise.reject(e);
     }
-    return result;
   }
 
   /**
@@ -369,7 +385,7 @@ export class FakeTime {
    * Returns true when there is a scheduled timer and false when there is not.
    */
   next(): boolean {
-    const next = dueTree.min();
+    const next = nextDueNode();
     if (next) this.now = next.due;
     return !!next;
   }

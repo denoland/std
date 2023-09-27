@@ -3,19 +3,6 @@
  * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
  * and other utilities for creating HTTP servers and clients.
  *
- * ## Server
- *
- * Server APIs utilizing Deno's
- * [HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
- *
- * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * serve(() => new Response("Hello World\n"));
- *
- * console.log("http://localhost:8000/");
- * ```
- *
  * ## File Server
  *
  * A small program for serving local files over HTTP.
@@ -64,9 +51,8 @@
  *
  * ```ts
  * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
- * serve((req) => {
+ * Deno.serve((req) => {
  *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
  *   return new Response(`Hello, ${userAgent.browser.name}
  *     on ${userAgent.os.name} ${userAgent.os.version}!`);

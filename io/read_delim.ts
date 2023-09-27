@@ -11,7 +11,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
   let prefixEnd = 0;
   let i = 1;
   while (i < lps.length) {
-    if (pat[i] == pat[prefixEnd]) {
+    if (pat[i] === pat[prefixEnd]) {
       prefixEnd++;
       lps[i] = prefixEnd;
       i++;
@@ -25,7 +25,11 @@ function createLPS(pat: Uint8Array): Uint8Array {
   return lps;
 }
 
-/** Read delimited bytes from a Reader. */
+/**
+ * Read delimited bytes from a Reader.
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ */
 export async function* readDelim(
   reader: Reader,
   delim: Uint8Array,

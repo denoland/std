@@ -15,6 +15,7 @@ Deno.test({
         "--allow-env",
         path.join(testdataDir, "./app_load.ts"),
       ],
+      clearEnv: true,
       cwd: testdataDir,
     });
     const { stdout } = await command.output();
@@ -37,6 +38,7 @@ Deno.test({
         "--allow-env",
         path.join(testdataDir, "./app_load_parent.ts"),
       ],
+      clearEnv: true,
       cwd: testdataDir,
     });
     const { stdout } = await command.output();

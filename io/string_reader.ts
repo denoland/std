@@ -31,6 +31,8 @@ import { Buffer } from "./buffer.ts";
  * null
  * abcdef
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export class StringReader extends Buffer {
   constructor(s: string) {

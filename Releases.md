@@ -1,3 +1,78 @@
+### 0.202.0 / 2023.09.19
+
+- BREAKING(collections): move RedBlackTree, BinarySearchTree, and BinaryHeap to
+  'unstable' subdir (#3628)
+- BREAKING(crypto): clean up module (#3630)
+- BREAKING(csv): deprecate error message exports (#3602)
+- BREAKING(datetime): deprecate to_imf.ts (#3633)
+- BREAKING(media_types): deprecate typeByExtension (#3622)
+- BREAKING(streams): deprecate APIs based on legacy Reader/Writer interfaces
+  (#3640)
+- feat(encoding): add encodeHex, decodeHex (#3642)
+- feat(streams): to ArrayBuffer/Blob/Json/Text (#3631)
+- feat(ulid): port /x/ulid module (#3582)
+- fix(streams): DelimiterStream regression (#3611)
+- fix(stripAnsiCode): escape erase character (#3608)
+- fix(testing/snapshot): distinguish between singular and plural forms (#3625)
+- fix(testing/time): fix FakeTime.next to return false if all timers are cleared
+  (#3638)
+- fix(url): fixes for url functions and new tests. (#3607)
+
+### 0.201.0 / 2023.09.01
+
+- BREAKING(bytes): deprecate BytesList class (#3589)
+- BREAKING(crypto): deprecate crypto.subtle.timingSafeEqual() (#3596)
+- BREAKING(dotenv): fix dotenv permissions (#3578)
+- BREAKING(encoding): deprecate encoding/binary (#3584)
+- BREAKING(fmt): rename stripColor to stripAnsiCode (#3588)
+- BREAKING(permissions): deprecate permissions module (#3567)
+- BREAKING(semver): remove deprecated APIs (#3591)
+- BREAKING(signal): deprecate signal module (#3568)
+- BREAKING(streams): remove readable_stream_from_iterable (#3579)
+- BREAKING(yaml): change binary handling (#3586)
+- feat(assert): add inequality asserts (#3496)
+- feat(std): add `std/url` module. (#3527)
+- fix(assert): properly quote strings in assertIsError (#3577)
+- fix(fmt): make printf respect NO_COLOR (#3595)
+- fix(log): rotating file handler sync setup and destroy (#3543)
+
+### 0.200.0 / 2023.08.24
+
+- doc: add complete docs for all dotenv functionality (#3560)
+
+### 0.199.0 / 2023.08.21
+
+- fix(collections): redblack tree and bst not being exported from mod (#3528)
+- fix(http/cookie_map): add maxAge to set/delete options (#3524)
+- fix(log): fix serializing BigInt value in object (#3550)
+- fix(path): typo in comment in _resolve (#3545)
+- fix(testing/time): fix FakeTime.restoreFor accuracy for sync callbacks (#3531)
+- perf: repoint internal imports to single-export files (#3537)
+
+### 0.198.0 / 2023.08.10
+
+- feat(path): single file exports (#3510)
+
+### 0.197.0 / 2023.08.03
+
+- BREAKING(testing/snapshot): change tab char serialization (#3447)
+- BREAKING(testing/snapshot): fix regression of serialization of long strings
+  (#3507)
+- feat(fs/walk): include symlink option (#3464)
+- fix(toml/parse): fix edge cases (#3509)
+
+### 0.196.0 / 2023.07.26
+
+- BREAKING(http/server): deprecate serve and serveTls (#3381)
+- fix(http): fix handling of string port number (#3499)
+
+### 0.195.0 / 2023.07.19
+
+- BREAKING(streams): deprecate readableStreamFromIterable (#3486)
+- BREAKING(testing, assert): move `std/testing/asserts` to `std/assert` (#3445)
+- feat(fmt): enable `setColorEnabled` in browsers (#3485)
+- fix(async/delay): reject with existing AbortSignal reason (#3479)
+
 ### 0.194.0 / 2023.07.12
 
 - feat(collections): allow PropertyKey for groupBy key (#3461)

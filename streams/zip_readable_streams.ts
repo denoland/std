@@ -10,19 +10,19 @@
 export function zipReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
-  const readers = streams.map((s) => s.getReader());
+  const readers = new Set(streams.map((s) => s.getReader()));
   return new ReadableStream<T>({
     async start(controller) {
       try {
         let resolved = 0;
-        while (resolved != streams.length) {
-          for (const [key, reader] of Object.entries(readers)) {
+        while (resolved !== streams.length) {
+          for (const reader of readers) {
             const { value, done } = await reader.read();
             if (!done) {
               controller.enqueue(value!);
             } else {
               resolved++;
-              readers.splice(+key, 1);
+              readers.delete(reader);
             }
           }
         }

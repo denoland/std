@@ -5,6 +5,8 @@ import { type BufReader } from "./buf_reader.ts";
 /**
  * Read big endian 16bit short from BufReader
  * @param buf
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function readShort(buf: BufReader): Promise<number | null> {
   const high = await buf.readByte();

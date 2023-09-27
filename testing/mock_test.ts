@@ -6,7 +6,7 @@ import {
   assertNotEquals,
   assertRejects,
   assertThrows,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import {
   assertSpyCall,
   assertSpyCallArg,

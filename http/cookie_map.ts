@@ -106,6 +106,8 @@ export interface CookieMapSetDeleteOptions {
   domain?: string;
   /** When the cookie expires. */
   expires?: Date;
+  /** Number of seconds until the cookie expires */
+  maxAge?: number;
   /** A flag that indicates if the cookie is valid over HTTP only. */
   httpOnly?: boolean;
   /** Do not error when signing and validating cookies over an insecure
@@ -165,6 +167,8 @@ export interface SecureCookieMapSetDeleteOptions {
   domain?: string;
   /** When the cookie expires. */
   expires?: Date;
+  /** Number of seconds until the cookie expires */
+  maxAge?: number;
   /** A flag that indicates if the cookie is valid over HTTP only. */
   httpOnly?: boolean;
   /** Do not error when signing and validating cookies over an insecure
@@ -302,7 +306,7 @@ export const cookieMapHeadersInitSymbol = Symbol.for(
 );
 
 function isMergeable(value: unknown): value is Mergeable {
-  return value != null && typeof value === "object" &&
+  return value !== null && value !== undefined && typeof value === "object" &&
     cookieMapHeadersInitSymbol in value;
 }
 
