@@ -67,12 +67,12 @@ export default {
     {
       path: "/callback",
       handler: async (req) => {
-        const { response, accessToken, sessionId } = await handleCallback(
+        const { response, tokens, sessionId } = await handleCallback(
           req,
           oauthConfig,
         );
 
-        const githubUser = await getGitHubUser(accessToken);
+        const githubUser = await getGitHubUser(tokens.accessToken);
         const user = await getUser(githubUser.login);
 
         if (user === null) {
