@@ -1,3 +1,16 @@
+### 0.203.0 / 2023.09.27
+
+- BREAKING(encoding): deprecate encode/decode, add encodeFoo/decodeFoo (#3660)
+- BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
+- BREAKING(front_matter): deprecate default exports (#3653)
+- BREAKING(io): deprecate io top level module (#3556)
+- fix(collections): accept readonly arrays in aggregateGroups, reduceGroups, zip
+  (#3662)
+- fix(datetime): correctly format midnight in 12-hour time (#3667)
+- fix(datetime): fix dayOfYear when the timezone has DST (#3668)
+- fix(encoding): add validation of the input types (#3666)
+- fix(semver): add a necessary grouping, fix prerelease parsing (#3674)
+
 ### 0.202.0 / 2023.09.19
 
 - BREAKING(collections): move RedBlackTree, BinarySearchTree, and BinaryHeap to
