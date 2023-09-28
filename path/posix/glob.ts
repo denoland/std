@@ -1,25 +1,25 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows, OSType } from "./_os.ts";
-import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
 import {
-  globToRegExp as posixGlobToRegExp,
-  joinGlobs as posixJoinGlobs,
-  normalizeGlob as posixNormalizeGlob,
-} from "./posix/glob.ts";
-import {
-  globToRegExp as windowsGlobToRegExp,
-  joinGlobs as windowsJoinGlobs,
-  normalizeGlob as windowsNormalizeGlob,
-} from "./windows/glob.ts";
+  _globToRegExp,
+  GlobConstants,
+  GlobOptions,
+  GlobToRegExpOptions,
+} from "../_common/glob_to_reg_exp.ts";
+import { normalize } from "./normalize.ts";
+import { join } from "./join.ts";
+import { SEP, SEP_PATTERN } from "./separator.ts";
 
-export { isGlob } from "./_common/is_glob.ts";
+export { isGlob } from "../_common/is_glob.ts";
 
-export type { GlobOptions };
-
-export type GlobToRegExpOptions = GlobOptions & {
-  os?: OSType;
+const constants: GlobConstants = {
+  sep: "/+",
+  sepMaybe: "/*",
+  seps: ["/"],
+  globstar: "(?:[^/]*(?:/|$)+)*",
+  wildcard: "[^/]*",
+  escapePrefix: "\\",
 };
 
 /** Convert a glob string to a regular expression.
@@ -81,27 +81,45 @@ export function globToRegExp(
   glob: string,
   options: GlobToRegExpOptions = {},
 ): RegExp {
-  return options.os === "windows" || (!options.os && isWindows)
-    ? windowsGlobToRegExp(glob, options)
-    : posixGlobToRegExp(glob, options);
+  return _globToRegExp(constants, glob, options);
 }
 
 /** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function normalizeGlob(
   glob: string,
-  options: GlobOptions = {},
+  { globstar = false }: GlobOptions = {},
 ): string {
-  return isWindows
-    ? windowsNormalizeGlob(glob, options)
-    : posixNormalizeGlob(glob, options);
+  if (glob.match(/\0/g)) {
+    throw new Error(`Glob contains invalid characters: "${glob}"`);
+  }
+  if (!globstar) {
+    return normalize(glob);
+  }
+  const s = SEP_PATTERN.source;
+  const badParentPattern = new RegExp(
+    `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
+    "g",
+  );
+  return normalize(glob.replace(badParentPattern, "\0")).replace(/\0/g, "..");
 }
 
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function joinGlobs(
   globs: string[],
-  options: GlobOptions = {},
+  { extended = true, globstar = false }: GlobOptions = {},
 ): string {
-  return isWindows
-    ? windowsJoinGlobs(globs, options)
-    : posixJoinGlobs(globs, options);
+  if (!globstar || globs.length === 0) {
+    return join(...globs);
+  }
+  if (globs.length === 0) return ".";
+  let joined: string | undefined;
+  for (const glob of globs) {
+    const path = glob;
+    if (path.length > 0) {
+      if (!joined) joined = path;
+      else joined += `${SEP}${path}`;
+    }
+  }
+  if (!joined) return ".";
+  return normalizeGlob(joined, { extended, globstar });
 }
