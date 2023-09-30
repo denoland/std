@@ -102,29 +102,21 @@ export function format(
   switch (opt.style) {
     case "narrow": {
       if (opt.ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value}${x.type === "us" ? "µs" : x.type}`
-          )
-            .join(" ")
-        }`;
+        return durationArr.filter((x) => x.value).map((x) =>
+          `${x.value}${x.type === "us" ? "µs" : x.type}`
+        ).join(" ");
       }
-      return `${
-        durationArr.map((x) => `${x.value}${x.type === "us" ? "µs" : x.type}`)
-          .join(" ")
-      }`;
+      return durationArr.map((x) =>
+        `${x.value}${x.type === "us" ? "µs" : x.type}`
+      ).join(" ");
     }
     case "full": {
       if (opt.ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value} ${keyList[x.type]}`
-          ).join(", ")
-        }`;
+        return durationArr.filter((x) => x.value).map((x) =>
+          `${x.value} ${keyList[x.type]}`
+        ).join(", ");
       }
-      return `${
-        durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ")
-      }`;
+      return durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ");
     }
     case "digital": {
       const arr = durationArr.map((x) =>
