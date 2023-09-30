@@ -47,6 +47,26 @@ Deno.test({
 });
 
 Deno.test({
+  name: "format negative duration ignore zero",
+  fn() {
+    assertEquals(
+      format(-99674, { style: "digital", ignoreZero: true }),
+      "00:00:01:39:674",
+    );
+  },
+});
+
+Deno.test({
+  name: "format negative duration 3 significant parts",
+  fn() {
+    assertEquals(
+      format(-99674, { style: "digital", significantParts: 3 }),
+      "00:00:01:39:674",
+    );
+  },
+});
+
+Deno.test({
   name: "format full duration ignore zero",
   fn() {
     assertEquals(
@@ -57,8 +77,28 @@ Deno.test({
 });
 
 Deno.test({
+  name: "format full duration ignore zero 2 significant parts",
+  fn() {
+    assertEquals(
+      format(99674, { style: "full", ignoreZero: true, significantParts: 2 }),
+      "1 minutes, 39 seconds",
+    );
+  },
+});
+
+Deno.test({
   name: "format narrow duration ignore zero",
   fn() {
     assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
+  },
+});
+
+Deno.test({
+  name: "format narrow duration ignore zero 2 significant parts",
+  fn() {
+    assertEquals(
+      format(99674, { ignoreZero: true, significantParts: 2 }),
+      "1m 39s",
+    );
   },
 });

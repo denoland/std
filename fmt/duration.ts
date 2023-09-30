@@ -87,6 +87,11 @@ export interface PrettyDurationOptions {
    * With style="digital", only values in the ends are ignored.
    */
   ignoreZero: boolean;
+  /**
+   * Number of significant parts to display.
+   * e.g. 1h 10m 30s 500ms with significantParts=2 will be displayed as 1h 10m.
+   */
+  significantParts?: number;
 }
 
 export function format(
@@ -94,11 +99,25 @@ export function format(
   options: Partial<PrettyDurationOptions> = {},
 ): string {
   const opt = Object.assign(
-    { style: "narrow", ignoreZero: false },
+    { style: "narrow", ignoreZero: false, significantParts: -1 },
     options,
   );
   const duration = millisecondsToDurationObject(ms);
   const durationArr = durationArray(duration);
+  let significantParts = opt.significantParts ?? durationArr.length;
+  if (opt.significantParts > 0) {
+    let hitFirstSignificant = false;
+    for (let i = 0; i < durationArr.length; i++) {
+      if (durationArr[i].value) hitFirstSignificant = true;
+      if (hitFirstSignificant) {
+        if (significantParts > 0) significantParts--;
+        else {
+          durationArr.splice(i);
+          break;
+        }
+      }
+    }
+  }
   switch (opt.style) {
     case "narrow": {
       if (opt.ignoreZero) {
