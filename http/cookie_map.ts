@@ -607,9 +607,11 @@ export class SecureCookieMap extends CookieMapBase {
   /** Sets all cookies in the {@linkcode Request} to be deleted in the
    * response. */
   async clear(options: SecureCookieMapSetDeleteOptions) {
+    let promisesCookiesKeys: Promise<this>[] = []
     for await (const key of this.keys()) {
-      await this.set(key, null, options);
+      promisesCookiesKeys.push(this.set(key, null, options));
     }
+    await Promise.all(promisesCookiesKeys);
   }
 
   /** Set a cookie to be deleted in the response.
