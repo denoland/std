@@ -190,14 +190,6 @@ export interface Vote {
   userLogin: string;
 }
 
-/** For testing */
-export function randomVote(): Vote {
-  return {
-    itemId: crypto.randomUUID(),
-    userLogin: crypto.randomUUID(),
-  };
-}
-
 /**
  * Creates a vote in the database. Throws if the given item or user doesn't
  * exist or the vote already exists. The item's score is incremented by 1.
@@ -247,66 +239,6 @@ export async function createVote(vote: Vote) {
     .commit();
 
   if (!res.ok) throw new Error("Failed to create vote");
-}
-
-/**
- * Deletes the vote from the database. Throws if the item, user or vote doesn't
- * exist. The item's score is decremented by 1.
- *
- * @example
- * ```ts
- * import { deleteVote } from "@/utils/db.ts";
- *
- * await deleteVote({
- *   itemId: "01H9YD2RVCYTBVJEYEJEV5D1S1",
- *   userLogin: "pedro"
- * });
- * ```
- */
-export async function deleteVote(vote: Omit<Vote, "createdAt">) {
-  const itemKey = ["items", vote.itemId];
-  const userKey = ["users", vote.userLogin];
-  const itemVotedByUserKey = [
-    "items_voted_by_user",
-    vote.userLogin,
-    vote.itemId,
-  ];
-  const userVotedForItemKey = [
-    "users_voted_for_item",
-    vote.itemId,
-    vote.userLogin,
-  ];
-  const [itemRes, userRes, itemVotedByUserRes, userVotedForItemRes] = await kv
-    .getMany<
-      [Item, User, Item, User]
-    >([itemKey, userKey, itemVotedByUserKey, userVotedForItemKey]);
-  const item = itemRes.value;
-  const user = userRes.value;
-  if (item === null) throw new Deno.errors.NotFound("Item not found");
-  if (user === null) throw new Deno.errors.NotFound("User not found");
-  if (itemVotedByUserRes.value === null) {
-    throw new Deno.errors.NotFound("Item voted by user not found");
-  }
-  if (userVotedForItemRes.value === null) {
-    throw new Deno.errors.NotFound("User voted for item not found");
-  }
-
-  const itemByUserKey = ["items_by_user", item.userLogin, item.id];
-
-  item.score--;
-
-  const res = await kv.atomic()
-    .check(itemRes)
-    .check(userRes)
-    .check(itemVotedByUserRes)
-    .check(userVotedForItemRes)
-    .set(itemKey, item)
-    .set(itemByUserKey, item)
-    .delete(itemVotedByUserKey)
-    .delete(userVotedForItemKey)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete vote");
 }
 
 /**

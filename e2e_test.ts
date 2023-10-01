@@ -12,9 +12,7 @@ import {
   listItemsByUser,
   randomItem,
   randomUser,
-  randomVote,
   User,
-  Vote,
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/stripe.ts";
 import {
@@ -380,52 +378,6 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
     assertEquals(resp.status, Status.OK);
     assertJson(resp);
     assertArrayIncludes(values, [item]);
-  });
-});
-
-Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
-  const item = randomItem();
-  const user = randomUser();
-  await createItem(item);
-  await createUser(user);
-  const vote: Vote = {
-    ...randomVote(),
-    itemId: item.id,
-    userLogin: user.login,
-  };
-  await createVote(vote);
-  const url = `http://localhost/api/items/${item.id}/vote`;
-
-  await test.step("serves unauthorized response if the session user is not signed in", async () => {
-    const resp = await handler(new Request(url, { method: "DELETE" }));
-
-    assertEquals(resp.status, Status.Unauthorized);
-    assertText(resp);
-    assertEquals(await resp.text(), "User must be signed in");
-  });
-
-  await test.step("serves not found response if the item is not found", async () => {
-    const resp = await handler(
-      new Request("http://localhost/api/items/bob-ross/vote", {
-        method: "DELETE",
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertEquals(resp.status, Status.NotFound);
-    assertText(resp);
-    assertEquals(await resp.text(), "Item not found");
-  });
-
-  await test.step("serves no content when it deletes a vote", async () => {
-    const resp = await handler(
-      new Request(url, {
-        method: "DELETE",
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertEquals(resp.status, Status.NoContent);
   });
 });
 
