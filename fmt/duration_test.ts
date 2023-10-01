@@ -102,3 +102,13 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "format narrow duration ignore zero 3 significant parts",
+  fn() {
+    assertEquals(
+      format(7_205_000.5, { ignoreZero: true, significantParts: 3 }),
+      "2h 0m 5s",
+    );
+  },
+});

@@ -89,9 +89,11 @@ export interface PrettyDurationOptions {
   ignoreZero: boolean;
   /**
    * Number of significant parts to display.
-   * e.g. 1h 10m 30s 500ms with significantParts=2 will be displayed as 1h 10m.
+   * e.g. `"1h 10m 30s 500ms"` with `significantParts: 2` will be displayed as `"1h 10m"`.
+   * Removes leading and trailing zeros.
+   * Overrides `ignoreZero` option.
    */
-  significantParts?: number;
+  significantParts: number;
 }
 
 export function format(
@@ -103,37 +105,29 @@ export function format(
     options,
   );
   const duration = millisecondsToDurationObject(ms);
-  const durationArr = durationArray(duration);
-  let significantParts = opt.significantParts ?? durationArr.length;
+  let durationArr = durationArray(duration);
   if (opt.significantParts > 0) {
-    let hitFirstSignificant = false;
     for (let i = 0; i < durationArr.length; i++) {
-      if (durationArr[i].value) hitFirstSignificant = true;
-      if (hitFirstSignificant) {
-        if (significantParts > 0) significantParts--;
-        else {
-          durationArr.splice(i);
-          break;
-        }
+      if (durationArr[i].value) {
+        const start = opt.style === "digital" ? 0 : i;
+        const end = i + opt.significantParts;
+        durationArr = durationArr.slice(start, end);
+        break;
       }
     }
   }
   switch (opt.style) {
     case "narrow": {
-      if (opt.ignoreZero) {
-        return durationArr.filter((x) => x.value).map((x) =>
-          `${x.value}${x.type === "us" ? "µs" : x.type}`
-        ).join(" ");
+      if (opt.ignoreZero && opt.significantParts <= 0) {
+        durationArr = durationArr.filter((x) => x.value);
       }
       return durationArr.map((x) =>
         `${x.value}${x.type === "us" ? "µs" : x.type}`
       ).join(" ");
     }
     case "full": {
-      if (opt.ignoreZero) {
-        return durationArr.filter((x) => x.value).map((x) =>
-          `${x.value} ${keyList[x.type]}`
-        ).join(", ");
+      if (opt.ignoreZero && opt.significantParts <= 0) {
+        durationArr = durationArr.filter((x) => x.value);
       }
       return durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ");
     }
@@ -143,7 +137,7 @@ export function format(
           ? addZero(x.value, 3)
           : addZero(x.value, 2)
       );
-      if (opt.ignoreZero) {
+      if (opt.ignoreZero && opt.significantParts <= 0) {
         let cont = true;
         while (cont) {
           if (!Number(arr[arr.length - 1])) arr.pop();
