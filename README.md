@@ -223,23 +223,20 @@ AWS Lightsail and Digital Ocean.
 > [`docker-compose.yml`](./docker-compose.yml) files come included with this
 > repo.
 
-The values of the environmental variables are pulled from the `.env` file.
-
-The `DENO_DEPLOYMENT_ID` variable is needed for Docker deployment of a Deno
-Fresh app for caching to work properly. Its value needs to be a unique id tied
-to the deployment. We recommend using the SHA1 commit hash, which can be
-obtained from the following command run in the repo's root folder:
+1. Grab the SHA1 commit hash by running the following command in the repo's root
+   folder:
 
 ```sh
 # get the SHA1 commit hash of the current branch
 git rev-parse HEAD
 ```
 
-Then, copy the output of the above and paste it as `DENO_DEPLOYMENT_ID` in your
-.env file.
+1. Copy the output of the above and paste it as `DENO_DEPLOYMENT_ID` in your
+   .env file. This value is needed to enable caching on Fresh in a Docker
+   deployment.
 
-Finally, refer to these guides for using Docker to deploy Deno to specific
-platforms:
+1. Finally, refer to these guides for using Docker to deploy Deno to specific
+   platforms:
 
 - [Amazon Lightsail](https://deno.land/manual/advanced/deploying_deno/aws_lightsail)
 - [Digital Ocean](https://deno.land/manual/advanced/deploying_deno/digital_ocean)
