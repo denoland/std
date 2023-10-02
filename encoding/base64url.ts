@@ -50,9 +50,12 @@ function convertBase64urlToBase64(b64url: string): string {
   return addPaddingToBase64url(b64url).replace(/\-/g, "+").replace(/_/g, "/");
 }
 
-function convertBase64ToBase64url(b64: string): string {
-  return b64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-}
+const convertBase64ToBase64url = (b64: string) =>
+  b64.endsWith("=")
+    ? b64.endsWith("==")
+      ? b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -2)
+      : b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -1)
+    : b64.replace(/\+/g, "-").replace(/\//g, "_");
 
 /**
  * @deprecated (will be removed in 0.210.0) Use a `encodeBase64Url` instead.
