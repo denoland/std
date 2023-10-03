@@ -87,41 +87,6 @@ export async function createItem(item: Item) {
 }
 
 /**
- * Deletes the item from the database. Throws if the item doesn't exist.
- *
- * @example
- * ```ts
- * import { deleteItem } from "@/utils/db.ts";
- *
- * await deleteItem({
- *   id: "01H9YD2RVCYTBVJEYEJEV5D1S1",
- *   userLogin: "john_doe",
- * });
- * ```
- */
-export async function deleteItem(item: Pick<Item, "id" | "userLogin">) {
-  const itemsKey = ["items", item.id];
-  const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
-  const [itemsRes, itemsByUserRes] = await kv.getMany<Item[]>([
-    itemsKey,
-    itemsByUserKey,
-  ]);
-  if (itemsRes.value === null) throw new Deno.errors.NotFound("Item not found");
-  if (itemsByUserRes.value === null) {
-    throw new Deno.errors.NotFound("Item by user not found");
-  }
-
-  const res = await kv.atomic()
-    .check(itemsRes)
-    .check(itemsByUserRes)
-    .delete(itemsKey)
-    .delete(itemsByUserKey)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete item");
-}
-
-/**
  * Gets the item with the given ID from the database.
  *
  * @example

@@ -6,7 +6,6 @@ import {
   createItem,
   createUser,
   createVote,
-  deleteItem,
   deleteUserSession,
   getAreVotedByUser,
   getItem,
@@ -40,7 +39,6 @@ Deno.test("[db] items", async () => {
   assertEquals(await getItem(item2.id), null);
   assertEquals(await collectValues(listItems()), []);
   assertEquals(await collectValues(listItemsByUser(user.login)), []);
-  await assertRejects(async () => await deleteItem(item1), "Item not found");
 
   await createItem(item1);
   await createItem(item2);
@@ -53,14 +51,6 @@ Deno.test("[db] items", async () => {
     item1,
     item2,
   ]);
-
-  await deleteItem(item1);
-  await deleteItem(item2);
-
-  assertEquals(await getItem(item1.id), null);
-  assertEquals(await getItem(item1.id), null);
-  assertEquals(await collectValues(listItems()), []);
-  assertEquals(await collectValues(listItemsByUser(user.login)), []);
 });
 
 Deno.test("[db] user", async () => {
