@@ -4,7 +4,7 @@
  * script.
  *
  * @example
- * ```
+ * ```bash
  * deno task db:restore backup.json
  * ```
  */
