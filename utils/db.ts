@@ -324,17 +324,42 @@ export async function updateUser(user: User) {
 }
 
 /**
- * Delete the user's session from the database.
+ * Updates the session ID of a given user in the database.
  *
  * @example
  * ```ts
- * import { deleteUserSession } from "@/utils/db.ts";
+ * import { updateUserSession } from "@/utils/db.ts";
  *
- * await deleteUserSession("jack");
+ * await updateUserSession({
+ *   login: "john",
+ *   sessionId: "xxx",
+ *   isSubscribed: false,
+ * }, "yyy");
  * ```
  */
-export async function deleteUserSession(sessionId: string) {
-  await kv.delete(["users_by_session", sessionId]);
+export async function updateUserSession(user: User, sessionId: string) {
+  const userKey = ["users", user.login];
+  const oldUserBySessionKey = ["users_by_session", user.sessionId];
+  const newUserBySessionKey = ["users_by_session", sessionId];
+  const newUser: User = { ...user, sessionId };
+
+  const atomicOp = kv.atomic()
+    .set(userKey, newUser)
+    .delete(oldUserBySessionKey)
+    .check({ key: newUserBySessionKey, versionstamp: null })
+    .set(newUserBySessionKey, newUser);
+
+  if (user.stripeCustomerId !== undefined) {
+    const usersByStripeCustomerKey = [
+      "users_by_stripe_customer",
+      user.stripeCustomerId,
+    ];
+    atomicOp
+      .set(usersByStripeCustomerKey, user);
+  }
+
+  const res = await atomicOp.commit();
+  if (!res.ok) throw new Error("Failed to update user session");
 }
 
 /**

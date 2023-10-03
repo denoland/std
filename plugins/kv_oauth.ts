@@ -8,9 +8,8 @@ import {
 } from "kv_oauth";
 import {
   createUser,
-  deleteUserSession,
   getUser,
-  updateUser,
+  updateUserSession,
   type User,
 } from "@/utils/db.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
@@ -87,8 +86,7 @@ export default {
           }
           await createUser(user);
         } else {
-          await deleteUserSession(user.sessionId);
-          await updateUser({ ...user, sessionId });
+          await updateUserSession(user, sessionId);
         }
 
         return response;

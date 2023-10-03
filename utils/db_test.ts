@@ -6,7 +6,6 @@ import {
   createItem,
   createUser,
   createVote,
-  deleteUserSession,
   getAreVotedByUser,
   getItem,
   getUser,
@@ -19,6 +18,7 @@ import {
   randomItem,
   randomUser,
   updateUser,
+  updateUserSession,
   type User,
 } from "./db.ts";
 
@@ -66,20 +66,25 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserBySession(user.sessionId), user);
   assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), user);
 
-  const user1 = randomUser();
-  await createUser(user1);
-
-  await deleteUserSession(user.sessionId);
-  assertEquals(await getUserBySession(user.sessionId), null);
-
-  const newUser: User = { ...user, sessionId: crypto.randomUUID() };
-  await updateUser(newUser);
-  assertEquals(await getUser(newUser.login), newUser);
-  assertEquals(await getUserBySession(newUser.sessionId), newUser);
+  const subscribedUser: User = { ...user, isSubscribed: true };
+  await updateUser(subscribedUser);
+  assertEquals(await getUser(subscribedUser.login), subscribedUser);
   assertEquals(
-    await getUserByStripeCustomer(newUser.stripeCustomerId!),
-    newUser,
+    await getUserBySession(subscribedUser.sessionId),
+    subscribedUser,
   );
+  assertEquals(
+    await getUserByStripeCustomer(subscribedUser.stripeCustomerId!),
+    subscribedUser,
+  );
+
+  const newSessionId = crypto.randomUUID();
+  await updateUserSession(user, newSessionId);
+  assertEquals(await getUserBySession(user.sessionId), null);
+  assertEquals(await getUserBySession(newSessionId), {
+    ...user,
+    sessionId: newSessionId,
+  });
 });
 
 Deno.test("[db] votes", async () => {
