@@ -129,30 +129,7 @@ import {
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/mod.ts";
 
-/**
- * A copy of the global WebCrypto interface, with methods bound so they're
- * safe to re-export.
- */
-const webCrypto = ((crypto) => ({
-  getRandomValues: crypto.getRandomValues?.bind(crypto),
-  randomUUID: crypto.randomUUID?.bind(crypto),
-  subtle: {
-    decrypt: crypto.subtle?.decrypt?.bind(crypto.subtle),
-    deriveBits: crypto.subtle?.deriveBits?.bind(crypto.subtle),
-    deriveKey: crypto.subtle?.deriveKey?.bind(crypto.subtle),
-    digest: crypto.subtle?.digest?.bind(crypto.subtle),
-    encrypt: crypto.subtle?.encrypt?.bind(crypto.subtle),
-    exportKey: crypto.subtle?.exportKey?.bind(crypto.subtle),
-    generateKey: crypto.subtle?.generateKey?.bind(crypto.subtle),
-    importKey: crypto.subtle?.importKey?.bind(crypto.subtle),
-    sign: crypto.subtle?.sign?.bind(crypto.subtle),
-    unwrapKey: crypto.subtle?.unwrapKey?.bind(crypto.subtle),
-    verify: crypto.subtle?.verify?.bind(crypto.subtle),
-    wrapKey: crypto.subtle?.wrapKey?.bind(crypto.subtle),
-  },
-}))(globalThis.crypto);
-
-const bufferSourceBytes = (data: BufferSource | unknown) => {
+function bufferSourceBytes(data: BufferSource | unknown) {
   let bytes: Uint8Array | undefined;
   if (data instanceof Uint8Array) {
     bytes = data;
@@ -162,7 +139,7 @@ const bufferSourceBytes = (data: BufferSource | unknown) => {
     bytes = new Uint8Array(data);
   }
   return bytes;
-};
+}
 
 /** Extensions to the web standard `SubtleCrypto` interface. */
 export interface StdSubtleCrypto extends SubtleCrypto {
@@ -205,10 +182,10 @@ export interface StdCrypto extends Crypto {
  * algorithms, but delegating to the runtime WebCrypto implementation whenever
  * possible.
  */
-const stdCrypto: StdCrypto = ((x) => x)({
-  ...webCrypto,
+const stdCrypto: StdCrypto = {
+  ...crypto,
   subtle: {
-    ...webCrypto.subtle,
+    ...crypto.subtle,
 
     /**
      * Polyfills stream support until the Web Crypto API does so:
@@ -232,7 +209,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
         // and the data is a single buffer,
         bytes
       ) {
-        return webCrypto.subtle.digest(algorithm, bytes);
+        return crypto.subtle.digest(algorithm, bytes);
       } else if (wasmDigestAlgorithms.includes(name as WasmDigestAlgorithm)) {
         if (bytes) {
           // Otherwise, we use our bundled Wasm implementation via digestSync
@@ -261,12 +238,12 @@ const stdCrypto: StdCrypto = ((x) => x)({
             "data must be a BufferSource or [Async]Iterable<BufferSource>",
           );
         }
-      } else if (webCrypto.subtle?.digest) {
+      } else if (crypto.subtle?.digest) {
         // (TypeScript type definitions prohibit this case.) If they're trying
         // to call an algorithm we don't recognize, pass it along to WebCrypto
         // in case it's a non-standard algorithm supported by the the runtime
         // they're using.
-        return webCrypto.subtle.digest(
+        return crypto.subtle.digest(
           algorithm,
           (data as unknown) as Uint8Array,
         );
@@ -311,7 +288,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
     // TODO(@kitsonk): rework when https://github.com/w3c/webcrypto/issues/270 resolved
     timingSafeEqual,
   },
-});
+};
 
 const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
 
@@ -334,10 +311,13 @@ export type DigestAlgorithmObject = {
 
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
-const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
-    ...algorithm,
-    name: algorithm.name.toUpperCase(),
-  }) as DigestAlgorithmObject;
+function normalizeAlgorithm(algorithm: DigestAlgorithm) {
+  return ((typeof algorithm === "string")
+    ? { name: algorithm.toUpperCase() }
+    : {
+      ...algorithm,
+      name: algorithm.name.toUpperCase(),
+    }) as DigestAlgorithmObject;
+}
 
 export { stdCrypto as crypto };
