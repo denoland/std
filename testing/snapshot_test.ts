@@ -7,7 +7,7 @@ import {
   AssertionError,
   assertRejects,
   fail,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(

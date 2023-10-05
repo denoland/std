@@ -722,19 +722,19 @@ Deno.test(
       assertStrictEquals(Object.keys(await load(optsNoPaths)).length, 0);
       assertEnv(await load(optsOnlyEnvPath));
 
-      assertRejects(
+      await assertRejects(
         () => load(optsEnvPath),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.defaults"`,
       );
 
-      assertRejects(
+      await assertRejects(
         () => load({ ...optsEnvPath, defaultsPath: null }),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.example"`,
       );
 
-      assertRejects(
+      await assertRejects(
         () => load({ ...optsEnvPath, examplePath: null }),
         Deno.errors.PermissionDenied,
         `Requires read access to ".env.defaults"`,

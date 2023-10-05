@@ -1,3 +1,36 @@
+### 0.203.0 / 2023.09.27
+
+- BREAKING(encoding): deprecate encode/decode, add encodeFoo/decodeFoo (#3660)
+- BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
+- BREAKING(front_matter): deprecate default exports (#3653)
+- BREAKING(io): deprecate io top level module (#3556)
+- fix(collections): accept readonly arrays in aggregateGroups, reduceGroups, zip
+  (#3662)
+- fix(datetime): correctly format midnight in 12-hour time (#3667)
+- fix(datetime): fix dayOfYear when the timezone has DST (#3668)
+- fix(encoding): add validation of the input types (#3666)
+- fix(semver): add a necessary grouping, fix prerelease parsing (#3674)
+
+### 0.202.0 / 2023.09.19
+
+- BREAKING(collections): move RedBlackTree, BinarySearchTree, and BinaryHeap to
+  'unstable' subdir (#3628)
+- BREAKING(crypto): clean up module (#3630)
+- BREAKING(csv): deprecate error message exports (#3602)
+- BREAKING(datetime): deprecate to_imf.ts (#3633)
+- BREAKING(media_types): deprecate typeByExtension (#3622)
+- BREAKING(streams): deprecate APIs based on legacy Reader/Writer interfaces
+  (#3640)
+- feat(encoding): add encodeHex, decodeHex (#3642)
+- feat(streams): to ArrayBuffer/Blob/Json/Text (#3631)
+- feat(ulid): port /x/ulid module (#3582)
+- fix(streams): DelimiterStream regression (#3611)
+- fix(stripAnsiCode): escape erase character (#3608)
+- fix(testing/snapshot): distinguish between singular and plural forms (#3625)
+- fix(testing/time): fix FakeTime.next to return false if all timers are cleared
+  (#3638)
+- fix(url): fixes for url functions and new tests. (#3607)
+
 ### 0.201.0 / 2023.09.01
 
 - BREAKING(bytes): deprecate BytesList class (#3589)

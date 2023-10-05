@@ -11,6 +11,8 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param r Reader
  * @param dest Writer
  * @param size Read size
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function copyN(
   r: Reader,

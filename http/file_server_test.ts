@@ -20,9 +20,10 @@ import { retry } from "../async/retry.ts";
 const isWindows = Deno.build.os === "windows";
 
 let child: Deno.ChildProcess;
+let stdout: ReadableStream<string>;
 
 interface FileServerCfg {
-  port?: string;
+  port?: number;
   cors?: boolean;
   "dir-listing"?: boolean;
   dotfiles?: boolean;
@@ -39,7 +40,7 @@ const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = "4507",
+  port = 4507,
   "dir-listing": dirListing = true,
   dotfiles = true,
   headers = [],
@@ -66,10 +67,10 @@ async function startFileServer({
   });
   child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-    new TextLineStream(),
-  );
-  const reader = r.getReader();
+  stdout = child.stdout
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextLineStream());
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
@@ -90,10 +91,10 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
     stderr: "null",
   });
   child = fileServer.spawn();
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  stdout = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
-  const reader = r.getReader();
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Server running..."));
   reader.releaseLock();
@@ -116,6 +117,7 @@ async function killFileServer() {
     }
   });
   await child.status;
+  for await (const _line of stdout) { /* noop */ } // wait until stdout closes
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -487,7 +489,7 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = "4577",
+  port = 4577,
 }: FileServerCfg = {}) {
   const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
@@ -526,7 +528,7 @@ async function startTlsFileServer({
   await retry(async () => {
     const conn = await Deno.connectTls({
       hostname: "localhost",
-      port: +port,
+      port,
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
     conn.close();

@@ -10,4 +10,5 @@ export function test(str: string): boolean {
 }
 
 export const extract = createExtractor({ json: JSON.parse as Parser });
+/** @deprecated (will be removed after 0.210.0) import `extract` (named export) instead. */
 export default extract;
