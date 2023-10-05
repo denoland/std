@@ -163,7 +163,10 @@ Deno.test("expandGlobFollowSymlink with resolveSymlinksToRealPaths", async funct
     root: join(EG_OPTIONS.root!, "."),
     followSymlinks: true,
   };
-  assertEquals(await expandGlobArray("**/abc", options), ["abc", "subdir/abc"]);
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("subdir", "abc")],
+  );
 });
 
 Deno.test("expandGlobFollowSymlink without resolveSymlinksToRealPaths", async function () {
@@ -175,6 +178,6 @@ Deno.test("expandGlobFollowSymlink without resolveSymlinksToRealPaths", async fu
   };
   assertEquals(
     await expandGlobArray("**/abc", options),
-    ["abc", "link/abc", "subdir/abc"],
+    ["abc", join("link", "abc"), join("subdir", "abc")],
   );
 });
