@@ -21,7 +21,10 @@ type Format = "yaml" | "toml" | "json" | "unknown";
  * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
  * ```
  */
-export function test(str: string, formats?: Format[]): boolean {
+export function test(
+  str: string,
+  formats?: ("yaml" | "toml" | "json" | "unknown")[],
+): boolean {
   if (!formats) {
     formats = Object.keys(MAP_FORMAT_TO_EXTRACTOR_RX) as Format[];
   }

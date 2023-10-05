@@ -118,7 +118,7 @@ function recognize(str: string, formats?: Format[]): Format {
  * ```
  */
 export function createExtractor(
-  formats: Partial<Record<Format, Parser>>,
+  formats: Partial<Record<"yaml" | "toml" | "json" | "unknown", Parser>>,
 ): Extractor {
   const formatKeys = Object.keys(formats) as Format[];
 
