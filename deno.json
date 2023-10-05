@@ -37,7 +37,7 @@
     "std/": "https://deno.land/std@0.202.0/",
     "stripe": "npm:/stripe@13.5.0",
     "feed": "npm:/feed@4.2.2",
-    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.8.0/mod.ts",
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.9.1/mod.ts",
     "tabler_icons_tsx/": "https://deno.land/x/tabler_icons_tsx@0.0.4/tsx/",
     "@twind/core": "https://esm.sh/@twind/core@1.1.3",
     "fresh_charts/": "https://deno.land/x/fresh_charts@0.3.1/"
