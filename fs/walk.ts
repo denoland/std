@@ -76,12 +76,11 @@ export interface WalkOptions {
    */
   followSymlinks?: boolean;
   /**
-   * Indicates whether the followed symlink's path should be resolved as
-   * the real path.
+   * Indicates whether the followed symlink's path should be canonicalized.
    * This option works only if `followSymlinks` is not `false`.
    * @default {true}
    */
-  resolveSymlinksToRealPaths?: boolean;
+  canonicalize?: boolean;
   /**
    * List of file extensions used to filter entries.
    * If specified, entries without the file extension specified by this option are excluded.
@@ -126,7 +125,7 @@ export async function* walk(
     includeDirs = true,
     includeSymlinks = true,
     followSymlinks = false,
-    resolveSymlinksToRealPaths = true,
+    canonicalize = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
@@ -156,7 +155,7 @@ export async function* walk(
           continue;
         }
         const realPath = await Deno.realPath(path);
-        if (resolveSymlinksToRealPaths) {
+        if (canonicalize) {
           path = realPath;
         }
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
@@ -194,7 +193,7 @@ export function* walkSync(
     includeDirs = true,
     includeSymlinks = true,
     followSymlinks = false,
-    resolveSymlinksToRealPaths = true,
+    canonicalize = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
@@ -229,7 +228,7 @@ export function* walkSync(
         continue;
       }
       const realPath = Deno.realPathSync(path);
-      if (resolveSymlinksToRealPaths) {
+      if (canonicalize) {
         path = realPath;
       }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()

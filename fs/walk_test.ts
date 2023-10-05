@@ -78,10 +78,10 @@ Deno.test("[fs/walk] symlink", async () =>
     followSymlinks: true,
   }));
 
-Deno.test("[fs/walk] symlink without resolveSymlinksToRealPaths", async () =>
+Deno.test("[fs/walk] symlink without canonicalize", async () =>
   await assertWalkPaths("symlink", [".", "a", "a/z", "b", "b/z", "x", "y"], {
     followSymlinks: true,
-    resolveSymlinksToRealPaths: false,
+    canonicalize: false,
   }));
 
 Deno.test("[fs/walk] symlink without followSymlink", async () => {

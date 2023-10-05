@@ -157,7 +157,7 @@ Deno.test("expandGlobFollowSymlink", async function () {
   assertEquals(await expandGlobArray("*", options), ["abc"]);
 });
 
-Deno.test("expandGlobFollowSymlink with resolveSymlinksToRealPaths", async function () {
+Deno.test("expandGlobFollowSymlink with canonicalize", async function () {
   const options = {
     ...EG_OPTIONS,
     root: join(EG_OPTIONS.root!, "."),
@@ -169,12 +169,12 @@ Deno.test("expandGlobFollowSymlink with resolveSymlinksToRealPaths", async funct
   );
 });
 
-Deno.test("expandGlobFollowSymlink without resolveSymlinksToRealPaths", async function () {
+Deno.test("expandGlobFollowSymlink without canonicalize", async function () {
   const options = {
     ...EG_OPTIONS,
     root: join(EG_OPTIONS.root!, "."),
     followSymlinks: true,
-    resolveSymlinksToRealPaths: false,
+    canonicalize: false,
   };
   assertEquals(
     await expandGlobArray("**/abc", options),

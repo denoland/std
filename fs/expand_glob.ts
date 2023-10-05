@@ -20,12 +20,11 @@ export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
   includeDirs?: boolean;
   followSymlinks?: boolean;
   /**
-   * Indicates whether the followed symlink's path should be resolved as
-   * the real path.
+   * Indicates whether the followed symlink's path should be canonicalized.
    * This option works only if `followSymlinks` is not `false`.
    * @default {true}
    */
-  resolveSymlinksToRealPaths?: boolean;
+  canonicalize?: boolean;
 }
 
 interface SplitPath {
@@ -87,7 +86,7 @@ export async function* expandGlob(
     globstar = true,
     caseInsensitive,
     followSymlinks,
-    resolveSymlinksToRealPaths,
+    canonicalize,
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -142,7 +141,7 @@ export async function* expandGlob(
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
         followSymlinks,
-        resolveSymlinksToRealPaths,
+        canonicalize,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
@@ -211,7 +210,7 @@ export function* expandGlobSync(
     globstar = true,
     caseInsensitive,
     followSymlinks,
-    resolveSymlinksToRealPaths,
+    canonicalize,
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -266,7 +265,7 @@ export function* expandGlobSync(
         skip: excludePatterns,
         maxDepth: globstar ? Infinity : 1,
         followSymlinks,
-        resolveSymlinksToRealPaths,
+        canonicalize,
       });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
