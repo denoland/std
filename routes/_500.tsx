@@ -8,7 +8,7 @@ export default function Error500Page(props: ErrorPageProps) {
       <h1 class={HEADING_STYLES}>Server error</h1>
       <p>500 internal error: {(props.error as Error).message}</p>
       <p>
-        <a href="/" class={LINK_STYLES}>Return home ›</a>
+        <a href="/" class={LINK_STYLES}>Return home &#8250;</a>
       </p>
     </main>
   );

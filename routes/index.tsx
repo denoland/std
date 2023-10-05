@@ -22,7 +22,7 @@ function SetupInstruction() {
           href="https://github.com/denoland/saaskit#auth-oauth"
           class="inline-flex gap-2 text-green-600 dark:text-green-400 hover:underline cursor-pointer"
         >
-          See the guide ›
+          See the guide &#8250;
         </a>
       </p>
 

@@ -18,21 +18,13 @@ async function fetchVotedItems() {
 
 function EmptyItemsList() {
   return (
-    <>
-      <div class="flex flex-col justify-center items-center gap-2">
-        <div class="flex flex-col items-center gap-2 pt-16">
-          <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
-          <p class="text-center font-medium">No items found</p>
-        </div>
-
-        <a
-          href="/submit"
-          class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-primary hover:underline"
-        >
-          Submit your project
-        </a>
-      </div>
-    </>
+    <div class="flex flex-col justify-center items-center gap-2 pt-16">
+      <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+      <p>No items found</p>
+      <a href="/submit" class="text-primary hover:underline">
+        Submit your project &#8250;
+      </a>
+    </div>
   );
 }
 
