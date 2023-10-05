@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { posixFromFileUrl, windowsFromFileUrl } from "./_from_file_url.ts";
+import { fromFileUrl as posixFromFileUrl } from "./posix/from_file_url.ts";
+import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
 
 /**
  * Converts a file URL to a path string.

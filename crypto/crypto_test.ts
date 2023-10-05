@@ -376,6 +376,7 @@ const bufferCopy = slicedCopy.buffer;
 // Test result when an error is expected for all algorithms.
 const allErrors = {
   BLAKE2B: Error,
+  "BLAKE2B-128": Error,
   "BLAKE2B-224": Error,
   "BLAKE2B-256": Error,
   "BLAKE2B-384": Error,
@@ -418,6 +419,7 @@ const digestCases: [
   ["Empty", [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]], {}, {
     BLAKE2B:
       "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
+    "BLAKE2B-128": "cae66941d9efbd404e4d88758ea67670",
     "BLAKE2B-224": "836cc68931c2e4e3e838602eca1902591d216837bafddfe6f0c8cb07",
     "BLAKE2B-256":
       "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
@@ -466,6 +468,7 @@ const digestCases: [
     {
       BLAKE2B:
         "2fa3f686df876995167e7c2e5d74c4c7b6e48f8068fe0e44208344d480f7904c36963e44115fe3eb2a3ac8694c28bcb4f5a0f3276f2e79487d8219057a506e4b",
+      "BLAKE2B-128": "7025e075d5e2f6cde3cc051a31f07660",
       "BLAKE2B-224": "0d94e174732ef9aae73f395ab44507bfa983d65023c11a951f0c32e4",
       "BLAKE2B-256":
         "03170a2e7597b7b7e3d84c05391d139a62b157e78786d8c082f29dcf4c111314",
@@ -512,6 +515,7 @@ const digestCases: [
     length: 20,
   }, {
     BLAKE2B: Error,
+    "BLAKE2B-128": Error,
     "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
     "BLAKE2B-384": Error,
@@ -542,6 +546,7 @@ const digestCases: [
     length: 3,
   }, {
     BLAKE2B: Error,
+    "BLAKE2B-128": Error,
     "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
     "BLAKE2B-384": Error,
@@ -572,6 +577,7 @@ const digestCases: [
     length: 123,
   }, {
     BLAKE2B: Error,
+    "BLAKE2B-128": Error,
     "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
     "BLAKE2B-384": Error,
@@ -605,6 +611,7 @@ const digestCases: [
     length: 0,
   }, {
     BLAKE2B: Error,
+    "BLAKE2B-128": Error,
     "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
     "BLAKE2B-384": Error,
@@ -649,6 +656,7 @@ const digestCases: [
   ["About a meg", [[aboutAMeg]], {}, {
     BLAKE2B:
       "81f197a4ced23ba7bfc9e5e84f417475371b22edb36089978734d1327c39ff75eeda6598ab1c63f0829aa437b68a526f04e622f714d9d7093150e6b2f9603b5c",
+    "BLAKE2B-128": "5f7d447d30b4e0eafc04130cb20269bb",
     "BLAKE2B-224": "bcab4f3527f236ebee29185804d0142a50fb87309654e7ebb0dbc628",
     "BLAKE2B-256":
       "84b033ca29abf242e3761b1657e14768cbfb4e7fc28b3d9f0f34905e5f2aa92b",
@@ -695,6 +703,7 @@ const digestCases: [
     {
       BLAKE2B:
         "dd3ce8111538e7de0842ce11835e38788b6c9436deb122dcfdf69a2fc51d0414e6e088e9ced8e275280eb945f135e5e9eb8000d0434427e67efeea8fc1f39cc5",
+      "BLAKE2B-128": "aa4c50ebd4df2bce32127c1ef8a748ed",
       "BLAKE2B-224": "bc514492509639ff70ddbed44682757939267df7b56b19c5a90e4f4a",
       "BLAKE2B-256":
         "ee079520d28e52bcf61dbc1919e90d9a6c3cb66290f5f41c5521dae9c365c4fe",
@@ -752,6 +761,7 @@ const digestCases: [
     {
       BLAKE2B:
         "0ad2f5cb56954ada6e852adcd8b3a9147e92cb68859b13ddb511a6abee263c51e32db3a4a8a78152fa0638f726c9ac96fa1fda41898bc6d7a4017d7abdbf8480",
+      "BLAKE2B-128": "d57b553f747e0db24b3bad3e279bf75b",
       "BLAKE2B-224": "1f619ea6d5652ef9fe5eee4477daa6bb33a1a0d7fd54dd7cf980f7b5",
       "BLAKE2B-256":
         "be41aad5e22791bfa0b6fc37cd35ecf32b5c6170f85aabcac839fb5e0315def9",

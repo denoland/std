@@ -6,29 +6,20 @@ import {
   CHAR_COLON,
   CHAR_DOT,
   CHAR_QUESTION_MARK,
-} from "./_constants.ts";
+} from "../_common/constants.ts";
 import { isWindowsDeviceRoot } from "./_util.ts";
-import { windowsResolve } from "./_resolve.ts";
+import { resolve } from "./resolve.ts";
 
 /**
  * Resolves path to a namespace path
  * @param path to resolve to namespace
  */
-export function posixToNamespacedPath(path: string): string {
-  // Non-op on posix systems
-  return path;
-}
-
-/**
- * Resolves path to a namespace path
- * @param path to resolve to namespace
- */
-export function windowsToNamespacedPath(path: string): string {
+export function toNamespacedPath(path: string): string {
   // Note: this will *probably* throw somewhere.
   if (typeof path !== "string") return path;
   if (path.length === 0) return "";
 
-  const resolvedPath = windowsResolve(path);
+  const resolvedPath = resolve(path);
 
   if (resolvedPath.length >= 3) {
     if (resolvedPath.charCodeAt(0) === CHAR_BACKWARD_SLASH) {

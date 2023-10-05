@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { posixResolve, windowsResolve } from "./_resolve.ts";
+import { resolve as posixResolve } from "./posix/resolve.ts";
+import { resolve as windowsResolve } from "./windows/resolve.ts";
 
 /**
  * Resolves path segments into a `path`
