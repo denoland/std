@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { Format, MAP_FORMAT_TO_EXTRACTOR_RX } from "./_formats.ts";
+import { MAP_FORMAT_TO_EXTRACTOR_RX } from "./_formats.ts";
+
+type Format = "yaml" | "toml" | "json" | "unknown";
 
 /**
  * Tests if a string has valid front matter. Supports YAML, TOML and JSON.
@@ -19,13 +21,16 @@ import { Format, MAP_FORMAT_TO_EXTRACTOR_RX } from "./_formats.ts";
  * assert(!test("---json\n{\"title\": \"Three dashes followed by format marks the spot\"}\n---\n", [Format.YAML]));
  * ```
  */
-export function test(str: string, formats?: Format[]): boolean {
+export function test(
+  str: string,
+  formats?: ("yaml" | "toml" | "json" | "unknown")[],
+): boolean {
   if (!formats) {
     formats = Object.keys(MAP_FORMAT_TO_EXTRACTOR_RX) as Format[];
   }
 
   for (const format of formats) {
-    if (format === Format.UNKNOWN) {
+    if (format === "unknown") {
       throw new TypeError("Unable to test for unknown front matter format");
     }
 
