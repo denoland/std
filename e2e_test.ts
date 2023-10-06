@@ -73,6 +73,22 @@ function assertRedirect(response: Response, location: string) {
   assert(response.headers.get("location")?.includes(location));
 }
 
+Deno.test("[e2e] security headers", async () => {
+  const resp = await handler(new Request("http://localhost"));
+
+  assertEquals(
+    resp.headers.get("strict-transport-security"),
+    "max-age=63072000;",
+  );
+  assertEquals(
+    resp.headers.get("referrer-policy"),
+    "strict-origin-when-cross-origin",
+  );
+  assertEquals(resp.headers.get("x-content-type-options"), "nosniff");
+  assertEquals(resp.headers.get("x-frame-options"), "SAMEORIGIN");
+  assertEquals(resp.headers.get("x-xss-protection"), "1; mode=block");
+});
+
 Deno.test("[e2e] GET /", async () => {
   const resp = await handler(new Request("http://localhost"));
 
@@ -828,4 +844,13 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
   assertEquals(resp.status, Status.OK);
   assertJson(resp);
   assertArrayIncludes(body, [{ ...item1, score: 1 }, { ...item2, score: 1 }]);
+});
+
+Deno.test("[e2e] GET /welcome", async () => {
+  Deno.env.delete("GITHUB_CLIENT_ID");
+
+  const req = new Request("http://localhost/");
+  const resp = await handler(req);
+
+  assertRedirect(resp, "/welcome");
 });

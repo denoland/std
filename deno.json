@@ -8,7 +8,7 @@
     "db:migrate": "deno run --allow-read --allow-env --allow-net --unstable tasks/db_migrate.ts",
     "db:reset": "deno run --allow-read --allow-env --unstable tasks/db_reset.ts",
     "start": "deno run --unstable -A --watch=static/,routes/ dev.ts",
-    "test": "DENO_KV_PATH=:memory: deno test -A --unstable --parallel --coverage=./cov --doc",
+    "test": "DENO_KV_PATH=:memory: GITHUB_CLIENT_ID=xxx GITHUB_CLIENT_SECRET=xxx deno test -A --unstable --parallel --coverage=./cov --doc",
     "check:license": "deno run --allow-read --allow-write tasks/check_license.ts",
     "check:types": "deno check **/*.ts && deno check **/*.tsx",
     "ok": "deno fmt --check && deno lint && deno task check:license --check && deno task check:types && deno task test",

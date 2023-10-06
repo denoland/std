@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { Plugin } from "$fresh/server.ts";
+import type { Plugin } from "$fresh/server.ts";
 import {
   createGitHubOAuthConfig,
   handleCallback,
@@ -13,40 +13,7 @@ import {
   type User,
 } from "@/utils/db.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
-import { createHttpError } from "std/http/http_errors.ts";
-
-const oauthConfig = createGitHubOAuthConfig();
-
-interface GitHubUser {
-  login: string;
-  email: string;
-}
-
-/**
- * Returns the GitHub profile information of the user with the given access
- * token.
- *
- * @see {@link https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user}
- *
- * @example
- * ```ts
- * import { getGitHubUser } from "@/plugins/kv_oauth.ts";
- *
- * const user = await getGitHubUser("<access token>");
- * user.login; // Returns "octocat"
- * user.email; // Returns "octocat@github.com"
- * ```
- */
-export async function getGitHubUser(accessToken: string) {
-  const resp = await fetch("https://api.github.com/user", {
-    headers: { authorization: `Bearer ${accessToken}` },
-  });
-  if (!resp.ok) {
-    const { message } = await resp.json();
-    throw createHttpError(resp.status, message);
-  }
-  return await resp.json() as Promise<GitHubUser>;
-}
+import { getGitHubUser } from "@/utils/github.ts";
 
 /**
  * This custom plugin centralizes all authentication logic using the
@@ -61,14 +28,14 @@ export default {
   routes: [
     {
       path: "/signin",
-      handler: async (req) => await signIn(req, oauthConfig),
+      handler: async (req) => await signIn(req, createGitHubOAuthConfig()),
     },
     {
       path: "/callback",
       handler: async (req) => {
         const { response, tokens, sessionId } = await handleCallback(
           req,
-          oauthConfig,
+          createGitHubOAuthConfig(),
         );
 
         const githubUser = await getGitHubUser(tokens.accessToken);

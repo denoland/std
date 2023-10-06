@@ -16,9 +16,6 @@ jobs:
           - ubuntu-22.04
           - windows-2022
           - macOS-12
-    env:
-      GITHUB_CLIENT_ID: test
-      GITHUB_CLIENT_SECRET: test
 
     steps:
       - name: Setup repo
