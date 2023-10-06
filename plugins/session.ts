@@ -82,7 +82,7 @@ export default {
       middleware: { handler: ensureSignedIn },
     },
     {
-      path: "/api/items/[id]/vote",
+      path: "/api/vote",
       middleware: { handler: ensureSignedIn },
     },
   ],

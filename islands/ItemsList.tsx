@@ -37,7 +37,7 @@ interface VoteButtonProps {
 function VoteButton(props: VoteButtonProps) {
   async function onClick(event: MouseEvent) {
     if (event.detail !== 1) return;
-    const resp = await fetch(`/api/items/${props.item.id}/vote`, {
+    const resp = await fetch(`/api/vote?item_id=${props.item.id}`, {
       method: "POST",
     });
     if (!resp.ok) throw new Error(await resp.text());

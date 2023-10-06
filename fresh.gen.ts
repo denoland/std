@@ -8,14 +8,14 @@ import * as $2 from "./routes/_app.tsx";
 import * as $3 from "./routes/account/index.tsx";
 import * as $4 from "./routes/account/manage.ts";
 import * as $5 from "./routes/account/upgrade.ts";
-import * as $6 from "./routes/api/items/[id]/index.ts";
-import * as $7 from "./routes/api/items/[id]/vote.ts";
-import * as $8 from "./routes/api/items/index.ts";
-import * as $9 from "./routes/api/me/votes.ts";
-import * as $10 from "./routes/api/stripe-webhooks.ts";
-import * as $11 from "./routes/api/users/[login]/index.ts";
-import * as $12 from "./routes/api/users/[login]/items.ts";
-import * as $13 from "./routes/api/users/index.ts";
+import * as $6 from "./routes/api/items/[id].ts";
+import * as $7 from "./routes/api/items/index.ts";
+import * as $8 from "./routes/api/me/votes.ts";
+import * as $9 from "./routes/api/stripe-webhooks.ts";
+import * as $10 from "./routes/api/users/[login]/index.ts";
+import * as $11 from "./routes/api/users/[login]/items.ts";
+import * as $12 from "./routes/api/users/index.ts";
+import * as $13 from "./routes/api/vote.ts";
 import * as $14 from "./routes/blog/[slug].tsx";
 import * as $15 from "./routes/blog/index.tsx";
 import * as $16 from "./routes/dashboard/index.tsx";
@@ -39,14 +39,14 @@ const manifest = {
     "./routes/account/index.tsx": $3,
     "./routes/account/manage.ts": $4,
     "./routes/account/upgrade.ts": $5,
-    "./routes/api/items/[id]/index.ts": $6,
-    "./routes/api/items/[id]/vote.ts": $7,
-    "./routes/api/items/index.ts": $8,
-    "./routes/api/me/votes.ts": $9,
-    "./routes/api/stripe-webhooks.ts": $10,
-    "./routes/api/users/[login]/index.ts": $11,
-    "./routes/api/users/[login]/items.ts": $12,
-    "./routes/api/users/index.ts": $13,
+    "./routes/api/items/[id].ts": $6,
+    "./routes/api/items/index.ts": $7,
+    "./routes/api/me/votes.ts": $8,
+    "./routes/api/stripe-webhooks.ts": $9,
+    "./routes/api/users/[login]/index.ts": $10,
+    "./routes/api/users/[login]/items.ts": $11,
+    "./routes/api/users/index.ts": $12,
+    "./routes/api/vote.ts": $13,
     "./routes/blog/[slug].tsx": $14,
     "./routes/blog/index.tsx": $15,
     "./routes/dashboard/index.tsx": $16,

@@ -52,12 +52,12 @@ To get started:
 1. Set **Authorization callback URL** to `http://localhost:8000/callback`.
 1. Click **Register application**.
 1. Copy the **Client ID** value to the `.env` file:
-   ```
+   ```bash
    GITHUB_CLIENT_ID=<GitHub OAuth application client ID>
    ```
 1. On the same web page, click **Generate a new client secret**.
 1. Copy the **Client secret** value to the `.env` file on a new line:
-   ```
+   ```bash
    GITHUB_CLIENT_SECRET=<GitHub OAuth application client secret>
    ```
 1. Start the server:
@@ -85,7 +85,7 @@ To get started:
 1. In the **Standard keys** section, click **Reveal test key** on the **Secret
    key** table row.
 1. Click to copy the value and paste to the `.env` file:
-   ```
+   ```bash
    STRIPE_SECRET_KEY=<Stripe secret key>
    ```
 1. Run the Stripe initialization script:
@@ -93,16 +93,16 @@ To get started:
    deno task init:stripe
    ```
 1. Copy the Stripe "Premium Plan" price ID to the `.env` file:
-   ```
+   ```bash
    STRIPE_PREMIUM_PLAN_PRICE_ID=<Stripe "Premium Plan" price ID>
    ```
 1. Begin
    [listening locally to Stripe events](https://stripe.com/docs/cli/listen):
-   ```
+   ```bash
    stripe listen --forward-to localhost:8000/api/stripe-webhooks --events=customer.subscription.created,customer.subscription.deleted
    ```
 1. Copy the **webhook signing secret** to the `.env` file:
-   ```
+   ```bash
    STRIPE_WEBHOOK_SECRET=<Stripe webhook signing secret>
    ```
 1. Start the server:
@@ -161,7 +161,7 @@ needs.
    ```
    ````
 1. Start the server:
-   ```
+   ```bash
    deno task start
    ```
 1. Navigate to the URL of the newly created blog post. E.g.
@@ -252,7 +252,7 @@ git rev-parse HEAD
    key** table row.
 1. Click to copy the value and paste to your `STRIPE_SECRET_KEY` environment
    variable in your production environment.
-   ```
+   ```bash
    STRIPE_SECRET_KEY=<Stripe secret key>
    ```
 1. Navigate to the [**Webhooks** page](https://dashboard.stripe.com/webhooks) to

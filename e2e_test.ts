@@ -397,12 +397,12 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
   });
 });
 
-Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
+Deno.test("[e2e] POST /api/vote", async (test) => {
   const item = randomItem();
   const user = randomUser();
   await createItem(item);
   await createUser(user);
-  const url = `http://localhost/api/items/${item.id}/vote`;
+  const url = `http://localhost/api/vote?item_id=${item.id}`;
 
   await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
@@ -414,7 +414,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
 
   await test.step("serves not found response if the item is not found", async () => {
     const resp = await handler(
-      new Request("http://localhost/api/items/bob-ross/vote", {
+      new Request("http://localhost/api/vote?item_id=bob-ross", {
         method: "POST",
         headers: { cookie: "site-session=" + user.sessionId },
       }),
@@ -428,7 +428,6 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
   await test.step("creates a vote", async () => {
     const item = { ...randomItem(), userLogin: user.login };
     await createItem(item);
-    const url = `http://localhost/api/items/${item.id}/vote`;
     const resp = await handler(
       new Request(url, {
         method: "POST",
