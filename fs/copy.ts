@@ -190,7 +190,7 @@ async function copyDir(
   src = toPathString(src);
   dest = toPathString(dest);
 
-  let promisesCopyAsyncFunctions: Promise<void>[] = [];
+  const promisesCopyAsyncFunctions: Promise<void>[] = [];
 
   for await (const entry of Deno.readDir(src)) {
     const srcPath = join(src, entry.name);
@@ -203,8 +203,8 @@ async function copyDir(
       promisesCopyAsyncFunctions.push(copyFile(srcPath, destPath, options));
     }
   }
-  
- await Promise.all(promisesCopyAsyncFunctions);
+
+  await Promise.all(promisesCopyAsyncFunctions);
 }
 
 /* copy folder from src to dest synchronously */
