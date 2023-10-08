@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
-import { mockConn as createMockConn } from "../_mock_conn.ts";
-import { dirname, fromFileUrl, join, resolve } from "../../path/mod.ts";
-import { writeAll } from "../../streams/write_all.ts";
-import { readAll } from "../../streams/read_all.ts";
-import { deferred, delay } from "../../async/mod.ts";
+import { mockConn as createMockConn } from "./_mock_conn.ts";
+import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { writeAll } from "../streams/write_all.ts";
+import { readAll } from "../streams/read_all.ts";
+import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -13,7 +13,7 @@ import {
   assertStrictEquals,
   assertThrows,
   unreachable,
-} from "../../assert/mod.ts";
+} from "../assert/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "../testdata");
@@ -43,7 +43,7 @@ class MockListener implements Deno.Listener {
     conn,
     rejectionError,
     rejectionCount = Infinity,
-    acceptCallSideEffect = () => {},
+    acceptCallSideEffect = () => { },
   }: {
     conn: Deno.Conn;
     rejectionError?: Error;
@@ -274,7 +274,7 @@ Deno.test(
     };
     const listener = Deno.listen(listenOptions);
     const handler = () => new Response();
-    const onAbort = () => {};
+    const onAbort = () => { };
     const abortController = new AbortController();
 
     abortController.signal.onabort = onAbort;
@@ -296,7 +296,7 @@ Deno.test(
   "serve should not overwrite an abort signal handler",
   async () => {
     const handler = () => new Response();
-    const onAbort = () => {};
+    const onAbort = () => { };
     const abortController = new AbortController();
 
     abortController.signal.onabort = onAbort;
@@ -322,7 +322,7 @@ Deno.test(
     const certFile = join(testdataDir, "tls/localhost.crt");
     const keyFile = join(testdataDir, "tls/localhost.key");
     const handler = () => new Response();
-    const onAbort = () => {};
+    const onAbort = () => { };
     const abortController = new AbortController();
 
     abortController.signal.onabort = onAbort;
@@ -717,7 +717,7 @@ Deno.test(`serve listens on the port 8000 by default`, async () => {
   const servePromise = serve(handler, {
     signal: abortController.signal,
   });
-  servePromise.catch(() => {});
+  servePromise.catch(() => { });
 
   try {
     const response = await fetch(url);
