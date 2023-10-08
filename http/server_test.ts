@@ -16,7 +16,7 @@ import {
 } from "../assert/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
-const testdataDir = resolve(moduleDir, "../testdata");
+const testdataDir = resolve(moduleDir, "testdata");
 
 let port = 4800;
 function getPort() {
