@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { posixJoin, windowsJoin } from "./_join.ts";
+import { join as posixJoin } from "./posix/join.ts";
+import { join as windowsJoin } from "./windows/join.ts";
 
 /**
  * Join all given a sequence of `paths`,then normalizes the resulting path.

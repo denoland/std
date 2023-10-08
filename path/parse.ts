@@ -3,7 +3,8 @@
 
 import { isWindows } from "./_os.ts";
 import type { ParsedPath } from "./_interface.ts";
-import { posixParse, windowsParse } from "./_parse.ts";
+import { parse as posixParse } from "./posix/parse.ts";
+import { parse as windowsParse } from "./windows/parse.ts";
 
 /**
  * Return a `ParsedPath` object of the `path`.

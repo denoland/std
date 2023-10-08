@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { posixDirname, windowsDirname } from "./_dirname.ts";
+import { dirname as posixDirname } from "./posix/dirname.ts";
+import { dirname as windowsDirname } from "./windows/dirname.ts";
 
 /**
  * Return the directory path of a `path`.

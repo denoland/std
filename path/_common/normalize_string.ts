@@ -3,38 +3,7 @@
 // Ported from https://github.com/browserify/path-browserify/
 // This module is browser compatible.
 
-import {
-  CHAR_BACKWARD_SLASH,
-  CHAR_DOT,
-  CHAR_FORWARD_SLASH,
-  CHAR_LOWERCASE_A,
-  CHAR_LOWERCASE_Z,
-  CHAR_UPPERCASE_A,
-  CHAR_UPPERCASE_Z,
-} from "./_constants.ts";
-
-export function assertPath(path: string) {
-  if (typeof path !== "string") {
-    throw new TypeError(
-      `Path must be a string. Received ${JSON.stringify(path)}`,
-    );
-  }
-}
-
-export function isPosixPathSeparator(code: number): boolean {
-  return code === CHAR_FORWARD_SLASH;
-}
-
-export function isPathSeparator(code: number): boolean {
-  return isPosixPathSeparator(code) || code === CHAR_BACKWARD_SLASH;
-}
-
-export function isWindowsDeviceRoot(code: number): boolean {
-  return (
-    (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
-    (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z)
-  );
-}
+import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./constants.ts";
 
 // Resolves . and .. elements in a path with directory names
 export function normalizeString(
@@ -102,25 +71,4 @@ export function normalizeString(
     }
   }
   return res;
-}
-
-export function stripTrailingSeparators(
-  segment: string,
-  isSep: (char: number) => boolean,
-): string {
-  if (segment.length <= 1) {
-    return segment;
-  }
-
-  let end = segment.length;
-
-  for (let i = segment.length - 1; i > 0; i--) {
-    if (isSep(segment.charCodeAt(i))) {
-      end = i;
-    } else {
-      break;
-    }
-  }
-
-  return segment.slice(0, end);
 }
