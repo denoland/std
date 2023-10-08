@@ -342,18 +342,21 @@ export function diffstr(A: string, B: string) {
   }
 
   // Compute word-diff
-  const aLines = added.length < removed.length ? added : removed;
-  const bLines = aLines === removed ? added : removed;
+  const hasMoreRemovedLines = added.length < removed.length;
+  const aLines = hasMoreRemovedLines ? added : removed;
+  const bLines = hasMoreRemovedLines ? removed : added;
   for (const a of aLines) {
     let tokens = [] as Array<DiffResult<string>>,
       b: undefined | DiffResult<string>;
     // Search another diff line with at least one common token
     while (bLines.length) {
       b = bLines.shift();
-      tokens = diff(
+      const tokenized = [
         tokenize(a.value, { wordDiff: true }),
         tokenize(b?.value ?? "", { wordDiff: true }),
-      );
+      ] as string[][];
+      if (hasMoreRemovedLines) tokenized.reverse();
+      tokens = diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
           type === DiffType.common && value.trim().length
