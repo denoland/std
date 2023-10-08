@@ -2,6 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable/errors.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
  */
-export * from "./unstable/errors.ts";
+export * from "./unstable_errors.ts";

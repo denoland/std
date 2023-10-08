@@ -5,16 +5,16 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../../assert/mod.ts";
-import { FakeTime } from "../../testing/time.ts";
-import { KeyStack } from "../../crypto/keystack.ts";
+} from "../assert/mod.ts";
+import { FakeTime } from "../testing/time.ts";
+import { KeyStack } from "../crypto/keystack.ts";
 
 import {
   CookieMap,
   cookieMapHeadersInitSymbol,
   mergeHeaders,
   SecureCookieMap,
-} from "./cookie_map.ts";
+} from "./unstable_cookie_map.ts";
 
 function isNode(): boolean {
   return "process" in globalThis && "global" in globalThis;

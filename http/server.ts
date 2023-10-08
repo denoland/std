@@ -61,7 +61,7 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
-* @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
  *
  * Used to construct an HTTP server.
  */
@@ -100,7 +100,7 @@ export class Server {
     this.#host = serverInit.hostname;
     this.#handler = serverInit.handler;
     this.#onError = serverInit.onError ??
-      function(error: unknown) {
+      function (error: unknown) {
         console.error(error);
         return new Response("Internal Server Error", { status: 500 });
       };

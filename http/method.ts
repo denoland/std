@@ -2,6 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable/method.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
  */
-export * from "./unstable/method.ts";
+export * from "./unstable_method.ts";

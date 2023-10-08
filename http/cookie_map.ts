@@ -2,6 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable/cookie_map.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  */
-export * from "./unstable/cookie_map.ts";
+export * from "./unstable_cookie_map.ts";

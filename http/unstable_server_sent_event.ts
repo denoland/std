@@ -20,7 +20,7 @@
  * import {
  *   ServerSentEvent,
  *   ServerSentEventStreamTarget,
- * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+ * } from "https://deno.land/std@$STD_VERSION/http/unstable_server_sent_event.ts";
  *
  * Deno.serve({ port: 8000 }, (request) => {
  *   const target = new ServerSentEventStreamTarget();
@@ -43,7 +43,7 @@
  * @module
  */
 
-import { assert } from "../../assert/assert.ts";
+import { assert } from "../assert/assert.ts";
 
 const encoder = new TextEncoder();
 
