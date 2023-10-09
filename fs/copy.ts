@@ -204,7 +204,7 @@ async function copyDir(
     }
   }
 
-  await Promise.all(promisesCopyAsyncFunctions);
+  await Promise.all(promises);
 }
 
 /* copy folder from src to dest synchronously */
