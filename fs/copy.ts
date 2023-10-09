@@ -196,7 +196,7 @@ async function copyDir(
     const srcPath = join(src, entry.name);
     const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {
-      promisesCopyAsyncFunctions.push(copySymLink(srcPath, destPath, options));
+      promises.push(copySymLink(srcPath, destPath, options));
     } else if (entry.isDirectory) {
       promisesCopyAsyncFunctions.push(copyDir(srcPath, destPath, options));
     } else if (entry.isFile) {
