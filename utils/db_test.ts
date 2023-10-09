@@ -85,6 +85,12 @@ Deno.test("[db] user", async () => {
     ...user,
     sessionId: newSessionId,
   });
+
+  await assertRejects(
+    async () => await updateUserSession(user, newSessionId),
+    Error,
+    "Failed to update user session",
+  );
 });
 
 Deno.test("[db] votes", async () => {

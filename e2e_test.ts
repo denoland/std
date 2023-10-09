@@ -437,6 +437,18 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
 
     assertEquals(resp.status, Status.Created);
   });
+
+  await test.step("serves an error response if the `item_id` URL parameter is missing", async () => {
+    const resp = await handler(
+      new Request("http://localhost/api/vote", {
+        method: "POST",
+        headers: { cookie: "site-session=" + user.sessionId },
+      }),
+    );
+
+    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(await resp.text(), "`item_id` URL parameter missing");
+  });
 });
 
 function createStripeEvent(
