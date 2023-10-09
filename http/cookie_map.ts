@@ -611,7 +611,7 @@ export class SecureCookieMap extends CookieMapBase {
     for await (const key of this.keys()) {
       promisesCookiesKeys.push(this.set(key, null, options));
     }
-    await Promise.all(promisesCookiesKeys);
+    await Promise.all(promises);
   }
 
   /** Set a cookie to be deleted in the response.
