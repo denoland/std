@@ -200,7 +200,7 @@ async function copyDir(
     } else if (entry.isDirectory) {
       promisesCopyAsyncFunctions.push(copyDir(srcPath, destPath, options));
     } else if (entry.isFile) {
-      promisesCopyAsyncFunctions.push(copyFile(srcPath, destPath, options));
+      promises.push(copyFile(srcPath, destPath, options));
     }
   }
 
