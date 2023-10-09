@@ -169,6 +169,12 @@ export default defineRoute<State>(async (_req, ctx) => {
     active: true,
   });
 
+  if (data.length === 0) {
+    throw new Error(
+      "No Stripe products have been found. Please see https://github.com/denoland/saaskit#set-up-stripe-optional to set up Stripe locally and create a Stripe product.",
+    );
+  }
+
   return (
     <>
       <Head title="Pricing" href={ctx.url.href} />
