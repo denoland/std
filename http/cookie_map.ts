@@ -609,7 +609,7 @@ export class SecureCookieMap extends CookieMapBase {
   async clear(options: SecureCookieMapSetDeleteOptions) {
     const promises = [];
     for await (const key of this.keys()) {
-      promisesCookiesKeys.push(this.set(key, null, options));
+      promises.push(this.set(key, null, options));
     }
     await Promise.all(promises);
   }
