@@ -29,8 +29,6 @@ export async function emptyDir(dir: string | URL) {
         return Deno.remove(filepath, { recursive: true });
       }
     }));
-
-    items.length = 0;
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
       throw err;
