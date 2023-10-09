@@ -14,7 +14,8 @@ import { isStripeEnabled } from "@/utils/stripe.ts";
 console.log(
   isStripeEnabled()
     ? "`STRIPE_SECRET_KEY` environment variable is defined. Stripe is enabled."
-    : "`STRIPE_SECRET_KEY` environment variable is not defined. Stripe is disabled.",
+    : "`STRIPE_SECRET_KEY` environment variable is not defined. Stripe is disabled.\n" +
+      "For more information on how to set up Stripe, see https://github.com/denoland/saaskit#set-up-stripe-optional",
 );
 
 await start(manifest, config);
