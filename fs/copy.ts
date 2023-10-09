@@ -198,7 +198,7 @@ async function copyDir(
     if (entry.isSymlink) {
       promises.push(copySymLink(srcPath, destPath, options));
     } else if (entry.isDirectory) {
-      promisesCopyAsyncFunctions.push(copyDir(srcPath, destPath, options));
+      promises.push(copyDir(srcPath, destPath, options));
     } else if (entry.isFile) {
       promises.push(copyFile(srcPath, destPath, options));
     }
