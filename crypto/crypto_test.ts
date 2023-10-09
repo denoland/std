@@ -1419,11 +1419,13 @@ Deno.test({
   },
 });
 
-// This is one of many methods on `crypto` for which we don't have our own
-// implementation, and just pass calls through to the native implementation.
-// This test doesn't cover any cryptographic logic, but just serves to ensure
-// that (at least this one of) the native methods are indeed re-exported, and
-// that they're appropriately bound to use the required reciever.
+/**
+ * This is one of many methods of `crypto` for which we don't have our own
+ * implementation, and just pass calls through to the native implementation.
+ * This test doesn't cover any cryptographic logic but just serves to ensure
+ * that (at least this one of) the native methods are indeed re-exported, and
+ * that they're appropriately bound to use the required receiver.
+ */
 Deno.test("[crypto/getRandomValues] passes through to native implementation", () => {
   assertInstanceOf(stdCrypto.getRandomValues(new Uint8Array(1)), Uint8Array);
 });
