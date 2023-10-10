@@ -194,7 +194,7 @@ export async function serveFile(
         fileInfo.mtime &&
         ifModifiedSinceValue &&
         fileInfo.mtime.getTime() <
-        new Date(ifModifiedSinceValue).getTime() + 1000)
+          new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
       return createCommonResponse(Status.NotModified, null, { headers });
     }
@@ -279,11 +279,12 @@ async function serveDirIndex(
 ): Promise<Response> {
   const { showDotfiles } = options;
   const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
-  const dirUrl = `/${relative(options.target, dirPath).replaceAll(
-    new RegExp(SEP_PATTERN, "g"),
-    "/",
-  )
-    }`;
+  const dirUrl = `/${
+    relative(options.target, dirPath).replaceAll(
+      new RegExp(SEP_PATTERN, "g"),
+      "/",
+    )
+  }`;
   const listEntryPromise: Promise<EntryInfo>[] = [];
 
   // if ".." makes sense
@@ -447,14 +448,15 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       <body>
         <main>
           <h1>Index of
-          <a href="/">home</a>${paths
+          <a href="/">home</a>${
+    paths
       .map((path, index, array) => {
         if (path === "") return "";
         const link = array.slice(0, index + 1).join("/");
         return `<a href="${link}">${path}</a>`;
       })
       .join("/")
-    }
+  }
           </h1>
           <table>
             <thead>
@@ -464,7 +466,8 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                 <th>Name</th>
               </tr>
             </thead>
-            ${entries
+            ${
+    entries
       .map(
         (entry) => `
                   <tr>
@@ -481,7 +484,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                 `,
       )
       .join("")
-    }
+  }
           </table>
         </main>
       </body>
