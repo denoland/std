@@ -314,8 +314,8 @@ async function serveDirIndex(
         return {
           mode: modeToString(entry.isDirectory, fileInfo.mode),
           size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
-          name: `${entry.name}${entry.isDirectory ? "/" : ""} `,
-          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""} `,
+          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
@@ -323,8 +323,8 @@ async function serveDirIndex(
         return {
           mode: "(unknown mode)",
           size: "",
-          name: `${entry.name}${entry.isDirectory ? "/" : ""} `,
-          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""} `,
+          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       }
     })());
