@@ -273,10 +273,12 @@ async function serveDirIndex(
   options: {
     showDotfiles: boolean;
     target: string;
+    urlRoot: string | undefined;
     quiet: boolean | undefined;
   },
 ): Promise<Response> {
   const { showDotfiles } = options;
+  const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
   const dirUrl = `/${
     relative(options.target, dirPath).replaceAll(
       new RegExp(SEP_PATTERN, "g"),
@@ -292,7 +294,7 @@ async function serveDirIndex(
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
-      url: posixJoin(dirUrl, ".."),
+      url: `${urlRoot}${posixJoin(dirUrl, "..")}`,
     }));
     listEntryPromise.push(entryInfo);
   }
@@ -312,8 +314,8 @@ async function serveDirIndex(
         return {
           mode: modeToString(entry.isDirectory, fileInfo.mode),
           size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
-          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          name: `${entry.name}${entry.isDirectory ? "/" : ""} `,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""} `,
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
@@ -321,8 +323,8 @@ async function serveDirIndex(
         return {
           mode: "(unknown mode)",
           size: "",
-          name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          name: `${entry.name}${entry.isDirectory ? "/" : ""} `,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""} `,
         };
       }
     })());
@@ -332,7 +334,7 @@ async function serveDirIndex(
   listEntry.sort((a, b) =>
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
-  const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
+  const formattedDirUrl = `${dirUrl.replace(/\/$/, "")} /`;
   const page = dirViewerTemplate(formattedDirUrl, listEntry);
 
   const headers = createBaseHeaders();
@@ -691,7 +693,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(fsPath, { urlRoot, showDotfiles, target, quiet });
   }
 
   return createCommonResponse(Status.NotFound);
