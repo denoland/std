@@ -52,10 +52,7 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
  */
-export {
-  type ErrorStatusKeys,
-  type HttpErrorOptions,
-} from "./unstable_errors.ts";
+export type { ErrorStatusKeys, HttpErrorOptions } from "./unstable_errors.ts";
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.

@@ -89,14 +89,14 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  */
-export {
-  type CookieMapOptions,
-  type CookieMapSetDeleteOptions,
-  type Headered,
-  type Mergeable,
-  type SecureCookieMapGetOptions,
-  type SecureCookieMapOptions,
-  type SecureCookieMapSetDeleteOptions,
+export type {
+  CookieMapOptions,
+  CookieMapSetDeleteOptions,
+  Headered,
+  Mergeable,
+  SecureCookieMapGetOptions,
+  SecureCookieMapOptions,
+  SecureCookieMapSetDeleteOptions,
 } from "./unstable_cookie_map.ts";
 
 /**
