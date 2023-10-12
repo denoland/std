@@ -334,10 +334,13 @@ export type DigestAlgorithmObject = {
 
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
-const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
-    ...algorithm,
-    name: algorithm.name.toUpperCase(),
-  }) as DigestAlgorithmObject;
+function normalizeAlgorithm(algorithm: DigestAlgorithm) {
+  return ((typeof algorithm === "string")
+    ? { name: algorithm.toUpperCase() }
+    : {
+      ...algorithm,
+      name: algorithm.name.toUpperCase(),
+    }) as DigestAlgorithmObject;
+}
 
 export { stdCrypto as crypto };
