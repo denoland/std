@@ -48,4 +48,48 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
  */
-export * from "./unstable_server_sent_event.ts";
+export type {
+  ServerSentEventInit,
+  ServerSentEventTarget,
+  ServerSentEventTargetOptions,
+} from "./unstable_server_sent_event.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
+ *
+ * An event which contains information which will be sent to the remote
+ * connection and be made available in an `EventSource` as an event. A server
+ * creates new events and dispatches them on the target which will then be
+ * sent to a client.
+ *
+ * See more about Server-sent events on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
+ *
+ * ### Example
+ *
+ * ```ts
+ * import {
+ *   ServerSentEvent,
+ *   ServerSentEventStreamTarget,
+ * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+ *
+ * Deno.serve({ port: 8000 }, (request) => {
+ *   const target = new ServerSentEventStreamTarget();
+ *   const evt = new ServerSentEvent("message", {
+ *     data: { hello: "world" },
+ *     id: 1
+ *   });
+ *   target.dispatchEvent(evt);
+ *   return target.asResponse();
+ * });
+ * ```
+ */
+export { ServerSentEvent } from "./unstable_server_sent_event.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
+ *
+ * An implementation of {@linkcode ServerSentEventTarget} that provides a
+ * readable stream as a body of a response to establish a connection to a
+ * client.
+ */
+export { ServerSentEventStreamTarget } from "./unstable_server_sent_event.ts";
