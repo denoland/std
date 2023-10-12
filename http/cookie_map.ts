@@ -89,4 +89,85 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  */
-export * from "./unstable_cookie_map.ts";
+export {
+  type CookieMapOptions,
+  type CookieMapSetDeleteOptions,
+  type Headered,
+  type Mergeable,
+  type SecureCookieMapGetOptions,
+  type SecureCookieMapOptions,
+  type SecureCookieMapSetDeleteOptions,
+} from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ *
+ * Symbol which is used in {@link mergeHeaders} to extract a
+ * `[string | string][]` from an instance to generate the final set of
+ * headers.
+ */
+export { cookieMapHeadersInitSymbol } from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ *
+ * Allows merging of various sources of headers into a final set of headers
+ * which can be used in a {@linkcode Response}.
+ *
+ * Note, that unlike when passing a `Response` or {@linkcode Headers} used in a
+ * response to {@linkcode CookieMap} or {@linkcode SecureCookieMap}, merging
+ * will not ensure that there are no other `Set-Cookie` headers from other
+ * sources, it will simply append the various headers together.
+ */
+export { mergeHeaders } from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ *
+ * Provides a way to manage cookies in a request and response on the server
+ * as a single iterable collection.
+ *
+ * The methods and properties align to {@linkcode Map}. When constructing a
+ * {@linkcode Request} or {@linkcode Headers} from the request need to be
+ * provided, as well as optionally the {@linkcode Response} or `Headers` for the
+ * response can be provided. Alternatively the {@linkcode mergeHeaders}
+ * function can be used to generate a final set of headers for sending in the
+ * response.
+ */
+export { CookieMap } from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ * Types of data that can be signed cryptographically.
+ */
+export { type Data } from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ *
+ * An interface which describes the methods that {@linkcode SecureCookieMap} uses to sign and verify cookies.
+ */
+export { type KeyRing } from "./unstable_cookie_map.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ *
+ * Provides an way to manage cookies in a request and response on the server
+ * as a single iterable collection, as well as the ability to sign and verify
+ * cookies to prevent tampering.
+ *
+ * The methods and properties align to {@linkcode Map}, but due to the need to
+ * support asynchronous cryptographic keys, all the APIs operate async. When
+ * constructing a {@linkcode Request} or {@linkcode Headers} from the request
+ * need to be provided, as well as optionally the {@linkcode Response} or
+ * `Headers` for the response can be provided. Alternatively the
+ * {@linkcode mergeHeaders} function can be used to generate a final set
+ * of headers for sending in the response.
+ *
+ * On construction, the optional set of keys implementing the
+ * {@linkcode KeyRing} interface. While it is optional, if you don't plan to use
+ * keys, you might want to consider using just the {@linkcode CookieMap}.
+ *
+ * @example
+ */
+export { SecureCookieMap } from "./unstable_cookie_map.ts";
