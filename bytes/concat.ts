@@ -8,6 +8,7 @@
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
  * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]
+ * ```
  */
 export function concat(...buf: Uint8Array[] | Uint8Array[][]): Uint8Array {
   let length = 0;
