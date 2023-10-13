@@ -52,14 +52,29 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
  */
-export type { ErrorStatusKeys, HttpErrorOptions } from "./unstable_errors.ts";
+import {
+  createHttpError as createHttpError_,
+  errors as errors_,
+  type ErrorStatusKeys as ErrorStatusKeys_,
+  HttpError as HttpError_,
+  type HttpErrorOptions as HttpErrorOptions_,
+  isHttpError as isHttpError_,
+} from "./unstable_errors.ts";
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
+ */
+export type ErrorStatusKeys = ErrorStatusKeys_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
+ */
+export type HttpErrorOptions = HttpErrorOptions_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
  *
  * The base class that all derivative HTTP extend, providing a `status` and an expose` property.
  */
-export { HttpError } from "./unstable_errors.ts";
+export const HttpError = HttpError_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
@@ -79,7 +94,7 @@ export { HttpError } from "./unstable_errors.ts";
  * throw new errors.InternalServerError("Ooops!");
  * ```
  */
-export { errors } from "./unstable_errors.ts";
+export const errors = errors_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
@@ -89,11 +104,11 @@ export { errors } from "./unstable_errors.ts";
  * and error options, which includes the `expose` property to set the `.expose`
  * value on the error.
  */
-export { createHttpError } from "./unstable_errors.ts";
+export const createHttpError = createHttpError_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_errors.ts` instead.
  *
  * A type guard that determines if the value is an HttpError or not.
  */
-export { isHttpError } from "./unstable_errors.ts";
+export const isHttpError = isHttpError_;

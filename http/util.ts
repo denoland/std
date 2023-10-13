@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { Status, STATUS_TEXT } from "./http_status.ts";
+import { Status, STATUS_TEXT } from "./status.ts";
 import { deepMerge } from "../collections/deep_merge.ts";
 
 /**

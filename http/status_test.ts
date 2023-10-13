@@ -9,7 +9,7 @@ import {
   isSuccessfulStatus,
   Status,
   STATUS_TEXT,
-} from "./http_status.ts";
+} from "./status.ts";
 import { assert, assertEquals } from "../assert/mod.ts";
 
 Deno.test({

@@ -10,6 +10,11 @@
  *
  * @module
  */
+import {
+  HTTP_METHODS as HTTP_METHODS_,
+  type HttpMethod as HttpMethod_,
+  isHttpMethod as isHttpMethod_,
+} from "./unstable_method.ts";
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
@@ -18,18 +23,18 @@
  *
  * This list is compatible with Node.js `http` module.
  */
-export { HTTP_METHODS } from "./unstable_method.ts";
+export const HTTP_METHODS = HTTP_METHODS_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
  *
  * A type representing string literals of each of the common HTTP method.
  */
-export type { HttpMethod } from "./unstable_method.ts";
+export type HttpMethod = HttpMethod_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
  *
  * A type guard that determines if a value is a valid HTTP method.
  */
-export { isHttpMethod } from "./unstable_method.ts";
+export const isHttpMethod = isHttpMethod_;

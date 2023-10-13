@@ -48,11 +48,26 @@
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
  */
-export type {
-  ServerSentEventInit,
-  ServerSentEventTarget,
-  ServerSentEventTargetOptions,
+import {
+  ServerSentEvent as ServerSentEvent_,
+  type ServerSentEventInit as ServerSentEventInit_,
+  ServerSentEventStreamTarget as ServerSentEventStreamTarget_,
+  type ServerSentEventTarget as ServerSentEventTarget_,
+  type ServerSentEventTargetOptions as ServerSentEventTargetOptions_,
 } from "./unstable_server_sent_event.ts";
+
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
+ */
+export type ServerSentEventInit = ServerSentEventInit_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
+ */
+export type ServerSentEventTarget = ServerSentEventTarget_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
+ */
+export type ServerSentEventTargetOptions = ServerSentEventTargetOptions_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
@@ -83,7 +98,7 @@ export type {
  * });
  * ```
  */
-export { ServerSentEvent } from "./unstable_server_sent_event.ts";
+export const ServerSentEvent = ServerSentEvent_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_server_sent_event.ts` instead.
@@ -92,4 +107,4 @@ export { ServerSentEvent } from "./unstable_server_sent_event.ts";
  * readable stream as a body of a response to establish a connection to a
  * client.
  */
-export { ServerSentEventStreamTarget } from "./unstable_server_sent_event.ts";
+export const ServerSentEventStreamTarget = ServerSentEventStreamTarget_;
