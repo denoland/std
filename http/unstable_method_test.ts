@@ -2,7 +2,7 @@
 
 import { assert, assertEquals } from "../assert/mod.ts";
 
-import { HTTP_METHODS, isHttpMethod } from "./method.ts";
+import { HTTP_METHODS, isHttpMethod } from "./unstable_method.ts";
 
 Deno.test({
   name: "HTTP_METHODS",
