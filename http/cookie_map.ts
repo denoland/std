@@ -86,18 +86,50 @@
  * @module
  */
 
+import {
+  CookieMap as CookieMap_,
+  cookieMapHeadersInitSymbol as cookieMapHeadersInitSymbol_,
+  type CookieMapOptions as CookieMapOptions_,
+  type CookieMapSetDeleteOptions as CookieMapSetDeleteOptions_,
+  type Data as Data_,
+  type Headered as Headered_,
+  type KeyRing as KeyRing_,
+  type Mergeable as Mergeable_,
+  mergeHeaders as mergeHeaders_,
+  SecureCookieMap as SecureCookieMap_,
+  type SecureCookieMapGetOptions as SecureCookieMapGetOptions_,
+  type SecureCookieMapOptions as SecureCookieMapOptions_,
+  type SecureCookieMapSetDeleteOptions as SecureCookieMapSetDeleteOptions_,
+} from "./unstable_cookie_map.ts";
+
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  */
-export type {
-  CookieMapOptions,
-  CookieMapSetDeleteOptions,
-  Headered,
-  Mergeable,
-  SecureCookieMapGetOptions,
-  SecureCookieMapOptions,
-  SecureCookieMapSetDeleteOptions,
-} from "./unstable_cookie_map.ts";
+export type CookieMapOptions = CookieMapOptions_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type CookieMapSetDeleteOptions = CookieMapSetDeleteOptions_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type Headered = Headered_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type Mergeable = Mergeable_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type SecureCookieMapGetOptions = SecureCookieMapGetOptions_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type SecureCookieMapOptions = SecureCookieMapOptions_;
+/**
+ * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
+ */
+export type SecureCookieMapSetDeleteOptions = SecureCookieMapSetDeleteOptions_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
@@ -106,7 +138,7 @@ export type {
  * `[string | string][]` from an instance to generate the final set of
  * headers.
  */
-export { cookieMapHeadersInitSymbol } from "./unstable_cookie_map.ts";
+export const cookieMapHeadersInitSymbol = cookieMapHeadersInitSymbol_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
@@ -119,7 +151,7 @@ export { cookieMapHeadersInitSymbol } from "./unstable_cookie_map.ts";
  * will not ensure that there are no other `Set-Cookie` headers from other
  * sources, it will simply append the various headers together.
  */
-export { mergeHeaders } from "./unstable_cookie_map.ts";
+export const mergeHeaders = mergeHeaders_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
@@ -134,20 +166,20 @@ export { mergeHeaders } from "./unstable_cookie_map.ts";
  * function can be used to generate a final set of headers for sending in the
  * response.
  */
-export { CookieMap } from "./unstable_cookie_map.ts";
+export const CookieMap = CookieMap_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  * Types of data that can be signed cryptographically.
  */
-export { type Data } from "./unstable_cookie_map.ts";
+export type Data = Data_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
  *
  * An interface which describes the methods that {@linkcode SecureCookieMap} uses to sign and verify cookies.
  */
-export { type KeyRing } from "./unstable_cookie_map.ts";
+export type KeyRing = KeyRing_;
 
 /**
  * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_cookie_map.ts` instead.
@@ -170,4 +202,4 @@ export { type KeyRing } from "./unstable_cookie_map.ts";
  *
  * @example
  */
-export { SecureCookieMap } from "./unstable_cookie_map.ts";
+export const SecureCookieMap = SecureCookieMap_;
