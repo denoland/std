@@ -9,17 +9,30 @@
  * const b = new Uint8Array([3, 4, 5]);
  * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]
  */
-export function concat(...buf: Uint8Array[]): Uint8Array {
+export function concat(...buf: Uint8Array[] | Uint8Array[][]): Uint8Array {
   let length = 0;
   for (const b of buf) {
-    length += b.length;
+    if (Array.isArray(b)) {
+      for (const b1 of b) {
+        length += b1.length;
+      }
+    } else {
+      length += b.length;
+    }
   }
 
   const output = new Uint8Array(length);
   let index = 0;
   for (const b of buf) {
-    output.set(b, index);
-    index += b.length;
+    if (Array.isArray(b)) {
+      for (const b1 of b) {
+        output.set(b1, index);
+        index += b1.length;
+      }
+    } else {
+      output.set(b, index);
+      index += b.length;
+    }
   }
 
   return output;
