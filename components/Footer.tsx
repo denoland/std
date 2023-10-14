@@ -6,6 +6,7 @@ import {
   SITE_BAR_STYLES,
   SITE_NAME,
 } from "@/utils/constants.ts";
+import { cx } from "@twind/core";
 import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
 import IconRss from "tabler_icons_tsx/rss.tsx";
@@ -72,9 +73,7 @@ export default function Footer(props: FooterProps) {
       <nav class={NAV_STYLES}>
         <a
           href="/blog"
-          class={props.url.pathname === "/blog"
-            ? ACTIVE_LINK_STYLES
-            : LINK_STYLES}
+          class={cx(LINK_STYLES, ACTIVE_LINK_STYLES)}
         >
           Blog
         </a>

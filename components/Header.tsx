@@ -1,5 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import {
+  ACTIVE_ANCESTOR_LINK_STYLES,
   ACTIVE_LINK_STYLES,
   LINK_STYLES,
   SITE_BAR_STYLES,
@@ -74,12 +75,7 @@ export default function Header(props: HeaderProps) {
       >
         <a
           href="/dashboard"
-          class={cx(
-            props.url.pathname.startsWith("/dashboard")
-              ? ACTIVE_LINK_STYLES
-              : LINK_STYLES,
-            NAV_ITEM,
-          )}
+          class={cx(LINK_STYLES, ACTIVE_ANCESTOR_LINK_STYLES, NAV_ITEM)}
         >
           Dashboard
         </a>
@@ -87,12 +83,7 @@ export default function Header(props: HeaderProps) {
           (
             <a
               href="/pricing"
-              class={cx(
-                props.url.pathname === "/pricing"
-                  ? ACTIVE_LINK_STYLES
-                  : LINK_STYLES,
-                NAV_ITEM,
-              )}
+              class={cx(LINK_STYLES, ACTIVE_LINK_STYLES, NAV_ITEM)}
             >
               Pricing
             </a>
@@ -101,12 +92,7 @@ export default function Header(props: HeaderProps) {
           ? (
             <a
               href="/account"
-              class={cx(
-                props.url.pathname === "/account"
-                  ? ACTIVE_LINK_STYLES
-                  : LINK_STYLES,
-                NAV_ITEM,
-              )}
+              class={cx(LINK_STYLES, ACTIVE_LINK_STYLES, NAV_ITEM)}
             >
               Account
             </a>
