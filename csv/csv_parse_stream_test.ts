@@ -383,6 +383,7 @@ Deno.test({
     for await (const _record of readable) {
       break;
     }
+    file.close();
   },
 });
 
