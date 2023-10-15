@@ -45,7 +45,7 @@ function checkImportStatements(
     const importPath = (moduleSpecifier as ts.StringLiteral).text;
     const isRelative = importPath.startsWith(".");
     const isInternal = importPath.startsWith(
-      "https://deno.land/std@$STD_VERSION/",
+      "https://deno.land/std/",
     );
     const { line } = sourceFile.getLineAndCharacterOfPosition(
       moduleSpecifier.pos,

@@ -5,7 +5,7 @@ path module is made to provide helpers to manipulate the path.
 ## Usage
 
 ```ts
-import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 ```
 
 Codes in the following example uses POSIX path but it automatically use Windows
@@ -13,7 +13,7 @@ path on Windows. Use methods under `posix` or `win32` object instead to handle
 non platform specific path like:
 
 ```ts
-import { posix, win32 } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { posix, win32 } from "https://deno.land/std/path/mod.ts";
 const p1 = posix.fromFileUrl("file:///home/foo");
 const p2 = win32.fromFileUrl("file:///home/foo");
 console.log(p1); // "/home/foo"
@@ -25,7 +25,7 @@ console.log(p2); // "\\home\\foo"
 Return the last portion of a `path`. Trailing directory separators are ignored.
 
 ```ts
-import { basename } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { basename } from "https://deno.land/std/path/mod.ts";
 const p = basename("./deno/std/path/mod.ts");
 console.log(p); // "mod.ts"
 ```
@@ -35,7 +35,7 @@ console.log(p); // "mod.ts"
 Return the directory name of a `path`.
 
 ```ts
-import { dirname } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { dirname } from "https://deno.land/std/path/mod.ts";
 const p = dirname("./deno/std/path/mod.ts");
 console.log(p); // "./deno/std/path"
 ```
@@ -45,7 +45,7 @@ console.log(p); // "./deno/std/path"
 Return the extension of the `path`.
 
 ```ts
-import { extname } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { extname } from "https://deno.land/std/path/mod.ts";
 const p = extname("./deno/std/path/mod.ts");
 console.log(p); // ".ts"
 ```
@@ -55,7 +55,7 @@ console.log(p); // ".ts"
 Generate a path from `FormatInputPathObject` object.
 
 ```ts
-import { format } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { format } from "https://deno.land/std/path/mod.ts";
 const p = format({
   root: "/",
   dir: "/home/user/dir",
@@ -70,7 +70,7 @@ console.log(p); // "/home/user/dir/index.html"
 Converts a file URL to a path string.
 
 ```ts
-import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { fromFileUrl } from "https://deno.land/std/path/mod.ts";
 const p = fromFileUrl("file:///home/foo");
 console.log(p); // "/home/foo"
 ```
@@ -80,7 +80,7 @@ console.log(p); // "/home/foo"
 Verifies whether provided path is absolute
 
 ```ts
-import { isAbsolute } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { isAbsolute } from "https://deno.land/std/path/mod.ts";
 console.log(isAbsolute("/home/foo")); // true
 console.log(isAbsolute("foo")); // false
 ```
@@ -90,7 +90,7 @@ console.log(isAbsolute("foo")); // false
 Join all given a sequence of `paths`,then normalizes the resulting path.
 
 ```ts
-import { join } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { join } from "https://deno.land/std/path/mod.ts";
 const p = join("foo", "bar");
 console.log(p); // "foo/bar"
 ```
@@ -100,7 +100,7 @@ console.log(p); // "foo/bar"
 Normalize the `path`, resolving `'..'` and `'.'` segments.
 
 ```ts
-import { normalize } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { normalize } from "https://deno.land/std/path/mod.ts";
 const p = normalize("/home/foo/bar/../hoge/./piyo");
 console.log(p); // "/home/foo/hoge/piyo"
 ```
@@ -110,7 +110,7 @@ console.log(p); // "/home/foo/hoge/piyo"
 Return a `ParsedPath` object of the `path`.
 
 ```ts
-import { parse } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { parse } from "https://deno.land/std/path/mod.ts";
 const p = parse("/home/user/dir/index.html");
 console.log(p);
 /*
@@ -129,7 +129,7 @@ console.log(p);
 Return the relative path from `from` to `to` based on current working directory.
 
 ```ts
-import { relative } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { relative } from "https://deno.land/std/path/mod.ts";
 const p = relative("/var/lib", "/var/apache");
 console.log(p); // "../apache"
 ```
@@ -139,7 +139,7 @@ console.log(p); // "../apache"
 Resolves `pathSegments` into an absolute path.
 
 ```ts
-import { resolve } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { resolve } from "https://deno.land/std/path/mod.ts";
 const p = resolve("/var/lib", "../", "file/");
 console.log(p); // "/var/file"
 ```
@@ -149,7 +149,7 @@ console.log(p); // "/var/file"
 Converts a path string to a file URL.
 
 ```ts
-import { toFileUrl } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { toFileUrl } from "https://deno.land/std/path/mod.ts";
 const p = toFileUrl("/home/foo");
 console.log(p);
 /*
@@ -174,7 +174,7 @@ console.log(p);
 Resolves path to a namespace path
 
 ```ts
-import { toNamespacedPath } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { toNamespacedPath } from "https://deno.land/std/path/mod.ts";
 const p = toNamespacedPath("/home/foo");
 console.log(p); // "/home/foo"
 ```
@@ -185,7 +185,7 @@ Determines the common path from a set of paths, using an optional separator,
 which defaults to the OS default separator.
 
 ```ts
-import { common } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+import { common } from "https://deno.land/std/path/mod.ts";
 const p = common([
   "./deno/std/path/mod.ts",
   "./deno/std/fs/mod.ts",
@@ -199,7 +199,7 @@ Generate a regex based on glob pattern and options This was meant to be using
 the `fs.walk` function but can be used anywhere else.
 
 ```ts
-import { globToRegExp } from "https://deno.land/std@$STD_VERSION/path/glob.ts";
+import { globToRegExp } from "https://deno.land/std/path/glob.ts";
 
 globToRegExp("foo/**/*.json", {
   extended: true,

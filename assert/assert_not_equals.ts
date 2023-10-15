@@ -10,7 +10,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_equals.ts";
+ * import { assertNotEquals } from "https://deno.land/std/assert/assert_not_equals.ts";
  *
  * assertNotEquals<number>(1, 2)
  * ```

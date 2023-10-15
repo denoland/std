@@ -17,7 +17,7 @@
  *
  * ```ts
  * // app.ts
- * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ * import { load } from "https://deno.land/std/dotenv/mod.ts";
  *
  * console.log(await load({export: true})); // { GREETING: "hello world" }
  * console.log(Deno.env.get("GREETING")); // hello world
@@ -34,7 +34,7 @@
  *
  * ```ts
  * // app.ts
- * import "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
+ * import "https://deno.land/std/dotenv/load.ts";
  *
  * console.log(Deno.env.get("GREETING")); // hello world
  * ```
@@ -111,7 +111,7 @@
  *
  * ### Example configuration
  * ```ts
- * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ * import { load } from "https://deno.land/std/dotenv/mod.ts";
  *
  * const conf = await load({
  *     envPath: "./.env_prod",
@@ -460,7 +460,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * @example
  * ```ts
- * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ * import { stringify } from "https://deno.land/std/dotenv/mod.ts";
  *
  * const object = { GREETING: "hello world" };
  * const string = stringify(object); // GREETING='hello world'

@@ -17,7 +17,7 @@
  * multiply as a parameter.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/parameter_injection.ts
+ * // https://deno.land/std/testing/mock_examples/parameter_injection.ts
  * export function multiply(a: number, b: number): number {
  *   return a * b;
  * }
@@ -35,17 +35,17 @@
  * `square(multiplySpy, value)` in the testing code.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/parameter_injection_test.ts
+ * // https://deno.land/std/testing/mock_examples/parameter_injection_test.ts
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "https://deno.land/std/testing/mock.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  * import {
  *   multiply,
  *   square,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/parameter_injection.ts";
+ * } from "https://deno.land/std/testing/mock_examples/parameter_injection.ts";
  *
  * Deno.test("square calls multiply and returns results", () => {
  *   const multiplySpy = spy(multiply);
@@ -70,7 +70,7 @@
  * `multiply`.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/internals_injection.ts
+ * // https://deno.land/std/testing/mock_examples/internals_injection.ts
  * export function multiply(a: number, b: number): number {
  *   return a * b;
  * }
@@ -88,17 +88,17 @@
  * function.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/internals_injection_test.ts
+ * // https://deno.land/std/testing/mock_examples/internals_injection_test.ts
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "https://deno.land/std/testing/mock.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   square,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/internals_injection.ts";
+ * } from "https://deno.land/std/testing/mock_examples/internals_injection.ts";
  *
  * Deno.test("square calls multiply and returns results", () => {
  *   const multiplySpy = spy(_internals, "multiply");
@@ -154,7 +154,7 @@
  * `randomInt` with a function that returns pre-defined values.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/random.ts
+ * // https://deno.land/std/testing/mock_examples/random.ts
  * export function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
  * }
@@ -171,18 +171,18 @@
  * on consecutive calls.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/random_test.ts
+ * // https://deno.land/std/testing/mock_examples/random_test.ts
  * import {
  *   assertSpyCall,
  *   assertSpyCalls,
  *   returnsNext,
  *   stub,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "https://deno.land/std/testing/mock.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  * import {
  *   _internals,
  *   randomMultiple,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/random.ts";
+ * } from "https://deno.land/std/testing/mock_examples/random.ts";
  *
  * Deno.test("randomMultiple uses randomInt to generate random multiples between -10 and 10 times the value", () => {
  *   const randomIntStub = stub(_internals, "randomInt", returnsNext([-3, 3]));
@@ -220,7 +220,7 @@
  * the callback is called every second.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts
+ * // https://deno.land/std/testing/mock_examples/interval.ts
  * export function secondInterval(cb: () => void): number {
  *   return setInterval(cb, 1000);
  * }
@@ -233,13 +233,13 @@
  * `tick` method on the `FakeTime` instance.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
+ * // https://deno.land/std/testing/mock_examples/interval_test.ts
  * import {
  *   assertSpyCalls,
  *   spy,
- * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
- * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
- * import { secondInterval } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts";
+ * } from "https://deno.land/std/testing/mock.ts";
+ * import { FakeTime } from "https://deno.land/std/testing/time.ts";
+ * import { secondInterval } from "https://deno.land/std/testing/mock_examples/interval.ts";
  *
  * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
  *   const time = new FakeTime();

@@ -13,7 +13,7 @@ import { types } from "./_db.ts";
  *
  * @example
  * ```ts
- * import { typeByExtension } from "https://deno.land/std@$STD_VERSION/media_types/type_by_extension.ts";
+ * import { typeByExtension } from "https://deno.land/std/media_types/type_by_extension.ts";
  *
  * typeByExtension("js"); // `application/json`
  * typeByExtension(".HTML"); // `text/html`

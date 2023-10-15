@@ -41,7 +41,7 @@
  * module by using a custom logger:
  *
  * ```ts
- * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { getLogger } from "https://deno.land/std/log/mod.ts";
  *
  * function logger() {
  *   return getLogger("my-awesome-module");
@@ -61,7 +61,7 @@
  * The user of the module can then display the internal logs with:
  *
  * ```ts, ignore
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "https://deno.land/std/log/mod.ts";
  * import { sum } from "<the-awesome-module>/mod.ts";
  *
  * log.setup({
@@ -84,7 +84,7 @@
  * following won't work:
  *
  * ```ts
- * import { getLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import { getLogger } from "https://deno.land/std/log/mod.ts";
  *
  * const logger = getLogger("my-awesome-module");
  *
@@ -96,7 +96,7 @@
  *
  * @example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "https://deno.land/std/log/mod.ts";
  *
  * // Simple default logger out of the box. You can customize it
  * // by overriding logger and handler named "default", or providing
@@ -155,7 +155,7 @@
  * @example
  * Custom message format example
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "https://deno.land/std/log/mod.ts";
  *
  * log.setup({
  *   handlers: {
@@ -207,7 +207,7 @@
  * @example
  * Inline Logging
  * ```ts
- * import * as logger from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as logger from "https://deno.land/std/log/mod.ts";
  *
  * const stringData: string = logger.debug("hello world");
  * const booleanData: boolean = logger.debug(true, 1, "abc");
@@ -223,7 +223,7 @@
  * @example
  * Lazy Log Evaluation
  * ```ts
- * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ * import * as log from "https://deno.land/std/log/mod.ts";
  *
  * log.setup({
  *   handlers: {

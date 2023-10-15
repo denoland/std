@@ -20,7 +20,7 @@ enum Day {
  *
  * @example
  * ```ts
- * import { weekOfYear } from "https://deno.land/std@$STD_VERSION/datetime/week_of_year.ts";
+ * import { weekOfYear } from "https://deno.land/std/datetime/week_of_year.ts";
  *
  * weekOfYear(new Date("2020-12-28T03:24:00")); // Returns 53
  * ```

@@ -251,7 +251,7 @@ function copyDirSync(
  *
  * @example
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * import { copy } from "https://deno.land/std/fs/copy.ts";
  * copy("./foo", "./bar"); // returns a promise
  * ```
  *
@@ -297,7 +297,7 @@ export async function copy(
  *
  * @example
  * ```ts
- * import { copySync } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * import { copySync } from "https://deno.land/std/fs/copy.ts";
  * copySync("./foo", "./bar"); // void
  * ```
  * @param src the file/directory path.

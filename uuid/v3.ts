@@ -14,7 +14,7 @@ const UUID_RE =
  *
  * @example
  * ```ts
- * import { generate as generateV3, validate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
+ * import { generate as generateV3, validate } from "https://deno.land/std/uuid/v3.ts";
  *
  * validate(await generateV3("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false
@@ -30,7 +30,7 @@ export function validate(id: string): boolean {
  *
  * @example
  * ```js
- * import { generate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
+ * import { generate } from "https://deno.land/std/uuid/v3.ts";
  *
  * const NAMESPACE_URL = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
  *

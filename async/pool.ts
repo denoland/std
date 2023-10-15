@@ -15,7 +15,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  *
  * @example
  * ```typescript
- * import { pooledMap } from "https://deno.land/std@$STD_VERSION/async/pool.ts";
+ * import { pooledMap } from "https://deno.land/std/async/pool.ts";
  *
  * const results = pooledMap(
  *   2,

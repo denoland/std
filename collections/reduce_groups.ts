@@ -11,8 +11,8 @@ import { mapValues } from "./map_values.ts";
  * @template A type of the accumulator value, which will match the returned record's values.
  * @example
  * ```ts
- * import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/reduce_groups.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { reduceGroups } from "https://deno.land/std/collections/reduce_groups.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const votes = {
  *   "Woody": [2, 3, 1, 4],

@@ -10,7 +10,7 @@ interface TextLineStreamOptions {
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * ```ts
- * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
+ * import { TextLineStream } from "https://deno.land/std/streams/text_line_stream.ts";
  * const res = await fetch("https://example.com");
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())

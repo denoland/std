@@ -65,8 +65,8 @@ const RX_REGEXP_ESCAPE = new RegExp(
  *
  * @example
  * ```ts
- * import { escape } from "https://deno.land/std@$STD_VERSION/regexp/mod.ts";
- * import { assertEquals, assertMatch, assertNotMatch } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * import { escape } from "https://deno.land/std/regexp/mod.ts";
+ * import { assertEquals, assertMatch, assertNotMatch } from "https://deno.land/std/assert/mod.ts";
  *
  * const re = new RegExp(`^${escape(".")}$`, "u");
  *

@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { distinctBy } from "https://deno.land/std/collections/distinct_by.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const names = ["Anna", "Kim", "Arnold", "Kate"];
  * const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));

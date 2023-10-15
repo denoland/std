@@ -26,8 +26,8 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  *
  * @example
  * ```ts
- * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { escape } from "https://deno.land/std/html/entities.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
@@ -58,15 +58,15 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * @example
  * ```ts
- * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { unescape } from "https://deno.land/std/html/entities.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * // default options (only handles &<>'" and numeric entities)
  * assertEquals(unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
  * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
  *
  * // using the full named entity list from the HTML spec (~47K unminified)
- * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
+ * import entityList from "https://deno.land/std/html/named_entity_list.json" assert { type: "json" };
  * assertEquals(unescape("&thorn;&eth;", { entityList }), "þð");
  * ```
  */

@@ -13,7 +13,7 @@ import { getFileInfoType, toPathString } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureFile } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureFile("./folder/targetFile.dat"); // returns promise
  * ```
@@ -51,7 +51,7 @@ export async function ensureFile(filePath: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureFileSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureFileSync } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureFileSync("./folder/targetFile.dat"); // void
  * ```

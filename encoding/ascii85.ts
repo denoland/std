@@ -28,7 +28,7 @@ import { validateBinaryLike } from "./_util.ts";
  * import {
  *   decode,
  *   encode,
- * } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ * } from "https://deno.land/std/encoding/ascii85.ts";
  *
  * const a85Repr = "LpTqp";
  *

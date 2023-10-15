@@ -9,7 +9,7 @@ import { normalize as posixNormalize } from "../path/posix/normalize.ts";
  *
  * @example
  * ```ts
- * import { normalize } from "https://deno.land/std@$STD_VERSION/url/normalize.ts";
+ * import { normalize } from "https://deno.land/std/url/normalize.ts";
  *
  * console.log(normalize("https:///deno.land///std//assert//.//mod.ts").href);
  * // Outputs: "https://deno.land/std/path/mod.ts"

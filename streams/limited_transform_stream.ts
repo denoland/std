@@ -7,7 +7,7 @@
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_transform_stream.ts";
+ * import { LimitedTransformStream } from "https://deno.land/std/streams/limited_transform_stream.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
  * ```

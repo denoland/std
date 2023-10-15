@@ -12,8 +12,8 @@ const decoder = new TextDecoder();
  * Converts a hash to a string with a given encoding.
  * @example
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/crypto.ts";
- * import { toHashString } from "https://deno.land/std@$STD_VERSION/crypto/to_hash_string.ts"
+ * import { crypto } from "https://deno.land/std/crypto/crypto.ts";
+ * import { toHashString } from "https://deno.land/std/crypto/to_hash_string.ts"
  *
  * const hash = await crypto.subtle.digest("SHA-384", new TextEncoder().encode("You hear that Mr. Anderson?"));
  *

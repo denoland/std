@@ -17,7 +17,7 @@
  * module:
  *
  * ```ts
- * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
+ * import { groupBy } from "https://deno.land/std/collections/group_by.ts";
  * ```
  *
  * @module

@@ -6,8 +6,8 @@
  *
  * @example
  * ```ts
- * import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/without_all.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { withoutAll } from "https://deno.land/std/collections/without_all.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
  *

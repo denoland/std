@@ -7,8 +7,8 @@
  * all the second elements.
  *
  * ```ts
- * import { unzip } from "https://deno.land/std@$STD_VERSION/collections/unzip.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { unzip } from "https://deno.land/std/collections/unzip.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const parents = [
  *   ["Maria", "Jeff"],

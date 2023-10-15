@@ -9,7 +9,7 @@ import { toPathString } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { ensureSymlink } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureSymlink } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // returns promise
  * ```
@@ -30,7 +30,7 @@ export async function ensureLink(src: string | URL, dest: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureSymlinkSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureSymlinkSync } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat"); // void
  * ```

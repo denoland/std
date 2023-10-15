@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/find_single.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { findSingle } from "https://deno.land/std/collections/find_single.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const bookings = [
  *   { month: "January", active: false },

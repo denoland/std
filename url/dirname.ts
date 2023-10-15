@@ -14,7 +14,7 @@ import { strip } from "./_strip.ts";
  *
  * @example
  * ```ts
- * import { dirname } from "https://deno.land/std@$STD_VERSION/url/dirname.ts";
+ * import { dirname } from "https://deno.land/std/url/dirname.ts";
  *
  * console.log(dirname("https://deno.land/std/path/mod.ts?a=b").href); // "https://deno.land/std/path"
  * console.log(dirname("https://deno.land/").href); // "https://deno.land"

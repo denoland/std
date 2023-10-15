@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { toIMF } from "https://deno.land/std@$STD_VERSION/datetime/to_imf.ts";
+ * import { toIMF } from "https://deno.land/std/datetime/to_imf.ts";
  *
  * toIMF(new Date(0)); // => returns "Thu, 01 Jan 1970 00:00:00 GMT"
  * ```

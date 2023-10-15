@@ -54,7 +54,7 @@
  *
  * @example
  * ```ts
- * import Context from "https://deno.land/std@$STD_VERSION/wasi/snapshot_preview1.ts";
+ * import Context from "https://deno.land/std/wasi/snapshot_preview1.ts";
  *
  * const context = new Context({
  *   args: Deno.args,

@@ -16,7 +16,7 @@ interface TaggedYieldedValue<T> {
  *
  * @example
  * ```typescript
- * import { MuxAsyncIterator } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { MuxAsyncIterator } from "https://deno.land/std/async/mod.ts";
  *
  * async function* gen123(): AsyncIterableIterator<number> {
  *   yield 1;

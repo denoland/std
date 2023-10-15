@@ -9,8 +9,8 @@ import { filterInPlace } from "./_utils.ts";
  *
  * @example
  * ```ts
- * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { intersect } from "https://deno.land/std/collections/intersect.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];

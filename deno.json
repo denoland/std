@@ -5,7 +5,7 @@
     "noImplicitOverride": true
   },
   "imports": {
-    "https://deno.land/std@$STD_VERSION/": "./"
+    "https://deno.land/std/": "./"
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --parallel --coverage=./cov",

@@ -10,7 +10,7 @@ import type { Reader, ReaderSync } from "../types.d.ts";
  * Turns a Reader, `r`, into an async iterator.
  *
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "https://deno.land/std/streams/iterate_reader.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * for await (const chunk of iterateReader(f)) {
@@ -23,7 +23,7 @@ import type { Reader, ReaderSync } from "../types.d.ts";
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReader } from "https://deno.land/std/streams/iterate_reader.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
@@ -59,7 +59,7 @@ export async function* iterateReader(
  * Turns a ReaderSync, `r`, into an iterator.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "https://deno.land/std/streams/iterate_reader.ts";
  *
  * let f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {
@@ -72,7 +72,7 @@ export async function* iterateReader(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
+ * import { iterateReaderSync } from "https://deno.land/std/streams/iterate_reader.ts";
 
  * let f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {

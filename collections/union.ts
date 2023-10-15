@@ -6,8 +6,8 @@
  *
  * @example
  * ```ts
- * import { union } from "https://deno.land/std@$STD_VERSION/collections/union.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { union } from "https://deno.land/std/collections/union.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const soupIngredients = ["Pepper", "Carrots", "Leek"];
  * const saladIngredients = ["Carrots", "Radicchio", "Pepper"];

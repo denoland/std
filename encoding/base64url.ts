@@ -12,7 +12,7 @@
  * import {
  *   decodeBase64Url,
  *   encodeBase64Url,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
+ * } from "https://deno.land/std/encoding/base64url.ts";
  *
  * const binary = new TextEncoder().encode("foobar");
  * const encoded = encodeBase64Url(binary);

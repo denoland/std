@@ -14,7 +14,7 @@
  *
  * @example
  * ```ts
- * import { errors, isHttpError } from "https://deno.land/std@$STD_VERSION/http/unstable_errors.ts";
+ * import { errors, isHttpError } from "https://deno.land/std/http/unstable_errors.ts";
  *
  * try {
  *   throw new errors.NotFound();
@@ -29,8 +29,8 @@
  *
  * @example
  * ```ts
- * import { createHttpError } from "https://deno.land/std@$STD_VERSION/http/unstable_errors.ts";
- * import { Status } from "https://deno.land/std@$STD_VERSION/http/status.ts";
+ * import { createHttpError } from "https://deno.land/std/http/unstable_errors.ts";
+ * import { Status } from "https://deno.land/std/http/status.ts";
  *
  * try {
  *   throw createHttpError(
@@ -171,7 +171,7 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
  *
  * @example
  * ```ts
- * import { errors } from "https://deno.land/std@$STD_VERSION/http/unstable_errors.ts";
+ * import { errors } from "https://deno.land/std/http/unstable_errors.ts";
  *
  * throw new errors.InternalServerError("Ooops!");
  * ```

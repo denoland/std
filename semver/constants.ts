@@ -29,9 +29,9 @@ export const MIN: SemVer = {
  * which may be the result of impossible ranges or comparator operations.
  * @example
  * ```ts
- * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { INVALID } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
+ * import { eq } from "https://deno.land/std/semver/eq.ts";
+ * import { parse } from "https://deno.land/std/semver/parse.ts";
+ * import { INVALID } from "https://deno.land/std/semver/constants.ts"
  * eq(parse("1.2.3"), INVALID);
  * ```
  */
@@ -48,9 +48,9 @@ export const INVALID: SemVer = {
  * SemVer object and should not be used directly.
  * @example
  * ```ts
- * import { eq } from "https://deno.land/std@$STD_VERSION/semver/eq.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/semver/parse.ts";
- * import { ANY } from "https://deno.land/std@$STD_VERSION/semver/constants.ts"
+ * import { eq } from "https://deno.land/std/semver/eq.ts";
+ * import { parse } from "https://deno.land/std/semver/parse.ts";
+ * import { ANY } from "https://deno.land/std/semver/constants.ts"
  * eq(parse("1.2.3"), ANY); // false
  * ```
  */

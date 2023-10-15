@@ -8,7 +8,7 @@ import { SEP } from "./separator.ts";
  * which defaults to the OS default separator.
  *
  * ```ts
- *       import { common } from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ *       import { common } from "https://deno.land/std/path/mod.ts";
  *       const p = common([
  *         "./deno/std/path/mod.ts",
  *         "./deno/std/fs/mod.ts",

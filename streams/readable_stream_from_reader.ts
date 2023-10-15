@@ -40,7 +40,7 @@ export interface ReadableStreamFromReaderOptions {
  * An example converting a `Deno.FsFile` into a readable stream:
  *
  * ```ts
- * import { readableStreamFromReader } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_reader.ts";
+ * import { readableStreamFromReader } from "https://deno.land/std/streams/readable_stream_from_reader.ts";
  *
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);

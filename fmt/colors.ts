@@ -22,7 +22,7 @@
  *   red,
  *   rgb24,
  *   rgb8,
- * } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ * } from "https://deno.land/std/fmt/colors.ts";
  *
  * console.log(bgBlue(italic(red(bold("Hello, World!")))));
  *
@@ -480,7 +480,7 @@ export function bgRgb8(str: string, color: number): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { rgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *      import { rgb24 } from "https://deno.land/std/fmt/colors.ts";
  *      rgb24("foo", 0xff00ff);
  *      rgb24("foo", {r: 255, g: 0, b: 255});
  * ```
@@ -520,7 +520,7 @@ export function rgb24(str: string, color: number | Rgb): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { bgRgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *      import { bgRgb24 } from "https://deno.land/std/fmt/colors.ts";
  *      bgRgb24("foo", 0xff00ff);
  *      bgRgb24("foo", {r: 255, g: 0, b: 255});
  * ```

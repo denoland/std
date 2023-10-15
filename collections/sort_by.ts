@@ -16,8 +16,8 @@ export type SortByOptions = {
  *
  * @example
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { sortBy } from "https://deno.land/std/collections/sort_by.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna", age: 34 },

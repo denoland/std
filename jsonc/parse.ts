@@ -30,7 +30,7 @@ export interface ParseOptions {
  * @example
  *
  * ```ts
- * import * as JSONC from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
+ * import * as JSONC from "https://deno.land/std/jsonc/mod.ts";
  *
  * console.log(JSONC.parse('{"foo": "bar", } // comment')); //=> { foo: "bar" }
  * console.log(JSONC.parse('{"foo": "bar", } /* comment *\/')); //=> { foo: "bar" }

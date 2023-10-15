@@ -17,7 +17,7 @@ import { validateBinaryLike } from "./_util.ts";
  * import {
  *   decodeBase32,
  *   encodeBase32,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ * } from "https://deno.land/std/encoding/base32.ts";
  *
  * const b32Repr = "RC2E6GA=";
  *

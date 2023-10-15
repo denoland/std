@@ -8,7 +8,7 @@ import { DateTimeFormatter } from "./_common.ts";
  *
  * @example
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/datetime/format.ts";
+ * import { format } from "https://deno.land/std/datetime/format.ts";
  *
  * format(new Date(2019, 0, 20), "dd-MM-yyyy"); // output : "20-01-2019"
  * format(new Date(2019, 0, 20), "yyyy-MM-dd"); // output : "2019-01-20"

@@ -181,10 +181,10 @@ export class TarEntry implements Reader {
  *
  * @example
  * ```ts
- * import { Untar } from "https://deno.land/std@$STD_VERSION/archive/untar.ts";
- * import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { Untar } from "https://deno.land/std/archive/untar.ts";
+ * import { ensureFile } from "https://deno.land/std/fs/ensure_file.ts";
+ * import { ensureDir } from "https://deno.land/std/fs/ensure_dir.ts";
+ * import { copy } from "https://deno.land/std/streams/copy.ts";
  *
  * const reader = await Deno.open("./out.tar", { read: true });
  * const untar = new Untar(reader);

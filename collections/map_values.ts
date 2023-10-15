@@ -8,8 +8,8 @@
  *
  * @example
  * ```ts
- * import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/map_values.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { mapValues } from "https://deno.land/std/collections/map_values.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const usersById = {
  *   "a5ec": { name: "Mischa" },

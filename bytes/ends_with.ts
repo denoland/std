@@ -7,7 +7,7 @@
  * The complexity of this function is O(suffix.length).
  *
  * ```ts
- * import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/ends_with.ts";
+ * import { endsWith } from "https://deno.land/std/bytes/ends_with.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const suffix = new Uint8Array([1, 2, 3]);
  * console.log(endsWith(source, suffix)); // true

@@ -11,8 +11,8 @@ import { Reader } from "../types.d.ts";
  * Create a `Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
- *      import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ *      import { readerFromIterable } from "https://deno.land/std/streams/reader_from_iterable.ts";
+ *      import { copy } from "https://deno.land/std/streams/copy.ts";
  *
  *      const file = await Deno.open("metrics.txt", { write: true });
  *      const reader = readerFromIterable((async function* () {

@@ -24,7 +24,7 @@
  * import {
  *   parse,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/yaml/mod.ts";
+ * } from "https://deno.land/std/yaml/mod.ts";
  *
  * const data = parse(`
  * foo: bar

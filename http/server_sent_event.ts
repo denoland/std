@@ -22,7 +22,7 @@
  * import {
  *   ServerSentEvent,
  *   ServerSentEventStreamTarget,
- * } from "https://deno.land/std@$STD_VERSION/http/unstable_server_sent_event.ts";
+ * } from "https://deno.land/std/http/unstable_server_sent_event.ts";
  *
  * Deno.serve({ port: 8000 }, (request) => {
  *   const target = new ServerSentEventStreamTarget();
@@ -85,7 +85,7 @@ export type ServerSentEventTargetOptions = ServerSentEventTargetOptions_;
  * import {
  *   ServerSentEvent,
  *   ServerSentEventStreamTarget,
- * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event.ts";
+ * } from "https://deno.land/std/http/server_sent_event.ts";
  *
  * Deno.serve({ port: 8000 }, (request) => {
  *   const target = new ServerSentEventStreamTarget();

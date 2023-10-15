@@ -14,8 +14,8 @@ const decoder = new TextDecoder();
  *   copyN,
  *   StringReader,
  *   StringWriter,
- * } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * } from "https://deno.land/std/io/mod.ts";
+ * import { copy } from "https://deno.land/std/streams/copy.ts";
  *
  * const w = new StringWriter("base");
  * const r = new StringReader("0123456789");

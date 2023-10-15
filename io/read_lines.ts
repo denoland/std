@@ -10,8 +10,8 @@ import { concat } from "../bytes/concat.ts";
  *
  *  @example
  * ```ts
- * import { readLines } from "https://deno.land/std@$STD_VERSION/io/read_lines.ts";
- * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
+ * import { readLines } from "https://deno.land/std/io/read_lines.ts";
+ * import * as path from "https://deno.land/std/path/mod.ts";
  *
  * const filename = path.join(Deno.cwd(), "std/io/README.md");
  * let fileReader = await Deno.open(filename);

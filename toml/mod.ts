@@ -97,7 +97,7 @@
  * import {
  *   parse,
  *   stringify,
- * } from "https://deno.land/std@$STD_VERSION/toml/mod.ts";
+ * } from "https://deno.land/std/toml/mod.ts";
  * const obj = {
  *   bin: [
  *     { name: "deno", path: "cli/main.rs" },

@@ -9,7 +9,7 @@ import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
  * Converts a file URL to a path string.
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std/path/from_file_url.ts";
  *
  * // posix
  * fromFileUrl("file:///home/foo"); // "/home/foo"

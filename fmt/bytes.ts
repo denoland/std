@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+ * import { format } from "https://deno.land/std/fmt/bytes.ts";
  *
  * format(1337);
  * //=> '1.34 kB'

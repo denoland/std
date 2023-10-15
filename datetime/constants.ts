@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { SECOND } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { SECOND } from "https://deno.land/std/datetime/constants.ts";
  *
  * console.log(SECOND); // => 1000
  * ```
@@ -17,7 +17,7 @@ export const SECOND = 1e3;
  *
  * @example
  * ```ts
- * import { MINUTE } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { MINUTE } from "https://deno.land/std/datetime/constants.ts";
  *
  * console.log(MINUTE); // => 60000 (60 * 1000)
  * ```
@@ -28,7 +28,7 @@ export const MINUTE = SECOND * 60;
  *
  * @example
  * ```ts
- * import { HOUR } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { HOUR } from "https://deno.land/std/datetime/constants.ts";
  *
  * console.log(HOUR); // => 3600000 (60 * 60 * 1000)
  * ```
@@ -39,7 +39,7 @@ export const HOUR = MINUTE * 60;
  *
  * @example
  * ```ts
- * import { DAY } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { DAY } from "https://deno.land/std/datetime/constants.ts";
  *
  * console.log(DAY); // => 86400000 (24 * 60 * 60 * 1000)
  * ```
@@ -50,7 +50,7 @@ export const DAY = HOUR * 24;
  *
  * @example
  * ```ts
- * import { WEEK } from "https://deno.land/std@$STD_VERSION/datetime/constants.ts";
+ * import { WEEK } from "https://deno.land/std/datetime/constants.ts";
  *
  * console.log(WEEK); // => 604800000 (7 * 24 * 60 * 60 * 1000)
  * ```

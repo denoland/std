@@ -11,8 +11,8 @@
  *
  * @example
  * ```ts
- * import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/max_with.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { maxWith } from "https://deno.land/std/collections/max_with.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const people = ["Kim", "Anna", "John", "Arthur"];
  * const largestName = maxWith(people, (a, b) => a.length - b.length);

@@ -87,13 +87,13 @@
  * both styles.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_test.ts
+ * // https://deno.land/std/testing/bdd_examples/user_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ * } from "https://deno.land/std/assert/mod.ts";
+ * import { User } from "https://deno.land/std/testing/bdd_examples/user.ts";
  *
  * Deno.test("User.users initially empty", () => {
  *   assertEquals(User.users.size, 0);
@@ -132,19 +132,19 @@
  * the options argument for describe.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_nested_test.ts
+ * // https://deno.land/std/testing/bdd_examples/user_nested_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "https://deno.land/std/assert/mod.ts";
  * import {
  *   afterEach,
  *   beforeEach,
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ * } from "https://deno.land/std/testing/bdd.ts";
+ * import { User } from "https://deno.land/std/testing/bdd_examples/user.ts";
  *
  * describe("User", () => {
  *   it("users initially empty", () => {
@@ -194,17 +194,17 @@
  * indentation in front of the grouped tests.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_flat_test.ts
+ * // https://deno.land/std/testing/bdd_examples/user_flat_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "https://deno.land/std/assert/mod.ts";
  * import {
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ * } from "https://deno.land/std/testing/bdd.ts";
+ * import { User } from "https://deno.land/std/testing/bdd_examples/user.ts";
  *
  * const userTests = describe("User");
  *
@@ -254,17 +254,17 @@
  * indentation in front of each line.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_mixed_test.ts
+ * // https://deno.land/std/testing/bdd_examples/user_mixed_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * } from "https://deno.land/std/assert/mod.ts";
  * import {
  *   describe,
  *   it,
- * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ * } from "https://deno.land/std/testing/bdd.ts";
+ * import { User } from "https://deno.land/std/testing/bdd_examples/user.ts";
  *
  * describe("User", () => {
  *   it("users initially empty", () => {

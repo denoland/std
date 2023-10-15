@@ -17,9 +17,9 @@ const primitives = new Map(
  *
  * @example
  * ```ts
- * import { ConcatenatedJsonParseStream } from "https://deno.land/std@$STD_VERSION/json/concatenated_json_parse_stream.ts";
+ * import { ConcatenatedJsonParseStream } from "https://deno.land/std/json/concatenated_json_parse_stream.ts";
  *
- * const url = "https://deno.land/std@$STD_VERSION/json/testdata/test.concatenated-json";
+ * const url = "https://deno.land/std/json/testdata/test.concatenated-json";
  * const { body } = await fetch(url);
  *
  * const readable = body!

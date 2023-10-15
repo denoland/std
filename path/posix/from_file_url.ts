@@ -7,7 +7,7 @@ import { assertArg } from "../_common/from_file_url.ts";
  * Converts a file URL to a path string.
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix.ts";
+ * import { fromFileUrl } from "https://deno.land/std/path/posix.ts";
  *
  * fromFileUrl("file:///home/foo"); // "/home/foo"
  * ```

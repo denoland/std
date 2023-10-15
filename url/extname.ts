@@ -11,7 +11,7 @@ import { strip } from "./_strip.ts";
  *
  * @example
  * ```ts
- * import { extname } from "https://deno.land/std@$STD_VERSION/url/extname.ts";
+ * import { extname } from "https://deno.land/std/url/extname.ts";
  *
  * console.log(extname("https://deno.land/std/path/mod.ts")); // ".ts"
  * console.log(extname("https://deno.land/std/path/mod")); // ""

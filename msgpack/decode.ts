@@ -7,7 +7,7 @@ import { ValueType } from "./encode.ts";
  *
  * @example
  * ```ts
- * import { decode } from "https://deno.land/std@$STD_VERSION/msgpack/decode.ts";
+ * import { decode } from "https://deno.land/std/msgpack/decode.ts";
  *
  * const encoded = Uint8Array.of(1, 2, 3)
  *

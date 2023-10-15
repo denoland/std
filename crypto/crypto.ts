@@ -75,7 +75,7 @@
  *
  * @example
  * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { crypto } from "https://deno.land/std/crypto/mod.ts";
  *
  * // This will delegate to the runtime's WebCrypto implementation.
  * console.log(
@@ -104,7 +104,7 @@
  * import {
  *   crypto,
  *   toHashString,
- * } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * } from "https://deno.land/std/crypto/mod.ts";
  *
  * const hash = await crypto.subtle.digest(
  *   "SHA-384",

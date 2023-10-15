@@ -8,7 +8,7 @@ import { Buffer } from "./buffer.ts";
  *
  * @example
  * ```ts
- * import { StringReader } from "https://deno.land/std@$STD_VERSION/io/string_reader.ts";
+ * import { StringReader } from "https://deno.land/std/io/string_reader.ts";
  *
  * const data = new Uint8Array(6);
  * const r = new StringReader("abcdef");

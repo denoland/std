@@ -8,7 +8,7 @@ import { getFileInfoType } from "./_util.ts";
  *
  * @example
  * ```ts
- * import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureDir } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureDir("./bar"); // returns a promise
  * ```
@@ -39,7 +39,7 @@ export async function ensureDir(dir: string | URL) {
  *
  * @example
  * ```ts
- * import { ensureDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { ensureDirSync } from "https://deno.land/std/fs/mod.ts";
  *
  * ensureDirSync("./ensureDirSync"); // void
  * ```

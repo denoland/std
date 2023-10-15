@@ -10,8 +10,8 @@ import type { Writer } from "../types.d.ts";
  *
  * @example
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
- * import { writerFromStreamWriter } from "https://deno.land/std@$STD_VERSION/streams/writer_from_stream_writer.ts";
+ * import { copy } from "https://deno.land/std/streams/copy.ts";
+ * import { writerFromStreamWriter } from "https://deno.land/std/streams/writer_from_stream_writer.ts";
  *
  * const file = await Deno.open("./deno.land.html", { read: true });
  *

@@ -10,7 +10,7 @@ import { strip } from "./_strip.ts";
  *
  * @example
  * ```ts
- * import { basename } from "https://deno.land/std@$STD_VERSION/url/basename.ts";
+ * import { basename } from "https://deno.land/std/url/basename.ts";
  *
  * // basename accepts a string or URL
  * console.log(basename("https://deno.land/std/assert/mod.ts"));  // "mod.ts"

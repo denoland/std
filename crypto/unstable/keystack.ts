@@ -74,7 +74,7 @@ async function compare(a: Data, b: Data): Promise<boolean> {
  *
  * @example
  * ```ts
- * import { KeyStack } from "https://deno.land/std@$STD_VERSION/crypto/keystack.ts";
+ * import { KeyStack } from "https://deno.land/std/crypto/keystack.ts";
  *
  * const keyStack = new KeyStack(["hello", "world"]);
  * const digest = await keyStack.sign("some data");

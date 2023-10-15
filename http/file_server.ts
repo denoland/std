@@ -12,16 +12,16 @@
  *
  * ```shell
  * > # start server
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
  * > # show help
- * > deno run --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts --help
+ * > deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts --help
  * ```
  *
  * If you want to install and run:
  *
  * ```shell
  * > # install
- * > deno install --allow-net --allow-read https://deno.land/std@$STD_VERSION/http/file_server.ts
+ * > deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
  * > # start server
  * > file_server
  * > # show help
@@ -561,7 +561,7 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serveDir } from "https://deno.land/std/http/file_server.ts";
  *
  * Deno.serve((req) => {
  *   const pathname = new URL(req.url).pathname;
@@ -578,7 +578,7 @@ export interface ServeDirOptions {
  * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
  *
  * ```ts
- * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serveDir } from "https://deno.land/std/http/file_server.ts";
  *
  * // ...
  * serveDir(new Request("http://localhost/static/path/to/file"), {

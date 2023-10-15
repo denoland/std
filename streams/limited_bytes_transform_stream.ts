@@ -9,7 +9,7 @@
  * an error will be thrown.
  *
  * ```ts
- * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_bytes_transform_stream.ts";
+ * import { LimitedBytesTransformStream } from "https://deno.land/std/streams/limited_bytes_transform_stream.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));

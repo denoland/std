@@ -27,9 +27,9 @@ type Direction = "left" | "right";
  * ```ts
  * import {
  *   BinarySearchTree,
- * } from "https://deno.land/std@$STD_VERSION/collections/unstable/binary_search_tree.ts";
- * import { ascend, descend } from "https://deno.land/std@$STD_VERSION/collections/unstable/comparators.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * } from "https://deno.land/std/collections/unstable/binary_search_tree.ts";
+ * import { ascend, descend } from "https://deno.land/std/collections/unstable/comparators.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new BinarySearchTree<number>();

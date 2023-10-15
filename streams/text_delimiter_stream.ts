@@ -11,7 +11,7 @@ import type {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
+ * import { TextDelimiterStream } from "https://deno.land/std/streams/text_delimiter_stream.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

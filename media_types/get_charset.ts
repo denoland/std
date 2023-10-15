@@ -11,7 +11,7 @@ import { db, type KeyOfDb } from "./_db.ts";
  *
  * @example
  * ```ts
- * import { getCharset } from "https://deno.land/std@$STD_VERSION/media_types/get_charset.ts";
+ * import { getCharset } from "https://deno.land/std/media_types/get_charset.ts";
  *
  * getCharset("text/plain"); // `UTF-8`
  * getCharset("application/foo"); // undefined

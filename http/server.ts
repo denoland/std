@@ -79,7 +79,7 @@ export class Server {
    * Constructs a new HTTP Server instance.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "https://deno.land/std/http/server.ts";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -118,7 +118,7 @@ export class Server {
    * Will always close the created listener.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "https://deno.land/std/http/server.ts";
    *
    * const handler = (request: Request) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
@@ -170,7 +170,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "https://deno.land/std/http/server.ts";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -214,7 +214,7 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server } from "https://deno.land/std/http/server.ts";
    *
    * const port = 4505;
    * const handler = (request: Request) => {
@@ -536,7 +536,7 @@ export interface ServeListenerOptions {
  * handles requests on these connections with the given handler.
  *
  * ```ts
- * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveListener } from "https://deno.land/std/http/server.ts";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
@@ -587,7 +587,7 @@ function hostnameForDisplay(hostname: string) {
  * The below example serves with the port 8000.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "https://deno.land/std/http/server.ts";
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
@@ -595,7 +595,7 @@ function hostnameForDisplay(hostname: string) {
  * The below example serves with the port 3000.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "https://deno.land/std/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
  * ```
  *
@@ -604,7 +604,7 @@ function hostnameForDisplay(hostname: string) {
  * `onListen` option to override it.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "https://deno.land/std/http/server.ts";
  * serve((_req) => new Response("Hello, world"), {
  *   onListen({ port, hostname }) {
  *     console.log(`Server started at http://${hostname}:${port}`);
@@ -616,7 +616,7 @@ function hostnameForDisplay(hostname: string) {
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "https://deno.land/std/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
  *
@@ -693,7 +693,7 @@ export interface ServeTlsInit extends ServeInit {
  * The below example serves with the default port 8443.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "https://deno.land/std/http/server.ts";
  *
  * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
  * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
@@ -711,7 +711,7 @@ export interface ServeTlsInit extends ServeInit {
  * `onListen` option to override it.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "https://deno.land/std/http/server.ts";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), {
@@ -727,7 +727,7 @@ export interface ServeTlsInit extends ServeInit {
  * You can also specify `undefined` or `null` to stop the logging behavior.
  *
  * ```ts
- * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveTls } from "https://deno.land/std/http/server.ts";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), {

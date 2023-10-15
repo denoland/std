@@ -17,7 +17,7 @@ export interface DelayOptions {
  * @example
  *
  * ```typescript
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { delay } from "https://deno.land/std/async/delay.ts";
  *
  * // ...
  * const delayedPromise = delay(100);
@@ -29,7 +29,7 @@ export interface DelayOptions {
  * `--unstable` flag.
  *
  * ```typescript
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
+ * import { delay } from "https://deno.land/std/async/delay.ts";
  *
  * // ...
  * await delay(100, { persistent: false });

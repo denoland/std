@@ -66,7 +66,7 @@ type RowType<T> = T extends undefined ? string[]
  *
  * @example
  * ```ts
- * import { CsvParseStream } from "https://deno.land/std@$STD_VERSION/csv/csv_parse_stream.ts";
+ * import { CsvParseStream } from "https://deno.land/std/csv/csv_parse_stream.ts";
  * const res = await fetch("https://example.com/data.csv");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())

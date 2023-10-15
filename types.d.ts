@@ -24,7 +24,7 @@ export interface Reader {
    *
    * Implementations should not retain a reference to `p`.
    *
-   * Use iterateReader() from https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts to turn a Reader into an
+   * Use iterateReader() from https://deno.land/std/streams/iterate_reader.ts to turn a Reader into an
    * AsyncIterator.
    */
   read(p: Uint8Array): Promise<number | null>;
@@ -50,7 +50,7 @@ export interface ReaderSync {
    *
    * Implementations should not retain a reference to `p`.
    *
-   * Use iterateReaderSync() from https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts to turn a ReaderSync
+   * Use iterateReaderSync() from https://deno.land/std/streams/iterate_reader.ts to turn a ReaderSync
    * into an Iterator.
    */
   readSync(p: Uint8Array): number | null;

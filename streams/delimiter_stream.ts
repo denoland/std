@@ -25,7 +25,7 @@ export interface DelimiterStreamOptions {
  * @example
  * Divide a CSV stream by commas, discarding the commas:
  * ```ts
- * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter_stream.ts";
+ * import { DelimiterStream } from "https://deno.land/std/streams/delimiter_stream.ts";
  * const res = await fetch("https://example.com/data.csv");
  * const parts = res.body!
  *   .pipeThrough(new DelimiterStream(new TextEncoder().encode(",")))
@@ -35,7 +35,7 @@ export interface DelimiterStreamOptions {
  * @example
  * Divide a stream after semi-colons, keeping the semi-colons in the output:
  * ```ts
- * import { DelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/delimiter_stream.ts";
+ * import { DelimiterStream } from "https://deno.land/std/streams/delimiter_stream.ts";
  * const res = await fetch("https://example.com/file.js");
  * const parts = res.body!
  *   .pipeThrough(

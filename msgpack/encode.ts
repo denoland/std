@@ -34,7 +34,7 @@ const encoder = new TextEncoder();
  *
  * @example
  * ```ts
- * import { encode } from "https://deno.land/std@$STD_VERSION/msgpack/encode.ts";
+ * import { encode } from "https://deno.land/std/msgpack/encode.ts";
  *
  * const obj = {
  *   str: "deno",

@@ -310,7 +310,7 @@ export interface ParseOptions extends ReadOptions {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/csv/parse.ts";
+ * import { parse } from "https://deno.land/std/csv/parse.ts";
  * const string = "a,b,c\nd,e,f";
  *
  * console.log(

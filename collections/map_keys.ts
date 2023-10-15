@@ -10,8 +10,8 @@
  *
  * @example
  * ```ts
- * import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/map_keys.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { mapKeys } from "https://deno.land/std/collections/map_keys.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const counts = { a: 5, b: 3, c: 8 };
  *

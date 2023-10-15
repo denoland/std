@@ -256,7 +256,7 @@
  *   gt,
  *   lt,
  *   format
- * } from "https://deno.land/std@$STD_VERSION/semver/mod.ts";
+ * } from "https://deno.land/std/semver/mod.ts";
  *
  * const semver = parse("1.2.3");
  * const range = parseRange("1.x || >=2.5.0 || 5.0.0 - 7.2.3");

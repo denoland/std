@@ -8,7 +8,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * Converts a path string to a file URL.
  *
  * ```ts
- * import { toFileUrl } from "https://deno.land/std@$STD_VERSION/path/win32.ts";
+ * import { toFileUrl } from "https://deno.land/std/path/win32.ts";
  *
  * toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
  * toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")

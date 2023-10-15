@@ -9,8 +9,8 @@ import type { Writer, WriterSync } from "../types.d.ts";
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
  * ```ts
- * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { writeAll } from "https://deno.land/std@$STD_VERSION/streams/write_all.ts";
+ * import { Buffer } from "https://deno.land/std/io/buffer.ts";
+ * import { writeAll } from "https://deno.land/std/streams/write_all.ts";
 
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -43,8 +43,8 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  * writer (`w`).
  *
  * ```ts
- * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
- * import { writeAllSync } from "https://deno.land/std@$STD_VERSION/streams/write_all.ts";
+ * import { Buffer } from "https://deno.land/std/io/buffer.ts";
+ * import { writeAllSync } from "https://deno.land/std/streams/write_all.ts";
  *
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");

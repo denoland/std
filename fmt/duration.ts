@@ -5,7 +5,7 @@
  * Format milliseconds to time duration.
  *
  * ```ts
- * import { format } from "https://deno.land/std@$STD_VERSION/fmt/duration.ts";
+ * import { format } from "https://deno.land/std/fmt/duration.ts";
  *
  * // "00:00:01:39:674:000:000"
  * format(99674, { style: "digital" });

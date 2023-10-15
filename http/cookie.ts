@@ -14,7 +14,7 @@ export interface Cookie {
    * @example <caption>Explicit date:</caption>
    *
    * ```ts
-   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * import { Cookie } from "https://deno.land/std/http/cookie.ts";
    * const cookie: Cookie = {
    *   name: 'name',
    *   value: 'value',
@@ -26,7 +26,7 @@ export interface Cookie {
    * @example <caption>UTC milliseconds</caption>
    *
    * ```ts
-   * import { Cookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+   * import { Cookie } from "https://deno.land/std/http/cookie.ts";
    * const cookie: Cookie = {
    *   name: 'name',
    *   value: 'value',
@@ -191,7 +191,7 @@ function validateDomain(domain: string) {
  *
  * @example
  * ```ts
- * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ * import { getCookies } from "https://deno.land/std/http/cookie.ts";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
@@ -227,7 +227,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  * import {
  *   Cookie,
  *   setCookie,
- * } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ * } from "https://deno.land/std/http/cookie.ts";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
@@ -257,7 +257,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  *
  * @example
  * ```ts
- * import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ * import { deleteCookie } from "https://deno.land/std/http/cookie.ts";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
@@ -368,7 +368,7 @@ function parseSetCookie(value: string): Cookie | null {
  *
  * @example
  * ```ts
- * import { getSetCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ * import { getSetCookies } from "https://deno.land/std/http/cookie.ts";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],

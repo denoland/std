@@ -4,7 +4,7 @@
 /** Concatenate the given arrays into a new Uint8Array.
  *
  * ```ts
- * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
+ * import { concat } from "https://deno.land/std/bytes/concat.ts";
  * const a = new Uint8Array([0, 1, 2]);
  * const b = new Uint8Array([3, 4, 5]);
  * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]

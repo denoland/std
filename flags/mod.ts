@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ * import { parse } from "https://deno.land/std/flags/mod.ts";
  *
  * console.dir(parse(Deno.args));
  * ```
@@ -288,7 +288,7 @@ export interface ParseOptions<
    *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+   * import { parse } from "https://deno.land/std/flags/mod.ts";
    * console.dir(parse(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parse(Deno.args, { "--": true }));
@@ -415,13 +415,13 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ * import { parse } from "https://deno.land/std/flags/mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
+ * import { parse } from "https://deno.land/std/flags/mod.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```

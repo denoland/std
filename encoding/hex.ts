@@ -16,7 +16,7 @@ import { validateBinaryLike } from "./_util.ts";
  * import {
  *   decodeHex,
  *   encodeHex,
- * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ * } from "https://deno.land/std/encoding/hex.ts";
  *
  * const binary = new TextEncoder().encode("abc");
  * const encoded = encodeHex(binary);

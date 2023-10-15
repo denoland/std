@@ -11,8 +11,8 @@ import { mapEntries } from "./map_entries.ts";
  * @template A type of the accumulator value, which will match the returned record's values.
  * @example
  * ```ts
- * import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/aggregate_groups.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { aggregateGroups } from "https://deno.land/std/collections/aggregate_groups.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const foodProperties = {
  *   "Curry": ["spicy", "vegan"],

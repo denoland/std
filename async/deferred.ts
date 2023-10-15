@@ -19,7 +19,7 @@ export interface Deferred<T> extends Promise<T> {
  *
  * @example
  * ```typescript
- * import { deferred } from "https://deno.land/std@$STD_VERSION/async/deferred.ts";
+ * import { deferred } from "https://deno.land/std/async/deferred.ts";
  *
  * const p = deferred<number>();
  * // ...

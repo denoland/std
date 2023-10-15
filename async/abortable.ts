@@ -8,8 +8,8 @@ import { deferred } from "./deferred.ts";
  *
  * @example
  * ```typescript
- * import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortable } from "https://deno.land/std/async/mod.ts";
+ * import { delay } from "https://deno.land/std/async/mod.ts";
  *
  * const p = delay(1000);
  * const c = new AbortController();
@@ -25,8 +25,8 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  *
  * @example
  * ```typescript
- * import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortable } from "https://deno.land/std/async/mod.ts";
+ * import { delay } from "https://deno.land/std/async/mod.ts";
  *
  * const p = async function* () {
  *   yield "Hello";
@@ -64,7 +64,7 @@ export function abortable<T>(
  *
  * @example
  * ```typescript
- * import { abortablePromise } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortablePromise } from "https://deno.land/std/async/mod.ts";
  *
  * const request = fetch("https://example.com");
  *
@@ -100,8 +100,8 @@ export function abortablePromise<T>(
  *
  * @example
  * ```typescript
- * import { abortableAsyncIterable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { abortableAsyncIterable } from "https://deno.land/std/async/mod.ts";
+ * import { delay } from "https://deno.land/std/async/mod.ts";
  *
  * const p = async function* () {
  *   yield "Hello";

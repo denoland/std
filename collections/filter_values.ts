@@ -7,8 +7,8 @@
  *
  * @example
  * ```ts
- * import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/filter_values.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ * import { filterValues } from "https://deno.land/std/collections/filter_values.ts";
+ * import { assertEquals } from "https://deno.land/std/assert/assert_equals.ts";
  *
  * const people = {
  *   "Arnold": 37,

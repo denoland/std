@@ -50,7 +50,7 @@
  * in an http request would look like this:
  *
  * ```ts
- * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
+ * import { UserAgent } from "https://deno.land/std/http/user_agent.ts";
  *
  * Deno.serve((req) => {
  *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");

@@ -11,7 +11,7 @@ import { extensionsByType } from "./extensions_by_type.ts";
  *
  * @example
  * ```ts
- * import { extension } from "https://deno.land/std@$STD_VERSION/media_types/extension.ts";
+ * import { extension } from "https://deno.land/std/media_types/extension.ts";
  *
  * extension("text/plain"); // `txt`
  * extension("application/json"); // `json`

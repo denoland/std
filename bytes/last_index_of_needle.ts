@@ -10,7 +10,7 @@
  * The complexity of this function is O(source.length * needle.length).
  *
  * ```ts
- * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/last_index_of_needle.ts";
+ * import { lastIndexOfNeedle } from "https://deno.land/std/bytes/last_index_of_needle.ts";
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
  * console.log(lastIndexOfNeedle(source, needle)); // 5

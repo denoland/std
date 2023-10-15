@@ -16,7 +16,7 @@
  * Example, for `posix`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/posix/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std/path/posix/from_file_url.ts";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "/home/foo"
  * ```
@@ -24,7 +24,7 @@
  * or, for `windows`:
  *
  * ```ts
- * import { fromFileUrl } from "https://deno.land/std@$STD_VERSION/path/windows/from_file_url.ts";
+ * import { fromFileUrl } from "https://deno.land/std/path/windows/from_file_url.ts";
  * const p = fromFileUrl("file:///home/foo");
  * console.log(p); // "\\home\\foo"
  * ```

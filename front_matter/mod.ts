@@ -40,7 +40,7 @@
  * import {
  *   extract,
  *   test,
- * } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * } from "https://deno.land/std/front_matter/any.ts";
  *
  * const str = await Deno.readTextFile("./example.md");
  *
@@ -75,8 +75,8 @@
  *   Format,
  *   Parser,
  *   test as _test,
- * } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
- * import { parse } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
+ * } from "https://deno.land/std/front_matter/mod.ts";
+ * import { parse } from "https://deno.land/std/toml/parse.ts";
  *
  * const extract = createExtractor({
  *   [Format.TOML]: parse as Parser,

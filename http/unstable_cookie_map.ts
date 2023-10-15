@@ -11,7 +11,7 @@
  * import {
  *   CookieMap,
  *   mergeHeaders
- * } from "https://deno.land/std@$STD_VERSION/http/unstable_cookie_map.ts";
+ * } from "https://deno.land/std/http/unstable_cookie_map.ts";
  *
  * const request = new Request("https://localhost/", {
  *   headers: { "cookie": "foo=bar; bar=baz;"}
@@ -39,7 +39,7 @@
  *   SecureCookieMap,
  *   mergeHeaders,
  *   type KeyRing,
- * } from "https://deno.land/std@$STD_VERSION/http/unstable_cookie_map.ts";
+ * } from "https://deno.land/std/http/unstable_cookie_map.ts";
  *
  * const request = new Request("https://localhost/", {
  *   headers: { "cookie": "foo=bar; bar=baz;"}
@@ -65,7 +65,7 @@
  * set cookies will be added directly to those headers:
  *
  * ```ts
- * import { CookieMap } from "https://deno.land/std@$STD_VERSION/http/unstable_cookie_map.ts";
+ * import { CookieMap } from "https://deno.land/std/http/unstable_cookie_map.ts";
  *
  * const request = new Request("https://localhost/", {
  *   headers: { "cookie": "foo=bar; bar=baz;"}

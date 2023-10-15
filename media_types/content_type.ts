@@ -37,7 +37,7 @@ type KnownExtensionOrType =
  *
  * @example
  * ```ts
- * import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/content_type.ts";
+ * import { contentType } from "https://deno.land/std/media_types/content_type.ts";
  *
  * contentType(".json"); // `application/json; charset=UTF-8`
  * contentType("text/html"); // `text/html; charset=UTF-8`
