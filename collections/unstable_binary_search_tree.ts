@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { ascend } from "./comparators.ts";
-import { BinarySearchNode } from "./_binary_search_node.ts";
+import { ascend } from "./unstable_comparators.ts";
+import { BinarySearchNode } from "./_unstable_binary_search_node.ts";
 
 type Direction = "left" | "right";
 
@@ -27,8 +27,8 @@ type Direction = "left" | "right";
  * ```ts
  * import {
  *   BinarySearchTree,
- * } from "https://deno.land/std@$STD_VERSION/collections/unstable/binary_search_tree.ts";
- * import { ascend, descend } from "https://deno.land/std@$STD_VERSION/collections/unstable/comparators.ts";
+ * } from "https://deno.land/std@$STD_VERSION/collections/unstable_binary_search_tree.ts";
+ * import { ascend, descend } from "https://deno.land/std@$STD_VERSION/collections/unstable_comparators.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];

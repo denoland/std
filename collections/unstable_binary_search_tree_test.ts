@@ -4,9 +4,9 @@ import {
   assertEquals,
   assertStrictEquals,
   assertThrows,
-} from "../../assert/mod.ts";
-import { BinarySearchTree } from "./binary_search_tree.ts";
-import { ascend, descend } from "./comparators.ts";
+} from "../assert/mod.ts";
+import { BinarySearchTree } from "./unstable_binary_search_tree.ts";
+import { ascend, descend } from "./unstable_comparators.ts";
 
 class MyMath {
   multiply(a: number, b: number): number {
