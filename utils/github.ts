@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { createHttpError } from "std/http/http_errors.ts";
-import { createGitHubOAuthConfig } from "kv_oauth";
+import { createGitHubOAuthConfig } from "kv_oauth/mod.ts";
 
 export function isGitHubSetup() {
   try {

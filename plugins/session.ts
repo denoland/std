@@ -1,7 +1,7 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Plugin } from "$fresh/server.ts";
 import type { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { getSessionId } from "kv_oauth";
+import { getSessionId } from "kv_oauth/mod.ts";
 import { getUserBySession } from "@/utils/db.ts";
 import type { User } from "@/utils/db.ts";
 import { createHttpError } from "std/http/http_errors.ts";
