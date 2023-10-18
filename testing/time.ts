@@ -6,8 +6,8 @@
  * @module
  */
 
-import { RedBlackTree } from "../collections/unstable/red_black_tree.ts";
-import { ascend } from "../collections/unstable/comparators.ts";
+import { RedBlackTree } from "../collections/unstable_red_black_tree.ts";
+import { ascend } from "../collections/unstable_comparators.ts";
 import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
