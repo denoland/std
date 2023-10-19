@@ -55,7 +55,7 @@ export function timeAgo(date: Date) {
 
 /**
  * Returns a formatted string based on the given amount of currency and the
- * machine's preferred language.
+ * `en-US` locale. Change the locale for your use case as required.
  *
  * @see {@linkcode Intl.NumberFormat}
  *
@@ -71,7 +71,7 @@ export function formatCurrency(
   currency: string,
 ): string {
   return new Intl.NumberFormat(
-    navigator.language,
+    "en-US",
     {
       style: "currency",
       currency,
