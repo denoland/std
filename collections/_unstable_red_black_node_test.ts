@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertStrictEquals } from "../../assert/mod.ts";
-import { RedBlackNode } from "./_red_black_node.ts";
+import { assertStrictEquals } from "../assert/mod.ts";
+import { RedBlackNode } from "./_unstable_red_black_node.ts";
 
 Deno.test("[collections/RedBlackNode] constructor and from", () => {
   const parent: RedBlackNode<number> = new RedBlackNode(null, 5);

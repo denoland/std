@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../../assert/mod.ts";
-import { BinaryHeap } from "./binary_heap.ts";
-import { ascend, descend } from "./comparators.ts";
-import { Container, MyMath } from "./_test_utils.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
+import { BinaryHeap } from "./unstable_binary_heap.ts";
+import { ascend, descend } from "./unstable_comparators.ts";
+import { Container, MyMath } from "./_unstable_test_utils.ts";
 
 Deno.test("[collections/BinaryHeap] with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();
