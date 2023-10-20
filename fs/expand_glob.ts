@@ -79,7 +79,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
 export async function* expandGlob(
   glob: string | URL,
   {
-    root = Deno.cwd(),
+    root,
     exclude = [],
     includeDirs = true,
     extended = true,
@@ -89,20 +89,22 @@ export async function* expandGlob(
     canonicalize,
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
-  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
-  const absRoot = resolve(root);
-  const resolveFromRoot = (path: string): string => resolve(absRoot, path);
-  const excludePatterns = exclude
-    .map(resolveFromRoot)
-    .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
   const {
     segments,
     isAbsolute: isGlobAbsolute,
     hasTrailingSep,
     winRoot,
   } = split(toPathString(glob));
+  root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
+
+  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
+  const absRoot = resolve(root!);
+  const resolveFromRoot = (path: string): string => resolve(absRoot, path);
+  const excludePatterns = exclude
+    .map(resolveFromRoot)
+    .map((s: string): RegExp => globToRegExp(s, globOptions));
+  const shouldInclude = (path: string): boolean =>
+    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
   let fixedRoot = isGlobAbsolute
     ? winRoot !== undefined ? winRoot : "/"
@@ -203,7 +205,7 @@ export async function* expandGlob(
 export function* expandGlobSync(
   glob: string | URL,
   {
-    root = Deno.cwd(),
+    root,
     exclude = [],
     includeDirs = true,
     extended = true,
@@ -213,20 +215,22 @@ export function* expandGlobSync(
     canonicalize,
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {
-  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
-  const absRoot = resolve(root);
-  const resolveFromRoot = (path: string): string => resolve(absRoot, path);
-  const excludePatterns = exclude
-    .map(resolveFromRoot)
-    .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
   const {
     segments,
     isAbsolute: isGlobAbsolute,
     hasTrailingSep,
     winRoot,
   } = split(toPathString(glob));
+  root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
+
+  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
+  const absRoot = resolve(root!);
+  const resolveFromRoot = (path: string): string => resolve(absRoot, path);
+  const excludePatterns = exclude
+    .map(resolveFromRoot)
+    .map((s: string): RegExp => globToRegExp(s, globOptions));
+  const shouldInclude = (path: string): boolean =>
+    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
 
   let fixedRoot = isGlobAbsolute
     ? winRoot !== undefined ? winRoot : "/"
