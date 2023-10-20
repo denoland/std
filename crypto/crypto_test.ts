@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertInstanceOf } from "../assert/mod.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
@@ -1417,4 +1417,15 @@ Deno.test({
     const b = new Uint8Array([212, 213]);
     assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
   },
+});
+
+/**
+ * This is one of many methods of `crypto` for which we don't have our own
+ * implementation, and just pass calls through to the native implementation.
+ * This test doesn't cover any cryptographic logic but just serves to ensure
+ * that (at least this one of) the native methods are indeed re-exported, and
+ * that they're appropriately bound to use the required receiver.
+ */
+Deno.test("[crypto/getRandomValues] passes through to native implementation", () => {
+  assertInstanceOf(stdCrypto.getRandomValues(new Uint8Array(1)), Uint8Array);
 });

@@ -22,8 +22,9 @@
  * @module
  */
 
-const addZero = (num: number, digits: number) =>
-  String(num).padStart(digits, "0");
+function addZero(num: number, digits: number) {
+  return String(num).padStart(digits, "0");
+}
 
 interface DurationObject {
   d: number;

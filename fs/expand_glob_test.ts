@@ -156,3 +156,28 @@ Deno.test("expandGlobFollowSymlink", async function () {
   };
   assertEquals(await expandGlobArray("*", options), ["abc"]);
 });
+
+Deno.test("expandGlobFollowSymlink with canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("subdir", "abc")],
+  );
+});
+
+Deno.test("expandGlobFollowSymlink without canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+    canonicalize: false,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("link", "abc"), join("subdir", "abc")],
+  );
+});

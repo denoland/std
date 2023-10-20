@@ -1,3 +1,15 @@
+### 0.204.0 / 2023.10.12
+
+- BREAKING(front_matter): deprecate Format enum, use union type instead (#3641)
+- BREAKING(front_matter): deprecate language-specific `test` functions (#3654)
+- BREAKING(path): split path into per-os modules, deprecate legacy os-specific
+  exports (#3649)
+- feat(crypto): add BLAKE2B-128 hash algorithm (#3680)
+- fix(archive/untar.ts): cannot access symlinks in archives (#3686)
+- fix(assert): fix swapping of multiline str diff (#3685)
+- perf(encoding): optimize encodeBase64Url (#3682)
+- perf: improvements using `Promise.all()` (#3683)
+
 ### 0.203.0 / 2023.09.27
 
 - BREAKING(encoding): deprecate encode/decode, add encodeFoo/decodeFoo (#3660)

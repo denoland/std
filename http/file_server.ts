@@ -40,11 +40,11 @@ import { resolve } from "../path/resolve.ts";
 import { SEP_PATTERN } from "../path/separator.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
-import { isRedirectStatus, Status } from "./http_status.ts";
+import { isRedirectStatus, Status, STATUS_TEXT } from "./status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
 import { parse } from "../flags/mod.ts";
 import { red } from "../fmt/colors.ts";
-import { createCommonResponse } from "./util.ts";
+import { deepMerge } from "../collections/deep_merge.ts";
 import { VERSION } from "../version.ts";
 import { format as formatBytes } from "../fmt/bytes.ts";
 
@@ -85,6 +85,24 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     });
   output = `${isDir ? "d" : "-"} ${output}`;
   return output;
+}
+
+/**
+ * Internal utility for returning a standardized response, automatically defining the body, status code and status text, according to the response type.
+ */
+function createCommonResponse(
+  status: Status,
+  body?: BodyInit | null,
+  init?: ResponseInit,
+): Response {
+  if (body === undefined) {
+    body = STATUS_TEXT[status];
+  }
+  init = deepMerge({
+    status,
+    statusText: STATUS_TEXT[status],
+  }, init ?? {});
+  return new Response(body, init);
 }
 
 /**

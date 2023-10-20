@@ -2,14 +2,14 @@
 
 import { assert, assertEquals, assertInstanceOf } from "../assert/mod.ts";
 
-import { type ErrorStatus, Status, STATUS_TEXT } from "./http_status.ts";
+import { type ErrorStatus, Status, STATUS_TEXT } from "./status.ts";
 
 import {
   createHttpError,
   errors,
   type ErrorStatusKeys,
   HttpError,
-} from "./http_errors.ts";
+} from "./unstable_errors.ts";
 
 const clientErrorStatus: ErrorStatus[] = [
   Status.BadRequest,

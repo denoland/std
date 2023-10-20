@@ -12,7 +12,7 @@
  * @module
  */
 
-import { encode as base64Encode } from "../encoding/base64.ts";
+import { encodeBase64 as base64Encode } from "../encoding/base64.ts";
 
 /** Just the part of `Deno.FileInfo` that is required to calculate an `ETag`,
  * so partial or user generated file information can be passed. */

@@ -4,7 +4,7 @@ import { assert, assertEquals } from "../assert/mod.ts";
 import {
   ServerSentEvent,
   ServerSentEventStreamTarget,
-} from "./server_sent_event.ts";
+} from "./unstable_server_sent_event.ts";
 
 Deno.test({
   name: "ServerSentEvent - construction",
