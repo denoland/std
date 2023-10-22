@@ -1,12 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
-import {
-  globToRegExp,
-  GlobToRegExpOptions,
-  isGlob,
-  joinGlobs,
-  normalizeGlob,
-} from "./glob.ts";
+import { globToRegExp, GlobToRegExpOptions } from "./glob_to_regexp.ts";
+import { isGlob } from "./is_glob.ts";
+import { joinGlobs } from "./join_globs.ts";
+import { normalizeGlob } from "./normalize_glob.ts";
 import { SEP } from "./mod.ts";
 
 function match(

@@ -1,22 +1,22 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { globToRegExp as _globToRegExp } from "./glob_to_regexp.ts";
-import { normalizeGlob as _normalizeGlob } from "./normalize_glob.ts";
-import { joinGlobs as _joinGlobs } from "./join_globs.ts";
-import { isGlob as _isGlob } from "../is_glob.ts";
+import {
+  _globToRegExp,
+  GlobConstants,
+  GlobToRegExpOptions,
+} from "../_common/glob_to_reg_exp.ts";
 
-/**
- * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/is_glob.ts"
- *
- * Test whether the given string is a glob
- */
-export const isGlob = _isGlob;
+const constants: GlobConstants = {
+  sep: "(?:\\\\|/)+",
+  sepMaybe: "(?:\\\\|/)*",
+  seps: ["\\", "/"],
+  globstar: "(?:[^\\\\/]*(?:\\\\|/|$)+)*",
+  wildcard: "[^\\\\/]*",
+  escapePrefix: "`",
+};
 
-/**
- * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/glob_to_regexp.ts"
- *
- * Convert a glob string to a regular expression.
+/** Convert a glob string to a regular expression.
  *
  * Tries to match bash glob expansion as closely as possible.
  *
@@ -71,18 +71,9 @@ export const isGlob = _isGlob;
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment. */
-export const globToRegExp = _globToRegExp;
-
-/**
- * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/normalize_glob.ts"
- *
- * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
- */
-export const normalizeGlob = _normalizeGlob;
-
-/**
- * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/join_globs.ts"
- *
- * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
- */
-export const joinGlobs = _joinGlobs;
+export function globToRegExp(
+  glob: string,
+  options: GlobToRegExpOptions = {},
+): RegExp {
+  return _globToRegExp(constants, glob, options);
+}

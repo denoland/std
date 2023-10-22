@@ -1,28 +1,26 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows, OSType } from "./_os.ts";
-import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import {
-  globToRegExp as posixGlobToRegExp,
-  joinGlobs as posixJoinGlobs,
-  normalizeGlob as posixNormalizeGlob,
-} from "./posix/glob.ts";
-import {
-  globToRegExp as windowsGlobToRegExp,
-  joinGlobs as windowsJoinGlobs,
-  normalizeGlob as windowsNormalizeGlob,
-} from "./windows/glob.ts";
+export type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
+export type { GlobToRegExpOptions } from "./glob_to_regexp.ts";
 
-export { isGlob } from "./_common/is_glob.ts";
+import { globToRegExp as _globToRegExp } from "./glob_to_regexp.ts";
+import { normalizeGlob as _normalizeGlob } from "./normalize_glob.ts";
+import { joinGlobs as _joinGlobs } from "./join_globs.ts";
 
-export type { GlobOptions };
+import { isGlob as _isGlob } from "./_common/is_glob.ts";
 
-export type GlobToRegExpOptions = GlobOptions & {
-  os?: OSType;
-};
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/is_glob.ts"
+ *
+ * Test whether the given string is a glob
+ */
+export const isGlob = _isGlob;
 
-/** Convert a glob string to a regular expression.
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/normalize_glob.ts"
+ *
+ * Convert a glob string to a regular expression.
  *
  * Tries to match bash glob expansion as closely as possible.
  *
@@ -77,31 +75,18 @@ export type GlobToRegExpOptions = GlobOptions & {
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment. */
-export function globToRegExp(
-  glob: string,
-  options: GlobToRegExpOptions = {},
-): RegExp {
-  return options.os === "windows" || (!options.os && isWindows)
-    ? windowsGlobToRegExp(glob, options)
-    : posixGlobToRegExp(glob, options);
-}
+export const globToRegExp = _globToRegExp;
 
-/** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
-export function normalizeGlob(
-  glob: string,
-  options: GlobOptions = {},
-): string {
-  return isWindows
-    ? windowsNormalizeGlob(glob, options)
-    : posixNormalizeGlob(glob, options);
-}
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/normalize_glob.ts"
+ *
+ * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ */
+export const normalizeGlob = _normalizeGlob;
 
-/** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
-export function joinGlobs(
-  globs: string[],
-  options: GlobOptions = {},
-): string {
-  return isWindows
-    ? windowsJoinGlobs(globs, options)
-    : posixJoinGlobs(globs, options);
-}
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/join_globs.ts"
+ *
+ * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
+ */
+export const joinGlobs = _joinGlobs;
