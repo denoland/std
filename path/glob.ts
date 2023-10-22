@@ -8,7 +8,7 @@ import { globToRegExp as _globToRegExp } from "./glob_to_regexp.ts";
 import { normalizeGlob as _normalizeGlob } from "./normalize_glob.ts";
 import { joinGlobs as _joinGlobs } from "./join_globs.ts";
 
-import { isGlob as _isGlob } from "./_common/is_glob.ts";
+import { isGlob as _isGlob } from "./is_glob.ts";
 
 /**
  * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/is_glob.ts"
