@@ -1,27 +1,22 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  _globToRegExp,
-  GlobConstants,
-  GlobOptions,
-  GlobToRegExpOptions,
-} from "../_common/glob_to_reg_exp.ts";
-import { normalize } from "./normalize.ts";
-import { join } from "./join.ts";
-import { SEP, SEP_PATTERN } from "./separator.ts";
-export { isGlob } from "../_common/is_glob.ts";
+import { globToRegExp as _globToRegExp } from "./glob_to_regexp.ts";
+import { normalizeGlob as _normalizeGlob } from "./normalize_glob.ts";
+import { joinGlobs as _joinGlobs } from "./join_globs.ts";
+import { isGlob as _isGlob } from "../is_glob.ts";
 
-const constants: GlobConstants = {
-  sep: "(?:\\\\|/)+",
-  sepMaybe: "(?:\\\\|/)*",
-  seps: ["\\", "/"],
-  globstar: "(?:[^\\\\/]*(?:\\\\|/|$)+)*",
-  wildcard: "[^\\\\/]*",
-  escapePrefix: "`",
-};
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/is_glob.ts"
+ *
+ * Test whether the given string is a glob
+ */
+export const isGlob = _isGlob;
 
-/** Convert a glob string to a regular expression.
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/glob_to_regexp.ts"
+ *
+ * Convert a glob string to a regular expression.
  *
  * Tries to match bash glob expansion as closely as possible.
  *
@@ -76,49 +71,18 @@ const constants: GlobConstants = {
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
  *   the group occurs not nested at the end of the segment. */
-export function globToRegExp(
-  glob: string,
-  options: GlobToRegExpOptions = {},
-): RegExp {
-  return _globToRegExp(constants, glob, options);
-}
+export const globToRegExp = _globToRegExp;
 
-/** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
-export function normalizeGlob(
-  glob: string,
-  { globstar = false }: GlobOptions = {},
-): string {
-  if (glob.match(/\0/g)) {
-    throw new Error(`Glob contains invalid characters: "${glob}"`);
-  }
-  if (!globstar) {
-    return normalize(glob);
-  }
-  const s = SEP_PATTERN.source;
-  const badParentPattern = new RegExp(
-    `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
-    "g",
-  );
-  return normalize(glob.replace(badParentPattern, "\0")).replace(/\0/g, "..");
-}
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/normalize_glob.ts"
+ *
+ * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
+ */
+export const normalizeGlob = _normalizeGlob;
 
-/** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
-export function joinGlobs(
-  globs: string[],
-  { extended = true, globstar = false }: GlobOptions = {},
-): string {
-  if (!globstar || globs.length === 0) {
-    return join(...globs);
-  }
-  if (globs.length === 0) return ".";
-  let joined: string | undefined;
-  for (const glob of globs) {
-    const path = glob;
-    if (path.length > 0) {
-      if (!joined) joined = path;
-      else joined += `${SEP}${path}`;
-    }
-  }
-  if (!joined) return ".";
-  return normalizeGlob(joined, { extended, globstar });
-}
+/**
+ * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/join_globs.ts"
+ *
+ * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
+ */
+export const joinGlobs = _joinGlobs;
