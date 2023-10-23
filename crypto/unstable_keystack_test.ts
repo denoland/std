@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../../assert/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
-import { KeyStack } from "./keystack.ts";
+import { KeyStack } from "./unstable_keystack.ts";
 
 Deno.test({
   name: "keyStack.sign() - single key",

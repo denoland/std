@@ -12,6 +12,7 @@ import {
 import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
 import { StringReader } from "../io/string_reader.ts";
+import { delay } from "../async/delay.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
@@ -373,9 +374,6 @@ Deno.test({
   name:
     "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
-  // TODO(kt3k): Enable this test on windows.
-  // See https://github.com/denoland/deno_std/issues/3160
-  ignore: Deno.build.os === "windows",
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
     const readable = file.readable.pipeThrough(MyTextDecoderStream())
@@ -383,6 +381,8 @@ Deno.test({
     for await (const _record of readable) {
       break;
     }
+    // FIXME(kt3k): Remove this delay.
+    await delay(100);
   },
 });
 
