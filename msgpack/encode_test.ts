@@ -168,7 +168,7 @@ Deno.test("huge array with 100k objects", () => {
   for (let i = 0; i < 100000; i++) {
     bigArray.push({ a: { i: `${i}` }, i: i });
   }
-  const bigObject = { a: bigArray }
+  const bigObject = { a: bigArray };
 
   assertEquals(decode(encode(bigObject)), bigObject);
 });
@@ -178,9 +178,8 @@ Deno.test("huge object with 100k properties", () => {
   for (let i = 0; i < 100000; i++) {
     const _ = Object.defineProperty(bigObject, `prop_${i}`, {
       value: i,
-      enumerable: true
+      enumerable: true,
     });
   }
   assertEquals(decode(encode(bigObject)), bigObject);
-}
-);
+});

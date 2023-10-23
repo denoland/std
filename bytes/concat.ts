@@ -11,7 +11,6 @@
  * ```
  */
 export function concat(...buf: (Uint8Array | Uint8Array[])[]): Uint8Array {
-
   // No need to concatenate if there is only one element in array or sub-array
   if (buf.length === 1) {
     if (!Array.isArray(buf[0])) {
