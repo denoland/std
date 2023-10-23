@@ -98,7 +98,7 @@ export async function* expandGlob(
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
-  const absRoot = resolve(root!);
+  const absRoot = resolve(root!); // root is always string here
   const resolveFromRoot = (path: string): string => resolve(absRoot, path);
   const excludePatterns = exclude
     .map(resolveFromRoot)
@@ -224,7 +224,7 @@ export function* expandGlobSync(
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
-  const absRoot = resolve(root!);
+  const absRoot = resolve(root!); // root is always string here
   const resolveFromRoot = (path: string): string => resolve(absRoot, path);
   const excludePatterns = exclude
     .map(resolveFromRoot)
