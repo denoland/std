@@ -540,23 +540,14 @@ Deno.test(
   async function () {
     await startTlsFileServer();
     try {
-      // Valid request after invalid
-      const conn = await Deno.connectTls({
-        hostname: "localhost",
-        port: 4577,
-        certFile: join(testdataDir, "tls/RootCA.pem"),
-      });
-
-      await writeAll(
-        conn,
-        new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
       );
-      const res = new Uint8Array(128 * 1024);
-      const nread = await conn.read(res);
-      assert(nread !== null);
-      conn.close();
-      const page = new TextDecoder().decode(res.subarray(0, nread));
-      assert(page.includes("<title>Deno File Server</title>"));
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const res = await fetch("https://localhost:4577/", { client });
+      client.close();
+
+      assertStringIncludes(await res.text(), "<title>Deno File Server</title>");
     } finally {
       await killFileServer();
     }
@@ -587,9 +578,10 @@ Deno.test("partial TLS arguments fail", async function () {
   child = fileServer.spawn();
   try {
     // Once fileServer is ready it will write to its stdout.
-    const r = child.stdout.pipeThrough(new TextDecoderStream())
-      .pipeThrough(new TextLineStream());
-    const reader = r.getReader();
+    const reader = child.stdout
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new TextLineStream())
+      .getReader();
     const res = await reader.read();
     assert(
       !res.done && res.value.includes("--key and --cert are required for TLS"),
