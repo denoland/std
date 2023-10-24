@@ -32,14 +32,7 @@ export function resolve(...pathSegments: string[]): string {
       ) {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
-      try {
-        path = Deno.cwd();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.PermissionDenied)) {
-          throw error;
-        }
-        path = undefined as unknown as string;
-      }
+      path = Deno.cwd();
 
       // Verify that a cwd was found and that it actually points
       // to our drive. If not, default to the drive's root.
