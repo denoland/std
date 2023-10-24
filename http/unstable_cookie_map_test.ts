@@ -7,7 +7,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 import { FakeTime } from "../testing/time.ts";
-import { KeyStack } from "../crypto/keystack.ts";
+import { KeyStack } from "../crypto/unstable_keystack.ts";
 
 import {
   CookieMap,
