@@ -587,6 +587,7 @@ Deno.test("partial TLS arguments fail", async function () {
       !res.done && res.value.includes("--key and --cert are required for TLS"),
     );
     reader.releaseLock();
+    await reader.cancel();
   } finally {
     await killFileServer();
   }
