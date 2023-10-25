@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
+import { _exponentialBackoffWithJitter } from "./_util.ts";
 
 export class RetryError extends Error {
   constructor(cause: unknown, attempts: number) {
@@ -115,15 +116,4 @@ export async function retry<T>(
     }
     attempt++;
   }
-}
-
-export function _exponentialBackoffWithJitter(
-  cap: number,
-  base: number,
-  attempt: number,
-  multiplier: number,
-  jitter: number,
-) {
-  const exp = Math.min(cap, base * multiplier ** attempt);
-  return (1 - jitter * Math.random()) * exp;
 }
