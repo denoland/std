@@ -1,5 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertFalse,
+  assertStringIncludes,
+} from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
 import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
@@ -16,7 +21,6 @@ import {
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
-import { assertFalse } from "https://deno.land/std@$STD_VERSION/assert/assert_false.ts";
 
 const isWindows = Deno.build.os === "windows";
 
