@@ -16,6 +16,7 @@ import {
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
 import { retry } from "../async/retry.ts";
+import { assertFalse } from "https://deno.land/std@$STD_VERSION/assert/assert_false.ts";
 
 const isWindows = Deno.build.os === "windows";
 
@@ -555,7 +556,7 @@ Deno.test(
 );
 
 Deno.test("partial TLS arguments fail", async function () {
-  const fileServer = new Deno.Command(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -572,24 +573,14 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
-  child = fileServer.spawn();
-  try {
-    // Once fileServer is ready it will write to its stdout.
-    const reader = child.stdout
-      .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new TextLineStream())
-      .getReader();
-    const res = await reader.read();
-    assert(
-      !res.done && res.value.includes("--key and --cert are required for TLS"),
-    );
-    reader.releaseLock();
-  } finally {
-    await killFileServer();
-  }
+  const { stdout, success } = await command.output();
+  assertFalse(success);
+  assertStringIncludes(
+    new TextDecoder().decode(stdout),
+    "--key and --cert are required for TLS",
+  );
 });
 
 Deno.test("file_server disable dir listings", async function () {
