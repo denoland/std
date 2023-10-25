@@ -116,7 +116,7 @@
  * console.log(encodeHex(hash));
  *
  * // Or with base64 encoding
- * console.log(encodeBase64(hash, "base64"));
+ * console.log(encodeBase64(hash));
  * ```
  *
  * @module
