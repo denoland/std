@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 import { normalizeString } from "../_common/normalize_string.ts";
-import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
 /**
@@ -25,8 +24,6 @@ export function resolve(...pathSegments: string[]): string {
       }
       path = Deno.cwd();
     }
-
-    assertPath(path);
 
     // Skip empty entries
     if (path.length === 0) {

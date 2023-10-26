@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 import { CHAR_COLON } from "../_common/constants.ts";
-import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
 /**
@@ -10,8 +9,6 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param path to be verified as absolute
  */
 export function isAbsolute(path: string): boolean {
-  assertPath(path);
-
   const len = path.length;
   if (len === 0) return false;
 

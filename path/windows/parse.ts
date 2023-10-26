@@ -3,7 +3,6 @@
 
 import { CHAR_COLON, CHAR_DOT } from "../_common/constants.ts";
 import { ParsedPath } from "../_interface.ts";
-import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
 /**
@@ -11,8 +10,6 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param path to process
  */
 export function parse(path: string): ParsedPath {
-  assertPath(path);
-
   const ret: ParsedPath = { root: "", dir: "", base: "", ext: "", name: "" };
 
   const len = path.length;

@@ -4,7 +4,6 @@
 import { CHAR_DOT } from "../_common/constants.ts";
 import { ParsedPath } from "../_interface.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
-import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
 /**
@@ -12,8 +11,6 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param path to process
  */
 export function parse(path: string): ParsedPath {
-  assertPath(path);
-
   const ret: ParsedPath = { root: "", dir: "", base: "", ext: "", name: "" };
   if (path.length === 0) return ret;
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
