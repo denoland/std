@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertArg } from "../_common/normalize.ts";
 import { CHAR_COLON } from "../_common/constants.ts";
 import { normalizeString } from "../_common/normalize_string.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
@@ -13,8 +12,6 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param path to be normalized
  */
 export function normalize(path: string): string {
-  assertArg(path);
-
   const len = path.length;
   let rootEnd = 0;
   let device: string | undefined;

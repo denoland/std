@@ -3,7 +3,6 @@
 
 import { CHAR_BACKWARD_SLASH } from "../_common/constants.ts";
 import { resolve } from "./resolve.ts";
-import { assertArgs } from "../_common/relative.ts";
 
 /**
  * Return the relative path from `from` to `to` based on current working directory.
@@ -17,8 +16,6 @@ import { assertArgs } from "../_common/relative.ts";
  * @param to path in current working directory
  */
 export function relative(from: string, to: string): string {
-  assertArgs(from, to);
-
   const fromOrig = resolve(from);
   const toOrig = resolve(to);
 

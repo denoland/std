@@ -16,12 +16,12 @@ Deno.test("[path] fromFileUrl", function () {
   assertThrows(
     () => posix.fromFileUrl("http://localhost/foo"),
     TypeError,
-    "Must be a file URL.",
+    "URL must be a file URL",
   );
   assertThrows(
     () => posix.fromFileUrl("abcd://localhost/foo"),
     TypeError,
-    "Must be a file URL.",
+    "URL must be a file URL",
   );
 });
 
@@ -42,11 +42,11 @@ Deno.test("[path] fromFileUrl (win32)", function () {
   assertThrows(
     () => win32.fromFileUrl("http://localhost/foo"),
     TypeError,
-    "Must be a file URL.",
+    "URL must be a file URL",
   );
   assertThrows(
     () => win32.fromFileUrl("abcd://localhost/foo"),
     TypeError,
-    "Must be a file URL.",
+    "URL must be a file URL",
   );
 });

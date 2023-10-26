@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertArg } from "../_common/dirname.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
@@ -10,8 +9,6 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param path - path to extract the directory from.
  */
 export function dirname(path: string): string {
-  assertArg(path);
-
   let end = -1;
   let matchedNonSeparator = false;
 

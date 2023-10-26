@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertArg } from "../_common/normalize.ts";
 import { normalizeString } from "../_common/normalize_string.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
@@ -12,8 +11,6 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param path to be normalized
  */
 export function normalize(path: string): string {
-  assertArg(path);
-
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
   const trailingSeparator = isPosixPathSeparator(
     path.charCodeAt(path.length - 1),

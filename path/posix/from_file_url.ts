@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertArg } from "../_common/from_file_url.ts";
+import { assertFileUrl } from "../_common/from_file_url.ts";
 
 /**
  * Converts a file URL to a path string.
@@ -14,7 +14,8 @@ import { assertArg } from "../_common/from_file_url.ts";
  * @param url of a file URL
  */
 export function fromFileUrl(url: URL | string): string {
-  url = assertArg(url);
+  url = new URL(url);
+  assertFileUrl(url);
   return decodeURIComponent(
     url.pathname.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"),
   );

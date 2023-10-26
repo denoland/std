@@ -1,11 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  assertArgs,
-  lastPathSegment,
-  stripSuffix,
-} from "../_common/basename.ts";
+import { lastPathSegment, stripSuffix } from "../_common/basename.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
@@ -17,8 +13,6 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param [suffix] - suffix to remove from extracted name.
  */
 export function basename(path: string, suffix = ""): string {
-  assertArgs(path, suffix);
-
   const lastSegment = lastPathSegment(path, isPosixPathSeparator);
   const strippedSegment = stripTrailingSeparators(
     lastSegment,

@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { assertArg } from "../_common/dirname.ts";
 import { CHAR_COLON } from "../_common/constants.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import {
@@ -15,8 +14,6 @@ import {
  * @param path - path to extract the directory from.
  */
 export function dirname(path: string): string {
-  assertArg(path);
-
   const len = path.length;
   let rootEnd = -1;
   let end = -1;

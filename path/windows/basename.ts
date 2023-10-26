@@ -1,11 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  assertArgs,
-  lastPathSegment,
-  stripSuffix,
-} from "../_common/basename.ts";
+import { lastPathSegment, stripSuffix } from "../_common/basename.ts";
 import { CHAR_COLON } from "../_common/constants.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
@@ -18,8 +14,6 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param [suffix] - suffix to remove from extracted name.
  */
 export function basename(path: string, suffix = ""): string {
-  assertArgs(path, suffix);
-
   // Check for a drive letter prefix so as not to mistake the following
   // path separator as an extra separator at the end of the path that can be
   // disregarded

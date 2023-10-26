@@ -3,7 +3,6 @@
 
 import { isPosixPathSeparator } from "./_util.ts";
 import { resolve } from "./resolve.ts";
-import { assertArgs } from "../_common/relative.ts";
 
 /**
  * Return the relative path from `from` to `to` based on current working directory.
@@ -12,8 +11,6 @@ import { assertArgs } from "../_common/relative.ts";
  * @param to path in current working directory
  */
 export function relative(from: string, to: string): string {
-  assertArgs(from, to);
-
   from = resolve(from);
   to = resolve(to);
 

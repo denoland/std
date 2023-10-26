@@ -15,11 +15,3 @@ export function _format(
   if (dir === pathObject.root) return dir + base;
   return dir + sep + base;
 }
-
-export function assertArg(pathObject: FormatInputPathObject) {
-  if (pathObject === null || typeof pathObject !== "object") {
-    throw new TypeError(
-      `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,
-    );
-  }
-}
