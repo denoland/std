@@ -3,7 +3,7 @@
 [![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
 [![ci](https://github.com/denoland/deno_std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/deno_std/actions/workflows/ci.yml)
 
-High-quality APIs for Deno and the web. Use fearlessly.
+High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
 ## Get Started
 
@@ -72,9 +72,9 @@ Check out the contributing guidelines [here](./CONTRIBUTING.md).
 
 ## Releases
 
-Standard library is currently tagged independently of Deno version. This will
-change once the library is stabilized.
-
-To check compatibility of different version of standard library with Deno CLI
-see
-[this list](https://raw.githubusercontent.com/denoland/dotland/main/versions.json).
+The Standard Library is versioned independently of the
+[Deno CLI](https://deno.com/). This will change once the library is stabilized.
+See
+[here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
+for the compatibility of different versions of the Deno Standard Library and the
+Deno CLI.
