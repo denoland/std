@@ -184,10 +184,8 @@ async function fetchExactPath(
       status: statusCode,
       headers: new Headers(headersObj),
     });
-  } finally {
-    if (conn) {
-      conn.close();
-    }
+  } catch {
+    // no-op
   }
 }
 
