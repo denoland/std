@@ -2,39 +2,33 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
- *
  * Contains the constant {@linkcode HTTP_METHODS} and the type
  * {@linkcode HttpMethod} and the type guard {@linkcode isHttpMethod} for
  * working with HTTP methods with type safety.
  *
  * @module
  */
-import {
-  HTTP_METHODS as HTTP_METHODS_,
-  type HttpMethod as HttpMethod_,
-  isHttpMethod as isHttpMethod_,
-} from "./unstable_method.ts";
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
+ * List of common IANA-registered HTTP methods.
  *
- * A constant array of common HTTP methods.
- *
- * This list is compatible with Node.js `http` module.
+ * @see {@link https://www.rfc-editor.org/rfc/rfc9110.html#name-overview}
  */
-export const HTTP_METHODS = HTTP_METHODS_;
+export const HTTP_METHODS = [
+  "GET",
+  "HEAD",
+  "POST",
+  "PUT",
+  "DELETE",
+  "CONNECT",
+  "OPTIONS",
+  "TRACE",
+] as const;
 
-/**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
- *
- * A type representing string literals of each of the common HTTP method.
- */
-export type HttpMethod = HttpMethod_;
+/** A type representing string literals of each of the common HTTP method. */
+export type HttpMethod = typeof HTTP_METHODS[number];
 
-/**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
- *
- * A type guard that determines if a value is a valid HTTP method.
- */
-export const isHttpMethod = isHttpMethod_;
+/** A type guard that determines if a value is a valid HTTP method. */
+export function isHttpMethod(value: unknown): value is HttpMethod {
+  return HTTP_METHODS.includes(value as HttpMethod);
+}
