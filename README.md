@@ -1,50 +1,79 @@
-# Deno Standard Modules
+# Deno Standard Library
 
 [![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
+[![ci](https://github.com/denoland/deno_std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/deno_std/actions/workflows/ci.yml)
 
-These modules do not have external dependencies and they are reviewed by the
-Deno core team. The intention is to have a standard set of high quality code
-that all Deno projects can use fearlessly.
+High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-Contributions are welcome!
+## Get Started
 
-## Releases
+```ts
+import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
 
-Standard library is currently tagged independently of Deno version. This will
-change once the library is stabilized.
+await copy("./foo", "./bar");
+```
 
-To check compatibility of different version of standard library with Deno CLI
-see
-[this list](https://raw.githubusercontent.com/denoland/dotland/main/versions.json).
-
-## How to use
-
-These modules will eventually be tagged in accordance with Deno releases but as
-of today we do not yet consider them stable and so we version the standard
-modules differently from the Deno runtime to reflect this.
-
-It is strongly recommended that you link to tagged releases to avoid unintended
-updates and breaking changes.
-
-Don't link to / import any module whose path:
-
-- Has a name or parent with an underscore prefix: `_foo.ts`, `_util/bar.ts`.
-- Is that of a test module or test data: `test.ts`, `foo_test.ts`,
-  `testdata/bar.txt`.
-
-Don't import any symbol with an underscore prefix: `export function _baz() {}`.
-
-These elements are not considered part of the public API, thus no stability is
-guaranteed for them.
+See [here](#recommended-usage) for recommended usage patterns.
 
 ## Documentation
 
-To browse documentation for modules:
+Check out the documentation [here](https://deno.land/std?doc).
 
-- Go to https://deno.land/std/.
-- Click "View Documentation".
-- Navigate to any module of interest.
+## Recommended Usage
+
+1. Include the version of the library in the import specifier.
+
+   Good:
+   ```ts
+   import { copy } from "https://deno.land/std@0.204.0/fs/copy.ts";
+   ```
+
+1. Only import modules that you require.
+
+   Bad (when using only one function):
+   ```ts
+   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   ```
+
+   Good (when using only one function):
+   ```ts
+   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   ```
+
+   Good (when using multiple functions):
+   ```ts
+   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   ```
+
+1. Do not import symbols with an underscore in the name.
+
+   Bad:
+   ```ts
+   import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
+   ```
+
+1. Do not import modules with an underscore in the path.
+
+   Bad:
+   ```ts
+   import { filterInPlace } from "https://deno.land/std@$STD_VERSION/collections/_utils.ts";
+   ```
+
+1. Do not import test modules or test data.
+
+   Bad:
+   ```ts
+   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   ```
 
 ## Contributing
 
 Check out the contributing guidelines [here](./CONTRIBUTING.md).
+
+## Releases
+
+The Standard Library is versioned independently of the Deno CLI. This will
+change once the Standard Library is stabilized. See
+[here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
+for the compatibility of different versions of the Deno Standard Library and the
+Deno CLI.
