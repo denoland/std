@@ -10,6 +10,8 @@
  * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]
  * ```
  */
+export function concat(buf: Uint8Array[]): Uint8Array;
+export function concat(...buf: Uint8Array[]): Uint8Array;
 export function concat(...buf: (Uint8Array | Uint8Array[])[]): Uint8Array {
   // No need to concatenate if there is only one element in array or sub-array
   if (buf.length === 1) {
