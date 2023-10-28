@@ -133,9 +133,7 @@ async function fetchExactPath(
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
-  const conn = await Deno.connect(
-    { hostname: hostname, port: port, transport: "tcp" },
-  );
+  const conn = await Deno.connect({ hostname, port });
   await writeAll(conn, request);
   let currentResult = "";
   let contentLength = -1;
