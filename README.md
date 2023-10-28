@@ -13,13 +13,13 @@ import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
 await copy("./foo", "./bar");
 ```
 
-See [here](#recommended-usage-patterns) for recommended usage patterns.
+See [here](#recommended-usage) for recommended usage patterns.
 
 ## Documentation
 
 Check out the documentation [here](https://deno.land/std?doc).
 
-## Recommended Usage Patterns
+## Recommended Usage
 
 1. Include the version of the library in the import specifier.
 
