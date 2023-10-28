@@ -37,5 +37,4 @@ testing/      @kt3k
 toml/         @kt3k
 url/          @kt3k
 uuid/         @kt3k
-wasi/         @kt3k
 yaml/         @kt3k
