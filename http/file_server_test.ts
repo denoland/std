@@ -6,7 +6,6 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
@@ -134,62 +133,53 @@ async function fetchExactPath(
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
-  let conn: undefined | Deno.Conn;
-  try {
-    conn = await Deno.connect(
-      { hostname: hostname, port: port, transport: "tcp" },
-    );
-    await writeAll(conn, request);
-    let currentResult = "";
-    let contentLength = -1;
-    let startOfBody = -1;
-    for await (const chunk of iterateReader(conn)) {
-      currentResult += decoder.decode(chunk);
-      if (contentLength === -1) {
-        const match = /^content-length: (.*)$/m.exec(currentResult);
-        if (match && match[1]) {
-          contentLength = Number(match[1]);
-        }
-      }
-      if (startOfBody === -1) {
-        const ind = currentResult.indexOf("\r\n\r\n");
-        if (ind !== -1) {
-          startOfBody = ind + 4;
-        }
-      }
-      if (startOfBody !== -1 && contentLength !== -1) {
-        const byteLen = encoder.encode(currentResult).length;
-        if (byteLen >= contentLength + startOfBody) {
-          break;
-        }
+  const conn = await Deno.connect({ hostname, port });
+  await writeAll(conn, request);
+  let currentResult = "";
+  let contentLength = -1;
+  let startOfBody = -1;
+  for await (const chunk of conn.readable) {
+    currentResult += decoder.decode(chunk);
+    if (contentLength === -1) {
+      const match = /^content-length: (.*)$/m.exec(currentResult);
+      if (match && match[1]) {
+        contentLength = Number(match[1]);
       }
     }
-    const status = /^HTTP\/1.1 (...)/.exec(currentResult);
-    let statusCode = 0;
-    if (status && status[1]) {
-      statusCode = Number(status[1]);
-    }
-
-    const body = currentResult.slice(startOfBody);
-    const headersStr = currentResult.slice(0, startOfBody);
-    const headersReg = /^(.*): (.*)$/mg;
-    const headersObj: { [i: string]: string } = {};
-    let match = headersReg.exec(headersStr);
-    while (match !== null) {
-      if (match[1] && match[2]) {
-        headersObj[match[1]] = match[2];
+    if (startOfBody === -1) {
+      const ind = currentResult.indexOf("\r\n\r\n");
+      if (ind !== -1) {
+        startOfBody = ind + 4;
       }
-      match = headersReg.exec(headersStr);
     }
-    return new Response(body, {
-      status: statusCode,
-      headers: new Headers(headersObj),
-    });
-  } finally {
-    if (conn) {
-      conn.close();
+    if (startOfBody !== -1 && contentLength !== -1) {
+      const byteLen = encoder.encode(currentResult).length;
+      if (byteLen >= contentLength + startOfBody) {
+        break;
+      }
     }
   }
+  const status = /^HTTP\/1.1 (...)/.exec(currentResult);
+  let statusCode = 0;
+  if (status && status[1]) {
+    statusCode = Number(status[1]);
+  }
+
+  const body = currentResult.slice(startOfBody);
+  const headersStr = currentResult.slice(0, startOfBody);
+  const headersReg = /^(.*): (.*)$/mg;
+  const headersObj: { [i: string]: string } = {};
+  let match = headersReg.exec(headersStr);
+  while (match !== null) {
+    if (match[1] && match[2]) {
+      headersObj[match[1]] = match[2];
+    }
+    match = headersReg.exec(headersStr);
+  }
+  return new Response(body, {
+    status: statusCode,
+    headers: new Headers(headersObj),
+  });
 }
 
 Deno.test(
