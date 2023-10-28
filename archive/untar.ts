@@ -1,15 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import {
-  FileTypes,
-  readBlock,
-  recordSize,
-  type TarMeta,
-  ustarStructure,
-} from "./_common.ts";
-import { readAll } from "../streams/read_all.ts";
-import type { Reader } from "../types.d.ts";
-
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -38,6 +28,24 @@ import type { Reader } from "../types.d.ts";
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+import {
+  FileTypes,
+  HEADER_LENGTH,
+  readBlock,
+  type TarMeta,
+  ustarStructure,
+} from "./_common.ts";
+import { readAll } from "../streams/read_all.ts";
+import type { Reader } from "../types.d.ts";
+
+/**
+ * Extend TarMeta with the `linkName` property so that readers can access
+ * symbolic link values without polluting the world of archive writers.
+ */
+export interface TarMetaWithLinkName extends TarMeta {
+  linkName?: string;
+}
 
 export interface TarHeader {
   [key: string]: Uint8Array;
@@ -73,7 +81,7 @@ function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
 }
 
 // deno-lint-ignore no-empty-interface
-export interface TarEntry extends TarMeta {}
+export interface TarEntry extends TarMetaWithLinkName {}
 
 export class TarEntry implements Reader {
   #header: TarHeader;
@@ -83,7 +91,7 @@ export class TarEntry implements Reader {
   #consumed = false;
   #entrySize: number;
   constructor(
-    meta: TarMeta,
+    meta: TarMetaWithLinkName,
     header: TarHeader,
     reader: Reader | (Reader & Deno.Seeker),
   ) {
@@ -94,8 +102,8 @@ export class TarEntry implements Reader {
     // File Size
     this.#size = this.fileSize || 0;
     // Entry Size
-    const blocks = Math.ceil(this.#size / recordSize);
-    this.#entrySize = blocks * recordSize;
+    const blocks = Math.ceil(this.#size / HEADER_LENGTH);
+    this.#entrySize = blocks * HEADER_LENGTH;
   }
 
   get consumed(): boolean {
@@ -151,7 +159,25 @@ export class TarEntry implements Reader {
 }
 
 /**
- * A class to extract a tar archive
+ * ### Overview
+ * A class to extract from a tar archive.  Tar archives allow for storing multiple
+ * files in a single file (called an archive, or sometimes a tarball).  These
+ * archives typically have the '.tar' extension.
+ *
+ * ### Supported file formats
+ * Only the ustar file format is supported.  This is the most common format. The
+ * pax file format may also be read, but additional features, such as longer
+ * filenames may be ignored.
+ *
+ * ### Usage
+ * The workflow is to create a Untar instance referencing the source of the tar file.
+ * You can then use the untar reference to extract files one at a time. See the worked
+ * example below for details.
+ *
+ * ### Understanding compression
+ * A tar archive may be compressed, often identified by the `.tar.gz` extension.
+ * This utility does not support decompression which must be done before extracting
+ * the files.
  *
  * @example
  * ```ts
@@ -186,12 +212,12 @@ export class Untar {
 
   constructor(reader: Reader) {
     this.reader = reader;
-    this.block = new Uint8Array(recordSize);
+    this.block = new Uint8Array(HEADER_LENGTH);
   }
 
   #checksum(header: Uint8Array): number {
     let sum = initialChecksum;
-    for (let i = 0; i < 512; i++) {
+    for (let i = 0; i < HEADER_LENGTH; i++) {
       if (i >= 148 && i < 156) {
         // Ignore checksum header
         continue;
@@ -201,7 +227,7 @@ export class Untar {
     return sum;
   }
 
-  async #getHeader(): Promise<TarHeader | null> {
+  async #getAndValidateHeader(): Promise<TarHeader | null> {
     await readBlock(this.reader, this.block);
     const header = parseHeader(this.block);
 
@@ -226,22 +252,19 @@ export class Untar {
     return header;
   }
 
-  #getMetadata(header: TarHeader): TarMeta {
+  #getMetadata(header: TarHeader): TarMetaWithLinkName {
     const decoder = new TextDecoder();
     // get meta data
-    const meta: TarMeta = {
+    const meta: TarMetaWithLinkName = {
       fileName: decoder.decode(trim(header.fileName)),
     };
     const fileNamePrefix = trim(header.fileNamePrefix);
     if (fileNamePrefix.byteLength > 0) {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
-    (["fileMode", "mtime", "uid", "gid"] as [
-      "fileMode",
-      "mtime",
-      "uid",
-      "gid",
-    ]).forEach((key) => {
+    (
+      ["fileMode", "mtime", "uid", "gid"] as ["fileMode", "mtime", "uid", "gid"]
+    ).forEach((key) => {
       const arr = trim(header[key]);
       if (arr.byteLength > 0) {
         meta[key] = parseInt(decoder.decode(arr), 8);
@@ -259,9 +282,21 @@ export class Untar {
     meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
     meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
 
+    // Only create the `linkName` property for symbolic links to minimize
+    // the effect on existing code that only deals with non-links.
+    if (meta.type === "symlink") {
+      meta.linkName = decoder.decode(trim(header.linkName));
+    }
+
     return meta;
   }
 
+  /**
+   * Extract the next entry of the tar archive.
+   *
+   * @returns A TarEntry with header metadata and a reader to the entry's
+   *          body, or null if there are no more entries to extract.
+   */
   async extract(): Promise<TarEntry | null> {
     if (this.#entry && !this.#entry.consumed) {
       // If entry body was not read, discard the body
@@ -269,7 +304,7 @@ export class Untar {
       await this.#entry.discard();
     }
 
-    const header = await this.#getHeader();
+    const header = await this.#getAndValidateHeader();
     if (header === null) return null;
 
     const meta = this.#getMetadata(header);
@@ -279,6 +314,11 @@ export class Untar {
     return this.#entry;
   }
 
+  /**
+   * Iterate over all entries of the tar archive.
+   *
+   * @yields A TarEntry with tar header metadata and a reader to the entry's body.
+   */
   async *[Symbol.asyncIterator](): AsyncIterableIterator<TarEntry> {
     while (true) {
       const entry = await this.extract();

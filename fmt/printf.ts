@@ -907,7 +907,7 @@ class Printf {
    */
   fmtI(val: unknown, compact: boolean): string {
     return Deno.inspect(val, {
-      colors: true,
+      colors: !Deno?.noColor,
       compact,
       depth: Infinity,
       iterableLimit: Infinity,

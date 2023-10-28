@@ -23,15 +23,6 @@
  * @module
  */
 
-// Not sure what's causing this warning? Run `deno info <entry-point-path>` to
-// analyze the module graph. It's not recommended to import directly from
-// mod.ts here because it adds a lot of bloat.
-console.warn(
-  "%c[WARN] deno_std: prefer importing collections/<function_name_in_snake_case>.ts " +
-    "instead of collections/mod.ts",
-  "color: yellow;",
-);
-
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
 export * from "./associate_with.ts";
@@ -77,4 +68,4 @@ export * from "./sample.ts";
 export * from "./running_reduce.ts";
 export * from "./binary_heap.ts";
 export * from "./binary_search_tree.ts";
-export * from "./red_black_tree.ts";
+export { RedBlackTree } from "./unstable_red_black_tree.ts";

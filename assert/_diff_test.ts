@@ -314,3 +314,32 @@ Deno.test({
     ]);
   },
 });
+
+Deno.test({
+  name: "multiline diff with more removed lines",
+  fn() {
+    const diffResult = diffstr("a\na", "e");
+    assertEquals(diffResult, [
+      {
+        type: DiffType.removed,
+        value: "a\\n\n",
+      },
+      {
+        type: DiffType.removed,
+        value: "a\n",
+        details: [
+          { type: DiffType.removed, value: "a" },
+          { type: DiffType.common, value: "\n" },
+        ],
+      },
+      {
+        type: DiffType.added,
+        value: "e\n",
+        details: [
+          { type: DiffType.added, value: "e" },
+          { type: DiffType.common, value: "\n" },
+        ],
+      },
+    ]);
+  },
+});

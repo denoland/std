@@ -10,23 +10,7 @@ import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
  * @param version The version string to parse
  * @returns A valid SemVer
  */
-export function parse(version: string | SemVer): SemVer;
-/** @deprecated (will be removed after 0.200.0) Use parse(version: string | SemVer) instead. */
-export function parse(
-  version: string | SemVer | null,
-  options?: { includePrerelease: boolean },
-): SemVer;
-/**
- * Attempt to parse a string as a semantic version, returning either a `SemVer`
- * object or throws a TypeError.
- * @param version The version string to parse
- * @returns A valid SemVer
- */
-export function parse(
-  version: string | SemVer | null,
-  options?: { includePrerelease: boolean },
-): SemVer {
-  const includePrerelease = options?.includePrerelease ?? true;
+export function parse(version: string | SemVer): SemVer {
   if (typeof version === "object") {
     if (isSemVer(version)) {
       return version;
@@ -72,7 +56,7 @@ export function parse(
   }
 
   // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^${src[NUMERICIDENTIFIER]}$`);
+  const numericIdentifier = new RegExp(`^(${src[NUMERICIDENTIFIER]})$`);
   const prerelease = (m[4] ?? "")
     .split(".")
     .filter((id) => id)
@@ -86,21 +70,11 @@ export function parse(
     });
 
   const build = m[5]?.split(".")?.filter((m) => m) ?? [];
-  if (includePrerelease) {
-    return {
-      major,
-      minor,
-      patch,
-      prerelease,
-      build,
-    };
-  } else {
-    return {
-      major,
-      minor,
-      patch,
-      prerelease: [],
-      build: [],
-    };
-  }
+  return {
+    major,
+    minor,
+    patch,
+    prerelease,
+    build,
+  };
 }

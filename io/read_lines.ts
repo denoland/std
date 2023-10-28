@@ -20,6 +20,8 @@ import { concat } from "../bytes/concat.ts";
  *   console.log(line);
  * }
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function* readLines(
   reader: Reader,

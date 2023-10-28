@@ -34,6 +34,8 @@ const decoder = new TextDecoder();
  * base0123
  * base0123456789
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export class StringWriter implements Writer, WriterSync {
   #chunks: Uint8Array[] = [];

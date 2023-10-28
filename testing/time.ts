@@ -6,7 +6,8 @@
  * @module
  */
 
-import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
+import { RedBlackTree } from "../collections/unstable_red_black_tree.ts";
+import { ascend } from "../collections/unstable_comparators.ts";
 import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
@@ -154,6 +155,16 @@ function restoreGlobals() {
 function* timerIdGen() {
   let i = 1;
   while (true) yield i++;
+}
+
+function nextDueNode(): DueNode | null {
+  for (;;) {
+    const dueNode = dueTree.min();
+    if (!dueNode) return null;
+    const hasTimer = dueNode.timers.some((timer) => dueNodes.has(timer.id));
+    if (hasTimer) return dueNode;
+    dueTree.remove(dueNode);
+  }
 }
 
 let startedAt: number;
@@ -374,7 +385,7 @@ export class FakeTime {
    * Returns true when there is a scheduled timer and false when there is not.
    */
   next(): boolean {
-    const next = dueTree.min();
+    const next = nextDueNode();
     if (next) this.now = next.due;
     return !!next;
   }

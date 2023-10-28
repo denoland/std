@@ -17,6 +17,8 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeHandlerInfo` instead.
+ *
  * Information about the connection a request arrived on.
  */
 export interface ConnInfo {
@@ -27,6 +29,8 @@ export interface ConnInfo {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeHandler` instead.
+ *
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
  *
@@ -40,6 +44,8 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeInit` instead.
+ *
  * Options for running an HTTP server.
  */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
@@ -55,6 +61,8 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ *
  * Used to construct an HTTP server.
  */
 export class Server {
@@ -506,6 +514,8 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.ServeOptions` instead.
+ *
  * Additional serve listener options.
  */
 export interface ServeListenerOptions {
@@ -520,6 +530,8 @@ export interface ServeListenerOptions {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ *
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *

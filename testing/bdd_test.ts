@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertObjectMatch,
   assertStrictEquals,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import {
   afterAll,
   afterEach,

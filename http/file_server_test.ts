@@ -1,7 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertFalse,
+  assertStringIncludes,
+} from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { iterateReader } from "../streams/iterate_reader.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { serveDir, serveFile } from "./file_server.ts";
@@ -20,9 +24,10 @@ import { retry } from "../async/retry.ts";
 const isWindows = Deno.build.os === "windows";
 
 let child: Deno.ChildProcess;
+let stdout: ReadableStream<string>;
 
 interface FileServerCfg {
-  port?: string;
+  port?: number;
   cors?: boolean;
   "dir-listing"?: boolean;
   dotfiles?: boolean;
@@ -39,7 +44,7 @@ const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = "4507",
+  port = 4507,
   "dir-listing": dirListing = true,
   dotfiles = true,
   headers = [],
@@ -66,10 +71,10 @@ async function startFileServer({
   });
   child = fileServer.spawn();
   // Once fileServer is ready it will write to its stdout.
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-    new TextLineStream(),
-  );
-  const reader = r.getReader();
+  stdout = child.stdout
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextLineStream());
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
@@ -90,10 +95,10 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
     stderr: "null",
   });
   child = fileServer.spawn();
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+  stdout = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
     new TextLineStream(),
   );
-  const reader = r.getReader();
+  const reader = stdout.getReader();
   const res = await reader.read();
   assert(!res.done && res.value.includes("Server running..."));
   reader.releaseLock();
@@ -116,6 +121,7 @@ async function killFileServer() {
     }
   });
   await child.status;
+  for await (const _line of stdout) { /* noop */ } // wait until stdout closes
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -127,62 +133,53 @@ async function fetchExactPath(
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
-  let conn: undefined | Deno.Conn;
-  try {
-    conn = await Deno.connect(
-      { hostname: hostname, port: port, transport: "tcp" },
-    );
-    await writeAll(conn, request);
-    let currentResult = "";
-    let contentLength = -1;
-    let startOfBody = -1;
-    for await (const chunk of iterateReader(conn)) {
-      currentResult += decoder.decode(chunk);
-      if (contentLength === -1) {
-        const match = /^content-length: (.*)$/m.exec(currentResult);
-        if (match && match[1]) {
-          contentLength = Number(match[1]);
-        }
-      }
-      if (startOfBody === -1) {
-        const ind = currentResult.indexOf("\r\n\r\n");
-        if (ind !== -1) {
-          startOfBody = ind + 4;
-        }
-      }
-      if (startOfBody !== -1 && contentLength !== -1) {
-        const byteLen = encoder.encode(currentResult).length;
-        if (byteLen >= contentLength + startOfBody) {
-          break;
-        }
+  const conn = await Deno.connect({ hostname, port });
+  await writeAll(conn, request);
+  let currentResult = "";
+  let contentLength = -1;
+  let startOfBody = -1;
+  for await (const chunk of conn.readable) {
+    currentResult += decoder.decode(chunk);
+    if (contentLength === -1) {
+      const match = /^content-length: (.*)$/m.exec(currentResult);
+      if (match && match[1]) {
+        contentLength = Number(match[1]);
       }
     }
-    const status = /^HTTP\/1.1 (...)/.exec(currentResult);
-    let statusCode = 0;
-    if (status && status[1]) {
-      statusCode = Number(status[1]);
-    }
-
-    const body = currentResult.slice(startOfBody);
-    const headersStr = currentResult.slice(0, startOfBody);
-    const headersReg = /^(.*): (.*)$/mg;
-    const headersObj: { [i: string]: string } = {};
-    let match = headersReg.exec(headersStr);
-    while (match !== null) {
-      if (match[1] && match[2]) {
-        headersObj[match[1]] = match[2];
+    if (startOfBody === -1) {
+      const ind = currentResult.indexOf("\r\n\r\n");
+      if (ind !== -1) {
+        startOfBody = ind + 4;
       }
-      match = headersReg.exec(headersStr);
     }
-    return new Response(body, {
-      status: statusCode,
-      headers: new Headers(headersObj),
-    });
-  } finally {
-    if (conn) {
-      conn.close();
+    if (startOfBody !== -1 && contentLength !== -1) {
+      const byteLen = encoder.encode(currentResult).length;
+      if (byteLen >= contentLength + startOfBody) {
+        break;
+      }
     }
   }
+  const status = /^HTTP\/1.1 (...)/.exec(currentResult);
+  let statusCode = 0;
+  if (status && status[1]) {
+    statusCode = Number(status[1]);
+  }
+
+  const body = currentResult.slice(startOfBody);
+  const headersStr = currentResult.slice(0, startOfBody);
+  const headersReg = /^(.*): (.*)$/mg;
+  const headersObj: { [i: string]: string } = {};
+  let match = headersReg.exec(headersStr);
+  while (match !== null) {
+    if (match[1] && match[2]) {
+      headersObj[match[1]] = match[2];
+    }
+    match = headersReg.exec(headersStr);
+  }
+  return new Response(body, {
+    status: statusCode,
+    headers: new Headers(headersObj),
+  });
 }
 
 Deno.test(
@@ -487,7 +484,7 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = "4577",
+  port = 4577,
 }: FileServerCfg = {}) {
   const fileServer = new Deno.Command(Deno.execPath(), {
     args: [
@@ -526,7 +523,7 @@ async function startTlsFileServer({
   await retry(async () => {
     const conn = await Deno.connectTls({
       hostname: "localhost",
-      port: +port,
+      port,
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
     conn.close();
@@ -538,23 +535,14 @@ Deno.test(
   async function () {
     await startTlsFileServer();
     try {
-      // Valid request after invalid
-      const conn = await Deno.connectTls({
-        hostname: "localhost",
-        port: 4577,
-        certFile: join(testdataDir, "tls/RootCA.pem"),
-      });
-
-      await writeAll(
-        conn,
-        new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
       );
-      const res = new Uint8Array(128 * 1024);
-      const nread = await conn.read(res);
-      assert(nread !== null);
-      conn.close();
-      const page = new TextDecoder().decode(res.subarray(0, nread));
-      assert(page.includes("<title>Deno File Server</title>"));
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const res = await fetch("https://localhost:4577/", { client });
+      client.close();
+
+      assertStringIncludes(await res.text(), "<title>Deno File Server</title>");
     } finally {
       await killFileServer();
     }
@@ -562,7 +550,7 @@ Deno.test(
 );
 
 Deno.test("partial TLS arguments fail", async function () {
-  const fileServer = new Deno.Command(Deno.execPath(), {
+  const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
       "--no-check",
@@ -579,23 +567,14 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
-  child = fileServer.spawn();
-  try {
-    // Once fileServer is ready it will write to its stdout.
-    const r = child.stdout.pipeThrough(new TextDecoderStream())
-      .pipeThrough(new TextLineStream());
-    const reader = r.getReader();
-    const res = await reader.read();
-    assert(
-      !res.done && res.value.includes("--key and --cert are required for TLS"),
-    );
-    reader.releaseLock();
-  } finally {
-    await killFileServer();
-  }
+  const { stdout, success } = await command.output();
+  assertFalse(success);
+  assertStringIncludes(
+    new TextDecoder().decode(stdout),
+    "--key and --cert are required for TLS",
+  );
 });
 
 Deno.test("file_server disable dir listings", async function () {

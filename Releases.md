@@ -1,3 +1,66 @@
+### 0.204.0 / 2023.10.12
+
+- BREAKING(front_matter): deprecate Format enum, use union type instead (#3641)
+- BREAKING(front_matter): deprecate language-specific `test` functions (#3654)
+- BREAKING(path): split path into per-os modules, deprecate legacy os-specific
+  exports (#3649)
+- feat(crypto): add BLAKE2B-128 hash algorithm (#3680)
+- fix(archive/untar.ts): cannot access symlinks in archives (#3686)
+- fix(assert): fix swapping of multiline str diff (#3685)
+- perf(encoding): optimize encodeBase64Url (#3682)
+- perf: improvements using `Promise.all()` (#3683)
+
+### 0.203.0 / 2023.09.27
+
+- BREAKING(encoding): deprecate encode/decode, add encodeFoo/decodeFoo (#3660)
+- BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
+- BREAKING(front_matter): deprecate default exports (#3653)
+- BREAKING(io): deprecate io top level module (#3556)
+- fix(collections): accept readonly arrays in aggregateGroups, reduceGroups, zip
+  (#3662)
+- fix(datetime): correctly format midnight in 12-hour time (#3667)
+- fix(datetime): fix dayOfYear when the timezone has DST (#3668)
+- fix(encoding): add validation of the input types (#3666)
+- fix(semver): add a necessary grouping, fix prerelease parsing (#3674)
+
+### 0.202.0 / 2023.09.19
+
+- BREAKING(collections): move RedBlackTree, BinarySearchTree, and BinaryHeap to
+  'unstable' subdir (#3628)
+- BREAKING(crypto): clean up module (#3630)
+- BREAKING(csv): deprecate error message exports (#3602)
+- BREAKING(datetime): deprecate to_imf.ts (#3633)
+- BREAKING(media_types): deprecate typeByExtension (#3622)
+- BREAKING(streams): deprecate APIs based on legacy Reader/Writer interfaces
+  (#3640)
+- feat(encoding): add encodeHex, decodeHex (#3642)
+- feat(streams): to ArrayBuffer/Blob/Json/Text (#3631)
+- feat(ulid): port /x/ulid module (#3582)
+- fix(streams): DelimiterStream regression (#3611)
+- fix(stripAnsiCode): escape erase character (#3608)
+- fix(testing/snapshot): distinguish between singular and plural forms (#3625)
+- fix(testing/time): fix FakeTime.next to return false if all timers are cleared
+  (#3638)
+- fix(url): fixes for url functions and new tests. (#3607)
+
+### 0.201.0 / 2023.09.01
+
+- BREAKING(bytes): deprecate BytesList class (#3589)
+- BREAKING(crypto): deprecate crypto.subtle.timingSafeEqual() (#3596)
+- BREAKING(dotenv): fix dotenv permissions (#3578)
+- BREAKING(encoding): deprecate encoding/binary (#3584)
+- BREAKING(fmt): rename stripColor to stripAnsiCode (#3588)
+- BREAKING(permissions): deprecate permissions module (#3567)
+- BREAKING(semver): remove deprecated APIs (#3591)
+- BREAKING(signal): deprecate signal module (#3568)
+- BREAKING(streams): remove readable_stream_from_iterable (#3579)
+- BREAKING(yaml): change binary handling (#3586)
+- feat(assert): add inequality asserts (#3496)
+- feat(std): add `std/url` module. (#3527)
+- fix(assert): properly quote strings in assertIsError (#3577)
+- fix(fmt): make printf respect NO_COLOR (#3595)
+- fix(log): rotating file handler sync setup and destroy (#3543)
+
 ### 0.200.0 / 2023.08.24
 
 - doc: add complete docs for all dotenv functionality (#3560)
