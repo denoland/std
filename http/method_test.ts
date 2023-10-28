@@ -29,6 +29,6 @@ Deno.test({
   fn() {
     assert(isHttpMethod("GET"));
     assert(!isHttpMethod("PUSH"));
-    assert(isHttpMethod("M-SEARCH"));
+    assert(!isHttpMethod("M-SEARCH"));
   },
 });
