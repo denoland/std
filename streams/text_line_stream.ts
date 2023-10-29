@@ -54,7 +54,7 @@ export class TextLineStream extends TransformStream<string, string> {
         this.#currentLine = chars;
       },
       flush: (controller) => {
-        if (!this.#currentLine) return;
+        if (this.#currentLine === "") return;
         const currentLine = options.allowCR && this.#currentLine.endsWith("\r")
           ? this.#currentLine.slice(0, -1)
           : this.#currentLine;
