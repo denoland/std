@@ -16,7 +16,7 @@
 - BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
 - BREAKING(front_matter): deprecate default exports (#3653)
 - BREAKING(io): deprecate io top level module (#3556)
-- fix(collections): accept readonly arrays in aggregateGroups, reduceGroups, zip
+- fix(collections): accept read-only arrays in aggregateGroups, reduceGroups, zip
   (#3662)
 - fix(datetime): correctly format midnight in 12-hour time (#3667)
 - fix(datetime): fix dayOfYear when the timezone has DST (#3668)
@@ -402,7 +402,7 @@
 - docs(flags): fix broken link to minimist (#2842)
 - docs(fs): remove misleading docs from fs.walk (#2836)
 - docs(log): add note for module authors (#2843)
-- refactor: cleanup check licence headers tool (#2830)
+- refactor: cleanup check license headers tool (#2830)
 - refactor(_tools): use `fs/walk` in deprecations check (#2837)
 - refactor(_util): remove `deepAssign` (#2847)
 - refactor(crypto): move `crypto/_wasm_crypto/` to `crypto/_wasm/` (#2845)
