@@ -32,7 +32,7 @@ Deno.test("TextLineStream() parses simple input", async () => {
   ]);
 });
 
-Deno.test("TextLineStream() parses with `allowCr` enabled", async () => {
+Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
   const stream = ReadableStream.from([
     "qwertzu",
     "iopasd\r\nmnbvc",
