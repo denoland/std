@@ -7,7 +7,7 @@ export interface TextLineStreamOptions {
    *
    * @default {false}
    */
-  allowCR: boolean;
+  allowCR?: boolean;
 }
 
 /**
@@ -26,45 +26,38 @@ export interface TextLineStreamOptions {
 export class TextLineStream extends TransformStream<string, string> {
   #currentLine = "";
 
-  constructor(options?: TextLineStreamOptions) {
+  constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({
       transform: (chars, controller) => {
         chars = this.#currentLine + chars;
 
         while (true) {
           const lfIndex = chars.indexOf("\n");
+          const crIndex = options.allowCR ? chars.indexOf("\r") : -1;
 
-          if (options?.allowCR) {
-            const crIndex = chars.indexOf("\r");
-
-            if (
-              crIndex !== -1 && crIndex !== (chars.length - 1) &&
-              (lfIndex === -1 || (lfIndex - 1) > crIndex)
-            ) {
-              controller.enqueue(chars.slice(0, crIndex));
-              chars = chars.slice(crIndex + 1);
-              continue;
-            }
+          if (
+            crIndex !== -1 && crIndex !== (chars.length - 1) &&
+            (lfIndex === -1 || (lfIndex - 1) > crIndex)
+          ) {
+            controller.enqueue(chars.slice(0, crIndex));
+            chars = chars.slice(crIndex + 1);
+            continue;
           }
 
           if (lfIndex === -1) break;
 
-          let crOrLfIndex = lfIndex;
-          if (chars[lfIndex - 1] === "\r") {
-            crOrLfIndex--;
-          }
-          controller.enqueue(chars.slice(0, crOrLfIndex));
+          const endIndex = chars[lfIndex - 1] === "\r" ? lfIndex - 1 : lfIndex;
+          controller.enqueue(chars.slice(0, endIndex));
           chars = chars.slice(lfIndex + 1);
         }
 
         this.#currentLine = chars;
       },
       flush: (controller) => {
-        if (this.#currentLine === "") return;
-        const currentLine =
-          options?.allowCR && this.#currentLine.at(-1) === "\r"
-            ? this.#currentLine.slice(0, -1)
-            : this.#currentLine;
+        if (!this.#currentLine) return;
+        const currentLine = options.allowCR && this.#currentLine.endsWith("\r")
+          ? this.#currentLine.slice(0, -1)
+          : this.#currentLine;
         controller.enqueue(currentLine);
       },
     });
