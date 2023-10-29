@@ -66,6 +66,49 @@ Check out the documentation [here](https://deno.land/std?doc).
    import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
    ```
 
+## Stability
+
+| Sub-module   | Status     |
+| ------------ | ---------- |
+| archive      | Unstable   |
+| assert       | Stable     |
+| async        | Stable     |
+| bytes        | Stable     |
+| collections  | Stable     |
+| console      | Unstable   |
+| csv          | Stable     |
+| datetime     | Unstable   |
+| dotenv       | Unstable   |
+| encoding     | Unstable   |
+| flags        | Unstable   |
+| fmt          | Stable     |
+| front_matter | Unstable   |
+| fs           | Stable     |
+| html         | Unstable   |
+| http         | Unstable   |
+| io           | Deprecated |
+| json         | Stable     |
+| jsonc        | Stable     |
+| log          | Unstable   |
+| media_types  | Stable     |
+| msgpack      | Unstable   |
+| path         | Unstable   |
+| permissions  | Deprecated |
+| regexp       | Unstable   |
+| semver       | Unstable   |
+| signal       | Deprecated |
+| streams      | Unstable   |
+| testing      | Stable     |
+| toml         | Stable     |
+| ulid         | Unstable   |
+| url          | Unstable   |
+| uuid         | Stable     |
+| wasi         | Deprecated |
+| yaml         | Stable     |
+
+> For background and discussions regarding the stability of the following
+> sub-modules, see #3489.
+
 ## Contributing
 
 Check out the contributing guidelines [here](./CONTRIBUTING.md).
