@@ -3,24 +3,23 @@
 import { TextLineStream } from "./text_line_stream.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("[streams] TextLineStream", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("qwertzu");
-      controller.enqueue("iopasd\r\nmnbvc");
-      controller.enqueue("xylk\rjhgfds\napoiuzt\r");
-      controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
-      controller.enqueue("\nrewq0987\n\n654321");
-      controller.enqueue("\nrewq0987\r\n\r\n654321\r");
-      controller.close();
-    },
-  });
-
+async function collectLines(stream: ReadableStream<string>) {
   const lines = [];
-  for await (const chunk of textStream.pipeThrough(new TextLineStream())) {
-    lines.push(chunk);
-  }
-  assertEquals(lines, [
+  for await (const line of stream) lines.push(line);
+  return lines;
+}
+
+Deno.test("TextLineStream() parses simple input", async () => {
+  const stream = ReadableStream.from([
+    "qwertzu",
+    "iopasd\r\nmnbvc",
+    "xylk\rjhgfds\napoiuzt\r",
+    "qwr\r09ei\rqwrjiowqr\r",
+    "\nrewq0987\n\n654321",
+    "\nrewq0987\r\n\r\n654321\r",
+  ]).pipeThrough(new TextLineStream());
+
+  assertEquals(await collectLines(stream), [
     "qwertzuiopasd",
     "mnbvcxylk\rjhgfds",
     "apoiuzt\rqwr\r09ei\rqwrjiowqr",
@@ -31,45 +30,19 @@ Deno.test("[streams] TextLineStream", async () => {
     "",
     "654321\r",
   ]);
-
-  const textStream2 = new ReadableStream({
-    start(controller) {
-      controller.enqueue("rewq0987\r\n\r\n654321\n");
-      controller.close();
-    },
-  });
-
-  const lines2 = [];
-  for await (const chunk of textStream2.pipeThrough(new TextLineStream())) {
-    lines2.push(chunk);
-  }
-  assertEquals(lines2, [
-    "rewq0987",
-    "",
-    "654321",
-  ]);
 });
 
-Deno.test("[streams] TextLineStream - allowCR", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("qwertzu");
-      controller.enqueue("iopasd\r\nmnbvc");
-      controller.enqueue("xylk\rjhgfds\napoiuzt\r");
-      controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
-      controller.enqueue("\nrewq0987\n\n654321");
-      controller.enqueue("\nrewq0987\r\n\r\n654321\r");
-      controller.close();
-    },
-  });
+Deno.test("TextLineStream() parses with `allowCr` enabled", async () => {
+  const stream = ReadableStream.from([
+    "qwertzu",
+    "iopasd\r\nmnbvc",
+    "xylk\rjhgfds\napoiuzt\r",
+    "qwr\r09ei\rqwrjiowqr\r",
+    "\nrewq0987\n\n654321",
+    "\nrewq0987\r\n\r\n654321\r",
+  ]).pipeThrough(new TextLineStream({ allowCR: true }));
 
-  const lines = [];
-  for await (
-    const chunk of textStream.pipeThrough(new TextLineStream({ allowCR: true }))
-  ) {
-    lines.push(chunk);
-  }
-  assertEquals(lines, [
+  assertEquals(await collectLines(stream), [
     "qwertzuiopasd",
     "mnbvcxylk",
     "jhgfds",
@@ -84,113 +57,62 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
     "",
     "654321",
   ]);
+});
 
-  const textStream2 = new ReadableStream({
-    start(controller) {
-      controller.enqueue("rewq0987\r\n\r\n654321\n");
-      controller.close();
-    },
-  });
+Deno.test("TextLineStream() parses large chunks", async () => {
+  const totalLines = 20_000;
+  const stream = ReadableStream.from("\n".repeat(totalLines))
+    .pipeThrough(new TextLineStream());
+  const lines = await collectLines(stream);
 
-  const lines2 = [];
-  for await (const chunk of textStream2.pipeThrough(new TextLineStream())) {
-    lines2.push(chunk);
-  }
-  assertEquals(lines2, [
-    "rewq0987",
-    "",
-    "654321",
+  assertEquals(lines.length, totalLines);
+  assertEquals(lines, Array.from({ length: totalLines }).fill(""));
+});
+
+Deno.test("TextLineStream() parses no final empty chunk with terminal newline", async () => {
+  const stream = ReadableStream.from([
+    "abc\n",
+    "def\nghi\njk",
+    "l\nmn",
+    "o\np",
+    "qr",
+    "\nstu\nvwx\n",
+    "yz\n",
+  ]).pipeThrough(new TextLineStream());
+
+  assertEquals(await collectLines(stream), [
+    "abc",
+    "def",
+    "ghi",
+    "jkl",
+    "mno",
+    "pqr",
+    "stu",
+    "vwx",
+    "yz",
   ]);
 });
 
-Deno.test("[streams] TextLineStream - large chunks", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("\n".repeat(10000));
-      controller.enqueue("\n".repeat(10000));
-      controller.close();
-    },
-  });
+Deno.test("TextLineStream() parses no final empty chunk without terminal newline", async () => {
+  const stream = ReadableStream.from([
+    "abc\n",
+    "def\nghi\njk",
+    "l\nmn",
+    "o\np",
+    "qr",
+    "\nstu\nvwx\n",
+    "yz",
+  ]).pipeThrough(new TextLineStream());
 
-  let lines = 0;
-  for await (const chunk of textStream.pipeThrough(new TextLineStream())) {
-    assertEquals(chunk, "");
-    lines++;
-  }
-  assertEquals(lines, 20000);
+  assertEquals(await collectLines(stream), [
+    "abc",
+    "def",
+    "ghi",
+    "jkl",
+    "mno",
+    "pqr",
+    "stu",
+    "vwx",
+    "yz",
+  ]);
 });
-
-Deno.test(
-  "[streams] TextLineStream - no final empty chunk",
-  async (t) => {
-    await t.step("with terminal newline", async () => {
-      const inputChunks = [
-        "abc\n",
-        "def\nghi\njk",
-        "l\nmn",
-        "o\np",
-        "qr",
-        "\nstu\nvwx\n",
-        "yz\n",
-      ];
-
-      const textLineStream = new ReadableStream<string>({
-        start(controller) {
-          for (const chunk of inputChunks) controller.enqueue(chunk);
-          controller.close();
-        },
-      }).pipeThrough(new TextLineStream());
-
-      const lines = [];
-
-      for await (const chunk of textLineStream) lines.push(chunk);
-
-      assertEquals(lines, [
-        "abc",
-        "def",
-        "ghi",
-        "jkl",
-        "mno",
-        "pqr",
-        "stu",
-        "vwx",
-        "yz",
-      ]);
-    });
-
-    await t.step("without terminal newline", async () => {
-      const inputChunks = [
-        "abc\n",
-        "def\nghi\njk",
-        "l\nmn",
-        "o\np",
-        "qr",
-        "\nstu\nvwx\n",
-        "yz",
-      ];
-
-      const textLineStream = new ReadableStream<string>({
-        start(controller) {
-          for (const chunk of inputChunks) controller.enqueue(chunk);
-          controller.close();
-        },
-      }).pipeThrough(new TextLineStream());
-
-      const lines = [];
-
-      for await (const chunk of textLineStream) lines.push(chunk);
-
-      assertEquals(lines, [
-        "abc",
-        "def",
-        "ghi",
-        "jkl",
-        "mno",
-        "pqr",
-        "stu",
-        "vwx",
-        "yz",
-      ]);
-    });
-  },
-);
