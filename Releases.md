@@ -18,7 +18,6 @@
 - BREAKING(io): deprecate io top level module (#3556)
 - fix(collections): accept read-only arrays in aggregateGroups, reduceGroups,
   zip (#3662)
-  (#3662)
 - fix(datetime): correctly format midnight in 12-hour time (#3667)
 - fix(datetime): fix dayOfYear when the timezone has DST (#3668)
 - fix(encoding): add validation of the input types (#3666)
