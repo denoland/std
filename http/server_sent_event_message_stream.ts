@@ -34,7 +34,7 @@ export interface ServerSentEventMessage {
  * });
  * ```
  */
-export function stringify(message: ServerSentEventMessage) {
+function stringify(message: ServerSentEventMessage) {
   const lines = [];
   if (message.comment) lines.push(`:${message.comment}`);
   if (message.event) lines.push(`event:${message.event}`);
