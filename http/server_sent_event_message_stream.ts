@@ -20,19 +20,6 @@ export interface ServerSentEventMessage {
  * Converts a server-sent message object into a string for the client.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format}
- *
- * @example
- * ```ts
- * import { stringify } from "https://deno.land/std@$STD_VERSION/http/server_sent_event_message_stream.ts";
- *
- * stringify({
- *   comment: "crunchy on the outside",
- *   event: "soft on the inside",
- *   data: "milk chocolate chips\npeanut-butter chips",
- *   id: "123",
- *   retry: 456,
- * });
- * ```
  */
 function stringify(message: ServerSentEventMessage) {
   const lines = [];
