@@ -26,7 +26,9 @@ function stringify(message: ServerSentEventMessage) {
   if (message.comment) lines.push(`:${message.comment}`);
   if (message.event) lines.push(`event:${message.event}`);
   if (message.data) {
-    message.data.split(/\r?\n/).forEach((line) => lines.push(`data:${line}`));
+    message.data.split(/\r\n|\r|\n/).forEach((line) =>
+      lines.push(`data:${line}`)
+    );
   }
   if (message.id) lines.push(`id:${message.id}`);
   if (message.retry) lines.push(`retry:${message.retry}`);
