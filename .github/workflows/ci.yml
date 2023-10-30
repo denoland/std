@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  ci:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -32,10 +32,14 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Check
+      - name: Spell-check
+        uses: crate-ci/typos@master
+        if: matrix.os == 'ubuntu-22.04'
+        with:
+          config: ./.github/workflows/typos.toml
 
-      - name: Run tests canary
-        run: deno task test
+      - name: Check formatting, linting and run tests
+        run: deno task ok
 
       - name: Run timezone-dependent tests
         run: |
@@ -43,10 +47,6 @@ jobs:
           TZ=Europe/London deno test datetime
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-22.04'
-
-      - name: Type check browser compatible modules
-        shell: bash
-        run: deno task test:browser
 
       - name: Generate lcov
         run: deno task cov:gen
@@ -66,31 +66,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
-
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-          persist-credentials: false
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: canary
-
-      - name: Format
-        run: deno fmt --check
-
-      - name: Lint
-        run: deno task lint
-
-      - name: Spell-check
-        uses: crate-ci/typos@master
-        with:
-          config: ./.github/workflows/typos.toml
 
   wasm:
     name: wasm
