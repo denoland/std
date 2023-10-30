@@ -68,7 +68,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Contributing
 
-Check out the contributing guidelines [here](./CONTRIBUTING.md).
+Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
