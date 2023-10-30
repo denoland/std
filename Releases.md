@@ -402,7 +402,7 @@
 - docs(flags): fix broken link to minimist (#2842)
 - docs(fs): remove misleading docs from fs.walk (#2836)
 - docs(log): add note for module authors (#2843)
-- refactor: cleanup check license headers tool (#2830)
+- refactor: cleanup check licence headers tool (#2830)
 - refactor(_tools): use `fs/walk` in deprecations check (#2837)
 - refactor(_util): remove `deepAssign` (#2847)
 - refactor(crypto): move `crypto/_wasm_crypto/` to `crypto/_wasm/` (#2845)
