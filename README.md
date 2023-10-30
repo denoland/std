@@ -460,9 +460,8 @@ apply, such as:
 
 ## Community and Resources
 
-Join
-[the `#saaskit` channel in Deno's Discord](https://discord.com/channels/684898665143206084/1085986084653109438)
-to meet other SaaSKit developers, ask questions, and get unblocked.
+Join [the `#saaskit` channel in Deno's Discord](https://discord.gg/deno) to meet
+other SaaSKit developers, ask questions, and get unblocked.
 
 Here's a list of articles, how to guides, and videos about SaaSKit:
 
