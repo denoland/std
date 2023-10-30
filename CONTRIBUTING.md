@@ -15,7 +15,7 @@ before contributing.
 ## Pull Requests
 
 1. For and clone the repository.
-1. Create a new banch for your changes.
+1. Create a new branch for your changes.
 1. Make your changes and ensure `deno task ok` passes successfully.
 1. Commit your changes with clear messages.
 1. Submit a pull request with a clear description of your changes and reference
