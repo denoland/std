@@ -1,73 +1,31 @@
-# Contributing
+# Contributing Guide
 
-deno_std is a loose port of [Go's standard library](https://golang.org/pkg/).
-When in doubt, simply port Go's source code, documentation, and tests. There are
-many times when the nature of JavaScript, TypeScript, or Deno itself justifies
-diverging from Go, but if possible we want to leverage the energy that went into
-building Go. We generally welcome direct ports of Go's code.
+## Code of Conduct and Style Guide
 
-Please ensure the copyright headers cite the code's origin.
+Please read our [code of conduct](./CODE_OF_CONDUCT.md) and
+[style guide](https://docs.deno.com/runtime/manual/references/contributing/style_guide)
+before contributing.
 
-Follow the [style guide](https://deno.land/manual/contributing/style_guide).
+## Issues
 
-### Opening a pull request
+1. Check for existing issues before creating a new one.
+1. When creating an issue, be clear, provide as much detail as possible and
+   provide examples, when possible.
 
-After cloning don't forget to `git submodule update --init`.
+## Pull Requests
 
-Before opening a PR make sure to:
+1. For and clone the repository.
+1. Create a new banch for your changes.
+1. Make your changes and ensure `deno task ok` passes successfully.
+1. Commit your changes with clear messages.
+1. Submit a pull request with a clear description of your changes and reference
+   any relevant issues.
 
-- have the latest Deno version installed locally
-- add tests that cover your changes.
-- `deno task test` passes.
-- `deno fmt --check` passes.
-- `deno task lint` passes.
-- (optionally) check for typos with `deno task typos` (requires
-  [typos](https://github.com/crate-ci/typos#install) to be installed)
+## Development Setup
 
-Give the PR a descriptive title.
-
-Examples of good titles:
-
-- fix(http): Fix race condition in server
-- docs(fmt): Update docstrings
-- feat(log): Handle nested messages
-
-Examples of bad titles:
-
-- fix #7123
-- update docs
-- fix bugs
-
-Ensure there is a related issue and it is referenced in the PR text.
-
-_About CI checks_:
-
-We currently have 6 checks on CI. Each PR should pass all of these checks to be
-accepted.
-
-- test with Deno canary on Windows
-- test with Deno canary on Linux
-- test with Deno canary on macOS
-- lint
-- wasm crypto check
-- CLA
-
-_For maintainers_:
-
-To release a new version a tag in the form of `x.y.z` should be added.
-
-### Types
-
-Deno is moving away from non-native IO functions and interfaces in favor of the
-[Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
-These types are to be defined here, in the Standard Library, instead of in the
-Deno namespace in the future. As a rule, use the following corresponding and
-identical types from `types.d.ts`:
-
-- `Deno.Reader`
-- `Deno.Writer`
-- `Deno.ReaderSync`
-- `Deno.WriterSync`
-- `Deno.Closer`
-
-See the tracking issue [here](https://github.com/denoland/deno/issues/9795).
+1. [Install the Deno CLI](https://docs.deno.com/runtime/manual/getting_started/installation).
+1. After cloning, set up git submodules:
+   ```bash
+   git submodule update --init
+   ```
+1. Run `deno task ok` to ensure everything's working before making changes.
