@@ -42,12 +42,12 @@ function stringify(message: ServerSentEventMessage) {
  * ```ts
  * import {
  *   type ServerSentEventMessage,
- *   ServerSentEventMessageStream,
- * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event_message_stream.ts";
+ *   ServerSentEventStream,
+ * } from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts";
  *
  * const stream = ReadableStream.from<ServerSentEventMessage>([
  *   { data: "hello there" }
- * ]).pipeThrough(new ServerSentEventMessageStream())
+ * ]).pipeThrough(new ServerSentEventStream())
  *   .pipeThrough(new TextEncoderStream());
  * new Response(stream, {
  *   headers: {
@@ -57,7 +57,7 @@ function stringify(message: ServerSentEventMessage) {
  * });
  * ```
  */
-export class ServerSentEventMessageStream
+export class ServerSentEventStream
   extends TransformStream<ServerSentEventMessage, string> {
   constructor() {
     super({

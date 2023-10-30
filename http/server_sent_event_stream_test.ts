@@ -2,22 +2,22 @@
 import { assertEquals } from "../assert/assert_equals.ts";
 import {
   type ServerSentEventMessage,
-  ServerSentEventMessageStream,
-} from "./server_sent_event_message_stream.ts";
+  ServerSentEventStream,
+} from "./server_sent_event_stream.ts";
 
-Deno.test("ServerSentEventMessageStream() enqueues a stringified server-sent event message object", async () => {
+Deno.test("ServerSentEventStream() enqueues a stringified server-sent event message object", async () => {
   const stream = ReadableStream.from<ServerSentEventMessage>([{
     comment: "a",
     event: "b",
-    data: "c\nd",
+    data: "c\nd\re\r\nf",
     id: "123",
     retry: 456,
-  }]).pipeThrough(new ServerSentEventMessageStream());
+  }]).pipeThrough(new ServerSentEventStream());
   let chunks = "";
   for await (const chunk of stream) chunks += chunk;
 
   assertEquals(
     chunks,
-    `:a\nevent:b\ndata:c\ndata:d\nid:123\nretry:456\n\n`,
+    `:a\nevent:b\ndata:c\ndata:d\ndata:e\ndata:f\nid:123\nretry:456\n\n`,
   );
 });
