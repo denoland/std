@@ -2,44 +2,25 @@
 import type { Plugin } from "$fresh/server.ts";
 import type { State } from "@/plugins/session.ts";
 import { Status } from "$fresh/server.ts";
-import { errors, isHttpError } from "std/http/http_errors.ts";
-import { redirect } from "@/utils/http.ts";
+import { BadRequestError, redirect, UnauthorizedError } from "@/utils/http.ts";
+import { STATUS_TEXT } from "std/http/http_status.ts";
 
 /**
- * Returns the converted HTTP error response from the given error. If the error
- * is an instance of {@linkcode Deno.errors.NotFound}, a HTTP 404 Not Found
- * error response is returned. This is done to translate errors thrown from
- * logic that's separated by concerns.
- *
- * If the error is a HTTP-flavored error, the corresponding HTTP error response
- * is returned.
- *
- * If the error is a generic error, a HTTP 500 Internal Server error response
- * is returned.
- *
- * @see {@link https://deno.land/std/http/http_errors.ts}
+ * Returns the HTTP status code corresponding to a given runtime error. By
+ * default, a HTTP 500 status code is returned.
  *
  * @example
  * ```ts
- * import { toErrorResponse } from "@/plugins/error_handling.ts";
- * import { errors } from "std/http/http_errors.ts";
+ * import { toErrorStatus } from "@/plugins/error_handling.ts";
  *
- * const resp = toErrorResponse(new errors.NotFound("User not found"));
- * resp.status; // Returns 404
- * await resp.text(); // Returns "User not found"
+ * toErrorStatus(new Deno.errors.NotFound) // Returns 404
  * ```
  */
-// deno-lint-ignore no-explicit-any
-export function toErrorResponse(error: any) {
-  if (error instanceof Deno.errors.NotFound) {
-    return new Response(error.message, { status: Status.NotFound });
-  }
-  return isHttpError(error)
-    ? new Response(error.message, {
-      status: error.status,
-      headers: error.headers,
-    })
-    : new Response(error.message, { status: Status.InternalServerError });
+export function toErrorStatus(error: Error) {
+  if (error instanceof Deno.errors.NotFound) return Status.NotFound;
+  if (error instanceof UnauthorizedError) return Status.Unauthorized;
+  if (error instanceof BadRequestError) return Status.BadRequest;
+  return Status.InternalServerError;
 }
 
 export default {
@@ -52,7 +33,7 @@ export default {
           try {
             return await ctx.next();
           } catch (error) {
-            if (error instanceof errors.Unauthorized) {
+            if (error instanceof UnauthorizedError) {
               return redirect("/signin");
             }
             throw error;
@@ -67,7 +48,11 @@ export default {
           try {
             return await ctx.next();
           } catch (error) {
-            return toErrorResponse(error);
+            const status = toErrorStatus(error);
+            return new Response(error.message, {
+              statusText: STATUS_TEXT[status],
+              status,
+            });
           }
         },
       },

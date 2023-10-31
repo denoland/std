@@ -3,7 +3,7 @@ import { type Handlers, Status } from "$fresh/server.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import Stripe from "stripe";
 import { getUserByStripeCustomer, updateUser } from "@/utils/db.ts";
-import { createHttpError } from "std/http/http_errors.ts";
+import { BadRequestError } from "@/utils/http.ts";
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 export const handler: Handlers = {
@@ -15,16 +15,13 @@ export const handler: Handlers = {
    * @see {@link https://github.com/stripe-samples/stripe-node-deno-samples/blob/2d571b20cd88f1c1f02185483729a37210484c68/webhook-signing/main.js}
    */
   async POST(req) {
-    if (!isStripeEnabled()) throw createHttpError(Status.NotFound);
+    if (!isStripeEnabled()) throw new Deno.errors.NotFound("Not Found");
 
     /** @see {@link https://stripe.com/docs/webhooks#verify-events} */
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     if (signature === null) {
-      throw createHttpError(
-        Status.BadRequest,
-        "`Stripe-Signature` header is missing",
-      );
+      throw new BadRequestError("`Stripe-Signature` header is missing");
     }
     const signingSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     if (signingSecret === undefined) {
@@ -43,7 +40,7 @@ export const handler: Handlers = {
         cryptoProvider,
       );
     } catch (error) {
-      throw createHttpError(Status.BadRequest, error.message);
+      throw new BadRequestError(error.message);
     }
 
     // @ts-ignore: Property 'customer' actually does exist on type 'Object'
@@ -53,7 +50,7 @@ export const handler: Handlers = {
       case "customer.subscription.created": {
         const user = await getUserByStripeCustomer(customer);
         if (user === null) {
-          throw createHttpError(Status.NotFound, "User not found");
+          throw new Deno.errors.NotFound("User not found");
         }
 
         await updateUser({ ...user, isSubscribed: true });
@@ -62,14 +59,14 @@ export const handler: Handlers = {
       case "customer.subscription.deleted": {
         const user = await getUserByStripeCustomer(customer);
         if (user === null) {
-          throw createHttpError(Status.NotFound, "User not found");
+          throw new Deno.errors.NotFound("User not found");
         }
 
         await updateUser({ ...user, isSubscribed: false });
         return new Response(null, { status: Status.Accepted });
       }
       default: {
-        throw createHttpError(Status.BadRequest, "Event type not supported");
+        throw new BadRequestError("Event type not supported");
       }
     }
   },

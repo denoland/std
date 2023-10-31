@@ -2,9 +2,9 @@
 import { assertRejects } from "std/assert/assert_rejects.ts";
 import { getGitHubUser } from "./github.ts";
 import { returnsNext, stub } from "std/testing/mock.ts";
-import { errors } from "std/http/http_errors.ts";
 import { assertEquals } from "std/assert/assert_equals.ts";
 import { Status } from "kv_oauth/deps.ts";
+import { BadRequestError } from "@/utils/http.ts";
 
 Deno.test("[plugins] getGitHubUser()", async (test) => {
   await test.step("rejects on error message", async () => {
@@ -20,7 +20,7 @@ Deno.test("[plugins] getGitHubUser()", async (test) => {
     );
     await assertRejects(
       async () => await getGitHubUser(crypto.randomUUID()),
-      errors.BadRequest,
+      BadRequestError,
       message,
     );
     fetchStub.restore();
