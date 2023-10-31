@@ -15,7 +15,7 @@ import { compareSimilarity } from "./compare_similarity.ts";
  * // force case sensitive
  * wordSimilaritySort("hep", possibleWords, { caseSensitive: true });
  * ```
- * 
+ *
  * @param givenWord - The string to measure distance against
  * @param possibleWords - The string-array that will be sorted
  * @param options.caseSensitive - Flag indicating whether the distance should include case. Default is false.
