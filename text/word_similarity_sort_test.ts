@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { wordSimilaritySort } from "./word_similarity_sort.ts";
 
 Deno.test("basicWordSimilaritySort", function () {
