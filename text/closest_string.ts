@@ -10,7 +10,7 @@ const getWordDistance = levenshteinDistance;
  *
  * @example
  * ```ts
- * import { closestString } from "https://deno.land/std@$STD_VERSION/text/_util.ts";
+ * import { closestString } from "https://deno.land/std@$STD_VERSION/text/closest_string.ts";
  *
  * const possibleWords: string[] = ["length", "size", "blah", "help"];
  *
