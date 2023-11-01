@@ -89,6 +89,10 @@ class MockListener implements Deno.Listener {
       : Promise.resolve(this.conn);
   }
 
+  [Symbol.dispose]() {
+    this.close();
+  }
+
   close() {
     this.#closed = true;
   }
