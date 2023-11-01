@@ -380,7 +380,7 @@ Deno.test({
 Deno.test({
   name: "globToRegExp() matches special RegExp characters in range",
   fn() {
-    // Excluding characters checksed in the previous test.
+    // Excluding characters checked in the previous test.
     assertEquals(globToRegExp("[\\\\$^.=]", { os: "linux" }), /^[\\$^.=]\/*$/);
     assertEquals(
       globToRegExp("[!\\\\$^.=]", { os: "linux" }),
