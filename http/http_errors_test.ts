@@ -9,7 +9,7 @@ import {
   errors,
   type ErrorStatusKeys,
   HttpError,
-} from "./unstable_errors.ts";
+} from "./http_errors.ts";
 
 const clientErrorStatus: ErrorStatus[] = [
   Status.BadRequest,
