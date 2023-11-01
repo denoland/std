@@ -84,7 +84,7 @@ const WIN32_TESTSUITE = [
   [["file:stream"], "file:stream"],
 ];
 
-Deno.test("basename", function () {
+Deno.test("posix.basename()", function () {
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
     assertEquals(path.basename(name, suffix), expected);
   }
@@ -112,7 +112,7 @@ Deno.test("basename", function () {
   );
 });
 
-Deno.test("basenameWin32", function () {
+Deno.test("win32.basename()", function () {
   for (const [[name, suffix], expected] of WIN32_TESTSUITE) {
     assertEquals(path.win32.basename(name, suffix), expected);
   }
