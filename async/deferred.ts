@@ -7,7 +7,7 @@
 // See https://github.com/Microsoft/TypeScript/issues/15202
 // At the time of writing, the github issue is closed but the problem remains.
 
-/** @deprecated (will be removed after 0.214.0) Use `Promise.withResolvers` instead. */
+/** @deprecated (will be removed after 0.207.0) Use {@linkcode Promise.withResolvers} instead. */
 export interface Deferred<T> extends Promise<T> {
   readonly state: "pending" | "fulfilled" | "rejected";
   resolve(value?: T | PromiseLike<T>): void;
@@ -16,7 +16,7 @@ export interface Deferred<T> extends Promise<T> {
 }
 
 /**
- * @deprecated (will be removed after 0.214.0) Use `Promise.withResolvers` instead.
+ * @deprecated (will be removed after 0.207.0) Use {@linkcode Promise.withResolvers} instead.
  *
  * Creates a Promise with the `reject` and `resolve` functions placed as methods
  * on the promise object itself.
