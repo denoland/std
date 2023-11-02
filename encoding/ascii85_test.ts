@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { Ascii85Standard, decode, encode } from "./ascii85.ts";
+import { Ascii85Standard, decodeAscii85, encodeAscii85 } from "./ascii85.ts";
 type TestCases = Partial<{ [index in Ascii85Standard]: string[][] }>;
 const utf8encoder = new TextEncoder();
 const testCasesNoDelimiter: TestCases = {
@@ -123,7 +123,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encode(utf8encoder.encode(bin), {
+          encodeAscii85(bin, {
             standard: standard as Ascii85Standard,
           }),
           b85,
@@ -137,7 +137,7 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decode(b85, { standard: standard as Ascii85Standard }),
+          decodeAscii85(b85, { standard: standard as Ascii85Standard }),
           utf8encoder.encode(bin),
         );
       }
@@ -151,7 +151,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encode(utf8encoder.encode(bin), {
+          encodeAscii85(bin, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -166,7 +166,7 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decode(b85, {
+          decodeAscii85(b85, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -185,8 +185,8 @@ Deno.test({
       [0x01, 0x02, 0x03, 0x04, 0x73, 0x70, 0x61, 0x6d],
     );
 
-    const encoded1 = encode(data1);
-    const encoded2 = encode(data2.subarray(4));
+    const encoded1 = encodeAscii85(data1);
+    const encoded2 = encodeAscii85(data2.subarray(4));
 
     assertEquals(encoded1, "F)YQ)");
     assertEquals(encoded2, "F)YQ)");

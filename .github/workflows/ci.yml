@@ -13,7 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [canary]
+        deno:
+          - v1.x
+          - canary
         os:
           - ubuntu-22.04
           - windows-2022
@@ -33,27 +35,25 @@ jobs:
       - name: Run tests canary
         run: deno task test
 
+      - name: Run timezone-dependent tests
+        run: |
+          TZ=Australia/Sydney deno test datetime
+          TZ=Europe/London deno test datetime
+          TZ=America/Toronto deno test datetime
+        if: matrix.os == 'ubuntu-22.04'
+
       - name: Type check browser compatible modules
         shell: bash
         run: deno task test:browser
 
       - name: Generate lcov
-        shell: bash
-        # excludes tests, testdata, and generated sources from coverage report
-        run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
+        run: deno task cov:gen
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
-
-      - name: Remove coverage report
-        shell: bash
-        run: |
-          rm -rf ./cov/
-          rm cov.lcov
 
       - name: Release if version change
         if: |
@@ -125,7 +125,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.65.0
+          rust-version: 1.73.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

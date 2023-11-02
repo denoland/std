@@ -3,6 +3,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /** Port of the Go
  * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
  * library.
@@ -52,7 +54,11 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
-/** Encodes `src` into `src.length * 2` bytes. */
+/**
+ * @deprecated (will be removed in 0.210.0) Use a `encodeHex` instead.
+ *
+ * Encodes `src` into `src.length * 2` bytes.
+ */
 export function encode(src: Uint8Array): Uint8Array {
   const dst = new Uint8Array(src.length * 2);
   for (let i = 0; i < dst.length; i++) {
@@ -65,17 +71,7 @@ export function encode(src: Uint8Array): Uint8Array {
 
 /** Encodes the source into hex string. */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
-  let u8: Uint8Array;
-
-  if (src instanceof Uint8Array) {
-    u8 = src;
-  } else if (src instanceof ArrayBuffer) {
-    u8 = new Uint8Array(src);
-  } else if (typeof src === "string") {
-    u8 = textEncoder.encode(src);
-  } else {
-    throw new TypeError(`Invalid input type: ${typeof src}`);
-  }
+  const u8 = validateBinaryLike(src);
 
   const dst = new Uint8Array(u8.length * 2);
   for (let i = 0; i < dst.length; i++) {
@@ -87,6 +83,8 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
 }
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use a `decodeHex` instead.
+ *
  * Decodes `src` into `src.length / 2` bytes.
  * If the input is malformed, an error will be thrown.
  */

@@ -16,6 +16,7 @@ import {
 async function expandGlobArray(
   globString: string,
   options: ExpandGlobOptions,
+  { forceRoot = "" } = {},
 ): Promise<string[]> {
   const paths: string[] = [];
   for await (const { path } of expandGlob(globString, options)) {
@@ -27,7 +28,7 @@ async function expandGlobArray(
   );
   pathsSync.sort();
   assertEquals(paths, pathsSync);
-  const root = normalize(options.root || Deno.cwd());
+  const root = normalize(forceRoot || options.root || Deno.cwd());
   for (const path of paths) {
     assert(path.startsWith(root));
   }
@@ -156,3 +157,54 @@ Deno.test("expandGlobFollowSymlink", async function () {
   };
   assertEquals(await expandGlobArray("*", options), ["abc"]);
 });
+
+Deno.test("expandGlobFollowSymlink with canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("subdir", "abc")],
+  );
+});
+
+Deno.test("expandGlobFollowSymlink without canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+    canonicalize: false,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("link", "abc"), join("subdir", "abc")],
+  );
+});
+
+Deno.test(
+  "expandGlob doesn't require read permissions when root path is specified",
+  {
+    permissions: { read: [EG_OPTIONS.root!] },
+  },
+  async function () {
+    const options = { root: EG_OPTIONS.root! };
+    assertEquals(await expandGlobArray("abc", options), ["abc"]);
+  },
+);
+
+Deno.test(
+  "expandGlob doesn't require read permissions when an absolute glob is specified",
+  {
+    permissions: { read: [EG_OPTIONS.root!] },
+  },
+  async function () {
+    assertEquals(
+      await expandGlobArray(`${EG_OPTIONS.root!}/abc`, {}, {
+        forceRoot: EG_OPTIONS.root!,
+      }),
+      ["abc"],
+    );
+  },
+);

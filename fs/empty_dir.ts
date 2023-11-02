@@ -23,13 +23,12 @@ export async function emptyDir(dir: string | URL) {
       items.push(dirEntry);
     }
 
-    while (items.length) {
-      const item = items.shift();
+    await Promise.all(items.map((item) => {
       if (item && item.name) {
         const filepath = join(toPathString(dir), item.name);
-        await Deno.remove(filepath, { recursive: true });
+        return Deno.remove(filepath, { recursive: true });
       }
-    }
+    }));
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
       throw err;

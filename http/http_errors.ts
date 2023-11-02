@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** A collection of HTTP errors and utilities.
+/**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes and `http/status.ts` instead.
+ *
+ * A collection of HTTP errors and utilities.
  *
  * The export {@linkcode errors} contains an individual class that extends
  * {@linkcode HttpError} which makes handling HTTP errors in a structured way.
@@ -30,7 +33,7 @@
  * @example
  * ```ts
  * import { createHttpError } from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
- * import { Status } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ * import { Status } from "https://deno.land/std@$STD_VERSION/http/status.ts";
  *
  * try {
  *   throw createHttpError(
@@ -51,7 +54,7 @@ import {
   isClientErrorStatus,
   Status,
   STATUS_TEXT,
-} from "./http_status.ts";
+} from "./status.ts";
 
 const ERROR_STATUS_MAP = {
   "BadRequest": 400,
@@ -95,15 +98,25 @@ const ERROR_STATUS_MAP = {
   "NetworkAuthenticationRequired": 511,
 } as const;
 
+/**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes instead.
+ */
 export type ErrorStatusKeys = keyof typeof ERROR_STATUS_MAP;
 
+/**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes instead.
+ */
 export interface HttpErrorOptions extends ErrorOptions {
   expose?: boolean;
   headers?: HeadersInit;
 }
 
-/** The base class that all derivative HTTP extend, providing a `status` and an
- * `expose` property. */
+/**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes instead.
+ *
+ * The base class that all derivative HTTP extend, providing a `status` and an
+ * `expose` property.
+ */
 export class HttpError extends Error {
   #status: ErrorStatus = Status.InternalServerError;
   #expose: boolean;
@@ -161,6 +174,8 @@ function createHttpErrorConstructor(status: ErrorStatus): typeof HttpError {
 }
 
 /**
+ * @deprecated (will be removed in 0.207.0) Use custom `http/status.ts` instead.
+ *
  * A namespace that contains each error constructor. Each error extends
  * `HTTPError` and provides `.status` and `.expose` properties, where the
  * `.status` will be an error `Status` value and `.expose` indicates if
@@ -186,6 +201,8 @@ for (const [key, value] of Object.entries(ERROR_STATUS_MAP)) {
 }
 
 /**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes instead.
+ *
  * A factory function which provides a way to create errors. It takes up to 3
  * arguments, the error `Status`, an message, which defaults to the status text
  * and error options, which includes the `expose` property to set the `.expose`
@@ -199,7 +216,11 @@ export function createHttpError(
   return new errors[Status[status] as ErrorStatusKeys](message, options);
 }
 
-/** A type guard that determines if the value is an HttpError or not. */
+/**
+ * @deprecated (will be removed in 0.207.0) Use custom error classes instead.
+ *
+ * A type guard that determines if the value is an HttpError or not.
+ */
 export function isHttpError(value: unknown): value is HttpError {
   return value instanceof HttpError;
 }

@@ -2,6 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.209.0) Import from `std/crypto/unstable/keystack.ts` instead.
+ * @deprecated (will be removed after 0.209.0) Import from `std/crypto/unstable_keystack.ts` instead.
  */
-export * from "./unstable/keystack.ts";
+export * from "./unstable_keystack.ts";
