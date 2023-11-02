@@ -28,9 +28,7 @@ export const kv = await Deno.openKv(path);
  * ```
  */
 export async function collectValues<T>(iter: Deno.KvListIterator<T>) {
-  const values = [];
-  for await (const { value } of iter) values.push(value);
-  return values;
+  return await Array.fromAsync(iter, ({ value }) => value);
 }
 
 // Item
