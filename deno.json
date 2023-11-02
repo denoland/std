@@ -22,7 +22,7 @@
     "cov:clean": "rm -rf cov html_cov cov.lcov",
     "cov:gen": "deno coverage ./cov/ --lcov --output=cov.lcov",
     "cov:view": "genhtml --ignore-errors unmapped -o html_cov cov.lcov && open html_cov/index.html",
-    "ok": "deno task lint && deno task test:browser && deno task test"
+    "ok": "deno task lint && deno fmt --check && deno task test:browser && deno task test"
   },
   "exclude": [
     ".git",
