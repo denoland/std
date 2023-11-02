@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { RedirectStatus, Status } from "std/http/http_status.ts";
+import { RedirectStatus, Status } from "std/http/status.ts";
 
 /**
  * Returns a response that redirects the client to the given location (URL).

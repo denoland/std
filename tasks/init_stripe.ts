@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import type Stripe from "stripe";
 import { SITE_DESCRIPTION } from "@/utils/constants.ts";
-import "std/dotenv/load.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 
 async function createPremiumTierProduct(stripe: Stripe) {

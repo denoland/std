@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { extract } from "std/front_matter/yaml.ts";
-import { join } from "std/path/mod.ts";
+import { join } from "std/path/join.ts";
 
 /**
  * This code is based on the

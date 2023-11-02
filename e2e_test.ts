@@ -24,7 +24,7 @@ import {
   assertObjectMatch,
   assertStringIncludes,
 } from "std/assert/mod.ts";
-import { isRedirectStatus } from "std/http/http_status.ts";
+import { isRedirectStatus } from "std/http/status.ts";
 import { resolvesNext, returnsNext, stub } from "std/testing/mock.ts";
 import Stripe from "stripe";
 import options from "./fresh.config.ts";
