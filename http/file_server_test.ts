@@ -120,7 +120,9 @@ async function killFileServer(child: Deno.ChildProcess) {
     }
   });
   await child.status;
-  for await (const _line of child.stdout) { /* noop */ } // wait until stdout closes
+  if (!child.stdout.locked) {
+    for await (const _line of child.stdout) { /* noop */ } // wait until stdout closes
+  }
 }
 
 /* HTTP GET request allowing arbitrary paths */
