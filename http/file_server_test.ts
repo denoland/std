@@ -19,7 +19,7 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
-import { retry } from "../async/retry.ts";
+import { delay, retry } from "../async/mod.ts";
 
 const isWindows = Deno.build.os === "windows";
 
@@ -106,6 +106,7 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 async function killFileServer(child: Deno.ChildProcess) {
   // Note: We retry this because 'Access is denied' error is thrown sometimes
   // on windows
+  await delay(100);
   await retry(() => {
     try {
       child.kill("SIGKILL");
