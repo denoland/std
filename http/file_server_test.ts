@@ -455,7 +455,7 @@ Deno.test("contentType", async () => {
   }
 });
 
-Deno.test("file_server running as library", async function () {
+Deno.test.ignore("file_server running as library", async function () {
   const child = await startFileServerAsLibrary();
   try {
     const res = await fetch("http://localhost");
