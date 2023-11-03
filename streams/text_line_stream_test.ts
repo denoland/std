@@ -3,12 +3,6 @@
 import { TextLineStream } from "./text_line_stream.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-async function collectLines(stream: ReadableStream<string>) {
-  const lines = [];
-  for await (const line of stream) lines.push(line);
-  return lines;
-}
-
 Deno.test("TextLineStream() parses simple input", async () => {
   const stream = ReadableStream.from([
     "qwertzu",
@@ -19,7 +13,7 @@ Deno.test("TextLineStream() parses simple input", async () => {
     "\nrewq0987\r\n\r\n654321\r",
   ]).pipeThrough(new TextLineStream());
 
-  assertEquals(await collectLines(stream), [
+  assertEquals(await Array.fromAsync(stream), [
     "qwertzuiopasd",
     "mnbvcxylk\rjhgfds",
     "apoiuzt\rqwr\r09ei\rqwrjiowqr",
@@ -42,7 +36,7 @@ Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
     "\nrewq0987\r\n\r\n654321\r",
   ]).pipeThrough(new TextLineStream({ allowCR: true }));
 
-  assertEquals(await collectLines(stream), [
+  assertEquals(await Array.fromAsync(stream), [
     "qwertzuiopasd",
     "mnbvcxylk",
     "jhgfds",
@@ -63,7 +57,7 @@ Deno.test("TextLineStream() parses large chunks", async () => {
   const totalLines = 20_000;
   const stream = ReadableStream.from("\n".repeat(totalLines))
     .pipeThrough(new TextLineStream());
-  const lines = await collectLines(stream);
+  const lines = await Array.fromAsync(stream);
 
   assertEquals(lines.length, totalLines);
   assertEquals(lines, Array.from({ length: totalLines }).fill(""));
@@ -80,7 +74,7 @@ Deno.test("TextLineStream() parses no final empty chunk with terminal newline", 
     "yz\n",
   ]).pipeThrough(new TextLineStream());
 
-  assertEquals(await collectLines(stream), [
+  assertEquals(await Array.fromAsync(stream), [
     "abc",
     "def",
     "ghi",
@@ -104,7 +98,7 @@ Deno.test("TextLineStream() parses no final empty chunk without terminal newline
     "yz",
   ]).pipeThrough(new TextLineStream());
 
-  assertEquals(await collectLines(stream), [
+  assertEquals(await Array.fromAsync(stream), [
     "abc",
     "def",
     "ghi",
