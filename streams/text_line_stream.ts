@@ -12,7 +12,7 @@ export interface TextLineStreamOptions {
 
 /**
  * Transform a stream into a stream where each chunk is divided by a newline,
- * be it `\n` or `\r\n`.
+ * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * @example
  * ```ts

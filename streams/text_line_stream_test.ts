@@ -24,6 +24,15 @@ Deno.test("TextLineStream() parses simple input", async () => {
     "",
     "654321\r",
   ]);
+
+  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+    .pipeThrough(new TextLineStream());
+
+  assertEquals(await Array.fromAsync(stream2), [
+    "rewq0987",
+    "",
+    "654321",
+  ]);
 });
 
 Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
@@ -35,7 +44,6 @@ Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
     "\nrewq0987\n\n654321",
     "\nrewq0987\r\n\r\n654321\r",
   ]).pipeThrough(new TextLineStream({ allowCR: true }));
-
   assertEquals(await Array.fromAsync(stream), [
     "qwertzuiopasd",
     "mnbvcxylk",
@@ -47,6 +55,15 @@ Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
     "rewq0987",
     "",
     "654321",
+    "rewq0987",
+    "",
+    "654321",
+  ]);
+
+  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+    .pipeThrough(new TextLineStream());
+
+  assertEquals(await Array.fromAsync(stream2), [
     "rewq0987",
     "",
     "654321",
