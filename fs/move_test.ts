@@ -96,8 +96,8 @@ Deno.test("moveFileIfDestExists", async function () {
   ]);
 
   // make sure the test file have been created
-  assertEquals(new TextDecoder().decode(await Deno.readFile(srcFile)), "src");
-  assertEquals(new TextDecoder().decode(await Deno.readFile(destFile)), "dest");
+  assertEquals(await Deno.readTextFile(srcFile), "src");
+  assertEquals(await Deno.readTextFile(destFile), "dest");
 
   // move it without override
   await assertRejects(
@@ -119,7 +119,7 @@ Deno.test("moveFileIfDestExists", async function () {
   );
 
   await assertRejects(async () => await Deno.lstat(srcFile));
-  assertEquals(new TextDecoder().decode(await Deno.readFile(destFile)), "src");
+  assertEquals(await Deno.readTextFile(destFile), "src");
 
   // clean up
   await Promise.all([
@@ -145,9 +145,7 @@ Deno.test("moveDirectory", async function () {
   assert(await Deno.lstat(destDir));
   assert(await Deno.lstat(destFile));
 
-  const destFileContent = new TextDecoder().decode(
-    await Deno.readFile(destFile),
-  );
+  const destFileContent = await Deno.readTextFile(destFile);
   assertEquals(destFileContent, "src");
 
   await Deno.remove(destDir, { recursive: true });
@@ -180,9 +178,7 @@ Deno.test(
     assert(await Deno.lstat(destDir));
     assert(await Deno.lstat(destFile));
 
-    const destFileContent = new TextDecoder().decode(
-      await Deno.readFile(destFile),
-    );
+    const destFileContent = await Deno.readTextFile(destFile);
     assertEquals(destFileContent, "src");
 
     await Deno.remove(destDir, { recursive: true });
