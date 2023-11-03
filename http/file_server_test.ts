@@ -76,6 +76,7 @@ async function startFileServer({
     .pipeThrough(new TextLineStream());
   const reader = stdout.getReader();
   const res = await reader.read();
+  console.log(res.value);
   assert(!res.done && res.value.includes("Listening"));
   reader.releaseLock();
 }
