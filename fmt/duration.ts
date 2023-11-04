@@ -50,7 +50,7 @@ const keyList: Record<keyof DurationObject, string> = {
 function millisecondsToDurationObject(ms: number): DurationObject {
   // Duration cannot be negative
   const millis = Math.abs(ms);
-  const millisFraction = millis.toFixed(7).slice(-7, -1)
+  const millisFraction = millis.toFixed(7).slice(-7, -1);
   return {
     d: Math.trunc(millis / 86400000),
     h: Math.trunc(millis / 3600000) % 24,
@@ -58,7 +58,7 @@ function millisecondsToDurationObject(ms: number): DurationObject {
     s: Math.trunc(millis / 1000) % 60,
     ms: Math.trunc(millis) % 1000,
     us: +millisFraction.slice(0, 3),
-    ns: +millisFraction.slice(3, 6)
+    ns: +millisFraction.slice(3, 6),
   };
 }
 
