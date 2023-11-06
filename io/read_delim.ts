@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { BytesList } from "../bytes/bytes_list.ts";
+import { concat } from "../bytes/concat.ts";
 import type { Reader } from "../types.d.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
@@ -37,7 +37,7 @@ export async function* readDelim(
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-  const chunks = new BytesList();
+  let chunks = new Uint8Array();
   const bufSize = Math.max(1024, delimLen + 1);
 
   // Modified KMP
@@ -48,15 +48,15 @@ export async function* readDelim(
     const result = await reader.read(inspectArr);
     if (result === null) {
       // Yield last chunk.
-      yield chunks.concat();
+      yield chunks;
       return;
     } else if (result < 0) {
       // Discard all remaining and silently fail.
       return;
     }
-    chunks.add(inspectArr, 0, result);
+    chunks = concat(chunks, inspectArr.slice(0, result));
     let localIndex = 0;
-    while (inspectIndex < chunks.size()) {
+    while (inspectIndex < chunks.length) {
       if (inspectArr[localIndex] === delim[matchIndex]) {
         inspectIndex++;
         localIndex++;
@@ -67,7 +67,7 @@ export async function* readDelim(
           const readyBytes = chunks.slice(0, matchEnd);
           yield readyBytes;
           // Reset match, different from KMP.
-          chunks.shift(inspectIndex);
+          chunks = chunks.slice(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
         }

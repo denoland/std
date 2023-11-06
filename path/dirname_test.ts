@@ -69,7 +69,7 @@ const WIN32_TESTSUITE = [
   ["foo", "."],
 ];
 
-Deno.test("dirname", function () {
+Deno.test("posix.dirname()", function () {
   for (const [name, expected] of COREUTILS_TESTSUITE) {
     assertEquals(path.dirname(name), expected);
   }
@@ -85,7 +85,7 @@ Deno.test("dirname", function () {
   assertEquals(path.posix.dirname("/foo/bar/baz\\"), "/foo/bar");
 });
 
-Deno.test("dirnameWin32", function () {
+Deno.test("win32.dirname()", function () {
   for (const [name, expected] of WIN32_TESTSUITE) {
     assertEquals(path.win32.dirname(name), expected);
   }

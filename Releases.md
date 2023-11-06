@@ -1,3 +1,18 @@
+### 0.205.0 / 2023.11.01
+
+- BREAKING(dotenv): remove deprecated `restrictEnvAccessTo` option (#3705)
+- BREAKING(http): move cookie_map, errors, server_sent_event, and method to
+  unstable category, deprecate server.ts (#3661)
+- BREAKING: deprecate `std/wasi` (#3732)
+- BREAKING: remove deprecated `BytesList()` (#3740)
+- BREAKING: remove deprecated `std/csv` exports (#3704)
+- feat(fs): introduce `canonicalize` option to `WalkOptions` (#3679)
+- feat(semver): canParse (#3709)
+- fix(fs): `expandGlob`/`expandGlobSync` don't require full `--allow-read` perms
+  on granted read permissions (#3692)
+- fix(http): file server with showDirListing + urlRoot (#3691)
+- fix: flaky `http/file_server.ts` tests (#3717)
+
 ### 0.204.0 / 2023.10.12
 
 - BREAKING(front_matter): deprecate Format enum, use union type instead (#3641)
@@ -16,8 +31,8 @@
 - BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
 - BREAKING(front_matter): deprecate default exports (#3653)
 - BREAKING(io): deprecate io top level module (#3556)
-- fix(collections): accept readonly arrays in aggregateGroups, reduceGroups, zip
-  (#3662)
+- fix(collections): accept read-only arrays in aggregateGroups, reduceGroups,
+  zip (#3662)
 - fix(datetime): correctly format midnight in 12-hour time (#3667)
 - fix(datetime): fix dayOfYear when the timezone has DST (#3668)
 - fix(encoding): add validation of the input types (#3666)

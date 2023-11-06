@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { _exponentialBackoffWithJitter, retry, RetryError } from "./retry.ts";
+import { retry, RetryError } from "./retry.ts";
+import { _exponentialBackoffWithJitter } from "./_util.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { FakeTime } from "../testing/time.ts";
 
