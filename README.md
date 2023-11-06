@@ -120,3 +120,7 @@ change once the Standard Library is stabilized. See
 [here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
 for the compatibility of different versions of the Deno Standard Library and the
 Deno CLI.
+
+While versioned independently of the Deno CLI, new minor versions of the
+Standard Library and the Deno CLI are published at the same time (every 6
+weeks). Patch versions may be published in between.

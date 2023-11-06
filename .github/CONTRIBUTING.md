@@ -37,3 +37,10 @@ before contributing.
    - fix #7123
    - update docs
    - fix bugs
+
+## Breaking Changes
+
+Pull requests containing breaking changes will likely be merged right before a
+new minor version is published. This allows patch releases to be made in between
+minor releases without breaking changes. See the
+[Releases](../README.md#releases) documentation for details.
