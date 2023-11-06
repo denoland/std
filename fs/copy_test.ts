@@ -80,7 +80,7 @@ testCopy(
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
 
-    const srcContent = new TextDecoder().decode(await Deno.readFile(srcFile));
+    const srcContent = await Deno.readTextFile(srcFile);
 
     assert(await Deno.lstat(srcFile), "source should exist before copy");
     await assertRejects(
@@ -93,7 +93,7 @@ testCopy(
     assert(await Deno.lstat(srcFile), "source should exist after copy");
     assert(await Deno.lstat(destFile), "destination should exist after copy");
 
-    const destContent = new TextDecoder().decode(await Deno.readFile(destFile));
+    const destContent = await Deno.readTextFile(destFile);
 
     assertEquals(
       srcContent,
@@ -111,21 +111,16 @@ testCopy(
     );
 
     // Modify destination file.
-    await Deno.writeFile(destFile, new TextEncoder().encode("txt copy"));
 
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destFile)),
-      "txt copy",
-    );
+    await Deno.writeTextFile(destFile, "txt copy");
+
+    assertEquals(await Deno.readTextFile(destFile), "txt copy");
 
     // Copy again with overwrite option.
     await copy(srcFile, destFile, { overwrite: true });
 
     // Make sure the file has been overwritten.
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destFile)),
-      "txt",
-    );
+    assertEquals(await Deno.readTextFile(destFile), "txt");
   },
 );
 
@@ -209,12 +204,12 @@ testCopy(
 
     // After copy. The source and destination should have the same content.
     assertEquals(
-      new TextDecoder().decode(await Deno.readFile(srcFile)),
-      new TextDecoder().decode(await Deno.readFile(destFile)),
+      await Deno.readTextFile(srcFile),
+      await Deno.readTextFile(destFile),
     );
     assertEquals(
-      new TextDecoder().decode(await Deno.readFile(srcNestFile)),
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
+      await Deno.readTextFile(srcNestFile),
+      await Deno.readTextFile(destNestFile),
     );
 
     // Copy again without overwrite option and it should throw an error.
@@ -227,20 +222,14 @@ testCopy(
     );
 
     // Modify the file in the destination directory.
-    await Deno.writeFile(destNestFile, new TextEncoder().encode("nest copy"));
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
-      "nest copy",
-    );
+    await Deno.writeTextFile(destNestFile, "nest copy");
+    assertEquals(await Deno.readTextFile(destNestFile), "nest copy");
 
     // Copy again with overwrite option.
     await copy(srcDir, destDir, { overwrite: true });
 
     // Make sure the file has been overwritten.
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
-      "nest",
-    );
+    assertEquals(await Deno.readTextFile(destNestFile), "nest");
   },
 );
 
