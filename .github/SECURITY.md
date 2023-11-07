@@ -20,3 +20,8 @@
   against you in regard to your report.
 - We will handle your report with strict confidentiality, and not pass on your
   personal details to third parties without your permission.
+
+## Further Reading
+
+See the Security Policy for the Deno CLI
+[here](https://github.com/denoland/deno/blob/main/.github/SECURITY.md).
