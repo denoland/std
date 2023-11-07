@@ -51,7 +51,7 @@ const pairs = [
   ["file.//", "."],
 ];
 
-Deno.test("extname", function () {
+Deno.test("posix.extname()", function () {
   pairs.forEach(function (p) {
     const input = p[0];
     const expected = p[1];
@@ -69,7 +69,7 @@ Deno.test("extname", function () {
   assertEquals(path.posix.extname("file.\\\\"), ".\\\\");
 });
 
-Deno.test("extnameWin32", function () {
+Deno.test("win32.extname()", function () {
   pairs.forEach(function (p) {
     const input = p[0].replace(slashRE, "\\");
     const expected = p[1];

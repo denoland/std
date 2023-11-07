@@ -193,9 +193,7 @@ Deno.test(
         "video/mp2t",
       );
       const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "mod.ts")),
-      );
+      const localFile = await Deno.readTextFile(join(moduleDir, "mod.ts"));
       assertEquals(downloadedFile, localFile);
     } finally {
       await killFileServer();
@@ -211,8 +209,8 @@ Deno.test(
       const res = await fetch("http://localhost:4507/hello.html");
       assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
       const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "hello.html")),
+      const localFile = await Deno.readTextFile(
+        join(testdataDir, "hello.html"),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -232,8 +230,8 @@ Deno.test(
         "text/plain; charset=UTF-8",
       );
       const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "file#2.txt")),
+      const localFile = await Deno.readTextFile(
+        join(testdataDir, "file#2.txt"),
       );
       assertEquals(downloadedFile, localFile);
     } finally {
@@ -473,9 +471,7 @@ Deno.test("file_server should ignore query params", async () => {
     const res = await fetch("http://localhost:4507/mod.ts?key=value");
     assertEquals(res.status, 200);
     const downloadedFile = await res.text();
-    const localFile = new TextDecoder().decode(
-      await Deno.readFile(join(moduleDir, "mod.ts")),
-    );
+    const localFile = await Deno.readTextFile(join(moduleDir, "mod.ts"));
     assertEquals(downloadedFile, localFile);
   } finally {
     await killFileServer();
@@ -736,8 +732,8 @@ Deno.test(
       );
       const text = await res.text();
 
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "test file.txt")),
+      const localFile = await Deno.readTextFile(
+        join(testdataDir, "test file.txt"),
       );
 
       const contentLength = await getTestFileSize();
@@ -1245,9 +1241,7 @@ Deno.test(
     const req = new Request("http://localhost:4507/testdata/test file.txt");
     const testdataPath = join(testdataDir, "test file.txt");
     const res = await serveFile(req, testdataPath);
-    const localFile = new TextDecoder().decode(
-      await Deno.readFile(testdataPath),
-    );
+    const localFile = await Deno.readTextFile(testdataPath);
     assertEquals(res.status, 200);
     assertEquals(await res.text(), localFile);
   },
