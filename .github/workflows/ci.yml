@@ -47,22 +47,13 @@ jobs:
         run: deno task test:browser
 
       - name: Generate lcov
-        shell: bash
-        # excludes tests, testdata, and generated sources from coverage report
-        run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata" > cov.lcov
+        run: deno task cov:gen
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
-
-      - name: Remove coverage report
-        shell: bash
-        run: |
-          rm -rf ./cov/
-          rm cov.lcov
 
       - name: Release if version change
         if: |

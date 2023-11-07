@@ -8,7 +8,6 @@
  * @module
  */
 
-export * from "./bytes_list.ts";
 export * from "./concat.ts";
 export * from "./copy.ts";
 export * from "./ends_with.ts";
