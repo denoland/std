@@ -18,6 +18,7 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
+import { assertAlmostEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_almost_equals.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -37,14 +38,6 @@ const TEST_FILE_LAST_MODIFIED = TEST_FILE_STAT.mtime instanceof Date
   ? new Date(TEST_FILE_STAT.mtime).toUTCString()
   : "";
 const TEST_FILE_TEXT = await Deno.readTextFile(TEST_FILE_PATH);
-
-/**
- * Rounds epochs to 2 minute units, to accommodate minor variances in how long
- * the test(s) take to execute.
- */
-function round(d: number): number {
-  return Math.floor(d / 1000 / 60 / 30);
-}
 
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
@@ -571,7 +564,7 @@ Deno.test("serveDir() sets last-modified header", async () => {
     ? TEST_FILE_STAT.mtime.getTime()
     : Number.NaN;
 
-  assertEquals(round(lastModifiedTime), round(expectedTime));
+  assertAlmostEquals(lastModifiedTime, expectedTime, 1_000);
 });
 
 Deno.test("serveDir() sets date header", async () => {
@@ -585,7 +578,7 @@ Deno.test("serveDir() sets date header", async () => {
       ? TEST_FILE_STAT.atime.getTime()
       : Number.NaN;
 
-  assertEquals(round(date), round(expectedTime));
+  assertAlmostEquals(date, expectedTime, 1_000);
 });
 
 Deno.test("serveDir() sets headers if provided as arguments", async () => {
