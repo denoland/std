@@ -913,6 +913,10 @@ Deno.test(
   "serveDir() resolves empty sub-directory without asking for current directory read permissions on Windows",
   {
     ignore: Deno.build.os !== "windows",
+    permissions: {
+      read: [`${moduleDir}/testdata`],
+      write: true,
+    },
   },
   async () => {
     const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
