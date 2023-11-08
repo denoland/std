@@ -7,7 +7,6 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { writeAll } from "../streams/write_all.ts";
 import { serveDir, ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
@@ -19,20 +18,6 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
-// import { retry } from "../async/retry.ts";
-
-interface FileServerCfg {
-  port?: number;
-  cors?: boolean;
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
-  host?: string;
-  cert?: string;
-  key?: string;
-  help?: boolean;
-  target?: string;
-  headers?: string[];
-}
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -69,9 +54,8 @@ async function fetchExactPath(
 ): Promise<Response> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
   const conn = await Deno.connect({ hostname, port });
-  await writeAll(conn, request);
+  await conn.write(encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n"));
   let currentResult = "";
   let contentLength = -1;
   let startOfBody = -1;
