@@ -162,3 +162,24 @@ Deno.test("maps", () => {
   const nestedMap = { "a": -1, "b": 2, "c": "three", "d": null, "e": map1 };
   assertEquals(decode(encode(nestedMap)), nestedMap);
 });
+
+Deno.test("huge array with 100k objects", () => {
+  const bigArray = [];
+  for (let i = 0; i < 100000; i++) {
+    bigArray.push({ a: { i: `${i}` }, i: i });
+  }
+  const bigObject = { a: bigArray };
+
+  assertEquals(decode(encode(bigObject)), bigObject);
+});
+
+Deno.test("huge object with 100k properties", () => {
+  const bigObject = {};
+  for (let i = 0; i < 100000; i++) {
+    const _ = Object.defineProperty(bigObject, `prop_${i}`, {
+      value: i,
+      enumerable: true,
+    });
+  }
+  assertEquals(decode(encode(bigObject)), bigObject);
+});
