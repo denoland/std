@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertFalse,
+  assertMatch,
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
@@ -18,8 +19,7 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
-import { retry } from "../async/retry.ts";
-import { assertMatch } from "https://deno.land/std@$STD_VERSION/assert/assert_match.ts";
+// import { retry } from "../async/retry.ts";
 
 interface FileServerCfg {
   port?: number;
@@ -61,7 +61,7 @@ function round(d: number): number {
   return Math.floor(d / 1000 / 60 / 30);
 }
 
-async function killFileServer(child: Deno.ChildProcess) {
+/* async function killFileServer(child: Deno.ChildProcess) {
   // Note: We retry this because 'Access is denied' error is thrown sometimes
   // on windows
   await retry(() => {
@@ -79,7 +79,7 @@ async function killFileServer(child: Deno.ChildProcess) {
   });
   await child.status;
   for await (const _line of child.stdout) console.log(_line); // wait until stdout closes
-}
+} */
 
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
@@ -933,13 +933,13 @@ Deno.test("serveDir() resolves path correctly on Windows", {
     stdout: "null",
     stderr: "null",
   });
-  const child = fileServer.spawn();
+  fileServer.spawn();
   try {
     const resp = await fetch("http://localhost:4507/");
     assertEquals(resp.status, 200);
     await resp.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
-    await killFileServer(child);
+    // await killFileServer(child);
   }
 });
 
@@ -971,7 +971,7 @@ Deno.test(
       stdout: "null",
       stderr: "null",
     });
-    const child = fileServer.spawn();
+    fileServer.spawn();
     try {
       const resp = await fetch(
         `http://localhost:4507/testdata/${basename(tempDir)}`,
@@ -979,7 +979,7 @@ Deno.test(
       assertEquals(resp.status, 200);
       await resp.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
-      await killFileServer(child);
+      // await killFileServer(child);
       Deno.removeSync(tempDir);
     }
   },
