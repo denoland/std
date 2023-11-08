@@ -927,39 +927,5 @@ Deno.test(
     assertEquals(res.status, 200);
 
     Deno.removeSync(tempDir);
-
-    /* const process = new Deno.Command(Deno.execPath(), {
-      // specifying a path for `--allow-read` this is essential for this test
-      // otherwise it won't trigger the edge case
-      args: [
-        "run",
-        "--no-check",
-        "--no-prompt",
-        "--quiet",
-        `--allow-read=${moduleDir}/testdata`,
-        "--allow-net",
-        "file_server.ts",
-        moduleDir,
-        "--host",
-        "localhost",
-        "--port",
-        "4507",
-      ],
-      cwd: moduleDir,
-      stdout: "null",
-      stderr: "null",
-    });
-    const child = process.spawn();
-    try {
-      const resp = await fetch(
-        `http://localhost:4507/testdata/${basename(tempDir)}`,
-      );
-      assertEquals(resp.status, 200);
-      await resp.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      child.kill();
-      await child.status;
-      Deno.removeSync(tempDir);
-    } */
   },
 );
