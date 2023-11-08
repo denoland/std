@@ -7,7 +7,7 @@ import {
   isRedirectStatus,
   isServerErrorStatus,
   isSuccessfulStatus,
-  Status,
+  STATUS_CODES,
   STATUS_TEXT,
 } from "./status.ts";
 import { assert, assertEquals } from "../assert/mod.ts";
@@ -16,10 +16,10 @@ Deno.test({
   name: "http/http_status - Status",
   fn() {
     // just spot check a few common codes
-    assertEquals(Status.OK, 200);
-    assertEquals(Status.NoContent, 204);
-    assertEquals(Status.NotFound, 404);
-    assertEquals(Status.InternalServerError, 500);
+    assertEquals(STATUS_CODES.OK, 200);
+    assertEquals(STATUS_CODES.NoContent, 204);
+    assertEquals(STATUS_CODES.NotFound, 404);
+    assertEquals(STATUS_CODES.InternalServerError, 500);
   },
 });
 
@@ -27,11 +27,11 @@ Deno.test({
   name: "http/http_status - STATUS_TEXT",
   fn() {
     // just spot check a few common codes
-    assertEquals(STATUS_TEXT[Status.OK], "OK");
-    assertEquals(STATUS_TEXT[Status.NoContent], "No Content");
-    assertEquals(STATUS_TEXT[Status.NotFound], "Not Found");
+    assertEquals(STATUS_TEXT[STATUS_CODES.OK], "OK");
+    assertEquals(STATUS_TEXT[STATUS_CODES.NoContent], "No Content");
+    assertEquals(STATUS_TEXT[STATUS_CODES.NotFound], "Not Found");
     assertEquals(
-      STATUS_TEXT[Status.InternalServerError],
+      STATUS_TEXT[STATUS_CODES.InternalServerError],
       "Internal Server Error",
     );
   },
@@ -40,8 +40,8 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isInformationalStatus()",
   fn() {
-    assert(isInformationalStatus(Status.Continue));
-    assert(!isInformationalStatus(Status.OK));
+    assert(isInformationalStatus(STATUS_CODES.Continue));
+    assert(!isInformationalStatus(STATUS_CODES.OK));
     assert(isInformationalStatus(101));
     assert(!isInformationalStatus(300));
   },
@@ -50,8 +50,8 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isSuccessfulStatus()",
   fn() {
-    assert(isSuccessfulStatus(Status.OK));
-    assert(!isSuccessfulStatus(Status.NotFound));
+    assert(isSuccessfulStatus(STATUS_CODES.OK));
+    assert(!isSuccessfulStatus(STATUS_CODES.NotFound));
     assert(isSuccessfulStatus(204));
     assert(!isSuccessfulStatus(100));
   },
@@ -60,8 +60,8 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isRedirectStatus()",
   fn() {
-    assert(isRedirectStatus(Status.Found));
-    assert(!isRedirectStatus(Status.NotFound));
+    assert(isRedirectStatus(STATUS_CODES.Found));
+    assert(!isRedirectStatus(STATUS_CODES.NotFound));
     assert(isRedirectStatus(301));
     assert(!isRedirectStatus(200));
   },
@@ -70,8 +70,8 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isClientErrorStatus()",
   fn() {
-    assert(isClientErrorStatus(Status.NotFound));
-    assert(!isClientErrorStatus(Status.InternalServerError));
+    assert(isClientErrorStatus(STATUS_CODES.NotFound));
+    assert(!isClientErrorStatus(STATUS_CODES.InternalServerError));
     assert(isClientErrorStatus(400));
     assert(!isClientErrorStatus(503));
   },
@@ -80,8 +80,8 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isServerErrorStatus()",
   fn() {
-    assert(isServerErrorStatus(Status.InternalServerError));
-    assert(!isServerErrorStatus(Status.NotFound));
+    assert(isServerErrorStatus(STATUS_CODES.InternalServerError));
+    assert(!isServerErrorStatus(STATUS_CODES.NotFound));
     assert(isServerErrorStatus(503));
     assert(!isServerErrorStatus(400));
   },
@@ -90,12 +90,12 @@ Deno.test({
 Deno.test({
   name: "http/http_status - isErrorStatus()",
   fn() {
-    assert(isErrorStatus(Status.InternalServerError));
-    assert(isErrorStatus(Status.NotFound));
+    assert(isErrorStatus(STATUS_CODES.InternalServerError));
+    assert(isErrorStatus(STATUS_CODES.NotFound));
     assert(isErrorStatus(503));
     assert(isErrorStatus(400));
-    assert(!isErrorStatus(Status.OK));
-    assert(!isErrorStatus(Status.MovedPermanently));
+    assert(!isErrorStatus(STATUS_CODES.OK));
+    assert(!isErrorStatus(STATUS_CODES.MovedPermanently));
     assert(!isErrorStatus(100));
     assert(!isErrorStatus(204));
   },
