@@ -21,7 +21,7 @@ Deno.test("[bytes] concat empty arrays", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("[bytes] concat multiple arrays", () => {
+Deno.test("[bytes] concat multiple Uint8Array", () => {
   const encoder = new TextEncoder();
   const u1 = encoder.encode("Hello ");
   const u2 = encoder.encode("W");
@@ -33,4 +33,50 @@ Deno.test("[bytes] concat multiple arrays", () => {
   assertEquals(new TextDecoder().decode(joined), "Hello World");
   assert(u1 !== joined);
   assert(u2 !== joined);
+});
+
+Deno.test("[bytes] concat an array of Uint8Array", () => {
+  const a = [
+    new Uint8Array([0, 1, 2, 3]),
+    new Uint8Array([4, 5, 6]),
+    new Uint8Array([7, 8, 9]),
+  ];
+  const joined = concat(a);
+  const expected = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assertEquals(joined, expected);
+});
+
+Deno.test("[bytes] concat multiple arrays of Uint8Array using spread operator", () => {
+  const a = [new Uint8Array([0, 1, 2, 3]), new Uint8Array([4, 5, 6, 7, 8, 9])];
+  const b = [
+    new Uint8Array([10, 11]),
+    new Uint8Array([12, 13]),
+    new Uint8Array([14, 15]),
+    new Uint8Array([16]),
+    new Uint8Array([17, 18, 19]),
+  ];
+  const joined = concat(...a, ...b);
+  const expected = new Uint8Array([
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+  ]);
+  assertEquals(joined, expected);
 });
