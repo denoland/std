@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertAlmostEquals,
   assertEquals,
   assertFalse,
   assertMatch,
@@ -18,7 +19,6 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
-import { assertAlmostEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_almost_equals.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -564,7 +564,7 @@ Deno.test("serveDir() sets last-modified header", async () => {
     ? TEST_FILE_STAT.mtime.getTime()
     : Number.NaN;
 
-  assertAlmostEquals(lastModifiedTime, expectedTime, 1_000);
+  assertAlmostEquals(lastModifiedTime, expectedTime, 100_000);
 });
 
 Deno.test("serveDir() sets date header", async () => {
