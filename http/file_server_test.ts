@@ -61,26 +61,6 @@ function round(d: number): number {
   return Math.floor(d / 1000 / 60 / 30);
 }
 
-/* async function killFileServer(child: Deno.ChildProcess) {
-  // Note: We retry this because 'Access is denied' error is thrown sometimes
-  // on windows
-  await retry(() => {
-    try {
-      child.kill("SIGKILL");
-    } catch (e) {
-      if (
-        e instanceof TypeError &&
-        e.message === "Child process has already terminated."
-      ) {
-        return;
-      }
-      throw e;
-    }
-  });
-  await child.status;
-  for await (const _line of child.stdout) console.log(_line); // wait until stdout closes
-} */
-
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
   hostname: string,
@@ -915,42 +895,22 @@ Deno.test("serveDir() serves HTTP 304 for if-none-match requests with W/-prefixe
 Deno.test("serveDir() resolves path correctly on Windows", {
   ignore: Deno.build.os !== "windows",
 }, async () => {
-  const fileServer = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-check",
-      "--quiet",
-      "--allow-read",
-      "--allow-net",
-      "file_server.ts",
-      "c:/",
-      "--host",
-      "localhost",
-      "--port",
-      `4507`,
-    ],
-    cwd: moduleDir,
-    stdout: "null",
-    stderr: "null",
-  });
-  fileServer.spawn();
-  try {
-    const resp = await fetch("http://localhost:4507/");
-    assertEquals(resp.status, 200);
-    await resp.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    // await killFileServer(child);
-  }
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, { ...serveDirOptions, fsRoot: "c:/" });
+  await res.body?.cancel();
+
+  assertEquals(res.status, 200);
 });
 
 Deno.test(
   "serveDir() resolves empty sub-directory without asking for current directory read permissions on Windows",
   {
     ignore: Deno.build.os !== "windows",
+    permissions: {},
   },
   async () => {
     const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
-    const fileServer = new Deno.Command(Deno.execPath(), {
+    const process = new Deno.Command(Deno.execPath(), {
       // specifying a path for `--allow-read` this is essential for this test
       // otherwise it won't trigger the edge case
       args: [
@@ -971,7 +931,7 @@ Deno.test(
       stdout: "null",
       stderr: "null",
     });
-    fileServer.spawn();
+    const child = process.spawn();
     try {
       const resp = await fetch(
         `http://localhost:4507/testdata/${basename(tempDir)}`,
@@ -979,7 +939,8 @@ Deno.test(
       assertEquals(resp.status, 200);
       await resp.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
-      // await killFileServer(child);
+      child.kill();
+      await child.status;
       Deno.removeSync(tempDir);
     }
   },
