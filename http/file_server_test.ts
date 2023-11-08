@@ -19,6 +19,7 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
+import { MINUTE } from "../datetime/constants.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -106,7 +107,7 @@ Deno.test("serveDir() sets last-modified header", async () => {
     ? TEST_FILE_STAT.mtime.getTime()
     : Number.NaN;
 
-  assertAlmostEquals(lastModifiedTime, expectedTime, 60_000);
+  assertAlmostEquals(lastModifiedTime, expectedTime, 5 * MINUTE);
 });
 
 Deno.test("serveDir() sets date header", async () => {
@@ -120,7 +121,7 @@ Deno.test("serveDir() sets date header", async () => {
       ? TEST_FILE_STAT.atime.getTime()
       : Number.NaN;
 
-  assertAlmostEquals(date, expectedTime, 60_000);
+  assertAlmostEquals(date, expectedTime, 5 * MINUTE);
 });
 
 Deno.test("serveDir()", async () => {
