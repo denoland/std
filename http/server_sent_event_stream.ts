@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 const NEWLINE_REGEXP = /\r\n|\r|\n/;
+const encoder = new TextEncoder();
 
 /**
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#fields}
@@ -30,7 +31,7 @@ function assertHasNoNewline(value: string, varName: string) {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format}
  */
-function stringify(message: ServerSentEventMessage) {
+function stringify(message: ServerSentEventMessage): Uint8Array {
   const lines = [];
   if (message.comment) {
     assertHasNoNewline(message.comment, "`message.comment`");
@@ -50,7 +51,7 @@ function stringify(message: ServerSentEventMessage) {
     lines.push(`id:${message.id}`);
   }
   if (message.retry) lines.push(`retry:${message.retry}`);
-  return lines.join("\n") + "\n\n";
+  return encoder.encode(lines.join("\n") + "\n\n");
 }
 
 /**
@@ -67,8 +68,7 @@ function stringify(message: ServerSentEventMessage) {
  *
  * const stream = ReadableStream.from<ServerSentEventMessage>([
  *   { data: "hello there" }
- * ]).pipeThrough(new ServerSentEventStream())
- *   .pipeThrough(new TextEncoderStream());
+ * ]).pipeThrough(new ServerSentEventStream());
  * new Response(stream, {
  *   headers: {
  *     "content-type": "text/event-stream",
@@ -78,7 +78,7 @@ function stringify(message: ServerSentEventMessage) {
  * ```
  */
 export class ServerSentEventStream
-  extends TransformStream<ServerSentEventMessage, string> {
+  extends TransformStream<ServerSentEventMessage, Uint8Array> {
   constructor() {
     super({
       transform: (message, controller) => {

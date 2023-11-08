@@ -10,7 +10,8 @@ function createStream(
 ): ReadableStream<string> {
   return ReadableStream
     .from<ServerSentEventMessage>(messages)
-    .pipeThrough(new ServerSentEventStream());
+    .pipeThrough(new ServerSentEventStream())
+    .pipeThrough(new TextDecoderStream());
 }
 
 Deno.test("ServerSentEventStream() enqueues a stringified server-sent event message object", async () => {
