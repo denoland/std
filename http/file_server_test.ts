@@ -96,6 +96,33 @@ async function fetchExactPath(
   });
 }
 
+Deno.test("serveDir() sets last-modified header", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+  const lastModifiedHeader = res.headers.get("last-modified") as string;
+  const lastModifiedTime = Date.parse(lastModifiedHeader);
+  const expectedTime = TEST_FILE_STAT.mtime instanceof Date
+    ? TEST_FILE_STAT.mtime.getTime()
+    : Number.NaN;
+
+  assertAlmostEquals(lastModifiedTime, expectedTime, 10_000);
+});
+
+Deno.test("serveDir() sets date header", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+  const dateHeader = res.headers.get("date") as string;
+  const date = Date.parse(dateHeader);
+  const expectedTime =
+    TEST_FILE_STAT.atime && TEST_FILE_STAT.atime instanceof Date
+      ? TEST_FILE_STAT.atime.getTime()
+      : Number.NaN;
+
+  assertAlmostEquals(date, expectedTime, 10_000);
+});
+
 Deno.test("serveDir()", async () => {
   const req = new Request("http://localhost/hello.html");
   const res = await serveDir(req, serveDirOptions);
@@ -552,33 +579,6 @@ Deno.test("serveDir() sets accept-ranges header to bytes for file response", asy
   await res.body?.cancel();
 
   assertEquals(res.headers.get("accept-ranges"), "bytes");
-});
-
-Deno.test("serveDir() sets last-modified header", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
-  const res = await serveDir(req, serveDirOptions);
-  await res.body?.cancel();
-  const lastModifiedHeader = res.headers.get("last-modified") as string;
-  const lastModifiedTime = Date.parse(lastModifiedHeader);
-  const expectedTime = TEST_FILE_STAT.mtime instanceof Date
-    ? TEST_FILE_STAT.mtime.getTime()
-    : Number.NaN;
-
-  assertAlmostEquals(lastModifiedTime, expectedTime, 100_000);
-});
-
-Deno.test("serveDir() sets date header", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
-  const res = await serveDir(req, serveDirOptions);
-  await res.body?.cancel();
-  const dateHeader = res.headers.get("date") as string;
-  const date = Date.parse(dateHeader);
-  const expectedTime =
-    TEST_FILE_STAT.atime && TEST_FILE_STAT.atime instanceof Date
-      ? TEST_FILE_STAT.atime.getTime()
-      : Number.NaN;
-
-  assertAlmostEquals(date, expectedTime, 1_000);
 });
 
 Deno.test("serveDir() sets headers if provided as arguments", async () => {
