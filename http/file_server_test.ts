@@ -106,7 +106,7 @@ Deno.test("serveDir() sets last-modified header", async () => {
     ? TEST_FILE_STAT.mtime.getTime()
     : Number.NaN;
 
-  assertAlmostEquals(lastModifiedTime, expectedTime, 100_000);
+  assertAlmostEquals(lastModifiedTime, expectedTime, 60_000);
 });
 
 Deno.test("serveDir() sets date header", async () => {
@@ -120,7 +120,7 @@ Deno.test("serveDir() sets date header", async () => {
       ? TEST_FILE_STAT.atime.getTime()
       : Number.NaN;
 
-  assertAlmostEquals(date, expectedTime, 100_000);
+  assertAlmostEquals(date, expectedTime, 60_000);
 });
 
 Deno.test("serveDir()", async () => {
