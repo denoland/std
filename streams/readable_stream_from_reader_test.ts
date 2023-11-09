@@ -43,7 +43,7 @@ Deno.test("[streams] readableStreamFromReader()", async function () {
     actual.push(read);
   }
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
 });
 
 Deno.test({
@@ -65,7 +65,7 @@ Deno.test("[streams] readableStreamFromReader() - calls close", async function (
     actual.push(read);
   }
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 1);
 });
 
@@ -83,7 +83,7 @@ Deno.test("[streams] readableStreamFromReader() - doesn't call close with autoCl
     actual.push(read);
   }
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 0);
 });
 
@@ -102,6 +102,6 @@ Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () 
   }
   const decoder = new TextDecoder();
   assertEquals(actual.length, 8);
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 1);
 });

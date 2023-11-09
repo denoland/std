@@ -67,7 +67,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
         this.#handle(chunk, controller);
       },
       flush: (controller) => {
-        controller.enqueue(concat(...this.#bufs));
+        controller.enqueue(concat(this.#bufs));
       },
     });
 
@@ -121,7 +121,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
               // Concat not needed when a single buffer is passed.
               controller.enqueue(bufs[0]);
             } else {
-              controller.enqueue(concat(...bufs));
+              controller.enqueue(concat(bufs));
             }
             // Drop all previous chunks.
             bufs.length = 0;
@@ -144,7 +144,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
               controller.enqueue(lastSliced);
             } else {
               bufs[lastIndex] = lastSliced;
-              controller.enqueue(concat(...bufs));
+              controller.enqueue(concat(bufs));
             }
             bufs.length = 0;
             if (disposition === "prefix") {
@@ -157,7 +157,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
           } else if (delimitedChunkEnd > 0 && bufs.length > 0) {
             // Previous chunks and current chunk together form a delimited chunk.
             const chunkSliced = chunk.subarray(chunkStart, delimitedChunkEnd);
-            const result = concat(...bufs, chunkSliced);
+            const result = concat([...bufs, chunkSliced]);
             bufs.length = 0;
             controller.enqueue(result);
             chunkStart = disposition === "prefix"
