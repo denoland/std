@@ -12,11 +12,10 @@ export type MiddlewareFunction = (
 ) => Response | Promise<Response>;
 
 /**
- * Creates a {@linkcode Deno.ServeHandler} from the given middleware chain.
+ * Creates a {@linkcode Deno.ServeHandler} from the given middleware chain,
+ * which can then be passed to {@linkcode Deno.serve}
  *
  * @param middlewares Middleware chain
- *
- * @see {@linkcode Deno.serve}
  *
  * @example
  * ```ts
