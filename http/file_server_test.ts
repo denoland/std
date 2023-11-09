@@ -1,14 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertAlmostEquals,
   assertEquals,
   assertFalse,
+  assertMatch,
   assertStringIncludes,
 } from "../assert/mod.ts";
 import { stub } from "../testing/mock.ts";
-import { writeAll } from "../streams/write_all.ts";
-import { TextLineStream } from "../streams/text_line_stream.ts";
-import { serveDir, serveFile } from "./file_server.ts";
+import { serveDir, ServeDirOptions, serveFile } from "./file_server.ts";
 import { calculate } from "./etag.ts";
 import {
   basename,
@@ -19,110 +19,26 @@ import {
   toFileUrl,
 } from "../path/mod.ts";
 import { VERSION } from "../version.ts";
-import { retry } from "../async/retry.ts";
-
-const isWindows = Deno.build.os === "windows";
-
-let child: Deno.ChildProcess;
-let stdout: ReadableStream<string>;
-
-interface FileServerCfg {
-  port?: number;
-  cors?: boolean;
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
-  host?: string;
-  cert?: string;
-  key?: string;
-  help?: boolean;
-  target?: string;
-  headers?: string[];
-}
+import { MINUTE } from "../datetime/constants.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
+const serveDirOptions: ServeDirOptions = {
+  quiet: true,
+  fsRoot: testdataDir,
+  showDirListing: true,
+  showDotfiles: true,
+  enableCors: true,
+};
 
-async function startFileServer({
-  target = ".",
-  port = 4507,
-  "dir-listing": dirListing = true,
-  dotfiles = true,
-  headers = [],
-}: FileServerCfg = {}) {
-  const fileServer = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-check",
-      "--quiet",
-      "--allow-read",
-      "--allow-net",
-      "file_server.ts",
-      target,
-      "--cors",
-      "-p",
-      `${port}`,
-      `${dirListing ? "" : "--no-dir-listing"}`,
-      `${dotfiles ? "" : "--no-dotfiles"}`,
-      ...headers.map((header) => "-H=" + header),
-    ],
-    cwd: moduleDir,
-    stdout: "piped",
-    stderr: "inherit",
-  });
-  child = fileServer.spawn();
-  // Once fileServer is ready it will write to its stdout.
-  stdout = child.stdout
-    .pipeThrough(new TextDecoderStream())
-    .pipeThrough(new TextLineStream());
-  const reader = stdout.getReader();
-  const res = await reader.read();
-  assert(!res.done && res.value.includes("Listening"));
-  reader.releaseLock();
-}
-
-async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  const fileServer = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-check",
-      "--quiet",
-      "--allow-read",
-      "--allow-net",
-      "testdata/file_server_as_library.ts",
-    ],
-    cwd: moduleDir,
-    stdout: "piped",
-    stderr: "null",
-  });
-  child = fileServer.spawn();
-  stdout = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-    new TextLineStream(),
-  );
-  const reader = stdout.getReader();
-  const res = await reader.read();
-  assert(!res.done && res.value.includes("Server running..."));
-  reader.releaseLock();
-}
-
-async function killFileServer() {
-  // Note: We retry this because 'Access is denied' error is thrown sometimes
-  // on windows
-  await retry(() => {
-    try {
-      child.kill("SIGKILL");
-    } catch (e) {
-      if (
-        e instanceof TypeError &&
-        e.message === "Child process has already terminated."
-      ) {
-        return;
-      }
-      throw e;
-    }
-  });
-  await child.status;
-  for await (const _line of stdout) { /* noop */ } // wait until stdout closes
-}
+const TEST_FILE_PATH = join(testdataDir, "test file.txt");
+const TEST_FILE_STAT = await Deno.stat(TEST_FILE_PATH);
+const TEST_FILE_SIZE = TEST_FILE_STAT.size;
+const TEST_FILE_ETAG = await calculate(TEST_FILE_STAT) as string;
+const TEST_FILE_LAST_MODIFIED = TEST_FILE_STAT.mtime instanceof Date
+  ? new Date(TEST_FILE_STAT.mtime).toUTCString()
+  : "";
+const TEST_FILE_TEXT = await Deno.readTextFile(TEST_FILE_PATH);
 
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
@@ -132,9 +48,8 @@ async function fetchExactPath(
 ): Promise<Response> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
   const conn = await Deno.connect({ hostname, port });
-  await writeAll(conn, request);
+  await conn.write(encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n"));
   let currentResult = "";
   let contentLength = -1;
   let startOfBody = -1;
@@ -182,110 +97,81 @@ async function fetchExactPath(
   });
 }
 
-Deno.test(
-  "file_server serveFile",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/mod.ts");
-      assertEquals(
-        res.headers.get("content-type"),
-        "video/mp2t",
-      );
-      const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(moduleDir, "mod.ts")),
-      );
-      assertEquals(downloadedFile, localFile);
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+Deno.test("serveDir() sets last-modified header", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+  const lastModifiedHeader = res.headers.get("last-modified") as string;
+  const lastModifiedTime = Date.parse(lastModifiedHeader);
+  const expectedTime = TEST_FILE_STAT.mtime instanceof Date
+    ? TEST_FILE_STAT.mtime.getTime()
+    : Number.NaN;
 
-Deno.test(
-  "file_server serveFile in testdata",
-  async () => {
-    await startFileServer({ target: "./testdata" });
-    try {
-      const res = await fetch("http://localhost:4507/hello.html");
-      assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
-      const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "hello.html")),
-      );
-      assertEquals(downloadedFile, localFile);
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+  assertAlmostEquals(lastModifiedTime, expectedTime, 5 * MINUTE);
+});
 
-Deno.test(
-  "file_server serveFile with filename including hash symbol",
-  async () => {
-    await startFileServer({ target: "./testdata" });
-    try {
-      const res = await fetch("http://localhost:4507/file%232.txt");
-      assertEquals(
-        res.headers.get("content-type"),
-        "text/plain; charset=UTF-8",
-      );
-      const downloadedFile = await res.text();
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "file#2.txt")),
-      );
-      assertEquals(downloadedFile, localFile);
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+Deno.test("serveDir() sets date header", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+  const dateHeader = res.headers.get("date") as string;
+  const date = Date.parse(dateHeader);
+  const expectedTime =
+    TEST_FILE_STAT.atime && TEST_FILE_STAT.atime instanceof Date
+      ? TEST_FILE_STAT.atime.getTime()
+      : Number.NaN;
 
-Deno.test("serveDirIndex", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/");
-    const page = await res.text();
-    assert(page.includes("mod.ts"));
-    assert(page.includes(`<a href="/testdata/">testdata/</a>`));
+  assertAlmostEquals(date, expectedTime, 5 * MINUTE);
+});
 
-    // `Deno.FileInfo` is not completely compatible with Windows yet
-    // TODO(bartlomieju): `mode` should work correctly in the future.
-    // Correct this test case accordingly.
-    isWindows === false &&
-      assert(/<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/.test(page));
-    isWindows &&
-      assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
-    assert(page.includes(`<a href="/mod.ts">mod.ts</a>`));
-  } finally {
-    await killFileServer();
+Deno.test("serveDir()", async () => {
+  const req = new Request("http://localhost/hello.html");
+  const res = await serveDir(req, serveDirOptions);
+  const downloadedFile = await res.text();
+  const localFile = await Deno.readTextFile(join(testdataDir, "hello.html"));
+
+  assertEquals(res.status, 200);
+  assertEquals(downloadedFile, localFile);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+});
+
+Deno.test("serveDir() with hash symbol in filename", async () => {
+  const req = new Request("http://localhost/file%232.txt");
+  const res = await serveDir(req, serveDirOptions);
+  const downloadedFile = await res.text();
+  const localFile = await Deno.readTextFile(
+    join(testdataDir, "file#2.txt"),
+  );
+
+  assertEquals(res.status, 200);
+  assertEquals(
+    res.headers.get("content-type"),
+    "text/plain; charset=UTF-8",
+  );
+  assertEquals(downloadedFile, localFile);
+});
+
+Deno.test("serveDir() serves directory index", async () => {
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, serveDirOptions);
+  const page = await res.text();
+
+  assertEquals(res.status, 200);
+  assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
+  assertStringIncludes(page, '<a href="/tls/">tls/</a>');
+  assertStringIncludes(page, "%2525A.txt");
+  assertStringIncludes(page, "/file%232.txt");
+  // `Deno.FileInfo` is not completely compatible with Windows yet
+  // TODO(bartlomieju): `mode` should work correctly in the future.
+  // Correct this test case accordingly.
+  if (Deno.build.os === "windows") {
+    assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
+  } else {
+    assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
   }
 });
 
-Deno.test("serveDirIndex with filename including percent symbol", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/");
-    const page = await res.text();
-    assertStringIncludes(page, "%2525A.txt");
-  } finally {
-    await killFileServer();
-  }
-});
-
-Deno.test("serveDirIndex with filename including hash symbol", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/");
-    const page = await res.text();
-    assertStringIncludes(page, "/testdata/file%232.txt");
-  } finally {
-    await killFileServer();
-  }
-});
-
-Deno.test("serveDirIndex returns a response even if fileinfo is inaccessible", async function () {
+Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
   // Note: Deno.stat for windows system files may be rejected with os error 32.
   // Mock Deno.stat to test that the dirlisting page can be generated
   // even if the fileInfo for a particular file cannot be obtained.
@@ -297,122 +183,106 @@ Deno.test("serveDirIndex returns a response even if fileinfo is inaccessible", a
     }
     return denoStatStub.original.call(Deno, path);
   });
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, serveDirOptions);
+  const page = await res.text();
+  denoStatStub.restore();
 
-  try {
-    const url = "http://localhost:4507/http/testdata/";
-    const res = await serveDir(new Request(url), { showDirListing: true });
-
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "/testdata/test%20file.txt");
-  } finally {
-    denoStatStub.restore();
-  }
+  assertEquals(res.status, 200);
+  assertStringIncludes(page, "/test%20file.txt");
 });
 
-Deno.test("serveFallback", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/badfile.txt");
-    assertEquals(res.status, 404);
-    const _ = await res.text();
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() handles not found files", async () => {
+  const req = new Request("http://localhost/badfile.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 404);
 });
 
-Deno.test("checkPathTraversal", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch(
-      "http://localhost:4507/../../../../../../../..",
-    );
+Deno.test("serveDir() traverses path correctly", async () => {
+  const req = new Request("http://localhost/../../../../../../../..");
+  const res = await serveDir(req, serveDirOptions);
+  const page = await res.text();
 
-    assertEquals(res.status, 200);
-    const listing = await res.text();
-    assertStringIncludes(listing, "mod.ts");
-  } finally {
-    await killFileServer();
-  }
+  assertEquals(res.status, 200);
+  assertStringIncludes(page, "hello.html");
 });
 
-Deno.test("checkPathTraversalNoLeadingSlash", async function () {
-  await startFileServer();
-  try {
-    const res = await fetchExactPath("127.0.0.1", 4507, "../../../..");
-    assertEquals(res.status, 400);
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() traverses path", async () => {
+  const controller = new AbortController();
+  const port = 4507;
+  Deno.serve(
+    { port, signal: controller.signal },
+    async (req) => await serveDir(req, serveDirOptions),
+  );
+
+  const res1 = await fetchExactPath("127.0.0.1", port, "../../../..");
+  await res1.body?.cancel();
+
+  assertEquals(res1.status, 400);
+
+  const res2 = await fetchExactPath(
+    "127.0.0.1",
+    port,
+    "http://localhost/../../../..",
+  );
+  const page = await res2.text();
+
+  assertEquals(res2.status, 200);
+  assertStringIncludes(page, "hello.html");
+
+  controller.abort();
 });
 
-Deno.test("checkPathTraversalAbsoluteURI", async function () {
-  await startFileServer();
-  try {
-    //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
-    const res = await fetchExactPath(
-      "127.0.0.1",
-      4507,
-      "http://localhost/../../../..",
-    );
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "mod.ts");
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() traverses encoded URI path", async () => {
+  const req = new Request(
+    "http://localhost/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
+  );
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 301);
+  assertEquals(res.headers.get("location"), "http://localhost/");
 });
 
-Deno.test("checkURIEncodedPathTraversal", async function () {
-  await startFileServer();
-  try {
-    const res = await fetch(
-      "http://localhost:4507/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
-    );
+Deno.test("serveDir() serves unusual filename", async () => {
+  const req1 = new Request("http://localhost/%25");
+  const res1 = await serveDir(req1, serveDirOptions);
+  await res1.body?.cancel();
 
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "mod.ts");
-  } finally {
-    await killFileServer();
-  }
+  assertEquals(res1.status, 200);
+  assert(res1.headers.has("access-control-allow-origin"));
+  assert(res1.headers.has("access-control-allow-headers"));
+
+  const req2 = new Request("http://localhost/test%20file.txt");
+  const res2 = await serveDir(req2, serveDirOptions);
+  await res2.body?.cancel();
+
+  assertEquals(res2.status, 200);
+  assert(res2.headers.has("access-control-allow-origin"));
+  assert(res2.headers.has("access-control-allow-headers"));
 });
 
-Deno.test("serveWithUnorthodoxFilename", async function () {
-  await startFileServer();
-  try {
-    let res = await fetch("http://localhost:4507/testdata/%25");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
-    assertEquals(res.status, 200);
-    const _ = await res.text();
-    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
-    assertEquals(res.status, 200);
-    await res.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() supports CORS", async () => {
+  const req1 = new Request("http://localhost/");
+  const res1 = await serveDir(req1, serveDirOptions);
+  await res1.body?.cancel();
+
+  assertEquals(res1.status, 200);
+  assert(res1.headers.has("access-control-allow-origin"));
+  assert(res1.headers.has("access-control-allow-headers"));
+
+  const req2 = new Request("http://localhost/hello.html");
+  const res2 = await serveDir(req2, serveDirOptions);
+  await res2.body?.cancel();
+
+  assertEquals(res2.status, 200);
+  assert(res2.headers.has("access-control-allow-origin"));
+  assert(res2.headers.has("access-control-allow-headers"));
 });
 
-Deno.test("CORS support", async function () {
-  await startFileServer();
-  try {
-    const directoryRes = await fetch("http://localhost:4507/");
-    assert(directoryRes.headers.has("access-control-allow-origin"));
-    assert(directoryRes.headers.has("access-control-allow-headers"));
-    assertEquals(directoryRes.status, 200);
-    await directoryRes.text(); // Consuming the body so that the test doesn't leak resources
-
-    const fileRes = await fetch("http://localhost:4507/testdata/hello.html");
-    assert(fileRes.headers.has("access-control-allow-origin"));
-    assert(fileRes.headers.has("access-control-allow-headers"));
-    assertEquals(fileRes.status, 200);
-    await fileRes.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
-});
-
-Deno.test("printHelp", async function () {
+Deno.test("serveDir() script prints help", async () => {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -428,7 +298,7 @@ Deno.test("printHelp", async function () {
   assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
-Deno.test("printVersion", async function () {
+Deno.test("serveDir() script prints version", async () => {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -444,112 +314,17 @@ Deno.test("printVersion", async function () {
   assert(output.includes(`Deno File Server ${VERSION}`));
 });
 
-Deno.test("contentType", async () => {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/hello.html");
-    const contentType = res.headers.get("content-type");
-    assertEquals(contentType, "text/html; charset=UTF-8");
-    await res.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() ignores query params", async () => {
+  const req = new Request("http://localhost/hello.html?key=value");
+  const res = await serveDir(req, serveDirOptions);
+  const downloadedFile = await res.text();
+  const localFile = await Deno.readTextFile(join(testdataDir, "hello.html"));
+
+  assertEquals(res.status, 200);
+  assertEquals(downloadedFile, localFile);
 });
 
-Deno.test("file_server running as library", async function () {
-  await startFileServerAsLibrary();
-  try {
-    const res = await fetch("http://localhost:8000");
-    assertEquals(res.status, 200);
-    const _ = await res.text();
-  } finally {
-    await killFileServer();
-  }
-});
-
-Deno.test("file_server should ignore query params", async () => {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/mod.ts?key=value");
-    assertEquals(res.status, 200);
-    const downloadedFile = await res.text();
-    const localFile = new TextDecoder().decode(
-      await Deno.readFile(join(moduleDir, "mod.ts")),
-    );
-    assertEquals(downloadedFile, localFile);
-  } finally {
-    await killFileServer();
-  }
-});
-
-async function startTlsFileServer({
-  target = ".",
-  port = 4577,
-}: FileServerCfg = {}) {
-  const fileServer = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-check",
-      "--quiet",
-      "--allow-read",
-      "--allow-net",
-      "file_server.ts",
-      target,
-      "--host",
-      "localhost",
-      "--cert",
-      "./testdata/tls/localhost.crt",
-      "--key",
-      "./testdata/tls/localhost.key",
-      "--cors",
-      "-p",
-      `${port}`,
-    ],
-    cwd: moduleDir,
-    stdout: "piped",
-    stderr: "null",
-  });
-  child = fileServer.spawn();
-  // Once fileServer is ready it will write to its stdout.
-  const r = child.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
-    new TextLineStream(),
-  );
-  const reader = r.getReader();
-  const res = await reader.read();
-  assert(!res.done && res.value.includes("Listening"));
-  reader.releaseLock();
-
-  // Wait for fileServer to be ready.
-  await retry(async () => {
-    const conn = await Deno.connectTls({
-      hostname: "localhost",
-      port,
-      certFile: join(testdataDir, "tls/RootCA.pem"),
-    });
-    conn.close();
-  });
-}
-
-Deno.test(
-  "serveDirIndex TLS",
-  async function () {
-    await startTlsFileServer();
-    try {
-      const caCert = await Deno.readTextFile(
-        join(testdataDir, "tls/RootCA.pem"),
-      );
-      const client = Deno.createHttpClient({ caCerts: [caCert] });
-      const res = await fetch("https://localhost:4577/", { client });
-      client.close();
-
-      assertStringIncludes(await res.text(), "<title>Deno File Server</title>");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test("partial TLS arguments fail", async function () {
+Deno.test("serveDir() script fails with partial TLS args", async () => {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
@@ -577,1028 +352,558 @@ Deno.test("partial TLS arguments fail", async function () {
   );
 });
 
-Deno.test("file_server disable dir listings", async function () {
-  await startFileServer({ "dir-listing": false });
-  try {
-    const res = await fetch("http://localhost:4507/");
+Deno.test("serveDir() doesn't show directory listings", async () => {
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, {
+    ...serveDirOptions,
+    showDirListing: false,
+  });
+  await res.body?.cancel();
 
-    assertEquals(res.status, 404);
-    const _ = await res.text();
-  } finally {
-    await killFileServer();
-  }
+  assertEquals(res.status, 404);
 });
 
-Deno.test("file_server do not show dotfiles", async function () {
-  await startFileServer({ dotfiles: false });
-  try {
-    let res = await fetch("http://localhost:4507/testdata/");
-    assert(!(await res.text()).includes(".dotfile"));
+Deno.test("serveDir() doesn't show dotfiles", async () => {
+  const req1 = new Request("http://localhost/");
+  const res1 = await serveDir(req1, {
+    ...serveDirOptions,
+    showDotfiles: false,
+  });
+  const page1 = await res1.text();
 
-    res = await fetch("http://localhost:4507/testdata/.dotfile");
-    assertEquals(await res.text(), "dotfile");
-  } finally {
-    await killFileServer();
-  }
+  assert(!page1.includes(".dotfile"));
+
+  const req2 = new Request("http://localhost/.dotfile");
+  const res2 = await serveDir(req2, {
+    ...serveDirOptions,
+    showDotfiles: false,
+  });
+  const body = await res2.text();
+
+  assertEquals(body, "dotfile");
 });
 
-Deno.test("file_server should show .. if it makes sense", async function (): Promise<
-  void
-> {
-  await startFileServer();
-  try {
-    let res = await fetch("http://localhost:4507/");
-    let page = await res.text();
-    assert(!page.includes("../"));
-    assert(page.includes("testdata/"));
+Deno.test("serveDir() shows .. if it makes sense", async () => {
+  const req1 = new Request("http://localhost/");
+  const res1 = await serveDir(req1, serveDirOptions);
+  const page1 = await res1.text();
 
-    res = await fetch("http://localhost:4507/testdata/");
-    page = await res.text();
-    assert(page.includes("../"));
-  } finally {
-    await killFileServer();
-  }
+  assert(!page1.includes("../"));
+  assertStringIncludes(page1, "tls/");
+
+  const req2 = new Request("http://localhost/tls/");
+  const res2 = await serveDir(req2, serveDirOptions);
+  const page2 = await res2.text();
+
+  assertStringIncludes(page2, "../");
 });
 
-Deno.test(
-  "file_server should download first byte of hello.html file",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=0-0",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      const text = await res.text();
-      console.log(text);
-      assertEquals(text, "L");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+Deno.test("serveDir() handles range request (bytes=0-0)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=0-0" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
 
-Deno.test(
-  "file_server sets `content-range` header for range request responses",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=0-100",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes 0-100/${contentLength}`,
-      );
-
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-const getTestFileSize = async () => {
-  const fileInfo = await getTestFileStat();
-  return fileInfo.size;
-};
-
-const getTestFileStat = async (): Promise<Deno.FileInfo> => {
-  const fsPath = join(testdataDir, "test file.txt");
-  const fileInfo = await Deno.stat(fsPath);
-
-  return fileInfo;
-};
-
-const getTestFileEtag = async () => {
-  const fileInfo = await getTestFileStat();
-  const etag = await calculate(fileInfo);
-  assert(etag);
-  return etag;
-};
-
-const getTestFileLastModified = async () => {
-  const fileInfo = await getTestFileStat();
-
-  if (fileInfo.mtime instanceof Date) {
-    return new Date(fileInfo.mtime).toUTCString();
-  } else {
-    return "";
-  }
-};
-
-Deno.test(
-  "file_server returns 206 for range request responses",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=0-100",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes 0-100/${contentLength}`,
-      );
-
-      assertEquals(res.status, 206);
-      assertEquals((await res.arrayBuffer()).byteLength, 101);
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should download from 300 bytes into `hello.html` file until the end",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=300-",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      const text = await res.text();
-
-      const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "test file.txt")),
-      );
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes 300-${contentLength - 1}/${contentLength}`,
-      );
-      assertEquals(text, localFile.substring(300));
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should download last 200 bytes (-200)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=-200",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        (await Deno.readTextFile(join(testdataDir, "test file.txt")))
-          .slice(-200),
-      );
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes ${contentLength - 200}-${contentLength - 1}/${contentLength}`,
-      );
-
-      assertEquals(res.status, 206);
-      assertEquals(res.statusText, "Partial Content");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should clamp Ranges that are too large (0-999999999)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=0-999999999",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        await Deno.readTextFile(join(testdataDir, "test file.txt")),
-      );
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes 0-${contentLength - 1}/${contentLength}`,
-      );
-
-      assertEquals(res.status, 206);
-      assertEquals(res.statusText, "Partial Content");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should clamp Ranges that are too large (-999999999)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        // it means the last 999999999 bytes. It is too big and should be clamped.
-        "range": "bytes=-999999999",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        await Deno.readTextFile(join(testdataDir, "test file.txt")),
-      );
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes 0-${contentLength - 1}/${contentLength}`,
-      );
-
-      assertEquals(res.status, 206);
-      assertEquals(res.statusText, "Partial Content");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 416 due to a bad range request (500-200)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=500-200",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      await res.text();
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes */${contentLength}`,
-      );
-
-      assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 416 due to out of range request (99999-999999)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=99999-999999",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      await res.text();
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes */${contentLength}`,
-      );
-
-      assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 416 due to out of range request (99999)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=99999-",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      await res.text();
-
-      const contentLength = await getTestFileSize();
-      assertEquals(
-        res.headers.get("content-range"),
-        `bytes */${contentLength}`,
-      );
-
-      assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 200 OK and ignore bad range request (100)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=100",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        await Deno.readTextFile(join(testdataDir, "test file.txt")),
-      );
-      assertEquals(res.status, 200);
-      assertEquals(res.statusText, "OK");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 200 OK and ignore bad range request (a-b)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=a-b",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        await Deno.readTextFile(join(testdataDir, "test file.txt")),
-      );
-      assertEquals(res.status, 200);
-      assertEquals(res.statusText, "OK");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 200 OK and ignore unsupported multi range request (0-10, 20-30)",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=0-10, 20-30",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(
-        await res.text(),
-        await Deno.readTextFile(join(testdataDir, "test file.txt")),
-      );
-      assertEquals(res.status, 200);
-      assertEquals(res.statusText, "OK");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server should return 200 OK due to range request for empty file",
-  async () => {
-    await startFileServer();
-    try {
-      const headers = {
-        "range": "bytes=-100",
-      };
-      const res = await fetch(
-        "http://localhost:4507/testdata/test_empty_file.txt",
-        { headers },
-      );
-
-      assertEquals(await res.text(), "");
-
-      assertEquals(res.status, 200);
-      assertEquals(res.statusText, "OK");
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server returns correct mime-types",
-  async () => {
-    await startFileServer();
-    try {
-      const txtRes = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-      );
-      assertEquals(
-        txtRes.headers.get("content-type"),
-        "text/plain; charset=UTF-8",
-      );
-      await txtRes.text(); // Consuming the body so that the test doesn't leak resources
-
-      const htmlRes = await fetch("http://localhost:4507/testdata/hello.html");
-      assertEquals(
-        htmlRes.headers.get("content-type"),
-        "text/html; charset=UTF-8",
-      );
-      await htmlRes.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server sets `accept-ranges` header to `bytes` for directory listings",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/");
-      assertEquals(res.headers.get("accept-ranges"), "bytes");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server sets `accept-ranges` header to `bytes` for file responses",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      assertEquals(res.headers.get("accept-ranges"), "bytes");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test("file_server sets `Last-Modified` header correctly", async () => {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-
-    const lastModifiedHeader = res.headers.get("last-modified") as string;
-    const lastModifiedTime = Date.parse(lastModifiedHeader);
-
-    const fileInfo = await getTestFileStat();
-    const expectedTime = fileInfo.mtime && fileInfo.mtime instanceof Date
-      ? fileInfo.mtime.getTime()
-      : Number.NaN;
-
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
-    assertEquals(round(lastModifiedTime), round(expectedTime));
-    await res.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
+  assertEquals(text, "L");
 });
 
-Deno.test("file_server sets `Date` header correctly", async () => {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-    const dateHeader = res.headers.get("date") as string;
-    const date = Date.parse(dateHeader);
-    const fileInfo = await getTestFileStat();
-    const expectedTime = fileInfo.atime && fileInfo.atime instanceof Date
-      ? fileInfo.atime.getTime()
-      : Number.NaN;
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
-    assertEquals(round(date), round(expectedTime));
-    await res.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
+Deno.test("serveDir() handles range request (bytes=0-100)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=0-100" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assertEquals(
+    res.headers.get("content-range"),
+    `bytes 0-100/${TEST_FILE_SIZE}`,
+  );
+  assertEquals(res.status, 206);
+  assertEquals((await res.arrayBuffer()).byteLength, 101);
 });
 
+Deno.test("serveDir() handles range request (bytes=300-)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=300-" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
+
+  assertEquals(
+    res.headers.get("content-range"),
+    `bytes 300-${TEST_FILE_SIZE - 1}/${TEST_FILE_SIZE}`,
+  );
+  assertEquals(text, TEST_FILE_TEXT.substring(300));
+});
+
+Deno.test("serveDir() handles range request (bytes=-200)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=-200" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assertEquals(await res.text(), TEST_FILE_TEXT.slice(-200));
+  assertEquals(
+    res.headers.get("content-range"),
+    `bytes ${TEST_FILE_SIZE - 200}-${TEST_FILE_SIZE - 1}/${TEST_FILE_SIZE}`,
+  );
+  assertEquals(res.status, 206);
+  assertEquals(res.statusText, "Partial Content");
+});
+
+Deno.test("serveDir() clamps ranges that are too large (bytes=0-999999999)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=0-999999999" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+  assertEquals(
+    res.headers.get("content-range"),
+    `bytes 0-${TEST_FILE_SIZE - 1}/${TEST_FILE_SIZE}`,
+  );
+  assertEquals(res.status, 206);
+  assertEquals(res.statusText, "Partial Content");
+});
+
+Deno.test("serveDir() clamps ranges that are too large (bytes=-999999999)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    // This means the last 999999999 bytes. It is too big and should be clamped.
+    headers: { range: "bytes=-999999999" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+  assertEquals(
+    res.headers.get("content-range"),
+    `bytes 0-${TEST_FILE_SIZE - 1}/${TEST_FILE_SIZE}`,
+  );
+  assertEquals(res.status, 206);
+  assertEquals(res.statusText, "Partial Content");
+});
+
+Deno.test("serveDir() handles bad range request (bytes=500-200)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=500-200" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
+  assertEquals(res.status, 416);
+  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+});
+
+Deno.test("serveDir() handles bad range request (bytes=99999-999999)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=99999-999999" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
+  assertEquals(res.status, 416);
+  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+});
+
+Deno.test("serveDir() handles bad range request (bytes=99999)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=99999-" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
+  assertEquals(res.status, 416);
+  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+});
+
+Deno.test("serveDir() ignores bad range request (bytes=100)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=100" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
+
+  assertEquals(text, TEST_FILE_TEXT);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+});
+
+Deno.test("serveDir() ignores bad range request (bytes=a-b)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=a-b" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
+
+  assertEquals(text, TEST_FILE_TEXT);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+});
+
+Deno.test("serveDir() ignores bad multi-range request (bytes=0-10, 20-30)", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { range: "bytes=0-10, 20-30" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
+
+  assertEquals(text, TEST_FILE_TEXT);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+});
+
+Deno.test("serveFile() serves ok response for empty file range request", async () => {
+  const req = new Request("http://localhost/test_empty_file.txt", {
+    headers: { range: "bytes=0-10, 20-30" },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  const text = await res.text();
+
+  assertEquals(text, "");
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+});
+
+Deno.test("serveDir() sets accept-ranges header to bytes for directory listing", async () => {
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("accept-ranges"), "bytes");
+});
+
+Deno.test("serveDir() sets accept-ranges header to bytes for file response", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("accept-ranges"), "bytes");
+});
+
+Deno.test("serveDir() sets headers if provided as arguments", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, {
+    ...serveDirOptions,
+    headers: ["cache-control:max-age=100", "x-custom-header:hi"],
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("cache-control"), "max-age=100");
+  assertEquals(res.headers.get("x-custom-header"), "hi");
+});
+
+Deno.test("serveDir() sets etag header", async () => {
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
+});
+
+Deno.test("serveDir() serves empty HTTP 304 response for if-none-match request of unmodified file", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { "if-none-match": TEST_FILE_ETAG },
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assertEquals(await res.text(), "");
+  assertEquals(res.status, 304);
+  assertEquals(res.statusText, "Not Modified");
+});
+
+Deno.test("serveDir() serves HTTP 304 response for if-modified-since request of unmodified file", async () => {
+  const req = new Request("http://localhost/test%20file.txt", {
+    headers: { "if-modified-since": TEST_FILE_LAST_MODIFIED },
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 304);
+  assertEquals(res.statusText, "Not Modified");
+});
+
+/**
+ * When used in combination with If-None-Match, If-Modified-Since is ignored.
+ * If etag doesn't match, don't return 304 even if if-modified-since is a valid
+ * value.
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since}
+ */
 Deno.test(
-  "file_server sets headers correctly if provided as arguments",
+  "serveDir() only uses if-none-match header if if-non-match and if-modified-since headers are provided",
   async () => {
-    await startFileServer({
-      headers: ["cache-control:max-age=100", "x-custom-header:hi"],
+    const req = new Request("http://localhost/test%20file.txt", {
+      headers: {
+        "if-none-match": "not match etag",
+        "if-modified-since": TEST_FILE_LAST_MODIFIED,
+      },
     });
-    try {
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      assertEquals(res.headers.get("cache-control"), "max-age=100");
-      assertEquals(res.headers.get("x-custom-header"), "hi");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+    const res = await serveDir(req, serveDirOptions);
+    await res.body?.cancel();
 
-Deno.test(
-  "file_server file responses includes correct etag",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      const expectedEtag = await getTestFileEtag();
-      assertEquals(res.headers.get("etag"), expectedEtag);
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server returns 304 for requests with if-none-match set with the etag",
-  async () => {
-    await startFileServer();
-    try {
-      const expectedEtag = await getTestFileEtag();
-      const headers = new Headers();
-      headers.set("if-none-match", expectedEtag);
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(res.status, 304);
-      assertEquals(res.statusText, "Not Modified");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server returns an empty body for 304 responses from requests with if-none-match set with the etag",
-  async () => {
-    await startFileServer();
-    try {
-      const expectedEtag = await getTestFileEtag();
-      const headers = new Headers();
-      headers.set("if-none-match", expectedEtag);
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(await res.text(), "");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
-  async () => {
-    await startFileServer();
-    try {
-      const expectedIfModifiedSince = await getTestFileLastModified();
-      const headers = new Headers();
-      headers.set("if-modified-since", expectedIfModifiedSince);
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(res.status, 304);
-      assertEquals(res.statusText, "Not Modified");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
-  async () => {
-    await startFileServer();
-    try {
-      // When used in combination with If-None-Match, If-Modified-Since is ignored
-      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
-      // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
-
-      const expectedIfModifiedSince = await getTestFileLastModified();
-      const headers = new Headers();
-      headers.set("if-none-match", "not match etag");
-      headers.set("if-modified-since", expectedIfModifiedSince);
-      const res = await fetch(
-        "http://localhost:4507/testdata/test%20file.txt",
-        { headers },
-      );
-      assertEquals(res.status, 200);
-      assertEquals(res.statusText, "OK");
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` serve test file",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/test file.txt");
-    const testdataPath = join(testdataDir, "test file.txt");
-    const res = await serveFile(req, testdataPath);
-    const localFile = new TextDecoder().decode(
-      await Deno.readFile(testdataPath),
-    );
-    assertEquals(res.status, 200);
-    assertEquals(await res.text(), localFile);
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` returns 404 due to file not found",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/non_existent.txt");
-    const testdataPath = join(testdataDir, "non_existent.txt");
-    const res = await serveFile(req, testdataPath);
-    assertEquals(res.status, 404);
-    assertEquals(res.statusText, "Not Found");
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` returns 404 when the given path is a directory",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/");
-    const res = await serveFile(req, testdataDir);
-    assertEquals(res.status, 404);
-    assertEquals(res.statusText, "Not Found");
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` should return 206 due to a bad range request (200-500)",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/test file.txt");
-    req.headers.set("range", "bytes=200-500");
-    const testdataPath = join(testdataDir, "test file.txt");
-    const res = await serveFile(req, testdataPath);
-    assertEquals(res.status, 206);
-    assertEquals((await res.arrayBuffer()).byteLength, 301);
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` should return 416 due to a bad range request (500-200)",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/test file.txt");
-    req.headers.set("range", "bytes=500-200");
-    const testdataPath = join(testdataDir, "test file.txt");
-    const res = await serveFile(req, testdataPath);
-    assertEquals(res.status, 416);
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/test file.txt");
-    const expectedEtag = await getTestFileEtag();
-    req.headers.set("if-none-match", expectedEtag);
-    const testdataPath = join(testdataDir, "test file.txt");
-    const res = await serveFile(req, testdataPath);
-    assertEquals(res.status, 304);
-    assertEquals(res.statusText, "Not Modified");
-  },
-);
-
-Deno.test(
-  "file_server `serveFile` if both `if-none-match` and `if-modified-since` headers are provided, use only `if-none-match`",
-  async () => {
-    // When used in combination with If-None-Match, If-Modified-Since is ignored
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
-    // -> If etag doesn't match, don't return 304 even if if-modified-since is a valid value.
-
-    const expectedIfModifiedSince = await getTestFileLastModified();
-    const req = new Request("http://localhost:4507/testdata/test file.txt");
-    req.headers.set("if-none-match", "not match etag");
-    req.headers.set("if-modified-since", expectedIfModifiedSince);
-    const testdataPath = join(testdataDir, "test file.txt");
-    const res = await serveFile(req, testdataPath);
     assertEquals(res.status, 200);
     assertEquals(res.statusText, "OK");
-    await res.text(); // Consuming the body so that the test doesn't leak resources
   },
 );
 
-Deno.test(
-  "file_server `serveFile` etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available",
-  async () => {
-    const testDenoDeploymentId = "__THIS_IS_DENO_DEPLOYMENT_ID__";
-    const hashedDenoDeploymentId = await calculate(testDenoDeploymentId, {
-      weak: true,
-    });
-    // deno-fmt-ignore
-    const code = `
-      import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
-      import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
-      import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
-      const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
-      const fileInfo = await Deno.stat(new URL(testdataPath));
-      fileInfo.mtime = null;
-      const req = new Request("http://localhost:4507/testdata/test file.txt");
-      const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
-      assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
-    `;
-    const command = new Deno.Command(Deno.execPath(), {
-      args: ["eval", code],
-      stdout: "inherit",
-      stderr: "inherit",
-      env: { DENO_DEPLOYMENT_ID: testDenoDeploymentId },
-    });
-    const { success } = await command.output();
-    assert(success);
-  },
-);
+Deno.test("serveFile() serves test file", async () => {
+  const req = new Request("http://localhost/testdata/test file.txt");
+  const res = await serveFile(req, TEST_FILE_PATH);
 
-Deno.test(
-  "serveDir (without options) serves files under the current dir",
-  async () => {
-    const req = new Request("http://localhost:4507/http/testdata/hello.html");
-    const res = await serveDir(req);
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "Hello World");
-  },
-);
+  assertEquals(res.status, 200);
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+});
 
-Deno.test(
-  "serveDir (with fsRoot option) serves files under the given dir",
-  async () => {
-    const req = new Request("http://localhost:4507/testdata/hello.html");
-    const res = await serveDir(req, { fsRoot: "http" });
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "Hello World");
-  },
-);
+Deno.test("serveFile() handles file not found", async () => {
+  const req = new Request("http://localhost/testdata/non_existent.txt");
+  const testdataPath = join(testdataDir, "non_existent.txt");
+  const res = await serveFile(req, testdataPath);
+  await res.body?.cancel();
 
-Deno.test(
-  "serveDir (with fsRoot, urlRoot option) serves files under the given dir",
-  async () => {
-    const req = new Request(
-      "http://localhost:4507/my-static-root/testdata/hello.html",
-    );
-    const res = await serveDir(req, {
-      fsRoot: "http",
-      urlRoot: "my-static-root",
-    });
-    assertEquals(res.status, 200);
-    assertStringIncludes(await res.text(), "Hello World");
-  },
-);
+  assertEquals(res.status, 404);
+  assertEquals(res.statusText, "Not Found");
+});
 
-Deno.test(
-  "serveDir serves index.html when showIndex is true",
-  async () => {
-    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
-    const expectedText = "This is subdir-with-index/index.html";
-    {
-      const res = await serveDir(new Request(url), { showIndex: true });
-      assertEquals(res.status, 200);
-      assertStringIncludes(await res.text(), expectedText);
-    }
+Deno.test("serveFile() serves HTTP 404 when the path is a directory", async () => {
+  const req = new Request("http://localhost/testdata/");
+  const res = await serveFile(req, testdataDir);
+  await res.body?.cancel();
 
-    {
-      // showIndex is true by default
-      const res = await serveDir(new Request(url));
-      assertEquals(res.status, 200);
-      assertStringIncludes(await res.text(), expectedText);
-    }
-  },
-);
+  assertEquals(res.status, 404);
+  assertEquals(res.statusText, "Not Found");
+});
 
-Deno.test(
-  "serveDir doesn't serve index.html when showIndex is false",
-  async () => {
-    const url = "http://localhost:4507/http/testdata/subdir-with-index/";
-    const res = await serveDir(new Request(url), { showIndex: false });
-    assertEquals(res.status, 404);
-  },
-);
+Deno.test("serveFile() handles bad range request (bytes=200-500)", async () => {
+  const req = new Request("http://localhost/testdata/test file.txt", {
+    headers: { range: "bytes=200-500" },
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
 
-Deno.test(
-  "serveDir redirects a directory URL not ending with a slash if it has an index",
-  async () => {
-    const url = "http://localhost:4507/http/testdata/subdir-with-index";
-    const res = await serveDir(new Request(url), { showIndex: true });
-    assertEquals(res.status, 301);
-    assertEquals(
-      res.headers.get("Location"),
-      "http://localhost:4507/http/testdata/subdir-with-index/",
-    );
-  },
-);
+  assertEquals(res.status, 206);
+  assertEquals((await res.arrayBuffer()).byteLength, 301);
+});
 
-Deno.test(
-  "serveDir redirects a directory URL not ending with a slash correctly even with a query string",
-  async () => {
-    const url = "http://localhost:4507/http/testdata/subdir-with-index?test";
-    const res = await serveDir(new Request(url), { showIndex: true });
-    assertEquals(res.status, 301);
-    assertEquals(
-      res.headers.get("Location"),
-      "http://localhost:4507/http/testdata/subdir-with-index/?test",
-    );
-  },
-);
+Deno.test("serveFile() handles bad range request (bytes=500-200)", async () => {
+  const req = new Request("http://localhost/testdata/test file.txt", {
+    headers: { range: "bytes=500-200" },
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
+  await res.body?.cancel();
 
-Deno.test(
-  "serveDir redirects a file URL ending with a slash correctly even with a query string",
-  async () => {
-    const url = "http://localhost:4507/http/testdata/test%20file.txt/?test";
-    const res = await serveDir(new Request(url), { showIndex: true });
-    assertEquals(res.status, 301);
-    assertEquals(
-      res.headers.get("Location"),
-      "http://localhost:4507/http/testdata/test%20file.txt?test",
-    );
-  },
-);
+  assertEquals(res.status, 416);
+});
 
-Deno.test(
-  "serveDir redirects non-canonical URLs",
-  async () => {
-    const url =
-      "http://localhost:4507/http/testdata//////test%20file.txt/////?test";
-    const res = await serveDir(new Request(url), { showIndex: true });
-    assertEquals(res.status, 301);
-    assertEquals(
-      res.headers.get("Location"),
-      "http://localhost:4507/http/testdata/test%20file.txt/?test",
-    );
-  },
-);
+Deno.test("serveFile() serves HTTP 304 response for if-modified-since request of unmodified file", async () => {
+  const req = new Request("http://localhost/testdata/test file.txt", {
+    headers: { "if-none-match": TEST_FILE_ETAG },
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
 
-Deno.test(
-  "file_server returns 304 for requests with if-none-match set with the etag but with W/ prefixed etag in request headers.",
-  async () => {
-    await startFileServer();
-    try {
-      const testurl = "http://localhost:4507/testdata/desktop.ini";
-      const fileurl = new URL("./testdata/desktop.ini", import.meta.url);
-      let etag: string | undefined | null;
+  assertEquals(res.status, 304);
+  assertEquals(res.statusText, "Not Modified");
+});
 
-      {
-        const res = await fetch(
-          testurl,
-          {
-            headers: [
-              ["Accept-Encoding", "gzip, deflate, br"],
-            ],
-          },
-        );
-        assertEquals(res.status, 200);
-        assertEquals(res.statusText, "OK");
+/**
+ * When used in combination with If-None-Match, If-Modified-Since is ignored.
+ * If etag doesn't match, don't return 304 even if if-modified-since is a valid
+ * value.
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since}
+ */
+Deno.test("serveFile() only uses if-none-match header if if-non-match and if-modified-since headers are provided", async () => {
+  const req = new Request("http://localhost/testdata/test file.txt", {
+    headers: {
+      "if-none-match": "not match etag",
+      "if-modified-since": TEST_FILE_LAST_MODIFIED,
+    },
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
+  await res.body?.cancel();
 
-        const data = await Deno.readTextFile(
-          fileurl,
-        );
-        assertEquals(data, await res.text()); // Consuming the body so that the test doesn't leak resources
-        etag = res.headers.get("etag");
-      }
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+});
 
-      assert(typeof etag === "string");
-      assert(etag.length > 0);
-      assert(etag.startsWith("W/"));
-      {
-        const res = await fetch(
-          testurl,
-          {
-            headers: {
-              "if-none-match": etag,
-            },
-          },
-        );
-        assertEquals(res.status, 304);
-        assertEquals(res.statusText, "Not Modified");
-        assertEquals("", await res.text()); // Consuming the body so that the test doesn't leak resources
-        assert(
-          etag === res.headers.get("etag") ||
-            etag === "W/" + res.headers.get("etag"),
-        );
-      }
-    } finally {
-      await killFileServer();
-    }
-  },
-);
-
-Deno.test("file_server should resolve `path` correctly on Windows", {
-  ignore: Deno.build.os !== "windows",
-}, async () => {
-  const fileServer = new Deno.Command(Deno.execPath(), {
-    args: [
-      "run",
-      "--no-check",
-      "--quiet",
-      "--allow-read",
-      "--allow-net",
-      "file_server.ts",
-      "c:/",
-      "--host",
-      "localhost",
-      "--port",
-      `4507`,
-    ],
-    cwd: moduleDir,
+Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.mtime is not available", async () => {
+  const DENO_DEPLOYMENT_ID = "__THIS_IS_DENO_DEPLOYMENT_ID__";
+  const hashedDenoDeploymentId = await calculate(DENO_DEPLOYMENT_ID, {
+    weak: true,
+  });
+  // deno-fmt-ignore
+  const code = `
+    import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
+    import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
+    import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
+    const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
+    const fileInfo = await Deno.stat(new URL(testdataPath));
+    fileInfo.mtime = null;
+    const req = new Request("http://localhost/testdata/test file.txt");
+    const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
+    assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
+  `;
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", code],
     stdout: "null",
     stderr: "null",
+    env: { DENO_DEPLOYMENT_ID },
   });
-  child = fileServer.spawn();
-  try {
-    const resp = await fetch("http://localhost:4507/");
-    assertEquals(resp.status, 200);
-    await resp.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
+  const { success } = await command.output();
+  assert(success);
+});
+
+Deno.test("serveDir() without options serves files in current directory", async () => {
+  const req = new Request("http://localhost/http/testdata/hello.html");
+  const res = await serveDir(req);
+
+  assertEquals(res.status, 200);
+  assertStringIncludes(await res.text(), "Hello World");
+});
+
+Deno.test("serveDir() with fsRoot and urlRoot option serves files in given directory", async () => {
+  const req = new Request(
+    "http://localhost/my-static-root/testdata/hello.html",
+  );
+  const res = await serveDir(req, {
+    fsRoot: "http",
+    urlRoot: "my-static-root",
+  });
+
+  assertEquals(res.status, 200);
+  assertStringIncludes(await res.text(), "Hello World");
+});
+
+Deno.test("serveDir() serves index.html when showIndex is true", async () => {
+  const url = "http://localhost/http/testdata/subdir-with-index/";
+  const expectedText = "This is subdir-with-index/index.html";
+  {
+    const res = await serveDir(new Request(url), { showIndex: true });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), expectedText);
+  }
+
+  {
+    // showIndex is true by default
+    const res = await serveDir(new Request(url));
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), expectedText);
   }
 });
 
+Deno.test("serveDir() doesn't serve index.html when showIndex is false", async () => {
+  const req = new Request(
+    "http://localhost/http/testdata/subdir-with-index/",
+  );
+  const res = await serveDir(req, { showIndex: false });
+
+  assertEquals(res.status, 404);
+});
+
 Deno.test(
-  "file_server should resolve empty subdir correctly without asking for current directory read permission on Windows",
+  "serveDir() redirects a directory URL not ending with a slash if it has an index",
+  async () => {
+    const url = "http://localhost/http/testdata/subdir-with-index";
+    const res = await serveDir(new Request(url), { showIndex: true });
+
+    assertEquals(res.status, 301);
+    assertEquals(
+      res.headers.get("Location"),
+      "http://localhost/http/testdata/subdir-with-index/",
+    );
+  },
+);
+
+Deno.test("serveDir() redirects a directory URL not ending with a slash correctly even with a query string", async () => {
+  const url = "http://localhost/http/testdata/subdir-with-index?test";
+  const res = await serveDir(new Request(url), { showIndex: true });
+
+  assertEquals(res.status, 301);
+  assertEquals(
+    res.headers.get("Location"),
+    "http://localhost/http/testdata/subdir-with-index/?test",
+  );
+});
+
+Deno.test("serveDir() redirects a file URL ending with a slash correctly even with a query string", async () => {
+  const url = "http://localhost/http/testdata/test%20file.txt/?test";
+  const res = await serveDir(new Request(url), { showIndex: true });
+
+  assertEquals(res.status, 301);
+  assertEquals(
+    res.headers.get("Location"),
+    "http://localhost/http/testdata/test%20file.txt?test",
+  );
+});
+
+Deno.test("serveDir() redirects non-canonical URLs", async () => {
+  const url = "http://localhost/http/testdata//////test%20file.txt/////?test";
+  const res = await serveDir(new Request(url), { showIndex: true });
+
+  assertEquals(res.status, 301);
+  assertEquals(
+    res.headers.get("Location"),
+    "http://localhost/http/testdata/test%20file.txt/?test",
+  );
+});
+
+Deno.test("serveDir() serves HTTP 304 for if-none-match requests with W/-prefixed etag", async () => {
+  const testurl = "http://localhost/desktop.ini";
+  const fileurl = new URL("./testdata/desktop.ini", import.meta.url);
+  const req1 = new Request(testurl, {
+    headers: { "accept-encoding": "gzip, deflate, br" },
+  });
+  const res1 = await serveDir(req1, serveDirOptions);
+  const etag = res1.headers.get("etag");
+
+  assertEquals(res1.status, 200);
+  assertEquals(res1.statusText, "OK");
+  assertEquals(await Deno.readTextFile(fileurl), await res1.text());
+  assert(typeof etag === "string");
+  assert(etag.length > 0);
+  assert(etag.startsWith("W/"));
+
+  const req2 = new Request(testurl, {
+    headers: { "if-none-match": etag },
+  });
+  const res2 = await serveDir(req2, serveDirOptions);
+
+  assertEquals(res2.status, 304);
+  assertEquals(res2.statusText, "Not Modified");
+  assertEquals("", await res2.text());
+  assert(
+    etag === res2.headers.get("etag") ||
+      etag === "W/" + res2.headers.get("etag"),
+  );
+});
+
+Deno.test("serveDir() resolves path correctly on Windows", {
+  ignore: Deno.build.os !== "windows",
+}, async () => {
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, { ...serveDirOptions, fsRoot: "c:/" });
+  await res.body?.cancel();
+
+  assertEquals(res.status, 200);
+});
+
+Deno.test(
+  "serveDir() resolves empty sub-directory without asking for current directory read permissions on Windows",
   {
     ignore: Deno.build.os !== "windows",
+    permissions: {
+      read: [`${moduleDir}/testdata`],
+      write: true,
+    },
   },
   async () => {
     const tempDir = Deno.makeTempDirSync({ dir: `${moduleDir}/testdata` });
-    const fileServer = new Deno.Command(Deno.execPath(), {
-      // specifying a path for `--allow-read` this is essential for this test
-      // otherwise it won't trigger the edge case
-      args: [
-        "run",
-        "--no-check",
-        "--no-prompt",
-        "--quiet",
-        `--allow-read=${moduleDir}/testdata`,
-        "--allow-net",
-        "file_server.ts",
-        moduleDir,
-        "--host",
-        "localhost",
-        "--port",
-        "4507",
-      ],
-      cwd: moduleDir,
-      stdout: "null",
-      stderr: "null",
-    });
-    child = fileServer.spawn();
-    try {
-      const resp = await fetch(
-        `http://localhost:4507/testdata/${basename(tempDir)}`,
-      );
-      assertEquals(resp.status, 200);
-      await resp.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-      Deno.removeSync(tempDir);
-    }
+    const req = new Request(`http://localhost/${basename(tempDir)}/`);
+    const res = await serveDir(req, serveDirOptions);
+    await res.body?.cancel();
+
+    assertEquals(res.status, 200);
+
+    Deno.removeSync(tempDir);
   },
 );

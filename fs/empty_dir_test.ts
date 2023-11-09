@@ -197,9 +197,9 @@ for (const s of scenes) {
     try {
       await Deno.mkdir(testfolder);
 
-      await Deno.writeFile(
+      await Deno.writeTextFile(
         path.join(testfolder, "child.txt"),
-        new TextEncoder().encode("hello world"),
+        "hello world",
       );
 
       try {
