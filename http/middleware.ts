@@ -13,7 +13,7 @@ export type MiddlewareFunction = (
 
 /**
  * Creates a {@linkcode Deno.ServeHandler} from the given middleware chain,
- * which can then be passed to {@linkcode Deno.serve}
+ * which can then be passed to {@linkcode Deno.serve}.
  *
  * @param middlewares Middleware chain
  *
