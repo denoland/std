@@ -50,7 +50,7 @@ const encoder = new TextEncoder();
 export function encode(object: ValueType) {
   const byteParts: Uint8Array[] = [];
   encodeSlice(object, byteParts);
-  return concat(...byteParts);
+  return concat(byteParts);
 }
 
 function encodeFloat64(num: number) {
