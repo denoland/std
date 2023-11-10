@@ -1,8 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { deferred } from "./deferred.ts";
-
 /**
  * Make Promise abortable with the given signal.
  *
@@ -84,11 +82,11 @@ export function abortablePromise<T>(
   if (signal.aborted) {
     return Promise.reject(createAbortError(signal.reason));
   }
-  const waiter = deferred<never>();
-  const abort = () => waiter.reject(createAbortError(signal.reason));
+  const { promise, reject } = Promise.withResolvers<never>();
+  const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
   return Promise.race([
-    waiter,
+    promise,
     p.finally(() => {
       signal.removeEventListener("abort", abort);
     }),
@@ -126,13 +124,13 @@ export async function* abortableAsyncIterable<T>(
   if (signal.aborted) {
     throw createAbortError(signal.reason);
   }
-  const waiter = deferred<never>();
-  const abort = () => waiter.reject(createAbortError(signal.reason));
+  const { promise, reject } = Promise.withResolvers<never>();
+  const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();
   while (true) {
-    const { done, value } = await Promise.race([waiter, it.next()]);
+    const { done, value } = await Promise.race([promise, it.next()]);
     if (done) {
       signal.removeEventListener("abort", abort);
       return;
