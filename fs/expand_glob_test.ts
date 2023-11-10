@@ -18,10 +18,10 @@ async function expandGlobArray(
   options: ExpandGlobOptions,
   { forceRoot = "" } = {},
 ): Promise<string[]> {
-  const paths: string[] = [];
-  for await (const { path } of expandGlob(globString, options)) {
-    paths.push(path);
-  }
+  const paths = await Array.fromAsync(
+    expandGlob(globString, options),
+    ({ path }) => path,
+  );
   paths.sort();
   const pathsSync = [...expandGlobSync(globString, options)].map(
     ({ path }): string => path,
