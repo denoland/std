@@ -1,3 +1,25 @@
+### 0.206.0 / 2023.11.10
+
+- BREAKING(async): deprecate `deferred()` in favor of `Promise.withResolvers()`
+  (#3758)
+- BREAKING(encoding): remove deprecated binary APIs (#3763)
+- BREAKING(path): split up glob into multiple files
+- add `deno fmt --check`
+- feat(testing/mock): enable `spy` to accept a class constructor (#3766)
+- feat: `ServerSentEventStream()` (#3751)
+- feat: add `std/text` with word-similarity helpers (#3488)
+- fix(fmt): format duration rounding error. (#3762)
+- fix(msgpack): encode huge objects (#3698)
+- fix: broken import
+- fix: rework file server tests (#3779)
+- perf(streams): add single-character fast path for `DelimiterStream()` (#3739)
+- quieter
+- revert: CI changes
+- simplifications and tweaks
+- simplify
+- tweaks
+- work
+
 ### 0.205.0 / 2023.11.01
 
 - BREAKING(dotenv): remove deprecated `restrictEnvAccessTo` option (#3705)
