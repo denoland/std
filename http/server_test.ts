@@ -1103,10 +1103,10 @@ Deno.test(
 
     await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
-    await onRequest;
+    await onRequest.promise;
     conn.close();
 
-    await postRespondWith;
+    await postRespondWith.promise;
     server.close();
 
     await servePromise;
@@ -1137,7 +1137,7 @@ Deno.test("Server should not reject when the handler throws", async () => {
 
   await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
-  await postRespondWith;
+  await postRespondWith.promise;
   conn.close();
   server.close();
   await servePromise;
@@ -1167,7 +1167,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
           if (n === 3) {
             throw new Error("test-error");
           }
-          await a;
+          await a.promise;
           controller.enqueue(new TextEncoder().encode("a"));
           controller.close();
         },
