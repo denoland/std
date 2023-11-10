@@ -55,7 +55,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs: Uint8Array[] = [];
   #delimiter: Uint8Array;
   #matchIndex = 0;
-  #delimLPS: Uint8Array;
+  #delimLPS: Uint8Array | null;
   #disp: DelimiterDisposition;
 
   constructor(
@@ -63,16 +63,15 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     options?: DelimiterStreamOptions,
   ) {
     super({
-      transform: (chunk, controller) => {
-        this.#handle(chunk, controller);
-      },
-      flush: (controller) => {
-        controller.enqueue(concat(...this.#bufs));
-      },
+      transform: (chunk, controller) =>
+        delimiter.length === 1
+          ? this.#handleChar(chunk, controller)
+          : this.#handle(chunk, controller),
+      flush: (controller) => this.#flush(controller),
     });
 
     this.#delimiter = delimiter;
-    this.#delimLPS = createLPS(delimiter);
+    this.#delimLPS = delimiter.length > 1 ? createLPS(delimiter) : null;
     this.#disp = options?.disposition ?? "discard";
   }
 
@@ -85,7 +84,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     const disposition = this.#disp;
     const delimiter = this.#delimiter;
     const delimLen = delimiter.length;
-    const lps = this.#delimLPS;
+    const lps = this.#delimLPS as Uint8Array;
     let chunkStart = 0;
     let matchIndex = this.#matchIndex;
     let inspectIndex = 0;
@@ -187,6 +186,100 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
       // If we matched partially somewhere in the middle of our chunk
       // then the remnants should be pushed into buffers.
       bufs.push(chunk.subarray(chunkStart));
+    }
+  }
+
+  /**
+   * Optimized handler for a char delimited stream:
+   *
+   * For char delimited streams we do not need to keep track of
+   * the match index, removing the need for a fair bit of work.
+   */
+  #handleChar(
+    chunk: Uint8Array,
+    controller: TransformStreamDefaultController<Uint8Array>,
+  ) {
+    const bufs = this.#bufs;
+    const length = chunk.byteLength;
+    const disposition = this.#disp;
+    const delimiter = this.#delimiter[0];
+    let chunkStart = 0;
+    let inspectIndex = 0;
+    while (inspectIndex < length) {
+      if (chunk[inspectIndex] === delimiter) {
+        // Next byte matched our next delimiter
+        inspectIndex++;
+        /**
+         * Always non-negative
+         */
+        const delimitedChunkEnd = disposition === "suffix"
+          ? inspectIndex
+          : inspectIndex - 1;
+        if (delimitedChunkEnd === 0 && bufs.length === 0) {
+          // Our chunk started with a delimiter and no previous chunks exist:
+          // Enqueue an empty chunk.
+          controller.enqueue(new Uint8Array());
+          chunkStart = disposition === "prefix" ? 0 : 1;
+        } else if (delimitedChunkEnd > 0 && bufs.length === 0) {
+          // No previous chunks, slice from current chunk.
+          controller.enqueue(chunk.subarray(chunkStart, delimitedChunkEnd));
+          // Our chunk may have more than one delimiter; we must remember where
+          // the next delimited chunk begins.
+          chunkStart = disposition === "prefix"
+            ? inspectIndex - 1
+            : inspectIndex;
+        } else if (delimitedChunkEnd === 0 && bufs.length > 0) {
+          // Our chunk started with a delimiter, previous chunks are passed as
+          // they are (with concatenation).
+          if (bufs.length === 1) {
+            // Concat not needed when a single buffer is passed.
+            controller.enqueue(bufs[0]);
+          } else {
+            controller.enqueue(concat(...bufs));
+          }
+          // Drop all previous chunks.
+          bufs.length = 0;
+          if (disposition !== "prefix") {
+            // suffix or discard: The next chunk starts where our inspection finished.
+            // We should only ever end up here with a discard disposition as
+            // for a suffix disposition this branch would mean that the previous
+            // chunk ended with a full match but was not enqueued.
+            chunkStart = inspectIndex;
+          }
+        } else if (delimitedChunkEnd > 0 && bufs.length > 0) {
+          // Previous chunks and current chunk together form a delimited chunk.
+          const chunkSliced = chunk.subarray(chunkStart, delimitedChunkEnd);
+          const result = concat(...bufs, chunkSliced);
+          bufs.length = 0;
+          chunkStart = disposition === "prefix"
+            ? delimitedChunkEnd
+            : inspectIndex;
+          controller.enqueue(result);
+        } else {
+          throw new Error("unreachable");
+        }
+      } else {
+        inspectIndex++;
+      }
+    }
+    if (chunkStart === 0) {
+      bufs.push(chunk);
+    } else if (chunkStart < length) {
+      // If we matched partially somewhere in the middle of our chunk
+      // then the remnants should be pushed into buffers.
+      bufs.push(chunk.subarray(chunkStart));
+    }
+  }
+
+  #flush(controller: TransformStreamDefaultController<Uint8Array>) {
+    const bufs = this.#bufs;
+    const length = bufs.length;
+    if (length === 0) {
+      controller.enqueue(new Uint8Array());
+    } else if (length === 1) {
+      controller.enqueue(bufs[0]);
+    } else {
+      controller.enqueue(concat(...bufs));
     }
   }
 }
