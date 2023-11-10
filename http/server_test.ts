@@ -4,7 +4,7 @@ import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { readAll } from "../streams/read_all.ts";
-import { deferred, delay } from "../async/mod.ts";
+import { delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -1081,8 +1081,8 @@ Deno.test(
     };
     const listener = Deno.listen(listenOptions);
 
-    const onRequest = deferred();
-    const postRespondWith = deferred();
+    const onRequest = Promise.withResolvers<void>();
+    const postRespondWith = Promise.withResolvers<void>();
 
     const handler = async () => {
       onRequest.resolve();
@@ -1103,10 +1103,10 @@ Deno.test(
 
     await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
-    await onRequest;
+    await onRequest.promise;
     conn.close();
 
-    await postRespondWith;
+    await postRespondWith.promise;
     server.close();
 
     await servePromise;
@@ -1120,7 +1120,7 @@ Deno.test("Server should not reject when the handler throws", async () => {
   };
   const listener = Deno.listen(listenOptions);
 
-  const postRespondWith = deferred();
+  const postRespondWith = Promise.withResolvers<void>();
 
   const handler = () => {
     try {
@@ -1137,7 +1137,7 @@ Deno.test("Server should not reject when the handler throws", async () => {
 
   await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
-  await postRespondWith;
+  await postRespondWith.promise;
   conn.close();
   server.close();
   await servePromise;
@@ -1155,7 +1155,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
 
   let n = 0;
-  const a = deferred();
+  const a = Promise.withResolvers<void>();
   const connections = new Set();
 
   const handler = (_req: Request, connInfo: ConnInfo) => {
@@ -1167,7 +1167,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
           if (n === 3) {
             throw new Error("test-error");
           }
-          await a;
+          await a.promise;
           controller.enqueue(new TextEncoder().encode("a"));
           controller.close();
         },
