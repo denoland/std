@@ -49,7 +49,7 @@ const relativeTests = {
   ],
 };
 
-Deno.test("relative", function () {
+Deno.test("posix.relative()", function () {
   relativeTests.posix.forEach(function (p) {
     const expected = p[2];
     const actual = path.posix.relative(p[0], p[1]);
@@ -57,7 +57,7 @@ Deno.test("relative", function () {
   });
 });
 
-Deno.test("relativeWin32", function () {
+Deno.test("win32.relative()", function () {
   relativeTests.win32.forEach(function (p) {
     const expected = p[2];
     const actual = path.win32.relative(p[0], p[1]);
