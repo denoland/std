@@ -32,7 +32,7 @@
  */
 
 /**
- * @deprecated (will be removed in 0.207.0) Use {@linkcode STATUS_CODES} instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode STATUS_CODES} instead.
  *
  * Standard HTTP status codes.
  */
