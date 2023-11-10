@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  *
  * Provides {@linkcode ServerSentEvent} and
  * {@linkcode ServerSentEventStreamTarget} which provides an interface to send
@@ -46,7 +46,7 @@
  */
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  */
 import {
   ServerSentEvent as ServerSentEvent_,
@@ -57,20 +57,20 @@ import {
 } from "./unstable_server_sent_event.ts";
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  */
 export type ServerSentEventInit = ServerSentEventInit_;
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  */
 export type ServerSentEventTarget = ServerSentEventTarget_;
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  */
 export type ServerSentEventTargetOptions = ServerSentEventTargetOptions_;
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  *
  * An event which contains information which will be sent to the remote
  * connection and be made available in an `EventSource` as an event. A server
@@ -101,7 +101,7 @@ export type ServerSentEventTargetOptions = ServerSentEventTargetOptions_;
 export const ServerSentEvent = ServerSentEvent_;
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
  *
  * An implementation of {@linkcode ServerSentEventTarget} that provides a
  * readable stream as a body of a response to establish a connection to a
