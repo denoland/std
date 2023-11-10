@@ -5,13 +5,10 @@ import { ByteSliceStream } from "./byte_slice_stream.ts";
 
 Deno.test("[streams] ByteSliceStream", async function () {
   function createStream(start = 0, end = Infinity) {
-    return new ReadableStream({
-      start(controller) {
-        controller.enqueue(new Uint8Array([0, 1]));
-        controller.enqueue(new Uint8Array([2, 3]));
-        controller.close();
-      },
-    }).pipeThrough(new ByteSliceStream(start, end));
+    return ReadableStream.from([
+      new Uint8Array([0, 1]),
+      new Uint8Array([2, 3]),
+    ]).pipeThrough(new ByteSliceStream(start, end));
   }
 
   let chunks = [];
