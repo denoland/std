@@ -121,6 +121,5 @@ change once the Standard Library is stabilized. See
 for the compatibility of different versions of the Deno Standard Library and the
 Deno CLI.
 
-While versioned independently of the Deno CLI, new minor versions of the
-Standard Library and the Deno CLI are published at the same time (every 6
-weeks). Patch versions may be published in between.
+A new minor version of the Standard Library is published at the same time as
+every new version of the Deno CLI (including patch versions).
