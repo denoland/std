@@ -1081,8 +1081,8 @@ Deno.test(
     };
     const listener = Deno.listen(listenOptions);
 
-    const onRequest = Promise.withResolvers();
-    const postRespondWith = Promise.withResolvers();
+    const onRequest = Promise.withResolvers<void>();
+    const postRespondWith = Promise.withResolvers<void>();
 
     const handler = async () => {
       onRequest.resolve();
@@ -1120,7 +1120,7 @@ Deno.test("Server should not reject when the handler throws", async () => {
   };
   const listener = Deno.listen(listenOptions);
 
-  const postRespondWith = Promise.withResolvers();
+  const postRespondWith = Promise.withResolvers<void>();
 
   const handler = () => {
     try {
@@ -1155,7 +1155,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
 
   let n = 0;
-  const a = Promise.withResolvers();
+  const a = Promise.withResolvers<void>();
   const connections = new Set();
 
   const handler = (_req: Request, connInfo: ConnInfo) => {
