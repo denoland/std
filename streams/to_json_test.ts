@@ -3,28 +3,17 @@
 import { assertEquals } from "../assert/assert_equals.ts";
 import { toJson } from "./to_json.ts";
 
-const textEncoder = new TextEncoder();
-
 Deno.test("[streams] toJson", async () => {
-  const byteStream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      controller.enqueue(textEncoder.encode("["));
-      controller.enqueue(textEncoder.encode("1, 2, 3, 4"));
-      controller.enqueue(textEncoder.encode("]"));
-      controller.close();
-    },
-  });
+  const byteStream = ReadableStream.from(["[", "1, 2, 3, 4", "]"])
+    .pipeThrough(new TextEncoderStream());
 
   assertEquals(await toJson(byteStream), [1, 2, 3, 4]);
 
-  const stringStream = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue('{ "a": 2,');
-      controller.enqueue(' "b": 3,');
-      controller.enqueue(' "c": 4 }');
-      controller.close();
-    },
-  });
+  const stringStream = ReadableStream.from([
+    '{ "a": 2,',
+    ' "b": 3,',
+    ' "c": 4 }',
+  ]);
 
   assertEquals(await toJson(stringStream), {
     a: 2,

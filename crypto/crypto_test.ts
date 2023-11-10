@@ -29,12 +29,7 @@ Deno.test(
       toHexString(
         await stdCrypto.subtle.digest(
           "SHA-384",
-          new ReadableStream({
-            start(controller) {
-              controller.enqueue(inputBytes);
-              controller.close();
-            },
-          }),
+          ReadableStream.from([inputBytes]),
         ),
       ),
       expectedDigest,
@@ -145,12 +140,7 @@ Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
   assert(
     (await stdCrypto.subtle.digest(
       "BLAKE3",
-      new ReadableStream({
-        start(controller) {
-          controller.enqueue(inputBytes);
-          controller.close();
-        },
-      }),
+      ReadableStream.from([inputBytes]),
     )) instanceof ArrayBuffer,
   );
 });
