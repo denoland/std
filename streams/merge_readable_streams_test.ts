@@ -4,23 +4,17 @@ import { mergeReadableStreams } from "./merge_readable_streams.ts";
 import { assertEquals } from "../assert/mod.ts";
 
 Deno.test("[streams] mergeReadableStreams", async () => {
-  const textStream = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("qwertzuiopasd");
-      controller.enqueue("mnbvcxylkjhgfds");
-      controller.enqueue("apoiuztrewq0987654321");
-      controller.close();
-    },
-  });
+  const textStream = ReadableStream.from([
+    "qwertzuiopasd",
+    "mnbvcxylkjhgfds",
+    "apoiuztrewq0987654321",
+  ]);
 
-  const textStream2 = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("mnbvcxylkjhgfds");
-      controller.enqueue("apoiuztrewq0987654321");
-      controller.enqueue("qwertzuiopasd");
-      controller.close();
-    },
-  });
+  const textStream2 = ReadableStream.from([
+    "mnbvcxylkjhgfds",
+    "apoiuztrewq0987654321",
+    "qwertzuiopasd",
+  ]);
 
   const buf = [];
   for await (const s of mergeReadableStreams(textStream, textStream2)) {
@@ -38,21 +32,9 @@ Deno.test("[streams] mergeReadableStreams", async () => {
 });
 
 Deno.test("[streams] mergeReadableStreams - handling errors", async () => {
-  const textStream = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("1");
-      controller.enqueue("3");
-      controller.close();
-    },
-  });
+  const textStream = ReadableStream.from(["1", "3"]);
 
-  const textStream2 = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("2");
-      controller.enqueue("4");
-      controller.close();
-    },
-  });
+  const textStream2 = ReadableStream.from(["2", "4"]);
 
   const buf = [];
   try {
