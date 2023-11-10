@@ -7,10 +7,9 @@ Deno.test("[streams] earlyZipReadableStreams short first", async () => {
   const textStream = ReadableStream.from(["1", "2", "3"]);
   const textStream2 = ReadableStream.from(["a", "b", "c", "d", "e"]);
 
-  const buf = [];
-  for await (const s of earlyZipReadableStreams(textStream, textStream2)) {
-    buf.push(s);
-  }
+  const buf = await Array.fromAsync(
+    earlyZipReadableStreams(textStream, textStream2),
+  );
 
   assertEquals(buf, [
     "1",
@@ -26,10 +25,9 @@ Deno.test("[streams] earlyZipReadableStreams long first", async () => {
   const textStream = ReadableStream.from(["a", "b", "c", "d", "e"]);
   const textStream2 = ReadableStream.from(["1", "2", "3"]);
 
-  const buf = [];
-  for await (const s of earlyZipReadableStreams(textStream, textStream2)) {
-    buf.push(s);
-  }
+  const buf = await Array.fromAsync(
+    earlyZipReadableStreams(textStream, textStream2),
+  );
 
   assertEquals(buf, [
     "a",

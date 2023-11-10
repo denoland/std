@@ -10,11 +10,9 @@ export async function assertValidParse(
   expect: unknown[],
   options?: ParseStreamOptions,
 ) {
-  const r = ReadableStream.from(chunks);
-  const res = [];
-  for await (const data of r.pipeThrough(new transform(options))) {
-    res.push(data);
-  }
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transform(options));
+  const res = await Array.fromAsync(r);
   assertEquals(res, expect);
 }
 
@@ -26,11 +24,10 @@ export async function assertInvalidParse(
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
-  const r = ReadableStream.from(chunks);
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transform(options));
   await assertRejects(
-    async () => {
-      for await (const _ of r.pipeThrough(new transform(options)));
-    },
+    async () => await Array.fromAsync(r),
     ErrorClass,
     msgIncludes,
   );

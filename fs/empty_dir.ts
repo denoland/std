@@ -18,10 +18,7 @@ import { toPathString } from "./_util.ts";
  */
 export async function emptyDir(dir: string | URL) {
   try {
-    const items = [];
-    for await (const dirEntry of Deno.readDir(dir)) {
-      items.push(dirEntry);
-    }
+    const items = await Array.fromAsync(Deno.readDir(dir));
 
     await Promise.all(items.map((item) => {
       if (item && item.name) {

@@ -12,11 +12,9 @@ async function assertValidStringify(
   expect: string[],
   options?: StringifyStreamOptions,
 ) {
-  const r = ReadableStream.from(chunks);
-  const res = [];
-  for await (const data of r.pipeThrough(new transformer(options))) {
-    res.push(data);
-  }
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transformer(options));
+  const res = await Array.fromAsync(r);
   assertEquals(res, expect);
 }
 
@@ -28,11 +26,10 @@ async function assertInvalidStringify(
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
-  const r = ReadableStream.from(chunks);
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transformer(options));
   await assertRejects(
-    async () => {
-      for await (const _ of r.pipeThrough(new transformer(options)));
-    },
+    async () => await Array.fromAsync(r),
     ErrorClass,
     msgIncludes,
   );
