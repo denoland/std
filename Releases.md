@@ -13,12 +13,6 @@
 - fix: broken import
 - fix: rework file server tests (#3779)
 - perf(streams): add single-character fast path for `DelimiterStream()` (#3739)
-- quieter
-- revert: CI changes
-- simplifications and tweaks
-- simplify
-- tweaks
-- work
 
 ### 0.205.0 / 2023.11.01
 
