@@ -14,12 +14,9 @@ Deno.test("[streams] LimitedTransformStream", async function () {
       controller.enqueue("foo");
       controller.close();
     },
-  });
+  }).pipeThrough(new LimitedTransformStream(3));
 
-  const chunks = [];
-  for await (const chunk of r.pipeThrough(new LimitedTransformStream(3))) {
-    chunks.push(chunk);
-  }
+  const chunks = await Array.fromAsync(r);
   assertEquals(chunks.length, 3);
 });
 
@@ -34,15 +31,7 @@ Deno.test("[streams] LimitedTransformStream error", async function () {
       controller.enqueue("foo");
       controller.close();
     },
-  });
+  }).pipeThrough(new LimitedTransformStream(3, { error: true }));
 
-  await assertRejects(async () => {
-    for await (
-      const _chunk of r.pipeThrough(
-        new LimitedTransformStream(3, { error: true }),
-      )
-    ) {
-      // needed to read
-    }
-  }, RangeError);
+  await assertRejects(async () => await Array.fromAsync(r), RangeError);
 });

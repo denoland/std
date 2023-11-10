@@ -22,10 +22,9 @@ Deno.test("[streams] mergeReadableStreams", async () => {
     },
   });
 
-  const buf = [];
-  for await (const s of mergeReadableStreams(textStream, textStream2)) {
-    buf.push(s);
-  }
+  const buf = await Array.fromAsync(
+    mergeReadableStreams(textStream, textStream2),
+  );
 
   assertEquals(buf.sort(), [
     "apoiuztrewq0987654321",

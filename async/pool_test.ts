@@ -15,10 +15,7 @@ Deno.test("[async] pooledMap", async function () {
     [1, 2, 3],
     (i) => new Promise<number>((r) => setTimeout(() => r(i), 1000)),
   );
-  const array = [];
-  for await (const value of results) {
-    array.push(value);
-  }
+  const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
   const diff = new Date().getTime() - start.getTime();
   assert(diff >= 2000);
@@ -34,13 +31,15 @@ Deno.test("[async] pooledMap errors", async () => {
     return n;
   }
   const mappedNumbers: number[] = [];
-  const error = await assertRejects(async () => {
-    for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
-      mappedNumbers.push(m);
-    }
-  }, AggregateError);
-  assert(error instanceof AggregateError);
-  assert(error.message === ERROR_WHILE_MAPPING_MESSAGE);
+  const error = await assertRejects(
+    async () => {
+      for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
+        mappedNumbers.push(m);
+      }
+    },
+    AggregateError,
+    ERROR_WHILE_MAPPING_MESSAGE,
+  );
   assertEquals(error.errors.length, 2);
   assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
   assertStringIncludes(error.errors[1].stack, "Error: Bad number: 2");
@@ -63,10 +62,7 @@ Deno.test("pooledMap returns ordered items", async () => {
       ),
   );
 
-  const returned = [];
-  for await (const value of results) {
-    returned.push(value);
-  }
+  const returned = await Array.fromAsync(results);
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
 
@@ -81,10 +77,7 @@ Deno.test("[async] pooledMap (browser compat)", async function () {
       [1, 2, 3],
       (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
     );
-    const array = [];
-    for await (const value of results) {
-      array.push(value);
-    }
+    const array = await Array.fromAsync(results);
     assertEquals(array, [1, 2, 3]);
   } finally {
     ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;

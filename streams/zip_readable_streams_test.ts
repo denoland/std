@@ -22,10 +22,9 @@ Deno.test("[streams] zipReadableStreams", async () => {
     },
   });
 
-  const buf = [];
-  for await (const s of zipReadableStreams(textStream, textStream2)) {
-    buf.push(s);
-  }
+  const buf = await Array.fromAsync(
+    zipReadableStreams(textStream, textStream2),
+  );
 
   assertEquals(buf, [
     "qwertzuiopasd",

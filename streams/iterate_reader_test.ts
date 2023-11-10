@@ -34,9 +34,10 @@ Deno.test("iterateReader", async () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for await (const buf of iterateReader(reader)) {
-    totalSize += buf.byteLength;
-  }
+  await Array.fromAsync(
+    iterateReader(reader),
+    (buf) => totalSize += buf.byteLength,
+  );
 
   assertEquals(totalSize, 12);
 });

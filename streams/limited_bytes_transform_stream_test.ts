@@ -14,12 +14,9 @@ Deno.test("[streams] LimitedBytesTransformStream", async function () {
       controller.enqueue(new Uint8Array([16, 17, 18]));
       controller.close();
     },
-  });
+  }).pipeThrough(new LimitedBytesTransformStream(7));
 
-  const chunks = [];
-  for await (const chunk of r.pipeThrough(new LimitedBytesTransformStream(7))) {
-    chunks.push(chunk);
-  }
+  const chunks = await Array.fromAsync(r);
   assertEquals(chunks.length, 2);
 });
 
@@ -34,15 +31,7 @@ Deno.test("[streams] LimitedBytesTransformStream error", async function () {
       controller.enqueue(new Uint8Array([16, 17, 18]));
       controller.close();
     },
-  });
+  }).pipeThrough(new LimitedBytesTransformStream(7, { error: true }));
 
-  await assertRejects(async () => {
-    for await (
-      const _chunk of r.pipeThrough(
-        new LimitedBytesTransformStream(7, { error: true }),
-      )
-    ) {
-      // needed to read
-    }
-  }, RangeError);
+  await assertRejects(async () => await Array.fromAsync(r), RangeError);
 });
