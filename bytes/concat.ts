@@ -15,7 +15,7 @@
  */
 export function concat(buf: Uint8Array[]): Uint8Array;
 /**
- * @deprecated (will be removed in 0.207.0) Pass in an array instead of a
+ * @deprecated (will be removed in 0.209.0) Pass in an array instead of a
  * spread of arguments.
  *
  * Concatenate an array of {@linkcode Uint8Array}s.
@@ -31,7 +31,7 @@ export function concat(buf: Uint8Array[]): Uint8Array;
  */
 export function concat(...buf: Uint8Array[]): Uint8Array;
 /**
- * @deprecated (will be removed in 0.207.0) Pass in an array instead of a
+ * @deprecated (will be removed in 0.209.0) Pass in an array instead of a
  * spread of arguments.
  *
  * Concatenate an array of {@linkcode Uint8Array}s.
