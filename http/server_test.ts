@@ -4,7 +4,7 @@ import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { writeAll } from "../streams/write_all.ts";
 import { readAll } from "../streams/read_all.ts";
-import { deferred, delay } from "../async/mod.ts";
+import { delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -1081,8 +1081,8 @@ Deno.test(
     };
     const listener = Deno.listen(listenOptions);
 
-    const onRequest = deferred();
-    const postRespondWith = deferred();
+    const onRequest = Promise.withResolvers();
+    const postRespondWith = Promise.withResolvers();
 
     const handler = async () => {
       onRequest.resolve();
@@ -1120,7 +1120,7 @@ Deno.test("Server should not reject when the handler throws", async () => {
   };
   const listener = Deno.listen(listenOptions);
 
-  const postRespondWith = deferred();
+  const postRespondWith = Promise.withResolvers();
 
   const handler = () => {
     try {
@@ -1155,7 +1155,7 @@ Deno.test("Server should not close the http2 downstream connection when the resp
   const url = `https://${listenOptions.hostname}:${listenOptions.port}/`;
 
   let n = 0;
-  const a = deferred();
+  const a = Promise.withResolvers();
   const connections = new Set();
 
   const handler = (_req: Request, connInfo: ConnInfo) => {
