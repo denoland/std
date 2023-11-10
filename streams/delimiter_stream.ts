@@ -62,40 +62,16 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
     delimiter: Uint8Array,
     options?: DelimiterStreamOptions,
   ) {
-    let transform: (
-      chunk: Uint8Array,
-      controller: TransformStreamDefaultController<Uint8Array>,
-    ) => void;
-    const flush = (
-      controller: TransformStreamDefaultController<Uint8Array>,
-    ) => {
-      const bufs = this.#bufs;
-      const length = bufs.length;
-      if (length === 0) {
-        controller.enqueue(new Uint8Array());
-      } else if (length === 1) {
-        controller.enqueue(bufs[0]);
-      } else {
-        controller.enqueue(concat(...bufs));
-      }
-    };
-
-    let lps: Uint8Array | null = null;
-
-    if (delimiter.length === 1) {
-      // Delimiter is a single char
-      transform = (chunk, controller) => this.#handleChar(chunk, controller);
-    } else {
-      transform = (chunk, controller) => this.#handle(chunk, controller);
-      lps = createLPS(delimiter);
-    }
     super({
-      transform,
-      flush,
+      transform: (chunk, controller) =>
+        delimiter.length === 1
+          ? this.#handleChar(chunk, controller)
+          : this.#handle(chunk, controller),
+      flush: (controller) => this.#flush(controller),
     });
 
     this.#delimiter = delimiter;
-    this.#delimLPS = lps;
+    this.#delimLPS = delimiter.length > 1 ? createLPS(delimiter) : null;
     this.#disp = options?.disposition ?? "discard";
   }
 
@@ -292,6 +268,18 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
       // If we matched partially somewhere in the middle of our chunk
       // then the remnants should be pushed into buffers.
       bufs.push(chunk.subarray(chunkStart));
+    }
+  }
+
+  #flush(controller: TransformStreamDefaultController<Uint8Array>) {
+    const bufs = this.#bufs;
+    const length = bufs.length;
+    if (length === 0) {
+      controller.enqueue(new Uint8Array());
+    } else if (length === 1) {
+      controller.enqueue(bufs[0]);
+    } else {
+      controller.enqueue(concat(...bufs));
     }
   }
 }
