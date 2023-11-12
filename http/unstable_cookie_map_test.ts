@@ -500,10 +500,7 @@ Deno.test({
     );
     const response = createHeaders();
     const cookies = new SecureCookieMap(request, { response });
-    const actual = [];
-    for await (const cookie of cookies) {
-      actual.push(cookie);
-    }
+    const actual = await Array.fromAsync(cookies);
     assertEquals(
       actual,
       [["bar", "foo"], ["foo", "baz"], ["baz", "1234"]],
@@ -522,10 +519,7 @@ Deno.test({
       request,
       { response, keys: new KeyStack(["secret1"]) },
     );
-    const actual = [];
-    for await (const cookie of cookies) {
-      actual.push(cookie);
-    }
+    const actual = await Array.fromAsync(cookies);
     assertEquals(actual, [["bar", "foo"]]);
   },
 });

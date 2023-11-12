@@ -62,3 +62,10 @@ Deno.test({
     assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
   },
 });
+
+Deno.test({
+  name: "format duration rounding error",
+  fn() {
+    assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
+  },
+});

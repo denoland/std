@@ -116,9 +116,10 @@ Deno.test("directoryEntryType", async function () {
 
   const reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
-  for await (const entry of untar) {
-    assertEquals(entry.type, "directory");
-  }
+  await Array.fromAsync(
+    untar,
+    (entry) => assertEquals(entry.type, "directory"),
+  );
 
   reader.close();
   await Deno.remove(outputFile);
