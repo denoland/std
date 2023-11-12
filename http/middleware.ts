@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Middleware function based on {@linkcode Deno.ServeHandlerInfo} but an added
- * `next()` function which calls the next middleware function in the middleware
+ * Middleware handler based on {@linkcode Deno.ServeHandlerInfo} but an added
+ * `next()` function which calls the next middleware handler in the middleware
  * chain.
  */
 export type MiddlewareHandler = (
