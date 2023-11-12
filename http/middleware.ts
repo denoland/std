@@ -21,7 +21,7 @@ export type MiddlewareHandler = (
  * ```ts
  * import {
  *   type MiddlewareHandler,
- *   composeHandler,
+ *   createHandler,
  * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
  *
  * const middleware1: MiddlewareHandler = async (_request, _info, next) => {
@@ -36,10 +36,10 @@ export type MiddlewareHandler = (
  *   return Response.json({ request, info });
  * };
  *
- * const handler = composeHandler([middleware1, middleware2])
+ * const handler = createHandler([middleware1, middleware2])
  * ```
  */
-export function composeHandler(
+export function createHandler(
   middlewares: MiddlewareHandler[],
 ): Deno.ServeHandler {
   return (request, info) => {
