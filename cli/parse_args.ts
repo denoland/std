@@ -9,9 +9,9 @@
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
  *
- * console.dir(parse(Deno.args));
+ * console.dir(parseArgs(Deno.args));
  * ```
  *
  * @module
@@ -228,7 +228,7 @@ type Dedot<TKey extends string, TValue> = TKey extends
 
 type ValueOf<TValue> = TValue[keyof TValue];
 
-/** The value returned from `parse`. */
+/** The value returned from `parseArgs`. */
 export type Args<
   // deno-lint-ignore no-explicit-any
   TArgs extends Record<string, unknown> = Record<string, any>,
@@ -250,7 +250,7 @@ type DoubleDash = {
   "--"?: Array<string>;
 };
 
-/** The options for the `parse` call. */
+/** The options for the `parseArgs` call. */
 export interface ParseOptions<
   TBooleans extends BooleanType = BooleanType,
   TStrings extends StringType = StringType,
@@ -271,10 +271,10 @@ export interface ParseOptions<
    *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
-   * console.dir(parse(Deno.args, { "--": false }));
+   * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+   * console.dir(parseArgs(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
-   * console.dir(parse(Deno.args, { "--": true }));
+   * console.dir(parseArgs(Deno.args, { "--": true }));
    * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
    */
@@ -384,11 +384,11 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * available in the `_` property of the returned object.
  *
  * By default, the flags module tries to determine the type of all arguments
- * automatically and the return type of the `parse` method will have an index
+ * automatically and the return type of the `parseArgs` method will have an index
  * signature with `any` as value (`{ [x: string]: any }`).
  *
  * If the `string`, `boolean` or `collect` option is set, the return value of
- * the `parse` method will be fully typed and the index signature of the return
+ * the `parseArgs` method will be fully typed and the index signature of the return
  * type will change to `{ [x: string]: unknown }`.
  *
  * Any arguments after `'--'` will not be parsed and will end up in `parsedArgs._`.
@@ -398,18 +398,18 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
- * const parsedArgs = parse(Deno.args);
+ * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * const parsedArgs = parseArgs(Deno.args);
  * ```
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
- * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
+ * import { parseArgs } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * const parsedArgs = parseArgs(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
  */
-export function parse<
+export function parseArgs<
   TArgs extends Values<
     TBooleans,
     TStrings,
