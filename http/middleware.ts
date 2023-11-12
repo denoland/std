@@ -36,7 +36,7 @@ export type MiddlewareFunction = (
  *   return Response.json({ request, info });
  * };
  *
- * const handler = createHandler([])
+ * const handler = createHandler([middleware1, middleware2])
  * ```
  */
 export function createHandler(
