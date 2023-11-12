@@ -9,26 +9,9 @@
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/flags.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
  *
  * console.dir(parse(Deno.args));
- * ```
- *
- * ```sh
- * $ deno run https://deno.land/std/examples/flags.ts -a beep -b boop
- * { _: [], a: 'beep', b: 'boop' }
- * ```
- *
- * ```sh
- * $ deno run https://deno.land/std/examples/flags.ts -x 3 -y 4 -n5 -abc --beep=boop foo bar baz
- * { _: [ 'foo', 'bar', 'baz' ],
- *   x: 3,
- *   y: 4,
- *   n: 5,
- *   a: true,
- *   b: true,
- *   c: true,
- *   beep: 'boop' }
  * ```
  *
  * @module
@@ -288,7 +271,7 @@ export interface ParseOptions<
    *  @example
    * ```ts
    * // $ deno run example.ts -- a arg1
-   * import { parse } from "https://deno.land/std@$STD_VERSION/cli/flags.ts";
+   * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
    * console.dir(parse(Deno.args, { "--": false }));
    * // output: { _: [ "a", "arg1" ] }
    * console.dir(parse(Deno.args, { "--": true }));
@@ -372,7 +355,7 @@ function get<TValue>(
 
 function getForce<TValue>(obj: Record<string, TValue>, key: string): TValue {
   const v = get(obj, key);
-  assert(v != null);
+  assert(v !== undefined);
   return v;
 }
 
@@ -415,13 +398,13 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/flags.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/flags.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "./quux.txt"]);
  * // parsedArgs: { foo: true, bar: "baz", _: ["./quux.txt"] }
  * ```
@@ -638,7 +621,7 @@ export function parse<
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
-      assert(m != null);
+      assert(m !== null);
       const [, key, value] = m;
 
       if (flags.bools[key]) {
@@ -651,11 +634,11 @@ export function parse<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m != null);
+      assert(m !== null);
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m != null);
+      assert(m !== null);
       const [, key] = m;
       const next = args[i + 1];
       if (
