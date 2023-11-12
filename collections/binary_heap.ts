@@ -3,7 +3,7 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/binary_heap.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/binary_heap.ts` instead.
    *
    * A priority queue implemented with a binary heap. The heap is in descending
    * order by default, using JavaScript's built-in comparison operators to sort
@@ -51,13 +51,13 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/comparators.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/comparators.ts` instead.
    *
    * Compares its two arguments for ascending order using JavaScript's built in comparison operators.
    */
   ascend,
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/comparators.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/comparators.ts` instead.
    *
    * Compares its two arguments for descending order using JavaScript's built in comparison operators.
    */

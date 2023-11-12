@@ -3,7 +3,7 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/red_black_tree.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/red_black_tree.ts` instead.
    *
    * A red-black tree. This is a kind of self-balancing binary search tree. The
    * values are in ascending order by default, using JavaScript's built-in
@@ -91,13 +91,13 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/comparators.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/comparators.ts` instead.
    *
    * Compares its two arguments for ascending order using JavaScript's built in comparison operators.
    */
   ascend,
   /**
-   * @deprecated (will be removed in 0.207.0) Import from `data_structures/comparators.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from `data_structures/comparators.ts` instead.
    *
    * Compares its two arguments for descending order using JavaScript's built in comparison operators.
    */
