@@ -1835,7 +1835,7 @@ Deno.test("typesOfNullishDefaults", function () {
 });
 
 Deno.test("typesOfParseGenerics", function () {
-  const argv = parse<{ foo?: number } & { bar: string }, true>([]);
+  const argv = parseArgs<{ foo?: number } & { bar: string }, true>([]);
   assertType<
     IsExact<
       typeof argv,
