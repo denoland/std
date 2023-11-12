@@ -2,10 +2,10 @@
 // This module is browser compatible.
 
 import { parseMediaType } from "./parse_media_type.ts";
-import { typeByExtension } from "./type_by_extension.ts";
 import { getCharset } from "./get_charset.ts";
 import { formatMediaType } from "./format_media_type.ts";
 import type { db } from "./_db.ts";
+import { types } from "./_db.ts";
 
 type DB = typeof db;
 type ContentTypeToExtension = {
@@ -74,4 +74,10 @@ export function contentType<
   }
   return undefined as Lowercase<T> extends KnownExtensionOrType ? string
     : string | undefined;
+}
+
+function typeByExtension(extension: string): string | undefined {
+  extension = extension.startsWith(".") ? extension.slice(1) : extension;
+  // @ts-ignore workaround around denoland/dnt#148
+  return types.get(extension.toLowerCase());
 }

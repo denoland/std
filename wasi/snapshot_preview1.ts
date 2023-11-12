@@ -356,6 +356,9 @@ class ExitStatus {
   }
 }
 
+/**
+ * @deprecated (will be removed in 0.207.0)
+ */
 export interface ContextOptions {
   /**
    * An array of strings that the WebAssembly instance will see as command-line
@@ -401,6 +404,8 @@ export interface ContextOptions {
 }
 
 /**
+ * @deprecated (will be removed in 0.207.0)
+ *
  * The Context class provides the environment required to run WebAssembly
  * modules compiled to run with the WebAssembly System Interface.
  *
