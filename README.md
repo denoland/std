@@ -111,7 +111,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Contributing
 
-Check out the contributing guidelines [here](./CONTRIBUTING.md).
+Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 ## Releases
 
@@ -120,3 +120,6 @@ change once the Standard Library is stabilized. See
 [here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
 for the compatibility of different versions of the Deno Standard Library and the
 Deno CLI.
+
+A new minor version of the Standard Library is published at the same time as
+every new version of the Deno CLI (including patch versions).

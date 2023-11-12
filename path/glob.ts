@@ -6,7 +6,7 @@ export type { GlobToRegExpOptions } from "./glob_to_regexp.ts";
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from "std/path/windows/is_glob.ts"
+   * @deprecated (will be removed in 0.215.0) Import from "std/path/is_glob.ts"
    *
    * Test whether the given string is a glob
    */
