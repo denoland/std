@@ -5,7 +5,7 @@
  * `next()` function which calls the next middleware function in the middleware
  * chain.
  */
-export type MiddlewareFunction = (
+export type MiddlewareHandler = (
   request: Request,
   info: Deno.ServeHandlerInfo,
   next: () => Response | Promise<Response>,
@@ -20,11 +20,11 @@ export type MiddlewareFunction = (
  * @example
  * ```ts
  * import {
- *   type MiddlewareFunction,
- *   createHandler,
+ *   type MiddlewareHandler,
+ *   composeHandler,
  * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
  *
- * const middleware1: MiddlewareFunction = async (_request, _info, next) => {
+ * const middleware1: MiddlewareHandler = async (_request, _info, next) => {
  *   const start = performance.now();
  *   const response = await next();
  *   const duration = performance.now() - start;
@@ -32,15 +32,15 @@ export type MiddlewareFunction = (
  *   return response;
  * };
  *
- * const middleware2: MiddlewareFunction = (request, info) => {
+ * const middleware2: MiddlewareHandler = (request, info) => {
  *   return Response.json({ request, info });
  * };
  *
- * const handler = createHandler([middleware1, middleware2])
+ * const handler = composeHandler([middleware1, middleware2])
  * ```
  */
-export function createHandler(
-  middlewares: MiddlewareFunction[],
+export function composeHandler(
+  middlewares: MiddlewareHandler[],
 ): Deno.ServeHandler {
   return (request, info) => {
     function compose(index: number): Response | Promise<Response> {
