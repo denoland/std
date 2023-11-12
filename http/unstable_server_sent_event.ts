@@ -2,6 +2,8 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ *
  * Provides {@linkcode ServerSentEvent} and
  * {@linkcode ServerSentEventStreamTarget} which provides an interface to send
  * server sent events to a browser using the DOM event model.
@@ -49,6 +51,9 @@ const encoder = new TextEncoder();
 
 const DEFAULT_KEEP_ALIVE_INTERVAL = 30_000;
 
+/**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ */
 export interface ServerSentEventInit extends EventInit {
   /** Optional arbitrary data to send to the client, data this is a string will
    * be sent unmodified, otherwise `JSON.parse()` will be used to serialize the
@@ -71,6 +76,9 @@ export interface ServerSentEventInit extends EventInit {
   space?: string | number;
 }
 
+/**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ */
 export interface ServerSentEventTargetOptions {
   /** Keep client connections alive by sending a comment event to the client
    * at a specified interval.  If `true`, then it polls every 30000 milliseconds
@@ -86,7 +94,10 @@ class CloseEvent extends Event {
   }
 }
 
-/** An event which contains information which will be sent to the remote
+/**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ *
+ * An event which contains information which will be sent to the remote
  * connection and be made available in an `EventSource` as an event. A server
  * creates new events and dispatches them on the target which will then be
  * sent to a client.
@@ -170,6 +181,9 @@ const RESPONSE_HEADERS = [
   ["Keep-Alive", `timeout=${Number.MAX_SAFE_INTEGER}`],
 ] as const;
 
+/**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ */
 export interface ServerSentEventTarget extends EventTarget {
   /** Is set to `true` if events cannot be sent to the remote connection.
    * Otherwise it is set to `false`.
@@ -249,9 +263,13 @@ export interface ServerSentEventTarget extends EventTarget {
   dispatchEvent(event: CloseEvent | ErrorEvent): boolean;
 }
 
-/** An implementation of {@linkcode ServerSentEventTarget} that provides a
+/**
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode ServerSentEventStream} from "https://deno.land/std@$STD_VERSION/http/server_sent_event_stream.ts" instead.
+ *
+ * An implementation of {@linkcode ServerSentEventTarget} that provides a
  * readable stream as a body of a response to establish a connection to a
- * client. */
+ * client.
+ */
 export class ServerSentEventStreamTarget extends EventTarget
   implements ServerSentEventTarget {
   #bodyInit: ReadableStream<Uint8Array>;
