@@ -215,7 +215,7 @@ snapshot[`Snapshot Test - Options > mode 2`] = `
 snapshot ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -227,7 +227,7 @@ snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 Snapshot Test - Update ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -272,7 +272,7 @@ snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 Snapshot Test - Update ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -301,7 +301,7 @@ Snapshot Test - Second ... ok (--ms)
 
  > 2 snapshots updated.
 
- > 1 snapshots removed.
+ > 1 snapshot removed.
    • Snapshot Test - Update 1
 
 ok | 2 passed | 0 failed (--ms)
@@ -361,7 +361,7 @@ Snapshot Test - Remove - Fourth ... ok (--ms)
 Snapshot Test - Remove - Fifth ... ok (--ms)
 ------- output -------
 
- > 1 snapshots removed.
+ > 1 snapshot removed.
    • Snapshot Test - Remove - Third 1
 
 ok | 4 passed | 0 failed (--ms)
@@ -410,7 +410,7 @@ Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ...----- output end -----
 Snapshot Test - First ... ok (--ms)

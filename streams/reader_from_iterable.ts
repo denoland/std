@@ -5,7 +5,10 @@ import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
 import { Reader } from "../types.d.ts";
 
-/** Create a `Reader` from an iterable of `Uint8Array`s.
+/**
+ * @deprecated (will be removed after 1.0.0) Convert to ReadableStream using ReadableStream.from instead.
+ *
+ * Create a `Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
  *      import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
@@ -31,7 +34,7 @@ export function readerFromIterable(
   const buffer = new Buffer();
   return {
     async read(p: Uint8Array): Promise<number | null> {
-      if (buffer.length == 0) {
+      if (buffer.length === 0) {
         const result = await iterator.next();
         if (result.done) {
           return null;
@@ -46,7 +49,7 @@ export function readerFromIterable(
         }
       } else {
         const n = await buffer.read(p);
-        if (n == null) {
+        if (n === null) {
           return this.read(p);
         }
         return n;

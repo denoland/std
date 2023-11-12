@@ -269,12 +269,10 @@
  * @module
  */
 
-import {
-  assertEquals,
-  AssertionError,
-  assertIsError,
-  assertRejects,
-} from "./asserts.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
+import { assertIsError } from "../assert/assert_is_error.ts";
+import { assertRejects } from "../assert/assert_rejects.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
 
 /** An error related to spying on a function or instance method. */
 export class MockError extends Error {
@@ -557,6 +555,58 @@ function methodSpy<
   return spy;
 }
 
+/** A constructor wrapper that records all calls made to it. */
+export interface ConstructorSpy<
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+> {
+  new (...args: Args): Self;
+  /** The function that is being spied on. */
+  original: new (...args: Args) => Self;
+  /** Information about calls made to the function or instance method. */
+  calls: SpyCall<Self, Args, Self>[];
+  /** Whether or not the original instance method has been restored. */
+  restored: boolean;
+  /** If spying on an instance method, this restores the original instance method. */
+  restore(): void;
+}
+
+/** Wraps a constructor with a Spy. */
+function constructorSpy<
+  Self,
+  Args extends unknown[],
+>(
+  constructor: new (...args: Args) => Self,
+): ConstructorSpy<Self, Args> {
+  const original = constructor,
+    calls: SpyCall<Self, Args, Self>[] = [];
+  // @ts-ignore TS2509: Can't know the type of `original` statically.
+  const spy = class extends original {
+    constructor(...args: Args) {
+      super(...args);
+      const call: SpyCall<Self, Args, Self> = { args };
+      try {
+        call.returned = this as unknown as Self;
+      } catch (error) {
+        call.error = error as Error;
+        calls.push(call);
+        throw error;
+      }
+      calls.push(call);
+    }
+    static readonly name = original.name;
+    static readonly original = original;
+    static readonly calls = calls;
+    static readonly restored = false;
+    static restore() {
+      throw new MockError("constructor cannot be restored");
+    }
+  } as ConstructorSpy<Self, Args>;
+  return spy;
+}
+
 /** Utility for extracting the arguments type from a property */
 type GetParametersFromProp<
   Self,
@@ -571,6 +621,15 @@ type GetReturnFromProp<
 > // deno-lint-ignore no-explicit-any
  = Self[Prop] extends (...args: any[]) => infer Return ? Return
   : unknown;
+
+type SpyLike<
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+  // deno-lint-ignore no-explicit-any
+  Args extends unknown[] = any[],
+  // deno-lint-ignore no-explicit-any
+  Return = any,
+> = Spy<Self, Args, Return> | ConstructorSpy<Self, Args>;
 
 /** Wraps a function or instance method with a Spy. */
 export function spy<
@@ -587,6 +646,13 @@ export function spy<
 >(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
 export function spy<
   Self,
+  Args extends unknown[],
+  Return = undefined,
+>(
+  constructor: new (...args: Args) => Self,
+): ConstructorSpy<Self, Args>;
+export function spy<
+  Self,
   Prop extends keyof Self,
 >(
   self: Self,
@@ -597,17 +663,23 @@ export function spy<
   Args extends unknown[],
   Return,
 >(
-  funcOrSelf?: ((this: Self, ...args: Args) => Return) | Self,
+  funcOrConstOrSelf?:
+    | ((this: Self, ...args: Args) => Return)
+    | (new (...args: Args) => Self)
+    | Self,
   property?: keyof Self,
-): Spy<Self, Args, Return> {
-  const spy = typeof property !== "undefined"
-    ? methodSpy<Self, Args, Return>(funcOrSelf as Self, property)
-    : typeof funcOrSelf === "function"
-    ? functionSpy<Self, Args, Return>(
-      funcOrSelf as (this: Self, ...args: Args) => Return,
+): SpyLike<Self, Args, Return> {
+  return !funcOrConstOrSelf
+    ? functionSpy<Self, Args, Return>()
+    : property !== undefined
+    ? methodSpy<Self, Args, Return>(funcOrConstOrSelf as Self, property)
+    : funcOrConstOrSelf.toString().startsWith("class")
+    ? constructorSpy<Self, Args>(
+      funcOrConstOrSelf as new (...args: Args) => Self,
     )
-    : functionSpy<Self, Args, Return>();
-  return spy;
+    : functionSpy<Self, Args, Return>(
+      funcOrConstOrSelf as (this: Self, ...args: Args) => Return,
+    );
 }
 
 /** An instance method replacement that records all calls made to it. */
@@ -737,7 +809,7 @@ export function assertSpyCalls<
   Args extends unknown[],
   Return,
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   expectedCalls: number,
 ) {
   try {
@@ -787,7 +859,7 @@ export function assertSpyCall<
   Args extends unknown[],
   Return,
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Return>,
 ) {
@@ -866,7 +938,7 @@ export async function assertSpyCallAsync<
   Args extends unknown[],
   Return,
 >(
-  spy: Spy<Self, Args, Promise<Return>>,
+  spy: SpyLike<Self, Args, Promise<Return>>,
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Promise<Return> | Return>,
 ) {
@@ -947,7 +1019,7 @@ export function assertSpyCallArg<
   Return,
   ExpectedArg,
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   argIndex: number,
   expected: ExpectedArg,
@@ -971,7 +1043,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[],
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
@@ -981,7 +1053,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[],
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   argsStart: number,
   expected: ExpectedArgs,
@@ -992,7 +1064,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[],
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   argStart: number,
   argEnd: number,
@@ -1004,7 +1076,7 @@ export function assertSpyCallArgs<
   Return,
   Self,
 >(
-  spy: Spy<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return>,
   callIndex: number,
   argsStart?: number | ExpectedArgs,
   argsEnd?: number | ExpectedArgs,

@@ -63,10 +63,7 @@ Deno.test({
       .pipeThrough(new TextLineStream())
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },
@@ -87,10 +84,7 @@ Deno.test({
       .pipeThrough(new TextLineStream())
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },
@@ -113,10 +107,7 @@ Deno.test({
       .pipeThrough(new TextDelimiterStream(recordSeparator))
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },

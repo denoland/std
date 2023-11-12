@@ -42,6 +42,7 @@
  * ```ts
  * // https://deno.land/std/crypto/_wasm/mod.ts
  * export const digestAlgorithms = [
+ *   "BLAKE2B-128",
  *   "BLAKE2B-224",
  *   "BLAKE2B-256",
  *   "BLAKE2B-384",
@@ -70,58 +71,6 @@
  *   "MD5",
  *   "SHA-1",
  * ] as const;
- * ```
- *
- * ## Timing safe comparison
- *
- * When checking the values of cryptographic hashes are equal, default
- * comparisons can be susceptible to timing based attacks, where attacker is
- * able to find out information about the host system by repeatedly checking
- * response times to equality comparisons of values.
- *
- * It is likely some form of timing safe equality will make its way to the
- * WebCrypto standard (see:
- * [w3c/webcrypto#270](https://github.com/w3c/webcrypto/issues/270)), but until
- * that time, `timingSafeEqual()` is provided:
- *
- * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
- *
- * const a = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const b = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const c = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello deno"),
- * );
- *
- * assert(crypto.subtle.timingSafeEqual(a, b));
- * assert(!crypto.subtle.timingSafeEqual(a, c));
- * ```
- *
- * In addition to the method being part of the `crypto.subtle` interface, it is
- * also loadable directly:
- *
- * ```ts
- * import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
- *
- * const a = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const b = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- *
- * assert(timingSafeEqual(a, b));
  * ```
  *
  * @example
@@ -154,19 +103,20 @@
  * ```ts
  * import {
  *   crypto,
- *   toHashString,
  * } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts"
+ * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts"
  *
  * const hash = await crypto.subtle.digest(
  *   "SHA-384",
  *   new TextEncoder().encode("You hear that Mr. Anderson?"),
  * );
  *
- * // Hex encoding by default
- * console.log(toHashString(hash));
+ * // Hex encoding
+ * console.log(encodeHex(hash));
  *
  * // Or with base64 encoding
- * console.log(toHashString(hash, "base64"));
+ * console.log(encodeBase64(hash));
  * ```
  *
  * @module
@@ -235,7 +185,10 @@ export interface StdSubtleCrypto extends SubtleCrypto {
     data: BufferSource | Iterable<BufferSource>,
   ): ArrayBuffer;
 
-  /** Compare to array buffers or data views in a way that timing based attacks
+  /**
+   * @deprecated (will be removed in 0.207.0) Import from `std/crypto/timing_safe_equal.ts` instead
+   *
+   * Compare to array buffers or data views in a way that timing based attacks
    * cannot gain information about the platform. */
   timingSafeEqual(
     a: ArrayBufferLike | DataView,
@@ -382,10 +335,13 @@ export type DigestAlgorithmObject = {
 
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
-const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
-    ...algorithm,
-    name: algorithm.name.toUpperCase(),
-  }) as DigestAlgorithmObject;
+function normalizeAlgorithm(algorithm: DigestAlgorithm) {
+  return ((typeof algorithm === "string")
+    ? { name: algorithm.toUpperCase() }
+    : {
+      ...algorithm,
+      name: algorithm.name.toUpperCase(),
+    }) as DigestAlgorithmObject;
+}
 
 export { stdCrypto as crypto };

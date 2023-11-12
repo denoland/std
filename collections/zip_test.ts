@@ -24,7 +24,7 @@ Deno.test({
 });
 
 function zipTest<T, U>(
-  input: [Array<T>, Array<U>],
+  input: [ReadonlyArray<T>, ReadonlyArray<U>],
   expected: Array<[T, U]>,
   message?: string,
 ) {

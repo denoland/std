@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
-import { buildMessage, diff, diffstr } from "../_util/diff.ts";
+import { buildMessage, diff, diffstr } from "./_diff.ts";
 import { CAN_NOT_DISPLAY } from "./_constants.ts";
 import { red } from "../fmt/colors.ts";
 

@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "../_util/os.ts";
-import { posixFromFileUrl, windowsFromFileUrl } from "./_from_file_url.ts";
+import { isWindows } from "./_os.ts";
+import { fromFileUrl as posixFromFileUrl } from "./posix/from_file_url.ts";
+import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
 
 /**
  * Converts a file URL to a path string.

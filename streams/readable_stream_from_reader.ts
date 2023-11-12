@@ -5,11 +5,13 @@ import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
 import type { Closer, Reader } from "../types.d.ts";
 
 function isCloser(value: unknown): value is Closer {
-  return typeof value === "object" && value != null && "close" in value &&
+  return typeof value === "object" && value !== null && value !== undefined &&
+    "close" in value &&
     // deno-lint-ignore no-explicit-any
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
+/** @deprecated (will be removed after 1.0.0) Use ReadableStream directly. */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -27,6 +29,8 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use ReadableStream directly.
+ *
  * Create a `ReadableStream<Uint8Array>` from a `Reader`.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader

@@ -16,14 +16,8 @@ Deno.test("[streams] readerFromStreamReader()", async function () {
   const chunks: string[] = ["hello", "deno", "land"];
   const expected = chunks.slice();
   const readChunks: Uint8Array[] = [];
-  const readableStream = new ReadableStream({
-    pull(controller) {
-      const encoder = new TextEncoder();
-      const chunk = chunks.shift();
-      if (!chunk) return controller.close();
-      controller.enqueue(encoder.encode(chunk));
-    },
-  });
+  const readableStream = ReadableStream.from(chunks)
+    .pipeThrough(new TextEncoderStream());
 
   const decoder = new TextDecoder();
   const reader = readerFromStreamReader(readableStream.getReader());
@@ -61,15 +55,8 @@ Deno.test("[streams] readerFromStreamReader() big chunks", async function () {
     "c".repeat(chunkSize),
   ];
   const expected = chunks.slice();
-  const readableStream = new ReadableStream({
-    pull(controller) {
-      const encoder = new TextEncoder();
-      const chunk = chunks.shift();
-      if (!chunk) return controller.close();
-
-      controller.enqueue(encoder.encode(chunk));
-    },
-  });
+  const readableStream = ReadableStream.from(chunks)
+    .pipeThrough(new TextEncoderStream());
 
   const reader = readerFromStreamReader(readableStream.getReader());
   const n = await copy(reader, writer, { bufSize });
@@ -97,14 +84,7 @@ Deno.test("[streams] readerFromStreamReader() irregular chunks", async function 
       .map((chunk) => [...chunk])
       .flat(),
   );
-  const readableStream = new ReadableStream({
-    pull(controller) {
-      const chunk = chunks.shift();
-      if (!chunk) return controller.close();
-
-      controller.enqueue(chunk);
-    },
-  });
+  const readableStream = ReadableStream.from(chunks);
 
   const reader = readerFromStreamReader(readableStream.getReader());
 

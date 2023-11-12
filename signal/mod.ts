@@ -3,10 +3,10 @@
  * Higher level API for dealing with OS signals.
  *
  * @module
+ * @deprecated (will be removed in 1.0.0) Use the Deno signals API instead
  */
 
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
-import { deferred } from "../async/deferred.ts";
 
 export type Disposable = { dispose: () => void };
 
@@ -31,6 +31,8 @@ export type Disposable = { dispose: () => void };
  * ```
  *
  * @param signals - one or more signals to listen to
+ *
+ * @deprecated (will be removed in 1.0.0) Use the Deno signals API instead
  */
 export function signal(
   ...signals: [Deno.Signal, ...Deno.Signal[]]
@@ -62,15 +64,15 @@ export function signal(
 function createSignalStream(
   signal: Deno.Signal,
 ): AsyncIterable<void> & Disposable {
-  let streamContinues = deferred<boolean>();
+  let streamContinues = Promise.withResolvers<boolean>();
   const handler = () => {
     streamContinues.resolve(true);
   };
   Deno.addSignalListener(signal, handler);
 
   const gen = async function* () {
-    while (await streamContinues) {
-      streamContinues = deferred<boolean>();
+    while (await streamContinues.promise) {
+      streamContinues = Promise.withResolvers<boolean>();
       yield undefined;
     }
   };

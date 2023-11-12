@@ -8,6 +8,8 @@ const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 /**
  * Read big endian 64bit long from BufReader
  * @param buf
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
  */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);

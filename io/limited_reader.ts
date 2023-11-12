@@ -9,6 +9,9 @@
  */
 import type { Reader } from "../types.d.ts";
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ */
 export class LimitedReader implements Reader {
   constructor(public reader: Reader, public limit: number) {}
 
@@ -21,7 +24,7 @@ export class LimitedReader implements Reader {
       p = p.subarray(0, this.limit);
     }
     const n = await this.reader.read(p);
-    if (n == null) {
+    if (n === null) {
       return null;
     }
 

@@ -58,9 +58,9 @@ export class TextDelimiterStream extends TransformStream<string, string> {
           const end = this.#disp === "suffix" ? this.#inspectIndex : start;
           const copy = this.#buf.slice(0, end);
           controller.enqueue(copy);
-          const shift = this.#disp == "prefix" ? start : this.#inspectIndex;
+          const shift = this.#disp === "prefix" ? start : this.#inspectIndex;
           this.#buf = this.#buf.slice(shift);
-          this.#inspectIndex = this.#disp == "prefix"
+          this.#inspectIndex = this.#disp === "prefix"
             ? this.#delimiter.length
             : 0;
           this.#matchIndex = 0;

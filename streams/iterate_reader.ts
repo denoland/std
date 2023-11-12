@@ -4,7 +4,10 @@
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
 
-/** Turns a Reader, `r`, into an async iterator.
+/**
+ * @deprecated (will be removed after 1.0.0) Use ReadableStream instead.
+ *
+ * Turns a Reader, `r`, into an async iterator.
  *
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
@@ -50,7 +53,10 @@ export async function* iterateReader(
   }
 }
 
-/** Turns a ReaderSync, `r`, into an iterator.
+/**
+ * @deprecated (will be removed after 1.0.0) Use ReadableStream instead.
+ *
+ * Turns a ReaderSync, `r`, into an iterator.
  *
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";

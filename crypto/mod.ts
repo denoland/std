@@ -11,6 +11,6 @@
  */
 
 export * from "./crypto.ts";
-export * from "./keystack.ts";
+export * from "./unstable_keystack.ts";
 export * from "./timing_safe_equal.ts";
 export * from "./to_hash_string.ts";

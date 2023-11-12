@@ -2,7 +2,7 @@
 
 import { assert, assertEquals, assertInstanceOf } from "../assert/mod.ts";
 
-import { type ErrorStatus, Status, STATUS_TEXT } from "./http_status.ts";
+import { type ErrorStatus, Status, STATUS_TEXT } from "./status.ts";
 
 import {
   createHttpError,

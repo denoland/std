@@ -3,7 +3,11 @@
 
 import type { Reader } from "../types.d.ts";
 
-/** Reader utility for combining multiple readers */
+/**
+ * Reader utility for combining multiple readers
+ *
+ * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ */
 export class MultiReader implements Reader {
   readonly #readers: Reader[];
   #currentIndex = 0;

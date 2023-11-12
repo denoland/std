@@ -6,8 +6,8 @@ import {
   assertNotEquals,
   assertRejects,
   assertStrictEquals,
-} from "./asserts.ts";
-import { FakeTime } from "./time.ts";
+} from "../assert/mod.ts";
+import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, SpyCall } from "./mock.ts";
 
@@ -304,6 +304,80 @@ Deno.test("FakeTime restoreFor restores real time temporarily", async () => {
   }
 });
 
+Deno.test("FakeTime restoreFor restores real time and re-overridden atomically", async () => {
+  const time: FakeTime = new FakeTime();
+  const fakeSetTimeout = setTimeout;
+  const actualSetTimeouts: (typeof setTimeout)[] = [];
+
+  try {
+    const asyncFn = async () => {
+      actualSetTimeouts.push(setTimeout);
+      await Promise.resolve();
+      actualSetTimeouts.push(setTimeout);
+      await Promise.resolve();
+      actualSetTimeouts.push(setTimeout);
+    };
+    const promise = asyncFn();
+    await new Promise((resolve) => {
+      FakeTime.restoreFor(() => setTimeout(resolve, 0));
+    });
+    await promise;
+    assertEquals(actualSetTimeouts, [
+      fakeSetTimeout,
+      fakeSetTimeout,
+      fakeSetTimeout,
+    ]);
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that resolved to result of callback", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    const resultSync = await FakeTime.restoreFor(() => "a");
+    assertEquals(resultSync, "a");
+    const resultAsync = await FakeTime.restoreFor(() => Promise.resolve("b"));
+    assertEquals(resultAsync, "b");
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that rejected to error in callback", async () => {
+  const time: FakeTime = new FakeTime();
+
+  try {
+    await assertRejects(
+      () =>
+        FakeTime.restoreFor(() => {
+          throw new Error("Error in sync callback");
+        }),
+      Error,
+      "Error in sync callback",
+    );
+    await assertRejects(
+      () =>
+        FakeTime.restoreFor(() => {
+          return Promise.reject(new Error("Error in async callback"));
+        }),
+      Error,
+      "Error in async callback",
+    );
+  } finally {
+    time.restore();
+  }
+});
+
+Deno.test("FakeTime restoreFor returns promise that rejected to TimeError if FakeTime is uninitialized", async () => {
+  await assertRejects(
+    () => FakeTime.restoreFor(() => {}),
+    TimeError,
+    "no fake time",
+  );
+});
+
 Deno.test("delay uses real time", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
@@ -409,65 +483,146 @@ Deno.test("tickAsync runs all microtasks and runs timers if ticks past due", asy
   }
 });
 
-Deno.test("runNext runs next timer without running microtasks", async () => {
+Deno.test("next runs next timer without running microtasks", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {
+    // Callback is called by `next`.
     setTimeout(cb, 1000);
     queueMicrotask(() => seq.push(3));
     queueMicrotask(() => seq.push(4));
     seq.push(1);
-    time.next();
+    const hasNextTimer = time.next();
     seq.push(2);
+
+    assertEquals(hasNextTimer, true);
     const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
     await time.runMicrotasks();
 
+    // Callback is already called before `next` called.
     queueMicrotask(() => seq.push(7));
     queueMicrotask(() => seq.push(8));
     seq.push(5);
-    time.next();
+    const hasNextTimerAfterCalled = time.next();
     seq.push(6);
     await time.runMicrotasks();
 
+    assertEquals(hasNextTimerAfterCalled, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+
+    // Callbacks are cleared before `next` called.
+    const id1 = setTimeout(cb, 1000);
+    const id2 = setTimeout(cb, 2000);
+    clearTimeout(id1);
+    clearTimeout(id2);
+    queueMicrotask(() => seq.push(11));
+    queueMicrotask(() => seq.push(12));
+    seq.push(9);
+    const hasNextTimerAfterCleared = time.next();
+    seq.push(10);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterCleared, false);
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+
+    // Callback is partially cleared before `next` called.
+    const id3 = setTimeout(cb, 1500);
+    setTimeout(cb, 1500);
+    clearTimeout(id3);
+    queueMicrotask(() => seq.push(15));
+    queueMicrotask(() => seq.push(16));
+    seq.push(13);
+    const hasNextTimerAfterPartiallyCleared = time.next();
+    seq.push(14);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterPartiallyCleared, true);
+    const expectedCalls2 = [
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1000 + 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls2);
+    assertEquals(Date.now(), start + 1000 + 1500);
+
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   } finally {
     time.restore();
   }
 });
 
-Deno.test("runNextAsync runs all microtasks and next timer", async () => {
+Deno.test("nextAsync runs all microtasks and next timer", async () => {
   const time: FakeTime = new FakeTime();
   const start: number = Date.now();
   const cb = spy(fromNow());
   const seq: number[] = [];
 
   try {
+    // Callback is called by `nextAsync`.
     setTimeout(cb, 1000);
     queueMicrotask(() => seq.push(2));
     queueMicrotask(() => seq.push(3));
     seq.push(1);
-    await time.nextAsync();
+    const hasNextTimer = await time.nextAsync();
     seq.push(4);
+
+    assertEquals(hasNextTimer, true);
     const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
+    // Callback is already called before `nextAsync` called.
     queueMicrotask(() => seq.push(6));
     queueMicrotask(() => seq.push(7));
     seq.push(5);
-    await time.nextAsync();
+    const hasNextTimerAfterCalled = await time.nextAsync();
     seq.push(8);
 
+    assertEquals(hasNextTimerAfterCalled, false);
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
-    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
+
+    // Callbacks are cleared before `nextAsync` called.
+    const id1 = setTimeout(cb, 1000);
+    const id2 = setTimeout(cb, 2000);
+    clearTimeout(id1);
+    clearTimeout(id2);
+    queueMicrotask(() => seq.push(10));
+    queueMicrotask(() => seq.push(11));
+    seq.push(9);
+    const hasNextTimerAfterCleared = await time.nextAsync();
+    seq.push(12);
+
+    assertEquals(hasNextTimerAfterCleared, false);
+    assertEquals(cb.calls, expectedCalls);
+    assertEquals(Date.now(), start + 1000);
+
+    // Callback is partially cleared before `nextAsync` called.
+    const id3 = setTimeout(cb, 1500);
+    setTimeout(cb, 1500);
+    clearTimeout(id3);
+    queueMicrotask(() => seq.push(14));
+    queueMicrotask(() => seq.push(15));
+    seq.push(13);
+    const hasNextTimerAfterPartiallyCleared = await time.nextAsync();
+    seq.push(16);
+    await time.runMicrotasks();
+
+    assertEquals(hasNextTimerAfterPartiallyCleared, true);
+    const expectedCalls2 = [
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1000 + 1500 },
+    ];
+    assertEquals(cb.calls, expectedCalls2);
+    assertEquals(Date.now(), start + 1000 + 1500);
+
+    assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   } finally {
     time.restore();
   }
