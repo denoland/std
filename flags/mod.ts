@@ -2,6 +2,8 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated (will be removed in 0.208.0) Import from `std/cli/parse_args.ts` instead
+ *
  * Command line arguments parser based on
  * [minimist](https://github.com/minimistjs/minimist).
  *
@@ -9,7 +11,7 @@
  *
  * @example
  * ```ts
- * import { parse } from "https://deno.land/std@$STD_VERSION/cli/parse_args.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/flags/mod.ts";
  *
  * console.dir(parse(Deno.args));
  * ```
