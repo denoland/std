@@ -11,7 +11,7 @@
     "test": "deno test --doc --unstable --allow-all --parallel --coverage=./cov --trace-ops",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
-    "lint:deprecations": "deno run --allow-read --allow-net ./_tools/check_deprecation.ts",
+    "lint:deprecations": "deno run --allow-read --allow-net --allow-env=HOME ./_tools/check_deprecation.ts",
     "lint:doc-imports": "deno run --allow-env --allow-read ./_tools/check_doc_imports.ts",
     "lint:circular": "deno run --allow-env --allow-read --allow-net=deno.land ./_tools/check_circular_submodule_dependencies.ts",
     "lint:tools-types": "deno check _tools/*.ts",
