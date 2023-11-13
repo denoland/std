@@ -13,7 +13,7 @@ const CR = "\r".charCodeAt(0);
  * Use an empty `mask` if you don't want to show any character.
  */
 export function promptSecret(
-  message = "Password ",
+  message = "Secret ",
   mask = "*",
 ): string | null {
   if (!Deno.isatty(input.rid)) {
