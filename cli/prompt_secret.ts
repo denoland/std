@@ -21,7 +21,7 @@ export function promptSecret(
   }
 
   const maskChar = encoder.encode(mask);
-  const callback = mask === "" ? () => {} : () => {
+  const callback = mask === "" ? undefined : () => {
     output.writeSync(maskChar);
   };
   output.writeSync(encoder.encode(message));
@@ -38,7 +38,7 @@ export function promptSecret(
 // This implementation immediately break on CR or LF and accept callback.
 // The original version waits LF when CR is received.
 // https://github.com/denoland/deno/blob/e4593873a9c791238685dfbb45e64b4485884174/runtime/js/41_prompt.js#L52-L77
-function readLineFromStdinSync(callback: () => void): string {
+function readLineFromStdinSync(callback?: () => void): string {
   const c = new Uint8Array(1);
   const buf = [];
 
@@ -51,7 +51,7 @@ function readLineFromStdinSync(callback: () => void): string {
       break;
     }
     buf.push(c[0]);
-    callback();
+    if (callback) callback();
   }
   return decoder.decode(new Uint8Array(buf));
 }
