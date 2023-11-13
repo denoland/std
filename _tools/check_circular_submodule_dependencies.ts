@@ -3,7 +3,7 @@ import {
   createGraph,
   ModuleGraphJson,
   ModuleJson,
-} from "https://deno.land/x/deno_graph@0.52.0/mod.ts";
+} from "https://deno.land/x/deno_graph@0.60.0/mod.ts";
 
 /**
  * Checks for circular dependencies in the std submodules.
