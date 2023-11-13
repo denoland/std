@@ -27,16 +27,16 @@ const regDetect = /(?:\r?\n)/g;
  *
  * @example
  * ```ts
- * import { detect, EOL } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { detect, LF, CRLF } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";
  * const Mixedinput = "deno\nis not\r\nnode";
  * const LFinput = "deno\nis not\nnode";
  * const NoNLinput = "deno is not node";
  *
- * detect(LFinput); // output EOL.LF
- * detect(CRLFinput); // output EOL.CRLF
- * detect(Mixedinput); // output EOL.CRLF
+ * detect(LFinput); // output LF
+ * detect(CRLFinput); // output CRLF
+ * detect(Mixedinput); // output CRLF
  * detect(NoNLinput); // output null
  * ```
  */
@@ -55,11 +55,11 @@ export function detect(content: string): typeof EOL | null {
  *
  * @example
  * ```ts
- * import { EOL, format } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ * import { LF, format } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";
  *
- * format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
+ * format(CRLFinput, LF); // output "deno\nis not\nnode"
  * ```
  */
 export function format(content: string, eol: typeof EOL): string {
