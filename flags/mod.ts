@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed in 0.208.0) Import from `std/cli/parse_args.ts` instead
+ * @deprecated (will be removed in 1.0.0) Import from `std/cli/parse_args.ts` instead
  *
  * Command line arguments parser based on
  * [minimist](https://github.com/minimistjs/minimist).
