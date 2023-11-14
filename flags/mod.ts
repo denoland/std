@@ -21,12 +21,12 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.208.0) Import from `std/cli/parse_args.ts` instead
+   * @deprecated (will be removed in 1.0.0) Import from `std/cli/parse_args.ts` instead
    * The value returned from `parse`.
    */
   type Args,
   /**
-   * @deprecated (will be removed in 0.208.0) Import from `std/cli/parse_args.ts` instead
+   * @deprecated (will be removed in 1.0.0) Import from `std/cli/parse_args.ts` instead
    *
    * Take a set of command line arguments, optionally with a set of options, and
    * return an object representing the flags found in the passed arguments.
@@ -64,7 +64,7 @@ export {
    */
   parseArgs as parse,
   /**
-   * @deprecated (will be removed in 0.208.0) Import from `std/cli/parse_args.ts` instead
+   * @deprecated (will be removed in 1.0.0) Import from `std/cli/parse_args.ts` instead
    *
    * The options for the `parse` call.
    */
