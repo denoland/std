@@ -221,15 +221,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
 
-      if (
-        length !== undefined &&
-        (length < 0 || length > maximumDigestLength ||
-          !Number.isInteger(length))
-      ) {
-        throw new RangeError(
-          `length must be an integer between 0 and ${maximumDigestLength}, inclusive`,
-        );
-      }
+      assertValidDigestLength(length);
 
       const bytes = bufferSourceBytes(data);
 
@@ -293,15 +285,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
     ): ArrayBuffer {
       const { name, length } = normalizeAlgorithm(algorithm);
 
-      if (
-        length !== undefined &&
-        (length < 0 || length > maximumDigestLength ||
-          !Number.isInteger(length))
-      ) {
-        throw new RangeError(
-          `length must be an integer between 0 and ${maximumDigestLength}, inclusive`,
-        );
-      }
+      assertValidDigestLength(length);
 
       const bytes = bufferSourceBytes(data);
 
@@ -352,9 +336,25 @@ export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 /*
  * The largest digest length the current WASM implementation can support. This
  * is the value of `isize::MAX` on 32-bit platforms like WASM, which is the
- * maximum allowed capacity of a Rust `Vec`.
+ * maximum allowed capacity of a Rust `Vec<u8>`.
  */
-const maximumDigestLength = 0x7FFF_FFFF;
+const MAX_DIGEST_LENGTH = 0x7FFF_FFFF;
+
+/**
+ * Asserts that a number is a valid length for a digest, which must be an
+ * integer that fits in a Rust `Vec<u8>`, or be undefined.
+ */
+const assertValidDigestLength = (value?: number) => {
+  if (
+    value !== undefined &&
+    (value < 0 || value > MAX_DIGEST_LENGTH ||
+      !Number.isInteger(value))
+  ) {
+    throw new RangeError(
+      `length must be an integer between 0 and ${MAX_DIGEST_LENGTH}, inclusive`,
+    );
+  }
+};
 
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
