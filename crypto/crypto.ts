@@ -344,7 +344,7 @@ const MAX_DIGEST_LENGTH = 0x7FFF_FFFF;
  * Asserts that a number is a valid length for a digest, which must be an
  * integer that fits in a Rust `Vec<u8>`, or be undefined.
  */
-const assertValidDigestLength = (value?: number) => {
+function assertValidDigestLength(value?: number) {
   if (
     value !== undefined &&
     (value < 0 || value > MAX_DIGEST_LENGTH ||
@@ -354,7 +354,7 @@ const assertValidDigestLength = (value?: number) => {
       `length must be an integer between 0 and ${MAX_DIGEST_LENGTH}, inclusive`,
     );
   }
-};
+}
 
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
