@@ -165,56 +165,45 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    const smallData = new Uint8Array(64);
+    const smallDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
+    const heapBytesAfterSmall = memory.buffer.byteLength;
+
+    const largeData = new Uint8Array(64_000_000);
+    const largeDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
+    const heapBytesAfterLarge = memory.buffer.byteLength;
+
+    console.log(JSON.stringify(
+      {
+        heapBytesInitial,
+        smallDigest,
+        heapBytesAfterSmall,
+        largeDigest,
+        heapBytesAfterLarge,
+      },
+      null,
+      2,
+    ));
+  `;
+
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", code],
     cwd: moduleDir,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "inherit",
   });
-  const child = process.spawn();
 
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+  const { success, stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
 
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      const smallData = new Uint8Array(64);
-      const smallDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
-      const heapBytesAfterSmall = memory.buffer.byteLength;
-
-      const largeData = new Uint8Array(64_000_000);
-      const largeDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
-      const heapBytesAfterLarge = memory.buffer.byteLength;
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          smallDigest,
-          heapBytesAfterSmall,
-          largeDigest,
-          heapBytesAfterLarge,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const res = await child.output();
-  const stdout = new TextDecoder().decode(res.stdout);
-
-  assertEquals(res.success, true, "test subprocess failed");
+  assertEquals(success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -227,7 +216,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     heapBytesAfterSmall: number;
     largeDigest: string;
     heapBytesAfterLarge: number;
-  } = JSON.parse(stdout);
+  } = JSON.parse(output);
 
   assertEquals(
     smallDigest,
@@ -262,55 +251,43 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    let state = new ArrayBuffer(0);
+
+    for (let i = 0; i < 1_000_000; i++) {
+      state = stdCrypto.subtle.digestSync({
+        name: "BLAKE3"
+      }, state);
+    }
+
+    const heapBytesFinal = memory.buffer.byteLength;
+
+    const stateFinal = encodeHex(state);
+
+    console.log(JSON.stringify(
+      {
+        heapBytesInitial,
+        heapBytesFinal,
+        stateFinal,
+      },
+      null,
+      2,
+    ));
+  `;
+
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+    args: ["eval", code],
     cwd: moduleDir,
-    stdout: "piped",
-    stderr: "inherit",
-    stdin: "piped",
   });
-  const child = command.spawn();
-
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
-
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      let state = new ArrayBuffer(0);
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      for (let i = 0; i < 1_000_000; i++) {
-        state = stdCrypto.subtle.digestSync({
-          name: "BLAKE3"
-        }, state);
-      }
-
-      const heapBytesFinal = memory.buffer.byteLength;
-
-      const stateFinal = toHexString(state);
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          heapBytesFinal,
-          stateFinal,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const { stdout, success } = await child.output();
+  const { stdout, success } = await command.output();
   const output = new TextDecoder().decode(stdout);
 
   assert(success);
