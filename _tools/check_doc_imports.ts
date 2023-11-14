@@ -14,7 +14,6 @@ const EXCLUDED_PATHS = [
   ".git",
   ".github",
   "_tools",
-  "README.md",
 ];
 
 const ROOT = new URL("../", import.meta.url);
