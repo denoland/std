@@ -6,7 +6,7 @@ import { writeAll } from "./write_all.ts";
 import { Reader } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Convert to ReadableStream using ReadableStream.from instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream.from} instead.
  *
  * Create a `Reader` from an iterable of `Uint8Array`s.
  *
