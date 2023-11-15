@@ -1421,15 +1421,6 @@ const toHexString = (bytes: ArrayBuffer): string =>
     "",
   );
 
-Deno.test({
-  name: "[crypto/subtle/timeSafeEqual] - is present",
-  fn() {
-    const a = new Uint8Array([212, 213]);
-    const b = new Uint8Array([212, 213]);
-    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
-  },
-});
-
 /**
  * This is one of many methods of `crypto` for which we don't have our own
  * implementation, and just pass calls through to the native implementation.
