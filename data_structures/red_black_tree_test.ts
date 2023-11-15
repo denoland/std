@@ -1,8 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
-import { RedBlackTree } from "./unstable_red_black_tree.ts";
-import { ascend, descend } from "./unstable_comparators.ts";
-import { Container, MyMath } from "./_unstable_test_utils.ts";
+import { RedBlackTree } from "./red_black_tree.ts";
+import { ascend, descend } from "./comparators.ts";
+import { Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("[collections/RedBlackTree] with default ascend comparator", () => {
   const trees: RedBlackTree<number>[] = [

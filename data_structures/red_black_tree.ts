@@ -1,9 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { ascend } from "./unstable_comparators.ts";
-import { BinarySearchTree } from "./unstable_binary_search_tree.ts";
-import { Direction, RedBlackNode } from "./_unstable_red_black_node.ts";
+import { ascend } from "./comparators.ts";
+import { BinarySearchTree } from "./binary_search_tree.ts";
+import { Direction, RedBlackNode } from "./_red_black_node.ts";
 
 /**
  * A red-black tree. This is a kind of self-balancing binary search tree. The
@@ -29,7 +29,7 @@ import { Direction, RedBlackNode } from "./_unstable_red_black_node.ts";
  *   ascend,
  *   descend,
  *   RedBlackTree,
- * } from "https://deno.land/std@$STD_VERSION/collections/red_black_tree.ts";
+ * } from "https://deno.land/std@$STD_VERSION/data_structures/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
