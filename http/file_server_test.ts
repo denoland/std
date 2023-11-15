@@ -212,7 +212,7 @@ Deno.test("serveDir() traverses path correctly", async () => {
 Deno.test("serveDir() traverses path", async () => {
   const controller = new AbortController();
   const port = 4507;
-  Deno.serve(
+  const server = Deno.serve(
     { port, signal: controller.signal },
     async (req) => await serveDir(req, serveDirOptions),
   );
@@ -233,6 +233,7 @@ Deno.test("serveDir() traverses path", async () => {
   assertStringIncludes(page, "hello.html");
 
   controller.abort();
+  await server.finished;
 });
 
 Deno.test("serveDir() traverses encoded URI path", async () => {
