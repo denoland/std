@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { descend } from "./unstable_comparators.ts";
+import { descend } from "./comparators.ts";
 
 /** Swaps the values at two indexes in an array. */
 function swap<T>(array: T[], a: number, b: number) {
@@ -32,7 +32,7 @@ function getParentIndex(index: number) {
  *   ascend,
  *   BinaryHeap,
  *   descend,
- * } from "https://deno.land/std@$STD_VERSION/collections/binary_heap.ts";
+ * } from "https://deno.land/std@$STD_VERSION/data_structures/mod.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const maxHeap = new BinaryHeap<number>();
