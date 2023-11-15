@@ -84,6 +84,7 @@ deps["collections"] = await check("collections", "ready");
 deps["console"] = await check("console", "not ready");
 deps["crypto"] = await check("crypto", "needs clean up");
 deps["csv"] = await check("csv", "ready");
+deps["data_structures"] = await check("data_structures", "not ready");
 deps["datetime"] = await check("datetime", "deprecated");
 deps["dotenv"] = await check("dotenv", "not ready");
 deps["encoding"] = await check("encoding", "needs clean up", [
@@ -130,7 +131,6 @@ deps["toml"] = await check("toml", "ready");
 deps["ulid"] = await check("ulid", "not ready");
 deps["url"] = await check("url", "not ready");
 deps["uuid"] = await check("uuid", "ready");
-deps["wasi"] = await check("wasi", "not ready", ["snapshot_preview1.ts"]);
 deps["yaml"] = await check("yaml", "ready");
 
 /** Checks circular deps between sub modules */
