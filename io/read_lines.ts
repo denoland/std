@@ -38,13 +38,13 @@ export async function* readLines(
     const res = await bufReader.readLine();
     if (!res) {
       if (chunks.length > 0) {
-        yield decoder.decode(concat(...chunks));
+        yield decoder.decode(concat(chunks));
       }
       break;
     }
     chunks.push(res.line);
     if (!res.more) {
-      yield decoder.decode(concat(...chunks));
+      yield decoder.decode(concat(chunks));
       chunks = [];
     }
   }

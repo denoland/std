@@ -19,5 +19,5 @@ export async function toArrayBuffer(
     chunks.push(value);
   }
 
-  return concat(...chunks).buffer;
+  return concat(chunks).buffer;
 }
