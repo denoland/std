@@ -8,9 +8,7 @@
  * APIs when possible.
  *
  * Provides additional digest algorithms that are not part of the WebCrypto
- * standard as well as a `subtle.digest` and `subtle.digestSync` methods. It
- * also provides a `subtle.timingSafeEqual()` method to compare array buffers
- * or data views in a way that isn't prone to timing based attacks.
+ * standard as well as a `subtle.digest` and `subtle.digestSync` methods.
  *
  * The "polyfill" delegates to `WebCrypto` where possible.
  *
@@ -127,7 +125,6 @@ import {
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
 } from "./_wasm/mod.ts";
-import { timingSafeEqual } from "./timing_safe_equal.ts";
 import { fnv } from "./_fnv/mod.ts";
 
 /**
@@ -184,16 +181,6 @@ export interface StdSubtleCrypto extends SubtleCrypto {
     algorithm: DigestAlgorithm,
     data: BufferSource | Iterable<BufferSource>,
   ): ArrayBuffer;
-
-  /**
-   * @deprecated (will be removed in 0.207.0) Import from `std/crypto/timing_safe_equal.ts` instead
-   *
-   * Compare to array buffers or data views in a way that timing based attacks
-   * cannot gain information about the platform. */
-  timingSafeEqual(
-    a: ArrayBufferLike | DataView,
-    b: ArrayBufferLike | DataView,
-  ): boolean;
 }
 
 /** Extensions to the Web {@linkcode Crypto} interface. */
@@ -308,9 +295,6 @@ const stdCrypto: StdCrypto = ((x) => x)({
         );
       }
     },
-
-    // TODO(@kitsonk): rework when https://github.com/w3c/webcrypto/issues/270 resolved
-    timingSafeEqual,
   },
 });
 
