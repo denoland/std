@@ -111,16 +111,21 @@ Check out the documentation [here](https://deno.land/std?doc).
 
 ## Deprecation Policy
 
-We deprecate the APIs in the Standard Library when they get covered by new JavaScript language APIs or new Web Standard APIs. These APIs are usually removed after 3 minor versions.
+We deprecate the APIs in the Standard Library when they get covered by new
+JavaScript language APIs or new Web Standard APIs. These APIs are usually
+removed after 3 minor versions.
 
-If you still need to use such APIs after the removal for some reason (for example, the usage in Fresh island), please use the URL pinned to the version where they are still available.
+If you still need to use such APIs after the removal for some reason (for
+example, the usage in Fresh island), please use the URL pinned to the version
+where they are still available.
 
-For example, if you want to keep using `readableStreamFromIterable`, which was deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please use the import URL pinned to `v0.194.0`:
+For example, if you want to keep using `readableStreamFromIterable`, which was
+deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
+use the import URL pinned to `v0.194.0`:
 
 ```ts
 import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
 ```
-
 
 ## Contributing
 
