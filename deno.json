@@ -29,7 +29,6 @@
     "crypto/_wasm/target",
     "cov",
     "jsonc/testdata",
-    "front_matter/testdata",
-    "wasi/testdata"
+    "front_matter/testdata"
   ]
 }
