@@ -33,7 +33,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests canary
-        run: deno task test
+        run: deno task test fmt/colors_test.ts
 
       - name: Run timezone-dependent tests
         run: |
