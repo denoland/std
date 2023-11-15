@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { BinarySearchNode, Direction } from "./_unstable_binary_search_node.ts";
+import { BinarySearchNode, Direction } from "./_binary_search_node.ts";
 export type { Direction };
 
 export class RedBlackNode<T> extends BinarySearchNode<T> {

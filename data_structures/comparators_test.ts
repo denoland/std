@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { ascend, descend } from "./unstable_comparators.ts";
+import { ascend, descend } from "./comparators.ts";
 
 Deno.test("[collections/comparators] ascend", () => {
   assertEquals(ascend(2, 2), 0);
