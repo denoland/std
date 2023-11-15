@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
  *
  * Contains the constant {@linkcode HTTP_METHODS} and the type
  * {@linkcode HttpMethod} and the type guard {@linkcode isHttpMethod} for
@@ -17,7 +17,7 @@ import {
 } from "./unstable_method.ts";
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
  *
  * A constant array of common HTTP methods.
  *
@@ -26,14 +26,14 @@ import {
 export const HTTP_METHODS = HTTP_METHODS_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
  *
  * A type representing string literals of each of the common HTTP method.
  */
 export type HttpMethod = HttpMethod_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from `std/http/unstable_method.ts` instead.
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
  *
  * A type guard that determines if a value is a valid HTTP method.
  */

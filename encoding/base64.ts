@@ -97,7 +97,7 @@ const base64abc = [
 ];
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeBase64` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64} instead.
  *
  * CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
  * Encodes a given Uint8Array, ArrayBuffer or string into RFC4648 base64 representation
@@ -106,7 +106,7 @@ const base64abc = [
 export const encode = encodeBase64;
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `decodeBase64` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64} instead.
  *
  * Decodes a given RFC4648 base64 encoded string
  * @param b64
