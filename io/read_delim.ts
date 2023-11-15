@@ -54,7 +54,7 @@ export async function* readDelim(
       // Discard all remaining and silently fail.
       return;
     }
-    chunks = concat(chunks, inspectArr.slice(0, result));
+    chunks = concat([chunks, inspectArr.slice(0, result)]);
     let localIndex = 0;
     while (inspectIndex < chunks.length) {
       if (inspectArr[localIndex] === delim[matchIndex]) {
