@@ -25,7 +25,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 
    Good:
    ```ts
-   import { copy } from "https://deno.land/std@0.204.0/fs/copy.ts";
+   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
    ```
 
 1. Only import modules that you require.
