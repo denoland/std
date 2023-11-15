@@ -220,6 +220,9 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
+
+      assertValidDigestLength(length);
+
       const bytes = bufferSourceBytes(data);
 
       if (FNVAlgorithms.includes(name)) {
@@ -280,20 +283,22 @@ const stdCrypto: StdCrypto = ((x) => x)({
       algorithm: DigestAlgorithm,
       data: BufferSource | Iterable<BufferSource>,
     ): ArrayBuffer {
-      algorithm = normalizeAlgorithm(algorithm);
+      const { name, length } = normalizeAlgorithm(algorithm);
+
+      assertValidDigestLength(length);
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(algorithm.name)) {
-        return fnv(algorithm.name, bytes);
+      if (FNVAlgorithms.includes(name)) {
+        return fnv(name, bytes);
       }
 
       const wasmCrypto = instantiateWasm();
       if (bytes) {
-        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
+        return wasmCrypto.digest(name, bytes, length)
           .buffer;
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
-        const context = new wasmCrypto.DigestContext(algorithm.name);
+        const context = new wasmCrypto.DigestContext(name);
         for (const chunk of data as Iterable<BufferSource>) {
           const chunkBytes = bufferSourceBytes(chunk);
           if (!chunkBytes) {
@@ -301,7 +306,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
           }
           context.update(chunkBytes);
         }
-        return context.digestAndDrop(algorithm.length).buffer;
+        return context.digestAndDrop(length).buffer;
       } else {
         throw new TypeError(
           "data must be a BufferSource or Iterable<BufferSource>",
@@ -327,6 +332,29 @@ const webCryptoDigestAlgorithms = [
 
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
 export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
+
+/*
+ * The largest digest length the current WASM implementation can support. This
+ * is the value of `isize::MAX` on 32-bit platforms like WASM, which is the
+ * maximum allowed capacity of a Rust `Vec<u8>`.
+ */
+const MAX_DIGEST_LENGTH = 0x7FFF_FFFF;
+
+/**
+ * Asserts that a number is a valid length for a digest, which must be an
+ * integer that fits in a Rust `Vec<u8>`, or be undefined.
+ */
+function assertValidDigestLength(value?: number) {
+  if (
+    value !== undefined &&
+    (value < 0 || value > MAX_DIGEST_LENGTH ||
+      !Number.isInteger(value))
+  ) {
+    throw new RangeError(
+      `length must be an integer between 0 and ${MAX_DIGEST_LENGTH}, inclusive`,
+    );
+  }
+}
 
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
