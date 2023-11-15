@@ -56,7 +56,11 @@ const noColor = typeof Deno?.noColor === "boolean"
   ? Deno.noColor as boolean
   : false;
 
-console.log(noColor);
+console.log("noColor", noColor);
+console.log(
+  '"typeof Deno?.noColor === "boolean"',
+  typeof Deno?.noColor === "boolean",
+);
 
 interface Code {
   open: string;
