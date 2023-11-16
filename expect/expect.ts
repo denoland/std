@@ -22,15 +22,23 @@ import { toBeTruthy } from "./_to_be_truthy.ts";
 import { toBeUndefined } from "./_to_be_undefined.ts";
 import { toBe } from "./_to_be.ts";
 import { toEqual } from "./_to_equal.ts";
+import { toHaveBeenCalledTimes } from "./_to_have_been_called_times.ts";
+import { toHaveBeenCalledWith } from "./_to_have_been_called_with.ts";
+import { toHaveBeenCalled } from "./_to_have_been_called.ts";
+import { toHaveBeenLastCalledWith } from "./_to_have_been_last_called_with.ts";
+import { toHaveBeenNthCalledWith } from "./_to_have_been_nth_called_with.ts";
+import { toHaveLength } from "./_to_have_length.ts";
+import { toHaveNthReturnedWith } from "./_to_have_nth_returned_with.ts";
+import { toHaveProperty } from "./_to_have_property.ts";
+import { toHaveReturnedTimes } from "./_to_have_returned_times.ts";
+import { toHaveReturnedWith } from "./_to_have_returned_with.ts";
+import { toHaveReturned } from "./_to_have_returned.ts";
 import { toMatchObject } from "./_to_match_object.ts";
 import { toMatch } from "./_to_match.ts";
 import { toStrictEqual } from "./_to_strict_equal.ts";
 import { toThrow } from "./_to_throw.ts";
 
 export interface Expected {
-  toEqual(candidate: unknown): void;
-  toStrictEqual(candidate: unknown): void;
-  toBe(candidate: unknown): void;
   toBeCloseTo(candidate: number, tolerance?: number): void;
   toBeDefined(): void;
   toBeFalsy(): void;
@@ -43,8 +51,22 @@ export interface Expected {
   toBeNull(): void;
   toBeTruthy(): void;
   toBeUndefined(): void;
+  toBe(candidate: unknown): void;
+  toEqual(candidate: unknown): void;
+  toHaveBeenCalledTimes(expected: number): void;
+  toHaveBeenCalledWith(...expected: unknown[]): void;
+  toHaveBeenCalled(): void;
+  toHaveBeenLastCalledWith(...expected: unknown[]): void;
+  toHaveBeenNthCalledWith(nth: number, ...expected: unknown[]): void;
+  toHaveLength(expected: number): void;
+  toHaveNthReturnedWith(nth: number, expected: unknown): void;
+  toHaveProperty(propName: string | symbol, value?: unknown): void;
+  toHaveReturnedTimes(expected: number): void;
+  toHaveReturnedWith(expected: unknown): void;
+  toHaveReturned(): void;
   toMatch(expected: RegExp): void;
   toMatchObject(expected: Record<PropertyKey, unknown>): void;
+  toStrictEqual(candidate: unknown): void;
   // deno-lint-ignore no-explicit-any
   toThrow<E extends Error = Error>(expected: new (...args: any[]) => E): void;
   not: Expected;
@@ -67,6 +89,17 @@ const matchers: Record<string | symbol, Matcher> = {
   toBeUndefined,
   toBe,
   toEqual,
+  toHaveBeenCalledTimes,
+  toHaveBeenCalledWith,
+  toHaveBeenCalled,
+  toHaveBeenLastCalledWith,
+  toHaveBeenNthCalledWith,
+  toHaveLength,
+  toHaveNthReturnedWith,
+  toHaveProperty,
+  toHaveReturnedTimes,
+  toHaveReturnedWith,
+  toHaveReturned,
   toMatchObject,
   toMatch,
   toStrictEqual,
