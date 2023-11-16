@@ -3,7 +3,7 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.209.0) Import from `data_structures/binary_search_tree.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Import from {@link https://deno.land/std/data_structures/binary_search_tree.ts} instead.
    *
    * An unbalanced binary search tree. The values are in ascending order by default,
    * using JavaScript's built-in comparison operators to sort the values.

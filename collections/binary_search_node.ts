@@ -3,10 +3,10 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.207.0) Use {@linkcode BinarySearchTree} from `data_structures/binary_search_tree.ts` instead.
+   * @deprecated (will be removed in 0.209.0) Use {@linkcode BinarySearchTree} from {@link https://deno.land/std/data_structures/binary_search_tree.ts} instead.
    */
   BinarySearchNode,
 } from "../data_structures/_binary_search_node.ts";
 
-/** @deprecated (will be removed in 0.207.0) Use "left" | "right" union class instead */
+/** @deprecated (will be removed in 0.209.0) Use `"left" | "right"` union class instead */
 export type Direction = "left" | "right";
