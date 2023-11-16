@@ -59,7 +59,7 @@ function convertBase64ToBase64url(b64: string) {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeBase64Url` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64Url} instead.
  *
  * Encodes a given ArrayBuffer or string into a base64url representation
  * @param data
@@ -67,7 +67,7 @@ function convertBase64ToBase64url(b64: string) {
 export const encode = encodeBase64Url;
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `decodeBase64Url` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64Url} instead.
  *
  * Converts given base64url encoded data back to original
  * @param b64url
