@@ -4,6 +4,8 @@ import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
+import { encodeHex } from "../encoding/hex.ts";
+
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
@@ -21,12 +23,12 @@ Deno.test(
       "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           ReadableStream.from([inputBytes]),
@@ -36,7 +38,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
@@ -46,12 +48,12 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
@@ -66,7 +68,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         stdCrypto.subtle.digestSync(
           "SHA-384",
           (function* () {
@@ -80,7 +82,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (function* () {
@@ -92,17 +94,17 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
+      encodeHex(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
 
     assertEquals(
-      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
+      encodeHex(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
   },
@@ -175,24 +177,20 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     const heapBytesInitial = memory.buffer.byteLength;
 
     const smallData = new Uint8Array(64);
-    const smallDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
+    const smallDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
     const heapBytesAfterSmall = memory.buffer.byteLength;
 
     const largeData = new Uint8Array(64_000_000);
-    const largeDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
+    const largeDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
     const heapBytesAfterLarge = memory.buffer.byteLength;
 
-    console.log(JSON.stringify(
-      {
-        heapBytesInitial,
-        smallDigest,
-        heapBytesAfterSmall,
-        largeDigest,
-        heapBytesAfterLarge,
-      },
-      null,
-      2,
-    ));
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      smallDigest,
+      heapBytesAfterSmall,
+      largeDigest,
+      heapBytesAfterLarge,
+    }));
   `;
 
   const command = new Deno.Command(Deno.execPath(), {
@@ -272,15 +270,11 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
 
     const stateFinal = encodeHex(state);
 
-    console.log(JSON.stringify(
-      {
-        heapBytesInitial,
-        heapBytesFinal,
-        stateFinal,
-      },
-      null,
-      2,
-    ));
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      heapBytesFinal,
+      stateFinal,
+    }));
   `;
 
   const command = new Deno.Command(Deno.execPath(), {
@@ -1312,20 +1306,20 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
   const expectedDigest64a = "a5d9fb67426e48b1";
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
     expectedDigest32,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
     expectedDigest32a,
   );
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
     expectedDigest64,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
     expectedDigest64a,
   );
 });
@@ -1341,7 +1335,7 @@ for (const algorithm of digestAlgorithms) {
           typeof piece === "string" ? new TextEncoder().encode(piece) : piece
         ) as Array<BufferSource>;
         try {
-          const actual = toHexString(
+          const actual = encodeHex(
             await stdCrypto.subtle.digest({
               ...options,
               name: algorithm,
@@ -1370,12 +1364,6 @@ for (const algorithm of digestAlgorithms) {
     }
   });
 }
-
-const toHexString = (bytes: ArrayBuffer): string =>
-  new Uint8Array(bytes).reduce(
-    (str, byte) => str + byte.toString(16).padStart(2, "0"),
-    "",
-  );
 
 Deno.test({
   name: "[crypto/subtle/timeSafeEqual] - is present",
