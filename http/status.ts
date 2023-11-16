@@ -2,19 +2,19 @@
 // This module is browser compatible.
 
 /**
- * Contains the {@linkcode STATUS_CODES} object which contains standard HTTP
+ * Contains the {@linkcode STATUS_CODE} object which contains standard HTTP
  * status codes and provides several type guards for handling status codes
  * with type safety.
  *
  * @example
  * ```ts
  * import {
- *   STATUS_CODES,
+ *   STATUS_CODE,
  *   STATUS_TEXT,
  * } from "https://deno.land/std@$STD_VERSION/http/status.ts";
  *
- * console.log(STATUS_CODES.NotFound); // Returns 404
- * console.log(STATUS_TEXT[STATUS_CODES.NotFound]); // Returns "Not Found"
+ * console.log(STATUS_CODE.NotFound); // Returns 404
+ * console.log(STATUS_TEXT[STATUS_CODE.NotFound]); // Returns "Not Found"
  * ```
  *
  * @example
@@ -32,7 +32,7 @@
  */
 
 /**
- * @deprecated (will be removed in 0.209.0) Use {@linkcode STATUS_CODES} instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode STATUS_CODE} instead.
  *
  * Standard HTTP status codes.
  */
@@ -167,7 +167,7 @@ export enum Status {
   NetworkAuthenticationRequired = 511,
 }
 
-export const STATUS_CODES = {
+export const STATUS_CODE = {
   /** RFC 7231, 6.2.1 */
   Continue: 100,
   /** RFC 7231, 6.2.2 */
@@ -298,157 +298,157 @@ export const STATUS_CODES = {
   NetworkAuthenticationRequired: 511,
 } as const;
 
-export type StatusCode = typeof STATUS_CODES[keyof typeof STATUS_CODES];
+export type StatusCode = typeof STATUS_CODE[keyof typeof STATUS_CODE];
 
 /** A record of all the status codes text. */
 export const STATUS_TEXT = {
-  [STATUS_CODES.Accepted]: "Accepted",
-  [STATUS_CODES.AlreadyReported]: "Already Reported",
-  [STATUS_CODES.BadGateway]: "Bad Gateway",
-  [STATUS_CODES.BadRequest]: "Bad Request",
-  [STATUS_CODES.Conflict]: "Conflict",
-  [STATUS_CODES.Continue]: "Continue",
-  [STATUS_CODES.Created]: "Created",
-  [STATUS_CODES.EarlyHints]: "Early Hints",
-  [STATUS_CODES.ExpectationFailed]: "Expectation Failed",
-  [STATUS_CODES.FailedDependency]: "Failed Dependency",
-  [STATUS_CODES.Forbidden]: "Forbidden",
-  [STATUS_CODES.Found]: "Found",
-  [STATUS_CODES.GatewayTimeout]: "Gateway Timeout",
-  [STATUS_CODES.Gone]: "Gone",
-  [STATUS_CODES.HTTPVersionNotSupported]: "HTTP Version Not Supported",
-  [STATUS_CODES.IMUsed]: "IM Used",
-  [STATUS_CODES.InsufficientStorage]: "Insufficient Storage",
-  [STATUS_CODES.InternalServerError]: "Internal Server Error",
-  [STATUS_CODES.LengthRequired]: "Length Required",
-  [STATUS_CODES.Locked]: "Locked",
-  [STATUS_CODES.LoopDetected]: "Loop Detected",
-  [STATUS_CODES.MethodNotAllowed]: "Method Not Allowed",
-  [STATUS_CODES.MisdirectedRequest]: "Misdirected Request",
-  [STATUS_CODES.MovedPermanently]: "Moved Permanently",
-  [STATUS_CODES.MultiStatus]: "Multi Status",
-  [STATUS_CODES.MultipleChoices]: "Multiple Choices",
-  [STATUS_CODES.NetworkAuthenticationRequired]:
+  [STATUS_CODE.Accepted]: "Accepted",
+  [STATUS_CODE.AlreadyReported]: "Already Reported",
+  [STATUS_CODE.BadGateway]: "Bad Gateway",
+  [STATUS_CODE.BadRequest]: "Bad Request",
+  [STATUS_CODE.Conflict]: "Conflict",
+  [STATUS_CODE.Continue]: "Continue",
+  [STATUS_CODE.Created]: "Created",
+  [STATUS_CODE.EarlyHints]: "Early Hints",
+  [STATUS_CODE.ExpectationFailed]: "Expectation Failed",
+  [STATUS_CODE.FailedDependency]: "Failed Dependency",
+  [STATUS_CODE.Forbidden]: "Forbidden",
+  [STATUS_CODE.Found]: "Found",
+  [STATUS_CODE.GatewayTimeout]: "Gateway Timeout",
+  [STATUS_CODE.Gone]: "Gone",
+  [STATUS_CODE.HTTPVersionNotSupported]: "HTTP Version Not Supported",
+  [STATUS_CODE.IMUsed]: "IM Used",
+  [STATUS_CODE.InsufficientStorage]: "Insufficient Storage",
+  [STATUS_CODE.InternalServerError]: "Internal Server Error",
+  [STATUS_CODE.LengthRequired]: "Length Required",
+  [STATUS_CODE.Locked]: "Locked",
+  [STATUS_CODE.LoopDetected]: "Loop Detected",
+  [STATUS_CODE.MethodNotAllowed]: "Method Not Allowed",
+  [STATUS_CODE.MisdirectedRequest]: "Misdirected Request",
+  [STATUS_CODE.MovedPermanently]: "Moved Permanently",
+  [STATUS_CODE.MultiStatus]: "Multi Status",
+  [STATUS_CODE.MultipleChoices]: "Multiple Choices",
+  [STATUS_CODE.NetworkAuthenticationRequired]:
     "Network Authentication Required",
-  [STATUS_CODES.NoContent]: "No Content",
-  [STATUS_CODES.NonAuthoritativeInfo]: "Non Authoritative Info",
-  [STATUS_CODES.NotAcceptable]: "Not Acceptable",
-  [STATUS_CODES.NotExtended]: "Not Extended",
-  [STATUS_CODES.NotFound]: "Not Found",
-  [STATUS_CODES.NotImplemented]: "Not Implemented",
-  [STATUS_CODES.NotModified]: "Not Modified",
-  [STATUS_CODES.OK]: "OK",
-  [STATUS_CODES.PartialContent]: "Partial Content",
-  [STATUS_CODES.PaymentRequired]: "Payment Required",
-  [STATUS_CODES.PermanentRedirect]: "Permanent Redirect",
-  [STATUS_CODES.PreconditionFailed]: "Precondition Failed",
-  [STATUS_CODES.PreconditionRequired]: "Precondition Required",
-  [STATUS_CODES.Processing]: "Processing",
-  [STATUS_CODES.ProxyAuthRequired]: "Proxy Auth Required",
-  [STATUS_CODES.ContentTooLarge]: "Content Too Large",
-  [STATUS_CODES.RequestHeaderFieldsTooLarge]: "Request Header Fields Too Large",
-  [STATUS_CODES.RequestTimeout]: "Request Timeout",
-  [STATUS_CODES.URITooLong]: "URI Too Long",
-  [STATUS_CODES.RangeNotSatisfiable]: "Range Not Satisfiable",
-  [STATUS_CODES.ResetContent]: "Reset Content",
-  [STATUS_CODES.SeeOther]: "See Other",
-  [STATUS_CODES.ServiceUnavailable]: "Service Unavailable",
-  [STATUS_CODES.SwitchingProtocols]: "Switching Protocols",
-  [STATUS_CODES.Teapot]: "I'm a teapot",
-  [STATUS_CODES.TemporaryRedirect]: "Temporary Redirect",
-  [STATUS_CODES.TooEarly]: "Too Early",
-  [STATUS_CODES.TooManyRequests]: "Too Many Requests",
-  [STATUS_CODES.Unauthorized]: "Unauthorized",
-  [STATUS_CODES.UnavailableForLegalReasons]: "Unavailable For Legal Reasons",
-  [STATUS_CODES.UnprocessableEntity]: "Unprocessable Entity",
-  [STATUS_CODES.UnsupportedMediaType]: "Unsupported Media Type",
-  [STATUS_CODES.UpgradeRequired]: "Upgrade Required",
-  [STATUS_CODES.UseProxy]: "Use Proxy",
-  [STATUS_CODES.VariantAlsoNegotiates]: "Variant Also Negotiates",
+  [STATUS_CODE.NoContent]: "No Content",
+  [STATUS_CODE.NonAuthoritativeInfo]: "Non Authoritative Info",
+  [STATUS_CODE.NotAcceptable]: "Not Acceptable",
+  [STATUS_CODE.NotExtended]: "Not Extended",
+  [STATUS_CODE.NotFound]: "Not Found",
+  [STATUS_CODE.NotImplemented]: "Not Implemented",
+  [STATUS_CODE.NotModified]: "Not Modified",
+  [STATUS_CODE.OK]: "OK",
+  [STATUS_CODE.PartialContent]: "Partial Content",
+  [STATUS_CODE.PaymentRequired]: "Payment Required",
+  [STATUS_CODE.PermanentRedirect]: "Permanent Redirect",
+  [STATUS_CODE.PreconditionFailed]: "Precondition Failed",
+  [STATUS_CODE.PreconditionRequired]: "Precondition Required",
+  [STATUS_CODE.Processing]: "Processing",
+  [STATUS_CODE.ProxyAuthRequired]: "Proxy Auth Required",
+  [STATUS_CODE.ContentTooLarge]: "Content Too Large",
+  [STATUS_CODE.RequestHeaderFieldsTooLarge]: "Request Header Fields Too Large",
+  [STATUS_CODE.RequestTimeout]: "Request Timeout",
+  [STATUS_CODE.URITooLong]: "URI Too Long",
+  [STATUS_CODE.RangeNotSatisfiable]: "Range Not Satisfiable",
+  [STATUS_CODE.ResetContent]: "Reset Content",
+  [STATUS_CODE.SeeOther]: "See Other",
+  [STATUS_CODE.ServiceUnavailable]: "Service Unavailable",
+  [STATUS_CODE.SwitchingProtocols]: "Switching Protocols",
+  [STATUS_CODE.Teapot]: "I'm a teapot",
+  [STATUS_CODE.TemporaryRedirect]: "Temporary Redirect",
+  [STATUS_CODE.TooEarly]: "Too Early",
+  [STATUS_CODE.TooManyRequests]: "Too Many Requests",
+  [STATUS_CODE.Unauthorized]: "Unauthorized",
+  [STATUS_CODE.UnavailableForLegalReasons]: "Unavailable For Legal Reasons",
+  [STATUS_CODE.UnprocessableEntity]: "Unprocessable Entity",
+  [STATUS_CODE.UnsupportedMediaType]: "Unsupported Media Type",
+  [STATUS_CODE.UpgradeRequired]: "Upgrade Required",
+  [STATUS_CODE.UseProxy]: "Use Proxy",
+  [STATUS_CODE.VariantAlsoNegotiates]: "Variant Also Negotiates",
 } as const;
 
 export type StatusText = typeof STATUS_TEXT[keyof typeof STATUS_TEXT];
 
 /** An HTTP status that is a informational (1XX). */
 export type InformationalStatus =
-  | typeof STATUS_CODES.Continue
-  | typeof STATUS_CODES.SwitchingProtocols
-  | typeof STATUS_CODES.Processing
-  | typeof STATUS_CODES.EarlyHints;
+  | typeof STATUS_CODE.Continue
+  | typeof STATUS_CODE.SwitchingProtocols
+  | typeof STATUS_CODE.Processing
+  | typeof STATUS_CODE.EarlyHints;
 
 /** An HTTP status that is a success (2XX). */
 export type SuccessfulStatus =
-  | typeof STATUS_CODES.OK
-  | typeof STATUS_CODES.Created
-  | typeof STATUS_CODES.Accepted
-  | typeof STATUS_CODES.NonAuthoritativeInfo
-  | typeof STATUS_CODES.NoContent
-  | typeof STATUS_CODES.ResetContent
-  | typeof STATUS_CODES.PartialContent
-  | typeof STATUS_CODES.MultiStatus
-  | typeof STATUS_CODES.AlreadyReported
-  | typeof STATUS_CODES.IMUsed;
+  | typeof STATUS_CODE.OK
+  | typeof STATUS_CODE.Created
+  | typeof STATUS_CODE.Accepted
+  | typeof STATUS_CODE.NonAuthoritativeInfo
+  | typeof STATUS_CODE.NoContent
+  | typeof STATUS_CODE.ResetContent
+  | typeof STATUS_CODE.PartialContent
+  | typeof STATUS_CODE.MultiStatus
+  | typeof STATUS_CODE.AlreadyReported
+  | typeof STATUS_CODE.IMUsed;
 
 /** An HTTP status that is a redirect (3XX). */
 export type RedirectStatus =
-  | typeof STATUS_CODES.MultipleChoices // 300
-  | typeof STATUS_CODES.MovedPermanently // 301
-  | typeof STATUS_CODES.Found // 302
-  | typeof STATUS_CODES.SeeOther // 303
-  | typeof STATUS_CODES.UseProxy // 305 - DEPRECATED
-  | typeof STATUS_CODES.TemporaryRedirect // 307
-  | typeof STATUS_CODES.PermanentRedirect; // 308
+  | typeof STATUS_CODE.MultipleChoices // 300
+  | typeof STATUS_CODE.MovedPermanently // 301
+  | typeof STATUS_CODE.Found // 302
+  | typeof STATUS_CODE.SeeOther // 303
+  | typeof STATUS_CODE.UseProxy // 305 - DEPRECATED
+  | typeof STATUS_CODE.TemporaryRedirect // 307
+  | typeof STATUS_CODE.PermanentRedirect; // 308
 
 /** An HTTP status that is a client error (4XX). */
 export type ClientErrorStatus =
-  | typeof STATUS_CODES.BadRequest
-  | typeof STATUS_CODES.Unauthorized
-  | typeof STATUS_CODES.PaymentRequired
-  | typeof STATUS_CODES.Forbidden
-  | typeof STATUS_CODES.NotFound
-  | typeof STATUS_CODES.MethodNotAllowed
-  | typeof STATUS_CODES.NotAcceptable
-  | typeof STATUS_CODES.ProxyAuthRequired
-  | typeof STATUS_CODES.RequestTimeout
-  | typeof STATUS_CODES.Conflict
-  | typeof STATUS_CODES.Gone
-  | typeof STATUS_CODES.LengthRequired
-  | typeof STATUS_CODES.PreconditionFailed
-  | typeof STATUS_CODES.ContentTooLarge
-  | typeof STATUS_CODES.URITooLong
-  | typeof STATUS_CODES.UnsupportedMediaType
-  | typeof STATUS_CODES.RangeNotSatisfiable
-  | typeof STATUS_CODES.ExpectationFailed
-  | typeof STATUS_CODES.Teapot
-  | typeof STATUS_CODES.MisdirectedRequest
-  | typeof STATUS_CODES.UnprocessableEntity
-  | typeof STATUS_CODES.Locked
-  | typeof STATUS_CODES.FailedDependency
-  | typeof STATUS_CODES.UpgradeRequired
-  | typeof STATUS_CODES.PreconditionRequired
-  | typeof STATUS_CODES.TooManyRequests
-  | typeof STATUS_CODES.RequestHeaderFieldsTooLarge
-  | typeof STATUS_CODES.UnavailableForLegalReasons;
+  | typeof STATUS_CODE.BadRequest
+  | typeof STATUS_CODE.Unauthorized
+  | typeof STATUS_CODE.PaymentRequired
+  | typeof STATUS_CODE.Forbidden
+  | typeof STATUS_CODE.NotFound
+  | typeof STATUS_CODE.MethodNotAllowed
+  | typeof STATUS_CODE.NotAcceptable
+  | typeof STATUS_CODE.ProxyAuthRequired
+  | typeof STATUS_CODE.RequestTimeout
+  | typeof STATUS_CODE.Conflict
+  | typeof STATUS_CODE.Gone
+  | typeof STATUS_CODE.LengthRequired
+  | typeof STATUS_CODE.PreconditionFailed
+  | typeof STATUS_CODE.ContentTooLarge
+  | typeof STATUS_CODE.URITooLong
+  | typeof STATUS_CODE.UnsupportedMediaType
+  | typeof STATUS_CODE.RangeNotSatisfiable
+  | typeof STATUS_CODE.ExpectationFailed
+  | typeof STATUS_CODE.Teapot
+  | typeof STATUS_CODE.MisdirectedRequest
+  | typeof STATUS_CODE.UnprocessableEntity
+  | typeof STATUS_CODE.Locked
+  | typeof STATUS_CODE.FailedDependency
+  | typeof STATUS_CODE.UpgradeRequired
+  | typeof STATUS_CODE.PreconditionRequired
+  | typeof STATUS_CODE.TooManyRequests
+  | typeof STATUS_CODE.RequestHeaderFieldsTooLarge
+  | typeof STATUS_CODE.UnavailableForLegalReasons;
 
 /** An HTTP status that is a server error (5XX). */
 export type ServerErrorStatus =
-  | typeof STATUS_CODES.InternalServerError
-  | typeof STATUS_CODES.NotImplemented
-  | typeof STATUS_CODES.BadGateway
-  | typeof STATUS_CODES.ServiceUnavailable
-  | typeof STATUS_CODES.GatewayTimeout
-  | typeof STATUS_CODES.HTTPVersionNotSupported
-  | typeof STATUS_CODES.VariantAlsoNegotiates
-  | typeof STATUS_CODES.InsufficientStorage
-  | typeof STATUS_CODES.LoopDetected
-  | typeof STATUS_CODES.NotExtended
-  | typeof STATUS_CODES.NetworkAuthenticationRequired;
+  | typeof STATUS_CODE.InternalServerError
+  | typeof STATUS_CODE.NotImplemented
+  | typeof STATUS_CODE.BadGateway
+  | typeof STATUS_CODE.ServiceUnavailable
+  | typeof STATUS_CODE.GatewayTimeout
+  | typeof STATUS_CODE.HTTPVersionNotSupported
+  | typeof STATUS_CODE.VariantAlsoNegotiates
+  | typeof STATUS_CODE.InsufficientStorage
+  | typeof STATUS_CODE.LoopDetected
+  | typeof STATUS_CODE.NotExtended
+  | typeof STATUS_CODE.NetworkAuthenticationRequired;
 
 /** An HTTP status that is an error (4XX and 5XX). */
 export type ErrorStatus = ClientErrorStatus | ServerErrorStatus;
 
 export function isStatus(status: number): status is StatusCode {
-  return Object.values(STATUS_CODES).includes(status as StatusCode);
+  return Object.values(STATUS_CODE).includes(status as StatusCode);
 }
 
 /** A type guard that determines if the status code is informational. */

@@ -42,7 +42,7 @@ import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
 import {
   isRedirectStatus,
-  STATUS_CODES,
+  STATUS_CODE,
   STATUS_TEXT,
   type StatusCode,
 } from "./status.ts";
@@ -161,7 +161,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      return createStandardResponse(STATUS_CODES.NotFound);
+      return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
     }
@@ -169,7 +169,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    return createStandardResponse(STATUS_CODES.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
   const headers = createBaseHeaders();
@@ -205,7 +205,7 @@ export async function serveFile(
         fileInfo.mtime.getTime() <
           new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
-      const status = STATUS_CODES.NotModified;
+      const status = STATUS_CODE.NotModified;
       return new Response(null, {
         status,
         statusText: STATUS_TEXT[status],
@@ -237,7 +237,7 @@ export async function serveFile(
       headers.set("content-length", `${fileSize}`);
 
       const file = await Deno.open(filePath);
-      const status = STATUS_CODES.OK;
+      const status = STATUS_CODE.OK;
       return new Response(file.readable, {
         status,
         statusText: STATUS_TEXT[status],
@@ -255,7 +255,7 @@ export async function serveFile(
       headers.set("content-range", `bytes */${fileSize}`);
 
       return createStandardResponse(
-        STATUS_CODES.RangeNotSatisfiable,
+        STATUS_CODE.RangeNotSatisfiable,
         { headers },
       );
     }
@@ -276,7 +276,7 @@ export async function serveFile(
     await file.seek(start, Deno.SeekMode.Start);
     const sliced = file.readable
       .pipeThrough(new ByteSliceStream(0, contentLength - 1));
-    const status = STATUS_CODES.PartialContent;
+    const status = STATUS_CODE.PartialContent;
     return new Response(sliced, {
       status,
       statusText: STATUS_TEXT[status],
@@ -288,7 +288,7 @@ export async function serveFile(
   headers.set("content-length", `${fileSize}`);
 
   const file = await Deno.open(filePath);
-  const status = STATUS_CODES.OK;
+  const status = STATUS_CODE.OK;
   return new Response(file.readable, {
     status,
     statusText: STATUS_TEXT[status],
@@ -368,7 +368,7 @@ async function serveDirIndex(
   const headers = createBaseHeaders();
   headers.set("content-type", "text/html; charset=UTF-8");
 
-  const status = STATUS_CODES.OK;
+  const status = STATUS_CODE.OK;
   return new Response(page, {
     status,
     statusText: STATUS_TEXT[status],
@@ -378,14 +378,14 @@ async function serveDirIndex(
 
 function serveFallback(maybeError: unknown): Response {
   if (maybeError instanceof URIError) {
-    return createStandardResponse(STATUS_CODES.BadRequest);
+    return createStandardResponse(STATUS_CODE.BadRequest);
   }
 
   if (maybeError instanceof Deno.errors.NotFound) {
-    return createStandardResponse(STATUS_CODES.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  return createStandardResponse(STATUS_CODES.InternalServerError);
+  return createStandardResponse(STATUS_CODE.InternalServerError);
 }
 
 function serverLog(req: Request, status: number) {
@@ -657,7 +657,7 @@ async function createServeDirResponse(
   let normalizedPath = posixNormalize(decodedUrl);
 
   if (urlRoot && !normalizedPath.startsWith("/" + urlRoot)) {
-    return createStandardResponse(STATUS_CODES.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
   // Redirect paths like `/foo////bar` and `/foo/bar/////` to normalized paths.
@@ -729,7 +729,7 @@ async function createServeDirResponse(
     return serveDirIndex(fsPath, { urlRoot, showDotfiles, target, quiet });
   }
 
-  return createStandardResponse(STATUS_CODES.NotFound);
+  return createStandardResponse(STATUS_CODE.NotFound);
 }
 
 function logError(error: unknown) {
