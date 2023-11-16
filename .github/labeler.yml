@@ -12,6 +12,8 @@ crypto:
   - crypto/**
 csv:
   - csv/**
+data_structures:
+  - data_structures/**
 datetime:
   - datetime/**
 dotenv:
@@ -60,7 +62,5 @@ toml:
   - toml/**
 uuid:
   - uuid/**
-wasi:
-  - wasi/**
 yaml:
   - yaml/**

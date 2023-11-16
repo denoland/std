@@ -6,7 +6,7 @@ import { writeAll } from "./write_all.ts";
 import type { Reader } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use ReadableStreamDefaultReader directly.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
  *
  * Create a `Reader` from a `ReadableStreamDefaultReader`.
  *

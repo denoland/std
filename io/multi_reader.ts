@@ -6,7 +6,7 @@ import type { Reader } from "../types.d.ts";
 /**
  * Reader utility for combining multiple readers
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class MultiReader implements Reader {
   readonly #readers: Reader[];

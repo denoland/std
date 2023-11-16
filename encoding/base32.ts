@@ -80,7 +80,7 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `decodeBase32` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase32} instead.
  *
  * Decodes a given RFC4648 base32 encoded string.
  * @param b32
@@ -182,7 +182,7 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeBase32` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase32} instead.
  *
  * Encodes a given Uint8Array into RFC4648 base32 representation
  * @param uint8

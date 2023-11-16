@@ -4,7 +4,7 @@
 import type { Writer, WriterSync } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use WritableStream, ReadableStream.from, and pipeTo() instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
  *
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
@@ -37,7 +37,7 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use WritableStream, ReadableStream.from, and pipeTo() instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
  *
  * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).

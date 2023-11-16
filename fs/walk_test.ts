@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { walk, WalkEntry, WalkError, WalkOptions, walkSync } from "./walk.ts";
+import { walk, WalkError, WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,
@@ -10,21 +10,13 @@ import { fromFileUrl, resolve } from "../path/mod.ts";
 
 const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
 
-async function toArray(iterator: AsyncIterableIterator<WalkEntry>) {
-  const entries = [];
-  for await (const entry of iterator) {
-    entries.push(entry);
-  }
-  return entries;
-}
-
 async function assertWalkPaths(
   rootPath: string,
   expectedPaths: string[],
   options?: WalkOptions,
 ) {
   const root = resolve(testdataDir, rootPath);
-  const entries = await toArray(walk(root, options));
+  const entries = await Array.fromAsync(walk(root, options));
   const entriesSync = Array.from(walkSync(root, options));
 
   const expected = expectedPaths.map((path) => resolve(root, path));
@@ -93,7 +85,7 @@ Deno.test("[fs/walk] symlink without followSymlink", async () => {
 Deno.test("[fs/walk] non-existent root", async () => {
   const root = resolve(testdataDir, "non_existent");
   await assertRejects(
-    async () => await toArray(walk(root)),
+    async () => await Array.fromAsync(walk(root)),
     Deno.errors.NotFound,
   );
   assertThrows(() => Array.from(walkSync(root)), Deno.errors.NotFound);
@@ -135,8 +127,9 @@ Deno.test("[fs/walk] error", async () => {
   const root = resolve(testdataDir, "error");
   await Deno.mkdir(root);
   await assertRejects(async () => {
-    for await (const _entry of walk(root)) {
-      await Deno.remove(root, { recursive: true });
-    }
+    await Array.fromAsync(
+      walk(root),
+      async () => await Deno.remove(root, { recursive: true }),
+    );
   }, WalkError);
 });

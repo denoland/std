@@ -11,63 +11,41 @@ Deno.test("[streams] ByteSliceStream", async function () {
     ]).pipeThrough(new ByteSliceStream(start, end));
   }
 
-  let chunks = [];
-
-  for await (const chunk of createStream(0, 3)) {
-    chunks.push(chunk);
-  }
+  let chunks = await Array.fromAsync(createStream(0, 3));
   assertEquals(chunks, [
     new Uint8Array([0, 1]),
     new Uint8Array([2, 3]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(0, 1)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(0, 1));
   assertEquals(chunks, [
     new Uint8Array([0, 1]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(0, 2)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(0, 2));
   assertEquals(chunks, [
     new Uint8Array([0, 1]),
     new Uint8Array([2]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(0, 3)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(0, 3));
   assertEquals(chunks, [
     new Uint8Array([0, 1]),
     new Uint8Array([2, 3]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(1, 3)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(1, 3));
   assertEquals(chunks, [
     new Uint8Array([1]),
     new Uint8Array([2, 3]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(2, 3)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(2, 3));
   assertEquals(chunks, [
     new Uint8Array([2, 3]),
   ]);
 
-  chunks = [];
-  for await (const chunk of createStream(0, 10)) {
-    chunks.push(chunk);
-  }
+  chunks = await Array.fromAsync(createStream(0, 10));
   assertEquals(chunks, [
     new Uint8Array([0, 1]),
     new Uint8Array([2, 3]),

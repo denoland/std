@@ -47,7 +47,7 @@ import {
   type StatusCode,
 } from "./status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parse } from "../flags/mod.ts";
+import { parseArgs } from "../cli/parse_args.ts";
 import { red } from "../fmt/colors.ts";
 import { VERSION } from "../version.ts";
 import { format as formatBytes } from "../fmt/bytes.ts";
@@ -737,7 +737,7 @@ function logError(error: unknown) {
 }
 
 function main() {
-  const serverArgs = parse(Deno.args, {
+  const serverArgs = parseArgs(Deno.args, {
     string: ["port", "host", "cert", "key", "header"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],

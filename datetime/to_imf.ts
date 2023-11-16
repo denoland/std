@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed in 0.209.0) Use `date.toUTCString()` instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode Date.toUTCString} instead.
  *
  * Formats the given date to IMF date time format. (Reference:
  * https://tools.ietf.org/html/rfc7231#section-7.1.1.1).

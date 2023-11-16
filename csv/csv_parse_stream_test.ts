@@ -25,10 +25,7 @@ Deno.test({
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
-    const records = [] as Array<Array<string>>;
-    for await (const record of readable) {
-      records.push(record);
-    }
+    const records = await Array.fromAsync(readable);
     assertEquals(records, [
       ["id", "name"],
       ["1", "foobar"],
@@ -333,10 +330,7 @@ x,,,
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [];
-          for await (const record of readable) {
-            actual.push(record);
-          }
+          const actual = await Array.fromAsync(readable);
           assertEquals(actual, testCase.output);
         } else {
           await assertRejects(async () => {

@@ -50,10 +50,7 @@ Deno.test("[async] abortable (AsyncIterable)", async () => {
     await promise;
     yield "World";
   };
-  const items: string[] = [];
-  for await (const item of abortable(a(), c.signal)) {
-    items.push(item);
-  }
+  const items = await Array.fromAsync(abortable(a(), c.signal));
   assertEquals(items, ["Hello", "World"]);
   clearTimeout(t);
 });
