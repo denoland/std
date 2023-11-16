@@ -13,10 +13,11 @@ export function toBeTruthy(
         `Expected ${context.value} to NOT be truthy`,
       );
     }
-  }
-  if (!isTruthy) {
-    throw new AssertionError(
-      `Expected ${context.value} to be truthy`,
-    );
+  } else {
+    if (!isTruthy) {
+      throw new AssertionError(
+        `Expected ${context.value} to be truthy`,
+      );
+    }
   }
 }

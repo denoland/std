@@ -37,11 +37,11 @@ export interface Expected {
   toBeCloseTo(candidate: number, tolerance?: number): void;
   toBeDefined(): void;
   toBeFalsy(): void;
-  toBeGreater(expected: number): void;
-  toBeGreaterOrEqual(expected: number): void;
+  toBeGreaterThan(expected: number): void;
+  toBeGreaterThanOrEqual(expected: number): void;
   toBeInstanceOf<T extends AnyConstructor>(expected: T): void;
-  toBeLess(expected: number): void;
-  toBeLessOrEqual(expected: number): void;
+  toBeLessThan(expected: number): void;
+  toBeLessThanOrEqual(expected: number): void;
   toBeNaN(): void;
   toBeNull(): void;
   toBeTruthy(): void;
@@ -69,7 +69,9 @@ export interface Expected {
   rejects: Async<Expected>;
 }
 
-const matchers: Record<string | symbol, Matcher> = {
+type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
+
+const matchers: Record<MatcherKey, Matcher> = {
   toBeCloseTo,
   toBeDefined,
   toBeFalsy,
@@ -139,7 +141,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
           return self;
         }
 
-        const matcher: Matcher = matchers[name as string];
+        const matcher: Matcher = matchers[name as MatcherKey];
         if (!matcher) {
           throw new TypeError(
             typeof name === "string"

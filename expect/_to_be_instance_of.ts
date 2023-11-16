@@ -9,7 +9,8 @@ export function toBeInstanceOf<T extends AnyConstructor>(
   expected: T,
 ): MatchResult {
   if (context.isNot) {
-    return assertNotInstanceOf(context.value, expected);
+    assertNotInstanceOf(context.value, expected);
+  } else {
+    assertInstanceOf(context.value, expected);
   }
-  return assertInstanceOf(context.value, expected);
 }

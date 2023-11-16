@@ -14,10 +14,11 @@ export function toBeLessThanOrEqual(
         `Expected ${context.value} to NOT be lower than or equal ${expected}`,
       );
     }
-  }
-  if (!isLower) {
-    throw new AssertionError(
-      `Expected ${context.value} to be lower than or equal ${expected}`,
-    );
+  } else {
+    if (!isLower) {
+      throw new AssertionError(
+        `Expected ${context.value} to be lower than or equal ${expected}`,
+      );
+    }
   }
 }

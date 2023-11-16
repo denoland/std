@@ -6,15 +6,16 @@ import { assertEquals } from "../assert/assert_equals.ts";
 
 export function toBeNaN(context: MatcherContext): MatchResult {
   if (context.isNot) {
-    return assertNotEquals(
+    assertNotEquals(
       isNaN(Number(context.value)),
       true,
       context.customMessage || `Expected ${context.value} to not be NaN`,
     );
+  } else {
+    assertEquals(
+      isNaN(Number(context.value)),
+      true,
+      context.customMessage || `Expected ${context.value} to be NaN`,
+    );
   }
-  return assertEquals(
-    isNaN(Number(context.value)),
-    true,
-    context.customMessage || `Expected ${context.value} to be NaN`,
-  );
 }

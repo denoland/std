@@ -9,7 +9,8 @@ export function toEqual(
   expected: unknown,
 ): MatchResult {
   if (context.isNot) {
-    return assertNotEquals(context.value, expected, context.customMessage);
+    assertNotEquals(context.value, expected, context.customMessage);
+  } else {
+    assertEquals(context.value, expected, context.customMessage);
   }
-  return assertEquals(context.value, expected, context.customMessage);
 }

@@ -3,4 +3,13 @@
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 
-Deno.test("expect().toBeInstanceOf", () => {});
+Deno.test("expect().toBeInstanceOf", () => {
+  expect(new Error()).toBeInstanceOf(Error);
+  expect(new Error()).toBeInstanceOf(Object);
+
+  expect(new Error()).not.toBeInstanceOf(String);
+
+  assertThrows(() => {
+    expect(new Error()).toBeInstanceOf(String);
+  }, AssertionError);
+});

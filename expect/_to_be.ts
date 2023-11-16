@@ -6,7 +6,8 @@ import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   if (context.isNot) {
-    return assertNotStrictEquals(context.value, expect, context.customMessage);
+    assertNotStrictEquals(context.value, expect, context.customMessage);
+  } else {
+    assertStrictEquals(context.value, expect, context.customMessage);
   }
-  return assertStrictEquals(context.value, expect, context.customMessage);
 }

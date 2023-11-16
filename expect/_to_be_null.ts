@@ -6,15 +6,16 @@ import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
 
 export function toBeNull(context: MatcherContext): MatchResult {
   if (context.isNot) {
-    return assertNotStrictEquals(
+    assertNotStrictEquals(
       context.value as number,
       null,
       context.customMessage || `Expected ${context.value} to not be null`,
     );
+  } else {
+    assertStrictEquals(
+      context.value as number,
+      null,
+      context.customMessage || `Expected ${context.value} to be null`,
+    );
   }
-  return assertStrictEquals(
-    context.value as number,
-    null,
-    context.customMessage || `Expected ${context.value} to be null`,
-  );
 }

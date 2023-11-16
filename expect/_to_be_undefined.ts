@@ -6,11 +6,12 @@ import { assertStrictEquals } from "../assert/assert_strict_equals.ts";
 
 export function toBeUndefined(context: MatcherContext): MatchResult {
   if (context.isNot) {
-    return assertNotStrictEquals(
+    assertNotStrictEquals(
       context.value,
       undefined,
       context.customMessage,
     );
+  } else {
+    assertStrictEquals(context.value, undefined, context.customMessage);
   }
-  return assertStrictEquals(context.value, undefined, context.customMessage);
 }

@@ -3,4 +3,12 @@
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 
-Deno.test("expect().toBeNaN()", () => {});
+Deno.test("expect().toBeNaN()", () => {
+  expect(NaN).toBeNaN();
+
+  expect(1).not.toBeNaN();
+
+  assertThrows(() => {
+    expect(1).toBeNaN();
+  }, AssertionError);
+});

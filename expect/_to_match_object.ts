@@ -31,11 +31,12 @@ export function toMatchObject(
       }
       return;
     }
+  } else {
+    assertObjectMatch(
+      // deno-lint-ignore no-explicit-any
+      context.value as Record<PropertyKey, any>,
+      expected,
+      context.customMessage,
+    );
   }
-  return assertObjectMatch(
-    // deno-lint-ignore no-explicit-any
-    context.value as Record<PropertyKey, any>,
-    expected,
-    context.customMessage,
-  );
 }

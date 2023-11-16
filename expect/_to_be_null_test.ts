@@ -3,4 +3,12 @@
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "../assert/mod.ts";
 
-Deno.test("expect().toBeNull()", () => {});
+Deno.test("expect().toBeNull()", () => {
+  expect(null).toBeNull();
+
+  expect(undefined).not.toBeNull();
+
+  assertThrows(() => {
+    expect(undefined).toBeNull();
+  }, AssertionError);
+});

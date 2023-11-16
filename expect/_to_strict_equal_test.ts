@@ -9,6 +9,10 @@ Deno.test("expect().toStrictEqual()", () => {
   expect("a").toStrictEqual("a");
   expect(obj).toStrictEqual(obj);
 
+  expect(1).not.toStrictEqual(2);
+  expect("a").not.toStrictEqual("b");
+  expect(obj).not.toStrictEqual({ a: 1 });
+
   assertThrows(() => {
     expect(1).toStrictEqual(2);
   }, AssertionError);
