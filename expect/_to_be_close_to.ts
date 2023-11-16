@@ -4,10 +4,11 @@ import { MatcherContext, MatchResult } from "./_types.ts";
 import { assertAlmostEquals } from "../assert/assert_almost_equals.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
+// TODO(kt3k): tolerance handling is wrong
 export function toBeCloseTo(
   context: MatcherContext,
   expected: number,
-  tolerance = 1e-7,
+  tolerance = 1e-7, // FIXME: This should be digits number, not tolerance
 ): MatchResult {
   if (context.isNot) {
     const actual = Number(context.value);

@@ -1,12 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
-import type {
-  AnyConstructor,
-  Matcher,
-  MatcherContext,
-  Matchers,
-} from "./_types.ts";
+import type { AnyConstructor, Matcher, MatcherContext } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import { toBeCloseTo } from "./_to_be_close_to.ts";
 import { toBeDefined } from "./_to_be_defined.ts";
@@ -68,7 +63,7 @@ export interface Expected {
   toMatchObject(expected: Record<PropertyKey, unknown>): void;
   toStrictEqual(candidate: unknown): void;
   // deno-lint-ignore no-explicit-any
-  toThrow<E extends Error = Error>(expected: new (...args: any[]) => E): void;
+  toThrow<E extends Error = Error>(expected?: new (...args: any[]) => E): void;
   not: Expected;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
@@ -189,10 +184,6 @@ export type Async<T> = {
     ? (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>
     : T[K];
 };
-
-export function addMatchers(newMatchers: Matchers): void {
-  Object.assign(matchers, newMatchers);
-}
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   if (value == null) {

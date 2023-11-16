@@ -4,7 +4,6 @@ import { MatcherContext, MatchResult } from "./_types.ts";
 import { assertNotEquals } from "../assert/assert_not_equals.ts";
 import { assertEquals } from "../assert/assert_equals.ts";
 
-/* Similar to assertEqual */
 export function toEqual(
   context: MatcherContext,
   expected: unknown,

@@ -3,7 +3,6 @@
 import { MatcherContext, MatchResult } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
-/* Similar to assertEqual */
 export function toBeLessThanOrEqual(
   context: MatcherContext,
   expected: number,

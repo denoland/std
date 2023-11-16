@@ -1,0 +1,9 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+import { expect } from "./expect.ts";
+import { AssertionError, assertThrows } from "../assert/mod.ts";
+
+Deno.test("expect().toBeCloseTo()", () => {
+  expect(0.2 + 0.1).toBeCloseTo(0.3);
+  expect(0.2 + 0.1).toBeCloseTo(0.3, 5);
+});
