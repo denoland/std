@@ -6,4 +6,10 @@ import { AssertionError, assertThrows } from "../assert/mod.ts";
 Deno.test("expect().toBeCloseTo()", () => {
   expect(0.2 + 0.1).toBeCloseTo(0.3);
   expect(0.2 + 0.1).toBeCloseTo(0.3, 5);
+
+  expect(0.2 + 0.11).not.toBeCloseTo(0.3);
+
+  assertThrows(() => {
+    expect(0.2 + 0.11).toBeCloseTo(0.3);
+  }, AssertionError);
 });

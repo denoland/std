@@ -8,6 +8,8 @@ Deno.test("expect().toThrow()", () => {
     throw new Error("hello world");
   }).toThrow();
 
+  expect(() => {}).not.toThrow();
+
   assertThrows(() => {
     expect(() => {}).toThrow();
   }, AssertionError);

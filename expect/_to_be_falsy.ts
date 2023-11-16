@@ -13,10 +13,12 @@ export function toBeFalsy(
         `Expected ${context.value} to NOT be falsy`,
       );
     }
-  }
-  if (!isFalsy) {
-    throw new AssertionError(
-      `Expected ${context.value} to be falsy`,
-    );
+    return;
+  } else {
+    if (!isFalsy) {
+      throw new AssertionError(
+        `Expected ${context.value} to be falsy`,
+      );
+    }
   }
 }
