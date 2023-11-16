@@ -1,13 +1,33 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
-import * as builtInMatchers from "./_matchers/mod.ts";
-import type { Matcher, MatcherContext, Matchers } from "./_types.ts";
+import type {
+  AnyConstructor,
+  Matcher,
+  MatcherContext,
+  Matchers,
+} from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { AnyConstructor } from "../assert/assert_instance_of.ts";
+import { toBeCloseTo } from "./_to_be_close_to.ts";
+import { toBeDefined } from "./_to_be_defined.ts";
+import { toBeFalsy } from "./_to_be_falsy.ts";
+import { toBeGreaterThanOrEqual } from "./_to_be_greater_than_or_equal.ts";
+import { toBeGreaterThan } from "./_to_be_greater_than.ts";
+import { toBeInstanceOf } from "./_to_be_instance_of.ts";
+import { toBeLessThanOrEqual } from "./_to_be_less_than_or_equal.ts";
+import { toBeLessThan } from "./_to_be_less_than.ts";
+import { toBeNaN } from "./_to_be_nan.ts";
+import { toBeNull } from "./_to_be_null.ts";
+import { toBeTruthy } from "./_to_be_truthy.ts";
+import { toBeUndefined } from "./_to_be_undefined.ts";
+import { toBe } from "./_to_be.ts";
+import { toEqual } from "./_to_equal.ts";
+import { toMatchObject } from "./_to_match_object.ts";
+import { toMatch } from "./_to_match.ts";
+import { toStrictEqual } from "./_to_strict_equal.ts";
+import { toThrow } from "./_to_throw.ts";
 
 export interface Expected {
-  /* Similar to assertEqual */
   toEqual(candidate: unknown): void;
   toStrictEqual(candidate: unknown): void;
   toBe(candidate: unknown): void;
@@ -19,7 +39,7 @@ export interface Expected {
   toBeInstanceOf<T extends AnyConstructor>(expected: T): void;
   toBeLess(expected: number): void;
   toBeLessOrEqual(expected: number): void;
-  toBeNan(): void;
+  toBeNaN(): void;
   toBeNull(): void;
   toBeTruthy(): void;
   toBeUndefined(): void;
@@ -33,7 +53,24 @@ export interface Expected {
 }
 
 const matchers: Record<string | symbol, Matcher> = {
-  ...builtInMatchers,
+  toBeCloseTo,
+  toBeDefined,
+  toBeFalsy,
+  toBeGreaterThanOrEqual,
+  toBeGreaterThan,
+  toBeInstanceOf,
+  toBeLessThanOrEqual,
+  toBeLessThan,
+  toBeNaN,
+  toBeNull,
+  toBeTruthy,
+  toBeUndefined,
+  toBe,
+  toEqual,
+  toMatchObject,
+  toMatch,
+  toStrictEqual,
+  toThrow,
 };
 
 export function expect(value: unknown, customMessage?: string): Expected {

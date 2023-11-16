@@ -1,10 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { MatcherContext, MatchResult } from "../_types.ts";
-import { assertEquals, assertNotEquals } from "../../testing/asserts.ts";
+import { MatcherContext, MatchResult } from "./_types.ts";
+import { assertNotEquals } from "../assert/assert_not_equals.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
 
 /* Similar to assertStrictEquals(isNaN(context.value as number), true) and  assertNotStrictEquals(isNaN(context.value as number), true)*/
-export function toBeNan(context: MatcherContext): MatchResult {
+export function toBeNaN(context: MatcherContext): MatchResult {
   if (context.isNot) {
     return assertNotEquals(
       isNaN(Number(context.value)),

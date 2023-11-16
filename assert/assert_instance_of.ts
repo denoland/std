@@ -2,7 +2,7 @@
 import { AssertionError } from "./assertion_error.ts";
 
 // deno-lint-ignore no-explicit-any
-export type AnyConstructor = new (...args: any[]) => any;
+type AnyConstructor = new (...args: any[]) => any;
 type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
 new (...args: any) => infer C ? C
   : never;

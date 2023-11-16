@@ -1,7 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { MatcherContext, MatchResult } from "../_types.ts";
-import { AssertionError, assertIsError } from "../../testing/asserts.ts";
+import { MatcherContext, MatchResult } from "./_types.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { assertIsError } from "../assert/assert_is_error.ts";
 
 /* Similar to assertIsError with value thrown error*/
 export function toThrow<E extends Error = Error>(

@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { MatcherContext, MatchResult } from "../_types.ts";
-import { AssertionError, assertObjectMatch } from "../../testing/asserts.ts";
-import { format } from "../../assert/_format.ts";
+import { MatcherContext, MatchResult } from "./_types.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { assertObjectMatch } from "../assert/assert_object_match.ts";
+import { format } from "../assert/_format.ts";
 
 /* Similar to assertObjectMatch(value, expected)*/
 export function toMatchObject(

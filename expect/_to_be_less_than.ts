@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { MatcherContext, MatchResult } from "../_types.ts";
-import { AssertionError } from "../../assert/assertion_error.ts";
+import { MatcherContext, MatchResult } from "./_types.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
 
 /* Similar to assertEqual */
-export function toBeLowerThan(
+export function toBeLessThan(
   context: MatcherContext,
   expected: number,
 ): MatchResult {

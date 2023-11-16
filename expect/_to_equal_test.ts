@@ -5,11 +5,12 @@ import {
   gray,
   green,
   red,
-  stripColor,
+  stripAnsiCode,
   yellow,
-} from "../../fmt/colors.ts";
-import { assertThrows } from "../../assert/assert_throws.ts";
-import { AssertionError } from "../../assert/assertion_error.ts";
+} from "../fmt/colors.ts";
+import { assertThrows } from "../assert/assert_throws.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { expect } from "./expect.ts";
 
 const createHeader = (): string[] => [
   "",
@@ -24,11 +25,9 @@ const createHeader = (): string[] => [
 ];
 
 const added: (s: string) => string = (s: string): string =>
-  green(bold(stripColor(s)));
+  green(bold(stripAnsiCode(s)));
 const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripColor(s)));
-
-import { expect } from "../expect.ts";
+  red(bold(stripAnsiCode(s)));
 
 Deno.test({
   name: "pass case",
