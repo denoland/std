@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertInstanceOf } from "../assert/mod.ts";
+import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
@@ -1334,7 +1334,10 @@ for (const algorithm of digestAlgorithms) {
         const bytePieces = pieces.map((piece) =>
           typeof piece === "string" ? new TextEncoder().encode(piece) : piece
         ) as Array<BufferSource>;
-        try {
+        // Expected value will either be a hex string, if the case is expected
+        // to return successfully, or an error class/constructor function, if
+        // the case is expected to throw.
+        if (typeof expected === "string") {
           const actual = encodeHex(
             await stdCrypto.subtle.digest({
               ...options,
@@ -1350,29 +1353,37 @@ for (const algorithm of digestAlgorithms) {
               JSON.stringify(options)
             }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
           );
-        } catch (error) {
-          if (expected instanceof Function) {
-            assert(
-              error instanceof expected,
-              `got a different error than expected: ${error}`,
+        } else if (typeof expected === "function") {
+          let error;
+          try {
+            await stdCrypto.subtle.digest({
+              ...options,
+              name: algorithm,
+            }, bytePieces);
+          } catch (caughtError) {
+            error = caughtError;
+          }
+          if (error !== undefined) {
+            assertInstanceOf(
+              error,
+              expected,
             );
           } else {
-            throw error;
+            fail(
+              `${algorithm} of ${caption}${
+                i > 0 ? ` (but not until variation [${i}]!)` : ""
+              } with options ${
+                JSON.stringify(options)
+              }) expected an exception of type ${expected.name}, but none was thrown.`,
+            );
           }
+        } else {
+          throw new TypeError("expected value has an unexpected type");
         }
       }
     }
   });
 }
-
-Deno.test({
-  name: "[crypto/subtle/timeSafeEqual] - is present",
-  fn() {
-    const a = new Uint8Array([212, 213]);
-    const b = new Uint8Array([212, 213]);
-    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
-  },
-});
 
 /**
  * This is one of many methods of `crypto` for which we don't have our own

@@ -26,7 +26,7 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeBase58` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase58} instead.
  *
  * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
@@ -38,7 +38,7 @@ const base58alphabet =
 export const encode = encodeBase58;
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `decodeBase58` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase58} instead.
  *
  * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1

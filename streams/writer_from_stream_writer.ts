@@ -4,7 +4,7 @@
 import type { Writer } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use WritableStreamDefaultWriter directly.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
  *
  * Create a `Writer` from a `WritableStreamDefaultWriter`.
  *
