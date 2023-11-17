@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
- * @deprecated (will be removed after 1.0.0) Import from `std/assert/mod.ts` instead.
+ * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/mod.ts} instead.
  *
  * A library of assertion functions.
  * If the assertion is false an `AssertionError` will be thrown which will
@@ -15,13 +15,13 @@
 
 export {
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert.ts} instead.
    *
    * Make an assertion, error will be thrown if `expr` does not have truthy value.
    */
   assert,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_almost_equals.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_equals.ts} instead.
    *
    * Make an assertion that `actual` and `expected` are almost equal numbers through
    * a given tolerance. It can be used to take into account IEEE-754 double-precision
@@ -41,7 +41,7 @@ export {
    */
   assertAlmostEquals,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_array_includes.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_array_includes.ts} instead.
    *
    * Make an assertion that `actual` includes the `expected` values.
    * If not then an error will be thrown.
@@ -57,7 +57,7 @@ export {
    */
   assertArrayIncludes,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_equals.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_equals.ts} instead.
    *
    * Make an assertion that `actual` and `expected` are equal, deeply. If not
    * deeply equal, then throw.
@@ -76,29 +76,29 @@ export {
    */
   assertEquals,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_exists.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_exists.ts} instead.
    *
    * Make an assertion that actual is not null or undefined.
    * If not then throw.
    */
   assertExists,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_false.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_false.ts} instead.
    *
    * Make an assertion, error will be thrown if `expr` have truthy value.
    */
   assertFalse,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_instance_of.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_instance_of.ts} instead.
    *
    * Make an assertion that `obj` is an instance of `type`.
    * If not then throw.
    */
   assertInstanceOf,
-  /** @deprecated (will be removed after 1.0.0) Import from `std/assert/assertion_error.ts` instead. */
+  /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assertion_error.ts} instead. */
   AssertionError,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_is_error.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_is_error.ts} instead.
    *
    * Make an assertion that `error` is an `Error`.
    * If not then an error will be thrown.
@@ -107,14 +107,14 @@ export {
    */
   assertIsError,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_match.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_match.ts} instead.
    *
    * Make an assertion that `actual` match RegExp `expected`. If not
    * then throw.
    */
   assertMatch,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_not_equals.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_not_equals.ts} instead.
    *
    * Make an assertion that `actual` and `expected` are not equal, deeply.
    * If not then throw.
@@ -130,21 +130,21 @@ export {
    */
   assertNotEquals,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_not_instance_of.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_not_instance_of.ts} instead.
    *
    * Make an assertion that `obj` is not an instance of `type`.
    * If so, then throw.
    */
   assertNotInstanceOf,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_not_match.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_not_match.ts} instead.
    *
    * Make an assertion that `actual` object is a subset of `expected` object, deeply.
    * If not, then throw.
    */
   assertNotMatch,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_not_strict_equals.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_not_strict_equals.ts} instead.
    *
    * Make an assertion that `actual` and `expected` are not strictly equal.
    * If the values are strictly equal then throw.
@@ -157,11 +157,15 @@ export {
    */
   assertNotStrictEquals,
   /**
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_object_match.ts} instead.
+   *
    * Make an assertion that `actual` object is a subset of `expected` object, deeply.
    * If not, then throw.
    */
   assertObjectMatch,
   /**
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_rejects.ts} instead.
+   *
    * Executes a function which returns a promise, expecting it to reject.
    * If it does not, then it throws. An error class and a string that should be
    * included in the error message can also be asserted.
@@ -193,7 +197,7 @@ export {
    * });
    * ```
    *
-   *  * @example
+   * @example
    * ```ts
    * import { assertRejects } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
    *
@@ -222,7 +226,7 @@ export {
    */
   assertRejects,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_strict_equals.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_strict_equals.ts} instead.
    *
    * Make an assertion that `actual` and `expected` are strictly equal. If
    * not then throw.
@@ -247,14 +251,14 @@ export {
    */
   assertStrictEquals,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_string_includes.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_string_includes.ts} instead.
    *
    * Make an assertion that actual includes expected. If not
    * then throw.
    */
   assertStringIncludes,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/assert_throws.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_throws.ts} instead.
    *
    * Executes a function, expecting it to throw. If it does not, then it
    * throws. An error class and a string that should be included in the
@@ -305,7 +309,7 @@ export {
    */
   assertThrows,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/equal.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/equal.ts} instead.
    *
    * Deep equality comparison used in assertions
    * @param c actual value
@@ -313,19 +317,19 @@ export {
    */
   equal,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/fail.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/fail.ts} instead.
    *
    * Forcefully throws a failed assertion
    */
   fail,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/unimplemented.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/unimplemented.ts} instead.
    *
    * Use this to stub out methods that will throw when invoked.
    */
   unimplemented,
   /**
-   * @deprecated (will be removed after 1.0.0) Import from `std/assert/unreachable.ts` instead.
+   * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/unreachable.ts} instead.
    *
    * Use this to assert unreachable code.
    */

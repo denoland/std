@@ -5,7 +5,7 @@ import { Buffer } from "../io/buffer.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use ReadableStream and toArrayBuffer instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} and {@linkcode import("./to_array_buffer.ts").toArrayBuffer} instead.
  *
  * Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
@@ -36,7 +36,7 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use ReadableStream and toArrayBuffer instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} and {@linkcode import("./to_array_buffer.ts").toArrayBuffer} instead.
  *
  * Synchronously reads Reader `r` until EOF (`null`) and returns the content
  * as `Uint8Array`.

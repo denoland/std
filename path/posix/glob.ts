@@ -3,7 +3,7 @@
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/is_glob.ts"
+   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/posix/is_glob.ts} instead.
    *
    * Test whether the given string is a glob
    */
@@ -12,7 +12,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/glob_to_regexp.ts"
+   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/posix/glob_to_regexp.ts} instead.
    *
    * Convert a glob string to a regular expression.
    *
@@ -75,7 +75,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/normalize_glob.ts"
+   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/posix/normalize_glob.ts} instead.
    *
    * Like normalize(), but doesn't collapse "**\/.." when `globstar` is true.
    */
@@ -84,7 +84,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from "std/path/posix/join_globs.ts"
+   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/posix/join_globs.ts} instead.
    *
    * Like join(), but doesn't collapse "**\/.." when `globstar` is true.
    */

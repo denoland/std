@@ -492,7 +492,7 @@ Deno.test("serveDir() handles bad range request (bytes=500-200)", async () => {
 
   assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
   assertEquals(res.status, 416);
-  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+  assertEquals(res.statusText, "Range Not Satisfiable");
 });
 
 Deno.test("serveDir() handles bad range request (bytes=99999-999999)", async () => {
@@ -504,7 +504,7 @@ Deno.test("serveDir() handles bad range request (bytes=99999-999999)", async () 
 
   assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
   assertEquals(res.status, 416);
-  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+  assertEquals(res.statusText, "Range Not Satisfiable");
 });
 
 Deno.test("serveDir() handles bad range request (bytes=99999)", async () => {
@@ -516,7 +516,7 @@ Deno.test("serveDir() handles bad range request (bytes=99999)", async () => {
 
   assertEquals(res.headers.get("content-range"), `bytes */${TEST_FILE_SIZE}`);
   assertEquals(res.status, 416);
-  assertEquals(res.statusText, "Requested Range Not Satisfiable");
+  assertEquals(res.statusText, "Range Not Satisfiable");
 });
 
 Deno.test("serveDir() ignores bad range request (bytes=100)", async () => {

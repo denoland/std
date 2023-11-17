@@ -20,7 +20,7 @@ import { readDelim } from "./read_delim.ts";
  * }
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function* readStringDelim(
   reader: Reader,

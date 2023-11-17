@@ -1,13 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { encode as hexEncode } from "../encoding/hex.ts";
-import { encode as base64Encode } from "../encoding/base64.ts";
-
-const decoder = new TextDecoder();
+import { encodeHex } from "../encoding/hex.ts";
+import { encodeBase64 } from "../encoding/base64.ts";
 
 /**
- * @deprecated (will be removed after 0.209.0) Use `std/encoding/hex.ts` or `std/encoding/base64.ts` instead.
+ * @deprecated (will be removed after 0.209.0) Use {@linkcode encodeHex} or {@linkcode encodeBase64} instead.
  *
  * Converts a hash to a string with a given encoding.
  * @example
@@ -30,8 +28,8 @@ export function toHashString(
 ): string {
   switch (encoding) {
     case "hex":
-      return decoder.decode(hexEncode(new Uint8Array(hash)));
+      return encodeHex(hash);
     case "base64":
-      return base64Encode(hash);
+      return encodeBase64(hash);
   }
 }
