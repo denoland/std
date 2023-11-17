@@ -476,7 +476,7 @@ export class IniMap {
 
   #appendValue(lineValue: LineValue): void {
     if (this.#lines.length === 0) {
-      // For an empty aray, just insert the line value
+      // For an empty array, just insert the line value
       lineValue.num = 1;
       this.#lines.push(lineValue);
     } else if (lineValue.sec) {
