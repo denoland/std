@@ -11,9 +11,6 @@
 - BREAKING: remove deprecated `std/http/http_errors` (#3737)
 - BREAKING: remove deprecated `std/wasi` module (#3733)
 - feat: `std/data_structures` (#3734)
-- fix(crypto): validate that digest length must be an integer between 0 and
-  isize::MAX (#3799)
-- fix: linting tweaks (#3796)
 
 ### 0.206.0 / 2023.11.10
 
