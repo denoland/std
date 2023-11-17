@@ -11,4 +11,8 @@ Deno.test("expect().toBeNull()", () => {
   assertThrows(() => {
     expect(undefined).toBeNull();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(null).not.toBeNull();
+  }, AssertionError);
 });

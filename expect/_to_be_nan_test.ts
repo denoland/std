@@ -11,4 +11,8 @@ Deno.test("expect().toBeNaN()", () => {
   assertThrows(() => {
     expect(1).toBeNaN();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(NaN).not.toBeNaN();
+  }, AssertionError);
 });

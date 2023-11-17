@@ -21,4 +21,14 @@ Deno.test("expect().toBeFalsy()", () => {
   assertThrows(() => {
     expect("hello").toBeFalsy();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(false).not.toBeFalsy();
+  }, AssertionError);
+  assertThrows(() => {
+    expect(0).not.toBeFalsy();
+  }, AssertionError);
+  assertThrows(() => {
+    expect("").not.toBeFalsy();
+  }, AssertionError);
 });

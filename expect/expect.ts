@@ -16,6 +16,8 @@ import { toBeNull } from "./_to_be_null.ts";
 import { toBeTruthy } from "./_to_be_truthy.ts";
 import { toBeUndefined } from "./_to_be_undefined.ts";
 import { toBe } from "./_to_be.ts";
+import { toContain } from "./_to_contain.ts";
+import { toContainEqual } from "./_to_contain_equal.ts";
 import { toEqual } from "./_to_equal.ts";
 import { toHaveBeenCalledTimes } from "./_to_have_been_called_times.ts";
 import { toHaveBeenCalledWith } from "./_to_have_been_called_with.ts";
@@ -46,8 +48,10 @@ export interface Expected {
   toBeNull(): void;
   toBeTruthy(): void;
   toBeUndefined(): void;
-  toBe(candidate: unknown): void;
-  toEqual(candidate: unknown): void;
+  toBe(expected: unknown): void;
+  toContainEqual(expected: unknown): void;
+  toContain(expected: unknown): void;
+  toEqual(expected: unknown): void;
   toHaveBeenCalledTimes(expected: number): void;
   toHaveBeenCalledWith(...expected: unknown[]): void;
   toHaveBeenCalled(): void;
@@ -85,6 +89,8 @@ const matchers: Record<MatcherKey, Matcher> = {
   toBeTruthy,
   toBeUndefined,
   toBe,
+  toContainEqual,
+  toContain,
   toEqual,
   toHaveBeenCalledTimes,
   toHaveBeenCalledWith,

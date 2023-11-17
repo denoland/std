@@ -13,7 +13,6 @@ export function toBeFalsy(
         `Expected ${context.value} to NOT be falsy`,
       );
     }
-    return;
   } else {
     if (!isFalsy) {
       throw new AssertionError(

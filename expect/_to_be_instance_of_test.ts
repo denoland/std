@@ -12,4 +12,11 @@ Deno.test("expect().toBeInstanceOf", () => {
   assertThrows(() => {
     expect(new Error()).toBeInstanceOf(String);
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(new Error()).not.toBeInstanceOf(Error);
+  }, AssertionError);
+  assertThrows(() => {
+    expect(new Error()).not.toBeInstanceOf(Object);
+  }, AssertionError);
 });

@@ -12,4 +12,8 @@ Deno.test("expect().toBeGreaterThanOrEqual()", () => {
   assertThrows(() => {
     expect(9).toBeGreaterThanOrEqual(10);
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(11).not.toBeGreaterThanOrEqual(10);
+  }, AssertionError);
 });

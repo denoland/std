@@ -22,4 +22,14 @@ Deno.test("expect().toBe()", () => {
   assertThrows(() => {
     expect(obj).toBe({});
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(1).not.toBe(1);
+  }, AssertionError);
+  assertThrows(() => {
+    expect("hello").not.toBe("hello");
+  }, AssertionError);
+  assertThrows(() => {
+    expect(obj).not.toBe(obj);
+  }, AssertionError);
 });

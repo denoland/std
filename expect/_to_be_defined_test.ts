@@ -17,4 +17,11 @@ Deno.test("expect().toBeDefined()", () => {
   assertThrows(() => {
     expect(({} as any).foo).toBeDefined();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(1).not.toBeDefined();
+  }, AssertionError);
+  assertThrows(() => {
+    expect("a").not.toBeDefined();
+  }, AssertionError);
 });

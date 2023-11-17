@@ -25,4 +25,14 @@ Deno.test("expect().toBeTruthy()", () => {
   assertThrows(() => {
     expect(undefined).toBeTruthy();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(1).not.toBeTruthy();
+  }, AssertionError);
+  assertThrows(() => {
+    expect("hello").not.toBeTruthy();
+  }, AssertionError);
+  assertThrows(() => {
+    expect({}).not.toBeTruthy();
+  }, AssertionError);
 });
