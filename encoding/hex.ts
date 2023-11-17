@@ -3,6 +3,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { validateBinaryLike } from "./_util.ts";
+
 /** Port of the Go
  * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
  * library.
@@ -12,16 +14,16 @@
  * @example
  * ```ts
  * import {
- *   decode,
- *   encode,
+ *   decodeHex,
+ *   encodeHex,
  * } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
  *
  * const binary = new TextEncoder().encode("abc");
- * const encoded = encode(binary);
+ * const encoded = encodeHex(binary);
  * console.log(encoded);
- * // => Uint8Array(6) [ 54, 49, 54, 50, 54, 51 ]
+ * // => "616263"
  *
- * console.log(decode(encoded));
+ * console.log(decodeHex(encoded));
  * // => Uint8Array(3) [ 97, 98, 99 ]
  * ```
  *
@@ -29,6 +31,8 @@
  */
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 function errInvalidByte(byte: number) {
   return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
@@ -50,7 +54,11 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
-/** Encodes `src` into `src.length * 2` bytes. */
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeHex} instead.
+ *
+ * Encodes `src` into `src.length * 2` bytes.
+ */
 export function encode(src: Uint8Array): Uint8Array {
   const dst = new Uint8Array(src.length * 2);
   for (let i = 0; i < dst.length; i++) {
@@ -61,7 +69,22 @@ export function encode(src: Uint8Array): Uint8Array {
   return dst;
 }
 
+/** Encodes the source into hex string. */
+export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
+  const u8 = validateBinaryLike(src);
+
+  const dst = new Uint8Array(u8.length * 2);
+  for (let i = 0; i < dst.length; i++) {
+    const v = u8[i];
+    dst[i * 2] = hexTable[v >> 4];
+    dst[i * 2 + 1] = hexTable[v & 0x0f];
+  }
+  return textDecoder.decode(dst);
+}
+
 /**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeHex} instead.
+ *
  * Decodes `src` into `src.length / 2` bytes.
  * If the input is malformed, an error will be thrown.
  */
@@ -77,6 +100,27 @@ export function decode(src: Uint8Array): Uint8Array {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
     fromHexChar(src[dst.length * 2]);
+    throw errLength();
+  }
+
+  return dst;
+}
+
+/** Decodes the given hex string to Uint8Array.
+ * If the input is malformed, an error will be thrown. */
+export function decodeHex(src: string): Uint8Array {
+  const u8 = textEncoder.encode(src);
+  const dst = new Uint8Array(u8.length / 2);
+  for (let i = 0; i < dst.length; i++) {
+    const a = fromHexChar(u8[i * 2]);
+    const b = fromHexChar(u8[i * 2 + 1]);
+    dst[i] = (a << 4) | b;
+  }
+
+  if (u8.length % 2 === 1) {
+    // Check for invalid char before reporting bad length,
+    // since the invalid char (if present) is an earlier problem.
+    fromHexChar(u8[dst.length * 2]);
     throw errLength();
   }
 

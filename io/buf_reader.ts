@@ -1,6 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/**
+ * @module
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
+
 import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
 import type { Reader } from "../types.d.ts";
@@ -11,6 +16,9 @@ const MAX_CONSECUTIVE_EMPTY_READS = 100;
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
   constructor(public partial: Uint8Array) {
@@ -18,6 +26,9 @@ export class BufferFullError extends Error {
   }
 }
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
   partial?: Uint8Array;
@@ -26,12 +37,19 @@ export class PartialReadError extends Error {
   }
 }
 
-/** Result type returned by of BufReader.readLine(). */
+/**
+ * Result type returned by of BufReader.readLine().
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export interface ReadLineResult {
   line: Uint8Array;
   more: boolean;
 }
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
   #rd!: Reader; // Reader provided by caller.

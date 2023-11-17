@@ -2,58 +2,39 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
+ *
  * Contains the constant {@linkcode HTTP_METHODS} and the type
  * {@linkcode HttpMethod} and the type guard {@linkcode isHttpMethod} for
  * working with HTTP methods with type safety.
  *
  * @module
  */
+import {
+  HTTP_METHODS as HTTP_METHODS_,
+  type HttpMethod as HttpMethod_,
+  isHttpMethod as isHttpMethod_,
+} from "./unstable_method.ts";
 
-/** A constant array of common HTTP methods.
+/**
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
+ *
+ * A constant array of common HTTP methods.
  *
  * This list is compatible with Node.js `http` module.
  */
-export const HTTP_METHODS = [
-  "ACL",
-  "BIND",
-  "CHECKOUT",
-  "CONNECT",
-  "COPY",
-  "DELETE",
-  "GET",
-  "HEAD",
-  "LINK",
-  "LOCK",
-  "M-SEARCH",
-  "MERGE",
-  "MKACTIVITY",
-  "MKCALENDAR",
-  "MKCOL",
-  "MOVE",
-  "NOTIFY",
-  "OPTIONS",
-  "PATCH",
-  "POST",
-  "PROPFIND",
-  "PROPPATCH",
-  "PURGE",
-  "PUT",
-  "REBIND",
-  "REPORT",
-  "SEARCH",
-  "SOURCE",
-  "SUBSCRIBE",
-  "TRACE",
-  "UNBIND",
-  "UNLINK",
-  "UNLOCK",
-  "UNSUBSCRIBE",
-] as const;
+export const HTTP_METHODS = HTTP_METHODS_;
 
-/** A type representing string literals of each of the common HTTP method. */
-export type HttpMethod = typeof HTTP_METHODS[number];
+/**
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
+ *
+ * A type representing string literals of each of the common HTTP method.
+ */
+export type HttpMethod = HttpMethod_;
 
-/** A type guard that determines if a value is a valid HTTP method. */
-export function isHttpMethod(value: unknown): value is HttpMethod {
-  return HTTP_METHODS.includes(value as HttpMethod);
-}
+/**
+ * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
+ *
+ * A type guard that determines if a value is a valid HTTP method.
+ */
+export const isHttpMethod = isHttpMethod_;

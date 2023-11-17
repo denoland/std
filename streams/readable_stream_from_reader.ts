@@ -11,6 +11,7 @@ function isCloser(value: unknown): value is Closer {
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
+/** @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead. */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -28,6 +29,8 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead.
+ *
  * Create a `ReadableStream<Uint8Array>` from a `Reader`.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader

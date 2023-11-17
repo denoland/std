@@ -38,12 +38,9 @@ Deno.test("[streams] readableStreamFromReader()", async function () {
   const encoder = new TextEncoder();
   const reader = new Buffer(encoder.encode("hello deno land"));
   const stream = readableStreamFromReader(reader);
-  const actual: Uint8Array[] = [];
-  for await (const read of stream) {
-    actual.push(read);
-  }
+  const actual = await Array.fromAsync(stream);
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
 });
 
 Deno.test({
@@ -60,12 +57,9 @@ Deno.test("[streams] readableStreamFromReader() - calls close", async function (
     encoder.encode("land"),
   ];
   const stream = readableStreamFromReader(reader);
-  const actual: Uint8Array[] = [];
-  for await (const read of stream) {
-    actual.push(read);
-  }
+  const actual = await Array.fromAsync(stream);
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 1);
 });
 
@@ -78,12 +72,9 @@ Deno.test("[streams] readableStreamFromReader() - doesn't call close with autoCl
     encoder.encode("land"),
   ];
   const stream = readableStreamFromReader(reader, { autoClose: false });
-  const actual: Uint8Array[] = [];
-  for await (const read of stream) {
-    actual.push(read);
-  }
+  const actual = await Array.fromAsync(stream);
   const decoder = new TextDecoder();
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 0);
 });
 
@@ -96,12 +87,9 @@ Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () 
     encoder.encode("land"),
   ];
   const stream = readableStreamFromReader(reader, { chunkSize: 2 });
-  const actual: Uint8Array[] = [];
-  for await (const read of stream) {
-    actual.push(read);
-  }
+  const actual = await Array.fromAsync(stream);
   const decoder = new TextDecoder();
   assertEquals(actual.length, 8);
-  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(decoder.decode(concat(actual)), "hello deno land");
   assertEquals(reader.closeCall, 1);
 });

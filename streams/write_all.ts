@@ -3,7 +3,10 @@
 
 import type { Writer, WriterSync } from "../types.d.ts";
 
-/** Write all the content of the array buffer (`arr`) to the writer (`w`).
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
+ *
+ * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
@@ -33,7 +36,10 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
   }
 }
 
-/** Synchronously write all the content of the array buffer (`arr`) to the
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
+ *
+ * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
  *
  * ```ts

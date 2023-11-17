@@ -25,7 +25,10 @@ const MAX_SIZE = 2 ** 32 - 2;
  * ArrayBuffer is a fixed memory allocation. Buffer is implemented on top of
  * ArrayBuffer.
  *
- * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer). */
+ * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer).
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 
 export class Buffer {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]

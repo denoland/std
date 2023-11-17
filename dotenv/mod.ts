@@ -221,14 +221,6 @@ export interface LoadOptions {
    * @default {"./.env.defaults"}
    */
   defaultsPath?: string | null;
-
-  /**
-   * @deprecated (will be removed in 0.205.0) This option has no effect now.
-   *
-   * This option has no effect now.
-   * See https://github.com/denoland/deno_std/pull/3578 for details.
-   */
-  restrictEnvAccessTo?: Array<string> | ReadonlyArray<string> | undefined;
 }
 
 type LineParseResult = {

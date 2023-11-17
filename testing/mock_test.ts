@@ -6,7 +6,7 @@ import {
   assertNotEquals,
   assertRejects,
   assertThrows,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import {
   assertSpyCall,
   assertSpyCallArg,
@@ -343,6 +343,66 @@ Deno.test("spy instance method property descriptor", () => {
     "instance method already restored",
   );
   assertEquals(action.restored, true);
+});
+
+Deno.test("spy constructor", () => {
+  const PointSpy = spy(Point);
+  assertSpyCalls(PointSpy, 0);
+
+  const point = new PointSpy(2, 3);
+  assertEquals(point.x, 2);
+  assertEquals(point.y, 3);
+  assertEquals(point.action(), undefined);
+
+  assertSpyCall(PointSpy, 0, {
+    self: undefined,
+    args: [2, 3],
+    returned: point,
+  });
+  assertSpyCallArg(PointSpy, 0, 0, 2);
+  assertSpyCallArgs(PointSpy, 0, 0, 1, [2]);
+  assertSpyCalls(PointSpy, 1);
+
+  new PointSpy(3, 5);
+  assertSpyCall(PointSpy, 1, {
+    self: undefined,
+    args: [3, 5],
+  });
+  assertSpyCalls(PointSpy, 2);
+
+  assertThrows(
+    () => PointSpy.restore(),
+    MockError,
+    "constructor cannot be restored",
+  );
+});
+
+Deno.test("spy constructor of child class", () => {
+  const PointSpy = spy(Point);
+  const PointSpyChild = class extends PointSpy {
+    override action() {
+      return 1;
+    }
+  };
+  const point = new PointSpyChild(2, 3);
+
+  assertEquals(point.x, 2);
+  assertEquals(point.y, 3);
+  assertEquals(point.action(), 1);
+
+  assertSpyCall(PointSpyChild, 0, {
+    self: undefined,
+    args: [2, 3],
+    returned: point,
+  });
+  assertSpyCalls(PointSpyChild, 1);
+
+  assertSpyCall(PointSpy, 0, {
+    self: undefined,
+    args: [2, 3],
+    returned: point,
+  });
+  assertSpyCalls(PointSpy, 1);
 });
 
 Deno.test("stub default", () => {

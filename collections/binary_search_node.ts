@@ -1,56 +1,12 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+export {
+  /**
+   * @deprecated (will be removed in 0.209.0) Use {@linkcode BinarySearchTree} from {@link https://deno.land/std/data_structures/binary_search_tree.ts} instead.
+   */
+  BinarySearchNode,
+} from "../data_structures/_binary_search_node.ts";
+
+/** @deprecated (will be removed in 0.209.0) Use `"left" | "right"` union class instead */
 export type Direction = "left" | "right";
-
-export class BinarySearchNode<T> {
-  left: BinarySearchNode<T> | null;
-  right: BinarySearchNode<T> | null;
-  constructor(public parent: BinarySearchNode<T> | null, public value: T) {
-    this.left = null;
-    this.right = null;
-  }
-
-  static from<T>(node: BinarySearchNode<T>): BinarySearchNode<T> {
-    const copy: BinarySearchNode<T> = new BinarySearchNode(
-      node.parent,
-      node.value,
-    );
-    copy.left = node.left;
-    copy.right = node.right;
-    return copy;
-  }
-
-  directionFromParent(): Direction | null {
-    return this.parent === null
-      ? null
-      : this === this.parent.left
-      ? "left"
-      : this === this.parent.right
-      ? "right"
-      : null;
-  }
-
-  findMinNode(): BinarySearchNode<T> {
-    let minNode: BinarySearchNode<T> | null = this.left;
-    while (minNode?.left) minNode = minNode.left;
-    return minNode ?? this;
-  }
-
-  findMaxNode(): BinarySearchNode<T> {
-    let maxNode: BinarySearchNode<T> | null = this.right;
-    while (maxNode?.right) maxNode = maxNode.right;
-    return maxNode ?? this;
-  }
-
-  findSuccessorNode(): BinarySearchNode<T> | null {
-    if (this.right !== null) return this.right.findMinNode();
-    let parent: BinarySearchNode<T> | null = this.parent;
-    let direction: Direction | null = this.directionFromParent();
-    while (parent && direction === "right") {
-      direction = parent.directionFromParent();
-      parent = parent.parent;
-    }
-    return parent;
-  }
-}

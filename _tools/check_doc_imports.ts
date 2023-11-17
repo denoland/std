@@ -2,7 +2,7 @@
 
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { walk } from "../fs/walk.ts";
-import ts from "npm:typescript@5.0.2";
+import ts from "npm:typescript@5.2.2";
 const {
   createSourceFile,
   ScriptTarget,
@@ -38,11 +38,11 @@ function checkImportStatements(
   );
   const importDeclarations = sourceFile.statements.filter((s) =>
     s.kind === SyntaxKind.ImportDeclaration
-  ) as ImportDeclaration[];
+  ) as ts.ImportDeclaration[];
 
   for (const importDeclaration of importDeclarations) {
     const { moduleSpecifier } = importDeclaration;
-    const importPath = (moduleSpecifier as StringLiteral).text;
+    const importPath = (moduleSpecifier as ts.StringLiteral).text;
     const isRelative = importPath.startsWith(".");
     const isInternal = importPath.startsWith(
       "https://deno.land/std@$STD_VERSION/",

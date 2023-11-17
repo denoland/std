@@ -1,25 +1,12 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { BinarySearchNode, Direction } from "./binary_search_node.ts";
-export type { Direction };
+export {
+  /**
+   * @deprecated (will be removed in 0.209.0) Use {@linkcode RedBlackTree} from {@link https://deno.land/std/data_structures/red_black_tree.ts} instead.
+   */
+  RedBlackNode,
+} from "../data_structures/_red_black_node.ts";
 
-export class RedBlackNode<T> extends BinarySearchNode<T> {
-  declare parent: RedBlackNode<T> | null;
-  declare left: RedBlackNode<T> | null;
-  declare right: RedBlackNode<T> | null;
-  red: boolean;
-
-  constructor(parent: RedBlackNode<T> | null, value: T) {
-    super(parent, value);
-    this.red = true;
-  }
-
-  static override from<T>(node: RedBlackNode<T>): RedBlackNode<T> {
-    const copy: RedBlackNode<T> = new RedBlackNode(node.parent, node.value);
-    copy.left = node.left;
-    copy.right = node.right;
-    copy.red = node.red;
-    return copy;
-  }
-}
+/** @deprecated (will be removed in 0.209.0) Use `"left" | "right"` union type instead */
+export type Direction = "left" | "right";

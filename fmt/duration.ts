@@ -22,8 +22,9 @@
  * @module
  */
 
-const addZero = (num: number, digits: number) =>
-  String(num).padStart(digits, "0");
+function addZero(num: number, digits: number) {
+  return String(num).padStart(digits, "0");
+}
 
 interface DurationObject {
   d: number;
@@ -45,18 +46,19 @@ const keyList: Record<keyof DurationObject, string> = {
   ns: "nanoseconds",
 };
 
-/** Parse milleseconds into a duration. */
+/** Parse milliseconds into a duration. */
 function millisecondsToDurationObject(ms: number): DurationObject {
   // Duration cannot be negative
-  const absolute_ms = Math.abs(ms);
+  const millis = Math.abs(ms);
+  const millisFraction = millis.toFixed(7).slice(-7, -1);
   return {
-    d: Math.trunc(absolute_ms / 86400000),
-    h: Math.trunc(absolute_ms / 3600000) % 24,
-    m: Math.trunc(absolute_ms / 60000) % 60,
-    s: Math.trunc(absolute_ms / 1000) % 60,
-    ms: Math.trunc(absolute_ms) % 1000,
-    us: Math.trunc(absolute_ms * 1000) % 1000,
-    ns: Math.trunc(absolute_ms * 1000000) % 1000,
+    d: Math.trunc(millis / 86400000),
+    h: Math.trunc(millis / 3600000) % 24,
+    m: Math.trunc(millis / 60000) % 60,
+    s: Math.trunc(millis / 1000) % 60,
+    ms: Math.trunc(millis) % 1000,
+    us: +millisFraction.slice(0, 3),
+    ns: +millisFraction.slice(3, 6),
   };
 }
 

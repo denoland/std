@@ -1,7 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { deferred } from "../async/deferred.ts";
-
 /**
  * Merge multiple streams into a single one, not taking order into account.
  * If a stream ends before other ones, the other will continue adding data,
@@ -10,11 +8,11 @@ import { deferred } from "../async/deferred.ts";
 export function mergeReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
-  const resolvePromises = streams.map(() => deferred<void>());
+  const resolvePromises = streams.map(() => Promise.withResolvers<void>());
   return new ReadableStream<T>({
     start(controller) {
       let mustClose = false;
-      Promise.all(resolvePromises)
+      Promise.all(resolvePromises.map(({ promise }) => promise))
         .then(() => {
           controller.close();
         })
@@ -22,7 +20,7 @@ export function mergeReadableStreams<T>(
           mustClose = true;
           controller.error(error);
         });
-      for (const [key, stream] of Object.entries(streams)) {
+      for (const [index, stream] of streams.entries()) {
         (async () => {
           try {
             for await (const data of stream) {
@@ -31,9 +29,9 @@ export function mergeReadableStreams<T>(
               }
               controller.enqueue(data);
             }
-            resolvePromises[+key].resolve();
+            resolvePromises[index].resolve();
           } catch (error) {
-            resolvePromises[+key].reject(error);
+            resolvePromises[index].reject(error);
           }
         })();
       }

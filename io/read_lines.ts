@@ -20,6 +20,8 @@ import { concat } from "../bytes/concat.ts";
  *   console.log(line);
  * }
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function* readLines(
   reader: Reader,
@@ -36,13 +38,13 @@ export async function* readLines(
     const res = await bufReader.readLine();
     if (!res) {
       if (chunks.length > 0) {
-        yield decoder.decode(concat(...chunks));
+        yield decoder.decode(concat(chunks));
       }
       break;
     }
     chunks.push(res.line);
     if (!res.more) {
-      yield decoder.decode(concat(...chunks));
+      yield decoder.decode(concat(chunks));
       chunks = [];
     }
   }
