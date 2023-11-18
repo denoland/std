@@ -1,11 +1,11 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { firstNotNullishOf } from "./first_not_nullish_of.ts";
 
 function firstNotNullishOfTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],
-  expected: O,
+  expected: NonNullable<O> | undefined,
   message?: string,
 ) {
   const actual = firstNotNullishOf(...input);

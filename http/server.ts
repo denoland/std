@@ -1,5 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { delay } from "../async/mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { delay } from "../async/delay.ts";
 
 /** Thrown by Server after it has been closed. */
 const ERROR_SERVER_CLOSED = "Server closed";
@@ -16,7 +16,11 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 /** Max backoff delay of 1s following a temporary accept failure. */
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
-/** Information about the connection a request arrived on. */
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
+ *
+ * Information about the connection a request arrived on.
+ */
 export interface ConnInfo {
   /** The local address of the connection. */
   readonly localAddr: Deno.Addr;
@@ -25,6 +29,8 @@ export interface ConnInfo {
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
+ *
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
  *
@@ -37,7 +43,11 @@ export type Handler = (
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
-/** Options for running an HTTP server. */
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ *
+ * Options for running an HTTP server.
+ */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
   handler: Handler;
@@ -50,13 +60,18 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
   onError?: (error: unknown) => Response | Promise<Response>;
 }
 
-/** Used to construct an HTTP server. */
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ *
+ * Used to construct an HTTP server.
+ */
 export class Server {
   #port?: number;
   #host?: string;
   #handler: Handler;
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
+  #acceptBackoffDelayAbortController = new AbortController();
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #onError: (error: unknown) => Response | Promise<Response>;
 
@@ -123,7 +138,7 @@ export class Server {
    *
    * @param listener The listener to accept connections from.
    */
-  async serve(listener: Deno.Listener): Promise<void> {
+  async serve(listener: Deno.Listener) {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -173,7 +188,7 @@ export class Server {
    * await server.listenAndServe();
    * ```
    */
-  async listenAndServe(): Promise<void> {
+  async listenAndServe() {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -223,7 +238,7 @@ export class Server {
    * @param certFile The path to the file containing the TLS certificate.
    * @param keyFile The path to the file containing the TLS private key.
    */
-  async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
+  async listenAndServeTls(certFile: string, keyFile: string) {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -246,7 +261,7 @@ export class Server {
    *
    * Throws a server closed error if called after the server has been closed.
    */
-  close(): void {
+  close() {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -262,6 +277,8 @@ export class Server {
     }
 
     this.#listeners.clear();
+
+    this.#acceptBackoffDelayAbortController.abort();
 
     for (const httpConn of this.#httpConnections) {
       this.#closeHttpConn(httpConn);
@@ -284,18 +301,20 @@ export class Server {
    * Responds to an HTTP request.
    *
    * @param requestEvent The HTTP request to respond to.
-   * @param httpCon The HTTP connection to yield requests from.
    * @param connInfo Information about the underlying connection.
    */
   async #respond(
     requestEvent: Deno.RequestEvent,
-    httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
-  ): Promise<void> {
+  ) {
     let response: Response;
     try {
       // Handle the request event, generating a response.
       response = await this.#handler(requestEvent.request, connInfo);
+
+      if (response.bodyUsed && response.body !== null) {
+        throw new TypeError("Response body already consumed.");
+      }
     } catch (error: unknown) {
       // Invoke onError handler when request handler throws.
       response = await this.#onError(error);
@@ -305,10 +324,11 @@ export class Server {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // respondWith() fails when the connection has already been closed, or there is some
-      // other error with responding on this connection that prompts us to
-      // close it and open a new connection.
-      return this.#closeHttpConn(httpConn);
+      // `respondWith()` can throw for various reasons, including downstream and
+      // upstream connection errors, as well as errors thrown during streaming
+      // of the response content.  In order to avoid false negatives, we ignore
+      // the error here and let `serveHttp` close the connection on the
+      // following iteration if it is in fact a downstream connection error.
     }
   }
 
@@ -318,7 +338,7 @@ export class Server {
    * @param httpConn The HTTP connection to yield requests from.
    * @param connInfo Information about the underlying connection.
    */
-  async #serveHttp(httpConn: Deno.HttpConn, connInfo: ConnInfo): Promise<void> {
+  async #serveHttp(httpConn: Deno.HttpConn, connInfo: ConnInfo) {
     while (!this.#closed) {
       let requestEvent: Deno.RequestEvent | null;
 
@@ -337,7 +357,7 @@ export class Server {
 
       // Respond to the request. Note we do not await this async method to
       // allow the connection to handle multiple requests in the case of h2.
-      this.#respond(requestEvent, httpConn, connInfo);
+      this.#respond(requestEvent, connInfo);
     }
 
     this.#closeHttpConn(httpConn);
@@ -348,7 +368,7 @@ export class Server {
    *
    * @param listener The listener to accept connections from.
    */
-  async #accept(listener: Deno.Listener): Promise<void> {
+  async #accept(listener: Deno.Listener) {
     let acceptBackoffDelay: number | undefined;
 
     while (!this.#closed) {
@@ -380,7 +400,16 @@ export class Server {
             acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
           }
 
-          await delay(acceptBackoffDelay);
+          try {
+            await delay(acceptBackoffDelay, {
+              signal: this.#acceptBackoffDelayAbortController.signal,
+            });
+          } catch (err: unknown) {
+            // The backoff delay timer is aborted when closing the server.
+            if (!(err instanceof DOMException && err.name === "AbortError")) {
+              throw err;
+            }
+          }
 
           continue;
         }
@@ -421,7 +450,7 @@ export class Server {
    *
    * @param httpConn The HTTP connection to close.
    */
-  #closeHttpConn(httpConn: Deno.HttpConn): void {
+  #closeHttpConn(httpConn: Deno.HttpConn) {
     this.#untrackHttpConnection(httpConn);
 
     try {
@@ -436,7 +465,7 @@ export class Server {
    *
    * @param listener Listener to track.
    */
-  #trackListener(listener: Deno.Listener): void {
+  #trackListener(listener: Deno.Listener) {
     this.#listeners.add(listener);
   }
 
@@ -445,7 +474,7 @@ export class Server {
    *
    * @param listener Listener to untrack.
    */
-  #untrackListener(listener: Deno.Listener): void {
+  #untrackListener(listener: Deno.Listener) {
     this.#listeners.delete(listener);
   }
 
@@ -454,7 +483,7 @@ export class Server {
    *
    * @param httpConn HTTP connection to track.
    */
-  #trackHttpConnection(httpConn: Deno.HttpConn): void {
+  #trackHttpConnection(httpConn: Deno.HttpConn) {
     this.#httpConnections.add(httpConn);
   }
 
@@ -463,21 +492,46 @@ export class Server {
    *
    * @param httpConn HTTP connection to untrack.
    */
-  #untrackHttpConnection(httpConn: Deno.HttpConn): void {
+  #untrackHttpConnection(httpConn: Deno.HttpConn) {
     this.#httpConnections.delete(httpConn);
   }
 }
 
-/** Additional serve options. */
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
+ *
+ * Additional serve options.
+ */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
 
   /** The handler to invoke when route handlers throw an error. */
   onError?: (error: unknown) => Response | Promise<Response>;
+
+  /** The callback which is called when the server started listening */
+  onListen?: (params: { hostname: string; port: number }) => void;
 }
 
 /**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
+ *
+ * Additional serve listener options.
+ */
+export interface ServeListenerOptions {
+  /** An AbortSignal to close the server and all connections. */
+  signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: unknown) => Response | Promise<Response>;
+
+  /** The callback which is called when the server started listening */
+  onListen?: (params: { hostname: string; port: number }) => void;
+}
+
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
+ *
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *
@@ -504,21 +558,31 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">,
-): Promise<void> {
+  options?: ServeListenerOptions,
+) {
   const server = new Server({ handler, onError: options?.onError });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.serve(listener);
 }
 
-/** Serves HTTP requests with the given handler.
+function hostnameForDisplay(hostname: string) {
+  // If the hostname is "0.0.0.0", we display "localhost" in console
+  // because browsers in Windows don't resolve "0.0.0.0".
+  // See the discussion in https://github.com/denoland/deno_std/issues/1165
+  return hostname === "0.0.0.0" ? "localhost" : hostname;
+}
+
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
- * You can specify an object with a port and hostname option, which is the address to listen on.
- * The default is port 8000 on hostname "0.0.0.0".
+ * Serves HTTP requests with the given handler.
+ *
+ * You can specify an object with a port and hostname option, which is the
+ * address to listen on. The default is port 8000 on hostname "0.0.0.0".
  *
  * The below example serves with the port 8000.
  *
@@ -527,13 +591,33 @@ export async function serveListener(
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
- * You can change the listening address by the host and port option. The below example
- * serves with the port 3000.
+ * You can change the listening address by the `hostname` and `port` options.
+ * The below example serves with the port 3000.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
- * console.log("Listening on http://localhost:3000");
+ * ```
+ *
+ * `serve` function prints the message `Listening on http://<hostname>:<port>/`
+ * on start-up by default. If you like to change this message, you can specify
+ * `onListen` option to override it.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"), {
+ *   onListen({ port, hostname }) {
+ *     console.log(`Server started at http://${hostname}:${port}`);
+ *     // ... more info specific to your server ..
+ *   },
+ * });
+ * ```
+ *
+ * You can also specify `undefined` or `null` to stop the logging behavior.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"), { onListen: undefined });
  * ```
  *
  * @param handler The handler for individual HTTP requests.
@@ -542,44 +626,115 @@ export async function serveListener(
 export async function serve(
   handler: Handler,
   options: ServeInit = {},
-): Promise<void> {
+) {
+  let port = options.port ?? 8000;
+  if (typeof port !== "number") {
+    port = Number(port);
+  }
+
+  const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
-    port: options.port ?? 8000,
-    hostname: options.hostname ?? "0.0.0.0",
+    port,
+    hostname,
     handler,
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
+
+  const listener = Deno.listen({
+    port,
+    hostname,
+    transport: "tcp",
+  });
+
+  const s = server.serve(listener);
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
+
+  if ("onListen" in options) {
+    options.onListen?.({ port, hostname });
+  } else {
+    console.log(`Listening on http://${hostnameForDisplay(hostname)}:${port}/`);
   }
 
-  return await server.listenAndServe();
+  return await s;
 }
 
-interface ServeTlsInit extends ServeInit {
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeTlsOptions} instead.
+ */
+export interface ServeTlsInit extends ServeInit {
+  /** Server private key in PEM format */
+  key?: string;
+
+  /** Cert chain in PEM format */
+  cert?: string;
+
   /** The path to the file containing the TLS private key. */
-  keyFile: string;
+  keyFile?: string;
 
   /** The path to the file containing the TLS certificate */
-  certFile: string;
+  certFile?: string;
 }
 
-/** Serves HTTPS requests with the given handler.
+/**
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
- * You must specify `keyFile` and `certFile` options.
+ * Serves HTTPS requests with the given handler.
  *
- * You can specify an object with a port and hostname option, which is the address to listen on.
- * The default is port 8443 on hostname "0.0.0.0".
+ * You must specify `key` or `keyFile` and `cert` or `certFile` options.
+ *
+ * You can specify an object with a port and hostname option, which is the
+ * address to listen on. The default is port 8443 on hostname "0.0.0.0".
  *
  * The below example serves with the default port 8443.
  *
  * ```ts
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const cert = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n";
+ * const key = "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n";
+ * serveTls((_req) => new Response("Hello, world"), { cert, key });
+ *
+ * // Or
+ *
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
- * console.log("Listening on https://localhost:8443");
+ * ```
+ *
+ * `serveTls` function prints the message `Listening on https://<hostname>:<port>/`
+ * on start-up by default. If you like to change this message, you can specify
+ * `onListen` option to override it.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * serveTls((_req) => new Response("Hello, world"), {
+ *   certFile,
+ *   keyFile,
+ *   onListen({ port, hostname }) {
+ *     console.log(`Server started at https://${hostname}:${port}`);
+ *     // ... more info specific to your server ..
+ *   },
+ * });
+ * ```
+ *
+ * You can also specify `undefined` or `null` to stop the logging behavior.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * serveTls((_req) => new Response("Hello, world"), {
+ *   certFile,
+ *   keyFile,
+ *   onListen: undefined,
+ * });
  * ```
  *
  * @param handler The handler for individual HTTPS requests.
@@ -589,123 +744,56 @@ interface ServeTlsInit extends ServeInit {
 export async function serveTls(
   handler: Handler,
   options: ServeTlsInit,
-): Promise<void> {
-  if (!options.keyFile) {
-    throw new Error("TLS config is given, but 'keyFile' is missing.");
+) {
+  if (!options.key && !options.keyFile) {
+    throw new Error("TLS config is given, but 'key' is missing.");
   }
 
-  if (!options.certFile) {
-    throw new Error("TLS config is given, but 'certFile' is missing.");
+  if (!options.cert && !options.certFile) {
+    throw new Error("TLS config is given, but 'cert' is missing.");
   }
 
+  let port = options.port ?? 8443;
+  if (typeof port !== "number") {
+    port = Number(port);
+  }
+
+  const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
-    port: options.port ?? 8443,
-    hostname: options.hostname ?? "0.0.0.0",
+    port,
+    hostname,
     handler,
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
+
+  const key = options.key || Deno.readTextFileSync(options.keyFile!);
+  const cert = options.cert || Deno.readTextFileSync(options.certFile!);
+
+  const listener = Deno.listenTls({
+    port,
+    hostname,
+    cert,
+    key,
+    transport: "tcp",
+    // ALPN protocol support not yet stable.
+    // alpnProtocols: ["h2", "http/1.1"],
+  });
+
+  const s = server.serve(listener);
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
+
+  if ("onListen" in options) {
+    options.onListen?.({ port, hostname });
+  } else {
+    console.log(
+      `Listening on https://${hostnameForDisplay(hostname)}:${port}/`,
+    );
   }
 
-  return await server.listenAndServeTls(options.certFile, options.keyFile);
-}
-
-/**
- * @deprecated Use `serve` instead.
- *
- * Constructs a server, creates a listener on the given address, accepts
- * incoming connections, and handles requests on these connections with the
- * given handler.
- *
- * If the port is omitted from the ListenOptions, 80 is used.
- *
- * If the host is omitted from the ListenOptions, the non-routable meta-address
- * `0.0.0.0` is used.
- *
- * ```ts
- * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * const port = 4505;
- *
- * console.log("server listening on http://localhost:4505");
- *
- * await listenAndServe({ port }, (request) => {
- *   const body = `Your user-agent is:\n\n${request.headers.get(
- *     "user-agent",
- *   ) ?? "Unknown"}`;
- *
- *   return new Response(body, { status: 200 });
- * });
- * ```
- *
- * @param config The Deno.ListenOptions to specify the hostname and port.
- * @param handler The handler for individual HTTP requests.
- * @param options Optional serve options.
- */
-export async function listenAndServe(
-  config: Partial<Deno.ListenOptions>,
-  handler: Handler,
-  options?: ServeInit,
-): Promise<void> {
-  const server = new Server({ ...config, handler });
-
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
-
-  return await server.listenAndServe();
-}
-
-/**
- * @deprecated Use `serveTls` instead.
- *
- * Constructs a server, creates a listener on the given address, accepts
- * incoming connections, upgrades them to TLS, and handles requests on these
- * connections with the given handler.
- *
- * If the port is omitted from the ListenOptions, port 443 is used.
- *
- * If the host is omitted from the ListenOptions, the non-routable meta-address
- * `0.0.0.0` is used.
- *
- * ```ts
- * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * const port = 4505;
- * const certFile = "/path/to/certFile.crt";
- * const keyFile = "/path/to/keyFile.key";
- *
- * console.log("server listening on http://localhost:4505");
- *
- * await listenAndServeTls({ port }, certFile, keyFile, (request) => {
- *   const body = `Your user-agent is:\n\n${request.headers.get(
- *     "user-agent",
- *   ) ?? "Unknown"}`;
- *
- *   return new Response(body, { status: 200 });
- * });
- * ```
- *
- * @param config The Deno.ListenOptions to specify the hostname and port.
- * @param certFile The path to the file containing the TLS certificate.
- * @param keyFile The path to the file containing the TLS private key.
- * @param handler The handler for individual HTTP requests.
- * @param options Optional serve options.
- */
-export async function listenAndServeTls(
-  config: Partial<Deno.ListenOptions>,
-  certFile: string,
-  keyFile: string,
-  handler: Handler,
-  options?: ServeInit,
-): Promise<void> {
-  const server = new Server({ ...config, handler });
-
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
-
-  return await server.listenAndServeTls(certFile, keyFile);
+  return await s;
 }

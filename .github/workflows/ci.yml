@@ -13,182 +13,122 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        deno:
+          - v1.x
+          - canary
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macOS-12
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: true
-          persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Install fakedate
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install faketime
-
       - name: Run tests canary
-        run: |
-          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+        run: deno task test
 
-      - name: Run test with the date 2021-12-31
-        if: matrix.os == 'ubuntu-latest'
+      - name: Run timezone-dependent tests
         run: |
-          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
+          TZ=Australia/Sydney deno test datetime
+          TZ=Europe/London deno test datetime
+          TZ=America/Toronto deno test datetime
+        if: matrix.os == 'ubuntu-22.04'
 
       - name: Type check browser compatible modules
         shell: bash
-        run: |
-          git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
+        run: deno task test:browser
 
       - name: Generate lcov
-        shell: bash
-        # excludes tests, testdata, and generated sources from coverage report
-        run: |
-         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+        run: deno task cov:gen
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
-        if: matrix.os != 'ubuntu-latest'
+        uses: codecov/codecov-action@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
-      - name: Remove coverage report
+      - name: Release if version change
+        if: |
+          matrix.os == 'ubuntu-22.04' &&
+          github.repository == 'denoland/deno_std' &&
+          github.ref == 'refs/heads/main'
         shell: bash
-        if: matrix.os != 'ubuntu-latest'
-        run: |
-          rm -rf ./cov/
-          rm cov.lcov
-
-  node:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
-
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-          persist-credentials: false
-
-      - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
-        with:
-          deno-version: ${{ matrix.deno }}
-
-      # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
-      # - name: Doctest node/
-      #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
-
-      - name: Unit test node/
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/ --ignore=node/_tools/test.ts,node/_tools/versions/
-
-      - name: Run Node tests canary
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
         env:
-          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
+          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
+        run: ./_tools/release/03_release.ts
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: false
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: canary
 
       - name: Format
-        shell: bash
-        run: ./_tools/format.js --check
+        run: deno fmt --check
 
       - name: Lint
-        shell: bash
-        run: ./_tools/lint.js
+        run: deno task lint
 
-  hash-wasm:
-    name: "_wasm_crypto/"
-    runs-on: ubuntu-latest
+      - name: Spell-check
+        uses: crate-ci/typos@master
+        with:
+          config: ./.github/workflows/typos.toml
+
+  wasm:
+    name: wasm
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        module: [ crypto/_wasm ]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           # required to check for changes
           fetch-depth: 2
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to _wasm_crypto/
+      - name: Check for changes
         id: source
         run: |-
           set -o errexit
           shopt -s inherit_errexit
-          declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
+          declare modifications="$(git diff --name-only HEAD~ -- ${{ matrix.module }})"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "WASM crypto source modified in this commit? $modified"
+          echo "modified=$modified" >> $GITHUB_OUTPUT
+          echo "${{ matrix.module }} WASM source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1.0.0
+        uses: denoland/setup-deno@v1
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
+        uses: hecrj/setup-rust-action@v2
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in _wasm_crypto/rust-toolchain.toml:
-          rust-version: 1.57.0
+          # This must match the version in _wasm/rust-toolchain.toml of the module folder
+          rust-version: 1.73.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Set up wasm-bindgen-cli
-        run: |-
-          # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.78
+      - name: Rebuild Wasm and verify it hasn't changed
         if: success() && steps.source.outputs.modified == 'true'
-
-      - name: Rebuild WASM
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          ./_wasm_crypto/_build.ts
-
-      - name: Verify WASM hasn't changed
-        id: build
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          set -o errexit
-          shopt -s inherit_errexit
-          declare modifications="$(git status --porcelain)"
-          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::$modified"
-          echo "Generated code modified? $modified"
-          echo "$modifications"
-
-          if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
-            exit 1
-          fi
-
-      - name: Upload rebuilt ./_wasm_crypto/ as artifact if it didn't match committed
-        if: failure() && steps.build.outputs.modified == 'true'
-        uses: actions/upload-artifact@v2
-        with:
-          name: Rebuilt _wasm_crypto
-          path: |-
-            ./_wasm_crypto/crypto.js
-            ./_wasm_crypto/crypto.wasm.js
+        run: deno task --cwd ${{ matrix.module }} wasmbuild --check

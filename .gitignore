@@ -1,9 +1,10 @@
 .DS_Store
 .idea
-deno.d.ts
-/node_modules
-package.json
-package-lock.json
 .vscode/settings.json
+.vim
 **/cov/
-/_wasm_crypto/target
+/crypto/_wasm/target
+deno.lock
+/console/testdata/unicode_width_crate/target
+html_cov/
+cov.lcov

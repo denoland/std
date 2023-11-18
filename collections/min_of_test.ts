@@ -1,6 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { minOf } from "./min_of.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 Deno.test("[collections/minOf] Regular min", () => {
   const array = [5, 18, 35, 120];

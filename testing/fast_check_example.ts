@@ -1,6 +1,10 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 /**
  * Tests that run the fast-check property-based testing library in the Deno
- * runtime. See: https://github.com/dubzzz/fast-check
+ * runtime.
+ *
+ * See: https://github.com/dubzzz/fast-check
  *
  * This file contains all the 'simple' examples from the fast-check
  * repo (001-simple folder) using Deno.test for the test functions and
@@ -9,14 +13,17 @@
  *
  * Since the nested testing API is used, the tests need to be run with the
  * unstable flag as indicated in the command:
- * `deno test --unstable ./testing/fast_check_example.ts`
+ *
+ * ```shellsession
+ * $ deno test --unstable ./testing/fast_check_example.ts
+ * ```
+ *
+ * @module
  */
-import fc from "https://cdn.skypack.dev/fast-check";
+
+import fc from "https://cdn.skypack.dev/fast-check@3.10.0";
 import { groupBy } from "../collections/group_by.ts";
-import {
-  assert,
-  assertEquals,
-} from "https://deno.land/std@0.90.0/testing/asserts.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 
 /********************** contains() *************************************/
 const contains = (text: string, pattern: string): boolean =>
@@ -82,8 +89,8 @@ Deno.test("Can use fast-check to property test decomposePrime function", async (
   await t.step("should be able to decompose a product of two numbers", () => {
     fc.assert(
       fc.property(
-        fc.integer(2, MAX_INPUT),
-        fc.integer(2, MAX_INPUT),
+        fc.integer({ min: 2, max: MAX_INPUT }),
+        fc.integer({ min: 2, max: MAX_INPUT }),
         (a: number, b: number) => {
           const n = a * b;
           const factors = decomposePrime(n);
@@ -97,8 +104,8 @@ Deno.test("Can use fast-check to property test decomposePrime function", async (
     () => {
       fc.assert(
         fc.property(
-          fc.integer(2, MAX_INPUT),
-          fc.integer(2, MAX_INPUT),
+          fc.integer({ min: 2, max: MAX_INPUT }),
+          fc.integer({ min: 2, max: MAX_INPUT }),
           (a: number, b: number) => {
             const factorsA = decomposePrime(a);
             const factorsB = decomposePrime(b);
@@ -146,7 +153,7 @@ Deno.test("Can use fast-check to property test indexOf function", async (t) => {
             const pattern = b;
             const index = indexOf(text, pattern);
             return index === -1 ||
-              text.substr(index, pattern.length) === pattern;
+              text.slice(index, index + pattern.length) === pattern;
           },
         ),
       );
@@ -175,7 +182,7 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
     "should be equal to the sum of fibonacci(n-1) and fibonacci(n-2)",
     () => {
       fc.assert(
-        fc.property(fc.integer(2, MaxN), (n: number) => {
+        fc.property(fc.integer({ min: 2, max: MaxN }), (n: number) => {
           assert(fibonacci(n) === (fibonacci(n - 1) + fibonacci(n - 2)));
         }),
       );
@@ -188,8 +195,8 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
     () => {
       fc.assert(
         fc.property(
-          fc.integer(1, MaxN),
-          fc.integer(0, MaxN),
+          fc.integer({ min: 1, max: MaxN }),
+          fc.integer({ min: 0, max: MaxN }),
           (p: number, q: number) => {
             assertEquals(
               fibonacci(p + q),
@@ -203,7 +210,7 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
   await t.step("should fulfill fibonacci(2p-1) = fibo²(p-1)+fibo²(p)", () => {
     // Special case of the property above
     fc.assert(
-      fc.property(fc.integer(1, MaxN), (p: number) => {
+      fc.property(fc.integer({ min: 1, max: MaxN }), (p: number) => {
         assertEquals(
           fibonacci(2 * p - 1),
           fibonacci(p - 1) * fibonacci(p - 1) + fibonacci(p) * fibonacci(p),
@@ -214,8 +221,8 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
   await t.step("should fulfill Catalan identity", () => {
     fc.assert(
       fc.property(
-        fc.integer(0, MaxN),
-        fc.integer(0, MaxN),
+        fc.integer({ min: 0, max: MaxN }),
+        fc.integer({ min: 0, max: MaxN }),
         (a: number, b: number) => {
           const [p, q] = a < b ? [b, a] : [a, b];
           const sign = (p - q) % 2 === 0 ? 1n : -1n; // (-1)^(p-q)
@@ -229,20 +236,25 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
   });
   await t.step("should fulfill Cassini identity", () => {
     fc.assert(
-      fc.property(fc.integer(1, MaxN), fc.integer(0, MaxN), (p: number) => {
-        const sign = p % 2 === 0 ? 1n : -1n; // (-1)^p
-        assert(
-          fibonacci(p + 1) * fibonacci(p - 1) - fibonacci(p) * fibonacci(p) ===
-            sign,
-        );
-      }),
+      fc.property(
+        fc.integer({ min: 1, max: MaxN }),
+        fc.integer({ min: 0, max: MaxN }),
+        (p: number) => {
+          const sign = p % 2 === 0 ? 1n : -1n; // (-1)^p
+          assert(
+            fibonacci(p + 1) * fibonacci(p - 1) -
+                fibonacci(p) * fibonacci(p) ===
+              sign,
+          );
+        },
+      ),
     );
   });
   await t.step("should fibonacci(nk) divisible by fibonacci(n)", () => {
     fc.assert(
       fc.property(
-        fc.integer(1, MaxN),
-        fc.integer(0, 100),
+        fc.integer({ min: 1, max: MaxN }),
+        fc.integer({ min: 0, max: 100 }),
         (n: number, k: number) => {
           assert(fibonacci(n * k) % fibonacci(n) === 0n);
         },
@@ -254,8 +266,8 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
     () => {
       fc.assert(
         fc.property(
-          fc.integer(1, MaxN),
-          fc.integer(1, MaxN),
+          fc.integer({ min: 1, max: MaxN }),
+          fc.integer({ min: 1, max: MaxN }),
           (a: number, b: number) => {
             const gcd = <T extends bigint | number>(a: T, b: T, zero: T): T => {
               a = a < zero ? (-a as T) : a;
@@ -266,9 +278,9 @@ Deno.test("Can use fast-check to property test fibronacci function", async (t) =
                 b = temp;
               }
               while (true) {
-                if (b == zero) return a;
+                if (b === zero) return a;
                 a = (a % b) as T;
-                if (a == zero) return b;
+                if (a === zero) return b;
                 b = (b % a) as T;
               }
             };
@@ -322,7 +334,7 @@ Deno.test("Can use fast-check to property test sort function", async (t) => {
     );
   });
   await t.step(
-    "should have exactly the same number of occurences as source for each item",
+    "should have exactly the same number of occurrences as source for each item",
     () => {
       fc.assert(
         fc.property(fc.array(fc.integer()), (data: Array<number>) => {
@@ -405,8 +417,8 @@ Deno.test("Can use fast-check to property test add and absoluteAddition function
     () => {
       fc.assert(
         fc.property(
-          fc.integer(-99, 99),
-          fc.integer(-99, 99),
+          fc.integer({ min: -99, max: 99 }),
+          fc.integer({ min: -99, max: 99 }),
           (a: number, b: number) => add(a, b) <= absoluteAddition(a, b),
         ),
       );

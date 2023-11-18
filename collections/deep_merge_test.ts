@@ -1,4 +1,5 @@
-import { assertEquals } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { deepMerge } from "./deep_merge.ts";
 
 Deno.test("deepMerge: simple merge", () => {
@@ -94,7 +95,7 @@ Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor proper
     configurable: true,
   });
   try {
-    assertEquals(
+    assertEquals<unknown>(
       deepMerge({
         foo: true,
       }, {
@@ -298,6 +299,39 @@ Deno.test("deepMerge: sets merge (merge)", () => {
   );
 });
 
+Deno.test("deepMerge: nested replace", () => {
+  assertEquals(
+    deepMerge(
+      {
+        a: "A1",
+        b: ["B11", "B12"],
+        c: {
+          d: "D1",
+          e: ["E11"],
+        },
+      },
+      {
+        b: [],
+        c: {
+          d: "D2",
+          e: [],
+        },
+      },
+      {
+        arrays: "replace",
+      },
+    ),
+    {
+      a: "A1",
+      b: [],
+      c: {
+        d: "D2",
+        e: [],
+      },
+    },
+  );
+});
+
 Deno.test("deepMerge: complex test", () => {
   assertEquals(
     deepMerge({
@@ -341,6 +375,24 @@ Deno.test("deepMerge: handle circular references", () => {
   const expected = { foo: true } as { foo: boolean; bar: unknown };
   expected.bar = expected;
   assertEquals(deepMerge({}, expected), expected);
+  assertEquals(deepMerge(expected, {}), expected);
+  assertEquals(deepMerge(expected, expected), expected);
+
+  const source = {
+    foo: { b: { c: { d: {} } } },
+    bar: {},
+  };
+  const object = {
+    foo: { a: 1 },
+    bar: { a: 2 },
+  };
+
+  source.foo.b.c.d = source;
+  // deno-lint-ignore no-explicit-any
+  (source.bar as any).b = source.foo.b;
+  // deno-lint-ignore no-explicit-any
+  const result: any = deepMerge(source, object);
+  assertStrictEquals(result.foo.b.c.d, result.foo.b.c.d.foo.b.c.d);
 });
 
 Deno.test("deepMerge: target object is not modified", () => {

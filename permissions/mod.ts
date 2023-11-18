@@ -1,4 +1,9 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+/**
+ * Helpers for interacting with Deno's permissions system.
+ * @module
+ * @deprecated (will be removed in 1.0.0) Use the [Deno Permissions API]{@link https://deno.land/api?s=Deno.Permissions} directly instead.
+ */
 
 const { PermissionDenied } = Deno.errors;
 
@@ -30,7 +35,7 @@ function getPermissionString(descriptors: Deno.PermissionDescriptor[]): string {
  * the permissions that are granted.
  *
  * ```ts
- *      import { grant } from "./mod.ts";
+ *      import { grant } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      const perms = await grant({ name: "net" }, { name: "read" });
  *      if (perms && perms.length === 2) {
  *        // do something cool that connects to the net and reads files
@@ -40,7 +45,10 @@ function getPermissionString(descriptors: Deno.PermissionDescriptor[]): string {
  * ```
  *
  * If one of the permissions requires a prompt, the function will attempt to
- * prompt for it.  The function resolves with all of the granted permissions. */
+ * prompt for it.  The function resolves with all of the granted permissions.
+ *
+ * @deprecated (will be removed in 1.0.0) Use the [Deno Permissions API]{@link https://deno.land/api?s=Deno.Permissions} directly instead.
+ */
 export async function grant(
   ...descriptors: Deno.PermissionDescriptor[]
 ): Promise<void | Deno.PermissionDescriptor[]>;
@@ -48,7 +56,7 @@ export async function grant(
  * the permissions that are granted.
  *
  * ```ts
- *      import { grant } from "./mod.ts";
+ *      import { grant } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      const perms = await grant([{ name: "net" }, { name: "read" }]);
  *      if (perms && perms.length === 2) {
  *        // do something cool that connects to the net and reads files
@@ -58,7 +66,10 @@ export async function grant(
  * ```
  *
  * If one of the permissions requires a prompt, the function will attempt to
- * prompt for it.  The function resolves with all of the granted permissions. */
+ * prompt for it.  The function resolves with all of the granted permissions.
+ *
+ * @deprecated (will be removed in 1.0.0) Use the [Deno Permissions API]{@link https://deno.land/api?s=Deno.Permissions} directly instead.
+ */
 export async function grant(
   descriptors: Deno.PermissionDescriptor[],
 ): Promise<void | Deno.PermissionDescriptor[]>;
@@ -85,28 +96,34 @@ export async function grant(
 /** Attempts to grant a set of permissions or rejects.
  *
  * ```ts
- *      import { grantOrThrow } from "./mod.ts";
+ *      import { grantOrThrow } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      await grantOrThrow({ name: "env" }, { name: "net" });
  * ```
  *
  * If the permission can be prompted for, the function will attempt to prompt.
  * If any of the permissions are denied, the function will reject for the first
  * permission that is denied.  If all permissions are granted, the function
- * will resolve. */
+ * will resolve.
+ *
+ * @deprecated (will be removed in 1.0.0) Use the [Deno Permissions API]{@link https://deno.land/api?s=Deno.Permissions} directly instead.
+ */
 export async function grantOrThrow(
   ...descriptors: Deno.PermissionDescriptor[]
 ): Promise<void>;
 /** Attempts to grant a set of permissions or rejects.
  *
  * ```ts
- *      import { grantOrThrow } from "./mod.ts";
+ *      import { grantOrThrow } from "https://deno.land/std@$STD_VERSION/permissions/mod.ts";
  *      await grantOrThrow([{ name: "env" }, { name: "net" }]);
  * ```
  *
  * If the permission can be prompted for, the function will attempt to prompt.
  * If any of the permissions are denied, the function will reject mentioning the
  * the denied permissions.  If all permissions are granted, the function will
- * resolve. */
+ * resolve.
+ *
+ * @deprecated (will be removed in 1.0.0) Use the [Deno Permissions API]{@link https://deno.land/api?s=Deno.Permissions} directly instead.
+ */
 export async function grantOrThrow(
   descriptors: Deno.PermissionDescriptor[],
 ): Promise<void>;

@@ -1,13 +1,14 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Returns all elements in the given collection until the first element that does not match the given predicate.
+ * Returns all elements in the given collection until the first element that
+ * does not match the given predicate.
  *
- * Example:
+ * @example
  * ```ts
- * import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/take_while.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const arr = [1, 2, 3, 4, 5, 6];
  *

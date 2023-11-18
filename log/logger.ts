@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName } from "./levels.ts";
 import type { BaseHandler } from "./handlers.ts";
@@ -13,6 +13,10 @@ export interface LogRecordOptions {
   loggerName: string;
 }
 
+/**
+ * An object that encapsulates provided message and arguments as well some
+ * metadata that can be later used when formatting a message.
+ */
 export class LogRecord {
   readonly msg: string;
   #args: unknown[];
@@ -88,7 +92,7 @@ export class Logger {
    * function, not the function itself, unless the function isn't called, in which
    * case undefined is returned.  All types are coerced to strings for logging.
    */
-  private _log<T>(
+  #_log<T>(
     level: number,
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
@@ -112,15 +116,16 @@ export class Logger {
       loggerName: this.loggerName,
     });
 
-    this.#handlers.forEach((handler): void => {
+    this.#handlers.forEach((handler) => {
       handler.handle(record);
     });
 
     return msg instanceof Function ? fnResult : msg;
   }
 
-  asString(data: unknown): string {
+  asString(data: unknown, isProperty = false): string {
     if (typeof data === "string") {
+      if (isProperty) return `"${data}"`;
       return data;
     } else if (
       data === null ||
@@ -134,7 +139,11 @@ export class Logger {
     } else if (data instanceof Error) {
       return data.stack!;
     } else if (typeof data === "object") {
-      return JSON.stringify(data);
+      return `{${
+        Object.entries(data)
+          .map(([k, v]) => `"${k}":${this.asString(v, true)}`)
+          .join(",")
+      }}`;
     }
     return "undefined";
   }
@@ -145,7 +154,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.DEBUG, msg, ...args);
+    return this.#_log(LogLevels.DEBUG, msg, ...args);
   }
 
   info<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -154,7 +163,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.INFO, msg, ...args);
+    return this.#_log(LogLevels.INFO, msg, ...args);
   }
 
   warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -163,7 +172,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.WARNING, msg, ...args);
+    return this.#_log(LogLevels.WARNING, msg, ...args);
   }
 
   error<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -172,7 +181,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.ERROR, msg, ...args);
+    return this.#_log(LogLevels.ERROR, msg, ...args);
   }
 
   critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
@@ -184,6 +193,6 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this._log(LogLevels.CRITICAL, msg, ...args);
+    return this.#_log(LogLevels.CRITICAL, msg, ...args);
   }
 }

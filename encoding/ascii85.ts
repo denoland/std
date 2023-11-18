@@ -1,20 +1,76 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
+import { validateBinaryLike } from "./_util.ts";
+
 /**
- * encoding/decoding options
- * @property standard - characterset and delimiter (if supported and used). Defaults to Adobe
- * @property delimiter - whether to use a delimiter (if supported) - "<~" and "~>" by default
+ * {@linkcode encode} and {@linkcode decode} for
+ * [Ascii85/base85](https://en.wikipedia.org/wiki/Ascii85) encoding.
+ *
+ * This module is browser compatible.
+ *
+ * ## Specifying a standard and delimiter
+ *
+ * By default, all functions are using the most popular Adobe version of ascii85
+ * and not adding any delimiter. However, there are three more standards
+ * supported - btoa (different delimiter and additional compression of 4 bytes
+ * equal to 32), [Z85](https://rfc.zeromq.org/spec/32/) and
+ * [RFC 1924](https://tools.ietf.org/html/rfc1924). It's possible to use a
+ * different encoding by specifying it in `options` object as a second parameter.
+ *
+ * Similarly, it's possible to make `encode` add a delimiter (`<~` and `~>` for
+ * Adobe, `xbtoa Begin` and `xbtoa End` with newlines between the delimiters and
+ * encoded data for btoa. Checksums for btoa are not supported. Delimiters are not
+ * supported by other encodings.)
+ *
+ * @example
+ * ```ts
+ * import {
+ *   decode,
+ *   encode,
+ * } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
+ *
+ * const a85Repr = "LpTqp";
+ *
+ * const binaryData = decode(a85Repr);
+ * console.log(binaryData);
+ * // => Uint8Array [ 136, 180, 79, 24 ]
+ *
+ * console.log(encode(binaryData));
+ * // => LpTqp
+ * ```
+ *
+ * @module
  */
+
+export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
+
+/** encoding/decoding options */
 export interface Ascii85Options {
+  /** characterset and delimiter (if supported and used).
+   *
+   * @default {"Adobe"}
+   */
   standard?: Ascii85Standard;
+  /** whether to use a delimiter (if supported) - "<~" and "~>" by default */
   delimiter?: boolean;
 }
 const rfc1924 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
 const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeAscii85} instead.
+ *
+ * Encodes a given Uint8Array into ascii85, supports multiple standards
+ * @param uint8 input to encode
+ * @param [options] encoding options
+ * @param [options.standard=Adobe] encoding standard (Adobe, btoa, RFC 1924 or Z85)
+ * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
+ */
+export const encode = encodeAscii85;
+
 /**
  * Encodes a given Uint8Array into ascii85, supports multiple standards
  * @param uint8 input to encode
@@ -22,7 +78,12 @@ const Z85 =
  * @param [options.standard=Adobe] encoding standard (Adobe, btoa, RFC 1924 or Z85)
  * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
  */
-export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
+export function encodeAscii85(
+  data: ArrayBuffer | Uint8Array | string,
+  options?: Ascii85Options,
+): string {
+  let uint8 = validateBinaryLike(data);
+
   const standard = options?.standard ?? "Adobe";
   let output: string[] = [],
     v: number,
@@ -34,7 +95,7 @@ export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
     uint8 = new Uint8Array(tmp.length + difference);
     uint8.set(tmp);
   }
-  const view = new DataView(uint8.buffer);
+  const view = new DataView(uint8.buffer, uint8.byteOffset, uint8.byteLength);
   for (let i = 0, len = uint8.length; i < len; i += 4) {
     v = view.getUint32(i);
     // Adobe and btoa standards compress 4 zeroes to single "z" character
@@ -81,13 +142,27 @@ export function encode(uint8: Uint8Array, options?: Ascii85Options): string {
   }
   return output.slice(0, output.length - difference).join("");
 }
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeAscii85} instead.
+ *
+ * Decodes a given ascii85 encoded string.
+ * @param ascii85 input to decode
+ * @param [options] decoding options
+ * @param [options.standard=Adobe] encoding standard used in the input string (Adobe, btoa, RFC 1924 or Z85)
+ */
+export const decode = decodeAscii85;
+
 /**
  * Decodes a given ascii85 encoded string.
  * @param ascii85 input to decode
  * @param [options] decoding options
  * @param [options.standard=Adobe] encoding standard used in the input string (Adobe, btoa, RFC 1924 or Z85)
  */
-export function decode(ascii85: string, options?: Ascii85Options): Uint8Array {
+export function decodeAscii85(
+  ascii85: string,
+  options?: Ascii85Options,
+): Uint8Array {
   const encoding = options?.standard ?? "Adobe";
   // translate all encodings to most basic adobe/btoa one and decompress some special characters ("z" and "y")
   switch (encoding) {

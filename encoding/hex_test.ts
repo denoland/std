@@ -3,10 +3,10 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 
-import { decode, encode } from "./hex.ts";
+import { decode, decodeHex, encode, encodeHex } from "./hex.ts";
 
 const testCases = [
   // encoded(hex) / decoded(Uint8Array)
@@ -48,6 +48,21 @@ Deno.test("[encoding.hex] encode", () => {
   }
 });
 
+Deno.test("[encoding.hex] encodeHex", () => {
+  {
+    const srcStr = "abc";
+    const dest = encodeHex(srcStr);
+    assertEquals(dest, "616263");
+  }
+
+  for (const [enc, dec] of testCases) {
+    const src = new Uint8Array(dec as number[]);
+    const dest = encodeHex(src);
+    assertEquals(dest.length, src.length * 2);
+    assertEquals(dest, enc);
+  }
+});
+
 Deno.test("[encoding.hex] decode", () => {
   // Case for decoding uppercase hex characters, since
   // Encode always uses lowercase.
@@ -64,10 +79,35 @@ Deno.test("[encoding.hex] decode", () => {
   }
 });
 
+Deno.test("[encoding.hex] decodeHex", () => {
+  // Case for decoding uppercase hex characters, since
+  // Encode always uses lowercase.
+  const extraTestcase: [string, number[]][] = [
+    ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
+  ];
+
+  const cases = testCases.concat(extraTestcase);
+
+  for (const [enc, dec] of cases) {
+    const dest = decodeHex(enc as string);
+    assertEquals(dest, new Uint8Array(dec as number[]));
+  }
+});
+
 Deno.test("[encoding.hex] decode error", () => {
   for (const [input, expectedErr, msg] of errCases) {
     assertThrows(
       () => decode(new TextEncoder().encode(input)),
+      expectedErr,
+      msg,
+    );
+  }
+});
+
+Deno.test("[encoding.hex] decodeHex error", () => {
+  for (const [input, expectedErr, msg] of errCases) {
+    assertThrows(
+      () => decodeHex(input),
       expectedErr,
       msg,
     );

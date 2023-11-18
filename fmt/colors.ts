@@ -1,26 +1,60 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 // A module to print ANSI terminal colors. Inspired by chalk, kleur, and colors
 // on npm.
-//
 
 /**
- * ```ts
- * import { bgBlue, red, bold } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
- * console.log(bgBlue(red(bold("Hello world!"))));
- * ```
+ * String formatters and utilities for dealing with ANSI color codes.
+ *
+ * This module is browser compatible.
  *
  * This module supports `NO_COLOR` environmental variable disabling any coloring
  * if `NO_COLOR` is set.
  *
+ * @example
+ * ```typescript
+ * import {
+ *   bgBlue,
+ *   bgRgb24,
+ *   bgRgb8,
+ *   bold,
+ *   italic,
+ *   red,
+ *   rgb24,
+ *   rgb8,
+ * } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *
+ * console.log(bgBlue(italic(red(bold("Hello, World!")))));
+ *
+ * // also supports 8bit colors
+ *
+ * console.log(rgb8("Hello, World!", 42));
+ *
+ * console.log(bgRgb8("Hello, World!", 42));
+ *
+ * // and 24bit rgb
+ *
+ * console.log(rgb24("Hello, World!", {
+ *   r: 41,
+ *   g: 42,
+ *   b: 43,
+ * }));
+ *
+ * console.log(bgRgb24("Hello, World!", {
+ *   r: 41,
+ *   g: 42,
+ *   b: 43,
+ * }));
+ * ```
+ *
  * @module
  */
-// This module is browser compatible.
 
 // deno-lint-ignore no-explicit-any
 const { Deno } = globalThis as any;
 const noColor = typeof Deno?.noColor === "boolean"
   ? Deno.noColor as boolean
-  : true;
+  : false;
 
 interface Code {
   open: string;
@@ -41,8 +75,8 @@ let enabled = !noColor;
  * Set changing text color to enabled or disabled
  * @param value
  */
-export function setColorEnabled(value: boolean): void {
-  if (noColor) {
+export function setColorEnabled(value: boolean) {
+  if (Deno?.noColor) {
     return;
   }
 
@@ -446,7 +480,7 @@ export function bgRgb8(str: string, color: number): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { rgb24 } from "./colors.ts";
+ *      import { rgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *      rgb24("foo", 0xff00ff);
  *      rgb24("foo", {r: 255, g: 0, b: 255});
  * ```
@@ -486,7 +520,7 @@ export function rgb24(str: string, color: number | Rgb): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { bgRgb24 } from "./colors.ts";
+ *      import { bgRgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *      bgRgb24("foo", 0xff00ff);
  *      bgRgb24("foo", {r: 255, g: 0, b: 255});
  * ```
@@ -518,19 +552,27 @@ export function bgRgb24(str: string, color: number | Rgb): string {
   );
 }
 
-// https://github.com/chalk/ansi-regex/blob/2b56fb0c7a07108e5b54241e8faec160d393aedb/index.js
+// https://github.com/chalk/ansi-regex/blob/02fa893d619d3da85411acc8fd4e2eea0e95a9d9/index.js
 const ANSI_PATTERN = new RegExp(
   [
-    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
-    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))",
+    "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+    "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TXZcf-nq-uy=><~]))",
   ].join("|"),
   "g",
 );
 
 /**
+ * @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
+ *
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
-export function stripColor(string: string): string {
+export const stripColor = stripAnsiCode;
+
+/**
+ * Remove ANSI escape codes from the string.
+ * @param string to remove ANSI escape codes from
+ */
+export function stripAnsiCode(string: string): string {
   return string.replace(ANSI_PATTERN, "");
 }

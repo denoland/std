@@ -1,4 +1,5 @@
-/**
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+/*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
  *
@@ -6,7 +7,7 @@
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
- * Copyright (c) 2018-2021 the Deno authors
+ * Copyright (c) 2018-2023 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,69 +27,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { MultiReader } from "../io/readers.ts";
-import { Buffer, PartialReadError } from "../io/buffer.ts";
-import { assert } from "../_util/assert.ts";
-import { readAll } from "../streams/conversion.ts";
 
-type Reader = Deno.Reader;
-type Seeker = Deno.Seeker;
+import {
+  FileTypes,
+  type TarInfo,
+  type TarMeta,
+  type TarOptions,
+  ustarStructure,
+} from "./_common.ts";
+import type { Reader } from "../types.d.ts";
+import { MultiReader } from "../io/multi_reader.ts";
+import { Buffer } from "../io/buffer.ts";
+import { assert } from "../assert/assert.ts";
+import { HEADER_LENGTH } from "./_common.ts";
 
-const recordSize = 512;
-const ustar = "ustar\u000000";
+export { type TarInfo, type TarMeta, type TarOptions };
 
-// https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
-// eight checksum bytes taken to be ascii spaces (decimal value 32)
-const initialChecksum = 8 * 32;
-
-async function readBlock(
-  reader: Deno.Reader,
-  p: Uint8Array,
-): Promise<number | null> {
-  let bytesRead = 0;
-  while (bytesRead < p.length) {
-    const rr = await reader.read(p.subarray(bytesRead));
-    if (rr === null) {
-      if (bytesRead === 0) {
-        return null;
-      } else {
-        throw new PartialReadError();
-      }
-    }
-    bytesRead += rr;
-  }
-  return bytesRead;
-}
+const USTAR_MAGIC_HEADER = "ustar\u000000";
 
 /**
  * Simple file reader
  */
 class FileReader implements Reader {
-  private file?: Deno.File;
+  #file?: Deno.FsFile;
 
   constructor(private filePath: string) {}
 
   public async read(p: Uint8Array): Promise<number | null> {
-    if (!this.file) {
-      this.file = await Deno.open(this.filePath, { read: true });
+    if (!this.#file) {
+      this.#file = await Deno.open(this.filePath, { read: true });
     }
-    const res = await Deno.read(this.file.rid, p);
+    const res = await this.#file.read(p);
     if (res === null) {
-      Deno.close(this.file.rid);
-      this.file = undefined;
+      this.#file.close();
+      this.#file = undefined;
     }
     return res;
   }
-}
-
-/**
- * Remove the trailing null codes
- * @param buffer
- */
-function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex((v): boolean => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
 }
 
 /**
@@ -97,147 +72,27 @@ function trim(buffer: Uint8Array): Uint8Array {
  */
 function clean(length: number): Uint8Array {
   const buffer = new Uint8Array(length);
-  buffer.fill(0, 0, length - 1);
   return buffer;
 }
 
 function pad(num: number, bytes: number, base = 8): string {
   const numString = num.toString(base);
-  return "000000000000".substr(numString.length + 12 - bytes) + numString;
+  return "000000000000".slice(numString.length + 12 - bytes) + numString;
 }
-
-enum FileTypes {
-  "file" = 0,
-  "link" = 1,
-  "symlink" = 2,
-  "character-device" = 3,
-  "block-device" = 4,
-  "directory" = 5,
-  "fifo" = 6,
-  "contiguous-file" = 7,
-}
-
-/*
-struct posix_header {           // byte offset
-  char name[100];               //   0
-  char mode[8];                 // 100
-  char uid[8];                  // 108
-  char gid[8];                  // 116
-  char size[12];                // 124
-  char mtime[12];               // 136
-  char chksum[8];               // 148
-  char typeflag;                // 156
-  char linkname[100];           // 157
-  char magic[6];                // 257
-  char version[2];              // 263
-  char uname[32];               // 265
-  char gname[32];               // 297
-  char devmajor[8];             // 329
-  char devminor[8];             // 337
-  char prefix[155];             // 345
-                                // 500
-};
-*/
-
-const ustarStructure: Array<{ field: string; length: number }> = [
-  {
-    field: "fileName",
-    length: 100,
-  },
-  {
-    field: "fileMode",
-    length: 8,
-  },
-  {
-    field: "uid",
-    length: 8,
-  },
-  {
-    field: "gid",
-    length: 8,
-  },
-  {
-    field: "fileSize",
-    length: 12,
-  },
-  {
-    field: "mtime",
-    length: 12,
-  },
-  {
-    field: "checksum",
-    length: 8,
-  },
-  {
-    field: "type",
-    length: 1,
-  },
-  {
-    field: "linkName",
-    length: 100,
-  },
-  {
-    field: "ustar",
-    length: 8,
-  },
-  {
-    field: "owner",
-    length: 32,
-  },
-  {
-    field: "group",
-    length: 32,
-  },
-  {
-    field: "majorNumber",
-    length: 8,
-  },
-  {
-    field: "minorNumber",
-    length: 8,
-  },
-  {
-    field: "fileNamePrefix",
-    length: 155,
-  },
-  {
-    field: "padding",
-    length: 12,
-  },
-];
 
 /**
  * Create header for a file in a tar archive
  */
 function formatHeader(data: TarData): Uint8Array {
-  const encoder = new TextEncoder(),
-    buffer = clean(512);
+  const encoder = new TextEncoder();
+  const buffer = clean(HEADER_LENGTH);
   let offset = 0;
-  ustarStructure.forEach(function (value): void {
+  ustarStructure.forEach(function (value) {
     const entry = encoder.encode(data[value.field as keyof TarData] || "");
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
   });
   return buffer;
-}
-
-/**
- * Parse file header in a tar archive
- * @param length
- */
-function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
-  const data: { [key: string]: Uint8Array } = {};
-  let offset = 0;
-  ustarStructure.forEach(function (value): void {
-    const arr = buffer.subarray(offset, offset + value.length);
-    data[value.field] = arr;
-    offset += value.length;
-  });
-  return data;
-}
-
-interface TarHeader {
-  [key: string]: Uint8Array;
 }
 
 export interface TarData {
@@ -266,43 +121,60 @@ export interface TarDataWithSource extends TarData {
   reader?: Reader;
 }
 
-export interface TarInfo {
-  fileMode?: number;
-  mtime?: number;
-  uid?: number;
-  gid?: number;
-  owner?: string;
-  group?: string;
-  type?: string;
-}
-
-export interface TarOptions extends TarInfo {
-  /**
-   * append file
-   */
-  filePath?: string;
-
-  /**
-   * append any arbitrary content
-   */
-  reader?: Reader;
-
-  /**
-   * size of the content to be appended
-   */
-  contentSize?: number;
-}
-
-export interface TarMeta extends TarInfo {
-  fileName: string;
-  fileSize?: number;
-}
-
-// deno-lint-ignore no-empty-interface
-interface TarEntry extends TarMeta {}
-
 /**
- * A class to create a tar archive
+ * ### Overview
+ * A class to create a tar archive.  Tar archives allow for storing multiple files in a
+ * single file (called an archive, or sometimes a tarball).  These archives typically
+ * have the '.tar' extension.
+ *
+ * ### Usage
+ * The workflow is to create a Tar instance, append files to it, and then write the
+ * tar archive to the filesystem (or other output stream).  See the worked example
+ * below for details.
+ *
+ * ### Compression
+ * Tar archives are not compressed by default.  If you want to compress the archive,
+ * you may compress the tar archive after creation, but this capability is not provided
+ * here.
+ *
+ * ### File format and limitations
+ *
+ * The ustar file format is used for creating the archive file.
+ * While this format is compatible with most tar readers,
+ * the format has several limitations, including:
+ * * Files must be smaller than 8GiB
+ * * Filenames (including path) must be shorter than 256 characters
+ * * Filenames (including path) cannot contain non-ASCII characters
+ * * Sparse files are not supported
+ *
+ * @example
+ * ```ts
+ * import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
+ * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ *
+ * const tar = new Tar();
+ *
+ * // Now that we've created our tar, let's add some files to it:
+ *
+ * const content = new TextEncoder().encode("Some arbitrary content");
+ * await tar.append("deno.txt", {
+ *   reader: new Buffer(content),
+ *   contentSize: content.byteLength,
+ * });
+ *
+ * // This file is sourced from the filesystem (and renamed in the archive)
+ * await tar.append("filename_in_archive.txt", {
+ *   filePath: "./filename_on_filesystem.txt",
+ * });
+ *
+ * // Now let's write the tar (with it's two files) to the filesystem
+ * // use tar.getReader() to read the contents.
+ *
+ * const writer = await Deno.open("./out.tar", { write: true, create: true });
+ * await copy(tar.getReader(), writer);
+ * writer.close();
+ * ```
  */
 export class Tar {
   data: TarDataWithSource[];
@@ -312,16 +184,31 @@ export class Tar {
   }
 
   /**
-   * Append a file to this tar archive
-   * @param fn file name
+   * Append a file or reader of arbitrary content to this tar archive. Directories
+   * appended to the archive append only the directory itself to the archive, not
+   * its contents.  To add a directory and its contents, recursively append the
+   * directory's contents.  Directories and subdirectories will be created automatically
+   * in the archive as required.
+   *
+   * @param filenameInArchive file name of the content in the archive
    *                 e.g., test.txt; use slash for directory separators
-   * @param opts options
+   * @param source details of the source of the content including the
+   *               reference to the content itself and potentially any
+   *               related metadata.
    */
-  async append(fn: string, opts: TarOptions) {
-    if (typeof fn !== "string") {
+  async append(filenameInArchive: string, source: TarOptions) {
+    if (typeof filenameInArchive !== "string") {
       throw new Error("file name not specified");
     }
-    let fileName = fn;
+    let fileName = filenameInArchive;
+
+    /**
+     * Ustar format has a limitation of file name length.  Specifically:
+     * 1. File names can contain at most 255 bytes.
+     * 2. File names longer than 100 bytes must be split at a directory separator in two parts,
+     * the first being at most 155 bytes long. So, in most cases file names must be a bit shorter
+     * than 255 bytes.
+     */
     // separate file name into two parts if needed
     let fileNamePrefix: string | undefined;
     if (fileName.length > 100) {
@@ -329,8 +216,8 @@ export class Tar {
       while (i >= 0) {
         i = fileName.lastIndexOf("/", i);
         if (i <= 155) {
-          fileNamePrefix = fileName.substr(0, i);
-          fileName = fileName.substr(i + 1);
+          fileNamePrefix = fileName.slice(0, i);
+          fileName = fileName.slice(i + 1);
           break;
         }
         i--;
@@ -341,48 +228,49 @@ export class Tar {
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
       } else {
-        assert(fileNamePrefix != null);
+        assert(fileNamePrefix !== undefined);
         if (fileNamePrefix.length > 155) {
           throw new Error(errMsg);
         }
       }
     }
 
-    opts = opts || {};
+    source = source || {};
 
     // set meta data
     let info: Deno.FileInfo | undefined;
-    if (opts.filePath) {
-      info = await Deno.stat(opts.filePath);
+    if (source.filePath) {
+      info = await Deno.stat(source.filePath);
       if (info.isDirectory) {
         info.size = 0;
-        opts.reader = new Buffer();
+        source.reader = new Buffer();
       }
     }
 
-    const mode = opts.fileMode || (info && info.mode) ||
-        parseInt("777", 8) & 0xfff,
-      mtime = Math.floor(
-        opts.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
-      ),
-      uid = opts.uid || 0,
-      gid = opts.gid || 0;
-    if (typeof opts.owner === "string" && opts.owner.length >= 32) {
+    const mode = source.fileMode || (info && info.mode) ||
+      parseInt("777", 8) & 0xfff /* 511 */;
+    const mtime = Math.floor(
+      source.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
+    );
+    const uid = source.uid || 0;
+    const gid = source.gid || 0;
+
+    if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
         "ustar format does not allow owner name length >= 32 bytes",
       );
     }
-    if (typeof opts.group === "string" && opts.group.length >= 32) {
+    if (typeof source.group === "string" && source.group.length >= 32) {
       throw new Error(
         "ustar format does not allow group name length >= 32 bytes",
       );
     }
 
-    const fileSize = info?.size ?? opts.contentSize;
-    assert(fileSize != null, "fileSize must be set");
+    const fileSize = info?.size ?? source.contentSize;
+    assert(fileSize !== undefined, "fileSize must be set");
 
-    const type = opts.type
-      ? FileTypes[opts.type as keyof typeof FileTypes]
+    const type = source.type
+      ? FileTypes[source.type as keyof typeof FileTypes]
       : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
     const tarData: TarDataWithSource = {
       fileName,
@@ -394,11 +282,11 @@ export class Tar {
       mtime: pad(mtime, 11),
       checksum: "        ",
       type: type.toString(),
-      ustar,
-      owner: opts.owner || "",
-      group: opts.group || "",
-      filePath: opts.filePath,
-      reader: opts.reader,
+      ustar: USTAR_MAGIC_HEADER,
+      owner: source.owner || "",
+      group: source.group || "",
+      filePath: source.filePath,
+      reader: source.reader,
     };
 
     // calculate the checksum
@@ -406,7 +294,7 @@ export class Tar {
     const encoder = new TextEncoder();
     Object.keys(tarData)
       .filter((key): boolean => ["filePath", "reader"].indexOf(key) < 0)
-      .forEach(function (key): void {
+      .forEach(function (key) {
         checksum += encoder
           .encode(tarData[key as keyof TarData])
           .reduce((p, c): number => p + c, 0);
@@ -417,224 +305,35 @@ export class Tar {
   }
 
   /**
-   * Get a Reader instance for this tar data
+   * Get a Reader instance for this tar archive.
    */
   getReader(): Reader {
     const readers: Reader[] = [];
-    this.data.forEach((tarData): void => {
+    this.data.forEach((tarData) => {
       let { reader } = tarData;
       const { filePath } = tarData;
       const headerArr = formatHeader(tarData);
       readers.push(new Buffer(headerArr));
       if (!reader) {
-        assert(filePath != null);
+        assert(filePath !== undefined);
         reader = new FileReader(filePath);
       }
       readers.push(reader);
 
       // to the nearest multiple of recordSize
-      assert(tarData.fileSize != null, "fileSize must be set");
+      assert(tarData.fileSize !== undefined, "fileSize must be set");
       readers.push(
         new Buffer(
           clean(
-            recordSize -
-              (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
+            HEADER_LENGTH -
+              (parseInt(tarData.fileSize, 8) % HEADER_LENGTH || HEADER_LENGTH),
           ),
         ),
       );
     });
 
     // append 2 empty records
-    readers.push(new Buffer(clean(recordSize * 2)));
-    return new MultiReader(...readers);
-  }
-}
-
-class TarEntry implements Reader {
-  #header: TarHeader;
-  #reader: Reader | (Reader & Deno.Seeker);
-  #size: number;
-  #read = 0;
-  #consumed = false;
-  #entrySize: number;
-  constructor(
-    meta: TarMeta,
-    header: TarHeader,
-    reader: Reader | (Reader & Deno.Seeker),
-  ) {
-    Object.assign(this, meta);
-    this.#header = header;
-    this.#reader = reader;
-
-    // File Size
-    this.#size = this.fileSize || 0;
-    // Entry Size
-    const blocks = Math.ceil(this.#size / recordSize);
-    this.#entrySize = blocks * recordSize;
-  }
-
-  get consumed(): boolean {
-    return this.#consumed;
-  }
-
-  async read(p: Uint8Array): Promise<number | null> {
-    // Bytes left for entry
-    const entryBytesLeft = this.#entrySize - this.#read;
-    const bufSize = Math.min(
-      // bufSize can't be greater than p.length nor bytes left in the entry
-      p.length,
-      entryBytesLeft,
-    );
-
-    if (entryBytesLeft <= 0) {
-      this.#consumed = true;
-      return null;
-    }
-
-    const block = new Uint8Array(bufSize);
-    const n = await readBlock(this.#reader, block);
-    const bytesLeft = this.#size - this.#read;
-
-    this.#read += n || 0;
-    if (n === null || bytesLeft <= 0) {
-      if (n === null) this.#consumed = true;
-      return null;
-    }
-
-    // Remove zero filled
-    const offset = bytesLeft < n ? bytesLeft : n;
-    p.set(block.subarray(0, offset), 0);
-
-    return offset < 0 ? n - Math.abs(offset) : offset;
-  }
-
-  async discard() {
-    // Discard current entry
-    if (this.#consumed) return;
-    this.#consumed = true;
-
-    if (typeof (this.#reader as Seeker).seek === "function") {
-      await (this.#reader as Seeker).seek(
-        this.#entrySize - this.#read,
-        Deno.SeekMode.Current,
-      );
-      this.#read = this.#entrySize;
-    } else {
-      await readAll(this);
-    }
-  }
-}
-
-/**
- * A class to extract a tar archive
- */
-export class Untar {
-  reader: Reader;
-  block: Uint8Array;
-  #entry: TarEntry | undefined;
-
-  constructor(reader: Reader) {
-    this.reader = reader;
-    this.block = new Uint8Array(recordSize);
-  }
-
-  #checksum(header: Uint8Array): number {
-    let sum = initialChecksum;
-    for (let i = 0; i < 512; i++) {
-      if (i >= 148 && i < 156) {
-        // Ignore checksum header
-        continue;
-      }
-      sum += header[i];
-    }
-    return sum;
-  }
-
-  async #getHeader(): Promise<TarHeader | null> {
-    await readBlock(this.reader, this.block);
-    const header = parseHeader(this.block);
-
-    // calculate the checksum
-    const decoder = new TextDecoder();
-    const checksum = this.#checksum(this.block);
-
-    if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
-      if (checksum === initialChecksum) {
-        // EOF
-        return null;
-      }
-      throw new Error("checksum error");
-    }
-
-    const magic = decoder.decode(header.ustar);
-
-    if (magic.indexOf("ustar")) {
-      throw new Error(`unsupported archive format: ${magic}`);
-    }
-
-    return header;
-  }
-
-  #getMetadata(header: TarHeader): TarMeta {
-    const decoder = new TextDecoder();
-    // get meta data
-    const meta: TarMeta = {
-      fileName: decoder.decode(trim(header.fileName)),
-    };
-    const fileNamePrefix = trim(header.fileNamePrefix);
-    if (fileNamePrefix.byteLength > 0) {
-      meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
-    }
-    (["fileMode", "mtime", "uid", "gid"] as [
-      "fileMode",
-      "mtime",
-      "uid",
-      "gid",
-    ]).forEach((key): void => {
-      const arr = trim(header[key]);
-      if (arr.byteLength > 0) {
-        meta[key] = parseInt(decoder.decode(arr), 8);
-      }
-    });
-    (["owner", "group", "type"] as ["owner", "group", "type"]).forEach(
-      (key): void => {
-        const arr = trim(header[key]);
-        if (arr.byteLength > 0) {
-          meta[key] = decoder.decode(arr);
-        }
-      },
-    );
-
-    meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-    meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
-
-    return meta;
-  }
-
-  async extract(): Promise<TarEntry | null> {
-    if (this.#entry && !this.#entry.consumed) {
-      // If entry body was not read, discard the body
-      // so we can read the next entry.
-      await this.#entry.discard();
-    }
-
-    const header = await this.#getHeader();
-    if (header === null) return null;
-
-    const meta = this.#getMetadata(header);
-
-    this.#entry = new TarEntry(meta, header, this.reader);
-
-    return this.#entry;
-  }
-
-  async *[Symbol.asyncIterator](): AsyncIterableIterator<TarEntry> {
-    while (true) {
-      const entry = await this.extract();
-
-      if (entry === null) return;
-
-      yield entry;
-    }
+    readers.push(new Buffer(clean(HEADER_LENGTH * 2)));
+    return new MultiReader(readers);
   }
 }

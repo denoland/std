@@ -1,8 +1,17 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 /**
+ * An example of using [Sinon.js](https://sinonjs.org/) with `Deno.test()`.
+ *
  * Run this example with:
  *
- * deno test ./testing/sinon_example.ts
+ * ```shellsession
+ * $ deno test ./testing/sinon_example.ts
+ * ```
+ *
+ * @module
  */
+
 import sinon from "https://cdn.skypack.dev/sinon@11.1.2?dts";
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 

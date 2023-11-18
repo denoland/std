@@ -1,5 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { join } from "../path/mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { join } from "../path/join.ts";
+import { toPathString } from "./_util.ts";
 
 /**
  * Ensures that a directory is empty.
@@ -7,21 +8,24 @@ import { join } from "../path/mod.ts";
  * If the directory does not exist, it is created.
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { emptyDir } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * emptyDir("./foo"); // returns a promise
+ * ```
  */
-export async function emptyDir(dir: string) {
+export async function emptyDir(dir: string | URL) {
   try {
-    const items = [];
-    for await (const dirEntry of Deno.readDir(dir)) {
-      items.push(dirEntry);
-    }
+    const items = await Array.fromAsync(Deno.readDir(dir));
 
-    while (items.length) {
-      const item = items.shift();
+    await Promise.all(items.map((item) => {
       if (item && item.name) {
-        const filepath = join(dir, item.name);
-        await Deno.remove(filepath, { recursive: true });
+        const filepath = join(toPathString(dir), item.name);
+        return Deno.remove(filepath, { recursive: true });
       }
-    }
+    }));
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
       throw err;
@@ -38,8 +42,15 @@ export async function emptyDir(dir: string) {
  * If the directory does not exist, it is created.
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { emptyDirSync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+ *
+ * emptyDirSync("./foo"); // void
+ * ```
  */
-export function emptyDirSync(dir: string): void {
+export function emptyDirSync(dir: string | URL) {
   try {
     const items = [...Deno.readDirSync(dir)];
 
@@ -47,7 +58,7 @@ export function emptyDirSync(dir: string): void {
     while (items.length) {
       const item = items.shift();
       if (item && item.name) {
-        const filepath = join(dir, item.name);
+        const filepath = join(toPathString(dir), item.name);
         Deno.removeSync(filepath, { recursive: true });
       }
     }
@@ -57,6 +68,5 @@ export function emptyDirSync(dir: string): void {
     }
     // if not exist. then create it
     Deno.mkdirSync(dir, { recursive: true });
-    return;
   }
 }

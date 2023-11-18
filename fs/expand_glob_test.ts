@@ -1,9 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import {
   fromFileUrl,
   join,
@@ -20,18 +16,19 @@ import {
 async function expandGlobArray(
   globString: string,
   options: ExpandGlobOptions,
+  { forceRoot = "" } = {},
 ): Promise<string[]> {
-  const paths: string[] = [];
-  for await (const { path } of expandGlob(globString, options)) {
-    paths.push(path);
-  }
+  const paths = await Array.fromAsync(
+    expandGlob(globString, options),
+    ({ path }) => path,
+  );
   paths.sort();
   const pathsSync = [...expandGlobSync(globString, options)].map(
     ({ path }): string => path,
   );
   pathsSync.sort();
   assertEquals(paths, pathsSync);
-  const root = normalize(options.root || Deno.cwd());
+  const root = normalize(forceRoot || options.root || Deno.cwd());
   for (const path of paths) {
     assert(path.startsWith(root));
   }
@@ -46,7 +43,6 @@ const EG_OPTIONS: ExpandGlobOptions = {
   root: fromFileUrl(new URL(join("testdata", "glob"), import.meta.url)),
   includeDirs: true,
   extended: false,
-  globstar: false,
 };
 
 Deno.test("expandGlobWildcard", async function () {
@@ -56,13 +52,17 @@ Deno.test("expandGlobWildcard", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
 
 Deno.test("expandGlobTrailingSeparator", async function () {
   const options = EG_OPTIONS;
-  assertEquals(await expandGlobArray("*/", options), ["a[b]c", "subdir"]);
+  assertEquals(await expandGlobArray("*/", options), [
+    "a[b]c",
+    "subdir",
+  ]);
 });
 
 Deno.test("expandGlobParent", async function () {
@@ -72,6 +72,7 @@ Deno.test("expandGlobParent", async function () {
     "abc",
     "abcdef",
     "abcdefghi",
+    "link",
     "subdir",
   ]);
 });
@@ -97,9 +98,9 @@ Deno.test("expandGlobExt", async function () {
 });
 
 Deno.test("expandGlobGlobstar", async function () {
-  const options = { ...EG_OPTIONS, globstar: true };
+  const options = { ...EG_OPTIONS };
   assertEquals(
-    await expandGlobArray(joinGlobs(["**", "abc"], options), options),
+    await expandGlobArray("**/abc", options),
     ["abc", join("subdir", "abc")],
   );
 });
@@ -112,6 +113,19 @@ Deno.test("expandGlobGlobstarParent", async function () {
   );
 });
 
+Deno.test("expandGlobGlobstarFalseWithGlob", async function () {
+  const options = { ...EG_OPTIONS, globstar: false };
+  assertEquals(await expandGlobArray("**", options), [
+    ".",
+    "a[b]c",
+    "abc",
+    "abcdef",
+    "abcdefghi",
+    "link",
+    "subdir",
+  ]);
+});
+
 Deno.test("expandGlobIncludeDirs", async function () {
   const options = { ...EG_OPTIONS, includeDirs: false };
   assertEquals(await expandGlobArray("subdir", options), []);
@@ -119,29 +133,78 @@ Deno.test("expandGlobIncludeDirs", async function () {
 
 Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
-      "run",
-      "--quiet",
-      "--unstable",
-      exampleUrl.toString(),
-    ],
-    stdin: "null",
-    stdout: "piped",
-    stderr: "piped",
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["run", "--quiet", "--unstable", exampleUrl.toString()],
   });
+  const { code, success, stdout, stderr } = await command.output();
   const decoder = new TextDecoder();
-  assertEquals(await p.status(), { code: 1, success: false });
-  assertEquals(decoder.decode(await p.output()), "");
-  assertStringIncludes(
-    decoder.decode(await p.stderrOutput()),
-    "Uncaught PermissionDenied",
-  );
-  p.close();
+  assert(!success);
+  assertEquals(code, 1);
+  assertEquals(decoder.decode(stdout), "");
+  assertStringIncludes(decoder.decode(stderr), "Uncaught PermissionDenied");
 });
 
 Deno.test("expandGlobRootIsNotGlob", async function () {
   const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
   assertEquals(await expandGlobArray("*", options), ["foo"]);
 });
+
+Deno.test("expandGlobFollowSymlink", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "link"),
+    followSymlinks: true,
+  };
+  assertEquals(await expandGlobArray("*", options), ["abc"]);
+});
+
+Deno.test("expandGlobFollowSymlink with canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("subdir", "abc")],
+  );
+});
+
+Deno.test("expandGlobFollowSymlink without canonicalize", async function () {
+  const options = {
+    ...EG_OPTIONS,
+    root: join(EG_OPTIONS.root!, "."),
+    followSymlinks: true,
+    canonicalize: false,
+  };
+  assertEquals(
+    await expandGlobArray("**/abc", options),
+    ["abc", join("link", "abc"), join("subdir", "abc")],
+  );
+});
+
+Deno.test(
+  "expandGlob doesn't require read permissions when root path is specified",
+  {
+    permissions: { read: [EG_OPTIONS.root!] },
+  },
+  async function () {
+    const options = { root: EG_OPTIONS.root! };
+    assertEquals(await expandGlobArray("abc", options), ["abc"]);
+  },
+);
+
+Deno.test(
+  "expandGlob doesn't require read permissions when an absolute glob is specified",
+  {
+    permissions: { read: [EG_OPTIONS.root!] },
+  },
+  async function () {
+    assertEquals(
+      await expandGlobArray(`${EG_OPTIONS.root!}/abc`, {}, {
+        forceRoot: EG_OPTIONS.root!,
+      }),
+      ["abc"],
+    );
+  },
+);

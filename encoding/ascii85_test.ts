@@ -1,6 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
-import { Ascii85Standard, decode, encode } from "./ascii85.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../assert/mod.ts";
+import { Ascii85Standard, decodeAscii85, encodeAscii85 } from "./ascii85.ts";
 type TestCases = Partial<{ [index in Ascii85Standard]: string[][] }>;
 const utf8encoder = new TextEncoder();
 const testCasesNoDelimiter: TestCases = {
@@ -120,10 +120,10 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
     name: `[encoding/ascii85] encode ${standard}`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encode(utf8encoder.encode(bin), {
+          encodeAscii85(bin, {
             standard: standard as Ascii85Standard,
           }),
           b85,
@@ -134,10 +134,10 @@ for (const [standard, tests] of Object.entries(testCasesNoDelimiter)) {
 
   Deno.test({
     name: `[encoding/ascii85] decode ${standard}`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decode(b85, { standard: standard as Ascii85Standard }),
+          decodeAscii85(b85, { standard: standard as Ascii85Standard }),
           utf8encoder.encode(bin),
         );
       }
@@ -148,10 +148,10 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
   if (tests === undefined) continue;
   Deno.test({
     name: `[encoding/ascii85] encode ${standard} with delimiter`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          encode(utf8encoder.encode(bin), {
+          encodeAscii85(bin, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -163,10 +163,10 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
 
   Deno.test({
     name: `[encoding/ascii85] decode ${standard} with delimiter`,
-    fn(): void {
+    fn() {
       for (const [bin, b85] of tests) {
         assertEquals(
-          decode(b85, {
+          decodeAscii85(b85, {
             standard: standard as Ascii85Standard,
             delimiter: true,
           }),
@@ -176,3 +176,19 @@ for (const [standard, tests] of Object.entries(testCasesDelimiter)) {
     },
   });
 }
+
+Deno.test({
+  name: `[encoding/ascii85] encode subarray of an Uint8Array`,
+  fn() {
+    const data1 = new Uint8Array([0x73, 0x70, 0x61, 0x6d]);
+    const data2 = new Uint8Array(
+      [0x01, 0x02, 0x03, 0x04, 0x73, 0x70, 0x61, 0x6d],
+    );
+
+    const encoded1 = encodeAscii85(data1);
+    const encoded2 = encodeAscii85(data2.subarray(4));
+
+    assertEquals(encoded1, "F)YQ)");
+    assertEquals(encoded2, "F)YQ)");
+  },
+});

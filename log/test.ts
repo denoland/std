@@ -1,5 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import * as log from "./mod.ts";
 import {
   getLevelByName,
@@ -11,7 +11,7 @@ import {
 class TestHandler extends log.handlers.BaseHandler {
   public messages: string[] = [];
 
-  log(msg: string): void {
+  override log(msg: string) {
     this.messages.push(msg);
   }
 }
@@ -108,7 +108,7 @@ Deno.test("getLoggerUnknown", async function () {
   assertEquals(logger.handlers, []);
 });
 
-Deno.test("getInvalidLoggerLevels", function (): void {
+Deno.test("getInvalidLoggerLevels", function () {
   assertThrows(() => getLevelByName("FAKE_LOG_LEVEL" as LevelName));
   assertThrows(() => getLevelName(5000));
 });

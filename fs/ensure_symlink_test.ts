@@ -1,10 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-import {
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../testing/asserts.ts";
+import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
@@ -23,22 +19,22 @@ Deno.test("ensureSymlinkIfItNotExist", async function () {
 
   await assertRejects(
     async () => {
-      await Deno.stat(testFile).then((): void => {
+      await Deno.stat(testFile).then(() => {
         throw new Error("test file should exists.");
       });
     },
   );
 });
 
-Deno.test("ensureSymlinkSyncIfItNotExist", function (): void {
+Deno.test("ensureSymlinkSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "link_file_2");
   const testFile = path.join(testDir, "test.txt");
 
-  assertThrows((): void => {
+  assertThrows(() => {
     ensureSymlinkSync(testFile, path.join(testDir, "test1.txt"));
   });
 
-  assertThrows((): void => {
+  assertThrows(() => {
     Deno.statSync(testFile);
     throw new Error("test file should exists.");
   });
@@ -53,6 +49,7 @@ Deno.test("ensureSymlinkIfItExist", async function () {
   await Deno.writeFile(testFile, new Uint8Array());
 
   await ensureSymlink(testFile, linkFile);
+  await ensureSymlink(testFile, linkFile);
 
   const srcStat = await Deno.lstat(testFile);
   const linkStat = await Deno.lstat(linkFile);
@@ -63,7 +60,7 @@ Deno.test("ensureSymlinkIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlinkSyncIfItExist", function (): void {
+Deno.test("ensureSymlinkSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "link_file_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -72,9 +69,9 @@ Deno.test("ensureSymlinkSyncIfItExist", function (): void {
   Deno.writeFileSync(testFile, new Uint8Array());
 
   ensureSymlinkSync(testFile, linkFile);
+  ensureSymlinkSync(testFile, linkFile);
 
   const srcStat = Deno.lstatSync(testFile);
-
   const linkStat = Deno.lstatSync(linkFile);
 
   assertEquals(srcStat.isFile, true);
@@ -92,6 +89,7 @@ Deno.test("ensureSymlinkDirectoryIfItExist", async function () {
   await Deno.writeFile(testFile, new Uint8Array());
 
   await ensureSymlink(testDir, linkDir);
+  await ensureSymlink(testDir, linkDir);
 
   const testDirStat = await Deno.lstat(testDir);
   const linkDirStat = await Deno.lstat(linkDir);
@@ -105,7 +103,7 @@ Deno.test("ensureSymlinkDirectoryIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlinkSyncDirectoryIfItExist", function (): void {
+Deno.test("ensureSymlinkSyncDirectoryIfItExist", function () {
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");
   const testFile = path.join(testDir, "test.txt");
@@ -113,6 +111,7 @@ Deno.test("ensureSymlinkSyncDirectoryIfItExist", function (): void {
   Deno.mkdirSync(testDir, { recursive: true });
   Deno.writeFileSync(testFile, new Uint8Array());
 
+  ensureSymlinkSync(testDir, linkDir);
   ensureSymlinkSync(testDir, linkDir);
 
   const testDirStat = Deno.lstatSync(testDir);
@@ -124,5 +123,49 @@ Deno.test("ensureSymlinkSyncDirectoryIfItExist", function (): void {
   assertEquals(linkDirStat.isSymlink, true);
 
   Deno.removeSync(linkDir, { recursive: true });
+  Deno.removeSync(testDir, { recursive: true });
+});
+
+Deno.test("ensureSymlinkRelativeTarget", async function () {
+  const testDir = path.join(testdataDir, "symlink-relative");
+  const testLinkName = path.join(testDir, "link.txt");
+  const testFile = path.join(testDir, "target.txt");
+
+  await Deno.mkdir(testDir);
+
+  await Deno.writeFile(testFile, new Uint8Array());
+
+  await ensureSymlink("target.txt", testLinkName);
+
+  const testDirStat = await Deno.lstat(testDir);
+  const linkDirStat = await Deno.lstat(testLinkName);
+  const testFileStat = await Deno.lstat(testFile);
+
+  assertEquals(testFileStat.isFile, true);
+  assertEquals(testDirStat.isDirectory, true);
+  assertEquals(linkDirStat.isSymlink, true);
+
+  await Deno.remove(testDir, { recursive: true });
+});
+
+Deno.test("ensureSymlinkSyncRelativeTarget", function () {
+  const testDir = path.join(testdataDir, "symlink-relative-sync");
+  const testLinkName = path.join(testDir, "link.txt");
+  const testFile = path.join(testDir, "target.txt");
+
+  Deno.mkdirSync(testDir);
+
+  Deno.writeFileSync(testFile, new Uint8Array());
+
+  ensureSymlinkSync("target.txt", testLinkName);
+
+  const testDirStat = Deno.lstatSync(testDir);
+  const linkDirStat = Deno.lstatSync(testLinkName);
+  const testFileStat = Deno.lstatSync(testFile);
+
+  assertEquals(testFileStat.isFile, true);
+  assertEquals(testDirStat.isDirectory, true);
+  assertEquals(linkDirStat.isSymlink, true);
+
   Deno.removeSync(testDir, { recursive: true });
 });

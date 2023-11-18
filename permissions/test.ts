@@ -1,6 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { grant, grantOrThrow } from "./mod.ts";
-import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assert, assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test({
   name: "grant basic",
@@ -45,21 +45,21 @@ Deno.test({
 
 Deno.test({
   name: "grantOrThrow invalid argument",
-  fn() {
-    assertRejects(
+  async fn() {
+    await assertRejects(
       () => {
         return grantOrThrow();
       },
       TypeError,
-      `Cannot read properties of undefined (reading 'name')`,
+      `The provided value "undefined" is not a valid permission name.`,
     );
   },
 });
 
 Deno.test({
   name: "grantOrThrow invalid permissionDescriptor name",
-  fn() {
-    assertRejects(
+  async fn() {
+    await assertRejects(
       () => {
         // deno-lint-ignore no-explicit-any
         return grantOrThrow({ name: "nett" } as any);

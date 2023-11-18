@@ -1,30 +1,27 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-
-// deno-lint-ignore-file ban-types
 
 import { filterInPlace } from "./_utils.ts";
 
 const { hasOwn } = Object;
 
 /**
- * Merges the two given Records, recursively merging any nested Records with
- * the second collection overriding the first in case of conflict
+ * Merges the two given Records, recursively merging any nested Records with the
+ * second collection overriding the first in case of conflict
  *
  * For arrays, maps and sets, a merging strategy can be specified to either
- * "replace" values, or "merge" them instead.
- * Use "includeNonEnumerable" option to include non enumerable properties too.
+ * `replace` values, or `merge` them instead. Use `includeNonEnumerable` option
+ * to include non-enumerable properties too.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
- * const a = {foo: true}
- * const b = {foo: {bar: true}}
+ * const a = { foo: true };
+ * const b = { foo: { bar: true } };
  *
- * assertEquals(deepMerge(a, b), {foo: {bar: true}});
+ * assertEquals(deepMerge(a, b), { foo: { bar: true } });
  * ```
  */
 export function deepMerge<
@@ -58,6 +55,23 @@ export function deepMerge<
   other: Readonly<U>,
   options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
+  return deepMergeInternal(record, other, new Set(), options);
+}
+
+function deepMergeInternal<
+  T extends Record<PropertyKey, unknown>,
+  U extends Record<PropertyKey, unknown>,
+  Options extends DeepMergeOptions = {
+    arrays: "merge";
+    sets: "merge";
+    maps: "merge";
+  },
+>(
+  record: Readonly<T>,
+  other: Readonly<U>,
+  seen: Set<NonNullable<unknown>>,
+  options?: Readonly<Options>,
+) {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
   type Result = DeepMerge<T, U, Options>;
@@ -87,8 +101,12 @@ export function deepMerge<
 
     const b = other[key] as ResultMember;
 
-    if (isNonNullObject(a) && isNonNullObject(b)) {
-      result[key] = mergeObjects(a, b, options) as ResultMember;
+    if (
+      isNonNullObject(a) && isNonNullObject(b) && !seen.has(a) && !seen.has(b)
+    ) {
+      seen.add(a);
+      seen.add(b);
+      result[key] = mergeObjects(a, b, seen, options) as ResultMember;
 
       continue;
     }
@@ -101,17 +119,18 @@ export function deepMerge<
 }
 
 function mergeObjects(
-  left: Readonly<NonNullable<object>>,
-  right: Readonly<NonNullable<object>>,
+  left: Readonly<NonNullable<Record<string, unknown>>>,
+  right: Readonly<NonNullable<Record<string, unknown>>>,
+  seen: Set<NonNullable<unknown>>,
   options: Readonly<DeepMergeOptions> = {
     arrays: "merge",
     sets: "merge",
     maps: "merge",
   },
-): Readonly<NonNullable<object>> {
+): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
-    return deepMerge(left, right);
+    return deepMergeInternal(left, right, seen, options);
   }
 
   if (isIterable(left) && isIterable(right)) {
@@ -158,22 +177,24 @@ function mergeObjects(
  * are not considered mergeable (it means that reference will be copied)
  */
 function isMergeable(
-  value: NonNullable<object>,
+  value: NonNullable<unknown>,
 ): value is Record<PropertyKey, unknown> {
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 
 function isIterable(
-  value: NonNullable<object>,
+  value: NonNullable<unknown>,
 ): value is Iterable<unknown> {
   return typeof (value as Iterable<unknown>)[Symbol.iterator] === "function";
 }
 
-function isNonNullObject(value: unknown): value is NonNullable<object> {
+function isNonNullObject(
+  value: unknown,
+): value is NonNullable<Record<string, unknown>> {
   return value !== null && typeof value === "object";
 }
 
-function getKeys<T extends object>(record: T): Array<keyof T> {
+function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
   const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
   filterInPlace(
     ret,
@@ -382,5 +403,5 @@ export type DeepMerge<
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U, Options>
-    : // Handle primitives
-    T | U;
+    // Handle primitives
+    : T | U;

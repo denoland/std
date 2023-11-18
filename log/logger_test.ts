@@ -1,5 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertMatch } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertMatch } from "../assert/mod.ts";
 import { Logger, LogRecord } from "./logger.ts";
 import { LevelName, LogLevels } from "./levels.ts";
 import { BaseHandler } from "./handlers.ts";
@@ -8,12 +8,12 @@ class TestHandler extends BaseHandler {
   public messages: string[] = [];
   public records: LogRecord[] = [];
 
-  handle(record: LogRecord): void {
+  override handle(record: LogRecord) {
     this.records.push(record);
     super.handle(record);
   }
 
-  public log(str: string): void {
+  public override log(str: string) {
     this.messages.push(str);
   }
 }
@@ -35,7 +35,7 @@ Deno.test({
   },
 });
 
-Deno.test("simpleLogger", function (): void {
+Deno.test("simpleLogger", function () {
   const handler = new TestHandler("DEBUG");
   let logger = new Logger("default", "DEBUG");
 
@@ -48,7 +48,7 @@ Deno.test("simpleLogger", function (): void {
   assertEquals(logger.handlers, [handler]);
 });
 
-Deno.test("customHandler", function (): void {
+Deno.test("customHandler", function () {
   const handler = new TestHandler("DEBUG");
   const logger = new Logger("default", "DEBUG", { handlers: [handler] });
 
@@ -64,7 +64,7 @@ Deno.test("customHandler", function (): void {
   assertEquals(inlineData!, "foo");
 });
 
-Deno.test("logFunctions", function (): void {
+Deno.test("logFunctions", function () {
   const doLog = (level: LevelName): TestHandler => {
     const handler = new TestHandler(level);
     const logger = new Logger("default", level, { handlers: [handler] });
@@ -116,7 +116,7 @@ Deno.test("logFunctions", function (): void {
 
 Deno.test(
   "String resolver fn will not execute if msg will not be logged",
-  function (): void {
+  function () {
     const handler = new TestHandler("ERROR");
     const logger = new Logger("default", "ERROR", { handlers: [handler] });
     let called = false;
@@ -136,7 +136,7 @@ Deno.test(
   },
 );
 
-Deno.test("String resolver fn resolves as expected", function (): void {
+Deno.test("String resolver fn resolves as expected", function () {
   const handler = new TestHandler("ERROR");
   const logger = new Logger("default", "ERROR", { handlers: [handler] });
   const expensiveFunction = (x: number): string => {
@@ -151,7 +151,7 @@ Deno.test("String resolver fn resolves as expected", function (): void {
 
 Deno.test(
   "All types map correctly to log strings and are returned as is",
-  function (): void {
+  function () {
     const handler = new TestHandler("DEBUG");
     const logger = new Logger("default", "DEBUG", { handlers: [handler] });
     const sym = Symbol();
@@ -241,15 +241,33 @@ Deno.test(
       payload: "data",
       other: 123,
     });
+    const data19: { payload: string; other: bigint } = logger.error({
+      payload: "data",
+      other: 123n,
+    });
+    assertEquals(data19, {
+      payload: "data",
+      other: 123n,
+    });
+    const data20: { payload: string; other: bigint } = logger.error(
+      { payload: "data", other: 123n },
+      1,
+    );
+    assertEquals(data20, {
+      payload: "data",
+      other: 123n,
+    });
     assertEquals(handler.messages[16], 'ERROR {"payload":"data","other":123}');
     assertEquals(handler.messages[17], 'ERROR {"payload":"data","other":123}');
+    assertEquals(handler.messages[18], 'ERROR {"payload":"data","other":123}');
+    assertEquals(handler.messages[19], 'ERROR {"payload":"data","other":123}');
 
     // error
     const error = new RangeError("Uh-oh!");
-    const data19: RangeError = logger.error(error);
-    assertEquals(data19, error);
-    const messages19 = handler.messages[18].split("\n");
-    assertEquals(messages19[0], `ERROR ${error.name}: ${error.message}`);
-    assertMatch(messages19[1], /^\s+at file:.*\d+:\d+$/);
+    const data21: RangeError = logger.error(error);
+    assertEquals(data21, error);
+    const messages21 = handler.messages[20].split("\n");
+    assertEquals(messages21[0], `ERROR ${error.name}: ${error.message}`);
+    assertMatch(messages21[1], /^\s+at file:.*\d+:\d+$/);
   },
 );

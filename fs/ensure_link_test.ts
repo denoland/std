@@ -1,10 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-import {
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../testing/asserts.ts";
+import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { ensureLink, ensureLinkSync } from "./ensure_link.ts";
 
@@ -26,12 +22,12 @@ Deno.test("ensureLinkIfItNotExist", async function () {
   await Deno.remove(destDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncIfItNotExist", function (): void {
+Deno.test("ensureLinkSyncIfItNotExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_2");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
 
-  assertThrows((): void => {
+  assertThrows(() => {
     ensureLinkSync(testFile, linkFile);
   });
 
@@ -57,14 +53,10 @@ Deno.test("ensureLinkIfItExist", async function () {
   // har link success. try to change one of them. they should be change both.
 
   // let's change origin file.
-  await Deno.writeFile(testFile, new TextEncoder().encode("123"));
+  await Deno.writeTextFile(testFile, "123");
 
-  const testFileContent1 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
-  const linkFileContent1 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
+  const testFileContent1 = await Deno.readTextFile(testFile);
+  const linkFileContent1 = await Deno.readTextFile(testFile);
 
   assertEquals(testFileContent1, "123");
   assertEquals(testFileContent1, linkFileContent1);
@@ -72,12 +64,8 @@ Deno.test("ensureLinkIfItExist", async function () {
   // let's change link file.
   await Deno.writeFile(testFile, new TextEncoder().encode("abc"));
 
-  const testFileContent2 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
-  const linkFileContent2 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
+  const testFileContent2 = await Deno.readTextFile(testFile);
+  const linkFileContent2 = await Deno.readTextFile(testFile);
 
   assertEquals(testFileContent2, "abc");
   assertEquals(testFileContent2, linkFileContent2);
@@ -85,7 +73,7 @@ Deno.test("ensureLinkIfItExist", async function () {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncIfItExist", function (): void {
+Deno.test("ensureLinkSyncIfItExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -152,7 +140,7 @@ Deno.test("ensureLinkDirectoryIfItExist", async function () {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSyncDirectoryIfItExist", function (): void {
+Deno.test("ensureLinkSyncDirectoryIfItExist", function () {
   const testDir = path.join(testdataDir, "ensure_link_origin_3");
   const linkDir = path.join(testdataDir, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");
@@ -161,7 +149,7 @@ Deno.test("ensureLinkSyncDirectoryIfItExist", function (): void {
   Deno.writeFileSync(testFile, new Uint8Array());
 
   assertThrows(
-    (): void => {
+    () => {
       ensureLinkSync(testDir, linkDir);
     },
     // "Operation not permitted (os error 1)" // throw an local matching test

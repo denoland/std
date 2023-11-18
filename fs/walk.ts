@@ -1,45 +1,28 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Documentation and interface for walk were adapted from Go
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
-import { assert } from "../_util/assert.ts";
-import { basename, join, normalize } from "../path/mod.ts";
+import { join } from "../path/join.ts";
+import { normalize } from "../path/normalize.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
-/** Create WalkEntry for the `path` synchronously */
-export function _createWalkEntrySync(path: string): WalkEntry {
-  path = normalize(path);
-  const name = basename(path);
-  const info = Deno.statSync(path);
-  return {
-    path,
-    name,
-    isFile: info.isFile,
-    isDirectory: info.isDirectory,
-    isSymlink: info.isSymlink,
-  };
-}
+export class WalkError extends Error {
+  override cause: unknown;
+  override name = "WalkError";
+  path: string;
 
-/** Create WalkEntry for the `path` asynchronously */
-export async function _createWalkEntry(path: string): Promise<WalkEntry> {
-  path = normalize(path);
-  const name = basename(path);
-  const info = await Deno.stat(path);
-  return {
-    path,
-    name,
-    isFile: info.isFile,
-    isDirectory: info.isDirectory,
-    isSymlink: info.isSymlink,
-  };
-}
-
-export interface WalkOptions {
-  maxDepth?: number;
-  includeFiles?: boolean;
-  includeDirs?: boolean;
-  followSymlinks?: boolean;
-  exts?: string[];
-  match?: RegExp[];
-  skip?: RegExp[];
+  constructor(cause: unknown, path: string) {
+    super(
+      `${cause instanceof Error ? cause.message : cause} for path "${path}"`,
+    );
+    this.path = path;
+    this.cause = cause;
+  }
 }
 
 function include(
@@ -60,53 +43,89 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: unknown, root: string) {
-  if (err instanceof Error && "root" in err) return err;
-  const e = new Error() as Error & { root: string };
-  e.root = root;
-  e.message = err instanceof Error
-    ? `${err.message} for path "${root}"`
-    : `[non-error thrown] for path "${root}"`;
-  e.stack = err instanceof Error ? err.stack : undefined;
-  e.cause = err instanceof Error ? err.cause : undefined;
-  return e;
+function wrapErrorWithPath(err: unknown, root: string) {
+  if (err instanceof WalkError) return err;
+  return new WalkError(err, root);
 }
 
-export interface WalkEntry extends Deno.DirEntry {
-  path: string;
+export interface WalkOptions {
+  /**
+   * The maximum depth of the file tree to be walked recursively.
+   * @default {Infinity}
+   */
+  maxDepth?: number;
+  /**
+   * Indicates whether file entries should be included or not.
+   * @default {true}
+   */
+  includeFiles?: boolean;
+  /**
+   * Indicates whether directory entries should be included or not.
+   * @default {true}
+   */
+  includeDirs?: boolean;
+  /**
+   * Indicates whether symlink entries should be included or not.
+   * This option is meaningful only if `followSymlinks` is set to `false`.
+   * @default {true}
+   */
+  includeSymlinks?: boolean;
+  /**
+   * Indicates whether symlinks should be resolved or not.
+   * @default {false}
+   */
+  followSymlinks?: boolean;
+  /**
+   * Indicates whether the followed symlink's path should be canonicalized.
+   * This option works only if `followSymlinks` is not `false`.
+   * @default {true}
+   */
+  canonicalize?: boolean;
+  /**
+   * List of file extensions used to filter entries.
+   * If specified, entries without the file extension specified by this option are excluded.
+   * @default {undefined}
+   */
+  exts?: string[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries that do not match the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
+  match?: RegExp[];
+  /**
+   * List of regular expression patterns used to filter entries.
+   * If specified, entries matching the patterns specified by this option are excluded.
+   * @default {undefined}
+   */
+  skip?: RegExp[];
 }
+export type { WalkEntry };
 
-/** Walks the file tree rooted at root, yielding each file or directory in the
- * tree filtered according to the given options. The files are walked in lexical
- * order, which makes the output deterministic but means that for very large
- * directories walk() can be inefficient.
+/**
+ * Walks the file tree rooted at root, yielding each file or directory in the
+ * tree filtered according to the given options.
  *
- * Options:
- * - maxDepth?: number = Infinity;
- * - includeFiles?: boolean = true;
- * - includeDirs?: boolean = true;
- * - followSymlinks?: boolean = false;
- * - exts?: string[];
- * - match?: RegExp[];
- * - skip?: RegExp[];
- *
+ * @example
  * ```ts
- *       import { walk } from "./walk.ts";
- *       import { assert } from "../testing/asserts.ts";
+ * import { walk } from "https://deno.land/std@$STD_VERSION/fs/walk.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts";
  *
- *       for await (const entry of walk(".")) {
- *         console.log(entry.path);
- *         assert(entry.isFile);
- *       }
+ * for await (const entry of walk(".")) {
+ *   console.log(entry.path);
+ *   assert(entry.isFile);
+ * }
  * ```
  */
 export async function* walk(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
+    canonicalize = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
@@ -115,26 +134,34 @@ export async function* walk(
   if (maxDepth < 0) {
     return;
   }
+  root = toPathString(root);
   if (includeDirs && include(root, exts, match, skip)) {
-    yield await _createWalkEntry(root);
+    yield await createWalkEntry(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
   try {
     for await (const entry of Deno.readDir(root)) {
-      assert(entry.name != null);
       let path = join(root, entry.name);
 
       let { isSymlink, isDirectory } = entry;
 
       if (isSymlink) {
-        if (!followSymlinks) continue;
-        path = await Deno.realPath(path);
+        if (!followSymlinks) {
+          if (includeSymlinks && include(path, exts, match, skip)) {
+            yield { path, ...entry };
+          }
+          continue;
+        }
+        const realPath = await Deno.realPath(path);
+        if (canonicalize) {
+          path = realPath;
+        }
         // Caveat emptor: don't assume |path| is not a symlink. realpath()
         // resolves symlinks but another process can replace the file system
         // entity with a different type of entity before we call lstat().
-        ({ isSymlink, isDirectory } = await Deno.lstat(path));
+        ({ isSymlink, isDirectory } = await Deno.lstat(realPath));
       }
 
       if (isSymlink || isDirectory) {
@@ -142,6 +169,7 @@ export async function* walk(
           maxDepth: maxDepth - 1,
           includeFiles,
           includeDirs,
+          includeSymlinks,
           followSymlinks,
           exts,
           match,
@@ -152,28 +180,31 @@ export async function* walk(
       }
     }
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
 }
 
 /** Same as walk() but uses synchronous ops */
 export function* walkSync(
-  root: string,
+  root: string | URL,
   {
     maxDepth = Infinity,
     includeFiles = true,
     includeDirs = true,
+    includeSymlinks = true,
     followSymlinks = false,
+    canonicalize = true,
     exts = undefined,
     match = undefined,
     skip = undefined,
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
+  root = toPathString(root);
   if (maxDepth < 0) {
     return;
   }
   if (includeDirs && include(root, exts, match, skip)) {
-    yield _createWalkEntrySync(root);
+    yield createWalkEntrySync(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
@@ -182,21 +213,28 @@ export function* walkSync(
   try {
     entries = Deno.readDirSync(root);
   } catch (err) {
-    throw wrapErrorWithRootPath(err, normalize(root));
+    throw wrapErrorWithPath(err, normalize(root));
   }
   for (const entry of entries) {
-    assert(entry.name != null);
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;
 
     if (isSymlink) {
-      if (!followSymlinks) continue;
-      path = Deno.realPathSync(path);
+      if (!followSymlinks) {
+        if (includeSymlinks && include(path, exts, match, skip)) {
+          yield { path, ...entry };
+        }
+        continue;
+      }
+      const realPath = Deno.realPathSync(path);
+      if (canonicalize) {
+        path = realPath;
+      }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
       // entity with a different type of entity before we call lstat().
-      ({ isSymlink, isDirectory } = Deno.lstatSync(path));
+      ({ isSymlink, isDirectory } = Deno.lstatSync(realPath));
     }
 
     if (isSymlink || isDirectory) {
@@ -204,6 +242,7 @@ export function* walkSync(
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
+        includeSymlinks,
         followSymlinks,
         exts,
         match,

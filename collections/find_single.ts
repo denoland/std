@@ -1,19 +1,19 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
- * Returns an element if and only if that element is the only one matching the given condition. Returns `undefined` otherwise.
+ * Returns an element if and only if that element is the only one matching the
+ * given condition. Returns `undefined` otherwise.
  *
- * Example:
- *
+ * @example
  * ```ts
- * import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/find_single.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const bookings = [
- *     { month: 'January', active: false },
- *     { month: 'March', active: false },
- *     { month: 'June', active: true },
+ *   { month: "January", active: false },
+ *   { month: "March", active: false },
+ *   { month: "June", active: true },
  * ];
  * const activeBooking = findSingle(bookings, (it) => it.active);
  * const inactiveBooking = findSingle(bookings, (it) => !it.active);
@@ -23,7 +23,7 @@
  * ```
  */
 export function findSingle<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T | undefined {
   let match: T | undefined = undefined;

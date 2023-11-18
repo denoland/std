@@ -1,7 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { decode, encode } from "./base64url.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
 
 const testsetString = [
   ["", ""],
@@ -29,26 +29,26 @@ const testsetInvalid = [
 
 Deno.test("[encoding/base64url] testBase64urlEncodeString", () => {
   for (const [input, output] of testsetString) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase64Url(input), output);
   }
 });
 
 Deno.test("[encoding/base64url] testBase64urlEncodeBinary", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase64Url(input), output);
   }
 });
 
 Deno.test("[decoding/base64url] testBase64urlDecodeBinary", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(decode(output), input);
+    assertEquals(decodeBase64Url(output), input);
   }
 });
 
 Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () => {
   for (const invalidb64url of testsetInvalid) {
     assertThrows(
-      () => decode(invalidb64url),
+      () => decodeBase64Url(invalidb64url),
       TypeError,
       "invalid character",
     );

@@ -1,34 +1,38 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
+import { basename } from "../path/basename.ts";
+import { join } from "../path/join.ts";
+import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType, isSubdir } from "./_util.ts";
-import { assert } from "../_util/assert.ts";
-import { isWindows } from "../_util/os.ts";
+import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
+import { assert } from "../assert/assert.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 export interface CopyOptions {
   /**
-   * overwrite existing file or directory. Default is `false`
+   * overwrite existing file or directory.
+   * @default {false}
    */
   overwrite?: boolean;
   /**
    * When `true`, will set last modification and access times to the ones of the
    * original source files.
    * When `false`, timestamp behavior is OS-dependent.
-   * Default is `false`.
+   *
+   * @default {false}
    */
   preserveTimestamps?: boolean;
 }
 
 interface InternalCopyOptions extends CopyOptions {
-  /**
-   * default is `false`
-   */
+  /** @default {false} */
   isFolder?: boolean;
 }
 
 async function ensureValidCopy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Promise<Deno.FileInfo | undefined> {
   let destStat: Deno.FileInfo;
@@ -48,15 +52,15 @@ async function ensureValidCopy(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
 }
 
 function ensureValidCopySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ): Deno.FileInfo | undefined {
   let destStat: Deno.FileInfo;
@@ -75,7 +79,7 @@ function ensureValidCopySync(
     );
   }
   if (!options.overwrite) {
-    throw new Error(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
   }
 
   return destStat;
@@ -83,8 +87,8 @@ function ensureValidCopySync(
 
 /* copy file to dest */
 async function copyFile(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -98,10 +102,10 @@ async function copyFile(
 }
 /* copy file to dest synchronously */
 function copyFileSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
-): void {
+) {
   ensureValidCopySync(src, dest, options);
   Deno.copyFileSync(src, dest);
   if (options.preserveTimestamps) {
@@ -114,8 +118,8 @@ function copyFileSync(
 
 /* copy symlink to dest */
 async function copySymLink(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
 ) {
   await ensureValidCopy(src, dest, options);
@@ -138,10 +142,10 @@ async function copySymLink(
 
 /* copy symlink to dest synchronously */
 function copySymlinkSync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: InternalCopyOptions,
-): void {
+) {
   ensureValidCopySync(src, dest, options);
   const originSrcFilePath = Deno.readLinkSync(src);
   const type = getFileInfoType(Deno.lstatSync(src));
@@ -163,8 +167,8 @@ function copySymlinkSync(
 
 /* copy folder from src to dest. */
 async function copyDir(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions,
 ) {
   const destStat = await ensureValidCopy(src, dest, {
@@ -183,21 +187,32 @@ async function copyDir(
     await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
+  src = toPathString(src);
+  dest = toPathString(dest);
+
+  const promises = [];
+
   for await (const entry of Deno.readDir(src)) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, path.basename(srcPath as string));
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {
-      await copySymLink(srcPath, destPath, options);
+      promises.push(copySymLink(srcPath, destPath, options));
     } else if (entry.isDirectory) {
-      await copyDir(srcPath, destPath, options);
+      promises.push(copyDir(srcPath, destPath, options));
     } else if (entry.isFile) {
-      await copyFile(srcPath, destPath, options);
+      promises.push(copyFile(srcPath, destPath, options));
     }
   }
+
+  await Promise.all(promises);
 }
 
 /* copy folder from src to dest synchronously */
-function copyDirSync(src: string, dest: string, options: CopyOptions): void {
+function copyDirSync(
+  src: string | URL,
+  dest: string | URL,
+  options: CopyOptions,
+) {
   const destStat = ensureValidCopySync(src, dest, {
     ...options,
     isFolder: true,
@@ -214,10 +229,12 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
     Deno.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
+  src = toPathString(src);
+  dest = toPathString(dest);
+
   for (const entry of Deno.readDirSync(src)) {
-    assert(entry.name != null, "file.name must be set");
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, path.basename(srcPath as string));
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {
       copySymlinkSync(srcPath, destPath, options);
     } else if (entry.isDirectory) {
@@ -231,6 +248,13 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * copy("./foo", "./bar"); // returns a promise
+ * ```
+ *
  * @param src the file/directory path.
  *            Note that if `src` is a directory it will copy everything inside
  *            of this directory, not the entire directory itself
@@ -239,12 +263,12 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
  * @param options
  */
 export async function copy(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+  src = resolve(toPathString(src));
+  dest = resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
@@ -270,6 +294,12 @@ export async function copy(
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * Requires the `--allow-read` and `--allow-write` flag.
+ *
+ * @example
+ * ```ts
+ * import { copySync } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+ * copySync("./foo", "./bar"); // void
+ * ```
  * @param src the file/directory path.
  *            Note that if `src` is a directory it will copy everything inside
  *            of this directory, not the entire directory itself
@@ -278,12 +308,12 @@ export async function copy(
  * @param options
  */
 export function copySync(
-  src: string,
-  dest: string,
+  src: string | URL,
+  dest: string | URL,
   options: CopyOptions = {},
-): void {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
+) {
+  src = resolve(toPathString(src));
+  dest = resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");

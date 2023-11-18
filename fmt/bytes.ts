@@ -1,6 +1,41 @@
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2021 Giuseppe Eletto. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/** Pretty print bytes.
+ *
+ * Based on [pretty-bytes](https://github.com/sindresorhus/pretty-bytes).
+ * A utility for displaying file sizes for humans.
+ *
+ * This module is browser compatible.
+ *
+ * @example
+ * ```ts
+ * import { format } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
+ *
+ * format(1337);
+ * //=> '1.34 kB'
+ *
+ * format(100);
+ * //=> '100 B'
+ *
+ * // Display with units of bits
+ * format(1337, { bits: true });
+ * //=> '1.34 kbit'
+ *
+ * // Display file size differences
+ * format(42, { signed: true });
+ * //=> '+42 B'
+ *
+ * // Localized output using German locale
+ * format(1337, { locale: "de" });
+ * //=> '1,34 kB'
+ * ```
+ *
+ * @module
+ */
 
 type LocaleOptions = {
   minimumFractionDigits?: number;
@@ -10,7 +45,7 @@ type LocaleOptions = {
 /**
  * The options for pretty printing the byte numbers.
  */
-export interface PrettyBytesOptions {
+export interface FormatOptions {
   /** Uses bits representation. Default is false. */
   bits?: boolean;
   /** Uses binary bytes (e.g. kibibyte). Default is false. */
@@ -26,14 +61,14 @@ export interface PrettyBytesOptions {
 }
 
 /**
- * Convert bytes to a human readable string: 1337 → 1.34 kB
+ * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
  * @param num The number to format
  * @param options The options
  */
-export function prettyBytes(
+export function format(
   num: number,
-  options: PrettyBytesOptions = {},
+  options: FormatOptions = {},
 ): string {
   if (!Number.isFinite(num)) {
     throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);
@@ -83,7 +118,7 @@ export function prettyBytes(
 }
 
 function getLocaleOptions(
-  { maximumFractionDigits, minimumFractionDigits }: PrettyBytesOptions,
+  { maximumFractionDigits, minimumFractionDigits }: FormatOptions,
 ): LocaleOptions | undefined {
   if (maximumFractionDigits || minimumFractionDigits) {
     return {

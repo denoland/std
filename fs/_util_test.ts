@@ -1,15 +1,16 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
-import { getFileInfoType, isSubdir, PathType } from "./_util.ts";
+import { getFileInfoType, isSamePath, isSubdir, PathType } from "./_util.ts";
 import { ensureFileSync } from "./ensure_file.ts";
 import { ensureDirSync } from "./ensure_dir.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("_isSubdir", function (): void {
+Deno.test("_isSubdir", function () {
   const pairs = [
     ["", "", false, path.posix.sep],
     ["/first/second", "/first", false, path.posix.sep],
@@ -21,7 +22,7 @@ Deno.test("_isSubdir", function (): void {
     ["c:\\first", "c:\\first\\second", true, path.win32.sep],
   ];
 
-  pairs.forEach(function (p): void {
+  pairs.forEach(function (p) {
     const src = p[0] as string;
     const dest = p[1] as string;
     const expected = p[2] as boolean;
@@ -34,13 +35,13 @@ Deno.test("_isSubdir", function (): void {
   });
 });
 
-Deno.test("_getFileInfoType", function (): void {
+Deno.test("_getFileInfoType", function () {
   const pairs = [
     [path.join(testdataDir, "file_type_1"), "file"],
     [path.join(testdataDir, "file_type_dir_1"), "dir"],
   ];
 
-  pairs.forEach(function (p): void {
+  pairs.forEach(function (p) {
     const filePath = p[0] as string;
     const type = p[1] as PathType;
     switch (type) {
@@ -61,4 +62,57 @@ Deno.test("_getFileInfoType", function (): void {
 
     assertEquals(getFileInfoType(stat), type);
   });
+});
+
+Deno.test({
+  name: "_isSamePathWin32",
+  ignore: Deno.build.os !== "windows",
+  fn() {
+    const pairs: (string | URL | boolean)[][] = [
+      ["", "", true],
+      ["C:\\test", "C:\\test", true],
+      ["C:\\test", "C:\\test\\test", false],
+      ["C:\\test", path.toFileUrl("C:\\test"), true],
+      ["C:\\test", path.toFileUrl("C:\\test\\test"), false],
+    ];
+
+    for (const p of pairs) {
+      const src = p[0] as string | URL;
+      const dest = p[1] as string | URL;
+      const expected = p[2] as boolean;
+
+      assertEquals(
+        isSamePath(src, dest),
+        expected,
+        `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
+      );
+    }
+  },
+});
+
+Deno.test({
+  name: "_isSamePathPosix",
+  ignore: Deno.build.os === "windows",
+  fn() {
+    const pairs: (string | URL | boolean)[][] = [
+      ["", "", true],
+      ["/test", "/test/", true],
+      ["/test", "/test/test", false],
+      ["/test", "/test/test/..", true],
+      ["/test", path.toFileUrl("/test"), true],
+      ["/test", path.toFileUrl("/test/test"), false],
+    ];
+
+    for (const p of pairs) {
+      const src = p[0] as string | URL;
+      const dest = p[1] as string | URL;
+      const expected = p[2] as boolean;
+
+      assertEquals(
+        isSamePath(src, dest),
+        expected,
+        `'${src}' should ${expected ? "" : "not"} be the same as '${dest}'`,
+      );
+    }
+  },
 });
