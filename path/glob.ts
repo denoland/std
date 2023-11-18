@@ -15,7 +15,7 @@ export {
 
 export {
   /**
-   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/normalize_glob.ts} instead.
+   * @deprecated (will be removed in 0.215.0) Import from {@link https://deno.land/std/path/glob_to_regexp.ts} instead.
    *
    * Convert a glob string to a regular expression.
    *
