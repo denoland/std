@@ -23,27 +23,7 @@
  */
 export function minBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
-): T | undefined;
-export function minBy<T>(
-  array: Iterable<T>,
-  selector: (el: T) => string,
-): T | undefined;
-export function minBy<T>(
-  array: Iterable<T>,
-  selector: (el: T) => bigint,
-): T | undefined;
-export function minBy<T>(
-  array: Iterable<T>,
-  selector: (el: T) => Date,
-): T | undefined;
-export function minBy<T>(
-  array: Iterable<T>,
-  selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+  selector: (el: T) => number | string | bigint | Date,
 ): T | undefined {
   let min: T | undefined = undefined;
   let minValue: ReturnType<typeof selector> | undefined = undefined;

@@ -21,17 +21,7 @@
  * assertEquals(minCount, 2);
  * ```
  */
-export function minOf<T>(
-  array: Iterable<T>,
-  selector: (el: T) => number,
-): number | undefined;
-
-export function minOf<T>(
-  array: Iterable<T>,
-  selector: (el: T) => bigint,
-): bigint | undefined;
-
-export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
+export function minOf<T, S extends (el: T) => number | bigint>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
