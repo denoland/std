@@ -23,7 +23,7 @@ export function assertNotStrictEquals<T>(
 
   const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(
-    `Expected "actual" to be strictly unequal to: ${
+    `Expected "actual" to not be strictly equal to: ${
       format(actual)
     }${msgSuffix}\n`,
   );
