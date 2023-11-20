@@ -18,20 +18,12 @@
  * assertEquals(odd, [5, 7, 9]);
  * ```
  */
-export function partition<T, U extends T>(
-  array: Iterable<T>,
-  predicate: (el: T) => el is U,
-): [U[], Exclude<T, U>[]];
 export function partition<T>(
   array: Iterable<T>,
   predicate: (el: T) => boolean,
-): [T[], T[]];
-export function partition(
-  array: Iterable<unknown>,
-  predicate: (el: unknown) => boolean,
-): [unknown[], unknown[]] {
-  const matches: Array<unknown> = [];
-  const rest: Array<unknown> = [];
+): [T[], T[]] {
+  const matches = [];
+  const rest = [];
 
   for (const element of array) {
     if (predicate(element)) {
