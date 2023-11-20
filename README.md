@@ -103,7 +103,6 @@ Check out the documentation [here](https://deno.land/std?doc).
 | ulid         | Unstable   |
 | url          | Unstable   |
 | uuid         | Stable     |
-| wasi         | Deprecated |
 | yaml         | Stable     |
 
 > For background and discussions regarding the stability of the following

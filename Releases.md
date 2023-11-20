@@ -1,3 +1,17 @@
+### 0.207.0 / 2023.11.17
+
+- BREAKING(bytes): deprecate `concat()` signatures that don't use `Uint8Array[]`
+  argument (#3784)
+- BREAKING(crypto): remove `crypto.subtle.timingSafeEqual()` method (#3803)
+- BREAKING(fs): deprecate `EOL` enum (#3809)
+- BREAKING(http): deprecate `ServerSentEvent()` (#3783)
+- BREAKING(http): deprecate `enum Status` in favour of `STATUS_CODES` object
+  (#3781)
+- BREAKING: move `std/flags` to new `std/cli` sub-module (#3530)
+- BREAKING: remove deprecated `std/http/http_errors` (#3737)
+- BREAKING: remove deprecated `std/wasi` module (#3733)
+- feat: `std/data_structures` (#3734)
+
 ### 0.206.0 / 2023.11.10
 
 - BREAKING(async): deprecate `deferred()` in favor of `Promise.withResolvers()`

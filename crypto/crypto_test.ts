@@ -4,6 +4,8 @@ import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
+import { encodeHex } from "../encoding/hex.ts";
+
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
@@ -21,12 +23,12 @@ Deno.test(
       "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           ReadableStream.from([inputBytes]),
@@ -36,7 +38,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
@@ -46,12 +48,12 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
@@ -66,7 +68,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         stdCrypto.subtle.digestSync(
           "SHA-384",
           (function* () {
@@ -80,7 +82,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (function* () {
@@ -92,17 +94,17 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
+      encodeHex(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
 
     assertEquals(
-      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
+      encodeHex(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
   },
@@ -165,56 +167,41 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    const smallData = new Uint8Array(64);
+    const smallDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
+    const heapBytesAfterSmall = memory.buffer.byteLength;
+
+    const largeData = new Uint8Array(64_000_000);
+    const largeDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
+    const heapBytesAfterLarge = memory.buffer.byteLength;
+
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      smallDigest,
+      heapBytesAfterSmall,
+      largeDigest,
+      heapBytesAfterLarge,
+    }));
+  `;
+
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", code],
     cwd: moduleDir,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "inherit",
   });
-  const child = process.spawn();
 
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+  const { success, stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
 
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      const smallData = new Uint8Array(64);
-      const smallDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
-      const heapBytesAfterSmall = memory.buffer.byteLength;
-
-      const largeData = new Uint8Array(64_000_000);
-      const largeDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
-      const heapBytesAfterLarge = memory.buffer.byteLength;
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          smallDigest,
-          heapBytesAfterSmall,
-          largeDigest,
-          heapBytesAfterLarge,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const res = await child.output();
-  const stdout = new TextDecoder().decode(res.stdout);
-
-  assertEquals(res.success, true, "test subprocess failed");
+  assertEquals(success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -227,7 +214,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     heapBytesAfterSmall: number;
     largeDigest: string;
     heapBytesAfterLarge: number;
-  } = JSON.parse(stdout);
+  } = JSON.parse(output);
 
   assertEquals(
     smallDigest,
@@ -262,55 +249,39 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    let state = new ArrayBuffer(0);
+
+    for (let i = 0; i < 1_000_000; i++) {
+      state = stdCrypto.subtle.digestSync({
+        name: "BLAKE3"
+      }, state);
+    }
+
+    const heapBytesFinal = memory.buffer.byteLength;
+
+    const stateFinal = encodeHex(state);
+
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      heapBytesFinal,
+      stateFinal,
+    }));
+  `;
+
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+    args: ["eval", code],
     cwd: moduleDir,
-    stdout: "piped",
-    stderr: "inherit",
-    stdin: "piped",
   });
-  const child = command.spawn();
-
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
-
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      let state = new ArrayBuffer(0);
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      for (let i = 0; i < 1_000_000; i++) {
-        state = stdCrypto.subtle.digestSync({
-          name: "BLAKE3"
-        }, state);
-      }
-
-      const heapBytesFinal = memory.buffer.byteLength;
-
-      const stateFinal = toHexString(state);
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          heapBytesFinal,
-          stateFinal,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const { stdout, success } = await child.output();
+  const { stdout, success } = await command.output();
   const output = new TextDecoder().decode(stdout);
 
   assert(success);
@@ -1345,20 +1316,20 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
   const expectedDigest64a = "a5d9fb67426e48b1";
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
     expectedDigest32,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
     expectedDigest32a,
   );
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
     expectedDigest64,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
     expectedDigest64a,
   );
 });
@@ -1373,12 +1344,11 @@ for (const algorithm of digestAlgorithms) {
         const bytePieces = pieces.map((piece) =>
           typeof piece === "string" ? new TextEncoder().encode(piece) : piece
         ) as Array<BufferSource>;
-
         // Expected value will either be a hex string, if the case is expected
         // to return successfully, or an error class/constructor function, if
         // the case is expected to throw.
         if (typeof expected === "string") {
-          const actual = toHexString(
+          const actual = encodeHex(
             await stdCrypto.subtle.digest({
               ...options,
               name: algorithm,
@@ -1424,12 +1394,6 @@ for (const algorithm of digestAlgorithms) {
     }
   });
 }
-
-const toHexString = (bytes: ArrayBuffer): string =>
-  new Uint8Array(bytes).reduce(
-    (str, byte) => str + byte.toString(16).padStart(2, "0"),
-    "",
-  );
 
 /**
  * This is one of many methods of `crypto` for which we don't have our own

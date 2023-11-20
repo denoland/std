@@ -62,7 +62,5 @@ toml:
   - toml/**
 uuid:
   - uuid/**
-wasi:
-  - wasi/**
 yaml:
   - yaml/**
