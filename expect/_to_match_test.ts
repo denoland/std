@@ -11,4 +11,8 @@ Deno.test("expect().toMatch()", () => {
   assertThrows(() => {
     expect("hello deno").toMatch(/DENO/);
   }, AssertionError);
+
+  assertThrows(() => {
+    expect("hello deno").not.toMatch(/deno/);
+  });
 });

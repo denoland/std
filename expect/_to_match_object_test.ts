@@ -37,4 +37,8 @@ Deno.test("expect().toMatchObject()", () => {
   assertThrows(() => {
     expect(house1).toMatchObject(desiredHouse);
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(house0).not.toMatchObject(desiredHouse);
+  }, AssertionError);
 });

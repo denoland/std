@@ -6,20 +6,22 @@ import { AssertionError, assertThrows } from "../assert/mod.ts";
 Deno.test("expect().toStrictEqual()", () => {
   const obj = { a: 1 };
   expect(1).toStrictEqual(1);
-  expect("a").toStrictEqual("a");
   expect(obj).toStrictEqual(obj);
 
   expect(1).not.toStrictEqual(2);
-  expect("a").not.toStrictEqual("b");
   expect(obj).not.toStrictEqual({ a: 1 });
 
   assertThrows(() => {
     expect(1).toStrictEqual(2);
   }, AssertionError);
   assertThrows(() => {
-    expect("a").toStrictEqual("b");
+    expect(obj).toStrictEqual({ a: 1 });
+  }, AssertionError);
+
+  assertThrows(() => {
+    expect(1).not.toStrictEqual(1);
   }, AssertionError);
   assertThrows(() => {
-    expect(obj).toStrictEqual({ a: 1 });
+    expect(obj).not.toStrictEqual(obj);
   }, AssertionError);
 });

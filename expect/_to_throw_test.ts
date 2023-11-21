@@ -13,4 +13,10 @@ Deno.test("expect().toThrow()", () => {
   assertThrows(() => {
     expect(() => {}).toThrow();
   }, AssertionError);
+
+  assertThrows(() => {
+    expect(() => {
+      throw new Error("hello world");
+    }).not.toThrow();
+  }, AssertionError);
 });
