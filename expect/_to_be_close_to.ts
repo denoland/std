@@ -3,7 +3,6 @@
 import { MatcherContext, MatchResult } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
-// TODO(kt3k): tolerance handling is wrong
 export function toBeCloseTo(
   context: MatcherContext,
   expected: number,
