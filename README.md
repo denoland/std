@@ -149,7 +149,7 @@ every new version of the Deno CLI (including patch versions).
 ```html
 <a href="https://deno.land/std">
   <img
-    width="231"
+    width="135"
     height="20"
     src="https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg"
     alt="Built with the Deno Standard Library"
