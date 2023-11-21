@@ -66,7 +66,7 @@ export interface Expected {
   toHaveBeenNthCalledWith(nth: number, ...expected: unknown[]): void;
   toHaveLength(expected: number): void;
   toHaveNthReturnedWith(nth: number, expected: unknown): void;
-  toHaveProperty(propName: string | symbol, value?: unknown): void;
+  toHaveProperty(propName: string | string[], value?: unknown): void;
   toHaveReturnedTimes(expected: number): void;
   toHaveReturnedWith(expected: unknown): void;
   toHaveReturned(): void;

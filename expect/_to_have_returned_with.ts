@@ -2,6 +2,7 @@
 
 import { MatcherContext, MatchResult } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
+import { equal } from "../assert/equal.ts";
 import { getMockCalls } from "./_mock_util.ts";
 
 export function toHaveReturnedWith(

@@ -4,7 +4,7 @@ export function inspectArgs(args: unknown[]): string {
   return args.map(inspectArg).join(", ");
 }
 
-function inspectArg(arg: unknown): string {
+export function inspectArg(arg: unknown): string {
   return typeof Deno !== "undefined" && Deno.inspect
     ? Deno.inspect(arg)
     : String(arg);
