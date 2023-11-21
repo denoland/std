@@ -10,6 +10,13 @@ const BS = "\b".charCodeAt(0); // ^H - Backspace on Linux and Windows
 const DEL = 0x7f; // ^? - Backspace on macOS
 const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
 
+export type PromptSecretOptions = {
+  /** A character to print instead of the user's input. */
+  mask?: string;
+  /** Clear the current line after the user's input. */
+  clear?: boolean;
+};
+
 /**
  * Shows the given message and waits for the user's input. Returns the user's input as string.
  * This is similar to `prompt()` but it print user's input as `*` to prevent password from being shown.
@@ -17,14 +24,13 @@ const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
  */
 export function promptSecret(
   message = "Secret ",
-  mask = "*",
+  { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
   if (!Deno.isatty(input.rid)) {
     return null;
   }
 
-  const callback = mask === "" ? undefined : (n: number) => {
-    // Clear the current line
+  const callback = !mask ? undefined : (n: number) => {
     output.writeSync(CLR);
     output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));
   };
@@ -34,7 +40,11 @@ export function promptSecret(
   try {
     return readLineFromStdinSync(callback);
   } finally {
-    output.writeSync(CLR);
+    if (clear) {
+      output.writeSync(CLR);
+    } else {
+      output.writeSync(encoder.encode("\n"));
+    }
     Deno.stdin.setRaw(false);
   }
 }
