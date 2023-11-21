@@ -25,6 +25,7 @@ import { toHaveBeenCalled } from "./_to_have_been_called.ts";
 import { toHaveBeenLastCalledWith } from "./_to_have_been_last_called_with.ts";
 import { toHaveBeenNthCalledWith } from "./_to_have_been_nth_called_with.ts";
 import { toHaveLength } from "./_to_have_length.ts";
+import { toHaveLastReturnedWith } from "./_to_have_last_returned_with.ts";
 import { toHaveNthReturnedWith } from "./_to_have_nth_returned_with.ts";
 import { toHaveProperty } from "./_to_have_property.ts";
 import { toHaveReturnedTimes } from "./_to_have_returned_times.ts";
@@ -65,6 +66,7 @@ export interface Expected {
   toHaveBeenLastCalledWith(...expected: unknown[]): void;
   toHaveBeenNthCalledWith(nth: number, ...expected: unknown[]): void;
   toHaveLength(expected: number): void;
+  toHaveLastReturnedWith(expected: unknown): void;
   toHaveNthReturnedWith(nth: number, expected: unknown): void;
   toHaveProperty(propName: string | string[], value?: unknown): void;
   toHaveReturnedTimes(expected: number): void;
@@ -87,7 +89,7 @@ type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
 
 const matchers: Record<MatcherKey, Matcher> = {
   lastCalledWith: toHaveBeenLastCalledWith,
-  lastReturnedWith: toHaveReturnedWith,
+  lastReturnedWith: toHaveLastReturnedWith,
   nthCalledWith: toHaveBeenNthCalledWith,
   nthReturnedWith: toHaveNthReturnedWith,
   toBeCalled: toHaveBeenCalled,
@@ -115,6 +117,7 @@ const matchers: Record<MatcherKey, Matcher> = {
   toHaveBeenLastCalledWith,
   toHaveBeenNthCalledWith,
   toHaveLength,
+  toHaveLastReturnedWith,
   toHaveNthReturnedWith,
   toHaveProperty,
   toHaveReturnedTimes,

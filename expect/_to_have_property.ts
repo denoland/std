@@ -19,6 +19,7 @@ export function toHaveProperty(
     propPath = propName.split(".");
   }
 
+  // deno-lint-ignore no-explicit-any
   let current = value as any;
   while (true) {
     if (current === undefined || current === null) {

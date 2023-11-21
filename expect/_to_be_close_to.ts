@@ -1,34 +1,35 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { MatcherContext, MatchResult } from "./_types.ts";
-import { assertAlmostEquals } from "../assert/assert_almost_equals.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 
 // TODO(kt3k): tolerance handling is wrong
 export function toBeCloseTo(
   context: MatcherContext,
   expected: number,
-  tolerance = 1e-7, // FIXME: This should be digits number, not tolerance
+  numDigits = 2,
 ): MatchResult {
-  if (context.isNot) {
-    const actual = Number(context.value);
-    const delta = Math.abs(expected - actual);
-    if (delta > tolerance) {
-      return;
-    }
-    const msgSuffix = context.customMessage
-      ? `: ${context.customMessage}`
-      : ".";
-    const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
-    throw new AssertionError(
-      `Expected actual: "${f(actual)}" to NOT be close to "${f(expected)}": \
-  delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`,
+  if (numDigits < 0) {
+    throw new Error(
+      "toBeCloseTo second argument must be a non-negative integer. Got " +
+        numDigits,
     );
   }
-  return assertAlmostEquals(
-    Number(context.value),
-    expected,
-    tolerance,
-    context.customMessage,
-  );
+  const tolerance = 0.5 * Math.pow(10, -numDigits);
+  const value = Number(context.value);
+  const pass = Math.abs(expected - value) < tolerance;
+
+  if (context.isNot) {
+    if (pass) {
+      throw new AssertionError(
+        `Expected the value not to be close to ${expected} (using ${numDigits} digits), but it is`,
+      );
+    }
+  } else {
+    if (!pass) {
+      throw new AssertionError(
+        `Expected the value (${value} to be close to ${expected} (using ${numDigits} digits), but it is not`,
+      );
+    }
+  }
 }
