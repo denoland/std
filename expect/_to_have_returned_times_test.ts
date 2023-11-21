@@ -6,4 +6,19 @@ import { AssertionError, assertThrows } from "../assert/mod.ts";
 
 Deno.test("expect().toHaveReturnedTimes()", () => {
   const mockFn = fn();
+
+  mockFn();
+  mockFn();
+
+  expect(mockFn).toHaveReturnedTimes(2);
+
+  expect(mockFn).not.toHaveReturnedTimes(1);
+
+  assertThrows(() => {
+    expect(mockFn).toHaveReturnedTimes(1);
+  }, AssertionError);
+
+  assertThrows(() => {
+    expect(mockFn).not.toHaveReturnedTimes(2);
+  }, AssertionError);
 });

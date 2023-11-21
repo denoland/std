@@ -9,4 +9,5 @@ export function toHaveLastReturnedWith(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
+  const calls = getMockCalls(context.value);
 }

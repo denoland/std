@@ -8,4 +8,20 @@ export function toHaveReturnedTimes(
   context: MatcherContext,
   expected: number,
 ): MatchResult {
+  const calls = getMockCalls(context.value);
+  const returned = calls.filter((call) => call.returns);
+
+  if (context.isNot) {
+    if (returned.length === expected) {
+      throw new AssertionError(
+        `Expected the mock function to not have returned ${expected} times, but it returned ${returned.length} times`,
+      );
+    }
+  } else {
+    if (returned.length !== expected) {
+      throw new AssertionError(
+        `Expected the mock function to have returned ${expected} times, but it returned ${returned.length} times`,
+      );
+    }
+  }
 }

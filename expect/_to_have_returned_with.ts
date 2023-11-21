@@ -9,4 +9,5 @@ export function toHaveReturnedWith(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
+  const calls = getMockCalls(context.value);
 }

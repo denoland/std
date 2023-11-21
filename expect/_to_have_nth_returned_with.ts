@@ -10,4 +10,5 @@ export function toHaveNthReturnedWith(
   nth: number,
   expected: unknown,
 ): MatchResult {
+  const calls = getMockCalls(context.value);
 }
