@@ -6,7 +6,7 @@
  * ```ts
  * // Example usage:
  * import { parseVersion } from "https://deno.land/std@$STD_VERSION/text/parse_version.ts";
- * const result: Array<number | string> = versionToList("1.2.3.4.5beta");
+ * const result: Array<number | string> = parseVersion("1.2.3.4.5beta");
  * console.log(result); // [1,2,3,4,5,"beta"]
  * ```
  * @param {string} version - The version string to convert.
