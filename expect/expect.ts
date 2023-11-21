@@ -36,6 +36,13 @@ import { toStrictEqual } from "./_to_strict_equal.ts";
 import { toThrow } from "./_to_throw.ts";
 
 export interface Expected {
+  lastCalledWith(...expected: unknown[]): void;
+  lastReturnedWith(expected: unknown): void;
+  nthCalledWith(nth: number, ...expected: unknown[]): void;
+  nthReturnedWith(nth: number, expected: unknown): void;
+  toBeCalled(): void;
+  toBeCalledTimes(expected: number): void;
+  toBeCalledWith(...expected: unknown[]): void;
   toBeCloseTo(candidate: number, tolerance?: number): void;
   toBeDefined(): void;
   toBeFalsy(): void;
@@ -65,6 +72,9 @@ export interface Expected {
   toHaveReturned(): void;
   toMatch(expected: RegExp): void;
   toMatchObject(expected: Record<PropertyKey, unknown>): void;
+  toReturn(): void;
+  toReturnTimes(expected: number): void;
+  toReturnWith(expected: unknown): void;
   toStrictEqual(candidate: unknown): void;
   // deno-lint-ignore no-explicit-any
   toThrow<E extends Error = Error>(expected?: new (...args: any[]) => E): void;
@@ -76,6 +86,13 @@ export interface Expected {
 type MatcherKey = keyof Omit<Expected, "not" | "resolves" | "rejects">;
 
 const matchers: Record<MatcherKey, Matcher> = {
+  lastCalledWith: toHaveBeenLastCalledWith,
+  lastReturnedWith: toHaveReturnedWith,
+  nthCalledWith: toHaveBeenNthCalledWith,
+  nthReturnedWith: toHaveNthReturnedWith,
+  toBeCalled: toHaveBeenCalled,
+  toBeCalledTimes: toHaveBeenCalledTimes,
+  toBeCalledWith: toHaveBeenCalledWith,
   toBeCloseTo,
   toBeDefined,
   toBeFalsy,
@@ -105,6 +122,9 @@ const matchers: Record<MatcherKey, Matcher> = {
   toHaveReturned,
   toMatchObject,
   toMatch,
+  toReturn: toHaveReturned,
+  toReturnTimes: toHaveReturnedTimes,
+  toReturnWith: toHaveReturnedWith,
   toStrictEqual,
   toThrow,
 };
