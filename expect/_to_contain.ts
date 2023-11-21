@@ -9,6 +9,7 @@ export function toContain(
 ): MatchResult {
   // deno-lint-ignore no-explicit-any
   const doesContain = (context.value as any)?.includes?.(expected);
+
   if (context.isNot) {
     if (doesContain) {
       throw new AssertionError("The value contains the expected item");

@@ -2,19 +2,10 @@
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // deno-lint-ignore-file no-explicit-any ban-types
 
-const MOCK_SYMBOL = Symbol.for("@MOCK");
-
-export type _MockCall = {
-  args: any[];
-  returned?: any;
-  thrown?: any;
-  timestamp: number;
-  returns: boolean;
-  throws: boolean;
-};
+import { MOCK_SYMBOL, MockCall } from "./_mock_util.ts";
 
 export function fn(...stubs: Function[]) {
-  const calls: _MockCall[] = [];
+  const calls: MockCall[] = [];
 
   const f = (...args: any[]) => {
     const stub = stubs.length === 1
@@ -51,11 +42,4 @@ export function fn(...stubs: Function[]) {
   });
 
   return f;
-}
-
-export function _calls(f: Function): _MockCall[] {
-  const mockInfo = (f as any)[MOCK_SYMBOL];
-  if (!mockInfo) throw new Error("callCount only available on mock functions");
-
-  return [...mockInfo.calls];
 }
