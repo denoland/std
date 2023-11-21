@@ -49,7 +49,7 @@ Deno.test("assertVersions throws for low versions of v8", () => {
     () => {
       assertVersions({
         v8: {
-          min: [11, 6, 189, 12],
+          min: [1, 6, 189, 12],
         },
       });
     },
