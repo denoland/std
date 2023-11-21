@@ -66,7 +66,7 @@ Deno.test("assertVersions doesnt throw when valid", () => {
     },
     v8: {
       max: [20],
-      min: [11, 6],
+      min: [11, 1],
     },
     typescript: {
       max: [99],

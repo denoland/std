@@ -76,8 +76,8 @@ export function assertVersions(options: {
             if (eachExisting < eachMin) {
               throwMin();
             } else if (eachExisting > eachMin) {
-                // no need to go deeper, it meets the min
-                break
+              // no need to go deeper, it meets the min
+              break;
             }
           }
         }
@@ -102,8 +102,8 @@ export function assertVersions(options: {
             if (eachExisting > eachMax) {
               throwMax();
             } else if (eachExisting < eachMax) {
-                // no need to go deeper, it meets the max
-                break
+              // no need to go deeper, it meets the max
+              break;
             }
           }
         }
