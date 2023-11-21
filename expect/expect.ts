@@ -3,39 +3,40 @@
 
 import type { AnyConstructor, Matcher, MatcherContext } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
-import { toBeCloseTo } from "./_to_be_close_to.ts";
-import { toBeDefined } from "./_to_be_defined.ts";
-import { toBeFalsy } from "./_to_be_falsy.ts";
-import { toBeGreaterThanOrEqual } from "./_to_be_greater_than_or_equal.ts";
-import { toBeGreaterThan } from "./_to_be_greater_than.ts";
-import { toBeInstanceOf } from "./_to_be_instance_of.ts";
-import { toBeLessThanOrEqual } from "./_to_be_less_than_or_equal.ts";
-import { toBeLessThan } from "./_to_be_less_than.ts";
-import { toBeNaN } from "./_to_be_nan.ts";
-import { toBeNull } from "./_to_be_null.ts";
-import { toBeTruthy } from "./_to_be_truthy.ts";
-import { toBeUndefined } from "./_to_be_undefined.ts";
-import { toBe } from "./_to_be.ts";
-import { toContain } from "./_to_contain.ts";
-import { toContainEqual } from "./_to_contain_equal.ts";
-import { toEqual } from "./_to_equal.ts";
-import { toHaveBeenCalledTimes } from "./_to_have_been_called_times.ts";
-import { toHaveBeenCalledWith } from "./_to_have_been_called_with.ts";
-import { toHaveBeenCalled } from "./_to_have_been_called.ts";
-import { toHaveBeenLastCalledWith } from "./_to_have_been_last_called_with.ts";
-import { toHaveBeenNthCalledWith } from "./_to_have_been_nth_called_with.ts";
-import { toHaveLength } from "./_to_have_length.ts";
-import { toHaveLastReturnedWith } from "./_to_have_last_returned_with.ts";
-import { toHaveNthReturnedWith } from "./_to_have_nth_returned_with.ts";
-import { toHaveProperty } from "./_to_have_property.ts";
-import { toHaveReturnedTimes } from "./_to_have_returned_times.ts";
-import { toHaveReturnedWith } from "./_to_have_returned_with.ts";
-import { toHaveReturned } from "./_to_have_returned.ts";
-import { toMatchObject } from "./_to_match_object.ts";
-import { toMatch } from "./_to_match.ts";
-import { toStrictEqual } from "./_to_strict_equal.ts";
-import { toThrow } from "./_to_throw.ts";
-
+import {
+  toBe,
+  toBeCloseTo,
+  toBeDefined,
+  toBeFalsy,
+  toBeGreaterThan,
+  toBeGreaterThanOrEqual,
+  toBeInstanceOf,
+  toBeLessThan,
+  toBeLessThanOrEqual,
+  toBeNaN,
+  toBeNull,
+  toBeTruthy,
+  toBeUndefined,
+  toContain,
+  toContainEqual,
+  toEqual,
+  toHaveBeenCalled,
+  toHaveBeenCalledTimes,
+  toHaveBeenCalledWith,
+  toHaveBeenLastCalledWith,
+  toHaveBeenNthCalledWith,
+  toHaveLastReturnedWith,
+  toHaveLength,
+  toHaveNthReturnedWith,
+  toHaveProperty,
+  toHaveReturned,
+  toHaveReturnedTimes,
+  toHaveReturnedWith,
+  toMatch,
+  toMatchObject,
+  toStrictEqual,
+  toThrow,
+} from "./_matchers.ts";
 export interface Expected {
   lastCalledWith(...expected: unknown[]): void;
   lastReturnedWith(expected: unknown): void;
