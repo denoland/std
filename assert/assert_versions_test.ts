@@ -49,12 +49,12 @@ Deno.test("assertVersions throws for low versions of v8", () => {
     () => {
       assertVersions({
         v8: {
-          min: [1, 6, 189, 12],
+          min: [99, 6, 189, 12],
         },
       });
     },
     AssertionError,
-    `Current version of v8 is ${Deno.version.v8}, however the code requires a minimum version of 11.6.189.12`,
+    `Current version of v8 is ${Deno.version.v8}, however the code requires a minimum version of 99.6.189.12`,
   );
 });
 
