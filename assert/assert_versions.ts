@@ -68,7 +68,7 @@ export function assertVersions(options: {
           if (typeof eachExisting !== typeof eachMin) {
             throwMin();
           } else if (typeof eachExisting == "string") {
-            // @ts-ignore it complains "dont do string!=number" but beacuse of the if statement above this will never have that case
+            // @ts-ignore it complains "dont do string!=number" but because of the if statement above this will never have that case
             if (eachExisting !== eachMin) {
               throwMin();
             }
@@ -91,7 +91,7 @@ export function assertVersions(options: {
           if (typeof eachExisting !== typeof eachMax) {
             throwMax();
           } else if (typeof eachExisting == "string") {
-            // @ts-ignore it complains "dont do string!=number" but beacuse of the if statement above this will never have that case
+            // @ts-ignore it complains "dont do string!=number" but because of the if statement above this will never have that case
             if (eachExisting !== eachMax) {
               throwMax();
             }
