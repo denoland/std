@@ -43,7 +43,31 @@ export type SortByOptions = {
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: (el: T) => number | string | bigint | Date,
+  selector: (el: T) => number,
+  options?: SortByOptions,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => string,
+  options?: SortByOptions,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => bigint,
+  options?: SortByOptions,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => Date,
+  options?: SortByOptions,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
   options?: SortByOptions,
 ): T[] {
   const len = array.length;

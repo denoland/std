@@ -22,7 +22,17 @@
  * assertEquals(maxCount, 32);
  * ```
  */
-export function maxOf<T, S extends (el: T) => number | bigint>(
+export function maxOf<T>(
+  array: Iterable<T>,
+  selector: (el: T) => number,
+): number | undefined;
+
+export function maxOf<T>(
+  array: Iterable<T>,
+  selector: (el: T) => bigint,
+): bigint | undefined;
+
+export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {

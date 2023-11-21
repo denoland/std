@@ -23,7 +23,27 @@
  */
 export function maxBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => number | string | bigint | Date,
+  selector: (el: T) => number,
+): T | undefined;
+export function maxBy<T>(
+  array: Iterable<T>,
+  selector: (el: T) => string,
+): T | undefined;
+export function maxBy<T>(
+  array: Iterable<T>,
+  selector: (el: T) => bigint,
+): T | undefined;
+export function maxBy<T>(
+  array: Iterable<T>,
+  selector: (el: T) => Date,
+): T | undefined;
+export function maxBy<T>(
+  array: Iterable<T>,
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): T | undefined {
   let max: T | undefined = undefined;
   let maxValue: ReturnType<typeof selector> | undefined = undefined;
