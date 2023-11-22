@@ -125,7 +125,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.73.0
+          rust-version: 1.74.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
