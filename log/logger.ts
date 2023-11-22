@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
-import type { LevelName } from "./levels.ts";
+import type { LevelName, LogLevel } from "./levels.ts";
 import type { BaseHandler } from "./handlers.ts";
 
 // deno-lint-ignore no-explicit-any
@@ -9,7 +9,7 @@ export type GenericFunction = (...args: any[]) => any;
 export interface LogRecordOptions {
   msg: string;
   args: unknown[];
-  level: number;
+  level: LogLevel;
   loggerName: string;
 }
 
@@ -46,7 +46,7 @@ export interface LoggerOptions {
 }
 
 export class Logger {
-  #level: LogLevels;
+  #level: LogLevel;
   #handlers: BaseHandler[];
   readonly #loggerName: string;
 
@@ -60,10 +60,10 @@ export class Logger {
     this.#handlers = options.handlers || [];
   }
 
-  get level(): LogLevels {
+  get level(): LogLevel {
     return this.#level;
   }
-  set level(level: LogLevels) {
+  set level(level: LogLevel) {
     this.#level = level;
   }
 
@@ -85,7 +85,8 @@ export class Logger {
     return this.#handlers;
   }
 
-  /** If the level of the logger is greater than the level to log, then nothing
+  /**
+   * If the level of the logger is greater than the level to log, then nothing
    * is logged, otherwise a log record is passed to each log handler.  `msg` data
    * passed in is returned.  If a function is passed in, it is only evaluated
    * if the msg will be logged and the return value will be the result of the
@@ -93,7 +94,7 @@ export class Logger {
    * case undefined is returned.  All types are coerced to strings for logging.
    */
   #_log<T>(
-    level: number,
+    level: LogLevel,
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
