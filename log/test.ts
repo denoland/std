@@ -5,6 +5,7 @@ import {
   getLevelByName,
   getLevelName,
   LevelName,
+  LogLevel,
   LogLevelNames,
 } from "./levels.ts";
 
@@ -110,5 +111,5 @@ Deno.test("getLoggerUnknown", async function () {
 
 Deno.test("getInvalidLoggerLevels", function () {
   assertThrows(() => getLevelByName("FAKE_LOG_LEVEL" as LevelName));
-  assertThrows(() => getLevelName(5000));
+  assertThrows(() => getLevelName(5000 as LogLevel));
 });
