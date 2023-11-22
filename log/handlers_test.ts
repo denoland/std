@@ -9,6 +9,7 @@ import {
   getLevelByName,
   getLevelName,
   LevelName,
+  LogLevel,
   LogLevelNames,
   LogLevels,
 } from "./levels.ts";
@@ -27,7 +28,7 @@ class TestHandler extends BaseHandler {
 }
 
 Deno.test("simpleHandler", function () {
-  const cases = new Map<number, string[]>([
+  const cases = new Map<LogLevel, string[]>([
     [
       LogLevels.DEBUG,
       [
