@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
+ * @deprecated (will be removed in 0.210.0)
  *
  * Contains the constant {@linkcode HTTP_METHODS} and the type
  * {@linkcode HttpMethod} and the type guard {@linkcode isHttpMethod} for
@@ -10,31 +10,26 @@
  *
  * @module
  */
-import {
-  HTTP_METHODS as HTTP_METHODS_,
-  type HttpMethod as HttpMethod_,
-  isHttpMethod as isHttpMethod_,
+
+export {
+  /**
+   * @deprecated (will be removed in 0.210.0)
+   *
+   * A constant array of common HTTP methods.
+   *
+   * This list is compatible with Node.js `http` module.
+   */
+  HTTP_METHODS,
+  /**
+   * @deprecated (will be removed in 0.210.0)
+   *
+   * A type representing string literals of each of the common HTTP method.
+   */
+  type HttpMethod,
+  /**
+   * @deprecated (will be removed in 0.210.0)
+   *
+   * A type guard that determines if a value is a valid HTTP method.
+   */
+  isHttpMethod,
 } from "./unstable_method.ts";
-
-/**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
- *
- * A constant array of common HTTP methods.
- *
- * This list is compatible with Node.js `http` module.
- */
-export const HTTP_METHODS = HTTP_METHODS_;
-
-/**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
- *
- * A type representing string literals of each of the common HTTP method.
- */
-export type HttpMethod = HttpMethod_;
-
-/**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/http/unstable_method.ts} instead.
- *
- * A type guard that determines if a value is a valid HTTP method.
- */
-export const isHttpMethod = isHttpMethod_;
