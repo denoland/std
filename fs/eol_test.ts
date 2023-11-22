@@ -9,28 +9,29 @@ const LFinput = "deno\nis not\nnode";
 const NoNLinput = "deno is not node";
 
 Deno.test({
-  name: "[EOL] Detect CR LF",
+  name: "detect() detects CR LF as the end-of-line character",
   fn() {
     assertEquals(detect(CRLFinput), EOL.CRLF);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect LF",
+  name: "detect() detects LF as the end-of-line character",
   fn() {
     assertEquals(detect(LFinput), EOL.LF);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect No New Line",
+  name: "detect() returns null for a string with no end-of-line character",
   fn() {
     assertEquals(detect(NoNLinput), null);
   },
 });
 
 Deno.test({
-  name: "[EOL] Detect Mixed",
+  name:
+    "detect() detects the most common end-of-line character in a mixed string",
   fn() {
     assertEquals(detect(Mixedinput), EOL.CRLF);
     assertEquals(detect(Mixedinput2), EOL.CRLF);
@@ -38,7 +39,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[EOL] Format",
+  name: "format() converts the end-of-line character to the specified one",
   fn() {
     assertEquals(format(CRLFinput, EOL.LF), LFinput);
     assertEquals(format(LFinput, EOL.LF), LFinput);
