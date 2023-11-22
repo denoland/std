@@ -1,3 +1,33 @@
+### 0.207.0 / 2023.11.17
+
+- BREAKING(bytes): deprecate `concat()` signatures that don't use `Uint8Array[]`
+  argument (#3784)
+- BREAKING(crypto): remove `crypto.subtle.timingSafeEqual()` method (#3803)
+- BREAKING(fs): deprecate `EOL` enum (#3809)
+- BREAKING(http): deprecate `ServerSentEvent()` (#3783)
+- BREAKING(http): deprecate `enum Status` in favour of `STATUS_CODES` object
+  (#3781)
+- BREAKING: move `std/flags` to new `std/cli` sub-module (#3530)
+- BREAKING: remove deprecated `std/http/http_errors` (#3737)
+- BREAKING: remove deprecated `std/wasi` module (#3733)
+- feat: `std/data_structures` (#3734)
+
+### 0.206.0 / 2023.11.10
+
+- BREAKING(async): deprecate `deferred()` in favor of `Promise.withResolvers()`
+  (#3758)
+- BREAKING(encoding): remove deprecated binary APIs (#3763)
+- BREAKING(path): split up glob into multiple files
+- add `deno fmt --check`
+- feat(testing/mock): enable `spy` to accept a class constructor (#3766)
+- feat: `ServerSentEventStream()` (#3751)
+- feat: add `std/text` with word-similarity helpers (#3488)
+- fix(fmt): format duration rounding error. (#3762)
+- fix(msgpack): encode huge objects (#3698)
+- fix: broken import
+- fix: rework file server tests (#3779)
+- perf(streams): add single-character fast path for `DelimiterStream()` (#3739)
+
 ### 0.205.0 / 2023.11.01
 
 - BREAKING(dotenv): remove deprecated `restrictEnvAccessTo` option (#3705)

@@ -1,7 +1,33 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Platform-specific conventions for the line ending format (i.e., the "end-of-line"). */
+// End-of-line character for POSIX platforms such as macOS and Linux.
+export const LF = "\n" as const;
+
+/** End-of-line character for Windows platforms. */
+export const CRLF = "\r\n" as const;
+
+/**
+ * End-of-line character evaluated for the current platform.
+ *
+ * @example
+ * ```ts
+ * import { EOL } from "https://deno.land/std@$STD_VERSION/fs/eol.ts";
+ *
+ * EOL; // Returns "\n" on POSIX platforms or "\r\n" on Windows
+ * ```
+ *
+ * @todo(iuioiua): Uncomment the following line upon deprecation of the `EOL`
+ * enum.
+ */
+// export const EOL = Deno.build.os === "windows" ? CRLF : LF;
+
+/**
+ * Platform-specific conventions for the line ending format (i.e., the "end-of-line").
+ *
+ * @deprecated (will be removed in 0.209.0) This will be replaced by an
+ * OS-dependent `EOL` constant.
+ */
 export enum EOL {
   /** Line Feed. Typically used in Unix (and Unix-like) systems. */
   LF = "\n",

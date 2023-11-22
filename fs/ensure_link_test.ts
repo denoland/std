@@ -53,14 +53,10 @@ Deno.test("ensureLinkIfItExist", async function () {
   // har link success. try to change one of them. they should be change both.
 
   // let's change origin file.
-  await Deno.writeFile(testFile, new TextEncoder().encode("123"));
+  await Deno.writeTextFile(testFile, "123");
 
-  const testFileContent1 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
-  const linkFileContent1 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
+  const testFileContent1 = await Deno.readTextFile(testFile);
+  const linkFileContent1 = await Deno.readTextFile(testFile);
 
   assertEquals(testFileContent1, "123");
   assertEquals(testFileContent1, linkFileContent1);
@@ -68,12 +64,8 @@ Deno.test("ensureLinkIfItExist", async function () {
   // let's change link file.
   await Deno.writeFile(testFile, new TextEncoder().encode("abc"));
 
-  const testFileContent2 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
-  const linkFileContent2 = new TextDecoder().decode(
-    await Deno.readFile(testFile),
-  );
+  const testFileContent2 = await Deno.readTextFile(testFile);
+  const linkFileContent2 = await Deno.readTextFile(testFile);
 
   assertEquals(testFileContent2, "abc");
   assertEquals(testFileContent2, linkFileContent2);

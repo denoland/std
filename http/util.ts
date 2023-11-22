@@ -20,6 +20,7 @@ export function createCommonResponse(
   init = deepMerge({
     status,
     statusText: STATUS_TEXT[status],
+    // @ts-ignore Trust me
   }, init ?? {});
   return new Response(body, init);
 }

@@ -13,10 +13,7 @@ Deno.test({
         }
       }));
 
-    const res = [];
-    for await (const i of readable) {
-      res.push(i);
-    }
+    const res = await Array.fromAsync(readable);
     assertEquals(res, [0, 100, 200]);
   },
 });
@@ -31,10 +28,7 @@ Deno.test({
         yield 200;
       }));
 
-    const res = [];
-    for await (const i of readable) {
-      res.push(i);
-    }
+    const res = await Array.fromAsync(readable);
     assertEquals(res, [0, 100, 200]);
   },
 });
@@ -207,9 +201,7 @@ Deno.test({
     });
 
     await assertRejects(
-      async () => {
-        for await (const _ of src.pipeThrough(transform));
-      },
+      async () => await Array.fromAsync(src.pipeThrough(transform)),
       Error,
       "foo",
     );

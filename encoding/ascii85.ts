@@ -61,7 +61,7 @@ const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeAscii85` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeAscii85} instead.
  *
  * Encodes a given Uint8Array into ascii85, supports multiple standards
  * @param uint8 input to encode
@@ -144,7 +144,7 @@ export function encodeAscii85(
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `decodeAscii85` instead.
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeAscii85} instead.
  *
  * Decodes a given ascii85 encoded string.
  * @param ascii85 input to decode

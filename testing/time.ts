@@ -6,8 +6,8 @@
  * @module
  */
 
-import { RedBlackTree } from "../collections/unstable_red_black_tree.ts";
-import { ascend } from "../collections/unstable_comparators.ts";
+import { RedBlackTree } from "../data_structures/red_black_tree.ts";
+import { ascend } from "../data_structures/comparators.ts";
 import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
@@ -182,13 +182,15 @@ let dueTree: RedBlackTree<DueNode>;
  * controlled through the fake time instance.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
  * import {
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
  * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
- * import { secondInterval } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts";
+ *
+ * function secondInterval(cb: () => void): number {
+ *   return setInterval(cb, 1000);
+ * }
  *
  * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
  *   const time = new FakeTime();

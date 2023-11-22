@@ -17,7 +17,7 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeHandlerInfo` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
  *
  * Information about the connection a request arrived on.
  */
@@ -29,7 +29,7 @@ export interface ConnInfo {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeHandler` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
  *
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
@@ -44,7 +44,7 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeInit` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
  *
  * Options for running an HTTP server.
  */
@@ -61,7 +61,7 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
  * Used to construct an HTTP server.
  */
@@ -498,7 +498,7 @@ export class Server {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeInit` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
  *
  * Additional serve options.
  */
@@ -514,7 +514,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeOptions` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
  *
  * Additional serve listener options.
  */
@@ -530,7 +530,7 @@ export interface ServeListenerOptions {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
@@ -577,7 +577,7 @@ function hostnameForDisplay(hostname: string) {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
  * Serves HTTP requests with the given handler.
  *
@@ -664,7 +664,7 @@ export async function serve(
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.ServeTlsOptions` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeTlsOptions} instead.
  */
 export interface ServeTlsInit extends ServeInit {
   /** Server private key in PEM format */
@@ -681,7 +681,7 @@ export interface ServeTlsInit extends ServeInit {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use `Deno.serve` instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  *
  * Serves HTTPS requests with the given handler.
  *

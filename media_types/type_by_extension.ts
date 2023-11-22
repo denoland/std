@@ -4,7 +4,7 @@
 import { types } from "./_db.ts";
 
 /**
- * @deprecated (will be removed in 0.209.0) Use `contentType` instead.
+ * @deprecated (will be removed in 0.209.0) Use {@linkcode import("./content_type.ts").contentType} instead.
  *
  * Returns the media type associated with the file extension. Values are
  * normalized to lower case and matched irrespective of a leading `.`.

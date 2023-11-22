@@ -5,7 +5,7 @@ import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
 import type { Reader, ReaderSync } from "../types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use ReadableStream instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
  *
  * Turns a Reader, `r`, into an async iterator.
  *
@@ -54,7 +54,7 @@ export async function* iterateReader(
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use ReadableStream instead.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
  *
  * Turns a ReaderSync, `r`, into an iterator.
  *

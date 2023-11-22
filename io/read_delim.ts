@@ -28,7 +28,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /**
  * Read delimited bytes from a Reader.
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function* readDelim(
   reader: Reader,
@@ -54,7 +54,7 @@ export async function* readDelim(
       // Discard all remaining and silently fail.
       return;
     }
-    chunks = concat(chunks, inspectArr.slice(0, result));
+    chunks = concat([chunks, inspectArr.slice(0, result)]);
     let localIndex = 0;
     while (inspectIndex < chunks.length) {
       if (inspectArr[localIndex] === delim[matchIndex]) {
