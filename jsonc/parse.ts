@@ -51,30 +51,32 @@ export function parse(
   return new JSONCParser(text, { allowTrailingComma }).parse();
 }
 
-enum TokenType {
-  BeginObject,
-  EndObject,
-  BeginArray,
-  EndArray,
-  NameSeparator,
-  ValueSeparator,
-  NullOrTrueOrFalseOrNumber,
-  String,
-}
+const TokenType = {
+  BeginObject: "BeginObject",
+  EndObject: "EndObject",
+  BeginArray: "BeginArray",
+  EndArray: "EndArray",
+  NameSeparator: "NameSeparator",
+  ValueSeparator: "ValueSeparator",
+  NullOrTrueOrFalseOrNumber: "NullOrTrueOrFalseOrNumber",
+  String: "String",
+} as const;
+
+type TokenTypes = keyof typeof TokenType;
 
 type Token = {
   type: Exclude<
-    TokenType,
-    TokenType.String | TokenType.NullOrTrueOrFalseOrNumber
+    TokenTypes,
+    typeof TokenType.String | typeof TokenType.NullOrTrueOrFalseOrNumber
   >;
   sourceText?: undefined;
   position: number;
 } | {
-  type: TokenType.String;
+  type: typeof TokenType.String;
   sourceText: string;
   position: number;
 } | {
-  type: TokenType.NullOrTrueOrFalseOrNumber;
+  type: typeof TokenType.NullOrTrueOrFalseOrNumber;
   sourceText: string;
   position: number;
 };
@@ -318,7 +320,7 @@ class JSONCParser {
     }
   }
   #parseString(value: {
-    type: TokenType.String;
+    type: typeof TokenType.String;
     sourceText: string;
     position: number;
   }): string {
@@ -333,7 +335,7 @@ class JSONCParser {
     return parsed;
   }
   #parseNullOrTrueOrFalseOrNumber(value: {
-    type: TokenType.NullOrTrueOrFalseOrNumber;
+    type: typeof TokenType.NullOrTrueOrFalseOrNumber;
     sourceText: string;
     position: number;
   }): null | boolean | number {
