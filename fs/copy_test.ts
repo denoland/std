@@ -47,7 +47,7 @@ function testCopySync(name: string, cb: (tempDir: string) => void) {
 }
 
 testCopy(
-  "copy() throws if src does not exist",
+  "copy() rejects if src does not exist",
   async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1.txt");
@@ -60,7 +60,7 @@ testCopy(
 );
 
 testCopy(
-  "copy() throws if src and dest are the same paths",
+  "copy() rejects if src and dest are the same paths",
   async (tempDir: string) => {
     const srcFile = path.join(tempDir, "copy_file_same.txt");
     const destFile = path.join(tempDir, "copy_file_same.txt");
@@ -151,7 +151,7 @@ testCopy(
 );
 
 testCopy(
-  "copy() throws if destination is its own subdirectory",
+  "copy() rejects if destination is its own subdirectory",
   async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
@@ -169,7 +169,7 @@ testCopy(
 );
 
 testCopy(
-  "copy() throws when copying a directory to an existent destination that is not a directory",
+  "copy() rejects when copying a directory to an existent destination that is not a directory",
   async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(tempDir, "child.txt");

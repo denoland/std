@@ -7,7 +7,7 @@ import { ensureLink, ensureLinkSync } from "./ensure_link.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureLink() creates link if it does not exist", async function () {
+Deno.test("ensureLink() rejects if src and dest do not exist", async function () {
   const srcDir = path.join(testdataDir, "ensure_link_1");
   const destDir = path.join(testdataDir, "ensure_link_1_2");
   const testFile = path.join(srcDir, "test.txt");
@@ -22,7 +22,7 @@ Deno.test("ensureLink() creates link if it does not exist", async function () {
   await Deno.remove(destDir, { recursive: true });
 });
 
-Deno.test("ensureLinkSync() creates link if it does not exist", function () {
+Deno.test("ensureLinkSync() throws if src and dest do not exist", function () {
   const testDir = path.join(testdataDir, "ensure_link_2");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -121,7 +121,7 @@ Deno.test("ensureLinkSync() ensures dest links to the src", function () {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureLink() throws if link does not exist", async function () {
+Deno.test("ensureLink() rejects if link does not exist", async function () {
   const testDir = path.join(testdataDir, "ensure_link_origin_3");
   const linkDir = path.join(testdataDir, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");

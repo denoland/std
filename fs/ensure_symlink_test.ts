@@ -7,7 +7,7 @@ import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureSymlink() throws if file does not exist", async function () {
+Deno.test("ensureSymlink() rejects if file does not exist", async function () {
   const testDir = path.join(testdataDir, "link_file_1");
   const testFile = path.join(testDir, "test.txt");
 

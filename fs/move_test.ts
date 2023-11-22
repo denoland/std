@@ -14,7 +14,7 @@ import { existsSync } from "./exists.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("move() throws if src dir does not exist", async function () {
+Deno.test("move() rejects if src dir does not exist", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_1");
   const destDir = path.join(testdataDir, "move_test_dest_1");
   // if src directory not exist
@@ -66,7 +66,7 @@ Deno.test(
   },
 );
 
-Deno.test("move() throws if src file does not exist", async function () {
+Deno.test("move() rejects if src file does not exist", async function () {
   const srcFile = path.join(testdataDir, "move_test_src_3", "test.txt");
   const destFile = path.join(testdataDir, "move_test_dest_3", "test.txt");
 
@@ -185,7 +185,7 @@ Deno.test(
   },
 );
 
-Deno.test("move() throws when dest is its own sub dir", async function () {
+Deno.test("move() rejects when dest is its own sub dir", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_7");
   const destDir = path.join(srcDir, "nest");
 

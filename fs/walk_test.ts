@@ -149,7 +149,7 @@ Deno.test("walkSync() accepts followSymlinks option set to false", () => {
   });
 });
 
-Deno.test("walk() throws Deno.errors.NotFound for non-existent root", async () => {
+Deno.test("walk() rejects Deno.errors.NotFound for non-existent root", async () => {
   const root = resolve(testdataDir, "non_existent");
   await assertRejects(
     async () => await Array.fromAsync(walk(root)),
@@ -226,7 +226,7 @@ Deno.test({
   },
 });
 
-Deno.test("walk() throws WalkError when root is removed during execution", async () => {
+Deno.test("walk() rejects with WalkError when root is removed during execution", async () => {
   const root = resolve(testdataDir, "error");
   await Deno.mkdir(root);
   try {

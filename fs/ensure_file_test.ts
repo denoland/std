@@ -68,7 +68,7 @@ Deno.test("ensureFileSync() ensures existing file exists", function () {
   }
 });
 
-Deno.test("ensureFile() throws if input is dir", async function () {
+Deno.test("ensureFile() rejects if input is dir", async function () {
   const testDir = path.join(testdataDir, "ensure_file_5");
 
   try {
@@ -105,7 +105,7 @@ Deno.test("ensureFileSync() throws if input is dir", function () {
 });
 
 Deno.test({
-  name: "ensureFile() throws permission fs write error",
+  name: "ensureFile() rejects permission fs write error",
   permissions: { read: true },
   async fn() {
     const testDir = path.join(testdataDir, "ensure_file_7");
