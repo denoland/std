@@ -48,8 +48,11 @@ export class MissingEnvVarError extends Error {
  * asserts that the given environment variable has been set in the current
  * process.
  *
+ * Requires [--allow-env[=envVar.key] permissions]{@link https://docs.deno.com/runtime/manual/basics/permissions#environment-variables}.
+ *
  * @example
  * ```ts
+ * // Run with --allow-env=FOO permissions
  * import { x } from "https://deno.land/std@$STD_VERSION/dotenv/x.ts";
  *
  * // Returns the value of the "FOO" environment variable if already set or
