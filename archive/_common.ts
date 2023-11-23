@@ -36,16 +36,26 @@ export interface TarMeta extends TarInfo {
   fileSize?: number;
 }
 
-export enum FileTypes {
-  "file" = 0,
-  "link" = 1,
-  "symlink" = 2,
-  "character-device" = 3,
-  "block-device" = 4,
-  "directory" = 5,
-  "fifo" = 6,
-  "contiguous-file" = 7,
-}
+export const FileTypes = {
+  "file": 0,
+  "link": 1,
+  "symlink": 2,
+  "character-device": 3,
+  "block-device": 4,
+  "directory": 5,
+  "fifo": 6,
+  "contiguous-file": 7,
+  0: "file",
+  1: "link",
+  2: "symlink",
+  3: "character-device",
+  4: "block-device",
+  5: "directory",
+  6: "fifo",
+  7: "contiguous-file",
+} as const;
+
+export type FileTypes = typeof FileTypes[keyof typeof FileTypes];
 
 export const HEADER_LENGTH = 512;
 

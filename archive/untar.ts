@@ -263,7 +263,7 @@ export class Untar {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
     (
-      ["fileMode", "mtime", "uid", "gid"] as ["fileMode", "mtime", "uid", "gid"]
+      ["fileMode", "mtime", "uid", "gid"] as const
     ).forEach((key) => {
       const arr = trim(header[key]);
       if (arr.byteLength > 0) {
@@ -280,7 +280,8 @@ export class Untar {
     );
 
     meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-    meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
+    meta.type = FileTypes[parseInt(meta.type!) as Exclude<FileTypes, string>] ??
+      meta.type;
 
     // Only create the `linkName` property for symbolic links to minimize
     // the effect on existing code that only deals with non-links.

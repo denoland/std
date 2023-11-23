@@ -270,8 +270,9 @@ export class Tar {
     assert(fileSize !== undefined, "fileSize must be set");
 
     const type = source.type
-      ? FileTypes[source.type as keyof typeof FileTypes]
+      ? FileTypes[source.type as FileTypes]
       : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
+
     const tarData: TarDataWithSource = {
       fileName,
       fileNamePrefix,
