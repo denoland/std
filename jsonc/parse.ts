@@ -51,7 +51,7 @@ export function parse(
   return new JSONCParser(text, { allowTrailingComma }).parse();
 }
 
-const TokenType = {
+const TokenTypeMap = {
   BeginObject: "BeginObject",
   EndObject: "EndObject",
   BeginArray: "BeginArray",
@@ -62,21 +62,21 @@ const TokenType = {
   String: "String",
 } as const;
 
-type TokenTypes = keyof typeof TokenType;
+type TokenType = keyof typeof TokenTypeMap;
 
 type Token = {
   type: Exclude<
-    TokenTypes,
-    typeof TokenType.String | typeof TokenType.NullOrTrueOrFalseOrNumber
+    TokenType,
+    "String" | "NullOrTrueOrFalseOrNumber"
   >;
   sourceText?: undefined;
   position: number;
 } | {
-  type: typeof TokenType.String;
+  type: "String";
   sourceText: string;
   position: number;
 } | {
-  type: typeof TokenType.NullOrTrueOrFalseOrNumber;
+  type: "NullOrTrueOrFalseOrNumber";
   sourceText: string;
   position: number;
 };
@@ -155,22 +155,22 @@ class JSONCParser {
 
       switch (this.#text[i]) {
         case "{":
-          yield { type: TokenType.BeginObject, position: i };
+          yield { type: TokenTypeMap.BeginObject, position: i };
           break;
         case "}":
-          yield { type: TokenType.EndObject, position: i };
+          yield { type: TokenTypeMap.EndObject, position: i };
           break;
         case "[":
-          yield { type: TokenType.BeginArray, position: i };
+          yield { type: TokenTypeMap.BeginArray, position: i };
           break;
         case "]":
-          yield { type: TokenType.EndArray, position: i };
+          yield { type: TokenTypeMap.EndArray, position: i };
           break;
         case ":":
-          yield { type: TokenType.NameSeparator, position: i };
+          yield { type: TokenTypeMap.NameSeparator, position: i };
           break;
         case ",":
-          yield { type: TokenType.ValueSeparator, position: i };
+          yield { type: TokenTypeMap.ValueSeparator, position: i };
           break;
         case '"': { // parse string token
           const startIndex = i;
@@ -188,7 +188,7 @@ class JSONCParser {
             shouldEscapeNext = this.#text[i] === "\\" && !shouldEscapeNext;
           }
           yield {
-            type: TokenType.String,
+            type: TokenTypeMap.String,
             sourceText: this.#text.substring(startIndex, i + 1),
             position: startIndex,
           };
@@ -203,7 +203,7 @@ class JSONCParser {
           }
           i--;
           yield {
-            type: TokenType.NullOrTrueOrFalseOrNumber,
+            type: TokenTypeMap.NullOrTrueOrFalseOrNumber,
             sourceText: this.#text.substring(startIndex, i + 1),
             position: startIndex,
           };
@@ -213,13 +213,13 @@ class JSONCParser {
   }
   #parseJsonValue(value: Token): JsonValue {
     switch (value.type) {
-      case TokenType.BeginObject:
+      case TokenTypeMap.BeginObject:
         return this.#parseObject();
-      case TokenType.BeginArray:
+      case TokenTypeMap.BeginArray:
         return this.#parseArray();
-      case TokenType.NullOrTrueOrFalseOrNumber:
+      case TokenTypeMap.NullOrTrueOrFalseOrNumber:
         return this.#parseNullOrTrueOrFalseOrNumber(value);
-      case TokenType.String:
+      case TokenTypeMap.String:
         return this.#parseString(value);
       default:
         throw new SyntaxError(buildErrorMessage(value));
@@ -253,17 +253,17 @@ class JSONCParser {
       const token1 = this.#getNext();
       if (
         (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === TokenType.EndObject
+        token1.type === TokenTypeMap.EndObject
       ) {
         return target;
       }
-      if (token1.type !== TokenType.String) {
+      if (token1.type !== TokenTypeMap.String) {
         throw new SyntaxError(buildErrorMessage(token1));
       }
       const key = this.#parseString(token1);
 
       const token2 = this.#getNext();
-      if (token2.type !== TokenType.NameSeparator) {
+      if (token2.type !== TokenTypeMap.NameSeparator) {
         throw new SyntaxError(buildErrorMessage(token2));
       }
 
@@ -276,10 +276,10 @@ class JSONCParser {
       });
 
       const token4 = this.#getNext();
-      if (token4.type === TokenType.EndObject) {
+      if (token4.type === TokenTypeMap.EndObject) {
         return target;
       }
-      if (token4.type !== TokenType.ValueSeparator) {
+      if (token4.type !== TokenTypeMap.ValueSeparator) {
         throw new SyntaxError(buildErrorMessage(token4));
       }
     }
@@ -304,23 +304,23 @@ class JSONCParser {
       const token1 = this.#getNext();
       if (
         (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === TokenType.EndArray
+        token1.type === TokenTypeMap.EndArray
       ) {
         return target;
       }
       target.push(this.#parseJsonValue(token1));
 
       const token2 = this.#getNext();
-      if (token2.type === TokenType.EndArray) {
+      if (token2.type === TokenTypeMap.EndArray) {
         return target;
       }
-      if (token2.type !== TokenType.ValueSeparator) {
+      if (token2.type !== TokenTypeMap.ValueSeparator) {
         throw new SyntaxError(buildErrorMessage(token2));
       }
     }
   }
   #parseString(value: {
-    type: typeof TokenType.String;
+    type: typeof TokenTypeMap.String;
     sourceText: string;
     position: number;
   }): string {
@@ -335,7 +335,7 @@ class JSONCParser {
     return parsed;
   }
   #parseNullOrTrueOrFalseOrNumber(value: {
-    type: typeof TokenType.NullOrTrueOrFalseOrNumber;
+    type: typeof TokenTypeMap.NullOrTrueOrFalseOrNumber;
     sourceText: string;
     position: number;
   }): null | boolean | number {
@@ -363,26 +363,26 @@ class JSONCParser {
 function buildErrorMessage({ type, sourceText, position }: Token): string {
   let token = "";
   switch (type) {
-    case TokenType.BeginObject:
+    case TokenTypeMap.BeginObject:
       token = "{";
       break;
-    case TokenType.EndObject:
+    case TokenTypeMap.EndObject:
       token = "}";
       break;
-    case TokenType.BeginArray:
+    case TokenTypeMap.BeginArray:
       token = "[";
       break;
-    case TokenType.EndArray:
+    case TokenTypeMap.EndArray:
       token = "]";
       break;
-    case TokenType.NameSeparator:
+    case TokenTypeMap.NameSeparator:
       token = ":";
       break;
-    case TokenType.ValueSeparator:
+    case TokenTypeMap.ValueSeparator:
       token = ",";
       break;
-    case TokenType.NullOrTrueOrFalseOrNumber:
-    case TokenType.String:
+    case TokenTypeMap.NullOrTrueOrFalseOrNumber:
+    case TokenTypeMap.String:
       // Truncate the string so that it is within 30 lengths.
       token = 30 < sourceText.length
         ? `${sourceText.slice(0, 30)}...`
