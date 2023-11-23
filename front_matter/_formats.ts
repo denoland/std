@@ -2,13 +2,14 @@
 
 type Delimiter = string | [begin: string, end: string];
 
-/** @deprecated (will be removed after 1.0.0) Use literal types `"yaml" | "toml" | "json" | "unknown"`. */
-export enum Format {
-  YAML = "yaml",
-  TOML = "toml",
-  JSON = "json",
-  UNKNOWN = "unknown",
-}
+export const Formats = {
+  YAML: "yaml",
+  TOML: "toml",
+  JSON: "json",
+  UNKNOWN: "unknown",
+} as const
+
+export type Format = typeof Formats[keyof typeof Formats];
 
 const { isArray } = Array;
 
