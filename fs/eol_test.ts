@@ -9,7 +9,7 @@ const LFinput = "deno\nis not\nnode";
 const NoNLinput = "deno is not node";
 
 Deno.test({
-  name: "detect() detects CR LF as the end-of-line character",
+  name: "detect() detects CRLF as the end-of-line character",
   fn() {
     assertEquals(detect(CRLFinput), EOL.CRLF);
   },
