@@ -144,7 +144,7 @@ every new version of the Deno CLI (including patch versions).
 
 ## Badge
 
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
+[![Built with the Deno Standard Library](./badge.svg)](https://deno.land/std)
 
 ```html
 <a href="https://deno.land/std">
