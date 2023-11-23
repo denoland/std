@@ -10,7 +10,7 @@ import { ensureDirSync } from "./ensure_dir.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("_isSubdir", function () {
+Deno.test("isSubdir() returns a boolean indicating if dir is a subdir", function () {
   const pairs = [
     ["", "", false, path.posix.sep],
     ["/first/second", "/first", false, path.posix.sep],
@@ -35,7 +35,7 @@ Deno.test("_isSubdir", function () {
   });
 });
 
-Deno.test("_getFileInfoType", function () {
+Deno.test("getFileInfoType() returns entity type as a string", function () {
   const pairs = [
     [path.join(testdataDir, "file_type_1"), "file"],
     [path.join(testdataDir, "file_type_dir_1"), "dir"],
@@ -65,7 +65,7 @@ Deno.test("_getFileInfoType", function () {
 });
 
 Deno.test({
-  name: "_isSamePathWin32",
+  name: "isSamePath() works correctly for win32",
   ignore: Deno.build.os !== "windows",
   fn() {
     const pairs: (string | URL | boolean)[][] = [
@@ -91,7 +91,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "_isSamePathPosix",
+  name: "isSamePath() works correctly for posix",
   ignore: Deno.build.os === "windows",
   fn() {
     const pairs: (string | URL | boolean)[][] = [
