@@ -26,47 +26,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { PartialReadError } from "../io/buffer.ts";
-import { assert } from "../_util/assert.ts";
+import { assert } from "../assert/assert.ts";
+import { TarInfo, FileTypes, ustarStructure, recordSize } from "./_stream_common.ts";
 
-const recordSize = 512;
 const ustar = "ustar\u000000";
-
-// https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
-// eight checksum bytes taken to be ascii spaces (decimal value 32)
-const initialChecksum = 8 * 32;
-
-async function readBlock(
-  readable: ReadableStream<Uint8Array>,
-  p: Uint8Array,
-): Promise<number | null> {
-  let bytesRead = 0;
-  const reader = readable.getReader();
-  while (bytesRead < p.length) {
-    const res = await reader.read();
-    if (res.done) {
-      if (bytesRead === 0) {
-        return null;
-      } else {
-        throw new PartialReadError();
-      }
-    }
-    p.set(res.value, bytesRead);
-    bytesRead += res.value.byteLength;
-  }
-  reader.releaseLock();
-  return bytesRead;
-}
-
-/**
- * Remove the trailing null codes
- * @param buffer
- */
-function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex((v): boolean => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
-}
 
 /**
  * Initialize Uint8Array of the specified length filled with 0
@@ -81,17 +44,6 @@ function clean(length: number): Uint8Array {
 function pad(num: number, bytes: number, base = 8): string {
   const numString = num.toString(base);
   return "000000000000".substr(numString.length + 12 - bytes) + numString;
-}
-
-enum FileTypes {
-  "file" = 0,
-  "link" = 1,
-  "symlink" = 2,
-  "character-device" = 3,
-  "block-device" = 4,
-  "directory" = 5,
-  "fifo" = 6,
-  "contiguous-file" = 7,
 }
 
 /*
@@ -116,73 +68,6 @@ struct posix_header {           // byte offset
 };
 */
 
-const ustarStructure = [
-  {
-    field: "fileName",
-    length: 100,
-  },
-  {
-    field: "fileMode",
-    length: 8,
-  },
-  {
-    field: "uid",
-    length: 8,
-  },
-  {
-    field: "gid",
-    length: 8,
-  },
-  {
-    field: "fileSize",
-    length: 12,
-  },
-  {
-    field: "mtime",
-    length: 12,
-  },
-  {
-    field: "checksum",
-    length: 8,
-  },
-  {
-    field: "type",
-    length: 1,
-  },
-  {
-    field: "linkName",
-    length: 100,
-  },
-  {
-    field: "ustar",
-    length: 8,
-  },
-  {
-    field: "owner",
-    length: 32,
-  },
-  {
-    field: "group",
-    length: 32,
-  },
-  {
-    field: "majorNumber",
-    length: 8,
-  },
-  {
-    field: "minorNumber",
-    length: 8,
-  },
-  {
-    field: "fileNamePrefix",
-    length: 155,
-  },
-  {
-    field: "padding",
-    length: 12,
-  },
-] as const;
-
 /**
  * Create header for a file in a tar archive
  */
@@ -197,24 +82,6 @@ function formatHeader(data: TarData): Uint8Array {
   }
   return buffer;
 }
-
-type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
-
-/**
- * Parse file header in a tar archive
- * @param buffer
- */
-function parseHeader(buffer: Uint8Array): TarHeader {
-  const data: Record<string, Uint8Array> = {};
-  let offset = 0;
-  for (const value of ustarStructure) {
-    data[value.field] = buffer.subarray(offset, offset + value.length);
-    offset += value.length;
-
-  }
-  return data as TarHeader;
-}
-
 
 export interface TarData {
   fileName?: string;
@@ -238,16 +105,6 @@ export interface TarDataWithSource extends TarData {
   readable: ReadableStream<Uint8Array>;
 }
 
-export interface TarInfo {
-  fileMode?: number;
-  mtime?: number;
-  uid?: number;
-  gid?: number;
-  owner?: string;
-  group?: string;
-  type?: keyof typeof FileTypes;
-}
-
 export interface TarOptions extends TarInfo {
   /**
    * file name
@@ -265,87 +122,6 @@ export interface TarOptions extends TarInfo {
   contentSize: number;
 }
 
-export interface TarMeta extends TarInfo {
-  fileName: string;
-  fileSize?: number;
-}
-
-// deno-lint-ignore no-empty-interface
-interface TarEntry extends TarMeta {}
-
-class TarEntry extends ReadableStream<Uint8Array> {
-  #header: TarHeader;
-  #readable: ReadableStream<Uint8Array>;
-  #size: number;
-  #read = 0;
-  #consumed = false;
-  #entrySize: number;
-
-  constructor(
-    meta: TarMeta,
-    header: TarHeader,
-    readable: ReadableStream<Uint8Array>,
-  ) {
-    super({
-      pull: async (controller) => {
-        const p = new Uint8Array(controller.byobRequest!.view!.buffer);
-        // Bytes left for entry
-        const entryBytesLeft = this.#entrySize - this.#read;
-        // bufSize can't be greater than p.length nor bytes left in the entry
-        const bufSize = Math.min(p.byteLength, entryBytesLeft);
-
-        if (entryBytesLeft <= 0) {
-          this.#consumed = true;
-          controller.close();
-          return;
-        }
-        const block = new Uint8Array(bufSize);
-        const n = await readBlock(this.#readable, block);
-        const bytesLeft = this.#size - this.#read;
-
-        this.#read += n || 0;
-        if (n === null || bytesLeft <= 0) {
-          if (n === null) this.#consumed = true;
-          controller.close();
-          return;
-        }
-
-        // Remove zero filled
-        const offset = bytesLeft < n ? bytesLeft : n;
-        p.set(block.subarray(0, offset), 0);
-        controller.byobRequest!.respond(
-          offset < 0 ? n - Math.abs(offset) : offset,
-        );
-      },
-      autoAllocateChunkSize: 512,
-      type: "bytes",
-    });
-
-    Object.assign(this, meta);
-    this.#header = header;
-    this.#readable = readable;
-
-    // File Size
-    this.#size = this.fileSize || 0;
-    // Entry Size
-    const blocks = Math.ceil(this.#size / recordSize);
-    this.#entrySize = blocks * recordSize;
-  }
-
-  get consumed(): boolean {
-    return this.#consumed;
-  }
-
-  async discard() {
-    // Discard current entry
-    if (this.#consumed) return;
-    this.#consumed = true;
-
-    for await (const _ of this.#readable) {
-      //
-    }
-  }
-}
 
 /**
  * A class to create a tar archive
@@ -422,7 +198,10 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           if (key === "filePath" || key === "readable") {
             continue;
           }
-          checksum += encoder.encode(tarData[key as keyof TarData]).reduce((p, c) => p + c, 0)
+          checksum += encoder.encode(tarData[key as keyof TarData]).reduce(
+            (p, c) => p + c,
+            0,
+          );
         }
 
         tarData.checksum = pad(checksum, 6) + "\u0000 ";
@@ -433,7 +212,12 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           controller.enqueue(readableChunk);
         }
 
-        controller.enqueue(clean(recordSize - (parseInt(tarData.fileSize, 8) % recordSize || recordSize)));
+        controller.enqueue(
+          clean(
+            recordSize -
+              (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
+          ),
+        );
       },
       flush(controller) {
         // append 2 empty records
@@ -443,107 +227,3 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
   }
 }
 
-/**
- * A class to extract a tar archive
- */
-export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
-  writable: WritableStream<Uint8Array>;
-  readable: ReadableStream<TarEntry>;
-  #innerReadable: ReadableStream<Uint8Array>;
-  #block = new Uint8Array(recordSize);
-  #entry: TarEntry | undefined;
-
-  constructor() {
-    const readable = new ReadableStream<TarEntry>({
-      pull: async (controller) => {
-        if (this.#entry && !this.#entry.consumed) {
-          // If entry body was not read, discard the body
-          // so we can read the next entry.
-          await this.#entry.discard();
-        }
-
-        const header = await this.#getHeader();
-        if (header === null) {
-          controller.close();
-          return;
-        }
-
-        const meta = getMetadata(header);
-        this.#entry = new TarEntry(meta, header, this.#innerReadable);
-        controller.enqueue(this.#entry);
-      },
-    });
-    const innerTransform = new TransformStream<Uint8Array, Uint8Array>();
-    this.readable = readable;
-    this.writable = innerTransform.writable;
-    this.#innerReadable = innerTransform.readable;
-  }
-
-  async #getHeader(): Promise<TarHeader | null> {
-    await readBlock(this.#innerReadable, this.#block);
-    const header = parseHeader(this.#block);
-
-    // calculate the checksum
-    const decoder = new TextDecoder();
-    const checksum = getChecksum(this.#block);
-
-    if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
-      if (checksum === initialChecksum) {
-        // EOF
-        return null;
-      }
-      throw new Error("checksum error");
-    }
-
-    const magic = decoder.decode(header.ustar);
-
-    if (magic.indexOf("ustar")) {
-      throw new Error(`unsupported archive format: ${magic}`);
-    }
-
-    return header;
-  }
-}
-
-function getMetadata(header: TarHeader): TarMeta {
-  const decoder = new TextDecoder();
-  // get meta data
-  const meta: TarMeta = {
-    fileName: decoder.decode(trim(header.fileName)),
-  };
-  const fileNamePrefix = trim(header.fileNamePrefix);
-  if (fileNamePrefix.byteLength > 0) {
-    meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
-  }
-
-  for (const key of ["fileMode", "mtime", "uid", "gid"] as const) {
-    const arr = trim(header[key]);
-    if (arr.byteLength > 0) {
-      meta[key] = parseInt(decoder.decode(arr), 8);
-    }
-  }
-
-  for (const key of ["owner", "group", "type"] as const) {
-    const arr = trim(header[key]);
-    if (arr.byteLength > 0) {
-      meta[key] = decoder.decode(arr) as any;
-    }
-  }
-
-  meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-  meta.type = (FileTypes[parseInt(meta.type!)] ?? meta.type) as keyof typeof FileTypes;
-
-  return meta;
-}
-
-function getChecksum(header: Uint8Array): number {
-  let sum = initialChecksum;
-  for (let i = 0; i < 512; i++) {
-    if (i >= 148 && i < 156) {
-      // Ignore checksum header
-      continue;
-    }
-    sum += header[i];
-  }
-  return sum;
-}
