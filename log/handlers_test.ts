@@ -8,7 +8,6 @@ import {
 import {
   getLevelByName,
   getLevelName,
-  LevelName,
   LogLevel,
   LogLevelNames,
   LogLevels,
