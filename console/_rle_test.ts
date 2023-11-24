@@ -3,26 +3,30 @@
 import { runLengthDecode, runLengthEncode } from "./_rle.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 
-const runLengthTestCases: [number[], { d: string; r: string }, string][] = [
-  [
-    [1, 2, 3, 4, 5],
-    { d: "AQIDBAU=", r: "AQEBAQE=" },
-    "return expected value if input is normal value",
-  ],
-  [
-    [1, 1, 1, 1],
-    { d: "AQ==", r: "BA==" },
-    "return expected value if input includes an continuous value",
-  ],
-  [
-    [],
-    { d: "", r: "" },
-    "return expected value if input is empty",
-  ],
+const runLengthTestCases: {
+  list: number[];
+  compressed: { d: string; r: string };
+  testName: string;
+}[] = [
+  {
+    list: [1, 2, 3, 4, 5],
+    compressed: { d: "AQIDBAU=", r: "AQEBAQE=" },
+    testName: "return expected value if input is normal value",
+  },
+  {
+    list: [1, 1, 1, 1],
+    compressed: { d: "AQ==", r: "BA==" },
+    testName: "return expected value if input includes an continuous value",
+  },
+  {
+    list: [],
+    compressed: { d: "", r: "" },
+    testName: "return expected value if input is empty",
+  },
 ];
 
 Deno.test("runLengthEncode()", async (t) => {
-  for (const [list, compressed, testName] of runLengthTestCases) {
+  for (const { list, compressed, testName } of runLengthTestCases) {
     await t.step(`runLengthEncode() ${testName}`, () => {
       const encoded = runLengthEncode(list);
       assertEquals(encoded, compressed);
@@ -47,7 +51,7 @@ Deno.test("runLengthEncode()", async (t) => {
 });
 
 Deno.test("runLengthDecode()", async (t) => {
-  for (const [list, compressed, testName] of runLengthTestCases) {
+  for (const { list, compressed, testName } of runLengthTestCases) {
     await t.step(`runLengthDecode() ${testName}`, () => {
       const decoded = runLengthDecode(compressed);
       assertEquals(decoded, new Uint8Array(list));
