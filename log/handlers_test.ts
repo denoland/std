@@ -61,7 +61,7 @@ Deno.test("simpleHandler", function () {
     const handler = new TestHandler(testLevel);
 
     for (const levelName of LogLevelNames) {
-      const level = getLevelByName(levelName as LevelName);
+      const level = getLevelByName(levelName);
       handler.handle(
         new LogRecord({
           msg: `${levelName.toLowerCase()}-test`,
