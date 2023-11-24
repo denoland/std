@@ -1,3 +1,11 @@
+### 0.208.0 / 2023.11.24
+
+- BREAKING(collections): deprecate `groupBy()` (#3663)
+- BREAKING: deprecate `std/http/method` (#3834)
+- feat(assert): improve assertion message of `assertNotStrictEquals()` (#3820)
+- feat(crypto): support `BLAKE2B-160` algorithm (#3793)
+- feat: add std/expect (#3814)
+
 ### 0.207.0 / 2023.11.17
 
 - BREAKING(bytes): deprecate `concat()` signatures that don't use `Uint8Array[]`
