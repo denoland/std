@@ -37,3 +37,25 @@ before contributing.
    - fix #7123
    - update docs
    - fix bugs
+
+## Deprecations
+
+1. See the [deprecation policy](/README.md#deprecation-policy) for how
+   deprecations work.
+1. Start creating a pull request by adding a deprecation notice to the given
+   symbol with the following format, including the removal version and links to
+   any relevant replacement symbols or documentation:
+
+   ```ts
+   // /sub/foo.ts
+   /**
+    * @deprecated (will be removed in 0.215.0) Use {@linkcode bar} instead.
+    */
+   export function foo() {}
+   ```
+
+1. Submit a pull request starting with the following format:
+
+   ```
+   deprecation(sub): `foo()`
+   ```
