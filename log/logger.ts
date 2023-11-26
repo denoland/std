@@ -9,8 +9,7 @@ export type GenericFunction = (...args: any[]) => any;
 export interface LogRecordOptions {
   msg: string;
   args: unknown[];
-  /* @deprecated (will be changed 0.211.0) Use {@linkcode LogLevel} instead */
-  level: number;
+  level: LogLevel;
   loggerName: string;
 }
 
@@ -22,7 +21,7 @@ export class LogRecord {
   readonly msg: string;
   #args: unknown[];
   #datetime: Date;
-  readonly level: number;
+  readonly level: LogLevel;
   readonly levelName: string;
   readonly loggerName: string;
 
@@ -73,13 +72,10 @@ export class Logger {
 
   /**
    * Use this to set the numeric log level.
-   *
-   * @param {number} level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
    */
-  set level(level: number) {
+  set level(level: LogLevel) {
     try {
-      /* TODO: Remove this unnecessary typecast after 0.211.0 */
-      this.#level = getLevelByName(getLevelName(level)) as LogLevel;
+      this.#level = getLevelByName(getLevelName(level));
     } catch (_) {
       throw new TypeError(`Invalid log level: ${level}`);
     }
@@ -89,8 +85,7 @@ export class Logger {
     return getLevelName(this.#level);
   }
   set levelName(levelName: LevelName) {
-    /* TODO: Remove this unnecessary typecast after 0.211.0 */
-    this.#level = getLevelByName(levelName) as LogLevel;
+    this.#level = getLevelByName(levelName);
   }
 
   get loggerName(): string {
