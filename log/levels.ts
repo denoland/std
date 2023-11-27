@@ -3,7 +3,7 @@
 
 /**
  * @deprecated (will be changed after 0.211.0) Entries with numeric keys will be removed.
- *
+ * 
  * Use this to retrieve the numeric log level by it's associated name.
  * Defaults to INFO.
  */
@@ -56,7 +56,7 @@ export function getLevelByName(name: LevelName): LogLevel {
 
 /**
  * Returns the stringy log level name provided the numeric log level.
- */
+ **/
 export function getLevelName(level: LogLevel): LevelName {
   const levelName = byLevel[level as LogLevel];
   if (levelName) {
