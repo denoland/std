@@ -56,14 +56,17 @@ export class Logger {
     options: LoggerOptions = {},
   ) {
     this.#loggerName = loggerName;
-    this.#level = getLevelByName(levelName);
+    /* TODO: Remove this unnecessary typecast after 0.211.0 */
+    this.#level = getLevelByName(levelName) as LogLevel;
     this.#handlers = options.handlers || [];
   }
 
   /**
    * Use this to retrieve the current numeric log level.
+   *
+   * @returns {number} - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
    */
-  get level(): LogLevel {
+  get level(): number {
     return this.#level;
   }
 
