@@ -2,8 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be changed after 0.211.0) Entries with numeric keys will be removed.
- * 
  * Use this to retrieve the numeric log level by it's associated name.
  * Defaults to INFO.
  */
@@ -14,11 +12,17 @@ export const LogLevels = {
   WARNING: 30,
   ERROR: 40,
   CRITICAL: 50,
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   0: "NOTSET",
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   10: "DEBUG",
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   20: "INFO",
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   30: "WARNING",
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   40: "ERROR",
+  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
   50: "CRITICAL",
 } as const;
 
@@ -45,8 +49,11 @@ const byLevel: Record<LogLevel, LevelName> = {
 /**
  * Returns the numeric log level associated with the passed,
  * stringy log level name.
+ *
+ * @param {LevelName} name
+ * @returns {number} - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
  */
-export function getLevelByName(name: LevelName): LogLevel {
+export function getLevelByName(name: LevelName): number {
   const level = LogLevels[name];
   if (level !== undefined) {
     return level;
@@ -55,9 +62,12 @@ export function getLevelByName(name: LevelName): LogLevel {
 }
 
 /**
- * Returns the stringy log level name provided the numeric log level.
- **/
-export function getLevelName(level: LogLevel): LevelName {
+ * Returns the stringy log level name provided the numeric log level
+ *
+ * @param {number} level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
+ * @returns {LevelName}
+ */
+export function getLevelName(level: number): LevelName {
   const levelName = byLevel[level as LogLevel];
   if (levelName) {
     return levelName;
