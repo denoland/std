@@ -50,8 +50,7 @@ const byLevel: Record<LogLevel, LevelName> = {
  * Returns the numeric log level associated with the passed,
  * stringy log level name.
  *
- * @param {LevelName} name
- * @returns {number} - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
+ * @returns - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
  */
 export function getLevelByName(name: LevelName): number {
   const level = LogLevels[name];
@@ -64,8 +63,7 @@ export function getLevelByName(name: LevelName): number {
 /**
  * Returns the stringy log level name provided the numeric log level
  *
- * @param {number} level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
- * @returns {LevelName}
+ * @param level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
  */
 export function getLevelName(level: number): LevelName {
   const levelName = byLevel[level as LogLevel];

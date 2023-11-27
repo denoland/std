@@ -65,7 +65,7 @@ export class Logger {
   /**
    * Use this to retrieve the current numeric log level.
    *
-   * @returns {number} - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
+   * @returns - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
    */
   get level(): number {
     return this.#level;
@@ -74,7 +74,7 @@ export class Logger {
   /**
    * Use this to set the numeric log level.
    *
-   * @param {number} level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
+   * @param level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
    */
   set level(level: number) {
     try {
