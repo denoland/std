@@ -263,7 +263,7 @@ import { assert } from "../assert/assert.ts";
 import type { LevelName } from "./levels.ts";
 
 export { LogLevels } from "./levels.ts";
-export type { LevelName } from "./levels.ts";
+export type { LevelName, LogLevel } from "./levels.ts";
 export { Logger } from "./logger.ts";
 export type { LogRecord } from "./logger.ts";
 export type { FormatterFunction, HandlerOptions, LogMode } from "./handlers.ts";
