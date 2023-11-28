@@ -2,7 +2,6 @@
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { writeAll } from "../streams/write_all.ts";
 import { readAll } from "../streams/read_all.ts";
 import { delay } from "../async/mod.ts";
 import {
@@ -570,10 +569,9 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
 
-    await writeAll(
-      conn,
-      new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
-    );
+    await ReadableStream.from(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`)
+      .pipeThrough(new TextEncoderStream())
+      .pipeTo(conn.writable, { preventClose: true });
 
     const response = new TextDecoder().decode(await readAll(conn));
 
@@ -633,11 +631,9 @@ Deno.test({
         port,
         certFile: join(testdataDir, "tls/RootCA.pem"),
       });
-
-      await writeAll(
-        conn,
-        new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
-      );
+      await ReadableStream.from(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`)
+        .pipeThrough(new TextEncoderStream())
+        .pipeTo(conn.writable, { preventClose: true });
 
       const response = new TextDecoder().decode(await readAll(conn));
 
@@ -819,10 +815,9 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
 
-    await writeAll(
-      conn,
-      new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
-    );
+    await ReadableStream.from(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`)
+      .pipeThrough(new TextEncoderStream())
+      .pipeTo(conn.writable, { preventClose: true });
 
     const response = new TextDecoder().decode(await readAll(conn));
 
@@ -1101,7 +1096,9 @@ Deno.test(
 
     const conn = await Deno.connect(listenOptions);
 
-    await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
+    await ReadableStream.from("GET / HTTP/1.0\r\n\r\n")
+      .pipeThrough(new TextEncoderStream())
+      .pipeTo(conn.writable, { preventClose: true });
 
     await onRequest.promise;
     conn.close();
@@ -1135,7 +1132,9 @@ Deno.test("Server should not reject when the handler throws", async () => {
 
   const conn = await Deno.connect(listenOptions);
 
-  await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
+  await ReadableStream.from("GET / HTTP/1.0\r\n\r\n")
+    .pipeThrough(new TextEncoderStream())
+    .pipeTo(conn.writable, { preventClose: true });
 
   await postRespondWith.promise;
   conn.close();
@@ -1482,12 +1481,9 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
 
-    await writeAll(
-      conn,
-      new TextEncoder().encode(
-        `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
-      ),
-    );
+    await ReadableStream.from(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`)
+      .pipeThrough(new TextEncoderStream())
+      .pipeTo(conn.writable, { preventClose: true });
 
     const response = new TextDecoder().decode(await readAll(conn));
 
