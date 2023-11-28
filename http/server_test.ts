@@ -3,7 +3,6 @@ import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { writeAll } from "../streams/write_all.ts";
-import { readAll } from "../streams/read_all.ts";
 import { delay } from "../async/mod.ts";
 import {
   assert,
@@ -14,6 +13,7 @@ import {
   assertThrows,
   unreachable,
 } from "../assert/mod.ts";
+import { toText } from "../streams/to_text.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -575,9 +575,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
     );
 
-    const response = new TextDecoder().decode(await readAll(conn));
-
-    conn.close();
+    const response = await toText(conn.readable);
 
     assert(response.includes(`HTTP/1.0 ${status}`), "Status code not correct");
     assert(response.includes(body), "Response body not correct");
@@ -639,9 +637,7 @@ Deno.test({
         new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
       );
 
-      const response = new TextDecoder().decode(await readAll(conn));
-
-      conn.close();
+      const response = await toText(conn.readable);
 
       assert(
         response.includes(`HTTP/1.0 ${status}`),
@@ -824,9 +820,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       new TextEncoder().encode(`${method.toUpperCase()} / HTTP/1.0\r\n\r\n`),
     );
 
-    const response = new TextDecoder().decode(await readAll(conn));
-
-    conn.close();
+    const response = await toText(conn.readable);
 
     assert(response.includes(`HTTP/1.0 ${status}`), "Status code not correct");
     assert(response.includes(body), "Response body not correct");
@@ -1489,9 +1483,7 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
       ),
     );
 
-    const response = new TextDecoder().decode(await readAll(conn));
-
-    conn.close();
+    const response = await toText(conn.readable);
 
     assert(
       response.includes(`HTTP/1.0 ${status}`),
