@@ -3,13 +3,14 @@ use digest::{
   core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput,
   ExtendableOutputReset, Reset, Update,
 };
-use typenum::{U16, U28, U32, U48};
+use typenum::{U16, U20, U28, U32, U48};
 
 /// Enum wrapper over all supported digest implementations.
 #[derive(Clone)]
 pub enum Context {
   Blake2b(Box<blake2::Blake2b512>),
   Blake2b128(Box<blake2::Blake2b<U16>>),
+  Blake2b160(Box<blake2::Blake2b<U20>>),
   Blake2b224(Box<blake2::Blake2b<U28>>),
   Blake2b256(Box<blake2::Blake2b<U32>>),
   Blake2b384(Box<blake2::Blake2b<U48>>),
@@ -43,6 +44,7 @@ impl Context {
     Ok(match algorithm_name {
       "BLAKE2B" => Blake2b(Default::default()),
       "BLAKE2B-128" => Blake2b128(Default::default()),
+      "BLAKE2B-160" => Blake2b160(Default::default()),
       "BLAKE2B-224" => Blake2b224(Default::default()),
       "BLAKE2B-256" => Blake2b256(Default::default()),
       "BLAKE2B-384" => Blake2b384(Default::default()),
@@ -82,6 +84,7 @@ impl Context {
     match self {
       Blake2b(context) => static_block_length(&**context),
       Blake2b128(context) => static_block_length(&**context),
+      Blake2b160(context) => static_block_length(&**context),
       Blake2b224(context) => static_block_length(&**context),
       Blake2b256(context) => static_block_length(&**context),
       Blake2b384(context) => static_block_length(&**context),
@@ -125,6 +128,7 @@ impl Context {
     match self {
       Blake2b(context) => context.output_size(),
       Blake2b128(context) => context.output_size(),
+      Blake2b160(context) => context.output_size(),
       Blake2b224(context) => context.output_size(),
       Blake2b256(context) => context.output_size(),
       Blake2b384(context) => context.output_size(),
@@ -173,6 +177,7 @@ impl Context {
     match self {
       Blake2b(_) => "BLAKE2B",
       Blake2b128(_) => "BLAKE2B-128",
+      Blake2b160(_) => "BLAKE2B-160",
       Blake2b224(_) => "BLAKE2B-224",
       Blake2b256(_) => "BLAKE2B-256",
       Blake2b384(_) => "BLAKE2B-384",
@@ -204,6 +209,7 @@ impl Context {
     match self {
       Blake2b(context) => Reset::reset(&mut **context),
       Blake2b128(context) => Reset::reset(&mut **context),
+      Blake2b160(context) => Reset::reset(&mut **context),
       Blake2b224(context) => Reset::reset(&mut **context),
       Blake2b256(context) => Reset::reset(&mut **context),
       Blake2b384(context) => Reset::reset(&mut **context),
@@ -235,6 +241,7 @@ impl Context {
     match self {
       Blake2b(context) => Digest::update(&mut **context, data),
       Blake2b128(context) => Digest::update(&mut **context, data),
+      Blake2b160(context) => Digest::update(&mut **context, data),
       Blake2b224(context) => Digest::update(&mut **context, data),
       Blake2b256(context) => Digest::update(&mut **context, data),
       Blake2b384(context) => Digest::update(&mut **context, data),
@@ -279,6 +286,7 @@ impl Context {
     Ok(match self {
       Blake2b(context) => context.finalize(),
       Blake2b128(context) => context.finalize(),
+      Blake2b160(context) => context.finalize(),
       Blake2b224(context) => context.finalize(),
       Blake2b256(context) => context.finalize(),
       Blake2b384(context) => context.finalize(),
@@ -322,6 +330,7 @@ impl Context {
     Ok(match self {
       Blake2b(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b128(context) => DynDigest::finalize_reset(context.as_mut()),
+      Blake2b160(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b224(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b256(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b384(context) => DynDigest::finalize_reset(context.as_mut()),

@@ -342,27 +342,14 @@ x,,,
   },
 });
 
-// Work around resource leak error with TextDecoderStream:
-//   https://github.com/denoland/deno/issues/13142
-export const MyTextDecoderStream = () => {
-  const textDecoder = new TextDecoder();
-  return new TransformStream({
-    transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode(chunk));
-    },
-    flush(controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode());
-    },
-  });
-};
-
 Deno.test({
   name:
     "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
-    const readable = file.readable.pipeThrough(MyTextDecoderStream())
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
     for await (const _record of readable) {
       break;

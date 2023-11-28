@@ -16,11 +16,13 @@ interface FarthestPoint {
   id: number;
 }
 
-export enum DiffType {
-  removed = "removed",
-  common = "common",
-  added = "added",
-}
+export const DiffType = {
+  removed: "removed",
+  common: "common",
+  added: "added",
+} as const;
+
+export type DiffType = keyof typeof DiffType;
 
 export interface DiffResult<T> {
   type: DiffType;

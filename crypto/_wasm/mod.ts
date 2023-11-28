@@ -14,6 +14,7 @@ export {
  */
 export const digestAlgorithms = [
   "BLAKE2B-128",
+  "BLAKE2B-160",
   "BLAKE2B-224",
   "BLAKE2B-256",
   "BLAKE2B-384",
