@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-/** Environment variable settings for {@linkcode x}. */
+/** Environment variable settings for {@linkcode check}. */
 export type EnvVar =
   & {
     /** Key of the environment variable. */
@@ -53,22 +53,23 @@ export class MissingEnvVarError extends Error {
  * @example
  * ```ts
  * // Run with --allow-env=FOO permissions
- * import { x } from "https://deno.land/std@$STD_VERSION/dotenv/x.ts";
+ * import { check } from "https://deno.land/std@$STD_VERSION/dotenv/check.ts";
  *
  * // Returns the value of the "FOO" environment variable if already set or
  * // returns "BAR" when "FOO" environment variable is not set or
- * x({ key: "FOO", defaultValue: "BAR" });
+ * check({ key: "FOO", defaultValue: "BAR" });
  *
  * // Throws when the value of the "FOO" environment variable is not set or
  * // does not have a default value.
- * x({ key: "FOO", required: true });
+ * check({ key: "FOO", required: true });
  * ```
  */
-export function x(envVar: EnvVar) {
+export function check(envVar: EnvVar) {
   if (Deno.env.has(envVar.key)) return;
 
   if (envVar.defaultValue !== undefined) {
     Deno.env.set(envVar.key, envVar.defaultValue);
+    return;
   }
 
   if (envVar.required) {
