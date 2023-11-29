@@ -23,7 +23,7 @@ export class MissingEnvVarError extends Error {
  * @example
  * ```ts
  * // Run with --allow-env=FOO permissions
- * import { assertEnvSet } from "https://deno.land/std@$STD_VERSION/dotenv/assert_env_set.ts";
+ * import { assertEnvSet } from "https://deno.land/std@$STD_VERSION/env/assert_env_set.ts";
  *
  * // Throws when the value of the "FOO" environment variable is not set.
  * assertEnvSet("FOO");

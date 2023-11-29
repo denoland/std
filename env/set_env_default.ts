@@ -1,3 +1,5 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+
 /**
  * Sets a default value for the given environment variable, if one is not
  * already set.
@@ -7,7 +9,7 @@
  * @example
  * ```ts
  * // Run with --allow-env=FOO permissions
- * import { setEnvDefault } from "https://deno.land/std@$STD_VERSION/dotenv/set_env_default.ts";
+ * import { setEnvDefault } from "https://deno.land/std@$STD_VERSION/env/set_env_default.ts";
  *
  * // Sets the value of the `FOO` environment variable to `BAR` if not already
  * // set.
