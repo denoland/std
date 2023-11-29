@@ -62,6 +62,12 @@ export class MissingEnvVarError extends Error {
  * // Throws when the value of the "FOO" environment variable is not set or
  * // does not have a default value.
  * prepare({ key: "FOO", required: true });
+ *
+ * // Prepare multiple environment variables.
+ * [
+ *   { key: "FOO", defaultValue: "BAR" },
+ *   { key: "HELLO", required: true },
+ * ].forEach(prepare);
  * ```
  */
 export function prepare(envVar: EnvVar) {
