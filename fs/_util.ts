@@ -6,7 +6,7 @@ import { basename, normalize } from "../path/mod.ts";
  * Convert a URL or string to a path
  * @param pathUrl A URL or string to be converted
  */
-function toPathString(
+export function toPathString(
   pathUrl: string | URL,
 ): string {
   return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;

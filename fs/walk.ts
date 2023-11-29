@@ -4,7 +4,12 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { join } from "../path/join.ts";
 import { normalize } from "../path/normalize.ts";
-import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
+import {
+  createWalkEntry,
+  createWalkEntrySync,
+  toPathString,
+  WalkEntry,
+} from "./_util.ts";
 
 export class WalkError extends Error {
   override cause: unknown;
@@ -129,7 +134,7 @@ export async function* walk(
   if (maxDepth < 0) {
     return;
   }
-  root = root.toString();
+  root = toPathString(root);
   if (includeDirs && include(root, exts, match, skip)) {
     yield await createWalkEntry(root);
   }
@@ -194,7 +199,7 @@ export function* walkSync(
     skip = undefined,
   }: WalkOptions = {},
 ): IterableIterator<WalkEntry> {
-  root = root.toString();
+  root = toPathString(root);
   if (maxDepth < 0) {
     return;
   }
