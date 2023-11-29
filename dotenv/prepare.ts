@@ -74,7 +74,10 @@ export function prepare(envVar: EnvVar) {
 
   if (envVar.required) {
     throw new MissingEnvVarError(
-      `Missing environment variable: ${envVar.key}`,
+      `Missing environment variable: ${envVar.key}
+      
+      ${envVar.key}=<VALUE>
+      `,
       envVar.key,
     );
   }
