@@ -2,7 +2,6 @@
 
 import { basename } from "../path/basename.ts";
 import { join } from "../path/join.ts";
-import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
 import { assert } from "../assert/assert.ts";
@@ -267,8 +266,8 @@ export async function copy(
   dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = resolve(toPathString(src));
-  dest = resolve(toPathString(dest));
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
@@ -312,8 +311,8 @@ export function copySync(
   dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = resolve(toPathString(src));
-  dest = resolve(toPathString(dest));
+  src = toPathString(src);
+  dest = toPathString(dest);
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
