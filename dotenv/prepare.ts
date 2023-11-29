@@ -56,7 +56,7 @@ export class MissingEnvVarError extends Error {
  * import { prepare } from "https://deno.land/std@$STD_VERSION/dotenv/prepare.ts";
  *
  * // Returns the value of the "FOO" environment variable if already set or
- * // returns "BAR" when "FOO" environment variable is not set or
+ * // returns "BAR" when "FOO" environment variable is not set.
  * prepare({ key: "FOO", defaultValue: "BAR" });
  *
  * // Throws when the value of the "FOO" environment variable is not set or
