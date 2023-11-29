@@ -178,8 +178,6 @@ import { parse } from "./parse.ts";
 
 export * from "./stringify.ts";
 export * from "./parse.ts";
-export * from "./assert_env_set.ts";
-export * from "./set_env_default.ts";
 
 export interface LoadOptions {
   /**
