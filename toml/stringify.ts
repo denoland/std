@@ -15,11 +15,10 @@ function joinKeys(keys: string[]): string {
     .join(".");
 }
 
-enum ArrayType {
-  ONLY_PRIMITIVE,
-  ONLY_OBJECT_EXCLUDING_ARRAY,
-  MIXED,
-}
+type ArrayType =
+  | "ONLY_PRIMITIVE"
+  | "ONLY_OBJECT_EXCLUDING_ARRAY"
+  | "MIXED";
 
 export interface FormatOptions {
   keyAlignment?: boolean;
@@ -67,9 +66,9 @@ class Dumper {
         value instanceof Array
       ) {
         const arrayType = this.#getTypeOfArray(value);
-        if (arrayType === ArrayType.ONLY_PRIMITIVE) {
+        if (arrayType === "ONLY_PRIMITIVE") {
           out.push(this.#arrayDeclaration([prop], value));
-        } else if (arrayType === ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY) {
+        } else if (arrayType === "ONLY_OBJECT_EXCLUDING_ARRAY") {
           // array of objects
           for (let i = 0; i < value.length; i++) {
             out.push("");
@@ -110,23 +109,21 @@ class Dumper {
   #doGetTypeOfArray(arr: unknown[]): ArrayType {
     if (!arr.length) {
       // any type should be fine
-      return ArrayType.ONLY_PRIMITIVE;
+      return "ONLY_PRIMITIVE";
     }
 
     const onlyPrimitive = this.#isPrimitive(arr[0]);
     if (arr[0] instanceof Array) {
-      return ArrayType.MIXED;
+      return "MIXED";
     }
     for (let i = 1; i < arr.length; i++) {
       if (
         onlyPrimitive !== this.#isPrimitive(arr[i]) || arr[i] instanceof Array
       ) {
-        return ArrayType.MIXED;
+        return "MIXED";
       }
     }
-    return onlyPrimitive
-      ? ArrayType.ONLY_PRIMITIVE
-      : ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY;
+    return onlyPrimitive ? "ONLY_PRIMITIVE" : "ONLY_OBJECT_EXCLUDING_ARRAY";
   }
   #printAsInlineValue(value: unknown): string | number {
     if (value instanceof Date) {
@@ -164,7 +161,7 @@ class Dumper {
       value instanceof RegExp ||
       value instanceof Date ||
       (value instanceof Array &&
-        this.#getTypeOfArray(value) !== ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY)
+        this.#getTypeOfArray(value) !== "ONLY_OBJECT_EXCLUDING_ARRAY")
     );
   }
   #header(keys: string[]): string {

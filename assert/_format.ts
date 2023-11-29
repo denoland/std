@@ -18,6 +18,7 @@ export function format(v: unknown): string {
       iterableLimit: Infinity,
       // getters should be true in assertEquals.
       getters: true,
+      strAbbreviateSize: Infinity,
     })
     : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
 }
