@@ -21,3 +21,4 @@ export * from "./extensions_by_type.ts";
 export * from "./format_media_type.ts";
 export * from "./get_charset.ts";
 export * from "./parse_media_type.ts";
+export * from "./type_by_extension.ts";
