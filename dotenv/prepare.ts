@@ -46,7 +46,7 @@ export class MissingEnvVarError extends Error {
 /**
  * Sets a default value for the given environment variable, if defined. Then,
  * asserts that the given environment variable has been set in the current
- * process.
+ * process, if required.
  *
  * Requires [--allow-env[=envVar.key] permissions]{@link https://docs.deno.com/runtime/manual/basics/permissions#environment-variables}.
  *
