@@ -10,6 +10,11 @@ const BS = "\b".charCodeAt(0); // ^H - Backspace on Linux and Windows
 const DEL = 0x7f; // ^? - Backspace on macOS
 const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
 
+// The `cbreak` option is not supported on Windows
+const setRawOptions = Deno.build.os === "windows"
+  ? undefined
+  : { cbreak: true };
+
 export type PromptSecretOptions = {
   /** A character to print instead of the user's input. */
   mask?: string;
@@ -36,7 +41,7 @@ export function promptSecret(
   };
   output.writeSync(encoder.encode(message));
 
-  Deno.stdin.setRaw(true, { cbreak: true });
+  Deno.stdin.setRaw(true, setRawOptions);
   try {
     return readLineFromStdinSync(callback);
   } finally {
