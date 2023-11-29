@@ -5,12 +5,7 @@ import { resolve } from "../path/resolve.ts";
 import { SEP_PATTERN } from "../path/separator.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
-import {
-  createWalkEntry,
-  createWalkEntrySync,
-  toPathString,
-  WalkEntry,
-} from "./_util.ts";
+import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
 
 const isWindows = Deno.build.os === "windows";
 
@@ -94,7 +89,7 @@ export async function* expandGlob(
     isAbsolute: isGlobAbsolute,
     hasTrailingSep,
     winRoot,
-  } = split(toPathString(glob));
+  } = split(glob.toString());
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
@@ -220,7 +215,7 @@ export function* expandGlobSync(
     isAbsolute: isGlobAbsolute,
     hasTrailingSep,
     winRoot,
-  } = split(toPathString(glob));
+  } = split(glob.toString());
   root ??= isGlobAbsolute ? winRoot ?? "/" : Deno.cwd();
 
   const globOptions: GlobOptions = { extended, globstar, caseInsensitive };

@@ -2,7 +2,7 @@
 import { dirname } from "../path/dirname.ts";
 import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { getFileInfoType, toPathString } from "./_util.ts";
+import { getFileInfoType } from "./_util.ts";
 
 const isWindows = Deno.build.os === "windows";
 
@@ -30,7 +30,7 @@ export async function ensureSymlink(
   const srcStatInfo = await Deno.lstat(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  await ensureDir(dirname(toPathString(linkName)));
+  await ensureDir(dirname(linkName.toString()));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
@@ -62,7 +62,7 @@ export function ensureSymlinkSync(
   const srcStatInfo = Deno.lstatSync(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  ensureDirSync(dirname(toPathString(linkName)));
+  ensureDirSync(dirname(linkName.toString()));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {

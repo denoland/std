@@ -3,6 +3,16 @@ import * as path from "../path/mod.ts";
 import { basename, normalize } from "../path/mod.ts";
 
 /**
+ * Convert a URL or string to a path
+ * @param pathUrl A URL or string to be converted
+ */
+function toPathString(
+  pathUrl: string | URL,
+): string {
+  return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;
+}
+
+/**
  * Test whether `src` and `dest` resolve to the same location
  * @param src src file path
  * @param dest dest file path
@@ -31,10 +41,8 @@ export function isSubdir(
   if (src === dest) {
     return false;
   }
-  src = toPathString(src);
-  const srcArray = src.split(sep);
-  dest = toPathString(dest);
-  const destArray = dest.split(sep);
+  const srcArray = src.toString().split(sep);
+  const destArray = dest.toString().split(sep);
   return srcArray.every((current, i) => destArray[i] === current);
 }
 
@@ -62,7 +70,7 @@ export interface WalkEntry extends Deno.DirEntry {
 
 /** Create WalkEntry for the `path` synchronously */
 export function createWalkEntrySync(path: string | URL): WalkEntry {
-  path = toPathString(path);
+  path = path.toString();
   path = normalize(path);
   const name = basename(path);
   const info = Deno.statSync(path);
@@ -77,7 +85,7 @@ export function createWalkEntrySync(path: string | URL): WalkEntry {
 
 /** Create WalkEntry for the `path` asynchronously */
 export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
-  path = toPathString(path);
+  path = path.toString();
   path = normalize(path);
   const name = basename(path);
   const info = await Deno.stat(path);
@@ -88,14 +96,4 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
     isDirectory: info.isDirectory,
     isSymlink: info.isSymlink,
   };
-}
-
-/**
- * Convert a URL or string to a path
- * @param pathUrl A URL or string to be converted
- */
-export function toPathString(
-  pathUrl: string | URL,
-): string {
-  return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;
 }

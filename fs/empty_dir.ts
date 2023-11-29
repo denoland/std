@@ -1,6 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { join } from "../path/join.ts";
-import { toPathString } from "./_util.ts";
 
 /**
  * Ensures that a directory is empty.
@@ -22,7 +21,7 @@ export async function emptyDir(dir: string | URL) {
 
     await Promise.all(items.map((item) => {
       if (item && item.name) {
-        const filepath = join(toPathString(dir), item.name);
+        const filepath = join(dir.toString(), item.name);
         return Deno.remove(filepath, { recursive: true });
       }
     }));
@@ -58,7 +57,7 @@ export function emptyDirSync(dir: string | URL) {
     while (items.length) {
       const item = items.shift();
       if (item && item.name) {
-        const filepath = join(toPathString(dir), item.name);
+        const filepath = join(dir.toString(), item.name);
         Deno.removeSync(filepath, { recursive: true });
       }
     }
