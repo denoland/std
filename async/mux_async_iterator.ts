@@ -7,13 +7,13 @@ interface TaggedYieldedValue<T> {
 }
 
 /**
- * The MuxAsyncIterator class multiplexes multiple async iterators into a single
- * stream. It currently makes an assumption that the final result (the value
- * returned and not yielded from the iterator) does not matter; if there is any
- * result, it is discarded.
+ * Multiplexes multiple async iterators into a single stream. It currently
+ * makes an assumption that the final result (the value returned and not
+ * yielded from the iterator) does not matter; if there is any result, it is
+ * discarded.
  *
  * @example
- * ```typescript
+ * ```ts
  * import { MuxAsyncIterator } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
  *
  * async function* gen123(): AsyncIterableIterator<number> {
@@ -44,6 +44,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #throws: any[] = [];
   #signal = Promise.withResolvers<void>();
 
+  /** Add an async iterable to the stream */
   add(iterable: AsyncIterable<T>) {
     ++this.#iteratorCount;
     this.#callIteratorNext(iterable[Symbol.asyncIterator]());
@@ -65,6 +66,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     this.#signal.resolve();
   }
 
+  /** Returns an async iterator of the stream */
   async *iterate(): AsyncIterableIterator<T> {
     while (this.#iteratorCount > 0) {
       // Sleep until any of the wrapped iterators yields.
@@ -89,6 +91,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     }
   }
 
+  /** Implements an async iterator for the stream */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this.iterate();
   }
