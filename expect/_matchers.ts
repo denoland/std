@@ -12,7 +12,7 @@ import { assertObjectMatch } from "../assert/assert_object_match.ts";
 import { assertNotMatch } from "../assert/assert_not_match.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import { equal } from "../assert/equal.ts";
-import { format } from "../assert/_format.ts";
+import { format } from "../_util/_format.ts";
 
 import { AnyConstructor, MatcherContext, MatchResult } from "./_types.ts";
 import { getMockCalls } from "./_mock_util.ts";
