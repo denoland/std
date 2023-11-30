@@ -31,7 +31,7 @@ const serveDirOptions: ServeDirOptions = {
   enableCors: true,
 };
 
-const TEST_FILE_PATH = join(testdataDir, "test file.txt");
+const TEST_FILE_PATH = join(testdataDir, "test_file.txt");
 const TEST_FILE_STAT = await Deno.stat(TEST_FILE_PATH);
 const TEST_FILE_SIZE = TEST_FILE_STAT.size;
 const TEST_FILE_ETAG = await calculate(TEST_FILE_STAT) as string;
@@ -98,7 +98,7 @@ async function fetchExactPath(
 }
 
 Deno.test("serveDir() sets last-modified header", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
+  const req = new Request("http://localhost/test_file.txt");
   const res = await serveDir(req, serveDirOptions);
   await res.body?.cancel();
   const lastModifiedHeader = res.headers.get("last-modified") as string;
@@ -111,7 +111,7 @@ Deno.test("serveDir() sets last-modified header", async () => {
 });
 
 Deno.test("serveDir() sets date header", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
+  const req = new Request("http://localhost/test_file.txt");
   const res = await serveDir(req, serveDirOptions);
   await res.body?.cancel();
   const dateHeader = res.headers.get("date") as string;
@@ -183,9 +183,9 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   // Mock Deno.stat to test that the dirlisting page can be generated
   // even if the fileInfo for a particular file cannot be obtained.
 
-  // Assuming that fileInfo of `test file.txt` cannot be accessible
+  // Assuming that fileInfo of `test_file.txt` cannot be accessible
   const denoStatStub = stub(Deno, "stat", (path): Promise<Deno.FileInfo> => {
-    if (path.toString().includes("test file.txt")) {
+    if (path.toString().includes("test_file.txt")) {
       return Promise.reject(new Error("__stubed_error__"));
     }
     return denoStatStub.original.call(Deno, path);
@@ -196,7 +196,7 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   denoStatStub.restore();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, "/test%20file.txt");
+  assertStringIncludes(page, "/test_file.txt");
 });
 
 Deno.test("serveDir() handles not found files", async () => {
@@ -267,7 +267,7 @@ Deno.test("serveDir() serves unusual filename", async () => {
   assert(res1.headers.has("access-control-allow-origin"));
   assert(res1.headers.has("access-control-allow-headers"));
 
-  const req2 = new Request("http://localhost/test%20file.txt");
+  const req2 = new Request("http://localhost/test_file.txt");
   const res2 = await serveDir(req2, serveDirOptions);
   await res2.body?.cancel();
 
@@ -413,7 +413,7 @@ Deno.test("serveDir() shows .. if it makes sense", async () => {
 });
 
 Deno.test("serveDir() handles range request (bytes=0-0)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=0-0" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -423,7 +423,7 @@ Deno.test("serveDir() handles range request (bytes=0-0)", async () => {
 });
 
 Deno.test("serveDir() handles range request (bytes=0-100)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=0-100" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -437,7 +437,7 @@ Deno.test("serveDir() handles range request (bytes=0-100)", async () => {
 });
 
 Deno.test("serveDir() handles range request (bytes=300-)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=300-" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -451,7 +451,7 @@ Deno.test("serveDir() handles range request (bytes=300-)", async () => {
 });
 
 Deno.test("serveDir() handles range request (bytes=-200)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=-200" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -466,7 +466,7 @@ Deno.test("serveDir() handles range request (bytes=-200)", async () => {
 });
 
 Deno.test("serveDir() clamps ranges that are too large (bytes=0-999999999)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=0-999999999" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -481,7 +481,7 @@ Deno.test("serveDir() clamps ranges that are too large (bytes=0-999999999)", asy
 });
 
 Deno.test("serveDir() clamps ranges that are too large (bytes=-999999999)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     // This means the last 999999999 bytes. It is too big and should be clamped.
     headers: { range: "bytes=-999999999" },
   });
@@ -497,7 +497,7 @@ Deno.test("serveDir() clamps ranges that are too large (bytes=-999999999)", asyn
 });
 
 Deno.test("serveDir() handles bad range request (bytes=500-200)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=500-200" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -509,7 +509,7 @@ Deno.test("serveDir() handles bad range request (bytes=500-200)", async () => {
 });
 
 Deno.test("serveDir() handles bad range request (bytes=99999-999999)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=99999-999999" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -521,7 +521,7 @@ Deno.test("serveDir() handles bad range request (bytes=99999-999999)", async () 
 });
 
 Deno.test("serveDir() handles bad range request (bytes=99999)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=99999-" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -533,7 +533,7 @@ Deno.test("serveDir() handles bad range request (bytes=99999)", async () => {
 });
 
 Deno.test("serveDir() ignores bad range request (bytes=100)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=100" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -545,7 +545,7 @@ Deno.test("serveDir() ignores bad range request (bytes=100)", async () => {
 });
 
 Deno.test("serveDir() ignores bad range request (bytes=a-b)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=a-b" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -557,7 +557,7 @@ Deno.test("serveDir() ignores bad range request (bytes=a-b)", async () => {
 });
 
 Deno.test("serveDir() ignores bad multi-range request (bytes=0-10, 20-30)", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { range: "bytes=0-10, 20-30" },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -589,7 +589,7 @@ Deno.test("serveDir() sets accept-ranges header to bytes for directory listing",
 });
 
 Deno.test("serveDir() sets accept-ranges header to bytes for file response", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
+  const req = new Request("http://localhost/test_file.txt");
   const res = await serveDir(req, serveDirOptions);
   await res.body?.cancel();
 
@@ -597,7 +597,7 @@ Deno.test("serveDir() sets accept-ranges header to bytes for file response", asy
 });
 
 Deno.test("serveDir() sets headers if provided as arguments", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
+  const req = new Request("http://localhost/test_file.txt");
   const res = await serveDir(req, {
     ...serveDirOptions,
     headers: ["cache-control:max-age=100", "x-custom-header:hi"],
@@ -609,7 +609,7 @@ Deno.test("serveDir() sets headers if provided as arguments", async () => {
 });
 
 Deno.test("serveDir() sets etag header", async () => {
-  const req = new Request("http://localhost/test%20file.txt");
+  const req = new Request("http://localhost/test_file.txt");
   const res = await serveDir(req, serveDirOptions);
   await res.body?.cancel();
 
@@ -617,7 +617,7 @@ Deno.test("serveDir() sets etag header", async () => {
 });
 
 Deno.test("serveDir() serves empty HTTP 304 response for if-none-match request of unmodified file", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { "if-none-match": TEST_FILE_ETAG },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -628,7 +628,7 @@ Deno.test("serveDir() serves empty HTTP 304 response for if-none-match request o
 });
 
 Deno.test("serveDir() serves HTTP 304 response for if-modified-since request of unmodified file", async () => {
-  const req = new Request("http://localhost/test%20file.txt", {
+  const req = new Request("http://localhost/test_file.txt", {
     headers: { "if-modified-since": TEST_FILE_LAST_MODIFIED },
   });
   const res = await serveDir(req, serveDirOptions);
@@ -648,7 +648,7 @@ Deno.test("serveDir() serves HTTP 304 response for if-modified-since request of 
 Deno.test(
   "serveDir() only uses if-none-match header if if-non-match and if-modified-since headers are provided",
   async () => {
-    const req = new Request("http://localhost/test%20file.txt", {
+    const req = new Request("http://localhost/test_file.txt", {
       headers: {
         "if-none-match": "not match etag",
         "if-modified-since": TEST_FILE_LAST_MODIFIED,
@@ -663,7 +663,7 @@ Deno.test(
 );
 
 Deno.test("serveFile() serves test file", async () => {
-  const req = new Request("http://localhost/testdata/test file.txt");
+  const req = new Request("http://localhost/testdata/test_file.txt");
   const res = await serveFile(req, TEST_FILE_PATH);
 
   assertEquals(res.status, 200);
@@ -690,7 +690,7 @@ Deno.test("serveFile() serves HTTP 404 when the path is a directory", async () =
 });
 
 Deno.test("serveFile() handles bad range request (bytes=200-500)", async () => {
-  const req = new Request("http://localhost/testdata/test file.txt", {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
     headers: { range: "bytes=200-500" },
   });
   const res = await serveFile(req, TEST_FILE_PATH);
@@ -700,7 +700,7 @@ Deno.test("serveFile() handles bad range request (bytes=200-500)", async () => {
 });
 
 Deno.test("serveFile() handles bad range request (bytes=500-200)", async () => {
-  const req = new Request("http://localhost/testdata/test file.txt", {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
     headers: { range: "bytes=500-200" },
   });
   const res = await serveFile(req, TEST_FILE_PATH);
@@ -710,7 +710,7 @@ Deno.test("serveFile() handles bad range request (bytes=500-200)", async () => {
 });
 
 Deno.test("serveFile() serves HTTP 304 response for if-modified-since request of unmodified file", async () => {
-  const req = new Request("http://localhost/testdata/test file.txt", {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
     headers: { "if-none-match": TEST_FILE_ETAG },
   });
   const res = await serveFile(req, TEST_FILE_PATH);
@@ -727,7 +727,7 @@ Deno.test("serveFile() serves HTTP 304 response for if-modified-since request of
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since}
  */
 Deno.test("serveFile() only uses if-none-match header if if-non-match and if-modified-since headers are provided", async () => {
-  const req = new Request("http://localhost/testdata/test file.txt", {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
     headers: {
       "if-none-match": "not match etag",
       "if-modified-since": TEST_FILE_LAST_MODIFIED,
@@ -750,10 +750,10 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
     import { serveFile } from "${import.meta.resolve("./file_server.ts")}";
     import { fromFileUrl } from "${import.meta.resolve("../path/mod.ts")}";
     import { assertEquals } from "${import.meta.resolve("../assert/assert_equals.ts")}";
-    const testdataPath = "${toFileUrl(join(testdataDir, "test file.txt"))}";
+    const testdataPath = "${toFileUrl(join(testdataDir, "test_file.txt"))}";
     const fileInfo = await Deno.stat(new URL(testdataPath));
     fileInfo.mtime = null;
-    const req = new Request("http://localhost/testdata/test file.txt");
+    const req = new Request("http://localhost/testdata/test_file.txt");
     const res = await serveFile(req, fromFileUrl(testdataPath), { fileInfo });
     assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
   `;
@@ -840,24 +840,24 @@ Deno.test("serveDir() redirects a directory URL not ending with a slash correctl
 });
 
 Deno.test("serveDir() redirects a file URL ending with a slash correctly even with a query string", async () => {
-  const url = "http://localhost/http/testdata/test%20file.txt/?test";
+  const url = "http://localhost/http/testdata/test_file.txt/?test";
   const res = await serveDir(new Request(url), { showIndex: true });
 
   assertEquals(res.status, 301);
   assertEquals(
     res.headers.get("Location"),
-    "http://localhost/http/testdata/test%20file.txt?test",
+    "http://localhost/http/testdata/test_file.txt?test",
   );
 });
 
 Deno.test("serveDir() redirects non-canonical URLs", async () => {
-  const url = "http://localhost/http/testdata//////test%20file.txt/////?test";
+  const url = "http://localhost/http/testdata//////test_file.txt/////?test";
   const res = await serveDir(new Request(url), { showIndex: true });
 
   assertEquals(res.status, 301);
   assertEquals(
     res.headers.get("Location"),
-    "http://localhost/http/testdata/test%20file.txt/?test",
+    "http://localhost/http/testdata/test_file.txt/?test",
   );
 });
 
