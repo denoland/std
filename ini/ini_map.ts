@@ -5,7 +5,7 @@ export interface FormattingOptions {
   /** The character used to assign a value to a key; defaults to '='. */
   assignment?: string;
   /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
-  lineBreak?: string;
+  lineBreak?: "\n" | "\r\n";
   /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
   commentChar?: "#" | ";" | "//";
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
@@ -166,7 +166,8 @@ export class IniMap {
       return this.comments;
     },
   };
-  #formatting: Omit<FormattingOptions, "commentChar"> & {
+  #formatting: Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
+    lineBreak?: string;
     commentChar?: string;
   };
 
@@ -705,7 +706,7 @@ const LineOp = {
 } as const;
 const DummyFormatting: Required<FormattingOptions> = {
   assignment: "",
-  lineBreak: "",
+  lineBreak: "\n",
   pretty: false,
   commentChar: "#",
   deduplicate: false,
