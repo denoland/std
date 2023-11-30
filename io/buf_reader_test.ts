@@ -7,7 +7,7 @@ import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 import { copy } from "../bytes/copy.ts";
 
 /** OneByteReader returns a Reader that implements

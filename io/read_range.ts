@@ -2,7 +2,7 @@
 
 import { copy as copyBytes } from "../bytes/copy.ts";
 import { assert } from "../assert/assert.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "./types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 

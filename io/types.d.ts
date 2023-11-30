@@ -1,17 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * See the Contributing > Types section in the README for an explanation of this file.
- */
+/** See the Contributing > Types section in the README for an explanation of this file. */
 
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * An abstract interface which when implemented provides an interface to read bytes into an array buffer asynchronously.
- */
+/** An abstract interface which when implemented provides an interface to read bytes into an array buffer asynchronously. */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
    * bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -38,11 +30,7 @@ export interface Reader {
   read(p: Uint8Array): Promise<number | null>;
 }
 
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * An abstract interface which when implemented provides an interface to read bytes into an array buffer synchronously.
- */
+/** An abstract interface which when implemented provides an interface to read bytes into an array buffer synchronously. */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
    * of bytes read (`0` < `n` <= `p.byteLength`) and rejects if any error
@@ -68,11 +56,7 @@ export interface ReaderSync {
   readSync(p: Uint8Array): number | null;
 }
 
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource asynchronously.
- */
+/** An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource asynchronously. */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
    * resolves to the number of bytes written from `p` (`0` <= `n` <=
@@ -85,11 +69,7 @@ export interface Writer {
    */
   write(p: Uint8Array): Promise<number>;
 }
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource synchronously.
- */
+/** An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource synchronously. */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
    * stream. It returns the number of bytes written from `p` (`0` <= `n`
@@ -103,11 +83,7 @@ export interface WriterSync {
   writeSync(p: Uint8Array): number;
 }
 
-/**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
- * An abstract interface which when implemented provides an interface to close files/resources that were previously opened.
- */
+/** An abstract interface which when implemented provides an interface to close files/resources that were previously opened. */
 export interface Closer {
   /** Closes the resource, "freeing" the backing file/resource. */
   close(): void;
