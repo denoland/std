@@ -136,22 +136,28 @@ Deno.test("serveDir()", async () => {
 });
 
 Deno.test("serveDir() with hash symbol in filename", async () => {
+  const filePath = join(testdataDir, "file#2.txt");
+  const text = "Plain text";
+  await Deno.writeTextFile(filePath, text);
+
   const req = new Request("http://localhost/file%232.txt");
   const res = await serveDir(req, serveDirOptions);
   const downloadedFile = await res.text();
-  const localFile = await Deno.readTextFile(
-    join(testdataDir, "file#2.txt"),
-  );
 
   assertEquals(res.status, 200);
   assertEquals(
     res.headers.get("content-type"),
     "text/plain; charset=UTF-8",
   );
-  assertEquals(downloadedFile, localFile);
+  assertEquals(downloadedFile, text);
+
+  await Deno.remove(filePath);
 });
 
 Deno.test("serveDir() serves directory index", async () => {
+  const filePath = join(testdataDir, "%25A.txt");
+  await Deno.writeTextFile(filePath, "25A");
+
   const req = new Request("http://localhost/");
   const res = await serveDir(req, serveDirOptions);
   const page = await res.text();
@@ -160,7 +166,6 @@ Deno.test("serveDir() serves directory index", async () => {
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
-  assertStringIncludes(page, "/file%232.txt");
   // `Deno.FileInfo` is not completely compatible with Windows yet
   // TODO(bartlomieju): `mode` should work correctly in the future.
   // Correct this test case accordingly.
@@ -169,6 +174,8 @@ Deno.test("serveDir() serves directory index", async () => {
   } else {
     assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
   }
+
+  await Deno.remove(filePath);
 });
 
 Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
@@ -248,6 +255,10 @@ Deno.test("serveDir() traverses encoded URI path", async () => {
 });
 
 Deno.test("serveDir() serves unusual filename", async () => {
+  const filePath = join(testdataDir, "%");
+  const file = await Deno.create(filePath);
+  file.close();
+
   const req1 = new Request("http://localhost/%25");
   const res1 = await serveDir(req1, serveDirOptions);
   await res1.body?.cancel();
@@ -263,6 +274,8 @@ Deno.test("serveDir() serves unusual filename", async () => {
   assertEquals(res2.status, 200);
   assert(res2.headers.has("access-control-allow-origin"));
   assert(res2.headers.has("access-control-allow-headers"));
+
+  await Deno.remove(filePath);
 });
 
 Deno.test("serveDir() supports CORS", async () => {
