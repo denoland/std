@@ -11,7 +11,7 @@
  *
  * @example
  * ```ts
- * import * as INI from "https://deno.land/std@$STD_VERSION/ini/mod.ts";
+ * import * as ini from "https://deno.land/std@$STD_VERSION/ini/mod.ts";
  * const iniFile = `# Example configuration file
  * Global Key=Some data here
  *
@@ -19,7 +19,7 @@
  * Section Value=42
  * Section Date=1977-05-25
  * `;
- * const parsed = INI.parse(iniFile, {
+ * const parsed = ini.parse(iniFile, {
  *   reviver: (key, value, section) => {
  *     if (section === "Section #1") {
  *       if (key === "Section Value") return Number(value);
@@ -36,7 +36,7 @@
  * //   "Section #1": { "Section Value": 42, "Section Date": 1977-05-25T00:00:00.000Z }
  * // }
  *
- * const text = INI.stringify(parsed, {
+ * const text = ini.stringify(parsed, {
  *   replacer: (key, value, section) => {
  *     if (section === "Section #1" && key === "Section Date") {
  *       return (value as Date).toISOString().split("T")[0];

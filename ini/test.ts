@@ -1,28 +1,28 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import * as INI from "./mod.ts";
+import * as mod from "./mod.ts";
 import {
   assert,
   assertEquals,
   assertObjectMatch,
   assertStrictEquals,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 
 function assertValidParse(
   text: string,
   expected: unknown,
-  options?: INI.ParseOptions,
+  options?: mod.ParseOptions,
 ) {
-  assertEquals(INI.parse(text, options), expected);
+  assertEquals(mod.parse(text, options), expected);
 }
 
 function assertValidStringify(
   obj: unknown,
   expected: unknown,
-  options?: INI.StringifyOptions,
+  options?: mod.StringifyOptions,
 ) {
-  assertEquals(INI.stringify(obj, options), expected);
+  assertEquals(mod.stringify(obj, options), expected);
 }
 
 function assertInvalidParse(
@@ -30,10 +30,10 @@ function assertInvalidParse(
   // deno-lint-ignore no-explicit-any
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes?: string,
-  options?: INI.ParseOptions,
+  options?: mod.ParseOptions,
 ) {
   assertThrows(
-    () => INI.parse(text, options),
+    () => mod.parse(text, options),
     ErrorClass,
     msgIncludes,
   );
@@ -43,7 +43,7 @@ Deno.test({
   name: "[ini] create and manage an IniMap",
   async fn({ step }) {
     const text = "#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100";
-    let ini = new INI.IniMap();
+    let ini = new mod.IniMap();
 
     await step({
       name: "[IniMap] set values",
@@ -115,7 +115,7 @@ Deno.test({
     await step({
       name: "[IniMap] parse INI string",
       fn() {
-        ini = new INI.IniMap();
+        ini = new mod.IniMap();
         ini.parse(text);
         assertEquals(ini.get("section1", "keyA"), "100");
         assertEquals(ini.get("keyA"), "1977-05-25");
@@ -165,8 +165,8 @@ Deno.test({
       name: "[IniMap] create from",
       fn() {
         assertEquals(
-          INI.IniMap.from("keyA=1977-05-25\n[section1]\nkeyA=100").toString(),
-          INI.IniMap.from({
+          mod.IniMap.from("keyA=1977-05-25\n[section1]\nkeyA=100").toString(),
+          mod.IniMap.from({
             keyA: "1977-05-25",
             section1: { keyA: 100 },
           }).toString(),
@@ -177,22 +177,22 @@ Deno.test({
     await step({
       name: "[IniMap] detect unambiguous formatting marks",
       fn() {
-        assertObjectMatch(INI.IniMap.from("# comment\na = b").formatting, {
+        assertObjectMatch(mod.IniMap.from("# comment\na = b").formatting, {
           comment: "#",
           lineBreak: "\n",
           pretty: true,
         });
-        assertObjectMatch(INI.IniMap.from("; comment\ra=b").formatting, {
+        assertObjectMatch(mod.IniMap.from("; comment\ra=b").formatting, {
           comment: ";",
           lineBreak: "\r",
           pretty: false,
         });
-        assertObjectMatch(INI.IniMap.from("// comment\r\na= b").formatting, {
+        assertObjectMatch(mod.IniMap.from("// comment\r\na= b").formatting, {
           comment: "//",
           lineBreak: "\r\n",
           pretty: false,
         });
-        assertObjectMatch(INI.IniMap.from("# comment\n\ra =b").formatting, {
+        assertObjectMatch(mod.IniMap.from("# comment\n\ra =b").formatting, {
           comment: "#",
           lineBreak: "\n\r",
           pretty: false,
@@ -203,7 +203,7 @@ Deno.test({
     await step({
       name: "[IniMap] manage comments",
       async fn({ step }) {
-        ini = INI.IniMap.from({
+        ini = mod.IniMap.from({
           keyA: "1977-05-25",
           section1: { keyA: 100 },
         });
@@ -314,7 +314,7 @@ Deno.test({
           name: "[Comments] preserve comments",
           fn() {
             const comment = "# comment";
-            assertEquals(INI.IniMap.from(comment).toString(), comment);
+            assertEquals(mod.IniMap.from(comment).toString(), comment);
           },
         });
       },
@@ -405,7 +405,7 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"__proto__": 100}');
-    const ini = INI.parse("__proto__ = 100", {
+    const ini = mod.parse("__proto__ = 100", {
       reviver: (key, value) => {
         if (key === "__proto__") return Number(value);
       },
@@ -426,13 +426,13 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
-    const ini = INI.parse("aaa=0\naaa=1", {
+    const ini = mod.parse("aaa=0\naaa=1", {
       reviver: (_, value) => Number(value),
     });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
     assertEquals(
-      INI.IniMap.from("#comment\naaa=0\naaa=1", { deduplicate: true })
+      mod.IniMap.from("#comment\naaa=0\naaa=1", { deduplicate: true })
         .toString(),
       "#comment\naaa=1",
     );
