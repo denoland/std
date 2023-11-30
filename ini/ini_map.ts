@@ -7,7 +7,7 @@ export interface FormattingOptions {
   /** Character(s) used to break lines in the config file; defaults to '\n'. Ignored on parse. */
   lineBreak?: string;
   /** Mark to use for setting comments; expects '#', ';', '//', defaults to '#' unless another mark is found. */
-  comment?: string;
+  commentChar?: "#" | ";" | "//";
   /** Use a plain assignment char or pad with spaces; defaults to false. Ignored on parse. */
   pretty?: boolean;
   /** Filter duplicate keys from INI string output; defaults to false to preserve data parity. */
@@ -104,7 +104,7 @@ export class IniMap {
     },
     setAtLine: (line: number, text: string): Comments => {
       const comment = this.#getComment(line);
-      const mark = this.#formatting.comment ?? "#";
+      const mark = this.#formatting.commentChar ?? "#";
       const formatted = text.startsWith(mark) || text === ""
         ? text
         : `${mark} ${text}`;
@@ -166,7 +166,9 @@ export class IniMap {
       return this.comments;
     },
   };
-  #formatting: FormattingOptions;
+  #formatting: Omit<FormattingOptions, "commentChar"> & {
+    commentChar?: string;
+  };
 
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
@@ -181,7 +183,7 @@ export class IniMap {
     return size;
   }
 
-  get formatting(): FormattingOptions {
+  get formatting() {
     return this.#formatting;
   }
 
@@ -518,11 +520,11 @@ export class IniMap {
       const trimmed = line.trim();
       if (isComment(trimmed)) {
         // If comment formatting mark is not set, discover it.
-        if (!this.#formatting.comment) {
+        if (!this.#formatting.commentChar) {
           const mark = trimmed[0];
           if (mark) {
             // if mark is truthy, use the character.
-            this.#formatting.comment = mark === "/" ? "//" : mark;
+            this.#formatting.commentChar = mark === "/" ? "//" : mark;
           }
         }
         this.#lines.push({
@@ -705,7 +707,7 @@ const DummyFormatting: Required<FormattingOptions> = {
   assignment: "",
   lineBreak: "",
   pretty: false,
-  comment: "",
+  commentChar: "#",
   deduplicate: false,
 };
 const FormattingKeys = Object.keys(
