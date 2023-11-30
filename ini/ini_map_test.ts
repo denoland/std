@@ -142,22 +142,22 @@ Deno.test({
       name: "from() detects unambiguous formatting marks",
       fn() {
         assertObjectMatch(IniMap.from("# comment\na = b").formatting, {
-          comment: "#",
+          commentChar: "#",
           lineBreak: "\n",
           pretty: true,
         });
         assertObjectMatch(IniMap.from("; comment\ra=b").formatting, {
-          comment: ";",
+          commentChar: ";",
           lineBreak: "\r",
           pretty: false,
         });
         assertObjectMatch(IniMap.from("// comment\r\na= b").formatting, {
-          comment: "//",
+          commentChar: "//",
           lineBreak: "\r\n",
           pretty: false,
         });
         assertObjectMatch(IniMap.from("# comment\n\ra =b").formatting, {
-          comment: "#",
+          commentChar: "#",
           lineBreak: "\n\r",
           pretty: false,
         });
