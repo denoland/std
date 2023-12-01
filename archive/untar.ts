@@ -37,7 +37,7 @@ import {
   ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../streams/read_all.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "../io/types.d.ts";
 
 /**
  * Extend TarMeta with the `linkName` property so that readers can access

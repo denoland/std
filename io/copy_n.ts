@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
-import type { Reader, Writer } from "../types.d.ts";
+import type { Reader, Writer } from "./types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 

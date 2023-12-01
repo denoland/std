@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { Buffer } from "../io/buffer.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
 /**
  * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} and {@linkcode import("./to_array_buffer.ts").toArrayBuffer} instead.
