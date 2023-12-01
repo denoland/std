@@ -91,7 +91,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     }
   }
 
-  /** Implements an async iterator for the stream */
+  /** Implements an async iterator for the stream. */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this.iterate();
   }
