@@ -1,13 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-// Utility for representing n-tuple
-type Tuple<T, N extends number> = N extends N
+/** Utility for representing n-tuple. Used in {@linkcode tee}. */
+export type Tuple<T, N extends number> = N extends N
   ? number extends N ? T[] : TupleOf<T, N, []>
   : never;
-type TupleOf<T, N extends number, R extends unknown[]> = R["length"] extends N
-  ? R
-  : TupleOf<T, N, [T, ...R]>;
+
+/** Utility for representing n-tuple of. Used in {@linkcode Tuple}. */
+export type TupleOf<T, N extends number, R extends unknown[]> =
+  R["length"] extends N ? R
+    : TupleOf<T, N, [T, ...R]>;
 
 interface QueueNode<T> {
   value: T;
@@ -47,7 +49,7 @@ class Queue<T> {
 }
 
 /**
- * Branches the given async iterable into the n branches.
+ * Branches the given async iterable into the `n` branches.
  *
  * @example
  * ```ts
@@ -90,11 +92,10 @@ export function tee<T, N extends number = 2>(
     }
   }
 
-  const branches = Array.from({ length: n }).map(
+  return Array.from({ length: n }).map(
     () => generator(),
   ) as Tuple<
     AsyncIterable<T>,
     N
   >;
-  return branches;
 }
