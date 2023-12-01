@@ -44,7 +44,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #throws: any[] = [];
   #signal = Promise.withResolvers<void>();
 
-  /** Add an async iterable to the stream */
+  /** Add an async iterable to the stream. */
   add(iterable: AsyncIterable<T>) {
     ++this.#iteratorCount;
     this.#callIteratorNext(iterable[Symbol.asyncIterator]());
