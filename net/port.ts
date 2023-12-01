@@ -7,8 +7,11 @@ export function getAvailable(): number {
 }
 
 /**
+ * Get a promise that resolves upon successful connection to the specified port.
+ * 
  * @param port the port at which to check readiness
  * @param ms the duration of the intervals between re-checking readiness
+ * @throws if the inner `Deno.connect` call throws a non `Deno.errors.ConnectionRefused` error.
  */
 export async function ready(port: number, ms = 500): Promise<void> {
   while (true) {
