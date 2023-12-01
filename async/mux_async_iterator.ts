@@ -66,7 +66,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     this.#signal.resolve();
   }
 
-  /** Returns an async iterator of the stream */
+  /** Returns an async iterator of the stream. */
   async *iterate(): AsyncIterableIterator<T> {
     while (this.#iteratorCount > 0) {
       // Sleep until any of the wrapped iterators yields.
