@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-// This file been copied to `std/expect`.
+// This file is copied from `std/assert`.
 
 /**
  * Converts the input into a string. Objects, Sets and Maps are sorted so as to
