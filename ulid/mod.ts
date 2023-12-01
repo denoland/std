@@ -89,6 +89,6 @@ export const monotonicUlid: ULID = monotonicFactory();
  * ulid(1469918176385); // 01ARYZ6S41TSV4RRFFQ69G5FAV
  * ```
  */
-export function ulid(seedTime = Date.now()): string {
+export function ulid(seedTime: number = Date.now()): string {
   return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN);
 }
