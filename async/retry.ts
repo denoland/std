@@ -14,6 +14,9 @@ export class RetryError extends Error {
    *
    * @example
    * ```
+   * import { RetryError } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
+   *
+   * throw new RetryError({ foo: "bar" }, 3);
    * ```
    */
   constructor(cause: unknown, attempts: number) {
@@ -85,7 +88,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * @example
  * ```ts
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
  * const req = async () => {
  *  // some function that throws sometimes
  * };
@@ -102,7 +105,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * @example
  * ```ts
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
  * const req = async () => {
  *  // some function that throws sometimes
  * };
