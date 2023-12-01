@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
 /**
  * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.

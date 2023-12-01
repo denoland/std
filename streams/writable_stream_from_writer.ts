@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { writeAll } from "./write_all.ts";
-import type { Closer, Writer } from "../types.d.ts";
+import type { Closer, Writer } from "../io/types.d.ts";
 
 function isCloser(value: unknown): value is Closer {
   return typeof value === "object" && value !== null && value !== undefined &&

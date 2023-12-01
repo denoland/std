@@ -3,7 +3,7 @@ import { green, red, stripColor } from "../fmt/colors.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { format } from "./_format.ts";
 
-// This file been copied to `std/expect`.
+// This file is copied from `std/assert`.
 
 Deno.test("assert diff formatting (strings)", () => {
   assertThrows(

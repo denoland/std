@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
 export const MIN_READ_BUFFER_SIZE = 16;
 export const bufsizes: number[] = [

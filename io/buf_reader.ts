@@ -8,7 +8,7 @@
 
 import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;

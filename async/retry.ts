@@ -4,7 +4,21 @@
 import { assert } from "../assert/assert.ts";
 import { _exponentialBackoffWithJitter } from "./_util.ts";
 
+/**
+ * Error thrown in {@linkcode retry} once the maximum number of failed attempts
+ * has been reached.
+ */
 export class RetryError extends Error {
+  /**
+   * Constructs a new {@linkcode RetryError} instance.
+   *
+   * @example
+   * ```
+   * import { RetryError } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
+   *
+   * throw new RetryError({ foo: "bar" }, 3);
+   * ```
+   */
   constructor(cause: unknown, attempts: number) {
     super(`Retrying exceeded the maxAttempts (${attempts}).`);
     this.name = "RetryError";
@@ -12,16 +26,38 @@ export class RetryError extends Error {
   }
 }
 
+/** Options for {@linkcode retry}. */
 export interface RetryOptions {
-  /** How much to backoff after each retry. This is `2` by default. */
+  /**
+   * How much to backoff after each retry.
+   *
+   * @default {2}
+   */
   multiplier?: number;
-  /** The maximum milliseconds between attempts. This is `60000` by default. */
+  /**
+   * The maximum milliseconds between attempts.
+   *
+   * @default {60000}
+   */
   maxTimeout?: number;
-  /** The maximum amount of attempts until failure. This is `5` by default. */
+  /**
+   * The maximum amount of attempts until failure.
+   *
+   * @default {5}
+   */
   maxAttempts?: number;
-  /** The initial and minimum amount of milliseconds between attempts. This is `1000` by default. */
+  /**
+   * The initial and minimum amount of milliseconds between attempts.
+   *
+   * @default {1000}
+   */
   minTimeout?: number;
-  /** Amount of jitter to introduce to the time between attempts. This is `1` for full jitter by default. */
+  /**
+   * Amount of jitter to introduce to the time between attempts. This is `1`
+   * for full jitter by default.
+   *
+   * @default {1}
+   */
   jitter?: number;
 }
 
@@ -35,20 +71,24 @@ const defaultRetryOptions: Required<RetryOptions> = {
 
 /**
  * Calls the given (possibly asynchronous) function up to `maxAttempts` times.
- * Retries as long as the given function throws.
- * If the attempts are exhausted, throws an `RetryError` with `cause` set to the inner exception.
+ * Retries as long as the given function throws. If the attempts are exhausted,
+ * throws a {@linkcode RetryError} with `cause` set to the inner exception.
  *
- * The backoff is calculated by multiplying `minTimeout` with `multiplier` to the power of the current attempt counter (starting at 0 up to `maxAttempts - 1`). It is capped at `maxTimeout` however.
- * How long the actual delay is, depends on `jitter`.
+ * The backoff is calculated by multiplying `minTimeout` with `multiplier` to
+ * the power of the current attempt counter (starting at 0 up to `maxAttempts
+ * - 1`). It is capped at `maxTimeout` however. How long the actual delay is,
+ * depends on `jitter`.
  *
- * When `jitter` is the default value of `1`, waits between two attempts for a randomized amount between 0 and the backoff time.
- * With the default options the maximal delay will be `15s = 1s + 2s + 4s + 8s`. If all five attempts are exhausted the mean delay will be `9.5s = ½(4s + 15s)`.
+ * When `jitter` is the default value of `1`, waits between two attempts for a
+ * randomized amount between 0 and the backoff time. With the default options
+ * the maximal delay will be `15s = 1s + 2s + 4s + 8s`. If all five attempts
+ * are exhausted the mean delay will be `9.5s = ½(4s + 15s)`.
  *
  * When `jitter` is `0`, waits the full backoff time.
  *
  * @example
- * ```typescript
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
  * const req = async () => {
  *  // some function that throws sometimes
  * };
@@ -64,8 +104,8 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * ```
  *
  * @example
- * ```typescript
- * import { retry } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import { retry } from "https://deno.land/std@$STD_VERSION/async/retry.ts";
  * const req = async () => {
  *  // some function that throws sometimes
  * };
@@ -83,7 +123,7 @@ const defaultRetryOptions: Required<RetryOptions> = {
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
   opts?: RetryOptions,
-) {
+): Promise<T> {
   const options: Required<RetryOptions> = {
     ...defaultRetryOptions,
     ...opts,

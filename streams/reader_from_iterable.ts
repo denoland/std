@@ -3,7 +3,7 @@
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
-import { Reader } from "../types.d.ts";
+import { Reader } from "../io/types.d.ts";
 
 /**
  * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream.from} instead.

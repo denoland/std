@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
-import type { Closer, Reader } from "../types.d.ts";
+import type { Closer, Reader } from "../io/types.d.ts";
 
 function isCloser(value: unknown): value is Closer {
   return typeof value === "object" && value !== null && value !== undefined &&

@@ -38,7 +38,6 @@ async function check(
     }
   }
   deps.delete(submod);
-  deps.delete("types.d.ts");
   return { name: submod, set: deps, state };
 }
 

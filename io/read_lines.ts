@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { type Reader } from "../types.d.ts";
+import { type Reader } from "./types.d.ts";
 import { BufReader } from "./buf_reader.ts";
 import { concat } from "../bytes/concat.ts";
 
