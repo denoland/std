@@ -1,8 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-interface ULID {
-  (seedTime?: number): string;
-}
+/** Type for a ULID generator function. */
+export type ULID = (seedTime?: number) => string;
 
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
