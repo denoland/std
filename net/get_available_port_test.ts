@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { getAvailablePort } from "https://deno.land/std@$STD_VERSION/net/get_available_port.ts";
+import { getAvailablePort } from "./get_available_port.ts";
 import { assert } from "../assert/assert.ts";
 
 Deno.test("getAvailablePort() gets an available port", async () => {
