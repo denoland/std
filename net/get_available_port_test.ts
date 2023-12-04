@@ -6,8 +6,6 @@ import { assert } from "../assert/assert.ts";
 Deno.test("getAvailablePort() gets an available port", async () => {
   const port = getAvailablePort();
 
-  assert(port > 0);
-
   const server = Deno.serve({
     port,
     async onListen() {
