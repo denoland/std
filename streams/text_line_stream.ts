@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode TextLineStream}. */
 export interface TextLineStreamOptions {
   /**
    * Allow splitting by `\r`.
@@ -17,6 +18,7 @@ export interface TextLineStreamOptions {
  * @example
  * ```ts
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts";
+ *
  * const res = await fetch("https://example.com");
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())
@@ -26,6 +28,7 @@ export interface TextLineStreamOptions {
 export class TextLineStream extends TransformStream<string, string> {
   #currentLine = "";
 
+  /** Constructs a {@linkcode TextLineStream} instance. */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({
       transform: (chars, controller) => {

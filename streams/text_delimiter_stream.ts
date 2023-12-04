@@ -8,8 +8,10 @@ import type {
   DelimiterStreamOptions,
 } from "./delimiter_stream.ts";
 
-/** Transform a stream into a stream where each chunk is divided by a given delimiter.
+/**
+ * Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
+ * @example
  * ```ts
  * import { TextDelimiterStream } from "https://deno.land/std@$STD_VERSION/streams/text_delimiter_stream.ts";
  * const res = await fetch("https://example.com");
@@ -26,6 +28,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
   #delimLPS: Uint8Array;
   #disp: DelimiterDisposition;
 
+  /** Constructs a {@linkcode TextDelimiterStream} instance. */
   constructor(delimiter: string, options?: DelimiterStreamOptions) {
     super({
       transform: (chunk, controller) => {

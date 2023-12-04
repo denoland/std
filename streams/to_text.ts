@@ -3,8 +3,20 @@
 
 const textDecoder = new TextDecoder();
 
+/**
+ * Converts a {@linkcode ReadableSteam} of strings or {@linkcode Uint8Array}s
+ * to a single string. Works the same as {@linkcode Response.text}.
+ *
+ * @example
+ * ```ts
+ * import { toText } from "https://deno.land/std@$STD_VERSION/streams/to_text.ts";
+ *
+ * const stream = ReadableStream.from(["Hello, ", "world!"]);
+ * await toText(stream); // "Hello, world!"
+ * ```
+ */
 export async function toText(
-  readableStream: ReadableStream,
+  readableStream: ReadableStream<string | Uint8Array>,
 ): Promise<string> {
   const reader = readableStream.getReader();
   let result = "";

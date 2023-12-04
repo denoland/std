@@ -11,7 +11,11 @@ function isCloser(value: unknown): value is Closer {
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
-/** @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly. */
+/**
+ * Options for {@linkcode writableStreamFromWriter}.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ */
 export interface WritableStreamFromWriterOptions {
   /**
    * If the `writer` is also a `Closer`, automatically close the `writer`
@@ -23,9 +27,9 @@ export interface WritableStreamFromWriterOptions {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
  *
- * Create a `WritableStream` from a `Writer`.
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
  */
 export function writableStreamFromWriter(
   writer: Writer,
