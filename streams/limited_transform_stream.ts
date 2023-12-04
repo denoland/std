@@ -18,7 +18,7 @@
 export class LimitedTransformStream<T> extends TransformStream<T, T> {
   #read = 0;
 
-  /** Constructs a new {@linkcode LimitedTransformStream} instance. */
+  /** Constructs a new instance. */
   constructor(size: number, options: { error?: boolean } = {}) {
     super({
       transform: (chunk, controller) => {

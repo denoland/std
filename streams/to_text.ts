@@ -16,7 +16,7 @@ const textDecoder = new TextDecoder();
  * ```
  */
 export async function toText(
-  readableStream: ReadableStream<string | Uint8Array>,
+  readableStream: ReadableStream,
 ): Promise<string> {
   const reader = readableStream.getReader();
   let result = "";

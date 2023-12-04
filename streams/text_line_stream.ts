@@ -28,7 +28,7 @@ export interface TextLineStreamOptions {
 export class TextLineStream extends TransformStream<string, string> {
   #currentLine = "";
 
-  /** Constructs a {@linkcode TextLineStream} instance. */
+  /** Constructs a new instance. */
   constructor(options: TextLineStreamOptions = { allowCR: false }) {
     super({
       transform: (chars, controller) => {

@@ -17,7 +17,7 @@ import { toText } from "./to_text.ts";
  * ```
  */
 export function toJson(
-  readableStream: ReadableStream<string | Uint8Array>,
+  readableStream: ReadableStream,
 ): Promise<unknown> {
   return toText(readableStream).then(JSON.parse);
 }

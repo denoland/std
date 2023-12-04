@@ -28,7 +28,7 @@ export class TextDelimiterStream extends TransformStream<string, string> {
   #delimLPS: Uint8Array;
   #disp: DelimiterDisposition;
 
-  /** Constructs a {@linkcode TextDelimiterStream} instance. */
+  /** Constructs a new instance. */
   constructor(delimiter: string, options?: DelimiterStreamOptions) {
     super({
       transform: (chunk, controller) => {
