@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { assert } from "../assert/assert.ts";
-import { _exponentialBackoffWithJitter } from "./_util.ts";
+import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
  * Error thrown in {@linkcode retry} once the maximum number of failed attempts
@@ -145,7 +145,7 @@ export async function retry<T>(
         throw new RetryError(error, options.maxAttempts);
       }
 
-      const timeout = _exponentialBackoffWithJitter(
+      const timeout = exponentialBackoffWithJitter(
         options.maxTimeout,
         options.minTimeout,
         attempt,
