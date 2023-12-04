@@ -4,7 +4,7 @@
 import { concat } from "../bytes/concat.ts";
 import { createLPS } from "./_common.ts";
 
-/** Disposition of the delimiter. */
+/** Disposition of the delimiter for {@linkcode DelimiterStreamOptions}. */
 export type DelimiterDisposition =
   /** Include delimiter in the found chunk. */
   | "suffix"
@@ -14,6 +14,7 @@ export type DelimiterDisposition =
   | "discard" // delimiter discarded
 ;
 
+/** Options for {@linkcode DelimiterStream}. */
 export interface DelimiterStreamOptions {
   /** Disposition of the delimiter. */
   disposition?: DelimiterDisposition;
@@ -46,10 +47,6 @@ export interface DelimiterStreamOptions {
  *   )
  *   .pipeThrough(new TextDecoderStream());
  * ```
- *
- * @param delimiter Delimiter byte sequence
- * @param options Options for the transform stream
- * @returns Transform stream
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs: Uint8Array[] = [];
@@ -58,6 +55,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #delimLPS: Uint8Array | null;
   #disp: DelimiterDisposition;
 
+  /** Constructs a new instance. */
   constructor(
     delimiter: Uint8Array,
     options?: DelimiterStreamOptions,
