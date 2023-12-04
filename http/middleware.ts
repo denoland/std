@@ -21,7 +21,7 @@ export type MiddlewareHandler = (
  * ```ts
  * import {
  *   type MiddlewareHandler,
- *   createHandler,
+ *   composeHandler,
  * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
  *
  * const middleware1: MiddlewareHandler = async (_request, _info, next) => {
@@ -36,19 +36,23 @@ export type MiddlewareHandler = (
  *   return Response.json({ request, info });
  * };
  *
- * const handler = createHandler([middleware1, middleware2])
+ * const handler = composeHandler([middleware1, middleware2])
  * ```
  */
-export function createHandler(
+export function composeHandler(
   middlewares: MiddlewareHandler[],
 ): Deno.ServeHandler {
   return (request, info) => {
-    function compose(index: number): Response | Promise<Response> {
+    function chainMiddleware(index: number): Response | Promise<Response> {
       if (index >= middlewares.length) {
         throw new RangeError("Middleware chain exhausted");
       }
-      return middlewares[index](request, info, () => compose(index + 1));
+      return middlewares[index](
+        request,
+        info,
+        () => chainMiddleware(index + 1),
+      );
     }
-    return compose(0);
+    return chainMiddleware(0);
   };
 }

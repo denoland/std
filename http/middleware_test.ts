@@ -1,13 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../assert/mod.ts";
-import { createHandler, type MiddlewareHandler } from "./middleware.ts";
+import { composeHandler, type MiddlewareHandler } from "./middleware.ts";
 
 const info: Deno.ServeHandlerInfo = {
   remoteAddr: { transport: "tcp", hostname: "foo", port: 200 },
 };
 
-Deno.test("createHandler() chains middlewares in order", async () => {
+Deno.test("composeHandler() chains middlewares in order", async () => {
   const order: number[] = [];
 
   const middleware1: MiddlewareHandler = async (_request, _info, next) => {
@@ -29,7 +29,7 @@ Deno.test("createHandler() chains middlewares in order", async () => {
     return new Response();
   };
 
-  const handler = createHandler([middleware1, middleware2, finalMiddleware]);
+  const handler = composeHandler([middleware1, middleware2, finalMiddleware]);
   const request = new Request("http://localhost");
   const response = await handler(request, info);
 
@@ -39,13 +39,13 @@ Deno.test("createHandler() chains middlewares in order", async () => {
   assertEquals(order, [3, 2, 1]);
 });
 
-Deno.test("createHandler() throws when next() is called incorrectly", async () => {
+Deno.test("composeHandler() throws when next() is called incorrectly", async () => {
   const finalMiddleware: MiddlewareHandler = async (_request, _info, next) => {
     await next();
     return new Response();
   };
 
-  const handler = createHandler([finalMiddleware]);
+  const handler = composeHandler([finalMiddleware]);
   const request = new Request("http://localhost");
   await assertRejects(
     async () => await handler(request, info),
