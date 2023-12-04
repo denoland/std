@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { getAvailablePort } from "./get_available_port.ts";
-import { assert } from "../assert/assert.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 Deno.test("getAvailablePort() gets an available port", async () => {
   const port = getAvailablePort();
@@ -11,7 +11,7 @@ Deno.test("getAvailablePort() gets an available port", async () => {
     async onListen() {
       const resp = await fetch(`http://localhost:${port}`);
       const text = await resp.text();
-      assert(text, "hello");
+      assertEquals(text, "hello");
       server.shutdown();
     },
   }, () => new Response("hello"));
