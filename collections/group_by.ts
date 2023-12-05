@@ -2,8 +2,6 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed in 0.211.0) Use {@linkcode Object.groupBy} instead.
- *
  * Applies the given selector to each element in the given array, returning a
  * Record containing the results as keys and all values that produced that key
  * as values.
@@ -28,6 +26,8 @@
  *   },
  * );
  * ```
+ *
+ * @deprecated (will be removed in 0.211.0) Use {@linkcode Object.groupBy} instead.
  */
 export function groupBy<T, K extends PropertyKey>(
   iterable: Iterable<T>,
