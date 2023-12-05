@@ -1,10 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Order */
+/** Order option for {@linkcode SortByOptions}. */
 export type Order = "asc" | "desc";
 
-/** Options for sortBy */
+/** Options for {@linkcode sortBy}. */
 export type SortByOptions = {
   order: Order;
 };
