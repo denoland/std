@@ -2,12 +2,12 @@
 // This module is browser compatible.
 
 import type { Writer, WriterSync } from "../io/types.d.ts";
+export type { Writer, WriterSync };
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
- *
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { writeAll } from "https://deno.land/std@$STD_VERSION/streams/write_all.ts";
@@ -28,6 +28,10 @@ import type { Writer, WriterSync } from "../io/types.d.ts";
  * await writeAll(writer, contentBytes);
  * console.log(writer.bytes().length);  // 11
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream},
+ * {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo}
+ * instead.
  */
 export async function writeAll(w: Writer, arr: Uint8Array) {
   let nwritten = 0;
@@ -37,8 +41,6 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream}, {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo} instead.
- *
  * Synchronously write all the content of the array buffer (`arr`) to the
  * writer (`w`).
  *
@@ -62,6 +64,10 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  * writeAllSync(writer, contentBytes);
  * console.log(writer.bytes().length);  // 11
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream},
+ * {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo}
+ * instead.
  */
 export function writeAllSync(w: WriterSync, arr: Uint8Array) {
   let nwritten = 0;

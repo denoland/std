@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Returns all distinct elements that appear in any of the given arrays
+ * Returns all distinct elements that appear in any of the given arrays.
  *
  * @example
  * ```ts

@@ -154,6 +154,25 @@ Deno.test("serveDir() with hash symbol in filename", async () => {
   await Deno.remove(filePath);
 });
 
+Deno.test("serveDir() with space in filename", async () => {
+  const filePath = join(testdataDir, "test file.txt");
+  const text = "Plain text";
+  await Deno.writeTextFile(filePath, text);
+
+  const req = new Request("http://localhost/test%20file.txt");
+  const res = await serveDir(req, serveDirOptions);
+  const downloadedFile = await res.text();
+
+  assertEquals(res.status, 200);
+  assertEquals(
+    res.headers.get("content-type"),
+    "text/plain; charset=UTF-8",
+  );
+  assertEquals(downloadedFile, text);
+
+  await Deno.remove(filePath);
+});
+
 Deno.test("serveDir() serves directory index", async () => {
   const filePath = join(testdataDir, "%25A.txt");
   await Deno.writeTextFile(filePath, "25A");
@@ -166,6 +185,30 @@ Deno.test("serveDir() serves directory index", async () => {
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
+  // `Deno.FileInfo` is not completely compatible with Windows yet
+  // TODO(bartlomieju): `mode` should work correctly in the future.
+  // Correct this test case accordingly.
+  if (Deno.build.os === "windows") {
+    assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
+  } else {
+    assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
+  }
+
+  await Deno.remove(filePath);
+});
+
+Deno.test("serveDir() serves directory index with file containing space in the filename", async () => {
+  const filePath = join(testdataDir, "test file.txt");
+  await Deno.writeTextFile(filePath, "25A");
+
+  const req = new Request("http://localhost/");
+  const res = await serveDir(req, serveDirOptions);
+  const page = await res.text();
+
+  assertEquals(res.status, 200);
+  assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
+  assertStringIncludes(page, '<a href="/tls/">tls/</a>');
+  assertStringIncludes(page, "test%20file.txt");
   // `Deno.FileInfo` is not completely compatible with Windows yet
   // TODO(bartlomieju): `mode` should work correctly in the future.
   // Correct this test case accordingly.

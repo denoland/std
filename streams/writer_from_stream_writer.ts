@@ -4,9 +4,7 @@
 import type { Writer } from "../io/types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
- *
- * Create a `Writer` from a `WritableStreamDefaultWriter`.
+ * Create a {@linkcode Writer} from a {@linkcode WritableStreamDefaultWriter}.
  *
  * @example
  * ```ts
@@ -24,6 +22,8 @@ import type { Writer } from "../io/types.d.ts";
  * await copy(file, writer);
  * file.close();
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
  */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
