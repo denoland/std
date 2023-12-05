@@ -1,3 +1,21 @@
+### 0.209.0 / 2023.12.05
+
+- BREAKIING(fs): remove `EOL` enum, add OS-dependent `EOL` (#3850)
+- BREAKING(async): remove deprecated `deferred()` (#3852)
+- BREAKING(bytes): remove spread `concat()` overload (#3854)
+- BREAKING(collections): remove deprecated APIs (#3853)
+- BREAKING(datetime): remove `toIMF()` (#3849)
+- BREAKING(http): remove `ServerSentEvent()` (#3847)
+- BREAKING(media_types): remove `typeByExtension()` (#3848)
+- Revert "BREAKING(media_types): remove `typeByExtension()`" (#3877)
+- deprecate(log): remove enums and add deprecation notices (#3855)
+- deprecation: move `types.d.ts` to `std/io` (#3885)
+- feat(cli): `promptSecret()` (#3777)
+- feat(net): `getAvailablePort()` (#3890)
+- feat: add `std/ini` (#3871)
+- fix(assert): fix diff of long string in objects (#3867)
+- fix(fs): improve `exists()` test coverage (#3898)
+
 ### 0.208.0 / 2023.11.24
 
 - BREAKING(collections): deprecate `groupBy()` (#3663)
