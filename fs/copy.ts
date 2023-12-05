@@ -9,6 +9,7 @@ import { assert } from "../assert/assert.ts";
 
 const isWindows = Deno.build.os === "windows";
 
+/** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
   /**
    * overwrite existing file or directory.
