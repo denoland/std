@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
 
@@ -322,5 +322,145 @@ Deno.test("existsSync() returns true for an existing dir symlink", function () {
       Deno.chmodSync(tempDirPath, 0o755);
     }
     Deno.removeSync(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("exists() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await exists(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("existsSync() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await existsSync(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("exists() returns true for an existing file when user group is owner and can read?", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  const tempFilePath = path.join(tempDirPath, "0.ts");
+  const tempFile = await Deno.create(tempFilePath);
+
+  const fileInfo = await Deno.stat(tempFilePath);
+  const newUid = fileInfo.uid ? fileInfo.uid - 1 : 0;
+  try {
+    if (Deno.build.os !== "windows") {
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
+      Deno.chownSync(tempFilePath, newUid, null);
+      assertEquals(
+        await exists(tempFilePath, {
+          isReadable: true,
+        }),
+        true,
+      );
+    }
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("exists() returns true for an existing file when others can read", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  const tempFilePath = path.join(tempDirPath, "0.ts");
+  const tempFile = await Deno.create(tempFilePath);
+
+  const fileInfo = await Deno.stat(tempFilePath);
+  const newUid = fileInfo.uid ? fileInfo.uid - 1 : 0;
+  const newGid = fileInfo.gid ? fileInfo.gid - 1 : 0;
+  try {
+    if (Deno.build.os !== "windows") {
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
+      Deno.chownSync(tempFilePath, newUid, newGid);
+      assertEquals(
+        await exists(tempFilePath, {
+          isReadable: true,
+        }),
+        true,
+      );
+    }
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("existsSync() returns true for an existing file when user group is owner and can read?", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  const tempFilePath = path.join(tempDirPath, "0.ts");
+  const tempFile = await Deno.create(tempFilePath);
+
+  const fileInfo = await Deno.stat(tempFilePath);
+  const newUid = fileInfo.uid ? fileInfo.uid - 1 : 0;
+  try {
+    if (Deno.build.os !== "windows") {
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
+      Deno.chownSync(tempFilePath, newUid, null);
+      assertEquals(
+        await existsSync(tempFilePath, {
+          isReadable: true,
+        }),
+        true,
+      );
+    }
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("existsSync() returns true for an existing file when others can read", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  const tempFilePath = path.join(tempDirPath, "0.ts");
+  const tempFile = await Deno.create(tempFilePath);
+
+  const fileInfo = await Deno.stat(tempFilePath);
+  const newUid = fileInfo.uid ? fileInfo.uid - 1 : 0;
+  const newGid = fileInfo.gid ? fileInfo.gid - 1 : 0;
+  try {
+    if (Deno.build.os !== "windows") {
+      // TODO(martin-braun): include mode check for Windows tests when chmod is ported to NT
+      Deno.chownSync(tempFilePath, newUid, newGid);
+      assertEquals(
+        await existsSync(tempFilePath, {
+          isReadable: true,
+        }),
+        true,
+      );
+    }
+  } finally {
+    tempFile.close();
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
