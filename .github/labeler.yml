@@ -1,66 +1,123 @@
 archive:
-  - archive/**
+  - changed-files:
+    - any-glob-to-any-file: archive/**
+assert:
+  - changed-files:
+    - any-glob-to-any-file: assert/**
 async:
-  - async/**
+  - changed-files:
+    - any-glob-to-any-file: async/**
 bytes:
-  - bytes/**
+  - changed-files:
+    - any-glob-to-any-file: bytes/**
+cli:
+  - changed-files:
+    - any-glob-to-any-file: cli/**
 collections:
-  - collections/**
+  - changed-files:
+    - any-glob-to-any-file: collections/**
 console:
-  - console/**
+  - changed-files:
+    - any-glob-to-any-file: console/**
 crypto:
-  - crypto/**
+  - changed-files:
+    - any-glob-to-any-file: crypto/**
 csv:
-  - csv/**
+  - changed-files:
+    - any-glob-to-any-file: csv/**
 data_structures:
-  - data_structures/**
+  - changed-files:
+    - any-glob-to-any-file: data_structures/**
 datetime:
-  - datetime/**
+  - changed-files:
+    - any-glob-to-any-file: datetime/**
 dotenv:
-  - dotenv/**
+  - changed-files:
+    - any-glob-to-any-file: dotenv/**
 encoding:
-  - encoding/**
-examples:
-  - examples/**
+  - changed-files:
+    - any-glob-to-any-file: encoding/**
+expect:
+  - changed-files:
+    - any-glob-to-any-file: expect/**
 flags:
-  - flags/**
+  - changed-files:
+    - any-glob-to-any-file: flags/**
 fmt:
-  - fmt/**
+  - changed-files:
+    - any-glob-to-any-file: fmt/**
 front_matter:
-  - front_matter/**
+  - changed-files:
+    - any-glob-to-any-file: front_matter/**
 fs:
-  - fs/**
+  - changed-files:
+    - any-glob-to-any-file: fs/**
 html:
-  - html/**
+  - changed-files:
+    - any-glob-to-any-file: html/**
 http:
-  - http/**
+  - changed-files:
+    - any-glob-to-any-file: http/**
+ini:
+  - changed-files:
+    - any-glob-to-any-file: ini/**
 io:
-  - io/**
+  - changed-files:
+    - any-glob-to-any-file: io/**
 json:
-  - json/**
+  - changed-files:
+    - any-glob-to-any-file: json/**
 jsonc:
-  - jsonc/**
+  - changed-files:
+    - any-glob-to-any-file: jsonc/**
 log:
-  - log/**
+  - changed-files:
+    - any-glob-to-any-file: log/**
 media_types:
-  - media_types/**
+  - changed-files:
+    - any-glob-to-any-file: media_types/**
+msgpack:
+  - changed-files:
+    - any-glob-to-any-file: msgpack/**
+net:
+  - changed-files:
+    - any-glob-to-any-file: net/**
 path:
-  - path/**
-permission:
-  - permission/**
+  - changed-files:
+    - any-glob-to-any-file: path/**
+permissions:
+  - changed-files:
+    - any-glob-to-any-file: permissions/**
 regexp:
-  - regexp/**
+  - changed-files:
+    - any-glob-to-any-file: regexp/**
 semver:
-  - semver/**
+  - changed-files:
+    - any-glob-to-any-file: semver/**
 signal:
-  - signal/**
+  - changed-files:
+    - any-glob-to-any-file: signal/**
 streams:
-  - streams/**
+  - changed-files:
+    - any-glob-to-any-file: streams/**
 testing:
-  - testing/**
+  - changed-files:
+    - any-glob-to-any-file: testing/**
+text:
+  - changed-files:
+    - any-glob-to-any-file: text/**
 toml:
-  - toml/**
+  - changed-files:
+    - any-glob-to-any-file: toml/**
+ulid:
+  - changed-files:
+    - any-glob-to-any-file: ulid/**
+url:
+  - changed-files:
+    - any-glob-to-any-file: url/**
 uuid:
-  - uuid/**
+  - changed-files:
+    - any-glob-to-any-file: uuid/**
 yaml:
-  - yaml/**
+  - changed-files:
+    - any-glob-to-any-file: yaml/**
