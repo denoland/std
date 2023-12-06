@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "./assertion_error.ts";
-import { stripColor } from "../fmt/colors.ts";
+import { stripAnsiCode } from "../fmt/colors.ts";
 
 /**
  * Make an assertion that `error` is an `Error`.
@@ -29,7 +29,7 @@ export function assertIsError<E extends Error = Error>(
   }
   if (
     msgIncludes && (!(error instanceof Error) ||
-      !stripColor(error.message).includes(stripColor(msgIncludes)))
+      !stripAnsiCode(error.message).includes(stripAnsiCode(msgIncludes)))
   ) {
     msg = `Expected error message to include ${
       JSON.stringify(msgIncludes)
