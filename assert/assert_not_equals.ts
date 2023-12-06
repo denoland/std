@@ -12,10 +12,11 @@ import { AssertionError } from "./assertion_error.ts";
  * ```ts
  * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_equals.ts";
  *
- * assertNotEquals<number>(1, 2)
+ * assertNotEquals(1, 2); // Doesn't throw
+ * assertNotEquals(1, 1); // Throws
  * ```
  */
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
   if (!equal(actual, expected)) {
     return;
   }

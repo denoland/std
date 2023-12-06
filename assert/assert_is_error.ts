@@ -7,6 +7,15 @@ import { stripColor } from "../fmt/colors.ts";
  * If not then an error will be thrown.
  * An error class and a string that should be included in the
  * error message can also be asserted.
+ *
+ * @example
+ * ```ts
+ * import { assertIsError } from "https://deno.land/std@$STD_VERSION/assert/assert_is_error.ts";
+ *
+ * assertIsError(new RangeError("Out of range")); // Doesn't throw
+ * assertIsError(new RangeError("Out of range"), SyntaxError); // Throws
+ * assertIsError(null); // Throws
+ * ```
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,

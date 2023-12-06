@@ -2,20 +2,17 @@
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Make an assertion that `actual` and `expected` are almost equal numbers through
- * a given tolerance. It can be used to take into account IEEE-754 double-precision
- * floating-point representation limitations.
- * If the values are not almost equal then throw.
+ * Make an assertion that `actual` and `expected` are almost equal numbers
+ * through a given tolerance. It can be used to take into account IEEE-754
+ * double-precision floating-point representation limitations. If the values
+ * are not almost equal then throw.
  *
  * @example
  * ```ts
  * import { assertAlmostEquals, assertThrows } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  *
- * assertAlmostEquals(0.1, 0.2);
- *
- * // Using a custom tolerance value
- * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
- * assertThrows(() => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17));
+ * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
+ * assertAlmostEquals(0.01, 0.02); // Throws
  * ```
  */
 export function assertAlmostEquals(
@@ -23,7 +20,7 @@ export function assertAlmostEquals(
   expected: number,
   tolerance = 1e-7,
   msg?: string,
-) {
+): void {
   if (Object.is(actual, expected)) {
     return;
   }
