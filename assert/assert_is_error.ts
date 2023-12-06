@@ -12,9 +12,11 @@ import { stripColor } from "../fmt/colors.ts";
  * ```ts
  * import { assertIsError } from "https://deno.land/std@$STD_VERSION/assert/assert_is_error.ts";
  *
+ * assertIsError(null); // Throws
  * assertIsError(new RangeError("Out of range")); // Doesn't throw
  * assertIsError(new RangeError("Out of range"), SyntaxError); // Throws
- * assertIsError(null); // Throws
+ * assertIsError(new RangeError("Out of range"), SyntaxError, "Out of range"); // Doesn't throw
+ * assertIsError(new RangeError("Out of range"), SyntaxError, "Within range"); // Throws
  * ```
  */
 export function assertIsError<E extends Error = Error>(

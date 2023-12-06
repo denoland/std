@@ -9,10 +9,12 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example
  * ```ts
- * import { assertAlmostEquals, assertThrows } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ * import { assertAlmostEquals } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  *
  * assertAlmostEquals(0.01, 0.02, 0.1); // Doesn't throw
  * assertAlmostEquals(0.01, 0.02); // Throws
+ * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16); // Doesn't throw
+ * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17); // Throws
  * ```
  */
 export function assertAlmostEquals(
