@@ -57,6 +57,6 @@ function charWidth(ch: string) {
  * assertEquals(unicodeWidth(stripColor("\x1B]8;;https://deno.land\x07🦕\x1B]8;;\x07")), 2);
  * ```
  */
-export function unicodeWidth(str: string) {
+export function unicodeWidth(str: string): number {
   return [...str].map((ch) => charWidth(ch) ?? 0).reduce((a, b) => a + b, 0);
 }
