@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { green, red, stripColor } from "../fmt/colors.ts";
+import { green, red, stripAnsiCode } from "../fmt/colors.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { format } from "./_format.ts";
 
@@ -29,7 +29,7 @@ Deno.test("assert diff formatting", () => {
   // Wraps objects into multiple lines even when they are small. Prints trailing
   // commas.
   assertEquals(
-    stripColor(format({ a: 1, b: 2 })),
+    stripAnsiCode(format({ a: 1, b: 2 })),
     `{
   a: 1,
   b: 2,
@@ -51,7 +51,7 @@ Deno.test("assert diff formatting", () => {
 
   // Same for nested small objects.
   assertEquals(
-    stripColor(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
+    stripAnsiCode(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
     `[
   {
     x: {
@@ -68,7 +68,7 @@ Deno.test("assert diff formatting", () => {
 
   // Grouping is disabled.
   assertEquals(
-    stripColor(format(["i", "i", "i", "i", "i", "i", "i"])),
+    stripAnsiCode(format(["i", "i", "i", "i", "i", "i", "i"])),
     `[
   "i",
   "i",

@@ -1,6 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
-import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
+import {
+  bold,
+  gray,
+  green,
+  red,
+  stripAnsiCode,
+  yellow,
+} from "../fmt/colors.ts";
 
 const createHeader = (): string[] => [
   "",
@@ -15,9 +22,9 @@ const createHeader = (): string[] => [
 ];
 
 const added: (s: string) => string = (s: string): string =>
-  green(bold(stripColor(s)));
+  green(bold(stripAnsiCode(s)));
 const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripColor(s)));
+  red(bold(stripAnsiCode(s)));
 
 Deno.test({
   name: "pass case",
