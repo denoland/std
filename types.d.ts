@@ -2,15 +2,15 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * See the Contributing > Types section in the README for an explanation of this file.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * An abstract interface which when implemented provides an interface to read bytes into an array buffer asynchronously.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
@@ -39,9 +39,9 @@ export interface Reader {
 }
 
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * An abstract interface which when implemented provides an interface to read bytes into an array buffer synchronously.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
@@ -69,9 +69,9 @@ export interface ReaderSync {
 }
 
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource asynchronously.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
@@ -86,9 +86,9 @@ export interface Writer {
   write(p: Uint8Array): Promise<number>;
 }
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource synchronously.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
@@ -104,9 +104,9 @@ export interface WriterSync {
 }
 
 /**
- * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
- *
  * An abstract interface which when implemented provides an interface to close files/resources that were previously opened.
+ *
+ * @deprecated (will be removed in 0.211.0) Import from {@link https://deno.land/std/io/types.d.ts} instead.
  */
 export interface Closer {
   /** Closes the resource, "freeing" the backing file/resource. */
