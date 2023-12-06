@@ -10,9 +10,9 @@ import { AssertionError } from "./assertion_error.ts";
  * ```ts
  * import { assertGreaterOrEqual } from "https://deno.land/std@$STD_VERSION/assert/assert_greater_or_equal.ts";
  *
- * assertGreaterOrEqual(1, 2); // Doesn't throw
+ * assertGreaterOrEqual(2, 1); // Doesn't throw
  * assertGreaterOrEqual(1, 1); // Doesn't throw
- * assertGreaterOrEqual(1, 0); // Throws
+ * assertGreaterOrEqual(0, 1); // Throws
  * ```
  */
 export function assertGreaterOrEqual<T>(
