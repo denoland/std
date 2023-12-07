@@ -89,12 +89,9 @@ export function abortablePromise<T>(
   const { promise, reject } = Promise.withResolvers<never>();
   const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
-  return Promise.race([
-    promise,
-    p.finally(() => {
-      signal.removeEventListener("abort", abort);
-    }),
-  ]);
+  return Promise.race([promise, p]).finally(() => {
+    signal.removeEventListener("abort", abort);
+  });
 }
 
 /**
@@ -136,7 +133,11 @@ export async function* abortableAsyncIterable<T>(
 
   const it = p[Symbol.asyncIterator]();
   while (true) {
-    const { done, value } = await Promise.race([promise, it.next()]);
+    const race = Promise.race([promise, it.next()]);
+    race.catch(() => {
+      signal.removeEventListener("abort", abort);
+    });
+    const { done, value } = await race;
     if (done) {
       signal.removeEventListener("abort", abort);
       return;
