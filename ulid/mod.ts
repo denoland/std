@@ -4,12 +4,10 @@
 // This module is browser compatible.
 
 /**
+ * Utilities for generating and working with
+ * [Universally Unique Lexicographically Sortable Identifiers (ULIDs)]{@link https://github.com/ulid/spec}.
+ *
  * @module
- * @example
- * ```ts
- * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
- * ulid(); // 01ARZ3NDEKTSV4RRFFQ69G5FAV
- * ```
  */
 
 import {
@@ -21,10 +19,21 @@ import {
   RANDOM_LEN,
   TIME_LEN,
   TIME_MAX,
+  ULID,
 } from "./_util.ts";
 
+export type { ULID } from "./_util.ts";
+
 /**
- * Extracts the timestamp given a ULID
+ * Extracts the timestamp given a ULID.
+ *
+ * @example
+ * ```ts
+ * import { ulid, decodeTime } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
+ *
+ * const x = ulid(150000);
+ * decodeTime(x); // 150000
+ * ```
  */
 export function decodeTime(id: string): number {
   if (id.length !== TIME_LEN + RANDOM_LEN) {
@@ -48,6 +57,9 @@ export function decodeTime(id: string): number {
 }
 
 /**
+ * Generate a monotonically increasing ULID, optionally based on a given
+ * timestamp.
+ *
  * @example
  * ```ts
  * import { monotonicUlid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";
@@ -63,9 +75,11 @@ export function decodeTime(id: string): number {
  * monotonicUlid(100000); // 000XAL6S41ACTAV9WEVGEMMVRD
  * ```
  */
-export const monotonicUlid = monotonicFactory();
+export const monotonicUlid: ULID = monotonicFactory();
 
 /**
+ * Generate a ULID, optionally based on a given timestamp.
+ *
  * @example
  * ```ts
  * import { ulid } from "https://deno.land/std@$STD_VERSION/ulid/mod.ts";

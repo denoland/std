@@ -4,23 +4,25 @@ import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Make an assertion that `actual` includes the `expected` values.
- * If not then an error will be thrown.
+ * Make an assertion that `actual` includes the `expected` values. If not then
+ * an error will be thrown.
  *
- * Type parameter can be specified to ensure values under comparison have the same type.
+ * Type parameter can be specified to ensure values under comparison have the
+ * same type.
  *
  * @example
  * ```ts
  * import { assertArrayIncludes } from "https://deno.land/std@$STD_VERSION/assert/assert_array_includes.ts";
  *
- * assertArrayIncludes<number>([1, 2], [2])
+ * assertArrayIncludes([1, 2], [2]); // Doesn't throw
+ * assertArrayIncludes([1, 2], [3]); // Throws
  * ```
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
   msg?: string,
-) {
+): void {
   const missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
     let found = false;

@@ -140,3 +140,22 @@ Deno CLI.
 
 A new minor version of the Standard Library is published at the same time as
 every new version of the Deno CLI (including patch versions).
+
+## Badge
+
+[![Built with the Deno Standard Library](./badge.svg)](https://deno.land/std)
+
+```html
+<a href="https://deno.land/std">
+  <img
+    width="135"
+    height="20"
+    src="https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg"
+    alt="Built with the Deno Standard Library"
+  />
+</a>
+```
+
+```md
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
+```

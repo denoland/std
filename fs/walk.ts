@@ -11,17 +11,19 @@ import {
   WalkEntry,
 } from "./_util.ts";
 
+/** Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration. */
 export class WalkError extends Error {
-  override cause: unknown;
-  override name = "WalkError";
-  path: string;
+  /** File path of the root that's being walked. */
+  root: string;
 
-  constructor(cause: unknown, path: string) {
+  /** Constructs a new instance. */
+  constructor(cause: unknown, root: string) {
     super(
-      `${cause instanceof Error ? cause.message : cause} for path "${path}"`,
+      `${cause instanceof Error ? cause.message : cause} for path "${root}"`,
     );
-    this.path = path;
     this.cause = cause;
+    this.name = "WalkError";
+    this.root = root;
   }
 }
 
@@ -48,6 +50,7 @@ function wrapErrorWithPath(err: unknown, root: string) {
   return new WalkError(err, root);
 }
 
+/** Options for {@linkcode walk} and {@linkcode walkSync}. */
 export interface WalkOptions {
   /**
    * The maximum depth of the file tree to be walked recursively.

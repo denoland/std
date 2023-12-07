@@ -8,7 +8,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 import { readRange, readRangeSync } from "./read_range.ts";
-import type { Closer, Reader, ReaderSync } from "../types.d.ts";
+import type { Closer, Reader, ReaderSync } from "./types.d.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;

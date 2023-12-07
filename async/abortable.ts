@@ -2,12 +2,14 @@
 // This module is browser compatible.
 
 /**
- * Make Promise abortable with the given signal.
+ * Make {@linkcode Promise} abortable with the given signal.
  *
  * @example
- * ```typescript
- * import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import {
+ *   abortable,
+ *   delay,
+ * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
  *
  * const p = delay(1000);
  * const c = new AbortController();
@@ -19,12 +21,14 @@
  */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 /**
- * Make AsyncIterable abortable with the given signal.
+ * Make {@linkcode AsyncIterable} abortable with the given signal.
  *
  * @example
- * ```typescript
- * import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import {
+ *   abortable,
+ *   delay,
+ * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
  *
  * const p = async function* () {
  *   yield "Hello";
@@ -61,8 +65,8 @@ export function abortable<T>(
  * Make Promise abortable with the given signal.
  *
  * @example
- * ```typescript
- * import { abortablePromise } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import { abortablePromise } from "https://deno.land/std@$STD_VERSION/async/abortable.ts";
  *
  * const request = fetch("https://example.com");
  *
@@ -85,21 +89,20 @@ export function abortablePromise<T>(
   const { promise, reject } = Promise.withResolvers<never>();
   const abort = () => reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
-  return Promise.race([
-    promise,
-    p.finally(() => {
-      signal.removeEventListener("abort", abort);
-    }),
-  ]);
+  return Promise.race([promise, p]).finally(() => {
+    signal.removeEventListener("abort", abort);
+  });
 }
 
 /**
  * Make AsyncIterable abortable with the given signal.
  *
  * @example
- * ```typescript
- * import { abortableAsyncIterable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
- * import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import {
+ *   abortableAsyncIterable,
+ *   delay,
+ * } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
  *
  * const p = async function* () {
  *   yield "Hello";
@@ -130,7 +133,11 @@ export async function* abortableAsyncIterable<T>(
 
   const it = p[Symbol.asyncIterator]();
   while (true) {
-    const { done, value } = await Promise.race([promise, it.next()]);
+    const race = Promise.race([promise, it.next()]);
+    race.catch(() => {
+      signal.removeEventListener("abort", abort);
+    });
+    const { done, value } = await race;
     if (done) {
       signal.removeEventListener("abort", abort);
       return;

@@ -4,7 +4,7 @@
 import { concat } from "../bytes/concat.ts";
 import { createLPS } from "./_common.ts";
 
-/** Disposition of the delimiter. */
+/** Disposition of the delimiter for {@linkcode DelimiterStreamOptions}. */
 export type DelimiterDisposition =
   /** Include delimiter in the found chunk. */
   | "suffix"
@@ -14,6 +14,7 @@ export type DelimiterDisposition =
   | "discard" // delimiter discarded
 ;
 
+/** Options for {@linkcode DelimiterStream}. */
 export interface DelimiterStreamOptions {
   /** Disposition of the delimiter. */
   disposition?: DelimiterDisposition;
@@ -46,10 +47,6 @@ export interface DelimiterStreamOptions {
  *   )
  *   .pipeThrough(new TextDecoderStream());
  * ```
- *
- * @param delimiter Delimiter byte sequence
- * @param options Options for the transform stream
- * @returns Transform stream
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs: Uint8Array[] = [];
@@ -58,6 +55,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #delimLPS: Uint8Array | null;
   #disp: DelimiterDisposition;
 
+  /** Constructs a new instance. */
   constructor(
     delimiter: Uint8Array,
     options?: DelimiterStreamOptions,
@@ -235,7 +233,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             // Concat not needed when a single buffer is passed.
             controller.enqueue(bufs[0]);
           } else {
-            controller.enqueue(concat(...bufs));
+            controller.enqueue(concat(bufs));
           }
           // Drop all previous chunks.
           bufs.length = 0;
@@ -249,7 +247,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
         } else if (delimitedChunkEnd > 0 && bufs.length > 0) {
           // Previous chunks and current chunk together form a delimited chunk.
           const chunkSliced = chunk.subarray(chunkStart, delimitedChunkEnd);
-          const result = concat(...bufs, chunkSliced);
+          const result = concat([...bufs, chunkSliced]);
           bufs.length = 0;
           chunkStart = disposition === "prefix"
             ? delimitedChunkEnd

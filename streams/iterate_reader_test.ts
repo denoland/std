@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
 Deno.test("iterateReader", async () => {
   // ref: https://github.com/denoland/deno/issues/2330

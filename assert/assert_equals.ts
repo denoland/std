@@ -10,16 +10,15 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
  *
- * Type parameter can be specified to ensure values under comparison have the same type.
+ * Type parameter can be specified to ensure values under comparison have the
+ * same type.
  *
  * @example
  * ```ts
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
- * Deno.test("example", function (): void {
- *   assertEquals("world", "world");
- *   assertEquals({ hello: "world" }, { hello: "world" });
- * });
+ * assertEquals("world", "world"); // Doesn't throw
+ * assertEquals("hello", "world"); // Throws
  * ```
  *
  * Note: formatter option is experimental and may be removed in the future.
@@ -29,7 +28,7 @@ export function assertEquals<T>(
   expected: T,
   msg?: string,
   options: { formatter?: (value: unknown) => string } = {},
-) {
+): void {
   if (equal(actual, expected)) {
     return;
   }

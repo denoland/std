@@ -9,27 +9,8 @@ import { assertIsError } from "./assert_is_error.ts";
  * ```ts
  * import { assertRejects } from "https://deno.land/std@$STD_VERSION/assert/assert_rejects.ts";
  *
- * Deno.test("doesThrow", async function () {
- *   await assertRejects(
- *     async () => {
- *       throw new TypeError("hello world!");
- *     },
- *   );
- *   await assertRejects(
- *     async () => {
- *       return Promise.reject(new Error());
- *     },
- *   );
- * });
- *
- * // This test will not pass.
- * Deno.test("fails", async function () {
- *   await assertRejects(
- *     async () => {
- *       console.log("Hello world");
- *     },
- *   );
- * });
+ * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
+ * await assertRejects(async () => console.log("Hello world")); // Throws
  * ```
  */
 export function assertRejects(
@@ -45,27 +26,8 @@ export function assertRejects(
  * ```ts
  * import { assertRejects } from "https://deno.land/std@$STD_VERSION/assert/assert_rejects.ts";
  *
- * Deno.test("doesThrow", async function () {
- *   await assertRejects(async () => {
- *     throw new TypeError("hello world!");
- *   }, TypeError);
- *   await assertRejects(
- *     async () => {
- *       throw new TypeError("hello world!");
- *     },
- *     TypeError,
- *     "hello",
- *   );
- * });
- *
- * // This test will not pass.
- * Deno.test("fails", async function () {
- *   await assertRejects(
- *     async () => {
- *       console.log("Hello world");
- *     },
- *   );
- * });
+ * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
+ * await assertRejects(async () => Promise.reject(new Error()), SyntaxError); // Throws
  * ```
  */
 export function assertRejects<E extends Error = Error>(

@@ -3,27 +3,27 @@
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
-import { Reader } from "../types.d.ts";
+import { Reader } from "../io/types.d.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream.from} instead.
- *
- * Create a `Reader` from an iterable of `Uint8Array`s.
+ * Create a {@linkcode Reader} from an iterable of {@linkcode Uint8Array}s.
  *
  * ```ts
- *      import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
- *      import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
  *
- *      const file = await Deno.open("metrics.txt", { write: true });
- *      const reader = readerFromIterable((async function* () {
- *        while (true) {
- *          await new Promise((r) => setTimeout(r, 1000));
- *          const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *          yield new TextEncoder().encode(message);
- *        }
- *      })());
- *      await copy(reader, file);
+ * const file = await Deno.open("metrics.txt", { write: true });
+ * const reader = readerFromIterable((async function* () {
+ *   while (true) {
+ *     await new Promise((r) => setTimeout(r, 1000));
+ *     const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *     yield new TextEncoder().encode(message);
+ *   }
+ * })());
+ * await copy(reader, file);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream.from} instead.
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,

@@ -1,26 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Functions for specific common tasks around collection types like `Array` and
- * `Record`. This module is heavily inspired by `kotlin`s stdlib.
+/**
+ * Pure functions for common tasks around collection types like arrays and
+ * objects. Heavily inspired by
+ * [Kotlin's `kotlin.collections`]{@linkcode https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/}
+ * package.
  *
- * - All provided functions are **pure**, which also means that they do **not
- *   mutate** your inputs, **returning a new value** instead.
- * - All functions are importable on their own by referencing their snake_case
- *   named file (e.g. `collections/sort_by.ts`)
- *
- * This module re-exports several modules, and importing this module directly
- * will likely include a lot of code that you might not use.
- *
- * Consider importing the function directly. For example to import
- * {@linkcode groupBy} import the module using the snake cased version of the
- * module:
- *
- * ```ts
- * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
- * ```
- *
- * @module
+ * @module.
  */
 
 export * from "./aggregate_groups.ts";
@@ -66,6 +53,3 @@ export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
-export * from "./binary_heap.ts";
-export * from "./binary_search_tree.ts";
-export * from "./red_black_tree.ts";

@@ -1,9 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import {
-  createGraph,
-  ModuleGraphJson,
-  ModuleJson,
-} from "https://deno.land/x/deno_graph@0.60.0/mod.ts";
+import { createGraph, ModuleGraphJson, ModuleJson } from "deno_graph";
 
 /**
  * Checks for circular dependencies in the std submodules.
@@ -42,7 +38,6 @@ async function check(
     }
   }
   deps.delete(submod);
-  deps.delete("types.d.ts");
   return { name: submod, set: deps, state };
 }
 

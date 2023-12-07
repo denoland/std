@@ -4,7 +4,7 @@ import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
 import { existsSync } from "../fs/exists.ts";
 import { BufWriterSync } from "../io/buf_writer.ts";
-import type { Writer } from "../types.d.ts";
+import type { Writer } from "../io/types.d.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
