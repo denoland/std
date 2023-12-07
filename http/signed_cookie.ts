@@ -46,11 +46,17 @@ export async function signCookie(
  * import { verifyCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
  * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
  *
+ * const key = await crypto.subtle.generateKey(
+ *   { name: "HMAC", hash: "SHA-256" },
+ *   true,
+ *   ["sign", "verify"],
+ * );
+ *
  * const headers = new Headers({
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- * await verifyCookie(signedCookie);
+ * await verifyCookie(signedCookie, key);
  * ```
  */
 export async function verifyCookie(
@@ -76,11 +82,17 @@ export async function verifyCookie(
  * import { verifyCookie, parseSignedCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
  * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
  *
+ * const key = await crypto.subtle.generateKey(
+ *   { name: "HMAC", hash: "SHA-256" },
+ *   true,
+ *   ["sign", "verify"],
+ * );
+ *
  * const headers = new Headers({
  *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
  * });
  * const signedCookie = getCookies(headers)["location"];
- * await verifyCookie(signedCookie);
+ * await verifyCookie(signedCookie, key);
  * const cookie = parseSignedCookie(signedCookie);
  * ```
  */
