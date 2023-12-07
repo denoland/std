@@ -40,6 +40,18 @@ export async function signCookie(
 
 /**
  * Returns a promise of a boolean indicating whether the signed cookie is valid.
+ *
+ * @example
+ * ```ts
+ * import { verifyCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
+ * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers({
+ *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
+ * });
+ * const signedCookie = getCookies(headers)["location"];
+ * await verifyCookie(signedCookie);
+ * ```
  */
 export async function verifyCookie(
   signedCookie: string,
@@ -54,6 +66,24 @@ export async function verifyCookie(
   return await crypto.subtle.verify("HMAC", key, signature, data);
 }
 
-export function parseSignedCookie(signedCookie: string) {
+/**
+ * Parses a signed cookie to get its value.
+ *
+ * Important: always verify the cookie using {@linkcode verifyCookie} first.
+ *
+ * @example
+ * ```ts
+ * import { verifyCookie, parseSignedCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
+ * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+ *
+ * const headers = new Headers({
+ *   Cookie: "location=tokyo.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e",
+ * });
+ * const signedCookie = getCookies(headers)["location"];
+ * await verifyCookie(signedCookie);
+ * const cookie = parseSignedCookie(signedCookie);
+ * ```
+ */
+export function parseSignedCookie(signedCookie: string): string {
   return signedCookie.split(".")[0];
 }

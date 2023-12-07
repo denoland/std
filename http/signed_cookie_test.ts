@@ -1,5 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { signCookie, verifyCookie } from "./signed_cookie.ts";
+import {
+  parseSignedCookie,
+  signCookie,
+  verifyCookie,
+} from "./signed_cookie.ts";
 import { assertEquals } from "../assert/assert_equals.ts";
 
 Deno.test("signCookie() and verifyCookie() work circularly", async () => {
@@ -27,4 +31,11 @@ Deno.test("verifyCookie() returns false on poorly formed value", async () => {
   assertEquals(await verifyCookie(".", key), false);
   assertEquals(await verifyCookie("hello.", key), false);
   assertEquals(await verifyCookie(".world", key), false);
+});
+
+Deno.test("parseSignedCookie() returns parsed cookie value", () => {
+  const value = "tokyo";
+  const signedCookie =
+    `${value}.37f7481039762eef5cd46669f93c0a3214dfecba7d0cdc0b0dc40036063fb22e`;
+  assertEquals(parseSignedCookie(signedCookie), value);
 });
