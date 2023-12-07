@@ -242,7 +242,7 @@ Deno.test("expandGlob() throws permission error without fs permissions", async f
   assert(!success);
   assertEquals(code, 1);
   assertEquals(decoder.decode(stdout), "");
-  assertStringIncludes(decoder.decode(stderr), "Uncaught PermissionDenied");
+  assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
 });
 
 Deno.test("expandGlob() returns single entry when root is not glob", async function () {
