@@ -1,7 +1,12 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertExists, AssertionError } from "./mod.ts";
+import {
+  assertEquals,
+  assertExists,
+  AssertionError,
+  assertThrows,
+} from "./mod.ts";
 
-Deno.test("AssertExists", function () {
+Deno.test("assertExists() matches values that are not null or undefined", () => {
   assertExists("Denosaurus");
   assertExists(false);
   assertExists(0);
@@ -13,23 +18,17 @@ Deno.test("AssertExists", function () {
   const value = new URLSearchParams({ value: "test" }).get("value");
   assertExists(value);
   assertEquals(value.length, 4);
+});
 
-  let didThrow;
-  try {
-    assertExists(undefined);
-    didThrow = false;
-  } catch (e) {
-    assert(e instanceof AssertionError);
-    didThrow = true;
-  }
-  assertEquals(didThrow, true);
-  didThrow = false;
-  try {
-    assertExists(null);
-    didThrow = false;
-  } catch (e) {
-    assert(e instanceof AssertionError);
-    didThrow = true;
-  }
-  assertEquals(didThrow, true);
+Deno.test("assertExists() throws when value is null or undefined", () => {
+  assertThrows(
+    () => assertExists(undefined),
+    AssertionError,
+    'Expected actual: "undefined" to not be null or undefined.',
+  );
+  assertThrows(
+    () => assertExists(null),
+    AssertionError,
+    'Expected actual: "null" to not be null or undefined.',
+  );
 });
