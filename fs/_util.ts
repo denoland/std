@@ -1,6 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
-import { basename, normalize } from "../path/mod.ts";
+import { resolve } from "../path/resolve.ts";
+import { SEP } from "../path/separator.ts";
+import { basename } from "../path/basename.ts";
+import { normalize } from "../path/normalize.ts";
+import { fromFileUrl } from "../path/from_file_url.ts";
 
 /**
  * Test whether `src` and `dest` resolve to the same location
@@ -14,7 +17,7 @@ export function isSamePath(
   src = toPathString(src);
   dest = toPathString(dest);
 
-  return path.resolve(src) === path.resolve(dest);
+  return resolve(src) === resolve(dest);
 }
 
 /**
@@ -26,7 +29,7 @@ export function isSamePath(
 export function isSubdir(
   src: string | URL,
   dest: string | URL,
-  sep: string = path.SEP,
+  sep: string = SEP,
 ): boolean {
   if (src === dest) {
     return false;
@@ -102,5 +105,5 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
 export function toPathString(
   pathUrl: string | URL,
 ): string {
-  return pathUrl instanceof URL ? path.fromFileUrl(pathUrl) : pathUrl;
+  return pathUrl instanceof URL ? fromFileUrl(pathUrl) : pathUrl;
 }
