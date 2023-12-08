@@ -6,17 +6,32 @@ import { SEP_PATTERN } from "../path/separator.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
 import { createWalkEntry, createWalkEntrySync, WalkEntry } from "./_util.ts";
+export type { GlobOptions };
 
 const isWindows = Deno.build.os === "windows";
 
+/** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
+  /** File path where to expand from. */
   root?: string;
+  /** List of glob patterns to be excluded from the expansion. */
   exclude?: string[];
+  /**
+   * Whether to include directories in entries.
+   *
+   * @default {true}
+   */
   includeDirs?: boolean;
+  /**
+   * Whether to follow symbolic links.
+   *
+   * @default {false}
+   */
   followSymlinks?: boolean;
   /**
    * Indicates whether the followed symlink's path should be canonicalized.
    * This option works only if `followSymlinks` is not `false`.
+   *
    * @default {true}
    */
   canonicalize?: boolean;

@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
 
@@ -322,5 +322,47 @@ Deno.test("existsSync() returns true for an existing dir symlink", function () {
       Deno.chmodSync(tempDirPath, 0o755);
     }
     Deno.removeSync(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("exists() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await exists(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
+
+Deno.test("existsSync() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await existsSync(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });

@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 import { DEFAULT_CHUNK_SIZE } from "./_common.ts";
-import type { Closer, Reader } from "../types.d.ts";
+import type { Closer, Reader } from "../io/types.d.ts";
+export type { Closer };
 
 function isCloser(value: unknown): value is Closer {
   return typeof value === "object" && value !== null && value !== undefined &&
@@ -11,7 +12,12 @@ function isCloser(value: unknown): value is Closer {
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
-/** @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead. */
+/**
+ * Options for {@linkcode readableStreamFromReader}.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream}
+ * directly instead.
+ */
 export interface ReadableStreamFromReaderOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -29,9 +35,8 @@ export interface ReadableStreamFromReaderOptions {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead.
- *
- * Create a `ReadableStream<Uint8Array>` from a `Reader`.
+ * Create a {@linkcode ReadableStream} of {@linkcode Uint8Array}s from a
+ * {@linkcode Reader}.
  *
  * When the pull algorithm is called on the stream, a chunk from the reader
  * will be read.  When `null` is returned from the reader, the stream will be
@@ -45,6 +50,8 @@ export interface ReadableStreamFromReaderOptions {
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} directly instead.
  */
 export function readableStreamFromReader(
   reader: Reader | (Reader & Closer),

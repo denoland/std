@@ -18,7 +18,7 @@ import { getFileInfoType } from "./_util.ts";
  * ensureFile("./folder/targetFile.dat"); // returns promise
  * ```
  */
-export async function ensureFile(filePath: string | URL) {
+export async function ensureFile(filePath: string | URL): Promise<void> {
   try {
     // if file exists
     const stat = await Deno.lstat(filePath);
@@ -56,7 +56,7 @@ export async function ensureFile(filePath: string | URL) {
  * ensureFileSync("./folder/targetFile.dat"); // void
  * ```
  */
-export function ensureFileSync(filePath: string | URL) {
+export function ensureFileSync(filePath: string | URL): void {
   try {
     // if file exists
     const stat = Deno.lstatSync(filePath);

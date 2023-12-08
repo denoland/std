@@ -2,8 +2,9 @@
 // This module is browser compatible.
 
 /**
- * Convert the generator function into a TransformStream.
+ * Convert the generator function into a {@linkcode TransformStream}.
  *
+ * @example
  * ```ts
  * import { toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/to_transform_stream.ts";
  *

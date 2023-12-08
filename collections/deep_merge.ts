@@ -31,7 +31,25 @@ export function deepMerge<
   other: Partial<Readonly<T>>,
   options?: Readonly<DeepMergeOptions>,
 ): T;
-
+/**
+ * Merges the two given Records, recursively merging any nested Records with the
+ * second collection overriding the first in case of conflict
+ *
+ * For arrays, maps and sets, a merging strategy can be specified to either
+ * `replace` values, or `merge` them instead. Use `includeNonEnumerable` option
+ * to include non-enumerable properties too.
+ *
+ * @example
+ * ```ts
+ * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/deep_merge.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * const a = { foo: true };
+ * const b = { foo: { bar: true } };
+ *
+ * assertEquals(deepMerge(a, b), { foo: { bar: true } });
+ * ```
+ */
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
@@ -279,20 +297,20 @@ export type DeepMergeOptions = {
  */
 
 /** Force intellisense to expand the typing to hide merging typings */
-type ExpandRecursively<T> = T extends Record<PropertyKey, unknown>
+export type ExpandRecursively<T> = T extends Record<PropertyKey, unknown>
   ? T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never
   : T;
 
 /** Filter of keys matching a given type */
-type PartialByType<T, U> = {
+export type PartialByType<T, U> = {
   [K in keyof T as T[K] extends U ? K : never]: T[K];
 };
 
 /** Get set values type */
-type SetValueType<T> = T extends Set<infer V> ? V : never;
+export type SetValueType<T> = T extends Set<infer V> ? V : never;
 
 /** Merge all sets types definitions from keys present in both objects */
-type MergeAllSets<
+export type MergeAllSets<
   T,
   U,
   X = PartialByType<T, Set<unknown>>,
@@ -303,10 +321,10 @@ type MergeAllSets<
 > = Z;
 
 /** Get array values type */
-type ArrayValueType<T> = T extends Array<infer V> ? V : never;
+export type ArrayValueType<T> = T extends Array<infer V> ? V : never;
 
 /** Merge all sets types definitions from keys present in both objects */
-type MergeAllArrays<
+export type MergeAllArrays<
   T,
   U,
   X = PartialByType<T, Array<unknown>>,
@@ -319,13 +337,13 @@ type MergeAllArrays<
 > = Z;
 
 /** Get map values types */
-type MapKeyType<T> = T extends Map<infer K, unknown> ? K : never;
+export type MapKeyType<T> = T extends Map<infer K, unknown> ? K : never;
 
 /** Get map values types */
-type MapValueType<T> = T extends Map<unknown, infer V> ? V : never;
+export type MapValueType<T> = T extends Map<unknown, infer V> ? V : never;
 
 /** Merge all sets types definitions from keys present in both objects */
-type MergeAllMaps<
+export type MergeAllMaps<
   T,
   U,
   X = PartialByType<T, Map<unknown, unknown>>,
@@ -339,7 +357,7 @@ type MergeAllMaps<
 > = Z;
 
 /** Merge all records types definitions from keys present in both objects */
-type MergeAllRecords<
+export type MergeAllRecords<
   T,
   U,
   Options,
@@ -351,7 +369,7 @@ type MergeAllRecords<
 > = Z;
 
 /** Exclude map, sets and array from type */
-type OmitComplexes<T> = Omit<
+export type OmitComplexes<T> = Omit<
   T,
   keyof PartialByType<
     T,
@@ -363,7 +381,7 @@ type OmitComplexes<T> = Omit<
 >;
 
 /** Object with keys in either T or U but not in both */
-type ObjectXorKeys<
+export type ObjectXorKeys<
   T,
   U,
   X = Omit<T, keyof U> & Omit<U, keyof T>,
@@ -371,14 +389,14 @@ type ObjectXorKeys<
 > = Y;
 
 /** Merge two objects, with left precedence */
-type MergeRightOmitComplexes<
+export type MergeRightOmitComplexes<
   T,
   U,
   X = ObjectXorKeys<T, U> & OmitComplexes<{ [K in keyof U]: U[K] }>,
 > = X;
 
 /** Merge two objects */
-type Merge<
+export type Merge<
   T,
   U,
   Options,

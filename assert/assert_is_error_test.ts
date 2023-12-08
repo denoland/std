@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertIsError, assertThrows } from "./mod.ts";
 
-Deno.test("Assert Is Error Non-Error Fail", () => {
+class CustomError extends Error {}
+class AnotherCustomError extends Error {}
+
+Deno.test("assertIsError() throws when given value isn't error", () => {
   assertThrows(
     () => assertIsError("Panic!", undefined, "Panic!"),
     AssertionError,
@@ -21,13 +24,11 @@ Deno.test("Assert Is Error Non-Error Fail", () => {
   );
 });
 
-Deno.test("Assert Is Error Parent Error", () => {
+Deno.test("assertIsError() allows subclass of Error", () => {
   assertIsError(new AssertionError("Fail!"), Error, "Fail!");
 });
 
-Deno.test("Assert Is Error with custom Error", () => {
-  class CustomError extends Error {}
-  class AnotherCustomError extends Error {}
+Deno.test("assertIsError() allows custom error", () => {
   assertIsError(new CustomError("failed"), CustomError, "fail");
   assertThrows(
     () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
@@ -36,8 +37,7 @@ Deno.test("Assert Is Error with custom Error", () => {
   );
 });
 
-Deno.test("assertIsError throws with message diff, where messages contain double quotes", () => {
-  class CustomError extends Error {}
+Deno.test("assertIsError() throws with message diff containing double quotes", () => {
   assertThrows(
     () =>
       assertIsError(

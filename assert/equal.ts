@@ -13,6 +13,14 @@ function constructorsEqual(a: object, b: object) {
  * Deep equality comparison used in assertions
  * @param c actual value
  * @param d expected value
+ *
+ * @example
+ * ```ts
+ * import { equal } from "https://deno.land/std@$STD_VERSION/assert/equal.ts";
+ *
+ * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
+ * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
+ * ```
  */
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();

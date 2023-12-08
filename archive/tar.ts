@@ -35,7 +35,7 @@ import {
   type TarOptions,
   ustarStructure,
 } from "./_common.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "../io/types.d.ts";
 import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";

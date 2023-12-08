@@ -64,11 +64,16 @@ export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | undefined {
     : undefined;
 }
 
+/**
+ * Walk entry for {@linkcode walk}, {@linkcode walkSync},
+ * {@linkcode expandGlob} and {@linkcode expandGlobSync}.
+ */
 export interface WalkEntry extends Deno.DirEntry {
+  /** Full path of the entry. */
   path: string;
 }
 
-/** Create WalkEntry for the `path` synchronously */
+/** Create {@linkcode WalkEntry} for the `path` synchronously. */
 export function createWalkEntrySync(path: string | URL): WalkEntry {
   path = path.toString();
   path = normalize(path);
@@ -83,7 +88,7 @@ export function createWalkEntrySync(path: string | URL): WalkEntry {
   };
 }
 
-/** Create WalkEntry for the `path` asynchronously */
+/** Create {@linkcode WalkEntry} for the `path` asynchronously. */
 export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
   path = path.toString();
   path = normalize(path);

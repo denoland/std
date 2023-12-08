@@ -13,18 +13,13 @@ import { red } from "../fmt/colors.ts";
  * ```ts
  * import { assertStrictEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_strict_equals.ts";
  *
- * Deno.test("isStrictlyEqual", function (): void {
- *   const a = {};
- *   const b = a;
- *   assertStrictEquals(a, b);
- * });
+ * const a = {};
+ * const b = a;
+ * assertStrictEquals(a, b); // Doesn't throw
  *
- * // This test fails
- * Deno.test("isNotStrictlyEqual", function (): void {
- *   const a = {};
- *   const b = {};
- *   assertStrictEquals(a, b);
- * });
+ * const c = {};
+ * const d = {};
+ * assertStrictEquals(c, d); // Throws
  * ```
  */
 export function assertStrictEquals<T>(
