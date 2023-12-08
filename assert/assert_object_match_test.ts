@@ -7,38 +7,38 @@ import {
   assertThrows,
 } from "./mod.ts";
 
-Deno.test("AssertObjectMatching", function () {
-  const sym = Symbol("foo");
-  const a = { foo: true, bar: false };
-  const b = { ...a, baz: a };
-  const c = { ...b, qux: b };
-  const d = { corge: c, grault: c };
-  const e = { foo: true } as { [key: string]: unknown };
-  e.bar = e;
-  const f = { [sym]: true, bar: false };
-  interface r {
-    foo: boolean;
-    bar: boolean;
-  }
-  const g: r = { foo: true, bar: false };
-  const h = { foo: [1, 2, 3], bar: true };
-  const i = { foo: [a, e], bar: true };
-  const j = { foo: [[1, 2, 3]], bar: true };
-  const k = { foo: [[1, [2, [3]]]], bar: true };
-  const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
-  const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
-  const n = {
-    foo: new Set(["foo", "bar"]),
-    bar: new Map([
-      ["foo", 1],
-      ["bar", 2],
-    ]),
-    baz: new Map([
-      ["a", a],
-      ["b", b],
-    ]),
-  };
+const sym = Symbol("foo");
+const a = { foo: true, bar: false };
+const b = { ...a, baz: a };
+const c = { ...b, qux: b };
+const d = { corge: c, grault: c };
+const e = { foo: true } as { [key: string]: unknown };
+e.bar = e;
+const f = { [sym]: true, bar: false };
+interface r {
+  foo: boolean;
+  bar: boolean;
+}
+const g: r = { foo: true, bar: false };
+const h = { foo: [1, 2, 3], bar: true };
+const i = { foo: [a, e], bar: true };
+const j = { foo: [[1, 2, 3]], bar: true };
+const k = { foo: [[1, [2, [3]]]], bar: true };
+const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
+const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
+const n = {
+  foo: new Set(["foo", "bar"]),
+  bar: new Map([
+    ["foo", 1],
+    ["bar", 2],
+  ]),
+  baz: new Map([
+    ["a", a],
+    ["b", b],
+  ]),
+};
 
+Deno.test("AssertObjectMatching", function () {
   // Simple subset
   assertObjectMatch(a, {
     foo: true,
