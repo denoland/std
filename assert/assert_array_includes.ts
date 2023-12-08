@@ -4,7 +4,7 @@ import { format } from "./_format.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /** An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string */
-type ArrayLikeArg<T> = ArrayLike<T> & object;
+export type ArrayLikeArg<T> = ArrayLike<T> & object;
 
 /**
  * Make an assertion that `actual` includes the `expected` values. If not then
