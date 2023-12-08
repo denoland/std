@@ -6,7 +6,7 @@ import {
   assertThrows,
 } from "./mod.ts";
 
-Deno.test("AssertExists", function () {
+Deno.test("assertExists() matches values that are not null or undefined", () => {
   assertExists("Denosaurus");
   assertExists(false);
   assertExists(0);
@@ -18,7 +18,9 @@ Deno.test("AssertExists", function () {
   const value = new URLSearchParams({ value: "test" }).get("value");
   assertExists(value);
   assertEquals(value.length, 4);
+});
 
+Deno.test("assertExists() throws when value is null or undefined", () => {
   assertThrows(
     () => assertExists(undefined),
     AssertionError,
