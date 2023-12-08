@@ -106,9 +106,8 @@ Deno.test("AssertObjectMatching", function () {
   assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
 
   // Missing key
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(
         {
           foo: true,
@@ -117,65 +116,45 @@ Deno.test("AssertObjectMatching", function () {
           foo: true,
           bar: false,
         },
-      );
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      ),
+    AssertionError,
+  );
+
   // Simple subset
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(a, {
         foo: false,
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // Subset with another subset
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(b, {
         foo: true,
         baz: { bar: true },
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // Subset with multiple subsets
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(c, {
         foo: true,
         baz: { bar: false },
         qux: {
           baz: { foo: false },
         },
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // Subset with same object reference as subset
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(d, {
         corge: {
           foo: true,
@@ -185,18 +164,13 @@ Deno.test("AssertObjectMatching", function () {
           bar: false,
           qux: { foo: false },
         },
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // Subset with circular reference
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(e, {
         foo: true,
         bar: {
@@ -206,55 +180,35 @@ Deno.test("AssertObjectMatching", function () {
             },
           },
         },
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // Subset with symbol key but with string key subset
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(f, {
-        foo: true,
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+        [sym]: false,
+      }),
+    AssertionError,
+  );
+
   // Subset with array inside but doesn't match key subset
-  {
-    let didThrow;
-    try {
+  assertThrows(
+    () =>
       assertObjectMatch(i, {
         foo: [1, 2, 3, 4],
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
-  {
-    let didThrow;
-    try {
+      }),
+    AssertionError,
+  );
+  assertThrows(
+    () =>
       assertObjectMatch(i, {
         foo: [{ bar: true }, { foo: false }],
-      });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+      }),
+    AssertionError,
+  );
+
   // actual/expected value as instance of class
   {
     class A {
