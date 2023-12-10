@@ -60,8 +60,10 @@ async function compare(a: Data, b: Data): Promise<boolean> {
   const key = new Uint8Array(32);
   globalThis.crypto.getRandomValues(key);
   const cryptoKey = await importKey(key);
-  const ah = await sign(a, cryptoKey);
-  const bh = await sign(b, cryptoKey);
+  const [ah, bh] = await Promise.all([
+    sign(a, cryptoKey),
+    sign(b, cryptoKey),
+  ]);
   return timingSafeEqual(ah, bh);
 }
 
