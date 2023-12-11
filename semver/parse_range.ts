@@ -2,13 +2,29 @@
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
 import {
-  HYPHENRANGE_REGEXP,
   OPERATOR_REGEXP,
+  SEMVER_REGEXP,
   STAR_REGEXP,
   XRANGE_REGEXP,
 } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
+interface OperatorVersion {
+  operator: string;
+  major: number | string;
+  minor: number | string;
+  patch: number | string;
+  prerelease?: string;
+}
+function stringify(version: OperatorVersion) {
+  return `${version.operator}${version.major}.${version.minor}.${version.patch}${
+    version.prerelease ? `-${version.prerelease}` : ""
+  }`;
+}
+
+function stringifyRange(min: OperatorVersion, max: OperatorVersion) {
+  return `${stringify(min)} ${stringify(max)}`;
+}
 // ~, ~> --> * (any, kinda silly)
 // ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0
 // ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0
@@ -16,37 +32,51 @@ import { parseComparator } from "./parse_comparator.ts";
 // ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
 // ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
 function replaceCaret(
-  groups: { major: string; minor: string; patch: string; prerelease: string[] },
+  groups: { major: string; minor: string; patch: string; prerelease?: string },
 ) {
   const { major, minor, patch, prerelease } = groups;
 
   if (isX(major)) {
     return "";
   } else if (isX(minor)) {
-    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+    return stringifyRange({
+      operator: ">=",
+      major,
+      minor: 0,
+      patch: 0,
+    }, {
+      operator: "<",
+      major: +major + 1,
+      minor: 0,
+      patch: 0,
+    });
   } else if (isX(patch)) {
     // ~1.2 == >=1.2.0 <1.3.0
-    return ">=" + major + "." + minor + ".0 <" + major + "." +
-      (+minor + 1) +
-      ".0";
-  } else if (prerelease) {
-    return ">=" +
-      major +
-      "." +
-      minor +
-      "." +
-      patch +
-      "-" +
-      prerelease +
-      " <" +
-      major +
-      "." +
-      (+minor + 1) +
-      ".0";
+    return stringifyRange({
+      operator: ">=",
+      major,
+      minor,
+      patch: 0,
+    }, {
+      operator: "<",
+      major: major,
+      minor: +minor + 1,
+      patch: 0,
+    });
   }
   // ~1.2.3 == >=1.2.3 <1.3.0
-  return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
-    (+minor + 1) + ".0";
+  return stringifyRange({
+    operator: ">=",
+    major,
+    minor,
+    patch,
+    prerelease,
+  }, {
+    operator: "<",
+    major: major,
+    minor: +minor + 1,
+    patch: 0,
+  });
 }
 
 // ^ --> * (any, kinda silly)
@@ -56,7 +86,7 @@ function replaceCaret(
 // ^1.2.3 --> >=1.2.3 <2.0.0
 // ^1.2.0 --> >=1.2.0 <2.0.0
 function replaceTile(
-  groups: { major: string; minor: string; patch: string; prerelease: string[] },
+  groups: { major: string; minor: string; patch: string; prerelease?: string },
 ) {
   const {
     major,
@@ -68,71 +98,128 @@ function replaceTile(
   if (isX(major)) {
     return "";
   } else if (isX(minor)) {
-    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+    return stringifyRange({
+      operator: ">=",
+      major,
+      minor: 0,
+      patch: 0,
+    }, {
+      operator: "<",
+      major: +major + 1,
+      minor: 0,
+      patch: 0,
+    });
   } else if (isX(patch)) {
     if (major === "0") {
-      return ">=" + major + "." + minor + ".0 <" + major + "." +
-        (+minor + 1) +
-        ".0";
+      return stringifyRange({
+        operator: ">=",
+        major,
+        minor,
+        patch: 0,
+      }, {
+        operator: "<",
+        major,
+        minor: +minor + 1,
+        patch: 0,
+      });
     } else {
-      return ">=" + major + "." + minor + ".0 <" + (+major + 1) +
-        ".0.0";
+      return stringifyRange({
+        operator: ">=",
+        major,
+        minor,
+        patch: 0,
+      }, {
+        operator: "<",
+        major: +major + 1,
+        minor: 0,
+        patch: 0,
+      });
     }
   } else if (prerelease) {
     if (major === "0") {
       if (minor === "0") {
-        return ">=" +
-          major +
-          "." +
-          minor +
-          "." +
-          patch +
-          "-" +
-          prerelease +
-          " <" +
-          major +
-          "." +
-          minor +
-          "." +
-          (+patch + 1);
+        return stringifyRange({
+          operator: ">=",
+          major,
+          minor,
+          patch,
+          prerelease,
+        }, {
+          operator: "<",
+          major: major,
+          minor,
+          patch: +patch + 1,
+        });
       } else {
-        return ">=" +
-          major +
-          "." +
-          minor +
-          "." +
-          patch +
-          "-" +
-          prerelease +
-          " <" +
-          major +
-          "." +
-          (+minor + 1) +
-          ".0";
+        return stringifyRange({
+          operator: ">=",
+          major,
+          minor,
+          patch,
+          prerelease,
+        }, {
+          operator: "<",
+          major: major,
+          minor: +minor + 1,
+          patch: 0,
+        });
       }
     } else {
-      return ">=" + major + "." + minor + "." + patch + "-" +
-        prerelease +
-        " <" +
-        (+major + 1) +
-        ".0.0";
+      return stringifyRange({
+        operator: ">=",
+        major,
+        minor,
+        patch,
+        prerelease,
+      }, {
+        operator: "<",
+        major: +major + 1,
+        minor: 0,
+        patch: 0,
+      });
     }
   } else {
     if (major === "0") {
       if (minor === "0") {
-        return ">=" + major + "." + minor + "." + patch + " <" + major +
-          "." +
-          minor + "." +
-          (+patch + 1);
+        return stringifyRange({
+          operator: ">=",
+          major,
+          minor,
+          patch,
+          prerelease,
+        }, {
+          operator: "<",
+          major,
+          minor,
+          patch: +patch + 1,
+        });
       } else {
-        return ">=" + major + "." + minor + "." + patch + " <" + major +
-          "." +
-          (+minor + 1) + ".0";
+        return stringifyRange({
+          operator: ">=",
+          major,
+          minor,
+          patch,
+          prerelease,
+        }, {
+          operator: "<",
+          major,
+          minor: +minor + 1,
+          patch: 0,
+        });
       }
     } else {
-      return ">=" + major + "." + minor + "." + patch + " <" +
-        (+major + 1) +
-        ".0.0";
+      return stringifyRange({
+        operator: ">=",
+        major,
+        minor,
+        patch,
+        prerelease,
+      }, {
+        operator: "<",
+        major: +major + 1,
+        minor: 0,
+        patch: 0,
+      });
     }
   }
 }
@@ -147,7 +234,7 @@ function replaceOperators(comp: string) {
         major: string;
         minor: string;
         patch: string;
-        prerelease: string[];
+        prerelease?: string;
       };
       if (!groups) return comp;
       switch (groups.operator) {
@@ -190,7 +277,7 @@ function replaceXRange(comp: string): string {
   if (xM) {
     if (operator === ">" || operator === "<") {
       // nothing is allowed
-      return "<0.0.0";
+      return stringify({ operator: "<", major: 0, minor: 0, patch: 0 });
     } else {
       // nothing is forbidden
       return "*";
@@ -226,13 +313,21 @@ function replaceXRange(comp: string): string {
         minor = +minor + 1;
       }
     }
-
-    return operator + major + "." + minor + "." + patch;
+    return stringify({ operator, major, minor, patch });
   } else if (xm) {
-    return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
+    return stringifyRange({ operator: ">=", major, minor: 0, patch: 0 }, {
+      operator: "<",
+      major: +major + 1,
+      minor: 0,
+      patch: 0,
+    });
   } else if (xp) {
-    return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
-      ".0";
+    return stringifyRange({ operator: ">=", major, minor, patch: 0 }, {
+      operator: "<",
+      major: major,
+      minor: +minor + 1,
+      patch: 0,
+    });
   }
   return comp;
 }
@@ -248,44 +343,73 @@ function replaceStars(comp: string): string {
 // 1.2 - 3.4.5 -> >=1.2.0 <=3.4.5
 // 1.2.3 - 3.4 -> >=1.2.0 <3.5.0 Any 3.4.x will do
 // 1.2 - 3.4 -> >=1.2.0 <3.5.0
-function hyphenReplace(
-  _$0: string,
-  from: string,
-  fM: string,
-  fm: string,
-  fp: string,
-  _fpr: string,
-  _fb: string,
-  to: string,
-  tM: string,
-  tm: string,
-  tp: string,
-  tpr: string,
-  _tb: string,
-) {
-  if (isX(fM)) {
-    from = "";
-  } else if (isX(fm)) {
-    from = ">=" + fM + ".0.0";
-  } else if (isX(fp)) {
-    from = ">=" + fM + "." + fm + ".0";
-  } else {
-    from = ">=" + from;
-  }
+function replaceHyphen(range: string) {
+  const fromMatch = SEMVER_REGEXP.exec(range);
+  if (fromMatch) {
+    const hypthenIndex = fromMatch[0].length;
+    const hyphenMatch = /^\s*\-\s*/.exec(range.slice(hypthenIndex));
+    if (hyphenMatch) {
+      const toMatch = SEMVER_REGEXP.exec(
+        range.slice(hypthenIndex + hyphenMatch[0].length),
+      );
+      if (toMatch) {
+        let from = fromMatch[0];
+        let to = toMatch[0];
+        const fromGroups = fromMatch.groups!;
+        const toGroups = toMatch.groups!;
 
-  if (isX(tM)) {
-    to = "";
-  } else if (isX(tm)) {
-    to = "<" + (+tM + 1) + ".0.0";
-  } else if (isX(tp)) {
-    to = "<" + tM + "." + (+tm + 1) + ".0";
-  } else if (tpr) {
-    to = "<=" + tM + "." + tm + "." + tp + "-" + tpr;
-  } else {
-    to = "<=" + to;
-  }
+        if (isX(fromGroups.major)) {
+          from = "";
+        } else if (isX(fromGroups.minor)) {
+          from = stringify({
+            operator: ">=",
+            major: fromGroups.major,
+            minor: 0,
+            patch: 0,
+          });
+        } else if (isX(fromGroups.patch)) {
+          from = stringify({
+            operator: ">=",
+            major: fromGroups.major,
+            minor: fromGroups.minor,
+            patch: 0,
+          });
+        } else {
+          from = ">=" + from;
+        }
 
-  return (from + " " + to).trim();
+        if (isX(toGroups.major)) {
+          to = "";
+        } else if (isX(toGroups.minor)) {
+          to = stringify({
+            operator: "<",
+            major: +toGroups.major + 1,
+            minor: 0,
+            patch: 0,
+          });
+        } else if (isX(toGroups.patch)) {
+          to = stringify({
+            operator: "<",
+            major: toGroups.major,
+            minor: +toGroups.minor + 1,
+            patch: 0,
+          });
+        } else if (toGroups.prerelease) {
+          to = stringify({
+            operator: "<=",
+            major: toGroups.major,
+            minor: toGroups.minor,
+            patch: toGroups.patch,
+            prerelease: toGroups.prerelease,
+          });
+        } else {
+          to = "<=" + to;
+        }
+        return (from + " " + to).trim();
+      }
+    }
+  }
+  return range;
 }
 
 function isX(id: string): boolean {
@@ -310,9 +434,7 @@ export function parseRange(range: string): SemVerRange {
     .trim()
     .split(/\s*\|\|\s*/)
     .map((range) => {
-      // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
-      const hr: RegExp = HYPHENRANGE_REGEXP;
-      range = range.replace(hr, hyphenReplace);
+      range = replaceHyphen(range);
       range = replaceOperators(range);
       range = replaceXRanges(range);
       range = replaceStars(range);
