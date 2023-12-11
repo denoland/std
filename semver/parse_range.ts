@@ -8,7 +8,6 @@ import {
   XRANGE_REGEXP,
 } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
-import { func } from "https://deno.land/std@$STD_VERSION/yaml/_type/function.ts";
 
 // ~, ~> --> * (any, kinda silly)
 // ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0
