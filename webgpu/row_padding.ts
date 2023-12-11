@@ -11,6 +11,8 @@ export interface Padding {
 
 /** Buffer-Texture copies must have [`bytes_per_row`] aligned to this number. */
 export const COPY_BYTES_PER_ROW_ALIGNMENT = 256;
+
+/** Number of bytes per pixel. */
 export const BYTES_PER_PIXEL = 4;
 
 /**
