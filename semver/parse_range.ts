@@ -2,13 +2,13 @@
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
 import {
-  CARET_REGEXP,
   HYPHENRANGE_REGEXP,
+  OPERATOR_REGEXP,
   STAR_REGEXP,
-  TILDE_REGEXP,
   XRANGE_REGEXP,
 } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
+import { func } from "https://deno.land/std@$STD_VERSION/yaml/_type/function.ts";
 
 // ~, ~> --> * (any, kinda silly)
 // ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0
@@ -16,17 +16,9 @@ import { parseComparator } from "./parse_comparator.ts";
 // ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0
 // ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
 // ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
-function replaceTildes(comp: string): string {
-  return comp
-    .trim()
-    .split(/\s+/)
-    .map((comp) => replaceTilde(comp))
-    .join(" ");
-}
-
-function replaceTilde(comp: string): string {
-  const groups = TILDE_REGEXP.exec(comp)?.groups;
-  if (!groups) return comp;
+function replaceCaret(
+  groups: { major: string; minor: string; patch: string; prerelease: string[] },
+) {
   const { major, minor, patch, prerelease } = groups;
 
   if (isX(major)) {
@@ -35,7 +27,8 @@ function replaceTilde(comp: string): string {
     return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
   } else if (isX(patch)) {
     // ~1.2 == >=1.2.0 <1.3.0
-    return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
+    return ">=" + major + "." + minor + ".0 <" + major + "." +
+      (+minor + 1) +
       ".0";
   } else if (prerelease) {
     return ">=" +
@@ -63,17 +56,9 @@ function replaceTilde(comp: string): string {
 // ^1.2, ^1.2.x --> >=1.2.0 <2.0.0
 // ^1.2.3 --> >=1.2.3 <2.0.0
 // ^1.2.0 --> >=1.2.0 <2.0.0
-function replaceCarets(comp: string): string {
-  return comp
-    .trim()
-    .split(/\s+/)
-    .map((comp) => replaceCaret(comp))
-    .join(" ");
-}
-
-function replaceCaret(comp: string): string {
-  const groups = CARET_REGEXP.exec(comp)?.groups;
-  if (!groups) return comp;
+function replaceTile(
+  groups: { major: string; minor: string; patch: string; prerelease: string[] },
+) {
   const {
     major,
     minor,
@@ -87,10 +72,12 @@ function replaceCaret(comp: string): string {
     return ">=" + major + ".0.0 <" + (+major + 1) + ".0.0";
   } else if (isX(patch)) {
     if (major === "0") {
-      return ">=" + major + "." + minor + ".0 <" + major + "." + (+minor + 1) +
+      return ">=" + major + "." + minor + ".0 <" + major + "." +
+        (+minor + 1) +
         ".0";
     } else {
-      return ">=" + major + "." + minor + ".0 <" + (+major + 1) + ".0.0";
+      return ">=" + major + "." + minor + ".0 <" + (+major + 1) +
+        ".0.0";
     }
   } else if (prerelease) {
     if (major === "0") {
@@ -125,7 +112,8 @@ function replaceCaret(comp: string): string {
           ".0";
       }
     } else {
-      return ">=" + major + "." + minor + "." + patch + "-" + prerelease +
+      return ">=" + major + "." + minor + "." + patch + "-" +
+        prerelease +
         " <" +
         (+major + 1) +
         ".0.0";
@@ -133,18 +121,45 @@ function replaceCaret(comp: string): string {
   } else {
     if (major === "0") {
       if (minor === "0") {
-        return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
+        return ">=" + major + "." + minor + "." + patch + " <" + major +
+          "." +
           minor + "." +
           (+patch + 1);
       } else {
-        return ">=" + major + "." + minor + "." + patch + " <" + major + "." +
+        return ">=" + major + "." + minor + "." + patch + " <" + major +
+          "." +
           (+minor + 1) + ".0";
       }
     } else {
-      return ">=" + major + "." + minor + "." + patch + " <" + (+major + 1) +
+      return ">=" + major + "." + minor + "." + patch + " <" +
+        (+major + 1) +
         ".0.0";
     }
   }
+}
+
+function replaceOperators(comp: string) {
+  return comp
+    .trim()
+    .split(/\s+/)
+    .map((comp) => {
+      const groups = OPERATOR_REGEXP.exec(comp)?.groups as unknown as {
+        operator: string;
+        major: string;
+        minor: string;
+        patch: string;
+        prerelease: string[];
+      };
+      if (!groups) return comp;
+      switch (groups.operator) {
+        case "~":
+        case "~>":
+          return replaceCaret(groups);
+        case "^":
+          return replaceTile(groups);
+      }
+    })
+    .join(" ");
 }
 
 function replaceXRanges(comp: string): string {
@@ -299,8 +314,7 @@ export function parseRange(range: string): SemVerRange {
       // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
       const hr: RegExp = HYPHENRANGE_REGEXP;
       range = range.replace(hr, hyphenReplace);
-      range = replaceCarets(range);
-      range = replaceTildes(range);
+      range = replaceOperators(range);
       range = replaceXRanges(range);
       range = replaceStars(range);
 
