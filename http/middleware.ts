@@ -1,14 +1,21 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+/** Options for {@linkcode MiddlewareHandler}. */
+export interface MiddlewareOptions<T = undefined> {
+  /** Calls the next middleware handler in the middleware chain. */
+  next: () => Response | Promise<Response>;
+  /** State that gets passed down through each middleware handler. */
+  state: T;
+}
+
 /**
- * Middleware handler based on {@linkcode Deno.ServeHandlerInfo} but an added
- * `next()` function which calls the next middleware handler in the middleware
- * chain.
+ * Middleware handler which extends {@linkcode Deno.ServeHandlerInfo}. Used
+ * in {@linkcode composeMiddleware}.
  */
-export type MiddlewareHandler = (
+export type MiddlewareHandler<T = undefined> = (
   request: Request,
   info: Deno.ServeHandlerInfo,
-  next: () => Response | Promise<Response>,
+  options: MiddlewareOptions<T>,
 ) => Response | Promise<Response>;
 
 /**
@@ -21,10 +28,10 @@ export type MiddlewareHandler = (
  * ```ts
  * import {
  *   type MiddlewareHandler,
- *   composeHandler,
+ *   composeMiddleware,
  * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
  *
- * const middleware1: MiddlewareHandler = async (_request, _info, next) => {
+ * const middleware1: MiddlewareHandler = async (_request, _info, { next }) => {
  *   const start = performance.now();
  *   const response = await next();
  *   const duration = performance.now() - start;
@@ -36,13 +43,16 @@ export type MiddlewareHandler = (
  *   return Response.json({ request, info });
  * };
  *
- * const handler = composeHandler([middleware1, middleware2])
+ * const handler = composeMiddleware([middleware1, middleware2])
  * ```
  */
-export function composeHandler(
-  middlewares: MiddlewareHandler[],
+export function composeMiddleware<T = undefined>(
+  middlewares: MiddlewareHandler<T>[],
+  initialState?: T,
 ): Deno.ServeHandler {
   return (request, info) => {
+    const state = initialState as T;
+
     function chainMiddleware(index: number): Response | Promise<Response> {
       if (index >= middlewares.length) {
         throw new RangeError("Middleware chain exhausted");
@@ -50,7 +60,10 @@ export function composeHandler(
       return middlewares[index](
         request,
         info,
-        () => chainMiddleware(index + 1),
+        {
+          next: () => chainMiddleware(index + 1),
+          state,
+        },
       );
     }
     return chainMiddleware(0);
