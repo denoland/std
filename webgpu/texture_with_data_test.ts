@@ -40,7 +40,7 @@ Deno.test({
     const device = await adapter.requestDevice();
     assert(device);
 
-    const texture = createTextureWithData(device, {
+    createTextureWithData(device, {
       format: "bgra8unorm-srgb",
       size: {
         width: 3,
