@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../assert/mod.ts";
-import { decode, encode } from "./base58.ts";
+import { decodeBase58, encodeBase58 } from "./base58.ts";
 
 const testSetString = [
   ["", ""],
@@ -41,32 +41,32 @@ const testSetBinary = testSetString.map(([data, b58]) => {
 
 Deno.test("[encoding/base58] testBase58EncodeString", () => {
   for (const [input, output] of testSetString) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase58(input), output);
   }
 });
 
 Deno.test("[encoding/base58] testBase58EncodeBinary", () => {
   for (const [input, output] of testSetBinary) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase58(input), output);
   }
 });
 
 Deno.test("[encoding/base58] testBase58EncodeBinaryBuffer", () => {
   for (const [input, output] of testSetBinary) {
-    assertEquals(encode(input.buffer), output);
+    assertEquals(encodeBase58(input.buffer), output);
   }
 });
 
 Deno.test("[encoding/base58] testBase58DecodeBinary", () => {
   for (const [input, output] of testSetBinary) {
-    const outputBinary = decode(output);
+    const outputBinary = decodeBase58(output);
     assertEquals(outputBinary, input);
   }
 });
 
 Deno.test("[encoding/base58] testBase58DecodeError", () => {
   assertThrows(
-    () => decode("+2NEpo7TZRRrLZSi2U"),
+    () => decodeBase58("+2NEpo7TZRRrLZSi2U"),
     `Invalid base58 char at index 0 with value +`,
   );
 });

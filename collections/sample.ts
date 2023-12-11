@@ -4,7 +4,7 @@
 import { randomInteger } from "./_utils.ts";
 
 /**
- * Returns a random element from the given array
+ * Returns a random element from the given array.
  *
  * @example
  * ```ts

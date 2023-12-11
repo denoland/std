@@ -1,15 +1,25 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "./assertion_error.ts";
 
+/** Any constructor */
 // deno-lint-ignore no-explicit-any
-type AnyConstructor = new (...args: any[]) => any;
-type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
+export type AnyConstructor = new (...args: any[]) => any;
+/** Gets constructor type */
+export type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
 new (...args: any) => infer C ? C
   : never;
 
 /**
  * Make an assertion that `obj` is an instance of `type`.
  * If not then throw.
+ *
+ * @example
+ * ```ts
+ * import { assertInstanceOf } from "https://deno.land/std@$STD_VERSION/assert/assert_instance_of.ts";
+ *
+ * assertInstanceOf(new Date(), Date); // Doesn't throw
+ * assertInstanceOf(new Date(), Number); // Throws
+ * ```
  */
 export function assertInstanceOf<T extends AnyConstructor>(
   actual: unknown,
@@ -32,10 +42,10 @@ export function assertInstanceOf<T extends AnyConstructor>(
     actualTypeStr = typeof actual;
   }
 
-  if (expectedTypeStr == actualTypeStr) {
+  if (expectedTypeStr === actualTypeStr) {
     msg =
       `Expected object to be an instance of "${expectedTypeStr}"${msgSuffix}`;
-  } else if (actualTypeStr == "function") {
+  } else if (actualTypeStr === "function") {
     msg =
       `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object${msgSuffix}`;
   } else {

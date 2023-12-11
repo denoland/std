@@ -1,123 +1,161 @@
-# Deno Standard Modules
+# Deno Standard Library
 
 [![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
+[![ci](https://github.com/denoland/deno_std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/deno_std/actions/workflows/ci.yml)
 
-These modules do not have external dependencies and they are reviewed by the
-Deno core team. The intention is to have a standard set of high quality code
-that all Deno projects can use fearlessly.
+High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-Contributions are welcome!
+## Get Started
 
-## Releases
+```ts
+import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
 
-Standard library is currently tagged independently of Deno version. This will
-change once the library is stabilized.
+await copy("./foo", "./bar");
+```
 
-To check compatibility of different version of standard library with Deno CLI
-see
-[this list](https://raw.githubusercontent.com/denoland/dotland/main/versions.json).
-
-## How to use
-
-These modules will eventually be tagged in accordance with Deno releases but as
-of today we do not yet consider them stable and so we version the standard
-modules differently from the Deno runtime to reflect this.
-
-It is strongly recommended that you link to tagged releases to avoid unintended
-updates and breaking changes.
-
-Don't link to / import any module whose path:
-
-- Has a name or parent with an underscore prefix: `_foo.ts`, `_util/bar.ts`.
-- Is that of a test module or test data: `test.ts`, `foo_test.ts`,
-  `testdata/bar.txt`.
-
-Don't import any symbol with an underscore prefix: `export function _baz() {}`.
-
-These elements are not considered part of the public API, thus no stability is
-guaranteed for them.
+See [here](#recommended-usage) for recommended usage patterns.
 
 ## Documentation
 
-To browse documentation for modules:
+Check out the documentation [here](https://deno.land/std?doc).
 
-- Go to https://deno.land/std/.
-- Click "View Documentation".
-- Navigate to any module of interest.
+## Recommended Usage
+
+1. Include the version of the library in the import specifier.
+
+   Good:
+   ```ts
+   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   ```
+
+1. Only import modules that you require.
+
+   Bad (when using only one function):
+   ```ts
+   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   ```
+
+   Good (when using only one function):
+   ```ts
+   import { copy } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
+   ```
+
+   Good (when using multiple functions):
+   ```ts
+   import * as fs from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+   ```
+
+1. Do not import symbols with an underscore in the name.
+
+   Bad:
+   ```ts
+   import { _format } from "https://deno.land/std@$STD_VERSION/path/_common/format.ts";
+   ```
+
+1. Do not import modules with an underscore in the path.
+
+   Bad:
+   ```ts
+   import { filterInPlace } from "https://deno.land/std@$STD_VERSION/collections/_utils.ts";
+   ```
+
+1. Do not import test modules or test data.
+
+   Bad:
+   ```ts
+   import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
+   ```
+
+## Stability
+
+| Sub-module   | Status     |
+| ------------ | ---------- |
+| archive      | Unstable   |
+| assert       | Stable     |
+| async        | Stable     |
+| bytes        | Stable     |
+| collections  | Stable     |
+| console      | Unstable   |
+| csv          | Stable     |
+| datetime     | Unstable   |
+| dotenv       | Unstable   |
+| encoding     | Unstable   |
+| flags        | Unstable   |
+| fmt          | Stable     |
+| front_matter | Unstable   |
+| fs           | Stable     |
+| html         | Unstable   |
+| http         | Unstable   |
+| io           | Deprecated |
+| json         | Stable     |
+| jsonc        | Stable     |
+| log          | Unstable   |
+| media_types  | Stable     |
+| msgpack      | Unstable   |
+| path         | Unstable   |
+| permissions  | Deprecated |
+| regexp       | Unstable   |
+| semver       | Unstable   |
+| signal       | Deprecated |
+| streams      | Unstable   |
+| testing      | Stable     |
+| toml         | Stable     |
+| ulid         | Unstable   |
+| url          | Unstable   |
+| uuid         | Stable     |
+| yaml         | Stable     |
+
+> For background and discussions regarding the stability of the following
+> sub-modules, see [#3489](https://github.com/denoland/deno_std/issues/3489).
+
+## Deprecation Policy
+
+We deprecate the APIs in the Standard Library when they get covered by new
+JavaScript language APIs or new Web Standard APIs. These APIs are usually
+removed after 3 minor versions.
+
+If you still need to use such APIs after the removal for some reason (for
+example, the usage in Fresh island), please use the URL pinned to the version
+where they are still available.
+
+For example, if you want to keep using `readableStreamFromIterable`, which was
+deprecated and removed in favor of `ReadableStream.from` in `v0.195.0`, please
+use the import URL pinned to `v0.194.0`:
+
+```ts
+import { readableStreamFromIterable } from "https://deno.land/std@0.194.0/streams/readable_stream_from_iterable.ts";
+```
 
 ## Contributing
 
-**NOTE: This repository was unarchived and synced on Feb, 1st, 2021. If you
-already had it cloned, we suggest to do a fresh clone to avoid git conflicts.**
+Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
-deno_std is a loose port of [Go's standard library](https://golang.org/pkg/).
-When in doubt, simply port Go's source code, documentation, and tests. There are
-many times when the nature of JavaScript, TypeScript, or Deno itself justifies
-diverging from Go, but if possible we want to leverage the energy that went into
-building Go. We generally welcome direct ports of Go's code.
+## Releases
 
-Please ensure the copyright headers cite the code's origin.
+The Standard Library is versioned independently of the Deno CLI. This will
+change once the Standard Library is stabilized. See
+[here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
+for the compatibility of different versions of the Deno Standard Library and the
+Deno CLI.
 
-Follow the [style guide](https://deno.land/manual/contributing/style_guide).
+A new minor version of the Standard Library is published at the same time as
+every new version of the Deno CLI (including patch versions).
 
-### Opening a pull request
+## Badge
 
-After cloning don't forget to `git submodule update --init`.
+[![Built with the Deno Standard Library](./badge.svg)](https://deno.land/std)
 
-Before opening a PR make sure to:
+```html
+<a href="https://deno.land/std">
+  <img
+    width="135"
+    height="20"
+    src="https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg"
+    alt="Built with the Deno Standard Library"
+  />
+</a>
+```
 
-- have the latest Deno version installed locally
-- add tests that cover your changes.
-- `deno task test` passes.
-- `deno fmt --check` passes.
-- `deno task lint` passes.
-- (optionally) check for typos with `deno task typos` (requires
-  [typos](https://github.com/crate-ci/typos#install) to be installed)
-
-Give the PR a descriptive title.
-
-Examples of good titles:
-
-- fix(http): Fix race condition in server
-- docs(fmt): Update docstrings
-- feat(log): Handle nested messages
-
-Examples of bad titles:
-
-- fix #7123
-- update docs
-- fix bugs
-
-Ensure there is a related issue and it is referenced in the PR text.
-
-_About CI checks_:
-
-We currently have 6 checks on CI. Each PR should pass all of these checks to be
-accepted.
-
-- test with Deno canary on Windows
-- test with Deno canary on Linux
-- test with Deno canary on macOS
-- lint
-- wasm crypto check
-- CLA
-
-_For maintainers_:
-
-To release a new version a tag in the form of `x.y.z` should be added.
-
-### Types
-
-Deno is moving away from non-native IO functions and interfaces in favor of the
-[Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API).
-These types are to be defined here, in the Standard Library, instead of in the
-Deno namespace in the future. As a rule, use the following corresponding and
-identical types from `types.d.ts`:
-
-- `Deno.Reader`
-- `Deno.Writer`
-- `Deno.ReaderSync`
-- `Deno.WriterSync`
-- `Deno.Closer`
-
-See the tracking issue [here](https://github.com/denoland/deno/issues/9795).
+```md
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
+```

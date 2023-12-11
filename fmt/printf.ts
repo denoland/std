@@ -148,18 +148,30 @@
  * @module
  */
 
-enum State {
-  PASSTHROUGH,
-  PERCENT,
-  POSITIONAL,
-  PRECISION,
-  WIDTH,
-}
+const State = {
+  PASSTHROUGH: 0,
+  PERCENT: 1,
+  POSITIONAL: 2,
+  PRECISION: 3,
+  WIDTH: 4,
+} as const;
 
-enum WorP {
-  WIDTH,
-  PRECISION,
-}
+type State = typeof State[keyof typeof State];
+
+const WorP = {
+  WIDTH: 0,
+  PRECISION: 1,
+} as const;
+
+type WorP = typeof WorP[keyof typeof WorP];
+
+const F = {
+  sign: 1,
+  mantissa: 2,
+  fractional: 3,
+  esign: 4,
+  exponent: 5,
+} as const;
 
 class Flags {
   plus?: boolean;
@@ -176,14 +188,6 @@ const min = Math.min;
 const UNICODE_REPLACEMENT_CHARACTER = "\ufffd";
 const DEFAULT_PRECISION = 6;
 const FLOAT_REGEXP = /(-?)(\d)\.?(\d*)e([+-])(\d+)/;
-
-enum F {
-  sign = 1,
-  mantissa,
-  fractional,
-  esign,
-  exponent,
-}
 
 class Printf {
   format: string;
@@ -371,7 +375,7 @@ class Printf {
                 this.state = State.PERCENT;
                 return;
               }
-              flags.width = flags.width == -1 ? 0 : flags.width;
+              flags.width = flags.width === -1 ? 0 : flags.width;
               flags.width *= 10;
               flags.width += val;
             }
@@ -710,7 +714,7 @@ class Printf {
         esign = r < 0 ? "-" : "+";
       }
     }
-    e = e.length == 1 ? "0" + e : e;
+    e = e.length === 1 ? "0" + e : e;
     const val = `${mantissa}.${fractional}${upcase ? "E" : "e"}${esign}${e}`;
     return this.padNum(val, n < 0);
   }
@@ -907,7 +911,7 @@ class Printf {
    */
   fmtI(val: unknown, compact: boolean): string {
     return Deno.inspect(val, {
-      colors: true,
+      colors: !Deno?.noColor,
       compact,
       depth: Infinity,
       iterableLimit: Infinity,

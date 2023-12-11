@@ -2,14 +2,20 @@
 // This module is browser compatible.
 
 import { writeAll } from "./write_all.ts";
-import type { Closer, Writer } from "../types.d.ts";
+import type { Closer, Writer } from "../io/types.d.ts";
 
 function isCloser(value: unknown): value is Closer {
-  return typeof value === "object" && value != null && "close" in value &&
+  return typeof value === "object" && value !== null && value !== undefined &&
+    "close" in value &&
     // deno-lint-ignore no-explicit-any
     typeof (value as Record<string, any>)["close"] === "function";
 }
 
+/**
+ * Options for {@linkcode writableStreamFromWriter}.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ */
 export interface WritableStreamFromWriterOptions {
   /**
    * If the `writer` is also a `Closer`, automatically close the `writer`
@@ -20,7 +26,11 @@ export interface WritableStreamFromWriterOptions {
   autoClose?: boolean;
 }
 
-/** Create a `WritableStream` from a `Writer`. */
+/**
+ * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ */
 export function writableStreamFromWriter(
   writer: Writer,
   options: WritableStreamFromWriterOptions = {},

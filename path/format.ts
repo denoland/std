@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "../_util/os.ts";
-import { posixFormat, windowsFormat } from "./_format.ts";
+import { isWindows } from "./_os.ts";
+import { format as posixFormat } from "./posix/format.ts";
+import { format as windowsFormat } from "./windows/format.ts";
 import { FormatInputPathObject } from "./_interface.ts";
 
 /**

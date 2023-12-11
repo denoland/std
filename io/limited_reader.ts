@@ -7,8 +7,11 @@
  * `read` returns `null` when `limit` <= `0` or
  * when the underlying `reader` returns `null`.
  */
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class LimitedReader implements Reader {
   constructor(public reader: Reader, public limit: number) {}
 
@@ -21,7 +24,7 @@ export class LimitedReader implements Reader {
       p = p.subarray(0, this.limit);
     }
     const n = await this.reader.read(p);
-    if (n == null) {
+    if (n === null) {
       return null;
     }
 

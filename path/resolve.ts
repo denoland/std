@@ -1,8 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "../_util/os.ts";
-import { posixResolve, windowsResolve } from "./_resolve.ts";
+import { isWindows } from "./_os.ts";
+import { resolve as posixResolve } from "./posix/resolve.ts";
+import { resolve as windowsResolve } from "./windows/resolve.ts";
 
 /**
  * Resolves path segments into a `path`

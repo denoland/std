@@ -1,16 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-
-import {
-  FileTypes,
-  type TarInfo,
-  type TarMeta,
-  type TarOptions,
-  ustarStructure,
-} from "./_common.ts";
-import type { Reader } from "../types.d.ts";
-
-export { type TarInfo, type TarMeta, type TarOptions };
-
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -19,7 +7,7 @@ export { type TarInfo, type TarMeta, type TarOptions };
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
- * Copyright (c) 2018-2022 the Deno authors
+ * Copyright (c) 2018-2023 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +28,22 @@ export { type TarInfo, type TarMeta, type TarOptions };
  * THE SOFTWARE.
  */
 
+import {
+  FileTypes,
+  type TarInfo,
+  type TarMeta,
+  type TarOptions,
+  ustarStructure,
+} from "./_common.ts";
+import type { Reader } from "../io/types.d.ts";
 import { MultiReader } from "../io/multi_reader.ts";
 import { Buffer } from "../io/buffer.ts";
 import { assert } from "../assert/assert.ts";
-import { recordSize } from "./_common.ts";
+import { HEADER_LENGTH } from "./_common.ts";
 
-const ustar = "ustar\u000000";
+export { type TarInfo, type TarMeta, type TarOptions };
+
+const USTAR_MAGIC_HEADER = "ustar\u000000";
 
 /**
  * Simple file reader
@@ -86,8 +84,8 @@ function pad(num: number, bytes: number, base = 8): string {
  * Create header for a file in a tar archive
  */
 function formatHeader(data: TarData): Uint8Array {
-  const encoder = new TextEncoder(),
-    buffer = clean(512);
+  const encoder = new TextEncoder();
+  const buffer = clean(HEADER_LENGTH);
   let offset = 0;
   ustarStructure.forEach(function (value) {
     const entry = encoder.encode(data[value.field as keyof TarData] || "");
@@ -124,7 +122,30 @@ export interface TarDataWithSource extends TarData {
 }
 
 /**
- * A class to create a tar archive
+ * ### Overview
+ * A class to create a tar archive.  Tar archives allow for storing multiple files in a
+ * single file (called an archive, or sometimes a tarball).  These archives typically
+ * have the '.tar' extension.
+ *
+ * ### Usage
+ * The workflow is to create a Tar instance, append files to it, and then write the
+ * tar archive to the filesystem (or other output stream).  See the worked example
+ * below for details.
+ *
+ * ### Compression
+ * Tar archives are not compressed by default.  If you want to compress the archive,
+ * you may compress the tar archive after creation, but this capability is not provided
+ * here.
+ *
+ * ### File format and limitations
+ *
+ * The ustar file format is used for creating the archive file.
+ * While this format is compatible with most tar readers,
+ * the format has several limitations, including:
+ * * Files must be smaller than 8GiB
+ * * Filenames (including path) must be shorter than 256 characters
+ * * Filenames (including path) cannot contain non-ASCII characters
+ * * Sparse files are not supported
  *
  * @example
  * ```ts
@@ -133,17 +154,21 @@ export interface TarDataWithSource extends TarData {
  * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
  *
  * const tar = new Tar();
- * const content = new TextEncoder().encode("Deno.land");
+ *
+ * // Now that we've created our tar, let's add some files to it:
+ *
+ * const content = new TextEncoder().encode("Some arbitrary content");
  * await tar.append("deno.txt", {
  *   reader: new Buffer(content),
  *   contentSize: content.byteLength,
  * });
  *
- * // Or specifying a filePath.
- * await tar.append("land.txt", {
- *   filePath: "./land.txt",
+ * // This file is sourced from the filesystem (and renamed in the archive)
+ * await tar.append("filename_in_archive.txt", {
+ *   filePath: "./filename_on_filesystem.txt",
  * });
  *
+ * // Now let's write the tar (with it's two files) to the filesystem
  * // use tar.getReader() to read the contents.
  *
  * const writer = await Deno.open("./out.tar", { write: true, create: true });
@@ -159,16 +184,31 @@ export class Tar {
   }
 
   /**
-   * Append a file to this tar archive
-   * @param fn file name
+   * Append a file or reader of arbitrary content to this tar archive. Directories
+   * appended to the archive append only the directory itself to the archive, not
+   * its contents.  To add a directory and its contents, recursively append the
+   * directory's contents.  Directories and subdirectories will be created automatically
+   * in the archive as required.
+   *
+   * @param filenameInArchive file name of the content in the archive
    *                 e.g., test.txt; use slash for directory separators
-   * @param opts options
+   * @param source details of the source of the content including the
+   *               reference to the content itself and potentially any
+   *               related metadata.
    */
-  async append(fn: string, opts: TarOptions) {
-    if (typeof fn !== "string") {
+  async append(filenameInArchive: string, source: TarOptions) {
+    if (typeof filenameInArchive !== "string") {
       throw new Error("file name not specified");
     }
-    let fileName = fn;
+    let fileName = filenameInArchive;
+
+    /**
+     * Ustar format has a limitation of file name length.  Specifically:
+     * 1. File names can contain at most 255 bytes.
+     * 2. File names longer than 100 bytes must be split at a directory separator in two parts,
+     * the first being at most 155 bytes long. So, in most cases file names must be a bit shorter
+     * than 255 bytes.
+     */
     // separate file name into two parts if needed
     let fileNamePrefix: string | undefined;
     if (fileName.length > 100) {
@@ -188,48 +228,49 @@ export class Tar {
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
       } else {
-        assert(fileNamePrefix != null);
+        assert(fileNamePrefix !== undefined);
         if (fileNamePrefix.length > 155) {
           throw new Error(errMsg);
         }
       }
     }
 
-    opts = opts || {};
+    source = source || {};
 
     // set meta data
     let info: Deno.FileInfo | undefined;
-    if (opts.filePath) {
-      info = await Deno.stat(opts.filePath);
+    if (source.filePath) {
+      info = await Deno.stat(source.filePath);
       if (info.isDirectory) {
         info.size = 0;
-        opts.reader = new Buffer();
+        source.reader = new Buffer();
       }
     }
 
-    const mode = opts.fileMode || (info && info.mode) ||
-        parseInt("777", 8) & 0xfff,
-      mtime = Math.floor(
-        opts.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
-      ),
-      uid = opts.uid || 0,
-      gid = opts.gid || 0;
-    if (typeof opts.owner === "string" && opts.owner.length >= 32) {
+    const mode = source.fileMode || (info && info.mode) ||
+      parseInt("777", 8) & 0xfff /* 511 */;
+    const mtime = Math.floor(
+      source.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
+    );
+    const uid = source.uid || 0;
+    const gid = source.gid || 0;
+
+    if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
         "ustar format does not allow owner name length >= 32 bytes",
       );
     }
-    if (typeof opts.group === "string" && opts.group.length >= 32) {
+    if (typeof source.group === "string" && source.group.length >= 32) {
       throw new Error(
         "ustar format does not allow group name length >= 32 bytes",
       );
     }
 
-    const fileSize = info?.size ?? opts.contentSize;
-    assert(fileSize != null, "fileSize must be set");
+    const fileSize = info?.size ?? source.contentSize;
+    assert(fileSize !== undefined, "fileSize must be set");
 
-    const type = opts.type
-      ? FileTypes[opts.type as keyof typeof FileTypes]
+    const type = source.type
+      ? FileTypes[source.type as keyof typeof FileTypes]
       : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
     const tarData: TarDataWithSource = {
       fileName,
@@ -241,11 +282,11 @@ export class Tar {
       mtime: pad(mtime, 11),
       checksum: "        ",
       type: type.toString(),
-      ustar,
-      owner: opts.owner || "",
-      group: opts.group || "",
-      filePath: opts.filePath,
-      reader: opts.reader,
+      ustar: USTAR_MAGIC_HEADER,
+      owner: source.owner || "",
+      group: source.group || "",
+      filePath: source.filePath,
+      reader: source.reader,
     };
 
     // calculate the checksum
@@ -264,7 +305,7 @@ export class Tar {
   }
 
   /**
-   * Get a Reader instance for this tar data
+   * Get a Reader instance for this tar archive.
    */
   getReader(): Reader {
     const readers: Reader[] = [];
@@ -274,25 +315,25 @@ export class Tar {
       const headerArr = formatHeader(tarData);
       readers.push(new Buffer(headerArr));
       if (!reader) {
-        assert(filePath != null);
+        assert(filePath !== undefined);
         reader = new FileReader(filePath);
       }
       readers.push(reader);
 
       // to the nearest multiple of recordSize
-      assert(tarData.fileSize != null, "fileSize must be set");
+      assert(tarData.fileSize !== undefined, "fileSize must be set");
       readers.push(
         new Buffer(
           clean(
-            recordSize -
-              (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
+            HEADER_LENGTH -
+              (parseInt(tarData.fileSize, 8) % HEADER_LENGTH || HEADER_LENGTH),
           ),
         ),
       );
     });
 
     // append 2 empty records
-    readers.push(new Buffer(clean(recordSize * 2)));
+    readers.push(new Buffer(clean(HEADER_LENGTH * 2)));
     return new MultiReader(readers);
   }
 }

@@ -51,7 +51,7 @@ Deno.test("[collections/takeWhile] Returns empty array when the first element do
 Deno.test("[collections/takeWhile] Returns the same array when all elements match the predicate", () => {
   const arr = [1, 2, 3, 4];
 
-  const actual = takeWhile(arr, (i) => i != 400);
+  const actual = takeWhile(arr, (i) => i !== 400);
 
   assertEquals(actual, [1, 2, 3, 4]);
 });

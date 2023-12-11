@@ -27,6 +27,7 @@ Deno.test({
         ],
       },
       test: "foobar",
+      binary: new Uint8Array([72, 101, 108, 108, 111]),
     };
 
     const ASSERTS = `foo:
@@ -37,6 +38,7 @@ Deno.test({
     - a: false
     - a: false
 test: foobar
+binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 `;
 
     assertEquals(stringify(FIXTURE), ASSERTS);

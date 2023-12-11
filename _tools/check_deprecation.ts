@@ -3,7 +3,7 @@
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { doc } from "https://deno.land/x/deno_doc@0.59.0/mod.ts";
+import { doc } from "deno_doc";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/mod.ts";
 
@@ -37,7 +37,7 @@ let shouldFail = false;
 const DEFAULT_DEPRECATED_VERSION = semver.increment(
   semver.increment(
     semver.increment(
-      VERSION,
+      semver.parse(VERSION),
       "minor",
     )!,
     "minor",

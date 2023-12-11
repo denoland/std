@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+/** Options for {@linkcode exists} and {@linkcode existsSync.} */
 export interface ExistsOptions {
   /**
    * When `true`, will check if the path is readable by the user as well.
@@ -82,15 +83,15 @@ export async function exists(
         return false;
       }
       if (options.isReadable) {
-        if (stat.mode == null) {
+        if (stat.mode === null) {
           return true; // Exclusive on Non-POSIX systems
         }
-        if (Deno.uid() == stat.uid) {
-          return (stat.mode & 0o400) == 0o400; // User is owner and can read?
-        } else if (Deno.gid() == stat.gid) {
-          return (stat.mode & 0o040) == 0o040; // User group is owner and can read?
+        if (Deno.uid() === stat.uid) {
+          return (stat.mode & 0o400) === 0o400; // User is owner and can read?
+        } else if (Deno.gid() === stat.gid) {
+          return (stat.mode & 0o040) === 0o040; // User group is owner and can read?
         }
-        return (stat.mode & 0o004) == 0o004; // Others can read?
+        return (stat.mode & 0o004) === 0o004; // Others can read?
       }
     }
     return true;
@@ -173,15 +174,15 @@ export function existsSync(
         return false;
       }
       if (options.isReadable) {
-        if (stat.mode == null) {
+        if (stat.mode === null) {
           return true; // Exclusive on Non-POSIX systems
         }
-        if (Deno.uid() == stat.uid) {
-          return (stat.mode & 0o400) == 0o400; // User is owner and can read?
-        } else if (Deno.gid() == stat.gid) {
-          return (stat.mode & 0o040) == 0o040; // User group is owner and can read?
+        if (Deno.uid() === stat.uid) {
+          return (stat.mode & 0o400) === 0o400; // User is owner and can read?
+        } else if (Deno.gid() === stat.gid) {
+          return (stat.mode & 0o040) === 0o040; // User group is owner and can read?
         }
-        return (stat.mode & 0o004) == 0o004; // Others can read?
+        return (stat.mode & 0o004) === 0o004; // Others can read?
       }
     }
     return true;

@@ -7,7 +7,7 @@ import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureDirIfItNotExist", async function () {
+Deno.test("ensureDir() creates dir if it does not exist", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_not_exist");
   const testDir = path.join(baseDir, "test");
 
@@ -21,7 +21,7 @@ Deno.test("ensureDirIfItNotExist", async function () {
   }
 });
 
-Deno.test("ensureDirSyncIfItNotExist", function () {
+Deno.test("ensureDirSync() creates dir if it does not exist", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_sync_not_exist");
   const testDir = path.join(baseDir, "test");
 
@@ -35,7 +35,7 @@ Deno.test("ensureDirSyncIfItNotExist", function () {
   }
 });
 
-Deno.test("ensureDirIfItExist", async function () {
+Deno.test("ensureDir() ensures existing dir exists", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist");
   const testDir = path.join(baseDir, "test");
 
@@ -52,7 +52,7 @@ Deno.test("ensureDirIfItExist", async function () {
   }
 });
 
-Deno.test("ensureDirSyncIfItExist", function () {
+Deno.test("ensureDirSync() ensures existing dir exists", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_sync_exist");
   const testDir = path.join(baseDir, "test");
 
@@ -69,7 +69,7 @@ Deno.test("ensureDirSyncIfItExist", function () {
   }
 });
 
-Deno.test("ensureDirIfItAsFile", async function () {
+Deno.test("ensureDir() rejects if input is a file", async function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist_file");
   const testFile = path.join(baseDir, "test");
 
@@ -88,7 +88,7 @@ Deno.test("ensureDirIfItAsFile", async function () {
   }
 });
 
-Deno.test("ensureDirSyncIfItAsFile", function () {
+Deno.test("ensureDirSync() throws if input is a file", function () {
   const baseDir = path.join(testdataDir, "ensure_dir_exist_file_async");
   const testFile = path.join(baseDir, "test");
 
@@ -108,7 +108,7 @@ Deno.test("ensureDirSyncIfItAsFile", function () {
 });
 
 Deno.test({
-  name: "ensureDirShouldNotSwallowErrors",
+  name: "ensureDir() rejects permission fs write error",
   permissions: { read: true },
   async fn() {
     const baseDir = path.join(testdataDir, "ensure_dir_without_permission");
@@ -123,7 +123,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ensureDirSyncShouldNotSwallowErrors",
+  name: "ensureDirSync() throws permission fs write error",
   permissions: { read: true },
   fn() {
     const baseDir = path.join(

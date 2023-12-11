@@ -31,21 +31,24 @@
  * @module
  */
 
-import {
-  extname,
-  join,
-  posix,
-  relative,
-  resolve,
-  SEP_PATTERN,
-} from "../path/mod.ts";
+import { join as posixJoin } from "../path/posix/join.ts";
+import { normalize as posixNormalize } from "../path/posix/normalize.ts";
+import { extname } from "../path/extname.ts";
+import { join } from "../path/join.ts";
+import { relative } from "../path/relative.ts";
+import { resolve } from "../path/resolve.ts";
+import { SEP_PATTERN } from "../path/separator.ts";
 import { contentType } from "../media_types/content_type.ts";
 import { calculate, ifNoneMatch } from "./etag.ts";
-import { isRedirectStatus, Status } from "./http_status.ts";
+import {
+  isRedirectStatus,
+  STATUS_CODE,
+  STATUS_TEXT,
+  type StatusCode,
+} from "./status.ts";
 import { ByteSliceStream } from "../streams/byte_slice_stream.ts";
-import { parse } from "../flags/mod.ts";
+import { parseArgs } from "../cli/parse_args.ts";
 import { red } from "../fmt/colors.ts";
-import { createCommonResponse } from "./util.ts";
 import { VERSION } from "../version.ts";
 import { format as formatBytes } from "../fmt/bytes.ts";
 
@@ -86,6 +89,11 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     });
   output = `${isDir ? "d" : "-"} ${output}`;
   return output;
+}
+
+function createStandardResponse(status: StatusCode, init?: ResponseInit) {
+  const statusText = STATUS_TEXT[status];
+  return new Response(statusText, { status, statusText, ...init });
 }
 
 /**
@@ -153,7 +161,7 @@ export async function serveFile(
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       await req.body?.cancel();
-      return createCommonResponse(Status.NotFound);
+      return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
     }
@@ -161,7 +169,7 @@ export async function serveFile(
 
   if (fileInfo.isDirectory) {
     await req.body?.cancel();
-    return createCommonResponse(Status.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
   const headers = createBaseHeaders();
@@ -197,7 +205,12 @@ export async function serveFile(
         fileInfo.mtime.getTime() <
           new Date(ifModifiedSinceValue).getTime() + 1000)
     ) {
-      return createCommonResponse(Status.NotModified, null, { headers });
+      const status = STATUS_CODE.NotModified;
+      return new Response(null, {
+        status,
+        statusText: STATUS_TEXT[status],
+        headers,
+      });
     }
   }
 
@@ -224,7 +237,12 @@ export async function serveFile(
       headers.set("content-length", `${fileSize}`);
 
       const file = await Deno.open(filePath);
-      return createCommonResponse(Status.OK, file.readable, { headers });
+      const status = STATUS_CODE.OK;
+      return new Response(file.readable, {
+        status,
+        statusText: STATUS_TEXT[status],
+        headers,
+      });
     }
 
     // Return 416 Range Not Satisfiable if invalid range header value
@@ -236,9 +254,8 @@ export async function serveFile(
       // Set the "Content-range" header
       headers.set("content-range", `bytes */${fileSize}`);
 
-      return createCommonResponse(
-        Status.RequestedRangeNotSatisfiable,
-        undefined,
+      return createStandardResponse(
+        STATUS_CODE.RangeNotSatisfiable,
         { headers },
       );
     }
@@ -259,14 +276,24 @@ export async function serveFile(
     await file.seek(start, Deno.SeekMode.Start);
     const sliced = file.readable
       .pipeThrough(new ByteSliceStream(0, contentLength - 1));
-    return createCommonResponse(Status.PartialContent, sliced, { headers });
+    const status = STATUS_CODE.PartialContent;
+    return new Response(sliced, {
+      status,
+      statusText: STATUS_TEXT[status],
+      headers,
+    });
   }
 
   // Set content length
   headers.set("content-length", `${fileSize}`);
 
   const file = await Deno.open(filePath);
-  return createCommonResponse(Status.OK, file.readable, { headers });
+  const status = STATUS_CODE.OK;
+  return new Response(file.readable, {
+    status,
+    statusText: STATUS_TEXT[status],
+    headers,
+  });
 }
 
 async function serveDirIndex(
@@ -274,10 +301,12 @@ async function serveDirIndex(
   options: {
     showDotfiles: boolean;
     target: string;
+    urlRoot: string | undefined;
     quiet: boolean | undefined;
   },
 ): Promise<Response> {
   const { showDotfiles } = options;
+  const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
   const dirUrl = `/${
     relative(options.target, dirPath).replaceAll(
       new RegExp(SEP_PATTERN, "g"),
@@ -293,7 +322,7 @@ async function serveDirIndex(
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
-      url: posix.join(dirUrl, ".."),
+      url: `${urlRoot}${posixJoin(dirUrl, "..")}`,
     }));
     listEntryPromise.push(entryInfo);
   }
@@ -304,7 +333,7 @@ async function serveDirIndex(
       continue;
     }
     const filePath = join(dirPath, entry.name);
-    const fileUrl = encodeURIComponent(posix.join(dirUrl, entry.name))
+    const fileUrl = encodeURIComponent(posixJoin(dirUrl, entry.name))
       .replaceAll("%2F", "/");
 
     listEntryPromise.push((async () => {
@@ -314,7 +343,7 @@ async function serveDirIndex(
           mode: modeToString(entry.isDirectory, fileInfo.mode),
           size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
           name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
@@ -323,7 +352,7 @@ async function serveDirIndex(
           mode: "(unknown mode)",
           size: "",
           name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       }
     })());
@@ -339,19 +368,24 @@ async function serveDirIndex(
   const headers = createBaseHeaders();
   headers.set("content-type", "text/html; charset=UTF-8");
 
-  return createCommonResponse(Status.OK, page, { headers });
+  const status = STATUS_CODE.OK;
+  return new Response(page, {
+    status,
+    statusText: STATUS_TEXT[status],
+    headers,
+  });
 }
 
 function serveFallback(maybeError: unknown): Response {
   if (maybeError instanceof URIError) {
-    return createCommonResponse(Status.BadRequest);
+    return createStandardResponse(STATUS_CODE.BadRequest);
   }
 
   if (maybeError instanceof Deno.errors.NotFound) {
-    return createCommonResponse(Status.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  return createCommonResponse(Status.InternalServerError);
+  return createStandardResponse(STATUS_CODE.InternalServerError);
 }
 
 function serverLog(req: Request, status: number) {
@@ -620,10 +654,10 @@ async function createServeDirResponse(
 
   const url = new URL(req.url);
   const decodedUrl = decodeURIComponent(url.pathname);
-  let normalizedPath = posix.normalize(decodedUrl);
+  let normalizedPath = posixNormalize(decodedUrl);
 
   if (urlRoot && !normalizedPath.startsWith("/" + urlRoot)) {
-    return createCommonResponse(Status.NotFound);
+    return createStandardResponse(STATUS_CODE.NotFound);
   }
 
   // Redirect paths like `/foo////bar` and `/foo/bar/////` to normalized paths.
@@ -692,10 +726,10 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(fsPath, { urlRoot, showDotfiles, target, quiet });
   }
 
-  return createCommonResponse(Status.NotFound);
+  return createStandardResponse(STATUS_CODE.NotFound);
 }
 
 function logError(error: unknown) {
@@ -703,7 +737,7 @@ function logError(error: unknown) {
 }
 
 function main() {
-  const serverArgs = parse(Deno.args, {
+  const serverArgs = parseArgs(Deno.args, {
     string: ["port", "host", "cert", "key", "header"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
     negatable: ["dir-listing", "dotfiles", "cors"],

@@ -1,3 +1,132 @@
+### 0.208.0 / 2023.11.24
+
+- BREAKING(collections): deprecate `groupBy()` (#3663)
+- BREAKING: deprecate `std/http/method` (#3834)
+- feat(assert): improve assertion message of `assertNotStrictEquals()` (#3820)
+- feat(crypto): support `BLAKE2B-160` algorithm (#3793)
+- feat: add std/expect (#3814)
+
+### 0.207.0 / 2023.11.17
+
+- BREAKING(bytes): deprecate `concat()` signatures that don't use `Uint8Array[]`
+  argument (#3784)
+- BREAKING(crypto): remove `crypto.subtle.timingSafeEqual()` method (#3803)
+- BREAKING(fs): deprecate `EOL` enum (#3809)
+- BREAKING(http): deprecate `ServerSentEvent()` (#3783)
+- BREAKING(http): deprecate `enum Status` in favour of `STATUS_CODES` object
+  (#3781)
+- BREAKING: move `std/flags` to new `std/cli` sub-module (#3530)
+- BREAKING: remove deprecated `std/http/http_errors` (#3737)
+- BREAKING: remove deprecated `std/wasi` module (#3733)
+- feat: `std/data_structures` (#3734)
+
+### 0.206.0 / 2023.11.10
+
+- BREAKING(async): deprecate `deferred()` in favor of `Promise.withResolvers()`
+  (#3758)
+- BREAKING(encoding): remove deprecated binary APIs (#3763)
+- BREAKING(path): split up glob into multiple files
+- add `deno fmt --check`
+- feat(testing/mock): enable `spy` to accept a class constructor (#3766)
+- feat: `ServerSentEventStream()` (#3751)
+- feat: add `std/text` with word-similarity helpers (#3488)
+- fix(fmt): format duration rounding error. (#3762)
+- fix(msgpack): encode huge objects (#3698)
+- fix: broken import
+- fix: rework file server tests (#3779)
+- perf(streams): add single-character fast path for `DelimiterStream()` (#3739)
+
+### 0.205.0 / 2023.11.01
+
+- BREAKING(dotenv): remove deprecated `restrictEnvAccessTo` option (#3705)
+- BREAKING(http): move cookie_map, errors, server_sent_event, and method to
+  unstable category, deprecate server.ts (#3661)
+- BREAKING: deprecate `std/wasi` (#3732)
+- BREAKING: remove deprecated `BytesList()` (#3740)
+- BREAKING: remove deprecated `std/csv` exports (#3704)
+- feat(fs): introduce `canonicalize` option to `WalkOptions` (#3679)
+- feat(semver): canParse (#3709)
+- fix(fs): `expandGlob`/`expandGlobSync` don't require full `--allow-read` perms
+  on granted read permissions (#3692)
+- fix(http): file server with showDirListing + urlRoot (#3691)
+- fix: flaky `http/file_server.ts` tests (#3717)
+
+### 0.204.0 / 2023.10.12
+
+- BREAKING(front_matter): deprecate Format enum, use union type instead (#3641)
+- BREAKING(front_matter): deprecate language-specific `test` functions (#3654)
+- BREAKING(path): split path into per-os modules, deprecate legacy os-specific
+  exports (#3649)
+- feat(crypto): add BLAKE2B-128 hash algorithm (#3680)
+- fix(archive/untar.ts): cannot access symlinks in archives (#3686)
+- fix(assert): fix swapping of multiline str diff (#3685)
+- perf(encoding): optimize encodeBase64Url (#3682)
+- perf: improvements using `Promise.all()` (#3683)
+
+### 0.203.0 / 2023.09.27
+
+- BREAKING(encoding): deprecate encode/decode, add encodeFoo/decodeFoo (#3660)
+- BREAKING(encoding): deprecate old encode/decode in hex.ts (#3673)
+- BREAKING(front_matter): deprecate default exports (#3653)
+- BREAKING(io): deprecate io top level module (#3556)
+- fix(collections): accept read-only arrays in aggregateGroups, reduceGroups,
+  zip (#3662)
+- fix(datetime): correctly format midnight in 12-hour time (#3667)
+- fix(datetime): fix dayOfYear when the timezone has DST (#3668)
+- fix(encoding): add validation of the input types (#3666)
+- fix(semver): add a necessary grouping, fix prerelease parsing (#3674)
+
+### 0.202.0 / 2023.09.19
+
+- BREAKING(collections): move RedBlackTree, BinarySearchTree, and BinaryHeap to
+  'unstable' subdir (#3628)
+- BREAKING(crypto): clean up module (#3630)
+- BREAKING(csv): deprecate error message exports (#3602)
+- BREAKING(datetime): deprecate to_imf.ts (#3633)
+- BREAKING(media_types): deprecate typeByExtension (#3622)
+- BREAKING(streams): deprecate APIs based on legacy Reader/Writer interfaces
+  (#3640)
+- feat(encoding): add encodeHex, decodeHex (#3642)
+- feat(streams): to ArrayBuffer/Blob/Json/Text (#3631)
+- feat(ulid): port /x/ulid module (#3582)
+- fix(streams): DelimiterStream regression (#3611)
+- fix(stripAnsiCode): escape erase character (#3608)
+- fix(testing/snapshot): distinguish between singular and plural forms (#3625)
+- fix(testing/time): fix FakeTime.next to return false if all timers are cleared
+  (#3638)
+- fix(url): fixes for url functions and new tests. (#3607)
+
+### 0.201.0 / 2023.09.01
+
+- BREAKING(bytes): deprecate BytesList class (#3589)
+- BREAKING(crypto): deprecate crypto.subtle.timingSafeEqual() (#3596)
+- BREAKING(dotenv): fix dotenv permissions (#3578)
+- BREAKING(encoding): deprecate encoding/binary (#3584)
+- BREAKING(fmt): rename stripColor to stripAnsiCode (#3588)
+- BREAKING(permissions): deprecate permissions module (#3567)
+- BREAKING(semver): remove deprecated APIs (#3591)
+- BREAKING(signal): deprecate signal module (#3568)
+- BREAKING(streams): remove readable_stream_from_iterable (#3579)
+- BREAKING(yaml): change binary handling (#3586)
+- feat(assert): add inequality asserts (#3496)
+- feat(std): add `std/url` module. (#3527)
+- fix(assert): properly quote strings in assertIsError (#3577)
+- fix(fmt): make printf respect NO_COLOR (#3595)
+- fix(log): rotating file handler sync setup and destroy (#3543)
+
+### 0.200.0 / 2023.08.24
+
+- doc: add complete docs for all dotenv functionality (#3560)
+
+### 0.199.0 / 2023.08.21
+
+- fix(collections): redblack tree and bst not being exported from mod (#3528)
+- fix(http/cookie_map): add maxAge to set/delete options (#3524)
+- fix(log): fix serializing BigInt value in object (#3550)
+- fix(path): typo in comment in _resolve (#3545)
+- fix(testing/time): fix FakeTime.restoreFor accuracy for sync callbacks (#3531)
+- perf: repoint internal imports to single-export files (#3537)
+
 ### 0.198.0 / 2023.08.10
 
 - feat(path): single file exports (#3510)

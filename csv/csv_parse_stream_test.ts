@@ -2,7 +2,6 @@
 import { CsvParseStream } from "./csv_parse_stream.ts";
 import type { CsvParseStreamOptions } from "./csv_parse_stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
-import { readableStreamFromReader } from "../streams/readable_stream_from_reader.ts";
 import {
   assert,
   assertEquals,
@@ -11,7 +10,7 @@ import {
 } from "../assert/mod.ts";
 import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
-import { StringReader } from "../io/string_reader.ts";
+import { delay } from "../async/delay.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
@@ -26,10 +25,7 @@ Deno.test({
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
-    const records = [] as Array<Array<string>>;
-    for await (const record of readable) {
-      records.push(record);
-    }
+    const records = await Array.fromAsync(readable);
     assertEquals(records, [
       ["id", "name"],
       ["1", "foobar"],
@@ -330,14 +326,11 @@ x,,,
         if (testCase.columns) {
           options.columns = testCase.columns;
         }
-        const readable = createReadableStreamFromString(testCase.input)
+        const readable = ReadableStream.from(testCase.input)
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [];
-          for await (const record of readable) {
-            actual.push(record);
-          }
+          const actual = await Array.fromAsync(readable);
           assertEquals(actual, testCase.output);
         } else {
           await assertRejects(async () => {
@@ -349,40 +342,20 @@ x,,,
   },
 });
 
-function createReadableStreamFromString(s: string): ReadableStream<string> {
-  return readableStreamFromReader(new StringReader(s)).pipeThrough(
-    new TextDecoderStream(),
-  );
-}
-
-// Work around resource leak error with TextDecoderStream:
-//   https://github.com/denoland/deno/issues/13142
-export const MyTextDecoderStream = () => {
-  const textDecoder = new TextDecoder();
-  return new TransformStream({
-    transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode(chunk));
-    },
-    flush(controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode());
-    },
-  });
-};
-
 Deno.test({
   name:
     "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
-  // TODO(kt3k): Enable this test on windows.
-  // See https://github.com/denoland/deno_std/issues/3160
-  ignore: Deno.build.os === "windows",
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
-    const readable = file.readable.pipeThrough(MyTextDecoderStream())
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
     for await (const _record of readable) {
       break;
     }
+    // FIXME(kt3k): Remove this delay.
+    await delay(100);
   },
 });
 

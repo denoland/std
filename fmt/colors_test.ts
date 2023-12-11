@@ -1,7 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import * as c from "./colors.ts";
-import "../examples/colors.ts";
 
 Deno.test("reset", function () {
   assertEquals(c.reset("foo bar"), "[0mfoo bar[0m");
@@ -234,9 +233,9 @@ Deno.test("test bgRgb24 number", function () {
 });
 
 // https://github.com/chalk/strip-ansi/blob/2b8c961e75760059699373f9a69101065c3ded3a/test.js#L4-L6
-Deno.test("test stripColor", function () {
+Deno.test("test stripAnsiCode", function () {
   assertEquals(
-    c.stripColor(
+    c.stripAnsiCode(
       "\u001B[0m\u001B[4m\u001B[42m\u001B[31mfoo\u001B[39m\u001B[49m\u001B[24mfoo\u001B[0m",
     ),
     "foofoo",

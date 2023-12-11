@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { join } from "../path/mod.ts";
+import { join } from "../path/join.ts";
 import { toPathString } from "./_util.ts";
 
 /**
@@ -18,18 +18,14 @@ import { toPathString } from "./_util.ts";
  */
 export async function emptyDir(dir: string | URL) {
   try {
-    const items = [];
-    for await (const dirEntry of Deno.readDir(dir)) {
-      items.push(dirEntry);
-    }
+    const items = await Array.fromAsync(Deno.readDir(dir));
 
-    while (items.length) {
-      const item = items.shift();
+    await Promise.all(items.map((item) => {
       if (item && item.name) {
         const filepath = join(toPathString(dir), item.name);
-        await Deno.remove(filepath, { recursive: true });
+        return Deno.remove(filepath, { recursive: true });
       }
-    }
+    }));
   } catch (err) {
     if (!(err instanceof Deno.errors.NotFound)) {
       throw err;

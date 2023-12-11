@@ -19,7 +19,7 @@ import { isValidNumber, isValidString } from "./_shared.ts";
  * @returns True if value is a valid SemVer otherwise false
  */
 export function isSemVer(value: unknown): value is SemVer {
-  if (value == null) return false;
+  if (value === null || value === undefined) return false;
   if (Array.isArray(value)) return false;
   if (typeof value !== "object") return false;
   if (value === INVALID) return true;

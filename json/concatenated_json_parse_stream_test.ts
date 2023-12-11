@@ -325,7 +325,7 @@ Deno.test({
       [`{${"foo".repeat(100)}}`],
       {},
       SyntaxError,
-      `Expected property name or '}' in JSON at position 1 (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
+      `Expected property name or '}' in JSON at position 1 (line 1 column 2) (parsing: '{foofoofoofoofoofoofoofoofoofo...')`,
     );
   },
 });
@@ -340,10 +340,7 @@ Deno.test({
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new ConcatenatedJsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },

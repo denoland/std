@@ -1,11 +1,9 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "../_util/os.ts";
-import {
-  posixToNamespacedPath,
-  windowsToNamespacedPath,
-} from "./_to_namespaced_path.ts";
+import { isWindows } from "./_os.ts";
+import { toNamespacedPath as posixToNamespacedPath } from "./posix/to_namespaced_path.ts";
+import { toNamespacedPath as windowsToNamespacedPath } from "./windows/to_namespaced_path.ts";
 
 /**
  * Resolves path to a namespace path

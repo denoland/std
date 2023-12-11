@@ -3,12 +3,24 @@
 
 import { delay } from "./delay.ts";
 
+/** Options for {@linkcode Deadline}. */
 export interface DeadlineOptions {
   /** Signal used to abort the deadline. */
   signal?: AbortSignal;
 }
 
+/** Error thrown when {@linkcode Deadline} times out. */
 export class DeadlineError extends Error {
+  /**
+   * Constructs a new {@linkcode DeadlineError} instance.
+   *
+   * @example
+   * ```
+   * import { DeadlineError } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
+   *
+   * throw new DeadlineError();
+   * ```
+   */
   constructor() {
     super("Deadline");
     this.name = this.constructor.name;
@@ -16,12 +28,14 @@ export class DeadlineError extends Error {
 }
 
 /**
- * Create a promise which will be rejected with {@linkcode DeadlineError} when a given delay is exceeded.
+ * Create a promise which will be rejected with {@linkcode DeadlineError} when
+ * a given delay is exceeded.
  *
- * NOTE: Prefer to use `AbortSignal.timeout` instead for the APIs accept `AbortSignal`.
+ * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
+ * that accept {@linkcode AbortSignal}.
  *
  * @example
- * ```typescript
+ * ```ts
  * import { deadline } from "https://deno.land/std@$STD_VERSION/async/deadline.ts";
  * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
  *

@@ -2,8 +2,9 @@
 // This module is browser compatible.
 
 /**
- * Convert the generator function into a TransformStream.
+ * Convert the generator function into a {@linkcode TransformStream}.
  *
+ * @example
  * ```ts
  * import { toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/to_transform_stream.ts";
  *
@@ -60,7 +61,7 @@ export function toTransformStream<I, O>(
       },
       async cancel(reason) {
         // Propagate cancellation to readable and iterator
-        if (typeof iterator.throw == "function") {
+        if (typeof iterator.throw === "function") {
           try {
             await iterator.throw(reason);
           } catch {

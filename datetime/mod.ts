@@ -43,5 +43,4 @@ export * from "./difference.ts";
 export * from "./format.ts";
 export * from "./is_leap.ts";
 export * from "./parse.ts";
-export * from "./to_imf.ts";
 export * from "./week_of_year.ts";

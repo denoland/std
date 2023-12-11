@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { stripColor } from "../fmt/colors.ts";
+import { stripAnsiCode } from "../fmt/colors.ts";
 import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
 import {
   assert,
@@ -7,7 +7,7 @@ import {
   AssertionError,
   assertRejects,
   fail,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
@@ -17,7 +17,7 @@ const SNAPSHOT_MODULE_URL = toFileUrl(join(
 
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
-  return stripColor(string).replace(/([0-9])+m?s/g, "--ms").replace(
+  return stripAnsiCode(string).replace(/([0-9])+m?s/g, "--ms").replace(
     /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
     "<tempDir>/",
   );
@@ -26,7 +26,7 @@ function formatTestOutput(string: string) {
 function formatTestError(string: string) {
   // Strip colors and remove "Check file:///workspaces/deno_std/testing/.tmp/test.ts"
   // as this is always output to stderr
-  return stripColor(string).replace(/^Check file:\/\/(.+)\n/gm, "");
+  return stripAnsiCode(string).replace(/^Check file:\/\/(.+)\n/gm, "");
 }
 
 function testFnWithTempDir(
@@ -190,12 +190,12 @@ ${serialize(snapshot)}
 
     await t.step("Object", async (t) => {
       const error = await testFailedAssertion([1, 2, 3], [1, 2]);
-      await assertSnapshot(t, stripColor(error.message));
+      await assertSnapshot(t, stripAnsiCode(error.message));
     });
 
     await t.step("String", async (t) => {
       const error = await testFailedAssertion("Hello World!", "Hello!");
-      await assertSnapshot(t, stripColor(error.message));
+      await assertSnapshot(t, stripAnsiCode(error.message));
     });
   }),
 );
@@ -749,7 +749,7 @@ Deno.test("Snapshot Test - Empty #2245", async (t) => {
 
 Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
   const assertMonochromeSnapshot = createAssertSnapshot<string>({
-    serializer: stripColor,
+    serializer: stripAnsiCode,
   });
 
   await t.step("No Options", async (t) => {

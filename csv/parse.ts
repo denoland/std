@@ -13,14 +13,7 @@ import {
 } from "./_io.ts";
 import { assert } from "../assert/assert.ts";
 
-export {
-  ERR_BARE_QUOTE,
-  ERR_FIELD_COUNT,
-  ERR_INVALID_DELIM,
-  ERR_QUOTE,
-  ParseError,
-  ReadOptions,
-};
+export { ParseError, ReadOptions };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -103,8 +96,6 @@ class Parser {
     if (this.#options.comment && line[0] === this.#options.comment) {
       return [];
     }
-
-    assert(this.#options.separator != null);
 
     let fullLine = line;
     let quoteError: ParseError | null = null;
@@ -342,7 +333,7 @@ export function parse<const T extends ParseOptions>(
 
     if (opt.skipFirstRow) {
       const head = r.shift();
-      assert(head != null);
+      assert(head !== undefined);
       headers = head;
     }
 

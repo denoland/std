@@ -1,9 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
-/** Reader utility for combining multiple readers */
+/**
+ * Reader utility for combining multiple readers
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class MultiReader implements Reader {
   readonly #readers: Reader[];
   #currentIndex = 0;

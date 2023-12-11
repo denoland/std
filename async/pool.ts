@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Error message emitted from the thrown error while mapping. */
 export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
 /**
@@ -14,7 +15,7 @@ export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
  * thrown by the iterator in an `AggregateError`.
  *
  * @example
- * ```typescript
+ * ```ts
  * import { pooledMap } from "https://deno.land/std@$STD_VERSION/async/pool.ts";
  *
  * const results = pooledMap(
@@ -49,7 +50,7 @@ export function pooledMap<T, R>(
       } catch (e) {
         if (
           e instanceof AggregateError &&
-          e.message == ERROR_WHILE_MAPPING_MESSAGE
+          e.message === ERROR_WHILE_MAPPING_MESSAGE
         ) {
           controller.error(e as unknown);
         }
@@ -83,7 +84,7 @@ export function pooledMap<T, R>(
     } catch {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
-        if (result.status == "rejected") {
+        if (result.status === "rejected") {
           errors.push(result.reason);
         }
       }

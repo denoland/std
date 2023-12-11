@@ -50,7 +50,7 @@ export async function generate(
   const space = uuidToBytes(namespace);
   assert(space.length === 16, "namespace must be a valid UUID");
 
-  const toHash = concat(new Uint8Array(space), data);
+  const toHash = concat([new Uint8Array(space), data]);
   const buffer = await crypto.subtle.digest("MD5", toHash);
   const bytes = new Uint8Array(buffer);
 

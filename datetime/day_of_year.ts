@@ -22,8 +22,8 @@ export function dayOfYear(date: Date): number {
   const yearStart = new Date(date);
 
   yearStart.setFullYear(date.getFullYear(), 0, 0);
-  const diff = date.getTime() -
-    yearStart.getTime();
+  const diff = (date.getTime() - date.getTimezoneOffset() * 60 * 1000) -
+    (yearStart.getTime() - yearStart.getTimezoneOffset() * 60 * 1000);
 
   return Math.floor(diff / DAY);
 }
@@ -47,8 +47,7 @@ export function dayOfYearUtc(date: Date): number {
   const yearStart = new Date(date);
 
   yearStart.setUTCFullYear(date.getUTCFullYear(), 0, 0);
-  const diff = date.getTime() -
-    yearStart.getTime();
+  const diff = date.getTime() - yearStart.getTime();
 
   return Math.floor(diff / DAY);
 }

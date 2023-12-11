@@ -2,7 +2,8 @@
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { delay } from "../async/delay.ts";
 import { signal } from "./mod.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 Deno.test({
   name: "signal() throws when called with empty signals",
