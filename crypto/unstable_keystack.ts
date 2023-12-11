@@ -9,7 +9,7 @@
  */
 
 import { timingSafeEqual } from "./timing_safe_equal.ts";
-import * as base64url from "../encoding/base64url.ts";
+import { encodeBase64Url } from "../encoding/base64url.ts";
 
 /** Types of data that can be signed cryptographically. */
 export type Data = string | number[] | ArrayBuffer | Uint8Array;
@@ -120,7 +120,7 @@ export class KeyStack {
    * URL safe base64 encoded string. */
   async sign(data: Data): Promise<string> {
     const key = await this.#toCryptoKey(this.#keys[0]);
-    return base64url.encode(await sign(data, key));
+    return encodeBase64Url(await sign(data, key));
   }
 
   /** Given `data` and a `digest`, verify that one of the `keys` provided the
@@ -137,7 +137,7 @@ export class KeyStack {
     for (let i = 0; i < this.#keys.length; i++) {
       const cryptoKey = await this.#toCryptoKey(this.#keys[i]);
       if (
-        await compare(digest, base64url.encode(await sign(data, cryptoKey)))
+        await compare(digest, encodeBase64Url(await sign(data, cryptoKey)))
       ) {
         return i;
       }

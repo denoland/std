@@ -54,21 +54,6 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
-/**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeHex} instead.
- *
- * Encodes `src` into `src.length * 2` bytes.
- */
-export function encode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(src.length * 2);
-  for (let i = 0; i < dst.length; i++) {
-    const v = src[i];
-    dst[i * 2] = hexTable[v >> 4];
-    dst[i * 2 + 1] = hexTable[v & 0x0f];
-  }
-  return dst;
-}
-
 /** Encodes the source into hex string. */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
@@ -80,30 +65,6 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
     dst[i * 2 + 1] = hexTable[v & 0x0f];
   }
   return textDecoder.decode(dst);
-}
-
-/**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeHex} instead.
- *
- * Decodes `src` into `src.length / 2` bytes.
- * If the input is malformed, an error will be thrown.
- */
-export function decode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(src.length / 2);
-  for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(src[i * 2]);
-    const b = fromHexChar(src[i * 2 + 1]);
-    dst[i] = (a << 4) | b;
-  }
-
-  if (src.length % 2 === 1) {
-    // Check for invalid char before reporting bad length,
-    // since the invalid char (if present) is an earlier problem.
-    fromHexChar(src[dst.length * 2]);
-    throw errLength();
-  }
-
-  return dst;
 }
 
 /** Decodes the given hex string to Uint8Array.
