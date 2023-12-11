@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Return value for {@linkcode getRowPadding}. */
 export interface Padding {
   /** The number of bytes per row without padding calculated. */
   unpadded: number;

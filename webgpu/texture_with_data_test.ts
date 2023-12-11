@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { createTextureWithData } from "./texture_with_data.ts";
 
 async function checkIsWsl() {
