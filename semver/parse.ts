@@ -56,7 +56,7 @@ export function parse(version: string | SemVer): SemVer {
   }
 
   // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^0|[1-9]\\d*$`);
+  const numericIdentifier = /^(?:0|[1-9])\d*$/;
   const prerelease = (m[4] ?? "")
     .split(".")
     .filter((id) => id)
@@ -70,6 +70,7 @@ export function parse(version: string | SemVer): SemVer {
     });
 
   const build = m[5]?.split(".")?.filter((m) => m) ?? [];
+
   return {
     major,
     minor,
