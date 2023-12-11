@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, test } from "./any.ts";
+import { test } from "./test.ts";
+import { extract, Format } from "./any.ts";
 import {
   runExtractJSONTests,
   runExtractTOMLTests,

@@ -37,10 +37,8 @@
  * example.ts
  *
  * ```ts
- * import {
- *   extract,
- *   test,
- * } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * import { extract } from "https://deno.land/std@$STD_VERSION/front_matter/any.ts";
+ * import { test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
  *
  * const str = await Deno.readTextFile("./example.md");
  *

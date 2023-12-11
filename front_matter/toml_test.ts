@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, test } from "./toml.ts";
+import { test } from "./test.ts";
+import { extract, Format } from "./toml.ts";
 import {
   runExtractTOMLTests,
   runExtractTOMLTests2,
