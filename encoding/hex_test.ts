@@ -6,7 +6,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 
-import { decodeHex, encodeHex } from "./hex.ts";
+import { decode, decodeHex, encode, encodeHex } from "./hex.ts";
 
 const testCases = [
   // encoded(hex) / decoded(Uint8Array)
@@ -31,6 +31,23 @@ const errCases: [string, ErrorConstructor, string][] = [
   ["ffeed", RangeError, ""],
 ];
 
+Deno.test("[encoding.hex] encode", () => {
+  {
+    const srcStr = "abc";
+    const src = new TextEncoder().encode(srcStr);
+    const dest = encode(src);
+    assertEquals(src, new Uint8Array([97, 98, 99]));
+    assertEquals(dest.length, 6);
+  }
+
+  for (const [enc, dec] of testCases) {
+    const src = new Uint8Array(dec as number[]);
+    const dest = encode(src);
+    assertEquals(dest.length, src.length * 2);
+    assertEquals(new TextDecoder().decode(dest), enc);
+  }
+});
+
 Deno.test("[encoding.hex] encodeHex", () => {
   {
     const srcStr = "abc";
@@ -46,6 +63,22 @@ Deno.test("[encoding.hex] encodeHex", () => {
   }
 });
 
+Deno.test("[encoding.hex] decode", () => {
+  // Case for decoding uppercase hex characters, since
+  // Encode always uses lowercase.
+  const extraTestcase = [
+    ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
+  ];
+
+  const cases = testCases.concat(extraTestcase);
+
+  for (const [enc, dec] of cases) {
+    const src = new TextEncoder().encode(enc as string);
+    const dest = decode(src);
+    assertEquals(Array.from(dest), Array.from(dec as number[]));
+  }
+});
+
 Deno.test("[encoding.hex] decodeHex", () => {
   // Case for decoding uppercase hex characters, since
   // Encode always uses lowercase.
@@ -58,6 +91,16 @@ Deno.test("[encoding.hex] decodeHex", () => {
   for (const [enc, dec] of cases) {
     const dest = decodeHex(enc as string);
     assertEquals(dest, new Uint8Array(dec as number[]));
+  }
+});
+
+Deno.test("[encoding.hex] decode error", () => {
+  for (const [input, expectedErr, msg] of errCases) {
+    assertThrows(
+      () => decode(new TextEncoder().encode(input)),
+      expectedErr,
+      msg,
+    );
   }
 });
 
