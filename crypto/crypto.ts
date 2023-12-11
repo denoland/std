@@ -128,6 +128,8 @@ import {
 } from "./_wasm/mod.ts";
 import { fnv } from "./_fnv/mod.ts";
 
+export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
+
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
@@ -186,6 +188,7 @@ export interface StdSubtleCrypto extends SubtleCrypto {
 
 /** Extensions to the Web {@linkcode Crypto} interface. */
 export interface StdCrypto extends Crypto {
+  /** Extension to the {@linkcode crypto.SubtleCrypto} interface. */
   readonly subtle: StdSubtleCrypto;
 }
 
@@ -213,7 +216,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(name)) {
+      if (FNV_ALGORITHMS.includes(name)) {
         return fnv(name, bytes);
       }
 
@@ -277,7 +280,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(name)) {
+      if (FNV_ALGORITHMS.includes(name)) {
         return fnv(name, bytes);
       }
 
@@ -304,7 +307,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
   },
 });
 
-const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
+const FNV_ALGORITHMS = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
 
 /** Digest algorithms supported by WebCrypto. */
 const webCryptoDigestAlgorithms = [
@@ -315,7 +318,10 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
+/** FNV (Fowler/Noll/Vo) algorithms names. */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+
+/** Extended digest algorithm names. */
 export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 /*
@@ -341,11 +347,15 @@ function assertValidDigestLength(value?: number) {
   }
 }
 
+/** Extended digest algorithm objects. */
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
+/**
+ * Extended digest algorithms accepted by {@linkcode stdCrypto.subtle.digest}.
+ */
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 function normalizeAlgorithm(algorithm: DigestAlgorithm) {
