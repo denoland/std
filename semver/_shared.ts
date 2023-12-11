@@ -69,10 +69,8 @@ export const FULL_REGEXP =
   /^v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 export const SEMVER_REGEXP =
   /^\s*[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?/;
-export const XRANGE_REGEXP =
-  /^(?<operator>(?:<|>)?=?)\s*[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?$/;
 export const OPERATOR_REGEXP =
-  /^(?<operator>~>?|\^)[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?$/;
+  /^(?<operator>~>?|\^|(?:<|>)?=?)[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?$/;
 export const COMPARATOR_REGEXP =
   /^(?<operator>(?:<|>)?=?)\s*(v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$|^$/;
 export const STAR_REGEXP = /(?<operator>(<|>)?=?)\s*\*/;

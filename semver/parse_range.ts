@@ -1,12 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import {
-  OPERATOR_REGEXP,
-  SEMVER_REGEXP,
-  STAR_REGEXP,
-  XRANGE_REGEXP,
-} from "./_shared.ts";
+import { OPERATOR_REGEXP, SEMVER_REGEXP, STAR_REGEXP } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 interface OperatorVersion {
@@ -229,7 +224,7 @@ function replaceOperators(comp: string) {
     .trim()
     .split(/\s+/)
     .map((comp) => {
-      const groups = OPERATOR_REGEXP.exec(comp)?.groups as unknown as {
+      const groups = OPERATOR_REGEXP.exec(comp)?.groups as {
         operator: string;
         major: string;
         minor: string;
@@ -243,22 +238,22 @@ function replaceOperators(comp: string) {
           return replaceCaret(groups);
         case "^":
           return replaceTile(groups);
+        default:
+          return replaceXRange(groups);
       }
     })
     .join(" ");
 }
 
-function replaceXRanges(comp: string): string {
-  return comp
-    .split(/\s+/)
-    .map((comp) => replaceXRange(comp))
-    .join(" ");
-}
-
-function replaceXRange(comp: string): string {
-  comp = comp.trim();
-  const groups = XRANGE_REGEXP.exec(comp)?.groups;
-  if (!groups) return comp;
+function replaceXRange(
+  groups: {
+    operator: string;
+    major: string;
+    minor: string;
+    patch: string;
+    prerelease?: string;
+  },
+) {
   let { operator } = groups;
   const xM: boolean = isX(groups.major);
   const xm: boolean = xM || isX(groups.minor);
@@ -329,7 +324,7 @@ function replaceXRange(comp: string): string {
       patch: 0,
     });
   }
-  return comp;
+  return stringify(groups);
 }
 
 // Because * is AND-ed with everything else in the comparator,
@@ -436,7 +431,6 @@ export function parseRange(range: string): SemVerRange {
     .map((range) => {
       range = replaceHyphen(range);
       range = replaceOperators(range);
-      range = replaceXRanges(range);
       range = replaceStars(range);
 
       // At this point, the range is completely trimmed and
