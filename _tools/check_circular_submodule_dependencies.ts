@@ -92,7 +92,6 @@ deps["encoding"] = await check("encoding", "needs clean up", [
   "hex.ts",
   "varint.ts",
 ]);
-deps["flags"] = await check("flags", "not ready");
 deps["fmt"] = await check("fmt", "ready", [
   "bytes.ts",
   "colors.ts",

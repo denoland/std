@@ -80,7 +80,6 @@ Check out the documentation [here](https://deno.land/std?doc).
 | datetime     | Unstable   |
 | dotenv       | Unstable   |
 | encoding     | Unstable   |
-| flags        | Unstable   |
 | fmt          | Stable     |
 | front_matter | Unstable   |
 | fs           | Stable     |
