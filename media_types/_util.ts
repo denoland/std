@@ -18,10 +18,10 @@ export const extensions = new Map<string, string[]>();
 
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);
-  if (notPos == -1) {
+  if (notPos === -1) {
     return [v, ""];
   }
-  if (notPos == 0) {
+  if (notPos === 0) {
     return ["", v];
   }
   return [v.slice(0, notPos), v.slice(notPos)];
@@ -71,7 +71,7 @@ export function consumeMediaParam(
   rest = rest.slice(1);
   rest = rest.trimStart();
   const [value, rest2] = consumeValue(rest);
-  if (value == "" && rest2 === rest) {
+  if (value === "" && rest2 === rest) {
     return ["", "", v];
   }
   rest = rest2;
@@ -87,7 +87,7 @@ export function decode2331Encoding(v: string): string | undefined {
   if (!charset) {
     return undefined;
   }
-  if (charset != "us-ascii" && charset != "utf-8") {
+  if (charset !== "us-ascii" && charset !== "utf-8") {
     return undefined;
   }
   const encv = decodeURI(sv[2]);
@@ -109,7 +109,7 @@ function indexOf<T>(s: Iterable<T>, fn: (s: T) => boolean): number {
 }
 
 export function isIterator<T>(obj: unknown): obj is Iterable<T> {
-  if (obj == null) {
+  if (obj === null || obj === undefined) {
     return false;
   }
   // deno-lint-ignore no-explicit-any

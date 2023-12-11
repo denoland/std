@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { stripColor } from "../fmt/colors.ts";
+import { stripAnsiCode } from "../fmt/colors.ts";
 import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
 import {
   assert,
@@ -7,7 +7,7 @@ import {
   AssertionError,
   assertRejects,
   fail,
-} from "./asserts.ts";
+} from "../assert/mod.ts";
 import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
@@ -17,7 +17,7 @@ const SNAPSHOT_MODULE_URL = toFileUrl(join(
 
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
-  return stripColor(string).replace(/([0-9])+m?s/g, "--ms").replace(
+  return stripAnsiCode(string).replace(/([0-9])+m?s/g, "--ms").replace(
     /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
     "<tempDir>/",
   );
@@ -26,7 +26,7 @@ function formatTestOutput(string: string) {
 function formatTestError(string: string) {
   // Strip colors and remove "Check file:///workspaces/deno_std/testing/.tmp/test.ts"
   // as this is always output to stderr
-  return stripColor(string).replace(/^Check file:\/\/(.+)\n/g, "");
+  return stripAnsiCode(string).replace(/^Check file:\/\/(.+)\n/gm, "");
 }
 
 function testFnWithTempDir(
@@ -38,6 +38,25 @@ function testFnWithTempDir(
       await fn(t, tempDir);
     } finally {
       await Deno.remove(tempDir, { recursive: true });
+    }
+  };
+}
+
+function testFnWithDifferentTempDir(
+  fn: (
+    t: Deno.TestContext,
+    tempDir1: string,
+    tempDir2: string,
+  ) => Promise<void>,
+) {
+  return async (t: Deno.TestContext) => {
+    const tempDir1 = await Deno.makeTempDir();
+    const tempDir2 = await Deno.makeTempDir();
+    try {
+      await fn(t, tempDir1, tempDir2);
+    } finally {
+      await Deno.remove(tempDir1, { recursive: true });
+      await Deno.remove(tempDir2, { recursive: true });
     }
   };
 }
@@ -87,6 +106,10 @@ Deno.test("Snapshot Test - step", async (t) => {
 
 Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
   await assertSnapshot(t, "\\ ` ${}");
+});
+
+Deno.test("Snapshot Test - Default serializer", async (t) => {
+  await assertSnapshot(t, "a\nb\tc");
 });
 
 Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
@@ -167,12 +190,12 @@ ${serialize(snapshot)}
 
     await t.step("Object", async (t) => {
       const error = await testFailedAssertion([1, 2, 3], [1, 2]);
-      await assertSnapshot(t, stripColor(error.message));
+      await assertSnapshot(t, stripAnsiCode(error.message));
     });
 
     await t.step("String", async (t) => {
       const error = await testFailedAssertion("Hello World!", "Hello!");
-      await assertSnapshot(t, stripColor(error.message));
+      await assertSnapshot(t, stripAnsiCode(error.message));
     });
   }),
 );
@@ -459,6 +482,234 @@ Deno.test(
   }),
 );
 
+Deno.test(
+  "Snapshot Test - Remove",
+  testFnWithTempDir(async (t, tempDir) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath = join(tempDir, tempTestFileName);
+
+    async function runTestWithUpdateFlag(test: string) {
+      await Deno.writeTextFile(tempTestFilePath, test);
+
+      const command = new Deno.Command(Deno.execPath(), {
+        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
+      });
+      const { stdout, stderr } = await command.output();
+
+      return {
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
+      };
+    }
+
+    function assertNoError(error: string) {
+      if (formatTestError(error)) {
+        throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+      }
+    }
+
+    /**
+     * New snapshot
+     */
+    const result1 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+        await assertSnapshot(t, { c: 3, d: 4 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Third", async (t) => {
+        await assertSnapshot(t, { e: 5, f: 6 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+        await assertSnapshot(t, { g: 7, h: 8 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+        await assertSnapshot(t, { i: 9, j: 10 });
+      });
+      `,
+    );
+
+    assertNoError(result1.error);
+    await assertSnapshot(t, formatTestOutput(result1.output), {
+      name: "Snapshot Test - Remove - New snapshot",
+    });
+
+    /**
+     * Existing snapshot - removes one
+     */
+    const result2 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Second", async (t) => {
+        await assertSnapshot(t, { c: 3, d: 4 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fourth", async (t) => {
+        await assertSnapshot(t, { g: 7, h: 8 });
+      });
+
+      Deno.test("Snapshot Test - Remove - Fifth", async (t) => {
+        await assertSnapshot(t, { i: 9, j: 10 });
+      });
+      `,
+    );
+
+    assertNoError(result2.error);
+    await assertSnapshot(t, formatTestOutput(result2.output), {
+      name: "Snapshot Test - Remove - Existing snapshot - removed one",
+    });
+
+    /**
+     * Existing snapshot - removes several
+     */
+    const result3 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Remove - First", async (t) => {
+        await assertSnapshot(t, { a: 1, b: 2 });
+      });
+      `,
+    );
+
+    assertNoError(result3.error);
+    await assertSnapshot(t, formatTestOutput(result3.output), {
+      name: "Snapshot Test - Remove - Existing snapshot - removed several",
+    });
+  }),
+);
+
+Deno.test(
+  "Snapshot Test - Different Dir",
+  testFnWithDifferentTempDir(async (t, tempDir1, tempDir2) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath1 = join(tempDir1, tempTestFileName);
+    const tempTestFilePath2 = join(tempDir2, tempTestFileName);
+
+    async function runTestWithUpdateFlag(test1: string, test2: string) {
+      await Deno.writeTextFile(tempTestFilePath1, test1);
+      await Deno.writeTextFile(tempTestFilePath2, test2);
+
+      const command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "test",
+          "--allow-all",
+          tempTestFilePath1,
+          tempTestFilePath2,
+          "--",
+          "-u",
+        ],
+      });
+      const { stdout, stderr } = await command.output();
+
+      return {
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
+      };
+    }
+
+    function assertNoError(error: string) {
+      if (formatTestError(error)) {
+        throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+      }
+    }
+
+    /**
+     * New snapshot
+     */
+    const result1 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          4,
+        ]);
+      });`,
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          4,
+        ]);
+      });`,
+    );
+
+    assertNoError(result1.error);
+    await assertSnapshot(t, formatTestOutput(result1.output), {
+      name: "Snapshot Test - Different Dir - New snapshot",
+    });
+
+    /**
+     * Existing snapshot - updates
+     */
+    const result2 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          3,
+          5,
+        ]);
+      });`,
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, [
+          6,
+          7,
+        ]);
+      });
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, [
+          8,
+          9,
+        ]);
+      });`,
+    );
+    assertNoError(result2.error);
+    await assertSnapshot(t, formatTestOutput(result2.output), {
+      name: "Snapshot Test - Different Dir - Existing snapshot - update",
+    });
+  }),
+);
+
 // Regression test for https://github.com/denoland/deno_std/issues/2140
 // Long strings should not be truncated with ellipsis
 Deno.test("Snapshot Test - Regression #2140", async (t) => {
@@ -498,7 +749,7 @@ Deno.test("Snapshot Test - Empty #2245", async (t) => {
 
 Deno.test("SnapshotTest - createAssertSnapshot", async (t) => {
   const assertMonochromeSnapshot = createAssertSnapshot<string>({
-    serializer: stripColor,
+    serializer: stripAnsiCode,
   });
 
   await t.step("No Options", async (t) => {

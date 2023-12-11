@@ -1,11 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { copy as copyBytes } from "../bytes/copy.ts";
-import { assert } from "../_util/asserts.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import { assert } from "../assert/assert.ts";
+import type { Reader, ReaderSync } from "./types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
   start: number;
@@ -20,7 +23,7 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { readRange } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file
@@ -28,6 +31,8 @@ export interface ByteRange {
  * const bytes = await readRange(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -58,7 +63,7 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * import { readRangeSync } from "https://deno.land/std@$STD_VERSION/io/read_range.ts";
  *
  * // Read the first 10 bytes of a file
@@ -66,6 +71,8 @@ export async function readRange(
  * const bytes = readRangeSync(file, { start: 0, end: 9 });
  * assertEquals(bytes.length, 10);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,

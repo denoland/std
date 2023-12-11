@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { permutations } from "https://deno.land/std@$STD_VERSION/collections/permutations.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const numbers = [ 1, 2 ];
  * const windows = permutations(numbers);
@@ -20,16 +20,18 @@
  * ]);
  * ```
  */
-export function permutations<T>(inputArray: readonly T[]): T[][] {
+export function permutations<T>(inputArray: Iterable<T>): T[][] {
   const ret: T[][] = [];
-  const k = inputArray.length;
+
+  const array = [...inputArray];
+
+  const k = array.length;
 
   if (k === 0) {
     return ret;
   }
 
   // Heap's Algorithm
-  const array = [...inputArray];
   const c = new Array<number>(k).fill(0);
 
   ret.push([...array]);

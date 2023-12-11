@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/asserts.ts";
+// This module is browser compatible.
+
+import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
@@ -39,19 +41,25 @@ export class Buffer {
     },
     autoAllocateChunkSize: DEFAULT_CHUNK_SIZE,
   });
-  get readable() {
+
+  /** Getter returning the instance's {@linkcode ReadableStream}. */
+  get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
+
   #writable = new WritableStream<Uint8Array>({
     write: (chunk) => {
       const m = this.#grow(chunk.byteLength);
       copy(chunk, this.#buf, m);
     },
   });
-  get writable() {
+
+  /** Getter returning the instance's {@linkcode WritableStream}. */
+  get writable(): WritableStream<Uint8Array> {
     return this.#writable;
   }
 
+  /** Constructs a new instance. */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
   }
@@ -85,10 +93,12 @@ export class Buffer {
     return this.#buf.buffer.byteLength;
   }
 
-  /** Discards all but the first `n` unread bytes from the buffer but
+  /**
+   * Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
-   * negative or greater than the length of the buffer. */
-  truncate(n: number) {
+   * negative or greater than the length of the buffer.
+   */
+  truncate(n: number): void {
     if (n === 0) {
       this.reset();
       return;
@@ -99,6 +109,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
+  /** Resets to an empty buffer. */
   reset() {
     this.#reslice(0);
     this.#off = 0;

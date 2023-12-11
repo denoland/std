@@ -1,9 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, Writer } from "../types.d.ts";
+import type { Reader, Writer } from "../io/types.d.ts";
 
-/** Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
+/**
+ * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
@@ -19,6 +21,9 @@ import type { Reader, Writer } from "../types.d.ts";
  * @param src The source to copy from
  * @param dst The destination to copy to
  * @param options Can be used to tune size of the buffer. Default size is 32kB
+ *
+ * @deprecated (will be removed after 1.0.0) Use
+ * {@linkcode ReadableStream.pipeTo} instead.
  */
 export async function copy(
   src: Reader,

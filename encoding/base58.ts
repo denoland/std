@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
+ * {@linkcode encodeBase58} and {@linkcode decodeBase58} for
  * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
  *
  * This module is browser compatible.
@@ -23,6 +26,8 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase58} instead.
+ *
  * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
  *
@@ -30,12 +35,26 @@ const base58alphabet =
  *
  * @returns Encoded value
  */
-export function encode(data: ArrayBuffer | string): string {
-  const uint8tData = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+export const encode = encodeBase58;
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase58} instead.
+ *
+ * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
+ * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ *
+ * @param b58
+ *
+ * @returns Decoded value
+ */
+export const decode = decodeBase58;
+
+/**
+ * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
+ * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ */
+export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
+  const uint8tData = validateBinaryLike(data);
 
   let length = 0;
   let zeroes = 0;
@@ -85,25 +104,21 @@ export function encode(data: ArrayBuffer | string): string {
 /**
  * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
  * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
- *
- * @param b58
- *
- * @returns Decoded value
  */
-export function decode(b58: string): Uint8Array {
-  const splittedInput = b58.trim().split("");
+export function decodeBase58(b58: string): Uint8Array {
+  const splitInput = b58.trim().split("");
 
   let length = 0;
   let ones = 0;
 
   // Counting leading ones
   let index = 0;
-  while (splittedInput[index] === "1") {
+  while (splitInput[index] === "1") {
     ones++;
     index++;
   }
 
-  const notZeroData = splittedInput.slice(index);
+  const notZeroData = splitInput.slice(index);
 
   const size = Math.round((b58.length * 733) / 1000 + 1);
   const output: number[] = [];
@@ -118,11 +133,11 @@ export function decode(b58: string): Uint8Array {
 
     for (
       let reverse_iterator = size - 1;
-      (carry > 0 || i < length) && reverse_iterator !== 0;
-      --reverse_iterator, ++i
+      (carry > 0 || i < length) && reverse_iterator !== -1;
+      reverse_iterator--, i++
     ) {
-      carry += 58 * (output[reverse_iterator - 1] || 0);
-      output[reverse_iterator - 1] = Math.round(carry % 256);
+      carry += 58 * (output[reverse_iterator] || 0);
+      output[reverse_iterator] = Math.round(carry % 256);
       carry = Math.floor(carry / 256);
     }
 

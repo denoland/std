@@ -47,12 +47,6 @@
  * deno test --allow-all -- --update
  * ```
  *
- * Note: In Powershell, you need to quote `--`.
- *
- * ```powershell
- * deno test --allow-all "--" --update
- * ```
- *
  * Additionally, new snapshots will only be created when this flag is present.
  *
  * ## Permissions:
@@ -99,7 +93,7 @@
  * When configuring default options like this, the resulting `assertSnapshot`
  * function will function the same as the default function exported from the
  * snapshot module. If passed an optional options object, this will take precedence
- * over the default options, where the value provded for an option differs.
+ * over the default options, where the value provided for an option differs.
  *
  * It is possible to "extend" an `assertSnapshot` function which has been
  * configured with default options.
@@ -107,14 +101,14 @@
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
- * import { stripColor } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ * import { stripAnsiCode } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *
  * const assertSnapshot = createAssertSnapshot({
  *   dir: ".snaps",
  * });
  *
  * const assertMonochromeSnapshot = createAssertSnapshot<string>(
- *   { serializer: stripColor },
+ *   { serializer: stripAnsiCode },
  *   assertSnapshot,
  * );
  *
@@ -133,7 +127,7 @@
  *
  * ## Version Control:
  *
- * Snapshot testing works best when changes to snapshot files are comitted
+ * Snapshot testing works best when changes to snapshot files are committed
  * alongside other code changes. This allows for changes to reference snapshots to
  * be reviewed along side the code changes that caused them, and ensures that when
  * others pull your changes, their tests will pass without needing to update
@@ -142,13 +136,17 @@
  * @module
  */
 
-import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
-import { ensureFile, ensureFileSync } from "../fs/mod.ts";
+import { fromFileUrl } from "../path/from_file_url.ts";
+import { parse } from "../path/parse.ts";
+import { resolve } from "../path/resolve.ts";
+import { toFileUrl } from "../path/to_file_url.ts";
+import { ensureFile, ensureFileSync } from "../fs/ensure_file.ts";
 import { bold, green, red } from "../fmt/colors.ts";
-import { assert, AssertionError, equal } from "./asserts.ts";
-import { buildMessage, diff, diffstr } from "./_diff.ts";
+import { assert } from "../assert/assert.ts";
+import { AssertionError } from "../assert/assertion_error.ts";
+import { equal } from "../assert/equal.ts";
+import { assertEquals } from "../assert/assert_equals.ts";
 
-const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
@@ -180,7 +178,7 @@ export type SnapshotOptions<T = unknown> = {
    */
   name?: string;
   /**
-   * Snapshot output path. The shapshot will be written to this file. This can be
+   * Snapshot output path. The snapshot will be written to this file. This can be
    * a path relative to the test directory or an absolute path.
    *
    * If both `dir` and `path` are specified, the `dir` option will be ignored and
@@ -210,7 +208,9 @@ export function serialize(actual: unknown): string {
     compact: false,
     iterableLimit: Infinity,
     strAbbreviateSize: Infinity,
-  }).replace(/\\n/g, "\n");
+    breakLength: Infinity,
+    escapeSequences: false,
+  });
 }
 
 /**
@@ -314,6 +314,10 @@ class AssertSnapshotContext {
   #teardown = () => {
     const buf = ["export const snapshot = {};"];
     const currentSnapshots = this.#getCurrentSnapshotsInitialized();
+    const currentSnapshotNames = Array.from(currentSnapshots.keys());
+    const removedSnapshotNames = currentSnapshotNames.filter((name) =>
+      !this.snapshotUpdateQueue.includes(name)
+    );
     this.snapshotUpdateQueue.forEach((name) => {
       const updatedSnapshot = this.#updatedSnapshots.get(name);
       const currentSnapshot = currentSnapshots.get(name);
@@ -340,15 +344,32 @@ class AssertSnapshotContext {
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
-    const contexts = Array.from(AssertSnapshotContext.contexts.values());
-    if (contexts[contexts.length - 1] === this) {
-      let updated = 0;
-      for (const context of contexts) {
-        updated += context.getUpdatedCount();
-      }
-      if (updated > 0) {
+    const updated = this.getUpdatedCount();
+    if (updated > 0) {
+      console.log(
+        green(
+          bold(
+            `\n > ${updated} ${
+              updated === 1 ? "snapshot" : "snapshots"
+            } updated.`,
+          ),
+        ),
+      );
+    }
+    const removed = removedSnapshotNames.length;
+    if (removed > 0) {
+      console.log(
+        red(
+          bold(
+            `\n > ${removed} ${
+              removed === 1 ? "snapshot" : "snapshots"
+            } removed.`,
+          ),
+        ),
+      );
+      for (const snapshotName of removedSnapshotNames) {
         console.log(
-          green(bold(`\n > ${updated} snapshots updated.`)),
+          red(bold(`   • ${snapshotName}`)),
         );
       }
     }
@@ -411,7 +432,7 @@ class AssertSnapshotContext {
    * of snapshots updated after all tests have run.
    *
    * This method can safely be called more than once and will only register the teardown
-   * function once.
+   * function once in a context.
    */
   public registerTeardown() {
     if (!this.#teardownRegistered) {
@@ -551,14 +572,21 @@ export async function assertSnapshot(
     }
     let message = "";
     try {
-      const stringDiff = !_actual.includes("\n");
-      const diffResult = stringDiff
-        ? diffstr(_actual, snapshot)
-        : diff(_actual.split("\n"), snapshot.split("\n"));
-      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-      message = `Snapshot does not match:\n${diffMsg}`;
-    } catch {
-      message = `Snapshot does not match:\n${red(CAN_NOT_DISPLAY)} \n\n`;
+      const usesMultilineDiff = _actual.includes("\n");
+      if (usesMultilineDiff) {
+        assertEquals(true, false, undefined, {
+          formatter: (v) => v ? _actual : snapshot,
+        });
+      } else {
+        assertEquals(_actual, snapshot);
+      }
+    } catch (e) {
+      if (e instanceof AssertionError) {
+        message = e.message.replace(
+          "Values are not equal.",
+          "Snapshot does not match:",
+        );
+      }
     }
     throw new AssertionError(
       getErrorMessage(message, options),

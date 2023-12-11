@@ -1,356 +1,243 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// deno-lint-ignore-file no-explicit-any
-import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
+import { walk, WalkError, WalkOptions, walkSync } from "./walk.ts";
 import {
-  assert,
+  assertArrayIncludes,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
+import { fromFileUrl, resolve } from "../path/mod.ts";
 
-export function testWalk(
-  setup: (arg0: string) => any | Promise<any>,
-  t: (context: any) => void | Promise<void>,
-  ignore = false,
+const testdataDir = resolve(fromFileUrl(import.meta.url), "../testdata/walk");
+
+async function assertWalkPaths(
+  rootPath: string,
+  expectedPaths: string[],
+  options?: WalkOptions,
 ) {
-  const name = t.name;
-  async function fn() {
-    const origCwd = Deno.cwd();
-    const d = await Deno.makeTempDir();
-    Deno.chdir(d);
-    try {
-      const context = await setup(d);
-      await t(context);
-    } finally {
-      Deno.chdir(origCwd);
-      await Deno.remove(d, { recursive: true });
-    }
-  }
-  Deno.test({ ignore, name: `[walk] ${name}`, fn });
+  const root = resolve(testdataDir, rootPath);
+  const entries = await Array.fromAsync(walk(root, options));
+
+  const expected = expectedPaths.map((path) => resolve(root, path));
+  assertEquals(entries.length, expected.length);
+  assertArrayIncludes(entries.map(({ path }) => path), expected);
 }
 
-function normalize({ path }: WalkEntry): string {
-  return path.replace(/\\/g, "/");
+function assertWalkSyncPaths(
+  rootPath: string,
+  expectedPaths: string[],
+  options?: WalkOptions,
+) {
+  const root = resolve(testdataDir, rootPath);
+  const entriesSync = Array.from(walkSync(root, options));
+
+  const expected = expectedPaths.map((path) => resolve(root, path));
+  assertEquals(entriesSync.length, expected.length);
+  assertArrayIncludes(entriesSync.map(({ path }) => path), expected);
 }
 
-export async function walkArray(
-  root: string,
-  options: WalkOptions = {},
-): Promise<string[]> {
-  const arr: string[] = [];
-  for await (const w of walk(root, { ...options })) {
-    arr.push(normalize(w));
-  }
-  arr.sort(); // TODO(ry) Remove sort. The order should be deterministic.
-  const arrSync = Array.from(walkSync(root, options), normalize);
-  arrSync.sort(); // TODO(ry) Remove sort. The order should be deterministic.
-  assertEquals(arr, arrSync);
-  return arr;
-}
+Deno.test("walk() returns current dir for empty dir", async () => {
+  const emptyDir = resolve(testdataDir, "empty_dir");
+  await Deno.mkdir(emptyDir);
+  await assertWalkPaths("empty_dir", ["."]);
+  await Deno.remove(emptyDir);
+});
 
-export async function touch(path: string) {
-  const f = await Deno.create(path);
-  f.close();
-}
+Deno.test("walkSync() returns current dir for empty dir", async () => {
+  const emptyDir = resolve(testdataDir, "empty_dir");
+  await Deno.mkdir(emptyDir);
+  assertWalkSyncPaths("empty_dir", ["."]);
+  await Deno.remove(emptyDir);
+});
 
-function assertReady(expectedLength: number) {
-  const arr = Array.from(walkSync("."), normalize);
+Deno.test("walk() returns current dir and single file", async () =>
+  await assertWalkPaths("single_file", [".", "x"]));
 
-  assertEquals(arr.length, expectedLength);
-}
+Deno.test("walkSync() returns current dir and single file", () =>
+  assertWalkSyncPaths("single_file", [".", "x"]));
 
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/empty");
-  },
-  async function emptyDir() {
-    const arr = await walkArray(".");
-    assertEquals(arr, [".", "empty"]);
-  },
-);
+Deno.test("walk() returns current dir, subdir, and nested file", async () =>
+  await assertWalkPaths("nested_single_file", [".", "a", "a/x"]));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-  },
-  async function singleFile() {
-    const arr = await walkArray(".");
-    assertEquals(arr, [".", "x"]);
-  },
-);
+Deno.test("walkSync() returns current dir, subdir, and nested file", () =>
+  assertWalkSyncPaths("nested_single_file", [".", "a", "a/x"]));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-  },
-  async function iteratable() {
-    let count = 0;
-    for (const _ of walkSync(".")) {
-      count += 1;
-    }
-    assertEquals(count, 2);
-    for await (const _ of walk(".")) {
-      count += 1;
-    }
-    assertEquals(count, 4);
-  },
-);
+Deno.test("walk() accepts maxDepth option", async () =>
+  await assertWalkPaths("depth", [".", "a", "a/b", "a/b/c"], { maxDepth: 3 }));
 
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a");
-    await touch(d + "/a/x");
-  },
-  async function nestedSingleFile() {
-    const arr = await walkArray(".");
-    assertEquals(arr, [".", "a", "a/x"]);
-  },
-);
+Deno.test("walkSync() accepts maxDepth option", () =>
+  assertWalkSyncPaths("depth", [".", "a", "a/b", "a/b/c"], { maxDepth: 3 }));
 
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a/b/c/d", { recursive: true });
-    await touch(d + "/a/b/c/d/x");
-  },
-  async function depth() {
-    assertReady(6);
-    const arr3 = await walkArray(".", { maxDepth: 3 });
-    assertEquals(arr3, [".", "a", "a/b", "a/b/c"]);
-    const arr5 = await walkArray(".", { maxDepth: 5 });
-    assertEquals(arr5, [".", "a", "a/b", "a/b/c", "a/b/c/d", "a/b/c/d/x"]);
-  },
-);
+Deno.test("walk() accepts includeDirs option set to false", async () =>
+  await assertWalkPaths("depth", ["a/b/c/d/x"], { includeDirs: false }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/a");
-    await Deno.mkdir(d + "/b");
-    await touch(d + "/b/c");
-  },
-  async function includeDirs() {
-    assertReady(4);
-    const arr = await walkArray(".", { includeDirs: false });
-    assertEquals(arr, ["a", "b/c"]);
-  },
-);
+Deno.test("walkSync() accepts includeDirs option set to false", () =>
+  assertWalkSyncPaths("depth", ["a/b/c/d/x"], { includeDirs: false }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/a");
-    await Deno.mkdir(d + "/b");
-    await touch(d + "/b/c");
-  },
-  async function includeFiles() {
-    assertReady(4);
-    const arr = await walkArray(".", { includeFiles: false });
-    assertEquals(arr, [".", "b"]);
-  },
-);
+Deno.test("walk() accepts includeFiles option set to false", async () =>
+  await assertWalkPaths("depth", [".", "a", "a/b", "a/b/c", "a/b/c/d"], {
+    includeFiles: false,
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x.ts");
-    await touch(d + "/y.rs");
-  },
-  async function ext() {
-    assertReady(3);
-    const arr = await walkArray(".", { exts: [".ts"] });
-    assertEquals(arr, ["x.ts"]);
-  },
-);
+Deno.test("walkSync() accepts includeFiles option set to false", () =>
+  assertWalkSyncPaths("depth", [".", "a", "a/b", "a/b/c", "a/b/c/d"], {
+    includeFiles: false,
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x.ts");
-    await touch(d + "/y.rs");
-    await touch(d + "/z.py");
-  },
-  async function extAny() {
-    assertReady(4);
-    const arr = await walkArray(".", { exts: [".rs", ".ts"] });
-    assertEquals(arr, ["x.ts", "y.rs"]);
-  },
-);
+Deno.test("walk() accepts ext option as strings", async () =>
+  await assertWalkPaths("ext", ["y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-    await touch(d + "/y");
-  },
-  async function match() {
-    assertReady(3);
-    const arr = await walkArray(".", { match: [/x/] });
-    assertEquals(arr, ["x"]);
-  },
-);
+Deno.test("walkSync() accepts ext option as strings", () =>
+  assertWalkSyncPaths("ext", ["y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-    await touch(d + "/y");
-    await touch(d + "/z");
-  },
-  async function matchAny() {
-    assertReady(4);
-    const arr = await walkArray(".", { match: [/x/, /y/] });
-    assertEquals(arr, ["x", "y"]);
-  },
-);
+Deno.test("walk() accepts ext option as regExps", async () =>
+  await assertWalkPaths("match", ["x", "y"], {
+    match: [/x/, /y/],
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-    await touch(d + "/y");
-  },
-  async function skip() {
-    assertReady(3);
-    const arr = await walkArray(".", { skip: [/x/] });
-    assertEquals(arr, [".", "y"]);
-  },
-);
+Deno.test("walkSync() accepts ext option as regExps", () =>
+  assertWalkSyncPaths("match", ["x", "y"], {
+    match: [/x/, /y/],
+  }));
 
-testWalk(
-  async (d: string) => {
-    await touch(d + "/x");
-    await touch(d + "/y");
-    await touch(d + "/z");
-  },
-  async function skipAny() {
-    assertReady(4);
-    const arr = await walkArray(".", { skip: [/x/, /y/] });
-    assertEquals(arr, [".", "z"]);
-  },
-);
+Deno.test("walk() accepts skip option as regExps", async () =>
+  await assertWalkPaths("match", [".", "z"], {
+    skip: [/x/, /y/],
+  }));
 
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a");
-    await Deno.mkdir(d + "/b");
-    await touch(d + "/a/x");
-    await touch(d + "/a/y");
-    await touch(d + "/b/z");
-  },
-  async function subDir() {
-    assertReady(6);
-    const arr = await walkArray("b");
-    assertEquals(arr, ["b", "b/z"]);
-  },
-);
-
-testWalk(
-  async (_d: string) => {},
-  async function nonexistentRoot() {
-    await assertRejects(async () => {
-      await walkArray("nonexistent");
-    }, Deno.errors.NotFound);
-  },
-);
-
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a");
-    await Deno.mkdir(d + "/b");
-    await touch(d + "/a/x");
-    await touch(d + "/a/y");
-    await touch(d + "/b/z");
-    await Deno.symlink(d + "/b", d + "/a/bb");
-  },
-  async function symlink() {
-    assertReady(6);
-    const files = await walkArray("a");
-    assertEquals(files.length, 3);
-    assert(!files.includes("a/bb/z"));
-
-    const arr = await walkArray("a", { followSymlinks: true });
-    assertEquals(arr.length, 5);
-    assert(arr.some((f): boolean => f.endsWith("/b/z")));
-  },
-);
+Deno.test("walkSync() accepts skip option as regExps", () =>
+  assertWalkSyncPaths("match", [".", "z"], {
+    skip: [/x/, /y/],
+  }));
 
 // https://github.com/denoland/deno_std/issues/1358
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a");
-    await touch(d + "/a/x");
-    await touch(d + "/a/y");
-    await touch(d + "/b");
-    await Deno.symlink(d + "/b", d + "/a/bb");
-  },
-  async function symlinkPointsToFile() {
-    assertReady(5);
-    const files = await walkArray("a", { followSymlinks: true });
-    assertEquals(files.length, 4);
-    assert(files.some((f): boolean => f.endsWith("/b")));
-  },
-);
+Deno.test("walk() accepts followSymlinks option set to true", async () =>
+  await assertWalkPaths("symlink", [".", "a", "a/z", "a", "a/z", "x", "x"], {
+    followSymlinks: true,
+  }));
+
+Deno.test("walkSync() accepts followSymlinks option set to true", () =>
+  assertWalkSyncPaths("symlink", [".", "a", "a/z", "a", "a/z", "x", "x"], {
+    followSymlinks: true,
+  }));
+
+Deno.test("walk() accepts followSymlinks option set to true with canonicalize option set to false", async () =>
+  await assertWalkPaths("symlink", [".", "a", "a/z", "b", "b/z", "x", "y"], {
+    followSymlinks: true,
+    canonicalize: false,
+  }));
+
+Deno.test("walkSync() accepts followSymlinks option set to true with canonicalize option set to false", () =>
+  assertWalkSyncPaths("symlink", [".", "a", "a/z", "b", "b/z", "x", "y"], {
+    followSymlinks: true,
+    canonicalize: false,
+  }));
+
+Deno.test("walk() accepts followSymlinks option set to false", async () => {
+  await assertWalkPaths("symlink", [".", "a", "a/z", "b", "x", "y"], {
+    followSymlinks: false,
+  });
+});
+
+Deno.test("walkSync() accepts followSymlinks option set to false", () => {
+  assertWalkSyncPaths("symlink", [".", "a", "a/z", "b", "x", "y"], {
+    followSymlinks: false,
+  });
+});
+
+Deno.test("walk() rejects Deno.errors.NotFound for non-existent root", async () => {
+  const root = resolve(testdataDir, "non_existent");
+  await assertRejects(
+    async () => await Array.fromAsync(walk(root)),
+    Deno.errors.NotFound,
+  );
+});
+
+Deno.test("walkSync() throws Deno.errors.NotFound for non-existent root", () => {
+  const root = resolve(testdataDir, "non_existent");
+  assertThrows(() => Array.from(walkSync(root)), Deno.errors.NotFound);
+});
 
 // https://github.com/denoland/deno_std/issues/1789
-testWalk(
-  (d: string) => {
-    return Deno.listen({ path: d + "/a", transport: "unix" });
-  },
-  async function unixSocket(listener: Deno.Listener) {
-    assertReady(2);
-    const files = await walkArray(".", { followSymlinks: true });
-    assertEquals(files, [".", "a"]);
-    listener.close();
-  },
-  Deno.build.os === "windows",
-);
-
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a/b", { recursive: true });
-    await Deno.chmod(d + "/a/b", 0o000);
-  },
-  async function subDirNoPermissionAsync() {
+Deno.test({
+  name: "walk() walks unix socket",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      await assertRejects(
-        async () => {
-          await walkArray("a");
-        },
-        Deno.errors.PermissionDenied,
-        'for path "a/b"',
-      );
+      const listener = Deno.listen({ path, transport: "unix" });
+      await assertWalkPaths("socket", [".", "a.sock", ".gitignore"], {
+        followSymlinks: true,
+      });
+      listener.close();
     } finally {
-      await Deno.chmod("a/b", 0o755);
+      await Deno.remove(path);
     }
   },
-  // TODO(kt3k): Enable this test
-  true,
-);
+});
 
-testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a/b", { recursive: true });
-    await Deno.chmod(d + "/a/b", 0o000);
-  },
-  async function subDirNoPermissionSync() {
+// https://github.com/denoland/deno_std/issues/1789
+Deno.test({
+  name: "walkSync() walks unix socket",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      assertThrows(
-        () => {
-          return [...walkSync("a")];
-        },
-        Deno.errors.PermissionDenied,
-        'for path "a/b"',
-      );
+      const listener = Deno.listen({ path, transport: "unix" });
+      assertWalkSyncPaths("socket", [".", "a.sock", ".gitignore"], {
+        followSymlinks: true,
+      });
+      listener.close();
     } finally {
-      await Deno.chmod("a/b", 0o755);
+      await Deno.remove(path);
     }
   },
-  // TODO(kt3k): Enable this test
-  true,
-);
+});
 
-testWalk(
-  async (d: string) => {
-    const command = new Deno.Command("mkfifo", { args: [d + "/fifo"] });
+Deno.test({
+  name: "walk() walks fifo files on unix",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const command = new Deno.Command("mkfifo", {
+      args: [resolve(testdataDir, "fifo", "fifo")],
+    });
     await command.output();
+    await assertWalkPaths("fifo", [".", "fifo", ".gitignore"], {
+      followSymlinks: true,
+    });
   },
-  async function fifo() {
-    assertReady(2);
-    const files = await walkArray(".", { followSymlinks: true });
-    assertEquals(files, [".", "fifo"]);
+});
+
+Deno.test({
+  name: "walkSync() walks fifo files on unix",
+  ignore: Deno.build.os === "windows",
+  async fn() {
+    const command = new Deno.Command("mkfifo", {
+      args: [resolve(testdataDir, "fifo", "fifo")],
+    });
+    await command.output();
+    assertWalkSyncPaths("fifo", [".", "fifo", ".gitignore"], {
+      followSymlinks: true,
+    });
   },
-  Deno.build.os === "windows",
-);
+});
+
+Deno.test("walk() rejects with WalkError when root is removed during execution", async () => {
+  const root = resolve(testdataDir, "error");
+  await Deno.mkdir(root);
+  try {
+    await assertRejects(async () => {
+      await Array.fromAsync(
+        walk(root),
+        async () => await Deno.remove(root, { recursive: true }),
+      );
+    }, WalkError);
+  } catch (err) {
+    await Deno.remove(root, { recursive: true });
+    throw err;
+  }
+});

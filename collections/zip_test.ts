@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { zip } from "./zip.ts";
 
 function zip1Test<T>(
@@ -24,7 +24,7 @@ Deno.test({
 });
 
 function zipTest<T, U>(
-  input: [Array<T>, Array<U>],
+  input: [ReadonlyArray<T>, ReadonlyArray<U>],
   expected: Array<[T, U]>,
   message?: string,
 ) {
@@ -91,6 +91,7 @@ Deno.test({
       [[], [{}, []]],
       [],
     );
+    assertEquals(zip(), []);
   },
 });
 

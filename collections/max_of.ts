@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/max_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -23,17 +23,36 @@
  * ```
  */
 export function maxOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => number,
 ): number | undefined;
-
+/**
+ * Applies the given selector to all elements of the provided collection and
+ * returns the max value of all elements. If an empty array is provided the
+ * function will return undefined
+ *
+ * @example
+ * ```ts
+ * import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/max_of.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * const inventory = [
+ *   { name: "mustard", count: 2n },
+ *   { name: "soy", count: 4n },
+ *   { name: "tomato", count: 32n },
+ * ];
+ *
+ * const maxCount = maxOf(inventory, (i) => i.count);
+ *
+ * assertEquals(maxCount, 32n);
+ * ```
+ */
 export function maxOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => bigint,
 ): bigint | undefined;
-
 export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
   let maximumValue: ReturnType<S> | undefined = undefined;

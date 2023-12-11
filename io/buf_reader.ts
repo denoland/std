@@ -1,8 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { assert } from "../_util/asserts.ts";
+/**
+ * @module
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
+
+import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -10,6 +16,9 @@ const MAX_CONSECUTIVE_EMPTY_READS = 100;
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
   constructor(public partial: Uint8Array) {
@@ -17,6 +26,9 @@ export class BufferFullError extends Error {
   }
 }
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
   partial?: Uint8Array;
@@ -25,12 +37,19 @@ export class PartialReadError extends Error {
   }
 }
 
-/** Result type returned by of BufReader.readLine(). */
+/**
+ * Result type returned by of BufReader.readLine().
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export interface ReadLineResult {
   line: Uint8Array;
   more: boolean;
 }
 
+/**
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
   #rd!: Reader; // Reader provided by caller.
@@ -180,13 +199,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = p.subarray(0, bytesRead);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = p.subarray(0, bytesRead);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -211,7 +223,7 @@ export class BufReader implements Reader {
    * If ReadString encounters an error before finding a delimiter,
    * it returns the data read before the error and the error itself
    * (often `null`).
-   * ReadString returns err != nil if and only if the returned data does not end
+   * ReadString returns err !== null if and only if the returned data does not end
    * in delim.
    * For simple uses, a Scanner may be more convenient.
    */
@@ -295,7 +307,7 @@ export class BufReader implements Reader {
       return { line, more: false };
     }
 
-    if (line[line.byteLength - 1] == LF) {
+    if (line[line.byteLength - 1] === LF) {
       let drop = 1;
       if (line.byteLength > 1 && line[line.byteLength - 2] === CR) {
         drop = 2;
@@ -363,13 +375,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = slice;
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = slice;
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }
@@ -408,13 +413,6 @@ export class BufReader implements Reader {
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = this.#buf.subarray(this.#r, this.#w);
-        } else if (err instanceof Error) {
-          const e = new PartialReadError();
-          e.partial = this.#buf.subarray(this.#r, this.#w);
-          e.stack = err.stack;
-          e.message = err.message;
-          e.cause = err.cause;
-          throw err;
         }
         throw err;
       }

@@ -2,26 +2,24 @@
 
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { walk } from "../fs/walk.ts";
-import {
+import ts from "npm:typescript";
+const {
   createSourceFile,
-  ImportDeclaration,
   ScriptTarget,
-  StringLiteral,
   SyntaxKind,
-} from "https://esm.sh/typescript@4.8.4";
+} = ts;
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".md"];
 const EXCLUDED_PATHS = [
   ".git",
   ".github",
   "_tools",
-  "node",
 ];
 
 const ROOT = new URL("../", import.meta.url);
 const ROOT_LENGTH = ROOT.pathname.slice(0, -1).length;
 
-const RX_JSDOC_COMMENT = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/mg;
+const RX_JSDOC_COMMENT = /\*\*[^*]*\*+(?:[^/*][^*]*\*+)*/gm;
 const RX_JSDOC_REMOVE_LEADING_ASTERISK = /^\s*\* ?/gm;
 const RX_CODE_BLOCK = /`{3}([\w]*)\n([\S\s]+?)\n`{3}/gm;
 
@@ -40,11 +38,11 @@ function checkImportStatements(
   );
   const importDeclarations = sourceFile.statements.filter((s) =>
     s.kind === SyntaxKind.ImportDeclaration
-  ) as ImportDeclaration[];
+  ) as ts.ImportDeclaration[];
 
   for (const importDeclaration of importDeclarations) {
     const { moduleSpecifier } = importDeclaration;
-    const importPath = (moduleSpecifier as StringLiteral).text;
+    const importPath = (moduleSpecifier as ts.StringLiteral).text;
     const isRelative = importPath.startsWith(".");
     const isInternal = importPath.startsWith(
       "https://deno.land/std@$STD_VERSION/",

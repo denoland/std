@@ -1,31 +1,24 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { zipReadableStreams } from "./zip_readable_streams.ts";
 
 Deno.test("[streams] zipReadableStreams", async () => {
-  const textStream = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("qwertzuiopasd");
-      controller.enqueue("mnbvcxylkjhgfds");
-      controller.enqueue("apoiuztrewq0987321");
-      controller.close();
-    },
-  });
+  const textStream = ReadableStream.from([
+    "qwertzuiopasd",
+    "mnbvcxylkjhgfds",
+    "apoiuztrewq0987321",
+  ]);
 
-  const textStream2 = new ReadableStream<string>({
-    start(controller) {
-      controller.enqueue("mnbvcxylkjhgfdsewr");
-      controller.enqueue("apoiuztrewq0987654321");
-      controller.enqueue("qwertzuiopasq123d");
-      controller.close();
-    },
-  });
+  const textStream2 = ReadableStream.from([
+    "mnbvcxylkjhgfdsewr",
+    "apoiuztrewq0987654321",
+    "qwertzuiopasq123d",
+  ]);
 
-  const buf = [];
-  for await (const s of zipReadableStreams(textStream, textStream2)) {
-    buf.push(s);
-  }
+  const buf = await Array.fromAsync(
+    zipReadableStreams(textStream, textStream2),
+  );
 
   assertEquals(buf, [
     "qwertzuiopasd",

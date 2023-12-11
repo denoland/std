@@ -15,15 +15,15 @@ TestClass {
 `;
 
 snapshot[`Snapshot Test 3`] = `
-Map {
+Map(3) {
   "Hello" => "World!",
   1 => 2,
-  [Function] => "World!",
+  [Function (anonymous)] => "World!",
 }
 `;
 
 snapshot[`Snapshot Test 4`] = `
-Set {
+Set(3) {
   1,
   2,
   3,
@@ -63,15 +63,15 @@ TestClass {
 `;
 
 snapshot[`Snapshot Test - step > Nested 2`] = `
-Map {
+Map(3) {
   "Hello" => "World!",
   1 => 2,
-  [Function] => "World!",
+  [Function (anonymous)] => "World!",
 }
 `;
 
 snapshot[`Snapshot Test - step > Nested > Nested Nested 1`] = `
-Set {
+Set(3) {
   1,
   2,
   3,
@@ -97,6 +97,11 @@ snapshot[`Snapshot Test - step > Nested 3`] = `
 snapshot[`Snapshot Test - step 2`] = `"hello world"`;
 
 snapshot[`Snapshot Test - Adverse String \\ \` \${} 1`] = `"\\\\ \` \${}"`;
+
+snapshot[`Snapshot Test - Default serializer 1`] = `
+"a
+b	c"
+`;
 
 snapshot[`Snapshot Test - Multi-Line Strings > string 1`] = `
 "
@@ -210,7 +215,7 @@ snapshot[`Snapshot Test - Options > mode 2`] = `
 snapshot ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -222,7 +227,7 @@ snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 Snapshot Test - Update ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -267,7 +272,7 @@ snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 Snapshot Test - Update ... ok (--ms)
 ------- output -------
 
- > 1 snapshots updated.
+ > 1 snapshot updated.
 
 ok | 1 passed | 0 failed (--ms)
 
@@ -295,6 +300,9 @@ Snapshot Test - Second ... ok (--ms)
 ------- output -------
 
  > 2 snapshots updated.
+
+ > 1 snapshot removed.
+   • Snapshot Test - Update 1
 
 ok | 2 passed | 0 failed (--ms)
 
@@ -329,6 +337,93 @@ snapshot[\`Snapshot Test - First 1\`] = \`"FIRST"\`;
 '
 `;
 
+snapshot[`Snapshot Test - Remove - New snapshot 1`] = `
+"running 5 tests from <tempDir>/test.ts
+Snapshot Test - Remove - First ... ok (--ms)
+Snapshot Test - Remove - Second ... ok (--ms)
+Snapshot Test - Remove - Third ... ok (--ms)
+Snapshot Test - Remove - Fourth ... ok (--ms)
+Snapshot Test - Remove - Fifth ... ok (--ms)
+------- output -------
+
+ > 5 snapshots updated.
+
+ok | 5 passed | 0 failed (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Remove - Existing snapshot - removed one 1`] = `
+"running 4 tests from <tempDir>/test.ts
+Snapshot Test - Remove - First ... ok (--ms)
+Snapshot Test - Remove - Second ... ok (--ms)
+Snapshot Test - Remove - Fourth ... ok (--ms)
+Snapshot Test - Remove - Fifth ... ok (--ms)
+------- output -------
+
+ > 1 snapshot removed.
+   • Snapshot Test - Remove - Third 1
+
+ok | 4 passed | 0 failed (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Remove - Existing snapshot - removed several 1`] = `
+"running 1 test from <tempDir>/test.ts
+Snapshot Test - Remove - First ... ok (--ms)
+------- output -------
+
+ > 3 snapshots removed.
+   • Snapshot Test - Remove - Second 1
+   • Snapshot Test - Remove - Fourth 1
+   • Snapshot Test - Remove - Fifth 1
+
+ok | 1 passed | 0 failed (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Different Dir - New snapshot 1`] = `
+"running 2 tests from <tempDir>/test.ts
+Snapshot Test - First ... ok (--ms)
+Snapshot Test - Second ... ok (--ms)
+------- output -------
+
+ > 2 snapshots updated.
+running 2 tests from <tempDir>/test.ts
+Snapshot Test - First ...----- output end -----
+Snapshot Test - First ... ok (--ms)
+Snapshot Test - Second ... ok (--ms)
+------- output -------
+
+ > 2 snapshots updated.
+
+ok | 4 passed | 0 failed (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Different Dir - Existing snapshot - update 1`] = `
+"running 2 tests from <tempDir>/test.ts
+Snapshot Test - First ... ok (--ms)
+Snapshot Test - Second ... ok (--ms)
+------- output -------
+
+ > 1 snapshot updated.
+running 2 tests from <tempDir>/test.ts
+Snapshot Test - First ...----- output end -----
+Snapshot Test - First ... ok (--ms)
+Snapshot Test - Second ... ok (--ms)
+------- output -------
+
+ > 2 snapshots updated.
+
+ok | 4 passed | 0 failed (--ms)
+
+"
+`;
+
 snapshot[`Snapshot Test - Regression #2140 1`] = `
 {
   content: "
@@ -349,10 +444,8 @@ snapshot[`Snapshot Test - Regression #2144 1`] = `
 {
   fmt: {
     files: {
-      exclude: [
-      ],
-      include: [
-      ],
+      exclude: [],
+      include: [],
     },
     options: {},
   },

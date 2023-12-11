@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 
 Deno.test("[streams] readerFromIterable()", async function () {
@@ -16,7 +16,7 @@ Deno.test("[streams] readerFromIterable()", async function () {
   const p = new Uint8Array(4);
   while (true) {
     const n = await reader.read(p);
-    if (n == null) {
+    if (n === null) {
       break;
     }
     readStrings.push(decoder.decode(p.slice(0, n)));

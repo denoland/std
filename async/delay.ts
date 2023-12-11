@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode delay}. */
 export interface DelayOptions {
   /** Signal used to abort the delay. */
   signal?: AbortSignal;
@@ -12,11 +13,10 @@ export interface DelayOptions {
 }
 
 /**
- * Resolve a Promise after a given amount of milliseconds.
+ * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
  * @example
- *
- * ```typescript
+ * ```ts
  * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
  *
  * // ...
@@ -28,7 +28,7 @@ export interface DelayOptions {
  * To allow the process to continue to run as long as the timer exists. Requires
  * `--unstable` flag.
  *
- * ```typescript
+ * ```ts
  * import { delay } from "https://deno.land/std@$STD_VERSION/async/delay.ts";
  *
  * // ...
@@ -38,13 +38,11 @@ export interface DelayOptions {
  */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   const { signal, persistent } = options;
-  if (signal?.aborted) {
-    return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
-  }
+  if (signal?.aborted) return Promise.reject(signal.reason);
   return new Promise((resolve, reject) => {
     const abort = () => {
       clearTimeout(i);
-      reject(new DOMException("Delay was aborted.", "AbortError"));
+      reject(signal?.reason);
     };
     const done = () => {
       signal?.removeEventListener("abort", abort);

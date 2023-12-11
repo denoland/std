@@ -6,16 +6,16 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import { readRange, readRangeSync } from "./read_range.ts";
-import type { Closer, Reader, ReaderSync } from "../types.d.ts";
+import type { Closer, Reader, ReaderSync } from "./types.d.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
-let testBytes: Uint8Array | null;
+let testBytes: Uint8Array | undefined;
 
 export function init() {
-  if (testBytes == null) {
+  if (testBytes === undefined) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       testBytes[i] = "a".charCodeAt(0) + (i % 26);
@@ -70,7 +70,7 @@ class MockFile
   seek(offset: number, whence: Deno.SeekMode): Promise<number> {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      return Promise.reject(new RangeError("seeked pass end"));
+      return Promise.reject(new RangeError("attempted to seek past end"));
     }
     this.#offset = offset;
     return Promise.resolve(this.#offset);
@@ -79,7 +79,7 @@ class MockFile
   seekSync(offset: number, whence: Deno.SeekMode): number {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      throw new RangeError("seeked pass end");
+      throw new RangeError("attempted to seek past end");
     }
     this.#offset = offset;
     return this.#offset;

@@ -9,7 +9,7 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import { resolve } from "../path/mod.ts";
 import { Tar } from "./tar.ts";
 import { Untar } from "./untar.ts";
@@ -116,9 +116,10 @@ Deno.test("directoryEntryType", async function () {
 
   const reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
-  for await (const entry of untar) {
-    assertEquals(entry.type, "directory");
-  }
+  await Array.fromAsync(
+    untar,
+    (entry) => assertEquals(entry.type, "directory"),
+  );
 
   reader.close();
   await Deno.remove(outputFile);

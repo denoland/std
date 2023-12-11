@@ -1,21 +1,36 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
+import { dirname } from "../path/dirname.ts";
+import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
+
+function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
+  if (typeof target !== "string") return target; // URL is always absolute path
+  if (typeof linkName === "string") {
+    return resolve(dirname(linkName), target);
+  } else {
+    return new URL(target, linkName);
+  }
+}
 
 /**
- * Ensures that the link exists.
+ * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  *
- * @param src the source file path
- * @param dest the destination link path
+ * @param target the source file path
+ * @param linkName the destination link path
  */
-export async function ensureSymlink(src: string | URL, dest: string | URL) {
-  const srcStatInfo = await Deno.lstat(src);
+export async function ensureSymlink(
+  target: string | URL,
+  linkName: string | URL,
+) {
+  const targetRealPath = resolveSymlinkTarget(target, linkName);
+  const srcStatInfo = await Deno.lstat(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  await ensureDir(path.dirname(toPathString(dest)));
+  await ensureDir(dirname(toPathString(linkName)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
@@ -24,7 +39,7 @@ export async function ensureSymlink(src: string | URL, dest: string | URL) {
     : undefined;
 
   try {
-    await Deno.symlink(src, dest, options);
+    await Deno.symlink(target, linkName, options);
   } catch (error) {
     if (!(error instanceof Deno.errors.AlreadyExists)) {
       throw error;
@@ -33,17 +48,21 @@ export async function ensureSymlink(src: string | URL, dest: string | URL) {
 }
 
 /**
- * Ensures that the link exists.
+ * Ensures that the link exists, and points to a valid file.
  * If the directory structure does not exist, it is created.
  *
- * @param src the source file path
- * @param dest the destination link path
+ * @param target the source file path
+ * @param linkName the destination link path
  */
-export function ensureSymlinkSync(src: string | URL, dest: string | URL) {
-  const srcStatInfo = Deno.lstatSync(src);
+export function ensureSymlinkSync(
+  target: string | URL,
+  linkName: string | URL,
+) {
+  const targetRealPath = resolveSymlinkTarget(target, linkName);
+  const srcStatInfo = Deno.lstatSync(targetRealPath);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
-  ensureDirSync(path.dirname(toPathString(dest)));
+  ensureDirSync(dirname(toPathString(linkName)));
 
   const options: Deno.SymlinkOptions | undefined = isWindows
     ? {
@@ -52,7 +71,7 @@ export function ensureSymlinkSync(src: string | URL, dest: string | URL) {
     : undefined;
 
   try {
-    Deno.symlinkSync(src, dest, options);
+    Deno.symlinkSync(target, linkName, options);
   } catch (error) {
     if (!(error instanceof Deno.errors.AlreadyExists)) {
       throw error;

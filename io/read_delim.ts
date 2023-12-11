@@ -1,7 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import { BytesList } from "../bytes/bytes_list.ts";
-import type { Reader } from "../types.d.ts";
+import { concat } from "../bytes/concat.ts";
+import type { Reader } from "./types.d.ts";
 
 /** Generate longest proper prefix which is also suffix array. */
 function createLPS(pat: Uint8Array): Uint8Array {
@@ -10,7 +11,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
   let prefixEnd = 0;
   let i = 1;
   while (i < lps.length) {
-    if (pat[i] == pat[prefixEnd]) {
+    if (pat[i] === pat[prefixEnd]) {
       prefixEnd++;
       lps[i] = prefixEnd;
       i++;
@@ -24,7 +25,11 @@ function createLPS(pat: Uint8Array): Uint8Array {
   return lps;
 }
 
-/** Read delimited bytes from a Reader. */
+/**
+ * Read delimited bytes from a Reader.
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 export async function* readDelim(
   reader: Reader,
   delim: Uint8Array,
@@ -32,7 +37,7 @@ export async function* readDelim(
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-  const chunks = new BytesList();
+  let chunks = new Uint8Array();
   const bufSize = Math.max(1024, delimLen + 1);
 
   // Modified KMP
@@ -43,15 +48,15 @@ export async function* readDelim(
     const result = await reader.read(inspectArr);
     if (result === null) {
       // Yield last chunk.
-      yield chunks.concat();
+      yield chunks;
       return;
     } else if (result < 0) {
       // Discard all remaining and silently fail.
       return;
     }
-    chunks.add(inspectArr, 0, result);
+    chunks = concat([chunks, inspectArr.slice(0, result)]);
     let localIndex = 0;
-    while (inspectIndex < chunks.size()) {
+    while (inspectIndex < chunks.length) {
       if (inspectArr[localIndex] === delim[matchIndex]) {
         inspectIndex++;
         localIndex++;
@@ -62,7 +67,7 @@ export async function* readDelim(
           const readyBytes = chunks.slice(0, matchEnd);
           yield readyBytes;
           // Reset match, different from KMP.
-          chunks.shift(inspectIndex);
+          chunks = chunks.slice(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
         }

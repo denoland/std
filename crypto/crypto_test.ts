@@ -1,9 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals, assertInstanceOf, fail } from "../assert/mod.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import { repeat } from "../bytes/repeat.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 import { DigestAlgorithm, digestAlgorithms } from "./_wasm/mod.ts";
+import { encodeHex } from "../encoding/hex.ts";
+
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
@@ -21,27 +23,22 @@ Deno.test(
       "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
-          new ReadableStream({
-            start(controller) {
-              controller.enqueue(inputBytes);
-              controller.close();
-            },
-          }),
+          ReadableStream.from([inputBytes]),
         ),
       ),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
@@ -51,12 +48,12 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
@@ -71,7 +68,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         stdCrypto.subtle.digestSync(
           "SHA-384",
           (function* () {
@@ -85,7 +82,7 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
+      encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (function* () {
@@ -97,17 +94,17 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
+      encodeHex(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
+      encodeHex(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
 
     assertEquals(
-      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
+      encodeHex(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
   },
@@ -145,12 +142,7 @@ Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
   assert(
     (await stdCrypto.subtle.digest(
       "BLAKE3",
-      new ReadableStream({
-        start(controller) {
-          controller.enqueue(inputBytes);
-          controller.close();
-        },
-      }),
+      ReadableStream.from([inputBytes]),
     )) instanceof ArrayBuffer,
   );
 });
@@ -175,56 +167,41 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    const smallData = new Uint8Array(64);
+    const smallDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
+    const heapBytesAfterSmall = memory.buffer.byteLength;
+
+    const largeData = new Uint8Array(64_000_000);
+    const largeDigest = encodeHex(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
+    const heapBytesAfterLarge = memory.buffer.byteLength;
+
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      smallDigest,
+      heapBytesAfterSmall,
+      largeDigest,
+      heapBytesAfterLarge,
+    }));
+  `;
+
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", code],
     cwd: moduleDir,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "inherit",
   });
-  const child = process.spawn();
 
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+  const { success, stdout } = await command.output();
+  const output = new TextDecoder().decode(stdout);
 
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      const smallData = new Uint8Array(64);
-      const smallDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", smallData.buffer));
-      const heapBytesAfterSmall = memory.buffer.byteLength;
-
-      const largeData = new Uint8Array(64_000_000);
-      const largeDigest = toHexString(stdCrypto.subtle.digestSync("BLAKE3", largeData.buffer));
-      const heapBytesAfterLarge = memory.buffer.byteLength;
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          smallDigest,
-          heapBytesAfterSmall,
-          largeDigest,
-          heapBytesAfterLarge,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const res = await child.output();
-  const stdout = new TextDecoder().decode(res.stdout);
-
-  assertEquals(res.success, true, "test subprocess failed");
+  assertEquals(success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -237,7 +214,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     heapBytesAfterSmall: number;
     largeDigest: string;
     heapBytesAfterLarge: number;
-  } = JSON.parse(stdout);
+  } = JSON.parse(output);
 
   assertEquals(
     smallDigest,
@@ -272,55 +249,39 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
+  const code = `
+    import { crypto as stdCrypto } from "./mod.ts";
+    import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+    import { encodeHex } from "../encoding/hex.ts";
+
+    const { memory } = instantiateWithInstance().instance.exports;
+
+    const heapBytesInitial = memory.buffer.byteLength;
+
+    let state = new ArrayBuffer(0);
+
+    for (let i = 0; i < 1_000_000; i++) {
+      state = stdCrypto.subtle.digestSync({
+        name: "BLAKE3"
+      }, state);
+    }
+
+    const heapBytesFinal = memory.buffer.byteLength;
+
+    const stateFinal = encodeHex(state);
+
+    console.log(JSON.stringify({
+      heapBytesInitial,
+      heapBytesFinal,
+      stateFinal,
+    }));
+  `;
+
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["--quiet", "run", "--no-check", "-"],
+    args: ["eval", code],
     cwd: moduleDir,
-    stdout: "piped",
-    stderr: "inherit",
-    stdin: "piped",
   });
-  const child = command.spawn();
-
-  const writer = child.stdin.getWriter();
-  await writer.write(
-    new TextEncoder().encode(`
-      import { crypto as stdCrypto } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
-
-      const { memory } = instantiateWithInstance().instance.exports;
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      let state = new ArrayBuffer(0);
-
-      const toHexString = (bytes: ArrayBuffer): string =>
-        new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-      for (let i = 0; i < 1_000_000; i++) {
-        state = stdCrypto.subtle.digestSync({
-          name: "BLAKE3"
-        }, state);
-      }
-
-      const heapBytesFinal = memory.buffer.byteLength;
-
-      const stateFinal = toHexString(state);
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          heapBytesFinal,
-          stateFinal,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  writer.releaseLock();
-  await child.stdin.close();
-
-  const { stdout, success } = await child.output();
+  const { stdout, success } = await command.output();
   const output = new TextDecoder().decode(stdout);
 
   assert(success);
@@ -376,8 +337,11 @@ const bufferCopy = slicedCopy.buffer;
 // Test result when an error is expected for all algorithms.
 const allErrors = {
   BLAKE2B: Error,
-  "BLAKE2B-384": Error,
+  "BLAKE2B-128": Error,
+  "BLAKE2B-160": Error,
+  "BLAKE2B-224": Error,
   "BLAKE2B-256": Error,
+  "BLAKE2B-384": Error,
   BLAKE2S: Error,
   BLAKE3: Error,
   "KECCAK-224": Error,
@@ -417,6 +381,9 @@ const digestCases: [
   ["Empty", [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]], {}, {
     BLAKE2B:
       "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
+    "BLAKE2B-128": "cae66941d9efbd404e4d88758ea67670",
+    "BLAKE2B-160": "3345524abf6bbe1809449224b5972c41790b6cf2",
+    "BLAKE2B-224": "836cc68931c2e4e3e838602eca1902591d216837bafddfe6f0c8cb07",
     "BLAKE2B-256":
       "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
     "BLAKE2B-384":
@@ -464,6 +431,9 @@ const digestCases: [
     {
       BLAKE2B:
         "2fa3f686df876995167e7c2e5d74c4c7b6e48f8068fe0e44208344d480f7904c36963e44115fe3eb2a3ac8694c28bcb4f5a0f3276f2e79487d8219057a506e4b",
+      "BLAKE2B-128": "7025e075d5e2f6cde3cc051a31f07660",
+      "BLAKE2B-160": "082ad992fb76871c33a1b9993a082952feaca5e6",
+      "BLAKE2B-224": "0d94e174732ef9aae73f395ab44507bfa983d65023c11a951f0c32e4",
       "BLAKE2B-256":
         "03170a2e7597b7b7e3d84c05391d139a62b157e78786d8c082f29dcf4c111314",
       "BLAKE2B-384":
@@ -509,8 +479,11 @@ const digestCases: [
     length: 20,
   }, {
     BLAKE2B: Error,
-    "BLAKE2B-384": Error,
+    "BLAKE2B-128": Error,
+    "BLAKE2B-160": "70e8ece5e293e1bda064deef6b080edde357010f",
+    "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
+    "BLAKE2B-384": Error,
     BLAKE2S: Error,
     BLAKE3: "d74981efa70a0c880b8d8c1985d075dbcbf679b9",
     "KECCAK-224": Error,
@@ -538,8 +511,11 @@ const digestCases: [
     length: 3,
   }, {
     BLAKE2B: Error,
-    "BLAKE2B-384": Error,
+    "BLAKE2B-128": Error,
+    "BLAKE2B-160": Error,
+    "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
+    "BLAKE2B-384": Error,
     BLAKE2S: Error,
     BLAKE3: "d74981",
     "KECCAK-224": Error,
@@ -567,8 +543,11 @@ const digestCases: [
     length: 123,
   }, {
     BLAKE2B: Error,
-    "BLAKE2B-384": Error,
+    "BLAKE2B-128": Error,
+    "BLAKE2B-160": Error,
+    "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
+    "BLAKE2B-384": Error,
     BLAKE2S: Error,
     BLAKE3:
       "d74981efa70a0c880b8d8c1985d075dbcbf679b99a5f9914e5aaf96b831a9e24a020ed55aed9a6ab2eaf3fd70d2c98c949e142d8f42a10250190b699e02cf9eb68612e1a556fee6cf726bcb0994f7d3e669eda394788f8c80a4f0ea056be3d4dffd8069d7ef9a714a47a4cdef62c5402a25d7994384b07bfcf8479",
@@ -599,8 +578,11 @@ const digestCases: [
     length: 0,
   }, {
     BLAKE2B: Error,
-    "BLAKE2B-384": Error,
+    "BLAKE2B-128": Error,
+    "BLAKE2B-160": Error,
+    "BLAKE2B-224": Error,
     "BLAKE2B-256": Error,
+    "BLAKE2B-384": Error,
     BLAKE2S: Error,
     BLAKE3: "",
     "KECCAK-224": Error,
@@ -642,6 +624,9 @@ const digestCases: [
   ["About a meg", [[aboutAMeg]], {}, {
     BLAKE2B:
       "81f197a4ced23ba7bfc9e5e84f417475371b22edb36089978734d1327c39ff75eeda6598ab1c63f0829aa437b68a526f04e622f714d9d7093150e6b2f9603b5c",
+    "BLAKE2B-128": "5f7d447d30b4e0eafc04130cb20269bb",
+    "BLAKE2B-160": "12ae1afb8fc7d51f7b4fea2b75c9bd0ec34ac56a",
+    "BLAKE2B-224": "bcab4f3527f236ebee29185804d0142a50fb87309654e7ebb0dbc628",
     "BLAKE2B-256":
       "84b033ca29abf242e3761b1657e14768cbfb4e7fc28b3d9f0f34905e5f2aa92b",
     "BLAKE2B-384":
@@ -687,6 +672,9 @@ const digestCases: [
     {
       BLAKE2B:
         "dd3ce8111538e7de0842ce11835e38788b6c9436deb122dcfdf69a2fc51d0414e6e088e9ced8e275280eb945f135e5e9eb8000d0434427e67efeea8fc1f39cc5",
+      "BLAKE2B-128": "aa4c50ebd4df2bce32127c1ef8a748ed",
+      "BLAKE2B-160": "65e3c4006a6d6326cd221200d6a874095bb676f2",
+      "BLAKE2B-224": "bc514492509639ff70ddbed44682757939267df7b56b19c5a90e4f4a",
       "BLAKE2B-256":
         "ee079520d28e52bcf61dbc1919e90d9a6c3cb66290f5f41c5521dae9c365c4fe",
       "BLAKE2B-384":
@@ -743,6 +731,9 @@ const digestCases: [
     {
       BLAKE2B:
         "0ad2f5cb56954ada6e852adcd8b3a9147e92cb68859b13ddb511a6abee263c51e32db3a4a8a78152fa0638f726c9ac96fa1fda41898bc6d7a4017d7abdbf8480",
+      "BLAKE2B-128": "d57b553f747e0db24b3bad3e279bf75b",
+      "BLAKE2B-160": "1a9e52d2bb2e8a2ad942cebd212ffb8188523f21",
+      "BLAKE2B-224": "1f619ea6d5652ef9fe5eee4477daa6bb33a1a0d7fd54dd7cf980f7b5",
       "BLAKE2B-256":
         "be41aad5e22791bfa0b6fc37cd35ecf32b5c6170f85aabcac839fb5e0315def9",
       "BLAKE2B-384":
@@ -1325,20 +1316,20 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
   const expectedDigest64a = "a5d9fb67426e48b1";
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
     expectedDigest32,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
     expectedDigest32a,
   );
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
     expectedDigest64,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    encodeHex(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
     expectedDigest64a,
   );
 });
@@ -1353,8 +1344,11 @@ for (const algorithm of digestAlgorithms) {
         const bytePieces = pieces.map((piece) =>
           typeof piece === "string" ? new TextEncoder().encode(piece) : piece
         ) as Array<BufferSource>;
-        try {
-          const actual = toHexString(
+        // Expected value will either be a hex string, if the case is expected
+        // to return successfully, or an error class/constructor function, if
+        // the case is expected to throw.
+        if (typeof expected === "string") {
+          const actual = encodeHex(
             await stdCrypto.subtle.digest({
               ...options,
               name: algorithm,
@@ -1369,32 +1363,45 @@ for (const algorithm of digestAlgorithms) {
               JSON.stringify(options)
             }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
           );
-        } catch (error) {
-          if (expected instanceof Function) {
-            assert(
-              error instanceof expected,
-              `got a different error than expected: ${error}`,
+        } else if (typeof expected === "function") {
+          let error;
+          try {
+            await stdCrypto.subtle.digest({
+              ...options,
+              name: algorithm,
+            }, bytePieces);
+          } catch (caughtError) {
+            error = caughtError;
+          }
+          if (error !== undefined) {
+            assertInstanceOf(
+              error,
+              expected,
             );
           } else {
-            throw error;
+            fail(
+              `${algorithm} of ${caption}${
+                i > 0 ? ` (but not until variation [${i}]!)` : ""
+              } with options ${
+                JSON.stringify(options)
+              }) expected an exception of type ${expected.name}, but none was thrown.`,
+            );
           }
+        } else {
+          throw new TypeError("expected value has an unexpected type");
         }
       }
     }
   });
 }
 
-const toHexString = (bytes: ArrayBuffer): string =>
-  new Uint8Array(bytes).reduce(
-    (str, byte) => str + byte.toString(16).padStart(2, "0"),
-    "",
-  );
-
-Deno.test({
-  name: "[crypto/subtle/timeSafeEqual] - is present",
-  fn() {
-    const a = new Uint8Array([212, 213]);
-    const b = new Uint8Array([212, 213]);
-    assert(stdCrypto.subtle.timingSafeEqual(a.buffer, b.buffer));
-  },
+/**
+ * This is one of many methods of `crypto` for which we don't have our own
+ * implementation, and just pass calls through to the native implementation.
+ * This test doesn't cover any cryptographic logic but just serves to ensure
+ * that (at least this one of) the native methods are indeed re-exported, and
+ * that they're appropriately bound to use the required receiver.
+ */
+Deno.test("[crypto/getRandomValues] passes through to native implementation", () => {
+  assertInstanceOf(stdCrypto.getRandomValues(new Uint8Array(1)), Uint8Array);
 });

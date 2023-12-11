@@ -1,10 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
-/** Turns a Reader, `r`, into an async iterator.
+export type { Reader, ReaderSync };
+
+/**
+ * Turns a {@linkcode Reader}, `r`, into an async iterator.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
@@ -18,6 +23,7 @@ import type { Reader, ReaderSync } from "../types.d.ts";
  * Second argument can be used to tune size of a buffer.
  * Default size of the buffer is 32kB.
  *
+ * @example
  * ```ts
  * import { iterateReader } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
  *
@@ -30,6 +36,8 @@ import type { Reader, ReaderSync } from "../types.d.ts";
  * }
  * f.close();
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
  */
 export async function* iterateReader(
   r: Reader,
@@ -49,7 +57,8 @@ export async function* iterateReader(
   }
 }
 
-/** Turns a ReaderSync, `r`, into an iterator.
+/**
+ * Turns a {@linkcode ReaderSync}, `r`, into an iterator.
  *
  * ```ts
  * import { iterateReaderSync } from "https://deno.land/std@$STD_VERSION/streams/iterate_reader.ts";
@@ -81,6 +90,8 @@ export async function* iterateReader(
  * a view on that buffer on each iteration. It is therefore caller's
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
  */
 export function* iterateReaderSync(
   r: ReaderSync,

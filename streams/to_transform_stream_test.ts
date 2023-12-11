@@ -1,23 +1,19 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { toTransformStream } from "./to_transform_stream.ts";
-import { readableStreamFromIterable } from "./readable_stream_from_iterable.ts";
 
 Deno.test({
   name: "[streams] toTransformStream()",
   async fn() {
-    const readable = readableStreamFromIterable([0, 1, 2])
+    const readable = ReadableStream.from([0, 1, 2])
       .pipeThrough(toTransformStream(async function* (src) {
         for await (const i of src) {
           yield i * 100;
         }
       }));
 
-    const res = [];
-    for await (const i of readable) {
-      res.push(i);
-    }
+    const res = await Array.fromAsync(readable);
     assertEquals(res, [0, 100, 200]);
   },
 });
@@ -25,17 +21,14 @@ Deno.test({
 Deno.test({
   name: "[streams] toTransformStream() Pass iterable instead of asyncIterable",
   async fn() {
-    const readable = readableStreamFromIterable([0, 1, 2])
+    const readable = ReadableStream.from([0, 1, 2])
       .pipeThrough(toTransformStream(function* (_src) {
         yield 0;
         yield 100;
         yield 200;
       }));
 
-    const res = [];
-    for await (const i of readable) {
-      res.push(i);
-    }
+    const res = await Array.fromAsync(readable);
     assertEquals(res, [0, 100, 200]);
   },
 });
@@ -200,7 +193,7 @@ Deno.test({
   name:
     "[streams] toTransformStream() Cancel streams with the correct error message",
   async fn() {
-    const src = readableStreamFromIterable([0, 1, 2]);
+    const src = ReadableStream.from([0, 1, 2]);
     // deno-lint-ignore require-yield
     const transform = toTransformStream(function* (src) {
       src.getReader(); // lock the source stream to cause error at cancel
@@ -208,9 +201,7 @@ Deno.test({
     });
 
     await assertRejects(
-      async () => {
-        for await (const _ of src.pipeThrough(transform));
-      },
+      async () => await Array.fromAsync(src.pipeThrough(transform)),
       Error,
       "foo",
     );

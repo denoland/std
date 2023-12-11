@@ -1,11 +1,12 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "../io/types.d.ts";
 
 /**
- * Create a `Reader` from a `ReadableStreamDefaultReader`.
+ * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
  *
  * @example
  * ```ts
@@ -19,6 +20,8 @@ import type { Reader } from "../types.d.ts";
  * await copy(reader, file);
  * file.close();
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,

@@ -35,16 +35,17 @@ function getPrBody() {
     `Please ensure:\n` +
     `- [ ] Version in version.ts is updated correctly\n` +
     `- [ ] Releases.md is updated correctly\n` +
-    `- [ ] All the tests in this branch have been run against the CLI release being done ` +
-    `(\`../deno/target/release/deno task test && ../deno/target/release/deno task node:unit && ` +
-    `../deno/target/release/deno task node:test\`)\n\n` +
+    `- [ ] All the tests in this branch have been run against the CLI release being done\n` +
+    "     ```shell\n" +
+    `     ../deno/target/release/deno task test\n` +
+    "     ```\n" +
     `To make edits to this PR:\n` +
     "```shell\n" +
     `git fetch upstream ${newBranchName} && git checkout -b ${newBranchName} upstream/${newBranchName}\n` +
     "```\n";
 
   const actor = Deno.env.get("GH_WORKFLOW_ACTOR");
-  if (actor != null) {
+  if (actor !== undefined) {
     text += `\ncc @${actor}`;
   }
 

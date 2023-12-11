@@ -1,18 +1,14 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
-import { globToRegExp } from "../path/glob.ts";
+import { globToRegExp } from "../path/glob_to_regexp.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_DIRS = [
-  "**/node/_module",
-  "**/node/_tools/test",
-  "**/node/_tools/versions",
   "**/dotenv/testdata",
   "**/fs/testdata",
   "**/http/testdata",
-  "**/node/testdata",
   "**/crypto/_wasm/target",
-  "**/encoding/varint/_wasm/target",
+  "**/crypto/_wasm/lib",
 ];
 
 const ROOT = new URL("../", import.meta.url);

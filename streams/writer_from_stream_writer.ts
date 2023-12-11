@@ -1,8 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-import type { Writer } from "../types.d.ts";
+import type { Writer } from "../io/types.d.ts";
 
-/** Create a `Writer` from a `WritableStreamDefaultWriter`.
+/**
+ * Create a {@linkcode Writer} from a {@linkcode WritableStreamDefaultWriter}.
  *
  * @example
  * ```ts
@@ -20,6 +22,8 @@ import type { Writer } from "../types.d.ts";
  * await copy(file, writer);
  * file.close();
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStreamDefaultWriter} directly.
  */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,

@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { MuxAsyncIterator } from "./mux_async_iterator.ts";
 
 async function* gen123(): AsyncIterableIterator<number> {
@@ -29,10 +29,7 @@ Deno.test("[async] MuxAsyncIterator", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(gen123());
   mux.add(gen456());
-  const results = new Set();
-  for await (const value of mux) {
-    results.add(value);
-  }
+  const results = new Set(await Array.fromAsync(mux));
   assertEquals(results.size, 6);
   assertEquals(results, new Set([1, 2, 3, 4, 5, 6]));
 });
@@ -40,10 +37,7 @@ Deno.test("[async] MuxAsyncIterator", async function () {
 Deno.test("[async] MuxAsyncIterator takes async iterable as source", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(new CustomAsyncIterable());
-  const results = new Set();
-  for await (const value of mux) {
-    results.add(value);
-  }
+  const results = new Set(await Array.fromAsync(mux));
   assertEquals(results.size, 3);
   assertEquals(results, new Set([1, 2, 3]));
 });
@@ -54,13 +48,8 @@ Deno.test({
     const mux = new MuxAsyncIterator<number>();
     mux.add(gen123());
     mux.add(genThrows());
-    const results = new Set();
     await assertRejects(
-      async () => {
-        for await (const value of mux) {
-          results.add(value);
-        }
-      },
+      async () => await Array.fromAsync(mux),
       Error,
       "something went wrong",
     );

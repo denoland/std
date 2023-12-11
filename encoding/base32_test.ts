@@ -1,8 +1,8 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
-import { decode, encode } from "./base32.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
+import { decodeBase32, encodeBase32 } from "./base32.ts";
 
 // Lifted from https://stackoverflow.com/questions/38987784
 const fromHexString = (hexString: string): Uint8Array =>
@@ -90,7 +90,7 @@ Deno.test({
   name: "[encoding.base32] encode",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encode(fromHexString(bin)), b32);
+      assertEquals(encodeBase32(fromHexString(bin)), b32);
     }
   },
 });
@@ -99,7 +99,7 @@ Deno.test({
   name: "[encoding.base32] decode",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(toHexString(decode(b32)), bin);
+      assertEquals(toHexString(decodeBase32(b32)), bin);
     }
   },
 });
@@ -109,7 +109,7 @@ Deno.test({
   fn() {
     let errorCaught = false;
     try {
-      decode("OOOO==");
+      decodeBase32("OOOO==");
     } catch (e) {
       assert(e instanceof Error);
       assert(
@@ -126,7 +126,7 @@ Deno.test({
   fn() {
     let errorCaught = false;
     try {
-      decode("OOOOOO==");
+      decodeBase32("OOOOOO==");
     } catch (e) {
       assert(e instanceof Error);
       assert(e.message.includes("Invalid pad length"));

@@ -1,12 +1,15 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// @ts-nocheck Bypass static errors for missing --unstable.
 
-import * as path from "../path/mod.ts";
+import { basename } from "../path/basename.ts";
+import { join } from "../path/join.ts";
+import { resolve } from "../path/resolve.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, isSubdir, toPathString } from "./_util.ts";
-import { assert } from "../_util/asserts.ts";
-import { isWindows } from "../_util/os.ts";
+import { assert } from "../assert/assert.ts";
 
+const isWindows = Deno.build.os === "windows";
+
+/** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
   /**
    * overwrite existing file or directory.
@@ -188,17 +191,21 @@ async function copyDir(
   src = toPathString(src);
   dest = toPathString(dest);
 
+  const promises = [];
+
   for await (const entry of Deno.readDir(src)) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, path.basename(srcPath as string));
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {
-      await copySymLink(srcPath, destPath, options);
+      promises.push(copySymLink(srcPath, destPath, options));
     } else if (entry.isDirectory) {
-      await copyDir(srcPath, destPath, options);
+      promises.push(copyDir(srcPath, destPath, options));
     } else if (entry.isFile) {
-      await copyFile(srcPath, destPath, options);
+      promises.push(copyFile(srcPath, destPath, options));
     }
   }
+
+  await Promise.all(promises);
 }
 
 /* copy folder from src to dest synchronously */
@@ -227,9 +234,8 @@ function copyDirSync(
   dest = toPathString(dest);
 
   for (const entry of Deno.readDirSync(src)) {
-    assert(entry.name != null, "file.name must be set");
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, path.basename(srcPath as string));
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, basename(srcPath as string));
     if (entry.isSymlink) {
       copySymlinkSync(srcPath, destPath, options);
     } else if (entry.isDirectory) {
@@ -262,8 +268,8 @@ export async function copy(
   dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(toPathString(src));
-  dest = path.resolve(toPathString(dest));
+  src = resolve(toPathString(src));
+  dest = resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");
@@ -307,8 +313,8 @@ export function copySync(
   dest: string | URL,
   options: CopyOptions = {},
 ) {
-  src = path.resolve(toPathString(src));
-  dest = path.resolve(toPathString(dest));
+  src = resolve(toPathString(src));
+  dest = resolve(toPathString(dest));
 
   if (src === dest) {
     throw new Error("Source and destination cannot be the same.");

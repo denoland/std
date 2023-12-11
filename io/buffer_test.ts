@@ -8,20 +8,20 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import { Buffer } from "./buffer.ts";
 import { writeAllSync } from "../streams/write_all.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 // N controls how many iterations of certain checks are performed.
 const N = 100;
-let testBytes: Uint8Array | null;
-let testString: string | null;
+let testBytes: Uint8Array | undefined;
+let testString: string | undefined;
 
 const ignoreMaxSizeTests = true;
 
 function init() {
-  if (testBytes == null) {
+  if (testBytes === undefined) {
     testBytes = new Uint8Array(N);
     for (let i = 0; i < N; i++) {
       testBytes[i] = "a".charCodeAt(0) + (i % 26);
