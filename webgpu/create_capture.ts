@@ -2,6 +2,7 @@
 
 import { getRowPadding } from "./row_padding.ts";
 
+/** Return value for {@linkcode createCapture}. */
 export interface CreateCapture {
   texture: GPUTexture;
 

@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-interface TextureFormatInfo {
+/** Return type for {@linkcode describeTextureFormat}. */
+export interface TextureFormatInfo {
   /** The specific feature needed to use the format, if any. */
   requiredFeature?: GPUFeatureName;
   /** Type of sampling that is valid for the texture. */
