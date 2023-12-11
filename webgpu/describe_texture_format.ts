@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 interface TextureFormatInfo {
   /** The specific feature needed to use the format, if any. */
