@@ -54,6 +54,13 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeHex} instead.
+ *
+ * Encodes `src` into `src.length * 2` bytes.
+ */
+export const encode = encodeHex;
+
 /** Encodes the source into hex string. */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
@@ -66,6 +73,14 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   }
   return textDecoder.decode(dst);
 }
+
+/**
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeHex} instead.
+ *
+ * Decodes `src` into `src.length / 2` bytes.
+ * If the input is malformed, an error will be thrown.
+ */
+export const decode = decodeHex;
 
 /** Decodes the given hex string to Uint8Array.
  * If the input is malformed, an error will be thrown. */
