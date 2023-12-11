@@ -19,14 +19,26 @@ interface TextureFormatInfo {
   components: number;
 }
 
-const basic = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING;
+const basic = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
+  GPUTextureUsage.TEXTURE_BINDING;
 const attachment = basic | GPUTextureUsage.RENDER_ATTACHMENT;
 const storage = basic | GPUTextureUsage.STORAGE_BINDING;
-const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT;
+const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
+  GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING |
+  GPUTextureUsage.RENDER_ATTACHMENT;
 
 /** Get various information about a specific {@linkcode GPUTextureFormat}. */
-export function describeTextureFormat(format: GPUTextureFormat): TextureFormatInfo {
-  let info: [requiredFeatures: GPUFeatureName | undefined, sampleType: GPUTextureSampleType, usage: number, blockDimensions: [number, number], blockSize: number, components: number];
+export function describeTextureFormat(
+  format: GPUTextureFormat,
+): TextureFormatInfo {
+  let info: [
+    requiredFeatures: GPUFeatureName | undefined,
+    sampleType: GPUTextureSampleType,
+    usage: number,
+    blockDimensions: [number, number],
+    blockSize: number,
+    components: number,
+  ];
 
   switch (format) {
     case "r8unorm":
@@ -145,10 +157,10 @@ export function describeTextureFormat(format: GPUTextureFormat): TextureFormatIn
       break;
 
     case "stencil8": // TODO
-      info = []
+      info = [];
       break;
     case "depth16unorm": // TODO
-      info = []
+      info = [];
       break;
     case "depth24plus":
       info = [undefined, "depth", attachment, [1, 1], 4, 1];

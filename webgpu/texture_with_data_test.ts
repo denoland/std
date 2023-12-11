@@ -47,6 +47,6 @@ Deno.test({
         height: 2,
       },
       usage: GPUTextureUsage.COPY_SRC,
-    }, new Uint8Array([1,1,1,1,1,1,1]));
-  }
+    }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
+  },
 });

@@ -74,9 +74,33 @@ Deno.test("[WebGPU] resliceBufferWithPadding", () => {
       0]);
 
   const buf = resliceBufferWithPadding(input, 3, 2);
-  assertEquals(buf, new Uint8Array([
-      0, 255, 0, 255, 255, 0, 0, 255,
-      0, 255, 0, 255, 255, 0, 0, 255,
-      255,   0, 0, 255, 255, 0, 0, 255
-    ]));
+  assertEquals(
+    buf,
+    new Uint8Array([
+      0,
+      255,
+      0,
+      255,
+      255,
+      0,
+      0,
+      255,
+      0,
+      255,
+      0,
+      255,
+      255,
+      0,
+      0,
+      255,
+      255,
+      0,
+      0,
+      255,
+      255,
+      0,
+      0,
+      255,
+    ]),
+  );
 });
