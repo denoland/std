@@ -562,14 +562,6 @@ const ANSI_PATTERN = new RegExp(
 );
 
 /**
- * @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
- *
- * Remove ANSI escape codes from the string.
- * @param string to remove ANSI escape codes from
- */
-export const stripColor = stripAnsiCode;
-
-/**
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
