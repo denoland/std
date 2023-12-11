@@ -10,7 +10,7 @@ export interface CreateCapture {
 }
 
 /**
- * Creates a
+ * Creates a texture and buffer to use as a capture.
  */
 export function createCapture(
   device: GPUDevice,
@@ -33,5 +33,5 @@ export function createCapture(
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
   });
 
-  return { outputBuffer, texture };
+  return { texture, outputBuffer };
 }

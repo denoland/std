@@ -156,11 +156,11 @@ export function describeTextureFormat(
       info = [undefined, "float", allFlags, [1, 1], 16, 4];
       break;
 
-    case "stencil8": // TODO
-      info = [];
+    case "stencil8":
+      info = [undefined, "uint", attachment, [1, 1], 1, 1];
       break;
-    case "depth16unorm": // TODO
-      info = [];
+    case "depth16unorm":
+      info = [undefined, "depth", attachment, [1, 1], 2, 1];
       break;
     case "depth24plus":
       info = [undefined, "depth", attachment, [1, 1], 4, 1];
@@ -171,9 +171,7 @@ export function describeTextureFormat(
     case "depth32float":
       info = [undefined, "depth", attachment, [1, 1], 4, 1];
       break;
-    case "depth24unorm-stencil8":
-      info = ["depth24unorm-stencil8", "depth", attachment, [1, 1], 4, 2];
-      break;
+
     case "depth32float-stencil8":
       info = ["depth32float-stencil8", "depth", attachment, [1, 1], 4, 2];
       break;
