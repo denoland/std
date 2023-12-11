@@ -6,7 +6,7 @@ import { createCapture } from "./create_capture.ts";
 
 Deno.test({
   ignore,
-  name: "[WebGPU] createCapture",
+  name: "createCapture()",
   fn: async () => {
     const adapter = await navigator.gpu.requestAdapter();
     assert(adapter);

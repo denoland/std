@@ -6,7 +6,7 @@ import { cleanUp, ignore } from "./_test_util.ts";
 
 Deno.test({
   ignore,
-  name: "[WebGPU] createTextureWithData",
+  name: "createTextureWithData()",
   fn: async () => {
     const adapter = await navigator.gpu.requestAdapter();
     assert(adapter);
