@@ -22,8 +22,17 @@ export interface CreateCapture {
  * @example
  * ```ts
  * import { createCapture } from "https://deno.land/std@$STD_VERSION/webgpu/create_capture.ts";
+ * import { getRowPadding } from "https://deno.land/std@$STD_VERSION/webgpu/row_padding.ts";
  *
- * const { texture, outputBuffer } = createCapture(device, dimensions);
+ * const adapter = await navigator.gpu.requestAdapter();
+ * const device = await adapter?.requestDevice()!;
+ *
+ * const dimensions = {
+ *   width: 200,
+ *   height: 200,
+ * };
+ *
+ * const { texture, outputBuffer } = createCapture(device, dimensions.width, dimensions.height);
  *
  * const encoder = device.createCommandEncoder();
  * encoder.beginRenderPass({
@@ -37,7 +46,18 @@ export interface CreateCapture {
  *   ],
  * }).end();
  *
- * copyToBuffer(encoder, texture, outputBuffer, dimensions);
+ * const { padded } = getRowPadding(dimensions.width);
+ *
+ * encoder.copyTextureToBuffer(
+ *   {
+ *     texture,
+ *   },
+ *   {
+ *     buffer: outputBuffer,
+ *     bytesPerRow: padded,
+ *   },
+ *   dimensions,
+ * );
  *
  * device.queue.submit([encoder.finish()]);
  *

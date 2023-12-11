@@ -85,6 +85,9 @@ function textureMipLevelSize(
  * ```ts
  * import { createTextureWithData } from "https://deno.land/std@$STD_VERSION/webgpu/texture_with_data.ts";
  *
+ * const adapter = await navigator.gpu.requestAdapter();
+ * const device = await adapter?.requestDevice()!;
+ *
  * createTextureWithData(device, {
  *   format: "bgra8unorm-srgb",
  *   size: {
