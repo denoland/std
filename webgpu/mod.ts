@@ -9,3 +9,5 @@ export * from "./create_capture.ts";
 export * from "./describe_texture_format.ts";
 export * from "./row_padding.ts";
 export * from "./texture_with_data.ts";
+export * from "./create_capture.ts";
+export * from "./describe_texture_format.ts";

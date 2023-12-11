@@ -78,7 +78,23 @@ function textureMipLevelSize(
   );
 }
 
-/** Create a {@linkcode GPUTexture} with data */
+/**
+ * Create a {@linkcode GPUTexture} with data.
+ *
+ * @example
+ * ```ts
+ * import { createTextureWithData } from "https://deno.land/std@$STD_VERSION/webgpu/texture_with_data.ts";
+ *
+ * createTextureWithData(device, {
+ *   format: "bgra8unorm-srgb",
+ *   size: {
+ *     width: 3,
+ *     height: 2,
+ *   },
+ *   usage: GPUTextureUsage.COPY_SRC,
+ * }, new Uint8Array([1, 1, 1, 1, 1, 1, 1]));
+ * ```
+ */
 export function createTextureWithData(
   device: GPUDevice,
   descriptor: GPUTextureDescriptor,

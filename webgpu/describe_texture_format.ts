@@ -27,7 +27,16 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
   GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING |
   GPUTextureUsage.RENDER_ATTACHMENT;
 
-/** Get various information about a specific {@linkcode GPUTextureFormat}. */
+/**
+ * Get various information about a specific {@linkcode GPUTextureFormat}.
+ *
+ * @example
+ * ```ts
+ * import { describeTextureFormat } from "https://deno.land/std@$STD_VERSION/webgpu/describe_texture_format.ts";
+ *
+ * describeTextureFormat("rgba8unorm-srgb");
+ * ```
+ */
 export function describeTextureFormat(
   format: GPUTextureFormat,
 ): TextureFormatInfo {
