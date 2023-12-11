@@ -481,13 +481,20 @@ export function MultilineBasicString(
     return failure();
   }
   if (scanner.char() === "\n") {
-    // The first newline is trimmed
+    // The first newline (LF) is trimmed
     scanner.next();
+  } else if (scanner.slice(0, 2) === "\r\n") {
+    // The first newline (CRLF) is trimmed
+    scanner.next(2);
   }
   const acc: string[] = [];
   while (scanner.slice(0, 3) !== '"""' && !scanner.eof()) {
     // line ending backslash
     if (scanner.slice(0, 2) === "\\\n") {
+      scanner.next();
+      scanner.nextUntilChar({ comment: false });
+      continue;
+    } else if (scanner.slice(0, 3) === "\\\r\n") {
       scanner.next();
       scanner.nextUntilChar({ comment: false });
       continue;
@@ -525,8 +532,11 @@ export function MultilineLiteralString(
     return failure();
   }
   if (scanner.char() === "\n") {
-    // The first newline is trimmed
+    // The first newline (LF) is trimmed
     scanner.next();
+  } else if (scanner.slice(0, 2) === "\r\n") {
+    // The first newline (CRLF) is trimmed
+    scanner.next(2);
   }
   const acc: string[] = [];
   while (scanner.slice(0, 3) !== "'''" && !scanner.eof()) {
