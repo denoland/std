@@ -126,6 +126,7 @@ deps["toml"] = await check("toml", "ready");
 deps["ulid"] = await check("ulid", "not ready");
 deps["url"] = await check("url", "not ready");
 deps["uuid"] = await check("uuid", "ready");
+deps["webgpu"] = await check("webgpu", "not ready");
 deps["yaml"] = await check("yaml", "ready");
 
 /** Checks circular deps between sub modules */
