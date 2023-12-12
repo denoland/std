@@ -726,9 +726,10 @@ export function toHaveNthReturnedWith(
   }
 }
 
-export function toThrow(
+export function toThrow<E extends Error = Error>(
   context: MatcherContext,
-  expected: unknown,
+  // deno-lint-ignore no-explicit-any
+  expected?: string | RegExp | E | (new (...args: any[]) => E),
 ): MatchResult {
   if (typeof context.value === "function") {
     try {

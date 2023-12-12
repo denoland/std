@@ -79,8 +79,10 @@ export interface Expected {
   toReturnTimes(expected: number): void;
   toReturnWith(expected: unknown): void;
   toStrictEqual(candidate: unknown): void;
-  toThrow<E extends Error = Error>(expected?: unknown): void;
-  not: Expected;
+  toThrow<E extends Error = Error>(
+    // deno-lint-ignore no-explicit-any
+    expected?: string | RegExp | E | (new (...args: any[]) => E),
+  ): void;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
 }

@@ -23,7 +23,7 @@ export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
   ErrorClass?: new (...args: any[]) => E,
-  msgIncludes?: string | RegExp,
+  msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
   const msgSuffix = msg ? `: ${msg}` : ".";
@@ -39,20 +39,20 @@ export function assertIsError<E extends Error = Error>(
     throw new AssertionError(msg);
   }
   let msgCheck;
-  if (typeof msgIncludes === "string") {
+  if (typeof msgMatches === "string") {
     msgCheck = stripAnsiCode(error.message).includes(
-      stripAnsiCode(msgIncludes),
+      stripAnsiCode(msgMatches),
     );
   }
-  if (msgIncludes instanceof RegExp) {
-    msgCheck = msgIncludes.test(stripAnsiCode(error.message));
+  if (msgMatches instanceof RegExp) {
+    msgCheck = msgMatches.test(stripAnsiCode(error.message));
   }
 
-  if (msgIncludes && !msgCheck) {
+  if (msgMatches && !msgCheck) {
     msg = `Expected error message to include ${
-      msgIncludes instanceof RegExp
-        ? msgIncludes.toString()
-        : JSON.stringify(msgIncludes)
+      msgMatches instanceof RegExp
+        ? msgMatches.toString()
+        : JSON.stringify(msgMatches)
     }, but got ${
       error instanceof Error
         ? JSON.stringify(error.message)
