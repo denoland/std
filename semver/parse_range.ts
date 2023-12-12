@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import { OPERATOR_REGEXP, SEMVER_REGEXP, STAR_REGEXP } from "./_shared.ts";
+import { OPERATOR_REGEXP, SEMVER_REGEXP } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 interface OperatorVersion {
@@ -219,32 +219,6 @@ function replaceTile(
   }
 }
 
-function replaceOperators(comp: string) {
-  return comp
-    .trim()
-    .split(/\s+/)
-    .map((comp) => {
-      const groups = OPERATOR_REGEXP.exec(comp)?.groups as {
-        operator: string;
-        major: string;
-        minor: string;
-        patch: string;
-        prerelease?: string;
-      };
-      if (!groups) return comp;
-      switch (groups.operator) {
-        case "~":
-        case "~>":
-          return replaceCaret(groups);
-        case "^":
-          return replaceTile(groups);
-        default:
-          return replaceXRange(groups);
-      }
-    })
-    .join(" ");
-}
-
 function replaceXRange(
   groups: {
     operator: string;
@@ -325,12 +299,6 @@ function replaceXRange(
     });
   }
   return stringify(groups);
-}
-
-// Because * is AND-ed with everything else in the comparator,
-// and '' means "any version", just remove the *s entirely.
-function replaceStars(comp: string): string {
-  return comp.trim().replace(STAR_REGEXP, "");
 }
 
 // This function is passed to string.replace(re[HYPHENRANGE])
@@ -418,32 +386,56 @@ function isX(id: string): boolean {
  */
 export function parseRange(range: string): SemVerRange {
   // handle spaces around and between comparator and version
-  range = range.trim().replaceAll(/(?<=<|>|=) /g, "");
-
-  if (range === "") {
-    return { ranges: [[ALL]] };
-  }
+  range = range.replaceAll(/(?<=<|>|=) /g, "");
+  if (range === "") return { ranges: [[ALL]] };
 
   // Split into groups of comparators, these are considered OR'd together.
   const ranges = range
-    .trim()
     .split(/\s*\|\|\s*/)
     .map((range) => {
-      range = replaceHyphen(range);
-      range = replaceOperators(range);
-      range = replaceStars(range);
+      range = replaceHyphen(range)
+        .split(/\s+/)
+        .map((comp) => {
+          const operatorMatch = OPERATOR_REGEXP.exec(comp);
+          if (!operatorMatch) return comp;
+          const groups = comp.slice(operatorMatch[0].length)
+            .match(SEMVER_REGEXP)?.groups as {
+              major: string;
+              minor: string;
+              patch: string;
+              prerelease?: string;
+            } | undefined;
 
+          if (!groups) return comp;
+          const operator = operatorMatch.groups!.operator;
+          switch (operator) {
+            case "~":
+            case "~>":
+              return replaceCaret(groups);
+            case "^":
+              return replaceTile(groups);
+            case "=":
+            case "<":
+            case "<=":
+            case ">":
+            case ">=":
+            case "":
+              return replaceXRange({ operator, ...groups });
+          }
+        })
+        .join(" ");
+
+      if (range.includes("*") || range === "") {
+        return [ALL];
+      }
       // At this point, the range is completely trimmed and
       // ready to be split into comparators.
       // These are considered AND's
-      if (range === "") {
-        return [ALL];
-      } else {
-        return range
-          .split(" ")
-          .filter((r) => r)
-          .map((r) => parseComparator(r));
-      }
+
+      return range
+        .split(" ")
+        .filter((r) => r)
+        .map((r) => parseComparator(r));
     });
 
   return { ranges };
