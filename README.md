@@ -103,6 +103,7 @@ Check out the documentation [here](https://deno.land/std?doc).
 | ulid         | Unstable   |
 | url          | Unstable   |
 | uuid         | Stable     |
+| webgpu       | Unstable   |
 | yaml         | Stable     |
 
 > For background and discussions regarding the stability of the following
