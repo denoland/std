@@ -49,3 +49,12 @@ Deno.test("assertIsError() throws with message diff containing double quotes", (
     `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\"".`,
   );
 });
+
+Deno.test("assertIsError() throws when given value doesn't match regex ", () => {
+  assertIsError(new AssertionError("Regex test"), Error, /ege/);
+  assertThrows(
+    () => assertIsError(new AssertionError("Regex test"), Error, /egg/),
+    Error,
+    `Expected error message to include /egg/, but got "Regex test"`,
+  );
+});
