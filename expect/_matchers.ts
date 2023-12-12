@@ -726,10 +726,9 @@ export function toHaveNthReturnedWith(
   }
 }
 
-export function toThrow<E extends Error = Error>(
+export function toThrow(
   context: MatcherContext,
-  // deno-lint-ignore no-explicit-any
-  expected: new (...args: any[]) => E,
+  expected: unknown,
 ): MatchResult {
   if (typeof context.value === "function") {
     try {
@@ -738,10 +737,31 @@ export function toThrow<E extends Error = Error>(
       context.value = err;
     }
   }
+
+  // deno-lint-ignore no-explicit-any
+  type ErrorClass = new (...args: any[]) => Error;
+  let expectClass: undefined | ErrorClass = undefined;
+  let expectMessage: undefined | string | RegExp = undefined;
+  if (expected instanceof Error) {
+    expectClass = expected.constructor as ErrorClass;
+    expectMessage = expected.message;
+  }
+  if (expected instanceof Function) {
+    expectClass = expected as ErrorClass;
+  }
+  if (typeof expected === "string" || expected instanceof RegExp) {
+    expectMessage = expected;
+  }
+
   if (context.isNot) {
     let isError = false;
     try {
-      assertIsError(context.value, expected, undefined, context.customMessage);
+      assertIsError(
+        context.value,
+        expectClass,
+        expectMessage,
+        context.customMessage,
+      );
       isError = true;
       throw new AssertionError(`Expected to NOT throw ${expected}`);
     } catch (e) {
@@ -753,8 +773,8 @@ export function toThrow<E extends Error = Error>(
   }
   return assertIsError(
     context.value,
-    expected,
-    undefined,
+    expectClass,
+    expectMessage,
     context.customMessage,
   );
 }
