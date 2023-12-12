@@ -5,6 +5,11 @@ import { isSemVer } from "./is_semver.ts";
 import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
 
 /**
+ * @deprecated (will be removed in 0.211.0) parse only parses strings
+ */
+export function parse(version: SemVer): SemVer;
+export function parse(version: string): SemVer;
+/**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or throws a TypeError.
  * @param version The version string to parse

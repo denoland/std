@@ -77,7 +77,7 @@ Deno.test("format", async (t) => {
     await t.step({
       name: `format(${version} ${style} ${expected})`,
       fn: () => {
-        const v = parse(version)!;
+        const v = parse(version as SemVer)!;
         const actual = format(v, style);
         assertEquals(actual, expected);
       },
