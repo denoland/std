@@ -26,17 +26,17 @@ import { validateBinaryLike } from "./_util.ts";
  * @example
  * ```ts
  * import {
- *   decode,
- *   encode,
+ *   decodeAscii85,
+ *   encodeAscii85,
  * } from "https://deno.land/std@$STD_VERSION/encoding/ascii85.ts";
  *
  * const a85Repr = "LpTqp";
  *
- * const binaryData = decode(a85Repr);
+ * const binaryData = decodeAscii85(a85Repr);
  * console.log(binaryData);
  * // => Uint8Array [ 136, 180, 79, 24 ]
  *
- * console.log(encode(binaryData));
+ * console.log(encodeAscii85(binaryData));
  * // => LpTqp
  * ```
  *
