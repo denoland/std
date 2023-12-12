@@ -66,9 +66,9 @@ export function compareIdentifier(
 }
 
 export const FULL_REGEXP =
-  /^v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+  /^v?(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-z-][a-z-\d]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z-\d]*))*))?(?:\+(?<buildmetadata>[a-z-\d]+(?:\.[a-z-\d]+)*))?$/i;
 export const SEMVER_REGEXP =
-  /^[v=\s]*(?<major>0|[1-9]\d*|x|X|\*)(?:\.(?<minor>0|[1-9]\d*|x|X|\*)(?:\.(?<patch>0|[1-9]\d*|x|X|\*)(?:(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z\d-]*))*)))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)?)?/;
+  /^[v=\s]*(?<major>0|[1-9]\d*|x|\*)(?:\.(?<minor>0|[1-9]\d*|x|\*)(?:\.(?<patch>0|[1-9]\d*|x|\*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*)(?:\.(?:0|[1-9]\d*|\d*[a-z-][a-z\d-]*))*))?(?:\+(?<buildmetadata>[a-z-\d]+(?:\.[a-z-\d]+)*))?)?)?/i;
 export const OPERATOR_REGEXP = /^(?<operator>~>?|\^|(?:<|>)?=?)\s*/;
 
 /**
@@ -95,7 +95,7 @@ export const MAX_LENGTH = 256;
  * Returns true if the value is a valid semver pre-release or build identifier.
  *
  * Must be a string. Must be between 1 and 256 characters long. Must match
- * the regular expression /[0-9A-Za-z-]+/.
+ * the regular expression /[a-z-\d]+/i.
  * @param value The value to check
  * @returns True if the value is a valid semver string.
  */
@@ -104,7 +104,7 @@ export function isValidString(value: unknown): value is string {
     typeof value === "string" &&
     value.length > 0 &&
     value.length <= MAX_LENGTH &&
-    !!value.match(/[0-9A-Za-z-]+/)
+    !!value.match(/[a-z-\d]+/i)
   );
 }
 
