@@ -83,6 +83,7 @@ export interface Expected {
     // deno-lint-ignore no-explicit-any
     expected?: string | RegExp | E | (new (...args: any[]) => E),
   ): void;
+  not: Expected;
   resolves: Async<Expected>;
   rejects: Async<Expected>;
 }
