@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
-
+// Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**
  * Functions for encoding typed integers in array buffers.
  *
@@ -20,6 +20,10 @@ const SHIFT = 7;
 const MSBN = 0x80n;
 const SHIFTN = 7n;
 
+const AB = new ArrayBuffer(8);
+const U32_VIEW = new Uint32Array(AB);
+const U64_VIEW = new BigUint64Array(AB);
+
 /**
  * Given a `buf`, starting at `offset` (default: 0), begin decoding bytes as
  * VarInt encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
@@ -34,22 +38,51 @@ const SHIFTN = 7n;
  * from the returned new `offset`.
  */
 export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
-  for (
-    let i = offset,
-      len = Math.min(buf.length, offset + MaxVarIntLen64),
-      shift = 0,
-      decoded = 0n;
-    i < len;
-    i += 1, shift += SHIFT
-  ) {
-    const byte = buf[i];
-    decoded += BigInt((byte & REST) * Math.pow(2, shift));
-    if (!(byte & MSB) && decoded > MaxUInt64) {
-      throw new RangeError("overflow varint");
+  U64_VIEW[0] = 0n;
+  let intermediate = 0;
+  let position = 0;
+  let i = offset;
+
+  if (buf.length === 0) throw new RangeError("Cannot read empty buffer");
+
+  let byte = buf[i];
+  do {
+    byte = buf[i];
+
+    // 1. Take the lower 7 bits of the byte.
+    // 2. Shift the bits into the correct position.
+    // 3. Bitwise OR it with the intermediate value
+    // QUIRK: in the 5th (and 10th) iteration of this loop it will overflow on the shift.
+    // This causes only the lower 4 bits to be shifted into place and removing the upper 3 bits
+    intermediate |= (byte & 0b01111111) << position;
+
+    if (position === 28) {
+      // Write to the view
+      U32_VIEW[0] = intermediate;
+      // set `intermediate` to the remaining 3 bits
+      // We only want the remaining three bits because the other 4 have been "consumed" on line 21
+      intermediate = (byte & 0b01110000) >>> 4;
+      // set `position` to -4 because later 7 will be added, making it 3
+      position = -4;
     }
-    if (!(byte & MSB)) return [decoded, i + 1];
+
+    position += 7;
+    i++;
+    // Keep going while there is a continuation bit
+  } while ((byte & 0b10000000) === 0b10000000);
+  const adjustedOffset = i - offset;
+  if (
+    (adjustedOffset === 10 && intermediate > -1) ||
+    adjustedOffset === 11 || i > buf.length
+  ) {
+    throw new RangeError("malformed or overflow varint");
   }
-  throw new RangeError("malformed or overflow varint");
+
+  // Write the intermediate value to the "empty" slot
+  // if the first slot is taken. Take the second slot
+  U32_VIEW[Number(adjustedOffset > 4)] = intermediate;
+
+  return [U64_VIEW[0], i];
 }
 
 /**
