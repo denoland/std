@@ -5,8 +5,10 @@ import { parse as parseYAML } from "../yaml/parse.ts";
 import { parse as parseTOML } from "../toml/parse.ts";
 
 export { Format } from "./_formats.ts";
-/** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/front_matter/test.ts} instead. */
-export { test } from "./test.ts";
+export {
+  /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/front_matter/test.ts} instead. */
+  test,
+} from "./test.ts";
 
 export const extract = createExtractor({
   yaml: parseYAML as Parser,

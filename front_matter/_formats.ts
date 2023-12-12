@@ -2,7 +2,7 @@
 
 type Delimiter = string | [begin: string, end: string];
 
-/** @deprecated (will be removed after 1.0.0) Use literal types `"yaml" | "toml" | "json" | "unknown"`. */
+/** @deprecated (will be removed in 0.211.0) Use literal types `"yaml" | "toml" | "json" | "unknown"`. */
 export enum Format {
   YAML = "yaml",
   TOML = "toml",

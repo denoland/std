@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, test } from "./json.ts";
+import { test } from "./test.ts";
+import { extract } from "./json.ts";
 import {
   runExtractJSONTests,
   runExtractTypeErrorTests,
@@ -9,15 +10,15 @@ import {
 } from "./_test_utils.ts";
 
 Deno.test("[JSON] test valid input true", () => {
-  runTestValidInputTests(Format.JSON, test);
+  runTestValidInputTests("json", test);
 });
 
 Deno.test("[JSON] test invalid input false", () => {
-  runTestInvalidInputTests(Format.JSON, test);
+  runTestInvalidInputTests("json", test);
 });
 
 Deno.test("[JSON] extract type error on invalid input", () => {
-  runExtractTypeErrorTests(Format.JSON, extract);
+  runExtractTypeErrorTests("json", extract);
 });
 
 Deno.test("[JSON] parse json delineate by ---json", async () => {

@@ -70,21 +70,20 @@
  * ### Advanced usage
  *
  * ```ts
+ * import { test as _test } from "https://deno.land/std@$STD_VERSION/front_matter/test.ts";
  * import {
  *   createExtractor,
- *   Format,
  *   Parser,
- *   test as _test,
  * } from "https://deno.land/std@$STD_VERSION/front_matter/mod.ts";
  * import { parse } from "https://deno.land/std@$STD_VERSION/toml/parse.ts";
  *
  * const extract = createExtractor({
- *   [Format.TOML]: parse as Parser,
- *   [Format.JSON]: JSON.parse as Parser,
+ *   "toml": parse as Parser,
+ *   "json": JSON.parse as Parser,
  * });
  *
  * export function test(str: string): boolean {
- *   return _test(str, [Format.TOML, Format.JSON]);
+ *   return _test(str, ["toml", "json"]);
  * }
  * ```
  *

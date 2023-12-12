@@ -2,7 +2,6 @@
 
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { Format } from "./_formats.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -23,7 +22,7 @@ export function resolveTestDataPath(filename: string): string {
 }
 
 export function runTestValidInputTests(
-  format: Format,
+  format: "yaml" | "toml" | "json" | "unknown",
   testFn: (str: string) => boolean,
 ) {
   const testdata = [
@@ -33,7 +32,7 @@ export function runTestValidInputTests(
   ];
 
   // yaml is the default format, so it should be recognized without the format name
-  if (format === Format.YAML) {
+  if (format === "yaml") {
     testdata.push(`---\nname: deno\n---\n`);
   }
 
@@ -43,7 +42,7 @@ export function runTestValidInputTests(
 }
 
 export function runTestInvalidInputTests(
-  format: Format,
+  format: "yaml" | "toml" | "json" | "unknown",
   testFn: (str: string) => boolean,
 ) {
   [
@@ -61,7 +60,7 @@ export function runTestInvalidInputTests(
 }
 
 export function runExtractTypeErrorTests(
-  format: Format,
+  format: "yaml" | "toml" | "json" | "unknown",
   extractFn: (str: string) => unknown,
 ) {
   [
