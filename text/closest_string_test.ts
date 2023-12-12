@@ -7,7 +7,7 @@ Deno.test("closestString - basic", function () {
 
   assertEquals(
     JSON.stringify(closestString("hep", words)),
-    '"hi"',
+    '"help"',
   );
 });
 
