@@ -65,65 +65,52 @@ export function compareIdentifier(
   return 0;
 }
 
-// The actual regexps
-const re: RegExp[] = [];
-const src: string[] = [];
-let R = 0;
-
 // The following Regular Expressions can be used for tokenizing,
 // validating, and parsing SemVer version strings.
 
 // ## Numeric Identifier
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
-const NUMERICIDENTIFIER: number = R++;
-src[NUMERICIDENTIFIER] = "0|[1-9]\\d*";
+const NUMERICIDENTIFIER = "0|[1-9]\\d*";
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
 // more letters, digits, or hyphens.
 
-const NONNUMERICIDENTIFIER: number = R++;
-src[NONNUMERICIDENTIFIER] = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
+const NONNUMERICIDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
-
-const MAINVERSION: number = R++;
-const nid = src[NUMERICIDENTIFIER];
-src[MAINVERSION] = `(${nid})\\.(${nid})\\.(${nid})`;
+const MAINVERSION =
+  `(${NUMERICIDENTIFIER})\\.(${NUMERICIDENTIFIER})\\.(${NUMERICIDENTIFIER})`;
 
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
 
-const PRERELEASEIDENTIFIER: number = R++;
-src[PRERELEASEIDENTIFIER] = "(?:" + src[NUMERICIDENTIFIER] + "|" +
-  src[NONNUMERICIDENTIFIER] + ")";
+const PRERELEASEIDENTIFIER = "(?:" + NUMERICIDENTIFIER + "|" +
+  NONNUMERICIDENTIFIER + ")";
 
 // ## Pre-release Version
 // Hyphen, followed by one or more dot-separated pre-release version
 // identifiers.
 
-const PRERELEASE: number = R++;
-src[PRERELEASE] = "(?:-(" +
-  src[PRERELEASEIDENTIFIER] +
+const PRERELEASE = "(?:-(" +
+  PRERELEASEIDENTIFIER +
   "(?:\\." +
-  src[PRERELEASEIDENTIFIER] +
+  PRERELEASEIDENTIFIER +
   ")*))";
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
 
-const BUILDIDENTIFIER: number = R++;
-src[BUILDIDENTIFIER] = "[0-9A-Za-z-]+";
+const BUILDIDENTIFIER = "[0-9A-Za-z-]+";
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
 // identifiers.
 
-const BUILD: number = R++;
-src[BUILD] = "(?:\\+(" + src[BUILDIDENTIFIER] + "(?:\\." +
-  src[BUILDIDENTIFIER] + ")*))";
+const BUILD = "(?:\\+(" + BUILDIDENTIFIER + "(?:\\." +
+  BUILDIDENTIFIER + ")*))";
 
 // ## Full Version String
 // A main version, followed optionally by a pre-release version and
@@ -133,84 +120,69 @@ src[BUILD] = "(?:\\+(" + src[BUILDIDENTIFIER] + "(?:\\." +
 // the version string are capturing groups.  The build metadata is not a
 // capturing group, because it should not ever be used in version
 // comparison.
-
-const FULL: number = R++;
-const FULLPLAIN = "v?" + src[MAINVERSION] + src[PRERELEASE] + "?" + src[BUILD] +
+const FULLPLAIN = "v?" + MAINVERSION + PRERELEASE + "?" + BUILD +
   "?";
 
-src[FULL] = "^" + FULLPLAIN + "$";
+export const FULL_REGEXP = new RegExp("^" + FULLPLAIN + "$");
 
-const GTLT: number = R++;
-src[GTLT] = "((?:<|>)?=?)";
+const GTLT = "((?:<|>)?=?)";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
 // Only the first item is strictly required.
-const XRANGEIDENTIFIER: number = R++;
-src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + "|x|X|\\*";
+const XRANGEIDENTIFIER = NUMERICIDENTIFIER + "|x|X|\\*";
 
-const XRANGEPLAIN: number = R++;
-src[XRANGEPLAIN] = "[v=\\s]*(" +
-  src[XRANGEIDENTIFIER] +
+const XRANGEPLAIN = "[v=\\s]*(" +
+  XRANGEIDENTIFIER +
   ")" +
   "(?:\\.(" +
-  src[XRANGEIDENTIFIER] +
+  XRANGEIDENTIFIER +
   ")" +
   "(?:\\.(" +
-  src[XRANGEIDENTIFIER] +
+  XRANGEIDENTIFIER +
   ")" +
   "(?:" +
-  src[PRERELEASE] +
+  PRERELEASE +
   ")?" +
-  src[BUILD] +
+  BUILD +
   "?" +
   ")?)?";
 
-const XRANGE: number = R++;
-src[XRANGE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAIN] + "$";
+export const XRANGE_REGEXP = new RegExp(
+  "^" + GTLT + "\\s*" + XRANGEPLAIN + "$",
+);
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
-const LONETILDE: number = R++;
-src[LONETILDE] = "(?:~>?)";
+const LONETILDE = "(?:~>?)";
 
-const TILDE: number = R++;
-src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$";
+export const TILDE_REGEXP = new RegExp("^" + LONETILDE + XRANGEPLAIN + "$");
 
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
-const LONECARET: number = R++;
-src[LONECARET] = "(?:\\^)";
+const LONECARET = "(?:\\^)";
 
-const CARET: number = R++;
-src[CARET] = "^" + src[LONECARET] + src[XRANGEPLAIN] + "$";
+export const CARET_REGEXP = new RegExp("^" + LONECARET + XRANGEPLAIN + "$");
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
-const COMPARATOR: number = R++;
-src[COMPARATOR] = "^" + src[GTLT] + "\\s*(" + FULLPLAIN + ")$|^$";
+export const COMPARATOR_REGEXP = new RegExp(
+  "^" + GTLT + "\\s*(" + FULLPLAIN + ")$|^$",
+);
 
 // Something like `1.2.3 - 1.2.4`
-const HYPHENRANGE: number = R++;
-src[HYPHENRANGE] = "^\\s*(" +
-  src[XRANGEPLAIN] +
-  ")" +
-  "\\s+-\\s+" +
-  "(" +
-  src[XRANGEPLAIN] +
-  ")" +
-  "\\s*$";
+export const HYPHENRANGE_REGEXP = new RegExp(
+  "^\\s*(" +
+    XRANGEPLAIN +
+    ")" +
+    "\\s+-\\s+" +
+    "(" +
+    XRANGEPLAIN +
+    ")" +
+    "\\s*$",
+);
 
 // Star ranges basically just allow anything at all.
-const STAR: number = R++;
-src[STAR] = "(<|>)?=?\\s*\\*";
-
-// Compile to actual regexp objects.
-// All are flag-free, unless they were created above with a flag.
-for (let i = 0; i < R; i++) {
-  if (!re[i]) {
-    re[i] = new RegExp(src[i]);
-  }
-}
+export const STAR_REGEXP = new RegExp("(<|>)?=?\\s*\\*");
 
 /**
  * Returns true if the value is a valid SemVer number.
@@ -274,16 +246,3 @@ export function isValidOperator(value: unknown): value is Operator {
       return false;
   }
 }
-
-export {
-  CARET,
-  COMPARATOR,
-  FULL,
-  HYPHENRANGE,
-  NUMERICIDENTIFIER,
-  re,
-  src,
-  STAR,
-  TILDE,
-  XRANGE,
-};
