@@ -71,39 +71,40 @@ export function compareIdentifier(
 // ## Numeric Identifier
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
-const NUMERICIDENTIFIER = "0|[1-9]\\d*";
+const NUMERIC_IDENTIFIER = "0|[1-9]\\d*";
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
 // more letters, digits, or hyphens.
 
-const NONNUMERICIDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
+const NON_NUMERIC_IDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
-const MAINVERSION =
-  `(${NUMERICIDENTIFIER})\\.(${NUMERICIDENTIFIER})\\.(${NUMERICIDENTIFIER})`;
+const MAIN_VERSION =
+  `(${NUMERIC_IDENTIFIER})\\.(${NUMERIC_IDENTIFIER})\\.(${NUMERIC_IDENTIFIER})`;
 
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
 
-const PRERELEASEIDENTIFIER = `(?:${NUMERICIDENTIFIER}|${NONNUMERICIDENTIFIER})`;
+const PRERELEASE_IDENTIFIER =
+  `(?:${NUMERIC_IDENTIFIER}|${NON_NUMERIC_IDENTIFIER})`;
 
 // ## Pre-release Version
 // Hyphen, followed by one or more dot-separated pre-release version
 // identifiers.
 
 const PRERELEASE =
-  `(?:-(${PRERELEASEIDENTIFIER}(?:\\.${PRERELEASEIDENTIFIER})*))`;
+  `(?:-(${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
-const BUILDIDENTIFIER = "[0-9A-Za-z-]+";
+const BUILD_IDENTIFIER = "[0-9A-Za-z-]+";
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
 // identifiers.
-const BUILD = `(?:\\+(${BUILDIDENTIFIER}(?:\\.${BUILDIDENTIFIER})*))`;
+const BUILD = `(?:\\+(${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
 
 // ## Full Version String
 // A main version, followed optionally by a pre-release version and
@@ -113,40 +114,40 @@ const BUILD = `(?:\\+(${BUILDIDENTIFIER}(?:\\.${BUILDIDENTIFIER})*))`;
 // the version string are capturing groups.  The build metadata is not a
 // capturing group, because it should not ever be used in version
 // comparison.
-const FULLPLAIN = `v?${MAINVERSION}${PRERELEASE}?${BUILD}?`;
+const FULL_PLAIN = `v?${MAIN_VERSION}${PRERELEASE}?${BUILD}?`;
 
-export const FULL_REGEXP = new RegExp(`^${FULLPLAIN}$`);
+export const FULL_REGEXP = new RegExp(`^${FULL_PLAIN}$`);
 
-const GTLT = "((?:<|>)?=?)";
+const COMPARATOR = "((?:<|>)?=?)";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
 // Only the first item is strictly required.
-const XRANGEIDENTIFIER = `${NUMERICIDENTIFIER}|x|X|\\*`;
+const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|x|X|\\*`;
 
-const XRANGEPLAIN =
-  `[v=\\s]*(${XRANGEIDENTIFIER})(?:\\.(${XRANGEIDENTIFIER})(?:\\.(${XRANGEIDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
+const XRANGE_PLAIN =
+  `[v=\\s]*(${XRANGE_IDENTIFIER})(?:\\.(${XRANGE_IDENTIFIER})(?:\\.(${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
 export const XRANGE_REGEXP = new RegExp(
-  `^${GTLT}\\s*${XRANGEPLAIN}$`,
+  `^${COMPARATOR}\\s*${XRANGE_PLAIN}$`,
 );
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
-export const TILDE_REGEXP = new RegExp(`^(?:~>?)${XRANGEPLAIN}$`);
+export const TILDE_REGEXP = new RegExp(`^(?:~>?)${XRANGE_PLAIN}$`);
 
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
-export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGEPLAIN}$`);
+export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGE_PLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
-  `^${GTLT}\\s*(${FULLPLAIN})$|^$`,
+  `^${COMPARATOR}\\s*(${FULL_PLAIN})$|^$`,
 );
 
 // Something like `1.2.3 - 1.2.4`
 export const HYPHENRANGE_REGEXP = new RegExp(
-  `^\\s*(${XRANGEPLAIN})\\s+-\\s+(${XRANGEPLAIN})\\s*$`,
+  `^\\s*(${XRANGE_PLAIN})\\s+-\\s+(${XRANGE_PLAIN})\\s*$`,
 );
 
 // Star ranges basically just allow anything at all.
