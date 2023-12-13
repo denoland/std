@@ -3,7 +3,7 @@ import { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
 /**
- * @deprecated (will be removed in 0.211.0) Use a string argument instead.
+ * @deprecated (will be removed in 0.212.0) Use a string argument instead.
  */
 export function canParse(version: SemVer): boolean;
 export function canParse(version: string): boolean;

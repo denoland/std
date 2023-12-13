@@ -5,7 +5,7 @@ import { isSemVer } from "./is_semver.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
 /**
- * @deprecated (will be removed in 0.211.0) Use a string argument instead.
+ * @deprecated (will be removed in 0.212.0) Use a string argument instead.
  */
 export function parse(version: SemVer): SemVer;
 /**
