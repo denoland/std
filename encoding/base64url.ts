@@ -2,26 +2,11 @@
 // This module is browser compatible.
 
 /**
- * {@linkcode encodeBase64Url} and {@linkcode decodeBase64Url} for
- * [base64 URL safe](https://en.wikipedia.org/wiki/Base64#URL_applications) encoding.
+ * Utilities for
+ * [base64url]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ * encoding and decoding.
  *
  * This module is browser compatible.
- *
- * @example
- * ```ts
- * import {
- *   decodeBase64Url,
- *   encodeBase64Url,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
- *
- * const binary = new TextEncoder().encode("foobar");
- * const encoded = encodeBase64Url(binary);
- * console.log(encoded);
- * // => "Zm9vYmFy"
- *
- * console.log(decodeBase64Url(encoded));
- * // => Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
- * ```
  *
  * @module
  */
@@ -59,24 +44,32 @@ function convertBase64ToBase64url(b64: string) {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64Url} instead.
- *
  * Encodes a given ArrayBuffer or string into a base64url representation
  * @param data
+ *
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64Url} instead.
  */
-export const encode = encodeBase64Url;
+export const encode: typeof encodeBase64Url = encodeBase64Url;
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64Url} instead.
- *
  * Converts given base64url encoded data back to original
  * @param b64url
+ *
+ * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64Url} instead.
  */
-export const decode = decodeBase64Url;
+export const decode: typeof decodeBase64Url = decodeBase64Url;
 
 /**
- * Encodes a given ArrayBuffer or string into a base64url representation
- * @param data
+ * Convert data into a base64url-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ *
+ * @example
+ * ```ts
+ * import { encodeBase64Url } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
+ *
+ * encodeBase64Url(new TextEncoder().encode("foobar")); // "Zm9vYmFy"
+ * ```
  */
 export function encodeBase64Url(
   data: ArrayBuffer | Uint8Array | string,
@@ -85,8 +78,16 @@ export function encodeBase64Url(
 }
 
 /**
- * Converts given base64url encoded data back to original
- * @param b64url
+ * Decodes a given base64url-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}
+ *
+ * @example
+ * ```ts
+ * import { decodeBase64Url } from "https://deno.land/std@$STD_VERSION/encoding/base64url.ts";
+ *
+ * decodeBase64Url("Zm9vYmFy"); // Uint8Array(6) [ 102, 111, 111, 98, 97, 114 ]
+ * ```
  */
 export function decodeBase64Url(b64url: string): Uint8Array {
   return base64.decodeBase64(convertBase64urlToBase64(b64url));
