@@ -9,7 +9,7 @@ const encoder = new TextEncoder();
  *
  * @example
  * ```ts
- * import { signCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
+ * import { signCookie } from "https://deno.land/std@$STD_VERSION/http/unstable_signed_cookie.ts";
  * import { setCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
  *
  * const key = await crypto.subtle.generateKey(
@@ -43,7 +43,7 @@ export async function signCookie(
  *
  * @example
  * ```ts
- * import { verifyCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
+ * import { verifyCookie } from "https://deno.land/std@$STD_VERSION/http/unstable_signed_cookie.ts";
  * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
  *
  * const key = await crypto.subtle.generateKey(
@@ -79,7 +79,7 @@ export async function verifyCookie(
  *
  * @example
  * ```ts
- * import { verifyCookie, parseSignedCookie } from "https://deno.land/std@$STD_VERSION/http/signed_cookie.ts";
+ * import { verifyCookie, parseSignedCookie } from "https://deno.land/std@$STD_VERSION/http/unstable_signed_cookie.ts";
  * import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
  *
  * const key = await crypto.subtle.generateKey(
