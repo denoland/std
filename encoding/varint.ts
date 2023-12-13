@@ -81,7 +81,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
     i++;
     // Keep going while there is a continuation bit
   } while ((byte & 0b10000000) === 0b10000000);
-  // subtract the intial offset from `i` to get the bytes read
+  // subtract the initial offset from `i` to get the bytes read
   const nRead = i - offset;
 
   // If 10 bytes have been read and intermediate has overflown
