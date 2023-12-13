@@ -8,3 +8,4 @@
  */
 
 export * from "./parse_args.ts";
+export * from "./prompt_secret.ts";
