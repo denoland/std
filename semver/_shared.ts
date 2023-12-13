@@ -71,13 +71,13 @@ export function compareIdentifier(
 // ## Numeric Identifier
 // A single `0`, or a non-zero digit followed by zero or more digits.
 
-const NUMERICIDENTIFIER = `0|[1-9]\\d*`;
+const NUMERICIDENTIFIER = "0|[1-9]\\d*";
 
 // ## Non-numeric Identifier
 // Zero or more digits, followed by a letter or hyphen, and then zero or
 // more letters, digits, or hyphens.
 
-const NONNUMERICIDENTIFIER = `\\d*[a-zA-Z-][a-zA-Z0-9-]*`;
+const NONNUMERICIDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
 
 // ## Main Version
 // Three dot-separated numeric identifiers.
@@ -98,7 +98,7 @@ const PRERELEASE =
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
-const BUILDIDENTIFIER = `[0-9A-Za-z-]+`;
+const BUILDIDENTIFIER = "[0-9A-Za-z-]+";
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
@@ -117,7 +117,7 @@ const FULLPLAIN = `v?${MAINVERSION}${PRERELEASE}?${BUILD}?`;
 
 export const FULL_REGEXP = new RegExp(`^${FULLPLAIN}$`);
 
-const GTLT = `((?:<|>)?=?)`;
+const GTLT = "((?:<|>)?=?)";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
