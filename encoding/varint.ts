@@ -45,7 +45,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
 
   if (buf.length === 0) throw new RangeError("Cannot read empty buffer");
 
-  let byte = buf[i];
+  let byte;
   do {
     byte = buf[i];
 
