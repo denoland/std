@@ -20,6 +20,7 @@ const SHIFT = 7;
 const MSBN = 0x80n;
 const SHIFTN = 7n;
 
+// ArrayBuffer and TypedArray's for "pointer casting"
 const AB = new ArrayBuffer(8);
 const U32_VIEW = new Uint32Array(AB);
 const U64_VIEW = new BigUint64Array(AB);
@@ -38,15 +39,20 @@ const U64_VIEW = new BigUint64Array(AB);
  * from the returned new `offset`.
  */
 export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
+  // Clear the last result from the Two's complement view
   U64_VIEW[0] = 0n;
+
+  // Setup the initiat state of the function
   let intermediate = 0;
   let position = 0;
   let i = offset;
 
+  // If the buffer is empty Throw
   if (buf.length === 0) throw new RangeError("Cannot read empty buffer");
 
   let byte;
   do {
+    // Get a single byte from the buffer
     byte = buf[i];
 
     // 1. Take the lower 7 bits of the byte.
@@ -56,6 +62,9 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
     // This causes only the lower 4 bits to be shifted into place and removing the upper 3 bits
     intermediate |= (byte & 0b01111111) << position;
 
+    // If position is 28
+    // it means that this iteration needs to be written the the two's complement view
+    // This only happens once due to the `-4` in this branch
     if (position === 28) {
       // Write to the view
       U32_VIEW[0] = intermediate;
@@ -66,21 +75,26 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
       position = -4;
     }
 
+    // Increment the shift position by 7
     position += 7;
+    // Increment the iterator by 1
     i++;
     // Keep going while there is a continuation bit
   } while ((byte & 0b10000000) === 0b10000000);
-  const adjustedOffset = i - offset;
-  if (
-    (adjustedOffset === 10 && intermediate > -1) ||
-    adjustedOffset === 11 || i > buf.length
-  ) {
+  // subtract the intial offset from `i` to get the bytes read
+  const nRead = i - offset;
+  
+  // If 10 bytes have been read and intermediate has overflown
+  // it means that the varint is malformed
+  // If 11 bytes have been read it means that the varint is malformed
+  // If `i` is bigger than the buffer it means we overread the buffer and the varint is malformed
+  if ((nRead === 10 && intermediate > -1) || nRead === 11 || i > buf.length) {
     throw new RangeError("malformed or overflow varint");
   }
 
   // Write the intermediate value to the "empty" slot
   // if the first slot is taken. Take the second slot
-  U32_VIEW[Number(adjustedOffset > 4)] = intermediate;
+  U32_VIEW[Number(nRead > 4)] = intermediate;
 
   return [U64_VIEW[0], i];
 }
