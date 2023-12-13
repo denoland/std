@@ -83,7 +83,7 @@ export function decode(buf: Uint8Array, offset = 0): [bigint, number] {
   } while ((byte & 0b10000000) === 0b10000000);
   // subtract the intial offset from `i` to get the bytes read
   const nRead = i - offset;
-  
+
   // If 10 bytes have been read and intermediate has overflown
   // it means that the varint is malformed
   // If 11 bytes have been read it means that the varint is malformed
