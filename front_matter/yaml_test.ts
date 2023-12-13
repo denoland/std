@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import extract, { Format, test } from "./yaml.ts";
+import { test } from "./test.ts";
+import { extract } from "./yaml.ts";
 import {
   runExtractTypeErrorTests,
   runExtractYAMLTests1,
@@ -10,15 +11,15 @@ import {
 } from "./_test_utils.ts";
 
 Deno.test("[YAML] test valid input true", () => {
-  runTestValidInputTests(Format.YAML, test);
+  runTestValidInputTests("yaml", test);
 });
 
 Deno.test("[YAML] test invalid input false", () => {
-  runTestInvalidInputTests(Format.YAML, test);
+  runTestInvalidInputTests("yaml", test);
 });
 
 Deno.test("[YAML] extract type error on invalid input", () => {
-  runExtractTypeErrorTests(Format.YAML, extract);
+  runExtractTypeErrorTests("yaml", extract);
 });
 
 Deno.test("[YAML] parse yaml delineate by `---`", async () => {

@@ -100,6 +100,27 @@ Violets are\\tblue"""`),
 });
 
 Deno.test({
+  name: "[TOML parser] multi-line basic string (CRLF)",
+  fn() {
+    const parse = ParserFactory(MultilineBasicString);
+    assertEquals(
+      parse(`"""\r
+Roses are red\r
+Violets are\\tblue"""`),
+      "Roses are red\r\nViolets are\tblue",
+    );
+    assertEquals(
+      parse(`"""\\\r
+    The quick brown \\\r
+    fox jumps over \\\r
+    the lazy dog.\\\r
+    """`),
+      "The quick brown fox jumps over the lazy dog.",
+    );
+  },
+});
+
+Deno.test({
   name: "[TOML parser] multi-line literal string",
   fn() {
     const parse = ParserFactory(MultilineLiteralString);
@@ -108,6 +129,19 @@ Deno.test({
 Roses are red
 Violets are\\tblue'''`),
       "Roses are red\nViolets are\\tblue",
+    );
+  },
+});
+
+Deno.test({
+  name: "[TOML parser] multi-line literal string (CRLF)",
+  fn() {
+    const parse = ParserFactory(MultilineLiteralString);
+    assertEquals(
+      parse(`'''\r
+Roses are red\r
+Violets are\\tblue'''`),
+      "Roses are red\r\nViolets are\\tblue",
     );
   },
 });
