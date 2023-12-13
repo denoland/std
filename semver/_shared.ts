@@ -150,7 +150,7 @@ export const HYPHENRANGE_REGEXP = new RegExp(
 );
 
 // Star ranges basically just allow anything at all.
-export const STAR_REGEXP = new RegExp(`(<|>)?=?\\s*\\*`);
+export const STAR_REGEXP = /(<|>)?=?\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.
