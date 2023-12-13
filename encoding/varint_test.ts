@@ -20,8 +20,8 @@ function encodeDecode(i: number | bigint) {
 }
 
 Deno.test("Varint decode empty buff", () => {
-  assertThrows(() => decode(Uint8Array.of()), RangeError)
-})
+  assertThrows(() => decode(Uint8Array.of()), RangeError);
+});
 
 Deno.test("VarInt decode manual", () => {
   assertEquals(decode(Uint8Array.of(172, 2)), [300n, 2]);
