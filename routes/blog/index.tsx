@@ -2,7 +2,6 @@
 import { defineRoute } from "$fresh/server.ts";
 import { getPosts, type Post } from "@/utils/posts.ts";
 import Head from "@/components/Head.tsx";
-import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 
 function PostCard(props: Post) {
   return (
@@ -36,7 +35,7 @@ export default defineRoute(async (_req, ctx) => {
     <>
       <Head title="Blog" href={ctx.url.href} />
       <main class="p-4 flex-1">
-        <h1 class={HEADING_WITH_MARGIN_STYLES}>Blog</h1>
+        <h1 class="heading-with-margin-styles">Blog</h1>
         <div class="divide-y">
           {posts.map((post) => <PostCard {...post} />)}
         </div>

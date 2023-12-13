@@ -1,5 +1,4 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { HEADING_STYLES, INPUT_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import IconCheckCircle from "tabler_icons_tsx/circle-check.tsx";
 import IconCircleX from "tabler_icons_tsx/circle-x.tsx";
@@ -15,7 +14,7 @@ import { ulid } from "std/ulid/mod.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 
 const SUBMIT_STYLES =
-  "w-full text-white text-center rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))";
+  "w-full text-white text-center rounded-[7px] transition duration-300 px-4 py-2 block hover:bg-white hover:text-black hover:dark:bg-gray-900 hover:dark:!text-white";
 
 export const handler: Handlers<undefined, SignedInState> = {
   async POST(req, ctx) {
@@ -49,7 +48,7 @@ export default defineRoute<State>((_req, ctx) => {
       <Head title="Submit" href={ctx.url.href} />
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
-          <h1 class={HEADING_STYLES}>
+          <h1 class="heading-styles">
             Share your project
           </h1>
           <p class="text-gray-500">
@@ -91,7 +90,7 @@ export default defineRoute<State>((_req, ctx) => {
               </label>
               <input
                 id="submit_title"
-                class={`${INPUT_STYLES} w-full mt-2`}
+                class="input-styles w-full mt-2"
                 type="text"
                 name="title"
                 required
@@ -108,7 +107,7 @@ export default defineRoute<State>((_req, ctx) => {
                 URL
               </label>
               <input
-                class={`${INPUT_STYLES} w-full mt-2`}
+                class="input-styles w-full mt-2"
                 type="url"
                 name="url"
                 required

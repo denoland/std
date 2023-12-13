@@ -1,5 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { type Handlers, Status } from "$fresh/server.ts";
+import { type Handlers } from "$fresh/server.ts";
+import { STATUS_CODE } from "std/http/status.ts";
 import type { SignedInState } from "@/plugins/session.ts";
 import { createVote } from "@/utils/db.ts";
 import { BadRequestError } from "@/utils/http.ts";
@@ -16,6 +17,6 @@ export const handler: Handlers<undefined, SignedInState> = {
       userLogin: ctx.state.sessionUser.login,
     });
 
-    return new Response(null, { status: Status.Created });
+    return new Response(null, { status: STATUS_CODE.Created });
   },
 };

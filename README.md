@@ -173,7 +173,7 @@ See other examples of blog post files in [/posts](/posts).
 
 You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
-`twind.config.ts`. Change these values to match your desired color scheme.
+`tailwind.config.ts`. Change these values to match your desired color scheme.
 
 ### Cover Image
 

@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 
-import { createHandler, Status } from "$fresh/server.ts";
+import { createHandler } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
   collectValues,
@@ -24,7 +24,7 @@ import {
   assertObjectMatch,
   assertStringIncludes,
 } from "std/assert/mod.ts";
-import { isRedirectStatus } from "std/http/status.ts";
+import { isRedirectStatus, STATUS_CODE } from "std/http/status.ts";
 import { resolvesNext, returnsNext, stub } from "std/testing/mock.ts";
 import Stripe from "stripe";
 import options from "./fresh.config.ts";
@@ -94,7 +94,7 @@ Deno.test("[e2e] security headers", async () => {
 Deno.test("[e2e] GET /", async () => {
   const resp = await handler(new Request("http://localhost"));
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
@@ -184,7 +184,7 @@ Deno.test("[e2e] GET /blog", async () => {
     new Request("http://localhost/blog"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
@@ -192,7 +192,7 @@ Deno.test("[e2e] GET /pricing", async () => {
   const req = new Request("http://localhost/pricing");
   const resp = await handler(req);
 
-  assertEquals(resp.status, Status.NotFound);
+  assertEquals(resp.status, STATUS_CODE.NotFound);
   assertHtml(resp);
 });
 
@@ -255,7 +255,7 @@ Deno.test("[e2e] GET /dashboard/stats", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), "<!--frsh-chart_default");
   });
@@ -279,7 +279,7 @@ Deno.test("[e2e] GET /dashboard/users", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), "<!--frsh-userstable_default");
   });
@@ -290,7 +290,7 @@ Deno.test("[e2e] GET /submit", async () => {
     new Request("http://localhost/submit"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
@@ -299,7 +299,7 @@ Deno.test("[e2e] GET /feed", async () => {
     new Request("http://localhost/feed"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertXml(resp);
 });
 
@@ -312,7 +312,7 @@ Deno.test("[e2e] GET /api/items", async () => {
   const resp = await handler(req);
   const { values } = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(values, [item1, item2]);
 });
@@ -391,7 +391,7 @@ Deno.test("[e2e] GET /api/items/[id]", async (test) => {
   await test.step("serves not found response if item not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertEquals(await resp.text(), "Item not found");
   });
 
@@ -399,7 +399,7 @@ Deno.test("[e2e] GET /api/items/[id]", async (test) => {
     await createItem(item);
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertEquals(await resp.json(), item);
   });
@@ -416,7 +416,7 @@ Deno.test("[e2e] GET /api/users", async () => {
 
   const { values } = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(values, [user1, user2]);
 });
@@ -428,7 +428,7 @@ Deno.test("[e2e] GET /api/users/[login]", async (test) => {
   await test.step("serves not found response if user not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -437,7 +437,7 @@ Deno.test("[e2e] GET /api/users/[login]", async (test) => {
     await createUser(user);
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertEquals(await resp.json(), user);
   });
@@ -454,7 +454,7 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
   await test.step("serves not found response if user not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -465,7 +465,7 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
     const resp = await handler(req);
     const { values } = await resp.json();
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertArrayIncludes(values, [item]);
   });
@@ -481,7 +481,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
   await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.Unauthorized);
+    assertEquals(resp.status, STATUS_CODE.Unauthorized);
     assertText(resp);
     assertEquals(await resp.text(), "User must be signed in");
   });
@@ -494,7 +494,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "Item not found");
   });
@@ -509,7 +509,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.Created);
+    assertEquals(resp.status, STATUS_CODE.Created);
   });
 
   await test.step("serves an error response if the `item_id` URL parameter is missing", async () => {
@@ -520,7 +520,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertEquals(await resp.text(), "`item_id` URL parameter missing");
   });
 });
@@ -553,7 +553,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     Deno.env.delete("STRIPE_SECRET_KEY");
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "Not Found");
   });
@@ -562,7 +562,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(await resp.text(), "`Stripe-Signature` header is missing");
   });
@@ -576,7 +576,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.InternalServerError);
+    assertEquals(resp.status, STATUS_CODE.InternalServerError);
     assertText(resp);
     assertEquals(
       await resp.text(),
@@ -593,7 +593,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(
       await resp.text(),
@@ -619,7 +619,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -648,7 +648,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.Created);
+    assertEquals(resp.status, STATUS_CODE.Created);
     assertEquals(await getUser(user.login), { ...user, isSubscribed: true });
   });
 
@@ -670,7 +670,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -700,7 +700,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     constructEventAsyncStub.restore();
 
     assertEquals(await getUser(user.login), { ...user, isSubscribed: false });
-    assertEquals(resp.status, Status.Accepted);
+    assertEquals(resp.status, STATUS_CODE.Accepted);
   });
 
   await test.step("serves bad request response if the event type is not supported", async () => {
@@ -721,7 +721,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(await resp.text(), "Event type not supported");
   });
@@ -746,7 +746,7 @@ Deno.test("[e2e] GET /account", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), 'href="/account/upgrade"');
   });
@@ -761,7 +761,7 @@ Deno.test("[e2e] GET /account", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), 'href="/account/manage"');
   });
@@ -786,7 +786,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
@@ -836,7 +836,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.InternalServerError);
+    assertEquals(resp.status, STATUS_CODE.InternalServerError);
     assertHtml(resp);
   });
 
@@ -849,7 +849,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
@@ -874,7 +874,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 
     sessionsCreateStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
@@ -926,7 +926,7 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
   );
   const body = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(body, [{ ...item1, score: 1 }, { ...item2, score: 1 }]);
 });

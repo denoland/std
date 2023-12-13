@@ -1,15 +1,8 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import {
-  ACTIVE_ANCESTOR_LINK_STYLES,
-  ACTIVE_LINK_STYLES,
-  LINK_STYLES,
-  SITE_BAR_STYLES,
-  SITE_NAME,
-} from "@/utils/constants.ts";
+import { SITE_NAME } from "@/utils/constants.ts";
 import { isStripeEnabled } from "@/utils/stripe.ts";
 import IconX from "tabler_icons_tsx/x.tsx";
 import IconMenu from "tabler_icons_tsx/menu-2.tsx";
-import { cx } from "@twind/core";
 import { User } from "@/utils/db.ts";
 
 export interface HeaderProps {
@@ -23,14 +16,8 @@ export interface HeaderProps {
 }
 
 export default function Header(props: HeaderProps) {
-  const NAV_ITEM = "text-gray-500 px-3 py-4 sm:py-2";
   return (
-    <header
-      class={cx(
-        SITE_BAR_STYLES,
-        "flex-col sm:flex-row",
-      )}
-    >
+    <header class="site-bar-styles flex-col sm:flex-row">
       <input
         type="checkbox"
         id="nav-toggle"
@@ -71,11 +58,11 @@ export default function Header(props: HeaderProps) {
         `}
       </script>
       <nav
-        class={"hidden flex-col gap-x-4 divide-y divide-solid sm:(flex items-center flex-row divide-y-0)"}
+        class={"hidden flex-col gap-x-4 divide-y divide-solid sm:flex sm:items-center sm:flex-row sm:divide-y-0"}
       >
         <a
           href="/dashboard"
-          class={cx(LINK_STYLES, ACTIVE_ANCESTOR_LINK_STYLES, NAV_ITEM)}
+          class="link-styles data-[ancestor]:!text-black data-[ancestor]:dark:!text-white nav-item"
         >
           Dashboard
         </a>
@@ -83,7 +70,7 @@ export default function Header(props: HeaderProps) {
           (
             <a
               href="/pricing"
-              class={cx(LINK_STYLES, ACTIVE_LINK_STYLES, NAV_ITEM)}
+              class="link-styles data-[current]:!text-black data-[current]:dark:!text-white nav-item"
             >
               Pricing
             </a>
@@ -92,16 +79,20 @@ export default function Header(props: HeaderProps) {
           ? (
             <a
               href="/account"
-              class={cx(LINK_STYLES, ACTIVE_LINK_STYLES, NAV_ITEM)}
+              class="link-styles data-[current]:!text-black data-[current]:dark:!text-white nav-item"
             >
               Account
             </a>
           )
-          : <a href="/signin" class={cx(LINK_STYLES, NAV_ITEM)}>Sign in</a>}
+          : (
+            <a href="/signin" class="link-styles nav-item">
+              Sign in
+            </a>
+          )}
         <div class="rounded-lg bg-gradient-to-tr from-secondary to-primary p-px">
           <a
             href="/submit"
-            class="text-center text-white rounded-[7px] transition duration-300 px-4 py-2 block hover:(bg-white text-black dark:(bg-gray-900 !text-white))"
+            class="text-center text-white rounded-[7px] transition duration-300 px-4 py-2 block hover:bg-white hover:text-black hover:dark:bg-gray-900 hover:dark:!text-white"
           >
             Submit
           </a>

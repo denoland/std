@@ -1,7 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
-import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 import UsersTable from "@/islands/UsersTable.tsx";
 import { defineRoute } from "$fresh/server.ts";
 import { Partial } from "$fresh/runtime.ts";
@@ -20,7 +19,7 @@ export default defineRoute((_req, ctx) => {
         />
       </Head>
       <main class="flex-1 p-4 f-client-nav">
-        <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
+        <h1 class="heading-with-margin-styles">Dashboard</h1>
         <TabsBar
           links={[{
             path: "/dashboard/stats",

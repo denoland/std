@@ -2,69 +2,70 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $0 from "./routes/_404.tsx";
-import * as $1 from "./routes/_500.tsx";
-import * as $2 from "./routes/_app.tsx";
-import * as $3 from "./routes/account/index.tsx";
-import * as $4 from "./routes/account/manage.ts";
-import * as $5 from "./routes/account/upgrade.ts";
-import * as $6 from "./routes/api/items/[id].ts";
-import * as $7 from "./routes/api/items/index.ts";
-import * as $8 from "./routes/api/me/votes.ts";
-import * as $9 from "./routes/api/stripe-webhooks.ts";
-import * as $10 from "./routes/api/users/[login]/index.ts";
-import * as $11 from "./routes/api/users/[login]/items.ts";
-import * as $12 from "./routes/api/users/index.ts";
-import * as $13 from "./routes/api/vote.ts";
-import * as $14 from "./routes/blog/[slug].tsx";
-import * as $15 from "./routes/blog/index.tsx";
-import * as $16 from "./routes/dashboard/index.tsx";
-import * as $17 from "./routes/dashboard/stats.tsx";
-import * as $18 from "./routes/dashboard/users.tsx";
-import * as $19 from "./routes/feed.ts";
-import * as $20 from "./routes/index.tsx";
-import * as $21 from "./routes/pricing.tsx";
-import * as $22 from "./routes/submit.tsx";
-import * as $23 from "./routes/users/[login].tsx";
-import * as $24 from "./routes/welcome.tsx";
-import * as $$0 from "./islands/Chart.tsx";
-import * as $$1 from "./islands/ItemsList.tsx";
-import * as $$2 from "./islands/UsersTable.tsx";
+import * as $_404 from "./routes/_404.tsx";
+import * as $_500 from "./routes/_500.tsx";
+import * as $_app from "./routes/_app.tsx";
+import * as $account_index from "./routes/account/index.tsx";
+import * as $account_manage from "./routes/account/manage.ts";
+import * as $account_upgrade from "./routes/account/upgrade.ts";
+import * as $api_items_id_ from "./routes/api/items/[id].ts";
+import * as $api_items_index from "./routes/api/items/index.ts";
+import * as $api_me_votes from "./routes/api/me/votes.ts";
+import * as $api_stripe_webhooks from "./routes/api/stripe-webhooks.ts";
+import * as $api_users_login_index from "./routes/api/users/[login]/index.ts";
+import * as $api_users_login_items from "./routes/api/users/[login]/items.ts";
+import * as $api_users_index from "./routes/api/users/index.ts";
+import * as $api_vote from "./routes/api/vote.ts";
+import * as $blog_slug_ from "./routes/blog/[slug].tsx";
+import * as $blog_index from "./routes/blog/index.tsx";
+import * as $dashboard_index from "./routes/dashboard/index.tsx";
+import * as $dashboard_stats from "./routes/dashboard/stats.tsx";
+import * as $dashboard_users from "./routes/dashboard/users.tsx";
+import * as $feed from "./routes/feed.ts";
+import * as $index from "./routes/index.tsx";
+import * as $pricing from "./routes/pricing.tsx";
+import * as $submit from "./routes/submit.tsx";
+import * as $users_login_ from "./routes/users/[login].tsx";
+import * as $welcome from "./routes/welcome.tsx";
+import * as $Chart from "./islands/Chart.tsx";
+import * as $ItemsList from "./islands/ItemsList.tsx";
+import * as $UsersTable from "./islands/UsersTable.tsx";
+import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
-    "./routes/_404.tsx": $0,
-    "./routes/_500.tsx": $1,
-    "./routes/_app.tsx": $2,
-    "./routes/account/index.tsx": $3,
-    "./routes/account/manage.ts": $4,
-    "./routes/account/upgrade.ts": $5,
-    "./routes/api/items/[id].ts": $6,
-    "./routes/api/items/index.ts": $7,
-    "./routes/api/me/votes.ts": $8,
-    "./routes/api/stripe-webhooks.ts": $9,
-    "./routes/api/users/[login]/index.ts": $10,
-    "./routes/api/users/[login]/items.ts": $11,
-    "./routes/api/users/index.ts": $12,
-    "./routes/api/vote.ts": $13,
-    "./routes/blog/[slug].tsx": $14,
-    "./routes/blog/index.tsx": $15,
-    "./routes/dashboard/index.tsx": $16,
-    "./routes/dashboard/stats.tsx": $17,
-    "./routes/dashboard/users.tsx": $18,
-    "./routes/feed.ts": $19,
-    "./routes/index.tsx": $20,
-    "./routes/pricing.tsx": $21,
-    "./routes/submit.tsx": $22,
-    "./routes/users/[login].tsx": $23,
-    "./routes/welcome.tsx": $24,
+    "./routes/_404.tsx": $_404,
+    "./routes/_500.tsx": $_500,
+    "./routes/_app.tsx": $_app,
+    "./routes/account/index.tsx": $account_index,
+    "./routes/account/manage.ts": $account_manage,
+    "./routes/account/upgrade.ts": $account_upgrade,
+    "./routes/api/items/[id].ts": $api_items_id_,
+    "./routes/api/items/index.ts": $api_items_index,
+    "./routes/api/me/votes.ts": $api_me_votes,
+    "./routes/api/stripe-webhooks.ts": $api_stripe_webhooks,
+    "./routes/api/users/[login]/index.ts": $api_users_login_index,
+    "./routes/api/users/[login]/items.ts": $api_users_login_items,
+    "./routes/api/users/index.ts": $api_users_index,
+    "./routes/api/vote.ts": $api_vote,
+    "./routes/blog/[slug].tsx": $blog_slug_,
+    "./routes/blog/index.tsx": $blog_index,
+    "./routes/dashboard/index.tsx": $dashboard_index,
+    "./routes/dashboard/stats.tsx": $dashboard_stats,
+    "./routes/dashboard/users.tsx": $dashboard_users,
+    "./routes/feed.ts": $feed,
+    "./routes/index.tsx": $index,
+    "./routes/pricing.tsx": $pricing,
+    "./routes/submit.tsx": $submit,
+    "./routes/users/[login].tsx": $users_login_,
+    "./routes/welcome.tsx": $welcome,
   },
   islands: {
-    "./islands/Chart.tsx": $$0,
-    "./islands/ItemsList.tsx": $$1,
-    "./islands/UsersTable.tsx": $$2,
+    "./islands/Chart.tsx": $Chart,
+    "./islands/ItemsList.tsx": $ItemsList,
+    "./islands/UsersTable.tsx": $UsersTable,
   },
   baseUrl: import.meta.url,
-};
+} satisfies Manifest;
 
 export default manifest;

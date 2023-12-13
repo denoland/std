@@ -1,6 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import twindPlugin from "$fresh/plugins/twindv1.ts";
-import twindConfig from "./twind.config.ts";
+import tailwind from "$fresh/plugins/tailwind.ts";
 import kvOAuthPlugin from "./plugins/kv_oauth.ts";
 import sessionPlugin from "./plugins/session.ts";
 import errorHandling from "./plugins/error_handling.ts";
@@ -13,7 +12,7 @@ export default {
     welcomePlugin,
     kvOAuthPlugin,
     sessionPlugin,
-    twindPlugin(twindConfig),
+    tailwind(),
     errorHandling,
     securityHeaders,
   ],

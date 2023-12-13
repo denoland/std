@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.button-styles {
+  @apply px-4 py-2 bg-primary text-white rounded-lg border border-primary transition duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-transparent hover:text-primary;
+}
+
+.input-styles {
+  @apply px-4 py-2 bg-transparent rounded-lg outline-none border border-gray-300 hover:border-black transition duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:dark:border-white;
+}
+
+.site-bar-styles {
+  @apply flex justify-between p-4 gap-4;
+}
+
+.nav-styles {
+  @apply flex flex-wrap justify-start gap-x-8 gap-y-4 items-center justify-between h-full;
+}
+
+.nav-item {
+  @apply text-gray-500 px-3 py-4 sm:py-2;
+}
+
+.link-styles {
+  @apply text-gray-500 transition duration-100 hover:text-black hover:dark:text-white;
+}
+
+/* .active-link-styles {
+  @apply data-[current]:!text-black data-[current]:dark:!text-white;
+}
+
+.active-ancestor-link-styles {
+  @apply data-[ancestor]:!text-black data-[ancestor]:dark:!text-white;
+} */
+
+.heading-styles {
+  @apply text-3xl font-bold;
+}
+
+.heading-with-margin-styles {
+  @apply text-3xl font-bold mb-8;
+}

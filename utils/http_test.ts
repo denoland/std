@@ -2,7 +2,7 @@
 import { returnsNext, stub } from "std/testing/mock.ts";
 import { fetchValues, getCursor, redirect } from "./http.ts";
 import { assert, assertEquals, assertRejects } from "std/assert/mod.ts";
-import { Status } from "$fresh/server.ts";
+import { STATUS_CODE } from "std/http/status.ts";
 import { Item, randomItem } from "@/utils/db.ts";
 
 Deno.test("[http] redirect() defaults", () => {
@@ -33,7 +33,7 @@ Deno.test("[http] getCursor()", () => {
 
 Deno.test("[http] fetchValues()", async () => {
   const resp1 = Promise.resolve(
-    new Response(null, { status: Status.NotFound }),
+    new Response(null, { status: STATUS_CODE.NotFound }),
   );
   const resp2Body = {
     values: [randomItem(), randomItem()],

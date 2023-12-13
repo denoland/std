@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { Plugin } from "$fresh/server.ts";
-import type { MiddlewareHandlerContext } from "$fresh/server.ts";
+import type { FreshContext } from "$fresh/server.ts";
 import { getSessionId } from "kv_oauth/mod.ts";
 import { getUserBySession } from "@/utils/db.ts";
 import type { User } from "@/utils/db.ts";
@@ -22,7 +22,7 @@ export function assertSignedIn(
 
 async function setSessionState(
   req: Request,
-  ctx: MiddlewareHandlerContext<State>,
+  ctx: FreshContext<State>,
 ) {
   if (ctx.destination !== "route") return await ctx.next();
 
@@ -41,7 +41,7 @@ async function setSessionState(
 
 async function ensureSignedIn(
   _req: Request,
-  ctx: MiddlewareHandlerContext<State>,
+  ctx: FreshContext<State>,
 ) {
   assertSignedIn(ctx);
   return await ctx.next();

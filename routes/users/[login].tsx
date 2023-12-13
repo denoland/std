@@ -2,7 +2,6 @@
 import type { State } from "@/plugins/session.ts";
 import { getUser } from "@/utils/db.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
-import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
@@ -26,7 +25,7 @@ function UserProfile(props: UserProfileProps) {
         <a
           href={`https://github.com/${props.login}`}
           aria-label={`${props.login}'s GitHub profile`}
-          class={LINK_STYLES}
+          class="link-styles"
           target="_blank"
         >
           <IconBrandGithub class="w-6" />

@@ -3,7 +3,7 @@ import { assertRejects } from "std/assert/assert_rejects.ts";
 import { getGitHubUser } from "./github.ts";
 import { returnsNext, stub } from "std/testing/mock.ts";
 import { assertEquals } from "std/assert/assert_equals.ts";
-import { Status } from "kv_oauth/deps.ts";
+import { STATUS_CODE } from "std/http/status.ts";
 import { BadRequestError } from "@/utils/http.ts";
 
 Deno.test("[plugins] getGitHubUser()", async (test) => {
@@ -14,7 +14,7 @@ Deno.test("[plugins] getGitHubUser()", async (test) => {
       "fetch",
       returnsNext([
         Promise.resolve(
-          Response.json({ message }, { status: Status.BadRequest }),
+          Response.json({ message }, { status: STATUS_CODE.BadRequest }),
         ),
       ]),
     );

@@ -2,7 +2,6 @@
 import Chart from "@/islands/Chart.tsx";
 import Head from "@/components/Head.tsx";
 import TabsBar from "@/components/TabsBar.tsx";
-import { HEADING_WITH_MARGIN_STYLES } from "@/utils/constants.ts";
 import { defineRoute } from "$fresh/server.ts";
 import { Partial } from "$fresh/runtime.ts";
 
@@ -47,7 +46,7 @@ export default defineRoute((_req, ctx) => {
     <>
       <Head title="Dashboard" href={ctx.url.href} />
       <main class="flex-1 p-4 flex flex-col f-client-nav">
-        <h1 class={HEADING_WITH_MARGIN_STYLES}>Dashboard</h1>
+        <h1 class="heading-with-margin-styles">Dashboard</h1>
         <TabsBar
           links={[{
             path: "/dashboard/stats",

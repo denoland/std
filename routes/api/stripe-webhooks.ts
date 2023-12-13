@@ -1,5 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { type Handlers, Status } from "$fresh/server.ts";
+import { type Handlers } from "$fresh/server.ts";
+import { STATUS_CODE } from "std/http/status.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import Stripe from "stripe";
 import { getUserByStripeCustomer, updateUser } from "@/utils/db.ts";
@@ -54,7 +55,7 @@ export const handler: Handlers = {
         }
 
         await updateUser({ ...user, isSubscribed: true });
-        return new Response(null, { status: Status.Created });
+        return new Response(null, { status: STATUS_CODE.Created });
       }
       case "customer.subscription.deleted": {
         const user = await getUserByStripeCustomer(customer);
@@ -63,7 +64,7 @@ export const handler: Handlers = {
         }
 
         await updateUser({ ...user, isSubscribed: false });
-        return new Response(null, { status: Status.Accepted });
+        return new Response(null, { status: STATUS_CODE.Accepted });
       }
       default: {
         throw new BadRequestError("Event type not supported");

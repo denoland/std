@@ -3,7 +3,6 @@ import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import type { User } from "@/utils/db.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
-import { LINK_STYLES } from "@/utils/constants.ts";
 import { fetchValues } from "@/utils/http.ts";
 import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
@@ -12,7 +11,7 @@ const TD_STYLES = "p-4";
 
 function UserTableRow(props: User) {
   return (
-    <tr class="hover:(bg-gray-50 dark:bg-gray-900) border-b border-gray-200">
+    <tr class="hover:bg-gray-50 hover:dark:bg-gray-900 border-b border-gray-200">
       <td scope="col" class={TD_STYLES}>
         <GitHubAvatarImg login={props.login} size={32} />
         <a
@@ -86,7 +85,7 @@ export default function UsersTable(props: UsersTableProps) {
       {cursorSig.value !== "" && (
         <button
           onClick={loadMoreUsers}
-          class={LINK_STYLES + " p-4"}
+          class="link-styles p-4"
         >
           {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>

@@ -2,7 +2,6 @@
 import { Signal, useComputed, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { type Item } from "@/utils/db.ts";
-import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import { fetchValues } from "@/utils/http.ts";
 import { decodeTime } from "std/ulid/mod.ts";
@@ -91,7 +90,7 @@ function ItemSummary(props: ItemSummaryProps) {
       <div class="space-y-1">
         <p>
           <a
-            class="visited:(text-[purple] dark:text-[lightpink]) hover:underline mr-4"
+            class="visited:text-[purple] visited:dark:text-[lightpink] hover:underline mr-4"
             href={props.item.url}
           >
             {props.item.title}
@@ -167,7 +166,7 @@ export default function ItemsList(props: ItemsListProps) {
   }, []);
 
   if (isLoadingSig.value === undefined) {
-    return <p class={LINK_STYLES}>Loading...</p>;
+    return <p class="link-styles">Loading...</p>;
   }
 
   return (
@@ -185,7 +184,7 @@ export default function ItemsList(props: ItemsListProps) {
         })
         : <EmptyItemsList />}
       {cursorSig.value !== "" && (
-        <button onClick={loadMoreItems} class={LINK_STYLES}>
+        <button onClick={loadMoreItems} class="link-styles">
           {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}

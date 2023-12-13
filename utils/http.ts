@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { RedirectStatus, Status } from "std/http/status.ts";
+import { RedirectStatus, STATUS_CODE } from "std/http/status.ts";
 
 /**
  * Returns a response that redirects the client to the given location (URL).
@@ -19,7 +19,7 @@ import { RedirectStatus, Status } from "std/http/status.ts";
  */
 export function redirect(
   location: string,
-  status: Status.Created | RedirectStatus = Status.SeeOther,
+  status: typeof STATUS_CODE.Created | RedirectStatus = STATUS_CODE.SeeOther,
 ) {
   return new Response(null, {
     headers: {
