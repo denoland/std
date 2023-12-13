@@ -87,30 +87,23 @@ const MAINVERSION =
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
 
-const PRERELEASEIDENTIFIER = "(?:" + NUMERICIDENTIFIER + "|" +
-  NONNUMERICIDENTIFIER + ")";
+const PRERELEASEIDENTIFIER = `(?:${NUMERICIDENTIFIER}|${NONNUMERICIDENTIFIER})`;
 
 // ## Pre-release Version
 // Hyphen, followed by one or more dot-separated pre-release version
 // identifiers.
 
-const PRERELEASE = "(?:-(" +
-  PRERELEASEIDENTIFIER +
-  "(?:\\." +
-  PRERELEASEIDENTIFIER +
-  ")*))";
+const PRERELEASE =
+  `(?:-(${PRERELEASEIDENTIFIER}(?:\\.${PRERELEASEIDENTIFIER})*))`;
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
-
 const BUILDIDENTIFIER = "[0-9A-Za-z-]+";
 
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
 // identifiers.
-
-const BUILD = "(?:\\+(" + BUILDIDENTIFIER + "(?:\\." +
-  BUILDIDENTIFIER + ")*))";
+const BUILD = `(?:\\+(${BUILDIDENTIFIER}(?:\\.${BUILDIDENTIFIER})*))`;
 
 // ## Full Version String
 // A main version, followed optionally by a pre-release version and
@@ -120,69 +113,44 @@ const BUILD = "(?:\\+(" + BUILDIDENTIFIER + "(?:\\." +
 // the version string are capturing groups.  The build metadata is not a
 // capturing group, because it should not ever be used in version
 // comparison.
-const FULLPLAIN = "v?" + MAINVERSION + PRERELEASE + "?" + BUILD +
-  "?";
+const FULLPLAIN = `v?${MAINVERSION}${PRERELEASE}?${BUILD}?`;
 
-export const FULL_REGEXP = new RegExp("^" + FULLPLAIN + "$");
+export const FULL_REGEXP = new RegExp(`^${FULLPLAIN}$`);
 
 const GTLT = "((?:<|>)?=?)";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
 // Only the first item is strictly required.
-const XRANGEIDENTIFIER = NUMERICIDENTIFIER + "|x|X|\\*";
+const XRANGEIDENTIFIER = `${NUMERICIDENTIFIER}|x|X|\\*`;
 
-const XRANGEPLAIN = "[v=\\s]*(" +
-  XRANGEIDENTIFIER +
-  ")" +
-  "(?:\\.(" +
-  XRANGEIDENTIFIER +
-  ")" +
-  "(?:\\.(" +
-  XRANGEIDENTIFIER +
-  ")" +
-  "(?:" +
-  PRERELEASE +
-  ")?" +
-  BUILD +
-  "?" +
-  ")?)?";
+const XRANGEPLAIN =
+  `[v=\\s]*(${XRANGEIDENTIFIER})(?:\\.(${XRANGEIDENTIFIER})(?:\\.(${XRANGEIDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
 export const XRANGE_REGEXP = new RegExp(
-  "^" + GTLT + "\\s*" + XRANGEPLAIN + "$",
+  `^${GTLT}\\s*${XRANGEPLAIN}$`,
 );
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
-const LONETILDE = "(?:~>?)";
-
-export const TILDE_REGEXP = new RegExp("^" + LONETILDE + XRANGEPLAIN + "$");
+export const TILDE_REGEXP = new RegExp(`^(?:~>?)${XRANGEPLAIN}$`);
 
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
-const LONECARET = "(?:\\^)";
-
-export const CARET_REGEXP = new RegExp("^" + LONECARET + XRANGEPLAIN + "$");
+export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGEPLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
-  "^" + GTLT + "\\s*(" + FULLPLAIN + ")$|^$",
+  `^${GTLT}\\s*(${FULLPLAIN})$|^$`,
 );
 
 // Something like `1.2.3 - 1.2.4`
 export const HYPHENRANGE_REGEXP = new RegExp(
-  "^\\s*(" +
-    XRANGEPLAIN +
-    ")" +
-    "\\s+-\\s+" +
-    "(" +
-    XRANGEPLAIN +
-    ")" +
-    "\\s*$",
+  `^\\s*(${XRANGEPLAIN})\\s+-\\s+(${XRANGEPLAIN})\\s*$`,
 );
 
 // Star ranges basically just allow anything at all.
-export const STAR_REGEXP = new RegExp("(<|>)?=?\\s*\\*");
+export const STAR_REGEXP = /(<|>)?=?\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.
