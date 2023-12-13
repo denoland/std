@@ -25,7 +25,7 @@ import { validateBinaryLike } from "./_util.ts";
  * @module
  */
 
-/** Supported ascii85 standards. */
+/** Supported ascii85 standards for {@linkcode Ascii85Options}. */
 export type Ascii85Standard = "Adobe" | "btoa" | "RFC 1924" | "Z85";
 
 /** Options for {@linkcode encodeAscii85} and {@linkcode decodeAscii85}. */
