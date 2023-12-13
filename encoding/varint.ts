@@ -25,7 +25,7 @@ const U32_VIEW = new Uint32Array(AB);
 const U64_VIEW = new BigUint64Array(AB);
 
 /**
- * Given a `buf`, starting at `offset` (default: 0), begin decoding bytes as
+ * Given a non empty `buf`, starting at `offset` (default: 0), begin decoding bytes as
  * VarInt encoded bytes, for a maximum of 10 bytes (offset + 10). The returned
  * tuple is of the decoded varint 32-bit number, and the new offset with which
  * to continue decoding other data.

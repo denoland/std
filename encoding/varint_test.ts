@@ -19,6 +19,10 @@ function encodeDecode(i: number | bigint) {
   assertEquals(n, m, `${fn.name}(encode(${i})): buffer lengths ${n} !== ${m}`);
 }
 
+Deno.test("Varint decode empty buff", () => {
+  assertThrows(() => decode(Uint8Array.of()), RangeError)
+})
+
 Deno.test("VarInt decode manual", () => {
   assertEquals(decode(Uint8Array.of(172, 2)), [300n, 2]);
 });
