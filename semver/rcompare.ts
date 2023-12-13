@@ -7,7 +7,7 @@ import { compare } from "./compare.ts";
  * `1` and `-1` are inverted.
  *
  * Sorts in descending order if passed to `Array.sort()`,
- * @deprecated (will be removed in 0.211.0) use `compare` instead.
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode compare} instead.
  */
 export function rcompare(
   s0: SemVer,
