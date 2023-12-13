@@ -5,11 +5,16 @@ import { isSemVer } from "./is_semver.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
 /**
+ * @deprecated (will be removed in 0.212.0) Use a string argument instead.
+ */
+export function parse(version: SemVer): SemVer;
+/**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or throws a TypeError.
  * @param version The version string to parse
  * @returns A valid SemVer
  */
+export function parse(version: string): SemVer;
 export function parse(version: string | SemVer): SemVer {
   if (typeof version === "object") {
     if (isSemVer(version)) {
