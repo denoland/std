@@ -49,17 +49,6 @@ const Z85 =
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#";
 
 /**
- * Encodes a given Uint8Array into ascii85, supports multiple standards
- * @param uint8 input to encode
- * @param [options] encoding options
- * @param [options.standard=Adobe] encoding standard (Adobe, btoa, RFC 1924 or Z85)
- * @param [options.delimiter] whether to use a delimiter, if supported by encoding standard
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeAscii85} instead.
- */
-export const encode: typeof encodeAscii85 = encodeAscii85;
-
-/**
  * Converts data into an ascii58-encoded string.
  *
  * @example
@@ -133,16 +122,6 @@ export function encodeAscii85(
   }
   return output.slice(0, output.length - difference).join("");
 }
-
-/**
- * Decodes a given ascii85 encoded string.
- * @param ascii85 input to decode
- * @param [options] decoding options
- * @param [options.standard=Adobe] encoding standard used in the input string (Adobe, btoa, RFC 1924 or Z85)
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeAscii85} instead.
- */
-export const decode: typeof decodeAscii85 = decodeAscii85;
 
 /**
  * Decodes a given ascii85-encoded string.
