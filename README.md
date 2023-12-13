@@ -135,7 +135,7 @@ Check out the contributing guidelines [here](.github/CONTRIBUTING.md).
 
 The Standard Library is versioned independently of the Deno CLI. This will
 change once the Standard Library is stabilized. See
-[here](https://raw.githubusercontent.com/denoland/dotland/main/versions.json)
+[here](https://deno.com/versions.json)
 for the compatibility of different versions of the Deno Standard Library and the
 Deno CLI.
 
