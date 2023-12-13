@@ -1,7 +1,13 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import { CARET, HYPHENRANGE, re, STAR, TILDE, XRANGE } from "./_shared.ts";
+import {
+  CARET_REGEXP,
+  HYPHENRANGE_REGEXP,
+  STAR_REGEXP,
+  TILDE_REGEXP,
+  XRANGE_REGEXP,
+} from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 // ~, ~> --> * (any, kinda silly)
@@ -19,9 +25,8 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  const r: RegExp = re[TILDE];
   return comp.replace(
-    r,
+    TILDE_REGEXP,
     (_: string, M: string, m: string, p: string, pr: string) => {
       let ret: string;
 
@@ -71,8 +76,7 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  const r: RegExp = re[CARET];
-  return comp.replace(r, (_: string, M, m, p, pr) => {
+  return comp.replace(CARET_REGEXP, (_: string, M, m, p, pr) => {
     let ret: string;
 
     if (isX(M)) {
@@ -147,8 +151,7 @@ function replaceXRanges(comp: string): string {
 
 function replaceXRange(comp: string): string {
   comp = comp.trim();
-  const r: RegExp = re[XRANGE];
-  return comp.replace(r, (ret: string, gtlt, M, m, p, _pr) => {
+  return comp.replace(XRANGE_REGEXP, (ret: string, gtlt, M, m, p, _pr) => {
     const xM: boolean = isX(M);
     const xm: boolean = xM || isX(m);
     const xp: boolean = xm || isX(p);
@@ -212,7 +215,7 @@ function replaceXRange(comp: string): string {
 // Because * is AND-ed with everything else in the comparator,
 // and '' means "any version", just remove the *s entirely.
 function replaceStars(comp: string): string {
-  return comp.trim().replace(re[STAR], "");
+  return comp.trim().replace(STAR_REGEXP, "");
 }
 
 // This function is passed to string.replace(re[HYPHENRANGE])
@@ -283,8 +286,7 @@ export function parseRange(range: string): SemVerRange {
     .split(/\s*\|\|\s*/)
     .map((range) => {
       // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
-      const hr: RegExp = re[HYPHENRANGE];
-      range = range.replace(hr, hyphenReplace);
+      range = range.replace(HYPHENRANGE_REGEXP, hyphenReplace);
       range = replaceCarets(range);
       range = replaceTildes(range);
       range = replaceXRanges(range);
