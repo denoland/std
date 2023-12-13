@@ -4,7 +4,7 @@ import type { SemVerRange } from "./types.ts";
 import {
   CARET_REGEXP,
   HYPHENRANGE_REGEXP,
-  STAR,
+  STAR_REGEXP,
   TILDE_REGEXP,
   XRANGE_REGEXP,
 } from "./_shared.ts";
@@ -215,7 +215,7 @@ function replaceXRange(comp: string): string {
 // Because * is AND-ed with everything else in the comparator,
 // and '' means "any version", just remove the *s entirely.
 function replaceStars(comp: string): string {
-  return comp.trim().replace(STAR, "");
+  return comp.trim().replace(STAR_REGEXP, "");
 }
 
 // This function is passed to string.replace(re[HYPHENRANGE])
