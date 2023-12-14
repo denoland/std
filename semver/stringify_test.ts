@@ -1,7 +1,6 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { format } from "./format.ts";
 import { INVALID, MAX, MIN } from "./constants.ts";
 import { SemVer } from "./types.ts";
 import { stringify } from "./stringify.ts";
