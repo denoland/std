@@ -44,22 +44,6 @@ function convertBase64ToBase64url(b64: string) {
 }
 
 /**
- * Encodes a given ArrayBuffer or string into a base64url representation
- * @param data
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64Url} instead.
- */
-export const encode: typeof encodeBase64Url = encodeBase64Url;
-
-/**
- * Converts given base64url encoded data back to original
- * @param b64url
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64Url} instead.
- */
-export const decode: typeof decodeBase64Url = decodeBase64Url;
-
-/**
  * Convert data into a base64url-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-5}

@@ -5,8 +5,6 @@ import { encodeHex } from "../encoding/hex.ts";
 import { encodeBase64 } from "../encoding/base64.ts";
 
 /**
- * @deprecated (will be removed after 0.209.0) Use {@linkcode encodeHex} or {@linkcode encodeBase64} instead.
- *
  * Converts a hash to a string with a given encoding.
  * @example
  * ```ts
@@ -21,6 +19,8 @@ import { encodeBase64 } from "../encoding/base64.ts";
  * // Or with base64 encoding
  * console.log(toHashString(hash, "base64"));
  * ```
+ *
+ * @deprecated (will be removed after 0.209.0) Use {@linkcode encodeHex} or {@linkcode encodeBase64} instead.
  */
 export function toHashString(
   hash: ArrayBuffer,
