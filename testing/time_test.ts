@@ -30,6 +30,14 @@ Deno.test("Date is fake if FakeTime is initialized", () => {
   assertStrictEquals(Date, _internals.Date);
 });
 
+Deno.test("Date is resets correctly with 'using'/Symbol.dispose", () => {
+  {
+    using _time = new FakeTime(9001);
+    assertNotEquals(Date, _internals.Date);
+  }
+  assertStrictEquals(Date, _internals.Date);
+});
+
 Deno.test("Fake Date parse and UTC behave the same", () => {
   const expectedUTC = Date.UTC(96, 1, 2, 3, 4, 5);
   const expectedParse = Date.parse("04 Dec 1995 00:12:00 GMT");
