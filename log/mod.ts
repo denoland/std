@@ -292,7 +292,7 @@
  *         time: record.datetime.toISOString(),
  *         name: record.loggerName,
  *       }),
- *       useColor: false,
+ *       useColors: false,
  *     }),
  *   },
  *
