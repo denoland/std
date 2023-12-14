@@ -162,7 +162,7 @@ Deno.test("monotonicity", async (t) => {
   await t.step("without seedTime", async (t) => {
     const stubbedUlid = monotonicFactory(encodeRandom);
 
-    const time = new FakeTime(1469918176385);
+    using _time = new FakeTime(1469918176385);
 
     await t.step("first call", () => {
       assertEquals("01ARYZ6S41YYYYYYYYYYYYYYYY", stubbedUlid());
@@ -179,8 +179,6 @@ Deno.test("monotonicity", async (t) => {
     await t.step("fourth call", () => {
       assertEquals("01ARYZ6S41YYYYYYYYYYYYYYZ1", stubbedUlid());
     });
-
-    time.restore();
   });
 
   await t.step("with seedTime", async (t) => {
