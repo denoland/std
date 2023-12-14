@@ -27,22 +27,6 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase58} instead.
- */
-export const encode: typeof encodeBase58 = encodeBase58;
-
-/**
- * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase58} instead.
- */
-export const decode: typeof decodeBase58 = decodeBase58;
-
-/**
  * Converts data to a base58-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-3}
