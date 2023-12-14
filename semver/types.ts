@@ -53,7 +53,7 @@ export interface Comparator {
   max: SemVer;
 }
 /**
- * @deprecated (will be removed in 0.211.0) use `Comparator` instead.
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
  */
 export interface SemVerComparator {
   operator: Operator;
