@@ -123,14 +123,13 @@ Deno.test({
 Deno.test({
   name: "CookieMap - set cookie with maxAge instead of expires",
   fn() {
-    const time = new FakeTime(0);
+    using _time = new FakeTime(0);
     const request = createHeaders();
     const response = createHeaders();
     const cookies = new CookieMap(request, { response });
     cookies.set("foo", "bar", {
       maxAge: 1,
     });
-    time.restore();
     assertEquals(
       response.get("set-cookie"),
       "foo=bar; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; httponly",
