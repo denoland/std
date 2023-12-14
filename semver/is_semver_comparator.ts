@@ -11,7 +11,7 @@ import { isComparator } from "./is_comparator.ts";
  * Adds a type assertion if true.
  * @param value The value to check if its a SemVerComparator
  * @returns True if the object is a SemVerComparator otherwise false
- * @deprecated (will be removed in 0.211.0) use `isComparator` instead.
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode isComparator} instead.
  */
 export function isSemVerComparator(value: unknown): value is SemVerComparator {
   return isComparator(value);
