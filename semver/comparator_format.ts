@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVerComparator } from "./types.ts";
 import { stringifyComparator } from "./stringify_comparator.ts";
 
 /**
@@ -9,6 +8,4 @@ import { stringifyComparator } from "./stringify_comparator.ts";
  * @returns A string representation of the comparator
  * @deprecated (will be removed in 0.212.0) Use {@linkcode stringifyComparator} instead.
  */
-export function comparatorFormat(comparator: SemVerComparator) {
-  return stringifyComparator(comparator);
-}
+export const comparatorFormat = stringifyComparator;

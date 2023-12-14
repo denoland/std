@@ -1,5 +1,4 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVerRange } from "./types.ts";
 import { stringifyRange } from "./stringify_range.ts";
 
 /**
@@ -9,6 +8,4 @@ import { stringifyRange } from "./stringify_range.ts";
  * @returns A string representation of the range
  * @deprecated (will be removed in 0.212.0) Use {@linkcode stringifyRange} instead.
  */
-export function rangeFormat(range: SemVerRange) {
-  return stringifyRange(range);
-}
+export const rangeFormat = stringifyRange;
