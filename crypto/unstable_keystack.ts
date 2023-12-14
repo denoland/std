@@ -146,6 +146,7 @@ export class KeyStack {
     return -1;
   }
 
+  /** Custom output for {@linkcode Deno.inspect}. */
   [Symbol.for("Deno.customInspect")](
     inspect: (value: unknown) => string,
   ): string {
@@ -153,6 +154,7 @@ export class KeyStack {
     return `${this.constructor.name} ${inspect({ length })}`;
   }
 
+  /** Custom output for Node's {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options|util.inspect}. */
   [Symbol.for("nodejs.util.inspect.custom")](
     depth: number,
     // deno-lint-ignore no-explicit-any
