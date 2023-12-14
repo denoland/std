@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # - v1.x (temporarily disabled until v0.209.0 is released)
+          - v1.x
           - canary
         os:
           - ubuntu-22.04
