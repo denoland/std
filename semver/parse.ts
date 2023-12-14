@@ -37,8 +37,7 @@ export function parse(version: string | SemVer): SemVer {
 
   version = version.trim();
 
-  const match = version.match(FULL_REGEXP);
-  const groups = match?.groups;
+  const groups = version.match(FULL_REGEXP)?.groups;
   if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
   // these are actually numbers
