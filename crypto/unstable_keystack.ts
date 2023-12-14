@@ -96,6 +96,7 @@ export class KeyStack {
     return this.#cryptoKeys.get(key)!;
   }
 
+  /** Number of keys */
   get length(): number {
     return this.#keys.length;
   }
@@ -145,17 +146,21 @@ export class KeyStack {
     return -1;
   }
 
-  [Symbol.for("Deno.customInspect")](inspect: (value: unknown) => string) {
+  /** Custom output for {@linkcode Deno.inspect}. */
+  [Symbol.for("Deno.customInspect")](
+    inspect: (value: unknown) => string,
+  ): string {
     const { length } = this;
     return `${this.constructor.name} ${inspect({ length })}`;
   }
 
+  /** Custom output for Node's {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options|util.inspect}. */
   [Symbol.for("nodejs.util.inspect.custom")](
     depth: number,
     // deno-lint-ignore no-explicit-any
     options: any,
     inspect: (value: unknown, options?: unknown) => string,
-  ) {
+  ): string {
     if (depth < 0) {
       return options.stylize(`[${this.constructor.name}]`, "special");
     }

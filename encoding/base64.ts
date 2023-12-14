@@ -81,21 +81,6 @@ const base64abc = [
 ];
 
 /**
- * CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
- * Encodes a given Uint8Array, ArrayBuffer or string into RFC4648 base64 representation
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64} instead.
- */
-export const encode: typeof encodeBase64 = encodeBase64;
-
-/**
- * Decodes a given RFC4648 base64 encoded string
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64} instead.
- */
-export const decode: typeof decodeBase64 = decodeBase64;
-
-/**
  * Converts data into a base64-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}

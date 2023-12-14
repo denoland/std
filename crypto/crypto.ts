@@ -3,14 +3,12 @@
 
 /**
  * Extensions to the
- * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * [Web Crypto API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API}
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *
  * Provides additional digest algorithms that are not part of the WebCrypto
  * standard as well as a `subtle.digest` and `subtle.digestSync` methods.
- *
- * The "polyfill" delegates to `WebCrypto` where possible.
  *
  * The {@linkcode KeyStack} export implements the {@linkcode KeyRing} interface
  * for managing rotatable keys for signing data to prevent tampering, like with
@@ -22,54 +20,43 @@
  * and Wasm/Rust is the same, this library prefers to use algorithms that are
  * supported by WebCrypto.
  *
- * WebCrypto
+ * WebCrypto:
+ * - `SHA-384`
+ * - `SHA-256`
+ * - `SHA-512` (length-extendable and collidable)
  *
- * ```ts
- * // https://deno.land/std/crypto/crypto.ts
- * const webCryptoDigestAlgorithms = [
- *   "SHA-384",
- *   "SHA-256",
- *   "SHA-512",
- *   // insecure (length-extendable and collidable):
- *   "SHA-1",
- * ] as const;
- * ```
- *
- * Wasm/Rust
- *
- * ```ts
- * // https://deno.land/std/crypto/_wasm/mod.ts
- * export const digestAlgorithms = [
- *   "BLAKE2B-128",
- *   "BLAKE2B-160",
- *   "BLAKE2B-224",
- *   "BLAKE2B-256",
- *   "BLAKE2B-384",
- *   "BLAKE2B",
- *   "BLAKE2S",
- *   "BLAKE3",
- *   "KECCAK-224",
- *   "KECCAK-256",
- *   "KECCAK-384",
- *   "KECCAK-512",
- *   "SHA-384",
- *   "SHA3-224",
- *   "SHA3-256",
- *   "SHA3-384",
- *   "SHA3-512",
- *   "SHAKE128",
- *   "SHAKE256",
- *   "TIGER",
- *   // insecure (length-extendable):
- *   "RIPEMD-160",
- *   "SHA-224",
- *   "SHA-256",
- *   "SHA-512",
- *   // insecure (collidable and length-extendable):
- *   "MD4",
- *   "MD5",
- *   "SHA-1",
- * ] as const;
+ * Wasm/Rust:
+ * - `BLAKE2B-128`
+ * - `BLAKE2B-160`
+ * - `BLAKE2B-224`
+ * - `BLAKE2B-256`
+ * - `BLAKE2B-384`
+ * - `BLAKE2B`
+ * - `BLAKE2S`
+ * - `BLAKE3`
+ * - `FNV32` (length-extendable)
+ * - `FNV32A` (length-extendable)
+ * - `FNV64` (length-extendable)
+ * - `FNV64A` (length-extendable)
+ * - `KECCAK-224`
+ * - `KECCAK-256`
+ * - `KECCAK-384`
+ * - `KECCAK-512`
+ * - `SHA-384`
+ * - `SHA3-224`
+ * - `SHA3-256`
+ * - `SHA3-384`
+ * - `SHA3-512`
+ * - `SHAKE128`
+ * - `SHAKE256`
+ * - `TIGER`
+ * - `RIPEMD-160` (length-extendable)
+ * - `SHA-224` (length-extendable)
+ * - `SHA-256` (length-extendable)
+ * - `SHA-512` (length-extendable)
+ * - `MD4` (collidable and length-extendable)
+ * - `MD5` (collidable and length-extendable)
+ * - `SHA-1` (collidable and length-extendable)
  * ```
  *
  * @example
@@ -127,6 +114,8 @@ import {
   instantiateWasm,
 } from "./_wasm/mod.ts";
 import { fnv } from "./_fnv/mod.ts";
+
+export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -186,6 +175,7 @@ export interface StdSubtleCrypto extends SubtleCrypto {
 
 /** Extensions to the Web {@linkcode Crypto} interface. */
 export interface StdCrypto extends Crypto {
+  /** Extension to the {@linkcode crypto.SubtleCrypto} interface. */
   readonly subtle: StdSubtleCrypto;
 }
 
@@ -213,7 +203,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(name)) {
+      if (FNV_ALGORITHMS.includes(name)) {
         return fnv(name, bytes);
       }
 
@@ -277,7 +267,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(name)) {
+      if (FNV_ALGORITHMS.includes(name)) {
         return fnv(name, bytes);
       }
 
@@ -304,7 +294,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
   },
 });
 
-const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
+const FNV_ALGORITHMS = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
 
 /** Digest algorithms supported by WebCrypto. */
 const webCryptoDigestAlgorithms = [
@@ -315,7 +305,10 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
+/** FNV (Fowler/Noll/Vo) algorithms names. */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+
+/** Extended digest algorithm names. */
 export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 /*
@@ -341,11 +334,15 @@ function assertValidDigestLength(value?: number) {
   }
 }
 
+/** Extended digest algorithm objects. */
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
+/**
+ * Extended digest algorithms accepted by {@linkcode stdCrypto.subtle.digest}.
+ */
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 function normalizeAlgorithm(algorithm: DigestAlgorithm) {
