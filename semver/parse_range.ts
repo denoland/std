@@ -289,7 +289,6 @@ export function parseRange(range: string): SemVerRange {
     .split(/\s*\|\|\s*/)
     .map((range) => {
       range = hyphenReplace(range);
-      // range = range.replace(HYPHENRANGE_REGEXP, hyphenReplace);
       range = replaceCarets(range);
       range = replaceTildes(range);
       range = replaceXRanges(range);
