@@ -213,25 +213,21 @@
  * }
  *
  * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
- *   const time = new FakeTime();
+ *   using time = new FakeTime();
  *
- *   try {
- *     const cb = spy();
- *     const intervalId = secondInterval(cb);
- *     assertSpyCalls(cb, 0);
- *     time.tick(500);
- *     assertSpyCalls(cb, 0);
- *     time.tick(500);
- *     assertSpyCalls(cb, 1);
- *     time.tick(3500);
- *     assertSpyCalls(cb, 4);
+ *   const cb = spy();
+ *   const intervalId = secondInterval(cb);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 1);
+ *   time.tick(3500);
+ *   assertSpyCalls(cb, 4);
  *
- *     clearInterval(intervalId);
- *     time.tick(1000);
- *     assertSpyCalls(cb, 4);
- *   } finally {
- *     time.restore();
- *   }
+ *   clearInterval(intervalId);
+ *   time.tick(1000);
+ *   assertSpyCalls(cb, 4);
  * });
  * ```
  *
