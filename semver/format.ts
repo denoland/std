@@ -21,6 +21,7 @@ function formatNumber(value: number) {
  *
  * @param semver The semantic version to format
  * @returns The string representation of a semantic version.
+ * @deprecated (will be removed in 0.212.0) use {@linkcode stringify} instead.
  */
 export function format(semver: SemVer, style: FormatStyle = "full") {
   if (semver === ANY) {
