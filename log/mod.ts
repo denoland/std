@@ -265,17 +265,17 @@
  * // calling:
  * log.info("Hey");
  * // results in:
- * {"level":"INFO","datetime":1702481922294,"message":"Hey"}
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey"}
  *
  * // calling:
  * log.info("Hey", { product: "nail" });
  * // results in:
- * {"level":"INFO","datetime":1702484111115,"message":"Hey","args":{"product":"nail"}}
+ * // {"level":"INFO","datetime":1702484111115,"message":"Hey","args":{"product":"nail"}}
  *
  * // calling:
  * log.info("Hey", 1, "two", [3, 4, 5]);
  * // results in:
- * {"level":"INFO","datetime":1702481922294,"message":"Hey","args":[1,"two",[3,4,5]]}
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey","args":[1,"two",[3,4,5]]}
  * ```
  *
  * @example
