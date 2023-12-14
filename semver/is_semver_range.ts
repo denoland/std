@@ -11,7 +11,7 @@ import { isRange } from "./is_range.ts";
  * Adds a type assertion if true.
  * @param value The value to check if its a valid SemVerRange
  * @returns True if its a valid SemVerRange otherwise false.
- * @deprecated (will be removed in 0.211.0) use `Range` instead.
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode isRange} instead.
  */
 export function isSemVerRange(value: unknown): value is SemVerRange {
   return isRange(value);
