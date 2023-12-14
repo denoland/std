@@ -52,7 +52,7 @@
  * // {"level":"INFO","datetime":1702501580505,"message":"This is the message","args":{"thisWillBe":"JSON.stringify'd"}}
  *
  * log.info({ thisWontBe: "JSON.stringify'd"}, "This is an argument");
- * // {"level":"INFO","datetime":1702484111115,"message":"thisWontBe","args":{"product":"nail"}}
+ * // {"level":"INFO","datetime":1702501580505,"message":"{\"thisWontBe\":\"JSON.stringify'd\"}","args":"This is an argument"}
  * ```
  *
  * ## Inline Logging
