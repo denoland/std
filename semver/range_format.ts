@@ -7,7 +7,7 @@ import { stringifyRange } from "./stringify_range.ts";
  * @example >=0.0.0 || <1.0.0
  * @param range The range to format
  * @returns A string representation of the range
- * @deprecated (will be removed in 0.212.0) use {@linkcode stringifyRange} instead.
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode stringifyRange} instead.
  */
 export function rangeFormat(range: SemVerRange) {
   return stringifyRange(range);
