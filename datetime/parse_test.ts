@@ -67,7 +67,7 @@ Deno.test({
 
 Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
   using _time = new FakeTime("2021-12-31");
-  
+
   assertEquals(
     parse("01-01", "MM-dd"),
     new Date(2021, 0, 1),
