@@ -64,14 +64,6 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 }
 
 /**
- * Decodes a given RFC4648 base32 encoded string.
- * @param b32
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase32} instead.
- */
-export const decode: typeof decodeBase32 = decodeBase32;
-
-/**
  * Decodes a base32-encoded string.
  *
  * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
@@ -172,14 +164,6 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
   }
   return output.join("");
 }
-
-/**
- * Encodes a given Uint8Array into RFC4648 base32 representation
- * @param uint8
- *
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase32} instead.
- */
-export const encode: typeof encodeBase32 = encodeBase32;
 
 /**
  * Converts data to a base32-encoded string.
