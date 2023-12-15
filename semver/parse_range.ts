@@ -229,7 +229,7 @@ function hyphenReplace(range: string) {
   const leftGroup = leftMatch?.groups;
   if (!leftGroup) return range;
   const leftLength = leftMatch[0].length;
-  const hyphenMatch = range.slice(leftLength).match(/\s+-\s+/);
+  const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
   if (!hyphenMatch) return range;
   const hyphenLength = hyphenMatch[0].length;
   const rightMatch = range.slice(leftLength + hyphenLength).match(
