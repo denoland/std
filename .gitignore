@@ -11,3 +11,4 @@ cov.lcov
 /http/testdata/%25A.txt
 /http/testdata/file#2.txt
 /http/testdata/test file.txt
+/coverage/
