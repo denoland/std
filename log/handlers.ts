@@ -3,8 +3,7 @@ import { getLevelByName, LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "../fmt/colors.ts";
 import { existsSync } from "../fs/exists.ts";
-import { BufWriterSync } from "../io/buf_writer.ts";
-import type { Writer } from "../io/types.d.ts";
+import { Buffer } from "../streams/buffer.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 export type FormatterFunction = (logRecord: LogRecord) => string;
@@ -108,7 +107,6 @@ export class ConsoleHandler extends BaseHandler {
 }
 
 export abstract class WriterHandler extends BaseHandler {
-  protected _writer!: Writer;
   #encoder = new TextEncoder();
 
   abstract override log(msg: string): void;
@@ -139,7 +137,7 @@ interface FileHandlerOptions extends HandlerOptions {
  */
 export class FileHandler extends WriterHandler {
   protected _file: Deno.FsFile | undefined;
-  protected _buf!: BufWriterSync;
+  protected _buf!: Buffer;
   protected _filename: string;
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
@@ -164,8 +162,7 @@ export class FileHandler extends WriterHandler {
 
   override setup() {
     this._file = Deno.openSync(this._filename, this._openOptions);
-    this._writer = this._file;
-    this._buf = new BufWriterSync(this._file);
+    this._buf = new Buffer();
 
     addEventListener("unload", this.#unloadCallback);
   }
@@ -179,21 +176,26 @@ export class FileHandler extends WriterHandler {
     }
   }
 
-  log(msg: string) {
-    if (this._encoder.encode(msg).byteLength + 1 > this._buf.available()) {
-      this.flush();
+  async log(msg: string) {
+    const bytes = this._encoder.encode(msg + "\n");
+
+    const availableSpace = 4096 - this._buf.length;
+    if (bytes.byteLength + 1 > availableSpace) {
+      await this.flush();
     }
-    this._buf.writeSync(this._encoder.encode(msg + "\n"));
+
+    const writer = this._buf.writable.getWriter();
+    await writer.write(bytes);
   }
 
-  flush() {
-    if (this._buf?.buffered() > 0) {
-      this._buf.flush();
+  async flush() {
+    if (!this._buf?.empty() && this._file) {
+      await this._buf.readable.pipeTo(this._file.writable);
     }
   }
 
-  override destroy() {
-    this.flush();
+  override async destroy() {
+    await this.flush();
     this._file?.close();
     this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
@@ -292,11 +294,11 @@ export class RotatingFileHandler extends FileHandler {
     }
   }
 
-  override log(msg: string) {
+  override async log(msg: string) {
     const msgByteLength = this._encoder.encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
-      this.rotateLogFiles();
+      await this.rotateLogFiles();
       this.#currentFileSize = 0;
     }
 
@@ -305,8 +307,9 @@ export class RotatingFileHandler extends FileHandler {
     this.#currentFileSize += msgByteLength;
   }
 
-  rotateLogFiles() {
-    this._buf.flush();
+  async rotateLogFiles() {
+    await this.flush();
+    this._buf.reset();
     this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
@@ -319,7 +322,6 @@ export class RotatingFileHandler extends FileHandler {
     }
 
     this._file = Deno.openSync(this._filename, this._openOptions);
-    this._writer = this._file;
-    this._buf = new BufWriterSync(this._file);
+    this._buf = new Buffer();
   }
 }
