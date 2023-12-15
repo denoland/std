@@ -72,8 +72,6 @@ Deno.test("deflateTarArchive", async function () {
   await writer.close();
   await promise;
 
-  console.log(buf.bytes());
-
   const untar = new UntarStream();
   await buf.readable.pipeTo(untar.writable);
   const reader = untar.readable.getReader();
@@ -88,6 +86,7 @@ Deno.test("deflateTarArchive", async function () {
   assert((await reader.read()).done); // EOF
   // tests
   assertEquals(result.value.fileName, fileName);
+  console.log(JSON.stringify(untarText), JSON.stringify(text))
   assertEquals(untarText, text);
 });
 

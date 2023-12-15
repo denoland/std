@@ -101,13 +101,9 @@ class TarEntry {
           return;
         }
 
-        console.log("a", 6);
         const reader = this.#readableInner.getReader({ mode: "byob" });
-        console.log("a", 7);
         const res = await reader.read(new Uint8Array(bufSize), { min: bufSize });
-        console.log("a", 8);
         reader.releaseLock();
-        console.log("a", 9);
 
         const bytesLeft = this.#fileSize - this.#read;
         this.#read += bufSize;
@@ -121,7 +117,7 @@ class TarEntry {
       },
       autoAllocateChunkSize: 512,
       type: "bytes",
-    });
+    }, { highWaterMark: 0 });
 
     // File Size
     this.#fileSize = this.fileSize || 0;
@@ -176,7 +172,7 @@ export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
         this.#entry = new TarEntry(meta, header, this.#buffer.readable);
         controller.enqueue(this.#entry);
       },
-    });
+    }, { highWaterMark: 0 });
   }
 
   get writable() {
@@ -184,17 +180,11 @@ export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
   }
 
   async #getHeader(): Promise<TarHeader | null> {
-    console.log(1);
     const reader = this.#buffer.readable.getReader({ mode: "byob" });
-    console.log(2);
     const res = await reader.read(this.#block, { min: this.#block.byteLength });
-    console.log(3);
     reader.releaseLock();
-    console.log(4);
     assert(!res.done);
-    console.log(5);
     this.#block = res.value;
-    console.log(6);
     const header = parseHeader(this.#block);
 
     // calculate the checksum
