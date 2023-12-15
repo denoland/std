@@ -309,7 +309,6 @@ export class RotatingFileHandler extends FileHandler {
 
   async rotateLogFiles() {
     await this.flush();
-    this._buf.reset();
     this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
