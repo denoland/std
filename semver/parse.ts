@@ -2,14 +2,19 @@
 import { SemVer } from "./types.ts";
 import { isValidNumber } from "./_shared.ts";
 import { isSemVer } from "./is_semver.ts";
-import { FULL, MAX_LENGTH, NUMERICIDENTIFIER, re, src } from "./_shared.ts";
+import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
+/**
+ * @deprecated (will be removed in 0.212.0) Use a string argument instead.
+ */
+export function parse(version: SemVer): SemVer;
 /**
  * Attempt to parse a string as a semantic version, returning either a `SemVer`
  * object or throws a TypeError.
  * @param version The version string to parse
  * @returns A valid SemVer
  */
+export function parse(version: string): SemVer;
 export function parse(version: string | SemVer): SemVer {
   if (typeof version === "object") {
     if (isSemVer(version)) {
@@ -32,8 +37,7 @@ export function parse(version: string | SemVer): SemVer {
 
   version = version.trim();
 
-  const r = re[FULL];
-  const m = version.match(r);
+  const m = version.match(FULL_REGEXP);
   if (!m) {
     throw new TypeError(`Invalid Version: ${version}`);
   }
@@ -56,7 +60,7 @@ export function parse(version: string | SemVer): SemVer {
   }
 
   // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^(${src[NUMERICIDENTIFIER]})$`);
+  const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
   const prerelease = (m[4] ?? "")
     .split(".")
     .filter((id) => id)
