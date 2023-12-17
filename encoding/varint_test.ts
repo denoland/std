@@ -95,8 +95,11 @@ Deno.test("VarInt encode manual", () => {
     [Uint8Array.of(255, 255, 255, 255, 255, 255, 255, 255, 255, 1), 10],
   );
 });
+Deno.test("VarInt encode overflow uint64", () => {
+  assertThrows(() => encode(1e+30), RangeError, "overflows uint64");
+});
 Deno.test("VarInt encode overflow with negative", () => {
-  assertThrows(() => encode(-1), RangeError);
+  assertThrows(() => encode(-1), RangeError, "signed input given");
 });
 Deno.test("VarInt encode with offset", () => {
   let uint = new Uint8Array(3);

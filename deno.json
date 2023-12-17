@@ -12,7 +12,7 @@
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/"
   },
   "tasks": {
-    "test": "deno test --doc --unstable --allow-all --parallel --coverage=./cov --trace-ops",
+    "test": "deno test --doc --unstable --allow-all --parallel --coverage --trace-ops",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env=HOME ./_tools/check_deprecation.ts",
@@ -23,9 +23,8 @@
     "typos": "typos -c ./.github/workflows/typos.toml",
     "build:crypto": "deno task --cwd crypto/_wasm wasmbuild",
     "wasmbuild": "deno run --unstable -A https://deno.land/x/wasmbuild@0.15.3/main.ts --js-ext mjs --sync",
-    "cov:clean": "rm -rf cov html_cov cov.lcov",
-    "cov:gen": "deno coverage ./cov/ --lcov --output=cov.lcov",
-    "cov:view": "genhtml --ignore-errors unmapped -o html_cov cov.lcov && open html_cov/index.html",
+    "cov:gen": "deno coverage coverage --lcov --output=cov.lcov",
+    "cov:view": "deno coverage --html coverage",
     "ok": "deno task lint && deno fmt --check && deno task test:browser && deno task test"
   },
   "exclude": [
