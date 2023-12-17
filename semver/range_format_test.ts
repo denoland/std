@@ -1,11 +1,11 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import { stringifyRange } from "./stringify_range.ts";
+import { rangeFormat } from "./range_format.ts";
 import { parseRange } from "./parse_range.ts";
 
 Deno.test({
-  name: "stringifyRange()",
+  name: "rangeFormat()",
   fn: async (t) => {
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", ">=1.0.0 <=2.0.0"],
@@ -64,7 +64,7 @@ Deno.test({
         name: `${r} -> ${expected}`,
         fn: () => {
           const range = parseRange(r);
-          const actual = stringifyRange(range);
+          const actual = rangeFormat(range);
           assertEquals(actual, expected);
         },
       });
