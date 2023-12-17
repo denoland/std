@@ -3,11 +3,11 @@
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 import { parseRangeSet } from "./parse_range_set.ts";
-import { maxForRangeSet } from "./max_for_range_set.ts";
+import { maxInRangeSet } from "./max_in_range_set.ts";
 import { MAX, MIN } from "./constants.ts";
 
 Deno.test({
-  name: "maxForRangeSet",
+  name: "maxInRangeSet",
   fn: async (t) => {
     const versions: [string[], string, string][] = [
       [["1.2.3", "1.2.4"], "1.2", "1.2.4"],
@@ -20,7 +20,7 @@ Deno.test({
         const versions = v.map((v) => parse(v));
         const range = parseRangeSet(r);
         const expect = parse(e);
-        const actual = maxForRangeSet(versions, range);
+        const actual = maxInRangeSet(versions, range);
         assertEquals(actual, expect);
       });
     }
@@ -29,5 +29,5 @@ Deno.test({
 
 Deno.test("badRangesInMaxOrMinFor", function () {
   const r = parseRangeSet("some frogs and sneks-v2.5.6");
-  assertEquals(maxForRangeSet([MIN, MAX], r), undefined);
+  assertEquals(maxInRangeSet([MIN, MAX], r), undefined);
 });
