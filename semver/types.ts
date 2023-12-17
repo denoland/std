@@ -49,8 +49,14 @@ export type FormatStyle =
 export interface SemVerComparator {
   operator: Operator;
   semver: SemVer;
-  min: SemVer;
-  max: SemVer;
+  /**
+   * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMin} instead.
+   */
+  min?: SemVer;
+  /**
+   * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMax} instead.
+   */
+  max?: SemVer;
 }
 
 /**
@@ -76,3 +82,6 @@ export interface SemVerRange {
   // The outer array is OR while each inner array is AND
   ranges: SemVerRangeOr;
 }
+
+export type Range = [SemVerComparator, SemVerComparator];
+export type RangeSet = Range[];

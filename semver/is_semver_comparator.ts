@@ -20,11 +20,9 @@ export function isSemVerComparator(value: unknown): value is SemVerComparator {
   if (value === ALL) return true;
   if (Array.isArray(value)) return false;
   if (typeof value !== "object") return false;
-  const { operator, semver, min, max } = value as SemVerComparator;
+  const { operator, semver } = value as SemVerComparator;
   return (
     isValidOperator(operator) &&
-    isSemVer(semver) &&
-    isSemVer(min) &&
-    isSemVer(max)
+    isSemVer(semver)
   );
 }
