@@ -57,5 +57,5 @@ Deno.test("validateBinaryLike with invalid inputs", () => {
     },
     TypeError,
     "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type object.",
-  )
+  );
 });
