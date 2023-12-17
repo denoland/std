@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
+import type { RangeSet, SemVer } from "./types.ts";
 import { sort } from "./sort.ts";
-import { testRange } from "./test_range.ts";
+import { inRangeSet } from "./in_range_set.ts";
 
 /**
  * Returns the highest version in the list that satisfies the range, or `undefined`
@@ -9,13 +9,12 @@ import { testRange } from "./test_range.ts";
  * @param versions The versions to check.
  * @param range The range of possible versions to compare to.
  * @returns The highest version in versions that satisfies the range.
- * @deprecated (will be removed after 0.212.0) use {@linkcode maxForRangeSet} instead.
  */
-export function maxSatisfying(
+export function maxForRangeSet(
   versions: SemVer[],
-  range: SemVerRange,
+  range: RangeSet,
 ): SemVer | undefined {
-  const satisfying = versions.filter((v) => testRange(v, range));
+  const satisfying = versions.filter((v) => inRangeSet(v, range));
   const sorted = sort(satisfying);
   return sorted.pop();
 }

@@ -15,6 +15,7 @@ import { testRange } from "./test_range.ts";
  * @param range The range of possible versions
  * @param hilo The operator for the comparison or both if undefined.
  * @returns True if the version is outside of the range based on the operator
+ * @deprecated (will be removed after 0.212.0) use {@linkcode compareRangeSet} instead.
  */
 export function outside(
   version: SemVer,

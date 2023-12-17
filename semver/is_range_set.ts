@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVerRange } from "./types.ts";
+import type { RangeSet } from "./types.ts";
 import { isSemVerComparator } from "./is_semver_comparator.ts";
 
 /**
@@ -11,17 +11,14 @@ import { isSemVerComparator } from "./is_semver_comparator.ts";
  * Adds a type assertion if true.
  * @param value The value to check if its a valid SemVerRange
  * @returns True if its a valid SemVerRange otherwise false.
- * @deprecated (will be removed after 0.212.0) use {@linkcode isRangeSet} instead.
  */
-export function isSemVerRange(value: unknown): value is SemVerRange {
+export function isRangeSet(value: unknown): value is RangeSet {
   if (value === null || value === undefined) return false;
-  if (Array.isArray(value)) return false;
-  if (typeof value !== "object") return false;
-  const { ranges } = value as SemVerRange;
+  if (!Array.isArray(value)) return false;
+  const ranges = value as RangeSet;
   return (
-    Array.isArray(ranges),
-      ranges.every((r) =>
-        Array.isArray(r) && r.every((c) => isSemVerComparator(c))
-      )
+    ranges.every((r) =>
+      Array.isArray(r) && r.every((c) => isSemVerComparator(c))
+    )
   );
 }

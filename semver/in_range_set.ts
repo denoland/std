@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
+import type { RangeSet, SemVer } from "./types.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 
@@ -8,10 +8,9 @@ import { lte } from "./lte.ts";
  * @param version The version to test
  * @param range The range to check
  * @returns true if the version is in the range
- * @deprecated (will be removed after 0.212.0) use {@linkcode inRangeSet} instead.
  */
-export function testRange(version: SemVer, range: SemVerRange): boolean {
-  for (const r of range.ranges) {
+export function inRangeSet(version: SemVer, range: RangeSet): boolean {
+  for (const r of range) {
     if (r.every((c) => gte(version, c.min) && lte(version, c.max))) {
       return true;
     }

@@ -1,11 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { comparatorIntersects } from "./comparator_intersects.ts";
-import type { SemVerComparator, SemVerRange } from "./types.ts";
+import type { RangeSet, SemVerComparator } from "./types.ts";
 
-function rangesSatisfiable(ranges: SemVerRange[]): boolean {
+function rangesSatisfiable(ranges: RangeSet[]): boolean {
   return ranges.every((r) => {
     // For each OR at least one AND must be satisfiable
-    return r.ranges.some((comparators) => comparatorsSatisfiable(comparators));
+    return r.some((comparators) => comparatorsSatisfiable(comparators));
   });
 }
 
@@ -27,11 +27,10 @@ function comparatorsSatisfiable(comparators: SemVerComparator[]): boolean {
  * @param r0 range 0
  * @param r1 range 1
  * @returns returns true if any
- * @deprecated (will be removed after 0.212.0) use {@linkcode rangeSetIntersects} instead.
  */
-export function rangeIntersects(r0: SemVerRange, r1: SemVerRange): boolean {
-  return rangesSatisfiable([r0, r1]) && r0.ranges.some((r00) => {
-    return r1.ranges.some((r11) => {
+export function rangeSetIntersects(r0: RangeSet, r1: RangeSet): boolean {
+  return rangesSatisfiable([r0, r1]) && r0.some((r00) => {
+    return r1.some((r11) => {
       return r00.every((c0) => {
         return r11.every((c1) => comparatorIntersects(c0, c1));
       });

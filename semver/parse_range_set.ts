@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
-import type { SemVerRange } from "./types.ts";
+import type { RangeSet } from "./types.ts";
 import {
   CARET_REGEXP,
   HYPHENRANGE_REGEXP,
@@ -271,14 +271,13 @@ function isX(id: string): boolean {
  * Parses a range string into a SemVerRange object or throws a TypeError.
  * @param range The range string
  * @returns A valid semantic version range
- * @deprecated (will be removed after 0.212.0) use {@linkcode parseRangeSet} instead.
  */
-export function parseRange(range: string): SemVerRange {
+export function parseRangeSet(range: string): RangeSet {
   // handle spaces around and between comparator and version
   range = range.trim().replaceAll(/(?<=<|>|=) /g, "");
 
   if (range === "") {
-    return { ranges: [[ALL]] };
+    return [[ALL]];
   }
 
   // Split into groups of comparators, these are considered OR'd together.
@@ -306,5 +305,5 @@ export function parseRange(range: string): SemVerRange {
       }
     });
 
-  return { ranges };
+  return ranges;
 }
