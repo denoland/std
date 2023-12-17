@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
 import { ALL } from "./constants.ts";
-import { isRange } from "./is_range.ts";
+import { isSemVerRange } from "./is_semver_range.ts";
 
 Deno.test({
   name: "valid_range",
@@ -16,7 +16,7 @@ Deno.test({
     ];
     for (const r of ranges) {
       await t.step(`valid_range_${(i++).toString().padStart(2, "0")}`, () => {
-        const actual = isRange(r);
+        const actual = isSemVerRange(r);
         assert(actual);
       });
     }

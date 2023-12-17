@@ -81,13 +81,6 @@ type SemVerRangeOr = SemVerRangeAnd[];
  * a nested array, which represents a set of OR comparisons while the
  * inner array represents AND comparisons.
  */
-export interface Range {
-  // The outer array is OR while each inner array is AND
-  ranges: SemVerRangeOr;
-}
-/**
- * @deprecated (will be removed in 0.211.0) use `Range` instead.
- */
 export interface SemVerRange {
   // The outer array is OR while each inner array is AND
   ranges: SemVerRangeOr;
