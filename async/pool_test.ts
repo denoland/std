@@ -22,7 +22,7 @@ Deno.test("pooledMap()", async function () {
   assert(diff < 3000);
 });
 
-Deno.test("pooledMap() checks errors", async () => {
+Deno.test("pooledMap() handles errors", async () => {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);
