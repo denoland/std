@@ -70,7 +70,12 @@ export class Buffer {
 
   /** Constructs a new instance. */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
-    this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
+    if (ab === undefined) {
+      this.#buf = new Uint8Array(0);
+    } else {
+      this.#buf = new Uint8Array(ab);
+      this.#startedPromise.resolve(undefined);
+    }
   }
 
   /** Returns a slice holding the unread portion of the buffer.
