@@ -239,31 +239,31 @@ function hyphenReplace(range: string) {
   if (!rightGroups) return range;
   let from = leftMatch[0];
   let to = rightMatch[0];
+
   if (isX(leftGroup.major)) {
     from = "";
   } else if (isX(leftGroup.minor)) {
-    from = ">=" + leftGroup.major + ".0.0";
+    from = `>=${leftGroup.major}.0.0`;
   } else if (isX(leftGroup.patch)) {
-    from = ">=" + leftGroup.major + "." + leftGroup.minor + ".0";
+    from = `>=${leftGroup.major}.${leftGroup.minor}.0`;
   } else {
-    from = ">=" + from;
+    from = `>=${from}`;
   }
 
   if (isX(rightGroups.major)) {
     to = "";
   } else if (isX(rightGroups.minor)) {
-    to = "<" + (+rightGroups.major + 1) + ".0.0";
+    to = `<${+rightGroups.major + 1}.0.0`;
   } else if (isX(rightGroups.patch)) {
-    to = "<" + rightGroups.major + "." + (+rightGroups.minor + 1) +
-      ".0";
+    to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
   } else if (rightGroups.prerelease) {
-    to = "<=" + rightGroups.major + "." + rightGroups.minor + "." +
-      rightGroups.patch + "-" + rightGroups.prerelease;
+    to =
+      `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
   } else {
-    to = "<=" + to;
+    to = `<=${to}`;
   }
 
-  return (from + " " + to).trim();
+  return `${from} ${to}`.trim();
 }
 
 function isX(id: string): boolean {
