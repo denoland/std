@@ -9,6 +9,6 @@ import { join as windowsJoin } from "./windows/join.ts";
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  * @param paths to be joined and normalized
  */
-export function join(...paths: string[]) {
+export function join(...paths: string[]): string {
   return isWindows ? windowsJoin(...paths) : posixJoin(...paths);
 }

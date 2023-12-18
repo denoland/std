@@ -18,7 +18,9 @@
  */
 import { assert } from "../assert/assert.ts";
 
-/** Combines recursively all intersection types and returns a new single type. */
+/** Combines recursively all intersection types and returns a new single type.
+ * @internal
+ */
 type Id<TRecord> = TRecord extends Record<string, unknown>
   ? TRecord extends infer InferredRecord
     ? { [Key in keyof InferredRecord]: Id<InferredRecord[Key]> }
@@ -31,11 +33,16 @@ type UnionToIntersection<TValue> =
     (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
     : never;
 
+/** @internal */
 type BooleanType = boolean | string | undefined;
+/** @internal */
 type StringType = string | undefined;
+/** @internal */
 type ArgType = StringType | BooleanType;
 
+/** @internal */
 type Collectable = string | undefined;
+/** @internal */
 type Negatable = string | undefined;
 
 type UseTypes<
@@ -52,6 +59,7 @@ type UseTypes<
 /**
  * Creates a record with all available flags with the corresponding type and
  * default type.
+ * @internal
  */
 type Values<
   TBooleans extends BooleanType,
@@ -79,6 +87,7 @@ type Values<
   // deno-lint-ignore no-explicit-any
   : Record<string, any>;
 
+/** @internal */
 type Aliases<TArgNames = string, TAliasNames extends string = string> = Partial<
   Record<Extract<TArgNames, string>, TAliasNames | ReadonlyArray<TAliasNames>>
 >;
@@ -126,6 +135,7 @@ type SpreadDefaults<TArgs, TDefaults> = TDefaults extends undefined ? TArgs
 /**
  * Defines the Record for the `default` option to add
  * auto-suggestion support for IDE's.
+ * @internal
  */
 type Defaults<TBooleans extends BooleanType, TStrings extends StringType> = Id<
   UnionToIntersection<
@@ -245,6 +255,7 @@ export type Args<
     : Record<never, never>)
 >;
 
+/** @internal */
 type DoubleDash = {
   /** Contains all the arguments that appear after the double dash: "--". */
   "--"?: Array<string>;

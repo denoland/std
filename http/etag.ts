@@ -21,6 +21,7 @@ export interface FileInfo {
   size: number;
 }
 
+/** @internal */
 type Entity = string | Uint8Array | FileInfo;
 
 const encoder = new TextEncoder();

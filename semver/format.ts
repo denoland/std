@@ -22,7 +22,7 @@ function formatNumber(value: number) {
  * @param semver The semantic version to format
  * @returns The string representation of a semantic version.
  */
-export function format(semver: SemVer, style: FormatStyle = "full") {
+export function format(semver: SemVer, style: FormatStyle = "full"): string {
   if (semver === ANY) {
     return "*";
   }

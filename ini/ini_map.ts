@@ -14,6 +14,12 @@ export interface FormattingOptions {
   deduplicate?: boolean;
 }
 
+/** @internal */
+type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
+  lineBreak?: string;
+  commentChar?: string;
+};
+
 /** Options for parsing INI strings. */
 export interface ParseOptions {
   /** The character used to assign a value to a key; defaults to '='. */
@@ -166,10 +172,7 @@ export class IniMap {
       return this.comments;
     },
   };
-  #formatting: Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
-    lineBreak?: string;
-    commentChar?: string;
-  };
+  #formatting: Formatting;
 
   constructor(formatting?: FormattingOptions) {
     this.#formatting = this.#cleanFormatting(formatting);
@@ -184,7 +187,7 @@ export class IniMap {
     return size;
   }
 
-  get formatting() {
+  get formatting(): Formatting {
     return this.#formatting;
   }
 
@@ -467,7 +470,7 @@ export class IniMap {
   }
 
   /** Convenience method for `JSON.stringify`. */
-  toJSON() {
+  toJSON(): Record<string, unknown | Record<string, unknown>> {
     return this.toObject();
   }
 

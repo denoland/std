@@ -12,4 +12,4 @@ import { isComparator } from "./is_comparator.ts";
  * @returns True if the object is a SemVerComparator otherwise false
  * @deprecated (will be removed in 0.212.0) Use {@linkcode isComparator} instead.
  */
-export const isSemVerComparator = isComparator;
+export const isSemVerComparator: typeof isComparator = isComparator;

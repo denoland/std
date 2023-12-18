@@ -62,7 +62,9 @@ interface Code {
   regexp: RegExp;
 }
 
-/** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff` */
+/** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff`
+ * @internal
+ */
 interface Rgb {
   r: number;
   g: number;
@@ -567,7 +569,7 @@ const ANSI_PATTERN = new RegExp(
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
-export const stripColor = stripAnsiCode;
+export const stripColor: typeof stripAnsiCode = stripAnsiCode;
 
 /**
  * Remove ANSI escape codes from the string.

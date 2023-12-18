@@ -75,7 +75,7 @@ const RX_REGEXP_ESCAPE = new RegExp(
  * assertNotMatch("a", re);
  * ```
  */
-export function escape(str: string) {
+export function escape(str: string): string {
   return str.replaceAll(
     RX_REGEXP_ESCAPE,
     (m) => reservedCharMap[m as keyof typeof reservedCharMap],

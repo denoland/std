@@ -1761,6 +1761,7 @@ function loadDocuments(input: string, options?: LoaderStateOptions): unknown[] {
   return state.documents;
 }
 
+/** @internal */
 export type CbFunction = (doc: unknown) => void;
 function isCbFunction(fn: unknown): fn is CbFunction {
   return typeof fn === "function";

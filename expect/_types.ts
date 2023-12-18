@@ -16,4 +16,5 @@ export type Matchers = {
   [key: string]: Matcher;
 };
 export type MatchResult = void | Promise<void> | boolean;
+/** @internal */
 export type AnyConstructor = new (...args: any[]) => any;

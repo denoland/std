@@ -14,6 +14,7 @@ type ContentTypeToExtension = {
     : never;
 };
 
+/** @internal */
 type KnownExtensionOrType =
   | keyof ContentTypeToExtension
   | ContentTypeToExtension[keyof ContentTypeToExtension]

@@ -6,6 +6,7 @@ import type { Writer, WriterSync } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 
+/** @internal */
 abstract class AbstractBufBase {
   buf: Uint8Array;
   usedBufferBytes = 0;

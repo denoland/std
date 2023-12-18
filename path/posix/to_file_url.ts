@@ -14,7 +14,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * ```
  * @param path to convert to file URL
  */
-export function toFileUrl(path: string) {
+export function toFileUrl(path: string): URL {
   if (!isAbsolute(path)) {
     throw new TypeError("Must be an absolute path.");
   }

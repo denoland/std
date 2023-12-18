@@ -12,6 +12,7 @@ export type ValueType =
   | ValueType[]
   | ValueMap;
 
+/** @internal */
 interface ValueMap {
   [index: string | number]: ValueType;
 }
@@ -47,7 +48,7 @@ const encoder = new TextEncoder();
  * console.log(encode(obj))
  * ```
  */
-export function encode(object: ValueType) {
+export function encode(object: ValueType): Uint8Array {
   const byteParts: Uint8Array[] = [];
   encodeSlice(object, byteParts);
   return concat(byteParts);
