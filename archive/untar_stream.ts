@@ -64,7 +64,10 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data as TarHeader;
 }
 
-export type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
+export type TarHeader = Record<
+  (typeof ustarStructure)[number]["field"],
+  Uint8Array
+>;
 
 export interface TarMeta extends TarInfo {
   fileName: string;

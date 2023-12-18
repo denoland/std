@@ -11,14 +11,11 @@
  */
 import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { UntarStream, TarEntry, type TarHeader } from "./untar_stream.ts";
+import { TarEntry, type TarHeader, UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
 import { type TarOptions, TarStream } from "./tar_stream.ts";
 import { toArrayBuffer } from "../streams/to_array_buffer.ts";
-import {
-  TarMetaWithLinkName,
-  Untar,
-} from "./untar.ts";
+import { TarMetaWithLinkName, Untar } from "./untar.ts";
 import { readAll } from "../streams/read_all.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -220,14 +217,18 @@ Deno.test(
           return [
             {
               name: "output.txt",
-              readable: ReadableStream.from([new TextEncoder().encode("hello tar world!".repeat(100))]),
+              readable: ReadableStream.from([
+                new TextEncoder().encode("hello tar world!".repeat(100)),
+              ]),
               contentSize: 1600,
             },
             // Need to test at least two files, to make sure the first entry doesn't over-read
             // Causing the next to fail with: checksum error
             {
               name: "deni.txt",
-              readable: ReadableStream.from([new TextEncoder().encode("deno!".repeat(250))]),
+              readable: ReadableStream.from([
+                new TextEncoder().encode("deno!".repeat(250)),
+              ]),
               contentSize: 1250,
             },
           ];
@@ -243,7 +244,10 @@ Deno.test(
           const expected = assertEntries.shift();
           assert(expected);
           assertEquals(expected.name, entry.fileName);
-          assertEquals(await toArrayBuffer(entry.readable), await toArrayBuffer(expected.readable));
+          assertEquals(
+            await toArrayBuffer(entry.readable),
+            await toArrayBuffer(expected.readable),
+          );
         }
 
         assertEquals(assertEntries.length, 0);
