@@ -235,6 +235,7 @@ function getMetadata(header: TarHeader): TarMeta {
   for (const key of ["owner", "group", "type"] as const) {
     const arr = trim(header[key]);
     if (arr.byteLength > 0) {
+      // deno-lint-ignore no-explicit-any
       meta[key] = decoder.decode(arr) as any;
     }
   }

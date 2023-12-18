@@ -228,7 +228,7 @@ Deno.test(
     // record size is 512
     const bufSizes = [1, 53, 256, 511];
 
-    for (const bufSize of bufSizes) {
+    for (const _bufSize of bufSizes) {
       const entries: TestEntry[] = [
         {
           name: "output.txt",
