@@ -1,3 +1,4 @@
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 /**
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -27,7 +28,12 @@
  * THE SOFTWARE.
  */
 import { assert } from "../assert/assert.ts";
-import { TarInfo, FileTypes, ustarStructure, recordSize } from "./_stream_common.ts";
+import {
+  FileTypes,
+  recordSize,
+  TarInfo,
+  ustarStructure,
+} from "./_stream_common.ts";
 
 const ustar = "ustar\u000000";
 
@@ -121,7 +127,6 @@ export interface TarOptions extends TarInfo {
    */
   contentSize: number;
 }
-
 
 /**
  * A class to create a tar archive
@@ -226,4 +231,3 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
     });
   }
 }
-
