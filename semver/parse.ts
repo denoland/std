@@ -37,15 +37,13 @@ export function parse(version: string | SemVer): SemVer {
 
   version = version.trim();
 
-  const m = version.match(FULL_REGEXP);
-  if (!m) {
-    throw new TypeError(`Invalid Version: ${version}`);
-  }
+  const groups = version.match(FULL_REGEXP)?.groups;
+  if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
   // these are actually numbers
-  const major = parseInt(m[1]);
-  const minor = parseInt(m[2]);
-  const patch = parseInt(m[3]);
+  const major = parseInt(groups.major);
+  const minor = parseInt(groups.minor);
+  const patch = parseInt(groups.patch);
 
   if (major > Number.MAX_SAFE_INTEGER || major < 0) {
     throw new TypeError("Invalid major version");
@@ -61,7 +59,7 @@ export function parse(version: string | SemVer): SemVer {
 
   // number-ify any prerelease numeric ids
   const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
-  const prerelease = (m[4] ?? "")
+  const prerelease = (groups.prerelease ?? "")
     .split(".")
     .filter((id) => id)
     .map((id: string) => {
@@ -73,7 +71,7 @@ export function parse(version: string | SemVer): SemVer {
       }
     });
 
-  const build = m[5]?.split(".")?.filter((m) => m) ?? [];
+  const build = groups.buildmetadata?.split(".")?.filter((m) => m) ?? [];
   return {
     major,
     minor,

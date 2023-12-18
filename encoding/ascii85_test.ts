@@ -192,3 +192,21 @@ Deno.test({
     assertEquals(encoded2, "F)YQ)");
   },
 });
+
+Deno.test({
+  name: `[encoding/ascii85] decode with default standard`,
+  fn() {
+    const tests = [
+      ["<~FCfN8Bl7P~>", "testing"],
+      ["<~A7]XsCgh3l~>", "denoland"],
+      ["<~@<5pmBfIsm@:X:cAH~>", "ascii85 adobe"],
+    ];
+
+    for (const [input, expect] of tests) {
+      assertEquals(
+        decodeAscii85(input),
+        utf8encoder.encode(expect),
+      );
+    }
+  },
+});
