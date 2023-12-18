@@ -82,6 +82,3 @@ export interface SemVerRange {
   // The outer array is OR while each inner array is AND
   ranges: SemVerRangeOr;
 }
-
-export type Range = [SemVerComparator, SemVerComparator];
-export type RangeSet = Range[];
