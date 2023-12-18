@@ -326,7 +326,7 @@ Deno.test("Untar.AsyncIterator() checks linux generated tar", async function () 
 });
 
 Deno.test({
-  name: "TarEntry.constructor() checks meta",
+  name: "TarEntry() checks meta",
   // only: true,
   fn() {
     // test TarEntry class
