@@ -30,11 +30,11 @@ function replaceTilde(comp: string): string {
     (_: string, M: string, m: string, p: string, pr: string) => {
       let ret: string;
 
-      if (isX(M)) {
+      if (isWildcard(M)) {
         ret = "";
-      } else if (isX(m)) {
+      } else if (isWildcard(m)) {
         ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-      } else if (isX(p)) {
+      } else if (isWildcard(p)) {
         // ~1.2 == >=1.2.0 <1.3.0
         ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else if (pr) {
@@ -67,11 +67,11 @@ function replaceCaret(comp: string): string {
   return comp.replace(CARET_REGEXP, (_: string, M, m, p, pr) => {
     let ret: string;
 
-    if (isX(M)) {
+    if (isWildcard(M)) {
       ret = "";
-    } else if (isX(m)) {
+    } else if (isWildcard(m)) {
       ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-    } else if (isX(p)) {
+    } else if (isWildcard(p)) {
       if (M === `0`) {
         ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else {
@@ -114,9 +114,9 @@ function replaceXRanges(comp: string): string {
 function replaceXRange(comp: string): string {
   comp = comp.trim();
   return comp.replace(XRANGE_REGEXP, (ret: string, gtlt, M, m, p, _pr) => {
-    const xM: boolean = isX(M);
-    const xm: boolean = xM || isX(m);
-    const xp: boolean = xm || isX(p);
+    const xM: boolean = isWildcard(M);
+    const xm: boolean = xM || isWildcard(m);
+    const xp: boolean = xm || isWildcard(p);
     const anyX: boolean = xp;
 
     if (gtlt === "=" && anyX) {
@@ -202,21 +202,21 @@ function hyphenReplace(range: string) {
   let from = leftMatch[0];
   let to = rightMatch[0];
 
-  if (isX(leftGroup.major)) {
+  if (isWildcard(leftGroup.major)) {
     from = "";
-  } else if (isX(leftGroup.minor)) {
+  } else if (isWildcard(leftGroup.minor)) {
     from = `>=${leftGroup.major}.0.0`;
-  } else if (isX(leftGroup.patch)) {
+  } else if (isWildcard(leftGroup.patch)) {
     from = `>=${leftGroup.major}.${leftGroup.minor}.0`;
   } else {
     from = `>=${from}`;
   }
 
-  if (isX(rightGroups.major)) {
+  if (isWildcard(rightGroups.major)) {
     to = "";
-  } else if (isX(rightGroups.minor)) {
+  } else if (isWildcard(rightGroups.minor)) {
     to = `<${+rightGroups.major + 1}.0.0`;
-  } else if (isX(rightGroups.patch)) {
+  } else if (isWildcard(rightGroups.patch)) {
     to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
   } else if (rightGroups.prerelease) {
     to =
@@ -228,7 +228,7 @@ function hyphenReplace(range: string) {
   return `${from} ${to}`.trim();
 }
 
-function isX(id: string): boolean {
+function isWildcard(id: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
 }
 
