@@ -1,4 +1,4 @@
-/** Please note that this code should not be committed. Used here as demonstration. */
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../../assert/mod.ts";
 import { describe, it } from "../bdd.ts";
