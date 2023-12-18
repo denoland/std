@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { stringify } from "./stringify.ts";
 
-Deno.test("stringify", async (t) => {
+Deno.test("stringify()", async (t) => {
   await t.step(
     "basic",
     () =>
