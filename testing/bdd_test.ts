@@ -1899,5 +1899,8 @@ Deno.test("describe.only() works as expected with complex use case", async (t) =
     env: { NO_COLOR: "true" },
   });
   const { stdout } = await command.output();
-  await assertSnapshot(t, new TextDecoder().decode(stdout));
+  await assertSnapshot(
+    t,
+    new TextDecoder().decode(stdout).replace(/\d+m?s/g, "<TIME>"),
+  );
 });

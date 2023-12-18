@@ -4,30 +4,30 @@ snapshot[`describe.only() works as expected with complex use case 1`] = `
 "running 1 test from ./testing/testdata/only.ts
 Only ...
   Suite ...
-    it 4.2 ... ok (0ms)
-    it 1.2.3 ... ok (0ms)
+    it 4.2 ... ok (<TIME>)
+    it 1.2.3 ... ok (<TIME>)
     describe 3.1 ...
-      it 3.1 ... ok (0ms)
-    describe 3.1 ... ok (0ms)
-    it 3.2 ... ok (0ms)
-    describe 8.1 ... ok (0ms)
-    it 8.2 ... ok (0ms)
-  Suite ... ok (1ms)
+      it 3.1 ... ok (<TIME>)
+    describe 3.1 ... ok (<TIME>)
+    it 3.2 ... ok (<TIME>)
+    describe 8.1 ... ok (<TIME>)
+    it 8.2 ... ok (<TIME>)
+  Suite ... ok (<TIME>)
   describe 1.1 ...
-    it 1.1 ... ok (0ms)
-  describe 1.1 ... ok (0ms)
-  it 4.1 ... ok (0ms)
-  it 1.2.1 ... ok (0ms)
-  outer 2.1 ... ok (0ms)
+    it 1.1 ... ok (<TIME>)
+  describe 1.1 ... ok (<TIME>)
+  it 4.1 ... ok (<TIME>)
+  it 1.2.1 ... ok (<TIME>)
+  outer 2.1 ... ok (<TIME>)
   inner 2.2.1 ...
-    it 2.2.1 ... ok (0ms)
-  inner 2.2.1 ... ok (0ms)
-  it 2.3.1 ... ok (0ms)
-  describe 7.1 ... ok (0ms)
-  it 7.2 ... ok (0ms)
-Only ... ok (2ms)
+    it 2.2.1 ... ok (<TIME>)
+  inner 2.2.1 ... ok (<TIME>)
+  it 2.3.1 ... ok (<TIME>)
+  describe 7.1 ... ok (<TIME>)
+  it 7.2 ... ok (<TIME>)
+Only ... ok (<TIME>)
 
-ok | 1 passed (18 steps) | 0 failed | 7 filtered out (3ms)
+ok | 1 passed (18 steps) | 0 failed | 7 filtered out (<TIME>)
 
 "
 `;
