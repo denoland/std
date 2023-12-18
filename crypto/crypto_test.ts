@@ -11,7 +11,7 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 const webCrypto = globalThis.crypto;
 
 Deno.test(
-  "[crypto/digest] Different ways to perform the same operation should produce the same result",
+  "digest() checks different ways to perform the same operation should produce the same result",
   async () => {
     const inputString = "taking the hobbits to isengard";
     const inputBytes = new TextEncoder().encode(inputString);
@@ -110,7 +110,7 @@ Deno.test(
   },
 );
 
-Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
+Deno.test("digest() returns an ArrayBuffer", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
 
@@ -147,7 +147,7 @@ Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
   );
 });
 
-Deno.test("[crypto/digest] Should not ignore length option", async () => {
+Deno.test("digest() checks length option", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
 
@@ -166,7 +166,7 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
   );
 });
 
-Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
+Deno.test("digest() checks memory usage to remain reasonable with large inputs", async () => {
   const code = `
     import { crypto as stdCrypto } from "./mod.ts";
     import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
@@ -248,7 +248,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   );
 });
 
-Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
+Deno.test("digest() checks memory usage to remain reasonable with many calls", async () => {
   const code = `
     import { crypto as stdCrypto } from "./mod.ts";
     import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
@@ -1305,7 +1305,7 @@ const digestCases: [
   ],
 ];
 
-Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
+Deno.test("digest() checks fnv algorithm implementation", () => {
   const inputString = "deno";
   const inputBytes = new TextEncoder().encode(inputString);
 
@@ -1335,7 +1335,7 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
 });
 
 for (const algorithm of digestAlgorithms) {
-  Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {
+  Deno.test(`digest() checks ${algorithm} vectors`, async () => {
     for (
       const [caption, piecesVariations, options, algorithms] of digestCases
     ) {
@@ -1402,6 +1402,6 @@ for (const algorithm of digestAlgorithms) {
  * that (at least this one of) the native methods are indeed re-exported, and
  * that they're appropriately bound to use the required receiver.
  */
-Deno.test("[crypto/getRandomValues] passes through to native implementation", () => {
+Deno.test("getRandomValues() passes through to native implementation", () => {
   assertInstanceOf(stdCrypto.getRandomValues(new Uint8Array(1)), Uint8Array);
 });

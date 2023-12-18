@@ -5,7 +5,7 @@ import { assert, assertEquals } from "../assert/mod.ts";
 import { KeyStack } from "./unstable_keystack.ts";
 
 Deno.test({
-  name: "keyStack.sign() - single key",
+  name: "keyStack.sign() checks single key",
   async fn() {
     const keys = ["hello"];
     const keyStack = new KeyStack(keys);
@@ -16,7 +16,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.sign() - two keys, first key used",
+  name: "keyStack.sign() checks two keys, first key used",
   async fn() {
     const keys = ["hello", "world"];
     const keyStack = new KeyStack(keys);
@@ -27,7 +27,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.verify() - single key",
+  name: "keyStack.verify() checks single key",
   async fn() {
     const keys = ["hello"];
     const keyStack = new KeyStack(keys);
@@ -37,7 +37,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.verify() - single key verify invalid",
+  name: "keyStack.verify() checks single key verify invalid",
   async fn() {
     const keys = ["hello"];
     const keyStack = new KeyStack(keys);
@@ -47,7 +47,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.verify() - two keys",
+  name: "keyStack.verify() checks two keys",
   async fn() {
     const keys = ["hello", "world"];
     const keyStack = new KeyStack(keys);
@@ -57,7 +57,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.verify() - unshift key",
+  name: "keyStack.verify() checks unshift key",
   async fn() {
     const keys = ["hello"];
     const keyStack = new KeyStack(keys);
@@ -69,7 +69,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.verify() - shift key",
+  name: "keyStack.verify() checks shift key",
   async fn() {
     const keys = ["hello", "world"];
     const keyStack = new KeyStack(keys);
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.indexOf() - single key",
+  name: "keyStack.indexOf() checks single key",
   async fn() {
     const keys = ["hello"];
     const keyStack = new KeyStack(keys);
@@ -96,7 +96,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.indexOf() - two keys index 0",
+  name: "keyStack.indexOf() checks two keys index 0",
   async fn() {
     const keys = ["hello", "world"];
     const keyStack = new KeyStack(keys);
@@ -111,7 +111,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.indexOf() - two keys index 1",
+  name: "keyStack.indexOf() checks two keys index 1",
   async fn() {
     const keys = ["world", "hello"];
     const keyStack = new KeyStack(keys);
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack.indexOf() - two keys not found",
+  name: "keyStack.indexOf() checks two keys not found",
   async fn() {
     const keys = ["world", "hello"];
     const keyStack = new KeyStack(keys);
@@ -141,7 +141,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - number array key",
+  name: "keyStack.verify() checks number array key",
   async fn() {
     const keys = [[212, 213]];
     const keyStack = new KeyStack(keys);
@@ -150,7 +150,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - Uint8Array key",
+  name: "keyStack.verify() checks Uint8Array key",
   async fn() {
     const keys = [new Uint8Array([212, 213])];
     const keyStack = new KeyStack(keys);
@@ -159,7 +159,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - ArrayBuffer key",
+  name: "verify() checks ArrayBuffer key",
   async fn() {
     const key = new ArrayBuffer(2);
     const dataView = new DataView(key);
@@ -172,7 +172,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - number array data",
+  name: "verify() checks number array data",
   async fn() {
     const keys = [[212, 213]];
     const keyStack = new KeyStack(keys);
@@ -181,7 +181,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - Uint8Array data",
+  name: "verify() checks Uint8Array data",
   async fn() {
     const keys = [[212, 213]];
     const keyStack = new KeyStack(keys);
@@ -195,7 +195,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - ArrayBuffer data",
+  name: "verify() checks ArrayBuffer data",
   async fn() {
     const keys = [[212, 213]];
     const keyStack = new KeyStack(keys);
@@ -212,7 +212,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "keyStack - user iterable keys",
+  name: "verify() checks user iterable keys",
   async fn() {
     const keys = new Set(["hello", "world"]);
     const keyStack = new KeyStack(keys);
@@ -223,7 +223,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "KeyStack - inspecting",
+  name: "KeyStack() checks inspect",
   fn() {
     assertEquals(
       Deno.inspect(new KeyStack(["abcdef"])),
