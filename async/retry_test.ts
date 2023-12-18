@@ -15,7 +15,7 @@ function generateErroringFunction(errorsBeforeSucceeds: number) {
   };
 }
 
-Deno.test("[async] retry", async function () {
+Deno.test("retry()", async function () {
   const threeErrors = generateErroringFunction(3);
   const result = await retry(threeErrors, {
     minTimeout: 100,
@@ -23,7 +23,7 @@ Deno.test("[async] retry", async function () {
   assertEquals(result, 3);
 });
 
-Deno.test("[async] retry fails after max errors is passed", async function () {
+Deno.test("retry() fails after max errors is passed", async function () {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
     retry(fiveErrors, {
@@ -32,7 +32,7 @@ Deno.test("[async] retry fails after max errors is passed", async function () {
   );
 });
 
-Deno.test("[async] retry waits four times by default", async function () {
+Deno.test("retry() waits four times by default", async function () {
   let callCount = 0;
   const onlyErrors = function () {
     callCount++;
@@ -55,7 +55,7 @@ Deno.test("[async] retry waits four times by default", async function () {
 });
 
 Deno.test(
-  "[async] retry throws if minTimeout is less than maxTimeout",
+  "retry() throws if minTimeout is less than maxTimeout",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -67,7 +67,7 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if maxTimeout is less than 0",
+  "retry() throws if maxTimeout is less than 0",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -78,7 +78,7 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if jitter is bigger than 1",
+  "retry() throws if jitter is bigger than 1",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -88,7 +88,7 @@ Deno.test(
   },
 );
 
-Deno.test("[async] retry - backoff function timings", async (t) => {
+Deno.test("retry() checks backoff function timings", async (t) => {
   const originalMathRandom = Math.random;
 
   await t.step("wait fixed times without jitter", async function () {

@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 
-Deno.test("[async] pooledMap", async function () {
+Deno.test("pooledMap()", async function () {
   const start = new Date();
   const results = pooledMap(
     2,
@@ -22,7 +22,7 @@ Deno.test("[async] pooledMap", async function () {
   assert(diff < 3000);
 });
 
-Deno.test("[async] pooledMap errors", async () => {
+Deno.test("pooledMap() checks errors", async () => {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);
@@ -46,7 +46,7 @@ Deno.test("[async] pooledMap errors", async () => {
   assertEquals(mappedNumbers, [3]);
 });
 
-Deno.test("pooledMap returns ordered items", async () => {
+Deno.test("pooledMap() returns ordered items", async () => {
   function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -66,7 +66,7 @@ Deno.test("pooledMap returns ordered items", async () => {
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
 
-Deno.test("[async] pooledMap (browser compat)", async function () {
+Deno.test("pooledMap() checks browser compat", async function () {
   // Simulates the environment where Symbol.asyncIterator is not available
   const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
   // deno-lint-ignore no-explicit-any
