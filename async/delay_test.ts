@@ -22,7 +22,7 @@ Deno.test("delay()", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() checks abort", async function () {
+Deno.test("delay() handles abort", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -69,7 +69,7 @@ Deno.test("delay() checks abort reason", async function (ctx) {
   });
 });
 
-Deno.test("delay() checks non-aborted signal", async function () {
+Deno.test("delay() handles non-aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -80,7 +80,7 @@ Deno.test("delay() checks non-aborted signal", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() checks signal aborted after delay", async function () {
+Deno.test("delay() handles aborted signal after delay", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -92,7 +92,7 @@ Deno.test("delay() checks signal aborted after delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("delay() checks already aborted signal", async function () {
+Deno.test("delay() handles already aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   abort.abort();

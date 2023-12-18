@@ -3,7 +3,7 @@ import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { debounce, DebouncedFunction } from "./debounce.ts";
 import { delay } from "./delay.ts";
 
-Deno.test("debounce() checks called", async function () {
+Deno.test("debounce() handles called", async function () {
   let called = 0;
   const d = debounce(() => called++, 100);
   d();
@@ -16,7 +16,7 @@ Deno.test("debounce() checks called", async function () {
   assertEquals(d.pending, false);
 });
 
-Deno.test("debounce() checks canceled", async function () {
+Deno.test("debounce() handles cancelled", async function () {
   let called = 0;
   const d = debounce(() => called++, 100);
   d();
@@ -30,7 +30,7 @@ Deno.test("debounce() checks canceled", async function () {
   assertEquals(d.pending, false);
 });
 
-Deno.test("debounce() checks flushed", function () {
+Deno.test("debounce() handles flush", function () {
   let called = 0;
   const d = debounce(() => called++, 100);
   d();
@@ -43,7 +43,7 @@ Deno.test("debounce() checks flushed", function () {
   assertEquals(d.pending, false);
 });
 
-Deno.test("debounce() checks with params and context", async function () {
+Deno.test("debounce() handles params and context", async function () {
   const params: Array<string | number> = [];
   const d: DebouncedFunction<[string, number]> = debounce(
     function (param1: string, param2: number) {
@@ -66,7 +66,7 @@ Deno.test("debounce() checks with params and context", async function () {
   assertEquals(d.pending, false);
 });
 
-Deno.test("debounce() checks with types", async function () {
+Deno.test("debounce() handles number and string types", async function () {
   const params: Array<string> = [];
   const fn = (param: string) => params.push(param);
   const d: DebouncedFunction<[string]> = debounce(fn, 100);

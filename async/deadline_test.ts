@@ -42,7 +42,7 @@ Deno.test("deadline() throws when promise is rejected", async () => {
   controller.abort();
 });
 
-Deno.test("deadline() checks non-aborted signal", async () => {
+Deno.test("deadline() handles non-aborted signal", async () => {
   const controller = new AbortController();
   const { signal } = controller;
   const p = delay(100, { signal })
@@ -54,7 +54,7 @@ Deno.test("deadline() checks non-aborted signal", async () => {
   controller.abort();
 });
 
-Deno.test("deadline() checks signal aborted after delay", async () => {
+Deno.test("deadline() handles aborted signal after delay", async () => {
   const controller = new AbortController();
   const { signal } = controller;
   const p = delay(100, { signal })
@@ -69,7 +69,7 @@ Deno.test("deadline() checks signal aborted after delay", async () => {
   controller.abort();
 });
 
-Deno.test("deadline() checks already aborted signal", async () => {
+Deno.test("deadline() handles already aborted signal", async () => {
   const controller = new AbortController();
   const { signal } = controller;
   const p = delay(100, { signal })

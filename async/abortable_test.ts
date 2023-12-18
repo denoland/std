@@ -2,7 +2,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { abortable } from "./abortable.ts";
 
-Deno.test("abortable() checks with promise argument", async () => {
+Deno.test("abortable() handles promise", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -11,7 +11,7 @@ Deno.test("abortable() checks with promise argument", async () => {
   clearTimeout(t);
 });
 
-Deno.test("abortable() checks signal aborted after delay with promise argument", async () => {
+Deno.test("abortable() handles promise with aborted signal after delay", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -26,7 +26,7 @@ Deno.test("abortable() checks signal aborted after delay with promise argument",
   clearTimeout(t);
 });
 
-Deno.test("abortable() checks with already aborted signal with promise argument", async () => {
+Deno.test("abortable() handles promise with already aborted signal", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -55,7 +55,7 @@ Deno.test("abortable.AsyncIterable()", async () => {
   clearTimeout(t);
 });
 
-Deno.test("abortable.AsyncIterable() checks signal aborted after delay", async () => {
+Deno.test("abortable.AsyncIterable() handles aborted signal after delay", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -79,7 +79,7 @@ Deno.test("abortable.AsyncIterable() checks signal aborted after delay", async (
   clearTimeout(t);
 });
 
-Deno.test("abortable.AsyncIterable() checks already aborted signal", async () => {
+Deno.test("abortable.AsyncIterable() handles already aborted signal", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
