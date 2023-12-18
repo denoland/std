@@ -145,7 +145,7 @@ class TarEntry {
     if (this.#consumed) return;
     this.#consumed = true;
 
-    for await (const _ of this.#readableInner) {
+    for await (const _ of this.#readable) {
       //
     }
   }
@@ -155,6 +155,9 @@ class TarEntry {
 export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
   readable: ReadableStream<TarEntry>;
   #buffer: Buffer;
+  get buffer() {
+    return this.#buffer;
+  }
   #block = new Uint8Array(recordSize);
   #entry: TarEntry | undefined;
 

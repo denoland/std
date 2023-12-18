@@ -196,8 +196,82 @@ Deno.test("untarLinuxGeneratedTar", async function () {
 
     if (content) {
       const buffer = new Buffer();
-      entry.readable.pipeTo(buffer.writable);
+      await entry.readable.pipeTo(buffer.writable);
       assertEquals(content, buffer.bytes());
     }
   }
 });
+
+Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
+  void
+> {
+  const file = await Deno.open(filePath, { read: true });
+  const entries: TarOptions[] = [
+    {
+      name: "output.txt",
+      readable: ReadableStream.from([
+        new TextEncoder().encode("hello tar world!"),
+      ]),
+      contentSize: 16,
+    },
+    {
+      name: "dir/tar.ts",
+      readable: file.readable,
+      contentSize: file.statSync().size,
+    },
+  ];
+
+  const tar = ReadableStream.from<TarOptions>(entries).pipeThrough(new TarStream());
+
+  const untar = new UntarStream();
+  // read data from a tar archive
+  await tar.pipeTo(untar.writable);
+
+  for await (const entry of untar.readable) {
+    const expected = entries.shift();
+    assert(expected);
+    assertEquals(expected.name, entry.fileName);
+  }
+
+  assertEquals(entries.length, 0);
+});
+
+Deno.test(
+  "untarAsyncIteratorWithoutReadingBodyFromFileReadable",
+  async function () {
+    const file = await Deno.open(filePath, { read: true });
+    const entries: TarOptions[] = [
+      {
+        name: "output.txt",
+        readable: ReadableStream.from([
+          new TextEncoder().encode("hello tar world!"),
+        ]),
+        contentSize: 16,
+      },
+      {
+        name: "dir/tar.ts",
+        readable: file.readable,
+        contentSize: file.statSync().size,
+      },
+    ];
+
+    const tar = await ReadableStream.from<TarOptions>(entries).pipeThrough(new TarStream());
+
+    const outputFile = resolve(testdataDir, "test.tar");
+
+    const writeFile = await Deno.open(outputFile, { create: true, write: true });
+    await tar.pipeTo(writeFile.writable);
+
+    const reader = await Deno.open(outputFile, { read: true });
+
+    // read data from a tar archive
+    for await (const entry of reader.readable.pipeThrough(new UntarStream())) {
+      const expected = entries.shift();
+      assert(expected);
+      assertEquals(expected.name, entry.fileName);
+    }
+
+    await Deno.remove(outputFile);
+    assertEquals(entries.length, 0);
+  },
+);
