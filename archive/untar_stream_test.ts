@@ -9,7 +9,7 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals, assertExists } from "../assert/mod.ts";
+import { assert, assertEquals } from "../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { TarMeta, UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
