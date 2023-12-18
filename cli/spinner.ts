@@ -24,12 +24,6 @@ export interface SpinnerOptions {
   speed?: number;
   /** The color of the spinner. Defaults to the default terminal color. */
   color?: string;
-  /**
-   * Whether to cleanup the output if the process is terminated.
-   *
-   * @default {true}
-   */
-  cleanup?: boolean;
 }
 
 /**
@@ -47,34 +41,39 @@ export class Spinner {
    *
    * @example
    * ```ts
+   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * 
    * const spinner = new Spinner({ message: "Loading..." });
-   * spinner.start();
    * ```
    */
   constructor(options?: SpinnerOptions) {
-    this.#options = options ?? {
-      message: undefined,
-      speed: DEFAULT_SPEED,
+    this.#options = {
       spinner: DEFAULT_SPINNER,
-      color: undefined,
-      cleanup: true,
-    };
+      speed: DEFAULT_SPEED,
+      message: "",
+      ...options
+    }
   }
 
   /**
    * Starts the spinner.
+   * 
+   * @example 
+   * ```ts
+   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * 
+   * const spinner = new Spinner({ message: "Loading..." });
+   * spinner.start();
+   * ```
    */
   start() {
+    const options = this.#options;
     // Check if the spinner is already active.
     if (this.#active) return;
     this.#active = true;
 
     let i = 0;
-
-    const message = this.#options.message ?? "";
-    const spinner = this.#options.spinner ?? DEFAULT_SPINNER;
-    const speed = this.#options.speed ?? DEFAULT_SPEED;
-    const cleanup = this.#options.cleanup ?? true;
+    
 
     const color = this.#options.color ?? "";
 
@@ -86,23 +85,33 @@ export class Spinner {
       let frame;
       // If color was specified, add it to the frame. Otherwise, just use the spinner and message.
       if (this.#options.color) {
-        frame = encoder.encode(color + spinner + COLOR_RESET + " " + message);
-      } else frame = encoder.encode(spinner[i] + " " + message);
+        frame = encoder.encode(color + options.spinner![i] + COLOR_RESET + " " + options.message);
+      } else frame = encoder.encode(options.spinner![i] + " " + options.message);
 
       Deno.stdout.writeSync(frame);
-      i = (i + 1) % spinner.length;
+      i = (i + 1) % options.spinner!.length;
     };
 
-    this.#intervalId = setInterval(updateFrame, speed);
+    this.#intervalId = setInterval(updateFrame, options.speed);
 
-    // Cleanup if the process is terminated.
-    if (cleanup) {
-      Deno.addSignalListener("SIGINT", this.stop.bind(this));
-    }
+
   }
 
   /**
    * Stops the spinner.
+   * 
+   * @example
+   * ```ts
+   * import { Spinner } from "https://deno.land/std@$STD_VERSION/cli/spinner.ts";
+   * 
+   * const spinner = new Spinner({ message: "Loading..." });
+   * spinner.start();
+   * 
+   * setTimeout(() => {
+   *  spinner.stop();
+   *  console.log("Finished loading!");
+   * }, 3000);
+   * ```
    */
   stop() {
     if (this.#intervalId && this.#active) {
