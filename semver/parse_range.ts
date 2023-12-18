@@ -25,28 +25,27 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  return comp.replace(
-    TILDE_REGEXP,
-    (_: string, M: string, m: string, p: string, pr: string) => {
-      let ret: string;
+  const groups = comp.match(TILDE_REGEXP)?.groups;
+  if (!groups) return comp;
 
-      if (isWildcard(M)) {
-        ret = "";
-      } else if (isWildcard(m)) {
-        ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-      } else if (isWildcard(p)) {
-        // ~1.2 == >=1.2.0 <1.3.0
-        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
-      } else if (pr) {
-        ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
-      } else {
-        // ~1.2.3 == >=1.2.3 <1.3.0
-        ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
-      }
-
-      return ret;
-    },
-  );
+  if (isWildcard(groups.major)) {
+    return "";
+  } else if (isWildcard(groups.minor)) {
+    return `>=${groups.major}.0.0 <${+groups.major + 1}.0.0`;
+  } else if (isWildcard(groups.patch)) {
+    // ~1.2 == >=1.2.0 <1.3.0
+    return `>=${groups.major}.${groups.minor}.0 <${groups.major}.${
+      +groups.minor + 1
+    }.0`;
+  } else if (groups.prerelease) {
+    return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${
+      +groups.minor + 1
+    }.0`;
+  }
+  // ~1.2.3 == >=1.2.3 <1.3.0
+  return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${
+    +groups.minor + 1
+  }.0`;
 }
 
 // ^ --> * (any, kinda silly)
@@ -64,44 +63,52 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  return comp.replace(CARET_REGEXP, (_: string, M, m, p, pr) => {
-    let ret: string;
+  const groups = comp.match(CARET_REGEXP)?.groups;
+  if (!groups) return comp;
 
-    if (isWildcard(M)) {
-      ret = "";
-    } else if (isWildcard(m)) {
-      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-    } else if (isWildcard(p)) {
-      if (M === `0`) {
-        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
+  if (isWildcard(groups.major)) {
+    return "";
+  } else if (isWildcard(groups.minor)) {
+    return `>=${groups.major}.0.0 <${+groups.major + 1}.0.0`;
+  } else if (isWildcard(groups.patch)) {
+    if (groups.major === `0`) {
+      return `>=${groups.major}.${groups.minor}.0 <${groups.major}.${
+        +groups.minor + 1
+      }.0`;
+    } else {
+      return `>=${groups.major}.${groups.minor}.0 <${+groups.major + 1}.0.0`;
+    }
+  } else if (groups.prerelease) {
+    if (groups.major === "0") {
+      if (groups.minor === "0") {
+        return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${groups.minor}.${
+          +groups.patch + 1
+        }`;
       } else {
-        ret = `>=${M}.${m}.0 <${+M + 1}.0.0`;
-      }
-    } else if (pr) {
-      if (M === "0") {
-        if (m === "0") {
-          ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}`;
-        } else {
-          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
-        }
-      } else {
-        ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0`;
+        return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${
+          +groups.minor + 1
+        }.0`;
       }
     } else {
-      if (M === "0") {
-        if (m === "0") {
-          ret = `>=${M}.${m}.${p} <${M}.${m}.` +
-            (+p + 1);
-        } else {
-          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
-        }
-      } else {
-        ret = `>=${M}.${m}.${p} <${+M + 1}.0.0`;
-      }
+      return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${
+        +groups.major + 1
+      }.0.0`;
     }
-
-    return ret;
-  });
+  }
+  if (groups.major === "0") {
+    if (groups.minor === "0") {
+      return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${groups.minor}.` +
+        (+groups.patch + 1);
+    } else {
+      return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${
+        +groups.minor + 1
+      }.0`;
+    }
+  } else {
+    return `>=${groups.major}.${groups.minor}.${groups.patch} <${
+      +groups.major + 1
+    }.0.0`;
+  }
 }
 
 function replaceXRanges(comp: string): string {
