@@ -33,27 +33,15 @@ function replaceTilde(comp: string): string {
       if (isX(M)) {
         ret = "";
       } else if (isX(m)) {
-        ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.0.0 <${+M + 1}.0.0`;
       } else if (isX(p)) {
         // ~1.2 == >=1.2.0 <1.3.0
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else if (pr) {
-        ret = ">=" +
-          M +
-          "." +
-          m +
-          "." +
-          p +
-          "-" +
-          pr +
-          " <" +
-          M +
-          "." +
-          (+m + 1) +
-          ".0";
+        ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
       } else {
         // ~1.2.3 == >=1.2.3 <1.3.0
-        ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+        ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
       }
 
       return ret;
@@ -82,59 +70,33 @@ function replaceCaret(comp: string): string {
     if (isX(M)) {
       ret = "";
     } else if (isX(m)) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
     } else if (isX(p)) {
-      if (M === "0") {
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+      if (M === `0`) {
+        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else {
-        ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.${m}.0 <${+M + 1}.0.0`;
       }
     } else if (pr) {
       if (M === "0") {
         if (m === "0") {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            m +
-            "." +
-            (+p + 1);
+          ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}`;
         } else {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            (+m + 1) +
-            ".0";
+          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
         }
       } else {
-        ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) +
-          ".0.0";
+        ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0`;
       }
     } else {
       if (M === "0") {
         if (m === "0") {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." +
+          ret = `>=${M}.${m}.${p} <${M}.${m}.` +
             (+p + 1);
         } else {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
         }
       } else {
-        ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.${m}.${p} <${+M + 1}.0.0`;
       }
     }
 
@@ -201,11 +163,11 @@ function replaceXRange(comp: string): string {
         }
       }
 
-      ret = gtlt + M + "." + m + "." + p;
+      ret = gtlt + M + `.${m}.${p}`;
     } else if (xm) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
     } else if (xp) {
-      ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+      ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
     }
 
     return ret;
@@ -239,31 +201,31 @@ function hyphenReplace(range: string) {
   if (!rightGroups) return range;
   let from = leftMatch[0];
   let to = rightMatch[0];
+
   if (isX(leftGroup.major)) {
     from = "";
   } else if (isX(leftGroup.minor)) {
-    from = ">=" + leftGroup.major + ".0.0";
+    from = `>=${leftGroup.major}.0.0`;
   } else if (isX(leftGroup.patch)) {
-    from = ">=" + leftGroup.major + "." + leftGroup.minor + ".0";
+    from = `>=${leftGroup.major}.${leftGroup.minor}.0`;
   } else {
-    from = ">=" + from;
+    from = `>=${from}`;
   }
 
   if (isX(rightGroups.major)) {
     to = "";
   } else if (isX(rightGroups.minor)) {
-    to = "<" + (+rightGroups.major + 1) + ".0.0";
+    to = `<${+rightGroups.major + 1}.0.0`;
   } else if (isX(rightGroups.patch)) {
-    to = "<" + rightGroups.major + "." + (+rightGroups.minor + 1) +
-      ".0";
+    to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
   } else if (rightGroups.prerelease) {
-    to = "<=" + rightGroups.major + "." + rightGroups.minor + "." +
-      rightGroups.patch + "-" + rightGroups.prerelease;
+    to =
+      `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
   } else {
-    to = "<=" + to;
+    to = `<=${to}`;
   }
 
-  return (from + " " + to).trim();
+  return `${from} ${to}`.trim();
 }
 
 function isX(id: string): boolean {
