@@ -9,6 +9,7 @@ const EXCLUDED_DIRS = [
   "**/http/testdata",
   "**/crypto/_wasm/target",
   "**/crypto/_wasm/lib",
+  "**/.git",
 ];
 
 const ROOT = new URL("../", import.meta.url);

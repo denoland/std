@@ -5,7 +5,7 @@ import { format } from "./_format.ts";
 
 // This file is copied from `std/assert`.
 
-Deno.test("assert diff formatting (strings)", () => {
+Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(
     () => {
       assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
@@ -25,34 +25,38 @@ ${red("-   d")}
 
 // Check that the diff formatter overrides some default behaviours of
 // `Deno.inspect()` which are problematic for diffing.
-Deno.test("assert diff formatting", () => {
+Deno.test("format() overrides default behaviours of Deno.inspect", async (t) => {
   // Wraps objects into multiple lines even when they are small. Prints trailing
   // commas.
-  assertEquals(
-    stripAnsiCode(format({ a: 1, b: 2 })),
-    `{
+  await t.step(
+    "fromat() always wraps objects into multiple lines and prints trailing commas",
+    () =>
+      assertEquals(
+        stripAnsiCode(format({ a: 1, b: 2 })),
+        `{
   a: 1,
   b: 2,
 }`,
+      ),
   );
 
-  // Wraps Object with getters
-  assertEquals(
-    format(Object.defineProperty({}, "a", {
-      enumerable: true,
-      get() {
-        return 1;
-      },
-    })),
-    `{
+  await t.step("format() wraps Object with getters", () =>
+    assertEquals(
+      format(Object.defineProperty({}, "a", {
+        enumerable: true,
+        get() {
+          return 1;
+        },
+      })),
+      `{
   a: [Getter: 1],
 }`,
-  );
+    ));
 
-  // Same for nested small objects.
-  assertEquals(
-    stripAnsiCode(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
-    `[
+  await t.step("format() wraps nested small objects", () =>
+    assertEquals(
+      stripAnsiCode(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
+      `[
   {
     x: {
       a: 1,
@@ -64,12 +68,13 @@ Deno.test("assert diff formatting", () => {
     ],
   },
 ]`,
-  );
+    ));
 
   // Grouping is disabled.
-  assertEquals(
-    stripAnsiCode(format(["i", "i", "i", "i", "i", "i", "i"])),
-    `[
+  await t.step("format() disables grouping", () =>
+    assertEquals(
+      stripAnsiCode(format(["i", "i", "i", "i", "i", "i", "i"])),
+      `[
   "i",
   "i",
   "i",
@@ -78,7 +83,7 @@ Deno.test("assert diff formatting", () => {
   "i",
   "i",
 ]`,
-  );
+    ));
 });
 
 Deno.test("format() doesn't truncate long strings in object", () => {

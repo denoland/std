@@ -27,7 +27,7 @@ const removed: (s: string) => string = (s: string): string =>
   red(bold(stripAnsiCode(s)));
 
 Deno.test({
-  name: "pass case",
+  name: "assertEquals() matches when values are equal",
   fn() {
     assertEquals({ a: 10 }, { a: 10 });
     assertEquals(true, true);
@@ -39,7 +39,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number",
+  name: "assertEquals() throws when numbers are not equal",
   fn() {
     assertThrows(
       () => assertEquals(1, 2),
@@ -56,7 +56,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with number vs string",
+  name: "assertEquals() throws when types are not equal",
   fn() {
     assertThrows(
       () => assertEquals<unknown>(1, "1"),
@@ -72,7 +72,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with array",
+  name: "assertEquals() throws when array elements are not equal",
   fn() {
     assertThrows(
       () => assertEquals([1, "2", 3], ["1", "2", 3]),
@@ -89,7 +89,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with object",
+  name: "assertEquals() throws when object elements are not equal",
   fn() {
     assertThrows(
       () => assertEquals({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
@@ -109,7 +109,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with date",
+  name: "assertEquals() throws when dates are not equal",
   fn() {
     assertThrows(
       () =>
@@ -142,7 +142,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "failed with custom msg",
+  name: "assertEquals() throws with given custom messages",
   fn() {
     assertThrows(
       () => assertEquals(1, 2, "CUSTOM MESSAGE"),
@@ -159,7 +159,7 @@ Deno.test({
 });
 
 Deno.test(
-  "assertEquals compares objects structurally if one object's constructor is undefined and the other is Object",
+  "assertEquals() compares objects structurally if one object's constructor is undefined and the other is Object",
   () => {
     const a = Object.create(null);
     a.prop = "test";
@@ -172,7 +172,7 @@ Deno.test(
   },
 );
 
-Deno.test("assertEquals diff for differently ordered objects", () => {
+Deno.test("assertEquals() orders diff for differently ordered objects", () => {
   assertThrows(
     () => {
       assertEquals(
@@ -199,7 +199,7 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
   );
 });
 
-Deno.test("assertEquals same Set with object keys", () => {
+Deno.test("assertEquals() matches same Set with object keys", () => {
   const data = [
     {
       id: "_1p7ZED73OF98VbT1SzSkjn",

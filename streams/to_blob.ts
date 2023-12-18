@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 /**
- * Converts a {@linkcode ReadableStream} of strings or {@linkcode Uint8Array}s
- * to a {@linkcode Blob}. Works the same as {@linkcode Response.blob}.
+ * Converts a {@linkcode ReadableStream} of {@linkcode Uint8Array}s to a
+ * {@linkcode Blob}. Works the same as {@linkcode Response.blob}.
  *
  * @example
  * ```ts
@@ -14,20 +14,7 @@
  * ```
  */
 export async function toBlob(
-  readableStream: ReadableStream,
+  stream: ReadableStream<Uint8Array>,
 ): Promise<Blob> {
-  const reader = readableStream.getReader();
-  const chunks: Uint8Array[] = [];
-
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) {
-      break;
-    }
-
-    chunks.push(value);
-  }
-
-  return new Blob(chunks);
+  return await new Response(stream).blob();
 }

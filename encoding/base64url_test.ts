@@ -54,3 +54,20 @@ Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () =>
     );
   }
 });
+
+Deno.test("[decoding/base64url] base64url.decode throws on illegal base64url string", () => {
+  const testsetIllegalBase64url = [
+    "w58De",
+    "Zm9vYmFyy",
+    "DPj8-ZD_DnwEg",
+    "SGVsbG8gV29ybGQ-_",
+  ];
+
+  for (const illegalBase64url of testsetIllegalBase64url) {
+    assertThrows(
+      () => decodeBase64Url(illegalBase64url),
+      TypeError,
+      "Illegal base64url string!",
+    );
+  }
+});

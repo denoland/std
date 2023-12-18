@@ -7,7 +7,7 @@ import {
   fail,
 } from "./mod.ts";
 
-Deno.test("assertThrows with wrong error class", () => {
+Deno.test("assertThrows() throws when thrown error class does not match expected", () => {
   assertThrows(
     () => {
       //This next assertThrows will throw an AssertionError due to the wrong
@@ -25,13 +25,13 @@ Deno.test("assertThrows with wrong error class", () => {
   );
 });
 
-Deno.test("assertThrows with return type", () => {
+Deno.test("assertThrows() changes its return type by parameter", () => {
   assertThrows(() => {
     throw new Error();
   });
 });
 
-Deno.test("assertThrows with non-error value thrown and error class", () => {
+Deno.test("assertThrows() throws when error class is expected but non-error value is thrown", () => {
   assertThrows(
     () => {
       assertThrows(
@@ -47,7 +47,7 @@ Deno.test("assertThrows with non-error value thrown and error class", () => {
   );
 });
 
-Deno.test("assertThrows with non-error value thrown", () => {
+Deno.test("assertThrows() matches thrown non-error value", () => {
   assertThrows(
     () => {
       throw "Panic!";
@@ -65,7 +65,7 @@ Deno.test("assertThrows with non-error value thrown", () => {
   );
 });
 
-Deno.test("assertThrows with error class", () => {
+Deno.test("assertThrows() matches thrown error with given error class", () => {
   assertThrows(
     () => {
       throw new Error("foo");
@@ -75,7 +75,7 @@ Deno.test("assertThrows with error class", () => {
   );
 });
 
-Deno.test("assertThrows with thrown error returns caught error", () => {
+Deno.test("assertThrows() matches and returns thrown error value", () => {
   const error = assertThrows(
     () => {
       throw new Error("foo");
@@ -85,7 +85,7 @@ Deno.test("assertThrows with thrown error returns caught error", () => {
   assertEquals(error.message, "foo");
 });
 
-Deno.test("assertThrows with thrown non-error returns caught error", () => {
+Deno.test("assertThrows() matches and returns thrown non-error", () => {
   const stringError = assertThrows(
     () => {
       throw "Panic!";
@@ -118,7 +118,7 @@ Deno.test("assertThrows with thrown non-error returns caught error", () => {
   assertEquals(undefinedError, undefined);
 });
 
-Deno.test("Assert Throws Parent Error", () => {
+Deno.test("assertThrows() matches subclass of expected error", () => {
   assertThrows(
     () => {
       throw new AssertionError("Fail!");

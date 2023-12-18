@@ -5,29 +5,13 @@
 import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
- * [base32](https://en.wikipedia.org/wiki/Base32) encoding.
+ * Utilities for
+ * [base32]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * encoding and decoding.
  *
- * Modified from https://github.com/beatgammit/base64-js
+ * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
  * This module is browser compatible.
- *
- * @example
- * ```ts
- * import {
- *   decodeBase32,
- *   encodeBase32,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
- *
- * const b32Repr = "RC2E6GA=";
- *
- * const binaryData = decodeBase32(b32Repr);
- * console.log(binaryData);
- * // => Uint8Array [ 136, 180, 79, 24 ]
- *
- * console.log(encodeBase32(binaryData));
- * // => RC2E6GA=
- * ```
  *
  * @module
  */
@@ -80,16 +64,16 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase32} instead.
+ * Decodes a base32-encoded string.
  *
- * Decodes a given RFC4648 base32 encoded string.
- * @param b32
- */
-export const decode = decodeBase32;
-
-/**
- * Decodes a given RFC4648 base32 encoded string.
- * @param b32
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ *
+ * @example
+ * ```ts
+ * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * decodeBase32("NRQMA==="); // Uint8Array(3) [ 108, 96, 192 ]
+ * ```
  */
 export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
@@ -182,15 +166,16 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase32} instead.
+ * Converts data to a base32-encoded string.
  *
- * Encodes a given Uint8Array into RFC4648 base32 representation
- * @param uint8
- */
-export const encode = encodeBase32;
-
-/**
- * Encodes a given Uint8Array into RFC4648 base32 representation
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ *
+ * @example
+ * ```ts
+ * import { encodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * encodeBase32("6c60c0"); // "NRQMA==="
+ * ```
  */
 export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
   const uint8 = validateBinaryLike(data);
