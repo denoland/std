@@ -13,7 +13,7 @@ function filterValuesTest<T>(
 }
 
 Deno.test({
-  name: "[collections/filterValues] no mutation",
+  name: "filterValues() checks no mutation",
   fn() {
     const object = { a: 5, b: true };
     filterValues(object, (it) => it !== 5);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/filterValues] empty input",
+  name: "filterValues() checks empty input",
   fn() {
     filterValuesTest(
       [{}, () => true],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/filterValues] identity",
+  name: "filterValues() checks identity",
   fn() {
     filterValuesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/filterValues] filters",
+  name: "filterValues() checks filters",
   fn() {
     filterValuesTest(
       [

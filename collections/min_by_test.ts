@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { minBy } from "./min_by.ts";
 
-Deno.test("[collections/minBy] of array of input", () => {
+Deno.test("minBy() checks array input", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -15,7 +15,7 @@ Deno.test("[collections/minBy] of array of input", () => {
   assertEquals(min, { name: "Anna", age: 23 });
 });
 
-Deno.test("[collections/minBy] of array of input with mutation", () => {
+Deno.test("minBy() checks array input with mutation", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -27,7 +27,7 @@ Deno.test("[collections/minBy] of array of input with mutation", () => {
   assertEquals(min, { name: "Anna", age: 23 });
 });
 
-Deno.test("[collections/minBy] of array of input with multiple min", () => {
+Deno.test("minBy() checks array input with multiple min", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -40,7 +40,7 @@ Deno.test("[collections/minBy] of array of input with multiple min", () => {
   assertEquals(min, { name: "Anna", age: 23 });
 });
 
-Deno.test("[collections/minBy] of array of positive numbers", () => {
+Deno.test("minBy() checks array of positive numbers", () => {
   const input = [2, 3, 5];
 
   const min = minBy(input, (i) => i);
@@ -48,7 +48,7 @@ Deno.test("[collections/minBy] of array of positive numbers", () => {
   assertEquals(min, 2);
 });
 
-Deno.test("[collections/minBy] of array of negative numbers", () => {
+Deno.test("minBy() checks array of negative numbers", () => {
   const input = [-2, -3, -5];
 
   const min = minBy(input, (i) => i);
@@ -56,7 +56,7 @@ Deno.test("[collections/minBy] of array of negative numbers", () => {
   assertEquals(min, -5);
 });
 
-Deno.test("[collections/minBy] of array of strings", () => {
+Deno.test("minBy() checks array of strings", () => {
   const input = ["Kyle", "John", "Anna"];
 
   const min = minBy(input, (i: string) => i);
@@ -64,7 +64,7 @@ Deno.test("[collections/minBy] of array of strings", () => {
   assertEquals(min, "Anna");
 });
 
-Deno.test("[collections/minBy] of empty array", () => {
+Deno.test("minBy() checks of empty array", () => {
   const input: number[] = [];
 
   const min = minBy(input, (i) => i);
@@ -72,7 +72,7 @@ Deno.test("[collections/minBy] of empty array", () => {
   assertEquals(min, undefined);
 });
 
-Deno.test("[collections/minBy] of array of numbers with multiple min", () => {
+Deno.test("minBy() checks array of numbers with multiple min", () => {
   const input = [2, 3, 5, 5];
 
   const min = minBy(input, (i) => i);
@@ -80,7 +80,7 @@ Deno.test("[collections/minBy] of array of numbers with multiple min", () => {
   assertEquals(min, 2);
 });
 
-Deno.test("[collections/minBy] of array of numbers with infinity", () => {
+Deno.test("minBy() checks array of numbers with infinity", () => {
   const input = [2, 3, 5, -Infinity];
 
   const min = minBy(input, (i: number) => i);
@@ -88,7 +88,7 @@ Deno.test("[collections/minBy] of array of numbers with infinity", () => {
   assertEquals(min, -Infinity);
 });
 
-Deno.test("[collections/minBy] of array of numbers with NaN", () => {
+Deno.test("minBy() checks array of numbers with NaN", () => {
   const input = [2, 3, 5, NaN];
 
   const min = minBy(input, (i) => i);
@@ -96,7 +96,7 @@ Deno.test("[collections/minBy] of array of numbers with NaN", () => {
   assertEquals(min, 2);
 });
 
-Deno.test("[collections/minBy] no mutation", () => {
+Deno.test("minBy() checks no mutation", () => {
   const input = [2, 3, 5, NaN];
 
   minBy(input, (i: number) => i);
@@ -104,7 +104,7 @@ Deno.test("[collections/minBy] no mutation", () => {
   assertEquals(input, [2, 3, 5, NaN]);
 });
 
-Deno.test("[collections/minBy] empty input", () => {
+Deno.test("minBy() checks empty input", () => {
   const input: Array<{ age: number }> = [];
 
   const min = minBy(input, (i) => i.age);
@@ -113,7 +113,7 @@ Deno.test("[collections/minBy] empty input", () => {
 });
 
 Deno.test({
-  name: "[collections/sortBy] bigint",
+  name: "minBy() checks bigint",
   fn() {
     const input = [
       "9007199254740999",
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] date",
+  name: "minBy() checks date",
   fn() {
     const input = [
       "February 1, 2022",

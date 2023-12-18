@@ -2,7 +2,7 @@
 import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { deepMerge } from "./deep_merge.ts";
 
-Deno.test("deepMerge: simple merge", () => {
+Deno.test("deepMerge() checks simple merge", () => {
   assertEquals(
     deepMerge({
       foo: true,
@@ -16,7 +16,7 @@ Deno.test("deepMerge: simple merge", () => {
   );
 });
 
-Deno.test("deepMerge: symbol merge", () => {
+Deno.test("deepMerge() checks symbol merge", () => {
   assertEquals(
     deepMerge({}, {
       [Symbol.for("deepmerge.test")]: true,
@@ -27,7 +27,7 @@ Deno.test("deepMerge: symbol merge", () => {
   );
 });
 
-Deno.test("deepMerge: ignore non enumerable", () => {
+Deno.test("deepMerge() ignores non enumerable", () => {
   assertEquals(
     deepMerge(
       {},
@@ -42,7 +42,7 @@ Deno.test("deepMerge: ignore non enumerable", () => {
   );
 });
 
-Deno.test("deepMerge: nested merge", () => {
+Deno.test("deepMerge() checks nested merge", () => {
   assertEquals(
     deepMerge({
       foo: {
@@ -66,7 +66,7 @@ Deno.test("deepMerge: nested merge", () => {
   );
 });
 
-Deno.test("deepMerge: prevent prototype merge", () => {
+Deno.test("deepMerge() prevents prototype merge", () => {
   assertEquals(
     deepMerge({
       constructor: undefined,
@@ -80,7 +80,7 @@ Deno.test("deepMerge: prevent prototype merge", () => {
   );
 });
 
-Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor property", () => {
+Deno.test("deepMerge() prevents calling Object.prototype.__proto__ accessor property", () => {
   Object.defineProperty(Object.prototype, "__proto__", {
     get() {
       throw new Error(
@@ -113,7 +113,7 @@ Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor proper
   }
 });
 
-Deno.test("deepMerge: override target (non-mergeable source)", () => {
+Deno.test("deepMerge() overrides target (non-mergeable source)", () => {
   assertEquals(
     deepMerge({
       foo: {
@@ -128,7 +128,7 @@ Deno.test("deepMerge: override target (non-mergeable source)", () => {
   );
 });
 
-Deno.test("deepMerge: override target (non-mergeable destination, object like)", () => {
+Deno.test("deepMerge() overrides target (non-mergeable destination, object like)", () => {
   const CustomClass = class {};
   assertEquals(
     deepMerge({
@@ -142,7 +142,7 @@ Deno.test("deepMerge: override target (non-mergeable destination, object like)",
   );
 });
 
-Deno.test("deepMerge: override target (non-mergeable destination, array like)", () => {
+Deno.test("deepMerge() overrides target (non-mergeable destination, array like)", () => {
   assertEquals(
     deepMerge({
       foo: [],
@@ -155,7 +155,7 @@ Deno.test("deepMerge: override target (non-mergeable destination, array like)", 
   );
 });
 
-Deno.test("deepMerge: override target (different object like source and destination)", () => {
+Deno.test("deepMerge() overrides target (different object like source and destination)", () => {
   assertEquals(
     deepMerge({
       foo: {},
@@ -178,7 +178,7 @@ Deno.test("deepMerge: override target (different object like source and destinat
   );
 });
 
-Deno.test("deepMerge: primitive types handling", () => {
+Deno.test("deepMerge() checks primitive types handling", () => {
   const CustomClass = class {};
   const expected = {
     boolean: true,
@@ -221,7 +221,7 @@ Deno.test("deepMerge: primitive types handling", () => {
   );
 });
 
-Deno.test("deepMerge: array merge (replace)", () => {
+Deno.test("deepMerge() checks array merge (replace)", () => {
   assertEquals(
     deepMerge({
       foo: [1, 2, 3],
@@ -234,7 +234,7 @@ Deno.test("deepMerge: array merge (replace)", () => {
   );
 });
 
-Deno.test("deepMerge: array merge (merge)", () => {
+Deno.test("deepMerge() checks array merge (merge)", () => {
   assertEquals(
     deepMerge({
       foo: [1, 2, 3],
@@ -247,7 +247,7 @@ Deno.test("deepMerge: array merge (merge)", () => {
   );
 });
 
-Deno.test("deepMerge: maps merge (replace)", () => {
+Deno.test("deepMerge() checks maps merge (replace)", () => {
   assertEquals(
     deepMerge({
       map: new Map([["foo", true]]),
@@ -260,7 +260,7 @@ Deno.test("deepMerge: maps merge (replace)", () => {
   );
 });
 
-Deno.test("deepMerge: maps merge (merge)", () => {
+Deno.test("deepMerge() checks maps merge (merge)", () => {
   assertEquals(
     deepMerge({
       map: new Map([["foo", true]]),
@@ -273,7 +273,7 @@ Deno.test("deepMerge: maps merge (merge)", () => {
   );
 });
 
-Deno.test("deepMerge: sets merge (replace)", () => {
+Deno.test("deepMerge() checks sets merge (replace)", () => {
   assertEquals(
     deepMerge({
       set: new Set(["foo"]),
@@ -286,7 +286,7 @@ Deno.test("deepMerge: sets merge (replace)", () => {
   );
 });
 
-Deno.test("deepMerge: sets merge (merge)", () => {
+Deno.test("deepMerge() checks sets merge (merge)", () => {
   assertEquals(
     deepMerge({
       set: new Set(["foo"]),
@@ -299,7 +299,7 @@ Deno.test("deepMerge: sets merge (merge)", () => {
   );
 });
 
-Deno.test("deepMerge: nested replace", () => {
+Deno.test("deepMerge() checks nested replace", () => {
   assertEquals(
     deepMerge(
       {
@@ -332,7 +332,7 @@ Deno.test("deepMerge: nested replace", () => {
   );
 });
 
-Deno.test("deepMerge: complex test", () => {
+Deno.test("deepMerge() checks complex test", () => {
   assertEquals(
     deepMerge({
       foo: {
@@ -371,7 +371,7 @@ Deno.test("deepMerge: complex test", () => {
   );
 });
 
-Deno.test("deepMerge: handle circular references", () => {
+Deno.test("deepMerge() handles circular references", () => {
   const expected = { foo: true } as { foo: boolean; bar: unknown };
   expected.bar = expected;
   assertEquals(deepMerge({}, expected), expected);
@@ -395,7 +395,7 @@ Deno.test("deepMerge: handle circular references", () => {
   assertStrictEquals(result.foo.b.c.d, result.foo.b.c.d.foo.b.c.d);
 });
 
-Deno.test("deepMerge: target object is not modified", () => {
+Deno.test("deepMerge() checks target object is not modified", () => {
   const record = {
     foo: {
       bar: true,

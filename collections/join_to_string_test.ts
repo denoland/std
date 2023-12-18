@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { joinToString } from "./join_to_string.ts";
 
 Deno.test({
-  name: "[collections/joinToString] no mutation",
+  name: "joinToString() checks no mutation",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] identity",
+  name: "joinToString() checks identity",
   fn() {
     const arr = ["Kim", "Anna", "Tim"];
 
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] normal mapppers",
+  name: "joinToString() checks normal mapppers",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -47,7 +47,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] separator",
+  name: "joinToString() checks separator",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -61,7 +61,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] prefix",
+  name: "joinToString() checks prefix",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] suffix",
+  name: "joinToString() checks suffix",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -93,7 +93,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] limit",
+  name: "joinToString() checks limit",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -109,7 +109,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] truncated",
+  name: "joinToString() checks truncated",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/joinToString] all options",
+  name: "joinToString() checks all options",
   fn() {
     const arr = [
       { name: "Kim", age: 22 },

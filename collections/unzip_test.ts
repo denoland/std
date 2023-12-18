@@ -13,7 +13,7 @@ function unzipTest<T, U>(
 }
 
 Deno.test({
-  name: "[collections/unzip] no mutation",
+  name: "unzip() checks no mutation",
   fn() {
     const zipped: Array<[number, boolean]> = [
       [1, true],
@@ -31,7 +31,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/unzip] empty input",
+  name: "unzip() checks empty input",
   fn() {
     unzipTest(
       [[]],
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/unzip] unzips",
+  name: "unzip() checks unzips",
   fn() {
     unzipTest(
       [

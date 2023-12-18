@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { sumOf } from "./sum_of.ts";
 
-Deno.test("[collections/sumOf] On object properties", () => {
+Deno.test("sumOf() checks object properties", () => {
   const object = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -15,7 +15,7 @@ Deno.test("[collections/sumOf] On object properties", () => {
   assertEquals(actual, 99);
 });
 
-Deno.test("[collections/sumOf] Add 2 to each num", () => {
+Deno.test("sumOf() adds 2 to each num", () => {
   const array = [1, 2, 3];
 
   const actual = sumOf(array, (i) => i + 2);
@@ -23,7 +23,7 @@ Deno.test("[collections/sumOf] Add 2 to each num", () => {
   assertEquals(actual, 12);
 });
 
-Deno.test("[collections/sumOf] Regular sum", () => {
+Deno.test("sumOf() checks regular sum", () => {
   const array = [1, 2, 3];
 
   const actual = sumOf(array, (i) => i);
@@ -31,7 +31,7 @@ Deno.test("[collections/sumOf] Regular sum", () => {
   assertEquals(actual, 6);
 });
 
-Deno.test("[collections/sumOf] Negatives with regular sum", () => {
+Deno.test("sumOf() checks negatives with regular sum", () => {
   const array = [-1, -2, -3];
 
   const actual = sumOf(array, (i) => i);
@@ -39,7 +39,7 @@ Deno.test("[collections/sumOf] Negatives with regular sum", () => {
   assertEquals(actual, -6);
 });
 
-Deno.test("[collections/sumOf] Mixed negatives and positives with regular sum", () => {
+Deno.test("sumOf() checks mixed negatives and positives with regular sum", () => {
   const array = [-1, 2, 3, -5];
 
   const actual = sumOf(array, (i) => i);
@@ -47,7 +47,7 @@ Deno.test("[collections/sumOf] Mixed negatives and positives with regular sum", 
   assertEquals(actual, -1);
 });
 
-Deno.test("[collections/sumBy] Selector turns nums into negatives", () => {
+Deno.test("sumOf() turns selector nums into negatives", () => {
   const array = [1, 3, 5, 3];
 
   const actual = sumOf(array, (i) => i - 6);
@@ -55,7 +55,7 @@ Deno.test("[collections/sumBy] Selector turns nums into negatives", () => {
   assertEquals(actual, -12);
 });
 
-Deno.test("[collections/sumBy] Selector turns nums into zeros", () => {
+Deno.test("sumOf() turns selector nums into zeros", () => {
   const array = [3, 3, 3, 3];
 
   const actual = sumOf(array, (i) => i - 3);
@@ -63,7 +63,7 @@ Deno.test("[collections/sumBy] Selector turns nums into zeros", () => {
   assertEquals(actual, 0);
 });
 
-Deno.test("[collections/sumOf] On negative object properties", () => {
+Deno.test("sumOf() checks negative object properties", () => {
   const object = [
     { name: "Kyle", age: -34 },
     { name: "John", age: -42 },
@@ -75,7 +75,7 @@ Deno.test("[collections/sumOf] On negative object properties", () => {
   assertEquals(actual, -99);
 });
 
-Deno.test("[collections/sumOf] On mixed object properties", () => {
+Deno.test("sumOf() checks mixed object properties", () => {
   const object = [
     { name: "Kyle", age: -34 },
     { name: "John", age: 42 },
@@ -87,7 +87,7 @@ Deno.test("[collections/sumOf] On mixed object properties", () => {
   assertEquals(actual, -15);
 });
 
-Deno.test("[collections/sumOf] No mutation", () => {
+Deno.test("sumOf() checks no mutation", () => {
   const array = [1, 2, 3, 4];
 
   sumOf(array, (i) => i + 2);
@@ -95,7 +95,7 @@ Deno.test("[collections/sumOf] No mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
-Deno.test("[collections/sumOf] Empty array results in 0", () => {
+Deno.test("sumOf() checks empty array results in 0", () => {
   const array: number[] = [];
 
   const actual = sumOf(array, (i) => i + 2);
@@ -103,7 +103,7 @@ Deno.test("[collections/sumOf] Empty array results in 0", () => {
   assertEquals(actual, 0);
 });
 
-Deno.test("[collections/sumOf] NaN and Infinity", () => {
+Deno.test("sumOf() checks NaN and Infinity", () => {
   const array = [
     1,
     2,
@@ -123,7 +123,7 @@ Deno.test("[collections/sumOf] NaN and Infinity", () => {
   assertEquals(actual, NaN);
 });
 
-Deno.test("[collections/sumOf] Infinity", () => {
+Deno.test("sumOf() checks Infinity", () => {
   const array = [1, 2, Infinity, 3, 4, 5, 6, 7, 8];
 
   const actual = sumOf(array, (i) => i);

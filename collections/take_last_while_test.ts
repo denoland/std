@@ -3,28 +3,28 @@
 import { assertEquals } from "../assert/mod.ts";
 import { takeLastWhile } from "./take_last_while.ts";
 
-Deno.test("[collections/takeLastWhile] Num array", () => {
+Deno.test("takeLastWhile() checks num array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = takeLastWhile(arr, (i) => i !== 4);
 
   assertEquals(actual, [5, 6]);
 });
 
-Deno.test("[collections/takeLastWhile] Add two to each num in predicate", () => {
+Deno.test("takeLastWhile() adds two to each num in predicate", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = takeLastWhile(arr, (i) => i + 2 !== 6);
 
   assertEquals(actual, [5, 6]);
 });
 
-Deno.test("[collections/takeLastWhile] Negatives", () => {
+Deno.test("takeLastWhile() checks negatives", () => {
   const arr = [-1, -2, -3, -4, -5, -6];
 
   const actual = takeLastWhile(arr, (i) => i < -4);
   assertEquals(actual, [-5, -6]);
 });
 
-Deno.test("[collections/takeLastWhile] No mutation", () => {
+Deno.test("takeLastWhile() checks no mutation", () => {
   const arr = [1, 2, 3, 4, 5, 6];
 
   const actual = takeLastWhile(arr, (i) => i !== 4);
@@ -32,7 +32,7 @@ Deno.test("[collections/takeLastWhile] No mutation", () => {
   assertEquals(arr, [1, 2, 3, 4, 5, 6]);
 });
 
-Deno.test("[collections/takeLastWhile] Empty input array returns empty array", () => {
+Deno.test("takeLastWhile() checks empty input array returns empty array", () => {
   const arr: number[] = [];
 
   const actual = takeLastWhile(arr, (i) => i > 4);
@@ -40,7 +40,7 @@ Deno.test("[collections/takeLastWhile] Empty input array returns empty array", (
   assertEquals(actual, []);
 });
 
-Deno.test("[collections/takeLastWhile] Returns empty array when the last element doesn't match the predicate", () => {
+Deno.test("takeLastWhile() returns empty array when the last element doesn't match the predicate", () => {
   const arr = [1, 2, 3, 4];
 
   const actual = takeLastWhile(arr, (i) => i !== 4);
@@ -48,7 +48,7 @@ Deno.test("[collections/takeLastWhile] Returns empty array when the last element
   assertEquals(actual, []);
 });
 
-Deno.test("[collections/takeLastWhile] Returns the same array when all elements match the predicate", () => {
+Deno.test("takeLastWhile() returns the same array when all elements match the predicate", () => {
   const arr = [1, 2, 3, 4];
 
   const actual = takeLastWhile(arr, (i) => i !== 400);

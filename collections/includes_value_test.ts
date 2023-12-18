@@ -2,7 +2,7 @@
 import { includesValue } from "./includes_value.ts";
 import { assert, assertEquals } from "../assert/mod.ts";
 
-Deno.test("[collections/includesValue] Example", () => {
+Deno.test("includesValue() checks example", () => {
   const input = {
     first: 33,
     second: 34,
@@ -11,7 +11,7 @@ Deno.test("[collections/includesValue] Example", () => {
   assert(actual);
 });
 
-Deno.test("[collections/includesValue] No mutation", () => {
+Deno.test("includesValue() checks no mutation", () => {
   const input = {
     first: 33,
     second: 34,
@@ -25,7 +25,7 @@ Deno.test("[collections/includesValue] No mutation", () => {
   });
 });
 
-Deno.test("[collections/includesValue] Empty input returns false", () => {
+Deno.test("includesValue() checks empty input returns false", () => {
   const input = {};
 
   const actual = includesValue(input, 44);
@@ -33,7 +33,7 @@ Deno.test("[collections/includesValue] Empty input returns false", () => {
   assert(!actual);
 });
 
-Deno.test("[collections/includesValue] Returns false when it doesn't include the value", () => {
+Deno.test("includesValue() returns false when it doesn't include the value", () => {
   const input = {
     first: 33,
     second: 34,
@@ -44,7 +44,7 @@ Deno.test("[collections/includesValue] Returns false when it doesn't include the
   assert(!actual);
 });
 
-Deno.test("[collections/includesValue] Non-enumerable properties", () => {
+Deno.test("includesValue() checks non-enumerable properties", () => {
   // FAIL is expected, TODO: Figure out how to make it work on
   const input = {};
 
@@ -72,7 +72,7 @@ Deno.test("[collections/includesValue] Non-enumerable properties", () => {
   assert(!actual3);
 });
 
-Deno.test("[collections/includesValue] Non-primitive values", () => {
+Deno.test("includesValue() checks non-primitive values", () => {
   const input = {
     first: {},
   };
@@ -82,7 +82,7 @@ Deno.test("[collections/includesValue] Non-primitive values", () => {
   assert(!actual);
 });
 
-Deno.test("[collections/includesValue] Same behaviour as naive impl", () => {
+Deno.test("includesValue() checks same behaviour as naive impl", () => {
   const input = {
     first: 42,
   };
@@ -93,7 +93,7 @@ Deno.test("[collections/includesValue] Same behaviour as naive impl", () => {
   assertEquals(includesValueResult, naiveImplResult);
 });
 
-Deno.test("[collections/includesValue] Works with NaN", () => {
+Deno.test("includesValue() checks NaN value", () => {
   const input = {
     first: NaN,
   };
@@ -103,7 +103,7 @@ Deno.test("[collections/includesValue] Works with NaN", () => {
   assert(actual);
 });
 
-Deno.test("[collections/includesValue] prevent enumerable prototype check", () => {
+Deno.test("includesValue() prevents enumerable prototype check", () => {
   class Foo {}
   // @ts-ignore: for test
   Foo.prototype.a = "hello";

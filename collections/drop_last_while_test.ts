@@ -2,7 +2,7 @@
 import { dropLastWhile } from "./drop_last_while.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("[collections/dropLastWhile] Num array", () => {
+Deno.test("dropLastWhile() checks num array", () => {
   const values = [20, 33, 44];
 
   const actual = dropLastWhile(values, (i) => i > 30);
@@ -10,7 +10,7 @@ Deno.test("[collections/dropLastWhile] Num array", () => {
   assertEquals(actual, [20]);
 });
 
-Deno.test("[collections/dropLastWhile] No mutation", () => {
+Deno.test("dropLastWhile() checks no mutation", () => {
   const array = [1, 2, 3, 4, 5, 6];
 
   const actual = dropLastWhile(array, (i) => i > 4);
@@ -19,7 +19,7 @@ Deno.test("[collections/dropLastWhile] No mutation", () => {
   assertEquals(array, [1, 2, 3, 4, 5, 6]);
 });
 
-Deno.test("[collections/dropLastWhile] Negatives", () => {
+Deno.test("dropLastWhile() checks negatives", () => {
   const array = [-1, -2, -3, -4, -5, -6];
 
   const actual = dropLastWhile(array, (i) => i < -4);
@@ -27,7 +27,7 @@ Deno.test("[collections/dropLastWhile] Negatives", () => {
   assertEquals(actual, [-1, -2, -3, -4]);
 });
 
-Deno.test("[collections/dropLastWhile] Empty input returns empty array", () => {
+Deno.test("dropLastWhile() checks empty input returns empty array", () => {
   const array: number[] = [];
 
   const actual = dropLastWhile(array, (i) => i > 4);
@@ -35,7 +35,7 @@ Deno.test("[collections/dropLastWhile] Empty input returns empty array", () => {
   assertEquals(actual, []);
 });
 
-Deno.test("[collections/dropLastWhile] Returns same array when the last element doesn't get dropped", () => {
+Deno.test("dropLastWhile() returns same array when the last element doesn't get dropped", () => {
   const array = [40, 30, 20];
 
   const actual = dropLastWhile(array, (i) => i > 40);
@@ -43,7 +43,7 @@ Deno.test("[collections/dropLastWhile] Returns same array when the last element 
   assertEquals(actual, [40, 30, 20]);
 });
 
-Deno.test("[collections/dropLastWhile] Returns empty array when all elements get dropped", () => {
+Deno.test("dropLastWhile() returns empty array when all elements get dropped", () => {
   const array = [20, 30, 20];
 
   const actual = dropLastWhile(array, (i) => i < 40);

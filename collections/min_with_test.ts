@@ -13,7 +13,7 @@ function minWithTest<T>(
 }
 
 Deno.test({
-  name: "[collections/minWith] no mutation",
+  name: "minWith() checks no mutation",
   fn() {
     const input = [[1, 3], [6, 1, 3], [4]];
     minWith(input, (a, b) => a.length - b.length);
@@ -23,21 +23,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/minWith] empty input",
+  name: "minWith() checks empty input",
   fn() {
     minWithTest<string>([[], (a, b) => a.length - b.length], undefined);
   },
 });
 
 Deno.test({
-  name: "[collections/minWith] array of arrays",
+  name: "minWith() checks array of arrays",
   fn() {
     minWithTest([[[1, 3], [6, 1, 3], [4]], (a, b) => a.length - b.length], [4]);
   },
 });
 
 Deno.test({
-  name: "[collections/minWith] array of strings",
+  name: "minWith() checks array of strings",
   fn() {
     minWithTest(
       [["Kim", "Anna", "John"], (a, b) => a.length - b.length],
@@ -47,7 +47,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/minWith] array of objects",
+  name: "minWith() checks array of objects",
   fn() {
     minWithTest(
       [
@@ -64,14 +64,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/minWith] duplicates",
+  name: "minWith() checks duplicates",
   fn() {
     minWithTest([["John", "Kim", "Kim"], (a, b) => a.length - b.length], "Kim");
   },
 });
 
 Deno.test({
-  name: "[collections/minWith] array containing undefined",
+  name: "minWith() checks array containing undefined",
   fn() {
     minWithTest(
       [

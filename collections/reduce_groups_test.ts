@@ -17,7 +17,7 @@ function reduceGroupsTest<T, A>(
 }
 
 Deno.test({
-  name: "[collections/mapEntries] no mutation",
+  name: "mapEntries() checks no mutation",
   fn() {
     const input = {
       Woody: [2, 3, 1, 4],
@@ -34,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] array of numbers",
+  name: "mapEntries() checks array of numbers",
   fn() {
     reduceGroupsTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] array of string",
+  name: "mapEntries() checks array of strings",
   fn() {
     reduceGroupsTest(
       [
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] mapper",
+  name: "mapEntries() checks mapper",
   fn() {
     reduceGroupsTest(
       [
@@ -94,7 +94,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] initial value",
+  name: "mapEntries() checks initial value",
   fn() {
     reduceGroupsTest(
       [
@@ -114,7 +114,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] empty input",
+  name: "mapEntries() checks empty input",
   fn() {
     reduceGroupsTest([{}, () => 0, 0], {});
   },

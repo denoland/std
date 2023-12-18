@@ -2,42 +2,42 @@
 import { minOf } from "./min_of.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("[collections/minOf] Regular min", () => {
+Deno.test("minOf() checks regular min", () => {
   const array = [5, 18, 35, 120];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, 5);
 });
 
-Deno.test("[collections/minOf] Mixed negatives and positives numbers", () => {
+Deno.test("minOf() checks mixed negatives and positives numbers", () => {
   const array = [-32, -18, 140, 36];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, -32);
 });
 
-Deno.test("[collections/minOf] Negatives numbers", () => {
+Deno.test("minOf() checks negatives numbers", () => {
   const array = [-32, -18, -140, -36];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, -140);
 });
 
-Deno.test("[collections/minOf] BigInt regular min", () => {
+Deno.test("minOf() checks BigInt regular min", () => {
   const array = [BigInt(5), BigInt(18), BigInt(35), BigInt(120)];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, BigInt(5));
 });
 
-Deno.test("[collections/minOf] BigInt negatives numbers", () => {
+Deno.test("minOf() checks BigInt negatives numbers", () => {
   const array = [BigInt(-32), BigInt(-18), BigInt(-140), BigInt(-36)];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, BigInt(-140));
 });
 
-Deno.test("[collection/minOf] On object properties", () => {
+Deno.test("minOf() checks object properties", () => {
   const object = [
     { name: "mustard", count: 2 },
     { name: "soy", count: 4 },
@@ -48,7 +48,7 @@ Deno.test("[collection/minOf] On object properties", () => {
   assertEquals(actual, 2);
 });
 
-Deno.test("[collection/minOf] On mixed object properties", () => {
+Deno.test("minOf() checks mixed object properties", () => {
   const object = [
     { name: "mustard", count: -2 },
     { name: "soy", count: 4 },
@@ -59,7 +59,7 @@ Deno.test("[collection/minOf] On mixed object properties", () => {
   assertEquals(actual, -32);
 });
 
-Deno.test("[collections/minOf] No mutation", () => {
+Deno.test("minOf() checks no mutation", () => {
   const array = [1, 2, 3, 4];
 
   minOf(array, (i) => i + 2);
@@ -67,14 +67,14 @@ Deno.test("[collections/minOf] No mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
-Deno.test("[collections/minOf] Empty array results in undefined", () => {
+Deno.test("minOf() checks empty array results in undefined", () => {
   const array: number[] = [];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, undefined);
 });
 
-Deno.test("[collections/minOf] NaN and Infinity", () => {
+Deno.test("minOf() checks NaN and Infinity", () => {
   const array = [
     1,
     2,
@@ -93,7 +93,7 @@ Deno.test("[collections/minOf] NaN and Infinity", () => {
   assertEquals(actual, NaN);
 });
 
-Deno.test("[collections/minOf] Minus infinity", () => {
+Deno.test("minOf() checks minus infinity", () => {
   const array = [1, 2, -Infinity, 3, 4, 5, 6, 7, 8];
 
   const actual = minOf(array, (i) => i);
