@@ -159,9 +159,6 @@ export class TarEntry {
 export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
   readable: ReadableStream<TarEntry>;
   #buffer: Buffer;
-  get buffer() {
-    return this.#buffer;
-  }
   #block = new Uint8Array(recordSize);
   #entry: TarEntry | undefined;
 
