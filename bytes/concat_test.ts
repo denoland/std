@@ -12,7 +12,7 @@ Deno.test("concat()", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("concat() checks empty arrays", () => {
+Deno.test("concat() handles empty arrays", () => {
   const u1 = new Uint8Array();
   const u2 = new Uint8Array();
   const joined = concat([u1, u2]);
@@ -21,7 +21,7 @@ Deno.test("concat() checks empty arrays", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("concat() checks multiple Uint8Array", () => {
+Deno.test("concat() handles multiple Uint8Array", () => {
   const encoder = new TextEncoder();
   const u1 = encoder.encode("Hello ");
   const u2 = encoder.encode("W");
@@ -35,7 +35,7 @@ Deno.test("concat() checks multiple Uint8Array", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("concat() checks an array of Uint8Array", () => {
+Deno.test("concat() handles an array of Uint8Array", () => {
   const a = [
     new Uint8Array([0, 1, 2, 3]),
     new Uint8Array([4, 5, 6]),

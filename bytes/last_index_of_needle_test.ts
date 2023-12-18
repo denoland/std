@@ -2,7 +2,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { lastIndexOfNeedle } from "./last_index_of_needle.ts";
 
-Deno.test("lastIndexOfNeedle1() checks repeating occurence", () => {
+Deno.test("lastIndexOfNeedle1() handles repeating occurence", () => {
   const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 3]),
     new Uint8Array([0, 1, 2]),
@@ -10,7 +10,7 @@ Deno.test("lastIndexOfNeedle1() checks repeating occurence", () => {
   assertEquals(i, 3);
 });
 
-Deno.test("lastIndexOfNeedle() checks single occurence", () => {
+Deno.test("lastIndexOfNeedle() handles single occurence", () => {
   const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 1]),
     new Uint8Array([0, 1]),
@@ -18,7 +18,7 @@ Deno.test("lastIndexOfNeedle() checks single occurence", () => {
   assertEquals(i, 0);
 });
 
-Deno.test("lastIndexOfNeedle() checks missing occurence", () => {
+Deno.test("lastIndexOfNeedle() handles missing occurence", () => {
   const i = lastIndexOfNeedle(new Uint8Array(), new Uint8Array([0, 1]));
   assertEquals(i, -1);
 });

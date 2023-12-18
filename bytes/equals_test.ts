@@ -11,7 +11,7 @@ Deno.test("equals()", () => {
   assert(!v3);
 });
 
-Deno.test("equals() checks randomized testing", () => {
+Deno.test("equals() handles randomized testing", () => {
   // run tests before and after cutoff
   for (let len = 995; len <= 1005; len++) {
     const arr1 = crypto.getRandomValues(new Uint8Array(len));
