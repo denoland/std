@@ -1,6 +1,6 @@
 export const snapshot = {};
 
-snapshot[`describe.only() works as expected with complex usage case 1`] = `
+snapshot[`describe.only() works as expected with complex use case 1`] = `
 "running 1 test from ./testing/testdata/only.ts
 Only ...
   Suite ...
