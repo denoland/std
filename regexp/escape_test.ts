@@ -7,7 +7,7 @@ const ALL_ASCII =
   "\x00\x01\x02\x03\x04\x05\x06\x07\b\t\n\v\f\r\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F";
 const ALL_REGEXP_FLAGS = "gimsuy";
 
-Deno.test("escape() checks examples", async (t) => {
+Deno.test("escape() works with examples", async (t) => {
   await t.step("`.` matches literal `.`", () => {
     const re = new RegExp(`^${escape(".")}$`, "u");
 
@@ -49,7 +49,7 @@ Deno.test("escape() checks examples", async (t) => {
     assertNotMatch("a", re);
   });
 });
-Deno.test("escape() checks all ASCII", async (t) => {
+Deno.test("escape() works with all ASCII", async (t) => {
   await t.step("interpolates without erroring", async (t) => {
     await t.step("outside character class", () => {
       for (const char of ALL_ASCII) {
