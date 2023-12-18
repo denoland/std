@@ -4,7 +4,7 @@
 
 import { MOCK_SYMBOL, MockCall } from "./_mock_util.ts";
 
-export function fn(...stubs: Function[]): (...args: any[]) => any {
+export function fn(...stubs: Function[]): Function {
   const calls: MockCall[] = [];
 
   const f = (...args: any[]) => {
