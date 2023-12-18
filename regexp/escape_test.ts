@@ -28,7 +28,7 @@ Deno.test("escape() works with examples", async (t) => {
     assertNotMatch("", re);
     assertNotMatch("aaa", re);
   });
-  await t.step("escapes work correctly within character class", () => {
+  await t.step("escapes works correctly within character class", () => {
     const re = new RegExp(`^[${escape(".$*+[](){}|\\<>")}]$`);
 
     assertMatch(".", re);
