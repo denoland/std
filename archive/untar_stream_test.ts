@@ -26,6 +26,25 @@ interface TestEntry {
   filePath?: string;
 }
 
+async function getTarOptions(): Promise<TarOptions[]> {
+  const file = await Deno.open(filePath, { read: true });
+
+  return [
+    {
+      name: "output.txt",
+      readable: ReadableStream.from([
+        new TextEncoder().encode("hello tar world!"),
+      ]),
+      contentSize: 16,
+    },
+    {
+      name: "dir/tar.ts",
+      readable: file.readable,
+      contentSize: file.statSync().size,
+    },
+  ];
+}
+
 Deno.test("deflateTarArchive", async function () {
   const fileName = "output.txt";
   const text = "hello tar world!";
@@ -205,21 +224,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
 Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
   void
 > {
-  const file = await Deno.open(filePath, { read: true });
-  const entries: TarOptions[] = [
-    {
-      name: "output.txt",
-      readable: ReadableStream.from([
-        new TextEncoder().encode("hello tar world!"),
-      ]),
-      contentSize: 16,
-    },
-    {
-      name: "dir/tar.ts",
-      readable: file.readable,
-      contentSize: file.statSync().size,
-    },
-  ];
+  const entries: TarOptions[] = await getTarOptions();
 
   const tar = ReadableStream.from<TarOptions>(entries).pipeThrough(
     new TarStream(),
@@ -241,21 +246,7 @@ Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
 Deno.test(
   "untarAsyncIteratorWithoutReadingBodyFromFileReadable",
   async function () {
-    const file = await Deno.open(filePath, { read: true });
-    const entries: TarOptions[] = [
-      {
-        name: "output.txt",
-        readable: ReadableStream.from([
-          new TextEncoder().encode("hello tar world!"),
-        ]),
-        contentSize: 16,
-      },
-      {
-        name: "dir/tar.ts",
-        readable: file.readable,
-        contentSize: file.statSync().size,
-      },
-    ];
+    const entries: TarOptions[] = await getTarOptions();
 
     const tar = await ReadableStream.from<TarOptions>(entries).pipeThrough(
       new TarStream(),
@@ -280,5 +271,80 @@ Deno.test(
 
     await Deno.remove(outputFile);
     assertEquals(entries.length, 0);
+  },
+);
+
+Deno.test("untarAsyncIteratorFromFileReadable", async function () {
+  const tar = await ReadableStream.from<TarOptions>(await getTarOptions())
+    .pipeThrough(
+      new TarStream(),
+    );
+
+  const outputFile = resolve(testdataDir, "test.tar");
+
+  const writeFile = await Deno.open(outputFile, { create: true, write: true });
+  await tar.pipeTo(writeFile.writable);
+
+  const reader = await Deno.open(outputFile, { read: true });
+  // read data from a tar archive
+
+  const assertionEntries = await getTarOptions();
+
+  for await (const entry of reader.readable.pipeThrough(new UntarStream())) {
+    const expected = assertionEntries.shift();
+    assert(expected);
+
+    assertEquals(
+      await toArrayBuffer(expected.readable),
+      await toArrayBuffer(entry.readable),
+    );
+    assertEquals(expected.name, entry.fileName);
+  }
+
+  await Deno.remove(outputFile);
+  assertEquals(assertionEntries.length, 0);
+});
+
+Deno.test(
+  "untarAsyncIteratorReadingLessThanRecordSize",
+  async function (t) {
+    // record size is 512
+    const bufSizes = [1, 53, 256, 511];
+
+    for (const bufSize of bufSizes) {
+      await t.step(bufSize.toString(), async () => {
+        function getEntries(): TarOptions[] {
+          return [
+            {
+              name: "output.txt",
+              readable: ReadableStream.from([new TextEncoder().encode("hello tar world!".repeat(100))]),
+              contentSize: 1600,
+            },
+            // Need to test at least two files, to make sure the first entry doesn't over-read
+            // Causing the next to fail with: checksum error
+            {
+              name: "deni.txt",
+              readable: ReadableStream.from([new TextEncoder().encode("deno!".repeat(250))]),
+              contentSize: 1250,
+            },
+          ];
+        }
+
+        const untar = ReadableStream.from<TarOptions>(getEntries()).pipeThrough(
+          new TarStream(),
+        ).pipeThrough(new UntarStream());
+
+        const assertEntries = getEntries();
+        // read data from a tar archive
+        for await (const entry of untar) {
+          const expected = assertEntries.shift();
+          assert(expected);
+          assertEquals(expected.name, entry.fileName);
+          assertEquals(await toArrayBuffer(entry.readable), await toArrayBuffer(expected.readable));
+        }
+
+        assertEquals(assertEntries.length, 0);
+      });
+    }
   },
 );
