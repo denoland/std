@@ -5,8 +5,9 @@ const encoder = new TextEncoder();
 
 function splitByLast(value: string, separator: string): [string, string] {
   const index = value.lastIndexOf(separator);
-  if (index === -1) return [value, ""];
-  return [value.slice(0, index), value.slice(index + 1)];
+  return index === -1
+    ? [value, ""]
+    : [value.slice(0, index), value.slice(index + 1)];
 }
 
 /**
