@@ -89,4 +89,3 @@ export interface TarInfo {
   group?: string;
   type?: keyof typeof FileTypes;
 }
-

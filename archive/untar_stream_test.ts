@@ -221,7 +221,9 @@ Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
     },
   ];
 
-  const tar = ReadableStream.from<TarOptions>(entries).pipeThrough(new TarStream());
+  const tar = ReadableStream.from<TarOptions>(entries).pipeThrough(
+    new TarStream(),
+  );
 
   const untar = new UntarStream();
   // read data from a tar archive
@@ -255,11 +257,16 @@ Deno.test(
       },
     ];
 
-    const tar = await ReadableStream.from<TarOptions>(entries).pipeThrough(new TarStream());
+    const tar = await ReadableStream.from<TarOptions>(entries).pipeThrough(
+      new TarStream(),
+    );
 
     const outputFile = resolve(testdataDir, "test.tar");
 
-    const writeFile = await Deno.open(outputFile, { create: true, write: true });
+    const writeFile = await Deno.open(outputFile, {
+      create: true,
+      write: true,
+    });
     await tar.pipeTo(writeFile.writable);
 
     const reader = await Deno.open(outputFile, { read: true });
