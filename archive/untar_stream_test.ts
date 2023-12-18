@@ -11,13 +11,11 @@
  */
 import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { UntarStream } from "./untar_stream.ts";
+import { UntarStream, TarEntry, type TarHeader } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
 import { type TarOptions, TarStream } from "./tar_stream.ts";
 import { toArrayBuffer } from "../streams/to_array_buffer.ts";
 import {
-  TarEntry,
-  type TarHeader,
   TarMetaWithLinkName,
   Untar,
 } from "./untar.ts";
@@ -346,6 +344,53 @@ Deno.test("untarLinuxGeneratedTar", async function () {
       const buffer = new Buffer();
       await entry.readable.pipeTo(buffer.writable);
       assertEquals(content, buffer.bytes());
+    }
+  }
+});
+
+Deno.test("untarArchiveWithLink", async function () {
+  const filePath = resolve(testdataDir, "with_link.tar");
+  const file = await Deno.open(filePath, { read: true });
+
+  type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
+
+  const expectedEntries: ExpectedEntry[] = [
+    {
+      fileName: "hello.txt",
+      fileMode: 436,
+      fileSize: 14,
+      mtime: 1696384910,
+      uid: 1000,
+      gid: 1000,
+      owner: "user",
+      group: "user",
+      type: "file",
+      content: new TextEncoder().encode("Hello World!\n\n"),
+    },
+    {
+      fileName: "link_to_hello.txt",
+      linkName: "./hello.txt",
+      fileMode: 511,
+      fileSize: 0,
+      mtime: 1696384945,
+      uid: 1000,
+      gid: 1000,
+      owner: "user",
+      group: "user",
+      type: "symlink",
+    },
+  ];
+
+  for await (const entry of file.readable.pipeThrough(new UntarStream())) {
+    const expected = expectedEntries.shift();
+    assert(expected);
+    const content = expected.content;
+    delete expected.content;
+
+    assertEquals({ ...entry }, expected);
+
+    if (content) {
+      assertEquals(content.buffer, await toArrayBuffer(entry.readable));
     }
   }
 });

@@ -64,17 +64,18 @@ function parseHeader(buffer: Uint8Array): TarHeader {
   return data as TarHeader;
 }
 
-type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
+export type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
 
 export interface TarMeta extends TarInfo {
   fileName: string;
   fileSize?: number;
+  linkName?: string;
 }
 
 // deno-lint-ignore no-empty-interface
-interface TarEntry extends TarMeta {}
+export interface TarEntry extends TarMeta {}
 
-class TarEntry {
+export class TarEntry {
   #header: TarHeader;
   #readableInner: ReadableStream<Uint8Array>;
   #readable: ReadableStream<Uint8Array>;
@@ -247,6 +248,10 @@ function getMetadata(header: TarHeader): TarMeta {
   meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
   meta.type =
     (FileTypes[parseInt(meta.type!)] ?? meta.type) as keyof typeof FileTypes;
+
+  if (meta.type === "symlink") {
+    meta.linkName = decoder.decode(trim(header.linkName));
+  }
 
   return meta;
 }
