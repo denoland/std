@@ -9,22 +9,23 @@
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
  */
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
 import { type TarOptions, TarStream } from "./tar_stream.ts";
 import { toArrayBuffer } from "../streams/to_array_buffer.ts";
+import {
+  TarEntry,
+  type TarHeader,
+  TarMetaWithLinkName,
+  Untar,
+} from "./untar.ts";
+import { readAll } from "../streams/read_all.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 const filePath = resolve(testdataDir, "example.txt");
-
-interface TestEntry {
-  name: string;
-  content?: Uint8Array;
-  filePath?: string;
-}
 
 async function getTarOptions(): Promise<TarOptions[]> {
   const file = await Deno.open(filePath, { read: true });
@@ -123,102 +124,6 @@ Deno.test("untarAsyncIterator", async function () {
   assert(lastEntry);
   assert(lastEntry.consumed);
   assertEquals(entries.length, 0);
-});
-
-Deno.test("untarLinuxGeneratedTar", async function () {
-  const filePath = resolve(testdataDir, "deno.tar");
-  const file = await Deno.open(filePath, { read: true });
-
-  const expectedEntries = [
-    {
-      fileName: "archive/",
-      fileSize: 0,
-      fileMode: 509,
-      mtime: 1591800767,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "directory",
-    },
-    {
-      fileName: "archive/deno/",
-      fileSize: 0,
-      fileMode: 509,
-      mtime: 1591799635,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "directory",
-    },
-    {
-      fileName: "archive/deno/land/",
-      fileSize: 0,
-      fileMode: 509,
-      mtime: 1591799660,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "directory",
-    },
-    {
-      fileName: "archive/deno/land/land.txt",
-      fileMode: 436,
-      fileSize: 5,
-      mtime: 1591799660,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "file",
-      content: new TextEncoder().encode("land\n"),
-    },
-    {
-      fileName: "archive/file.txt",
-      fileMode: 436,
-      fileSize: 5,
-      mtime: 1591799626,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "file",
-      content: new TextEncoder().encode("file\n"),
-    },
-    {
-      fileName: "archive/deno.txt",
-      fileMode: 436,
-      fileSize: 5,
-      mtime: 1591799642,
-      uid: 1001,
-      gid: 1001,
-      owner: "deno",
-      group: "deno",
-      type: "file",
-      content: new TextEncoder().encode("deno\n"),
-    },
-  ];
-
-  const untar = new UntarStream();
-  await file.readable.pipeTo(untar.writable);
-
-  for await (const entry of untar.readable) {
-    const expected = expectedEntries.shift();
-    assert(expected);
-    const content = expected.content;
-    delete expected.content;
-
-    // @ts-ignore its fine
-    assertEquals({ ...entry }, expected);
-
-    if (content) {
-      const buffer = new Buffer();
-      await entry.readable.pipeTo(buffer.writable);
-      assertEquals(content, buffer.bytes());
-    }
-  }
 });
 
 Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
@@ -348,3 +253,99 @@ Deno.test(
     }
   },
 );
+
+Deno.test("untarLinuxGeneratedTar", async function () {
+  const filePath = resolve(testdataDir, "deno.tar");
+  const file = await Deno.open(filePath, { read: true });
+
+  const expectedEntries = [
+    {
+      fileName: "archive/",
+      fileSize: 0,
+      fileMode: 509,
+      mtime: 1591800767,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "directory",
+    },
+    {
+      fileName: "archive/deno/",
+      fileSize: 0,
+      fileMode: 509,
+      mtime: 1591799635,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "directory",
+    },
+    {
+      fileName: "archive/deno/land/",
+      fileSize: 0,
+      fileMode: 509,
+      mtime: 1591799660,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "directory",
+    },
+    {
+      fileName: "archive/deno/land/land.txt",
+      fileMode: 436,
+      fileSize: 5,
+      mtime: 1591799660,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "file",
+      content: new TextEncoder().encode("land\n"),
+    },
+    {
+      fileName: "archive/file.txt",
+      fileMode: 436,
+      fileSize: 5,
+      mtime: 1591799626,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "file",
+      content: new TextEncoder().encode("file\n"),
+    },
+    {
+      fileName: "archive/deno.txt",
+      fileMode: 436,
+      fileSize: 5,
+      mtime: 1591799642,
+      uid: 1001,
+      gid: 1001,
+      owner: "deno",
+      group: "deno",
+      type: "file",
+      content: new TextEncoder().encode("deno\n"),
+    },
+  ];
+
+  const untar = new UntarStream();
+  await file.readable.pipeTo(untar.writable);
+
+  for await (const entry of untar.readable) {
+    const expected = expectedEntries.shift();
+    assert(expected);
+    const content = expected.content;
+    delete expected.content;
+
+    // @ts-ignore its fine
+    assertEquals({ ...entry }, expected);
+
+    if (content) {
+      const buffer = new Buffer();
+      await entry.readable.pipeTo(buffer.writable);
+      assertEquals(content, buffer.bytes());
+    }
+  }
+});
