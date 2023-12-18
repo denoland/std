@@ -2,7 +2,7 @@
 import { equals } from "./equals.ts";
 import { assert } from "../assert/mod.ts";
 
-Deno.test("[bytes] equals", () => {
+Deno.test("equals()", () => {
   const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));
   const v2 = equals(new Uint8Array([0, 1, 2, 2]), new Uint8Array([0, 1, 2, 3]));
   const v3 = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2]));
@@ -11,7 +11,7 @@ Deno.test("[bytes] equals", () => {
   assert(!v3);
 });
 
-Deno.test("[bytes] equals randomized testing", () => {
+Deno.test("equals() checks randomized testing", () => {
   // run tests before and after cutoff
   for (let len = 995; len <= 1005; len++) {
     const arr1 = crypto.getRandomValues(new Uint8Array(len));

@@ -2,7 +2,7 @@
 import { indexOfNeedle } from "./index_of_needle.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("[bytes] indexOfNeedle1", () => {
+Deno.test("indexOfNeedle() checks repeating occurence", () => {
   const i = indexOfNeedle(
     new Uint8Array([1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 3]),
     new Uint8Array([0, 1, 2]),
@@ -10,23 +10,23 @@ Deno.test("[bytes] indexOfNeedle1", () => {
   assertEquals(i, 2);
 });
 
-Deno.test("[bytes] indexOfNeedle2", () => {
+Deno.test("indexOfNeedle() checks single occurence", () => {
   const i = indexOfNeedle(new Uint8Array([0, 0, 1]), new Uint8Array([0, 1]));
   assertEquals(i, 1);
 });
 
-Deno.test("[bytes] indexOfNeedle3", () => {
+Deno.test("indexOfNeedle() checks text encoded occurence", () => {
   const encoder = new TextEncoder();
   const i = indexOfNeedle(encoder.encode("Deno"), encoder.encode("D"));
   assertEquals(i, 0);
 });
 
-Deno.test("[bytes] indexOfNeedle4", () => {
+Deno.test("indexOfNeedle() checks missing occurence", () => {
   const i = indexOfNeedle(new Uint8Array(), new Uint8Array([0, 1]));
   assertEquals(i, -1);
 });
 
-Deno.test("[bytes] indexOfNeedle with start index", () => {
+Deno.test("indexOfNeedle() returns index of occurence after start", () => {
   const i = indexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
@@ -35,7 +35,7 @@ Deno.test("[bytes] indexOfNeedle with start index", () => {
   assertEquals(i, 3);
 });
 
-Deno.test("[bytes] indexOfNeedle with start index 2", () => {
+Deno.test("indexOfNeedle() returns -1 if occurence is before start", () => {
   const i = indexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
@@ -44,7 +44,7 @@ Deno.test("[bytes] indexOfNeedle with start index 2", () => {
   assertEquals(i, -1);
 });
 
-Deno.test("[bytes] indexOfNeedle with start index < 0", () => {
+Deno.test("indexOfNeedle() checks start index less than 0", () => {
   assertEquals(
     indexOfNeedle(
       new Uint8Array([0, 1, 2, 0, 1, 2]),
