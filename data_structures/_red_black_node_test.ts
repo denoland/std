@@ -2,14 +2,12 @@
 import { assertStrictEquals } from "../assert/mod.ts";
 import { RedBlackNode } from "./_red_black_node.ts";
 
-Deno.test("[collections/RedBlackNode] constructor and from", () => {
+Deno.test("RedBlackNode()", () => {
   const parent: RedBlackNode<number> = new RedBlackNode(null, 5);
   const child: RedBlackNode<number> = new RedBlackNode(parent, 7);
   parent.left = child;
   assertStrictEquals(parent.red, true);
   parent.red = false;
-  const parentClone: RedBlackNode<number> = RedBlackNode.from(parent);
-  const childClone: RedBlackNode<number> = RedBlackNode.from(child);
 
   assertStrictEquals(parent.parent, null);
   assertStrictEquals(parent.left, child);
@@ -22,6 +20,16 @@ Deno.test("[collections/RedBlackNode] constructor and from", () => {
   assertStrictEquals(child.right, null);
   assertStrictEquals(child.value, 7);
   assertStrictEquals(child.red, true);
+});
+
+Deno.test("RedBlackNode.from()", () => {
+  const parent: RedBlackNode<number> = new RedBlackNode(null, 5);
+  const child: RedBlackNode<number> = new RedBlackNode(parent, 7);
+  parent.left = child;
+  parent.red = false;
+
+  const parentClone: RedBlackNode<number> = RedBlackNode.from(parent);
+  const childClone: RedBlackNode<number> = RedBlackNode.from(child);
 
   assertStrictEquals(parentClone.parent, null);
   assertStrictEquals(parentClone.left, child);
