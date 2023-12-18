@@ -67,11 +67,11 @@ export interface SemVerComparator {
   /**
    * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMin} instead.
    */
-  min?: SemVer;
+  min: SemVer;
   /**
    * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMax} instead.
    */
-  max?: SemVer;
+  max: SemVer;
 }
 
 /**
