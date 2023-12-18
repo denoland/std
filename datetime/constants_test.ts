@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
 Deno.test({
-  name: "[std/datetime] constants",
+  name: "checks constants",
   fn() {
     assertEquals(SECOND, 1e3);
     assertEquals(MINUTE, SECOND * 60);

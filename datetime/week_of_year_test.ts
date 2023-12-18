@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { weekOfYear } from "./week_of_year.ts";
 
 Deno.test({
-  name: "[std/datetime] weekOfYear",
+  name: "weekOfYear()",
   fn: () => {
     assertEquals(weekOfYear(new Date("2020-01-05T03:00:00.000Z")), 1);
     assertEquals(weekOfYear(new Date("2020-06-28T03:00:00.000Z")), 26);

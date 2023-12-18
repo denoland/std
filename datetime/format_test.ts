@@ -3,7 +3,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { format } from "./format.ts";
 
 Deno.test({
-  name: "[std/datetime] format",
+  name: "format()",
   fn: () => {
     // 00 hours
     assertEquals(
