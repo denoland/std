@@ -2,14 +2,14 @@
 import { assertEquals } from "../assert/mod.ts";
 import { levenshteinDistance } from "./mod.ts";
 
-Deno.test("levenshteinDistanceAbove - basic cases", function () {
+Deno.test("levenshteinDistance() checks basic cases", function () {
   assertEquals(
     levenshteinDistance("aa", "bb"),
     2,
   );
 });
 
-Deno.test("levenshteinDistance - same strings", function () {
+Deno.test("levenshteinDistance() checks same strings", function () {
   assertEquals(
     levenshteinDistance("aa", "aa"),
     0,

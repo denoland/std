@@ -2,7 +2,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { wordSimilaritySort } from "./word_similarity_sort.ts";
 
-Deno.test("basicWordSimilaritySort", function () {
+Deno.test("wordSimilaritySort() checks basic example", function () {
   const possibleWords: string[] = ["length", "size", "blah", "help"];
   const badArg = "hep";
   assertEquals(
@@ -11,7 +11,7 @@ Deno.test("basicWordSimilaritySort", function () {
   );
 });
 
-Deno.test("emptyStringSimilaritySort", function () {
+Deno.test("wordSimilaritySort() checks empty string", function () {
   const possibleWords: string[] = ["length", "size", "blah", "help", ""];
   const badArg = "";
 
@@ -21,7 +21,7 @@ Deno.test("emptyStringSimilaritySort", function () {
   );
 });
 
-Deno.test("emptyArraySimilaritySort", function () {
+Deno.test("wordSimilaritySort() checks empty array", function () {
   const possibleWords: string[] = [];
   const badArg = "";
 
