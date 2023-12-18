@@ -16,7 +16,7 @@ const CRLF = "\r\n";
 const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
-  name: "stringify",
+  name: "stringify()",
   async fn(t) {
     await t.step({
       name: "Access array index using string",
@@ -174,7 +174,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: number accessor",
+        name: "checks number accessor column",
         fn() {
           const columns = [1];
           const data = [{ 1: 1 }, { 1: 2 }];
@@ -198,7 +198,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: number accessor,const data = array",
+        name: "checks number accessor,const data = array column",
         fn() {
           const columns = [1];
           const data = [["key", "foo"], ["key", "bar"]];
@@ -209,7 +209,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: array number accessor",
+        name: "checks array number accessor column",
 
         fn() {
           const columns = [[1]];
@@ -221,7 +221,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: array number accessor,const data = array",
+        name: "checks array number accessor,const data = array column",
         fn() {
           const columns = [[1]];
           const data = [["key", "foo"], ["key", "bar"]];
@@ -232,7 +232,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: array number accessor,const data = array",
+        name: "checks array number accessor,const data = array column",
 
         fn() {
           const columns = [[1, 1]];
@@ -244,7 +244,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: string accessor",
+        name: "checks string accessor column",
         fn() {
           const columns = ["value"];
           const data = [{ value: "foo" }, { value: "bar" }];
@@ -255,7 +255,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: array string accessor",
+        name: "checks array string accessor column",
         fn() {
           const columns = [["value"]];
           const data = [{ value: "foo" }, { value: "bar" }];
@@ -266,7 +266,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Column: array string accessor",
+        name: "checks array string accessor column",
         fn() {
           const columns = [["msg", "value"]];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
@@ -277,7 +277,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Explicit header",
+        name: "checks explicit header",
         fn() {
           const columns = [
             {
@@ -294,7 +294,7 @@ Deno.test({
 
     await t.step(
       {
-        name: "Targeted value: object",
+        name: "checks object",
         fn() {
           const columns = [0];
           const data = [[{ value: "foo" }], [{ value: "bar" }]];
@@ -306,7 +306,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: arary of objects",
+        name: "checks arary of objects",
         fn() {
           const columns = [0];
           const data = [
@@ -321,7 +321,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: array",
+        name: "checks array",
         fn() {
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
@@ -333,7 +333,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: array, separator: tab",
+        name: "checks array, separator: tab",
 
         fn() {
           const columns = [0];
@@ -347,7 +347,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: undefined",
+        name: "checks undefined",
         fn() {
           const columns = [0];
           const data = [[], []];
@@ -358,7 +358,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: null",
+        name: "checks null",
         fn() {
           const columns = [0];
           const data = [[null], [null]];
@@ -369,7 +369,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: hex number",
+        name: "checks hex number",
         fn() {
           const columns = [0];
           const data = [[0xa], [0xb]];
@@ -380,7 +380,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: BigInt",
+        name: "checks BigInt",
         fn() {
           const columns = [0];
           const data = [[BigInt("1")], [BigInt("2")]];
@@ -391,7 +391,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: boolean",
+        name: "checks boolean",
         fn() {
           const columns = [0];
           const data = [[true], [false]];
@@ -402,7 +402,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: string",
+        name: "checks string",
         fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
@@ -413,7 +413,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: symbol",
+        name: "checks symbol",
         fn() {
           const columns = [0];
           const data = [[Symbol("foo")], [Symbol("bar")]];
@@ -424,7 +424,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Targeted value: function",
+        name: "checks function",
         fn() {
           const columns = [0];
           const data = [[(n: number) => n]];
@@ -435,7 +435,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with double quote",
+        name: "checks value with double quote",
         fn() {
           const columns = [0];
           const data = [['foo"']];
@@ -446,7 +446,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with CRLF",
+        name: "checks value with CRLF",
         fn() {
           const columns = [0];
           const data = [["foo\r\n"]];
@@ -457,7 +457,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with CR",
+        name: "checks value with CR",
         fn() {
           const columns = [0];
           const data = [["foo\r"]];
@@ -468,7 +468,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with LF",
+        name: "checks value with LF",
         fn() {
           const columns = [0];
           const data = [["foo\n"]];
@@ -479,7 +479,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with comma",
+        name: "checks value with comma",
         fn() {
           const columns = [0];
           const data = [["foo,"]];
@@ -490,7 +490,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Value with comma, tab separator",
+        name: "checks value with comma, tab separator",
         fn() {
           const columns = [0];
           const data = [["foo,"]];
