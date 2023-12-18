@@ -27,7 +27,12 @@
  * THE SOFTWARE.
  */
 import { Buffer } from "../streams/buffer.ts";
-import { TarInfo, FileTypes, ustarStructure, recordSize } from "./_stream_common.ts";
+import {
+  FileTypes,
+  recordSize,
+  TarInfo,
+  ustarStructure,
+} from "./_stream_common.ts";
 import { assert } from "../assert/assert.ts";
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
@@ -44,7 +49,6 @@ function trim(buffer: Uint8Array): Uint8Array {
   return buffer.subarray(0, index);
 }
 
-
 /**
  * Parse file header in a tar archive
  * @param buffer
@@ -60,7 +64,6 @@ function parseHeader(buffer: Uint8Array): TarHeader {
 }
 
 type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
-
 
 export interface TarMeta extends TarInfo {
   fileName: string;
@@ -102,7 +105,9 @@ class TarEntry {
         }
 
         const reader = this.#readableInner.getReader({ mode: "byob" });
-        const res = await reader.read(new Uint8Array(bufSize), { min: bufSize });
+        const res = await reader.read(new Uint8Array(bufSize), {
+          min: bufSize,
+        });
         reader.releaseLock();
 
         const bytesLeft = this.#fileSize - this.#read;
@@ -113,7 +118,7 @@ class TarEntry {
           return;
         }
         p.set(res.value, 0);
-        controller.byobRequest!.respond(bufSize);
+        controller.byobRequest!.respond(Math.min(bytesLeft, bufSize));
       },
       autoAllocateChunkSize: 512,
       type: "bytes",

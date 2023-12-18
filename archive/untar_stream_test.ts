@@ -79,17 +79,17 @@ Deno.test("deflateTarArchive", async function () {
   assert(!result.done);
 
   let untarText = "";
-  for await (const s of result.value.readable.pipeThrough(new TextDecoderStream())) {
+  for await (
+    const s of result.value.readable.pipeThrough(new TextDecoderStream())
+  ) {
     untarText += s;
   }
 
   assert((await reader.read()).done); // EOF
   // tests
   assertEquals(result.value.fileName, fileName);
-  console.log(JSON.stringify(untarText), JSON.stringify(text))
   assertEquals(untarText, text);
 });
-
 
 Deno.test("untarAsyncIterator", async function () {
   const entries: TestEntry[] = [

@@ -107,10 +107,11 @@ Deno.test("appendFileWithLongNameToTarArchive", async function () {
   const untarReader = untar.readable.getReader();
   const result = await untarReader.read();
   assert(!result.done);
-  console.log(result);
   assert(!result.value.consumed);
   let untarText = "";
-  for await (const s of result.value.readable.pipeThrough(new TextDecoderStream())) {
+  for await (
+    const s of result.value.readable.pipeThrough(new TextDecoderStream())
+  ) {
     untarText += s;
   }
   await p;
