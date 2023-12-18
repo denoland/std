@@ -31,6 +31,7 @@ export class Buffer {
     pull: async (controller) => {
       if (!this.#startedBool) {
         await this.#startedPromise.promise;
+        this.#startedBool = true;
       }
 
       const view = new Uint8Array(controller.byobRequest!.view!.buffer);
@@ -74,6 +75,7 @@ export class Buffer {
       this.#buf = new Uint8Array(0);
     } else {
       this.#buf = new Uint8Array(ab);
+      this.#startedBool = true;
       this.#startedPromise.resolve(undefined);
     }
   }
