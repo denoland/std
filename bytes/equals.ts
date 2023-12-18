@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /** Check whether binary arrays are equal to each other using 8-bit comparisons.
@@ -20,10 +20,10 @@ function equalsNaive(a: Uint8Array, b: Uint8Array): boolean {
  */
 function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
   const len = a.length;
-  const compressable = Math.floor(len / 4);
-  const compressedA = new Uint32Array(a.buffer, 0, compressable);
-  const compressedB = new Uint32Array(b.buffer, 0, compressable);
-  for (let i = compressable * 4; i < len; i++) {
+  const compressible = Math.floor(len / 4);
+  const compressedA = new Uint32Array(a.buffer, 0, compressible);
+  const compressedB = new Uint32Array(b.buffer, 0, compressible);
+  for (let i = compressible * 4; i < len; i++) {
     if (a[i] !== b[i]) return false;
   }
   for (let i = 0; i < compressedA.length; i++) {

@@ -1,10 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
-/** A TransformStream that will only read & enqueue `size` amount of chunks.
+/**
+ * A {@linkcode TransformStream} that will only read & enqueue `size` amount of
+ * chunks.
  *
- * if options.error is set, then instead of terminating the stream,
+ * If `options.error` is set, then instead of terminating the stream,
  * an error will be thrown.
  *
+ * @example
  * ```ts
  * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/limited_transform_stream.ts";
  * const res = await fetch("https://example.com");
@@ -13,6 +17,8 @@
  */
 export class LimitedTransformStream<T> extends TransformStream<T, T> {
   #read = 0;
+
+  /** Constructs a new instance. */
   constructor(size: number, options: { error?: boolean } = {}) {
     super({
       transform: (chunk, controller) => {

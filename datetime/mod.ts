@@ -1,4 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Utilities for dealing with {@linkcode Date} objects.
@@ -42,5 +43,4 @@ export * from "./difference.ts";
 export * from "./format.ts";
 export * from "./is_leap.ts";
 export * from "./parse.ts";
-export * from "./to_imf.ts";
 export * from "./week_of_year.ts";

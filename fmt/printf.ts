@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * {@linkcode sprintf} and {@linkcode printf} for printing formatted strings to
@@ -47,6 +47,8 @@
  * | `T`   | type of arg, as returned by `typeof`                           |
  * | `v`   | value of argument in 'default' format (see below)              |
  * | `j`   | argument as formatted by `JSON.stringify`                      |
+ * | `i`   | argument as formatted by `Deno.inspect`                        |
+ * | `I`   | argument as formatted by `Deno.inspect` in compact format      |
  *
  * ## Width and Precision
  *
@@ -94,7 +96,7 @@
  * | `#`   |           | alternate format                                                           |
  * | `#`   | `b o x X` | prefix with `0b 0 0x`                                                      |
  * | `#`   | `g G`     | don't remove trailing zeros                                                |
- * | `#`   | `v`       | ues output of `inspect` instead of `toString`                              |
+ * | `#`   | `v`       | use output of `inspect` instead of `toString`                              |
  * | `' '` |           | space character                                                            |
  * | `' '` | `x X`     | leave spaces between bytes when printing string                            |
  * | `' '` | `d`       | insert space for missing `+` sign character                                |
@@ -146,18 +148,30 @@
  * @module
  */
 
-enum State {
-  PASSTHROUGH,
-  PERCENT,
-  POSITIONAL,
-  PRECISION,
-  WIDTH,
-}
+const State = {
+  PASSTHROUGH: 0,
+  PERCENT: 1,
+  POSITIONAL: 2,
+  PRECISION: 3,
+  WIDTH: 4,
+} as const;
 
-enum WorP {
-  WIDTH,
-  PRECISION,
-}
+type State = typeof State[keyof typeof State];
+
+const WorP = {
+  WIDTH: 0,
+  PRECISION: 1,
+} as const;
+
+type WorP = typeof WorP[keyof typeof WorP];
+
+const F = {
+  sign: 1,
+  mantissa: 2,
+  fractional: 3,
+  esign: 4,
+  exponent: 5,
+} as const;
 
 class Flags {
   plus?: boolean;
@@ -174,14 +188,6 @@ const min = Math.min;
 const UNICODE_REPLACEMENT_CHARACTER = "\ufffd";
 const DEFAULT_PRECISION = 6;
 const FLOAT_REGEXP = /(-?)(\d)\.?(\d*)e([+-])(\d+)/;
-
-enum F {
-  sign = 1,
-  mantissa,
-  fractional,
-  esign,
-  exponent,
-}
 
 class Printf {
   format: string;
@@ -369,7 +375,7 @@ class Printf {
                 this.state = State.PERCENT;
                 return;
               }
-              flags.width = flags.width == -1 ? 0 : flags.width;
+              flags.width = flags.width === -1 ? 0 : flags.width;
               flags.width *= 10;
               flags.width += val;
             }
@@ -505,6 +511,10 @@ class Printf {
         return this.fmtV(arg);
       case "j":
         return this.fmtJ(arg);
+      case "i":
+        return this.fmtI(arg, false);
+      case "I":
+        return this.fmtI(arg, true);
       default:
         return `%!(BAD VERB '${this.verb}')`;
     }
@@ -704,7 +714,7 @@ class Printf {
         esign = r < 0 ? "-" : "+";
       }
     }
-    e = e.length == 1 ? "0" + e : e;
+    e = e.length === 1 ? "0" + e : e;
     const val = `${mantissa}.${fractional}${upcase ? "E" : "e"}${esign}${e}`;
     return this.padNum(val, n < 0);
   }
@@ -892,6 +902,20 @@ class Printf {
    */
   fmtJ(val: unknown): string {
     return JSON.stringify(val);
+  }
+
+  /**
+   * Format inspect
+   * @param val
+   * @param compact Whether or not the output should be compact.
+   */
+  fmtI(val: unknown, compact: boolean): string {
+    return Deno.inspect(val, {
+      colors: !Deno?.noColor,
+      compact,
+      depth: Infinity,
+      iterableLimit: Infinity,
+    });
   }
 }
 

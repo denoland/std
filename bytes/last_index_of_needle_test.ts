@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../assert/mod.ts";
 import { lastIndexOfNeedle } from "./last_index_of_needle.ts";
 
 Deno.test("[bytes] lastIndexOfNeedle1", () => {

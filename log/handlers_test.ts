@@ -1,14 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
   assertNotEquals,
-  assertRejects,
-} from "../testing/asserts.ts";
+  assertThrows,
+} from "../assert/mod.ts";
 import {
   getLevelByName,
   getLevelName,
-  LevelName,
+  LogLevel,
   LogLevelNames,
   LogLevels,
 } from "./levels.ts";
@@ -27,7 +27,7 @@ class TestHandler extends BaseHandler {
 }
 
 Deno.test("simpleHandler", function () {
-  const cases = new Map<number, string[]>([
+  const cases = new Map<LogLevel, string[]>([
     [
       LogLevels.DEBUG,
       [
@@ -60,7 +60,7 @@ Deno.test("simpleHandler", function () {
     const handler = new TestHandler(testLevel);
 
     for (const levelName of LogLevelNames) {
-      const level = getLevelByName(levelName as LevelName);
+      const level = getLevelByName(levelName);
       handler.handle(
         new LogRecord({
           msg: `${levelName.toLowerCase()}-test`,
@@ -148,7 +148,7 @@ Deno.test("testFormatterAsFunction", function () {
 
 Deno.test({
   name: "FileHandler Shouldn't Have Broken line",
-  async fn() {
+  fn() {
     class TestFileHandler extends FileHandler {
       override flush() {
         super.flush();
@@ -158,9 +158,9 @@ Deno.test({
         assertEquals(text.slice(-1), "\n");
       }
 
-      override async destroy() {
-        await super.destroy();
-        await Deno.remove(LOG_FILE);
+      override destroy() {
+        super.destroy();
+        Deno.removeSync(LOG_FILE);
       }
     }
 
@@ -168,7 +168,7 @@ Deno.test({
       filename: LOG_FILE,
       mode: "w",
     });
-    await testFileHandler.setup();
+    testFileHandler.setup();
 
     for (let i = 0; i < 300; i++) {
       testFileHandler.handle(
@@ -181,7 +181,7 @@ Deno.test({
       );
     }
 
-    await testFileHandler.destroy();
+    testFileHandler.destroy();
   },
 });
 
@@ -193,7 +193,7 @@ Deno.test({
       mode: "w",
     });
 
-    await fileHandler.setup();
+    fileHandler.setup();
     fileHandler.handle(
       new LogRecord({
         msg: "Hello World",
@@ -202,10 +202,10 @@ Deno.test({
         loggerName: "default",
       }),
     );
-    await fileHandler.destroy();
+    fileHandler.destroy();
     const firstFileSize = (await Deno.stat(LOG_FILE)).size;
 
-    await fileHandler.setup();
+    fileHandler.setup();
     fileHandler.handle(
       new LogRecord({
         msg: "Hello World",
@@ -214,7 +214,7 @@ Deno.test({
         loggerName: "default",
       }),
     );
-    await fileHandler.destroy();
+    fileHandler.destroy();
     const secondFileSize = (await Deno.stat(LOG_FILE)).size;
 
     assertEquals(secondFileSize, firstFileSize);
@@ -224,18 +224,18 @@ Deno.test({
 
 Deno.test({
   name: "FileHandler with mode 'x' will throw if log file already exists",
-  async fn() {
+  fn() {
     const fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "x",
     });
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("hello world"));
 
-    await assertRejects(async () => {
-      await fileHandler.setup();
+    assertThrows(() => {
+      fileHandler.setup();
     }, Deno.errors.AlreadyExists);
 
-    await fileHandler.destroy();
+    fileHandler.destroy();
 
     Deno.removeSync(LOG_FILE);
   },
@@ -265,8 +265,8 @@ Deno.test({
       maxBackupCount: 3,
       mode: "w",
     });
-    await fileHandler.setup();
-    await fileHandler.destroy();
+    fileHandler.setup();
+    fileHandler.destroy();
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 0);
     assert(!existsSync(LOG_FILE + ".1"));
@@ -280,7 +280,7 @@ Deno.test({
 Deno.test({
   name:
     "RotatingFileHandler with mode 'x' will throw if any log file already exists",
-  async fn() {
+  fn() {
     Deno.writeFileSync(
       LOG_FILE + ".3",
       new TextEncoder().encode("hello world"),
@@ -291,9 +291,9 @@ Deno.test({
       maxBackupCount: 3,
       mode: "x",
     });
-    await assertRejects(
-      async () => {
-        await fileHandler.setup();
+    assertThrows(
+      () => {
+        fileHandler.setup();
       },
       Deno.errors.AlreadyExists,
       "Backup log file " + LOG_FILE + ".3 already exists",
@@ -314,7 +314,7 @@ Deno.test({
       maxBackupCount: 3,
       mode: "w",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
 
     fileHandler.handle(
       new LogRecord({
@@ -348,7 +348,7 @@ Deno.test({
     // Rollover occurred. Log file now has 1 record, rollover file has the original 2
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
     assertEquals((await Deno.stat(LOG_FILE + ".1")).size, 20);
-    await fileHandler.destroy();
+    fileHandler.destroy();
 
     Deno.removeSync(LOG_FILE);
     Deno.removeSync(LOG_FILE + ".1");
@@ -364,7 +364,7 @@ Deno.test({
       maxBackupCount: 3,
       mode: "w",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
 
     fileHandler.handle(
       new LogRecord({
@@ -391,7 +391,7 @@ Deno.test({
       }),
     );
 
-    await fileHandler.destroy();
+    fileHandler.destroy();
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
     assertEquals((await Deno.stat(LOG_FILE + ".1")).size, 20);
@@ -403,7 +403,7 @@ Deno.test({
 
 Deno.test({
   name: "RotatingFileHandler with all backups rollover",
-  async fn() {
+  fn() {
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("original log file"));
     Deno.writeFileSync(
       LOG_FILE + ".1",
@@ -424,7 +424,7 @@ Deno.test({
       maxBackupCount: 3,
       mode: "a",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
     fileHandler.handle(
       new LogRecord({
         msg: "AAA",
@@ -433,7 +433,7 @@ Deno.test({
         loggerName: "default",
       }),
     ); // 'ERROR AAA\n' = 10 bytes
-    await fileHandler.destroy();
+    fileHandler.destroy();
 
     const decoder = new TextDecoder();
     assertEquals(decoder.decode(Deno.readFileSync(LOG_FILE)), "ERROR AAA\n");
@@ -460,16 +460,16 @@ Deno.test({
 
 Deno.test({
   name: "RotatingFileHandler maxBytes cannot be less than 1",
-  async fn() {
-    await assertRejects(
-      async () => {
+  fn() {
+    assertThrows(
+      () => {
         const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
           maxBytes: 0,
           maxBackupCount: 3,
           mode: "w",
         });
-        await fileHandler.setup();
+        fileHandler.setup();
       },
       Error,
       "maxBytes cannot be less than 1",
@@ -479,16 +479,16 @@ Deno.test({
 
 Deno.test({
   name: "RotatingFileHandler maxBackupCount cannot be less than 1",
-  async fn() {
-    await assertRejects(
-      async () => {
+  fn() {
+    assertThrows(
+      () => {
         const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
           maxBytes: 50,
           maxBackupCount: 0,
           mode: "w",
         });
-        await fileHandler.setup();
+        fileHandler.setup();
       },
       Error,
       "maxBackupCount cannot be less than 1",
@@ -503,7 +503,7 @@ Deno.test({
       filename: LOG_FILE,
       mode: "w",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
     fileHandler.handle(
       new LogRecord({
         msg: "AAA",
@@ -531,7 +531,7 @@ Deno.test({
       maxBackupCount: 1,
       mode: "w",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
 
     const msg = "。";
     const msgLength = msg.length;
@@ -543,7 +543,7 @@ Deno.test({
     fileHandler.log(msg); // logs 4 bytes (including '\n')
     fileHandler.log(msg); // max bytes is 7, but this would be 8.  Rollover.
 
-    await fileHandler.destroy();
+    fileHandler.destroy();
 
     const fileSize1 = (await Deno.stat(LOG_FILE)).size;
     const fileSize2 = (await Deno.stat(LOG_FILE + ".1")).size;
@@ -563,7 +563,7 @@ Deno.test({
       filename: LOG_FILE,
       mode: "w",
     });
-    await fileHandler.setup();
+    fileHandler.setup();
 
     fileHandler.handle(
       new LogRecord({
@@ -592,7 +592,7 @@ Deno.test({
     // ERROR record is 10 bytes, CRITICAL is 13 bytes
     assertEquals(fileSize2, 23);
 
-    await fileHandler.destroy();
+    fileHandler.destroy();
     Deno.removeSync(LOG_FILE);
   },
 });

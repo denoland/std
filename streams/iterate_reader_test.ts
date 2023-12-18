@@ -1,10 +1,10 @@
-import { assertEquals } from "../testing/asserts.ts";
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../assert/mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
 import { readerFromIterable } from "./reader_from_iterable.ts";
 import { delay } from "../async/delay.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
 Deno.test("iterateReader", async () => {
   // ref: https://github.com/denoland/deno/issues/2330
@@ -34,9 +34,10 @@ Deno.test("iterateReader", async () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for await (const buf of iterateReader(reader)) {
-    totalSize += buf.byteLength;
-  }
+  await Array.fromAsync(
+    iterateReader(reader),
+    (buf) => totalSize += buf.byteLength,
+  );
 
   assertEquals(totalSize, 12);
 });

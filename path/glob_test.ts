@@ -1,12 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
-import {
-  globToRegExp,
-  GlobToRegExpOptions,
-  isGlob,
-  joinGlobs,
-  normalizeGlob,
-} from "./glob.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals } from "../assert/mod.ts";
+import { globToRegExp, GlobToRegExpOptions } from "./glob_to_regexp.ts";
+import { isGlob } from "./is_glob.ts";
+import { joinGlobs } from "./join_globs.ts";
+import { normalizeGlob } from "./normalize_glob.ts";
 import { SEP } from "./mod.ts";
 
 function match(
@@ -14,7 +11,7 @@ function match(
   path: string,
   opts: GlobToRegExpOptions = {},
 ): boolean {
-  if (opts.os == null) {
+  if (opts.os === undefined) {
     const matchDarwin = path.match(
       globToRegExp(glob, { ...opts, os: "darwin" }),
     );
@@ -42,14 +39,14 @@ function match(
 }
 
 Deno.test({
-  name: "[path] globToRegExp() Basic RegExp",
+  name: "globToRegExp() returns RegExp from a glob",
   fn() {
     assertEquals(globToRegExp("*.js", { os: "linux" }), /^[^/]*\.js\/*$/);
   },
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Empty glob",
+  name: "globToRegExp() returns RegExp from an empty glob",
   fn() {
     assertEquals(globToRegExp(""), /(?!)/);
     assertEquals(globToRegExp("*.js", { os: "linux" }), /^[^/]*\.js\/*$/);
@@ -57,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() * (wildcard)",
+  name: `globToRegExp() checks "*" (wildcard)`,
   fn() {
     assert(match("*", "foo", { extended: false, globstar: false }));
     assert(match("*", "foo", { extended: false, globstar: false }));
@@ -74,7 +71,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() ? (match one character)",
+  name: `globToRegExp() checks "?" (match one character)`,
   fn() {
     assert(match("f?o", "foo", { extended: false, globstar: false }));
     assert(match("f?o?", "fooo", { extended: false, globstar: false }));
@@ -86,7 +83,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() [seq] (character range)",
+  name: "globToRegExp() checks [seq] (character range)",
   fn() {
     assert(match("fo[oz]", "foo", { extended: false, globstar: false }));
     assert(match("fo[oz]", "foz", { extended: false, globstar: false }));
@@ -99,7 +96,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() [[:alnum:]] (character class in range)",
+  name: "globToRegExp() checks [[:alnum:]] (character class in range)",
   fn() {
     assert(
       match(
@@ -168,7 +165,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() {} (brace expansion)",
+  name: `globToRegExp() checks {} (brace expansion)`,
   fn() {
     assert(
       match("foo{bar,baaz}", "foobaaz", { extended: false, globstar: false }),
@@ -186,7 +183,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Complex matches",
+  name: "globToRegExp() checks complex matches",
   fn() {
     assert(
       match(
@@ -227,7 +224,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() ** (globstar)",
+  name: `globToRegExp() checks "**" (globstar)`,
   fn() {
     assert(match("/foo/**", "/foo/bar.txt"));
     assert(match("/foo/**", "/foo/bar/baz.txt"));
@@ -278,7 +275,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() ?(pattern-list) (extended: match zero or one)",
+  name:
+    `globToRegExp() checks "?" (pattern-list) (extended: match zero or one)`,
   fn() {
     assert(match("?(foo).txt", "foo.txt"));
     assert(!match("?(foo).txt", "foo.txt", { extended: false }));
@@ -301,7 +299,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() *(pattern-list) (extended: match zero or more)",
+  name: "globToRegExp() checks *(pattern-list) (extended: match zero or more)",
   fn() {
     assert(match("*(foo).txt", "foo.txt"));
     assert(!match("*(foo).txt", "foo.txt", { extended: false }));
@@ -324,7 +322,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() +(pattern-list) (extended: match 1 or more)",
+  name: "globToRegExp() checks +(pattern-list) (extended: match 1 or more)",
   fn() {
     assert(match("+(foo).txt", "foo.txt"));
     assert(!match("+(foo).txt", "foo.txt", { extended: false }));
@@ -335,7 +333,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() @(pattern-list) (extended: match one)",
+  name: "globToRegExp() checks @(pattern-list) (extended: match one)",
   fn() {
     assert(match("@(foo).txt", "foo.txt"));
     assert(!match("@(foo).txt", "foo.txt", { extended: false }));
@@ -348,7 +346,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() !(pattern-list) (extended: match any except)",
+  name: "globToRegExp() checks !(pattern-list) (extended: match any except)",
   fn() {
     assert(match("!(boo).txt", "foo.txt"));
     assert(!match("!(boo).txt", "foo.txt", { extended: false }));
@@ -360,8 +358,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[path] globToRegExp() Special extended characters should match themselves",
+  name: "globToRegExp() matches special extended characters with themselves",
   fn() {
     const glob = "\\/$^+.()=!|,.*";
     assert(match(glob, glob));
@@ -370,7 +367,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Special extended characters in range",
+  name: "globToRegExp() matches special extended characters in range",
   fn() {
     assertEquals(globToRegExp("[?*+@!|]", { os: "linux" }), /^[?*+@!|]\/*$/);
     assertEquals(globToRegExp("[!?*+@!|]", { os: "linux" }), /^[^?*+@!|]\/*$/);
@@ -378,7 +375,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Special RegExp characters in range",
+  name: "globToRegExp() matches special RegExp characters in range",
   fn() {
     // Excluding characters checked in the previous test.
     assertEquals(globToRegExp("[\\\\$^.=]", { os: "linux" }), /^[\\$^.=]\/*$/);
@@ -391,7 +388,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Repeating separators",
+  name: "globToRegExp() checks repeating separators",
   fn() {
     assert(match("foo/bar", "foo//bar"));
     assert(match("foo//bar", "foo/bar"));
@@ -403,7 +400,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Trailing separators",
+  name: "globToRegExp() checks trailing separators",
   fn() {
     assert(match("foo", "foo/"));
     assert(match("foo/", "foo"));
@@ -415,7 +412,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Backslashes on Windows",
+  name: "globToRegExp() checks backslashes on Windows",
   fn() {
     assert(match("foo/bar", "foo\\bar", { os: "windows" }));
     assert(match("foo\\bar", "foo/bar", { os: "windows" }));
@@ -427,7 +424,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Unclosed groups",
+  name: "globToRegExp() checks unclosed groups",
   fn() {
     assert(match("{foo,bar}/[ab", "foo/[ab"));
     assert(match("{foo,bar}/{foo,bar", "foo/{foo,bar"));
@@ -442,7 +439,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Escape glob characters",
+  name: "globToRegExp() escapes glob characters",
   fn() {
     assert(match("\\[ab]", "[ab]", { os: "linux" }));
     assert(match("`[ab]", "[ab]", { os: "windows" }));
@@ -466,7 +463,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] globToRegExp() Dangling escape prefix",
+  name: "globToRegExp() checks dangling escape prefix",
   fn() {
     assert(match("{foo,bar}/[ab]\\", "foo/[ab]\\", { os: "linux" }));
     assert(match("{foo,bar}/[ab]`", "foo/[ab]`", { os: "windows" }));
@@ -474,7 +471,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] GlobToRegExpOptions::extended",
+  name: "globToRegExp() checks options.extended",
   fn() {
     const pattern1 = globToRegExp("?(foo|bar)");
     assertEquals("foo".match(pattern1)?.[0], "foo");
@@ -488,7 +485,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] GlobToRegExpOptions::globstar",
+  name: "globToRegExp() checks options.globstar",
   fn() {
     const pattern1 = globToRegExp("**/foo");
     assertEquals("foo".match(pattern1)?.[0], "foo");
@@ -502,7 +499,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] GlobToRegExpOptions::caseInsensitive",
+  name: "globToRegExp() checks options.caseInsensitive",
   fn() {
     const pattern1 = globToRegExp("foo/bar", { caseInsensitive: false });
     assertEquals("foo/bar".match(pattern1)?.[0], "foo/bar");
@@ -515,7 +512,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] GlobToRegExpOptions::os",
+  name: "globToRegExp() checks options.os",
   fn() {
     const pattern1 = globToRegExp("foo/bar", { os: "linux" });
     assertEquals("foo/bar".match(pattern1)?.[0], "foo/bar");
@@ -528,7 +525,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[path] isGlob()",
+  name: "isGlob()",
   fn() {
     // should be true if valid glob pattern
     assert(isGlob("!foo.js"));
@@ -634,10 +631,10 @@ Deno.test({
   },
 });
 
-Deno.test("[path] normalizeGlob() Globstar", function () {
+Deno.test("normalizeGlob() checks options.globstar", function () {
   assertEquals(normalizeGlob(`**${SEP}..`, { globstar: true }), `**${SEP}..`);
 });
 
-Deno.test("[path] joinGlobs() Globstar", function () {
+Deno.test("joinGlobs() checks options.globstar", function () {
   assertEquals(joinGlobs(["**", ".."], { globstar: true }), `**${SEP}..`);
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { path, ReleasesMdFile, Repo, semver } from "./deps.ts";
 
 const currentDirPath = path.dirname(path.fromFileUrl(import.meta.url));
@@ -17,7 +17,7 @@ export class VersionFile {
 
   get version() {
     const version = VersionFile.#versionRe.exec(this.#fileText);
-    if (version == null) {
+    if (version === null) {
       throw new Error(`Could not find version in text: ${this.#fileText}`);
     } else {
       return semver.parse(version[1])!;

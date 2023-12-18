@@ -1,17 +1,19 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { DAY, WEEK } from "./constants.ts";
 
 const DAYS_PER_WEEK = 7;
 
-enum Day {
-  Sun,
-  Mon,
-  Tue,
-  Wed,
-  Thu,
-  Fri,
-  Sat,
-}
+const Day = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+} as const;
 
 /**
  * Returns the ISO week number of the provided date (1-53).

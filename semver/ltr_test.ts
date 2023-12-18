@@ -1,12 +1,14 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
-import * as semver from "./mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert } from "../assert/mod.ts";
+import { parse } from "./parse.ts";
+import { parseRange } from "./parse_range.ts";
+import { ltr } from "./ltr.ts";
 
-Deno.test("ltr", function () {
+Deno.test("ltr", async (t) => {
   // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string]> = [
+  const versions: [string, string][] = [
     ["~1.2.2", "1.2.1"],
     ["~0.6.1-1", "0.6.1-0"],
     ["1.0.0 - 2.0.0", "0.0.1"],
@@ -63,21 +65,22 @@ Deno.test("ltr", function () {
     ["^1", "1.0.0-0"],
     [">=0.7.x", "0.7.0-asdf"],
     [">=0.7.x", "0.6.2"],
-    [">1.2.3", "1.3.0-alpha"],
+    [">1.2.3", "1.2.0-alpha"],
   ];
 
-  versions.forEach(function (tuple) {
-    const range = tuple[0];
-    const version = tuple[1];
-    const msg = `ltr(${version}, ${range})`;
-    assert(semver.ltr(version, range), msg);
-  });
+  for (const [a, b] of versions) {
+    await t.step(`${b} < ${a}`, () => {
+      const range = parseRange(a);
+      const version = parse(b);
+      assert(ltr(version, range));
+    });
+  }
 });
 
-Deno.test("ltrNegative", function () {
+Deno.test("ltrNegative", async (t) => {
   // [range, version]
   // Version should be greater than range
-  const versions: ReadonlyArray<[string, string]> = [
+  const versions: [string, string][] = [
     ["~0.6.1-1", "0.6.1-1"],
     ["1.0.0 - 2.0.0", "1.2.3"],
     ["1.0.0 - 2.0.0", "2.9.9"],
@@ -139,13 +142,14 @@ Deno.test("ltrNegative", function () {
     ["^0.1.0 || ~3.0.1 || >4 <=5.0.0", "3.5.0"],
     ["^1.0.0-alpha", "1.0.0-beta"],
     ["~1.0.0-alpha", "1.0.0-beta"],
-    ["=0.1.0", "1.0.0"],
+    ["=0.1.0", "0.1.0"],
   ];
 
-  versions.forEach(function (tuple) {
-    const range = tuple[0];
-    const version = tuple[1];
-    const msg = `!ltr(${version}, ${range})`;
-    assert(!semver.ltr(version, range), msg);
-  });
+  for (const [a, b] of versions) {
+    await t.step(`${b} ≮ ${a}`, () => {
+      const range = parseRange(a);
+      const version = parse(b);
+      assert(!ltr(version, range));
+    });
+  }
 });

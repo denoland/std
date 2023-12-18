@@ -1,7 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-
-import { Deferred, deferred } from "./deferred.ts";
 
 interface TaggedYieldedValue<T> {
   iterator: AsyncIterator<T>;
@@ -9,14 +7,14 @@ interface TaggedYieldedValue<T> {
 }
 
 /**
- * The MuxAsyncIterator class multiplexes multiple async iterators into a single
- * stream. It currently makes an assumption that the final result (the value
- * returned and not yielded from the iterator) does not matter; if there is any
- * result, it is discarded.
+ * Multiplexes multiple async iterators into a single stream. It currently
+ * makes an assumption that the final result (the value returned and not
+ * yielded from the iterator) does not matter; if there is any result, it is
+ * discarded.
  *
  * @example
- * ```typescript
- * import { MuxAsyncIterator } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+ * ```ts
+ * import { MuxAsyncIterator } from "https://deno.land/std@$STD_VERSION/async/mux_async_iterator.ts";
  *
  * async function* gen123(): AsyncIterableIterator<number> {
  *   yield 1;
@@ -44,8 +42,9 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   #yields: Array<TaggedYieldedValue<T>> = [];
   // deno-lint-ignore no-explicit-any
   #throws: any[] = [];
-  #signal: Deferred<void> = deferred();
+  #signal = Promise.withResolvers<void>();
 
+  /** Add an async iterable to the stream. */
   add(iterable: AsyncIterable<T>) {
     ++this.#iteratorCount;
     this.#callIteratorNext(iterable[Symbol.asyncIterator]());
@@ -67,10 +66,11 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     this.#signal.resolve();
   }
 
+  /** Returns an async iterator of the stream. */
   async *iterate(): AsyncIterableIterator<T> {
     while (this.#iteratorCount > 0) {
       // Sleep until any of the wrapped iterators yields.
-      await this.#signal;
+      await this.#signal.promise;
 
       // Note that while we're looping over `yields`, new items may be added.
       for (let i = 0; i < this.#yields.length; i++) {
@@ -87,10 +87,11 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
       }
       // Clear the `yields` list and reset the `signal` promise.
       this.#yields.length = 0;
-      this.#signal = deferred();
+      this.#signal = Promise.withResolvers<void>();
     }
   }
 
+  /** Implements an async iterator for the stream. */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this.iterate();
   }

@@ -1,8 +1,8 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
-import { decode, encode } from "./base32.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertExists } from "../assert/mod.ts";
+import { byteLength, decodeBase32, encodeBase32 } from "./base32.ts";
 
 // Lifted from https://stackoverflow.com/questions/38987784
 const fromHexString = (hexString: string): Uint8Array =>
@@ -90,7 +90,7 @@ Deno.test({
   name: "[encoding.base32] encode",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encode(fromHexString(bin)), b32);
+      assertEquals(encodeBase32(fromHexString(bin)), b32);
     }
   },
 });
@@ -99,7 +99,7 @@ Deno.test({
   name: "[encoding.base32] decode",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(toHexString(decode(b32)), bin);
+      assertEquals(toHexString(decodeBase32(b32)), bin);
     }
   },
 });
@@ -109,7 +109,7 @@ Deno.test({
   fn() {
     let errorCaught = false;
     try {
-      decode("OOOO==");
+      decodeBase32("OOOO==");
     } catch (e) {
       assert(e instanceof Error);
       assert(
@@ -126,12 +126,36 @@ Deno.test({
   fn() {
     let errorCaught = false;
     try {
-      decode("OOOOOO==");
+      decodeBase32("OOOOOO==");
     } catch (e) {
       assert(e instanceof Error);
       assert(e.message.includes("Invalid pad length"));
       errorCaught = true;
     }
     assert(errorCaught);
+  },
+});
+
+Deno.test({
+  name: "[encoding.base32] byteLength",
+  fn() {
+    const tests: [string, number][] = [
+      ["JBSWY3DPEBLW64TMMQ======", 11],
+      ["3X4A5PRBX4NR4EVGJROMNJ2LLWJN2===", 18],
+      ["WB2K5C467XQPC7ZXXTFN3YAG2A4ZS62ZZDX3AWW5", 25],
+      ["6L6CGGN5FFCXZTIB5DQZJ3U327UXFGFWMEG7JKYPHVN2UCZNPTHWTAU63N2O33Y=", 39],
+    ];
+
+    for (const [input, expect] of tests) {
+      assertEquals(byteLength(input), expect);
+    }
+  },
+});
+
+Deno.test({
+  name: "[encoding.base32] encode very long text",
+  fn() {
+    const data = "a".repeat(16400);
+    assertExists(encodeBase32(data));
   },
 });

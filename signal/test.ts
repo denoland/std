@@ -1,8 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { delay } from "../async/delay.ts";
 import { signal } from "./mod.ts";
-import { isWindows } from "../_util/os.ts";
+
+const isWindows = Deno.build.os === "windows";
 
 Deno.test({
   name: "signal() throws when called with empty signals",
@@ -30,13 +31,10 @@ Deno.test({
     const sig = signal(
       "SIGUSR1",
       "SIGUSR2",
-      "SIGINT",
     );
 
     setTimeout(async () => {
       await delay(20);
-      Deno.kill(Deno.pid, "SIGINT");
-      await delay(20);
       Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
       Deno.kill(Deno.pid, "SIGUSR1");
@@ -44,17 +42,16 @@ Deno.test({
       Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
       Deno.kill(Deno.pid, "SIGUSR1");
-      await delay(20);
-      Deno.kill(Deno.pid, "SIGINT");
       await delay(20);
       sig.dispose();
     });
 
     for await (const _ of sig) {
+      console.log(c);
       c += 1;
     }
 
-    assertEquals(c, 6);
+    assertEquals(c, 4);
 
     clearTimeout(t);
   },

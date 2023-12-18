@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -8,7 +8,7 @@
  *
  * ```ts
  * import { unzip } from "https://deno.land/std@$STD_VERSION/collections/unzip.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const parents = [
  *   ["Maria", "Jeff"],
@@ -25,8 +25,8 @@
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
   const ret: [T[], U[]] = [
-    Array.from({ length }),
-    Array.from({ length }),
+    Array<T>(length),
+    Array<U>(length),
   ];
 
   pairs.forEach(([first, second], index) => {

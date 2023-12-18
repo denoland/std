@@ -1,8 +1,13 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertExists } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { resolve } from "../path/mod.ts";
 import { Tar, type TarMeta } from "./tar.ts";
-import { TarEntry, type TarHeader, Untar } from "./untar.ts";
+import {
+  TarEntry,
+  type TarHeader,
+  TarMetaWithLinkName,
+  Untar,
+} from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy } from "../streams/copy.ts";
 import { readAll } from "../streams/read_all.ts";
@@ -347,4 +352,55 @@ Deno.test({
     const tarEntry: TarEntry = new TarEntry(tarMeta, header, reader);
     assertExists(tarEntry);
   },
+});
+
+Deno.test("untarArchiveWithLink", async function () {
+  const filePath = resolve(testdataDir, "with_link.tar");
+  const file = await Deno.open(filePath, { read: true });
+
+  type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
+
+  const expectedEntries: ExpectedEntry[] = [
+    {
+      fileName: "hello.txt",
+      fileMode: 436,
+      fileSize: 14,
+      mtime: 1696384910,
+      uid: 1000,
+      gid: 1000,
+      owner: "user",
+      group: "user",
+      type: "file",
+      content: new TextEncoder().encode("Hello World!\n\n"),
+    },
+    {
+      fileName: "link_to_hello.txt",
+      linkName: "./hello.txt",
+      fileMode: 511,
+      fileSize: 0,
+      mtime: 1696384945,
+      uid: 1000,
+      gid: 1000,
+      owner: "user",
+      group: "user",
+      type: "symlink",
+    },
+  ];
+
+  const untar = new Untar(file);
+
+  for await (const entry of untar) {
+    const expected = expectedEntries.shift();
+    assert(expected);
+    const content = expected.content;
+    delete expected.content;
+
+    assertEquals({ ...entry }, expected);
+
+    if (content) {
+      assertEquals(content, await readAll(entry));
+    }
+  }
+
+  file.close();
 });

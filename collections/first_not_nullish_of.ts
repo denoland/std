@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/first_not_nullish_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const tables = [
  *   { number: 11, order: null },
@@ -22,7 +22,7 @@
  * ```
  */
 export function firstNotNullishOf<T, O>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (item: T) => O | undefined | null,
 ): NonNullable<O> | undefined {
   for (const current of array) {

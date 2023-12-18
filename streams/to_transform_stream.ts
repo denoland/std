@@ -1,13 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
- * Convert the generator function into a TransformStream.
+ * Convert the generator function into a {@linkcode TransformStream}.
  *
+ * @example
  * ```ts
- * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/readable_stream_from_iterable.ts";
  * import { toTransformStream } from "https://deno.land/std@$STD_VERSION/streams/to_transform_stream.ts";
  *
- * const readable = readableStreamFromIterable([0, 1, 2])
+ * const readable = ReadableStream.from([0, 1, 2])
  *   .pipeThrough(toTransformStream(async function* (src) {
  *     for await (const chunk of src) {
  *       yield chunk * 100;
@@ -60,7 +61,7 @@ export function toTransformStream<I, O>(
       },
       async cancel(reason) {
         // Propagate cancellation to readable and iterator
-        if (typeof iterator.throw == "function") {
+        if (typeof iterator.throw === "function") {
           try {
             await iterator.throw(reason);
           } catch {

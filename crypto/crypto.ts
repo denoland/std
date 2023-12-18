@@ -1,17 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Extensions to the
- * [Web Crypto](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+ * [Web Crypto API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API}
  * supporting additional encryption APIs, but also delegating to the built-in
  * APIs when possible.
  *
  * Provides additional digest algorithms that are not part of the WebCrypto
- * standard as well as a `subtle.digest` and `subtle.digestSync` methods. It
- * also provides a `subtle.timingSafeEqual()` method to compare array buffers
- * or data views in a way that isn't prone to timing based attacks.
- *
- * The "polyfill" delegates to `WebCrypto` where possible.
+ * standard as well as a `subtle.digest` and `subtle.digestSync` methods.
  *
  * The {@linkcode KeyStack} export implements the {@linkcode KeyRing} interface
  * for managing rotatable keys for signing data to prevent tampering, like with
@@ -23,102 +20,43 @@
  * and Wasm/Rust is the same, this library prefers to use algorithms that are
  * supported by WebCrypto.
  *
- * WebCrypto
+ * WebCrypto:
+ * - `SHA-384`
+ * - `SHA-256`
+ * - `SHA-512` (length-extendable and collidable)
  *
- * ```ts
- * // https://deno.land/std/crypto/crypto.ts
- * const webCryptoDigestAlgorithms = [
- *   "SHA-384",
- *   "SHA-256",
- *   "SHA-512",
- *   // insecure (length-extendable and collidable):
- *   "SHA-1",
- * ] as const;
- * ```
- *
- * Wasm/Rust
- *
- * ```ts
- * // https://deno.land/std/_wasm_crypto/crypto.ts
- * export const digestAlgorithms = [
- *   "BLAKE2B-256",
- *   "BLAKE2B-384",
- *   "BLAKE2B",
- *   "BLAKE2S",
- *   "BLAKE3",
- *   "KECCAK-224",
- *   "KECCAK-256",
- *   "KECCAK-384",
- *   "KECCAK-512",
- *   "SHA-384",
- *   "SHA3-224",
- *   "SHA3-256",
- *   "SHA3-384",
- *   "SHA3-512",
- *   "SHAKE128",
- *   "SHAKE256",
- *   "TIGER",
- *   // insecure (length-extendable):
- *   "RIPEMD-160",
- *   "SHA-224",
- *   "SHA-256",
- *   "SHA-512",
- *   // insecure (collidable and length-extendable):
- *   "MD5",
- *   "SHA-1",
- * ] as const;
- * ```
- *
- * ## Timing safe comparison
- *
- * When checking the values of cryptographic hashes are equal, default
- * comparisons can be susceptible to timing based attacks, where attacker is
- * able to find out information about the host system by repeatedly checking
- * response times to equality comparisons of values.
- *
- * It is likely some form of timing safe equality will make its way to the
- * WebCrypto standard (see:
- * [w3c/webcrypto#270](https://github.com/w3c/webcrypto/issues/270)), but until
- * that time, `timingSafeEqual()` is provided:
- *
- * ```ts
- * import { crypto } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- *
- * const a = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const b = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const c = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello deno"),
- * );
- *
- * assert(crypto.subtle.timingSafeEqual(a, b));
- * assert(!crypto.subtle.timingSafeEqual(a, c));
- * ```
- *
- * In addition to the method being part of the `crypto.subtle` interface, it is
- * also loadable directly:
- *
- * ```ts
- * import { timingSafeEqual } from "https://deno.land/std@$STD_VERSION/crypto/timing_safe_equal.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- *
- * const a = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- * const b = await crypto.subtle.digest(
- *   "SHA-384",
- *   new TextEncoder().encode("hello world"),
- * );
- *
- * assert(timingSafeEqual(a, b));
+ * Wasm/Rust:
+ * - `BLAKE2B-128`
+ * - `BLAKE2B-160`
+ * - `BLAKE2B-224`
+ * - `BLAKE2B-256`
+ * - `BLAKE2B-384`
+ * - `BLAKE2B`
+ * - `BLAKE2S`
+ * - `BLAKE3`
+ * - `FNV32` (length-extendable)
+ * - `FNV32A` (length-extendable)
+ * - `FNV64` (length-extendable)
+ * - `FNV64A` (length-extendable)
+ * - `KECCAK-224`
+ * - `KECCAK-256`
+ * - `KECCAK-384`
+ * - `KECCAK-512`
+ * - `SHA-384`
+ * - `SHA3-224`
+ * - `SHA3-256`
+ * - `SHA3-384`
+ * - `SHA3-512`
+ * - `SHAKE128`
+ * - `SHAKE256`
+ * - `TIGER`
+ * - `RIPEMD-160` (length-extendable)
+ * - `SHA-224` (length-extendable)
+ * - `SHA-256` (length-extendable)
+ * - `SHA-512` (length-extendable)
+ * - `MD4` (collidable and length-extendable)
+ * - `MD5` (collidable and length-extendable)
+ * - `SHA-1` (collidable and length-extendable)
  * ```
  *
  * @example
@@ -151,19 +89,20 @@
  * ```ts
  * import {
  *   crypto,
- *   toHashString,
  * } from "https://deno.land/std@$STD_VERSION/crypto/mod.ts";
+ * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts"
+ * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts"
  *
  * const hash = await crypto.subtle.digest(
  *   "SHA-384",
  *   new TextEncoder().encode("You hear that Mr. Anderson?"),
  * );
  *
- * // Hex encoding by default
- * console.log(toHashString(hash));
+ * // Hex encoding
+ * console.log(encodeHex(hash));
  *
  * // Or with base64 encoding
- * console.log(toHashString(hash, "base64"));
+ * console.log(encodeBase64(hash));
  * ```
  *
  * @module
@@ -174,8 +113,9 @@ import {
   digestAlgorithms as wasmDigestAlgorithms,
   instantiateWasm,
 } from "./_wasm/mod.ts";
-import { timingSafeEqual } from "./timing_safe_equal.ts";
-import { fnv } from "./_fnv/index.ts";
+import { fnv } from "./_fnv/mod.ts";
+
+export { type WasmDigestAlgorithm, wasmDigestAlgorithms };
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
@@ -231,17 +171,11 @@ export interface StdSubtleCrypto extends SubtleCrypto {
     algorithm: DigestAlgorithm,
     data: BufferSource | Iterable<BufferSource>,
   ): ArrayBuffer;
-
-  /** Compare to array buffers or data views in a way that timing based attacks
-   * cannot gain information about the platform. */
-  timingSafeEqual(
-    a: ArrayBufferLike | DataView,
-    b: ArrayBufferLike | DataView,
-  ): boolean;
 }
 
 /** Extensions to the Web {@linkcode Crypto} interface. */
 export interface StdCrypto extends Crypto {
+  /** Extension to the {@linkcode crypto.SubtleCrypto} interface. */
   readonly subtle: StdSubtleCrypto;
 }
 
@@ -264,9 +198,12 @@ const stdCrypto: StdCrypto = ((x) => x)({
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
+
+      assertValidDigestLength(length);
+
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(name)) {
+      if (FNV_ALGORITHMS.includes(name)) {
         return fnv(name, bytes);
       }
 
@@ -324,20 +261,22 @@ const stdCrypto: StdCrypto = ((x) => x)({
       algorithm: DigestAlgorithm,
       data: BufferSource | Iterable<BufferSource>,
     ): ArrayBuffer {
-      algorithm = normalizeAlgorithm(algorithm);
+      const { name, length } = normalizeAlgorithm(algorithm);
+
+      assertValidDigestLength(length);
 
       const bytes = bufferSourceBytes(data);
 
-      if (FNVAlgorithms.includes(algorithm.name)) {
-        return fnv(algorithm.name, bytes);
+      if (FNV_ALGORITHMS.includes(name)) {
+        return fnv(name, bytes);
       }
 
       const wasmCrypto = instantiateWasm();
       if (bytes) {
-        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
+        return wasmCrypto.digest(name, bytes, length)
           .buffer;
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
-        const context = new wasmCrypto.DigestContext(algorithm.name);
+        const context = new wasmCrypto.DigestContext(name);
         for (const chunk of data as Iterable<BufferSource>) {
           const chunkBytes = bufferSourceBytes(chunk);
           if (!chunkBytes) {
@@ -345,20 +284,17 @@ const stdCrypto: StdCrypto = ((x) => x)({
           }
           context.update(chunkBytes);
         }
-        return context.digestAndDrop(algorithm.length).buffer;
+        return context.digestAndDrop(length).buffer;
       } else {
         throw new TypeError(
           "data must be a BufferSource or Iterable<BufferSource>",
         );
       }
     },
-
-    // TODO(@kitsonk): rework when https://github.com/w3c/webcrypto/issues/270 resolved
-    timingSafeEqual,
   },
 });
 
-const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
+const FNV_ALGORITHMS = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
 
 /** Digest algorithms supported by WebCrypto. */
 const webCryptoDigestAlgorithms = [
@@ -369,20 +305,53 @@ const webCryptoDigestAlgorithms = [
   "SHA-1",
 ] as const;
 
+/** FNV (Fowler/Noll/Vo) algorithms names. */
 export type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
+
+/** Extended digest algorithm names. */
 export type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
+/*
+ * The largest digest length the current WASM implementation can support. This
+ * is the value of `isize::MAX` on 32-bit platforms like WASM, which is the
+ * maximum allowed capacity of a Rust `Vec<u8>`.
+ */
+const MAX_DIGEST_LENGTH = 0x7FFF_FFFF;
+
+/**
+ * Asserts that a number is a valid length for a digest, which must be an
+ * integer that fits in a Rust `Vec<u8>`, or be undefined.
+ */
+function assertValidDigestLength(value?: number) {
+  if (
+    value !== undefined &&
+    (value < 0 || value > MAX_DIGEST_LENGTH ||
+      !Number.isInteger(value))
+  ) {
+    throw new RangeError(
+      `length must be an integer between 0 and ${MAX_DIGEST_LENGTH}, inclusive`,
+    );
+  }
+}
+
+/** Extended digest algorithm objects. */
 export type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
+/**
+ * Extended digest algorithms accepted by {@linkcode stdCrypto.subtle.digest}.
+ */
 export type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
-const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
-    ...algorithm,
-    name: algorithm.name.toUpperCase(),
-  }) as DigestAlgorithmObject;
+function normalizeAlgorithm(algorithm: DigestAlgorithm) {
+  return ((typeof algorithm === "string")
+    ? { name: algorithm.toUpperCase() }
+    : {
+      ...algorithm,
+      name: algorithm.name.toUpperCase(),
+    }) as DigestAlgorithmObject;
+}
 
 export { stdCrypto as crypto };

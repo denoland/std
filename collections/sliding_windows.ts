@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -14,7 +14,7 @@
  * @example
  * ```ts
  * import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/sliding_windows.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  * const numbers = [1, 2, 3, 4, 5];
  *
  * const windows = slidingWindows(numbers, 3);

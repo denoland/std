@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /*!
  * Ported and modified from: https://github.com/beatgammit/tar-js and
@@ -8,7 +8,7 @@
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
- * Copyright (c) 2018-2022 the Deno authors
+ * Copyright (c) 2018-2023 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,23 @@
  */
 
 /**
- * Provides a `Tar` and `Untar` classes for compressing and decompressing
- * arbitrary data.
+ * Tar is a utility for collecting multiple files (or any arbitrary data) into one
+ * archive file, while untar is the inverse utility to extract the files from an
+ * archive.  Files are not compressed, only collected into the archive.
+ *
+ * ### File format and limitations
+ *
+ * The ustar file format is used for creating the archive file.
+ * While this format is compatible with most tar readers,
+ * the format has several limitations, including:
+ * * Files must be smaller than 8GiB
+ * * Filenames (including path) must be shorter than 256 characters
+ * * Filenames (including path) cannot contain non-ASCII characters
+ * * Sparse files are not supported
+ * In addition to the ustar format, untar may also read from the pax format.
+ * However, additional features, such as longer filenames, may be ignored.
  *
  * @module
  */
-/** @deprecated (will be removed after 0.171.0) TODO: export all once overlapping objects/types are removed */
-export { Tar, type TarData, type TarDataWithSource } from "./tar.ts";
+export * from "./tar.ts";
 export * from "./untar.ts";

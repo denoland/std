@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const inventory = [
  *   { name: "mustard", count: 2 },
@@ -22,17 +22,35 @@
  * ```
  */
 export function minOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => number,
 ): number | undefined;
-
+/**
+ * Applies the given selector to all elements of the given collection and
+ * returns the min value of all elements. If an empty array is provided the
+ * function will return undefined.
+ *
+ * @example
+ * ```ts
+ * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/min_of.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
+ *
+ * const inventory = [
+ *   { name: "mustard", count: 2n },
+ *   { name: "soy", count: 4n },
+ *   { name: "tomato", count: 32n },
+ * ];
+ * const minCount = minOf(inventory, (i) => i.count);
+ *
+ * assertEquals(minCount, 2n);
+ * ```
+ */
 export function minOf<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => bigint,
 ): bigint | undefined;
-
 export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
   let minimumValue: ReturnType<S> | undefined = undefined;

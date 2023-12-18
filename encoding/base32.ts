@@ -1,30 +1,17 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright (c) 2014 Jameson Little. MIT License.
+// This module is browser compatible.
+
+import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
- * [base32](https://en.wikipedia.org/wiki/Base32) encoding.
+ * Utilities for
+ * [base32]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ * encoding and decoding.
  *
- * Modified from https://github.com/beatgammit/base64-js
+ * Modified from {@link https://github.com/beatgammit/base64-js}.
  *
  * This module is browser compatible.
- *
- * @example
- * ```ts
- * import {
- *   decode,
- *   encode,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
- *
- * const b32Repr = "RC2E6GA=";
- *
- * const binaryData = decode(b32Repr);
- * console.log(binaryData);
- * // => Uint8Array [ 136, 180, 79, 24 ]
- *
- * console.log(encode(binaryData));
- * // => RC2E6GA=
- * ```
  *
  * @module
  */
@@ -77,10 +64,18 @@ function _byteLength(validLen: number, placeHoldersLen: number): number {
 }
 
 /**
- * Decodes a given RFC4648 base32 encoded string.
- * @param b32
+ * Decodes a base32-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ *
+ * @example
+ * ```ts
+ * import { decodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * decodeBase32("NRQMA==="); // Uint8Array(3) [ 108, 96, 192 ]
+ * ```
  */
-export function decode(b32: string): Uint8Array {
+export function decodeBase32(b32: string): Uint8Array {
   let tmp: number;
   const [validLen, placeHoldersLen] = getLens(b32);
 
@@ -171,10 +166,20 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number): string {
 }
 
 /**
- * Encodes a given Uint8Array into RFC4648 base32 representation
- * @param uint8
+ * Converts data to a base32-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-6}
+ *
+ * @example
+ * ```ts
+ * import { encodeBase32 } from "https://deno.land/std@$STD_VERSION/encoding/base32.ts";
+ *
+ * encodeBase32("6c60c0"); // "NRQMA==="
+ * ```
  */
-export function encode(uint8: Uint8Array): string {
+export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
+  const uint8 = validateBinaryLike(data);
+
   let tmp: number;
   const len = uint8.length;
   const extraBytes = len % 5;

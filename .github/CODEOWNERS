@@ -1,31 +1,3 @@
-# github folder and all project root files (readme, license, general config, etc.)
-.github/      @kt3k
-/*            @kt3k
-
-# deno std
-_tools/       @kt3k
-_util/        @kt3k
-archive/      @kt3k
-async/        @kt3k
-bytes/        @kt3k
-collections/  @kt3k
-crypto/       @kt3k
-datetime/     @kt3k
-dotenv/       @kt3k
-encoding/     @kt3k
-examples/     @kt3k
-flags/        @kt3k
-fmt/          @kt3k
-fs/           @kt3k
-http/         @kt3k
-io/           @kt3k
-log/          @kt3k
-node/         @kt3k
-path/         @kt3k
-permissions/  @kt3k
-semver/       @kt3k
-signal/       @kt3k
-streams/      @kt3k @crowlKats
-testing/      @kt3k
-uuid/         @kt3k
-wasi/         @kt3k
+* @kt3k
+/streams @kt3k @crowlKats
+/webgpu @kt3k @crowlKats

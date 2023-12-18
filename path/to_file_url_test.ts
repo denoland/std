@@ -1,8 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { posix, win32 } from "./mod.ts";
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-Deno.test("[path] toFileUrl", function () {
+import { posix, win32 } from "./mod.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
+
+Deno.test("posix.toFileUrl()", function () {
   assertEquals(posix.toFileUrl("/home/foo").href, "file:///home/foo");
   assertEquals(posix.toFileUrl("/home/ ").href, "file:///home/%20");
   assertEquals(posix.toFileUrl("/home/%20").href, "file:///home/%2520");
@@ -25,7 +26,7 @@ Deno.test("[path] toFileUrl", function () {
   assertEquals(posix.toFileUrl("//:/home/foo").href, "file:///:/home/foo");
 });
 
-Deno.test("[path] toFileUrl (win32)", function () {
+Deno.test("win32.toFileUrl()", function () {
   assertEquals(win32.toFileUrl("/home/foo").href, "file:///home/foo");
   assertEquals(win32.toFileUrl("/home/ ").href, "file:///home/%20");
   assertEquals(win32.toFileUrl("/home/%20").href, "file:///home/%2520");

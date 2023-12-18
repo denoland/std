@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/find_single.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const bookings = [
  *   { month: "January", active: false },
@@ -23,7 +23,7 @@
  * ```
  */
 export function findSingle<T>(
-  array: readonly T[],
+  array: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T | undefined {
   let match: T | undefined = undefined;

@@ -1,7 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "./types.d.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
@@ -23,7 +25,10 @@ const MAX_SIZE = 2 ** 32 - 2;
  * ArrayBuffer is a fixed memory allocation. Buffer is implemented on top of
  * ArrayBuffer.
  *
- * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer). */
+ * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer).
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ */
 
 export class Buffer {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
@@ -245,99 +250,3 @@ export class Buffer {
     }
   }
 }
-
-export {
-  /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-  BufferFullError,
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
-   *
-   * BufReader implements buffering for a Reader object.
-   */
-  BufReader,
-  /** @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead */
-  PartialReadError,
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_reader.ts` instead
-   *
-   * Result type returned by of BufReader.readLine().
-   */
-  type ReadLineResult,
-} from "./buf_reader.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
-   *
-   * BufWriter implements buffering for an deno.Writer object.
-   * If an error occurs writing to a Writer, no more data will be
-   * accepted and all subsequent writes, and flush(), will return the error.
-   * After all data has been written, the client should call the
-   * flush() method to guarantee all data has been forwarded to
-   * the underlying deno.Writer.
-   */
-  BufWriter,
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/buf_writer.ts` instead
-   *
-   * BufWriterSync implements buffering for a deno.WriterSync object.
-   * If an error occurs writing to a WriterSync, no more data will be
-   * accepted and all subsequent writes, and flush(), will return the error.
-   * After all data has been written, the client should call the
-   * flush() method to guarantee all data has been forwarded to
-   * the underlying deno.WriterSync.
-   */
-  BufWriterSync,
-} from "./buf_writer.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_delim.ts` instead
-   *
-   * Read delimited bytes from a Reader. */
-  readDelim,
-} from "./read_delim.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_string_delim.ts` instead
-   *
-   * Read Reader chunk by chunk, splitting based on delimiter.
-   *
-   * @example
-   * ```ts
-   * import { readStringDelim } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
-   * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-   *
-   * const filename = path.join(Deno.cwd(), "std/io/README.md");
-   * let fileReader = await Deno.open(filename);
-   *
-   * for await (let line of readStringDelim(fileReader, "\n")) {
-   *   console.log(line);
-   * }
-   * ```
-   */
-  readStringDelim,
-} from "./read_string_delim.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.172.0) Import from `std/io/read_lines.ts` instead
-   *
-   * Read strings line-by-line from a Reader.
-   *
-   *  @example
-   * ```ts
-   * import { readLines } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
-   * import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-   *
-   * const filename = path.join(Deno.cwd(), "std/io/README.md");
-   * let fileReader = await Deno.open(filename);
-   *
-   * for await (let line of readLines(fileReader)) {
-   *   console.log(line);
-   * }
-   * ```
-   */
-  readLines,
-} from "./read_lines.ts";

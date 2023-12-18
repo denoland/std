@@ -1,4 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Buffer } from "./buffer.ts";
 
@@ -30,6 +31,8 @@ import { Buffer } from "./buffer.ts";
  * null
  * abcdef
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class StringReader extends Buffer {
   constructor(s: string) {

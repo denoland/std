@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Writer, WriterSync } from "../types.d.ts";
+import type { Writer, WriterSync } from "./types.d.ts";
 
 const decoder = new TextDecoder();
 
@@ -34,6 +34,8 @@ const decoder = new TextDecoder();
  * base0123
  * base0123456789
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class StringWriter implements Writer, WriterSync {
   #chunks: Uint8Array[] = [];

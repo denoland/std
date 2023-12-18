@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 export type Token = {
@@ -318,7 +318,10 @@ export class DateTimeFormatter {
         }
         case "hour": {
           let value = utc ? date.getUTCHours() : date.getHours();
-          value -= token.hour12 && date.getHours() > 12 ? 12 : 0;
+          if (token.hour12) {
+            if (value === 0) value = 12;
+            else if (value > 12) value -= 12;
+          }
           switch (token.value) {
             case "numeric": {
               string += value;

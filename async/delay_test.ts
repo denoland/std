@@ -1,6 +1,17 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { assert, assertRejects } from "../testing/asserts.ts";
+import {
+  assert,
+  assertInstanceOf,
+  assertRejects,
+  assertStrictEquals,
+} from "../assert/mod.ts";
+
+// https://dom.spec.whatwg.org/#interface-AbortSignal
+function assertIsDefaultAbortReason(reason: unknown) {
+  assertInstanceOf(reason, DOMException);
+  assertStrictEquals(reason.name, "AbortError");
+}
 
 Deno.test("[async] delay", async function () {
   const start = new Date();
@@ -17,14 +28,45 @@ Deno.test("[async] delay with abort", async function () {
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
   setTimeout(() => abort.abort(), 0);
-  await assertRejects(
-    () => delayedPromise,
-    DOMException,
-    "Delay was aborted",
-  );
-
+  const cause = await assertRejects(() => delayedPromise);
   const diff = new Date().getTime() - start.getTime();
   assert(diff < 100);
+  assertIsDefaultAbortReason(cause);
+});
+
+Deno.test("[async] delay with abort reason", async function (ctx) {
+  async function assertRejectsReason(reason: unknown) {
+    const start = new Date();
+    const abort = new AbortController();
+    const { signal } = abort;
+    const delayedPromise = delay(100, { signal });
+    setTimeout(() => abort.abort(reason), 0);
+    const cause = await assertRejects(() => delayedPromise);
+    const diff = new Date().getTime() - start.getTime();
+    assert(diff < 100);
+    assertStrictEquals(cause, reason);
+  }
+
+  await ctx.step("not-undefined values", async () => {
+    await Promise.all([
+      null,
+      new Error("Timeout cancelled"),
+      new DOMException("Timeout cancelled", "AbortError"),
+      new DOMException("The signal has been aborted", "AbortError"),
+    ].map(assertRejectsReason));
+  });
+
+  await ctx.step("undefined", async () => {
+    const start = new Date();
+    const abort = new AbortController();
+    const { signal } = abort;
+    const delayedPromise = delay(100, { signal });
+    setTimeout(() => abort.abort(), 0);
+    const cause = await assertRejects(() => delayedPromise);
+    const diff = new Date().getTime() - start.getTime();
+    assert(diff < 100);
+    assertIsDefaultAbortReason(cause);
+  });
 });
 
 Deno.test("[async] delay with non-aborted signal", async function () {
@@ -32,7 +74,6 @@ Deno.test("[async] delay with non-aborted signal", async function () {
   const abort = new AbortController();
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
-  // abort.abort()
   const result = await delayedPromise;
   const diff = new Date().getTime() - start.getTime();
   assert(result === undefined);
@@ -57,12 +98,8 @@ Deno.test("[async] delay with already aborted signal", async function () {
   abort.abort();
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
-  await assertRejects(
-    () => delayedPromise,
-    DOMException,
-    "Delay was aborted",
-  );
-
+  const cause = await assertRejects(() => delayedPromise);
   const diff = new Date().getTime() - start.getTime();
   assert(diff < 100);
+  assertIsDefaultAbortReason(cause);
 });

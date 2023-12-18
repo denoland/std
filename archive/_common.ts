@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { PartialReadError } from "../io/buf_reader.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "../io/types.d.ts";
 
 export interface TarInfo {
   fileMode?: number;
@@ -15,17 +15,18 @@ export interface TarInfo {
 
 export interface TarOptions extends TarInfo {
   /**
-   * append file
+   * Filepath of the file to append to the archive
    */
   filePath?: string;
 
   /**
-   * append any arbitrary content
+   * A Reader of any arbitrary content to append to the archive
    */
   reader?: Reader;
 
   /**
-   * size of the content to be appended
+   * Size of the content to be appended.  This is only required
+   * when passing a reader to the archive.
    */
   contentSize?: number;
 }
@@ -46,7 +47,7 @@ export enum FileTypes {
   "contiguous-file" = 7,
 }
 
-export const recordSize = 512;
+export const HEADER_LENGTH = 512;
 
 /*
 struct posix_header {           // byte offset

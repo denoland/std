@@ -1,17 +1,17 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
   assertRejects,
   assertStringIncludes,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("emptyDirIfItNotExist", async function () {
+Deno.test("emptyDir() creates a new dir if it does not exist", async function () {
   const testDir = path.join(testdataDir, "empty_dir_test_1");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which not exist. then it will create new one
@@ -27,7 +27,7 @@ Deno.test("emptyDirIfItNotExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItNotExist", function () {
+Deno.test("emptyDirSync() creates a new dir if it does not exist", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_2");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which does not exist, then it will a create new one.
@@ -43,7 +43,7 @@ Deno.test("emptyDirSyncIfItNotExist", function () {
   }
 });
 
-Deno.test("emptyDirIfItExist", async function () {
+Deno.test("emptyDir() empties nested dirs and files", async function () {
   const testDir = path.join(testdataDir, "empty_dir_test_3");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
@@ -86,7 +86,7 @@ Deno.test("emptyDirIfItExist", async function () {
   }
 });
 
-Deno.test("emptyDirSyncIfItExist", function () {
+Deno.test("emptyDirSync() empties nested dirs and files", function () {
   const testDir = path.join(testdataDir, "empty_dir_test_4");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
@@ -186,10 +186,10 @@ const scenes: Scenes[] = [
   },
 ];
 for (const s of scenes) {
-  let title = `test ${s.async ? "emptyDir" : "emptyDirSync"}`;
-  title += `("testdata/testfolder") ${s.read ? "with" : "without"}`;
+  let title = `${s.async ? "emptyDir()" : "emptyDirSync()"}`;
+  title += ` test ("testdata/testfolder") ${s.read ? "with" : "without"}`;
   title += ` --allow-read & ${s.write ? "with" : "without"} --allow-write`;
-  Deno.test(`[fs] emptyDirPermission ${title}`, async function (): Promise<
+  Deno.test(`${title} permission`, async function (): Promise<
     void
   > {
     const testfolder = path.join(testdataDir, "testfolder");
@@ -197,9 +197,9 @@ for (const s of scenes) {
     try {
       await Deno.mkdir(testfolder);
 
-      await Deno.writeFile(
+      await Deno.writeTextFile(
         path.join(testfolder, "child.txt"),
-        new TextEncoder().encode("hello world"),
+        "hello world",
       );
 
       try {

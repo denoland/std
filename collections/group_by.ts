@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/group_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const people = [
  *   { name: "Anna" },
@@ -26,16 +26,19 @@
  *   },
  * );
  * ```
+ *
+ * @deprecated (will be removed in 0.211.0) Use {@linkcode Object.groupBy} instead.
  */
-export function groupBy<T, K extends string>(
-  array: readonly T[],
-  selector: (el: T) => K,
+export function groupBy<T, K extends PropertyKey>(
+  iterable: Iterable<T>,
+  selector: (element: T, index: number) => K,
 ): Partial<Record<K, T[]>> {
   const ret: Partial<Record<K, T[]>> = {};
+  let i = 0;
 
-  for (const element of array) {
-    const key = selector(element);
-    const arr = ret[key] ??= [] as T[];
+  for (const element of iterable) {
+    const key = selector(element, i++);
+    const arr: T[] = ret[key] ??= [];
     arr.push(element);
   }
 

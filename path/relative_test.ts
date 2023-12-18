@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import * as path from "./mod.ts";
 
 const relativeTests = {
@@ -49,7 +49,7 @@ const relativeTests = {
   ],
 };
 
-Deno.test("relative", function () {
+Deno.test("posix.relative()", function () {
   relativeTests.posix.forEach(function (p) {
     const expected = p[2];
     const actual = path.posix.relative(p[0], p[1]);
@@ -57,7 +57,7 @@ Deno.test("relative", function () {
   });
 });
 
-Deno.test("relativeWin32", function () {
+Deno.test("win32.relative()", function () {
   relativeTests.win32.forEach(function (p) {
     const expected = p[2];
     const actual = path.win32.relative(p[0], p[1]);

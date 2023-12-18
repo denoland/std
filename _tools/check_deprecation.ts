@@ -1,35 +1,26 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { VERSION } from "../version.ts";
 import * as semver from "../semver/mod.ts";
 import * as colors from "../fmt/colors.ts";
-import { doc } from "https://deno.land/x/deno_doc@0.48.0/mod.ts";
+import { doc } from "deno_doc";
 import { walk } from "../fs/walk.ts";
+import { toFileUrl } from "../path/mod.ts";
 
 const EXTENSIONS = [".mjs", ".js", ".ts"];
 const EXCLUDED_PATHS = [
   ".git",
-  "node",
   "dotenv/testdata",
   "fs/testdata",
   "http/testdata",
   "http/_negotiation",
   "crypto/_wasm",
   "crypto/_fnv",
-  "encoding/varint/_wasm",
   "encoding/_yaml",
   "encoing/_toml",
   "_tools",
   "_util",
 ];
-
-console.warn(
-  colors.yellow("Warning"),
-  `ignore ${
-    colors.green(`"fs/exists.ts"`)
-  } until issue is resolved: https://github.com/denoland/deno_std/issues/2594`,
-);
-EXCLUDED_PATHS.push("fs/exists.ts");
 
 const ROOT = new URL("../", import.meta.url);
 
@@ -46,7 +37,7 @@ let shouldFail = false;
 const DEFAULT_DEPRECATED_VERSION = semver.increment(
   semver.increment(
     semver.increment(
-      VERSION,
+      semver.parse(VERSION),
       "minor",
     )!,
     "minor",
@@ -65,7 +56,7 @@ for await (
   })
 ) {
   // deno_doc only takes urls.
-  const url = new URL(path, "file://");
+  const url = toFileUrl(path);
   const docs = await doc(url.href);
 
   for (const d of docs) {
@@ -90,7 +81,9 @@ for await (
               DEPRECATION_AFTER_FORMAT_REGEX.exec(message)?.groups || {};
 
             if (afterVersion) {
-              if (semver.lt(afterVersion, VERSION)) {
+              if (
+                semver.lt(semver.parse(afterVersion), semver.parse(VERSION))
+              ) {
                 console.warn(
                   colors.yellow("Warn"),
                   `${
@@ -115,7 +108,7 @@ for await (
               continue;
             }
 
-            if (!semver.gt(inVersion, VERSION)) {
+            if (!semver.gt(semver.parse(inVersion), semver.parse(VERSION))) {
               console.error(
                 colors.red("Error"),
                 `${

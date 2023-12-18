@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -8,7 +8,7 @@
  * @example
  * ```ts
  * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const names = ["Anna", "Kim", "Arnold", "Kate"];
  * const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
@@ -17,7 +17,7 @@
  * ```
  */
 export function distinctBy<T, D>(
-  array: readonly T[],
+  array: Iterable<T>,
   selector: (el: T) => D,
 ): T[] {
   const selectedValues = new Set<D>();

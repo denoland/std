@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { filterInPlace } from "./_utils.ts";
@@ -10,7 +10,7 @@ import { filterInPlace } from "./_utils.ts";
  * @example
  * ```ts
  * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const lisaInterests = ["Cooking", "Music", "Hiking"];
  * const kimInterests = ["Music", "Tennis", "Cooking"];

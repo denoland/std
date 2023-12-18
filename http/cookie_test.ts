@@ -1,11 +1,11 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   deleteCookie,
   getCookies,
   getSetCookies,
   setCookie,
 } from "./cookie.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 
 Deno.test({
   name: "Cookie parser",
@@ -391,6 +391,32 @@ Deno.test({
     assertEquals(getSetCookies(headers), [{
       name: "Space",
       value: "Cat",
+    }]);
+
+    headers = new Headers({ "set-cookie": "Space=Cat=Happiness" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat=Happiness",
+    }]);
+
+    headers = new Headers({ "set-cookie": "Space=Cat= Happiness" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat= Happiness",
+    }]);
+
+    headers = new Headers({ "set-cookie": "Space=Cat = Happiness; Secure" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat = Happiness",
+      secure: true,
+    }]);
+
+    headers = new Headers({ "set-cookie": " Space=Cat = Happiness ; Secure" });
+    assertEquals(getSetCookies(headers), [{
+      name: "Space",
+      value: "Cat = Happiness",
+      secure: true,
     }]);
 
     headers = new Headers({ "set-cookie": "Space=Cat; Secure" });

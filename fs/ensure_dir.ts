@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { getFileInfoType } from "./_util.ts";
 
 /**
@@ -15,6 +15,12 @@ import { getFileInfoType } from "./_util.ts";
  */
 export async function ensureDir(dir: string | URL) {
   try {
+    await Deno.mkdir(dir, { recursive: true });
+  } catch (err) {
+    if (!(err instanceof Deno.errors.AlreadyExists)) {
+      throw err;
+    }
+
     const fileInfo = await Deno.lstat(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
@@ -23,13 +29,6 @@ export async function ensureDir(dir: string | URL) {
         }'`,
       );
     }
-  } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
-      // if dir not exists. then create it.
-      await Deno.mkdir(dir, { recursive: true });
-      return;
-    }
-    throw err;
   }
 }
 
@@ -47,6 +46,12 @@ export async function ensureDir(dir: string | URL) {
  */
 export function ensureDirSync(dir: string | URL) {
   try {
+    Deno.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    if (!(err instanceof Deno.errors.AlreadyExists)) {
+      throw err;
+    }
+
     const fileInfo = Deno.lstatSync(dir);
     if (!fileInfo.isDirectory) {
       throw new Error(
@@ -55,12 +60,5 @@ export function ensureDirSync(dir: string | URL) {
         }'`,
       );
     }
-  } catch (err) {
-    if (err instanceof Deno.errors.NotFound) {
-      // if dir not exists. then create it.
-      Deno.mkdirSync(dir, { recursive: true });
-      return;
-    }
-    throw err;
   }
 }

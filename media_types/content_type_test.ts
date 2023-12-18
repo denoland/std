@@ -1,7 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { contentType } from "./content_type.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 
 Deno.test({
   name: "media_types - contentType()",

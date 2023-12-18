@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Utilities for mocking time while testing.
@@ -6,8 +6,9 @@
  * @module
  */
 
-import { ascend, RedBlackTree } from "../collections/red_black_tree.ts";
-import { DelayOptions } from "../async/delay.ts";
+import { RedBlackTree } from "../data_structures/red_black_tree.ts";
+import { ascend } from "../data_structures/comparators.ts";
+import type { DelayOptions } from "../async/delay.ts";
 import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
@@ -18,75 +19,27 @@ export class TimeError extends Error {
   }
 }
 
-function isFakeDate(instance: unknown): instance is FakeDate {
-  return instance instanceof FakeDate;
+function FakeTimeNow() {
+  return time?.now ?? _internals.Date.now();
 }
 
-interface FakeDate extends Date {
-  date: Date;
-}
-
-function FakeDate(this: void): string;
-function FakeDate(this: FakeDate): void;
-function FakeDate(
-  this: FakeDate,
-  value: string | number | Date,
-): void;
-function FakeDate(
-  this: FakeDate,
-  year: number,
-  month: number,
-  date?: number,
-  hours?: number,
-  minutes?: number,
-  seconds?: number,
-  ms?: number,
-): void;
-function FakeDate(
-  this: FakeDate | void,
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-): string | void {
-  if (args.length === 0) args.push(FakeDate.now());
-  if (isFakeDate(this)) {
-    this.date = new _internals.Date(...(args as []));
-  } else {
-    return new _internals.Date(args[0]).toString();
-  }
-}
-
-FakeDate.parse = Date.parse;
-FakeDate.UTC = Date.UTC;
-FakeDate.now = () => time?.now ?? _internals.Date.now();
-Object.getOwnPropertyNames(Date.prototype).forEach((name: string) => {
-  const propName: keyof Date = name as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
-});
-Object.getOwnPropertySymbols(Date.prototype).forEach((name: symbol) => {
-  const propName: keyof Date = name as unknown as keyof Date;
-  FakeDate.prototype[propName] = function (
-    this: FakeDate,
-    // deno-lint-ignore no-explicit-any
-    ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ): any {
-    // deno-lint-ignore no-explicit-any
-    return (this.date[propName] as (...args: any[]) => any).apply(
-      this.date,
-      args,
-    );
-  };
+const FakeDate = new Proxy(Date, {
+  construct(_target, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return new _internals.Date(...args);
+  },
+  apply(_target, _thisArg, args) {
+    if (args.length === 0) args.push(FakeDate.now());
+    // @ts-expect-error this is a passthrough
+    return _internals.Date(...args);
+  },
+  get(target, prop, receiver) {
+    if (prop === "now") {
+      return FakeTimeNow;
+    }
+    return Reflect.get(target, prop, receiver);
+  },
 });
 
 interface Timer {
@@ -103,7 +56,7 @@ export interface FakeTimeOptions {
   /**
    * The rate relative to real time at which fake time is updated.
    * By default time only moves forward through calling tick or setting now.
-   * Set to 1 to have the fake time automatically tick foward at the same rate in milliseconds as real time.
+   * Set to 1 to have the fake time automatically tick forward at the same rate in milliseconds as real time.
    */
   advanceRate: number;
   /**
@@ -184,7 +137,7 @@ function setTimer(
 }
 
 function overrideGlobals() {
-  globalThis.Date = FakeDate as DateConstructor;
+  globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;
@@ -204,6 +157,16 @@ function* timerIdGen() {
   while (true) yield i++;
 }
 
+function nextDueNode(): DueNode | null {
+  for (;;) {
+    const dueNode = dueTree.min();
+    if (!dueNode) return null;
+    const hasTimer = dueNode.timers.some((timer) => dueNodes.has(timer.id));
+    if (hasTimer) return dueNode;
+    dueTree.remove(dueNode);
+  }
+}
+
 let startedAt: number;
 let now: number;
 let initializedAt: number;
@@ -219,34 +182,32 @@ let dueTree: RedBlackTree<DueNode>;
  * controlled through the fake time instance.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
  * import {
  *   assertSpyCalls,
  *   spy,
  * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
  * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
- * import { secondInterval } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts";
+ *
+ * function secondInterval(cb: () => void): number {
+ *   return setInterval(cb, 1000);
+ * }
  *
  * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
- *   const time = new FakeTime();
+ *   using time = new FakeTime();
  *
- *   try {
- *     const cb = spy();
- *     const intervalId = secondInterval(cb);
- *     assertSpyCalls(cb, 0);
- *     time.tick(500);
- *     assertSpyCalls(cb, 0);
- *     time.tick(500);
- *     assertSpyCalls(cb, 1);
- *     time.tick(3500);
- *     assertSpyCalls(cb, 4);
+ *   const cb = spy();
+ *   const intervalId = secondInterval(cb);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 0);
+ *   time.tick(500);
+ *   assertSpyCalls(cb, 1);
+ *   time.tick(3500);
+ *   assertSpyCalls(cb, 4);
  *
- *     clearInterval(intervalId);
- *     time.tick(1000);
- *     assertSpyCalls(cb, 4);
- *   } finally {
- *     time.restore();
- *   }
+ *   clearInterval(intervalId);
+ *   time.tick(1000);
+ *   assertSpyCalls(cb, 4);
  * });
  * ```
  */
@@ -291,6 +252,10 @@ export class FakeTime {
       : undefined;
   }
 
+  [Symbol.dispose]() {
+    this.restore();
+  }
+
   /** Restores real time. */
   static restore() {
     if (!time) throw new TimeError("time already restored");
@@ -300,21 +265,26 @@ export class FakeTime {
   /**
    * Restores real time temporarily until callback returns and resolves.
    */
-  static async restoreFor<T>(
+  static restoreFor<T>(
     // deno-lint-ignore no-explicit-any
     callback: (...args: any[]) => Promise<T> | T,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) throw new TimeError("no fake time");
-    let result: T;
+    if (!time) return Promise.reject(new TimeError("no fake time"));
     restoreGlobals();
     try {
-      result = await callback.apply(null, args);
-    } finally {
+      const result = callback.apply(null, args);
+      if (result instanceof Promise) {
+        return result.finally(() => overrideGlobals());
+      } else {
+        overrideGlobals();
+        return Promise.resolve(result);
+      }
+    } catch (e) {
       overrideGlobals();
+      return Promise.reject(e);
     }
-    return result;
   }
 
   /**
@@ -417,7 +387,7 @@ export class FakeTime {
    * Returns true when there is a scheduled timer and false when there is not.
    */
   next(): boolean {
-    const next = dueTree.min();
+    const next = nextDueNode();
     if (next) this.now = next.due;
     return !!next;
   }

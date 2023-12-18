@@ -1,18 +1,13 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  fail,
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertRejects, fail } from "../assert/mod.ts";
 import { BufferFullError, BufReader, PartialReadError } from "./buf_reader.ts";
 import { StringReader } from "./string_reader.ts";
 import { bufsizes, MIN_READ_BUFFER_SIZE } from "./_test_common.ts";
 import { Buffer } from "./buffer.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 import { copy } from "../bytes/copy.ts";
 
 /** OneByteReader returns a Reader that implements

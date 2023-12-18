@@ -1,4 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
 export type Unit =
@@ -18,23 +20,13 @@ export type DifferenceOptions = {
   units?: Unit[];
 };
 
-function calculateMonthsDifference(bigger: number, smaller: number): number {
-  const biggerDate = new Date(bigger);
-  const smallerDate = new Date(smaller);
-  const yearsDiff = biggerDate.getFullYear() - smallerDate.getFullYear();
-  const monthsDiff = biggerDate.getMonth() - smallerDate.getMonth();
-  const calendarDifferences = Math.abs(yearsDiff * 12 + monthsDiff);
-  const compareResult = biggerDate > smallerDate ? 1 : -1;
-  biggerDate.setMonth(
-    biggerDate.getMonth() - compareResult * calendarDifferences,
-  );
-  const isLastMonthNotFull = biggerDate > smallerDate
-    ? 1
-    : -1 === -compareResult
-    ? 1
-    : 0;
-  const months = compareResult * (calendarDifferences - isLastMonthNotFull);
-  return months === 0 ? 0 : months;
+function calculateMonthsDifference(from: Date, to: Date): number {
+  let months = (to.getFullYear() - from.getFullYear()) * 12 +
+    (to.getMonth() - from.getMonth());
+  if (to.getDate() < from.getDate()) {
+    months--;
+  }
+  return months;
 }
 
 /**
@@ -60,7 +52,7 @@ function calculateMonthsDifference(bigger: number, smaller: number): number {
  * //   days: 730,
  * //   weeks: 104,
  * //   months: 23,
- * //   quarters: 5,
+ * //   quarters: 7,
  * //   years: 1
  * // }
  * ```
@@ -74,6 +66,7 @@ export function difference(
   to: Date,
   options?: DifferenceOptions,
 ): DifferenceFormat {
+  [from, to] = from < to ? [from, to] : [to, from];
   const uniqueUnits = options?.units ? [...new Set(options?.units)] : [
     "milliseconds",
     "seconds",
@@ -86,9 +79,7 @@ export function difference(
     "years",
   ];
 
-  const bigger = Math.max(from.getTime(), to.getTime());
-  const smaller = Math.min(from.getTime(), to.getTime());
-  const differenceInMs = bigger - smaller;
+  const differenceInMs = Math.abs(from.getTime() - to.getTime());
 
   const differences: DifferenceFormat = {};
 
@@ -113,20 +104,18 @@ export function difference(
         differences.weeks = Math.floor(differenceInMs / WEEK);
         break;
       case "months":
-        differences.months = calculateMonthsDifference(bigger, smaller);
+        differences.months = calculateMonthsDifference(from, to);
         break;
       case "quarters":
         differences.quarters = Math.floor(
-          (typeof differences.months !== "undefined" &&
-            differences.months / 4) ||
-            calculateMonthsDifference(bigger, smaller) / 4,
+          (differences.months !== undefined && differences.months / 3) ||
+            calculateMonthsDifference(from, to) / 3,
         );
         break;
       case "years":
         differences.years = Math.floor(
-          (typeof differences.months !== "undefined" &&
-            differences.months / 12) ||
-            calculateMonthsDifference(bigger, smaller) / 12,
+          (differences.months !== undefined && differences.months / 12) ||
+            calculateMonthsDifference(from, to) / 12,
         );
         break;
     }

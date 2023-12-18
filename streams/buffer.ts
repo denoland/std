@@ -1,5 +1,7 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
@@ -39,19 +41,25 @@ export class Buffer {
     },
     autoAllocateChunkSize: DEFAULT_CHUNK_SIZE,
   });
-  get readable() {
+
+  /** Getter returning the instance's {@linkcode ReadableStream}. */
+  get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
+
   #writable = new WritableStream<Uint8Array>({
     write: (chunk) => {
       const m = this.#grow(chunk.byteLength);
       copy(chunk, this.#buf, m);
     },
   });
-  get writable() {
+
+  /** Getter returning the instance's {@linkcode WritableStream}. */
+  get writable(): WritableStream<Uint8Array> {
     return this.#writable;
   }
 
+  /** Constructs a new instance. */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
   }
@@ -85,10 +93,12 @@ export class Buffer {
     return this.#buf.buffer.byteLength;
   }
 
-  /** Discards all but the first `n` unread bytes from the buffer but
+  /**
+   * Discards all but the first `n` unread bytes from the buffer but
    * continues to use the same allocated storage. It throws if `n` is
-   * negative or greater than the length of the buffer. */
-  truncate(n: number) {
+   * negative or greater than the length of the buffer.
+   */
+  truncate(n: number): void {
     if (n === 0) {
       this.reset();
       return;
@@ -99,6 +109,7 @@ export class Buffer {
     this.#reslice(this.#off + n);
   }
 
+  /** Resets to an empty buffer. */
   reset() {
     this.#reslice(0);
     this.#off = 0;
@@ -165,59 +176,3 @@ export class Buffer {
     this.#reslice(m);
   }
 }
-
-export {
-  /**
-   * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_bytes_transform_stream.ts` instead.
-   *
-   * A TransformStream that will only read & enqueue `size` amount of bytes.
-   * This operation is chunk based and not BYOB based,
-   * and as such will read more than needed.
-   *
-   * if options.error is set, then instead of terminating the stream,
-   * an error will be thrown.
-   *
-   * ```ts
-   * import { LimitedBytesTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
-   * const res = await fetch("https://example.com");
-   * const parts = res.body!
-   *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
-   * ```
-   */
-  LimitedBytesTransformStream,
-} from "./limited_bytes_transform_stream.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.171.0) Import from `std/streams/limited_transform_stream.ts` instead.
-   *
-   * A TransformStream that will only read & enqueue `size` amount of chunks.
-   *
-   * if options.error is set, then instead of terminating the stream,
-   * an error will be thrown.
-   *
-   * ```ts
-   * import { LimitedTransformStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
-   * const res = await fetch("https://example.com");
-   * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
-   * ```
-   */
-  LimitedTransformStream,
-} from "./limited_transform_stream.ts";
-
-export {
-  /**
-   * @deprecated (will be removed after 0.171.0) Import from `std/streams/byte_slice_stream.ts` instead.
-   *
-   * A transform stream that only transforms from the zero-indexed `start` and `end` bytes (both inclusive).
-   *
-   * @example
-   * ```ts
-   * import { ByteSliceStream } from "https://deno.land/std@$STD_VERSION/streams/buffer.ts";
-   * const response = await fetch("https://example.com");
-   * const rangedStream = response.body!
-   *   .pipeThrough(new ByteSliceStream(3, 8));
-   * ```
-   */
-  ByteSliceStream,
-} from "./byte_slice_stream.ts";

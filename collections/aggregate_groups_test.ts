@@ -1,11 +1,11 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { aggregateGroups } from "./aggregate_groups.ts";
 
 function aggregateGroupsTest<T, A>(
   input: [
-    Record<string, Array<T>>,
+    Record<string, ReadonlyArray<T>>,
     (current: T, key: string, first: boolean, accumulator?: A) => A,
   ],
   expected: Record<string, A>,

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -9,7 +9,7 @@
  * @example
  * ```ts
  * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/associate_with.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const names = ["Kim", "Lara", "Jonathan"];
  * const namesToLength = associateWith(names, (it) => it.length);
@@ -22,7 +22,7 @@
  * ```
  */
 export function associateWith<T>(
-  array: readonly string[],
+  array: Iterable<string>,
   selector: (key: string) => T,
 ): Record<string, T> {
   const ret: Record<string, T> = {};

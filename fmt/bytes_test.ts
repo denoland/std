@@ -1,9 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2014-2021 Sindre Sorhus. All rights reserved. MIT license.
 // Copyright 2021 Yoshiya Hinosawa. All rights reserved. MIT license.
 
 import { format } from "./bytes.ts";
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 
 const parts = new Intl.NumberFormat().formatToParts(1000.1);
 const decimal = parts.find(({ type }) => type === "decimal")!.value;

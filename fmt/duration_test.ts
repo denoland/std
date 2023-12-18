@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertExists } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertExists } from "../assert/mod.ts";
 import { format } from "./duration.ts";
 
 Deno.test({
@@ -60,5 +60,12 @@ Deno.test({
   name: "format narrow duration ignore zero",
   fn() {
     assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
+  },
+});
+
+Deno.test({
+  name: "format duration rounding error",
+  fn() {
+    assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
   },
 });

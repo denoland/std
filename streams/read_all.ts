@@ -1,11 +1,14 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Buffer } from "../io/buffer.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.d.ts";
 
-/** Read Reader `r` until EOF (`null`) and resolve to the content as
- * Uint8Array`.
+/**
+ * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as
+ * {@linkcode Uint8Array}.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAll } from "https://deno.land/std@$STD_VERSION/streams/read_all.ts";
@@ -24,6 +27,9 @@ import type { Reader, ReaderSync } from "../types.d.ts";
  * const reader = new Buffer(myData.buffer);
  * const bufferContent = await readAll(reader);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream}
+ * and {@linkcode toArrayBuffer} instead.
  */
 export async function readAll(r: Reader): Promise<Uint8Array> {
   const buf = new Buffer();
@@ -31,9 +37,11 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
   return buf.bytes();
 }
 
-/** Synchronously reads Reader `r` until EOF (`null`) and returns the content
- * as `Uint8Array`.
+/**
+ * Synchronously reads {@linkcode Reader} `r` until EOF (`null`) and returns
+ * the content as {@linkcode Uint8Array}.
  *
+ * @example
  * ```ts
  * import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
  * import { readAllSync } from "https://deno.land/std@$STD_VERSION/streams/read_all.ts";
@@ -52,6 +60,9 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
  * const reader = new Buffer(myData.buffer);
  * const bufferContent = readAllSync(reader);
  * ```
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} and
+ * {@linkcode toArrayBuffer} instead.
  */
 export function readAllSync(r: ReaderSync): Uint8Array {
   const buf = new Buffer();

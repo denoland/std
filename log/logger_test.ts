@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertMatch } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertMatch } from "../assert/mod.ts";
 import { Logger, LogRecord } from "./logger.ts";
 import { LevelName, LogLevels } from "./levels.ts";
 import { BaseHandler } from "./handlers.ts";
@@ -241,15 +241,33 @@ Deno.test(
       payload: "data",
       other: 123,
     });
+    const data19: { payload: string; other: bigint } = logger.error({
+      payload: "data",
+      other: 123n,
+    });
+    assertEquals(data19, {
+      payload: "data",
+      other: 123n,
+    });
+    const data20: { payload: string; other: bigint } = logger.error(
+      { payload: "data", other: 123n },
+      1,
+    );
+    assertEquals(data20, {
+      payload: "data",
+      other: 123n,
+    });
     assertEquals(handler.messages[16], 'ERROR {"payload":"data","other":123}');
     assertEquals(handler.messages[17], 'ERROR {"payload":"data","other":123}');
+    assertEquals(handler.messages[18], 'ERROR {"payload":"data","other":123}');
+    assertEquals(handler.messages[19], 'ERROR {"payload":"data","other":123}');
 
     // error
     const error = new RangeError("Uh-oh!");
-    const data19: RangeError = logger.error(error);
-    assertEquals(data19, error);
-    const messages19 = handler.messages[18].split("\n");
-    assertEquals(messages19[0], `ERROR ${error.name}: ${error.message}`);
-    assertMatch(messages19[1], /^\s+at file:.*\d+:\d+$/);
+    const data21: RangeError = logger.error(error);
+    assertEquals(data21, error);
+    const messages21 = handler.messages[20].split("\n");
+    assertEquals(messages21[0], `ERROR ${error.name}: ${error.message}`);
+    assertMatch(messages21[1], /^\s+at file:.*\d+:\d+$/);
   },
 );

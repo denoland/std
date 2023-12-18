@@ -1,10 +1,10 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { copy, copySync } from "./copy.ts";
 import { existsSync } from "./exists.ts";
@@ -47,7 +47,7 @@ function testCopySync(name: string, cb: (tempDir: string) => void) {
 }
 
 testCopy(
-  "[fs] copy file if it does no exist",
+  "copy() rejects if src does not exist",
   async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1.txt");
@@ -60,7 +60,7 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy if src and dest are the same paths",
+  "copy() rejects if src and dest are the same paths",
   async (tempDir: string) => {
     const srcFile = path.join(tempDir, "copy_file_same.txt");
     const destFile = path.join(tempDir, "copy_file_same.txt");
@@ -75,12 +75,12 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy file",
+  "copy() copies file to new destination",
   async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
 
-    const srcContent = new TextDecoder().decode(await Deno.readFile(srcFile));
+    const srcContent = await Deno.readTextFile(srcFile);
 
     assert(await Deno.lstat(srcFile), "source should exist before copy");
     await assertRejects(
@@ -93,7 +93,7 @@ testCopy(
     assert(await Deno.lstat(srcFile), "source should exist after copy");
     assert(await Deno.lstat(destFile), "destination should exist after copy");
 
-    const destContent = new TextDecoder().decode(await Deno.readFile(destFile));
+    const destContent = await Deno.readTextFile(destFile);
 
     assertEquals(
       srcContent,
@@ -111,26 +111,21 @@ testCopy(
     );
 
     // Modify destination file.
-    await Deno.writeFile(destFile, new TextEncoder().encode("txt copy"));
 
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destFile)),
-      "txt copy",
-    );
+    await Deno.writeTextFile(destFile, "txt copy");
+
+    assertEquals(await Deno.readTextFile(destFile), "txt copy");
 
     // Copy again with overwrite option.
     await copy(srcFile, destFile, { overwrite: true });
 
     // Make sure the file has been overwritten.
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destFile)),
-      "txt",
-    );
+    assertEquals(await Deno.readTextFile(destFile), "txt");
   },
 );
 
 testCopy(
-  "[fs] copy with preserve timestamps",
+  "copy() copies with preserve timestamps",
   async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
@@ -156,7 +151,7 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy directory to its subdirectory",
+  "copy() rejects if destination is its own subdirectory",
   async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
@@ -174,7 +169,7 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy directory and destination exist and not a directory",
+  "copy() rejects when copying a directory to an existent destination that is not a directory",
   async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(tempDir, "child.txt");
@@ -193,7 +188,7 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy directory",
+  "copy() copies a directory",
   async (tempDir: string) => {
     const srcDir = path.join(testdataDir, "copy_dir");
     const destDir = path.join(tempDir, "copy_dir");
@@ -209,12 +204,12 @@ testCopy(
 
     // After copy. The source and destination should have the same content.
     assertEquals(
-      new TextDecoder().decode(await Deno.readFile(srcFile)),
-      new TextDecoder().decode(await Deno.readFile(destFile)),
+      await Deno.readTextFile(srcFile),
+      await Deno.readTextFile(destFile),
     );
     assertEquals(
-      new TextDecoder().decode(await Deno.readFile(srcNestFile)),
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
+      await Deno.readTextFile(srcNestFile),
+      await Deno.readTextFile(destNestFile),
     );
 
     // Copy again without overwrite option and it should throw an error.
@@ -227,25 +222,19 @@ testCopy(
     );
 
     // Modify the file in the destination directory.
-    await Deno.writeFile(destNestFile, new TextEncoder().encode("nest copy"));
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
-      "nest copy",
-    );
+    await Deno.writeTextFile(destNestFile, "nest copy");
+    assertEquals(await Deno.readTextFile(destNestFile), "nest copy");
 
     // Copy again with overwrite option.
     await copy(srcDir, destDir, { overwrite: true });
 
     // Make sure the file has been overwritten.
-    assertEquals(
-      new TextDecoder().decode(await Deno.readFile(destNestFile)),
-      "nest",
-    );
+    assertEquals(await Deno.readTextFile(destNestFile), "nest");
   },
 );
 
 testCopy(
-  "[fs] copy symlink file",
+  "copy() copies a symlink file",
   async (tempDir: string) => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt");
@@ -265,7 +254,7 @@ testCopy(
 );
 
 testCopy(
-  "[fs] copy symlink directory",
+  "copy() copies a symlink directory",
   async (tempDir: string) => {
     const srcDir = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(tempDir, "copy_dir_link");
@@ -287,7 +276,7 @@ testCopy(
 );
 
 testCopySync(
-  "[fs] copy file synchronously if it does not exist",
+  "copySync() throws if src does not exist",
   (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1_sync.txt");
@@ -298,7 +287,7 @@ testCopySync(
 );
 
 testCopySync(
-  "[fs] copy synchronously with preserve timestamps",
+  "copySync() copies with preserve timestamps",
   (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
@@ -324,7 +313,7 @@ testCopySync(
 );
 
 testCopySync(
-  "[fs] copy synchronously if src and dest are the same paths",
+  "copySync() throws if src and dest are the same paths",
   () => {
     const srcFile = path.join(testdataDir, "copy_file_same_sync.txt");
     assertThrows(
@@ -337,7 +326,7 @@ testCopySync(
   },
 );
 
-testCopySync("[fs] copy file synchronously", (tempDir: string) => {
+testCopySync("copySync() copies file to new destination", (tempDir: string) => {
   const srcFile = path.join(testdataDir, "copy_file.txt");
   const destFile = path.join(tempDir, "copy_file_copy_sync.txt");
 
@@ -380,7 +369,7 @@ testCopySync("[fs] copy file synchronously", (tempDir: string) => {
 });
 
 testCopySync(
-  "[fs] copy directory synchronously to its subdirectory",
+  "copySync() throws if destination is its own subdirectory",
   (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
@@ -398,8 +387,7 @@ testCopySync(
 );
 
 testCopySync(
-  "[fs] copy directory synchronously, and destination exist and not a " +
-    "directory",
+  "copySync() throws when copying a directory to an existent destination that is not a directory",
   (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent_sync");
     const destDir = path.join(tempDir, "child.txt");
@@ -417,7 +405,7 @@ testCopySync(
   },
 );
 
-testCopySync("[fs] copy directory synchronously", (tempDir: string) => {
+testCopySync("copySync() copies a directory", (tempDir: string) => {
   const srcDir = path.join(testdataDir, "copy_dir");
   const destDir = path.join(tempDir, "copy_dir_copy_sync");
   const srcFile = path.join(srcDir, "0.txt");
@@ -467,7 +455,7 @@ testCopySync("[fs] copy directory synchronously", (tempDir: string) => {
 });
 
 testCopySync(
-  "[fs] copy symlink file synchronously",
+  "copySync() copies symlink file",
   (tempDir: string) => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt");
@@ -487,7 +475,7 @@ testCopySync(
 );
 
 testCopySync(
-  "[fs] copy symlink directory synchronously",
+  "copySync() copies symlink directory",
   (tempDir: string) => {
     const originDir = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(tempDir, "copy_dir_link");

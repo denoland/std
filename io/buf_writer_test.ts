@@ -1,13 +1,13 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { BufWriter, BufWriterSync } from "./buf_writer.ts";
 import { Buffer } from "./buffer.ts";
 import { StringWriter } from "./string_writer.ts";
 import { bufsizes } from "./_test_common.ts";
-import type { Writer, WriterSync } from "../types.d.ts";
+import type { Writer, WriterSync } from "./types.d.ts";
 
 Deno.test("bufioWriter", async function () {
   const data = new Uint8Array(8192);

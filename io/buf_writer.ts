@@ -1,7 +1,8 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { copy } from "../bytes/copy.ts";
-import type { Writer, WriterSync } from "../types.d.ts";
+import type { Writer, WriterSync } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 
@@ -38,6 +39,8 @@ abstract class AbstractBufBase {
  * After all data has been written, the client should call the
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -83,10 +86,9 @@ export class BufWriter extends AbstractBufBase implements Writer {
     this.usedBufferBytes = 0;
   }
 
-  /** Writes the contents of `data` into the buffer.  If the contents won't fully
-   * fit into the buffer, those bytes that can are copied into the buffer, the
-   * buffer is the flushed to the writer and the remaining bytes are copied into
-   * the now empty buffer.
+  /** Writes the contents of `data` into the buffer. If the contents won't fully
+   * fit into the buffer, those bytes that are copied into the buffer will be flushed
+   * to the writer and the remaining bytes are then copied into the now empty buffer.
    *
    * @return the number of bytes written to the buffer.
    */
@@ -130,6 +132,8 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * After all data has been written, the client should call the
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Utilities for working with Deno's readers, writers, and web streams.
@@ -7,12 +7,12 @@
  * utilities are also deprecated. Consider using web streams instead.
  *
  * @module
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 
 export * from "./buf_reader.ts";
 export * from "./buf_writer.ts";
-/** @deprecated (will be removed after 0.172.0) `export * from "./buffer.ts";` upon removal */
-export { Buffer } from "./buffer.ts";
+export * from "./buffer.ts";
 export * from "./copy_n.ts";
 export * from "./limited_reader.ts";
 export * from "./multi_reader.ts";

@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { dirname } from "../path/dirname.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, toPathString } from "./_util.ts";
 
@@ -18,7 +18,7 @@ import { getFileInfoType, toPathString } from "./_util.ts";
  * ensureFile("./folder/targetFile.dat"); // returns promise
  * ```
  */
-export async function ensureFile(filePath: string | URL) {
+export async function ensureFile(filePath: string | URL): Promise<void> {
   try {
     // if file exists
     const stat = await Deno.lstat(filePath);
@@ -31,7 +31,7 @@ export async function ensureFile(filePath: string | URL) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      await ensureDir(path.dirname(toPathString(filePath)));
+      await ensureDir(dirname(toPathString(filePath)));
       // create file
       await Deno.writeFile(filePath, new Uint8Array());
       return;
@@ -56,7 +56,7 @@ export async function ensureFile(filePath: string | URL) {
  * ensureFileSync("./folder/targetFile.dat"); // void
  * ```
  */
-export function ensureFileSync(filePath: string | URL) {
+export function ensureFileSync(filePath: string | URL): void {
   try {
     // if file exists
     const stat = Deno.lstatSync(filePath);
@@ -69,7 +69,7 @@ export function ensureFileSync(filePath: string | URL) {
     // if file not exists
     if (err instanceof Deno.errors.NotFound) {
       // ensure dir exists
-      ensureDirSync(path.dirname(toPathString(filePath)));
+      ensureDirSync(dirname(toPathString(filePath)));
       // create file
       Deno.writeFileSync(filePath, new Uint8Array());
       return;

@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { repeat } from "./repeat.ts";
 
 Deno.test("[bytes] repeat", () => {

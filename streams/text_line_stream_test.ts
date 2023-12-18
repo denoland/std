@@ -1,26 +1,19 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { TextLineStream } from "./text_line_stream.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("[streams] TextLineStream", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("qwertzu");
-      controller.enqueue("iopasd\r\nmnbvc");
-      controller.enqueue("xylk\rjhgfds\napoiuzt\r");
-      controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
-      controller.enqueue("\nrewq0987\n\n654321");
-      controller.enqueue("\nrewq0987\r\n\r\n654321\r");
-      controller.close();
-    },
-  });
+Deno.test("TextLineStream() parses simple input", async () => {
+  const stream = ReadableStream.from([
+    "qwertzu",
+    "iopasd\r\nmnbvc",
+    "xylk\rjhgfds\napoiuzt\r",
+    "qwr\r09ei\rqwrjiowqr\r",
+    "\nrewq0987\n\n654321",
+    "\nrewq0987\r\n\r\n654321\r",
+  ]).pipeThrough(new TextLineStream());
 
-  const lines = [];
-  for await (const chunk of textStream.pipeThrough(new TextLineStream())) {
-    lines.push(chunk);
-  }
-  assertEquals(lines, [
+  assertEquals(await Array.fromAsync(stream), [
     "qwertzuiopasd",
     "mnbvcxylk\rjhgfds",
     "apoiuzt\rqwr\r09ei\rqwrjiowqr",
@@ -32,45 +25,26 @@ Deno.test("[streams] TextLineStream", async () => {
     "654321\r",
   ]);
 
-  const textStream2 = new ReadableStream({
-    start(controller) {
-      controller.enqueue("rewq0987\r\n\r\n654321\n");
-      controller.close();
-    },
-  });
+  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+    .pipeThrough(new TextLineStream());
 
-  const lines2 = [];
-  for await (const chunk of textStream2.pipeThrough(new TextLineStream())) {
-    lines2.push(chunk);
-  }
-  assertEquals(lines2, [
+  assertEquals(await Array.fromAsync(stream2), [
     "rewq0987",
     "",
     "654321",
-    "",
   ]);
 });
 
-Deno.test("[streams] TextLineStream - allowCR", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("qwertzu");
-      controller.enqueue("iopasd\r\nmnbvc");
-      controller.enqueue("xylk\rjhgfds\napoiuzt\r");
-      controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
-      controller.enqueue("\nrewq0987\n\n654321");
-      controller.enqueue("\nrewq0987\r\n\r\n654321\r");
-      controller.close();
-    },
-  });
-
-  const lines = [];
-  for await (
-    const chunk of textStream.pipeThrough(new TextLineStream({ allowCR: true }))
-  ) {
-    lines.push(chunk);
-  }
-  assertEquals(lines, [
+Deno.test("TextLineStream() parses with `allowCR` enabled", async () => {
+  const stream = ReadableStream.from([
+    "qwertzu",
+    "iopasd\r\nmnbvc",
+    "xylk\rjhgfds\napoiuzt\r",
+    "qwr\r09ei\rqwrjiowqr\r",
+    "\nrewq0987\n\n654321",
+    "\nrewq0987\r\n\r\n654321\r",
+  ]).pipeThrough(new TextLineStream({ allowCR: true }));
+  assertEquals(await Array.fromAsync(stream), [
     "qwertzuiopasd",
     "mnbvcxylk",
     "jhgfds",
@@ -84,41 +58,72 @@ Deno.test("[streams] TextLineStream - allowCR", async () => {
     "rewq0987",
     "",
     "654321",
-    "",
   ]);
 
-  const textStream2 = new ReadableStream({
-    start(controller) {
-      controller.enqueue("rewq0987\r\n\r\n654321\n");
-      controller.close();
-    },
-  });
+  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+    .pipeThrough(new TextLineStream());
 
-  const lines2 = [];
-  for await (const chunk of textStream2.pipeThrough(new TextLineStream())) {
-    lines2.push(chunk);
-  }
-  assertEquals(lines2, [
+  assertEquals(await Array.fromAsync(stream2), [
     "rewq0987",
     "",
     "654321",
-    "",
   ]);
 });
 
-Deno.test("[streams] TextLineStream - large chunks", async () => {
-  const textStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue("\n".repeat(10000));
-      controller.enqueue("\n".repeat(10000));
-      controller.close();
-    },
-  });
+Deno.test("TextLineStream() parses large chunks", async () => {
+  const totalLines = 20_000;
+  const stream = ReadableStream.from("\n".repeat(totalLines))
+    .pipeThrough(new TextLineStream());
+  const lines = await Array.fromAsync(stream);
 
-  let lines = 0;
-  for await (const chunk of textStream.pipeThrough(new TextLineStream())) {
-    assertEquals(chunk, "");
-    lines++;
-  }
-  assertEquals(lines, 20001);
+  assertEquals(lines.length, totalLines);
+  assertEquals(lines, Array.from({ length: totalLines }).fill(""));
+});
+
+Deno.test("TextLineStream() parses no final empty chunk with terminal newline", async () => {
+  const stream = ReadableStream.from([
+    "abc\n",
+    "def\nghi\njk",
+    "l\nmn",
+    "o\np",
+    "qr",
+    "\nstu\nvwx\n",
+    "yz\n",
+  ]).pipeThrough(new TextLineStream());
+
+  assertEquals(await Array.fromAsync(stream), [
+    "abc",
+    "def",
+    "ghi",
+    "jkl",
+    "mno",
+    "pqr",
+    "stu",
+    "vwx",
+    "yz",
+  ]);
+});
+
+Deno.test("TextLineStream() parses no final empty chunk without terminal newline", async () => {
+  const stream = ReadableStream.from([
+    "abc\n",
+    "def\nghi\njk",
+    "l\nmn",
+    "o\np",
+    "qr",
+    "\nstu\nvwx\n",
+    "yz",
+  ]).pipeThrough(new TextLineStream());
+
+  assertEquals(await Array.fromAsync(stream), [
+    "abc",
+    "def",
+    "ghi",
+    "jkl",
+    "mno",
+    "pqr",
+    "stu",
+    "vwx",
+    "yz",
+  ]);
 });

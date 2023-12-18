@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /** Returns the index of the first occurrence of the needle array in the source
@@ -7,7 +7,7 @@
  * A start index can be specified as the third argument that begins the search
  * at that given index. The start index defaults to the start of the array.
  *
- * The complexity of this function is O(source.lenth * needle.length).
+ * The complexity of this function is O(source.length * needle.length).
  *
  * ```ts
  * import { indexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/index_of_needle.ts";

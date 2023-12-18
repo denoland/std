@@ -1,6 +1,6 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../testing/asserts.ts";
+import { assert } from "../assert/mod.ts";
 import { endsWith } from "./ends_with.ts";
 
 Deno.test("[bytes] endsWith", () => {

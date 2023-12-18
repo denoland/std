@@ -1,8 +1,12 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encode} and {@linkcode decode} for
- * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
+ * Utilities for
+ * [base58]{@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03}
+ * encoding and decoding.
  *
  * This module is browser compatible.
  *
@@ -23,19 +27,19 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ * Converts data to a base58-encoded string.
  *
- * @param data
+ * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-3}
  *
- * @returns Encoded value
+ * @example
+ * ```ts
+ * import { encodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ *
+ * encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ * ```
  */
-export function encode(data: ArrayBuffer | string): string {
-  const uint8tData = typeof data === "string"
-    ? new TextEncoder().encode(data)
-    : data instanceof Uint8Array
-    ? data
-    : new Uint8Array(data);
+export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
+  const uint8tData = validateBinaryLike(data);
 
   let length = 0;
   let zeroes = 0;
@@ -83,27 +87,31 @@ export function encode(data: ArrayBuffer | string): string {
 }
 
 /**
- * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ * Decodes a base58-encoded string.
  *
- * @param b58
+ * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-4}
  *
- * @returns Decoded value
+ * @example
+ * ```ts
+ * import { decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ *
+ * decodeBase58("2NEpo7TZRRrLZSi2U"); // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * ```
  */
-export function decode(b58: string): Uint8Array {
-  const splittedInput = b58.trim().split("");
+export function decodeBase58(b58: string): Uint8Array {
+  const splitInput = b58.trim().split("");
 
   let length = 0;
   let ones = 0;
 
   // Counting leading ones
   let index = 0;
-  while (splittedInput[index] === "1") {
+  while (splitInput[index] === "1") {
     ones++;
     index++;
   }
 
-  const notZeroData = splittedInput.slice(index);
+  const notZeroData = splitInput.slice(index);
 
   const size = Math.round((b58.length * 733) / 1000 + 1);
   const output: number[] = [];
@@ -118,11 +126,11 @@ export function decode(b58: string): Uint8Array {
 
     for (
       let reverse_iterator = size - 1;
-      (carry > 0 || i < length) && reverse_iterator !== 0;
-      --reverse_iterator, ++i
+      (carry > 0 || i < length) && reverse_iterator !== -1;
+      reverse_iterator--, i++
     ) {
-      carry += 58 * (output[reverse_iterator - 1] || 0);
-      output[reverse_iterator - 1] = Math.round(carry % 256);
+      carry += 58 * (output[reverse_iterator] || 0);
+      output[reverse_iterator] = Math.round(carry % 256);
       carry = Math.floor(carry / 256);
     }
 

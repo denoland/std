@@ -1,10 +1,11 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import * as log from "./mod.ts";
 import {
   getLevelByName,
   getLevelName,
   LevelName,
+  LogLevel,
   LogLevelNames,
 } from "./levels.ts";
 
@@ -33,7 +34,7 @@ Deno.test("defaultHandlers", async function () {
     }
 
     const logger = loggers[levelName];
-    const handler = new TestHandler(levelName as LevelName);
+    const handler = new TestHandler(levelName);
 
     await log.setup({
       handlers: {
@@ -110,5 +111,5 @@ Deno.test("getLoggerUnknown", async function () {
 
 Deno.test("getInvalidLoggerLevels", function () {
   assertThrows(() => getLevelByName("FAKE_LOG_LEVEL" as LevelName));
-  assertThrows(() => getLevelName(5000));
+  assertThrows(() => getLevelName(5000 as LogLevel));
 });

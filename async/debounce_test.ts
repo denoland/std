@@ -1,5 +1,5 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { debounce, DebouncedFunction } from "./debounce.ts";
 import { delay } from "./delay.ts";
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 export {
   DigestContext,
   instantiate as instantiateWasm,
@@ -13,6 +13,9 @@ export {
  * comparisons required by the WebCrypto spec.
  */
 export const digestAlgorithms = [
+  "BLAKE2B-128",
+  "BLAKE2B-160",
+  "BLAKE2B-224",
   "BLAKE2B-256",
   "BLAKE2B-384",
   "BLAKE2B",

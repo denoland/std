@@ -1,9 +1,9 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../assert/mod.ts";
 import { common } from "./mod.ts";
 
 Deno.test({
-  name: "path - common - basic usage",
+  name: "common() returns shared path",
   fn() {
     const actual = common(
       [
@@ -18,7 +18,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "path - common - no shared",
+  name: "common() returns empty string if no shared path is present",
   fn() {
     const actual = common(
       ["file://deno/cli/js/deno.ts", "https://deno.land/std/path/mod.ts"],
@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "path - common - windows sep",
+  name: "common() checks windows separator",
   fn() {
     const actual = common(
       [

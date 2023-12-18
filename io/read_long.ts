@@ -1,4 +1,4 @@
-// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { type BufReader } from "./buf_reader.ts";
 import { readInt } from "./read_int.ts";
@@ -8,6 +8,8 @@ const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 /**
  * Read big endian 64bit long from BufReader
  * @param buf
+ *
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);
