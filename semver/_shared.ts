@@ -82,7 +82,7 @@ const NON_NUMERIC_IDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
 // ## Main Version
 // Three dot-separated numeric identifiers.
 const MAIN_VERSION =
-  `(${NUMERIC_IDENTIFIER})\\.(${NUMERIC_IDENTIFIER})\\.(${NUMERIC_IDENTIFIER})`;
+  `(?<major>${NUMERIC_IDENTIFIER})\\.(?<minor>${NUMERIC_IDENTIFIER})\\.(?<patch>${NUMERIC_IDENTIFIER})`;
 
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
@@ -95,7 +95,7 @@ const PRERELEASE_IDENTIFIER =
 // identifiers.
 
 const PRERELEASE =
-  `(?:-(${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
+  `(?:-(?<prerelease>${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
 
 // ## Build Metadata Identifier
 // Any combination of digits, letters, or hyphens.
@@ -104,7 +104,8 @@ const BUILD_IDENTIFIER = "[0-9A-Za-z-]+";
 // ## Build Metadata
 // Plus sign, followed by one or more period-separated build metadata
 // identifiers.
-const BUILD = `(?:\\+(${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
+const BUILD =
+  `(?:\\+(?<buildmetadata>${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
 
 // ## Full Version String
 // A main version, followed optionally by a pre-release version and
@@ -125,8 +126,8 @@ const COMPARATOR = "((?:<|>)?=?)";
 // Only the first item is strictly required.
 const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|x|X|\\*`;
 
-const XRANGE_PLAIN =
-  `[v=\\s]*(${XRANGE_IDENTIFIER})(?:\\.(${XRANGE_IDENTIFIER})(?:\\.(${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
+export const XRANGE_PLAIN =
+  `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
 export const XRANGE_REGEXP = new RegExp(
   `^${COMPARATOR}\\s*${XRANGE_PLAIN}$`,
@@ -143,11 +144,6 @@ export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGE_PLAIN}$`);
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
   `^${COMPARATOR}\\s*(${FULL_PLAIN})$|^$`,
-);
-
-// Something like `1.2.3 - 1.2.4`
-export const HYPHENRANGE_REGEXP = new RegExp(
-  `^\\s*(${XRANGE_PLAIN})\\s+-\\s+(${XRANGE_PLAIN})\\s*$`,
 );
 
 // Star ranges basically just allow anything at all.

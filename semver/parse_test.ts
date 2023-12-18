@@ -131,6 +131,6 @@ Deno.test("invalidVersion", async (t) => {
 });
 
 Deno.test("bigNumericPrerelease", function () {
-  const r = parse("1.2.3-beta." + Number.MAX_SAFE_INTEGER + "0");
+  const r = parse(`1.2.3-beta.${Number.MAX_SAFE_INTEGER}0`);
   assertEquals(r.prerelease, ["beta", "90071992547409910"]);
 });

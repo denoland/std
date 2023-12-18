@@ -290,24 +290,12 @@ export interface Spy<
 
 /** Wraps a function with a Spy. */
 function functionSpy<
-  // deno-lint-ignore no-explicit-any
-  Self = any,
-  // deno-lint-ignore no-explicit-any
-  Args extends unknown[] = any[],
-  Return = undefined,
->(): Spy<Self, Args, Return>;
-function functionSpy<
-  Self,
-  Args extends unknown[],
-  Return,
->(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
-function functionSpy<
   Self,
   Args extends unknown[],
   Return,
 >(func?: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return> {
-  const original = func ?? (() => {}) as (this: Self, ...args: Args) => Return,
-    calls: SpyCall<Self, Args, Return>[] = [];
+  const original = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
+  const calls: SpyCall<Self, Args, Return>[] = [];
   const spy = function (this: Self, ...args: Args): Return {
     const call: SpyCall<Self, Args, Return> = { args };
     if (this) call.self = this;
@@ -547,8 +535,8 @@ function constructorSpy<
 >(
   constructor: new (...args: Args) => Self,
 ): ConstructorSpy<Self, Args> {
-  const original = constructor,
-    calls: SpyCall<Self, Args, Self>[] = [];
+  const original = constructor;
+  const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
     constructor(...args: Args) {
@@ -636,17 +624,19 @@ export function spy<
     | Self,
   property?: keyof Self,
 ): SpyLike<Self, Args, Return> {
-  return !funcOrConstOrSelf
-    ? functionSpy<Self, Args, Return>()
-    : property !== undefined
-    ? methodSpy<Self, Args, Return>(funcOrConstOrSelf as Self, property)
-    : funcOrConstOrSelf.toString().startsWith("class")
-    ? constructorSpy<Self, Args>(
+  if (!funcOrConstOrSelf) {
+    return functionSpy<Self, Args, Return>();
+  } else if (property !== undefined) {
+    return methodSpy<Self, Args, Return>(funcOrConstOrSelf as Self, property);
+  } else if (funcOrConstOrSelf.toString().startsWith("class")) {
+    return constructorSpy<Self, Args>(
       funcOrConstOrSelf as new (...args: Args) => Self,
-    )
-    : functionSpy<Self, Args, Return>(
+    );
+  } else {
+    return functionSpy<Self, Args, Return>(
       funcOrConstOrSelf as (this: Self, ...args: Args) => Return,
     );
+  }
 }
 
 /** An instance method replacement that records all calls made to it. */

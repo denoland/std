@@ -3,9 +3,9 @@ import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
 import {
   CARET_REGEXP,
-  HYPHENRANGE_REGEXP,
   STAR_REGEXP,
   TILDE_REGEXP,
+  XRANGE_PLAIN,
   XRANGE_REGEXP,
 } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
@@ -33,27 +33,15 @@ function replaceTilde(comp: string): string {
       if (isX(M)) {
         ret = "";
       } else if (isX(m)) {
-        ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.0.0 <${+M + 1}.0.0`;
       } else if (isX(p)) {
         // ~1.2 == >=1.2.0 <1.3.0
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else if (pr) {
-        ret = ">=" +
-          M +
-          "." +
-          m +
-          "." +
-          p +
-          "-" +
-          pr +
-          " <" +
-          M +
-          "." +
-          (+m + 1) +
-          ".0";
+        ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
       } else {
         // ~1.2.3 == >=1.2.3 <1.3.0
-        ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+        ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
       }
 
       return ret;
@@ -82,59 +70,33 @@ function replaceCaret(comp: string): string {
     if (isX(M)) {
       ret = "";
     } else if (isX(m)) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
     } else if (isX(p)) {
-      if (M === "0") {
-        ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+      if (M === `0`) {
+        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
       } else {
-        ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.${m}.0 <${+M + 1}.0.0`;
       }
     } else if (pr) {
       if (M === "0") {
         if (m === "0") {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            m +
-            "." +
-            (+p + 1);
+          ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}`;
         } else {
-          ret = ">=" +
-            M +
-            "." +
-            m +
-            "." +
-            p +
-            "-" +
-            pr +
-            " <" +
-            M +
-            "." +
-            (+m + 1) +
-            ".0";
+          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
         }
       } else {
-        ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) +
-          ".0.0";
+        ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0`;
       }
     } else {
       if (M === "0") {
         if (m === "0") {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." +
+          ret = `>=${M}.${m}.${p} <${M}.${m}.` +
             (+p + 1);
         } else {
-          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
         }
       } else {
-        ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
+        ret = `>=${M}.${m}.${p} <${+M + 1}.0.0`;
       }
     }
 
@@ -201,11 +163,11 @@ function replaceXRange(comp: string): string {
         }
       }
 
-      ret = gtlt + M + "." + m + "." + p;
+      ret = gtlt + M + `.${m}.${p}`;
     } else if (xm) {
-      ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
     } else if (xp) {
-      ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+      ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
     }
 
     return ret;
@@ -223,44 +185,47 @@ function replaceStars(comp: string): string {
 // 1.2 - 3.4.5 -> >=1.2.0 <=3.4.5
 // 1.2.3 - 3.4 -> >=1.2.0 <3.5.0 Any 3.4.x will do
 // 1.2 - 3.4 -> >=1.2.0 <3.5.0
-function hyphenReplace(
-  _$0: string,
-  from: string,
-  fM: string,
-  fm: string,
-  fp: string,
-  _fpr: string,
-  _fb: string,
-  to: string,
-  tM: string,
-  tm: string,
-  tp: string,
-  tpr: string,
-  _tb: string,
-) {
-  if (isX(fM)) {
+function hyphenReplace(range: string) {
+  // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
+  const leftMatch = range.match(new RegExp(`^${XRANGE_PLAIN}`));
+  const leftGroup = leftMatch?.groups;
+  if (!leftGroup) return range;
+  const leftLength = leftMatch[0].length;
+  const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
+  if (!hyphenMatch) return range;
+  const hyphenLength = hyphenMatch[0].length;
+  const rightMatch = range.slice(leftLength + hyphenLength).match(
+    new RegExp(`^${XRANGE_PLAIN}\\s*$`),
+  );
+  const rightGroups = rightMatch?.groups;
+  if (!rightGroups) return range;
+  let from = leftMatch[0];
+  let to = rightMatch[0];
+
+  if (isX(leftGroup.major)) {
     from = "";
-  } else if (isX(fm)) {
-    from = ">=" + fM + ".0.0";
-  } else if (isX(fp)) {
-    from = ">=" + fM + "." + fm + ".0";
+  } else if (isX(leftGroup.minor)) {
+    from = `>=${leftGroup.major}.0.0`;
+  } else if (isX(leftGroup.patch)) {
+    from = `>=${leftGroup.major}.${leftGroup.minor}.0`;
   } else {
-    from = ">=" + from;
+    from = `>=${from}`;
   }
 
-  if (isX(tM)) {
+  if (isX(rightGroups.major)) {
     to = "";
-  } else if (isX(tm)) {
-    to = "<" + (+tM + 1) + ".0.0";
-  } else if (isX(tp)) {
-    to = "<" + tM + "." + (+tm + 1) + ".0";
-  } else if (tpr) {
-    to = "<=" + tM + "." + tm + "." + tp + "-" + tpr;
+  } else if (isX(rightGroups.minor)) {
+    to = `<${+rightGroups.major + 1}.0.0`;
+  } else if (isX(rightGroups.patch)) {
+    to = `<${rightGroups.major}.${+rightGroups.minor + 1}.0`;
+  } else if (rightGroups.prerelease) {
+    to =
+      `<=${rightGroups.major}.${rightGroups.minor}.${rightGroups.patch}-${rightGroups.prerelease}`;
   } else {
-    to = "<=" + to;
+    to = `<=${to}`;
   }
 
-  return (from + " " + to).trim();
+  return `${from} ${to}`.trim();
 }
 
 function isX(id: string): boolean {
@@ -285,8 +250,7 @@ export function parseRange(range: string): SemVerRange {
     .trim()
     .split(/\s*\|\|\s*/)
     .map((range) => {
-      // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
-      range = range.replace(HYPHENRANGE_REGEXP, hyphenReplace);
+      range = hyphenReplace(range);
       range = replaceCarets(range);
       range = replaceTildes(range);
       range = replaceXRanges(range);
