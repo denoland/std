@@ -15,6 +15,7 @@ import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { TarStream } from "./tar_stream.ts";
 import { UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
+import { toText } from "../streams/to_text.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -87,35 +88,25 @@ Deno.test("appendFileWithLongNameToTarArchive", async function () {
   const text = "hello tar world!";
 
   // create a tar archive
-  const tar = new TarStream();
-  const p = (async () => {
-    const writer = tar.writable.getWriter();
-
-    const content = new TextEncoder().encode(text);
-
-    await writer.write({
+  const untar = new UntarStream();
+  await ReadableStream.from([
+    {
       name: fileName,
-      readable: ReadableStream.from([content]),
-      contentSize: content.byteLength,
-    });
-    writer.releaseLock();
-  })();
+      readable: ReadableStream.from([
+        new TextEncoder().encode(text),
+      ]),
+      contentSize: 16,
+    },
+  ]).pipeThrough(new TarStream())
+    .pipeTo(untar.writable);
 
   // read data from a tar archive
-  const untar = new UntarStream();
-  await tar.readable.pipeTo(untar.writable);
   const untarReader = untar.readable.getReader();
   const result = await untarReader.read();
   assert(!result.done);
   assert(!result.value.consumed);
-  let untarText = "";
-  for await (
-    const s of result.value.readable.pipeThrough(new TextDecoderStream())
-  ) {
-    untarText += s;
-  }
-  await p;
-  await tar.writable.close();
+
+  const untarText = await toText(result.value.readable);
   assert(result.value.consumed);
 
   // tests
