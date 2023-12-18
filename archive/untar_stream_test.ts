@@ -11,12 +11,10 @@
  */
 import { assert, assertEquals, assertExists } from "../assert/mod.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { TarEntry, type TarHeader, UntarStream } from "./untar_stream.ts";
+import { TarMeta, UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
 import { type TarOptions, TarStream } from "./tar_stream.ts";
 import { toArrayBuffer } from "../streams/to_array_buffer.ts";
-import { TarMetaWithLinkName, Untar } from "./untar.ts";
-import { readAll } from "../streams/read_all.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -356,7 +354,7 @@ Deno.test("untarArchiveWithLink", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
   const file = await Deno.open(filePath, { read: true });
 
-  type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
+  type ExpectedEntry = TarMeta & { content?: Uint8Array };
 
   const expectedEntries: ExpectedEntry[] = [
     {
