@@ -61,7 +61,7 @@ export class BinaryHeap<T> implements Iterable<T> {
   #data: T[] = [];
   constructor(private compare: (a: T, b: T) => number = descend) {}
   /** Returns the underlying cloned array in arbitrary order without sorting */
-  toArray() {
+  toArray(): T[] {
     return Array.from(this.#data);
   }
   /** Creates a new binary heap from an array like or iterable object. */
