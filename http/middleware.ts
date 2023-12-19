@@ -2,6 +2,8 @@
 
 /** Options for {@linkcode MiddlewareHandler}. */
 export interface MiddlewareOptions<T = undefined> {
+  /** Information for a HTTP request. */
+  info: Deno.ServeHandlerInfo;
   /** Calls the next middleware handler in the middleware chain. */
   next: () => Response | Promise<Response>;
   /** State that gets passed down through each middleware handler. */
@@ -14,7 +16,6 @@ export interface MiddlewareOptions<T = undefined> {
  */
 export type MiddlewareHandler<T = undefined> = (
   request: Request,
-  info: Deno.ServeHandlerInfo,
   options: MiddlewareOptions<T>,
 ) => Response | Promise<Response>;
 
@@ -31,7 +32,7 @@ export type MiddlewareHandler<T = undefined> = (
  *   composeMiddleware,
  * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
  *
- * const middleware1: MiddlewareHandler = async (_request, _info, { next }) => {
+ * const middleware1: MiddlewareHandler = async (_request, { next }) => {
  *   const start = performance.now();
  *   const response = await next();
  *   const duration = performance.now() - start;
@@ -39,8 +40,8 @@ export type MiddlewareHandler<T = undefined> = (
  *   return response;
  * };
  *
- * const middleware2: MiddlewareHandler = (request, info) => {
- *   return Response.json({ request, info });
+ * const middleware2: MiddlewareHandler = (request) => {
+ *   return Response.json({ request });
  * };
  *
  * const handler = composeMiddleware([middleware1, middleware2])
@@ -59,8 +60,8 @@ export function composeMiddleware<T = undefined>(
       }
       return middlewares[index](
         request,
-        info,
         {
+          info,
           next: () => chainMiddleware(index + 1),
           state,
         },

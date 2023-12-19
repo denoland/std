@@ -12,7 +12,6 @@ Deno.test("composeMiddleware() chains middlewares in order", async () => {
 
   const middleware1: MiddlewareHandler<State> = async (
     _request,
-    _info,
     { next, state },
   ) => {
     state.push(1);
@@ -23,7 +22,6 @@ Deno.test("composeMiddleware() chains middlewares in order", async () => {
 
   const middleware2: MiddlewareHandler<State> = async (
     _request,
-    _info,
     { next, state },
   ) => {
     state.push(2);
@@ -34,7 +32,6 @@ Deno.test("composeMiddleware() chains middlewares in order", async () => {
 
   const finalMiddleware: MiddlewareHandler<State> = (
     _request,
-    _info,
     { state },
   ) => {
     assertEquals(state, [1, 2]);
@@ -57,7 +54,6 @@ Deno.test("composeMiddleware() chains middlewares in order", async () => {
 Deno.test("composeMiddleware() throws when next() is called incorrectly", async () => {
   const finalMiddleware: MiddlewareHandler = async (
     _request,
-    _info,
     { next },
   ) => {
     await next();
