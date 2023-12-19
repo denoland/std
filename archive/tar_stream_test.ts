@@ -20,7 +20,7 @@ import { toText } from "../streams/to_text.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
-Deno.test("createTarArchive", async function () {
+Deno.test("createTarArchive", async () => {
   // initialize
   const { readable, writable } = new TarStream();
 
@@ -43,11 +43,9 @@ Deno.test("createTarArchive", async function () {
 
   // 2048 = 512 (header) + 512 (content) + 1024 (footer)
   assertEquals(buf.bytes().length, 2048);
-
-  await Deno.writeFile("test.tar", buf.readable);
 });
 
-Deno.test("appendFileWithLongNameToTarArchive", async function () {
+Deno.test("appendFileWithLongNameToTarArchive", async () => {
   // 9 * 15 + 13 = 148 bytes
   const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
@@ -79,7 +77,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function () {
   assertEquals(untarText, text);
 });
 
-Deno.test("directoryEntryType", async function () {
+Deno.test("directoryEntryType", async () => {
   const outputFile = resolve(testdataDir, "directory_type_test.tar");
   const file = await Deno.open(outputFile, { create: true, write: true });
 
