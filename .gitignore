@@ -6,3 +6,4 @@ cov.lcov
 _fresh/
 backup.json
 html_cov/
+coverage/
