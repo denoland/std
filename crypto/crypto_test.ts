@@ -11,7 +11,7 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 const webCrypto = globalThis.crypto;
 
 Deno.test(
-  "digest() checks different ways to perform the same operation should produce the same result",
+  "digest() handles different ways to perform the same operation should produce the same result",
   async () => {
     const inputString = "taking the hobbits to isengard";
     const inputBytes = new TextEncoder().encode(inputString);
@@ -147,7 +147,7 @@ Deno.test("digest() returns an ArrayBuffer", async () => {
   );
 });
 
-Deno.test("digest() checks length option", async () => {
+Deno.test("digest() handles length option", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
 
@@ -166,7 +166,7 @@ Deno.test("digest() checks length option", async () => {
   );
 });
 
-Deno.test("digest() checks memory usage to remain reasonable with large inputs", async () => {
+Deno.test("digest() keeps memory usage reasonable with large inputs", async () => {
   const code = `
     import { crypto as stdCrypto } from "./mod.ts";
     import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";
@@ -248,7 +248,7 @@ Deno.test("digest() checks memory usage to remain reasonable with large inputs",
   );
 });
 
-Deno.test("digest() checks memory usage to remain reasonable with many calls", async () => {
+Deno.test("digest() keeps memory usage reasonable with many calls", async () => {
   const code = `
     import { crypto as stdCrypto } from "./mod.ts";
     import { instantiateWithInstance } from "./_wasm/lib/deno_std_wasm_crypto.generated.mjs";

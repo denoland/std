@@ -19,7 +19,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "timingSafeEqual() compares equal ArrayBuffer",
+  name: "timingSafeEqual() compares unequal ArrayBuffer",
   fn() {
     const a = new ArrayBuffer(2);
     const va = new DataView(a);
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "timingSafeEqual() compares not equal Uint8Array",
+  name: "timingSafeEqual() compares unequal Uint8Array",
   fn() {
     const a = new Uint8Array([212, 213]);
     const b = new Uint8Array([212, 212]);
@@ -62,7 +62,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "timingSafeEqual() compares not equal encoded Uint8Array",
+  name: "timingSafeEqual() compares unequal encoded Uint8Array",
   fn() {
     const encoder = new TextEncoder();
     const a = encoder.encode("hello deno");
@@ -73,7 +73,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "timingSafeEqual() checks Uint8Array with different buffer sizes (a > b)",
+    "timingSafeEqual() handles Uint8Array with different buffer sizes (a > b)",
   fn() {
     const a = new SharedArrayBuffer(4);
     const va = new DataView(a);
@@ -98,7 +98,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "timingSafeEqual() checks Uint8Array with different buffer sizes (b > a)",
+    "timingSafeEqual() handles Uint8Array with different buffer sizes (b > a)",
   fn() {
     const a = new SharedArrayBuffer(2);
     const va = new DataView(a);
@@ -122,7 +122,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "timingSafeEqual() checks Uint8Array with non-0 byteOffset",
+  name: "timingSafeEqual() handles Uint8Array with non-0 byteOffset",
   fn() {
     const a = new SharedArrayBuffer(4);
     const va = new DataView(a);
