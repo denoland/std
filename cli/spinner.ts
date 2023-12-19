@@ -4,8 +4,25 @@ const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
 const COLOR_RESET = "\u001b[0m";
-const DEFAULT_SPEED = 75;
+const DEFAULT_INTERVAL = 75;
 const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+// This is a hack to allow us to use the same type for both the color name and an ANSI escape code.
+// deno-lint-ignore ban-types
+type Ansi = string & { };
+type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray' | Ansi;
+
+const COLORS: Record<Color, string> = {
+  black: "\u001b[30m",
+  red: "\u001b[31m",
+  green: "\u001b[32m",
+  yellow: "\u001b[33m",
+  blue: "\u001b[34m",
+  magenta: "\u001b[35m",
+  cyan: "\u001b[36m",
+  white: "\u001b[37m",
+  gray: "\u001b[90m",
+};
 
 /** Options for {@linkcode Spinner}. */
 export interface SpinnerOptions {
@@ -17,13 +34,13 @@ export interface SpinnerOptions {
   spinner?: string[];
   /** The message to display next to the spinner. */
   message?: string;
-  /** The speed of the spinner.
+  /** The time between each frame of the spinner.
    *
    * @default {75}
    */
-  speed?: number;
+  interval?: number;
   /** The color of the spinner. Defaults to the default terminal color. */
-  color?: string;
+  color?: Color;
 }
 
 /**
@@ -32,8 +49,8 @@ export interface SpinnerOptions {
 export class Spinner {
   #spinner: string[];
   #message: string;
-  #speed: number;
-  #color?: string;
+  #interval: number;
+  #color?: Color;
   #intervalId: number | undefined;
   #active = false;
 
@@ -50,8 +67,8 @@ export class Spinner {
   constructor(options?: SpinnerOptions) {
     this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
     this.#message = options?.message ?? "";
-    this.#speed = options?.speed ?? DEFAULT_SPEED;
-    this.#color = options?.color;
+    this.#interval = options?.interval ?? DEFAULT_INTERVAL;
+    this.#color = options?.color ? COLORS[options.color] : undefined;
   }
 
   /**
@@ -80,7 +97,7 @@ export class Spinner {
       Deno.stdout.writeSync(frame);
       i = (i + 1) % this.#spinner.length;
     };
-    this.#intervalId = setInterval(updateFrame, this.#speed);
+    this.#intervalId = setInterval(updateFrame, this.#interval);
   }
   /**
    * Stops the spinner.
@@ -102,7 +119,6 @@ export class Spinner {
     if (this.#intervalId && this.#active) {
       clearInterval(this.#intervalId);
       Deno.stdout.writeSync(LINE_CLEAR); // Clear the current line
-      Deno.removeSignalListener("SIGINT", this.stop.bind(this));
       this.#active = false;
     }
   }
