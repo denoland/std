@@ -46,6 +46,21 @@ export type FormatStyle =
  * The shape of a valid semantic version comparator
  * @example >=0.0.0
  */
+export interface Comparator {
+  operator: Operator;
+  semver: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
+  min: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
+  max: SemVer;
+}
+/**
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
+ */
 export interface SemVerComparator {
   operator: Operator;
   semver: SemVer;
@@ -54,7 +69,7 @@ export interface SemVerComparator {
    */
   min: SemVer;
   /**
-   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMax} instead.
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
    */
   max: SemVer;
 }
@@ -82,6 +97,3 @@ export interface SemVerRange {
   // The outer array is OR while each inner array is AND
   ranges: SemVerRangeOr;
 }
-
-export type Range = [SemVerComparator, SemVerComparator];
-export type RangeSet = Range[];
