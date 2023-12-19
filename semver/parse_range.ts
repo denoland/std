@@ -71,7 +71,7 @@ function replaceCaret(comp: string): string {
   } else if (isWildcard(groups.minor)) {
     return `>=${groups.major}.0.0 <${+groups.major + 1}.0.0`;
   } else if (isWildcard(groups.patch)) {
-    if (groups.major === `0`) {
+    if (groups.major === "0") {
       return `>=${groups.major}.${groups.minor}.0 <${groups.major}.${
         +groups.minor + 1
       }.0`;
