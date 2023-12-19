@@ -4,7 +4,7 @@ import { FakeTime } from "../testing/time.ts";
 import { parse } from "./parse.ts";
 
 Deno.test({
-  name: "[std/datetime] parse",
+  name: "parse()",
   fn: () => {
     assertEquals(
       parse("01-03-2019 16:30", "MM-dd-yyyy HH:mm"),
@@ -65,7 +65,7 @@ Deno.test({
   },
 });
 
-Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
+Deno.test("parse(): The date is 2021-12-31", () => {
   using _time = new FakeTime("2021-12-31");
 
   assertEquals(
@@ -132,7 +132,7 @@ Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
 });
 
 Deno.test({
-  name: "[std/datetime] invalidParseDateTimeFormatThrows",
+  name: "parse() throws with invalid datetime format",
   fn: () => {
     assertThrows(() => {
       parse("2019-01-01 00:00", "x-y-z");
