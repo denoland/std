@@ -27,25 +27,21 @@ function replaceTildes(comp: string): string {
 function replaceTilde(comp: string): string {
   const groups = comp.match(TILDE_REGEXP)?.groups;
   if (!groups) return comp;
-
-  if (isWildcard(groups.major)) {
+  const { major, minor, patch, prerelease } = groups;
+  if (isWildcard(major)) {
     return "";
-  } else if (isWildcard(groups.minor)) {
-    return `>=${groups.major}.0.0 <${+groups.major + 1}.0.0`;
-  } else if (isWildcard(groups.patch)) {
+  } else if (isWildcard(minor)) {
+    return `>=${major}.0.0 <${+major + 1}.0.0`;
+  } else if (isWildcard(patch)) {
     // ~1.2 == >=1.2.0 <1.3.0
-    return `>=${groups.major}.${groups.minor}.0 <${groups.major}.${
-      +groups.minor + 1
-    }.0`;
-  } else if (groups.prerelease) {
-    return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${
-      +groups.minor + 1
+    return `>=${major}.${minor}.0 <${major}.${+minor + 1}.0`;
+  } else if (prerelease) {
+    return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${
+      +minor + 1
     }.0`;
   }
   // ~1.2.3 == >=1.2.3 <1.3.0
-  return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${
-    +groups.minor + 1
-  }.0`;
+  return `>=${major}.${minor}.${patch} <${major}.${+minor + 1}.0`;
 }
 
 // ^ --> * (any, kinda silly)
@@ -65,49 +61,42 @@ function replaceCarets(comp: string): string {
 function replaceCaret(comp: string): string {
   const groups = comp.match(CARET_REGEXP)?.groups;
   if (!groups) return comp;
+  const { major, minor, patch, prerelease } = groups;
 
-  if (isWildcard(groups.major)) {
+  if (isWildcard(major)) {
     return "";
-  } else if (isWildcard(groups.minor)) {
-    return `>=${groups.major}.0.0 <${+groups.major + 1}.0.0`;
-  } else if (isWildcard(groups.patch)) {
-    if (groups.major === "0") {
-      return `>=${groups.major}.${groups.minor}.0 <${groups.major}.${
-        +groups.minor + 1
-      }.0`;
+  } else if (isWildcard(minor)) {
+    return `>=${major}.0.0 <${+major + 1}.0.0`;
+  } else if (isWildcard(patch)) {
+    if (major === `0`) {
+      return `>=${major}.${minor}.0 <${major}.${+minor + 1}.0`;
     } else {
-      return `>=${groups.major}.${groups.minor}.0 <${+groups.major + 1}.0.0`;
+      return `>=${major}.${minor}.0 <${+major + 1}.0.0`;
     }
-  } else if (groups.prerelease) {
-    if (groups.major === "0") {
-      if (groups.minor === "0") {
-        return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${groups.minor}.${
-          +groups.patch + 1
+  } else if (prerelease) {
+    if (major === "0") {
+      if (minor === "0") {
+        return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${minor}.${
+          +patch + 1
         }`;
       } else {
-        return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${groups.major}.${
-          +groups.minor + 1
+        return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${
+          +minor + 1
         }.0`;
       }
     } else {
-      return `>=${groups.major}.${groups.minor}.${groups.patch}-${groups.prerelease} <${
-        +groups.major + 1
-      }.0.0`;
+      return `>=${major}.${minor}.${patch}-${prerelease} <${+major + 1}.0.0`;
     }
   }
-  if (groups.major === "0") {
-    if (groups.minor === "0") {
-      return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${groups.minor}.` +
-        (+groups.patch + 1);
+  if (major === "0") {
+    if (minor === "0") {
+      return `>=${major}.${minor}.${patch} <${major}.${minor}.` +
+        (+patch + 1);
     } else {
-      return `>=${groups.major}.${groups.minor}.${groups.patch} <${groups.major}.${
-        +groups.minor + 1
-      }.0`;
+      return `>=${major}.${minor}.${patch} <${major}.${+minor + 1}.0`;
     }
   } else {
-    return `>=${groups.major}.${groups.minor}.${groups.patch} <${
-      +groups.major + 1
-    }.0.0`;
+    return `>=${major}.${minor}.${patch} <${+major + 1}.0.0`;
   }
 }
 
