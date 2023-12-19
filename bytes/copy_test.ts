@@ -2,7 +2,7 @@
 import { assert, assertEquals } from "../assert/mod.ts";
 import { copy } from "./copy.ts";
 
-Deno.test("[bytes] copy", function () {
+Deno.test("copy()", function () {
   const dst = new Uint8Array(4);
 
   dst.fill(0);
