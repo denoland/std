@@ -284,7 +284,6 @@ export type ParseResult<ParseOptions, T> =
 
 // RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string>
 // RecordWithColumn<string> => Record<string, string | undefined>
-/** @internal */
 type RecordWithColumn<C extends string> = string extends C
   ? Record<string, string | undefined>
   : Record<C, string>;

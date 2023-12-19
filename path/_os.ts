@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 // Keep this up-to-date with Deno.build.os
-/** @internal */
 export type OSType =
   | "darwin"
   | "linux"

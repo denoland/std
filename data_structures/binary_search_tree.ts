@@ -4,7 +4,6 @@
 import { ascend } from "./comparators.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 
-/** @internal */
 type Direction = "left" | "right";
 
 /**

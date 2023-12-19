@@ -74,7 +74,6 @@ export interface SemVer {
 }
 
 type SemVerRangeAnd = SemVerComparator[];
-/** @internal */
 type SemVerRangeOr = SemVerRangeAnd[];
 
 /**

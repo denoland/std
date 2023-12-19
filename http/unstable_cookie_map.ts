@@ -374,7 +374,6 @@ const requestKeys = Symbol("#requestKeys");
 
 /** An internal abstract class which provides common functionality for
  * {@link CookieMap} and {@link SecureCookieMap}.
- * @internal
  */
 abstract class CookieMapBase implements Mergeable {
   [keys]?: string[];

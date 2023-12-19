@@ -12,7 +12,6 @@ export type ValueType =
   | ValueType[]
   | ValueMap;
 
-/** @internal */
 interface ValueMap {
   [index: string | number]: ValueType;
 }

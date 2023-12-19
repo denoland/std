@@ -210,7 +210,6 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
 // a helper type to match any function. Used so that we only convert functions
 // to return a promise and not properties.
-/** @internal */
 type Fn = (...args: unknown[]) => unknown;
 
 // converts all the methods in an interface to be async functions

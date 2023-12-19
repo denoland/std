@@ -62,9 +62,7 @@ interface Code {
   regexp: RegExp;
 }
 
-/** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff`
- * @internal
- */
+/** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff` */
 interface Rgb {
   r: number;
   g: number;

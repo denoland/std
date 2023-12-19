@@ -3,7 +3,6 @@
 
 export type Direction = "left" | "right";
 
-/** @internal */
 export class BinarySearchNode<T> {
   left: BinarySearchNode<T> | null;
   right: BinarySearchNode<T> | null;

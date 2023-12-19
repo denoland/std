@@ -4,7 +4,6 @@
 import { BinarySearchNode, Direction } from "./_binary_search_node.ts";
 export type { Direction };
 
-/** @internal */
 export class RedBlackNode<T> extends BinarySearchNode<T> {
   declare parent: RedBlackNode<T> | null;
   declare left: RedBlackNode<T> | null;

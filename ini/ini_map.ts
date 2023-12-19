@@ -14,7 +14,6 @@ export interface FormattingOptions {
   deduplicate?: boolean;
 }
 
-/** @internal */
 type Formatting = Omit<FormattingOptions, "lineBreak" | "commentChar"> & {
   lineBreak?: string;
   commentChar?: string;

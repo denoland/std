@@ -54,7 +54,6 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
-/** @internal */
 type RowType<T> = T extends undefined ? string[]
   : ParseResult<CsvParseStreamOptions, T>[number];
 
