@@ -4,46 +4,47 @@
 import * as path from "./windows/mod.ts";
 
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const SEP = path.SEP;
+export const SEP: typeof path.SEP = path.SEP;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const SEP_PATTERN = path.SEP_PATTERN;
+export const SEP_PATTERN: typeof path.SEP_PATTERN = path.SEP_PATTERN;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const basename = path.basename;
+export const basename: typeof path.basename = path.basename;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const common = path.common;
+export const common: typeof path.common = path.common;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const delimiter = path.delimiter;
+export const delimiter: typeof path.delimiter = path.delimiter;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const dirname = path.dirname;
+export const dirname: typeof path.dirname = path.dirname;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const extname = path.extname;
+export const extname: typeof path.extname = path.extname;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const format = path.format;
+export const format: typeof path.format = path.format;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const fromFileUrl = path.fromFileUrl;
+export const fromFileUrl: typeof path.fromFileUrl = path.fromFileUrl;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const globToRegExp = path.globToRegExp;
+export const globToRegExp: typeof path.globToRegExp = path.globToRegExp;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const isAbsolute = path.isAbsolute;
+export const isAbsolute: typeof path.isAbsolute = path.isAbsolute;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const isGlob = path.isGlob;
+export const isGlob: typeof path.isGlob = path.isGlob;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const join = path.join;
+export const join: typeof path.join = path.join;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const joinGlobs = path.joinGlobs;
+export const joinGlobs: typeof path.joinGlobs = path.joinGlobs;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const normalize = path.normalize;
+export const normalize: typeof path.normalize = path.normalize;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const normalizeGlob = path.normalizeGlob;
+export const normalizeGlob: typeof path.normalizeGlob = path.normalizeGlob;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const parse = path.parse;
+export const parse: typeof path.parse = path.parse;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const relative = path.relative;
+export const relative: typeof path.relative = path.relative;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const resolve = path.resolve;
+export const resolve: typeof path.resolve = path.resolve;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const sep = path.sep;
+export const sep: typeof path.sep = path.sep;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const toFileUrl = path.toFileUrl;
+export const toFileUrl: typeof path.toFileUrl = path.toFileUrl;
 /** @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
-export const toNamespacedPath = path.toNamespacedPath;
+export const toNamespacedPath: typeof path.toNamespacedPath =
+  path.toNamespacedPath;

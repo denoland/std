@@ -322,7 +322,7 @@ class Cookie implements CookieAttributes {
  *
  * @deprecated (will be removed in 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const cookieMapHeadersInitSymbol = Symbol.for(
+export const cookieMapHeadersInitSymbol: unique symbol = Symbol.for(
   "Deno.std.cookieMap.headersInit",
 );
 
@@ -373,7 +373,8 @@ const isSecure = Symbol("#secure");
 const requestKeys = Symbol("#requestKeys");
 
 /** An internal abstract class which provides common functionality for
- * {@link CookieMap} and {@link SecureCookieMap}. */
+ * {@link CookieMap} and {@link SecureCookieMap}.
+ */
 abstract class CookieMapBase implements Mergeable {
   [keys]?: string[];
   [requestHeaders]: Headers;
