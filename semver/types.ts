@@ -46,7 +46,7 @@ export type FormatStyle =
  * The shape of a valid semantic version comparator
  * @example >=0.0.0
  */
-export interface Comparator {
+export interface SemVerComparator {
   operator: Operator;
   semver: SemVer;
   /**
@@ -55,21 +55,6 @@ export interface Comparator {
   min: SemVer;
   /**
    * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMax} instead.
-   */
-  max: SemVer;
-}
-/**
- * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
- */
-export interface SemVerComparator {
-  operator: Operator;
-  semver: SemVer;
-  /**
-   * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMin} instead.
-   */
-  min: SemVer;
-  /**
-   * @deprecated (will be removed in 0.215.0) use {@linkcode comparatorMax} instead.
    */
   max: SemVer;
 }

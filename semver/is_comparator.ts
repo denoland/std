@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSemVer } from "./is_semver.ts";
 import { isValidOperator } from "./_shared.ts";
-import type { Comparator } from "./types.ts";
+import type { SemVerComparator } from "./types.ts";
 import { ALL, NONE } from "./constants.ts";
 
 /**
@@ -14,13 +14,13 @@ import { ALL, NONE } from "./constants.ts";
  * @param value The value to check if its a Comparator
  * @returns True if the object is a Comparator otherwise false
  */
-export function isComparator(value: unknown): value is Comparator {
+export function isComparator(value: unknown): value is SemVerComparator {
   if (value === null || value === undefined) return false;
   if (value === NONE) return true;
   if (value === ALL) return true;
   if (Array.isArray(value)) return false;
   if (typeof value !== "object") return false;
-  const { operator, semver, min, max } = value as Comparator;
+  const { operator, semver, min, max } = value as SemVerComparator;
   return (
     isValidOperator(operator) &&
     isSemVer(semver) &&
