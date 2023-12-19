@@ -4,8 +4,9 @@
 import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encodeBase58} and {@linkcode decodeBase58} for
- * [base58](https://en.wikipedia.org/wiki/Binary-to-text_encoding#Base58) encoding.
+ * Utilities for
+ * [base58]{@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03}
+ * encoding and decoding.
  *
  * This module is browser compatible.
  *
@@ -26,32 +27,16 @@ const base58alphabet =
   "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".split("");
 
 /**
- * @deprecated (will be removed in 0.210.0) Use a `encodeBase58` instead.
+ * Converts data to a base58-encoded string.
  *
- * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-3}
  *
- * @param data
+ * @example
+ * ```ts
+ * import { encodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
  *
- * @returns Encoded value
- */
-export const encode = encodeBase58;
-
-/**
- * @deprecated (will be removed in 0.210.0) Use a `decodeBase58` instead.
- *
- * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
- *
- * @param b58
- *
- * @returns Decoded value
- */
-export const decode = decodeBase58;
-
-/**
- * Encodes a given Uint8Array, ArrayBuffer or string into draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ * encodeBase58("Hello World!"); // "2NEpo7TZRRrLZSi2U"
+ * ```
  */
 export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
   const uint8tData = validateBinaryLike(data);
@@ -102,8 +87,16 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
 }
 
 /**
- * Decodes a given b58 string according to draft-mspotny-base58-03 RFC base58 representation:
- * https://tools.ietf.org/id/draft-msporny-base58-01.html#rfc.section.1
+ * Decodes a base58-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/draft-msporny-base58-03#section-4}
+ *
+ * @example
+ * ```ts
+ * import { decodeBase58 } from "https://deno.land/std@$STD_VERSION/encoding/base58.ts";
+ *
+ * decodeBase58("2NEpo7TZRRrLZSi2U"); // Uint8Array(12) [ 72, 101, 108, 108, 111, 32,  87, 111, 114, 108, 100, 33 ]
+ * ```
  */
 export function decodeBase58(b58: string): Uint8Array {
   const splitInput = b58.trim().split("");

@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertIsError, assertThrows } from "./mod.ts";
 
-Deno.test("Assert Is Error Non-Error Fail", () => {
+class CustomError extends Error {}
+class AnotherCustomError extends Error {}
+
+Deno.test("assertIsError() throws when given value isn't error", () => {
   assertThrows(
     () => assertIsError("Panic!", undefined, "Panic!"),
     AssertionError,
@@ -21,13 +24,11 @@ Deno.test("Assert Is Error Non-Error Fail", () => {
   );
 });
 
-Deno.test("Assert Is Error Parent Error", () => {
+Deno.test("assertIsError() allows subclass of Error", () => {
   assertIsError(new AssertionError("Fail!"), Error, "Fail!");
 });
 
-Deno.test("Assert Is Error with custom Error", () => {
-  class CustomError extends Error {}
-  class AnotherCustomError extends Error {}
+Deno.test("assertIsError() allows custom error", () => {
   assertIsError(new CustomError("failed"), CustomError, "fail");
   assertThrows(
     () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
@@ -36,8 +37,7 @@ Deno.test("Assert Is Error with custom Error", () => {
   );
 });
 
-Deno.test("assertIsError throws with message diff, where messages contain double quotes", () => {
-  class CustomError extends Error {}
+Deno.test("assertIsError() throws with message diff containing double quotes", () => {
   assertThrows(
     () =>
       assertIsError(
@@ -47,5 +47,14 @@ Deno.test("assertIsError throws with message diff, where messages contain double
       ),
     AssertionError,
     `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\"".`,
+  );
+});
+
+Deno.test("assertIsError() throws when given value doesn't match regex ", () => {
+  assertIsError(new AssertionError("Regex test"), Error, /ege/);
+  assertThrows(
+    () => assertIsError(new AssertionError("Regex test"), Error, /egg/),
+    Error,
+    `Expected error message to include /egg/, but got "Regex test"`,
   );
 });

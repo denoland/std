@@ -77,7 +77,7 @@ Deno.test({
     for (const [a, b] of versions) {
       await t.step(a, () => {
         const range = parseRange(a);
-        const version = parse(b);
+        const version = parse(b as SemVer);
         const min = rangeMin(range);
         assert(eq(min, version), `${format(min)} != ${format(version)}`);
       });

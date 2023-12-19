@@ -101,14 +101,14 @@
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
- * import { stripColor } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ * import { stripAnsiCode } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  *
  * const assertSnapshot = createAssertSnapshot({
  *   dir: ".snaps",
  * });
  *
  * const assertMonochromeSnapshot = createAssertSnapshot<string>(
- *   { serializer: stripColor },
+ *   { serializer: stripAnsiCode },
  *   assertSnapshot,
  * );
  *

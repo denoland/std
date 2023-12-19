@@ -2,12 +2,12 @@
 
 import { copy as copyBytes } from "../bytes/copy.ts";
 import { assert } from "../assert/assert.ts";
-import type { Reader, ReaderSync } from "../types.d.ts";
+import type { Reader, ReaderSync } from "./types.d.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
@@ -32,7 +32,7 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -72,7 +72,7 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,

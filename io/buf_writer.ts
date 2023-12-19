@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { copy } from "../bytes/copy.ts";
-import type { Writer, WriterSync } from "../types.d.ts";
+import type { Writer, WriterSync } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 
@@ -40,7 +40,7 @@ abstract class AbstractBufBase {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -133,7 +133,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;

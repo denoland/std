@@ -109,3 +109,33 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[collections/mapValues] preserves key type (Record)",
+  fn() {
+    type Variants = "a" | "b";
+    const input: Record<Variants, string> = { a: "a", b: "b" };
+    const actual = mapValues(
+      input,
+      (_: string) => 1,
+    );
+    const expected = { a: 1, b: 1 };
+
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[collections/mapValues] preserves key type (Partial Record)",
+  fn() {
+    type Variants = "a" | "b";
+    const input: Partial<Record<Variants, string>> = { a: "a" };
+    const actual = mapValues(
+      input,
+      (_: string) => 1,
+    );
+    const expected = { a: 1 };
+
+    assertEquals(actual, expected);
+  },
+});

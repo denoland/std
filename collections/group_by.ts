@@ -26,6 +26,8 @@
  *   },
  * );
  * ```
+ *
+ * @deprecated (will be removed in 0.211.0) Use {@linkcode Object.groupBy} instead.
  */
 export function groupBy<T, K extends PropertyKey>(
   iterable: Iterable<T>,

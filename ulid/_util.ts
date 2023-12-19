@@ -1,8 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-interface ULID {
-  (seedTime?: number): string;
-}
+/** Type for a ULID generator function. */
+export type ULID = (seedTime?: number) => string;
 
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
@@ -58,25 +57,7 @@ export function incrementBase32(str: string): string {
   throw new Error("cannot increment this string");
 }
 
-/**
- * Generates a monotonically increasing ULID.
- *
- * @example To generate monotonically increasing ULIDs, create a monotonic counter.
- * ```ts
- * import { monotonicFactory } from "https://deno.land/std@$STD_VERSION/ulid/_util.ts";
- *
- * const ulid = monotonicFactory();
- * // Strict ordering for the same timestamp, by incrementing the least-significant random bit by 1
- * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVR8
- * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVR9
- * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRA
- * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRB
- * ulid(150000); // 000XAL6S41ACTAV9WEVGEMMVRC
- *
- * // Even if a lower timestamp is passed (or generated), it will preserve sort order
- * ulid(100000); // 000XAL6S41ACTAV9WEVGEMMVRD
- * ```
- */
+/** Generates a monotonically increasing ULID. */
 export function monotonicFactory(encodeRand = encodeRandom): ULID {
   let lastTime = 0;
   let lastRandom: string;

@@ -25,10 +25,7 @@ Deno.test({
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
-    const records = [] as Array<Array<string>>;
-    for await (const record of readable) {
-      records.push(record);
-    }
+    const records = await Array.fromAsync(readable);
     assertEquals(records, [
       ["id", "name"],
       ["1", "foobar"],
@@ -333,10 +330,7 @@ x,,,
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [];
-          for await (const record of readable) {
-            actual.push(record);
-          }
+          const actual = await Array.fromAsync(readable);
           assertEquals(actual, testCase.output);
         } else {
           await assertRejects(async () => {
@@ -348,27 +342,14 @@ x,,,
   },
 });
 
-// Work around resource leak error with TextDecoderStream:
-//   https://github.com/denoland/deno/issues/13142
-export const MyTextDecoderStream = () => {
-  const textDecoder = new TextDecoder();
-  return new TransformStream({
-    transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode(chunk));
-    },
-    flush(controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode());
-    },
-  });
-};
-
 Deno.test({
   name:
     "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
   permissions: { read: [testdataDir] },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
-    const readable = file.readable.pipeThrough(MyTextDecoderStream())
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
     for await (const _record of readable) {
       break;

@@ -148,18 +148,30 @@
  * @module
  */
 
-enum State {
-  PASSTHROUGH,
-  PERCENT,
-  POSITIONAL,
-  PRECISION,
-  WIDTH,
-}
+const State = {
+  PASSTHROUGH: 0,
+  PERCENT: 1,
+  POSITIONAL: 2,
+  PRECISION: 3,
+  WIDTH: 4,
+} as const;
 
-enum WorP {
-  WIDTH,
-  PRECISION,
-}
+type State = typeof State[keyof typeof State];
+
+const WorP = {
+  WIDTH: 0,
+  PRECISION: 1,
+} as const;
+
+type WorP = typeof WorP[keyof typeof WorP];
+
+const F = {
+  sign: 1,
+  mantissa: 2,
+  fractional: 3,
+  esign: 4,
+  exponent: 5,
+} as const;
 
 class Flags {
   plus?: boolean;
@@ -176,14 +188,6 @@ const min = Math.min;
 const UNICODE_REPLACEMENT_CHARACTER = "\ufffd";
 const DEFAULT_PRECISION = 6;
 const FLOAT_REGEXP = /(-?)(\d)\.?(\d*)e([+-])(\d+)/;
-
-enum F {
-  sign = 1,
-  mantissa,
-  fractional,
-  esign,
-  exponent,
-}
 
 class Printf {
   format: string;

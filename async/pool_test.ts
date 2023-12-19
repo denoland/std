@@ -8,24 +8,21 @@ import {
   assertStringIncludes,
 } from "../assert/mod.ts";
 
-Deno.test("[async] pooledMap", async function () {
+Deno.test("pooledMap()", async function () {
   const start = new Date();
   const results = pooledMap(
     2,
     [1, 2, 3],
     (i) => new Promise<number>((r) => setTimeout(() => r(i), 1000)),
   );
-  const array = [];
-  for await (const value of results) {
-    array.push(value);
-  }
+  const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
   const diff = new Date().getTime() - start.getTime();
   assert(diff >= 2000);
   assert(diff < 3000);
 });
 
-Deno.test("[async] pooledMap errors", async () => {
+Deno.test("pooledMap() handles errors", async () => {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);
@@ -34,20 +31,22 @@ Deno.test("[async] pooledMap errors", async () => {
     return n;
   }
   const mappedNumbers: number[] = [];
-  const error = await assertRejects(async () => {
-    for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
-      mappedNumbers.push(m);
-    }
-  }, AggregateError);
-  assert(error instanceof AggregateError);
-  assert(error.message === ERROR_WHILE_MAPPING_MESSAGE);
+  const error = await assertRejects(
+    async () => {
+      for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
+        mappedNumbers.push(m);
+      }
+    },
+    AggregateError,
+    ERROR_WHILE_MAPPING_MESSAGE,
+  );
   assertEquals(error.errors.length, 2);
   assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
   assertStringIncludes(error.errors[1].stack, "Error: Bad number: 2");
   assertEquals(mappedNumbers, [3]);
 });
 
-Deno.test("pooledMap returns ordered items", async () => {
+Deno.test("pooledMap() returns ordered items", async () => {
   function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -63,14 +62,11 @@ Deno.test("pooledMap returns ordered items", async () => {
       ),
   );
 
-  const returned = [];
-  for await (const value of results) {
-    returned.push(value);
-  }
+  const returned = await Array.fromAsync(results);
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
 
-Deno.test("[async] pooledMap (browser compat)", async function () {
+Deno.test("pooledMap() checks browser compat", async function () {
   // Simulates the environment where Symbol.asyncIterator is not available
   const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
   // deno-lint-ignore no-explicit-any
@@ -81,10 +77,7 @@ Deno.test("[async] pooledMap (browser compat)", async function () {
       [1, 2, 3],
       (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
     );
-    const array = [];
-    for await (const value of results) {
-      array.push(value);
-    }
+    const array = await Array.fromAsync(results);
     assertEquals(array, [1, 2, 3]);
   } finally {
     ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;

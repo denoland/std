@@ -43,7 +43,7 @@ Deno.test("createTarArchive", async function () {
   assertEquals(wrote, 3072);
 });
 
-Deno.test("deflateTarArchive", async function () {
+Deno.test("Tar() deflates tar archive", async function () {
   const fileName = "output.txt";
   const text = "hello tar world!";
 
@@ -67,7 +67,7 @@ Deno.test("deflateTarArchive", async function () {
   assertEquals(untarText, text);
 });
 
-Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
+Deno.test("Tar() appends file with long name to tar archive", async function (): Promise<
   void
 > {
   // 9 * 15 + 13 = 148 bytes
@@ -95,7 +95,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   assertEquals(untarText, text);
 });
 
-Deno.test("directoryEntryType", async function () {
+Deno.test("Tar() checks directory entry type", async function () {
   const tar = new Tar();
 
   tar.append("directory/", {
@@ -116,9 +116,10 @@ Deno.test("directoryEntryType", async function () {
 
   const reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
-  for await (const entry of untar) {
-    assertEquals(entry.type, "directory");
-  }
+  await Array.fromAsync(
+    untar,
+    (entry) => assertEquals(entry.type, "directory"),
+  );
 
   reader.close();
   await Deno.remove(outputFile);

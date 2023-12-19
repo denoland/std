@@ -6,7 +6,7 @@ import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureFileIfItNotExist", async function () {
+Deno.test("ensureFile() creates file if it does not exist", async function () {
   const testDir = path.join(testdataDir, "ensure_file_1");
   const testFile = path.join(testDir, "test.txt");
 
@@ -20,7 +20,7 @@ Deno.test("ensureFileIfItNotExist", async function () {
   }
 });
 
-Deno.test("ensureFileSyncIfItNotExist", function () {
+Deno.test("ensureFileSync() creates file if it does not exist", function () {
   const testDir = path.join(testdataDir, "ensure_file_2");
   const testFile = path.join(testDir, "test.txt");
 
@@ -34,7 +34,7 @@ Deno.test("ensureFileSyncIfItNotExist", function () {
   }
 });
 
-Deno.test("ensureFileIfItExist", async function () {
+Deno.test("ensureFile() ensures existing file exists", async function () {
   const testDir = path.join(testdataDir, "ensure_file_3");
   const testFile = path.join(testDir, "test.txt");
 
@@ -51,7 +51,7 @@ Deno.test("ensureFileIfItExist", async function () {
   }
 });
 
-Deno.test("ensureFileSyncIfItExist", function () {
+Deno.test("ensureFileSync() ensures existing file exists", function () {
   const testDir = path.join(testdataDir, "ensure_file_4");
   const testFile = path.join(testDir, "test.txt");
 
@@ -68,7 +68,7 @@ Deno.test("ensureFileSyncIfItExist", function () {
   }
 });
 
-Deno.test("ensureFileIfItExistAsDir", async function () {
+Deno.test("ensureFile() rejects if input is dir", async function () {
   const testDir = path.join(testdataDir, "ensure_file_5");
 
   try {
@@ -86,7 +86,7 @@ Deno.test("ensureFileIfItExistAsDir", async function () {
   }
 });
 
-Deno.test("ensureFileSyncIfItExistAsDir", function () {
+Deno.test("ensureFileSync() throws if input is dir", function () {
   const testDir = path.join(testdataDir, "ensure_file_6");
 
   try {
@@ -105,7 +105,7 @@ Deno.test("ensureFileSyncIfItExistAsDir", function () {
 });
 
 Deno.test({
-  name: "ensureFileShouldNotSwallowErrors",
+  name: "ensureFile() rejects permission fs write error",
   permissions: { read: true },
   async fn() {
     const testDir = path.join(testdataDir, "ensure_file_7");
@@ -121,7 +121,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "ensureFileSyncShouldNotSwallowErrors",
+  name: "ensureFileSync() throws permission fs write error",
   permissions: { read: true },
   fn() {
     const testDir = path.join(testdataDir, "ensure_file_8");

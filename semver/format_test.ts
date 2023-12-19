@@ -7,7 +7,7 @@ import { INVALID, MAX, MIN } from "./constants.ts";
 import { FormatStyle, SemVer } from "./types.ts";
 
 Deno.test("format", async (t) => {
-  const versions: [string | SemVer, FormatStyle | undefined, string][] = [
+  const versions: [string, FormatStyle | undefined, string][] = [
     ["1.2.3", undefined, "1.2.3"],
     ["1.2.3", "full", "1.2.3"],
     ["1.2.3", "release", "1.2.3"],
@@ -67,10 +67,6 @@ Deno.test("format", async (t) => {
     ["1.2.3-pre.0+b.0", "patch", "3"],
     ["1.2.3-pre.0+b.0", "minor", "2"],
     ["1.2.3-pre.0+b.0", "major", "1"],
-
-    [MAX, "full", "∞.∞.∞"],
-    [MIN, "full", "0.0.0"],
-    [INVALID, "full", "⧞.∞.∞"],
   ];
 
   for (const [version, style, expected] of versions) {
@@ -79,6 +75,21 @@ Deno.test("format", async (t) => {
       fn: () => {
         const v = parse(version)!;
         const actual = format(v, style);
+        assertEquals(actual, expected);
+      },
+    });
+  }
+
+  const constantSemVers: [SemVer, FormatStyle | undefined, string][] = [
+    [MAX, "full", "∞.∞.∞"],
+    [MIN, "full", "0.0.0"],
+    [INVALID, "full", "⧞.∞.∞"],
+  ];
+  for (const [version, style, expected] of constantSemVers) {
+    await t.step({
+      name: `format(${version} ${style} ${expected})`,
+      fn: () => {
+        const actual = format(version, style);
         assertEquals(actual, expected);
       },
     });

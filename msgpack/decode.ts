@@ -14,7 +14,7 @@ import { ValueType } from "./encode.ts";
  * console.log(decode(encoded))
  * ```
  */
-export function decode(uint8: Uint8Array) {
+export function decode(uint8: Uint8Array): ValueType {
   const pointer = { consumed: 0 };
   const dataView = new DataView(
     uint8.buffer,

@@ -1,6 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+// This file been copied to `std/expect`.
+
 /**
  * Converts the input into a string. Objects, Sets and Maps are sorted so as to
  * make tests less flaky
@@ -18,6 +20,7 @@ export function format(v: unknown): string {
       iterableLimit: Infinity,
       // getters should be true in assertEquals.
       getters: true,
+      strAbbreviateSize: Infinity,
     })
     : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
 }

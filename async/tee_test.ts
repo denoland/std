@@ -9,18 +9,9 @@ const gen = async function* iter() {
   yield 3;
 };
 
-/** Testing utility for accumulating the values in async iterable. */
-async function accumulate<T>(src: AsyncIterable<T>): Promise<T[]> {
-  const res: T[] = [];
-  for await (const item of src) {
-    res.push(item);
-  }
-  return res;
-}
-
-Deno.test("async/tee - 2 branches", async () => {
+Deno.test("tee() handles 2 branches", async () => {
   const iter = gen();
-  const [res0, res1] = tee(iter).map(accumulate);
+  const [res0, res1] = tee(iter).map(async (src) => await Array.fromAsync(src));
   assertEquals(
     await Promise.all([res0, res1]),
     [
@@ -30,9 +21,11 @@ Deno.test("async/tee - 2 branches", async () => {
   );
 });
 
-Deno.test("async/tee - 3 branches - immediate consumption", async () => {
+Deno.test("tee() handles 3 branches with immediate consumption", async () => {
   const iter = gen();
-  const [res0, res1, res2] = tee(iter, 3).map(accumulate);
+  const [res0, res1, res2] = tee(iter, 3).map(async (src) =>
+    await Array.fromAsync(src)
+  );
   assertEquals(
     await Promise.all([res0, res1, res2]),
     [
@@ -43,7 +36,7 @@ Deno.test("async/tee - 3 branches - immediate consumption", async () => {
   );
 });
 
-Deno.test("async/tee - 3 branches - delayed consumption", async () => {
+Deno.test("tee() handles 3 branches with delayed consumption", async () => {
   const iter = gen();
   const iters = tee(iter, 3);
 
@@ -52,7 +45,7 @@ Deno.test("async/tee - 3 branches - delayed consumption", async () => {
   });
 
   assertEquals(
-    await Promise.all(iters.map(accumulate)),
+    await Promise.all(iters.map(async (src) => await Array.fromAsync(src))),
     [
       [1, 2, 3],
       [1, 2, 3],
@@ -61,7 +54,7 @@ Deno.test("async/tee - 3 branches - delayed consumption", async () => {
   );
 });
 
-Deno.test("async/tee - concurrent .next calls", async () => {
+Deno.test("tee() handles concurrent next() calls", async () => {
   const [left] = tee(gen());
   const l = left[Symbol.asyncIterator]();
   assertEquals(await Promise.all([l.next(), l.next(), l.next(), l.next()]), [{

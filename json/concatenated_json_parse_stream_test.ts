@@ -340,10 +340,7 @@ Deno.test({
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new ConcatenatedJsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },

@@ -3,12 +3,12 @@
 
 /**
  * @module
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 
 import { assert } from "../assert/assert.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Reader } from "../types.d.ts";
+import type { Reader } from "./types.d.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -17,7 +17,7 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
@@ -27,7 +27,7 @@ export class BufferFullError extends Error {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
@@ -40,7 +40,7 @@ export class PartialReadError extends Error {
 /**
  * Result type returned by of BufReader.readLine().
  *
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export interface ReadLineResult {
   line: Uint8Array;
@@ -48,7 +48,7 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use Web Streams instead.
+ * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;

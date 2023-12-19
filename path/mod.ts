@@ -38,14 +38,16 @@ import { isWindows } from "./_os.ts";
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
 
-/** @deprecated (will be removed after 1.0.0) Import from `path/windows/mod.ts` instead. */
-export const win32 = _windows;
+/** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
+export const win32: typeof _windows = _windows;
 
-/** @deprecated (will be removed after 1.0.0) Import from `path/posix/mod.ts` instead. */
-export const posix = _posix;
+/** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/posix/mod.ts} instead. */
+export const posix: typeof _posix = _posix;
 
-export const sep = isWindows ? _windows.sep : _posix.sep;
-export const delimiter = isWindows ? _windows.delimiter : _posix.delimiter;
+export const sep: "/" | "\\" = isWindows ? _windows.sep : _posix.sep;
+export const delimiter: ":" | ";" = isWindows
+  ? _windows.delimiter
+  : _posix.delimiter;
 
 export * from "./basename.ts";
 export * from "./dirname.ts";

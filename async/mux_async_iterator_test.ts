@@ -25,42 +25,31 @@ class CustomAsyncIterable {
   }
 }
 
-Deno.test("[async] MuxAsyncIterator", async function () {
+Deno.test("MuxAsyncIterator()", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(gen123());
   mux.add(gen456());
-  const results = new Set();
-  for await (const value of mux) {
-    results.add(value);
-  }
+  const results = new Set(await Array.fromAsync(mux));
   assertEquals(results.size, 6);
   assertEquals(results, new Set([1, 2, 3, 4, 5, 6]));
 });
 
-Deno.test("[async] MuxAsyncIterator takes async iterable as source", async function () {
+Deno.test("MuxAsyncIterator() takes async iterable as source", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(new CustomAsyncIterable());
-  const results = new Set();
-  for await (const value of mux) {
-    results.add(value);
-  }
+  const results = new Set(await Array.fromAsync(mux));
   assertEquals(results.size, 3);
   assertEquals(results, new Set([1, 2, 3]));
 });
 
 Deno.test({
-  name: "[async] MuxAsyncIterator throws when the source throws",
+  name: "MuxAsyncIterator() throws when the source throws",
   async fn() {
     const mux = new MuxAsyncIterator<number>();
     mux.add(gen123());
     mux.add(genThrows());
-    const results = new Set();
     await assertRejects(
-      async () => {
-        for await (const value of mux) {
-          results.add(value);
-        }
-      },
+      async () => await Array.fromAsync(mux),
       Error,
       "something went wrong",
     );

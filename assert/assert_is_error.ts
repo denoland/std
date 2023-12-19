@@ -1,22 +1,33 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { AssertionError } from "./assertion_error.ts";
-import { stripColor } from "../fmt/colors.ts";
+import { stripAnsiCode } from "../fmt/colors.ts";
 
 /**
  * Make an assertion that `error` is an `Error`.
  * If not then an error will be thrown.
  * An error class and a string that should be included in the
  * error message can also be asserted.
+ *
+ * @example
+ * ```ts
+ * import { assertIsError } from "https://deno.land/std@$STD_VERSION/assert/assert_is_error.ts";
+ *
+ * assertIsError(null); // Throws
+ * assertIsError(new RangeError("Out of range")); // Doesn't throw
+ * assertIsError(new RangeError("Out of range"), SyntaxError); // Throws
+ * assertIsError(new RangeError("Out of range"), SyntaxError, "Out of range"); // Doesn't throw
+ * assertIsError(new RangeError("Out of range"), SyntaxError, "Within range"); // Throws
+ * ```
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
   ErrorClass?: new (...args: any[]) => E,
-  msgIncludes?: string,
+  msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
   const msgSuffix = msg ? `: ${msg}` : ".";
-  if (error instanceof Error === false) {
+  if (!(error instanceof Error)) {
     throw new AssertionError(
       `Expected "error" to be an Error object${msgSuffix}}`,
     );
@@ -27,12 +38,21 @@ export function assertIsError<E extends Error = Error>(
     }"${msgSuffix}`;
     throw new AssertionError(msg);
   }
-  if (
-    msgIncludes && (!(error instanceof Error) ||
-      !stripColor(error.message).includes(stripColor(msgIncludes)))
-  ) {
+  let msgCheck;
+  if (typeof msgMatches === "string") {
+    msgCheck = stripAnsiCode(error.message).includes(
+      stripAnsiCode(msgMatches),
+    );
+  }
+  if (msgMatches instanceof RegExp) {
+    msgCheck = msgMatches.test(stripAnsiCode(error.message));
+  }
+
+  if (msgMatches && !msgCheck) {
     msg = `Expected error message to include ${
-      JSON.stringify(msgIncludes)
+      msgMatches instanceof RegExp
+        ? msgMatches.toString()
+        : JSON.stringify(msgMatches)
     }, but got ${
       error instanceof Error
         ? JSON.stringify(error.message)

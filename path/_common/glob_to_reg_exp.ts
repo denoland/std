@@ -1,6 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode globToRegExp}. */
 export interface GlobOptions {
   /** Extended glob syntax.
    * See https://www.linuxjournal.com/content/bash-extended-globbing.

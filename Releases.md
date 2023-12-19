@@ -1,3 +1,74 @@
+### 0.209.0 / 2023.12.13
+
+- BREAKIING(fs): remove `EOL` enum, add OS-dependent `EOL` (#3850)
+- BREAKING(async): remove deprecated `deferred()` (#3852)
+- BREAKING(bytes): remove spread `concat()` overload (#3854)
+- BREAKING(collections): remove deprecated APIs (#3853)
+- BREAKING(datetime): remove `toIMF()` (#3849)
+- BREAKING(http): remove `ServerSentEvent()` (#3847)
+- BREAKING(media_types): remove `typeByExtension()` (#3848)
+- Revert "BREAKING(media_types): remove `typeByExtension()`" (#3877)
+- deprecate(log): remove enums and add deprecation notices (#3855)
+- deprecation(front_matter): move `Format` enum deprecation forward (#3931)
+- deprecation(io): IO types in favour of Web Streams API (#3903)
+- deprecation: move `types.d.ts` to `std/io` (#3885)
+- feat(cli): `promptSecret()` (#3777)
+- feat(expect): support message checks in expect().toThrow (#3938)
+- feat(http): `signCookie()`, `verifyCookie()` and `parseSignedCookie()` (#3905)
+- feat(net): `getAvailablePort()` (#3890)
+- feat: add `std/ini` (#3871)
+- feat: new `std/webgpu` sub-module (#3119)
+- fix(assert): disallow scalar string args in `assertArrayIncludes()` (#3910)
+- fix(assert): export parameter type alias for `assertArrayIncludes()` (#3917)
+- fix(assert): fix diff of long string in objects (#3867)
+- fix(cli): re-export promptSecret from mod.ts (#3944)
+- fix(fs): improve `exists()` test coverage (#3898)
+- fix(text): fix closestString (#3936)
+- fix(toml): handle CRLF as newline in parsing multiline string (#3920)
+- fix(tools): ignore the .git folder when checking for copyright header (#3937)
+- perf(async): remove event listener ASAP in `abortablePromise()` and
+  `abortableAsyncIterable()` (#3909)
+- perf(crypto): use `Promise.all()` for `KeyStack` data comparisons (#3919)
+- perf(encoding): increase `varint.decode()` performance by 45x (#3940)
+
+### 0.208.0 / 2023.11.24
+
+- BREAKING(collections): deprecate `groupBy()` (#3663)
+- BREAKING: deprecate `std/http/method` (#3834)
+- feat(assert): improve assertion message of `assertNotStrictEquals()` (#3820)
+- feat(crypto): support `BLAKE2B-160` algorithm (#3793)
+- feat: add std/expect (#3814)
+
+### 0.207.0 / 2023.11.17
+
+- BREAKING(bytes): deprecate `concat()` signatures that don't use `Uint8Array[]`
+  argument (#3784)
+- BREAKING(crypto): remove `crypto.subtle.timingSafeEqual()` method (#3803)
+- BREAKING(fs): deprecate `EOL` enum (#3809)
+- BREAKING(http): deprecate `ServerSentEvent()` (#3783)
+- BREAKING(http): deprecate `enum Status` in favour of `STATUS_CODES` object
+  (#3781)
+- BREAKING: move `std/flags` to new `std/cli` sub-module (#3530)
+- BREAKING: remove deprecated `std/http/http_errors` (#3737)
+- BREAKING: remove deprecated `std/wasi` module (#3733)
+- feat: `std/data_structures` (#3734)
+
+### 0.206.0 / 2023.11.10
+
+- BREAKING(async): deprecate `deferred()` in favor of `Promise.withResolvers()`
+  (#3758)
+- BREAKING(encoding): remove deprecated binary APIs (#3763)
+- BREAKING(path): split up glob into multiple files
+- add `deno fmt --check`
+- feat(testing/mock): enable `spy` to accept a class constructor (#3766)
+- feat: `ServerSentEventStream()` (#3751)
+- feat: add `std/text` with word-similarity helpers (#3488)
+- fix(fmt): format duration rounding error. (#3762)
+- fix(msgpack): encode huge objects (#3698)
+- fix: broken import
+- fix: rework file server tests (#3779)
+- perf(streams): add single-character fast path for `DelimiterStream()` (#3739)
+
 ### 0.205.0 / 2023.11.01
 
 - BREAKING(dotenv): remove deprecated `restrictEnvAccessTo` option (#3705)

@@ -10,18 +10,8 @@ import { AssertionError } from "./assertion_error.ts";
  * ```ts
  * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
  *
- * Deno.test("doesThrow", function (): void {
- *   assertThrows((): void => {
- *     throw new TypeError("hello world!");
- *   });
- * });
- *
- * // This test will not pass.
- * Deno.test("fails", function (): void {
- *   assertThrows((): void => {
- *     console.log("Hello world");
- *   });
- * });
+ * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
+ * assertThrows(() => console.log("hello world!")); // Throws
  * ```
  */
 export function assertThrows(
@@ -37,25 +27,8 @@ export function assertThrows(
  * ```ts
  * import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
  *
- * Deno.test("doesThrow", function (): void {
- *   assertThrows((): void => {
- *     throw new TypeError("hello world!");
- *   }, TypeError);
- *   assertThrows(
- *     (): void => {
- *       throw new TypeError("hello world!");
- *     },
- *     TypeError,
- *     "hello",
- *   );
- * });
- *
- * // This test will not pass.
- * Deno.test("fails", function (): void {
- *   assertThrows((): void => {
- *     console.log("Hello world");
- *   });
- * });
+ * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw
+ * assertThrows(() => { throw new TypeError("hello world!"); }, RangeError); // Throws
  * ```
  */
 export function assertThrows<E extends Error = Error>(
