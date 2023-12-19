@@ -24,7 +24,7 @@ const getWordDistance = levenshteinDistance;
 export function compareSimilarity(
   givenWord: string,
   options?: { caseSensitive?: boolean },
-) {
+): (a: string, b: string) => number {
   const { caseSensitive } = { ...options };
   if (caseSensitive) {
     return (a: string, b: string) =>

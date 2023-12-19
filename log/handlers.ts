@@ -30,7 +30,7 @@ export class BaseHandler {
     if (this.level > logRecord.level) return;
 
     const msg = this.format(logRecord);
-    return this.log(msg);
+    this.log(msg);
   }
 
   format(logRecord: LogRecord): string {
@@ -81,7 +81,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  applyColors(msg: string, level: number) {
+  applyColors(msg: string, level: number): string {
     switch (level) {
       case LogLevels.INFO:
         msg = blue(msg);

@@ -33,7 +33,7 @@ export type LogLevel = typeof LogLevels[LevelName];
 export type LevelName = Exclude<keyof typeof LogLevels, number>;
 
 /** Permitted log level names */
-export const LogLevelNames = Object.keys(LogLevels).filter((key) =>
+export const LogLevelNames: LevelName[] = Object.keys(LogLevels).filter((key) =>
   isNaN(Number(key))
 ) as LevelName[];
 

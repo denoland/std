@@ -92,7 +92,7 @@ export class Schema implements SchemaDefinition {
   }
 
   /* Returns a new extended schema from current schema */
-  public extend(definition: SchemaDefinition) {
+  public extend(definition: SchemaDefinition): Schema {
     return new Schema({
       implicit: [
         ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
