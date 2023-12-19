@@ -3,6 +3,13 @@ import { decodeHex, encodeHex } from "../encoding/hex.ts";
 
 const encoder = new TextEncoder();
 
+function splitByLast(value: string, separator: string): [string, string] {
+  const index = value.lastIndexOf(separator);
+  return index === -1
+    ? [value, ""]
+    : [value.slice(0, index), value.slice(index + 1)];
+}
+
 /**
  * Returns a promise with the signed cookie value from the given cryptographic
  * key.
@@ -63,7 +70,7 @@ export async function verifyCookie(
   signedCookie: string,
   key: CryptoKey,
 ): Promise<boolean> {
-  const [value, signatureHex] = signedCookie.split(".");
+  const [value, signatureHex] = splitByLast(signedCookie, ".");
   if (!value || !signatureHex) return false;
 
   const data = encoder.encode(value);
@@ -97,5 +104,5 @@ export async function verifyCookie(
  * ```
  */
 export function parseSignedCookie(signedCookie: string): string {
-  return signedCookie.split(".")[0];
+  return splitByLast(signedCookie, ".")[0];
 }

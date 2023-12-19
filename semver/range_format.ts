@@ -8,9 +8,7 @@ import { stringifyComparator } from "./stringify_comparator.ts";
  * @param range The range to format
  * @returns A string representation of the range
  */
-export function rangeFormat(range: SemVerRange) {
+export function rangeFormat(range: SemVerRange): string {
   return range.ranges.map((c) => c.map((c) => stringifyComparator(c)).join(" "))
-    .join(
-      "||",
-    );
+    .join("||");
 }

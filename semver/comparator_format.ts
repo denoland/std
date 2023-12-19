@@ -8,4 +8,4 @@ import { stringifyComparator } from "./stringify_comparator.ts";
  * @returns A string representation of the comparator
  * @deprecated (will be removed in 0.212.0) Use {@linkcode stringifyComparator} instead.
  */
-export const comparatorFormat = stringifyComparator;
+export const comparatorFormat: typeof stringifyComparator = stringifyComparator;

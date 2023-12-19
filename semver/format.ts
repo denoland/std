@@ -23,7 +23,7 @@ function formatNumber(value: number) {
  * @returns The string representation of a semantic version.
  * @deprecated (will be removed in 0.212.0) use {@linkcode stringify} instead.
  */
-export function format(semver: SemVer, style: FormatStyle = "full") {
+export function format(semver: SemVer, style: FormatStyle = "full"): string {
   if (semver === ANY) {
     return "*";
   }

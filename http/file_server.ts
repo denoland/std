@@ -608,7 +608,10 @@ export interface ServeDirOptions {
  *
  * @param req The request to handle
  */
-export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
+export async function serveDir(
+  req: Request,
+  opts: ServeDirOptions = {},
+): Promise<Response> {
   let response: Response;
   try {
     response = await createServeDirResponse(req, opts);
