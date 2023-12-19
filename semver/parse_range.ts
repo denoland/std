@@ -90,8 +90,7 @@ function replaceCaret(comp: string): string {
   }
   if (major === "0") {
     if (minor === "0") {
-      return `>=${major}.${minor}.${patch} <${major}.${minor}.` +
-        (+patch + 1);
+      return `>=${major}.${minor}.${patch} <${major}.${minor}.${+patch + 1}`;
     } else {
       return `>=${major}.${minor}.${patch} <${major}.${+minor + 1}.0`;
     }
