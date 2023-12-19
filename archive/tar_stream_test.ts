@@ -21,25 +21,20 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 Deno.test("createTarArchive", async () => {
-  // initialize
-  const { readable, writable } = new TarStream();
-
-  // write tar data to a buffer
   const buf = new Buffer();
 
-  const promise = readable.pipeTo(buf.writable);
-
-  const writer = writable.getWriter();
   // put data on memory
   const content = new TextEncoder().encode("hello tar world!");
-  await writer.write({
-    name: "output.txt",
-    readable: ReadableStream.from([content]),
-    contentSize: content.byteLength,
-  });
-  await writer.close();
 
-  await promise;
+  // write tar data to a buffer
+  await ReadableStream.from<TarOptions>([
+    {
+      name: "output.txt",
+      readable: ReadableStream.from([content]),
+      contentSize: content.byteLength,
+    },
+  ]).pipeThrough(new TarStream())
+    .pipeTo(buf.writable);
 
   // 2048 = 512 (header) + 512 (content) + 1024 (footer)
   assertEquals(buf.bytes().length, 2048);
