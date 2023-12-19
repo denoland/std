@@ -40,7 +40,7 @@ async function createTar(entries: TestEntry[]): Promise<Tar> {
   return tar;
 }
 
-Deno.test("untarAsyncIterator", async function () {
+Deno.test("Untar() works as an async iterator", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -77,9 +77,7 @@ Deno.test("untarAsyncIterator", async function () {
   assertEquals(entries.length, 0);
 });
 
-Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
-  void
-> {
+Deno.test("Untar() reads without body", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -106,8 +104,8 @@ Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
 });
 
 Deno.test(
-  "untarAsyncIteratorWithoutReadingBodyFromFileReader",
-  async function () {
+  "Untar() reads without body from FileReader",
+  async () => {
     const entries: TestEntry[] = [
       {
         name: "output.txt",
@@ -142,7 +140,7 @@ Deno.test(
   },
 );
 
-Deno.test("untarAsyncIteratorFromFileReader", async function () {
+Deno.test("Untar() reads from FileReader", async () => {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -184,8 +182,8 @@ Deno.test("untarAsyncIteratorFromFileReader", async function () {
 });
 
 Deno.test(
-  "untarAsyncIteratorReadingLessThanRecordSize",
-  async function () {
+  "Untar() reads less than record size",
+  async () => {
     // record size is 512
     const bufSizes = [1, 53, 256, 511];
 
@@ -229,7 +227,7 @@ Deno.test(
   },
 );
 
-Deno.test("untarLinuxGeneratedTar", async function () {
+Deno.test("Untar() works with Linux generated tar", async () => {
   const filePath = resolve(testdataDir, "deno.tar");
   const file = await Deno.open(filePath, { read: true });
 
@@ -326,7 +324,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
 });
 
 Deno.test({
-  name: "test TarEntry",
+  name: "TarEntry() handles meta",
   // only: true,
   fn() {
     // test TarEntry class
@@ -354,7 +352,7 @@ Deno.test({
   },
 });
 
-Deno.test("untarArchiveWithLink", async function () {
+Deno.test("Untar() handles archive with link", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
   const file = await Deno.open(filePath, { read: true });
 

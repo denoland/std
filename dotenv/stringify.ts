@@ -12,7 +12,7 @@
  * @param object object to be stringified
  * @returns string of object
  */
-export function stringify(object: Record<string, string>) {
+export function stringify(object: Record<string, string>): string {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object)) {
     let quote;

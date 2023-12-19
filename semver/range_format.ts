@@ -9,9 +9,7 @@ import { comparatorFormat } from "./comparator_format.ts";
  * @returns A string representation of the range
  * @deprecated (will be removed after 0.212.0) use {@linkcode stringifyRangeSet} instead.
  */
-export function rangeFormat(range: SemVerRange) {
+export function rangeFormat(range: SemVerRange): string {
   return range.ranges.map((c) => c.map((c) => comparatorFormat(c)).join(" "))
-    .join(
-      "||",
-    );
+    .join("||");
 }

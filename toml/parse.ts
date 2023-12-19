@@ -7,4 +7,5 @@ import { ParserFactory, Toml } from "./_parser.ts";
  * Parse parses TOML string into an object.
  * @param tomlString
  */
-export const parse = ParserFactory(Toml);
+export const parse: (tomlString: string) => Record<string, unknown> =
+  ParserFactory(Toml);
