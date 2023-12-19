@@ -22,7 +22,7 @@ export const SECOND = 1e3;
  * console.log(MINUTE); // => 60000 (60 * 1000)
  * ```
  */
-export const MINUTE = SECOND * 60;
+export const MINUTE: number = SECOND * 60;
 /**
  * The number of milliseconds in an hour.
  *
@@ -33,7 +33,7 @@ export const MINUTE = SECOND * 60;
  * console.log(HOUR); // => 3600000 (60 * 60 * 1000)
  * ```
  */
-export const HOUR = MINUTE * 60;
+export const HOUR: number = MINUTE * 60;
 /**
  * The number of milliseconds in a day.
  *
@@ -44,7 +44,7 @@ export const HOUR = MINUTE * 60;
  * console.log(DAY); // => 86400000 (24 * 60 * 60 * 1000)
  * ```
  */
-export const DAY = HOUR * 24;
+export const DAY: number = HOUR * 24;
 /**
  * The number of milliseconds in a week.
  *
@@ -55,4 +55,4 @@ export const DAY = HOUR * 24;
  * console.log(WEEK); // => 604800000 (7 * 24 * 60 * 60 * 1000)
  * ```
  */
-export const WEEK = DAY * 7;
+export const WEEK: number = DAY * 7;

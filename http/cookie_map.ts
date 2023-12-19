@@ -146,7 +146,8 @@ export type SecureCookieMapSetDeleteOptions = SecureCookieMapSetDeleteOptions_;
  *
  * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const cookieMapHeadersInitSymbol = cookieMapHeadersInitSymbol_;
+export const cookieMapHeadersInitSymbol: typeof cookieMapHeadersInitSymbol_ =
+  cookieMapHeadersInitSymbol_;
 
 /**
  * Allows merging of various sources of headers into a final set of headers
@@ -159,7 +160,7 @@ export const cookieMapHeadersInitSymbol = cookieMapHeadersInitSymbol_;
  *
  * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const mergeHeaders = mergeHeaders_;
+export const mergeHeaders: typeof mergeHeaders_ = mergeHeaders_;
 
 /**
  * Provides a way to manage cookies in a request and response on the server
@@ -174,7 +175,7 @@ export const mergeHeaders = mergeHeaders_;
  *
  * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const CookieMap = CookieMap_;
+export const CookieMap: typeof CookieMap_ = CookieMap_;
 
 /**
  * Types of data that can be signed cryptographically.
@@ -211,4 +212,4 @@ export type KeyRing = KeyRing_;
  *
  * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
-export const SecureCookieMap = SecureCookieMap_;
+export const SecureCookieMap: typeof SecureCookieMap_ = SecureCookieMap_;
