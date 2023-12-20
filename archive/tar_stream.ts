@@ -37,16 +37,6 @@ import {
 
 const ustar = "ustar\u000000";
 
-/**
- * Initialize Uint8Array of the specified length filled with 0
- * @param length
- */
-function clean(length: number): Uint8Array {
-  const buffer = new Uint8Array(length);
-  buffer.fill(0, 0, length - 1);
-  return buffer;
-}
-
 function pad(num: number, bytes: number, base = 8): string {
   const numString = num.toString(base);
   return "000000000000".substr(numString.length + 12 - bytes) + numString;
@@ -79,7 +69,7 @@ struct posix_header {           // byte offset
  */
 function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder();
-  const buffer = clean(512);
+  const buffer = new Uint8Array(512);
   let offset = 0;
   for (const value of ustarStructure) {
     const entry = encoder.encode(data[value.field as keyof TarData]);
@@ -218,7 +208,7 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
         }
 
         controller.enqueue(
-          clean(
+          new Uint8Array(
             recordSize -
               (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
           ),
@@ -226,7 +216,7 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
       },
       flush(controller) {
         // append 2 empty records
-        controller.enqueue(clean(recordSize * 2));
+        controller.enqueue(new Uint8Array(recordSize * 2));
       },
     });
   }
