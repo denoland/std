@@ -4,7 +4,7 @@ import { BinaryHeap } from "./binary_heap.ts";
 import { ascend, descend } from "./comparators.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
-Deno.test("BinaryHeap() checks default descend comparator", () => {
+Deno.test("BinaryHeap() works with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
