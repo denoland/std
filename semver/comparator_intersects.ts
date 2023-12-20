@@ -2,6 +2,8 @@
 import type { SemVerComparator } from "./types.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
+import { comparatorMin } from "./comparator_min.ts";
+import { comparatorMax } from "./comparator_max.ts";
 /**
  * Returns true if the range of possible versions intersects with the other comparators set of possible versions
  * @param c0 The left side comparator
@@ -12,10 +14,10 @@ export function comparatorIntersects(
   c0: SemVerComparator,
   c1: SemVerComparator,
 ): boolean {
-  const l0 = c0.min;
-  const l1 = c0.max;
-  const r0 = c1.min;
-  const r1 = c1.max;
+  const l0 = comparatorMin(c0.semver, c0.operator);
+  const l1 = comparatorMax(c0.semver, c0.operator);
+  const r0 = comparatorMin(c1.semver, c1.operator);
+  const r1 = comparatorMax(c1.semver, c1.operator);
 
   // We calculate the min and max ranges of both comparators.
   // The minimum min is 0.0.0, the maximum max is ANY.

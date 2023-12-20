@@ -20,11 +20,9 @@ export function isComparator(value: unknown): value is Comparator {
   if (value === ALL) return true;
   if (Array.isArray(value)) return false;
   if (typeof value !== "object") return false;
-  const { operator, semver, min, max } = value as Comparator;
+  const { operator, semver } = value as Comparator;
   return (
     isValidOperator(operator) &&
-    isSemVer(semver) &&
-    isSemVer(min) &&
-    isSemVer(max)
+    isSemVer(semver)
   );
 }

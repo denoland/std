@@ -135,11 +135,11 @@ export const XRANGE_REGEXP = new RegExp(
 
 // Tilde ranges.
 // Meaning is "reasonably at or greater than"
-export const TILDE_REGEXP = new RegExp(`^(?:~>?)${XRANGE_PLAIN}$`);
+export const TILDE_REGEXP = new RegExp(`^(?<operator>~>?)${XRANGE_PLAIN}$`);
 
 // Caret ranges.
 // Meaning is "at least and backwards compatible with"
-export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGE_PLAIN}$`);
+export const CARET_REGEXP = new RegExp(`^(?<operator>\\^)${XRANGE_PLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
