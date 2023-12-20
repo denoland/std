@@ -30,7 +30,7 @@ const expectedTimings: readonly (readonly number[] & { length: 10 })[] & {
   [89, 78, 222, 668, 1027, 1397, 1293, 8295, 14077, 33602],
 ] as const;
 
-Deno.test("exponentialBackoffWithJitter", () => {
+Deno.test("exponentialBackoffWithJitter()", () => {
   let nextSeed = INITIAL_SEED;
 
   for (const row of expectedTimings) {

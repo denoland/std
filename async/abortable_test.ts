@@ -2,7 +2,7 @@
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { abortable } from "./abortable.ts";
 
-Deno.test("[async] abortable (Promise)", async () => {
+Deno.test("abortable() handles promise", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -11,7 +11,7 @@ Deno.test("[async] abortable (Promise)", async () => {
   clearTimeout(t);
 });
 
-Deno.test("[async] abortable (Promise) with signal aborted after delay", async () => {
+Deno.test("abortable() handles promise with aborted signal after delay", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -26,7 +26,7 @@ Deno.test("[async] abortable (Promise) with signal aborted after delay", async (
   clearTimeout(t);
 });
 
-Deno.test("[async] abortable (Promise) with already aborted signal", async () => {
+Deno.test("abortable() handles promise with already aborted signal", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -41,7 +41,7 @@ Deno.test("[async] abortable (Promise) with already aborted signal", async () =>
   clearTimeout(t);
 });
 
-Deno.test("[async] abortable (AsyncIterable)", async () => {
+Deno.test("abortable.AsyncIterable()", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -55,7 +55,7 @@ Deno.test("[async] abortable (AsyncIterable)", async () => {
   clearTimeout(t);
 });
 
-Deno.test("[async] abortable (AsyncIterable) with signal aborted after delay", async () => {
+Deno.test("abortable.AsyncIterable() handles aborted signal after delay", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);
@@ -79,7 +79,7 @@ Deno.test("[async] abortable (AsyncIterable) with signal aborted after delay", a
   clearTimeout(t);
 });
 
-Deno.test("[async] abortable (AsyncIterable) with already aborted signal", async () => {
+Deno.test("abortable.AsyncIterable() handles already aborted signal", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   const t = setTimeout(() => resolve("Hello"), 100);

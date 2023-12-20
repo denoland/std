@@ -13,7 +13,7 @@ function assertIsDefaultAbortReason(reason: unknown) {
   assertStrictEquals(reason.name, "AbortError");
 }
 
-Deno.test("[async] delay", async function () {
+Deno.test("delay()", async function () {
   const start = new Date();
   const delayedPromise = delay(100);
   const result = await delayedPromise;
@@ -22,7 +22,7 @@ Deno.test("[async] delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with abort", async function () {
+Deno.test("delay() handles abort", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -34,7 +34,7 @@ Deno.test("[async] delay with abort", async function () {
   assertIsDefaultAbortReason(cause);
 });
 
-Deno.test("[async] delay with abort reason", async function (ctx) {
+Deno.test("delay() checks abort reason", async function (ctx) {
   async function assertRejectsReason(reason: unknown) {
     const start = new Date();
     const abort = new AbortController();
@@ -69,7 +69,7 @@ Deno.test("[async] delay with abort reason", async function (ctx) {
   });
 });
 
-Deno.test("[async] delay with non-aborted signal", async function () {
+Deno.test("delay() handles non-aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -80,7 +80,7 @@ Deno.test("[async] delay with non-aborted signal", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with signal aborted after delay", async function () {
+Deno.test("delay() handles aborted signal after delay", async function () {
   const start = new Date();
   const abort = new AbortController();
   const { signal } = abort;
@@ -92,7 +92,7 @@ Deno.test("[async] delay with signal aborted after delay", async function () {
   assert(diff >= 100);
 });
 
-Deno.test("[async] delay with already aborted signal", async function () {
+Deno.test("delay() handles already aborted signal", async function () {
   const start = new Date();
   const abort = new AbortController();
   abort.abort();
