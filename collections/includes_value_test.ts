@@ -2,7 +2,7 @@
 import { includesValue } from "./includes_value.ts";
 import { assert, assertEquals } from "../assert/mod.ts";
 
-Deno.test("includesValue() checks example", () => {
+Deno.test("includesValue() handles example", () => {
   const input = {
     first: 33,
     second: 34,
