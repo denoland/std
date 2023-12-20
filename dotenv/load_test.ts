@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "load() loads multiple files",
+  name: "load() works as expected when the multiple files are imported",
   async fn() {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
