@@ -23,7 +23,7 @@ const testOptions = Object.freeze({
   defaultsPath: path.join(testdataDir, ".env.defaults"),
 });
 
-Deno.test("load() checks non-existent .env files", async () => {
+Deno.test("load() handles non-existent .env files", async () => {
   //n.b. neither .env nor .env.default exist in the current directory
   assertEquals({}, await load());
   assertEquals({}, loadSync());
@@ -37,7 +37,7 @@ Deno.test("load() checks non-existent .env files", async () => {
   assertEquals({}, loadSync(loadOptions));
 });
 
-Deno.test("load() checks build from .env.default only", async () => {
+Deno.test("load() handles build from .env.default only", async () => {
   const conf = loadSync({
     defaultsPath: path.join(testdataDir, ".env.defaults"),
   });
@@ -49,7 +49,7 @@ Deno.test("load() checks build from .env.default only", async () => {
   assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
 });
 
-Deno.test("load() checks comprised .env and .env.defaults", async () => {
+Deno.test("load() handles comprised .env and .env.defaults", async () => {
   const conf = loadSync(testOptions);
   assertEquals(conf.GREETING, "hello world", "loaded from .env");
   assertEquals(conf.DEFAULT1, "Some Default", "loaded from .env.default");
@@ -59,7 +59,7 @@ Deno.test("load() checks comprised .env and .env.defaults", async () => {
   assertEquals(asyncConf.DEFAULT1, "Some Default", "loaded from .env.default");
 });
 
-Deno.test("load() checks exported entries accessibility in Deno.env", async () => {
+Deno.test("load() handles exported entries accessibility in Deno.env", async () => {
   assert(Deno.env.get("GREETING") === undefined, "GREETING is not set");
   assert(Deno.env.get("DEFAULT1") === undefined, "DEFAULT1 is not set");
 
@@ -114,7 +114,7 @@ function validateNotOverridden(conf: Record<string, string>): void {
   }
 }
 
-Deno.test("load() checks example file key in .env, no issues loading", async () => {
+Deno.test("load() handles example file key in .env, no issues loading", async () => {
   //Both .env.example.test and .env contain "GREETING"
   const loadOptions = {
     ...testOptions,
@@ -124,7 +124,7 @@ Deno.test("load() checks example file key in .env, no issues loading", async () 
   await load(loadOptions);
 });
 
-Deno.test("load() checks example file key in .env.default, no issues loading", async () => {
+Deno.test("load() handles example file key in .env.default, no issues loading", async () => {
   //Both .env.example3.test and .env.default contain "DEFAULT1"
   const loadOptions = {
     ...testOptions,
@@ -134,7 +134,7 @@ Deno.test("load() checks example file key in .env.default, no issues loading", a
   await load(loadOptions);
 });
 
-Deno.test("load() checks example file key not in .env or .env.defaults, error thrown", async () => {
+Deno.test("load() handles example file key not in .env or .env.defaults, error thrown", async () => {
   // Example file key of "ANOTHER" is not present in .env or .env.defaults
   const error: MissingEnvVarsError = assertThrows(() => {
     loadSync({
@@ -155,7 +155,7 @@ Deno.test("load() checks example file key not in .env or .env.defaults, error th
   assertEquals(asyncError.missing, ["ANOTHER"]);
 });
 
-Deno.test("load() checks omitted allowEmptyValues, empty required keys throw error", async () => {
+Deno.test("load() handles omitted allowEmptyValues, empty required keys throw error", async () => {
   // Example file key of "ANOTHER" is present but empty in .env
   const error: MissingEnvVarsError = assertThrows(() => {
     loadSync({
@@ -176,7 +176,7 @@ Deno.test("load() checks omitted allowEmptyValues, empty required keys throw err
   assertEquals(asyncError.missing, ["ANOTHER"]);
 });
 
-Deno.test("load() checks allowEmptyValues, empty required keys do not throw error", async () => {
+Deno.test("load() handles allowEmptyValues, empty required keys do not throw error", async () => {
   // Example file key of "ANOTHER" is present but empty in .env
   const loadOptions = {
     envPath: path.join(testdataDir, "./.env.required.empty.test"),
@@ -297,7 +297,7 @@ Deno.test("load() expands empty values from process env expand as empty value", 
 });
 
 Deno.test(
-  "loadSync() checks --allow-env not required if no process env vars are expanded upon",
+  "loadSync() checks that --allow-env is not required if no process env vars are expanded upon",
   {
     permissions: {
       read: true,
@@ -312,7 +312,7 @@ Deno.test(
 );
 
 Deno.test(
-  "loadSync() checks --allow-env required when process env vars are expanded upon",
+  "loadSync() checks that --allow-env is required when process env vars are expanded upon",
   {
     permissions: {
       read: true,
@@ -335,7 +335,7 @@ Deno.test(
 );
 
 Deno.test(
-  "loadSync() checks --allow-env restricted access works when process env vars are expanded upon",
+  "loadSync() checks that --allow-env restricted access works when process env vars are expanded upon",
   {
     permissions: {
       read: true,
