@@ -9,8 +9,18 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 
 // This is a hack to allow us to use the same type for both the color name and an ANSI escape code.
 // deno-lint-ignore ban-types
-type Ansi = string & { };
-type Color = 'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white' | 'gray' | Ansi;
+type Ansi = string & {};
+type Color =
+  | "black"
+  | "red"
+  | "green"
+  | "yellow"
+  | "blue"
+  | "magenta"
+  | "cyan"
+  | "white"
+  | "gray"
+  | Ansi;
 
 const COLORS: Record<Color, string> = {
   black: "\u001b[30m",
