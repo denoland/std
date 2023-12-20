@@ -179,7 +179,7 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
         let checksum = 0;
         const encoder = new TextEncoder();
         for (const key in tarData) {
-          if (key === "filePath" || key === "readable") {
+          if (key === "readable") {
             continue;
           }
           checksum += encoder.encode(tarData[key as keyof TarData]).reduce(
