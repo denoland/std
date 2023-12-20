@@ -27,7 +27,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { assert } from "../assert/assert.ts";
 import {
   FileTypes,
   recordSize,
@@ -127,29 +126,21 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
         let fileNamePrefix: string | undefined;
         let fileName = chunk.name;
         if (fileName.length > 100) {
-          let i = fileName.length;
-          while (i >= 0) {
-            i = fileName.lastIndexOf("/", i);
-            if (i <= 155) {
-              fileNamePrefix = fileName.substr(0, i);
-              fileName = fileName.substr(i + 1);
-              break;
-            }
-            i--;
-          }
-          const errMsg =
-            "ustar format does not allow a long file name (length of [file name" +
-            "prefix] + / + [file name] must be shorter than 256 bytes)";
-          if (i < 0 || fileName.length > 100) {
-            throw new Error(errMsg);
+          const i = fileName.lastIndexOf("/", 155);
+          if (i >= 0) {
+            fileNamePrefix = fileName.substring(0, i);
+            fileName = fileName.substring(i + 1);
           } else {
-            assert(fileNamePrefix != null);
-            if (fileNamePrefix.length > 155) {
-              throw new Error(errMsg);
-            }
+            throw new Error(
+              "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)",
+            );
+          }
+          if (fileNamePrefix.length > 155) {
+            throw new Error(
+              "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)",
+            );
           }
         }
-
         const mode = chunk.fileMode || parseInt("777", 8) & 0xfff;
         const mtime = Math.floor(chunk.mtime ?? new Date().valueOf() / 1000);
         const uid = chunk.uid || 0;
