@@ -29,7 +29,7 @@
  */
 import { Buffer } from "../streams/buffer.ts";
 import {
-  FileTypes,
+  FILE_TYPES,
   recordSize,
   TarInfo,
   ustarStructure,
@@ -246,8 +246,7 @@ function getMetadata(header: TarHeader): TarMeta {
   }
 
   meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-  meta.type =
-    (FileTypes[parseInt(meta.type!)] ?? meta.type) as keyof typeof FileTypes;
+  meta.type = FILE_TYPES[parseInt(meta.type!)] ?? meta.type;
 
   if (meta.type === "symlink") {
     meta.linkName = decoder.decode(trim(header.linkName));

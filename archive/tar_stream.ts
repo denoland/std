@@ -28,7 +28,7 @@
  * THE SOFTWARE.
  */
 import {
-  FileTypes,
+  FILE_TYPES,
   recordSize,
   TarInfo,
   ustarStructure,
@@ -157,7 +157,7 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           );
         }
 
-        const type = chunk.type ? FileTypes[chunk.type] : FileTypes.file;
+        const type = FILE_TYPES.indexOf(chunk.type ?? "file");
 
         const tarData: TarDataWithSource = {
           fileName,

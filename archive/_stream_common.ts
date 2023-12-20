@@ -69,16 +69,18 @@ export const ustarStructure = [
   },
 ] as const;
 
-export enum FileTypes {
-  "file" = 0,
-  "link" = 1,
-  "symlink" = 2,
-  "character-device" = 3,
-  "block-device" = 4,
-  "directory" = 5,
-  "fifo" = 6,
-  "contiguous-file" = 7,
-}
+export const FILE_TYPES = [
+  "file",
+  "link",
+  "symlink",
+  "character-device",
+  "block-device",
+  "directory",
+  "fifo",
+  "contiguous-file",
+] as const;
+
+export type FileType = typeof FILE_TYPES[number];
 
 export interface TarInfo {
   fileMode?: number;
@@ -87,5 +89,5 @@ export interface TarInfo {
   gid?: number;
   owner?: string;
   group?: string;
-  type?: keyof typeof FileTypes;
+  type?: FileType;
 }
