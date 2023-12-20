@@ -142,7 +142,7 @@ Deno.test("parse()", () => {
   );
 });
 
-Deno.test("parse() checks comments", () => {
+Deno.test("parse() ignores comments", () => {
   const testDotenv = Deno.readTextFileSync(
     path.join(testdataDir, "./.env.comments"),
   );
