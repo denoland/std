@@ -13,7 +13,7 @@ function mapKeysTest<T>(
 }
 
 Deno.test({
-  name: "[collections/mapKeys] no mutation",
+  name: "mapKeys() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapKeys(object, (it) => `${it}a`);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] empty input",
+  name: "mapKeys() handles empty input",
   fn() {
     mapKeysTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] identity",
+  name: "mapKeys() handles identity",
   fn() {
     mapKeysTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] to constant key",
+  name: "mapKeys() handles to constant key",
   fn() {
     mapKeysTest(
       [
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] overlapping keys",
+  name: "mapKeys() handles overlapping keys",
   fn() {
     mapKeysTest(
       [
@@ -104,7 +104,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] empty key",
+  name: "mapKeys() handles empty key",
   fn() {
     mapKeysTest(
       [
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] normal mappers",
+  name: "mapKeys() handles normal mappers",
   fn() {
     mapKeysTest(
       [

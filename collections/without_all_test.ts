@@ -14,7 +14,7 @@ function withoutAllTest<I>(
 }
 
 Deno.test({
-  name: "[collections/withoutAll] no mutation",
+  name: "withoutAll() handles no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     withoutAll(array, [2, 3]);
@@ -23,21 +23,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/withoutAll] empty input",
+  name: "withoutAll() handles empty input",
   fn() {
     withoutAllTest([], [], []);
   },
 });
 
 Deno.test({
-  name: "[collections/withoutAll] no matches",
+  name: "withoutAll() handles no matches",
   fn() {
     withoutAllTest([1, 2, 3, 4], [0, 7, 9], [1, 2, 3, 4]);
   },
 });
 
 Deno.test({
-  name: "[collections/withoutAll] single matche",
+  name: "withoutAll() handles single match",
   fn() {
     withoutAllTest([1, 2, 3, 4], [1], [2, 3, 4]);
     withoutAllTest([1, 2, 3, 2], [2], [1, 3]);
@@ -45,7 +45,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/withoutAll] multiple matches",
+  name: "withoutAll() handles multiple matches",
   fn() {
     withoutAllTest([1, 2, 3, 4, 6, 3], [1, 2], [3, 4, 6, 3]);
     withoutAllTest([7, 2, 9, 8, 7, 6, 5, 7], [7, 9], [2, 8, 6, 5]);
@@ -53,7 +53,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collection/withoutAll] leaves duplicate elements",
+  name: "withoutAll() leaves duplicate elements",
   fn() {
     withoutAllTest(
       Array.from({ length: 110 }, () => 3),
