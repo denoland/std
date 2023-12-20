@@ -41,7 +41,7 @@ Deno.test("BinaryHeap() checks default descend comparator", () => {
   assertEquals(actual, expected);
 });
 
-Deno.test("BinaryHeap() checks ascend comparator", () => {
+Deno.test("BinaryHeap() works with ascend comparator", () => {
   const minHeap = new BinaryHeap<number>(ascend);
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 9, 9, 10, 100];
