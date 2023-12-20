@@ -10,15 +10,10 @@
  * deno run --allow-read archive/tar_test.ts
  */
 import { assert, assertEquals } from "../assert/mod.ts";
-
-import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { type TarOptions, TarStream } from "./tar_stream.ts";
 import { UntarStream } from "./untar_stream.ts";
 import { Buffer } from "../streams/buffer.ts";
 import { toText } from "../streams/to_text.ts";
-
-const moduleDir = dirname(fromFileUrl(import.meta.url));
-const testdataDir = resolve(moduleDir, "testdata");
 
 Deno.test("createTarArchive", async () => {
   const buf = new Buffer();
@@ -73,10 +68,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async () => {
 });
 
 Deno.test("directoryEntryType", async () => {
-  const outputFile = resolve(testdataDir, "directory_type_test.tar");
-  const file = await Deno.open(outputFile, { create: true, write: true });
-
-  await ReadableStream.from<TarOptions>([
+  const entries: TarOptions[] = [
     {
       name: "directory/",
       readable: ReadableStream.from([]),
@@ -89,15 +81,13 @@ Deno.test("directoryEntryType", async () => {
       readable: ReadableStream.from([]),
       contentSize: 0,
     },
-  ]).pipeThrough(new TarStream())
-    .pipeTo(file.writable);
-
-  const readFile = await Deno.open(outputFile, { read: true });
+  ];
   const untar = new UntarStream();
-  await readFile.readable.pipeTo(untar.writable);
+  await ReadableStream.from<TarOptions>(entries)
+    .pipeThrough(new TarStream())
+    .pipeTo(untar.writable);
+
   for await (const entry of untar.readable) {
     assertEquals(entry.type, "directory");
   }
-
-  await Deno.remove(outputFile);
 });
