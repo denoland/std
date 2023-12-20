@@ -13,16 +13,16 @@ function hyphenReplace(range: string) {
   // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
   const leftMatch = range.match(new RegExp(`^${XRANGE_PLAIN}`));
   const leftGroup = leftMatch?.groups;
-  if (!leftGroup) return range;
+  if (!leftGroup) return range.split(/\s+/);
   const leftLength = leftMatch[0].length;
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
-  if (!hyphenMatch) return range;
+  if (!hyphenMatch) return range.split(/\s+/);
   const hyphenLength = hyphenMatch[0].length;
   const rightMatch = range.slice(leftLength + hyphenLength).match(
     new RegExp(`^${XRANGE_PLAIN}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return range;
+  if (!rightGroups) return range.split(/\s+/);
   let from = leftMatch[0];
   let to = rightMatch[0];
 
@@ -49,7 +49,7 @@ function hyphenReplace(range: string) {
     to = `<=${to}`;
   }
 
-  return `${from} ${to}`;
+  return [from, to];
 }
 
 function isWildcard(id: string): boolean {
@@ -70,14 +70,13 @@ export function parseRange(range: string): SemVerRange {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => {
-      // handle space around and between comparator and version
+      // handle space between comparator and version
       range = range.replace(/(?<=<|>|=) /, "");
 
       const entries = hyphenReplace(range)
-        .split(/\s+/)
-        .map((comp) => {
+        .flatMap((comp) => {
           const groups = comp.match(OPERATOR_REGEXP)?.groups;
-          if (!groups) return comp;
+          if (!groups) return comp.split(/\s+/);
 
           const majorIsWildcard = isWildcard(groups.major);
           const minorIsWildcard = isWildcard(groups.minor);
@@ -89,13 +88,15 @@ export function parseRange(range: string): SemVerRange {
 
           switch (groups.operator) {
             case "^": {
-              if (majorIsWildcard) return "";
-              if (minorIsWildcard) return `>=${major}.0.0 <${major + 1}.0.0`;
+              if (majorIsWildcard) return [""];
+              if (minorIsWildcard) {
+                return [`>=${major}.0.0`, `<${major + 1}.0.0`];
+              }
               if (patchIsWildcard) {
                 if (major === 0) {
-                  return `>=${major}.${minor}.0 <${major}.${minor + 1}.0`;
+                  return [`>=${major}.${minor}.0`, `<${major}.${minor + 1}.0`];
                 }
-                return `>=${major}.${minor}.0 <${major + 1}.0.0`;
+                return [`>=${major}.${minor}.0`, `<${major + 1}.0.0`];
               }
 
               const prerelease = groups.prerelease
@@ -104,83 +105,88 @@ export function parseRange(range: string): SemVerRange {
 
               if (major === 0) {
                 if (minor === 0) {
-                  return `>=${major}.${minor}.${patch}${prerelease} <${major}.${minor}.${
-                    patch + 1
-                  }`;
+                  return [
+                    `>=${major}.${minor}.${patch}${prerelease}`,
+                    `<${major}.${minor}.${patch + 1}`,
+                  ];
                 }
-                return `>=${major}.${minor}.${patch}${prerelease} <${major}.${
-                  minor + 1
-                }.0`;
+                return [
+                  `>=${major}.${minor}.${patch}${prerelease}`,
+                  `<${major}.${minor + 1}.0`,
+                ];
               }
-              return `>=${major}.${minor}.${patch}${prerelease} <${
-                major + 1
-              }.0.0`;
+              return [
+                `>=${major}.${minor}.${patch}${prerelease}`,
+                `<${major + 1}.0.0`,
+              ];
             }
             case "~":
             case "~>": {
-              if (majorIsWildcard) return "";
-              if (minorIsWildcard) return `>=${major}.0.0 <${major + 1}.0.0`;
+              if (majorIsWildcard) return [""];
+              if (minorIsWildcard) {
+                return [`>=${major}.0.0`, `<${major + 1}.0.0`];
+              }
               if (patchIsWildcard) {
-                return `>=${major}.${minor}.0 <${major}.${minor + 1}.0`;
+                return [`>=${major}.${minor}.0`, `<${major}.${minor + 1}.0`];
               }
               const prerelease = groups.prerelease
                 ? `-${groups.prerelease}`
                 : "";
 
-              return `>=${major}.${minor}.${patch}${prerelease} <${major}.${
-                minor + 1
-              }.0`;
+              return [
+                `>=${major}.${minor}.${patch}${prerelease}`,
+                `<${major}.${minor + 1}.0`,
+              ];
             }
             case "<": {
-              if (majorIsWildcard) return "<0.0.0";
+              if (majorIsWildcard) return ["<0.0.0"];
               if (minorIsWildcard) {
-                if (patchIsWildcard) return `<${major}.0.0`;
-                return `<${major}.${minor}.0`;
+                if (patchIsWildcard) return [`<${major}.0.0`];
+                return [`<${major}.${minor}.0`];
               }
-              if (patchIsWildcard) return `<${major}.${minor}.0`;
+              if (patchIsWildcard) return [`<${major}.${minor}.0`];
               break;
             }
             case ">": {
-              if (majorIsWildcard) return "<0.0.0";
+              if (majorIsWildcard) return ["<0.0.0"];
               if (minorIsWildcard) {
-                if (patchIsWildcard) return `>=${major + 1}.0.0`;
-                return `>${major}.${minor + 1}.0`;
+                if (patchIsWildcard) return [`>=${major + 1}.0.0`];
+                return [`>${major}.${minor + 1}.0`];
               }
-              if (patchIsWildcard) return `>${major}.${minor + 1}.0`;
+              if (patchIsWildcard) return [`>${major}.${minor + 1}.0`];
               break;
             }
             case "<=": {
               if (minorIsWildcard) {
-                if (patchIsWildcard) return `<${major + 1}.0.0`;
-                return `<${major}.${minor + 1}.0`;
+                if (patchIsWildcard) return [`<${major + 1}.0.0`];
+                return [`<${major}.${minor + 1}.0`];
               }
-              if (patchIsWildcard) return `<${major}.${minor + 1}.0`;
+              if (patchIsWildcard) return [`<${major}.${minor + 1}.0`];
               break;
             }
             case ">=": {
-              if (majorIsWildcard) return "";
+              if (majorIsWildcard) return [""];
               if (minorIsWildcard) {
-                if (patchIsWildcard) return `>=${major}.0.0`;
-                return `>=${major}.${minor}.0`;
+                if (patchIsWildcard) return [`>=${major}.0.0`];
+                return [`>=${major}.${minor}.0`];
               }
-              if (patchIsWildcard) return `>=${major}.${minor}.0`;
+              if (patchIsWildcard) return [`>=${major}.${minor}.0`];
               break;
             }
             default: {
-              if (majorIsWildcard) return "";
-              if (minorIsWildcard) return `>=${major}.0.0 <${major + 1}.0.0`;
+              if (majorIsWildcard) return [""];
+              if (minorIsWildcard) {
+                return [`>=${major}.0.0`, `<${major + 1}.0.0`];
+              }
               if (patchIsWildcard) {
-                return `>=${major}.${minor}.0 <${major}.${minor + 1}.0`;
+                return [`>=${major}.${minor}.0`, `<${major}.${minor + 1}.0`];
               }
             }
           }
-          return comp;
+          return comp.split(/\s+/);
         });
 
-      return entries
-        .join(" ")
-        .split(" ")
-        .map((r) => parseComparator(r)) ?? [ALL];
+      return entries.map((r) => parseComparator(r)) ?? [ALL];
     });
 
   return { ranges };
