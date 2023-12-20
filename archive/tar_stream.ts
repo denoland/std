@@ -37,11 +37,9 @@ import {
 
 const ustar = "ustar\u000000";
 
-function pad(num: number, bytes: number, base = 8): string {
-  const numString = num.toString(base);
-  return "000000000000".substr(numString.length + 12 - bytes) + numString;
+function pad(num: number, bytes: number): string {
+  return num.toString(8).padStart(bytes, "0");
 }
-
 /*
 struct posix_header {           // byte offset
   char name[100];               //   0
