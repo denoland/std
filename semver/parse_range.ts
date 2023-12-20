@@ -70,7 +70,8 @@ export function parseRange(range: string): SemVerRange {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => {
-      range = range.replaceAll(/(?<=<|>|=) /g, "");
+      // handle space around and between comparator and version
+      range = range.replace(/(?<=<|>|=) /, "");
 
       const entries = hyphenReplace(range)
         .split(/\s+/)
