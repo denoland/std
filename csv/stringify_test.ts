@@ -19,7 +19,7 @@ Deno.test({
   name: "stringify()",
   async fn(t) {
     await t.step({
-      name: "Access array index using string",
+      name: "handles access array index using string",
       fn() {
         const columns = ["a"];
         const data = [["foo"], ["bar"]];
@@ -33,7 +33,7 @@ Deno.test({
     });
     await t.step(
       {
-        name: "Double quote in separator",
+        name: "handles double quote in separator",
 
         fn() {
           const columns = [0];
@@ -54,7 +54,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "CRLF in separator",
+        name: "handles CRLF in separator",
         fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
@@ -75,7 +75,7 @@ Deno.test({
 
     await t.step(
       {
-        name: "Invalid data, no columns",
+        name: "handles invalid data, no columns",
         fn() {
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
@@ -88,7 +88,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Invalid data, no columns",
+        name: "handles invalid data, no columns",
         fn() {
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
@@ -101,7 +101,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "No data, no columns",
+        name: "handles no data, no columns",
 
         fn() {
           const columns: string[] = [];
@@ -113,7 +113,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "No data, no columns, no headers",
+        name: "handles no data, no columns, no headers",
         fn() {
           const columns: string[] = [];
           const data: string[][] = [];
@@ -125,7 +125,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "No data, columns",
+        name: "handles no data, columns",
         fn() {
           const columns = ["a"];
           const data: string[][] = [];
@@ -136,7 +136,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "No data, columns, no headers",
+        name: "handles no data, columns, no headers",
 
         fn() {
           const columns = ["a"];
@@ -149,7 +149,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Separator: CR",
+        name: "handles CR separator",
         fn() {
           const columns = [0, 1];
           const data = [["foo", "bar"], ["baz", "qux"]];
@@ -161,7 +161,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Separator: LF",
+        name: "handles LF separator",
 
         fn() {
           const columns = [0, 1];
@@ -174,7 +174,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks number accessor column",
+        name: "handles number accessor column",
         fn() {
           const columns = [1];
           const data = [{ 1: 1 }, { 1: 2 }];
@@ -185,7 +185,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Explicit header value, no headers",
+        name: "handles explicit header value, no headers",
 
         fn() {
           const columns = [{ header: "Value", prop: "value" }];
@@ -198,7 +198,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks number accessor,const data = array column",
+        name: "handles number accessor,const data = array column",
         fn() {
           const columns = [1];
           const data = [["key", "foo"], ["key", "bar"]];
@@ -209,7 +209,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array number accessor column",
+        name: "handles array number accessor column",
 
         fn() {
           const columns = [[1]];
@@ -221,7 +221,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array number accessor,const data = array column",
+        name: "handles array number accessor,const data = array column",
         fn() {
           const columns = [[1]];
           const data = [["key", "foo"], ["key", "bar"]];
@@ -232,7 +232,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array number accessor,const data = array column",
+        name: "handles array number accessor,const data = array column",
 
         fn() {
           const columns = [[1, 1]];
@@ -244,7 +244,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks string accessor column",
+        name: "handles string accessor column",
         fn() {
           const columns = ["value"];
           const data = [{ value: "foo" }, { value: "bar" }];
@@ -255,7 +255,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array string accessor column",
+        name: "handles array string accessor column",
         fn() {
           const columns = [["value"]];
           const data = [{ value: "foo" }, { value: "bar" }];
@@ -266,7 +266,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array string accessor column",
+        name: "handles array string accessor column",
         fn() {
           const columns = [["msg", "value"]];
           const data = [{ msg: { value: "foo" } }, { msg: { value: "bar" } }];
@@ -277,7 +277,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks explicit header",
+        name: "handles explicit header",
         fn() {
           const columns = [
             {
@@ -294,7 +294,7 @@ Deno.test({
 
     await t.step(
       {
-        name: "checks object",
+        name: "handles object",
         fn() {
           const columns = [0];
           const data = [[{ value: "foo" }], [{ value: "bar" }]];
@@ -306,7 +306,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks arary of objects",
+        name: "handles arary of objects",
         fn() {
           const columns = [0];
           const data = [
@@ -321,7 +321,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array",
+        name: "handles array",
         fn() {
           const columns = [0];
           const data = [[["foo", "bar"]], [["baz", "qux"]]];
@@ -333,7 +333,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks array, separator: tab",
+        name: "handles array, separator: tab",
 
         fn() {
           const columns = [0];
@@ -347,7 +347,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks undefined",
+        name: "handles undefined",
         fn() {
           const columns = [0];
           const data = [[], []];
@@ -358,7 +358,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks null",
+        name: "handles null",
         fn() {
           const columns = [0];
           const data = [[null], [null]];
@@ -369,7 +369,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks hex number",
+        name: "handles hex number",
         fn() {
           const columns = [0];
           const data = [[0xa], [0xb]];
@@ -380,7 +380,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks BigInt",
+        name: "handles BigInt",
         fn() {
           const columns = [0];
           const data = [[BigInt("1")], [BigInt("2")]];
@@ -391,7 +391,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks boolean",
+        name: "handles boolean",
         fn() {
           const columns = [0];
           const data = [[true], [false]];
@@ -402,7 +402,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks string",
+        name: "handles string",
         fn() {
           const columns = [0];
           const data = [["foo"], ["bar"]];
@@ -413,7 +413,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks symbol",
+        name: "handles symbol",
         fn() {
           const columns = [0];
           const data = [[Symbol("foo")], [Symbol("bar")]];
@@ -424,7 +424,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks function",
+        name: "handles function",
         fn() {
           const columns = [0];
           const data = [[(n: number) => n]];
@@ -435,7 +435,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with double quote",
+        name: "handles value with double quote",
         fn() {
           const columns = [0];
           const data = [['foo"']];
@@ -446,7 +446,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with CRLF",
+        name: "handles value with CRLF",
         fn() {
           const columns = [0];
           const data = [["foo\r\n"]];
@@ -457,7 +457,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with CR",
+        name: "handles value with CR",
         fn() {
           const columns = [0];
           const data = [["foo\r"]];
@@ -468,7 +468,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with LF",
+        name: "handles value with LF",
         fn() {
           const columns = [0];
           const data = [["foo\n"]];
@@ -479,7 +479,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with comma",
+        name: "handles value with comma",
         fn() {
           const columns = [0];
           const data = [["foo,"]];
@@ -490,7 +490,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "checks value with comma, tab separator",
+        name: "handles value with comma, tab separator",
         fn() {
           const columns = [0];
           const data = [["foo,"]];
@@ -502,7 +502,7 @@ Deno.test({
       },
     );
     await t.step({
-      name: "Valid data, no columns",
+      name: "handles valid data, no columns",
       fn() {
         const data = [[1, 2, 3], [4, 5, 6]];
         const output = `${CRLF}1,2,3${CRLF}4,5,6${CRLF}`;
@@ -512,7 +512,7 @@ Deno.test({
     });
     await t.step(
       {
-        name: "byte-order mark with bom=true",
+        name: "handles byte-order mark with bom=true",
         fn() {
           const data = [["abc"]];
           const output = `${BYTE_ORDER_MARK}abc${CRLF}`;
@@ -524,7 +524,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "no byte-order mark with omitted bom option",
+        name: "handles no byte-order mark with omitted bom option",
         fn() {
           const data = [["abc"]];
           const output = `abc${CRLF}`;
@@ -536,7 +536,7 @@ Deno.test({
     );
     await t.step(
       {
-        name: "no byte-order mark with bom=false",
+        name: "handles no byte-order mark with bom=false",
         fn() {
           const data = [["abc"]];
           const output = `abc${CRLF}`;
