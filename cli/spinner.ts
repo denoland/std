@@ -1,5 +1,8 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+// TODO(kt3k): Write test when pty is supported in Deno
+// See: https://github.com/denoland/deno/issues/3994
+
 const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
@@ -8,6 +11,7 @@ const DEFAULT_INTERVAL = 75;
 const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 // This is a hack to allow us to use the same type for both the color name and an ANSI escape code.
+// ref: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-460346421
 // deno-lint-ignore ban-types
 type Ansi = string & {};
 type Color =
