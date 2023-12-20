@@ -13,7 +13,7 @@ function unionTest<I>(
 }
 
 Deno.test({
-  name: "[collections/union] no mutations",
+  name: "union() handles no mutations",
   fn() {
     const arrayA = [1, 2, 3];
     const arrayB = [2, 4, 5];
@@ -25,14 +25,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] empty input",
+  name: "union() handles empty input",
   fn() {
     unionTest([], []);
   },
 });
 
 Deno.test({
-  name: "[collections/union] empty arrays",
+  name: "union() handles empty arrays",
   fn() {
     unionTest(
       [
@@ -46,7 +46,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] one input",
+  name: "union() handles one input",
   fn() {
     unionTest(
       [
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] some empty",
+  name: "union() handles some empty",
   fn() {
     unionTest([[], ["a", "b", "c"]], ["a", "b", "c"]);
     unionTest([["a", "b", "c"], []], ["a", "b", "c"]);
@@ -73,7 +73,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] distinct sets",
+  name: "union() handles distinct sets",
   fn() {
     unionTest([["a", "b", "c"], ["d", "e", "f"]], [
       "a",
@@ -105,7 +105,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] overlapping sets",
+  name: "union() handles overlapping sets",
   fn() {
     unionTest([["a", "b"], ["b", "c"]], ["a", "b", "c"]);
     unionTest(
@@ -120,7 +120,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] objects",
+  name: "union() handles objects",
   fn() {
     const a = { foo: "bar" };
     const b = { bar: "baz" };
@@ -147,7 +147,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] functions",
+  name: "union() handles functions",
   fn() {
     const a = () => {};
     const b = () => null;

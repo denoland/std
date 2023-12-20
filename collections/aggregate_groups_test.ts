@@ -16,7 +16,7 @@ function aggregateGroupsTest<T, A>(
 }
 
 Deno.test({
-  name: "[collections/aggregateGroups] no mutation",
+  name: "aggregateGroups() handles no mutation",
   fn() {
     const input = {
       Woody: [2, 3, 1, 4],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/aggregateGroups] string building using all params",
+  name: "aggregateGroups() handles string building using all params",
   fn() {
     aggregateGroupsTest(
       [
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/aggregateGroups] sum ignoring non reduce params",
+  name: "aggregateGroups() handles sum ignoring non reduce params",
   fn() {
     aggregateGroupsTest(
       [
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/aggregateGroups] empty input",
+  name: "aggregateGroups() handles empty input",
   fn() {
     aggregateGroupsTest([
       {},
