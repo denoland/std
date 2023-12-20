@@ -14,7 +14,7 @@ function distinctByTest<I>(
 }
 
 Deno.test({
-  name: "distinctBy() checks identities on empty array",
+  name: "distinctBy() handles identities on empty array",
   fn() {
     distinctByTest(
       [],
@@ -92,7 +92,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "distinctBy() checks distincts by selected value and preserves order",
+  name: "distinctBy() handles distincts by selected value and preserves order",
   fn() {
     const kim = { name: "Kim", age: 22 };
     const arthur = { name: "Arthur", age: 22 };

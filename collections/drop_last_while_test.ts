@@ -2,7 +2,7 @@
 import { dropLastWhile } from "./drop_last_while.ts";
 import { assertEquals } from "../assert/mod.ts";
 
-Deno.test("dropLastWhile() checks num array", () => {
+Deno.test("dropLastWhile() handles num array", () => {
   const values = [20, 33, 44];
 
   const actual = dropLastWhile(values, (i) => i > 30);
@@ -10,7 +10,7 @@ Deno.test("dropLastWhile() checks num array", () => {
   assertEquals(actual, [20]);
 });
 
-Deno.test("dropLastWhile() checks no mutation", () => {
+Deno.test("dropLastWhile() handles no mutation", () => {
   const array = [1, 2, 3, 4, 5, 6];
 
   const actual = dropLastWhile(array, (i) => i > 4);
@@ -19,7 +19,7 @@ Deno.test("dropLastWhile() checks no mutation", () => {
   assertEquals(array, [1, 2, 3, 4, 5, 6]);
 });
 
-Deno.test("dropLastWhile() checks negatives", () => {
+Deno.test("dropLastWhile() handles negatives", () => {
   const array = [-1, -2, -3, -4, -5, -6];
 
   const actual = dropLastWhile(array, (i) => i < -4);
@@ -27,7 +27,7 @@ Deno.test("dropLastWhile() checks negatives", () => {
   assertEquals(actual, [-1, -2, -3, -4]);
 });
 
-Deno.test("dropLastWhile() checks empty input returns empty array", () => {
+Deno.test("dropLastWhile() handles empty input returns empty array", () => {
   const array: number[] = [];
 
   const actual = dropLastWhile(array, (i) => i > 4);

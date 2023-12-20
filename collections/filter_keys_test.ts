@@ -13,7 +13,7 @@ function filterKeysTest<T>(
 }
 
 Deno.test({
-  name: "filterKeys() checks no mutation",
+  name: "filterKeys() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     filterKeys(object, (key) => key !== "a");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "filterKeys() checks empty input",
+  name: "filterKeys() handles empty input",
   fn() {
     filterKeysTest(
       [{}, () => true],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "filterKeys() checks identity",
+  name: "filterKeys() handles identity",
   fn() {
     filterKeysTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "filterKeys() checks filters",
+  name: "filterKeys() handles filters",
   fn() {
     filterKeysTest(
       [

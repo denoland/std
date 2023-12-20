@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { takeWhile } from "./take_while.ts";
 
-Deno.test("takeWhile() checks num array", () => {
+Deno.test("takeWhile() handles num array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = takeWhile(arr, (i) => i !== 4);
 
@@ -17,14 +17,14 @@ Deno.test("takeWhile() adds two to each num in predicate", () => {
   assertEquals(actual, [1, 2, 3]);
 });
 
-Deno.test("takeWhile() checks negatives", () => {
+Deno.test("takeWhile() handles negatives", () => {
   const arr = [-1, -2, -3, -4, -5, -6];
 
   const actual = takeWhile(arr, (i) => i > -4);
   assertEquals(actual, [-1, -2, -3]);
 });
 
-Deno.test("takeWhile() checks no mutation", () => {
+Deno.test("takeWhile() handles no mutation", () => {
   const arr = [-1, -2, -3, -4, -5, -6];
 
   const actual = takeWhile(arr, (i) => i > -4);
@@ -32,7 +32,7 @@ Deno.test("takeWhile() checks no mutation", () => {
   assertEquals(arr, [-1, -2, -3, -4, -5, -6]);
 });
 
-Deno.test("takeWhile() checks empty input array returns empty array", () => {
+Deno.test("takeWhile() handles empty input array returns empty array", () => {
   const arr: number[] = [];
 
   const actual = takeWhile(arr, (i) => i > 4);

@@ -13,7 +13,7 @@ function findSingleTest<I>(
 }
 
 Deno.test({
-  name: "findSingle() checks no mutation",
+  name: "findSingle() handles no mutation",
   fn() {
     const array = [1, 2, 3];
     findSingle(array, (it) => it % 2 === 0);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "findSingle() checks empty input",
+  name: "findSingle() handles empty input",
   fn() {
     findSingleTest(
       [[], (_) => true],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "findSingle() checks only one element",
+  name: "findSingle() handles only one element",
   fn() {
     findSingleTest(
       [[42], (_it) => true],
@@ -55,7 +55,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "findSingle() checks no matches",
+  name: "findSingle() handles no matches",
   fn() {
     findSingleTest(
       [[9, 11, 13], (it) => it % 2 === 0],
@@ -73,7 +73,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "findSingle() checks only match",
+  name: "findSingle() handles only match",
   fn() {
     findSingleTest(
       [[9, 12, 13], (it) => it % 2 === 0],
@@ -91,7 +91,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "findSingle() checks multiple matches",
+  name: "findSingle() handles multiple matches",
   fn() {
     findSingleTest(
       [[9, 12, 13, 14], (it) => it % 2 === 0],

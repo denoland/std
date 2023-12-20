@@ -13,7 +13,7 @@ function associateByTest<T>(
 }
 
 Deno.test({
-  name: "associateBy() checks no mutation",
+  name: "associateBy() handles no mutation",
   fn() {
     const arrayA = ["Foo", "Bar"];
     associateBy(arrayA, (it) => it.charAt(0));
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "associateBy() checks empty input",
+  name: "associateBy() handles empty input",
   fn() {
     associateByTest(
       [[], () => "a"],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "associateBy() checks constant key",
+  name: "associateBy() handles constant key",
   fn() {
     associateByTest(
       [[1, 3, 5, 6], () => "a"],
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "associateBy() checks empty key",
+  name: "associateBy() handles empty key",
   fn() {
     associateByTest(
       [
@@ -59,7 +59,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "associateBy() checks duplicate keys",
+  name: "associateBy() handles duplicate keys",
   fn() {
     associateByTest(
       [
@@ -87,7 +87,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "associateBy() checks associates",
+  name: "associateBy() handles associates",
   fn() {
     associateByTest(
       [

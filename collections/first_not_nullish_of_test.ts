@@ -13,7 +13,7 @@ function firstNotNullishOfTest<T, O>(
 }
 
 Deno.test({
-  name: "firstNotNullishOf() checks no mutation",
+  name: "firstNotNullishOf() handles no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     firstNotNullishOf(array, (it) => it * 2);
@@ -23,42 +23,42 @@ Deno.test({
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks empty input",
+  name: "firstNotNullishOf() handles empty input",
   fn() {
     firstNotNullishOfTest([[], (it) => it], undefined);
   },
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks all items nullish",
+  name: "firstNotNullishOf() handles all items nullish",
   fn() {
     firstNotNullishOfTest([[undefined, null], (it) => it], undefined);
   },
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks identity",
+  name: "firstNotNullishOf() handles identity",
   fn() {
     firstNotNullishOfTest([[[], 1, 3], (it) => it], []);
   },
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks array of array",
+  name: "firstNotNullishOf() handles array of array",
   fn() {
     firstNotNullishOfTest([[[, 0], [null], ["Kim"]], (it) => it[0]], "Kim");
   },
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks falsy values",
+  name: "firstNotNullishOf() handles falsy values",
   fn() {
     firstNotNullishOfTest([[undefined, false, null], (it) => it], false);
   },
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks mappers without nullish values",
+  name: "firstNotNullishOf() handles mappers without nullish values",
   fn() {
     firstNotNullishOfTest(
       [["Anna", "Kim", "Hans"], (it) => it.charAt(0)],
@@ -69,7 +69,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "firstNotNullishOf() checks mappers with nullish values",
+  name: "firstNotNullishOf() handles mappers with nullish values",
   fn() {
     firstNotNullishOfTest(
       [

@@ -15,7 +15,7 @@ function chunkTest<I>(
 const testArray = [1, 2, 3, 4, 5, 6];
 
 Deno.test({
-  name: "chunk() checks no mutation",
+  name: "chunk() handles no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     chunk(array, 2);
@@ -36,7 +36,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chunk() checks empty input",
+  name: "chunk() handles empty input",
   fn() {
     chunkTest(
       [[], 1],
@@ -46,7 +46,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chunk() checks single element chunks",
+  name: "chunk() handles single element chunks",
   fn() {
     chunkTest(
       [testArray, 1],
@@ -60,7 +60,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chunk() checks n chunks fitting",
+  name: "chunk() handles n chunks fitting",
   fn() {
     chunkTest(
       [testArray, 2],
@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chunk() checks n chunks not fitting",
+  name: "chunk() handles n chunks not fitting",
   fn() {
     chunkTest(
       [testArray, 4],
@@ -88,7 +88,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chunk() checks chunks equal to length",
+  name: "chunk() handles chunks equal to length",
   fn() {
     chunkTest(
       [testArray, testArray.length],

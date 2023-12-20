@@ -15,7 +15,7 @@ function zip1Test<T>(
 assertEquals(zip([]), []);
 
 Deno.test({
-  name: "zip() checks one array",
+  name: "zip() handles one array",
   fn() {
     zip1Test([
       [1, 2, 3],
@@ -42,7 +42,7 @@ function zip3Test<T, U, V>(
 }
 
 Deno.test({
-  name: "zip() checks three arrays",
+  name: "zip() handles three arrays",
   fn() {
     zip3Test([
       [1, 2, 3],
@@ -53,7 +53,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks three arrays when the first is the shortest",
+  name: "zip() handles three arrays when the first is the shortest",
   fn() {
     zip3Test([
       [1, 2],
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks no mutation",
+  name: "zip() handles no mutation",
   fn() {
     const arrayA = [1, 4, 5];
     const arrayB = ["foo", "bar"];
@@ -76,7 +76,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks empty input",
+  name: "zip() handles empty input",
   fn() {
     zipTest(
       [[], []],
@@ -95,7 +95,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks same length",
+  name: "zip() handles same length",
   fn() {
     zipTest(
       [
@@ -122,7 +122,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks first shorter",
+  name: "zip() handles first shorter",
   fn() {
     zipTest(
       [
@@ -145,7 +145,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "zip() checks second shorter",
+  name: "zip() handles second shorter",
   fn() {
     zipTest(
       [

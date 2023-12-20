@@ -13,7 +13,7 @@ function partitionEntriesTest<T>(
 }
 
 Deno.test({
-  name: "partitionEntries() checks no mutation",
+  name: "partitionEntries() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     partitionEntries(object, ([key]) => key !== "a");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partitionEntries() checks empty input",
+  name: "partitionEntries() handles empty input",
   fn() {
     partitionEntriesTest(
       [{}, () => true],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partitionEntries() checks identity",
+  name: "partitionEntries() handles identity",
   fn() {
     partitionEntriesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partitionEntries() checks clean object",
+  name: "partitionEntries() handles clean object",
   fn() {
     partitionEntriesTest(
       [
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partitionEntries() checks filters",
+  name: "partitionEntries() handles filters",
   fn() {
     partitionEntriesTest(
       [

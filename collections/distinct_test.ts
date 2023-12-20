@@ -13,7 +13,7 @@ function distinctTest<I>(
 }
 
 Deno.test({
-  name: "distinct() checks identities on empty array",
+  name: "distinct() handles identities on empty array",
   fn() {
     distinctTest([], []);
   },

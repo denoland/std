@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { takeLastWhile } from "./take_last_while.ts";
 
-Deno.test("takeLastWhile() checks num array", () => {
+Deno.test("takeLastWhile() handles num array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = takeLastWhile(arr, (i) => i !== 4);
 
@@ -17,14 +17,14 @@ Deno.test("takeLastWhile() adds two to each num in predicate", () => {
   assertEquals(actual, [5, 6]);
 });
 
-Deno.test("takeLastWhile() checks negatives", () => {
+Deno.test("takeLastWhile() handles negatives", () => {
   const arr = [-1, -2, -3, -4, -5, -6];
 
   const actual = takeLastWhile(arr, (i) => i < -4);
   assertEquals(actual, [-5, -6]);
 });
 
-Deno.test("takeLastWhile() checks no mutation", () => {
+Deno.test("takeLastWhile() handles no mutation", () => {
   const arr = [1, 2, 3, 4, 5, 6];
 
   const actual = takeLastWhile(arr, (i) => i !== 4);
@@ -32,7 +32,7 @@ Deno.test("takeLastWhile() checks no mutation", () => {
   assertEquals(arr, [1, 2, 3, 4, 5, 6]);
 });
 
-Deno.test("takeLastWhile() checks empty input array returns empty array", () => {
+Deno.test("takeLastWhile() handles empty input array returns empty array", () => {
   const arr: number[] = [];
 
   const actual = takeLastWhile(arr, (i) => i > 4);

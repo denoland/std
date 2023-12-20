@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { sumOf } from "./sum_of.ts";
 
-Deno.test("sumOf() checks object properties", () => {
+Deno.test("sumOf() handles object properties", () => {
   const object = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -23,7 +23,7 @@ Deno.test("sumOf() adds 2 to each num", () => {
   assertEquals(actual, 12);
 });
 
-Deno.test("sumOf() checks regular sum", () => {
+Deno.test("sumOf() handles regular sum", () => {
   const array = [1, 2, 3];
 
   const actual = sumOf(array, (i) => i);
@@ -31,7 +31,7 @@ Deno.test("sumOf() checks regular sum", () => {
   assertEquals(actual, 6);
 });
 
-Deno.test("sumOf() checks negatives with regular sum", () => {
+Deno.test("sumOf() handles negatives with regular sum", () => {
   const array = [-1, -2, -3];
 
   const actual = sumOf(array, (i) => i);
@@ -39,7 +39,7 @@ Deno.test("sumOf() checks negatives with regular sum", () => {
   assertEquals(actual, -6);
 });
 
-Deno.test("sumOf() checks mixed negatives and positives with regular sum", () => {
+Deno.test("sumOf() handles mixed negatives and positives with regular sum", () => {
   const array = [-1, 2, 3, -5];
 
   const actual = sumOf(array, (i) => i);
@@ -63,7 +63,7 @@ Deno.test("sumOf() turns selector nums into zeros", () => {
   assertEquals(actual, 0);
 });
 
-Deno.test("sumOf() checks negative object properties", () => {
+Deno.test("sumOf() handles negative object properties", () => {
   const object = [
     { name: "Kyle", age: -34 },
     { name: "John", age: -42 },
@@ -75,7 +75,7 @@ Deno.test("sumOf() checks negative object properties", () => {
   assertEquals(actual, -99);
 });
 
-Deno.test("sumOf() checks mixed object properties", () => {
+Deno.test("sumOf() handles mixed object properties", () => {
   const object = [
     { name: "Kyle", age: -34 },
     { name: "John", age: 42 },
@@ -87,7 +87,7 @@ Deno.test("sumOf() checks mixed object properties", () => {
   assertEquals(actual, -15);
 });
 
-Deno.test("sumOf() checks no mutation", () => {
+Deno.test("sumOf() handles no mutation", () => {
   const array = [1, 2, 3, 4];
 
   sumOf(array, (i) => i + 2);
@@ -95,7 +95,7 @@ Deno.test("sumOf() checks no mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
-Deno.test("sumOf() checks empty array results in 0", () => {
+Deno.test("sumOf() handles empty array results in 0", () => {
   const array: number[] = [];
 
   const actual = sumOf(array, (i) => i + 2);
@@ -103,7 +103,7 @@ Deno.test("sumOf() checks empty array results in 0", () => {
   assertEquals(actual, 0);
 });
 
-Deno.test("sumOf() checks NaN and Infinity", () => {
+Deno.test("sumOf() handles NaN and Infinity", () => {
   const array = [
     1,
     2,
@@ -123,7 +123,7 @@ Deno.test("sumOf() checks NaN and Infinity", () => {
   assertEquals(actual, NaN);
 });
 
-Deno.test("sumOf() checks Infinity", () => {
+Deno.test("sumOf() handles Infinity", () => {
   const array = [1, 2, Infinity, 3, 4, 5, 6, 7, 8];
 
   const actual = sumOf(array, (i) => i);

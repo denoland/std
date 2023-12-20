@@ -13,7 +13,7 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "mapValues() checks no mutation",
+  name: "mapValues() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapValues(object, (it) => it ?? "nothing");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mapValues() checks empty input",
+  name: "mapValues() handles empty input",
   fn() {
     mapValuesTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mapValues() checks identity",
+  name: "mapValues() handles identity",
   fn() {
     mapValuesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mapValues() checks falsy values",
+  name: "mapValues() handles falsy values",
   fn() {
     mapValuesTest<number, null | undefined | string | boolean>(
       [
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mapValues() checks normal mappers",
+  name: "mapValues() handles normal mappers",
   fn() {
     mapValuesTest(
       [

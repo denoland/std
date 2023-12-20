@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { sortBy } from "./sort_by.ts";
 
 Deno.test({
-  name: "sortBy() checks no mutation",
+  name: "sortBy() handles no mutation",
   fn() {
     const array = ["a", "abc", "ba"];
     sortBy(array, (it) => it.length);
@@ -28,21 +28,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sortBy() checks empty input",
+  name: "sortBy() handles empty input",
   fn() {
     assertEquals(sortBy([], () => 5), []);
   },
 });
 
 Deno.test({
-  name: "sortBy() checks identity selector",
+  name: "sortBy() handles identity selector",
   fn() {
     assertEquals(sortBy([2, 3, 1], (it) => it), [1, 2, 3]);
   },
 });
 
 Deno.test({
-  name: "sortBy() checks stable sort",
+  name: "sortBy() handles stable sort",
   fn() {
     assertEquals(
       sortBy([
@@ -81,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sortBy() checks special number values",
+  name: "sortBy() handles special number values",
   fn() {
     assertEquals(
       sortBy([
@@ -147,7 +147,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sortBy() checks sortings",
+  name: "sortBy() handles sortings",
   fn() {
     const testArray = [
       { name: "benchmark", stage: 3 },
@@ -199,7 +199,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sortBy() checks desc ordering",
+  name: "sortBy() handles desc ordering",
   fn() {
     assertEquals(
       sortBy(

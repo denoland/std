@@ -13,7 +13,7 @@ function partitionTest<I>(
 }
 
 Deno.test({
-  name: "partition() checks no mutation",
+  name: "partition() handles no mutation",
   fn() {
     const array = [1, 2, 3];
     partition(array, (it) => it % 2 === 0);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partition() checks empty input",
+  name: "partition() handles empty input",
   fn() {
     partitionTest(
       [[], () => true],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partition() checks all match",
+  name: "partition() handles all match",
   fn() {
     partitionTest(
       [[2, 4, 6], (it) => it % 2 === 0],
@@ -47,7 +47,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partition() checks none match",
+  name: "partition() handles none match",
   fn() {
     partitionTest(
       [[3, 7, 5], (it) => it % 2 === 0],
@@ -61,7 +61,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partition() checks some match",
+  name: "partition() handles some match",
   fn() {
     partitionTest(
       [[13, 4, 13, 8], (it) => it % 2 === 0],

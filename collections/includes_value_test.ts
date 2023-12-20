@@ -11,7 +11,7 @@ Deno.test("includesValue() checks example", () => {
   assert(actual);
 });
 
-Deno.test("includesValue() checks no mutation", () => {
+Deno.test("includesValue() handles no mutation", () => {
   const input = {
     first: 33,
     second: 34,
@@ -25,7 +25,7 @@ Deno.test("includesValue() checks no mutation", () => {
   });
 });
 
-Deno.test("includesValue() checks empty input returns false", () => {
+Deno.test("includesValue() handles empty input returns false", () => {
   const input = {};
 
   const actual = includesValue(input, 44);
@@ -44,7 +44,7 @@ Deno.test("includesValue() returns false when it doesn't include the value", () 
   assert(!actual);
 });
 
-Deno.test("includesValue() checks non-enumerable properties", () => {
+Deno.test("includesValue() handles non-enumerable properties", () => {
   // FAIL is expected, TODO: Figure out how to make it work on
   const input = {};
 
@@ -72,7 +72,7 @@ Deno.test("includesValue() checks non-enumerable properties", () => {
   assert(!actual3);
 });
 
-Deno.test("includesValue() checks non-primitive values", () => {
+Deno.test("includesValue() handles non-primitive values", () => {
   const input = {
     first: {},
   };
@@ -82,7 +82,7 @@ Deno.test("includesValue() checks non-primitive values", () => {
   assert(!actual);
 });
 
-Deno.test("includesValue() checks same behaviour as naive impl", () => {
+Deno.test("includesValue() handles same behaviour as naive impl", () => {
   const input = {
     first: 42,
   };
@@ -93,7 +93,7 @@ Deno.test("includesValue() checks same behaviour as naive impl", () => {
   assertEquals(includesValueResult, naiveImplResult);
 });
 
-Deno.test("includesValue() checks NaN value", () => {
+Deno.test("includesValue() handles NaN value", () => {
   const input = {
     first: NaN,
   };

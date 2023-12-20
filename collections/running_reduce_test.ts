@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { runningReduce } from "./running_reduce.ts";
 
 Deno.test({
-  name: "runningReduce() checks no mutation",
+  name: "runningReduce() handles no mutation",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     runningReduce(numbers, (sum, current) => sum + current, 0);
@@ -14,7 +14,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "runningReduce() checks array of numbers initial value 0",
+  name: "runningReduce() handles array of numbers initial value 0",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(numbers, (sum, current) => sum + current, 0);
@@ -24,7 +24,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "runningReduce() checks array of numbers initial value 5",
+  name: "runningReduce() handles array of numbers initial value 5",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(numbers, (sum, current) => sum + current, 5);
@@ -34,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: `runningReduce() checks array of strings initial value ""`,
+  name: `runningReduce() handles array of strings initial value ""`,
   fn() {
     const strings = ["a", "b", "c", "d", "e"];
     const result = runningReduce(strings, (str, current) => str + current, "");
@@ -44,7 +44,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: `runningReduce() checks array of strings initial value "foo"`,
+  name: `runningReduce() handles array of strings initial value "foo"`,
   fn() {
     const strings = ["a", "b", "c", "d", "e"];
     const result = runningReduce(
@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "runningReduce() checks empty array initial value 0",
+  name: "runningReduce() handles empty array initial value 0",
   fn() {
     const result = runningReduce([], (sum, current) => sum + current, 0);
 
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "runningReduce() checks empty array initial value 5",
+  name: "runningReduce() handles empty array initial value 5",
   fn() {
     const result = runningReduce([], (sum, current) => sum + current, 5);
 
@@ -76,7 +76,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "runningReduce() checks array of objects initial value 0",
+  name: "runningReduce() handles array of objects initial value 0",
   fn() {
     const medals = [
       { country: "USA", count: 113 },
@@ -94,7 +94,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: `runningReduce() checks array of objects initial value ""`,
+  name: `runningReduce() handles array of objects initial value ""`,
   fn() {
     const medals = [
       { country: "USA", count: 113 },
