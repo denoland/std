@@ -9,6 +9,6 @@ import { map, seq, str } from "../_type/mod.ts";
 
 // Standard YAML's Failsafe schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2802346
-export const failsafe = new Schema({
+export const failsafe: Schema = new Schema({
   explicit: [str, seq, map],
 });

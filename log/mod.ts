@@ -357,7 +357,7 @@
  */
 
 import { Logger } from "./logger.ts";
-import type { GenericFunction } from "./logger.ts";
+import type { GenericFunction, LogRecord } from "./logger.ts";
 import {
   BaseHandler,
   ConsoleHandler,
@@ -431,7 +431,13 @@ const state = {
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
  */
-export const handlers = {
+export const handlers: {
+  BaseHandler: typeof BaseHandler;
+  ConsoleHandler: typeof ConsoleHandler;
+  WriterHandler: typeof WriterHandler;
+  FileHandler: typeof FileHandler;
+  RotatingFileHandler: typeof RotatingFileHandler;
+} = {
   BaseHandler,
   ConsoleHandler,
   WriterHandler,
@@ -439,7 +445,9 @@ export const handlers = {
   RotatingFileHandler,
 };
 
-export const formatters = {
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string
+} = {
   jsonFormatter,
 };
 
