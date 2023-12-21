@@ -13,8 +13,8 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 // This is a hack to allow us to use the same type for both the color name and an ANSI escape code.
 // ref: https://github.com/microsoft/TypeScript/issues/29729#issuecomment-460346421
 // deno-lint-ignore ban-types
-type Ansi = string & {};
-type Color =
+export type Ansi = string & {};
+export type Color =
   | "black"
   | "red"
   | "green"
