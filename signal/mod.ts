@@ -3,7 +3,7 @@
  * Higher level API for dealing with OS signals.
  *
  * @module
- * @deprecated (will be removed in 1.0.0) Use the [Deno Signals API]{@link https://docs.deno.com/runtime/tutorials/os_signals} directly instead.
+ * @deprecated (will be removed in 0.212.0) Use the {@link https://docs.deno.com/runtime/tutorials/os_signals|Deno Signals API} directly instead.
  */
 
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
@@ -32,7 +32,7 @@ export type Disposable = { dispose: () => void };
  *
  * @param signals - one or more signals to listen to
  *
- * @deprecated (will be removed in 1.0.0) Use the [Deno Signals API]{@link https://docs.deno.com/runtime/tutorials/os_signals} directly instead.
+ * @deprecated (will be removed in 0.212.0) Use the {@link https://docs.deno.com/runtime/tutorials/os_signals|Deno Signals API} directly instead.
  */
 export function signal(
   ...signals: [Deno.Signal, ...Deno.Signal[]]
