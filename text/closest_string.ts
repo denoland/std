@@ -46,7 +46,7 @@ export function closestString(
   }
 
   let nearestWord = possibleWords[0];
-  let closestStringDistance = 0;
+  let closestStringDistance = Infinity;
   for (const each of possibleWords) {
     const distance = caseSensitive
       ? getWordDistance(givenWord, each)

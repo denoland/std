@@ -13,7 +13,7 @@ function permutationsTest<T>(
 }
 
 Deno.test({
-  name: "[collections/permutations] no mutation",
+  name: "permutations() handles no mutation",
   fn() {
     const array = [1, 2, 3];
     permutations(array);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/permutations] empty input",
+  name: "permutations() handles empty input",
   fn() {
     permutationsTest(
       [[]],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/permutations] one element",
+  name: "permutations() handles one element",
   fn() {
     permutationsTest(
       [
@@ -51,7 +51,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/permutations] equality is ignored",
+  name: "permutations() ignores equality",
   fn() {
     permutationsTest(
       [[1, 1]],
@@ -61,7 +61,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/permutations] examples",
+  name: "permutations() handles examples",
   fn() {
     permutationsTest(
       [["a", "b", "c"]],

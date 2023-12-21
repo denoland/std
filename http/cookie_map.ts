@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+
  *
  * Provides a iterable map interfaces for managing cookies server side.
  *
@@ -83,6 +83,10 @@
  * cookies.set("session", "1234567");
  * ```
  *
+ * @deprecated (will be removed after 0.212.0) Use
+ * {@link https://deno.land/std/http/cookie.ts} and
+ * {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
+ *
  * @module
  */
 
@@ -103,46 +107,49 @@ import {
 } from "./unstable_cookie_map.ts";
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
 export type CookieMapOptions = CookieMapOptions_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
 export type CookieMapSetDeleteOptions = CookieMapSetDeleteOptions_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
 export type Headered = Headered_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
 export type Mergeable = Mergeable_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use
+ * {@link https://deno.land/std/http/cookie.ts} and
+ * {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
 export type SecureCookieMapGetOptions = SecureCookieMapGetOptions_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use
+ * {@link https://deno.land/std/http/cookie.ts} and
+ * {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
 export type SecureCookieMapOptions = SecureCookieMapOptions_;
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
 export type SecureCookieMapSetDeleteOptions = SecureCookieMapSetDeleteOptions_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
- *
  * Symbol which is used in {@link mergeHeaders} to extract a
  * `[string | string][]` from an instance to generate the final set of
  * headers.
+ *
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const cookieMapHeadersInitSymbol = cookieMapHeadersInitSymbol_;
+export const cookieMapHeadersInitSymbol: typeof cookieMapHeadersInitSymbol_ =
+  cookieMapHeadersInitSymbol_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
- *
  * Allows merging of various sources of headers into a final set of headers
  * which can be used in a {@linkcode Response}.
  *
@@ -150,12 +157,12 @@ export const cookieMapHeadersInitSymbol = cookieMapHeadersInitSymbol_;
  * response to {@linkcode CookieMap} or {@linkcode SecureCookieMap}, merging
  * will not ensure that there are no other `Set-Cookie` headers from other
  * sources, it will simply append the various headers together.
+ *
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const mergeHeaders = mergeHeaders_;
+export const mergeHeaders: typeof mergeHeaders_ = mergeHeaders_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
- *
  * Provides a way to manage cookies in a request and response on the server
  * as a single iterable collection.
  *
@@ -165,24 +172,27 @@ export const mergeHeaders = mergeHeaders_;
  * response can be provided. Alternatively the {@linkcode mergeHeaders}
  * function can be used to generate a final set of headers for sending in the
  * response.
+ *
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  */
-export const CookieMap = CookieMap_;
+export const CookieMap: typeof CookieMap_ = CookieMap_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
  * Types of data that can be signed cryptographically.
+ *
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
 export type Data = Data_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
- *
  * An interface which describes the methods that {@linkcode SecureCookieMap} uses to sign and verify cookies.
+ *
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
 export type KeyRing = KeyRing_;
 
 /**
- * @deprecated (will be removed after 0.210.0) Import from {@link https://deno.land/std/crypto/unstable_cookie_map.ts} instead.
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/cookie.ts} instead.
  *
  * Provides an way to manage cookies in a request and response on the server
  * as a single iterable collection, as well as the ability to sign and verify
@@ -200,6 +210,6 @@ export type KeyRing = KeyRing_;
  * {@linkcode KeyRing} interface. While it is optional, if you don't plan to use
  * keys, you might want to consider using just the {@linkcode CookieMap}.
  *
- * @example
+ * @deprecated (will be removed after 0.212.0) Use {@link https://deno.land/std/http/unstable_signed_cookie.ts} instead.
  */
-export const SecureCookieMap = SecureCookieMap_;
+export const SecureCookieMap: typeof SecureCookieMap_ = SecureCookieMap_;

@@ -5,7 +5,8 @@
 
 import { validateBinaryLike } from "./_util.ts";
 
-/** Port of the Go
+/**
+ * Port of the Go
  * [encoding/hex](https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go)
  * library.
  *
@@ -55,21 +56,15 @@ function fromHexChar(byte: number): number {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeHex} instead.
+ * Converts data into a hex-encoded string.
  *
- * Encodes `src` into `src.length * 2` bytes.
+ * @example
+ * ```ts
+ * import { encodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ *
+ * encodeHex("abc"); // "616263"
+ * ```
  */
-export function encode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(src.length * 2);
-  for (let i = 0; i < dst.length; i++) {
-    const v = src[i];
-    dst[i * 2] = hexTable[v >> 4];
-    dst[i * 2 + 1] = hexTable[v & 0x0f];
-  }
-  return dst;
-}
-
-/** Encodes the source into hex string. */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
 
@@ -83,31 +78,16 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
 }
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeHex} instead.
+ * Decodes the given hex-encoded string. If the input is malformed, an error is
+ * thrown.
  *
- * Decodes `src` into `src.length / 2` bytes.
- * If the input is malformed, an error will be thrown.
+ * @example
+ * ```ts
+ * import { decodeHex } from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+ *
+ * decodeHex("616263"); // Uint8Array(3) [ 97, 98, 99 ]
+ * ```
  */
-export function decode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(src.length / 2);
-  for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(src[i * 2]);
-    const b = fromHexChar(src[i * 2 + 1]);
-    dst[i] = (a << 4) | b;
-  }
-
-  if (src.length % 2 === 1) {
-    // Check for invalid char before reporting bad length,
-    // since the invalid char (if present) is an earlier problem.
-    fromHexChar(src[dst.length * 2]);
-    throw errLength();
-  }
-
-  return dst;
-}
-
-/** Decodes the given hex string to Uint8Array.
- * If the input is malformed, an error will be thrown. */
 export function decodeHex(src: string): Uint8Array {
   const u8 = textEncoder.encode(src);
   const dst = new Uint8Array(u8.length / 2);

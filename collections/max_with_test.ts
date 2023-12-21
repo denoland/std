@@ -13,7 +13,7 @@ function maxWithTest<T>(
 }
 
 Deno.test({
-  name: "[collections/maxWith] no mutation",
+  name: "maxWith() handles no mutation",
   fn() {
     const input = [[1, 3], [6, 1, 3], [4]];
     maxWith(input, (a, b) => a.length - b.length);
@@ -23,14 +23,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/maxWith] empty input",
+  name: "maxWith() handles empty input",
   fn() {
     maxWithTest<string>([[], (a, b) => a.length - b.length], undefined);
   },
 });
 
 Deno.test({
-  name: "[collections/maxWith] array of arrays",
+  name: "maxWith() handles array of arrays",
   fn() {
     maxWithTest([[[1, 3], [6, 1, 3], [4]], (a, b) => a.length - b.length], [
       6,
@@ -41,7 +41,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/maxWith] array of strings",
+  name: "maxWith() handles array of strings",
   fn() {
     maxWithTest(
       [["Kim", "Anna", "Arthur"], (a, b) => a.length - b.length],
@@ -51,7 +51,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/maxWith] array of objects",
+  name: "maxWith() handles array of objects",
   fn() {
     maxWithTest(
       [
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/maxWith] duplicates",
+  name: "maxWith() handles duplicates",
   fn() {
     maxWithTest(
       [["John", "Arthur", "Arthur"], (a, b) => a.length - b.length],
@@ -78,7 +78,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/maxWith] array containing undefined",
+  name: "maxWith() handles array containing undefined",
   fn() {
     maxWithTest(
       [

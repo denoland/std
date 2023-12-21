@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { join } from "../path/join.ts";
-import { toPathString } from "./_util.ts";
+import { toPathString } from "./_to_path_string.ts";
 
 /**
  * Ensures that a directory is empty.

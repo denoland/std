@@ -1054,7 +1054,14 @@ export class UserAgent {
     return this.#ua;
   }
 
-  toJSON() {
+  toJSON(): {
+    browser: Browser;
+    cpu: Cpu;
+    device: Device;
+    engine: Engine;
+    os: Os;
+    ua: string;
+  } {
     const { browser, cpu, device, engine, os, ua } = this;
     return { browser, cpu, device, engine, os, ua };
   }

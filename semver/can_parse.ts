@@ -2,9 +2,14 @@
 import { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
+/**
+ * @deprecated (will be removed in 0.212.0) Use a string argument instead.
+ */
+export function canParse(version: SemVer): boolean;
+export function canParse(version: string): boolean;
 export function canParse(version: string | SemVer) {
   try {
-    parse(version);
+    parse(version as SemVer);
     return true;
   } catch (err) {
     if (!(err instanceof TypeError)) {

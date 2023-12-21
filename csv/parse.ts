@@ -13,7 +13,7 @@ import {
 } from "./_io.ts";
 import { assert } from "../assert/assert.ts";
 
-export { ParseError, ReadOptions };
+export { ParseError, type ParseResult, ReadOptions };
 
 const BYTE_ORDER_MARK = "\ufeff";
 

@@ -30,7 +30,7 @@ export class BaseHandler {
     if (this.level > logRecord.level) return;
 
     const msg = this.format(logRecord);
-    return this.log(msg);
+    this.log(msg);
   }
 
   format(logRecord: LogRecord): string {
@@ -55,15 +55,34 @@ export class BaseHandler {
   destroy() {}
 }
 
+export interface ConsoleHandlerOptions extends HandlerOptions {
+  useColors?: boolean;
+}
+
 /**
  * This is the default logger. It will output color coded log messages to the
  * console via `console.log()`.
  */
 export class ConsoleHandler extends BaseHandler {
+  #useColors?: boolean;
+
+  constructor(levelName: LevelName, options: ConsoleHandlerOptions = {}) {
+    super(levelName, options);
+    this.#useColors = options.useColors ?? true;
+  }
+
   override format(logRecord: LogRecord): string {
     let msg = super.format(logRecord);
 
-    switch (logRecord.level) {
+    if (this.#useColors) {
+      msg = this.applyColors(msg, logRecord.level);
+    }
+
+    return msg;
+  }
+
+  applyColors(msg: string, level: number): string {
+    switch (level) {
       case LogLevels.INFO:
         msg = blue(msg);
         break;

@@ -3,7 +3,7 @@
 
 import { isWindows } from "./_os.ts";
 import { extname as posixExtname } from "./posix/extname.ts";
-import { extname as windowsExtname } from "./posix/extname.ts";
+import { extname as windowsExtname } from "./windows/extname.ts";
 /**
  * Return the extension of the `path` with leading period.
  * @param path with extension

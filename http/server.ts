@@ -138,7 +138,7 @@ export class Server {
    *
    * @param listener The listener to accept connections from.
    */
-  async serve(listener: Deno.Listener) {
+  async serve(listener: Deno.Listener): Promise<void> {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -188,7 +188,7 @@ export class Server {
    * await server.listenAndServe();
    * ```
    */
-  async listenAndServe() {
+  async listenAndServe(): Promise<void> {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -238,7 +238,7 @@ export class Server {
    * @param certFile The path to the file containing the TLS certificate.
    * @param keyFile The path to the file containing the TLS private key.
    */
-  async listenAndServeTls(certFile: string, keyFile: string) {
+  async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
     if (this.#closed) {
       throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
@@ -559,7 +559,7 @@ export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
   options?: ServeListenerOptions,
-) {
+): Promise<void> {
   const server = new Server({ handler, onError: options?.onError });
 
   options?.signal?.addEventListener("abort", () => server.close(), {
@@ -626,7 +626,7 @@ function hostnameForDisplay(hostname: string) {
 export async function serve(
   handler: Handler,
   options: ServeInit = {},
-) {
+): Promise<void> {
   let port = options.port ?? 8000;
   if (typeof port !== "number") {
     port = Number(port);
@@ -744,7 +744,7 @@ export interface ServeTlsInit extends ServeInit {
 export async function serveTls(
   handler: Handler,
   options: ServeTlsInit,
-) {
+): Promise<void> {
   if (!options.key && !options.keyFile) {
     throw new Error("TLS config is given, but 'key' is missing.");
   }

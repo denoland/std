@@ -6,14 +6,13 @@ import {
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
-import { Format } from "./_formats.ts";
 import { test } from "./test.ts";
 
 // GENERAL TESTS //
 
 Deno.test("[ANY] try to test for unknown format", () => {
   assertThrows(
-    () => test("foo", [Format.UNKNOWN]),
+    () => test("foo", ["unknown"]),
     TypeError,
     "Unable to test for unknown front matter format",
   );
@@ -22,11 +21,11 @@ Deno.test("[ANY] try to test for unknown format", () => {
 // YAML //
 
 Deno.test("[YAML] test valid input true", () => {
-  runTestValidInputTests(Format.YAML, test);
+  runTestValidInputTests("yaml", test);
 });
 
 Deno.test("[YAML] test invalid input false", () => {
-  runTestInvalidInputTests(Format.YAML, test);
+  runTestInvalidInputTests("yaml", test);
 });
 
 Deno.test({
@@ -43,19 +42,19 @@ Deno.test({
 // JSON //
 
 Deno.test("[JSON] test valid input true", () => {
-  runTestValidInputTests(Format.JSON, test);
+  runTestValidInputTests("json", test);
 });
 
 Deno.test("[JSON] test invalid input false", () => {
-  runTestInvalidInputTests(Format.JSON, test);
+  runTestInvalidInputTests("json", test);
 });
 
 // TOML //
 
 Deno.test("[TOML] test valid input true", () => {
-  runTestValidInputTests(Format.TOML, test);
+  runTestValidInputTests("toml", test);
 });
 
 Deno.test("[TOML] test invalid input false", () => {
-  runTestInvalidInputTests(Format.TOML, test);
+  runTestInvalidInputTests("toml", test);
 });

@@ -3,6 +3,7 @@ import { INVALID } from "./constants.ts";
 import { sort } from "./sort.ts";
 import type { SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
+import { comparatorMin } from "./comparator_min.ts";
 
 /**
  * The minimum valid SemVer for a given range or INVALID
@@ -14,7 +15,10 @@ export function rangeMin(range: SemVerRange): SemVer { // For and's, you take th
   //[ [1 and 2] or [2 and 3] ] = [ 2 or 3 ] = 2
   return sort(
     range.ranges.map((r) =>
-      sort(r.filter((c) => testRange(c.min, range)).map((c) => c.min)).pop()!
+      sort(
+        r.filter((c) => testRange(comparatorMin(c.semver, c.operator), range))
+          .map((c) => comparatorMin(c.semver, c.operator)),
+      ).pop()!
     ).filter((v) => v),
   ).shift() ?? INVALID;
 }

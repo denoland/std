@@ -15,7 +15,7 @@ function generateErroringFunction(errorsBeforeSucceeds: number) {
   };
 }
 
-Deno.test("[async] retry", async function () {
+Deno.test("retry()", async function () {
   const threeErrors = generateErroringFunction(3);
   const result = await retry(threeErrors, {
     minTimeout: 100,
@@ -23,7 +23,7 @@ Deno.test("[async] retry", async function () {
   assertEquals(result, 3);
 });
 
-Deno.test("[async] retry fails after max errors is passed", async function () {
+Deno.test("retry() fails after max errors is passed", async function () {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
     retry(fiveErrors, {
@@ -32,34 +32,30 @@ Deno.test("[async] retry fails after max errors is passed", async function () {
   );
 });
 
-Deno.test("[async] retry waits four times by default", async function () {
+Deno.test("retry() waits four times by default", async function () {
   let callCount = 0;
   const onlyErrors = function () {
     callCount++;
     throw new Error("Failure");
   };
-  const time = new FakeTime();
+  using time = new FakeTime();
   const callCounts: Array<number> = [];
-  try {
-    const promise = retry(onlyErrors);
-    queueMicrotask(() => callCounts.push(callCount));
-    await time.next();
-    queueMicrotask(() => callCounts.push(callCount));
-    await time.next();
-    queueMicrotask(() => callCounts.push(callCount));
-    await time.next();
-    queueMicrotask(() => callCounts.push(callCount));
-    await time.next();
-    queueMicrotask(() => callCounts.push(callCount));
-    await assertRejects(() => promise, RetryError);
-    assertEquals(callCounts, [1, 2, 3, 4, 5]);
-  } finally {
-    time.restore();
-  }
+  const promise = retry(onlyErrors);
+  queueMicrotask(() => callCounts.push(callCount));
+  await time.next();
+  queueMicrotask(() => callCounts.push(callCount));
+  await time.next();
+  queueMicrotask(() => callCounts.push(callCount));
+  await time.next();
+  queueMicrotask(() => callCounts.push(callCount));
+  await time.next();
+  queueMicrotask(() => callCounts.push(callCount));
+  await assertRejects(() => promise, RetryError);
+  assertEquals(callCounts, [1, 2, 3, 4, 5]);
 });
 
 Deno.test(
-  "[async] retry throws if minTimeout is less than maxTimeout",
+  "retry() throws if minTimeout is less than maxTimeout",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -71,7 +67,7 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if maxTimeout is less than 0",
+  "retry() throws if maxTimeout is less than 0",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -82,7 +78,7 @@ Deno.test(
 );
 
 Deno.test(
-  "[async] retry throws if jitter is bigger than 1",
+  "retry() throws if jitter is bigger than 1",
   async function () {
     await assertRejects(() =>
       retry(() => {}, {
@@ -92,11 +88,11 @@ Deno.test(
   },
 );
 
-Deno.test("[async] retry - backoff function timings", async (t) => {
+Deno.test("retry() checks backoff function timings", async (t) => {
   const originalMathRandom = Math.random;
 
   await t.step("wait fixed times without jitter", async function () {
-    const time = new FakeTime();
+    using time = new FakeTime();
     let resolved = false;
     const checkResolved = async () => {
       try {
@@ -107,33 +103,30 @@ Deno.test("[async] retry - backoff function timings", async (t) => {
         resolved = true;
       }
     };
-    try {
-      const promise = checkResolved();
-      const startTime = time.now;
 
-      await time.nextAsync();
-      assertEquals(time.now - startTime, 1000);
+    const promise = checkResolved();
+    const startTime = time.now;
 
-      await time.nextAsync();
-      assertEquals(time.now - startTime, 3000);
+    await time.nextAsync();
+    assertEquals(time.now - startTime, 1000);
 
-      await time.nextAsync();
-      assertEquals(time.now - startTime, 7000);
+    await time.nextAsync();
+    assertEquals(time.now - startTime, 3000);
 
-      await time.nextAsync();
-      assertEquals(time.now - startTime, 15000);
-      assertEquals(resolved, false);
+    await time.nextAsync();
+    assertEquals(time.now - startTime, 7000);
 
-      await time.runMicrotasks();
-      assertEquals(time.now - startTime, 15000);
-      assertEquals(resolved, true);
+    await time.nextAsync();
+    assertEquals(time.now - startTime, 15000);
+    assertEquals(resolved, false);
 
-      await time.runAllAsync();
-      assertEquals(time.now - startTime, 15000);
-      await promise;
-    } finally {
-      time.restore();
-    }
+    await time.runMicrotasks();
+    assertEquals(time.now - startTime, 15000);
+    assertEquals(resolved, true);
+
+    await time.runAllAsync();
+    assertEquals(time.now - startTime, 15000);
+    await promise;
   });
 
   Math.random = originalMathRandom;
