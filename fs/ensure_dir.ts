@@ -16,18 +16,32 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
 export async function ensureDir(dir: string | URL) {
   try {
     await Deno.mkdir(dir, { recursive: true });
-  } catch (err) {
-    if (!(err instanceof Deno.errors.AlreadyExists)) {
-      throw err;
+  } catch (mkdirErr) {
+    if (
+      !(mkdirErr instanceof Deno.errors.AlreadyExists ||
+        mkdirErr instanceof Deno.errors.PermissionDenied)
+    ) {
+      throw mkdirErr;
     }
 
-    const fileInfo = await Deno.lstat(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
+    try {
+      const fileInfo = await Deno.lstat(dir);
+      if (!fileInfo.isDirectory) {
+        throw new Error(
+          `Ensure path exists, expected 'dir', got '${
+            getFileInfoType(fileInfo)
+          }'`,
+        );
+      }
+    } catch (lstatErr) {
+      if (
+        mkdirErr instanceof Deno.errors.PermissionDenied &&
+        lstatErr instanceof Deno.errors.NotFound
+      ) {
+        throw mkdirErr;
+      } else {
+        throw lstatErr;
+      }
     }
   }
 }
@@ -47,18 +61,32 @@ export async function ensureDir(dir: string | URL) {
 export function ensureDirSync(dir: string | URL) {
   try {
     Deno.mkdirSync(dir, { recursive: true });
-  } catch (err) {
-    if (!(err instanceof Deno.errors.AlreadyExists)) {
-      throw err;
+  } catch (mkdirErr) {
+    if (
+      !(mkdirErr instanceof Deno.errors.AlreadyExists ||
+        mkdirErr instanceof Deno.errors.PermissionDenied)
+    ) {
+      throw mkdirErr;
     }
 
-    const fileInfo = Deno.lstatSync(dir);
-    if (!fileInfo.isDirectory) {
-      throw new Error(
-        `Ensure path exists, expected 'dir', got '${
-          getFileInfoType(fileInfo)
-        }'`,
-      );
+    try {
+      const fileInfo = Deno.lstatSync(dir);
+      if (!fileInfo.isDirectory) {
+        throw new Error(
+          `Ensure path exists, expected 'dir', got '${
+            getFileInfoType(fileInfo)
+          }'`,
+        );
+      }
+    } catch (lstatErr) {
+      if (
+        mkdirErr instanceof Deno.errors.PermissionDenied &&
+        lstatErr instanceof Deno.errors.NotFound
+      ) {
+        throw mkdirErr;
+      } else {
+        throw lstatErr;
+      }
     }
   }
 }
