@@ -4,12 +4,12 @@
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 import { join } from "../path/join.ts";
 import { normalize } from "../path/normalize.ts";
+import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
-  toPathString,
-  WalkEntry,
-} from "./_util.ts";
+  type WalkEntry,
+} from "./_create_walk_entry.ts";
 
 /** Error thrown in {@linkcode walk} or {@linkcode walkSync} during iteration. */
 export class WalkError extends Error {

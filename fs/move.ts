@@ -1,5 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { isSamePath, isSubdir } from "./_util.ts";
+import { isSubdir } from "./_is_subdir.ts";
+import { isSamePath } from "./_is_same_path.ts";
 
 const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
