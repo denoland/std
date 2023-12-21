@@ -1,8 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 
-// deno-lint-ignore-file no-explicit-any
-
 import type { AnyConstructor, Matcher, MatcherContext } from "./_types.ts";
 import { AssertionError } from "../assert/assertion_error.ts";
 import {
@@ -82,6 +80,7 @@ export interface Expected {
   toReturnWith(expected: unknown): void;
   toStrictEqual(candidate: unknown): void;
   toThrow<E extends Error = Error>(
+    // deno-lint-ignore no-explicit-any
     expected?: string | RegExp | E | (new (...args: any[]) => E),
   ): void;
   not: Expected;
@@ -211,6 +210,7 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
 // a helper type to match any function. Used so that we only convert functions
 // to return a promise and not properties.
+// deno-lint-ignore no-explicit-any
 type Fn = (...args: any[]) => unknown;
 
 // converts all the methods in an interface to be async functions
