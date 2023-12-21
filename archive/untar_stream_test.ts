@@ -249,7 +249,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
       owner: "deno",
       group: "deno",
       type: "file",
-      content: new TextEncoder().encode("land\n"),
+      content: "land\n",
     },
     {
       fileName: "archive/file.txt",
@@ -261,7 +261,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
       owner: "deno",
       group: "deno",
       type: "file",
-      content: new TextEncoder().encode("file\n"),
+      content: "file\n",
     },
     {
       fileName: "archive/deno.txt",
@@ -273,7 +273,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
       owner: "deno",
       group: "deno",
       type: "file",
-      content: new TextEncoder().encode("deno\n"),
+      content: "deno\n",
     },
   ];
 
@@ -292,7 +292,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
     if (content) {
       const buffer = new Buffer();
       await entry.readable.pipeTo(buffer.writable);
-      assertEquals(content, buffer.bytes());
+      assertEquals(content, await toText(buffer.readable));
     }
   }
 });
