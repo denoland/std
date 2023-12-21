@@ -19,23 +19,20 @@ import { toText } from "../streams/to_text.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
-const filePath = resolve(testdataDir, "example.txt");
 
-async function getTarOptions(): Promise<TarOptions[]> {
-  const file = await Deno.open(filePath, { read: true });
-
+function getTarOptions(): TarOptions[] {
   return [
     {
       name: "output.txt",
-      readable: ReadableStream.from([
-        new TextEncoder().encode("hello tar world!"),
-      ]),
+      readable: ReadableStream.from("hello tar world!")
+        .pipeThrough(new TextEncoderStream()),
       contentSize: 16,
     },
     {
       name: "dir/tar.ts",
-      readable: file.readable,
-      contentSize: file.statSync().size,
+      readable: ReadableStream.from("hello world!")
+        .pipeThrough(new TextEncoderStream()),
+      contentSize: 13,
     },
   ];
 }
@@ -68,7 +65,7 @@ Deno.test("deflateTarArchive", async () => {
 });
 
 Deno.test("untarAsyncIterator", async () => {
-  const entries = await getTarOptions();
+  const entries = getTarOptions();
 
   const untar = new UntarStream();
   await ReadableStream.from<TarOptions>(entries)
@@ -97,7 +94,7 @@ Deno.test("untarAsyncIterator", async () => {
 });
 
 Deno.test("untarAsyncIteratorWithoutReadingBody", async () => {
-  const entries: TarOptions[] = await getTarOptions();
+  const entries: TarOptions[] = getTarOptions();
 
   const tar = ReadableStream.from<TarOptions>(entries)
     .pipeThrough(new TarStream());
@@ -121,7 +118,7 @@ Deno.test(
     const filePath = resolve(testdataDir, "test_stream.tar");
     const file = await Deno.open(filePath, { read: true });
 
-    const entries = await getTarOptions();
+    const entries = getTarOptions();
 
     for await (const entry of file.readable.pipeThrough(new UntarStream())) {
       const expected = entries.shift();
@@ -137,7 +134,7 @@ Deno.test("untarAsyncIteratorFromFileReadable", async function () {
   const filePath = resolve(testdataDir, "test_stream.tar");
   const file = await Deno.open(filePath, { read: true });
 
-  const entries = await getTarOptions();
+  const entries = getTarOptions();
 
   for await (const entry of file.readable.pipeThrough(new UntarStream())) {
     const expected = entries.shift();
