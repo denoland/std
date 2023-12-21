@@ -156,4 +156,3 @@
 
 export * from "./create_extractor.ts";
 export * from "./test.ts";
-export { Format } from "./_formats.ts";
