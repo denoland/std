@@ -36,6 +36,8 @@ import {
 } from "./_stream_common.ts";
 import { assert } from "../assert/assert.ts";
 
+const decoder = new TextDecoder();
+
 // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
 // eight checksum bytes taken to be ascii spaces (decimal value 32)
 const initialChecksum = 8 * 32;
@@ -45,9 +47,8 @@ const initialChecksum = 8 * 32;
  * @param buffer
  */
 function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex((v): boolean => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
+  const index = buffer.findIndex((v) => v === 0);
+  return index < 0 ? buffer : buffer.subarray(0, index);
 }
 
 /**
@@ -198,7 +199,6 @@ export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
     const header = parseHeader(this.#block);
 
     // calculate the checksum
-    const decoder = new TextDecoder();
     const checksum = getChecksum(this.#block);
 
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
@@ -220,7 +220,6 @@ export class UntarStream implements TransformStream<Uint8Array, TarEntry> {
 }
 
 function getMetadata(header: TarHeader): TarMeta {
-  const decoder = new TextDecoder();
   // get meta data
   const meta: TarMeta = {
     fileName: decoder.decode(trim(header.fileName)),
@@ -258,11 +257,9 @@ function getMetadata(header: TarHeader): TarMeta {
 function getChecksum(header: Uint8Array): number {
   let sum = initialChecksum;
   for (let i = 0; i < 512; i++) {
-    if (i >= 148 && i < 156) {
-      // Ignore checksum header
-      continue;
+    if (i < 148 || i >= 156) {
+      sum += header[i];
     }
-    sum += header[i];
   }
   return sum;
 }

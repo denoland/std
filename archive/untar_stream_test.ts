@@ -301,7 +301,7 @@ Deno.test("untarArchiveWithLink", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
   const file = await Deno.open(filePath, { read: true });
 
-  type ExpectedEntry = TarMeta & { content?: Uint8Array };
+  type ExpectedEntry = TarMeta & { content?: string };
 
   const expectedEntries: ExpectedEntry[] = [
     {
@@ -314,7 +314,7 @@ Deno.test("untarArchiveWithLink", async function () {
       owner: "user",
       group: "user",
       type: "file",
-      content: new TextEncoder().encode("Hello World!\n\n"),
+      content: "Hello World!\n\n",
     },
     {
       fileName: "link_to_hello.txt",
@@ -339,7 +339,7 @@ Deno.test("untarArchiveWithLink", async function () {
     assertEquals({ ...entry }, expected);
 
     if (content) {
-      assertEquals(content.buffer, await toArrayBuffer(entry.readable));
+      assertEquals(content, await toText(entry.readable));
     }
   }
 });
