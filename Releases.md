@@ -1,3 +1,56 @@
+### 0.210.0 / 2023.12.21
+
+- BREAKING(crypto): remove `toHashString()` (#3924)
+- BREAKING(encoding): remove deprecated APIs (#3952)
+- BREAKING(http): remove deprecated `std/http/method` API (#3951)
+- deprecation(encoding): deprecate `base32.byteLength()` (#4000)
+- deprecation(semver): comparator min and max properties (#3974)
+- deprecation(semver): deprecate `SemVer` argument for `parse()` and
+  `canParse()` (#3939)
+- deprecation(semver): deprecate `rcompare()` (#3958)
+- deprecation(semver): rename `isSemVerComparator()` (#3957)
+- deprecation(signal): move deprecation forward (#4004)
+- feat(cli): command line spinner (#3968)
+- feat(collections): improve `mapValues()` typing (#3978)
+- feat(log): add support for structured JSON logging (#3960)
+- feat(testing): enable the `using` keyword on `FakeTime()` (#3961)
+- fix(http): account for period in signed cookie name (#3977)
+- fix(path/extname): fix incorrect import (#3970)
+- perf(streams): make `toBlob()` 20-30% faster (#3934)
+
+### 0.209.0 / 2023.12.13
+
+- BREAKIING(fs): remove `EOL` enum, add OS-dependent `EOL` (#3850)
+- BREAKING(async): remove deprecated `deferred()` (#3852)
+- BREAKING(bytes): remove spread `concat()` overload (#3854)
+- BREAKING(collections): remove deprecated APIs (#3853)
+- BREAKING(datetime): remove `toIMF()` (#3849)
+- BREAKING(http): remove `ServerSentEvent()` (#3847)
+- BREAKING(media_types): remove `typeByExtension()` (#3848)
+- Revert "BREAKING(media_types): remove `typeByExtension()`" (#3877)
+- deprecate(log): remove enums and add deprecation notices (#3855)
+- deprecation(front_matter): move `Format` enum deprecation forward (#3931)
+- deprecation(io): IO types in favour of Web Streams API (#3903)
+- deprecation: move `types.d.ts` to `std/io` (#3885)
+- feat(cli): `promptSecret()` (#3777)
+- feat(expect): support message checks in expect().toThrow (#3938)
+- feat(http): `signCookie()`, `verifyCookie()` and `parseSignedCookie()` (#3905)
+- feat(net): `getAvailablePort()` (#3890)
+- feat: add `std/ini` (#3871)
+- feat: new `std/webgpu` sub-module (#3119)
+- fix(assert): disallow scalar string args in `assertArrayIncludes()` (#3910)
+- fix(assert): export parameter type alias for `assertArrayIncludes()` (#3917)
+- fix(assert): fix diff of long string in objects (#3867)
+- fix(cli): re-export promptSecret from mod.ts (#3944)
+- fix(fs): improve `exists()` test coverage (#3898)
+- fix(text): fix closestString (#3936)
+- fix(toml): handle CRLF as newline in parsing multiline string (#3920)
+- fix(tools): ignore the .git folder when checking for copyright header (#3937)
+- perf(async): remove event listener ASAP in `abortablePromise()` and
+  `abortableAsyncIterable()` (#3909)
+- perf(crypto): use `Promise.all()` for `KeyStack` data comparisons (#3919)
+- perf(encoding): increase `varint.decode()` performance by 45x (#3940)
+
 ### 0.208.0 / 2023.11.24
 
 - BREAKING(collections): deprecate `groupBy()` (#3663)

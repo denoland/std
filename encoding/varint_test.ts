@@ -19,6 +19,10 @@ function encodeDecode(i: number | bigint) {
   assertEquals(n, m, `${fn.name}(encode(${i})): buffer lengths ${n} !== ${m}`);
 }
 
+Deno.test("Varint decode empty buff", () => {
+  assertThrows(() => decode(Uint8Array.of()), RangeError);
+});
+
 Deno.test("VarInt decode manual", () => {
   assertEquals(decode(Uint8Array.of(172, 2)), [300n, 2]);
 });
@@ -91,8 +95,11 @@ Deno.test("VarInt encode manual", () => {
     [Uint8Array.of(255, 255, 255, 255, 255, 255, 255, 255, 255, 1), 10],
   );
 });
+Deno.test("VarInt encode overflow uint64", () => {
+  assertThrows(() => encode(1e+30), RangeError, "overflows uint64");
+});
 Deno.test("VarInt encode overflow with negative", () => {
-  assertThrows(() => encode(-1), RangeError);
+  assertThrows(() => encode(-1), RangeError, "signed input given");
 });
 Deno.test("VarInt encode with offset", () => {
   let uint = new Uint8Array(3);

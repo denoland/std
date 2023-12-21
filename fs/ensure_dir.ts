@@ -1,5 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { getFileInfoType } from "./_util.ts";
+import { getFileInfoType } from "./_get_file_info_type.ts";
 
 /**
  * Ensures that the directory exists.

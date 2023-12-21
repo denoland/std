@@ -4,27 +4,11 @@
 import { validateBinaryLike } from "./_util.ts";
 
 /**
- * {@linkcode encodeBase64} and {@linkcode decodeBase64} for
- * [base64](https://en.wikipedia.org/wiki/Base64) encoding.
+ * Utilities for
+ * [base64]{@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ * encoding and decoding.
  *
  * This module is browser compatible.
- *
- * @example
- * ```ts
- * import {
- *   decodeBase64,
- *   encodeBase64,
- * } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
- *
- * const b64Repr = "Zm9vYg==";
- *
- * const binaryData = decodeBase64(b64Repr);
- * console.log(binaryData);
- * // => Uint8Array [ 102, 111, 111, 98 ]
- *
- * console.log(encodeBase64(binaryData));
- * // => Zm9vYg==
- * ```
  *
  * @module
  */
@@ -97,24 +81,16 @@ const base64abc = [
 ];
 
 /**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode encodeBase64} instead.
+ * Converts data into a base64-encoded string.
  *
- * CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
- * Encodes a given Uint8Array, ArrayBuffer or string into RFC4648 base64 representation
- * @param data
- */
-export const encode = encodeBase64;
-
-/**
- * @deprecated (will be removed in 0.210.0) Use {@linkcode decodeBase64} instead.
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
  *
- * Decodes a given RFC4648 base64 encoded string
- * @param b64
- */
-export const decode = decodeBase64;
-
-/**
- * Encodes a given Uint8Array, ArrayBuffer or string into RFC4648 base64 representation
+ * @example
+ * ```ts
+ * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ *
+ * encodeBase64("foobar"); // "Zm9vYmFy"
+ * ```
  */
 export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
   // CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
@@ -145,7 +121,16 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
 }
 
 /**
- * Decodes a given RFC4648 base64 encoded string
+ * Decodes a base64-encoded string.
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc4648#section-4}
+ *
+ * @example
+ * ```ts
+ * import { encodeBase64 } from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+ *
+ * encodeBase64("foobar"); // "Zm9vYmFy"
+ * ```
  */
 export function decodeBase64(b64: string): Uint8Array {
   const binString = atob(b64);

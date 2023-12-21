@@ -36,7 +36,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * assertEquals(escape("þð"), "þð");
  * ```
  */
-export function escape(str: string) {
+export function escape(str: string): string {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
@@ -73,7 +73,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 export function unescape(
   str: string,
   options: Partial<UnescapeOptions> = {},
-) {
+): string {
   const { entityList } = { ...defaultUnescapeOptions, ...options };
 
   let entityRe = entityListRegexCache.get(entityList);

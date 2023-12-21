@@ -1,7 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
 import { INVALID, MIN } from "./constants.ts";
-import { isSemVerComparator } from "./is_semver_comparator.ts";
+import { isComparator } from "./is_comparator.ts";
 
 Deno.test({
   name: "valid_comparator",
@@ -25,7 +25,7 @@ Deno.test({
       await t.step(
         `valid_comparator_${(i++).toString().padStart(2, "0")}`,
         () => {
-          const actual = isSemVerComparator(c);
+          const actual = isComparator(c);
           assert(actual);
         },
       );

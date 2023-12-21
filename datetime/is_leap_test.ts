@@ -3,7 +3,7 @@ import { assert } from "../assert/mod.ts";
 import { isLeap, isUtcLeap } from "./is_leap.ts";
 
 Deno.test({
-  name: "[std/datetime] isLeap",
+  name: "isLeap()",
   fn() {
     assert(isLeap(1992));
     assert(isLeap(2000));
@@ -17,7 +17,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] isUtcLeap",
+  name: "isUtcLeap()",
   fn() {
     assert(isUtcLeap(1992));
     assert(isUtcLeap(2000));

@@ -2,16 +2,16 @@
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { closestString } from "./closest_string.ts";
 
-Deno.test("closestString - basic", function () {
+Deno.test("closestString() handles basic example", function () {
   const words = ["hi", "hello", "help"];
 
   assertEquals(
     JSON.stringify(closestString("hep", words)),
-    '"hi"',
+    '"help"',
   );
 });
 
-Deno.test("closestString - caseSensitive1", function () {
+Deno.test("closestString() handles case sensitive example 1", function () {
   const words = ["hi", "hello", "help"];
 
   // this is why caseSensitive is OFF by default; very unintuitive until something better than levenshtein_distance is used
@@ -21,7 +21,7 @@ Deno.test("closestString - caseSensitive1", function () {
   );
 });
 
-Deno.test("closestString - caseSensitive2", function () {
+Deno.test("closestString() handles case sensitive example 2", function () {
   const words = ["HI", "HELLO", "HELP"];
 
   assertEquals(
@@ -30,7 +30,7 @@ Deno.test("closestString - caseSensitive2", function () {
   );
 });
 
-Deno.test("closestString - empty input", function () {
+Deno.test("closestString() handles empty input", function () {
   assertThrows(
     () => closestString("he", []),
     Error,

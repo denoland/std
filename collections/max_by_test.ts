@@ -3,7 +3,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { maxBy } from "./max_by.ts";
 
-Deno.test("[collections/maxBy] of array of input", () => {
+Deno.test("maxBy() handles array input", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -15,7 +15,7 @@ Deno.test("[collections/maxBy] of array of input", () => {
   assertEquals(max, { name: "John", age: 42 });
 });
 
-Deno.test("[collections/maxBy] of array of input with mutation", () => {
+Deno.test("maxBy() handles array input with mutation", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -27,7 +27,7 @@ Deno.test("[collections/maxBy] of array of input with mutation", () => {
   assertEquals(max, { name: "John", age: 42 });
 });
 
-Deno.test("[collections/maxBy] of array of input with multiple max", () => {
+Deno.test("maxBy() handles array input with multiple max", () => {
   const input = [
     { name: "Kyle", age: 34 },
     { name: "John", age: 42 },
@@ -40,7 +40,7 @@ Deno.test("[collections/maxBy] of array of input with multiple max", () => {
   assertEquals(max, { name: "John", age: 42 });
 });
 
-Deno.test("[collections/maxBy] of array of positive numbers", () => {
+Deno.test("maxBy() handles array of positive numbers", () => {
   const input = [2, 3, 5];
 
   const max = maxBy(input, (i) => i);
@@ -48,7 +48,7 @@ Deno.test("[collections/maxBy] of array of positive numbers", () => {
   assertEquals(max, 5);
 });
 
-Deno.test("[collections/maxBy] of array of negative numbers", () => {
+Deno.test("maxBy() handles array of negative numbers", () => {
   const input = [-2, -3, -5];
 
   const max = maxBy(input, (i: number) => i);
@@ -56,7 +56,7 @@ Deno.test("[collections/maxBy] of array of negative numbers", () => {
   assertEquals(max, -2);
 });
 
-Deno.test("[collections/maxBy] of array of strings", () => {
+Deno.test("maxBy() handles array of strings", () => {
   const input = ["Kyle", "John", "Anna"];
 
   const max = maxBy(input, (i: string) => i);
@@ -64,7 +64,7 @@ Deno.test("[collections/maxBy] of array of strings", () => {
   assertEquals(max, "Kyle");
 });
 
-Deno.test("[collections/maxBy] of empty array", () => {
+Deno.test("maxBy() handles of empty array", () => {
   const input: number[] = [];
 
   const max = maxBy(input, (i) => i);
@@ -72,7 +72,7 @@ Deno.test("[collections/maxBy] of empty array", () => {
   assertEquals(max, undefined);
 });
 
-Deno.test("[collections/maxBy] of array of numbers with multiple max", () => {
+Deno.test("maxBy() handles array of numbers with multiple max", () => {
   const input = [2, 3, 5, 5];
 
   const max = maxBy(input, (i) => i);
@@ -80,7 +80,7 @@ Deno.test("[collections/maxBy] of array of numbers with multiple max", () => {
   assertEquals(max, 5);
 });
 
-Deno.test("[collections/maxBy] of array of numbers with infinity", () => {
+Deno.test("maxBy() handles array of numbers with infinity", () => {
   const input = [2, 3, 5, Infinity];
 
   const max = maxBy(input, (i) => i);
@@ -88,7 +88,7 @@ Deno.test("[collections/maxBy] of array of numbers with infinity", () => {
   assertEquals(max, Infinity);
 });
 
-Deno.test("[collections/maxBy] of array of numbers with NaN", () => {
+Deno.test("maxBy() handles array of numbers with NaN", () => {
   const input = [2, 3, 5, NaN];
 
   const max = maxBy(input, (i) => i);
@@ -96,7 +96,7 @@ Deno.test("[collections/maxBy] of array of numbers with NaN", () => {
   assertEquals(max, 5);
 });
 
-Deno.test("[collections/maxBy] no mutation", () => {
+Deno.test("maxBy() handles no mutation", () => {
   const input = [2, 3, 5];
 
   maxBy(input, (i) => i);
@@ -104,7 +104,7 @@ Deno.test("[collections/maxBy] no mutation", () => {
   assertEquals(input, [2, 3, 5]);
 });
 
-Deno.test("[collections/maxBy] empty input", () => {
+Deno.test("maxBy() handles empty input", () => {
   const emptyArray: Array<{ age: number }> = [];
   const max = maxBy(emptyArray, (it) => it.age);
 
@@ -112,7 +112,7 @@ Deno.test("[collections/maxBy] empty input", () => {
 });
 
 Deno.test({
-  name: "[collections/sortBy] bigint",
+  name: "maxBy() handles bigint",
   fn() {
     const input = [
       "9007199254740999",
@@ -125,7 +125,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/sortBy] date",
+  name: "maxBy() handles date",
   fn() {
     const input = [
       "February 1, 2022",

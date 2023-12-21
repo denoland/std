@@ -9,7 +9,7 @@
  */
 
 import { timingSafeEqual } from "./timing_safe_equal.ts";
-import * as base64url from "../encoding/base64url.ts";
+import { encodeBase64Url } from "../encoding/base64url.ts";
 
 /** Types of data that can be signed cryptographically. */
 export type Data = string | number[] | ArrayBuffer | Uint8Array;
@@ -96,6 +96,7 @@ export class KeyStack {
     return this.#cryptoKeys.get(key)!;
   }
 
+  /** Number of keys */
   get length(): number {
     return this.#keys.length;
   }
@@ -120,7 +121,7 @@ export class KeyStack {
    * URL safe base64 encoded string. */
   async sign(data: Data): Promise<string> {
     const key = await this.#toCryptoKey(this.#keys[0]);
-    return base64url.encode(await sign(data, key));
+    return encodeBase64Url(await sign(data, key));
   }
 
   /** Given `data` and a `digest`, verify that one of the `keys` provided the
@@ -137,7 +138,7 @@ export class KeyStack {
     for (let i = 0; i < this.#keys.length; i++) {
       const cryptoKey = await this.#toCryptoKey(this.#keys[i]);
       if (
-        await compare(digest, base64url.encode(await sign(data, cryptoKey)))
+        await compare(digest, encodeBase64Url(await sign(data, cryptoKey)))
       ) {
         return i;
       }
@@ -145,17 +146,21 @@ export class KeyStack {
     return -1;
   }
 
-  [Symbol.for("Deno.customInspect")](inspect: (value: unknown) => string) {
+  /** Custom output for {@linkcode Deno.inspect}. */
+  [Symbol.for("Deno.customInspect")](
+    inspect: (value: unknown) => string,
+  ): string {
     const { length } = this;
     return `${this.constructor.name} ${inspect({ length })}`;
   }
 
+  /** Custom output for Node's {@linkcode https://nodejs.org/api/util.html#utilinspectobject-options|util.inspect}. */
   [Symbol.for("nodejs.util.inspect.custom")](
     depth: number,
     // deno-lint-ignore no-explicit-any
     options: any,
     inspect: (value: unknown, options?: unknown) => string,
-  ) {
+  ): string {
     if (depth < 0) {
       return options.stylize(`[${this.constructor.name}]`, "special");
     }

@@ -6,7 +6,7 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test({
-  name: "load",
+  name: "load()",
   async fn() {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
@@ -29,7 +29,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "load when multiple files",
+  name: "load() works as expected when the multiple files are imported",
   async fn() {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
