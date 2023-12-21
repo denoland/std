@@ -446,7 +446,7 @@ export const handlers: {
 };
 
 export const formatters: {
-  jsonFormatter(logRecord: LogRecord): string
+  jsonFormatter(logRecord: LogRecord): string;
 } = {
   jsonFormatter,
 };
