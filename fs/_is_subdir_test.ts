@@ -2,19 +2,20 @@
 // Copyright the Browserify authors. MIT License.
 
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "../path/mod.ts";
+import { SEP as SEP_POSIX } from "../path/posix/separator.ts";
+import { SEP as SEP_WIN32 } from "../path/windows/separator.ts";
 import { isSubdir } from "./_is_subdir.ts";
 
 Deno.test("isSubdir() returns a boolean indicating if dir is a subdir", function () {
   const pairs = [
-    ["", "", false, path.posix.sep],
-    ["/first/second", "/first", false, path.posix.sep],
-    ["/first", "/first", false, path.posix.sep],
-    ["/first", "/first/second", true, path.posix.sep],
-    ["first", "first/second", true, path.posix.sep],
-    ["../first", "../first/second", true, path.posix.sep],
-    ["c:\\first", "c:\\first", false, path.win32.sep],
-    ["c:\\first", "c:\\first\\second", true, path.win32.sep],
+    ["", "", false, SEP_POSIX],
+    ["/first/second", "/first", false, SEP_POSIX],
+    ["/first", "/first", false, SEP_POSIX],
+    ["/first", "/first/second", true, SEP_POSIX],
+    ["first", "first/second", true, SEP_POSIX],
+    ["../first", "../first/second", true, SEP_POSIX],
+    ["c:\\first", "c:\\first", false, SEP_WIN32],
+    ["c:\\first", "c:\\first\\second", true, SEP_WIN32],
   ];
 
   pairs.forEach(function (p) {
