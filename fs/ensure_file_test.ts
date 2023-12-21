@@ -135,3 +135,75 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name:
+    "ensureFile() can write file without write permissions on parent directory",
+  permissions: {
+    read: true,
+    write: [
+      path.join(testdataDir, "ensure_file_9"),
+      path.join(testdataDir, "ensure_file_9", "test.txt"),
+    ],
+    run: ["deno"],
+  },
+  async fn() {
+    const testDir = path.join(testdataDir, "ensure_file_9");
+    const testFile = path.join(testDir, "test.txt");
+
+    try {
+      await Deno.mkdir(testDir, { recursive: true });
+      await Deno.permissions.revoke({ name: "write", path: testDir });
+
+      // should still work as the parent directory already exists
+      await ensureFile(testFile);
+
+      // test file should exist
+      await Deno.stat(testFile);
+    } finally {
+      // it's dirty, but we can't remove the test output in the same process after dropping the write permission
+      await new Deno.Command(Deno.execPath(), {
+        args: [
+          "eval",
+          `Deno.removeSync("${testDir}", { recursive: true });`,
+        ],
+      }).output();
+    }
+  },
+});
+
+Deno.test({
+  name:
+    "ensureFileSync() can write file without write permissions on parent directory",
+  permissions: {
+    read: true,
+    write: [
+      path.join(testdataDir, "ensure_file_10"),
+      path.join(testdataDir, "ensure_file_10", "test.txt"),
+    ],
+    run: ["deno"],
+  },
+  fn() {
+    const testDir = path.join(testdataDir, "ensure_file_10");
+    const testFile = path.join(testDir, "test.txt");
+
+    try {
+      Deno.mkdirSync(testDir, { recursive: true });
+      Deno.permissions.revokeSync({ name: "write", path: testDir });
+
+      // should still work as the parent directory already exists
+      ensureFileSync(testFile);
+
+      // test file should exist
+      Deno.statSync(testFile);
+    } finally {
+      // it's dirty, but we can't remove the test output in the same process after dropping the write permission
+      new Deno.Command(Deno.execPath(), {
+        args: [
+          "eval",
+          `Deno.removeSync("${testDir}", { recursive: true });`,
+        ],
+      }).outputSync();
+    }
+  },
+});
