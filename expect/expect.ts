@@ -210,7 +210,8 @@ export function expect(value: unknown, customMessage?: string): Expected {
 
 // a helper type to match any function. Used so that we only convert functions
 // to return a promise and not properties.
-type Fn = (...args: unknown[]) => unknown;
+// deno-lint-ignore no-explicit-any
+type Fn = (...args: any[]) => unknown;
 
 // converts all the methods in an interface to be async functions
 export type Async<T> = {
