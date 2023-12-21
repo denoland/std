@@ -48,7 +48,8 @@ export interface SpinnerOptions {
   spinner?: string[];
   /** The message to display next to the spinner. */
   message?: string;
-  /** The time between each frame of the spinner.
+  /**
+   * The time between each frame of the spinner in milliseconds.
    *
    * @default {75}
    */
