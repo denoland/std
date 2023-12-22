@@ -199,7 +199,7 @@ export class FileHandler extends WriterHandler {
     // Why use a queue/LogQueue here instead of just calling writeToBuffer?
     // Because when we flush we need some way to wait for all pending calls
     // to writeToBuffer to be complete. This is tricky because log() is sync
-    // and writeToBuffer() is async. It could be achived with less lines
+    // and writeToBuffer() is async. It could be achieved with less lines
     // if it was built directly into this class but this class is getting
     // very complex and cluttered.
     this.#queue.enqueue(bytes);
@@ -236,7 +236,7 @@ export class FileHandler extends WriterHandler {
 
     // PR Question: should this comment be deleted before the PR is merged?
     //
-    // We create a new buffer rather than just reset becasue otherwise
+    // We create a new buffer rather than just reset because otherwise
     // Subsequent `readable.pipeTo`s will fail to run, nothing errors, it just
     // doesn't write the new buffer data to the file. By passing around the same
     // this._arrayBuf ArrayBuffer, it means we reuse the same section of memory
