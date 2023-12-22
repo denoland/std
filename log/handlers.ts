@@ -368,7 +368,7 @@ export class RotatingFileHandler extends FileHandler {
     // PR Question: should this comment be deleted before the PR is merged?
     //
     // We don't call flush() because the queue might have more data
-    // That we can fit in the #maxBytes, so we only flush the buffer
+    // than we can fit in the #maxBytes, so we only flush the buffer
     await this.flushBufferToFile();
     this._file!.close();
 
