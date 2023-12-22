@@ -1,16 +1,20 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { GlobOptions, globToRegExp, isGlob, joinGlobs } from "../path/glob.ts";
+import { GlobOptions } from "../path/glob.ts";
+import { globToRegExp } from "../path/glob_to_regexp.ts";
+import { joinGlobs } from "../path/join_globs.ts";
+import { isGlob } from "../path/is_glob.ts";
 import { isAbsolute } from "../path/is_absolute.ts";
 import { resolve } from "../path/resolve.ts";
 import { SEP_PATTERN } from "../path/separator.ts";
 import { walk, walkSync } from "./walk.ts";
 import { assert } from "../assert/assert.ts";
+import { toPathString } from "./_to_path_string.ts";
 import {
   createWalkEntry,
   createWalkEntrySync,
-  toPathString,
-  WalkEntry,
-} from "./_util.ts";
+  type WalkEntry,
+} from "./_create_walk_entry.ts";
+
 export type { GlobOptions };
 
 const isWindows = Deno.build.os === "windows";

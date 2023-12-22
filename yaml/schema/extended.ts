@@ -33,7 +33,7 @@ import { def } from "./default.ts";
  * );
  * ```
  */
-export const extended = new Schema({
+export const extended: Schema = new Schema({
   explicit: [regexp, undefinedType],
   include: [def],
 });
