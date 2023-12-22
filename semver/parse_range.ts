@@ -25,28 +25,23 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  return comp.replace(
-    TILDE_REGEXP,
-    (_: string, M: string, m: string, p: string, pr: string) => {
-      let ret: string;
-
-      if (isWildcard(M)) {
-        ret = "";
-      } else if (isWildcard(m)) {
-        ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-      } else if (isWildcard(p)) {
-        // ~1.2 == >=1.2.0 <1.3.0
-        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
-      } else if (pr) {
-        ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
-      } else {
-        // ~1.2.3 == >=1.2.3 <1.3.0
-        ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
-      }
-
-      return ret;
-    },
-  );
+  const groups = comp.match(TILDE_REGEXP)?.groups;
+  if (!groups) return comp;
+  const { major, minor, patch, prerelease } = groups;
+  if (isWildcard(major)) {
+    return "";
+  } else if (isWildcard(minor)) {
+    return `>=${major}.0.0 <${+major + 1}.0.0`;
+  } else if (isWildcard(patch)) {
+    // ~1.2 == >=1.2.0 <1.3.0
+    return `>=${major}.${minor}.0 <${major}.${+minor + 1}.0`;
+  } else if (prerelease) {
+    return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${
+      +minor + 1
+    }.0`;
+  }
+  // ~1.2.3 == >=1.2.3 <1.3.0
+  return `>=${major}.${minor}.${patch} <${major}.${+minor + 1}.0`;
 }
 
 // ^ --> * (any, kinda silly)
@@ -64,44 +59,44 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  return comp.replace(CARET_REGEXP, (_: string, M, m, p, pr) => {
-    let ret: string;
+  const groups = comp.match(CARET_REGEXP)?.groups;
+  if (!groups) return comp;
+  const { major, minor, patch, prerelease } = groups;
 
-    if (isWildcard(M)) {
-      ret = "";
-    } else if (isWildcard(m)) {
-      ret = `>=${M}.0.0 <${+M + 1}.0.0`;
-    } else if (isWildcard(p)) {
-      if (M === `0`) {
-        ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0`;
+  if (isWildcard(major)) {
+    return "";
+  } else if (isWildcard(minor)) {
+    return `>=${major}.0.0 <${+major + 1}.0.0`;
+  } else if (isWildcard(patch)) {
+    if (major === `0`) {
+      return `>=${major}.${minor}.0 <${major}.${+minor + 1}.0`;
+    } else {
+      return `>=${major}.${minor}.0 <${+major + 1}.0.0`;
+    }
+  } else if (prerelease) {
+    if (major === "0") {
+      if (minor === "0") {
+        return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${minor}.${
+          +patch + 1
+        }`;
       } else {
-        ret = `>=${M}.${m}.0 <${+M + 1}.0.0`;
-      }
-    } else if (pr) {
-      if (M === "0") {
-        if (m === "0") {
-          ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}`;
-        } else {
-          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0`;
-        }
-      } else {
-        ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0`;
+        return `>=${major}.${minor}.${patch}-${prerelease} <${major}.${
+          +minor + 1
+        }.0`;
       }
     } else {
-      if (M === "0") {
-        if (m === "0") {
-          ret = `>=${M}.${m}.${p} <${M}.${m}.` +
-            (+p + 1);
-        } else {
-          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0`;
-        }
-      } else {
-        ret = `>=${M}.${m}.${p} <${+M + 1}.0.0`;
-      }
+      return `>=${major}.${minor}.${patch}-${prerelease} <${+major + 1}.0.0`;
     }
-
-    return ret;
-  });
+  }
+  if (major === "0") {
+    if (minor === "0") {
+      return `>=${major}.${minor}.${patch} <${major}.${minor}.${+patch + 1}`;
+    } else {
+      return `>=${major}.${minor}.${patch} <${major}.${+minor + 1}.0`;
+    }
+  } else {
+    return `>=${major}.${minor}.${patch} <${+major + 1}.0.0`;
+  }
 }
 
 function replaceXRanges(comp: string): string {

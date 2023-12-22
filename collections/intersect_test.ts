@@ -13,7 +13,7 @@ function intersectTest<I>(
 }
 
 Deno.test({
-  name: "[collections/intersect] no mutation",
+  name: "intersect() handles no mutation",
   fn() {
     const arrayA = [1, 2, 3];
     const arrayB = [3, 4, 5];
@@ -25,21 +25,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] empty input",
+  name: "intersect() handles empty input",
   fn() {
     intersectTest([], []);
   },
 });
 
 Deno.test({
-  name: "[collections/intersect] empty arrays",
+  name: "intersect() handles empty arrays",
   fn() {
     intersectTest([[], []], []);
   },
 });
 
 Deno.test({
-  name: "[collections/intersect] one side empty",
+  name: "intersect() handles one side empty",
   fn() {
     intersectTest([[], ["a", "b", "c"]], []);
     intersectTest([["a", "b", "c"], []], []);
@@ -47,14 +47,14 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] empty result",
+  name: "intersect() handles empty result",
   fn() {
     intersectTest([["a", "b", "c"], ["d", "e", "f"]], []);
   },
 });
 
 Deno.test({
-  name: "[collections/intersect] one or more items in intersection",
+  name: "intersect() handles one or more items in intersection",
   fn() {
     intersectTest([["a", "b"], ["b", "c"]], ["b"]);
     intersectTest([["a", "b", "c", "d"], ["c", "d", "e", "f"]], ["c", "d"]);
@@ -62,7 +62,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] duplicates",
+  name: "intersect() handles duplicates",
   fn() {
     intersectTest([["a", "b", "c", "b"], ["b", "c"]], ["b", "c"]);
     intersectTest([["a", "b"], ["b", "b", "c", "c"]], ["b"]);
@@ -70,7 +70,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] more than two inputs",
+  name: "intersect() handles more than two inputs",
   fn() {
     intersectTest(
       [
@@ -101,7 +101,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] objects",
+  name: "intersect() handles objects",
   fn() {
     intersectTest<Record<string, string>>([
       [{ foo: "bar" }, { bar: "baz" }],
@@ -121,7 +121,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/intersect] functions",
+  name: "intersect() handles functions",
   fn() {
     intersectTest([
       [() => {}, () => null],

@@ -2,14 +2,14 @@
 import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { isNil, NIL_UUID, validate, version } from "./mod.ts";
 
-Deno.test("[UUID] isNil", () => {
+Deno.test("isNil() checks if a UUID is the nil UUID", () => {
   const nil = NIL_UUID;
   const u = "582cbcff-dad6-4f28-888a-e062ae36bafc";
   assert(isNil(nil));
   assert(!isNil(u));
 });
 
-Deno.test("[UUID] validate", () => {
+Deno.test("validate() checks if a string is a valid UUID", () => {
   const u = "582cbcff-dad6-4f28-888a-e062ae36bafc";
   const nil = NIL_UUID;
   assert(validate(u));
@@ -17,7 +17,7 @@ Deno.test("[UUID] validate", () => {
   assert(!validate("not a UUID"));
 });
 
-Deno.test("[UUID] version", () => {
+Deno.test("version() detects the RFC version of a UUID", () => {
   assertEquals(version(NIL_UUID), 0);
   assertEquals(version("d9428888-122b-11e1-b85c-61cd3cbb3210"), 1);
   assertEquals(version("109156be-c4fb-41ea-b1b4-efe1671c5836"), 4);

@@ -13,7 +13,7 @@ function mapEntriesTest<T, O>(
 }
 
 Deno.test({
-  name: "[collections/mapEntries] no mutation",
+  name: "mapEntries() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapEntries(object, ([key, value]) => [`${key}a`, value]);
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] empty input",
+  name: "mapEntries() handles empty input",
   fn() {
     mapEntriesTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] identity",
+  name: "mapEntries() handles identity",
   fn() {
     mapEntriesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] to constant entry",
+  name: "mapEntries() handles to constant entry",
   fn() {
     mapEntriesTest(
       [
@@ -67,7 +67,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] overlapping keys",
+  name: "mapEntries() handles overlapping keys",
   fn() {
     mapEntriesTest(
       [
@@ -104,7 +104,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] normal mappers",
+  name: "mapEntries() handles normal mappers",
   fn() {
     mapEntriesTest(
       [

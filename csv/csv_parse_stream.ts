@@ -167,7 +167,7 @@ export class CsvParseStream<
     }
   }
 
-  get readable() {
+  get readable(): ReadableStream<RowType<T>> {
     return this.#readable as ReadableStream<RowType<T>>;
   }
 

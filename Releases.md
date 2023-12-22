@@ -1,3 +1,23 @@
+### 0.210.0 / 2023.12.21
+
+- BREAKING(crypto): remove `toHashString()` (#3924)
+- BREAKING(encoding): remove deprecated APIs (#3952)
+- BREAKING(http): remove deprecated `std/http/method` API (#3951)
+- deprecation(encoding): deprecate `base32.byteLength()` (#4000)
+- deprecation(semver): comparator min and max properties (#3974)
+- deprecation(semver): deprecate `SemVer` argument for `parse()` and
+  `canParse()` (#3939)
+- deprecation(semver): deprecate `rcompare()` (#3958)
+- deprecation(semver): rename `isSemVerComparator()` (#3957)
+- deprecation(signal): move deprecation forward (#4004)
+- feat(cli): command line spinner (#3968)
+- feat(collections): improve `mapValues()` typing (#3978)
+- feat(log): add support for structured JSON logging (#3960)
+- feat(testing): enable the `using` keyword on `FakeTime()` (#3961)
+- fix(http): account for period in signed cookie name (#3977)
+- fix(path/extname): fix incorrect import (#3970)
+- perf(streams): make `toBlob()` 20-30% faster (#3934)
+
 ### 0.209.0 / 2023.12.13
 
 - BREAKIING(fs): remove `EOL` enum, add OS-dependent `EOL` (#3850)

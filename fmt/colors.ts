@@ -567,7 +567,7 @@ const ANSI_PATTERN = new RegExp(
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
  */
-export const stripColor = stripAnsiCode;
+export const stripColor: typeof stripAnsiCode = stripAnsiCode;
 
 /**
  * Remove ANSI escape codes from the string.
