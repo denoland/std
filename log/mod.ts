@@ -431,13 +431,7 @@ const state = {
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
  */
-export const handlers: {
-  BaseHandler: typeof BaseHandler;
-  ConsoleHandler: typeof ConsoleHandler;
-  WriterHandler: typeof WriterHandler;
-  FileHandler: typeof FileHandler;
-  RotatingFileHandler: typeof RotatingFileHandler;
-} = {
+export const handlers = {
   BaseHandler,
   ConsoleHandler,
   WriterHandler,
