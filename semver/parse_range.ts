@@ -14,6 +14,7 @@ type RegExpGroups = {
   minor: string;
   patch: string;
   prerelease?: string;
+  build?: string;
 };
 
 function parseHyphenRange(range: string) {
@@ -169,6 +170,7 @@ function handleLessThanOperator(
 
   const major = +groups.major;
   const minor = +groups.minor;
+  const patch = +groups.patch;
 
   if (majorIsWildcard) return parseComparator("<0.0.0");
   if (minorIsWildcard) {
@@ -176,6 +178,11 @@ function handleLessThanOperator(
     return parseComparator(`<${major}.${minor}.0`);
   }
   if (patchIsWildcard) return parseComparator(`<${major}.${minor}.0`);
+  return parseComparator(
+    `<${major}.${minor}.${patch}${
+      groups.prerelease ? `-${groups.prerelease}` : ""
+    }${groups.build ? `+${groups.build}` : ""}`,
+  );
 }
 function handleLessThanOrEqualOperator(
   groups: RegExpGroups,
@@ -185,12 +192,18 @@ function handleLessThanOrEqualOperator(
 
   const major = +groups.major;
   const minor = +groups.minor;
+  const patch = +groups.patch;
 
   if (minorIsWildcard) {
     if (patchIsWildcard) return parseComparator(`<${major + 1}.0.0`);
     return parseComparator(`<${major}.${minor + 1}.0`);
   }
   if (patchIsWildcard) return parseComparator(`<${major}.${minor + 1}.0`);
+  return parseComparator(
+    `<=${major}.${minor}.${patch}${
+      groups.prerelease ? `-${groups.prerelease}` : ""
+    }${groups.build ? `+${groups.build}` : ""}`,
+  );
 }
 function handleGreaterThanOperator(
   groups: RegExpGroups,
@@ -201,6 +214,7 @@ function handleGreaterThanOperator(
 
   const major = +groups.major;
   const minor = +groups.minor;
+  const patch = +groups.patch;
 
   if (majorIsWildcard) return parseComparator("<0.0.0");
   if (minorIsWildcard) {
@@ -208,6 +222,11 @@ function handleGreaterThanOperator(
     return parseComparator(`>${major}.${minor + 1}.0`);
   }
   if (patchIsWildcard) return parseComparator(`>${major}.${minor + 1}.0`);
+  return parseComparator(
+    `>${major}.${minor}.${patch}${
+      groups.prerelease ? `-${groups.prerelease}` : ""
+    }${groups.build ? `+${groups.build}` : ""}`,
+  );
 }
 function handleGreaterOrEqualOperator(
   groups: RegExpGroups,
@@ -218,6 +237,7 @@ function handleGreaterOrEqualOperator(
 
   const major = +groups.major;
   const minor = +groups.minor;
+  const patch = +groups.patch;
 
   if (majorIsWildcard) return ALL;
   if (minorIsWildcard) {
@@ -225,6 +245,43 @@ function handleGreaterOrEqualOperator(
     return parseComparator(`>=${major}.${minor}.0`);
   }
   if (patchIsWildcard) return parseComparator(`>=${major}.${minor}.0`);
+  return parseComparator(
+    `>=${major}.${minor}.${patch}${
+      groups.prerelease ? `-${groups.prerelease}` : ""
+    }${groups.build ? `+${groups.build}` : ""}`,
+  );
+}
+function handleEqualOperator(groups: RegExpGroups) {
+  const majorIsWildcard = isWildcard(groups.major);
+  const minorIsWildcard = isWildcard(groups.minor);
+  const patchIsWildcard = isWildcard(groups.patch);
+
+  const major = +groups.major;
+  const minor = +groups.minor;
+  const patch = +groups.patch;
+
+  if (majorIsWildcard) return ALL;
+  if (minorIsWildcard) {
+    return [
+      parseComparator(`>=${major}.0.0`),
+      parseComparator(`<${major + 1}.0.0`),
+    ];
+  }
+  if (patchIsWildcard) {
+    return [
+      parseComparator(
+        `>=${major}.${minor}.0`,
+      ),
+      parseComparator(
+        `<${major}.${minor + 1}.0`,
+      ),
+    ];
+  }
+  return parseComparator(
+    `${major}.${minor}.${patch}${
+      groups.prerelease ? `-${groups.prerelease}` : ""
+    }${groups.build ? `+${groups.build}` : ""}`,
+  );
 }
 
 function parseRangeString(string: string) {
@@ -238,45 +295,18 @@ function parseRangeString(string: string) {
     case "~>":
       return handleTildeOperator(groups);
     case "<":
-      return handleLessThanOperator(groups) ?? parseComparator(string);
+      return handleLessThanOperator(groups);
     case "<=":
-      return handleLessThanOrEqualOperator(groups) ?? parseComparator(string);
+      return handleLessThanOrEqualOperator(groups);
     case ">":
-      return handleGreaterThanOperator(groups) ?? parseComparator(string);
+      return handleGreaterThanOperator(groups);
     case ">=":
-      return handleGreaterOrEqualOperator(groups) ?? parseComparator(string);
+      return handleGreaterOrEqualOperator(groups);
     case "=":
-    case "": {
-      const majorIsWildcard = isWildcard(groups.major);
-      const minorIsWildcard = isWildcard(groups.minor);
-      const patchIsWildcard = isWildcard(groups.patch);
-
-      const major = +groups.major;
-      const minor = +groups.minor;
-
-      if (majorIsWildcard) return ALL;
-      if (minorIsWildcard) {
-        return [
-          parseComparator(`>=${major}.0.0`),
-          parseComparator(`<${major + 1}.0.0`),
-        ];
-      }
-      if (patchIsWildcard) {
-        return [
-          parseComparator(
-            `>=${major}.${minor}.0`,
-          ),
-          parseComparator(
-            `<${major}.${minor + 1}.0`,
-          ),
-        ];
-      }
-      return parseComparator(string);
-    }
+    case "":
+      return handleEqualOperator(groups);
     default:
-      throw new Error(
-        `'${groups.operator}' is not a valid operator.`,
-      );
+      throw new Error(`'${groups.operator}' is not a valid operator.`);
   }
 }
 
