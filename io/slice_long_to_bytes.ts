@@ -10,7 +10,7 @@
  */
 export function sliceLongToBytes(
   d: number,
-  dest = Array.from<number>({ length: 8 }),
+  dest: number[] = Array.from<number>({ length: 8 }),
 ): number[] {
   let big = BigInt(d);
   for (let i = 0; i < 8; i++) {

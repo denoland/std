@@ -16,6 +16,6 @@ import { SEP } from "./separator.ts";
  *       console.log(p); // "./deno/std/"
  * ```
  */
-export function common(paths: string[], sep = SEP): string {
+export function common(paths: string[], sep: typeof SEP = SEP): string {
   return _common(paths, sep);
 }
