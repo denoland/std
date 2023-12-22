@@ -230,6 +230,7 @@ export class FileHandler extends WriterHandler {
       return;
     }
 
+    // Without preventClose: true the file handle would be closed each flush
     await this._buf.readable.pipeTo(this._file.writable, {
       preventClose: true,
     });
