@@ -110,7 +110,7 @@ Deno.test("BinaryHeap() contains objects", () => {
   assertEquals(heap.isEmpty(), true);
 });
 
-Deno.test("BinaryHeap.from() checks iterable", () => {
+Deno.test("BinaryHeap.from() handles iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
@@ -155,7 +155,7 @@ Deno.test("BinaryHeap.from() checks iterable", () => {
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("BinaryHeap.from() checks default descend comparator", () => {
+Deno.test("BinaryHeap.from() handles default descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 9, 9, 1, 0, -1, -9, -10, -100];
   const maxHeap = new BinaryHeap<number>();
@@ -207,7 +207,7 @@ Deno.test("BinaryHeap.from() checks default descend comparator", () => {
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("BinaryHeap.from() checks ascend comparator", () => {
+Deno.test("BinaryHeap.from() handles ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 9, 9, 10, 100];
   const minHeap = new BinaryHeap<number>(ascend);
@@ -259,7 +259,7 @@ Deno.test("BinaryHeap.from() checks ascend comparator", () => {
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("BinaryHeap() checks edge case 1", () => {
+Deno.test("BinaryHeap() handles edge case 1", () => {
   const minHeap = new BinaryHeap<number>(ascend);
   minHeap.push(4, 2, 8, 1, 10, 7, 3, 6, 5);
   assertEquals(minHeap.pop(), 1);
@@ -269,7 +269,7 @@ Deno.test("BinaryHeap() checks edge case 1", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("BinaryHeap() checks edge case 2", () => {
+Deno.test("BinaryHeap() handles edge case 2", () => {
   interface Point {
     x: number;
     y: number;
@@ -281,7 +281,7 @@ Deno.test("BinaryHeap() checks edge case 2", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("BinaryHeap() checks edge case 3", () => {
+Deno.test("BinaryHeap() handles edge case 3", () => {
   interface Point {
     x: number;
     y: number;
@@ -309,7 +309,7 @@ Deno.test("BinaryHeap() checks edge case 3", () => {
   assertEquals([...minHeap], expected);
 });
 
-Deno.test("BinaryHeap() checks README example", () => {
+Deno.test("BinaryHeap() handles README example", () => {
   const maxHeap = new BinaryHeap<number>();
   maxHeap.push(4, 1, 3, 5, 2);
   assertEquals(maxHeap.peek(), 5);

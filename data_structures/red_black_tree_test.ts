@@ -4,7 +4,7 @@ import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
-Deno.test("RedBlackTree() checks default ascend comparator", () => {
+Deno.test("RedBlackTree() handles default ascend comparator", () => {
   const trees: RedBlackTree<number>[] = [
     new RedBlackTree(),
     new RedBlackTree(),
@@ -124,7 +124,7 @@ Deno.test("RedBlackTree() checks default ascend comparator", () => {
   }
 });
 
-Deno.test("RedBlackTree() checks descend comparator", () => {
+Deno.test("RedBlackTree() handles descend comparator", () => {
   const trees: RedBlackTree<number>[] = [
     new RedBlackTree(descend),
     new RedBlackTree(descend),
@@ -304,7 +304,7 @@ Deno.test("RedBlackTree() contains objects", () => {
   assertEquals(tree.isEmpty(), true);
 });
 
-Deno.test("RedBlackTree.from() checks Iterable", () => {
+Deno.test("RedBlackTree.from() handles Iterable", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const originalValues: number[] = Array.from(values);
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
@@ -361,7 +361,7 @@ Deno.test("RedBlackTree.from() checks Iterable", () => {
   assertEquals([...tree.lvlValues()], [-3, 27, -30, 300, 3, -27, -300, 30, 0]);
 });
 
-Deno.test("RedBlackTree.from() checks default ascend comparator", () => {
+Deno.test("RedBlackTree.from() handles default ascend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
   const originalTree: RedBlackTree<number> = new RedBlackTree();
@@ -420,7 +420,7 @@ Deno.test("RedBlackTree.from() checks default ascend comparator", () => {
   assertEquals([...tree.lvlValues()], [-3, 3, -30, 30, 0, -27, -300, 300, 27]);
 });
 
-Deno.test("RedBlackTree.from() checks descend comparator", () => {
+Deno.test("RedBlackTree.from() handles descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];
   const originalTree: RedBlackTree<number> = new RedBlackTree(descend);
@@ -1497,7 +1497,7 @@ Deno.test("RedBlackTree() removes rebalance right", () => {
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2, 3]);
 });
 
-Deno.test("RedBlackTree() checks README example", () => {
+Deno.test("RedBlackTree() handles README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
   const tree = new RedBlackTree<number>();
   values.forEach((value) => tree.insert(value));
