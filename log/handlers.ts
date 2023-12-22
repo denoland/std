@@ -6,6 +6,7 @@ import { existsSync } from "../fs/exists.ts";
 import { Buffer } from "../streams/buffer.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
+const PAGE_SIZE = 4096;
 export type FormatterFunction = (logRecord: LogRecord) => string;
 export type LogMode = "a" | "w" | "x";
 
@@ -136,14 +137,23 @@ interface FileHandlerOptions extends HandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  */
 export class FileHandler extends WriterHandler {
+  // PR Question: This file is getting very complex
+  // Would it be worth moving the following into a new LogFile class:
+  // _file _arrayBuf _buf _bufWriter flushBufferToFile
   protected _file: Deno.FsFile | undefined;
+  protected _arrayBuf!: ArrayBuffer;
   protected _buf!: Buffer;
+  protected _bufWriter!: WritableStreamDefaultWriter<Uint8Array>;
   protected _filename: string;
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
   protected _encoder = new TextEncoder();
+  // PR Question: was not sure if I should use protected or #hashName
+  #queue!: LogQueue<Uint8Array>;
+  #queueProcessor!: Promise<void>;
   #unloadCallback = (() => {
-    this.destroy();
+    // @TODO Understand how to "unload" works with promises
+    return this.destroy();
   }).bind(this);
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
@@ -162,7 +172,13 @@ export class FileHandler extends WriterHandler {
 
   override setup() {
     this._file = Deno.openSync(this._filename, this._openOptions);
-    this._buf = new Buffer();
+
+    this.#queue = new LogQueue<Uint8Array>();
+    this.#queueProcessor = this.startQueueProcessor();
+
+    this._arrayBuf = new ArrayBuffer(0);
+    this._buf = new Buffer(this._arrayBuf);
+    this._bufWriter = this._buf.writable.getWriter();
 
     addEventListener("unload", this.#unloadCallback);
   }
@@ -176,26 +192,63 @@ export class FileHandler extends WriterHandler {
     }
   }
 
-  async log(msg: string) {
+  log(msg: string) {
     const bytes = this._encoder.encode(msg + "\n");
+    // PR Question: should this comment be deleted before the PR is merged?
+    //
+    // Why use a queue/LogQueue here instead of just calling writeToBuffer?
+    // Because when we flush we need some way to wait for all pending calls
+    // to writeToBuffer to be complete. This is tricky because log() is sync
+    // and writeToBuffer() is async. It could be achived with less lines
+    // if it was built directly into this class but this class is getting
+    // very complex and cluttered.
+    this.#queue.enqueue(bytes);
+  }
 
-    const availableSpace = 4096 - this._buf.length;
-    if (bytes.byteLength + 1 > availableSpace) {
-      await this.flush();
+  async startQueueProcessor() {
+    for await (const msg of this.#queue) {
+      await this.writeToBuffer(msg);
     }
+  }
 
-    const writer = this._buf.writable.getWriter();
-    await writer.write(bytes);
+  async writeToBuffer(msg: Uint8Array) {
+    const availableSpace = PAGE_SIZE - this._buf.length;
+    if (msg.byteLength + 1 > availableSpace) {
+      await this.flushBufferToFile();
+    }
+    await this._bufWriter.ready;
+    await this._bufWriter.write(msg);
   }
 
   async flush() {
-    if (!this._buf?.empty() && this._file) {
-      await this._buf.readable.pipeTo(this._file.writable);
+    await this.#queue.waitUntilEmpty;
+    await this.flushBufferToFile();
+  }
+
+  async flushBufferToFile() {
+    if (this._buf?.empty() || !this._file) {
+      return;
     }
+
+    await this._buf.readable.pipeTo(this._file.writable, {
+      preventClose: true,
+    });
+
+    // PR Question: should this comment be deleted before the PR is merged?
+    //
+    // We create a new buffer rather than just reset becasue otherwise
+    // Subsequent `readable.pipeTo`s will fail to run, nothing errors, it just
+    // doesn't write the new buffer data to the file. By passing around the same
+    // this._arrayBuf ArrayBuffer, it means we reuse the same section of memory
+    this._buf = new Buffer(this._arrayBuf);
+    this._bufWriter = this._buf.writable.getWriter();
+    await this._buf.reset();
   }
 
   override async destroy() {
-    await this.flush();
+    this.#queue?.close(); // Tell the queueProcessor that there will be no more logs
+    await this.#queueProcessor; // Wait for the queue to be fully written to the buffer
+    await this.flushBufferToFile();
     this._file?.close();
     this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
@@ -258,10 +311,12 @@ export class RotatingFileHandler extends FileHandler {
 
   override setup() {
     if (this.#maxBytes < 1) {
+      // PR Question: what to do now destroy is async?
       this.destroy();
       throw new Error("maxBytes cannot be less than 1");
     }
     if (this.#maxBackupCount < 1) {
+      // PR Question: what to do now destroy is async?
       this.destroy();
       throw new Error("maxBackupCount cannot be less than 1");
     }
@@ -283,6 +338,7 @@ export class RotatingFileHandler extends FileHandler {
       // Throw if any backups also exist
       for (let i = 1; i <= this.#maxBackupCount; i++) {
         if (existsSync(this._filename + "." + i)) {
+          // PR Question: what to do now destroy is async?
           this.destroy();
           throw new Deno.errors.AlreadyExists(
             "Backup log file " + this._filename + "." + i + " already exists",
@@ -294,21 +350,25 @@ export class RotatingFileHandler extends FileHandler {
     }
   }
 
-  override async log(msg: string) {
-    const msgByteLength = this._encoder.encode(msg).byteLength + 1;
+  override async writeToBuffer(msg: Uint8Array) {
+    const msgByteLength = msg.byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
       await this.rotateLogFiles();
       this.#currentFileSize = 0;
     }
 
-    super.log(msg);
+    super.writeToBuffer(msg);
 
     this.#currentFileSize += msgByteLength;
   }
 
   async rotateLogFiles() {
-    await this.flush();
+    // PR Question: should this comment be deleted before the PR is merged?
+    //
+    // We don't call flush() because the queue might have more data
+    // That we can fit in the #maxBytes, so we only flush the buffer
+    await this.flushBufferToFile();
     this._file!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
@@ -322,5 +382,102 @@ export class RotatingFileHandler extends FileHandler {
 
     this._file = Deno.openSync(this._filename, this._openOptions);
     this._buf = new Buffer();
+    this._bufWriter = this._buf.writable.getWriter();
+  }
+}
+
+/**
+ * !!! Temp comment just for the PR !!!
+ * @TODO rewrite to be proper docs
+ *
+ * PR Question:
+ * Could be renamed to AsyncIterableQueue
+ * and moved to std/async/async_iterable_queue.ts
+ *
+ * API is as follows:
+ * ```ts
+ * import { LogQueue } from "https://deno.land/std@$STD_VERSION/log/handlers.ts";
+ * const queue = new LogQueue<string>();
+ *
+ * (async () => {
+ *   for await (const item of queue) {
+ *     console.log("Processing", item);
+ *   }
+ *   console.log("Processing complete");
+ * })();
+ *
+ * queue.enqueue("one");
+ * queue.enqueue("two");
+ * queue.enqueue("three");
+ * console.log(queue.length);
+ * // > 3
+ * await queue.waitUntilEmpty;
+ * // > Processing one
+ * // > Processing two
+ * // > Processing three
+ *
+ * queue.enqueue("four");
+ * queue.close();
+ * console.log(queue.length);
+ * // > 2
+ * await queue.waitUntilEmpty;
+ * // > Processing four
+ * // > Processing complete
+ * ```
+ *
+ * If this class stays in log/handlers.ts then I won't export for the final PR
+ * I'm exporting for now so `deno test --doc` works.
+ */
+export class LogQueue<T> {
+  #items: IteratorResult<T>[] = [];
+  #readyToProcess: ((value: unknown) => void) | undefined;
+  #waitUntilEmpty: Promise<void> = Promise.resolve();
+  #registerEmpty: (value: void) => void = () => {};
+
+  get waitUntilEmpty() {
+    return this.#waitUntilEmpty;
+  }
+
+  get length() {
+    return this.#items.length;
+  }
+
+  enqueue(message: T) {
+    this.#push({ done: false, value: message });
+  }
+
+  close() {
+    this.#push({ done: true, value: undefined });
+  }
+
+  #push(message: IteratorResult<T>) {
+    if (this.#items.length === 0) {
+      this.#waitUntilEmpty = new Promise((resolve) => {
+        this.#registerEmpty = resolve;
+      });
+    }
+
+    this.#items.push(message);
+
+    if (this.#readyToProcess) {
+      this.#readyToProcess(true);
+    }
+  }
+
+  [Symbol.asyncIterator](): AsyncIterator<T> {
+    return {
+      next: async () => {
+        while (this.#items.length === 0) {
+          this.#registerEmpty();
+          await new Promise((resolve) => {
+            this.#readyToProcess = resolve;
+          });
+        }
+        if (this.#items[0]?.done) {
+          this.#registerEmpty();
+        }
+        return this.#items.shift() as IteratorResult<T>;
+      },
+    };
   }
 }

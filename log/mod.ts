@@ -556,6 +556,7 @@ export function setup(config: LogConfig) {
 
   // tear down existing handlers
   state.handlers.forEach((handler) => {
+    // PR Question: what to do now destroy is async?
     handler.destroy();
   });
   state.handlers.clear();
