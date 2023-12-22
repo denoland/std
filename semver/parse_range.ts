@@ -160,7 +160,7 @@ function handleTildeOperator(
     ),
   ];
 }
-function handleSmallerOperator(
+function handleLessThanOperator(
   groups: RegExpGroups,
 ) {
   const majorIsWildcard = isWildcard(groups.major);
@@ -177,7 +177,7 @@ function handleSmallerOperator(
   }
   if (patchIsWildcard) return parseComparator(`<${major}.${minor}.0`);
 }
-function handleSmallerThanOperator(
+function handleLessThanOrEqualOperator(
   groups: RegExpGroups,
 ) {
   const minorIsWildcard = isWildcard(groups.minor);
@@ -192,7 +192,7 @@ function handleSmallerThanOperator(
   }
   if (patchIsWildcard) return parseComparator(`<${major}.${minor + 1}.0`);
 }
-function handleBiggerOperator(
+function handleGreaterThanOperator(
   groups: RegExpGroups,
 ) {
   const majorIsWildcard = isWildcard(groups.major);
@@ -209,7 +209,7 @@ function handleBiggerOperator(
   }
   if (patchIsWildcard) return parseComparator(`>${major}.${minor + 1}.0`);
 }
-function handleBiggerThanOperator(
+function handleGreaterOrEqualOperator(
   groups: RegExpGroups,
 ) {
   const majorIsWildcard = isWildcard(groups.major);
@@ -238,13 +238,13 @@ function parseRangeString(string: string) {
     case "~>":
       return handleTildeOperator(groups);
     case "<":
-      return handleSmallerOperator(groups) ?? parseComparator(string);
+      return handleLessThanOperator(groups) ?? parseComparator(string);
     case "<=":
-      return handleSmallerThanOperator(groups) ?? parseComparator(string);
+      return handleLessThanOrEqualOperator(groups) ?? parseComparator(string);
     case ">":
-      return handleBiggerOperator(groups) ?? parseComparator(string);
+      return handleGreaterThanOperator(groups) ?? parseComparator(string);
     case ">=":
-      return handleBiggerThanOperator(groups) ?? parseComparator(string);
+      return handleGreaterOrEqualOperator(groups) ?? parseComparator(string);
     case "=":
     case "": {
       const majorIsWildcard = isWildcard(groups.major);
