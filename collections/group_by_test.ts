@@ -13,7 +13,7 @@ function groupByTest<T>(
 }
 
 Deno.test({
-  name: "[collections/groupBy] no mutation",
+  name: "groupBy() handles no mutation",
   fn() {
     const arrayA = [1.1, 4.2, 4.5];
     groupBy(arrayA, () => "test");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] empty input",
+  name: "groupBy() handles empty input",
   fn() {
     groupByTest(
       [[], () => "a"],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] constant key",
+  name: "groupBy() handles constant key",
   fn() {
     groupByTest(
       [[1, 3, 5, 6], () => "a"],
@@ -42,7 +42,7 @@ Deno.test({
   },
 });
 Deno.test({
-  name: "[collections/groupBy] non-string key",
+  name: "groupBy() handles non-string key",
   fn() {
     groupByTest(
       [
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] empty key",
+  name: "groupBy() handles empty key",
   fn() {
     groupByTest(
       [
@@ -80,7 +80,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] groups",
+  name: "groupBy() handles groups",
   fn() {
     groupByTest(
       [
@@ -108,7 +108,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] callback index",
+  name: "groupBy() handles callback index",
   fn() {
     const actual = groupBy(
       ["a", "b", "c", "d"],
@@ -122,7 +122,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/groupBy] iterable input",
+  name: "groupBy() handles iterable input",
   fn() {
     function* count(): Generator<number, void> {
       for (let i = 0; i < 5; i += 1) yield i;

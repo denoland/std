@@ -49,8 +49,6 @@ export type FormatStyle =
 export interface Comparator {
   operator: Operator;
   semver: SemVer;
-  min: SemVer;
-  max: SemVer;
 }
 /**
  * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
@@ -58,7 +56,13 @@ export interface Comparator {
 export interface SemVerComparator {
   operator: Operator;
   semver: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
   min: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
   max: SemVer;
 }
 

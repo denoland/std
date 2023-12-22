@@ -370,7 +370,7 @@ const keys = Symbol("#keys");
 const requestHeaders = Symbol("#requestHeaders");
 const responseHeaders = Symbol("#responseHeaders");
 const isSecure = Symbol("#secure");
-const requestKeys = Symbol("#requestKeys");
+const requestKeys: unique symbol = Symbol("#requestKeys");
 
 /** An internal abstract class which provides common functionality for
  * {@link CookieMap} and {@link SecureCookieMap}.
@@ -417,7 +417,7 @@ abstract class CookieMapBase implements Mergeable {
     return init;
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     return `${this.constructor.name} []`;
   }
 
@@ -426,7 +426,7 @@ abstract class CookieMapBase implements Mergeable {
     // deno-lint-ignore no-explicit-any
     options: any,
     inspect: (value: unknown, options?: unknown) => string,
-  ) {
+  ): string {
     if (depth < 0) {
       return options.stylize(`[${this.constructor.name}]`, "special");
     }
