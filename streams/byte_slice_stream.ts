@@ -21,7 +21,7 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
   #offsetEnd = 0;
 
   /** Constructs a new instance. */
-  constructor(start = 0, end = Infinity) {
+  constructor(start = 0, end: number = Infinity) {
     super({
       start: () => {
         assert(start >= 0, "`start` must be greater than 0");

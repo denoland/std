@@ -357,7 +357,7 @@
  */
 
 import { Logger } from "./logger.ts";
-import type { GenericFunction } from "./logger.ts";
+import type { GenericFunction, LogRecord } from "./logger.ts";
 import {
   BaseHandler,
   ConsoleHandler,
@@ -439,7 +439,9 @@ export const handlers = {
   RotatingFileHandler,
 };
 
-export const formatters = {
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string;
+} = {
   jsonFormatter,
 };
 

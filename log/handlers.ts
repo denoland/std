@@ -147,7 +147,7 @@ export class FileHandler extends WriterHandler {
   protected _filename: string;
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
-  protected _encoder = new TextEncoder();
+  protected _encoder: TextEncoder = new TextEncoder();
   // PR Question: was not sure if I should use protected or #hashName
   #queue!: LogQueue<Uint8Array>;
   #queueProcessor!: Promise<void>;
