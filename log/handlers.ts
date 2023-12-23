@@ -221,7 +221,7 @@ export class FileHandler extends WriterHandler {
   }
 
   async flush() {
-    await this.#queue.waitUntilEmpty;
+    await this.#queue.empty;
     await this.flushBufferToFile();
   }
 
@@ -431,12 +431,12 @@ export class RotatingFileHandler extends FileHandler {
  */
 export class LogQueue<T> {
   #items: IteratorResult<T>[] = [];
-  #readyToProcess: ((value: unknown) => void) | undefined;
-  #waitUntilEmpty: Promise<void> = Promise.resolve();
+  #empty: Promise<void> = Promise.resolve();
+  #registerPending: (value: void) => void = () => {};
   #registerEmpty: (value: void) => void = () => {};
 
-  get waitUntilEmpty() {
-    return this.#waitUntilEmpty;
+  get empty() {
+    return this.#empty;
   }
 
   get length() {
@@ -453,16 +453,13 @@ export class LogQueue<T> {
 
   #push(message: IteratorResult<T>) {
     if (this.#items.length === 0) {
-      this.#waitUntilEmpty = new Promise((resolve) => {
+      this.#empty = new Promise((resolve) => {
         this.#registerEmpty = resolve;
       });
     }
 
     this.#items.push(message);
-
-    if (this.#readyToProcess) {
-      this.#readyToProcess(true);
-    }
+    this.#registerPending();
   }
 
   [Symbol.asyncIterator](): AsyncIterator<T> {
@@ -471,7 +468,7 @@ export class LogQueue<T> {
         while (this.#items.length === 0) {
           this.#registerEmpty();
           await new Promise((resolve) => {
-            this.#readyToProcess = resolve;
+            this.#registerPending = resolve;
           });
         }
         if (this.#items[0]?.done) {
