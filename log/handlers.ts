@@ -359,7 +359,7 @@ export class RotatingFileHandler extends FileHandler {
       this.#currentFileSize = 0;
     }
 
-    super.writeToBuffer(msg);
+    await super.writeToBuffer(msg);
 
     this.#currentFileSize += msgByteLength;
   }
