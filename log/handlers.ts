@@ -435,6 +435,12 @@ export class LogQueue<T> {
   #registerPending: (value: void) => void = () => {};
   #registerEmpty: (value: void) => void = () => {};
 
+  /**
+   * This promise is resolved when all items in the queue have been
+   * processed by the async iterable consumer. So either:
+   * 1. The async iterator is waiting for new items but the queue is empty
+   * 2. The async iterator has finished
+   */
   get empty() {
     return this.#empty;
   }
