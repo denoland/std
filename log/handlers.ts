@@ -398,9 +398,9 @@ export class RotatingFileHandler extends FileHandler {
  * API is as follows:
  * ```ts
  * import { LogQueue } from "https://deno.land/std@$STD_VERSION/log/handlers.ts";
- * const queue = new LogQueue<string>();
  *
- * (async () => {
+ * const queue = new LogQueue<string>();
+ * const processor = (async () => {
  *   for await (const item of queue) {
  *     console.log("Processing", item);
  *   }
@@ -412,7 +412,7 @@ export class RotatingFileHandler extends FileHandler {
  * queue.enqueue("three");
  * console.log(queue.length);
  * // > 3
- * await queue.waitUntilEmpty;
+ * await queue.empty;
  * // > Processing one
  * // > Processing two
  * // > Processing three
@@ -421,8 +421,10 @@ export class RotatingFileHandler extends FileHandler {
  * queue.close();
  * console.log(queue.length);
  * // > 2
- * await queue.waitUntilEmpty;
+ * await queue.empty;
  * // > Processing four
+ *
+ * await processor;
  * // > Processing complete
  * ```
  *
