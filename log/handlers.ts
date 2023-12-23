@@ -226,7 +226,7 @@ export class FileHandler extends WriterHandler {
   }
 
   async flushBufferToFile() {
-    if (this._buf?.empty() || !this._file) {
+    if (this._buf?.empty() || !this._file || this._buf.readable.locked) {
       return;
     }
 

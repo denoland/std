@@ -516,8 +516,7 @@ Deno.test({
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 0);
     dispatchEvent(new Event("unload"));
-    // @TODO Double dispatch caused an issue
-    // dispatchEvent(new Event("unload"));
+    dispatchEvent(new Event("unload"));
     // @TODO delay in tests is bad, detect when unload handler is finished
     await delay(1);
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
