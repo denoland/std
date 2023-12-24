@@ -243,7 +243,7 @@ export class FileHandler extends WriterHandler {
     // this._arrayBuf ArrayBuffer, it means we reuse the same section of memory
     this._buf = new Buffer(this._arrayBuf);
     this._bufWriter = this._buf.writable.getWriter();
-    await this._buf.reset();
+    this._buf.reset();
   }
 
   override async destroy() {
