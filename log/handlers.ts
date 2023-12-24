@@ -183,18 +183,22 @@ export class FileHandler extends WriterHandler {
       this.flush();
     }
     this._buf.set(bytes, this._pointer);
-    this._pointer += bytes.length;
+    this._pointer += bytes.byteLength;
   }
 
   flush() {
-    if (this._buf?.byteLength > 0 && this._file) {
-      this._file?.writeSync(this._buf.subarray(0, this._pointer));
+    if (this._pointer > 0 && this._file) {
+      let written = 0;
+      while (written < this._pointer) {
+        written += this._file.writeSync(
+          this._buf.subarray(written, this._pointer),
+        );
+      }
       this.resetBuffer();
     }
   }
 
   resetBuffer() {
-    this._buf.fill(0);
     this._pointer = 0;
   }
 
