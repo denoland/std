@@ -1,7 +1,7 @@
 {
   "lock": false,
   "tasks": {
-    "init:stripe": "deno run --allow-read --allow-env --allow-net tasks/init_stripe.ts",
+    "init:stripe": "deno run --allow-read --allow-env --allow-net --env tasks/init_stripe.ts",
     "db:dump": "deno run --allow-read --allow-env --unstable tasks/db_dump.ts",
     "db:restore": "deno run --allow-read --allow-env --unstable tasks/db_restore.ts",
     "db:seed": "deno run --allow-read --allow-env --allow-net --unstable tasks/db_seed.ts",
