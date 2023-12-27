@@ -119,7 +119,7 @@ const FULL_PLAIN = `v?${MAIN_VERSION}${PRERELEASE}?${BUILD}?`;
 
 export const FULL_REGEXP = new RegExp(`^${FULL_PLAIN}$`);
 
-const COMPARATOR = "((?:<|>)?=?)";
+const COMPARATOR = "(?:<|>)?=?";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
@@ -130,7 +130,7 @@ export const XRANGE_PLAIN =
   `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
 export const XRANGE_REGEXP = new RegExp(
-  `^${COMPARATOR}\\s*${XRANGE_PLAIN}$`,
+  `^(?<operator>${COMPARATOR})\\s*${XRANGE_PLAIN}$`,
 );
 
 // Tilde ranges.
@@ -143,7 +143,7 @@ export const CARET_REGEXP = new RegExp(`^(?<operator>\\^)${XRANGE_PLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
-  `^${COMPARATOR}\\s*(${FULL_PLAIN})$|^$`,
+  `^(?<operator>${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
 );
 
 // Star ranges basically just allow anything at all.
@@ -210,4 +210,23 @@ export function isValidOperator(value: unknown): value is Operator {
     default:
       return false;
   }
+}
+
+const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
+export function parsePrerelease(prerelease: string) {
+  return prerelease
+    .split(".")
+    .filter((id) => id)
+    .map((id: string) => {
+      const num = parseInt(id);
+      if (id.match(numericIdentifier) && isValidNumber(num)) {
+        return num;
+      } else {
+        return id;
+      }
+    });
+}
+
+export function parseBuild(buildmetadata: string) {
+  return buildmetadata.split(".").filter((m) => m) ?? [];
 }

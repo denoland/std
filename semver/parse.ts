@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { isValidNumber } from "./_shared.ts";
+import { parseBuild, parsePrerelease } from "./_shared.ts";
 import { isSemVer } from "./is_semver.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
@@ -57,21 +57,11 @@ export function parse(version: string | SemVer): SemVer {
     throw new TypeError("Invalid patch version");
   }
 
-  // number-ify any prerelease numeric ids
-  const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
-  const prerelease = (groups.prerelease ?? "")
-    .split(".")
-    .filter((id) => id)
-    .map((id: string) => {
-      const num = parseInt(id);
-      if (id.match(numericIdentifier) && isValidNumber(num)) {
-        return num;
-      } else {
-        return id;
-      }
-    });
+  const prerelease = groups.prerelease
+    ? parsePrerelease(groups.prerelease)
+    : [];
+  const build = groups.buildmetadata ? parseBuild(groups.buildmetadata) : [];
 
-  const build = groups.buildmetadata?.split(".")?.filter((m) => m) ?? [];
   return {
     major,
     minor,
