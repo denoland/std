@@ -13,6 +13,7 @@ export function parse(version: SemVer): SemVer;
  * object or throws a TypeError.
  * @param version The version string to parse
  * @returns A valid SemVer
+ * @deprecated (will be removed after 0.212.0) Use {@linkcode string} instead of SemVer.
  */
 export function parse(version: string): SemVer;
 export function parse(version: string | SemVer): SemVer {
