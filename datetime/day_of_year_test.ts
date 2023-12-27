@@ -187,7 +187,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[std/datetime] dayOfYear",
+  name: "dayOfYear()",
   fn: () => {
     // from https://golang.org/src/time/time_test.go
     // Test YearDay in several different scenarios
