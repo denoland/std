@@ -30,8 +30,8 @@ export function format(semver: SemVer, style: FormatStyle = "full"): string {
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
   const patch = formatNumber(semver.patch);
-  const pre = semver.prerelease.join(".");
-  const build = semver.build.join(".");
+  const pre = semver.prerelease?.join(".") ?? "";
+  const build = semver.build?.join(".") ?? "";
 
   const primary = `${major}.${minor}.${patch}`;
   const release = [primary, pre].filter((v) => v).join("-");

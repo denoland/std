@@ -73,8 +73,8 @@ export interface SemVer {
   major: number;
   minor: number;
   patch: number;
-  prerelease: (string | number)[];
-  build: string[];
+  prerelease?: (string | number)[];
+  build?: string[];
 }
 
 type SemVerRangeAnd = SemVerComparator[];

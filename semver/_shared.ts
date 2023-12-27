@@ -13,14 +13,14 @@ export function compareNumber(
 }
 
 export function checkIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> | undefined,
+  v2: ReadonlyArray<string | number> | undefined,
 ): 1 | 0 | -1 {
   // NOT having a prerelease is > having one
   // But NOT having a build is < having one
-  if (v1.length && !v2.length) {
+  if (v1?.length && !v2?.length) {
     return -1;
-  } else if (!v1.length && v2.length) {
+  } else if (!v1?.length && v2?.length) {
     return 1;
   } else {
     return 0;
@@ -28,13 +28,13 @@ export function checkIdentifier(
 }
 
 export function compareIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> | undefined,
+  v2: ReadonlyArray<string | number> | undefined,
 ): 1 | 0 | -1 {
   let i = 0;
   do {
-    const a = v1[i];
-    const b = v2[i];
+    const a = v1?.[i];
+    const b = v2?.[i];
     if (a === undefined && b === undefined) {
       // same length is equal
       return 0;

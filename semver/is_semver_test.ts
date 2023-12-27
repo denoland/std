@@ -16,8 +16,6 @@ Deno.test({
       [false],
       [0],
       ["1.2.3"],
-      [{ major: 0, minor: 0, patch: 0, prerelease: [] }],
-      [{ major: 0, minor: 0, patch: 0, build: [] }],
       [{ major: 0, minor: 0, build: [], prerelease: [] }],
       [{ major: 0, patch: 0, build: [], prerelease: [] }],
       [{ minor: 0, patch: 0, build: [], prerelease: [] }],
@@ -47,6 +45,8 @@ Deno.test({
   fn: async (t) => {
     let i = 0;
     const versions: [unknown][] = [
+      [{ major: 0, minor: 0, patch: 0, prerelease: [] }],
+      [{ major: 0, minor: 0, patch: 0, build: [] }],
       [{ major: 0, minor: 0, patch: 0, build: [], prerelease: [] }],
       [{ extra: 1, major: 0, minor: 0, patch: 0, build: [], prerelease: [] }],
       [{ major: 0, minor: 0, patch: 0, build: ["abc"], prerelease: [] }],
