@@ -1,7 +1,8 @@
 // Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals, assertExists } from "../assert/mod.ts";
+import { assertThrows } from "https://deno.land/std@$STD_VERSION/assert/assert_throws.ts";
+import { assertEquals, assertExists } from "../assert/mod.ts";
 import { byteLength, decodeBase32, encodeBase32 } from "./base32.ts";
 
 // Lifted from https://stackoverflow.com/questions/38987784
@@ -87,7 +88,7 @@ const testCases = [
 ];
 
 Deno.test({
-  name: "[encoding.base32] encode",
+  name: "encodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
       assertEquals(encodeBase32(fromHexString(bin)), b32);
@@ -96,7 +97,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] decode",
+  name: "decodeBase32()",
   fn() {
     for (const [bin, b32] of testCases) {
       assertEquals(toHexString(decodeBase32(b32)), bin);
@@ -105,39 +106,27 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] decode bad length",
+  name: "decodeBase32() throws on bad length",
   fn() {
-    let errorCaught = false;
-    try {
-      decodeBase32("OOOO==");
-    } catch (e) {
-      assert(e instanceof Error);
-      assert(
-        e.message.includes("Invalid string. Length must be a multiple of 8"),
-      );
-      errorCaught = true;
-    }
-    assert(errorCaught);
+    assertThrows(
+      () => decodeBase32("OOOO=="),
+      "Invalid string. Length must be a multiple of 8",
+    );
   },
 });
 
 Deno.test({
-  name: "[encoding.base32] decode bad padding",
+  name: "decodeBase32() throws on bad padding",
   fn() {
-    let errorCaught = false;
-    try {
-      decodeBase32("OOOOOO==");
-    } catch (e) {
-      assert(e instanceof Error);
-      assert(e.message.includes("Invalid pad length"));
-      errorCaught = true;
-    }
-    assert(errorCaught);
+    assertThrows(
+      () => decodeBase32("OOOO=="),
+      "Invalid pad length",
+    );
   },
 });
 
 Deno.test({
-  name: "[encoding.base32] byteLength",
+  name: "encodeBase32() checks byteLength",
   fn() {
     const tests: [string, number][] = [
       ["JBSWY3DPEBLW64TMMQ======", 11],
@@ -153,7 +142,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding.base32] encode very long text",
+  name: "encodeBase32() encodes very long text",
   fn() {
     const data = "a".repeat(16400);
     assertExists(encodeBase32(data));
