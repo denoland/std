@@ -13,8 +13,18 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
  * ensureDir("./bar"); // returns a promise
  * ```
  */
-export async function ensureDir(dir: string | URL) {
+export async function ensureDir(
+  dir: string | URL,
+  onlyPromptIfNotExists = true,
+) {
   try {
+    if (
+      onlyPromptIfNotExists &&
+      (await Deno.permissions.query({ name: "write", path: dir })).state ===
+        "prompt"
+    ) {
+      throw new Deno.errors.PermissionDenied();
+    }
     await Deno.mkdir(dir, { recursive: true });
   } catch (mkdirErr) {
     if (
@@ -38,6 +48,14 @@ export async function ensureDir(dir: string | URL) {
         mkdirErr instanceof Deno.errors.PermissionDenied &&
         lstatErr instanceof Deno.errors.NotFound
       ) {
+        if (
+          onlyPromptIfNotExists &&
+          (await Deno.permissions.query({ name: "write", path: dir })).state ===
+            "prompt"
+        ) {
+          await ensureDir(dir, false);
+          return;
+        }
         throw mkdirErr;
       } else {
         throw lstatErr;
@@ -58,8 +76,15 @@ export async function ensureDir(dir: string | URL) {
  * ensureDirSync("./ensureDirSync"); // void
  * ```
  */
-export function ensureDirSync(dir: string | URL) {
+export function ensureDirSync(dir: string | URL, onlyPromptIfNotExists = true) {
   try {
+    if (
+      onlyPromptIfNotExists &&
+      Deno.permissions.querySync({ name: "write", path: dir }).state ===
+        "prompt"
+    ) {
+      throw new Deno.errors.PermissionDenied();
+    }
     Deno.mkdirSync(dir, { recursive: true });
   } catch (mkdirErr) {
     if (
@@ -83,6 +108,14 @@ export function ensureDirSync(dir: string | URL) {
         mkdirErr instanceof Deno.errors.PermissionDenied &&
         lstatErr instanceof Deno.errors.NotFound
       ) {
+        if (
+          onlyPromptIfNotExists &&
+          Deno.permissions.querySync({ name: "write", path: dir }).state ===
+            "prompt"
+        ) {
+          ensureDirSync(dir, false);
+          return;
+        }
         throw mkdirErr;
       } else {
         throw lstatErr;
