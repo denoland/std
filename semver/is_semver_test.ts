@@ -45,6 +45,7 @@ Deno.test({
   fn: async (t) => {
     let i = 0;
     const versions: [unknown][] = [
+      [{ major: 0, minor: 0, patch: 0 }],
       [{ major: 0, minor: 0, patch: 0, prerelease: [] }],
       [{ major: 0, minor: 0, patch: 0, build: [] }],
       [{ major: 0, minor: 0, patch: 0, build: [], prerelease: [] }],
