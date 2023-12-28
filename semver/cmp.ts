@@ -13,7 +13,8 @@ import { lte } from "./lte.ts";
  * @param operator The operator to use for the comparison
  * @param s1 The right side of the comparison
  * @returns True or false based on the operator
- * @deprecated (will be removed in 0.212.0) use {@linkcode compare} instead.
+ *
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode compare} instead.
  */
 export function cmp(
   s0: SemVer,
