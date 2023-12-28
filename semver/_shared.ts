@@ -212,14 +212,14 @@ export function isValidOperator(value: unknown): value is Operator {
   }
 }
 
-const numericIdentifier = new RegExp(`^(0|[1-9]\\d*)$`);
+const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);
 export function parsePrerelease(prerelease: string) {
   return prerelease
     .split(".")
     .filter((id) => id)
     .map((id: string) => {
       const num = parseInt(id);
-      if (id.match(numericIdentifier) && isValidNumber(num)) {
+      if (id.match(NUMERIC_IDENTIFIER_REGEXP) && isValidNumber(num)) {
         return num;
       } else {
         return id;
