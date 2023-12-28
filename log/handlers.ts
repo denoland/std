@@ -137,7 +137,7 @@ interface FileHandlerOptions extends HandlerOptions {
  */
 export class FileHandler extends WriterHandler {
   protected _file: Deno.FsFile | undefined;
-  protected _buf: Uint8Array = new Uint8Array(new ArrayBuffer(PAGE_SIZE));
+  protected _buf: Uint8Array = new Uint8Array(PAGE_SIZE);
   protected _pointer = 0;
   protected _filename: string;
   protected _mode: LogMode;
