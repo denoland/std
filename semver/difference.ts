@@ -14,7 +14,7 @@ export function difference(
     let prefix = "";
     let defaultResult: ReleaseType | undefined = undefined;
     if (s0 && s1) {
-      if (s0.prerelease?.length || s1.prerelease?.length) {
+      if ((s0.prerelease ?? []).length || (s1.prerelease ?? []).length) {
         prefix = "pre";
         defaultResult = "prerelease";
       }
