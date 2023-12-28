@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+import { operators } from "./_shared.ts";
+
 /**
  * The possible release types are used as an operator for the
  * increment function and as a result of the difference function.
@@ -17,17 +19,7 @@ export type ReleaseType =
 /**
  * SemVer comparison operators.
  */
-export type Operator =
-  | ""
-  | "="
-  | "=="
-  | "==="
-  | "!=="
-  | "!="
-  | ">"
-  | ">="
-  | "<"
-  | "<=";
+export type Operator = typeof operators[number];
 
 /**
  * The style to use when formatting a SemVer object into a string

@@ -4,7 +4,7 @@ import { StringifyError } from "./stringify.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test({
-  name: "[csv/csv_stringify_stream] CsvStringifyStream",
+  name: "CsvStringifyStream handles various inputs",
   permissions: "none",
   fn: async (t) => {
     await t.step("with arrays", async () => {
