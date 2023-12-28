@@ -186,6 +186,19 @@ export function isValidString(value: unknown): value is string {
   );
 }
 
+export const operators = [
+  "",
+  "=",
+  "==",
+  "===",
+  "!==",
+  "!=",
+  ">",
+  ">=",
+  "<",
+  "<=",
+] as const;
+
 /**
  * Checks to see if the value is a valid Operator string.
  *
@@ -193,21 +206,6 @@ export function isValidString(value: unknown): value is string {
  * @param value The value to check
  * @returns True if the value is a valid Operator string otherwise false.
  */
-export function isValidOperator(value: unknown): value is Operator {
-  if (typeof value !== "string") return false;
-  switch (value) {
-    case "":
-    case "=":
-    case "==":
-    case "===":
-    case "!==":
-    case "!=":
-    case ">":
-    case ">=":
-    case "<":
-    case "<=":
-      return true;
-    default:
-      return false;
-  }
+export function isOperator(value: unknown): value is Operator {
+  return operators.includes(value as Operator);
 }
