@@ -4,10 +4,10 @@ import { StringifyError } from "./stringify.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test({
-  name: "CsvStringifyStream",
+  name: "CsvStringifyStream handles various inputs",
   permissions: "none",
   fn: async (t) => {
-    await t.step("handles arrays", async () => {
+    await t.step("with arrays", async () => {
       const readable = ReadableStream.from([
         ["id", "name"],
         [1, "foo"],
@@ -21,7 +21,7 @@ Deno.test({
       ]);
     });
 
-    await t.step("handles arrays, columns", async () => {
+    await t.step("with arrays, columns", async () => {
       const readable = ReadableStream.from([
         [1, "foo"],
         [2, "bar"],
@@ -33,7 +33,7 @@ Deno.test({
       );
     });
 
-    await t.step("handles `separator`", async () => {
+    await t.step("with `separator`", async () => {
       const readable = ReadableStream.from([
         [1, "one"],
         [2, "two"],
@@ -47,7 +47,7 @@ Deno.test({
       ]);
     });
 
-    await t.step("handles invalid `separator`", async () => {
+    await t.step("with invalid `separator`", async () => {
       const readable = ReadableStream.from([
         ["one", "two", "three"],
       ]).pipeThrough(new CsvStringifyStream({ separator: "\r\n" }));
@@ -57,7 +57,7 @@ Deno.test({
       );
     });
 
-    await t.step("handles objects", async () => {
+    await t.step("with objects", async () => {
       const readable = ReadableStream.from([
         { id: 1, name: "foo" },
         { id: 2, name: "bar" },
@@ -72,7 +72,7 @@ Deno.test({
       ]);
     });
 
-    await t.step("handles objects, no columns", async () => {
+    await t.step("with objects, no columns", async () => {
       const readable = ReadableStream.from([
         { id: 1, name: "foo" },
         { id: 2, name: "bar" },
