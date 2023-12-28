@@ -312,11 +312,11 @@ function parseRangeString(string: string) {
 
 /**
  * Parses a range string into a SemVerRange object or throws a TypeError.
- * @param rangeSet The range set string
- * @returns A valid semantic groups range
+ * @param range The range set string
+ * @returns A valid semantic range
  */
-export function parseRange(rangeSet: string): SemVerRange {
-  const ranges = rangeSet
+export function parseRange(range: string): SemVerRange {
+  const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
   return { ranges };
