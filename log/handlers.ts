@@ -17,7 +17,7 @@ export class BaseHandler {
   level: number;
   levelName: LevelName;
   /**
-   * @deprecated (will be removed in 0.212.0) Use {@linkcode FormatterFunction} instead of a string.
+   * @deprecated (will be removed in 0.213.0) Use {@linkcode FormatterFunction} instead of a string.
    */
   formatter: string | FormatterFunction;
 
