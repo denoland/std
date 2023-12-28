@@ -230,3 +230,11 @@ export function parsePrerelease(prerelease: string) {
 export function parseBuild(buildmetadata: string) {
   return buildmetadata.split(".").filter((m) => m) ?? [];
 }
+
+export function parseNumber(input: string, errorMessage: string) {
+  const number = Number(input);
+  if (number > Number.MAX_SAFE_INTEGER || number < 0) {
+    throw new TypeError(errorMessage);
+  }
+  return number;
+}

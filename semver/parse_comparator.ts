@@ -1,6 +1,11 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import type { Operator, SemVerComparator } from "./types.ts";
-import { COMPARATOR_REGEXP, parseBuild, parsePrerelease } from "./_shared.ts";
+import {
+  COMPARATOR_REGEXP,
+  parseBuild,
+  parseNumber,
+  parsePrerelease,
+} from "./_shared.ts";
 import { comparatorMin } from "./comparator_min.ts";
 import { comparatorMax } from "./comparator_max.ts";
 import { ANY, NONE } from "./constants.ts";
@@ -27,18 +32,16 @@ export function parseComparator(comparator: string): SemVerComparator {
 
   const {
     operator = "",
-    major,
-    minor,
-    patch,
+
     prerelease,
     buildmetadata,
   } = groups as REGEXP_GROUPS;
 
-  const semver = major
+  const semver = groups.major
     ? {
-      major: parseInt(major),
-      minor: parseInt(minor),
-      patch: parseInt(patch),
+      major: parseNumber(groups.major, "Invalid major version"),
+      minor: parseNumber(groups.minor, "Invalid minor version"),
+      patch: parseNumber(groups.patch, "Invalid patch version"),
       prerelease: prerelease ? parsePrerelease(prerelease) : [],
       build: buildmetadata ? parseBuild(buildmetadata) : [],
     }

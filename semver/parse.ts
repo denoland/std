@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { SemVer } from "./types.ts";
-import { parseBuild, parsePrerelease } from "./_shared.ts";
+import { parseBuild, parseNumber, parsePrerelease } from "./_shared.ts";
 import { isSemVer } from "./is_semver.ts";
 import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
 
@@ -40,22 +40,9 @@ export function parse(version: string | SemVer): SemVer {
   const groups = version.match(FULL_REGEXP)?.groups;
   if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
-  // these are actually numbers
-  const major = parseInt(groups.major);
-  const minor = parseInt(groups.minor);
-  const patch = parseInt(groups.patch);
-
-  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
-    throw new TypeError("Invalid major version");
-  }
-
-  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
-    throw new TypeError("Invalid minor version");
-  }
-
-  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
-    throw new TypeError("Invalid patch version");
-  }
+  const major = parseNumber(groups.major, "Invalid major version");
+  const minor = parseNumber(groups.minor, "Invalid minor version");
+  const patch = parseNumber(groups.patch, "Invalid patch version");
 
   const prerelease = groups.prerelease
     ? parsePrerelease(groups.prerelease)
