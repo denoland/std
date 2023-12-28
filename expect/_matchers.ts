@@ -42,13 +42,9 @@ export function toStrictEqual(
   expected: unknown,
 ): MatchResult {
   if (context.isNot) {
-    assertNotStrictEquals(
-      context.value,
-      expected,
-      context.customMessage,
-    );
+    assertNotEquals(context.value, expected, context.customMessage);
   } else {
-    assertStrictEquals(context.value, expected, context.customMessage);
+    assertEquals(context.value, expected, context.customMessage);
   }
 }
 
