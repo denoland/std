@@ -16,7 +16,7 @@ const CRLF = "\r\n";
 const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
-  name: "stringify",
+  name: "stringify() handles",
   async fn(t) {
     await t.step({
       name: "Access array index using string",
