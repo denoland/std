@@ -2,7 +2,7 @@
 import type { ReleaseType, SemVer } from "./types.ts";
 
 function pre(
-  prerelease: ReadonlyArray<string | number>,
+  prerelease: ReadonlyArray<string | number> = [],
   identifier: string | undefined,
 ) {
   let values = [...prerelease];
@@ -37,7 +37,7 @@ function pre(
 }
 
 function parseBuild(
-  build: string[],
+  build: string[] = [],
   metadata: string | undefined,
 ) {
   return metadata === undefined ? build : metadata.split(".").filter((m) => m);
@@ -107,7 +107,7 @@ export function increment(
     // If the input is a non-prerelease version, this acts the same as
     // prepatch.
     case "prerelease":
-      if (version.prerelease.length === 0) {
+      if ((version.prerelease ?? []).length === 0) {
         result = {
           major: version.major,
           minor: version.minor,
@@ -134,7 +134,7 @@ export function increment(
       if (
         version.minor !== 0 ||
         version.patch !== 0 ||
-        version.prerelease.length === 0
+        (version.prerelease ?? []).length === 0
       ) {
         result = {
           major: version.major + 1,
@@ -161,7 +161,7 @@ export function increment(
       // 1.2.1 bumps to 1.3.0
       if (
         version.patch !== 0 ||
-        version.prerelease.length === 0
+        (version.prerelease ?? []).length === 0
       ) {
         result = {
           major: version.major,
@@ -186,7 +186,7 @@ export function increment(
       // If it is a pre-release it will bump up to the same patch version.
       // 1.2.0-5 patches to 1.2.0
       // 1.2.0 patches to 1.2.1
-      if (version.prerelease.length === 0) {
+      if ((version.prerelease ?? []).length === 0) {
         result = {
           major: version.major,
           minor: version.minor,
