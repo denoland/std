@@ -17,7 +17,7 @@ export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
 
   switch (operator) {
     case ">":
-      return semver.prerelease.length > 0
+      return semver.prerelease && semver.prerelease.length > 0
         ? increment(semver, "pre")
         : increment(semver, "patch");
     case "!=":
