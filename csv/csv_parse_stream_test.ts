@@ -16,7 +16,7 @@ const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "CsvParseStream should work with Deno.File's readable",
+  name: "CsvParseStream should work with Deno.FsFile's readable",
   permissions: {
     read: [testdataDir],
   },
