@@ -4,7 +4,7 @@ import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
-Deno.test("RedBlackTree() handles default ascend comparator", () => {
+Deno.test("RedBlackTree works as expected with default ascend comparator", () => {
   const trees: RedBlackTree<number>[] = [
     new RedBlackTree(),
     new RedBlackTree(),
@@ -124,7 +124,7 @@ Deno.test("RedBlackTree() handles default ascend comparator", () => {
   }
 });
 
-Deno.test("RedBlackTree() handles descend comparator", () => {
+Deno.test("RedBlackTree works as exepcted with descend comparator", () => {
   const trees: RedBlackTree<number>[] = [
     new RedBlackTree(descend),
     new RedBlackTree(descend),
@@ -244,7 +244,7 @@ Deno.test("RedBlackTree() handles descend comparator", () => {
   }
 });
 
-Deno.test("RedBlackTree() contains objects", () => {
+Deno.test("RedBlackTree works with object items", () => {
   const tree: RedBlackTree<Container> = new RedBlackTree((
     a: Container,
     b: Container,
@@ -575,7 +575,7 @@ Deno.test("RedBlackTree() inserts rebalance right", () => {
   assertEquals([...tree.lvlValues()], [-4, -8, 0, -10, -6, -2, 2, -11, 3]);
 });
 
-Deno.test("RedBlackTree() removes rebalance root", () => {
+Deno.test("RedBlackTree removes rebalance root", () => {
   let values: number[] = [0];
   let tree: RedBlackTree<number> = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [0]);
@@ -833,7 +833,7 @@ Deno.test("RedBlackTree() removes rebalance root", () => {
   assertEquals([...tree.lvlValues()], [0, -2, 2]);
 });
 
-Deno.test("RedBlackTree() removes rebalance left", () => {
+Deno.test("RedBlackTree removes rebalance left", () => {
   let values = [4, 5, 0];
   let tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [4, 0, 5]);
@@ -1165,7 +1165,7 @@ Deno.test("RedBlackTree() removes rebalance left", () => {
   assertEquals([...tree.lvlValues()], [0, -2, 3, 2, 4]);
 });
 
-Deno.test("RedBlackTree() removes rebalance right", () => {
+Deno.test("RedBlackTree removes rebalance right", () => {
   let values = [-4, -5, 0];
   let tree = RedBlackTree.from(values);
   assertEquals([...tree.nlrValues()], [-4, -5, 0]);
@@ -1497,7 +1497,7 @@ Deno.test("RedBlackTree() removes rebalance right", () => {
   assertEquals([...tree.lvlValues()], [0, -4, 2, -2, 3]);
 });
 
-Deno.test("RedBlackTree() handles README example", () => {
+Deno.test("RedBlackTree works with README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
   const tree = new RedBlackTree<number>();
   values.forEach((value) => tree.insert(value));

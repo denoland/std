@@ -19,7 +19,7 @@ interface Container {
   values: number[];
 }
 
-Deno.test("BinarySearchTree() handles default ascend comparator", () => {
+Deno.test("BinarySearchTree handles default ascend comparator", () => {
   const trees: BinarySearchTree<number>[] = [
     new BinarySearchTree(),
     new BinarySearchTree(),
@@ -139,7 +139,7 @@ Deno.test("BinarySearchTree() handles default ascend comparator", () => {
   }
 });
 
-Deno.test("BinarySearchTree() handles descend comparator", () => {
+Deno.test("BinarySearchTree handles descend comparator", () => {
   const trees: BinarySearchTree<number>[] = [
     new BinarySearchTree(descend),
     new BinarySearchTree(descend),
@@ -259,7 +259,7 @@ Deno.test("BinarySearchTree() handles descend comparator", () => {
   }
 });
 
-Deno.test("BinarySearchTree() contains objects", () => {
+Deno.test("BinarySearchTree contains objects", () => {
   const tree: BinarySearchTree<Container> = new BinarySearchTree((
     a: Container,
     b: Container,
@@ -478,7 +478,7 @@ Deno.test("BinarySearchTree.from() handles descend comparator", () => {
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
 
-Deno.test("BinarySearchTree() handles README example", () => {
+Deno.test("BinarySearchTree handles README example", () => {
   const values = [3, 10, 13, 4, 6, 7, 1, 14];
   const tree = new BinarySearchTree<number>();
   values.forEach((value) => tree.insert(value));

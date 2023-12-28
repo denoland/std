@@ -10,7 +10,7 @@ function beforeEach() {
   parent.right = child;
 }
 
-Deno.test("BinarySearchNode()", () => {
+Deno.test("BinarySearchNode", () => {
   beforeEach();
   assertStrictEquals(parent.parent, null);
   assertStrictEquals(parent.left, null);
