@@ -11,10 +11,10 @@ import type { AssertTrue, IsExact } from "../testing/types.ts";
 const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
-  name: "parse()",
+  name: "parse",
   async fn(t) {
     await t.step({
-      name: "checks simple",
+      name: "Simple",
       fn() {
         const input = "a,b,c\n";
         assertEquals(
@@ -24,7 +24,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks CRLF",
+      name: "CRLF",
       fn() {
         const input = "a,b\r\nc,d\r\n";
         assertEquals(
@@ -38,7 +38,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks bare CR",
+      name: "BareCR",
       fn() {
         const input = "a,b\rc,d\r\n";
         assertEquals(
@@ -49,7 +49,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks RFC4180",
+      name: "RFC4180test",
       fn() {
         const input =
           '#field1,field2,field3\n"aaa","bbb","ccc"\n"a,a","bbb","ccc"\nzzz,yyy,xxx';
@@ -65,7 +65,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks no EOL",
+      name: "NoEOLTest",
       fn() {
         const input = "a,b,c";
         assertEquals(
@@ -76,7 +76,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks semicolon",
+      name: "Semicolon",
       fn() {
         const input = "a;b;c\n";
         assertEquals(
@@ -87,7 +87,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks multi line",
+      name: "MultiLine",
       fn() {
         const input = '"two\nline","one line","three\nline\nfield"';
         assertEquals(
@@ -98,7 +98,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks blank line",
+      name: "BlankLine",
       fn() {
         const input = "a,b,c\n\nd,e,f\n\n";
         assertEquals(
@@ -112,7 +112,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks blank line field count",
+      name: "BlankLineFieldCount",
       fn() {
         const input = "a,b,c\n\nd,e,f\n\n";
         assertEquals(
@@ -126,7 +126,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks trim space",
+      name: "TrimSpace",
       fn() {
         const input = " a,  b,   c\n";
         assertEquals(
@@ -137,7 +137,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks leading space",
+      name: "LeadingSpace",
       fn() {
         const input = " a,  b,   c\n";
         const output = [[" a", "  b", "   c"]];
@@ -145,7 +145,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks comment",
+      name: "Comment",
       fn() {
         const input = "#1,2,3\na,b,c\n#comment";
         const output = [["a", "b", "c"]];
@@ -153,7 +153,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks no comment",
+      name: "NoComment",
       fn() {
         const input = "#1,2,3\na,b,c";
         const output = [
@@ -164,7 +164,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks lazy quotes",
+      name: "LazyQuotes",
       fn() {
         const input = `a "word","1"2",a","b`;
         const output = [[`a "word"`, `1"2`, `a"`, `b`]];
@@ -172,7 +172,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bare quotes",
+      name: "BareQuotes",
       fn() {
         const input = `a "word","1"2",a"`;
         const output = [[`a "word"`, `1"2`, `a"`]];
@@ -180,7 +180,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bare double quotes",
+      name: "BareDoubleQuotes",
       fn() {
         const input = `a""b,c`;
         const output = [[`a""b`, `c`]];
@@ -188,7 +188,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bad double quotes",
+      name: "BadDoubleQuotes",
       fn() {
         const input = `a""b,c`;
         assertThrows(
@@ -199,7 +199,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trim quote",
+      name: "TrimQuote",
       fn() {
         const input = ` "a"," b",c`;
         const output = [["a", " b", "c"]];
@@ -207,7 +207,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bad bare quote",
+      name: "BadBareQuote",
       fn() {
         const input = `a "word","b"`;
         assertThrows(
@@ -218,7 +218,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bad trailing quote",
+      name: "BadTrailingQuote",
       fn() {
         const input = `"a word",b"`;
         assertThrows(
@@ -229,7 +229,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks extraneous quote",
+      name: "ExtraneousQuote",
       fn() {
         const input = `"a "word","b"`;
         assertThrows(
@@ -240,7 +240,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bad field count 0",
+      name: "BadFieldCount",
       fn() {
         const input = "a,b,c\nd,e";
         assertThrows(
@@ -251,7 +251,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks bad field count",
+      name: "BadFieldCount1",
       fn() {
         const input = `a,b,c`;
         assertThrows(
@@ -262,7 +262,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks field count",
+      name: "FieldCount",
       fn() {
         const input = "a,b,c\nd,e";
         const output = [
@@ -273,7 +273,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trailing comma EOF",
+      name: "TrailingCommaEOF",
       fn() {
         const input = "a,b,c,";
         const output = [["a", "b", "c", ""]];
@@ -281,7 +281,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trailing comma EOL",
+      name: "TrailingCommaEOL",
       fn() {
         const input = "a,b,c,\n";
         const output = [["a", "b", "c", ""]];
@@ -289,7 +289,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trailing comma space EOF",
+      name: "TrailingCommaSpaceEOF",
       fn() {
         const input = "a,b,c, ";
         const output = [["a", "b", "c", ""]];
@@ -297,7 +297,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trailing comma space EOL",
+      name: "TrailingCommaSpaceEOL",
       fn() {
         const input = "a,b,c, \n";
         const output = [["a", "b", "c", ""]];
@@ -305,7 +305,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks trailing comma line",
+      name: "TrailingCommaLine3",
       fn() {
         const input = "a,b,c\nd,e,f\ng,hi,";
         const output = [
@@ -317,7 +317,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks not trailing comma",
+      name: "NotTrailingComma3",
       fn() {
         const input = "a,b,c, \n";
         const output = [["a", "b", "c", " "]];
@@ -325,7 +325,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks comma field",
+      name: "CommaFieldTest",
       fn() {
         const input =
           `x,y,z,w\nx,y,z,\nx,y,,\nx,,,\n,,,\n"x","y","z","w"\n"x","y","z",""\n"x","y","",""\n"x","","",""\n"","","",""\n`;
@@ -345,7 +345,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks TrailingCommaIneffective1",
+      name: "TrailingCommaIneffective1",
       fn() {
         const input = "a,b,\nc,d,e";
         const output = [
@@ -356,7 +356,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks ReadAllReuseRecord",
+      name: "ReadAllReuseRecord",
       fn() {
         const input = "a,b\nc,d";
         const output = [
@@ -368,7 +368,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks StartLine1", // Issue 19019
+      name: "StartLine1", // Issue 19019
       fn() {
         const input = 'a,"b\nc"d,e';
         assertThrows(
@@ -379,7 +379,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks StartLine2",
+      name: "StartLine2",
       fn() {
         const input = 'a,b\n"d\n\n,e';
         assertThrows(
@@ -390,7 +390,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks CRLF in quoted field", // Issue 21201
+      name: "CRLFInQuotedField", // Issue 21201
       fn() {
         const input = 'A,"Hello\r\nHi",B\r\n';
         const output = [["A", "Hello\nHi", "B"]];
@@ -398,7 +398,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks BinaryBlobField", // Issue 19410
+      name: "BinaryBlobField", // Issue 19410
       fn() {
         const input = "x09\x41\xb4\x1c,aktau";
         const output = [["x09A\xb4\x1c", "aktau"]];
@@ -406,7 +406,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks TrailingCR",
+      name: "TrailingCR",
       fn() {
         const input = "field1,field2\r";
         const output = [["field1", "field2"]];
@@ -414,7 +414,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks QuotedTrailingCR",
+      name: "QuotedTrailingCR",
       fn() {
         const input = '"field"\r';
         const output = [["field"]];
@@ -422,7 +422,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks quoted trailing CRCR",
+      name: "QuotedTrailingCRCR",
       fn() {
         const input = '"field"\r\r';
         assertThrows(
@@ -433,7 +433,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks field CR",
+      name: "FieldCR",
       fn() {
         const input = "field\rfield\r";
         const output = [["field\rfield"]];
@@ -441,7 +441,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks fieldCRCR",
+      name: "FieldCRCR",
       fn() {
         const input = "field\r\rfield\r\r";
         const output = [["field\r\rfield\r"]];
@@ -449,7 +449,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks field CRCRLF",
+      name: "FieldCRCRLF",
       fn() {
         const input = "field\r\r\nfield\r\r\n";
         const output = [["field\r"], ["field\r"]];
@@ -457,7 +457,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks field CRCRLFCR",
+      name: "FieldCRCRLFCR",
       fn() {
         const input = "field\r\r\n\rfield\r\r\n\r";
         const output = [["field\r"], ["\rfield\r"]];
@@ -465,7 +465,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks fieldCRCRLFCRCR",
+      name: "FieldCRCRLFCRCR",
       fn() {
         const input = "field\r\r\n\r\rfield\r\r\n\r\r";
         const output = [["field\r"], ["\r\rfield\r"], ["\r"]];
@@ -473,7 +473,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks multi-field CRCRLFCRCR",
+      name: "MultiFieldCRCRLFCRCR",
       fn() {
         const input = "field1,field2\r\r\n\r\rfield1,field2\r\r\n\r\r,";
         const output = [
@@ -485,7 +485,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks non ASCII comma and comment",
+      name: "NonASCIICommaAndComment",
       fn() {
         const input = "a£b,c£ \td,e\n€ comment\n";
         const output = [["a", "b,c", "d,e"]];
@@ -500,7 +500,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks non ASCII comma and comment with quotes",
+      name: "NonASCIICommaAndCommentWithQuotes",
       fn() {
         const input = 'a€"  b,"€ c\nλ comment\n';
         const output = [["a", "  b,", " c"]];
@@ -514,7 +514,7 @@ Deno.test({
       {
         // λ and θ start with the same byte.
         // This tests that the parser doesn't confuse such characters.
-        name: "checks non ASCII comma confusion",
+        name: "NonASCIICommaConfusion",
         fn() {
           const input = '"abθcd"λefθgh';
           const output = [["abθcd", "efθgh"]];
@@ -526,7 +526,7 @@ Deno.test({
       },
     );
     await t.step({
-      name: "checks non ASCII comment confusion",
+      name: "NonASCIICommentConfusion",
       fn() {
         const input = "λ\nλ\nθ\nλ\n";
         const output = [["λ"], ["λ"], ["λ"]];
@@ -534,7 +534,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks quoted field multiple LF",
+      name: "QuotedFieldMultipleLF",
       fn() {
         const input = '"\n\n\n\n"';
         const output = [["\n\n\n\n"]];
@@ -542,7 +542,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks multiple CRLF",
+      name: "MultipleCRLF",
       fn() {
         const input = "\r\n\r\n\r\n\r\n";
         const output: string[][] = [];
@@ -565,7 +565,7 @@ Deno.test({
       },
       }*/);
     await t.step({
-      name: "checks quote with trailing CRLF",
+      name: "QuoteWithTrailingCRLF",
       fn() {
         const input = '"foo"bar"\r\n';
         assertThrows(
@@ -576,7 +576,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks lazy quote with trailing CRLF",
+      name: "LazyQuoteWithTrailingCRLF",
       fn() {
         const input = '"foo"bar"\r\n';
         const output = [[`foo"bar`]];
@@ -584,7 +584,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks double quote with trailing CRLF",
+      name: "DoubleQuoteWithTrailingCRLF",
       fn() {
         const input = '"foo""bar"\r\n';
         const output = [[`foo"bar`]];
@@ -592,7 +592,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks even quotes",
+      name: "EvenQuotes",
       fn() {
         const input = `""""""""`;
         const output = [[`"""`]];
@@ -600,7 +600,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks odd quotes",
+      name: "OddQuotes",
       fn() {
         const input = `"""""""`;
         assertThrows(
@@ -611,7 +611,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks lazy odd quotes",
+      name: "LazyOddQuotes",
       fn() {
         const input = `"""""""`;
         const output = [[`"""`]];
@@ -619,7 +619,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid '\\n' separator",
+      name: "BadComma1",
       fn() {
         const input = "";
         assertThrows(
@@ -630,7 +630,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid '\\r' separator",
+      name: "BadComma2",
       fn() {
         const input = "";
         assertThrows(
@@ -641,7 +641,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid '\"' separator",
+      name: "BadComma3",
       fn() {
         const input = "";
         assertThrows(
@@ -652,7 +652,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid '\n' comment",
+      name: "BadComment1",
       fn() {
         const input = "";
         assertThrows(
@@ -663,7 +663,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid '\r' comment",
+      name: "BadComment2",
       fn() {
         const input = "";
         assertThrows(
@@ -674,7 +674,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks invalid separator and comment",
+      name: "BadCommaComment",
       fn() {
         const input = "";
         assertThrows(
@@ -686,7 +686,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks simple csv",
+      name: "simple",
       fn() {
         const input = "a,b,c";
         const output = [["a", "b", "c"]];
@@ -694,7 +694,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks simple Bufreader",
+      name: "simple Bufreader",
       fn() {
         const input = "a,b,c";
         const output = [["a", "b", "c"]];
@@ -702,7 +702,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks multiline",
+      name: "multiline",
       fn() {
         const input = "a,b,c\ne,f,g\n";
         const output = [
@@ -713,7 +713,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks header mapping boolean",
+      name: "header mapping boolean",
       fn() {
         const input = "a,b,c\ne,f,g\n";
         const output = [{ a: "e", b: "f", c: "g" }];
@@ -721,7 +721,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks header mapping array",
+      name: "header mapping array",
       fn() {
         const input = "a,b,c\ne,f,g\n";
         const output = [
@@ -736,7 +736,7 @@ Deno.test({
     });
 
     await t.step({
-      name: "checks provides both opts.skipFirstRow and opts.columns",
+      name: "provides both opts.skipFirstRow and opts.columns",
       fn() {
         const input = "a,b,1\nc,d,2\ne,f,3";
         const output = [
@@ -753,7 +753,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks mismatching number of headers and fields",
+      name: "mismatching number of headers and fields",
       fn() {
         const input = "a,b,c\nd,e";
         assertThrows(
@@ -768,7 +768,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks strips leading byte-order mark with bare cell",
+      name: "Strips leading byte-order mark with bare cell",
       fn() {
         const input = `${BYTE_ORDER_MARK}abc`;
         const output = [["abc"]];
@@ -777,7 +777,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks strips leading byte-order mark with quoted cell",
+      name: "Strips leading byte-order mark with quoted cell",
       fn() {
         const input = `${BYTE_ORDER_MARK}"a""b"`;
         const output = [['a"b']];
@@ -786,7 +786,7 @@ Deno.test({
       },
     });
     await t.step({
-      name: "checks does not strip byte-order mark after position [0]",
+      name: "Does not strip byte-order mark after position [0]",
       fn() {
         const input = `a${BYTE_ORDER_MARK}bc`;
         const output = [[`a${BYTE_ORDER_MARK}bc`]];
@@ -795,7 +795,7 @@ Deno.test({
     });
     await t.step({
       name:
-        "strips leading byte-order mark followed by whitespace with options.trimLeadingSpace",
+        "trimLeadingSpace strips leading byte-order mark followed by whitespace",
       fn() {
         const input = `${BYTE_ORDER_MARK} abc`;
         const output = [["abc"]];
@@ -806,7 +806,7 @@ Deno.test({
       // This behavior is due to String#trimStart including U+FEFF in the set of
       // characters to be trimmed
       name:
-        "strips leading whitespace followed by byte-order mark with options.trimLeadingSpace",
+        "trimLeadingSpace strips leading whitespace followed by byte-order mark",
       fn() {
         const input = ` ${BYTE_ORDER_MARK}abc`;
         const output = [["abc"]];
@@ -817,7 +817,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() checks correct typing",
+  name: "[csv] correct typing",
   fn() {
     // If no option is passed, defaults to string[][]
     {
