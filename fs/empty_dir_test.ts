@@ -225,9 +225,13 @@ for (const s of scenes) {
           cwd: testdataDir,
           args,
         });
-        const { stdout } = await command.output();
+        const { stdout, stderr } = await command.output();
         assertStringIncludes(new TextDecoder().decode(stdout), s.output);
+        if (stderr.length > 0) {
+          console.log(new TextDecoder().decode(stderr));
+        }
       } catch (err) {
+        console.log(err);
         await Deno.remove(testfolder, { recursive: true });
         throw err;
       }

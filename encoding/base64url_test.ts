@@ -27,25 +27,25 @@ const testsetInvalid = [
   "PDw/Pz8+Pg==",
 ];
 
-Deno.test("[encoding/base64url] testBase64urlEncodeString", () => {
+Deno.test("encodeBase64Url() encodes string", () => {
   for (const [input, output] of testsetString) {
     assertEquals(encodeBase64Url(input), output);
   }
 });
 
-Deno.test("[encoding/base64url] testBase64urlEncodeBinary", () => {
+Deno.test("encodeBase64Url() encodes binary", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(encodeBase64Url(input), output);
   }
 });
 
-Deno.test("[decoding/base64url] testBase64urlDecodeBinary", () => {
+Deno.test("decodeBase64Url() decodes binary", () => {
   for (const [input, output] of testsetBinary) {
     assertEquals(decodeBase64Url(output), input);
   }
 });
 
-Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () => {
+Deno.test("decodeBase64Url() throws on invalid input", () => {
   for (const invalidb64url of testsetInvalid) {
     assertThrows(
       () => decodeBase64Url(invalidb64url),
@@ -55,7 +55,7 @@ Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () =>
   }
 });
 
-Deno.test("[decoding/base64url] base64url.decode throws on illegal base64url string", () => {
+Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
   const testsetIllegalBase64url = [
     "w58De",
     "Zm9vYmFyy",
