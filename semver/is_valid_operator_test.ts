@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/mod.ts";
-import { isValidOperator } from "./_shared.ts";
+import { isOperator } from "./_shared.ts";
 
 Deno.test({
   name: "valid_operators",
@@ -19,7 +19,7 @@ Deno.test({
     ];
     for (const op of operators) {
       await t.step(`valid operator ${op}`, () => {
-        const actual = isValidOperator(op);
+        const actual = isOperator(op);
         assert(actual);
       });
     }

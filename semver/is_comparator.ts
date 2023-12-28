@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 import { isSemVer } from "./is_semver.ts";
-import { isValidOperator } from "./_shared.ts";
+import { isOperator } from "./_shared.ts";
 import type { Comparator } from "./types.ts";
 import { ALL, NONE } from "./constants.ts";
 
@@ -22,7 +22,7 @@ export function isComparator(value: unknown): value is Comparator {
   if (typeof value !== "object") return false;
   const { operator, semver } = value as Comparator;
   return (
-    isValidOperator(operator) &&
+    isOperator(operator) &&
     isSemVer(semver)
   );
 }

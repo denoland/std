@@ -25,7 +25,7 @@ export function isSemVer(value: unknown): value is SemVer {
   if (value === INVALID) return true;
   if (value === ANY) return true;
 
-  const { major, minor, patch, build, prerelease } = value as Record<
+  const { major, minor, patch, build = [], prerelease = [] } = value as Record<
     string,
     unknown
   >;

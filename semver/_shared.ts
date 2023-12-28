@@ -13,8 +13,8 @@ export function compareNumber(
 }
 
 export function checkIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   // NOT having a prerelease is > having one
   // But NOT having a build is < having one
@@ -28,8 +28,8 @@ export function checkIdentifier(
 }
 
 export function compareIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   let i = 0;
   do {
@@ -186,6 +186,19 @@ export function isValidString(value: unknown): value is string {
   );
 }
 
+export const operators = [
+  "",
+  "=",
+  "==",
+  "===",
+  "!==",
+  "!=",
+  ">",
+  ">=",
+  "<",
+  "<=",
+] as const;
+
 /**
  * Checks to see if the value is a valid Operator string.
  *
@@ -193,23 +206,8 @@ export function isValidString(value: unknown): value is string {
  * @param value The value to check
  * @returns True if the value is a valid Operator string otherwise false.
  */
-export function isValidOperator(value: unknown): value is Operator {
-  if (typeof value !== "string") return false;
-  switch (value) {
-    case "":
-    case "=":
-    case "==":
-    case "===":
-    case "!==":
-    case "!=":
-    case ">":
-    case ">=":
-    case "<":
-    case "<=":
-      return true;
-    default:
-      return false;
-  }
+export function isOperator(value: unknown): value is Operator {
+  return operators.includes(value as Operator);
 }
 
 const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);
