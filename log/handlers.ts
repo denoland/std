@@ -163,7 +163,7 @@ export class FileHandler extends WriterHandler {
 
   override setup() {
     this._file = Deno.openSync(this._filename, this._openOptions);
-    this.resetBuffer();
+    this.#resetBuffer();
 
     addEventListener("unload", this.#unloadCallback);
   }
@@ -194,11 +194,11 @@ export class FileHandler extends WriterHandler {
           this._buf.subarray(written, this._pointer),
         );
       }
-      this.resetBuffer();
+      this.#resetBuffer();
     }
   }
 
-  resetBuffer() {
+  #resetBuffer() {
     this._pointer = 0;
   }
 
@@ -329,6 +329,5 @@ export class RotatingFileHandler extends FileHandler {
     }
 
     this._file = Deno.openSync(this._filename, this._openOptions);
-    this.resetBuffer();
   }
 }
