@@ -7,6 +7,7 @@ import { cmp } from "./cmp.ts";
  * @param version The version to compare
  * @param comparator The comparator
  * @returns True if the version is within the comparators set otherwise false
+ * @deprecated (will be removed in 0.212.0) Use {@linkcode compare} instead.
  */
 export function testComparator(
   version: SemVer,
