@@ -26,14 +26,37 @@ export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   }
 }
 
+// deno-lint-ignore no-explicit-any
+function filterUndefined(obj: any): any {
+  if (typeof obj !== "object") return obj;
+  if (obj instanceof Date) return obj;
+  if (obj instanceof RegExp) return obj;
+  if (ArrayBuffer.isView(obj)) return obj;
+  if (obj === null) return obj;
+  if ("size" in obj) return obj;
+  if (Symbol.iterator in obj) return obj;
+  if (Array.isArray(obj)) return obj.map(filterUndefined);
+
+  // deno-lint-ignore no-explicit-any
+  const result = {} as any;
+  for (const key in obj) {
+    const val = obj[key];
+    if (val === undefined) continue;
+    result[key] = filterUndefined(val);
+  }
+  return result;
+}
+
 export function toEqual(
   context: MatcherContext,
   expected: unknown,
 ): MatchResult {
+  const v = filterUndefined(context.value);
+  const e = filterUndefined(expected);
   if (context.isNot) {
-    assertNotEquals(context.value, expected, context.customMessage);
+    assertNotEquals(v, e, context.customMessage);
   } else {
-    assertEquals(context.value, expected, context.customMessage);
+    assertEquals(v, e, context.customMessage);
   }
 }
 
