@@ -11,7 +11,7 @@ import type { AssertTrue, IsExact } from "../testing/types.ts";
 const BYTE_ORDER_MARK = "\ufeff";
 
 Deno.test({
-  name: "parse() handles",
+  name: "parse() handles various inputs",
   async fn(t) {
     await t.step({
       name: "Simple",

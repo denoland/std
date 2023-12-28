@@ -58,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "CsvParseStream with various inputs",
+  name: "CsvParseStream handles various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
