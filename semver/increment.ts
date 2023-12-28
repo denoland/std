@@ -2,7 +2,7 @@
 import type { ReleaseType, SemVer } from "./types.ts";
 
 function pre(
-  prerelease: ReadonlyArray<string | number> | undefined = [],
+  prerelease: ReadonlyArray<string | number> = [],
   identifier: string | undefined,
 ) {
   let values = [...prerelease];
@@ -37,7 +37,7 @@ function pre(
 }
 
 function parseBuild(
-  build: string[] | undefined = [],
+  build: string[] = [],
   metadata: string | undefined,
 ) {
   return metadata === undefined ? build : metadata.split(".").filter((m) => m);
