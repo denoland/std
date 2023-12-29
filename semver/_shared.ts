@@ -11,8 +11,8 @@ export function compareNumber(
 }
 
 export function checkIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   // NOT having a prerelease is > having one
   // But NOT having a build is < having one
@@ -26,8 +26,8 @@ export function checkIdentifier(
 }
 
 export function compareIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   let i = 0;
   do {
