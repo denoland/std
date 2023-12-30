@@ -127,25 +127,15 @@ const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|x|X|\\*`;
 export const XRANGE_PLAIN =
   `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
-export const XRANGE_REGEXP = new RegExp(
-  `^(?<operator>${COMPARATOR})\\s*${XRANGE_PLAIN}$`,
+// Meaning is "reasonably at or greater than" or "at least and backwards compatible with"
+export const OPERATOR_REGEXP = new RegExp(
+  `^(?<operator>~>?|\\^|${COMPARATOR})\\s*${XRANGE_PLAIN}$`,
 );
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-export const TILDE_REGEXP = new RegExp(`^(?<operator>~>?)${XRANGE_PLAIN}$`);
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-export const CARET_REGEXP = new RegExp(`^(?<operator>\\^)${XRANGE_PLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
   `^(?<operator>${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
 );
-
-// Star ranges basically just allow anything at all.
-export const STAR_REGEXP = /(<|>)?=?\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.
