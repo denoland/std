@@ -24,7 +24,10 @@ import * as v3 from "./v3.ts";
 import * as v4 from "./v4.ts";
 import * as v5 from "./v5.ts";
 
-/** The nil UUID is special form of UUID that is specified to have all 128 bits set to zero. */
+/**
+ * The nil UUID is special form of UUID that is specified to have all 128 bits
+ * set to zero.
+ */
 export const NIL_UUID = "00000000-0000-0000-0000-000000000000";
 
 /**

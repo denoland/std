@@ -29,7 +29,7 @@ let _clockseq: number;
 let _lastMSecs = 0;
 let _lastNSecs = 0;
 
-/** The options used for generating a v1 UUID. */
+/** The options used for generating a v1 UUID in {@linkcode generate}. */
 export interface V1Options {
   /**
    * An array of 6 bytes that represents a 48-bit IEEE 802 MAC address.
@@ -51,14 +51,18 @@ export interface V1Options {
    */
   msecs?: number;
   /**
-   * The number of nanoseconds to add to `V1Options.msecs` (0 - 10,000).
+   * The number of nanoseconds to add to {@linkcode V1Options.msecs}
+   * (0 - 10,000).
    *
    * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
    */
   nsecs?: number;
   /** An array of 16 random bytes (0 - 255). */
   random?: number[];
-  /** A function that returns an array of 16 random bytes (0-255) (Alternative to `V1Options.random`). */
+  /**
+   * A function that returns an array of 16 random bytes (0 - 255).
+   * Alternative to {@linkcode V1Options.random}.
+   */
   rng?: () => number[];
 }
 
@@ -76,7 +80,7 @@ export interface V1Options {
  *   nsecs: 5678,
  * };
  *
- * console.log(generate(options)); // 710b962e-041c-11e1-9234-0123456789ab
+ * generate(options); // "710b962e-041c-11e1-9234-0123456789ab"
  * ```
  *
  * @param options Can use RFC time sequence values as overwrites.
