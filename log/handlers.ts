@@ -16,6 +16,9 @@ export interface HandlerOptions {
 export class BaseHandler {
   level: number;
   levelName: LevelName;
+  /**
+   * @deprecated (will be removed in 0.213.0) Use {@linkcode FormatterFunction} instead of a string.
+   */
   formatter: string | FormatterFunction;
 
   constructor(levelName: LevelName, options: HandlerOptions = {}) {

@@ -136,7 +136,7 @@ export const OPERATOR_REGEXP = new RegExp(
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
-  `^(${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
+  `^(?<operator>${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
 );
 
 /**
@@ -198,4 +198,31 @@ export const operators = [
  */
 export function isOperator(value: unknown): value is Operator {
   return operators.includes(value as Operator);
+}
+
+const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);
+export function parsePrerelease(prerelease: string) {
+  return prerelease
+    .split(".")
+    .filter((id) => id)
+    .map((id: string) => {
+      const num = parseInt(id);
+      if (id.match(NUMERIC_IDENTIFIER_REGEXP) && isValidNumber(num)) {
+        return num;
+      } else {
+        return id;
+      }
+    });
+}
+
+export function parseBuild(buildmetadata: string) {
+  return buildmetadata.split(".").filter((m) => m) ?? [];
+}
+
+export function parseNumber(input: string, errorMessage: string) {
+  const number = Number(input);
+  if (number > Number.MAX_SAFE_INTEGER || number < 0) {
+    throw new TypeError(errorMessage);
+  }
+  return number;
 }

@@ -151,7 +151,7 @@
  *     file: new log.handlers.FileHandler("WARNING", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
- *       formatter: "{levelName} {msg}",
+ *       formatter: (record) => `${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -196,7 +196,7 @@
  * log.setup({
  *   handlers: {
  *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{levelName}] {msg}",
+ *       formatter: (record) => `[${record.levelName}] ${record.msg}`,
  *     }),
  *
  *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
@@ -212,7 +212,7 @@
  *     }),
  *
  *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{loggerName}] - {levelName} {msg}",
+ *       formatter: (record) => `[${record.loggerName}] - ${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
