@@ -1,6 +1,6 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { operators } from "./_shared.ts";
+import { OPERATORS } from "./_constants.ts";
 
 /**
  * The possible release types are used as an operator for the
@@ -19,7 +19,7 @@ export type ReleaseType =
 /**
  * SemVer comparison operators.
  */
-export type Operator = typeof operators[number];
+export type Operator = typeof OPERATORS[number];
 
 /**
  * The style to use when formatting a SemVer object into a string

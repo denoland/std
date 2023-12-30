@@ -1,7 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { Operator } from "./types.ts";
-
 export function compareNumber(
   a: number,
   b: number,
@@ -174,30 +172,6 @@ export function isValidString(value: unknown): value is string {
     value.length <= MAX_LENGTH &&
     !!value.match(/[0-9A-Za-z-]+/)
   );
-}
-
-export const operators = [
-  "",
-  "=",
-  "==",
-  "===",
-  "!==",
-  "!=",
-  ">",
-  ">=",
-  "<",
-  "<=",
-] as const;
-
-/**
- * Checks to see if the value is a valid Operator string.
- *
- * Adds a type assertion if true.
- * @param value The value to check
- * @returns True if the value is a valid Operator string otherwise false.
- */
-export function isOperator(value: unknown): value is Operator {
-  return operators.includes(value as Operator);
 }
 
 const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);

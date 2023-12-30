@@ -565,8 +565,7 @@ export function setup(config: LogConfig) {
   // setup handlers
   const handlers = state.config.handlers || {};
 
-  for (const handlerName in handlers) {
-    const handler = handlers[handlerName];
+  for (const [handlerName, handler] of Object.entries(handlers)) {
     handler.setup();
     state.handlers.set(handlerName, handler);
   }
@@ -576,8 +575,7 @@ export function setup(config: LogConfig) {
 
   // setup loggers
   const loggers = state.config.loggers || {};
-  for (const loggerName in loggers) {
-    const loggerConfig = loggers[loggerName];
+  for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
     const handlerNames = loggerConfig.handlers || [];
     const handlers: BaseHandler[] = [];
 
