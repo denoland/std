@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "useUnknownInCatchVariables": true,
+    "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
   },
   "imports": {

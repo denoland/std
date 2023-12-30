@@ -12,8 +12,7 @@ export function join(...paths: string[]): string {
   if (paths.length === 0) return ".";
 
   let joined: string | undefined;
-  for (let i = 0, len = paths.length; i < len; ++i) {
-    const path = paths[i];
+  for (const path of paths) {
     assertPath(path);
     if (path.length > 0) {
       if (!joined) joined = path;

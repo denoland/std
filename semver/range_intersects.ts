@@ -11,8 +11,7 @@ function rangesSatisfiable(ranges: SemVerRange[]): boolean {
 
 function comparatorsSatisfiable(comparators: SemVerComparator[]): boolean {
   // Comparators are satisfiable if they all intersect with each other
-  for (let i = 0; i < comparators.length - 1; i++) {
-    const c0 = comparators[i];
+  for (const [i, c0] of comparators.entries()) {
     for (const c1 of comparators.slice(i + 1)) {
       if (!comparatorIntersects(c0, c1)) {
         return false;

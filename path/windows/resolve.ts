@@ -20,7 +20,11 @@ export function resolve(...pathSegments: string[]): string {
     // deno-lint-ignore no-explicit-any
     const { Deno } = globalThis as any;
     if (i >= 0) {
-      path = pathSegments[i];
+      const segment = pathSegments[i];
+      if (typeof segment !== "string") {
+        throw new Error("Unexpected out of bounds on resolve() pathSegments");
+      }
+      path = segment;
     } else if (!resolvedDevice) {
       if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a drive-letter-less path without a CWD.");

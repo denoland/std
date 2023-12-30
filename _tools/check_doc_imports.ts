@@ -75,7 +75,7 @@ function checkCodeBlocks(
   lineNumber = 1,
 ): void {
   for (const codeBlockMatch of content.matchAll(RX_CODE_BLOCK)) {
-    const [, language, codeBlock] = codeBlockMatch;
+    const [, language = "", codeBlock = ""] = codeBlockMatch;
     const codeBlockLineNumber =
       content.slice(0, codeBlockMatch.index).split("\n").length;
 

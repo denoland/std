@@ -25,7 +25,7 @@ function replaceTildes(comp: string): string {
 }
 
 function replaceTilde(comp: string): string {
-  const groups = comp.match(TILDE_REGEXP)?.groups;
+  const groups = parseGroup(comp.match(TILDE_REGEXP));
   if (!groups) return comp;
   const { major, minor, patch, prerelease } = groups;
   if (isWildcard(major)) {
@@ -59,7 +59,7 @@ function replaceCarets(comp: string): string {
 }
 
 function replaceCaret(comp: string): string {
-  const groups = comp.match(CARET_REGEXP)?.groups;
+  const groups = parseGroup(comp.match(CARET_REGEXP));
   if (!groups) return comp;
   const { major, minor, patch, prerelease } = groups;
 
@@ -183,19 +183,19 @@ function replaceStars(comp: string): string {
 function hyphenReplace(range: string) {
   // convert `1.2.3 - 1.2.4` into `>=1.2.3 <=1.2.4`
   const leftMatch = range.match(new RegExp(`^${XRANGE_PLAIN}`));
-  const leftGroup = leftMatch?.groups;
+  const leftGroup = parseGroup(leftMatch);
   if (!leftGroup) return range;
-  const leftLength = leftMatch[0].length;
+  const leftLength = leftMatch?.[0].length ?? 0;
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
   if (!hyphenMatch) return range;
   const hyphenLength = hyphenMatch[0].length;
   const rightMatch = range.slice(leftLength + hyphenLength).match(
     new RegExp(`^${XRANGE_PLAIN}\\s*$`),
   );
-  const rightGroups = rightMatch?.groups;
+  const rightGroups = parseGroup(rightMatch);
   if (!rightGroups) return range;
-  let from = leftMatch[0];
-  let to = rightMatch[0];
+  let from = leftMatch?.[0];
+  let to = rightMatch?.[0];
 
   if (isWildcard(leftGroup.major)) {
     from = "";
@@ -225,6 +225,25 @@ function hyphenReplace(range: string) {
 
 function isWildcard(id: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
+}
+
+type Group = {
+  major: string;
+  minor: string;
+  patch: string;
+  prerelease: string;
+};
+function parseGroup(match: RegExpMatchArray | null): Group | null {
+  if (!match || !match?.groups?.length) {
+    return null;
+  }
+  const version = match.groups;
+  return {
+    major: version.major ?? "",
+    minor: version.minor ?? "",
+    patch: version.patch ?? "",
+    prerelease: version.prerelease ?? "",
+  };
 }
 
 /**

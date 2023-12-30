@@ -41,19 +41,19 @@ export function parse(version: string | SemVer): SemVer {
   if (!groups) throw new TypeError(`Invalid Version: ${version}`);
 
   // these are actually numbers
-  const major = parseInt(groups.major);
-  const minor = parseInt(groups.minor);
-  const patch = parseInt(groups.patch);
+  const major = parseInt(groups.major!);
+  const minor = parseInt(groups.minor!);
+  const patch = parseInt(groups.patch!);
 
-  if (major > Number.MAX_SAFE_INTEGER || major < 0) {
+  if (major > Number.MAX_SAFE_INTEGER || major < 0 || Number.isNaN(major)) {
     throw new TypeError("Invalid major version");
   }
 
-  if (minor > Number.MAX_SAFE_INTEGER || minor < 0) {
+  if (minor > Number.MAX_SAFE_INTEGER || minor < 0 || Number.isNaN(minor)) {
     throw new TypeError("Invalid minor version");
   }
 
-  if (patch > Number.MAX_SAFE_INTEGER || patch < 0) {
+  if (patch > Number.MAX_SAFE_INTEGER || patch < 0 || Number.isNaN(patch)) {
     throw new TypeError("Invalid patch version");
   }
 

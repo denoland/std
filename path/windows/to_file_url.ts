@@ -24,6 +24,9 @@ export function toFileUrl(path: string): URL {
   const [, hostname, pathname] = path.match(
     /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
   )!;
+  if (typeof pathname !== "string") {
+    throw new Error("Missing pathname in file path");
+  }
   const url = new URL("file:///");
   url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
   if (hostname !== undefined && hostname !== "localhost") {

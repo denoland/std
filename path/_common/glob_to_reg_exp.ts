@@ -65,7 +65,7 @@ export function _globToRegExp(
 
   // Remove trailing separators.
   let newLength = glob.length;
-  for (; newLength > 1 && c.seps.includes(glob[newLength - 1]); newLength--);
+  for (; newLength > 1 && c.seps.includes(glob[newLength - 1]!); newLength--);
   glob = glob.slice(0, newLength);
 
   let regExpString = "";
@@ -80,11 +80,13 @@ export function _globToRegExp(
     let i = j;
 
     // Terminates with `i` at the non-inclusive end of the current segment.
-    for (; i < glob.length && !c.seps.includes(glob[i]); i++) {
+    for (; i < glob.length && !c.seps.includes(glob[i] ?? ""); i++) {
       if (inEscape) {
         inEscape = false;
         const escapeChars = inRange ? rangeEscapeChars : regExpEscapeChars;
-        segment += escapeChars.includes(glob[i]) ? `\\${glob[i]}` : glob[i];
+        segment += escapeChars.includes(glob[i] ?? "")
+          ? `\\${glob[i]}`
+          : glob[i];
         continue;
       }
 
@@ -247,7 +249,9 @@ export function _globToRegExp(
         continue;
       }
 
-      segment += regExpEscapeChars.includes(glob[i]) ? `\\${glob[i]}` : glob[i];
+      segment += regExpEscapeChars.includes(glob[i] ?? "")
+        ? `\\${glob[i]}`
+        : glob[i];
     }
 
     // Check for unclosed groups or a dangling backslash.
@@ -267,7 +271,7 @@ export function _globToRegExp(
     }
 
     // Terminates with `i` at the start of the next segment.
-    while (c.seps.includes(glob[i])) i++;
+    while (c.seps.includes(glob[i] ?? "")) i++;
 
     // Check that the next value of `j` is indeed higher than the current value.
     if (!(i > j)) {

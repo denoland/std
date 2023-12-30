@@ -16,8 +16,9 @@ export function resolve(...pathSegments: string[]): string {
   for (let i = pathSegments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
     let path: string;
 
-    if (i >= 0) path = pathSegments[i];
-    else {
+    if (i >= 0) {
+      path = pathSegments[i]!;
+    } else {
       // deno-lint-ignore no-explicit-any
       const { Deno } = globalThis as any;
       if (typeof Deno?.cwd !== "function") {
