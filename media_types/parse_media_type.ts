@@ -42,7 +42,7 @@ import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
 export function parseMediaType(
   v: string,
 ): [mediaType: string, params: Record<string, string> | undefined] {
-  const [base] = v.split(";");
+  const [base] = v.split(";") as [string];
   const mediaType = base.toLowerCase().trim();
 
   const params: Record<string, string> = {};
