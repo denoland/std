@@ -4,9 +4,7 @@
 /**
  * Generators and validators for UUIDs for versions v1, v3, v4 and v5.
  *
- * Consider using the web platform
- * [`crypto.randomUUID`](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID)
- * for v4 UUIDs instead.
+ * Use {@linkcode crypto.randomUUID} for v4 generating v4 UUIDs.
  *
  * Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
  *
@@ -18,11 +16,10 @@
  */
 
 export * from "./constants.ts";
-
-import * as v1 from "./v1.ts";
-import * as v3 from "./v3.ts";
-import * as v4 from "./v4.ts";
-import * as v5 from "./v5.ts";
+export * as v1 from "./v1.ts";
+export * as v3 from "./v3.ts";
+export * as v4 from "./v4.ts";
+export * as v5 from "./v5.ts";
 
 /**
  * The nil UUID is special form of UUID that is specified to have all 128 bits
@@ -81,5 +78,3 @@ export function version(uuid: string): number {
 
   return parseInt(uuid[14], 16);
 }
-
-export { v1, v3, v4, v5 };
