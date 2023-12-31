@@ -35,13 +35,13 @@ const COMMON = 2;
 const ADDED = 3;
 
 function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
-  const common = [];
+  const common: T[] = [];
   if (A.length === 0 || B.length === 0) return [];
   for (let i = 0; i < Math.min(A.length, B.length); i += 1) {
     if (
       A[reverse ? A.length - i - 1 : i] === B[reverse ? B.length - i - 1 : i]
     ) {
-      common.push(A[reverse ? A.length - i - 1 : i]);
+      common.push(A[reverse ? A.length - i - 1 : i]!);
     } else {
       return common;
     }
@@ -95,6 +95,14 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     { length: size },
     () => ({ y: -1, id: -1 }),
   );
+  function getPoint(index: number) {
+    const point = fp[index];
+    if (!point) {
+      throw Error(`Missing FarthestPoint at index ${index}`);
+    }
+    return point;
+  }
+
   /**
    * INFO:
    * This buffer is used to save memory and improve performance.
@@ -119,28 +127,28 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   }> {
     const M = A.length;
     const N = B.length;
-    const result = [];
+    const result: { type: DiffType; value: T }[] = [];
     let a = M - 1;
     let b = N - 1;
     let j = routes[current.id];
     let type = routes[current.id + diffTypesPtrOffset];
     while (true) {
       if (!j && !type) break;
-      const prev = j;
+      const prev = j!;
       if (type === REMOVED) {
         result.unshift({
           type: swapped ? DiffType.removed : DiffType.added,
-          value: B[b],
+          value: B[b]!,
         });
         b -= 1;
       } else if (type === ADDED) {
         result.unshift({
           type: swapped ? DiffType.added : DiffType.removed,
-          value: A[a],
+          value: A[a]!,
         });
         a -= 1;
       } else {
-        result.unshift({ type: DiffType.common, value: A[a] });
+        result.unshift({ type: DiffType.common, value: A[a]! });
         a -= 1;
         b -= 1;
       }
@@ -201,13 +209,13 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return fp;
   }
 
-  while (fp[delta + offset].y < N) {
+  while (getPoint(delta + offset).y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
       fp[k + offset] = snake(
         k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
+        getPoint(k - 1 + offset),
+        getPoint(k + 1 + offset),
         offset,
         A,
         B,
@@ -216,8 +224,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     for (let k = delta + p; k > delta; --k) {
       fp[k + offset] = snake(
         k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
+        getPoint(k - 1 + offset),
+        getPoint(k + 1 + offset),
         offset,
         A,
         B,
@@ -225,8 +233,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     }
     fp[delta + offset] = snake(
       delta,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
+      getPoint(delta - 1 + offset),
+      getPoint(delta + 1 + offset),
       offset,
       A,
       B,
@@ -236,7 +244,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     ...prefixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
-    ...backTrace(A, B, fp[delta + offset], swapped),
+    ...backTrace(A, B, getPoint(delta + offset), swapped),
     ...suffixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
@@ -274,11 +282,16 @@ export function diffstr(A: string, B: string) {
 
       // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
       for (let i = 0; i < tokens.length - 1; i++) {
+        const token = tokens[i];
+        const tokenPlusTwo = tokens[i + 2];
         if (
-          !tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) &&
-          words.test(tokens[i + 2])
+          !tokens[i + 1] &&
+          token &&
+          tokenPlusTwo &&
+          words.test(token) &&
+          words.test(tokenPlusTwo)
         ) {
-          tokens[i] += tokens[i + 2];
+          tokens[i] += tokenPlusTwo;
           tokens.splice(i + 1, 2);
           i--;
         }
@@ -286,7 +299,7 @@ export function diffstr(A: string, B: string) {
       return tokens.filter((token) => token);
     } else {
       // Split string on new lines symbols
-      const tokens = [], lines = string.split(/(\n|\r\n)/);
+      const tokens: string[] = [], lines = string.split(/(\n|\r\n)/);
 
       // Ignore final empty token when text ends with a newline
       if (!lines[lines.length - 1]) {
@@ -294,11 +307,11 @@ export function diffstr(A: string, B: string) {
       }
 
       // Merge the content and line separators into single tokens
-      for (let i = 0; i < lines.length; i++) {
+      for (const [i, line] of lines.entries()) {
         if (i % 2) {
-          tokens[tokens.length - 1] += lines[i];
+          tokens[tokens.length - 1] += line;
         } else {
-          tokens.push(lines[i]);
+          tokens.push(line);
         }
       }
       return tokens;
@@ -314,13 +327,14 @@ export function diffstr(A: string, B: string) {
     return tokens.filter(({ type }) =>
       type === line.type || type === DiffType.common
     ).map((result, i, t) => {
+      const token = t[i - 1];
       if (
-        (result.type === DiffType.common) && (t[i - 1]) &&
-        (t[i - 1]?.type === t[i + 1]?.type) && /\s+/.test(result.value)
+        (result.type === DiffType.common) && token &&
+        (token.type === t[i + 1]?.type) && /\s+/.test(result.value)
       ) {
         return {
           ...result,
-          type: t[i - 1].type,
+          type: token.type,
         };
       }
       return result;
@@ -356,7 +370,7 @@ export function diffstr(A: string, B: string) {
       const tokenized = [
         tokenize(a.value, { wordDiff: true }),
         tokenize(b?.value ?? "", { wordDiff: true }),
-      ] as string[][];
+      ] as [string[], string[]];
       if (hasMoreRemovedLines) tokenized.reverse();
       tokens = diff(tokenized[0], tokenized[1]);
       if (
@@ -443,3 +457,7 @@ export function buildMessage(
 
   return messages;
 }
+
+Deno.bench("_diff", () => {
+  diff(["abc", "c"], ["abc", "bcd", "c"]);
+});
