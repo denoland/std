@@ -95,13 +95,6 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     { length: size },
     () => ({ y: -1, id: -1 }),
   );
-  function getPoint(index: number) {
-    const point = fp[index];
-    if (!point) {
-      throw Error(`Missing FarthestPoint at index ${index}`);
-    }
-    return point;
-  }
 
   /**
    * INFO:
@@ -159,37 +152,38 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   }
 
   function createFP(
-    slide: FarthestPoint,
-    down: FarthestPoint,
+    slide: FarthestPoint | undefined,
+    down: FarthestPoint | undefined,
     k: number,
     M: number,
   ): FarthestPoint {
     if (slide && slide.y === -1 && down && down.y === -1) {
       return { y: 0, id: 0 };
     }
-    if (
-      (down && down.y === -1) ||
+    const isAdding = (down?.y === -1) ||
       k === M ||
-      (slide && slide.y) > (down && down.y) + 1
-    ) {
+      (slide?.y || 0) > (down?.y || 0) + 1;
+    if (slide && isAdding) {
       const prev = slide.id;
       ptr++;
       routes[ptr] = prev;
       routes[ptr + diffTypesPtrOffset] = ADDED;
       return { y: slide.y, id: ptr };
-    } else {
+    } else if (down && !isAdding) {
       const prev = down.id;
       ptr++;
       routes[ptr] = prev;
       routes[ptr + diffTypesPtrOffset] = REMOVED;
       return { y: down.y + 1, id: ptr };
+    } else {
+      throw new Error("Unexpected FarthestPoint");
     }
   }
 
   function snake<T>(
     k: number,
-    slide: FarthestPoint,
-    down: FarthestPoint,
+    slide: FarthestPoint | undefined,
+    down: FarthestPoint | undefined,
     _offset: number,
     A: T[],
     B: T[],
@@ -209,13 +203,21 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return fp;
   }
 
-  while (getPoint(delta + offset).y < N) {
+  function ensureDefined<T>(item: T | undefined): T {
+    if (!item) {
+      throw Error("durr");
+    }
+    return item;
+  }
+
+  let currentFP: FarthestPoint = ensureDefined(fp[delta + offset]);
+  while (currentFP && currentFP.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
       fp[k + offset] = snake(
         k,
-        getPoint(k - 1 + offset),
-        getPoint(k + 1 + offset),
+        fp[k - 1 + offset],
+        fp[k + 1 + offset],
         offset,
         A,
         B,
@@ -224,8 +226,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     for (let k = delta + p; k > delta; --k) {
       fp[k + offset] = snake(
         k,
-        getPoint(k - 1 + offset),
-        getPoint(k + 1 + offset),
+        fp[k - 1 + offset],
+        fp[k + 1 + offset],
         offset,
         A,
         B,
@@ -233,18 +235,19 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     }
     fp[delta + offset] = snake(
       delta,
-      getPoint(delta - 1 + offset),
-      getPoint(delta + 1 + offset),
+      fp[delta - 1 + offset],
+      fp[delta + 1 + offset],
       offset,
       A,
       B,
     );
+    currentFP = ensureDefined(fp[delta + offset]);
   }
   return [
     ...prefixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
-    ...backTrace(A, B, getPoint(delta + offset), swapped),
+    ...backTrace(A, B, currentFP, swapped),
     ...suffixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
