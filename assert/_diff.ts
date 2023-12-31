@@ -457,7 +457,3 @@ export function buildMessage(
 
   return messages;
 }
-
-Deno.bench("_diff", () => {
-  diff(["abc", "c"], ["abc", "bcd", "c"]);
-});
