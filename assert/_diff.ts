@@ -176,7 +176,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
       routes[ptr + diffTypesPtrOffset] = REMOVED;
       return { y: down.y + 1, id: ptr };
     } else {
-      throw new Error("Unexpected FarthestPoint");
+      throw new Error("Unexpected missing FarthestPoint");
     }
   }
 
@@ -205,7 +205,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   function ensureDefined<T>(item: T | undefined): T {
     if (!item) {
-      throw Error("durr");
+      throw Error("Unexpected missing FarthestPoint");
     }
     return item;
   }
