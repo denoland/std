@@ -1,7 +1,10 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../assert/mod.ts";
-import { composeMiddleware, type MiddlewareHandler } from "./middleware.ts";
+import {
+  composeMiddleware,
+  type MiddlewareHandler,
+} from "./unstable_middleware.ts";
 
 const info: Deno.ServeHandlerInfo = {
   remoteAddr: { transport: "tcp", hostname: "foo", port: 200 },

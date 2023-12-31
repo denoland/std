@@ -30,7 +30,7 @@ export type MiddlewareHandler<T = undefined> = (
  * import {
  *   type MiddlewareHandler,
  *   composeMiddleware,
- * } from "https://deno.land/std@$STD_VERSION/http/middleware.ts";
+ * } from "https://deno.land/std@$STD_VERSION/http/unstable_middleware.ts";
  *
  * const middleware1: MiddlewareHandler = async (_request, { next }) => {
  *   const start = performance.now();
