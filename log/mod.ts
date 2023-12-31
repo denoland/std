@@ -151,7 +151,7 @@
  *     file: new log.handlers.FileHandler("WARNING", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
- *       formatter: "{levelName} {msg}",
+ *       formatter: (record) => `${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -196,7 +196,7 @@
  * log.setup({
  *   handlers: {
  *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{levelName}] {msg}",
+ *       formatter: (record) => `[${record.levelName}] ${record.msg}`,
  *     }),
  *
  *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
@@ -212,7 +212,7 @@
  *     }),
  *
  *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{loggerName}] - {levelName} {msg}",
+ *       formatter: (record) => `[${record.loggerName}] - ${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -357,7 +357,7 @@
  */
 
 import { Logger } from "./logger.ts";
-import type { GenericFunction } from "./logger.ts";
+import type { GenericFunction, LogRecord } from "./logger.ts";
 import {
   BaseHandler,
   ConsoleHandler,
@@ -439,7 +439,9 @@ export const handlers = {
   RotatingFileHandler,
 };
 
-export const formatters = {
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string;
+} = {
   jsonFormatter,
 };
 
@@ -563,8 +565,7 @@ export function setup(config: LogConfig) {
   // setup handlers
   const handlers = state.config.handlers || {};
 
-  for (const handlerName in handlers) {
-    const handler = handlers[handlerName];
+  for (const [handlerName, handler] of Object.entries(handlers)) {
     handler.setup();
     state.handlers.set(handlerName, handler);
   }
@@ -574,8 +575,7 @@ export function setup(config: LogConfig) {
 
   // setup loggers
   const loggers = state.config.loggers || {};
-  for (const loggerName in loggers) {
-    const loggerConfig = loggers[loggerName];
+  for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
     const handlerNames = loggerConfig.handlers || [];
     const handlers: BaseHandler[] = [];
 

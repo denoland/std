@@ -20,7 +20,7 @@
 export function lastIndexOfNeedle(
   source: Uint8Array,
   needle: Uint8Array,
-  start = source.length - 1,
+  start: number = source.length - 1,
 ): number {
   if (start < 0) {
     return -1;

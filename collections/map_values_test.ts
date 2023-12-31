@@ -13,7 +13,7 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "[collections/mapValues] no mutation",
+  name: "mapValues() handles no mutation",
   fn() {
     const object = { a: 5, b: true };
     mapValues(object, (it) => it ?? "nothing");
@@ -23,7 +23,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] empty input",
+  name: "mapValues() handles empty input",
   fn() {
     mapValuesTest(
       [{}, (it) => it],
@@ -33,7 +33,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] identity",
+  name: "mapValues() handles identity",
   fn() {
     mapValuesTest(
       [
@@ -54,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] falsy values",
+  name: "mapValues() handles falsy values",
   fn() {
     mapValuesTest<number, null | undefined | string | boolean>(
       [
@@ -77,7 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] normal mappers",
+  name: "mapValues() handles normal mappers",
   fn() {
     mapValuesTest(
       [
@@ -111,7 +111,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] preserves key type (Record)",
+  name: "mapValues() preserves key type (Record)",
   fn() {
     type Variants = "a" | "b";
     const input: Record<Variants, string> = { a: "a", b: "b" };
@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapValues] preserves key type (Partial Record)",
+  name: "mapValues() preserves key type (Partial Record)",
   fn() {
     type Variants = "a" | "b";
     const input: Partial<Record<Variants, string>> = { a: "a" };

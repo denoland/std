@@ -1,5 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
+import { OPERATORS } from "./_constants.ts";
+
 /**
  * The possible release types are used as an operator for the
  * increment function and as a result of the difference function.
@@ -17,17 +19,7 @@ export type ReleaseType =
 /**
  * SemVer comparison operators.
  */
-export type Operator =
-  | ""
-  | "="
-  | "=="
-  | "==="
-  | "!=="
-  | "!="
-  | ">"
-  | ">="
-  | "<"
-  | "<=";
+export type Operator = typeof OPERATORS[number];
 
 /**
  * The style to use when formatting a SemVer object into a string
@@ -49,8 +41,6 @@ export type FormatStyle =
 export interface Comparator {
   operator: Operator;
   semver: SemVer;
-  min: SemVer;
-  max: SemVer;
 }
 /**
  * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
@@ -58,7 +48,13 @@ export interface Comparator {
 export interface SemVerComparator {
   operator: Operator;
   semver: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
   min: SemVer;
+  /**
+   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
+   */
   max: SemVer;
 }
 
@@ -69,8 +65,8 @@ export interface SemVer {
   major: number;
   minor: number;
   patch: number;
-  prerelease: (string | number)[];
-  build: string[];
+  prerelease?: (string | number)[];
+  build?: string[];
 }
 
 type SemVerRangeAnd = SemVerComparator[];

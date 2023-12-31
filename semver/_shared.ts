@@ -1,7 +1,5 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 
-import { Operator } from "./types.ts";
-
 export function compareNumber(
   a: number,
   b: number,
@@ -13,8 +11,8 @@ export function compareNumber(
 }
 
 export function checkIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   // NOT having a prerelease is > having one
   // But NOT having a build is < having one
@@ -28,8 +26,8 @@ export function checkIdentifier(
 }
 
 export function compareIdentifier(
-  v1: ReadonlyArray<string | number>,
-  v2: ReadonlyArray<string | number>,
+  v1: ReadonlyArray<string | number> = [],
+  v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
   let i = 0;
   do {
@@ -119,7 +117,7 @@ const FULL_PLAIN = `v?${MAIN_VERSION}${PRERELEASE}?${BUILD}?`;
 
 export const FULL_REGEXP = new RegExp(`^${FULL_PLAIN}$`);
 
-const COMPARATOR = "((?:<|>)?=?)";
+const COMPARATOR = "(?:<|>)?=?";
 
 // Something like "2.*" or "1.2.x".
 // Note that "x.x" is a valid xRange identifier, meaning "any version"
@@ -129,25 +127,15 @@ const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|x|X|\\*`;
 export const XRANGE_PLAIN =
   `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
 
-export const XRANGE_REGEXP = new RegExp(
-  `^${COMPARATOR}\\s*${XRANGE_PLAIN}$`,
+// Meaning is "reasonably at or greater than" or "at least and backwards compatible with"
+export const OPERATOR_REGEXP = new RegExp(
+  `^(?<operator>~>?|\\^|${COMPARATOR})\\s*${XRANGE_PLAIN}$`,
 );
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-export const TILDE_REGEXP = new RegExp(`^(?:~>?)${XRANGE_PLAIN}$`);
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-export const CARET_REGEXP = new RegExp(`^(?:\\^)${XRANGE_PLAIN}$`);
 
 // A simple gt/lt/eq thing, or just "" to indicate "any version"
 export const COMPARATOR_REGEXP = new RegExp(
-  `^${COMPARATOR}\\s*(${FULL_PLAIN})$|^$`,
+  `^(?<operator>${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
 );
-
-// Star ranges basically just allow anything at all.
-export const STAR_REGEXP = /(<|>)?=?\s*\*/;
 
 /**
  * Returns true if the value is a valid SemVer number.
@@ -186,28 +174,29 @@ export function isValidString(value: unknown): value is string {
   );
 }
 
-/**
- * Checks to see if the value is a valid Operator string.
- *
- * Adds a type assertion if true.
- * @param value The value to check
- * @returns True if the value is a valid Operator string otherwise false.
- */
-export function isValidOperator(value: unknown): value is Operator {
-  if (typeof value !== "string") return false;
-  switch (value) {
-    case "":
-    case "=":
-    case "==":
-    case "===":
-    case "!==":
-    case "!=":
-    case ">":
-    case ">=":
-    case "<":
-    case "<=":
-      return true;
-    default:
-      return false;
+const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);
+export function parsePrerelease(prerelease: string) {
+  return prerelease
+    .split(".")
+    .filter((id) => id)
+    .map((id: string) => {
+      const num = parseInt(id);
+      if (id.match(NUMERIC_IDENTIFIER_REGEXP) && isValidNumber(num)) {
+        return num;
+      } else {
+        return id;
+      }
+    });
+}
+
+export function parseBuild(buildmetadata: string) {
+  return buildmetadata.split(".").filter((m) => m) ?? [];
+}
+
+export function parseNumber(input: string, errorMessage: string) {
+  const number = Number(input);
+  if (number > Number.MAX_SAFE_INTEGER || number < 0) {
+    throw new TypeError(errorMessage);
   }
+  return number;
 }

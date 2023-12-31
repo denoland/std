@@ -218,3 +218,8 @@ Deno.test("expect().toEqual same Set with object keys", () => {
   expect(data).toEqual(data);
   expect(new Set(data)).toEqual(new Set(data));
 });
+
+Deno.test("expect().toEqual() does not throw when a key with undfined value exists in only one of values", () => {
+  // bar: undefined is ignored in comparison
+  expect({ foo: 1, bar: undefined }).toEqual({ foo: 1 });
+});
