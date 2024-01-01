@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
 import type { BaseHandler } from "./handlers.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertNotStrictEquals } from "../assert/assert_not_strict_equals.ts";
 import { assertStrictEquals } from "../assert/assert_strict_equals.ts";

@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // This module was heavily inspired by ua-parser-js
 // (https://www.npmjs.com/package/ua-parser-js) which is MIT licensed and
-// Copyright (c) 2012-2023 Faisal Salman <f@faisalman.com>
+// Copyright (c) 2012-2024 Faisal Salman <f@faisalman.com>
 
 /** Provides {@linkcode UserAgent} and related types to be able to provide a
  * structured understanding of a user agent string.

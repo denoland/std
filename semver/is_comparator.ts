@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { isSemVer } from "./is_semver.ts";
 import { OPERATORS } from "./_constants.ts";
 import type { Comparator } from "./types.ts";

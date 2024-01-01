@@ -1,6 +1,6 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { validateBinaryLike } from "./_util.ts";
