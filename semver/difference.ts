@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { ReleaseType, SemVer } from "./types.ts";
 import { eq } from "./eq.ts";
 

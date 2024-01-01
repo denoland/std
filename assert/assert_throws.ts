@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertIsError } from "./assert_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
