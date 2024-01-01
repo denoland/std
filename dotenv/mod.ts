@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Load environment variables from a `.env` file.  Loaded variables are accessible
  * in a configuration object returned by the `load()` function, as well as optionally

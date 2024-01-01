@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { diff, diffstr, DiffType } from "./_diff.ts";
 import { assertEquals } from "./assert_equals.ts";
 

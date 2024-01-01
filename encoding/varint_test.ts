@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 
