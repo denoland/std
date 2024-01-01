@@ -38,10 +38,10 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
   const common: T[] = [];
   if (A.length === 0 || B.length === 0) return [];
   for (let i = 0; i < Math.min(A.length, B.length); i += 1) {
-    if (
-      A[reverse ? A.length - i - 1 : i] === B[reverse ? B.length - i - 1 : i]
-    ) {
-      common.push(A[reverse ? A.length - i - 1 : i]!);
+    const a = reverse ? A[A.length - i - 1] : A[i];
+    const b = reverse ? B[B.length - i - 1] : B[i];
+    if (a !== undefined && a === b) {
+      common.push(a);
     } else {
       return common;
     }
