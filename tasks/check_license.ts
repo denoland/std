@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 // Copied from std/_tools/check_license.ts
 
 import { walk } from "std/fs/walk.ts";
@@ -14,10 +14,10 @@ const ROOT = new URL("../", import.meta.url);
 const CHECK = Deno.args.includes("--check");
 const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
-  `// Copyright ([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
+  `// Copyright 2023-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
 );
 const COPYRIGHT =
-  `// Copyright ${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
+  `// Copyright 2023-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
 let failed = false;
 

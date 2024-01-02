@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import IconBrandFacebook from "tabler_icons_tsx/brand-facebook.tsx";
 import IconBrandLinkedin from "tabler_icons_tsx/brand-linkedin.tsx";
 import IconBrandReddit from "tabler_icons_tsx/brand-reddit.tsx";

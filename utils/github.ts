@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { createGitHubOAuthConfig } from "kv_oauth/mod.ts";
 import { BadRequestError } from "@/utils/http.ts";
 

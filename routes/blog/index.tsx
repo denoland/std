@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { defineRoute } from "$fresh/server.ts";
 import { getPosts, type Post } from "@/utils/posts.ts";
 import Head from "@/components/Head.tsx";

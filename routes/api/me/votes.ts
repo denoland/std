@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { Handlers } from "$fresh/server.ts";
 import { collectValues, listItemsVotedByUser } from "@/utils/db.ts";
 import { SignedInState } from "@/plugins/session.ts";

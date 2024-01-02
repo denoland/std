@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { Plugin } from "$fresh/server.ts";
 import type { FreshContext } from "$fresh/server.ts";
 import { getSessionId } from "kv_oauth/mod.ts";

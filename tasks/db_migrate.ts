@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * This script is used to perform migration jobs on the database. These jobs
  * can be performed on remote KV instances using

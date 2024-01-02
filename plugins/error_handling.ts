@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { Plugin } from "$fresh/server.ts";
 import type { State } from "@/plugins/session.ts";
 import { BadRequestError, redirect, UnauthorizedError } from "@/utils/http.ts";

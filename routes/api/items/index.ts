@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 
 import { collectValues, listItems } from "@/utils/db.ts";
 import { getCursor } from "@/utils/http.ts";

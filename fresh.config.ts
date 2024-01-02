@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import tailwind from "$fresh/plugins/tailwind.ts";
 import kvOAuthPlugin from "./plugins/kv_oauth.ts";
 import sessionPlugin from "./plugins/session.ts";

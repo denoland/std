@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import Header from "@/components/Header.tsx";
 import Footer from "@/components/Footer.tsx";
 import type { State } from "@/plugins/session.ts";

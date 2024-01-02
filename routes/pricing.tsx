@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { State } from "@/plugins/session.ts";
 import { assertIsPrice, isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import { formatCurrency } from "@/utils/display.ts";

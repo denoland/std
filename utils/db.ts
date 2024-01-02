@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { ulid } from "std/ulid/mod.ts";
 
 const DENO_KV_PATH_KEY = "DENO_KV_PATH";

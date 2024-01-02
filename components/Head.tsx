@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { Head as _Head } from "$fresh/runtime.ts";
 import Meta, { type MetaProps } from "./Meta.tsx";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants.ts";

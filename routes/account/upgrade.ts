@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { defineRoute } from "$fresh/server.ts";
 import type { SignedInState } from "@/plugins/session.ts";
 import { redirect } from "@/utils/http.ts";
