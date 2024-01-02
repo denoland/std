@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import { OPERATOR_REGEXP, XRANGE } from "./_shared.ts";
+import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 function isWildcard(id: string): boolean {
@@ -285,7 +285,7 @@ function handleEqualOperator(groups: RegExpGroups) {
 }
 
 function parseRangeString(string: string) {
-  const groups = string.match(OPERATOR_REGEXP)?.groups as RegExpGroups;
+  const groups = string.match(OPERATOR_XRANGE_REGEXP)?.groups as RegExpGroups;
   if (!groups) return parseComparator(string);
 
   switch (groups.operator) {
