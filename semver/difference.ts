@@ -2,31 +2,27 @@
 import type { ReleaseType, SemVer } from "./types.ts";
 import { eq } from "./eq.ts";
 
-/** Returns difference between two versions by the release type, or
- * `undefined` if the versions are the same. */
+/**
+ * Returns difference between two versions by the release type, or `undefined` if the versions are the same.
+ */
 export function difference(
-  s0: SemVer,
-  s1: SemVer,
+  version1: SemVer,
+  version2: SemVer,
 ): ReleaseType | undefined {
-  if (eq(s0, s1)) {
-    return undefined;
-  } else {
-    let prefix = "";
-    let defaultResult: ReleaseType | undefined = undefined;
-    if (s0 && s1) {
-      if ((s0.prerelease ?? []).length || (s1.prerelease ?? []).length) {
-        prefix = "pre";
-        defaultResult = "prerelease";
-      }
+  if (eq(version1, version2)) return undefined;
 
-      for (const key in s0) {
-        if (key === "major" || key === "minor" || key === "patch") {
-          if (s0[key] !== s1[key]) {
-            return (prefix + key) as ReleaseType;
-          }
-        }
-      }
-    }
-    return defaultResult; // may be undefined
+  const hasPrerelease = version1.prerelease?.length ||
+    version2.prerelease?.length;
+
+  if (version1.major !== version2.major) {
+    return hasPrerelease ? "premajor" : "major";
   }
+  if (version1.minor !== version2.minor) {
+    return hasPrerelease ? "preminor" : "minor";
+  }
+  if (version1.patch !== version2.patch) {
+    return hasPrerelease ? "prepatch" : "patch";
+  }
+
+  return hasPrerelease ? "prerelease" : undefined;
 }
