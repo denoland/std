@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { ReleaseType, SemVer } from "./types.ts";
-import { eq } from "./eq.ts";
+import { compareIdentifier } from "./_shared.ts";
 
 /**
  * Returns difference between two versions by the release type, or `undefined` if the versions are the same.
@@ -9,8 +9,6 @@ export function difference(
   version1: SemVer,
   version2: SemVer,
 ): ReleaseType | undefined {
-  if (eq(version1, version2)) return undefined;
-
   const hasPrerelease = version1.prerelease?.length ||
     version2.prerelease?.length;
 
@@ -24,5 +22,7 @@ export function difference(
     return hasPrerelease ? "prepatch" : "patch";
   }
 
-  return hasPrerelease ? "prerelease" : undefined;
+  if (compareIdentifier(version1.prerelease, version2.prerelease) !== 0) {
+    return "prerelease";
+  }
 }
