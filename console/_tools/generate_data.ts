@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-write
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
 import { assert } from "../../assert/assert.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * {@linkcode parse} and {@linkcode stringify} for handling
  * [INI](https://en.wikipedia.org/wiki/INI_file) encoded data, such as the

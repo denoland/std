@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { GlobOptions } from "../path/glob.ts";
 import { globToRegExp } from "../path/glob_to_regexp.ts";
 import { joinGlobs } from "../path/join_globs.ts";

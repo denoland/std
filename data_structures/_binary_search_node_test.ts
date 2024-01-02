@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../assert/mod.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 
