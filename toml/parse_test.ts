@@ -25,7 +25,7 @@ import {
 import { parse } from "./parse.ts";
 
 Deno.test({
-  name: "[TOML parser] Scanner",
+  name: "Scanner()",
   fn() {
     const scanner = new Scanner(" # comment\n\n\na \nb");
     scanner.nextUntilChar({ inline: true });
@@ -43,7 +43,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] bare key",
+  name: "parse() handles bare key",
   fn() {
     const parse = ParserFactory(BareKey);
     assertEquals(parse("A-Za-z0-9_-"), "A-Za-z0-9_-");
@@ -53,7 +53,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] basic string",
+  name: "parse() handles basic string",
   fn() {
     const parse = ParserFactory(BasicString);
     assertEquals(
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] literal string",
+  name: "parse() handles literal string",
   fn() {
     const parse = ParserFactory(LiteralString);
     assertEquals(parse("'a\\n'"), "a\\n");
@@ -79,7 +79,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] multi-line basic string",
+  name: "parse() handles multi-line basic string",
   fn() {
     const parse = ParserFactory(MultilineBasicString);
     assertEquals(
@@ -100,7 +100,7 @@ Violets are\\tblue"""`),
 });
 
 Deno.test({
-  name: "[TOML parser] multi-line basic string (CRLF)",
+  name: "parse() handles multi-line basic string (CRLF)",
   fn() {
     const parse = ParserFactory(MultilineBasicString);
     assertEquals(
@@ -121,7 +121,7 @@ Violets are\\tblue"""`),
 });
 
 Deno.test({
-  name: "[TOML parser] multi-line literal string",
+  name: "parse() handles multi-line literal string",
   fn() {
     const parse = ParserFactory(MultilineLiteralString);
     assertEquals(
@@ -134,7 +134,7 @@ Violets are\\tblue'''`),
 });
 
 Deno.test({
-  name: "[TOML parser] multi-line literal string (CRLF)",
+  name: "parse() handles multi-line literal string (CRLF)",
   fn() {
     const parse = ParserFactory(MultilineLiteralString);
     assertEquals(
@@ -147,7 +147,7 @@ Violets are\\tblue'''`),
 });
 
 Deno.test({
-  name: "[TOML parser] symbols",
+  name: "parse() handles symbols",
   fn() {
     const parse = ParserFactory(Symbols);
     assertEquals(parse("true"), true);
@@ -159,7 +159,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] dotted key",
+  name: "parse() handles dotted key",
   fn() {
     const parse = ParserFactory(DottedKey);
     assertEquals(parse("a . b . c"), ["a", "b", "c"]);
@@ -171,7 +171,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] table",
+  name: "parse() handles table",
   fn() {
     const parse = ParserFactory(Table);
     assertEquals(
@@ -203,7 +203,7 @@ fizz.buzz = true
 });
 
 Deno.test({
-  name: "[TOML parser] integer",
+  name: "parse() handles integer",
   fn() {
     const parse = ParserFactory(Integer);
     assertEquals(parse("123"), 123);
@@ -223,7 +223,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] float",
+  name: "parse() handles float",
   fn() {
     const parse = ParserFactory(Float);
     assertEquals(parse("+1.0"), 1.0);
@@ -240,7 +240,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] date and date time",
+  name: "parse() handles date and date time",
   fn() {
     const parse = ParserFactory(DateTime);
     assertEquals(
@@ -272,7 +272,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] local time",
+  name: "parse() handles local time",
   fn() {
     const parse = ParserFactory(LocalTime);
     assertEquals(parse("07:32:00"), "07:32:00");
@@ -282,7 +282,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] value",
+  name: "parse() handles value",
   fn() {
     const parse = ParserFactory(Value);
     assertEquals(parse("1"), 1);
@@ -295,7 +295,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] key value pair",
+  name: "parse() handles key value pair",
   fn() {
     const parse = ParserFactory(Pair);
     assertEquals(parse("key = 'value'"), { key: "value" });
@@ -306,7 +306,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] array",
+  name: "parse() handles array",
   fn() {
     const parse = ParserFactory(ArrayValue);
     assertEquals(parse("[]"), []);
@@ -340,7 +340,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] inline table",
+  name: "parse() handles inline table",
   fn() {
     const parse = ParserFactory(InlineTable);
     assertEquals(parse(`{ first = "Tom", last = "Preston-Werner" }`), {
@@ -355,7 +355,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] Utils.deepAssignWithTable",
+  name: "parse() handles Utils.deepAssignWithTable",
   fn() {
     const source = {
       foo: {
@@ -406,7 +406,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] Utils.deepAssignWithTable / TableArray",
+  name: "parse() handles Utils.deepAssignWithTable / TableArray",
   fn() {
     const source = {
       foo: {},
@@ -459,7 +459,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML parser] error message",
+  name: "parse() handles error message",
   fn() {
     assertThrows(
       () => parse("foo = 1\nbar ="),
