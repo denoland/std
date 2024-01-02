@@ -136,7 +136,7 @@ export const XRANGE =
  * An operator (`~`, `~>`, `^`, `=`, `<`, `<=`, `>`, or `>=`), followed by an x-range.
  * @example "~1.x.x", "^1.2.*", ">=1.2.3"
  */
-export const OPERATOR_REGEXP = new RegExp(
+export const OPERATOR_XRANGE_REGEXP = new RegExp(
   `^(?<operator>~>?|\\^|${COMPARATOR})\\s*${XRANGE}$`,
 );
 
