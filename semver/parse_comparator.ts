@@ -50,5 +50,5 @@ export function parseComparator(comparator: string): SemVerComparator {
   const min = comparatorMin(semver, operator);
   const max = comparatorMax(semver, operator);
 
-  return { operator, semver, min, max };
+  return { ...semver, operator, semver, min, max };
 }
