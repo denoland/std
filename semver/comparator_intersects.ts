@@ -14,10 +14,10 @@ export function comparatorIntersects(
   c0: SemVerComparator,
   c1: SemVerComparator,
 ): boolean {
-  const l0 = comparatorMin(c0.semver, c0.operator);
-  const l1 = comparatorMax(c0.semver, c0.operator);
-  const r0 = comparatorMin(c1.semver, c1.operator);
-  const r1 = comparatorMax(c1.semver, c1.operator);
+  const l0 = comparatorMin(c0);
+  const l1 = comparatorMax(c0);
+  const r0 = comparatorMin(c1);
+  const r1 = comparatorMax(c1);
 
   // We calculate the min and max ranges of both comparators.
   // The minimum min is 0.0.0, the maximum max is ANY.

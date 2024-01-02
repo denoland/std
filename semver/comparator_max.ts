@@ -1,7 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Operator, SemVer } from "./types.ts";
+import type { Comparator, Operator, SemVer } from "./types.ts";
 import { ANY, INVALID, MAX } from "./constants.ts";
+import { isComparator } from "./is_comparator.ts";
 
+/**
+ * @deprecated (will be removed in 0.213.0) Use a {@linkcode Comparator} argument instead.
+ */
+export function comparatorMax(semver: SemVer, operator: Operator): SemVer;
 /**
  * The maximum version that could match this comparator.
  *
@@ -9,7 +14,16 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  * an out of range semver will be returned.
  * @returns the version, the MAX version or the next smallest patch version
  */
-export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
+export function comparatorMax(comparator: Comparator): SemVer;
+export function comparatorMax(
+  comparator: SemVer | Comparator,
+  op?: Operator,
+): SemVer {
+  if (!isComparator(comparator)) {
+    comparator = { operator: op as Operator, semver: comparator };
+  }
+  const { operator, semver } = comparator;
+
   if (semver === ANY) {
     return MAX;
   }

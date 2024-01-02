@@ -17,8 +17,8 @@ export function rangeMax(range: SemVerRange): SemVer | undefined {
   return sort(
     range.ranges.map((r) =>
       sort(
-        r.filter((c) => testRange(comparatorMax(c.semver, c.operator), range))
-          .map((c) => comparatorMax(c.semver, c.operator)),
+        r.filter((c) => testRange(comparatorMax(c), range))
+          .map((c) => comparatorMax(c)),
       ).shift()!
     ),
   ).filter((v) => v).pop() ?? INVALID;

@@ -15,8 +15,8 @@ export function testRange(version: SemVer, range: SemVerRange): boolean {
   for (const r of range.ranges) {
     if (
       r.every((c) =>
-        gte(version, comparatorMin(c.semver, c.operator)) &&
-        lte(version, comparatorMax(c.semver, c.operator))
+        gte(version, comparatorMin(c)) &&
+        lte(version, comparatorMax(c))
       )
     ) {
       return true;

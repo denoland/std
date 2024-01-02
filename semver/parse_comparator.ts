@@ -32,7 +32,6 @@ export function parseComparator(comparator: string): SemVerComparator {
 
   const {
     operator = "",
-
     prerelease,
     buildmetadata,
   } = groups as REGEXP_GROUPS;
@@ -47,8 +46,8 @@ export function parseComparator(comparator: string): SemVerComparator {
     }
     : ANY;
 
-  const min = comparatorMin(semver, operator);
-  const max = comparatorMax(semver, operator);
+  const min = comparatorMin({ semver, operator });
+  const max = comparatorMax({ semver, operator });
 
   return { operator, semver, min, max };
 }
