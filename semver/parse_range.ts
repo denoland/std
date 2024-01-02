@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
 import type { SemVerRange } from "./types.ts";
-import { OPERATOR_REGEXP, XRANGE_PLAIN } from "./_shared.ts";
+import { OPERATOR_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
 function isWildcard(id: string): boolean {
@@ -21,7 +21,7 @@ function parseHyphenRange(range: string) {
   // remove spaces between comparator and groups
   range = range.replace(/(?<=<|>|=) +/, "");
 
-  const leftMatch = range.match(new RegExp(`^${XRANGE_PLAIN}`));
+  const leftMatch = range.match(new RegExp(`^${XRANGE}`));
   const leftGroup = leftMatch?.groups;
   if (!leftGroup) return range.split(/\s+/);
   const leftLength = leftMatch[0].length;
@@ -29,7 +29,7 @@ function parseHyphenRange(range: string) {
   if (!hyphenMatch) return range.split(/\s+/);
   const hyphenLength = hyphenMatch[0].length;
   const rightMatch = range.slice(leftLength + hyphenLength).match(
-    new RegExp(`^${XRANGE_PLAIN}\\s*$`),
+    new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
   if (!rightGroups) return range.split(/\s+/);
