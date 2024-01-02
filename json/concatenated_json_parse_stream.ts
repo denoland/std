@@ -33,9 +33,9 @@ const primitives = new Map(
  */
 export class ConcatenatedJsonParseStream
   implements TransformStream<string, JsonValue> {
-  /** a writable stream of byte data */
+  /** A writable stream of byte data */
   readonly writable: WritableStream<string>;
-  /** a readable stream of byte data */
+  /** A readable stream of byte data */
   readonly readable: ReadableStream<JsonValue>;
   /**
    * Constructs a new instance.
