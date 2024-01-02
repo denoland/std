@@ -107,9 +107,9 @@ const BUILD =
 /**
  * A version, followed optionally by a pre-release version and build metadata.
  */
-const SEMVER = `v?${VERSION_CORE}${PRERELEASE}?${BUILD}?`;
+const FULL_VERSION = `v?${VERSION_CORE}${PRERELEASE}?${BUILD}?`;
 
-export const FULL_REGEXP = new RegExp(`^${SEMVER}$`);
+export const FULL_REGEXP = new RegExp(`^${FULL_VERSION}$`);
 
 /**
  * A comparator.
@@ -145,7 +145,7 @@ export const OPERATOR_REGEXP = new RegExp(
  * @example ">1.2.3"
  */
 export const COMPARATOR_REGEXP = new RegExp(
-  `^(?<operator>${COMPARATOR})\\s*(${SEMVER})$|^$`,
+  `^(?<operator>${COMPARATOR})\\s*(${FULL_VERSION})$|^$`,
 );
 
 /**
