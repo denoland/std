@@ -56,7 +56,8 @@ function isBrankString(str: string) {
  * ```
  */
 export class JsonParseStream extends TransformStream<string, JsonValue> {
-  /**
+  /** 
+   * Construct new instance
    * @param options
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.

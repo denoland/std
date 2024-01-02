@@ -33,9 +33,12 @@ const primitives = new Map(
  */
 export class ConcatenatedJsonParseStream
   implements TransformStream<string, JsonValue> {
+  /** a writable stream of byte data */
   readonly writable: WritableStream<string>;
+  /** a readable stream of byte data */
   readonly readable: ReadableStream<JsonValue>;
   /**
+   * Constructs a new instance.
    * @param options
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.

@@ -82,6 +82,9 @@ export interface StringifyStreamOptions {
  * ```
  */
 export class JsonStringifyStream extends TransformStream<unknown, string> {
+  /** 
+   * Construct new instance
+   */
   constructor({
     prefix = "",
     suffix = "\n",
