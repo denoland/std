@@ -6,13 +6,16 @@ import { increment } from "./increment.ts";
 import { isComparator } from "./is_comparator.ts";
 
 /**
+ * The minimum semantic version that could match this comparator
+ * @param semver The semantic version of the comparator
+ * @param operator The operator of the comparator
+ * @returns The minimum valid semantic version
  * @deprecated (will be removed in 0.213.0) Use a {@linkcode Comparator} argument instead.
  */
 export function comparatorMin(semver: SemVer, operator: Operator): SemVer;
 /**
  * The minimum semantic version that could match this comparator
- * @param semver The semantic version of the comparator
- * @param operator The operator of the comparator
+ * @param comparator The comparator
  * @returns The minimum valid semantic version
  */
 export function comparatorMin(comparator: Comparator): SemVer;
