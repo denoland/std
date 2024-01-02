@@ -25,7 +25,7 @@ import {
 import { parse } from "./parse.ts";
 
 Deno.test({
-  name: "Scanner()",
+  name: "Scanner",
   fn() {
     const scanner = new Scanner(" # comment\n\n\na \nb");
     scanner.nextUntilChar({ inline: true });
