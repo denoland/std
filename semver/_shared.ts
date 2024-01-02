@@ -121,9 +121,9 @@ const COMPARATOR = "(?:<|>)?=?";
  * A wildcard identifier.
  * @example "x", "X", "*"
  */
-const WILRDCARD_IDENTIFIER = `x|X|\\*`;
+const WILDCARD_IDENTIFIER = `x|X|\\*`;
 
-const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|${WILRDCARD_IDENTIFIER}`;
+const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|${WILDCARD_IDENTIFIER}`;
 
 /**
  * A version that can contain wildcards.
