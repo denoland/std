@@ -15,7 +15,7 @@ function formatNumber(value: number) {
 /**
  * @deprecated (will be removed in 0.213.0)
  */
-export function format(semver: SemVer, style?: FormatStyle): string;
+export function format(semver: SemVer, style: FormatStyle): string;
 /**
  * Format a SemVer object into a string.
  *
@@ -26,12 +26,11 @@ export function format(semver: SemVer, style?: FormatStyle): string;
  * @param semver The semantic version to format
  * @returns The string representation of a semantic version.
  */
-export function format(semver: SemVer, style?: FormatStyle): string {
+export function format(semver: SemVer): string;
+export function format(semver: SemVer, style: FormatStyle = "full"): string {
   if (semver === ANY) {
     return "*";
   }
-
-  style ??= "full";
 
   const major = formatNumber(semver.major);
   const minor = formatNumber(semver.minor);
