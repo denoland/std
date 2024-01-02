@@ -2,9 +2,7 @@
 import { parseBuild } from "./_shared.ts";
 import type { ReleaseType, SemVer } from "./types.ts";
 
-function bumpPrereleaseNumber(
-  prerelease: ReadonlyArray<string | number> = [],
-) {
+function bumpPrereleaseNumber(prerelease: ReadonlyArray<string | number> = []) {
   const values = [...prerelease];
 
   let index = values.length;
@@ -65,7 +63,7 @@ function bumpPrerelease(
 export function increment(
   version: SemVer,
   release: ReleaseType,
-  prerelease = "",
+  prerelease?: string,
   buildmetadata?: string,
 ): SemVer {
   const build = buildmetadata !== undefined
