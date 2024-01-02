@@ -12,7 +12,7 @@ const TESTSUITE = [
   [new URL("https://deno.land/std/assert/mod"), ""],
 ];
 
-Deno.test("extname", function () {
+Deno.test("extname()", function () {
   for (const [test_url, expected] of TESTSUITE) {
     assertEquals(url.extname(test_url), expected);
   }
