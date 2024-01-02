@@ -75,7 +75,31 @@ function assertRedirect(response: Response, location: string) {
   assert(response.headers.get("location")?.includes(location));
 }
 
+function setupEnv(overrides: Record<string, string | null> = {}) {
+  const defaults: Record<string, string> = {
+    "STRIPE_SECRET_KEY": crypto.randomUUID(),
+    "STRIPE_WEBHOOK_SECRET": crypto.randomUUID(),
+    "STRIPE_PREMIUM_PLAN_PRICE_ID": crypto.randomUUID(),
+    "GITHUB_CLIENT_ID": crypto.randomUUID(),
+    "GITHUB_CLIENT_SECRET": crypto.randomUUID(),
+    // Add more default values here
+  };
+
+  // Merge defaults and overrides
+  const combinedEnvVars = { ...defaults, ...overrides };
+
+  // Set or delete environment variables
+  for (const [key, value] of Object.entries(combinedEnvVars)) {
+    if (value === null) {
+      Deno.env.delete(key);
+    } else {
+      Deno.env.set(key, value);
+    }
+  }
+}
+
 Deno.test("[e2e] security headers", async () => {
+  setupEnv();
   const resp = await handler(new Request("http://localhost"));
 
   assertEquals(
@@ -92,6 +116,7 @@ Deno.test("[e2e] security headers", async () => {
 });
 
 Deno.test("[e2e] GET /", async () => {
+  setupEnv();
   const resp = await handler(new Request("http://localhost"));
 
   assertEquals(resp.status, STATUS_CODE.OK);
@@ -99,6 +124,7 @@ Deno.test("[e2e] GET /", async () => {
 });
 
 Deno.test("[e2e] GET /callback", async (test) => {
+  setupEnv();
   const login = crypto.randomUUID();
   const sessionId = crypto.randomUUID();
 
@@ -180,6 +206,7 @@ Deno.test("[e2e] GET /callback", async (test) => {
 });
 
 Deno.test("[e2e] GET /blog", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/blog"),
   );
@@ -189,14 +216,21 @@ Deno.test("[e2e] GET /blog", async () => {
 });
 
 Deno.test("[e2e] GET /pricing", async () => {
-  const req = new Request("http://localhost/pricing");
-  const resp = await handler(req);
+  setupEnv({
+    "STRIPE_SECRET_KEY": null,
+    "STRIPE_PREMIUM_PLAN_PRICE_ID": null,
+  });
+  const handler = await createHandler(manifest, options);
+  const resp = await handler(
+    new Request("http://localhost/pricing"),
+  );
 
   assertEquals(resp.status, STATUS_CODE.NotFound);
   assertHtml(resp);
 });
 
 Deno.test("[e2e] GET /signin", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/signin"),
   );
@@ -208,6 +242,7 @@ Deno.test("[e2e] GET /signin", async () => {
 });
 
 Deno.test("[e2e] GET /signout", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/signout"),
   );
@@ -216,6 +251,7 @@ Deno.test("[e2e] GET /signout", async () => {
 });
 
 Deno.test("[e2e] GET /dashboard", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard";
   const user = randomUser();
   await createUser(user);
@@ -238,6 +274,7 @@ Deno.test("[e2e] GET /dashboard", async (test) => {
 });
 
 Deno.test("[e2e] GET /dashboard/stats", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard/stats";
   const user = randomUser();
   await createUser(user);
@@ -262,6 +299,7 @@ Deno.test("[e2e] GET /dashboard/stats", async (test) => {
 });
 
 Deno.test("[e2e] GET /dashboard/users", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard/users";
   const user = randomUser();
   await createUser(user);
@@ -286,6 +324,7 @@ Deno.test("[e2e] GET /dashboard/users", async (test) => {
 });
 
 Deno.test("[e2e] GET /submit", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/submit"),
   );
@@ -295,6 +334,7 @@ Deno.test("[e2e] GET /submit", async () => {
 });
 
 Deno.test("[e2e] GET /feed", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/feed"),
   );
@@ -304,6 +344,7 @@ Deno.test("[e2e] GET /feed", async () => {
 });
 
 Deno.test("[e2e] GET /api/items", async () => {
+  setupEnv();
   const item1 = randomItem();
   const item2 = randomItem();
   await createItem(item1);
@@ -318,6 +359,7 @@ Deno.test("[e2e] GET /api/items", async () => {
 });
 
 Deno.test("[e2e] POST /submit", async (test) => {
+  setupEnv();
   const url = "http://localhost/submit";
   const user = randomUser();
   await createUser(user);
@@ -385,6 +427,7 @@ Deno.test("[e2e] POST /submit", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/items/[id]", async (test) => {
+  setupEnv();
   const item = randomItem();
   const req = new Request("http://localhost/api/items/" + item.id);
 
@@ -406,6 +449,7 @@ Deno.test("[e2e] GET /api/items/[id]", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/users", async () => {
+  setupEnv();
   const user1 = randomUser();
   const user2 = randomUser();
   await createUser(user1);
@@ -422,6 +466,7 @@ Deno.test("[e2e] GET /api/users", async () => {
 });
 
 Deno.test("[e2e] GET /api/users/[login]", async (test) => {
+  setupEnv();
   const user = randomUser();
   const req = new Request("http://localhost/api/users/" + user.login);
 
@@ -444,6 +489,7 @@ Deno.test("[e2e] GET /api/users/[login]", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
+  setupEnv();
   const user = randomUser();
   const item: Item = {
     ...randomItem(),
@@ -472,6 +518,7 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
 });
 
 Deno.test("[e2e] POST /api/vote", async (test) => {
+  setupEnv();
   const item = randomItem();
   const user = randomUser();
   await createItem(item);
@@ -550,7 +597,9 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   const url = "http://localhost/api/stripe-webhooks";
 
   await test.step("serves not found response if Stripe is disabled", async () => {
-    Deno.env.delete("STRIPE_SECRET_KEY");
+    setupEnv(
+      { "STRIPE_SECRET_KEY": null },
+    );
     const resp = await handler(new Request(url, { method: "POST" }));
 
     assertEquals(resp.status, STATUS_CODE.NotFound);
@@ -559,7 +608,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("serves bad request response if `Stripe-Signature` header is missing", async () => {
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv();
     const resp = await handler(new Request(url, { method: "POST" }));
 
     assertEquals(resp.status, STATUS_CODE.BadRequest);
@@ -568,7 +617,9 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("serves internal server error response if `STRIPE_WEBHOOK_SECRET` environment variable is not set", async () => {
-    Deno.env.delete("STRIPE_WEBHOOK_SECRET");
+    setupEnv(
+      { "STRIPE_WEBHOOK_SECRET": null },
+    );
     const resp = await handler(
       new Request(url, {
         method: "POST",
@@ -585,7 +636,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("serves bad request response if the event payload is invalid", async () => {
-    Deno.env.set("STRIPE_WEBHOOK_SECRET", crypto.randomUUID());
+    setupEnv();
     const resp = await handler(
       new Request(url, {
         method: "POST",
@@ -728,6 +779,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 });
 
 Deno.test("[e2e] GET /account", async (test) => {
+  setupEnv();
   const url = "http://localhost/account";
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
@@ -768,8 +820,8 @@ Deno.test("[e2e] GET /account", async (test) => {
 });
 
 Deno.test("[e2e] GET /account/manage", async (test) => {
+  setupEnv();
   const url = "http://localhost/account/manage";
-  Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
@@ -816,6 +868,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
 });
 
 Deno.test("[e2e] GET /account/upgrade", async (test) => {
+  setupEnv();
   const url = "http://localhost/account/upgrade";
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
@@ -828,8 +881,10 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
   await createUser(user);
 
   await test.step("serves internal server error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
-    Deno.env.delete("STRIPE_PREMIUM_PLAN_PRICE_ID");
+    setupEnv(
+      { "STRIPE_PREMIUM_PLAN_PRICE_ID": null },
+    );
+
     const resp = await handler(
       new Request(url, {
         headers: { cookie: "site-session=" + user.sessionId },
@@ -841,8 +896,10 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
   });
 
   await test.step("serves not found response if Stripe is disabled", async () => {
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
-    Deno.env.delete("STRIPE_SECRET_KEY");
+    setupEnv(
+      { "STRIPE_SECRET_KEY": null },
+    );
+
     const resp = await handler(
       new Request(url, {
         headers: { cookie: "site-session=" + user.sessionId },
@@ -854,8 +911,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
   });
 
   await test.step("serves not found response if Stripe returns a `null` URL", async () => {
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv();
 
     const session = { url: null } as Stripe.Response<
       Stripe.Checkout.Session
@@ -880,8 +936,9 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 
   await test.step("redirects to the URL returned by Stripe after creating a checkout session", async () => {
     const priceId = crypto.randomUUID();
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", priceId);
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv(
+      { "STRIPE_PREMIUM_PLAN_PRICE_ID": priceId },
+    );
 
     const session = { url: "https://stubbing-returned-url" } as Stripe.Response<
       Stripe.Checkout.Session
@@ -905,6 +962,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/me/votes", async () => {
+  setupEnv();
   const user = randomUser();
   await createUser(user);
   const item1 = randomItem();
@@ -932,8 +990,9 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
 });
 
 Deno.test("[e2e] GET /welcome", async () => {
-  Deno.env.delete("GITHUB_CLIENT_ID");
-
+  setupEnv(
+    { "GITHUB_CLIENT_ID": null },
+  );
   const req = new Request("http://localhost/");
   const resp = await handler(req);
 
