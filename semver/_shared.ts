@@ -86,7 +86,7 @@ const PRERELEASE_IDENTIFIER =
   `(?:${NUMERIC_IDENTIFIER}|${NON_NUMERIC_IDENTIFIER})`;
 
 /**
- * A Hyphen, followed by one or more dot-separated pre-release version identifiers.
+ * A hyphen, followed by one or more dot-separated pre-release version identifiers.
  * @example "-pre.release"
  */
 const PRERELEASE =
