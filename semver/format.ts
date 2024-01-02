@@ -15,7 +15,7 @@ function formatNumber(value: number) {
 /**
  * @deprecated (will be removed in 0.213.0)
  */
-export function format(semver: SemVer, style: FormatStyle): string;
+export function format(semver: SemVer, style?: FormatStyle): string;
 /**
  * Format a SemVer object into a string.
  *
