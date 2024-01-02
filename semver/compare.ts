@@ -9,21 +9,30 @@ import {
 /**
  * Compare two semantic version objects.
  *
- * Returns `0` if `v1 === v2`, or `1` if `v1` is greater, or `-1` if `v2` is
+ * Returns `0` if `a === b`, or `1` if `a` is greater, or `-1` if `b` is
  * greater.
  *
- * Sorts in ascending order if passed to `Array.sort()`,
+ * Sorts in ascending order if passed to `Array.sort()`.
+ *
+ * The number returned by `compare` can then be compared to `0` in order to
+ * determine some common cases:
+ * - `compare(a, b) === 0` a equal to b
+ * - `compare(a, b) !== 0` a not equal to b
+ * - `compare(a, b) < 0`   a less than b
+ * - `compare(a, b) <= 0`  a less than or equal to b
+ * - `compare(a, b) > 0`   a greater than b
+ * - `compare(a, b) >= 0`  a greater than or equal to b
  */
 export function compare(
-  s0: SemVer,
-  s1: SemVer,
+  a: SemVer,
+  b: SemVer,
 ): 1 | 0 | -1 {
-  if (s0 === s1) return 0;
+  if (a === b) return 0;
   return (
-    compareNumber(s0.major, s1.major) ||
-    compareNumber(s0.minor, s1.minor) ||
-    compareNumber(s0.patch, s1.patch) ||
-    checkIdentifier(s0.prerelease, s1.prerelease) ||
-    compareIdentifier(s0.prerelease, s1.prerelease)
+    compareNumber(a.major, b.major) ||
+    compareNumber(a.minor, b.minor) ||
+    compareNumber(a.patch, b.patch) ||
+    checkIdentifier(a.prerelease, b.prerelease) ||
+    compareIdentifier(a.prerelease, b.prerelease)
   );
 }

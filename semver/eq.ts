@@ -2,8 +2,12 @@
 import { compare } from "./compare.ts";
 import type { SemVer } from "./types.ts";
 
-/** Returns `true` if they're logically equivalent, even if they're not the exact
- * same version object. */
+/**
+ * Returns `true` if they're logically equivalent, even if they're not the exact same version object.
+ * @deprecated (will be removed in 0.213.0) use {@linkcode compare} instead.
+ *
+ * This is equal to `compare(s0, s1) === 0`
+ */
 export function eq(s0: SemVer, s1: SemVer): boolean {
   return compare(s0, s1) === 0;
 }

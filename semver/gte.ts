@@ -2,7 +2,12 @@
 import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
-/** Greater than or equal to comparison */
+/**
+ * Greater than or equal to comparison
+ * @deprecated (will be removed in 0.213.0) use {@linkcode compare} instead.
+ *
+ * This is equal to `compare(s0, s1) >= 0`
+ */
 export function gte(
   s0: SemVer,
   s1: SemVer,

@@ -2,7 +2,12 @@
 import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
-/** Not equal comparison */
+/**
+ * Not equal comparison
+ * @deprecated (will be removed in 0.213.0) use {@linkcode compare} instead.
+ *
+ * This is equal to `compare(s0, s1) !== 0`
+ */
 export function neq(
   s0: SemVer,
   s1: SemVer,
