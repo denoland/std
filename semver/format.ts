@@ -13,7 +13,9 @@ function formatNumber(value: number) {
 }
 
 /**
- * @deprecated (will be removed in 0.213.0)
+ * Format a SemVer object into a string.
+ *
+ * @deprecated (will be removed in 0.213.0) `style` option is deprecated. Use `format(semver)` for full formatting. semver[prop] for getting a part of the version.
  */
 export function format(semver: SemVer, style?: FormatStyle): string;
 /**
