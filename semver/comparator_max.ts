@@ -4,14 +4,18 @@ import { ANY, INVALID, MAX } from "./constants.ts";
 import { isComparator } from "./is_comparator.ts";
 
 /**
+ * The maximum version that could match this comparator.
+ * @param semver The semantic version of the comparator
+ * @param operator The operator of the comparator
+ * If an invalid comparator is given such as <0.0.0 then an out of range semver will be returned.
+ * @returns the version, the MAX version or the next smallest patch version
  * @deprecated (will be removed in 0.213.0) Use a {@linkcode Comparator} argument instead.
  */
 export function comparatorMax(semver: SemVer, operator: Operator): SemVer;
 /**
  * The maximum version that could match this comparator.
- *
- * If an invalid comparator is given such as <0.0.0 then
- * an out of range semver will be returned.
+ * @param comparator The comparator
+ * If an invalid comparator is given such as <0.0.0 then an out of range semver will be returned.
  * @returns the version, the MAX version or the next smallest patch version
  */
 export function comparatorMax(comparator: Comparator): SemVer;
