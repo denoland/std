@@ -63,78 +63,89 @@ export function compareIdentifier(
   return 0;
 }
 
-// The following Regular Expressions can be used for tokenizing,
-// validating, and parsing SemVer version strings.
-
-// ## Numeric Identifier
-// A single `0`, or a non-zero digit followed by zero or more digits.
-
+/**
+ * A single `0`, or a non-zero digit followed by zero or more digits.
+ */
 const NUMERIC_IDENTIFIER = "0|[1-9]\\d*";
 
-// ## Non-numeric Identifier
-// Zero or more digits, followed by a letter or hyphen, and then zero or
-// more letters, digits, or hyphens.
-
+/**
+ * Zero or more digits, followed by a letter or hyphen, and then zero or more letters, digits, or hyphens.
+ */
 const NON_NUMERIC_IDENTIFIER = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
 
-// ## Main Version
-// Three dot-separated numeric identifiers.
-const MAIN_VERSION =
+/**
+ * Three dot-separated numeric identifiers.
+ */
+const VERSION_CORE =
   `(?<major>${NUMERIC_IDENTIFIER})\\.(?<minor>${NUMERIC_IDENTIFIER})\\.(?<patch>${NUMERIC_IDENTIFIER})`;
 
-// ## Pre-release Version Identifier
-// A numeric identifier, or a non-numeric identifier.
-
+/**
+ * A numeric identifier, or a non-numeric identifier.
+ */
 const PRERELEASE_IDENTIFIER =
   `(?:${NUMERIC_IDENTIFIER}|${NON_NUMERIC_IDENTIFIER})`;
 
-// ## Pre-release Version
-// Hyphen, followed by one or more dot-separated pre-release version
-// identifiers.
-
+/**
+ * A hyphen, followed by one or more dot-separated pre-release version identifiers.
+ * @example "-pre.release"
+ */
 const PRERELEASE =
   `(?:-(?<prerelease>${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
 
-// ## Build Metadata Identifier
-// Any combination of digits, letters, or hyphens.
+/**
+ * Any combination of digits, letters, or hyphens.
+ */
 const BUILD_IDENTIFIER = "[0-9A-Za-z-]+";
 
-// ## Build Metadata
-// Plus sign, followed by one or more period-separated build metadata
-// identifiers.
+/**
+ * A plus sign, followed by one or more period-separated build metadata identifiers.
+ * @example "+build.meta"
+ */
 const BUILD =
   `(?:\\+(?<buildmetadata>${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
 
-// ## Full Version String
-// A main version, followed optionally by a pre-release version and
-// build metadata.
+/**
+ * A version, followed optionally by a pre-release version and build metadata.
+ */
+const FULL_VERSION = `v?${VERSION_CORE}${PRERELEASE}?${BUILD}?`;
 
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-const FULL_PLAIN = `v?${MAIN_VERSION}${PRERELEASE}?${BUILD}?`;
+export const FULL_REGEXP = new RegExp(`^${FULL_VERSION}$`);
 
-export const FULL_REGEXP = new RegExp(`^${FULL_PLAIN}$`);
-
+/**
+ * A comparator.
+ * @example `=`, `<`, `<=`, `>`, `>=`
+ */
 const COMPARATOR = "(?:<|>)?=?";
 
-// Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifier, meaning "any version"
-// Only the first item is strictly required.
-const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|x|X|\\*`;
+/**
+ * A wildcard identifier.
+ * @example "x", "X", "*"
+ */
+const WILDCARD_IDENTIFIER = `x|X|\\*`;
 
-export const XRANGE_PLAIN =
-  `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})(?:${PRERELEASE})?${BUILD}?)?)?`;
+const XRANGE_IDENTIFIER = `${NUMERIC_IDENTIFIER}|${WILDCARD_IDENTIFIER}`;
 
-// Meaning is "reasonably at or greater than" or "at least and backwards compatible with"
+/**
+ * A version that can contain wildcards.
+ * @example "x", "1.x", "1.x.x", "1.2.x", "*", "1.*", "1.*.*", "1.2.*"
+ */
+export const XRANGE =
+  `[v=\\s]*(?<major>${XRANGE_IDENTIFIER})(?:\\.(?<minor>${XRANGE_IDENTIFIER})(?:\\.(?<patch>${XRANGE_IDENTIFIER})${PRERELEASE}?${BUILD}?)?)?`;
+
+/**
+ * An operator (`~`, `~>`, `^`, `=`, `<`, `<=`, `>`, or `>=`), followed by an x-range.
+ * @example "~1.x.x", "^1.2.*", ">=1.2.3"
+ */
 export const OPERATOR_REGEXP = new RegExp(
-  `^(?<operator>~>?|\\^|${COMPARATOR})\\s*${XRANGE_PLAIN}$`,
+  `^(?<operator>~>?|\\^|${COMPARATOR})\\s*${XRANGE}$`,
 );
 
-// A simple gt/lt/eq thing, or just "" to indicate "any version"
+/**
+ * An empty string or a comparator (`=`, `<`, `<=`, `>`, or `>=`), followed by a version.
+ * @example ">1.2.3"
+ */
 export const COMPARATOR_REGEXP = new RegExp(
-  `^(?<operator>${COMPARATOR})\\s*(${FULL_PLAIN})$|^$`,
+  `^(?<operator>${COMPARATOR})\\s*(${FULL_VERSION})$|^$`,
 );
 
 /**
