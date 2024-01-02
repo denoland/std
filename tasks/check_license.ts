@@ -2,7 +2,7 @@
 // Copied from std/_tools/check_license.ts
 
 import { walk } from "std/fs/walk.ts";
-import { globToRegExp } from "std/path/glob.ts";
+import { globToRegExp } from "std/path/glob_to_regexp.ts";
 
 const EXTENSIONS = [".ts", ".tsx"];
 const EXCLUDED_DIRS = [

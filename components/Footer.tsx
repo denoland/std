@@ -49,15 +49,7 @@ function MadeWithFreshBadge() {
   );
 }
 
-export interface FooterProps {
-  /**
-   * URL of the current page. This is used for highlighting the currently
-   * active page in navigation.
-   */
-  url: URL;
-}
-
-export default function Footer(props: FooterProps) {
+export default function Footer() {
   return (
     <footer class="site-bar-styles flex-col md:flex-row mt-8">
       <p>© {SITE_NAME}</p>
