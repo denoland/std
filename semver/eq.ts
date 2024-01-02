@@ -4,7 +4,7 @@ import type { SemVer } from "./types.ts";
 
 /**
  * Returns `true` if they're logically equivalent, even if they're not the exact same version object.
- * @deprecated (will be removed in 0.213.0) use {@linkcode compare} instead.
+ * @deprecated (will be removed in 0.213.0) Use {@linkcode compare} instead.
  *
  * This is equal to `compare(s0, s1) === 0`
  */
