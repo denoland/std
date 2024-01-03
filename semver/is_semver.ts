@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ANY, INVALID } from "./constants.ts";
 import type { SemVer } from "./types.ts";
-import { checkIdentifierValidity, checkNumberValidity } from "./_shared.ts";
+import { isValidNumber, isValidString } from "./_shared.ts";
 
 /**
  * Checks to see if value is a valid SemVer object. It does a check
@@ -33,20 +33,20 @@ export function isSemVer(value: unknown): value is SemVer {
     prerelease = [],
   } = value as Record<string, unknown>;
   return (
-    typeof major === "number" && checkNumberValidity(major) &&
-    typeof minor === "number" && checkNumberValidity(minor) &&
-    typeof patch === "number" && checkNumberValidity(patch) &&
+    typeof major === "number" && isValidNumber(major) &&
+    typeof minor === "number" && isValidNumber(minor) &&
+    typeof patch === "number" && isValidNumber(patch) &&
     Array.isArray(prerelease) &&
     prerelease
       .every((v) => typeof v === "string" || typeof v === "number") &&
     prerelease
       .filter((v) => typeof v === "string")
-      .every((v) => checkIdentifierValidity(v)) &&
+      .every((v) => isValidString(v)) &&
     prerelease
       .filter((v) => typeof v === "number")
-      .every((v) => checkNumberValidity(v)) &&
+      .every((v) => isValidNumber(v)) &&
     Array.isArray(build) &&
     build
-      .every((v) => typeof v === "string" && checkIdentifierValidity(v))
+      .every((v) => typeof v === "string" && isValidString(v))
   );
 }
