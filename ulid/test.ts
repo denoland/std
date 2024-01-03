@@ -149,7 +149,7 @@ Deno.test("ulid()", async (t) => {
   );
 });
 
-Deno.test("stubbedUlid() handles monotonicity", async (t) => {
+Deno.test("monotonicFactory() handles monotonicity", async (t) => {
   function encodeRandom(len: number): string {
     let str = "";
     const randomBytes = new Array(len).fill(30);
