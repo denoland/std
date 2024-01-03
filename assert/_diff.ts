@@ -302,7 +302,8 @@ export function diffstr(A: string, B: string) {
       return tokens.filter((token) => token);
     } else {
       // Split string on new lines symbols
-      const tokens: string[] = [], lines = string.split(/(\n|\r\n)/);
+      const tokens: string[] = [];
+      const lines = string.split(/(\n|\r\n)/);
 
       // Ignore final empty token when text ends with a newline
       if (!lines[lines.length - 1]) {
