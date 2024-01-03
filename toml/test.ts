@@ -30,7 +30,7 @@ Deno.test({
         str8: "Roses are red\fViolets are blue",
         str9: "Roses are red\bViolets are blue",
         str10: "Roses are red\\Violets are blue",
-        str11: `dobule "quote"\nsingle 'quote'\n`,
+        str11: `double "quote"\nsingle 'quote'\n`,
         str12: 'Here are two quotation marks: "". Simple enough.',
         str13: 'Here are three quotation marks: """.',
         str14: 'Here are fifteen quotation marks: """"""""""""""".',
