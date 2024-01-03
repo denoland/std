@@ -33,20 +33,15 @@ export function isSemVer(value: unknown): value is SemVer {
     prerelease = [],
   } = value as Record<string, unknown>;
   return (
-    typeof major === "number" && isValidNumber(major) &&
-    typeof minor === "number" && isValidNumber(minor) &&
-    typeof patch === "number" && isValidNumber(patch) &&
+    isValidNumber(major) &&
+    isValidNumber(minor) &&
+    isValidNumber(patch) &&
     Array.isArray(prerelease) &&
-    prerelease
-      .every((v) => typeof v === "string" || typeof v === "number") &&
-    prerelease
-      .filter((v) => typeof v === "string")
-      .every((v) => isValidString(v)) &&
-    prerelease
-      .filter((v) => typeof v === "number")
-      .every((v) => isValidNumber(v)) &&
+    prerelease.every((v) =>
+      (typeof v === "string" && isValidString(v)) ||
+      (typeof v === "number" && isValidNumber(v))
+    ) &&
     Array.isArray(build) &&
-    build
-      .every((v) => typeof v === "string" && isValidString(v))
+    build.every((v) => typeof v === "string" && isValidString(v))
   );
 }
