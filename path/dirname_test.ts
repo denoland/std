@@ -4,7 +4,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { dirname } from "./dirname.ts";
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/dirname.pl
@@ -35,7 +35,7 @@ const POSIX_TESTSUITE = [
   ["foo", "."],
 ];
 
-const WIN32_TESTSUITE = [
+const WINDOWS_TESTSUITE = [
   ["c:\\", "c:\\"],
   ["c:\\foo", "c:\\"],
   ["c:\\foo\\", "c:\\"],
@@ -87,17 +87,17 @@ Deno.test("posix.dirname()", function () {
   assertEquals(posix.dirname("/foo/bar/baz\\"), "/foo/bar");
 });
 
-Deno.test("win32.dirname()", function () {
-  for (const [name, expected] of WIN32_TESTSUITE) {
-    assertEquals(win32.dirname(name), expected);
+Deno.test("windows.dirname()", function () {
+  for (const [name, expected] of WINDOWS_TESTSUITE) {
+    assertEquals(windows.dirname(name), expected);
   }
 
-  // win32 should pass all "forward slash" posix tests as well.
+  // windows should pass all "forward slash" posix tests as well.
   for (const [name, expected] of COREUTILS_TESTSUITE) {
-    assertEquals(win32.dirname(name), expected);
+    assertEquals(windows.dirname(name), expected);
   }
 
   for (const [name, expected] of POSIX_TESTSUITE) {
-    assertEquals(win32.dirname(name), expected);
+    assertEquals(windows.dirname(name), expected);
   }
 });

@@ -4,7 +4,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import { basename } from "./basename.ts";
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/basename.pl
@@ -114,17 +114,17 @@ Deno.test("posix.basename()", function () {
   );
 });
 
-Deno.test("win32.basename()", function () {
+Deno.test("windows.basename()", function () {
   for (const [[name, suffix], expected] of WIN32_TESTSUITE) {
-    assertEquals(win32.basename(name, suffix), expected);
+    assertEquals(windows.basename(name, suffix), expected);
   }
 
-  // win32 should pass all "forward slash" posix tests as well.
+  // windows should pass all "forward slash" posix tests as well.
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
-    assertEquals(win32.basename(name, suffix), expected);
+    assertEquals(windows.basename(name, suffix), expected);
   }
 
   for (const [[name, suffix], expected] of POSIX_TESTSUITE) {
-    assertEquals(win32.basename(name, suffix), expected);
+    assertEquals(windows.basename(name, suffix), expected);
   }
 });

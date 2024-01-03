@@ -5,7 +5,7 @@ import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
 
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];
 type ParseTestCase = [string, ParsedPath];
@@ -90,7 +90,7 @@ const unixSpecialCaseFormatTests: FormatTestCase[] = [
 ];
 
 function checkParseFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: Array<[string, string, string?]>,
 ) {
   testCases.forEach(([element, root, formatted]) => {
@@ -115,7 +115,7 @@ function checkParseFormat(
 }
 
 function checkSpecialCaseParseFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: ParseTestCase[],
 ) {
   testCases.forEach(([element, expect]) => {
@@ -124,7 +124,7 @@ function checkSpecialCaseParseFormat(
 }
 
 function checkFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: FormatTestCase[],
 ) {
   testCases.forEach((testCase) => {
@@ -132,17 +132,17 @@ function checkFormat(
   });
 }
 
-Deno.test("win32.parse()", function () {
-  checkParseFormat(win32, winPaths);
-  checkSpecialCaseParseFormat(win32, winSpecialCaseParseTests);
+Deno.test("windows.parse()", function () {
+  checkParseFormat(windows, winPaths);
+  checkSpecialCaseParseFormat(windows, winSpecialCaseParseTests);
 });
 
 Deno.test("posix.parse()", function () {
   checkParseFormat(posix, unixPaths);
 });
 
-Deno.test("win32.format()", function () {
-  checkFormat(win32, winSpecialCaseFormatTests);
+Deno.test("windows.format()", function () {
+  checkFormat(windows, winSpecialCaseFormatTests);
 });
 
 Deno.test("posix.format()", function () {
@@ -181,9 +181,9 @@ const posixTrailingTests: ParseTestCase[] = [
   ],
 ];
 
-Deno.test("win32.parseTrailing()", function () {
+Deno.test("windows.parseTrailing()", function () {
   windowsTrailingTests.forEach(function (p) {
-    const actual = win32.parse(p[0]);
+    const actual = windows.parse(p[0]);
     const expected = p[1];
     assertEquals(actual, expected);
   });

@@ -3,11 +3,11 @@
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 const relativeTests = {
   // arguments                     result
-  win32: [
+  windows: [
     ["c:/blah\\blah", "d:/games", "d:\\games"],
     ["c:/aaaa/bbbb", "c:/aaaa", ".."],
     ["c:/aaaa/bbbb", "c:/cccc", "..\\..\\cccc"],
@@ -58,10 +58,10 @@ Deno.test("posix.relative()", function () {
   });
 });
 
-Deno.test("win32.relative()", function () {
-  relativeTests.win32.forEach(function (p) {
+Deno.test("windows.relative()", function () {
+  relativeTests.windows.forEach(function (p) {
     const expected = p[2];
-    const actual = win32.relative(p[0], p[1]);
+    const actual = windows.relative(p[0], p[1]);
     assertEquals(actual, expected);
   });
 });

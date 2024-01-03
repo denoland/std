@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 
 Deno.test("posix.fromFileUrl()", function () {
@@ -26,27 +26,33 @@ Deno.test("posix.fromFileUrl()", function () {
   );
 });
 
-Deno.test("win32.fromFileUrl()", function () {
-  assertEquals(win32.fromFileUrl(new URL("file:///home/foo")), "\\home\\foo");
-  assertEquals(win32.fromFileUrl("file:///"), "\\");
-  assertEquals(win32.fromFileUrl("file:///home/foo"), "\\home\\foo");
-  assertEquals(win32.fromFileUrl("file:///home/foo%20bar"), "\\home\\foo bar");
-  assertEquals(win32.fromFileUrl("file:///%"), "\\%");
-  assertEquals(win32.fromFileUrl("file://127.0.0.1/foo"), "\\\\127.0.0.1\\foo");
-  assertEquals(win32.fromFileUrl("file://localhost/foo"), "\\foo");
-  assertEquals(win32.fromFileUrl("file:///C:"), "C:\\");
-  assertEquals(win32.fromFileUrl("file:///C:/"), "C:\\");
+Deno.test("windows.fromFileUrl()", function () {
+  assertEquals(windows.fromFileUrl(new URL("file:///home/foo")), "\\home\\foo");
+  assertEquals(windows.fromFileUrl("file:///"), "\\");
+  assertEquals(windows.fromFileUrl("file:///home/foo"), "\\home\\foo");
+  assertEquals(
+    windows.fromFileUrl("file:///home/foo%20bar"),
+    "\\home\\foo bar",
+  );
+  assertEquals(windows.fromFileUrl("file:///%"), "\\%");
+  assertEquals(
+    windows.fromFileUrl("file://127.0.0.1/foo"),
+    "\\\\127.0.0.1\\foo",
+  );
+  assertEquals(windows.fromFileUrl("file://localhost/foo"), "\\foo");
+  assertEquals(windows.fromFileUrl("file:///C:"), "C:\\");
+  assertEquals(windows.fromFileUrl("file:///C:/"), "C:\\");
   // Drop the hostname if a drive letter is parsed.
-  assertEquals(win32.fromFileUrl("file://localhost/C:/"), "C:\\");
-  assertEquals(win32.fromFileUrl("file:///C:/Users/"), "C:\\Users\\");
-  assertEquals(win32.fromFileUrl("file:///C:foo/bar"), "\\C:foo\\bar");
+  assertEquals(windows.fromFileUrl("file://localhost/C:/"), "C:\\");
+  assertEquals(windows.fromFileUrl("file:///C:/Users/"), "C:\\Users\\");
+  assertEquals(windows.fromFileUrl("file:///C:foo/bar"), "\\C:foo\\bar");
   assertThrows(
-    () => win32.fromFileUrl("http://localhost/foo"),
+    () => windows.fromFileUrl("http://localhost/foo"),
     TypeError,
     "Must be a file URL.",
   );
   assertThrows(
-    () => win32.fromFileUrl("abcd://localhost/foo"),
+    () => windows.fromFileUrl("abcd://localhost/foo"),
     TypeError,
     "Must be a file URL.",
   );

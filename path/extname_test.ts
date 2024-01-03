@@ -3,7 +3,7 @@
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
-import * as win32 from "./windows/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 const slashRE = /\//g;
 
@@ -70,21 +70,21 @@ Deno.test("posix.extname()", function () {
   assertEquals(posix.extname("file.\\\\"), ".\\\\");
 });
 
-Deno.test("win32.extname()", function () {
+Deno.test("windows.extname()", function () {
   pairs.forEach(function (p) {
     const input = p[0].replace(slashRE, "\\");
     const expected = p[1];
-    assertEquals(expected, win32.extname(input));
-    assertEquals(expected, win32.extname("C:" + input));
+    assertEquals(expected, windows.extname(input));
+    assertEquals(expected, windows.extname("C:" + input));
   });
 
   // On Windows, backslash is a path separator.
-  assertEquals(win32.extname(".\\"), "");
-  assertEquals(win32.extname("..\\"), "");
-  assertEquals(win32.extname("file.ext\\"), ".ext");
-  assertEquals(win32.extname("file.ext\\\\"), ".ext");
-  assertEquals(win32.extname("file\\"), "");
-  assertEquals(win32.extname("file\\\\"), "");
-  assertEquals(win32.extname("file.\\"), ".");
-  assertEquals(win32.extname("file.\\\\"), ".");
+  assertEquals(windows.extname(".\\"), "");
+  assertEquals(windows.extname("..\\"), "");
+  assertEquals(windows.extname("file.ext\\"), ".ext");
+  assertEquals(windows.extname("file.ext\\\\"), ".ext");
+  assertEquals(windows.extname("file\\"), "");
+  assertEquals(windows.extname("file\\\\"), "");
+  assertEquals(windows.extname("file.\\"), ".");
+  assertEquals(windows.extname("file.\\\\"), ".");
 });
