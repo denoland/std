@@ -137,7 +137,7 @@ export const COMPARATOR_REGEXP = new RegExp(
  * @param value The value to check
  * @returns True if its a valid semver number
  */
-export function checkNumberValidity(value: unknown): value is number {
+export function isValidNumber(value: unknown): value is number {
   return (
     typeof value === "number" &&
     !Number.isNaN(value) &&
@@ -156,7 +156,7 @@ export const MAX_LENGTH = 256;
  * @param value The value to check
  * @returns True if the value is a valid semver string.
  */
-export function checkIdentifierValidity(value: unknown): value is string {
+export function isValidString(value: unknown): value is string {
   return (
     typeof value === "string" &&
     value.length > 0 &&
@@ -173,7 +173,7 @@ export function parsePrerelease(prerelease: string) {
     .map((id: string) => {
       if (NUMERIC_IDENTIFIER_REGEXP.test(id)) {
         const number = Number(id);
-        if (checkNumberValidity(number)) return number;
+        if (isValidNumber(number)) return number;
       }
       return id;
     });
@@ -185,6 +185,6 @@ export function parseBuild(buildmetadata: string) {
 
 export function parseNumber(input: string, errorMessage: string) {
   const number = Number(input);
-  if (!checkNumberValidity(number)) throw new TypeError(errorMessage);
+  if (!isValidNumber(number)) throw new TypeError(errorMessage);
   return number;
 }
