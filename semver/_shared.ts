@@ -4,9 +4,7 @@ export function compareNumber(
   a: number,
   b: number,
 ): 1 | 0 | -1 {
-  if (isNaN(a) || isNaN(b)) {
-    throw new Error("Comparison against non-numbers");
-  }
+  if (isNaN(a) || isNaN(b)) throw new Error("Comparison against non-numbers");
   return a === b ? 0 : a < b ? -1 : 1;
 }
 
@@ -16,50 +14,33 @@ export function checkIdentifier(
 ): 1 | 0 | -1 {
   // NOT having a prerelease is > having one
   // But NOT having a build is < having one
-  if (v1.length && !v2.length) {
-    return -1;
-  } else if (!v1.length && v2.length) {
-    return 1;
-  } else {
-    return 0;
-  }
+  if (v1.length && !v2.length) return -1;
+  if (!v1.length && v2.length) return 1;
+  return 0;
 }
 
 export function compareIdentifier(
   v1: ReadonlyArray<string | number> = [],
   v2: ReadonlyArray<string | number> = [],
 ): 1 | 0 | -1 {
-  let i = 0;
-  do {
+  const length = Math.max(v1.length, v2.length);
+  for (let i = 0; i < length; i++) {
     const a = v1[i];
     const b = v2[i];
-    if (a === undefined && b === undefined) {
-      // same length is equal
-      return 0;
-    } else if (b === undefined) {
-      // longer > shorter
-      return 1;
-    } else if (a === undefined) {
-      // shorter < longer
-      return -1;
-    } else if (typeof a === "string" && typeof b === "number") {
-      // string > number
-      return 1;
-    } else if (typeof a === "number" && typeof b === "string") {
-      // number < string
-      return -1;
-    } else if (a < b) {
-      return -1;
-    } else if (a > b) {
-      return 1;
-    } else {
-      // If they're equal, continue comparing segments.
-      continue;
-    }
-  } while (++i);
-
-  // It can't ever reach here, but typescript doesn't realize that so
-  // add this line so the return type is inferred correctly.
+    // same length is equal
+    if (a === undefined && b === undefined) return 0;
+    // longer > shorter
+    if (b === undefined) return 1;
+    // shorter < longer
+    if (a === undefined) return -1;
+    // string > number
+    if (typeof a === "string" && typeof b === "number") return 1;
+    // number < string
+    if (typeof a === "number" && typeof b === "string") return -1;
+    if (a < b) return -1;
+    if (a > b) return 1;
+    // If they're equal, continue comparing segments.
+  }
   return 0;
 }
 
@@ -156,13 +137,12 @@ export const COMPARATOR_REGEXP = new RegExp(
  * @param value The value to check
  * @returns True if its a valid semver number
  */
-export function isValidNumber(value: unknown): value is number {
+export function checkNumberValidity(value: unknown): value is number {
   return (
     typeof value === "number" &&
-    !Number.isNaN(value) && (
-      !Number.isFinite(value) ||
-      (0 <= value && value <= Number.MAX_SAFE_INTEGER)
-    )
+    !Number.isNaN(value) &&
+    (!Number.isFinite(value) ||
+      (0 <= value && value <= Number.MAX_SAFE_INTEGER))
   );
 }
 
@@ -176,38 +156,35 @@ export const MAX_LENGTH = 256;
  * @param value The value to check
  * @returns True if the value is a valid semver string.
  */
-export function isValidString(value: unknown): value is string {
+export function checkIdentifierValidity(value: unknown): value is string {
   return (
     typeof value === "string" &&
     value.length > 0 &&
     value.length <= MAX_LENGTH &&
-    !!value.match(/[0-9A-Za-z-]+/)
+    /[0-9A-Za-z-]+/.test(value)
   );
 }
 
-const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^(${NUMERIC_IDENTIFIER})$`);
+const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^${NUMERIC_IDENTIFIER}$`);
 export function parsePrerelease(prerelease: string) {
   return prerelease
     .split(".")
-    .filter((id) => id)
+    .filter(Boolean)
     .map((id: string) => {
-      const num = parseInt(id);
-      if (id.match(NUMERIC_IDENTIFIER_REGEXP) && isValidNumber(num)) {
-        return num;
-      } else {
-        return id;
+      if (NUMERIC_IDENTIFIER_REGEXP.test(id)) {
+        const number = Number(id);
+        if (checkNumberValidity(number)) return number;
       }
+      return id;
     });
 }
 
 export function parseBuild(buildmetadata: string) {
-  return buildmetadata.split(".").filter((m) => m) ?? [];
+  return buildmetadata.split(".").filter(Boolean);
 }
 
 export function parseNumber(input: string, errorMessage: string) {
   const number = Number(input);
-  if (number > Number.MAX_SAFE_INTEGER || number < 0) {
-    throw new TypeError(errorMessage);
-  }
+  if (!checkNumberValidity(number)) throw new TypeError(errorMessage);
   return number;
 }
