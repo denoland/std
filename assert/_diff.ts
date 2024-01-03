@@ -159,8 +159,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   }
 
   function createFP(
-    slide?: FarthestPoint,
-    down?: FarthestPoint,
+    slide: FarthestPoint | undefined,
+    down: FarthestPoint | undefined,
     k: number,
     M: number,
   ): FarthestPoint {
@@ -189,8 +189,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   function snake<T>(
     k: number,
-    slide?: FarthestPoint,
-    down?: FarthestPoint,
+    slide: FarthestPoint | undefined,
+    down: FarthestPoint | undefined,
     _offset: number,
     A: T[],
     B: T[],
