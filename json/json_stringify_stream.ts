@@ -84,6 +84,11 @@ export interface StringifyStreamOptions {
 export class JsonStringifyStream extends TransformStream<unknown, string> {
   /**
    * Construct new instance
+   * @param options
+   * @param options.prefix - Prefix added to the stringified chunks. Default to ""
+   * @param options.suffix - Suffix added to the stringified chunks. Default to "\n"
+   * @param options.writableStrategy - Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
+   * @param options.readableStrategy - Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    */
   constructor({
     prefix = "",
