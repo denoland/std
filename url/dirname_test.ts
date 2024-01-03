@@ -26,7 +26,7 @@ const TESTSUITE = [
   ],
 ];
 
-Deno.test("dirname", function () {
+Deno.test("dirname()", function () {
   for (const [test_url, expected] of TESTSUITE) {
     assertEquals(url.dirname(test_url), expected);
   }
