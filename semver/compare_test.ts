@@ -3,32 +3,57 @@ import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
 import { compare } from "./compare.ts";
 
-Deno.test("compare ignores build metadata", async (t) => {
-  // v+b > v
-  const steps: [string, string, number][] = [
-    ["1.0.0", "1.0.0+0", 0],
-    ["1.0.0+0", "1.0.0+0", 0],
-    ["1.0.0+0", "1.0.0", 0],
-    ["1.0.0+0", "1.0.0+0.0", 0],
-    ["1.0.0+0.0", "1.0.0+0.0", 0],
-    ["1.0.0+0.0", "1.0.0+0", 0],
-    ["1.0.0+0", "1.0.0+1", 0],
-    ["1.0.0+0", "1.0.0+0", 0],
-    ["1.0.0+1", "1.0.0+0", 0],
-    ["1.0.0+0001", "1.0.0+2", 0],
-  ];
-  for (const [v0, v1, expected] of steps) {
-    await t.step(`${v0} <=> ${v1}`, () => {
+Deno.test({
+  name: "compare() handles version matcher",
+  fn: async (t) => {
+    const cases: [string, string, number][] = [
+      ["1.2.3", "1.2.3", 0],
+      ["1.2.3", "2.3.4", -1],
+      ["1.2.3", "0.1.2", 1],
+      ["1.2.3", "1.2.3-pre", 0],
+      ["1.2.3", "1.2.3+build", 0],
+      ["1.2.3", "1.2.3-pre+build", 0],
+    ];
+    for (const [v0, v1, expected] of cases) {
       const s0 = parse(v0);
       const s1 = parse(v1);
-      const actual = compare(s0, s1);
-      assertEquals(actual, expected);
-    });
-  }
+      await t.step(`${v0} <=> ${v1}`, () => {
+        const actual = compare(s0, s1, { matcher: "version" });
+        assertEquals(actual, expected);
+      });
+    }
+  },
 });
 
 Deno.test({
-  name: "comparePre",
+  name: "compare() ignores build by default",
+  fn: async (t) => {
+    // v+b > v
+    const steps: [string, string, number][] = [
+      ["1.0.0", "1.0.0+0", 0],
+      ["1.0.0+0", "1.0.0+0", 0],
+      ["1.0.0+0", "1.0.0", 0],
+      ["1.0.0+0", "1.0.0+0.0", 0],
+      ["1.0.0+0.0", "1.0.0+0.0", 0],
+      ["1.0.0+0.0", "1.0.0+0", 0],
+      ["1.0.0+0", "1.0.0+1", 0],
+      ["1.0.0+0", "1.0.0+0", 0],
+      ["1.0.0+1", "1.0.0+0", 0],
+      ["1.0.0+0001", "1.0.0+2", 0],
+    ];
+    for (const [v0, v1, expected] of steps) {
+      await t.step(`${v0} <=> ${v1}`, () => {
+        const s0 = parse(v0);
+        const s1 = parse(v1);
+        const actual = compare(s0, s1);
+        assertEquals(actual, expected);
+      });
+    }
+  },
+});
+
+Deno.test({
+  name: "compare() handles prerelease by default",
   fn: async (t) => {
     const cases: [string, string, number][] = [
       ["1.2.3", "1.2.3", 0],
@@ -49,6 +74,57 @@ Deno.test({
       const s1 = parse(v1);
       await t.step(`${v0} <=> ${v1}`, () => {
         const actual = compare(s0, s1);
+        assertEquals(actual, expected);
+      });
+    }
+  },
+});
+
+Deno.test({
+  name: "compare() handles prerelease matcher",
+  fn: async (t) => {
+    const cases: [string, string, number][] = [
+      ["1.2.3", "1.2.3", 0],
+      ["1.2.3", "2.3.4", -1],
+      ["1.2.3", "0.1.2", 1],
+      ["1.2.3", "1.2.3-pre", 1],
+      ["1.2.3", "1.2.3+build", 0],
+      ["1.2.3", "1.2.3-pre+build", 1],
+    ];
+    for (const [v0, v1, expected] of cases) {
+      const s0 = parse(v0);
+      const s1 = parse(v1);
+      await t.step(`${v0} <=> ${v1}`, () => {
+        const actual = compare(s0, s1, { matcher: "prerelease" });
+        assertEquals(actual, expected);
+      });
+    }
+  },
+});
+
+Deno.test({
+  name: "compare() handles build matcher",
+  fn: async (t) => {
+    // v+b > v
+    const steps: [string, string, number][] = [
+      ["1.0.0", "1.0.0+0", -1],
+      ["1.0.0+0", "1.0.0+0", 0],
+      ["1.0.0+0", "1.0.0", 1],
+      ["1.0.0+0", "1.0.0+0.0", -1],
+      ["1.0.0+0.0", "1.0.0+0.0", 0],
+      ["1.0.0+0.0", "1.0.0+0", 1],
+      ["1.0.0+0", "1.0.0+1", -1],
+      ["1.0.0+0", "1.0.0+0", 0],
+      ["1.0.0+1", "1.0.0+0", 1],
+
+      // Builds are sorted alphabetically, not numerically
+      ["1.0.0+0001", "1.0.0+2", -1],
+    ];
+    for (const [v0, v1, expected] of steps) {
+      await t.step(`${v0} <=> ${v1}`, () => {
+        const s0 = parse(v0);
+        const s1 = parse(v1);
+        const actual = compare(s0, s1, { matcher: "build" });
         assertEquals(actual, expected);
       });
     }
