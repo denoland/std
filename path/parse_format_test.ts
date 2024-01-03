@@ -4,7 +4,8 @@
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
 
 import { assertEquals } from "../assert/mod.ts";
-import { posix, win32 } from "./mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as win32 from "./windows/mod.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];
 type ParseTestCase = [string, ParsedPath];

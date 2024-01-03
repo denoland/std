@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { posix, win32 } from "./mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as win32 from "./windows/mod.ts";
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 
 Deno.test("posix.fromFileUrl()", function () {
