@@ -27,7 +27,7 @@ str8 = "Roses are red\fViolets are blue"
 str9 = "Roses are red\bViolets are blue"
 str10 = "Roses are red\\Violets are blue"
 str11 = """
-dobule "quote"
+double "quote"
 single 'quote'
 """
 str12 = """Here are two quotation marks: "". Simple enough."""
