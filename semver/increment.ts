@@ -97,7 +97,7 @@ export function increment(
       };
     case "prerelease": {
       // If the input is a non-prerelease version, this acts the same as prepatch.
-      const isPrerelease = (version.prerelease ?? []).length === 0;
+      const isPrerelease = version.prerelease?.length === 0;
       const patch = isPrerelease ? version.patch + 1 : version.patch;
       return {
         major: version.major,
@@ -111,7 +111,7 @@ export function increment(
       // If this is a pre-major version, bump up to the same major version. Otherwise increment major.
       // 1.0.0-5 bumps to 1.0.0
       // 1.1.0 bumps to 2.0.0
-      const isPrerelease = (version.prerelease ?? []).length === 0;
+      const isPrerelease = version.prerelease?.length === 0;
       const major = isPrerelease || version.minor !== 0 || version.patch !== 0
         ? version.major + 1
         : version.major;
@@ -127,7 +127,7 @@ export function increment(
       // If this is a pre-minor version, bump up to the same minor version. Otherwise increment minor.
       // 1.2.0-5 bumps to 1.2.0
       // 1.2.1 bumps to 1.3.0
-      const isPrerelease = (version.prerelease ?? []).length === 0;
+      const isPrerelease = version.prerelease?.length === 0;
       const minor = isPrerelease || version.patch !== 0
         ? version.minor + 1
         : version.minor;
@@ -144,7 +144,7 @@ export function increment(
       // If it is a pre-release it will bump up to the same patch version.
       // 1.2.0-5 patches to 1.2.0
       // 1.2.0 patches to 1.2.1
-      const isPrerelease = (version.prerelease ?? []).length === 0;
+      const isPrerelease = version.prerelease?.length === 0;
       const patch = isPrerelease ? version.patch + 1 : version.patch;
       return {
         major: version.major,
