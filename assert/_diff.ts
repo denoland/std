@@ -182,8 +182,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
 
   function snake<T>(
     k: number,
-    slide: FarthestPoint | undefined,
-    down: FarthestPoint | undefined,
+    slide?: FarthestPoint,
+    down?: FarthestPoint,
     _offset: number,
     A: T[],
     B: T[],
