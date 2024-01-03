@@ -37,11 +37,8 @@ export function isSemVer(value: unknown): value is SemVer {
     isValidNumber(minor) &&
     isValidNumber(patch) &&
     Array.isArray(prerelease) &&
-    prerelease.every((v) =>
-      (typeof v === "string" && isValidString(v)) ||
-      (typeof v === "number" && isValidNumber(v))
-    ) &&
+    prerelease.every((v) => isValidString(v) || isValidNumber(v)) &&
     Array.isArray(build) &&
-    build.every((v) => typeof v === "string" && isValidString(v))
+    build.every(isValidString)
   );
 }
