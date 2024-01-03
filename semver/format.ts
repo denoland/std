@@ -15,6 +15,12 @@ function formatNumber(value: number) {
 /**
  * Format a SemVer object into a string.
  *
+ * @deprecated (will be removed in 0.213.0) `style` option is deprecated. Use `format(semver)` for full formatting. semver[prop] for getting a part of the version.
+ */
+export function format(semver: SemVer, style?: FormatStyle): string;
+/**
+ * Format a SemVer object into a string.
+ *
  * If any number is NaN then NaN will be printed.
  *
  * If any number is positive or negative infinity then '∞' or '⧞' will be printed instead.
@@ -22,6 +28,7 @@ function formatNumber(value: number) {
  * @param semver The semantic version to format
  * @returns The string representation of a semantic version.
  */
+export function format(semver: SemVer): string;
 export function format(semver: SemVer, style: FormatStyle = "full"): string {
   if (semver === ANY) {
     return "*";
