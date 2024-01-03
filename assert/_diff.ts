@@ -210,7 +210,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return item;
   }
 
-  let currentFP: FarthestPoint = ensureDefined(fp[delta + offset]);
+  let currentFP = ensureDefined<FarthestPoint>(fp[delta + offset]);
   while (currentFP && currentFP.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
