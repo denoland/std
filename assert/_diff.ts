@@ -49,6 +49,13 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
   return common;
 }
 
+function ensureDefined<T>(item?: T): T {
+  if (item === undefined) {
+    throw Error("Unexpected missing FarthestPoint");
+  }
+  return item;
+}
+
 /**
  * Renders the differences between the actual and expected values
  * @param A Actual value
@@ -201,13 +208,6 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
       routes[ptr + diffTypesPtrOffset] = COMMON;
     }
     return fp;
-  }
-
-  function ensureDefined<T>(item: T | undefined): T {
-    if (!item) {
-      throw Error("Unexpected missing FarthestPoint");
-    }
-    return item;
   }
 
   let currentFP = ensureDefined<FarthestPoint>(fp[delta + offset]);
