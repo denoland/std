@@ -2,8 +2,8 @@
 // https://github.com/golang/go/blob/go1.12.5/src/encoding/csv/
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../_util/asserts.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assert } from "../assert/assert.ts";
 
 export interface ReadOptions {
   /** Character which separates values.
@@ -38,7 +38,7 @@ export interface ReadOptions {
    * Enabling checking number of expected fields for each row.
    *
    * If positive, each record is required to have the given number of fields.
-   * If == 0, it will be set to the number of fields in the first row, so that
+   * If === 0, it will be set to the number of fields in the first row, so that
    * future rows must have the same field count.
    * If negative, no check is made and records may have a variable number of
    * fields.
@@ -70,7 +70,7 @@ export async function parseRecord(
     return [];
   }
 
-  assert(opt.separator != null);
+  assert(opt.separator !== undefined);
 
   let fullLine = line;
   let quoteError: ParseError | null = null;

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import {
@@ -11,16 +11,9 @@ import {
   type ParseResult,
   type ReadOptions,
 } from "./_io.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
-export {
-  ERR_BARE_QUOTE,
-  ERR_FIELD_COUNT,
-  ERR_INVALID_DELIM,
-  ERR_QUOTE,
-  ParseError,
-  ReadOptions,
-};
+export { ParseError, type ParseResult, ReadOptions };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -103,8 +96,6 @@ class Parser {
     if (this.#options.comment && line[0] === this.#options.comment) {
       return [];
     }
-
-    assert(this.#options.separator != null);
 
     let fullLine = line;
     let quoteError: ParseError | null = null;
@@ -323,7 +314,7 @@ export interface ParseOptions extends ReadOptions {
  * @param input Input to parse.
  * @param opt options of the parser.
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
  */
 export function parse(input: string, opt?: undefined): string[][];
 export function parse<const T extends ParseOptions>(
@@ -342,7 +333,7 @@ export function parse<const T extends ParseOptions>(
 
     if (opt.skipFirstRow) {
       const head = r.shift();
-      assert(head != null);
+      assert(head !== undefined);
       headers = head;
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { isIterator, isToken, needsEncoding } from "./_util.ts";
@@ -23,7 +23,7 @@ export function formatMediaType(
   param?: Record<string, string> | Iterable<[string, string]>,
 ): string {
   let b = "";
-  const [major, sub] = type.split("/");
+  const [major = "", sub] = type.split("/");
   if (!sub) {
     if (!isToken(type)) {
       return "";
@@ -45,7 +45,7 @@ export function formatMediaType(
       if (!isToken(attribute)) {
         return "";
       }
-      const value = param[attribute];
+      const value = param[attribute]!;
       b += `; ${attribute.toLowerCase()}`;
 
       const needEnc = needsEncoding(value);

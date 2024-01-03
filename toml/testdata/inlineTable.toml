@@ -8,3 +8,4 @@ nile = { derek.roddy = "drummer", also = { malevolant.creation = { drum.kit = "T
 annotation_filter = { "kubernetes.io/ingress.class" = "nginx" }
 literal_key = { 'foo\nbar' = 'foo\nbar' }
 nested = { parent = { children = ["{", "}"], "child.ren" = ["[", "]"] } } # comment
+empty = {}

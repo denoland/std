@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import {
@@ -167,7 +167,7 @@ export class CsvParseStream<
     }
   }
 
-  get readable() {
+  get readable(): ReadableStream<RowType<T>> {
     return this.#readable as ReadableStream<RowType<T>>;
   }
 

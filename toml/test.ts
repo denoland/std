@@ -1,5 +1,5 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
 import { parse, stringify } from "./mod.ts";
@@ -15,7 +15,7 @@ function parseFile(filePath: string): Record<string, unknown> {
 }
 
 Deno.test({
-  name: "[TOML] Strings",
+  name: "parse() handles strings",
   fn() {
     const expected = {
       strings: {
@@ -30,7 +30,7 @@ Deno.test({
         str8: "Roses are red\fViolets are blue",
         str9: "Roses are red\bViolets are blue",
         str10: "Roses are red\\Violets are blue",
-        str11: `dobule "quote"\nsingle 'quote'\n`,
+        str11: `double "quote"\nsingle 'quote'\n`,
         str12: 'Here are two quotation marks: "". Simple enough.',
         str13: 'Here are three quotation marks: """.',
         str14: 'Here are fifteen quotation marks: """"""""""""""".',
@@ -55,7 +55,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] CRLF",
+  name: "parse() handles CRLF",
   fn() {
     const expected = { boolean: { bool1: true, bool2: false } };
     const actual = parseFile(path.join(testdataDir, "CRLF.toml"));
@@ -64,7 +64,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Boolean",
+  name: "parse() handles boolean",
   fn() {
     const expected = { boolean: { bool1: true, bool2: false, bool3: true } };
     const actual = parseFile(path.join(testdataDir, "boolean.toml"));
@@ -73,7 +73,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Integer",
+  name: "parse() handles integer",
   fn() {
     const expected = {
       integer: {
@@ -98,7 +98,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Float",
+  name: "parse() handles float",
   fn() {
     const expected = {
       float: {
@@ -124,13 +124,17 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Arrays",
+  name: "parse() handles arrays",
   fn() {
     const expected = {
       arrays: {
         data: [
           ["gamma", "delta"],
           [1, 2],
+        ],
+        floats: [
+          0.1,
+          -1.25,
         ],
         hosts: ["alpha", "omega"],
         profiles: [
@@ -151,7 +155,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Table",
+  name: "parse() handles table",
   fn() {
     const expected = {
       deeply: {
@@ -191,7 +195,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Various keys",
+  name: "parse() handles various keys",
   fn() {
     const expected = {
       site: { "google.com": { bar: 1, baz: 1 } },
@@ -210,7 +214,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Simple",
+  name: "parse() handles simple",
   fn() {
     const expected = {
       deno: "is",
@@ -225,7 +229,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Datetime",
+  name: "parse() handles datetime",
   fn() {
     const expected = {
       datetime: {
@@ -244,7 +248,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Inline Table",
+  name: "parse() handles inline table",
   fn() {
     const expected = {
       inlinetable: {
@@ -297,6 +301,7 @@ Deno.test({
             ],
           },
         },
+        empty: {},
       },
     };
     const actual = parseFile(path.join(testdataDir, "inlineTable.toml"));
@@ -305,7 +310,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Array of Tables",
+  name: "parse() handles array of tables",
   fn() {
     const expected = {
       bin: [
@@ -345,7 +350,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Cargo",
+  name: "parse() handles cargo",
   fn() {
     const expected = {
       workspace: { members: ["./", "core"] },
@@ -392,13 +397,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Stringify",
+  name: "parse() handles stringify",
   fn() {
     const src = {
       foo: { bar: "deno" },
       this: { is: { nested: "denonono" } },
       "https://deno.land/std": {
-        $: "doller",
+        $: "dollar",
       },
       "##": {
         deno: {
@@ -491,7 +496,7 @@ bar = "deno"
 nested = "denonono"
 
 ["https://deno.land/std"]
-"$" = "doller"
+"$" = "dollar"
 
 ["##".deno."https://deno.land"]
 proto = "https"
@@ -511,7 +516,7 @@ the = "array"
 });
 
 Deno.test({
-  name: "[TOML] Mixed Array",
+  name: "parse() handles mixed array",
   fn() {
     const src = {
       emptyArray: [],
@@ -542,7 +547,7 @@ b = [1,{c = 2,d = [{e = 3},true]}]
 });
 
 Deno.test({
-  name: "[TOML] Stringify with string values",
+  name: "parse() handles stringify with string values",
   fn: () => {
     const src = {
       '"': '"',
@@ -568,7 +573,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Comments",
+  name: "parse() handles comments",
   fn: () => {
     const expected = {
       str0: "value",
@@ -595,7 +600,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Inline Array of Inline Table",
+  name: "parse() handles inline array of inline table",
   fn() {
     const expected = {
       inlineArray: {
@@ -620,7 +625,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Parse malformed local time as String (#8433)",
+  name: "parse() handles parse malformed local time as string (#8433)",
   fn() {
     const expected = { sign: "2020-01-01x" };
     const actual = parse(`sign='2020-01-01x'`);
@@ -629,7 +634,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Single-line string comment error",
+  name: "parse() handles single-line string comment error",
   fn() {
     assertThrows(
       () => {
@@ -642,7 +647,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Invalid string format",
+  name: "parse() handles invalid string format",
   fn() {
     assertThrows(
       () => {
@@ -655,7 +660,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] Invalid whitespaces",
+  name: "parse() handles invalid whitespaces",
   fn() {
     assertThrows(
       () => {
@@ -676,7 +681,7 @@ Deno.test({
 
 // https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
 Deno.test({
-  name: "[TOML] object value contains '='",
+  name: "stringify() handles object value contains '='",
   fn() {
     const src = {
       "a": "a = 1",
@@ -692,7 +697,7 @@ helloooooooo = 1
 });
 
 Deno.test({
-  name: "[TOML] stringfy with key alignment",
+  name: "stringify() handles key alignment",
   fn() {
     const src = {
       "a": 1,
@@ -713,7 +718,7 @@ aaaaa = 1
 });
 
 Deno.test({
-  name: "[TOML] stringify empty key",
+  name: "stringify() handles empty key",
   fn() {
     const src = {
       "": "a",
@@ -730,7 +735,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] stringify empty object",
+  name: "stringify() handles empty object",
   fn() {
     const src = {
       "a": {},
@@ -747,7 +752,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[TOML] stringify special keys in inline object",
+  name: "stringify() handles special keys in inline object",
   fn() {
     const src = {
       "a": [{ "/": "b" }, "c"],

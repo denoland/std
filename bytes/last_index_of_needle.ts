@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /** Returns the index of the last occurrence of the needle array in the source
@@ -7,7 +7,7 @@
  * A start index can be specified as the third argument that begins the search
  * at that given index. The start index defaults to the end of the array.
  *
- * The complexity of this function is O(source.lenth * needle.length).
+ * The complexity of this function is O(source.length * needle.length).
  *
  * ```ts
  * import { lastIndexOfNeedle } from "https://deno.land/std@$STD_VERSION/bytes/last_index_of_needle.ts";
@@ -20,7 +20,7 @@
 export function lastIndexOfNeedle(
   source: Uint8Array,
   needle: Uint8Array,
-  start = source.length - 1,
+  start: number = source.length - 1,
 ): number {
   if (start < 0) {
     return -1;

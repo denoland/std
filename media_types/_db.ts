@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import db from "./vendor/mime-db.v1.52.0.ts";
 import { type DBEntry, extensions } from "./_util.ts";
 

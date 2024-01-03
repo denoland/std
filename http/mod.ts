@@ -1,20 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
  * and other utilities for creating HTTP servers and clients.
- *
- * ## Server
- *
- * Server APIs utilizing Deno's
- * [HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
- *
- * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * serve(() => new Response("Hello World\n"));
- *
- * console.log("http://localhost:8000/");
- * ```
  *
  * ## File Server
  *
@@ -54,15 +41,33 @@
  * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
  * with the familiar `Map` interface.
  *
+ * ## User agent handling
+ *
+ * The {@linkcode UserAgent} class provides user agent string parsing, allowing
+ * a user agent flag to be semantically understood.
+ *
+ * For example to integrate the user agent provided in the header `User-Agent`
+ * in an http request would look like this:
+ *
+ * ```ts
+ * import { UserAgent } from "https://deno.land/std@$STD_VERSION/http/user_agent.ts";
+ *
+ * Deno.serve((req) => {
+ *   const userAgent = new UserAgent(req.headers.get("user-agent") ?? "");
+ *   return new Response(`Hello, ${userAgent.browser.name}
+ *     on ${userAgent.os.name} ${userAgent.os.version}!`);
+ * });
+ * ```
+ *
  * @module
  */
 
 export * from "./cookie.ts";
 export * from "./cookie_map.ts";
 export * from "./etag.ts";
-export * from "./http_errors.ts";
-export * from "./http_status.ts";
-export * from "./method.ts";
+export * from "./status.ts";
 export * from "./negotiation.ts";
 export * from "./server.ts";
-export * from "./server_sent_event.ts";
+export * from "./unstable_signed_cookie.ts";
+export * from "./server_sent_event_stream.ts";
+export * from "./user_agent.ts";

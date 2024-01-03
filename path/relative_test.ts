@@ -1,12 +1,13 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../testing/asserts.ts";
-import * as path from "./mod.ts";
+import { assertEquals } from "../assert/mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 const relativeTests = {
   // arguments                     result
-  win32: [
+  windows: [
     ["c:/blah\\blah", "d:/games", "d:\\games"],
     ["c:/aaaa/bbbb", "c:/aaaa", ".."],
     ["c:/aaaa/bbbb", "c:/cccc", "..\\..\\cccc"],
@@ -49,18 +50,18 @@ const relativeTests = {
   ],
 };
 
-Deno.test("relative", function () {
+Deno.test("posix.relative()", function () {
   relativeTests.posix.forEach(function (p) {
     const expected = p[2];
-    const actual = path.posix.relative(p[0], p[1]);
+    const actual = posix.relative(p[0], p[1]);
     assertEquals(actual, expected);
   });
 });
 
-Deno.test("relativeWin32", function () {
-  relativeTests.win32.forEach(function (p) {
+Deno.test("windows.relative()", function () {
+  relativeTests.windows.forEach(function (p) {
     const expected = p[2];
-    const actual = path.win32.relative(p[0], p[1]);
+    const actual = windows.relative(p[0], p[1]);
     assertEquals(actual, expected);
   });
 });

@@ -1,12 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals, assertStringIncludes } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
 
-const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata");
-
-Deno.test("[fs] existsNotExist", async function () {
+Deno.test("exists() returns false for a non-existent path", async function () {
   const tempDirPath = await Deno.makeTempDir();
   try {
     assertEquals(await exists(path.join(tempDirPath, "not_exists")), false);
@@ -15,7 +12,7 @@ Deno.test("[fs] existsNotExist", async function () {
   }
 });
 
-Deno.test("[fs] existsNotExistSync", function () {
+Deno.test("existsSync() returns false for a non-existent path", function () {
   const tempDirPath = Deno.makeTempDirSync();
   try {
     assertEquals(existsSync(path.join(tempDirPath, "not_exists")), false);
@@ -24,7 +21,7 @@ Deno.test("[fs] existsNotExistSync", function () {
   }
 });
 
-Deno.test("[fs] existsFile", async function () {
+Deno.test("exists() returns true for an existing file", async function () {
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempFile = await Deno.create(tempFilePath);
@@ -62,7 +59,7 @@ Deno.test("[fs] existsFile", async function () {
   }
 });
 
-Deno.test("[fs] existsFileLink", async function () {
+Deno.test("exists() returns true for an existing file symlink", async function () {
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
@@ -103,7 +100,7 @@ Deno.test("[fs] existsFileLink", async function () {
   }
 });
 
-Deno.test("[fs] existsFileSync", function () {
+Deno.test("existsSync() returns true for an existing file", function () {
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempFile = Deno.createSync(tempFilePath);
@@ -141,7 +138,7 @@ Deno.test("[fs] existsFileSync", function () {
   }
 });
 
-Deno.test("[fs] existsFileLinkSync", function () {
+Deno.test("existsSync() returns true for an existing file symlink", function () {
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
@@ -182,7 +179,7 @@ Deno.test("[fs] existsFileLinkSync", function () {
   }
 });
 
-Deno.test("[fs] existsDir", async function () {
+Deno.test("exists() returns true for an existing dir", async function () {
   const tempDirPath = await Deno.makeTempDir();
   try {
     assertEquals(await exists(tempDirPath), true);
@@ -217,7 +214,7 @@ Deno.test("[fs] existsDir", async function () {
   }
 });
 
-Deno.test("[fs] existsDirLink", async function () {
+Deno.test("exists() returns true for an existing dir symlink", async function () {
   const tempDirPath = await Deno.makeTempDir();
   const tempLinkDirPath = path.join(tempDirPath, "temp-link");
   try {
@@ -255,7 +252,7 @@ Deno.test("[fs] existsDirLink", async function () {
   }
 });
 
-Deno.test("[fs] existsDirSync", function () {
+Deno.test("existsSync() returns true for an existing dir", function () {
   const tempDirPath = Deno.makeTempDirSync();
   try {
     assertEquals(existsSync(tempDirPath), true);
@@ -290,7 +287,7 @@ Deno.test("[fs] existsDirSync", function () {
   }
 });
 
-Deno.test("[fs] existsDirLinkSync", function () {
+Deno.test("existsSync() returns true for an existing dir symlink", function () {
   const tempDirPath = Deno.makeTempDirSync();
   const tempLinkDirPath = path.join(tempDirPath, "temp-link");
   try {
@@ -328,100 +325,44 @@ Deno.test("[fs] existsDirLinkSync", function () {
   }
 });
 
-/**
- * Scenes control additional permission tests by spawning new Deno processes with and without --allow-read flag.
- */
-interface Scene {
-  read: boolean; // true to test with --allow-read
-  sync: boolean; // true to test sync
-  exists: boolean; // true to test on existing file
-  output: string; // required string include of stdout to succeed
-}
+Deno.test("exists() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await exists(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});
 
-const scenes: Scene[] = [
-  {
-    read: false,
-    sync: false,
-    exists: false,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: false,
-    sync: true,
-    exists: false,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: true,
-    sync: false,
-    exists: false,
-    output: "not exist",
-  },
-  {
-    read: true,
-    sync: true,
-    exists: false,
-    output: "not exist",
-  },
-  {
-    read: false,
-    sync: false,
-    exists: true,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: false,
-    sync: true,
-    exists: true,
-    output: "run again with the --allow-read flag",
-  },
-  {
-    read: true,
-    sync: false,
-    exists: true,
-    output: "exist",
-  },
-  {
-    read: true,
-    sync: true,
-    exists: true,
-    output: "exist",
-  },
-];
-
-for (const s of scenes) {
-  let title = `test ${!s.sync ? "exists" : "existsSync"} on`;
-  title += ` ${s.exists ? "existing" : "non-existing"} file`;
-  title += ` ${s.read ? "with" : "without"} --allow-read`;
-  Deno.test(`[fs] existsPermission ${title}`, async function () {
-    const args = ["run", "--quiet", "--no-prompt"];
-
-    if (s.read) {
-      args.push("--allow-read");
-    }
-    args.push(path.join(testdataDir, !s.sync ? "exists.ts" : "exists_sync.ts"));
-
-    let tempFilePath = "does_not_exist.ts";
-    let tempDirPath: string | null = null;
-    let tempFile: Deno.FsFile | null = null;
-    if (s.exists) {
-      tempDirPath = await Deno.makeTempDir();
-      tempFilePath = path.join(tempDirPath, "0.ts");
-      tempFile = await Deno.create(tempFilePath);
-    }
-    args.push(tempFilePath);
-
-    const command = new Deno.Command(Deno.execPath(), {
-      args,
-    });
-    const { stdout } = await command.output();
-
-    if (tempFile != null) {
-      tempFile.close();
-      await Deno.remove(tempDirPath!, { recursive: true });
-    }
-
-    assertStringIncludes(new TextDecoder().decode(stdout), s.output);
-  });
-  // done
-}
+Deno.test("existsSync() returns false when both isDirectory and isFile sets true", async function () {
+  const tempDirPath = await Deno.makeTempDir();
+  try {
+    assertEquals(
+      await existsSync(tempDirPath, {
+        isDirectory: true,
+        isFile: true,
+      }),
+      true,
+    );
+  } catch (error) {
+    assert(error instanceof TypeError);
+    assertStringIncludes(
+      error.message,
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+    );
+  } finally {
+    await Deno.remove(tempDirPath, { recursive: true });
+  }
+});

@@ -1,9 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
- * Options for joinToString
- */
+/** Options for {@linkcode joinToString}. */
 export type JoinToStringOptions = {
   separator?: string;
   prefix?: string;
@@ -23,7 +21,7 @@ export type JoinToStringOptions = {
  * @example
  * ```ts
  * import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/join_to_string.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * const users = [
  *   { name: "Kim" },

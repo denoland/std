@@ -1,16 +1,16 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../assert/mod.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { YAMLError } from "./_error.ts";
 import { Type } from "./type.ts";
 
 Deno.test({
-  name: "`parse` parses single document yaml string",
+  name: "parse() handles single document yaml string",
   fn() {
     const yaml = `
       test: toto
@@ -27,7 +27,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`parseAll` parses the yaml string with multiple documents",
+  name: "parseAll() handles yaml string with multiple documents",
   fn() {
     const yaml = `
 ---
@@ -59,7 +59,7 @@ name: Eve
 });
 
 Deno.test({
-  name: "`!!js/*` yaml types are not handled in default schemas while parsing",
+  name: "parse() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const yaml = `undefined: !!js/undefined ~`;
     assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
@@ -68,7 +68,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "`!!js/*` yaml types are correctly handled with extended schema while parsing",
+    "parse() handles `!!js/*` yaml types woth extended schema while parsing",
   fn() {
     const yaml = `
       regexp:
@@ -90,7 +90,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!!js/function` yaml type with extended schema throws while parsing",
+  name: "parse() throws with `!!js/function` yaml type with extended schema",
   fn() {
     const func = function foobar() {
       return "hello world!";
@@ -106,7 +106,7 @@ ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 });
 
 Deno.test({
-  name: "`!*` yaml user defined types are supported while parsing",
+  name: "parse() handles `!*` yaml user defined types",
   fn() {
     const PointYamlType = new Type("!point", {
       kind: "sequence",
@@ -131,7 +131,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`parseAll` accepts parse options",
+  name: "parseAll() accepts parse options",
   fn() {
     const yaml = `
 ---
@@ -174,7 +174,7 @@ regexp: !!js/regexp bar
 });
 
 Deno.test({
-  name: "parse __proto__",
+  name: "parse() handles __proto__",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
     // instead of `target[key] = value` when parsing the object.
@@ -214,5 +214,29 @@ merge_test:
     });
     const { success } = await command.output();
     assert(success);
+  },
+});
+
+Deno.test({
+  name: "parse() returns `null` when yaml is empty or only comments",
+  fn() {
+    const expected = null;
+
+    const yaml1 = ``;
+    assertEquals(parse(yaml1), expected);
+    const yaml2 = ` \n\n `;
+    assertEquals(parse(yaml2), expected);
+    const yaml3 = `# just a bunch of comments \n # in this file`;
+    assertEquals(parse(yaml3), expected);
+  },
+});
+
+Deno.test({
+  name: "parse() handles binary type",
+  fn() {
+    const yaml = `message: !!binary "SGVsbG8="`;
+    assertEquals(parse(yaml), {
+      message: new Uint8Array([72, 101, 108, 108, 111]),
+    });
   },
 });

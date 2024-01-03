@@ -1,7 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { decode, encode } from "./base64url.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
+import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
 
 const testsetString = [
   ["", ""],
@@ -27,30 +27,47 @@ const testsetInvalid = [
   "PDw/Pz8+Pg==",
 ];
 
-Deno.test("[encoding/base64url] testBase64urlEncodeString", () => {
+Deno.test("encodeBase64Url() encodes string", () => {
   for (const [input, output] of testsetString) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase64Url(input), output);
   }
 });
 
-Deno.test("[encoding/base64url] testBase64urlEncodeBinary", () => {
+Deno.test("encodeBase64Url() encodes binary", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(encode(input), output);
+    assertEquals(encodeBase64Url(input), output);
   }
 });
 
-Deno.test("[decoding/base64url] testBase64urlDecodeBinary", () => {
+Deno.test("decodeBase64Url() decodes binary", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(decode(output), input);
+    assertEquals(decodeBase64Url(output), input);
   }
 });
 
-Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () => {
+Deno.test("decodeBase64Url() throws on invalid input", () => {
   for (const invalidb64url of testsetInvalid) {
     assertThrows(
-      () => decode(invalidb64url),
+      () => decodeBase64Url(invalidb64url),
       TypeError,
       "invalid character",
+    );
+  }
+});
+
+Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
+  const testsetIllegalBase64url = [
+    "w58De",
+    "Zm9vYmFyy",
+    "DPj8-ZD_DnwEg",
+    "SGVsbG8gV29ybGQ-_",
+  ];
+
+  for (const illegalBase64url of testsetIllegalBase64url) {
+    assertThrows(
+      () => decodeBase64Url(illegalBase64url),
+      TypeError,
+      "Illegal base64url string!",
     );
   }
 });

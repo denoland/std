@@ -1,7 +1,7 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import * as path from "../path/mod.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { dirname } from "../path/dirname.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { toPathString } from "./_util.ts";
+import { toPathString } from "./_to_path_string.ts";
 
 /**
  * Ensures that the hard link exists.
@@ -19,7 +19,7 @@ import { toPathString } from "./_util.ts";
  */
 export async function ensureLink(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);
-  await ensureDir(path.dirname(dest));
+  await ensureDir(dirname(dest));
 
   await Deno.link(toPathString(src), dest);
 }
@@ -40,7 +40,7 @@ export async function ensureLink(src: string | URL, dest: string | URL) {
  */
 export function ensureLinkSync(src: string | URL, dest: string | URL) {
   dest = toPathString(dest);
-  ensureDirSync(path.dirname(dest));
+  ensureDirSync(dirname(dest));
 
   Deno.linkSync(toPathString(src), dest);
 }

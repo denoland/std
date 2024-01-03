@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { deepMerge } from "../collections/deep_merge.ts";
@@ -354,7 +354,7 @@ function character(str: string) {
 const Patterns = {
   BARE_KEY: /[A-Za-z0-9_-]/,
   FLOAT: /[0-9_\.e+\-]/i,
-  END_OF_VALUE: /[ \t\r\n#,}]/,
+  END_OF_VALUE: /[ \t\r\n#,}\]]/,
 };
 
 export function BareKey(scanner: Scanner): ParseResult<string> {
@@ -481,13 +481,20 @@ export function MultilineBasicString(
     return failure();
   }
   if (scanner.char() === "\n") {
-    // The first newline is trimmed
+    // The first newline (LF) is trimmed
     scanner.next();
+  } else if (scanner.slice(0, 2) === "\r\n") {
+    // The first newline (CRLF) is trimmed
+    scanner.next(2);
   }
   const acc: string[] = [];
   while (scanner.slice(0, 3) !== '"""' && !scanner.eof()) {
     // line ending backslash
     if (scanner.slice(0, 2) === "\\\n") {
+      scanner.next();
+      scanner.nextUntilChar({ comment: false });
+      continue;
+    } else if (scanner.slice(0, 3) === "\\\r\n") {
       scanner.next();
       scanner.nextUntilChar({ comment: false });
       continue;
@@ -525,8 +532,11 @@ export function MultilineLiteralString(
     return failure();
   }
   if (scanner.char() === "\n") {
-    // The first newline is trimmed
+    // The first newline (LF) is trimmed
     scanner.next();
+  } else if (scanner.slice(0, 2) === "\r\n") {
+    // The first newline (CRLF) is trimmed
+    scanner.next(2);
   }
   const acc: string[] = [];
   while (scanner.slice(0, 3) !== "'''" && !scanner.eof()) {
@@ -741,6 +751,10 @@ export function InlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   scanner.nextUntilChar();
+  if (scanner.char(1) === "}") {
+    scanner.next(2);
+    return success({});
+  }
   const pairs = surround(
     "{",
     join(Pair, ","),

@@ -1,6 +1,6 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 import { TextLineStream } from "../streams/text_line_stream.ts";
 import { JsonParseStream } from "./json_parse_stream.ts";
@@ -63,10 +63,7 @@ Deno.test({
       .pipeThrough(new TextLineStream())
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },
@@ -87,10 +84,7 @@ Deno.test({
       .pipeThrough(new TextLineStream())
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },
@@ -113,10 +107,7 @@ Deno.test({
       .pipeThrough(new TextDelimiterStream(recordSeparator))
       .pipeThrough(new JsonParseStream());
 
-    const result = [];
-    for await (const data of readable) {
-      result.push(data);
-    }
+    const result = await Array.fromAsync(readable);
 
     assertEquals(result, [
       { "hello": "world" },

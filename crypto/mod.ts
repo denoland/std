@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -11,6 +11,5 @@
  */
 
 export * from "./crypto.ts";
-export * from "./keystack.ts";
+export * from "./unstable_keystack.ts";
 export * from "./timing_safe_equal.ts";
-export * from "./to_hash_string.ts";

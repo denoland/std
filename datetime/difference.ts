@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
@@ -52,7 +52,7 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  * //   days: 730,
  * //   weeks: 104,
  * //   months: 23,
- * //   quarters: 5,
+ * //   quarters: 7,
  * //   years: 1
  * // }
  * ```

@@ -1,16 +1,16 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { stringify } from "./stringify.ts";
 import { YAMLError } from "./_error.ts";
 import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { Type } from "./type.ts";
 
 Deno.test({
-  name: "stringified correctly",
+  name: "stringify()",
   fn() {
     const FIXTURE = {
       foo: {
@@ -27,6 +27,7 @@ Deno.test({
         ],
       },
       test: "foobar",
+      binary: new Uint8Array([72, 101, 108, 108, 111]),
     };
 
     const ASSERTS = `foo:
@@ -37,6 +38,7 @@ Deno.test({
     - a: false
     - a: false
 test: foobar
+binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 `;
 
     assertEquals(stringify(FIXTURE), ASSERTS);
@@ -44,8 +46,7 @@ test: foobar
 });
 
 Deno.test({
-  name:
-    "`!!js/*` yaml types are not handled in default schemas while stringifying",
+  name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const object = { undefined: undefined };
     assertThrows(
@@ -57,8 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "`!!js/*` yaml types are correctly handled with extended schema while stringifying",
+  name: "stringify() handles `!!js/*` yaml types with extended schema",
   fn() {
     const object = {
       regexp: {
@@ -79,7 +79,8 @@ undefined: !<tag:yaml.org,2002:js/undefined> ''
 });
 
 Deno.test({
-  name: "`!!js/function` yaml with extended schema throws while stringifying",
+  name:
+    "stringify() throws with `!!js/function` yaml types with extended schema",
   fn() {
     const func = function foobar() {
       return "hello world!";
@@ -92,7 +93,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!*` yaml user defined types are supported while stringifying",
+  name: "stringify() handles `!*` yaml user defined types",
   fn() {
     const PointYamlType = new Type("!point", {
       kind: "sequence",

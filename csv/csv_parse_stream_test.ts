@@ -1,24 +1,22 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { CsvParseStream } from "./csv_parse_stream.ts";
 import type { CsvParseStreamOptions } from "./csv_parse_stream.ts";
 import { ERR_QUOTE, ParseError } from "./_io.ts";
-import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
-import { readableStreamFromReader } from "../streams/readable_stream_from_reader.ts";
 import {
   assert,
   assertEquals,
   assertRejects,
   assertStringIncludes,
-} from "../testing/asserts.ts";
+} from "../assert/mod.ts";
 import type { AssertTrue, IsExact } from "../testing/types.ts";
 import { fromFileUrl, join } from "../path/mod.ts";
-import { StringReader } from "../io/string_reader.ts";
+import { delay } from "../async/delay.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
 
 Deno.test({
-  name: "[csv/csv_parse_stream] CsvParseStream should work with Deno.File",
+  name: "CsvParseStream should work with Deno.FsFile's readable",
   permissions: {
     read: [testdataDir],
   },
@@ -27,10 +25,7 @@ Deno.test({
     const readable = file.readable
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
-    const records = [] as Array<Array<string>>;
-    for await (const record of readable) {
-      records.push(record);
-    }
+    const records = await Array.fromAsync(readable);
     assertEquals(records, [
       ["id", "name"],
       ["1", "foobar"],
@@ -40,9 +35,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv/csv_parse_stream] CsvParseStream with invalid csv",
+  name: "CsvParseStream throws at invalid csv line",
   fn: async () => {
-    const readable = readableStreamFromIterable([
+    const readable = ReadableStream.from([
       encoder.encode("id,name\n"),
       encoder.encode("\n"),
       encoder.encode("1,foo\n"),
@@ -63,7 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[csv/csv_parse_stream] CsvParseStream with various inputs",
+  name: "CsvParseStream handles various inputs",
   permissions: "none",
   fn: async (t) => {
     // These test cases were originally ported from Go:
@@ -331,14 +326,11 @@ x,,,
         if (testCase.columns) {
           options.columns = testCase.columns;
         }
-        const readable = createReadableStreamFromString(testCase.input)
+        const readable = ReadableStream.from(testCase.input)
           .pipeThrough(new CsvParseStream(options));
 
         if (testCase.output) {
-          const actual = [];
-          for await (const record of readable) {
-            actual.push(record);
-          }
+          const actual = await Array.fromAsync(readable);
           assertEquals(actual, testCase.output);
         } else {
           await assertRejects(async () => {
@@ -350,45 +342,25 @@ x,,,
   },
 });
 
-function createReadableStreamFromString(s: string): ReadableStream<string> {
-  return readableStreamFromReader(new StringReader(s)).pipeThrough(
-    new TextDecoderStream(),
-  );
-}
-
-// Work around resource leak error with TextDecoderStream:
-//   https://github.com/denoland/deno/issues/13142
-export const MyTextDecoderStream = () => {
-  const textDecoder = new TextDecoder();
-  return new TransformStream({
-    transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode(chunk));
-    },
-    flush(controller: TransformStreamDefaultController) {
-      controller.enqueue(textDecoder.decode());
-    },
-  });
-};
-
 Deno.test({
   name:
-    "[csv/csv_parse_stream] cancel CsvParseStream during iteration does not leak file",
+    "CsvParseStream.cancel() does not leak file when called in the middle of iteration",
   permissions: { read: [testdataDir] },
-  // TODO(kt3k): Enable this test on windows.
-  // See https://github.com/denoland/deno_std/issues/3160
-  ignore: Deno.build.os === "windows",
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "large.csv"));
-    const readable = file.readable.pipeThrough(MyTextDecoderStream())
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
       .pipeThrough(new CsvParseStream());
     for await (const _record of readable) {
       break;
     }
+    // FIXME(kt3k): Remove this delay.
+    await delay(100);
   },
 });
 
 Deno.test({
-  name: "[csv/csv_parse_stream] correct typing",
+  name: "CsvParseStream is correctly typed",
   fn() {
     // If no option is passed, defaults to ReadableStream<string[]>.
     {
@@ -401,7 +373,7 @@ Deno.test({
     }
     {
       // `skipFirstRow` may be `true` or `false`.
-      // `coloums` may be `undefined` or `string[]`.
+      // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
       // the return type is ReadableStream<string[] | Record<string, string | undefined>>
       const options: CsvParseStreamOptions = {};

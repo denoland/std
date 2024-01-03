@@ -1,8 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "../testing/asserts.ts";
-import * as path from "./mod.ts";
+import { assertEquals } from "../assert/mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 const windowsTests =
   // arguments                               result
@@ -33,18 +34,18 @@ const posixTests =
     [["/foo/tmp.3/", "../tmp.3/cycles/root.js"], "/foo/tmp.3/cycles/root.js"],
   ];
 
-Deno.test("resolve", function () {
+Deno.test("posix.resolve()", function () {
   posixTests.forEach(function (p) {
     const _p = p[0] as string[];
-    const actual = path.posix.resolve.apply(null, _p);
+    const actual = posix.resolve.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });
 
-Deno.test("resolveWin32", function () {
+Deno.test("windows.resolve()", function () {
   windowsTests.forEach(function (p) {
     const _p = p[0] as string[];
-    const actual = path.win32.resolve.apply(null, _p);
+    const actual = windows.resolve.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });

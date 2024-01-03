@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assertEquals } from "../assert/mod.ts";
 import { difference } from "./difference.ts";
 
 Deno.test({
-  name: "[std/datetime] difference",
+  name: "difference()",
   fn() {
     const denoInit = new Date("2018/5/14");
     const denoReleaseV1 = new Date("2020/5/13");

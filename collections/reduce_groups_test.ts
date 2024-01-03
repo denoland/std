@@ -1,10 +1,14 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../assert/mod.ts";
 import { reduceGroups } from "./reduce_groups.ts";
 
 function reduceGroupsTest<T, A>(
-  input: [Record<string, Array<T>>, (accumulator: A, current: T) => A, A],
+  input: [
+    record: Record<string, ReadonlyArray<T>>,
+    reducer: (accumulator: A, current: T) => A,
+    initialValue: A,
+  ],
   expected: Record<string, A>,
   message?: string,
 ) {
@@ -13,7 +17,7 @@ function reduceGroupsTest<T, A>(
 }
 
 Deno.test({
-  name: "[collections/mapEntries] no mutation",
+  name: "mapEntries() handles no mutation",
   fn() {
     const input = {
       Woody: [2, 3, 1, 4],
@@ -30,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] array of numbers",
+  name: "mapEntries() handles array of numbers",
   fn() {
     reduceGroupsTest(
       [
@@ -50,7 +54,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] array of string",
+  name: "mapEntries() handles array of strings",
   fn() {
     reduceGroupsTest(
       [
@@ -70,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] mapper",
+  name: "mapEntries() handles mapper",
   fn() {
     reduceGroupsTest(
       [
@@ -90,7 +94,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] initial value",
+  name: "mapEntries() handles initial value",
   fn() {
     reduceGroupsTest(
       [
@@ -110,7 +114,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] empty input",
+  name: "mapEntries() handles empty input",
   fn() {
     reduceGroupsTest([{}, () => 0, 0], {});
   },

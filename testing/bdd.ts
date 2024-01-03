@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /** A [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) interface
  * to `Deno.test()` API.
@@ -61,7 +61,7 @@
  *
  * ## Permissions option
  *
- * Like `Deno.TestDefinition`, the `DescribeDefintion` and `ItDefinition` have a
+ * Like `Deno.TestDefinition`, the `DescribeDefinition` and `ItDefinition` have a
  * `permissions` option. They specify the permissions that should be used to run an
  * individual test case or test suite. Set this to `"inherit"` to keep the calling
  * thread's permissions. Set this to `"none"` to revoke all permissions.
@@ -87,13 +87,34 @@
  * both styles.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
+ *
+ * class User {
+ *   static users: Map<string, User> = new Map();
+ *   age?: number;
+ *
+ *   constructor(public name: string) {
+ *     if (User.users.has(name)) {
+ *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
+ *     }
+ *     User.users.set(name, this);
+ *   }
+ *
+ *   getAge(): number {
+ *     if (!this.age) {
+ *       throw new Error("Age unknown");
+ *     }
+ *     return this.age;
+ *   }
+ *
+ *   setAge(age: number) {
+ *     this.age = age;
+ *   }
+ * }
  *
  * Deno.test("User.users initially empty", () => {
  *   assertEquals(User.users.size, 0);
@@ -132,19 +153,40 @@
  * the options argument for describe.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_nested_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   afterEach,
  *   beforeEach,
  *   describe,
  *   it,
  * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ *
+ * class User {
+ *   static users: Map<string, User> = new Map();
+ *   age?: number;
+ *
+ *   constructor(public name: string) {
+ *     if (User.users.has(name)) {
+ *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
+ *     }
+ *     User.users.set(name, this);
+ *   }
+ *
+ *   getAge(): number {
+ *     if (!this.age) {
+ *       throw new Error("Age unknown");
+ *     }
+ *     return this.age;
+ *   }
+ *
+ *   setAge(age: number) {
+ *     this.age = age;
+ *   }
+ * }
  *
  * describe("User", () => {
  *   it("users initially empty", () => {
@@ -194,17 +236,38 @@
  * indentation in front of the grouped tests.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_flat_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   describe,
  *   it,
  * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ *
+ * class User {
+ *   static users: Map<string, User> = new Map();
+ *   age?: number;
+ *
+ *   constructor(public name: string) {
+ *     if (User.users.has(name)) {
+ *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
+ *     }
+ *     User.users.set(name, this);
+ *   }
+ *
+ *   getAge(): number {
+ *     if (!this.age) {
+ *       throw new Error("Age unknown");
+ *     }
+ *     return this.age;
+ *   }
+ *
+ *   setAge(age: number) {
+ *     this.age = age;
+ *   }
+ * }
  *
  * const userTests = describe("User");
  *
@@ -254,17 +317,38 @@
  * indentation in front of each line.
  *
  * ```ts
- * // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_mixed_test.ts
  * import {
  *   assertEquals,
  *   assertStrictEquals,
  *   assertThrows,
- * } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * } from "https://deno.land/std@$STD_VERSION/assert/mod.ts";
  * import {
  *   describe,
  *   it,
  * } from "https://deno.land/std@$STD_VERSION/testing/bdd.ts";
- * import { User } from "https://deno.land/std@$STD_VERSION/testing/bdd_examples/user.ts";
+ *
+ * class User {
+ *   static users: Map<string, User> = new Map();
+ *   age?: number;
+ *
+ *   constructor(public name: string) {
+ *     if (User.users.has(name)) {
+ *       throw new Deno.errors.AlreadyExists(`User ${name} already exists`);
+ *     }
+ *     User.users.set(name, this);
+ *   }
+ *
+ *   getAge(): number {
+ *     if (!this.age) {
+ *       throw new Error("Age unknown");
+ *     }
+ *     return this.age;
+ *   }
+ *
+ *   setAge(age: number) {
+ *     this.age = age;
+ *   }
+ * }
  *
  * describe("User", () => {
  *   it("users initially empty", () => {

@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/concat.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -49,7 +49,7 @@ export async function generate(
   const space = uuidToBytes(namespace);
   assert(space.length === 16, "namespace must be a valid UUID");
 
-  const toHash = concat(new Uint8Array(space), data);
+  const toHash = concat([new Uint8Array(space), data]);
   const buffer = await crypto.subtle.digest("sha-1", toHash);
   const bytes = new Uint8Array(buffer);
 

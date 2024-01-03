@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 export type EntityList = Record<string, string>;
@@ -27,7 +27,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * @example
  * ```ts
  * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
  *
@@ -36,7 +36,7 @@ const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
  * assertEquals(escape("þð"), "þð");
  * ```
  */
-export function escape(str: string) {
+export function escape(str: string): string {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
@@ -59,7 +59,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * @example
  * ```ts
  * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
  * // default options (only handles &<>'" and numeric entities)
  * assertEquals(unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
@@ -73,7 +73,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 export function unescape(
   str: string,
   options: Partial<UnescapeOptions> = {},
-) {
+): string {
   const { entityList } = { ...defaultUnescapeOptions, ...options };
 
   let entityRe = entityListRegexCache.get(entityList);

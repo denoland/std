@@ -1,8 +1,8 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assert, assertEquals } from "../assert/mod.ts";
 import { copy } from "./copy.ts";
 
-Deno.test("[bytes] copy", function () {
+Deno.test("copy()", function () {
   const dst = new Uint8Array(4);
 
   dst.fill(0);

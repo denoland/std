@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /** Provides functions for dealing with and matching ETags, including
  * {@linkcode calculate} to calculate an etag for a given entity,
@@ -12,7 +12,7 @@
  * @module
  */
 
-import { encode as base64Encode } from "../encoding/base64.ts";
+import { encodeBase64 as base64Encode } from "../encoding/base64.ts";
 
 /** Just the part of `Deno.FileInfo` that is required to calculate an `ETag`,
  * so partial or user generated file information can be passed. */
@@ -83,7 +83,7 @@ async function calcFileInfo(
  *
  * ```ts
  * import { calculate } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
@@ -118,12 +118,11 @@ export async function calculate(
  *   calculate,
  *   ifMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
- * await serve(async (req) => {
+ * Deno.serve(async (req) => {
  *   const ifMatchValue = req.headers.get("if-match");
  *   const etag = await calculate(body);
  *   assert(etag);
@@ -162,12 +161,11 @@ export function ifMatch(
  *   calculate,
  *   ifNoneMatch,
  * } from "https://deno.land/std@$STD_VERSION/http/etag.ts";
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
+ * import { assert } from "https://deno.land/std@$STD_VERSION/assert/assert.ts"
  *
  * const body = "hello deno!";
  *
- * await serve(async (req) => {
+ * Deno.serve(async (req) => {
  *   const ifNoneMatchValue = req.headers.get("if-none-match");
  *   const etag = await calculate(body);
  *   assert(etag);

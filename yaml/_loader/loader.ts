@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { YAMLError } from "../_error.ts";
 import { Mark } from "../_mark.ts";
@@ -742,8 +742,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
   if (
     state.anchor !== null &&
-    typeof state.anchor != "undefined" &&
-    typeof state.anchorMap != "undefined"
+    typeof state.anchor !== "undefined" &&
+    typeof state.anchorMap !== "undefined"
   ) {
     state.anchorMap[state.anchor] = result;
   }
@@ -1788,7 +1788,7 @@ export function load(input: string, options?: LoaderStateOptions): unknown {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {
-    return;
+    return null;
   }
   if (documents.length === 1) {
     return documents[0];

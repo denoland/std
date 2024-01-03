@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-write
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
-import { assert } from "../../_util/asserts.ts";
+import { assert } from "../../assert/assert.ts";
 import { runLengthEncode } from "../_rle.ts";
 
 // change this line and re-run the script to update for new Unicode versions
@@ -11,11 +11,13 @@ const UNICODE_VERSION = "15.0.0";
 const NUM_CODEPOINTS = 0x110000;
 const MAX_CODEPOINT_BITS = Math.ceil(Math.log2(NUM_CODEPOINTS - 1));
 
-enum OffsetType {
-  U2 = 2,
-  U4 = 4,
-  U8 = 8,
-}
+const OffsetType = {
+  U2: 2,
+  U4: 4,
+  U8: 8,
+} as const;
+
+type OffsetType = typeof OffsetType[keyof typeof OffsetType];
 
 type CodePoint = number;
 type BitPos = number;
@@ -38,12 +40,14 @@ async function fetchUnicodeData(filename: string, version: string) {
   return await res.text();
 }
 
-enum EffectiveWidth {
-  Zero = 0,
-  Narrow = 1,
-  Wide = 2,
-  Ambiguous = 3,
-}
+const EffectiveWidth = {
+  Zero: 0,
+  Narrow: 1,
+  Wide: 2,
+  Ambiguous: 3,
+} as const;
+
+type EffectiveWidth = typeof EffectiveWidth[keyof typeof EffectiveWidth];
 
 const widthCodes = {
   N: EffectiveWidth.Narrow,
@@ -246,7 +250,7 @@ class Table {
 
     this.entries = this.entries.map((i) => {
       const width = this.indexed[i].width();
-      if (width == null) throw new TypeError("width cannot be null");
+      if (width === null) throw new TypeError("width cannot be null");
       return width;
     });
 

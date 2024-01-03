@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Logging library with the support for terminal and file outputs. Also provides
@@ -18,6 +18,42 @@
  * as argument and outputs string.
  *
  * The default log format is `{levelName} {msg}`.
+ *
+ * ### Logging Structured JSON Lines
+ *
+ * To output logs in a structured JSON format you can configure most handlers
+ * with a formatter that produces a JSON string. Either use the premade
+ * `log.formatters.jsonFormatter` or write your own function that takes a
+ * {@linkcode LogRecord} and returns a JSON.stringify'd object.
+ * If you want the log to go to stdout then use {@linkcode ConsoleHandler} with
+ * the configuration `useColors: false` to turn off the ANSI terminal colours.
+ *
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     default: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: log.formatters.jsonFormatter,
+ *       useColors: false,
+ *     }),
+ *   },
+ * });
+ * ```
+ *
+ * The first argument passed to a log function is always treated as the
+ * message and will be stringified differently. To have arguments JSON.stringify'd
+ * you must pass them after the first.
+ *
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.info("This is the message", { thisWillBe: "JSON.stringify'd"});
+ * // {"level":"INFO","datetime":1702501580505,"message":"This is the message","args":{"thisWillBe":"JSON.stringify'd"}}
+ *
+ * log.info({ thisWontBe: "JSON.stringify'd"}, "This is an argument");
+ * // {"level":"INFO","datetime":1702501580505,"message":"{\"thisWontBe\":\"JSON.stringify'd\"}","args":"This is an argument"}
+ * ```
  *
  * ## Inline Logging
  *
@@ -64,7 +100,7 @@
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  * import { sum } from "<the-awesome-module>/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *   },
@@ -108,14 +144,14 @@
  * log.critical("500 Internal server error");
  *
  * // custom configuration with 2 loggers (the default and `tasks` loggers).
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *
  *     file: new log.handlers.FileHandler("WARNING", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
- *       formatter: "{levelName} {msg}",
+ *       formatter: (record) => `${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -157,10 +193,10 @@
  * ```ts
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{levelName}] {msg}",
+ *       formatter: (record) => `[${record.levelName}] ${record.msg}`,
  *     }),
  *
  *     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
@@ -176,7 +212,7 @@
  *     }),
  *
  *     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
- *       formatter: "[{loggerName}] - {levelName} {msg}",
+ *       formatter: (record) => `[${record.loggerName}] - ${record.levelName} ${record.msg}`,
  *     }),
  *   },
  *
@@ -203,6 +239,76 @@
  * // results in:
  * // [dataLogger] - ERROR oh no! // output from anotherFmt handler.
  * ```
+
+ *
+ * @example
+ * JSON to stdout with no color example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     jsonStdout: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: log.formatters.jsonFormatter,
+ *       useColors: false,
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["jsonStdout"],
+ *     },
+ *   },
+ * });
+ *
+ * // calling:
+ * log.info("Hey");
+ * // results in:
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey"}
+ *
+ * // calling:
+ * log.info("Hey", { product: "nail" });
+ * // results in:
+ * // {"level":"INFO","datetime":1702484111115,"message":"Hey","args":{"product":"nail"}}
+ *
+ * // calling:
+ * log.info("Hey", 1, "two", [3, 4, 5]);
+ * // results in:
+ * // {"level":"INFO","datetime":1702481922294,"message":"Hey","args":[1,"two",[3,4,5]]}
+ * ```
+ *
+ * @example
+ * Custom JSON example
+ * ```ts
+ * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+ *
+ * log.setup({
+ *   handlers: {
+ *     customJsonFmt: new log.handlers.ConsoleHandler("DEBUG", {
+ *       formatter: (record) => JSON.stringify({
+ *         lvl: record.level,
+ *         msg: record.msg,
+ *         time: record.datetime.toISOString(),
+ *         name: record.loggerName,
+ *       }),
+ *       useColors: false,
+ *     }),
+ *   },
+ *
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["customJsonFmt"],
+ *     },
+ *   },
+ * });
+ *
+ * // calling:
+ * log.info("complete");
+ * // results in:
+ * // {"lvl":20,"msg":"complete","time":"2023-12-13T16:38:27.328Z","name":"default"}
+ * ```
  *
  * @example
  * Inline Logging
@@ -225,7 +331,7 @@
  * ```ts
  * import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
  *
- * await log.setup({
+ * log.setup({
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *   },
@@ -251,7 +357,7 @@
  */
 
 import { Logger } from "./logger.ts";
-import type { GenericFunction } from "./logger.ts";
+import type { GenericFunction, LogRecord } from "./logger.ts";
 import {
   BaseHandler,
   ConsoleHandler,
@@ -259,11 +365,12 @@ import {
   RotatingFileHandler,
   WriterHandler,
 } from "./handlers.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import type { LevelName } from "./levels.ts";
+import { jsonFormatter } from "./formatters.ts";
 
 export { LogLevels } from "./levels.ts";
-export type { LevelName } from "./levels.ts";
+export type { LevelName, LogLevel } from "./levels.ts";
 export { Logger } from "./logger.ts";
 export type { LogRecord } from "./logger.ts";
 export type { FormatterFunction, HandlerOptions, LogMode } from "./handlers.ts";
@@ -332,12 +439,18 @@ export const handlers = {
   RotatingFileHandler,
 };
 
+export const formatters: {
+  jsonFormatter(logRecord: LogRecord): string;
+} = {
+  jsonFormatter,
+};
+
 /** Get a logger instance. If not specified `name`, get the default logger. */
 export function getLogger(name?: string): Logger {
   if (!name) {
     const d = state.loggers.get("default");
     assert(
-      d != null,
+      d !== undefined,
       `"default" logger must be set for getting logger without name`,
     );
     return d;
@@ -452,8 +565,7 @@ export function setup(config: LogConfig) {
   // setup handlers
   const handlers = state.config.handlers || {};
 
-  for (const handlerName in handlers) {
-    const handler = handlers[handlerName];
+  for (const [handlerName, handler] of Object.entries(handlers)) {
     handler.setup();
     state.handlers.set(handlerName, handler);
   }
@@ -463,8 +575,7 @@ export function setup(config: LogConfig) {
 
   // setup loggers
   const loggers = state.config.loggers || {};
-  for (const loggerName in loggers) {
-    const loggerConfig = loggers[loggerName];
+  for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
     const handlerNames = loggerConfig.handlers || [];
     const handlers: BaseHandler[] = [];
 

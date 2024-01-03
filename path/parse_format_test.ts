@@ -1,10 +1,11 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
 
-import { assertEquals } from "../testing/asserts.ts";
-import { posix, win32 } from "./mod.ts";
+import { assertEquals } from "../assert/mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];
 type ParseTestCase = [string, ParsedPath];
@@ -89,7 +90,7 @@ const unixSpecialCaseFormatTests: FormatTestCase[] = [
 ];
 
 function checkParseFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: Array<[string, string, string?]>,
 ) {
   testCases.forEach(([element, root, formatted]) => {
@@ -114,7 +115,7 @@ function checkParseFormat(
 }
 
 function checkSpecialCaseParseFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: ParseTestCase[],
 ) {
   testCases.forEach(([element, expect]) => {
@@ -123,7 +124,7 @@ function checkSpecialCaseParseFormat(
 }
 
 function checkFormat(
-  path: typeof win32 | typeof posix,
+  path: typeof windows | typeof posix,
   testCases: FormatTestCase[],
 ) {
   testCases.forEach((testCase) => {
@@ -131,20 +132,20 @@ function checkFormat(
   });
 }
 
-Deno.test("parseWin32", function () {
-  checkParseFormat(win32, winPaths);
-  checkSpecialCaseParseFormat(win32, winSpecialCaseParseTests);
+Deno.test("windows.parse()", function () {
+  checkParseFormat(windows, winPaths);
+  checkSpecialCaseParseFormat(windows, winSpecialCaseParseTests);
 });
 
-Deno.test("parse", function () {
+Deno.test("posix.parse()", function () {
   checkParseFormat(posix, unixPaths);
 });
 
-Deno.test("formatWin32", function () {
-  checkFormat(win32, winSpecialCaseFormatTests);
+Deno.test("windows.format()", function () {
+  checkFormat(windows, winSpecialCaseFormatTests);
 });
 
-Deno.test("format", function () {
+Deno.test("posix.format()", function () {
   checkFormat(posix, unixSpecialCaseFormatTests);
 });
 
@@ -180,15 +181,15 @@ const posixTrailingTests: ParseTestCase[] = [
   ],
 ];
 
-Deno.test("parseTrailingWin32", function () {
+Deno.test("windows.parseTrailing()", function () {
   windowsTrailingTests.forEach(function (p) {
-    const actual = win32.parse(p[0]);
+    const actual = windows.parse(p[0]);
     const expected = p[1];
     assertEquals(actual, expected);
   });
 });
 
-Deno.test("parseTrailing", function () {
+Deno.test("parseTrailing()", function () {
   posixTrailingTests.forEach(function (p) {
     const actual = posix.parse(p[0]);
     const expected = p[1];

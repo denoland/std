@@ -1,9 +1,9 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/concat.ts";
-import { assert } from "../_util/asserts.ts";
+import { assert } from "../assert/assert.ts";
 import { crypto } from "../crypto/crypto.ts";
 
 const UUID_RE =
@@ -14,9 +14,9 @@ const UUID_RE =
  *
  * @example
  * ```ts
- * import { generate as generateV3, validate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
+ * import { generate, validate } from "https://deno.land/std@$STD_VERSION/uuid/v3.ts";
  *
- * validate(await generateV3("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
+ * validate(await generate("6ba7b811-9dad-11d1-80b4-00c04fd430c8", new Uint8Array())); // true
  * validate(crypto.randomUUID()); // false
  * validate("this-is-not-a-uuid"); // false
  * ```
@@ -50,7 +50,7 @@ export async function generate(
   const space = uuidToBytes(namespace);
   assert(space.length === 16, "namespace must be a valid UUID");
 
-  const toHash = concat(new Uint8Array(space), data);
+  const toHash = concat([new Uint8Array(space), data]);
   const buffer = await crypto.subtle.digest("MD5", toHash);
   const bytes = new Uint8Array(buffer);
 

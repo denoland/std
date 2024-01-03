@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { YAMLError } from "./_error.ts";
@@ -92,7 +92,7 @@ export class Schema implements SchemaDefinition {
   }
 
   /* Returns a new extended schema from current schema */
-  public extend(definition: SchemaDefinition) {
+  public extend(definition: SchemaDefinition): Schema {
     return new Schema({
       implicit: [
         ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),

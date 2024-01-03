@@ -1,4 +1,4 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from node-jsonc-parser
 // https://github.com/microsoft/node-jsonc-parser/blob/35d94cd71bd48f9784453b2439262c938e21d49b/src/test/json.test.ts
 /*---------------------------------------------------------------------------------------------
@@ -7,7 +7,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as JSONC from "../../parse.ts";
-import { assertEquals, assertThrows } from "../../../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../../../assert/mod.ts";
 function assertValidParse(
   text: string,
   expected: unknown,

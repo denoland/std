@@ -1,6 +1,5 @@
-// Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertRejects } from "../testing/asserts.ts";
-import { readableStreamFromIterable } from "../streams/readable_stream_from_iterable.ts";
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 import type { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts";
 import type { JsonParseStream } from "./json_parse_stream.ts";
 import type { ParseStreamOptions } from "./common.ts";
@@ -11,11 +10,9 @@ export async function assertValidParse(
   expect: unknown[],
   options?: ParseStreamOptions,
 ) {
-  const r = readableStreamFromIterable(chunks);
-  const res = [];
-  for await (const data of r.pipeThrough(new transform(options))) {
-    res.push(data);
-  }
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transform(options));
+  const res = await Array.fromAsync(r);
   assertEquals(res, expect);
 }
 
@@ -27,11 +24,10 @@ export async function assertInvalidParse(
   ErrorClass: new (...args: any[]) => Error,
   msgIncludes: string | undefined,
 ) {
-  const r = readableStreamFromIterable(chunks);
+  const r = ReadableStream.from(chunks)
+    .pipeThrough(new transform(options));
   await assertRejects(
-    async () => {
-      for await (const _ of r.pipeThrough(new transform(options)));
-    },
+    async () => await Array.fromAsync(r),
     ErrorClass,
     msgIncludes,
   );
