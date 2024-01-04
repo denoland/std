@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { comparatorIntersects } from "./comparator_intersects.ts";
-import type { SemVerComparator, SemVerRange } from "./types.ts";
+import type { Comparator, SemVerRange } from "./types.ts";
 
 function rangesSatisfiable(ranges: SemVerRange[]): boolean {
   return ranges.every((r) => {
@@ -9,7 +9,7 @@ function rangesSatisfiable(ranges: SemVerRange[]): boolean {
   });
 }
 
-function comparatorsSatisfiable(comparators: SemVerComparator[]): boolean {
+function comparatorsSatisfiable(comparators: Comparator[]): boolean {
   // Comparators are satisfiable if they all intersect with each other
   for (let i = 0; i < comparators.length - 1; i++) {
     const c0 = comparators[i];
