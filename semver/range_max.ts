@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { INVALID } from "./constants.ts";
-import { sort } from "./sort.ts";
 import type { SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { comparatorMax } from "./comparator_max.ts";
+import { gt } from "./gt.ts";
 
 /**
  * The maximum valid SemVer for a given range or INVALID
@@ -11,15 +11,13 @@ import { comparatorMax } from "./comparator_max.ts";
  * @returns A valid SemVer or INVALID
  */
 export function rangeMax(range: SemVerRange): SemVer {
-  // For and's, you take the smallest max
-  // For or's, you take the biggest max
-  //[ [1 and 2] or [2 and 3] ] = [ 1 or 2 ] = 2
-  return sort(
-    range.ranges.map((r) =>
-      sort(
-        r.filter((c) => testRange(comparatorMax(c.semver, c.operator), range))
-          .map((c) => comparatorMax(c.semver, c.operator)),
-      ).shift()!
-    ),
-  ).filter((v) => v).pop() ?? INVALID;
+  let max;
+  for (const comparators of range.ranges) {
+    for (const comparator of comparators) {
+      const candidate = comparatorMax(comparator.semver, comparator.operator);
+      if (!testRange(candidate, range)) continue;
+      max = (max && gt(max, candidate)) ? max : candidate;
+    }
+  }
+  return max ?? INVALID;
 }
