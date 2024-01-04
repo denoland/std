@@ -118,9 +118,9 @@ Deno.test("global", async (t) => {
   }
 
   await t.step("global hooks", async () => {
-    const test = stub(Deno, "test"),
-      fns = [spy(), spy()],
-      { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
+    const test = stub(Deno, "test");
+    const fns = [spy(), spy()] as const;
+    const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
     const context = new TestContext("global");
     try {
@@ -138,7 +138,7 @@ Deno.test("global", async (t) => {
 
       assertSpyCall(test, 0);
       const call = test.calls[0];
-      const options = call.args[0] as Deno.TestDefinition;
+      const options = call?.args[0] as Deno.TestDefinition;
       assertEquals(Object.keys(options).sort(), ["fn", "name"]);
       assertEquals(options.name, "global");
 
@@ -190,7 +190,7 @@ Deno.test("global", async (t) => {
         assertSpyCalls(fn, 0);
         assertSpyCall(test, 0);
         const call = test.calls[0];
-        const options = call.args[0] as Deno.TestDefinition;
+        const options = call?.args[0] as Deno.TestDefinition;
         assertEquals(
           Object.keys(options).sort(),
           ["name", "fn", ...Object.keys(expectedOptions)].sort(),
@@ -683,16 +683,16 @@ Deno.test("global", async (t) => {
      */
     async function assertOptions(
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
-      cb: (fns: Spy[]) => void,
+      cb: (fns: readonly [Spy, Spy]) => void,
     ) {
       const test = stub(Deno, "test");
-      const fns = [spy(), spy()];
+      const fns = [spy(), spy()] as const;
       try {
         cb(fns);
 
         assertSpyCall(test, 0);
         const call = test.calls[0];
-        const options = call.args[0] as Deno.TestDefinition;
+        const options = call?.args[0] as Deno.TestDefinition;
         assertEquals(
           Object.keys(options).sort(),
           ["name", "fn", ...Object.keys(expectedOptions)].sort(),
@@ -737,7 +737,7 @@ Deno.test("global", async (t) => {
      * This is used to reduce code duplication when testing calling `describe` with different call signatures.
      */
     async function assertMinimumOptions(
-      cb: (fns: Spy[]) => void,
+      cb: (fns: readonly [Spy, Spy]) => void,
     ) {
       await assertOptions({}, cb);
     }
@@ -748,7 +748,7 @@ Deno.test("global", async (t) => {
      * This is used to reduce code duplication when testing calling `describe` with different call signatures.
      */
     async function assertAllOptions(
-      cb: (fns: Spy[]) => void,
+      cb: (fns: readonly [Spy, Spy]) => void,
     ) {
       await assertOptions({ ...baseOptions }, cb);
     }
@@ -922,7 +922,7 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.only` with different call signatures.
        */
       async function assertMinimumOptions(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy]) => void,
       ) {
         await assertOptions({ only: true }, cb);
       }
@@ -933,7 +933,7 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.only` with different call signatures.
        */
       async function assertAllOptions(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy]) => void,
       ) {
         await assertOptions({ ...baseOptions, only: true }, cb);
       }
@@ -1123,7 +1123,7 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
        */
       async function assertMinimumOptions(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy]) => void,
       ) {
         await assertOptions({ ignore: true }, cb);
       }
@@ -1134,7 +1134,7 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
        */
       async function assertAllOptions(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy]) => void,
       ) {
         await assertOptions({ ...baseOptions, ignore: true }, cb);
       }
@@ -1327,16 +1327,16 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
        */
       async function assertOnly(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy, Spy]) => void,
       ) {
         const test = stub(Deno, "test");
-        const fns = [spy(), spy(), spy()];
+        const fns = [spy(), spy(), spy()] as const;
         try {
           cb(fns);
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(
             Object.keys(options).sort(),
             ["name", "only", "fn"].sort(),
@@ -1425,16 +1425,16 @@ Deno.test("global", async (t) => {
        * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
        */
       async function assertOnly(
-        cb: (fns: Spy[]) => void,
+        cb: (fns: readonly [Spy, Spy, Spy]) => void,
       ) {
         const test = stub(Deno, "test");
-        const fns = [spy(), spy(), spy()];
+        const fns = [spy(), spy(), spy()] as const;
         try {
           cb(fns);
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(
             Object.keys(options).sort(),
             ["name", "fn"].sort(),
@@ -1531,13 +1531,14 @@ Deno.test("global", async (t) => {
             afterAllFn: Spy;
             beforeEachFn: Spy;
             afterEachFn: Spy;
-            fns: Spy[];
+            fns: readonly [Spy, Spy];
           },
         ) => void,
       ) {
-        const test = stub(Deno, "test"),
-          fns = [spy(), spy()],
-          { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
+        const test = stub(Deno, "test");
+        const fns = [spy(), spy()] as const;
+        const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
+          hookFns();
 
         const context = new TestContext("example");
         try {
@@ -1548,7 +1549,7 @@ Deno.test("global", async (t) => {
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(Object.keys(options).sort(), ["fn", "name"]);
           assertEquals(options.name, "example");
 
@@ -1631,9 +1632,10 @@ Deno.test("global", async (t) => {
       await t.step(
         "nested",
         async () => {
-          const test = stub(Deno, "test"),
-            fns = [spy(), spy()],
-            { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
+          const test = stub(Deno, "test");
+          const fns = [spy(), spy()] as const;
+          const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
+            hookFns();
 
           const context = new TestContext("example");
           try {
@@ -1655,7 +1657,7 @@ Deno.test("global", async (t) => {
 
             assertSpyCall(test, 0);
             const call = test.calls[0];
-            const options = call.args[0] as Deno.TestDefinition;
+            const options = call?.args[0] as Deno.TestDefinition;
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
@@ -1666,7 +1668,7 @@ Deno.test("global", async (t) => {
 
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.steps[0].spies.step, 2);
+            assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
@@ -1675,7 +1677,7 @@ Deno.test("global", async (t) => {
           let fn = fns[0];
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 2 },
-            args: [context.steps[0].steps[0]],
+            args: [context.steps[0]!.steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1683,7 +1685,7 @@ Deno.test("global", async (t) => {
           fn = fns[1];
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 3 },
-            args: [context.steps[0].steps[1]],
+            args: [context.steps[0]!.steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1705,46 +1707,47 @@ Deno.test("global", async (t) => {
       await t.step(
         "nested with hooks",
         async () => {
-          const test = stub(Deno, "test"),
-            fns = [
-              spy(function (this: NestedContext) {
-                this.x = 2;
-              }),
-              spy(function (this: NestedContext) {
-                this.y = 3;
-              }),
-            ],
-            { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns(),
-            beforeAllFnNested = spy(async function (this: NestedContext) {
-              await Promise.resolve();
-              this.x = 1;
-              this.allTimerNested = timerIdx++;
-              timers.set(
-                this.allTimerNested,
-                setTimeout(() => {}, 10000),
-              );
+          const test = stub(Deno, "test");
+          const fns = [
+            spy(function (this: NestedContext) {
+              this.x = 2;
             }),
-            afterAllFnNested = spy(
-              async function (this: NestedContext) {
-                await Promise.resolve();
-                clearTimeout(timers.get(this.allTimerNested));
-              },
-            ),
-            beforeEachFnNested = spy(async function (this: NestedContext) {
-              await Promise.resolve();
-              this.y = 2;
-              this.eachTimerNested = timerIdx++;
-              timers.set(
-                this.eachTimerNested,
-                setTimeout(() => {}, 10000),
-              );
+            spy(function (this: NestedContext) {
+              this.y = 3;
             }),
-            afterEachFnNested = spy(
-              async function (this: NestedContext) {
-                await Promise.resolve();
-                clearTimeout(timers.get(this.eachTimerNested));
-              },
+          ] as const;
+          const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
+            hookFns();
+          const beforeAllFnNested = spy(async function (this: NestedContext) {
+            await Promise.resolve();
+            this.x = 1;
+            this.allTimerNested = timerIdx++;
+            timers.set(
+              this.allTimerNested,
+              setTimeout(() => {}, 10000),
             );
+          });
+          const afterAllFnNested = spy(
+            async function (this: NestedContext) {
+              await Promise.resolve();
+              clearTimeout(timers.get(this.allTimerNested));
+            },
+          );
+          const beforeEachFnNested = spy(async function (this: NestedContext) {
+            await Promise.resolve();
+            this.y = 2;
+            this.eachTimerNested = timerIdx++;
+            timers.set(
+              this.eachTimerNested,
+              setTimeout(() => {}, 10000),
+            );
+          });
+          const afterEachFnNested = spy(
+            async function (this: NestedContext) {
+              await Promise.resolve();
+              clearTimeout(timers.get(this.eachTimerNested));
+            },
+          );
 
           const context = new TestContext("example");
           try {
@@ -1772,7 +1775,7 @@ Deno.test("global", async (t) => {
 
             assertSpyCall(test, 0);
             const call = test.calls[0];
-            const options = call.args[0] as Deno.TestDefinition;
+            const options = call?.args[0] as Deno.TestDefinition;
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
@@ -1783,7 +1786,7 @@ Deno.test("global", async (t) => {
 
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.steps[0].spies.step, 2);
+            assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
@@ -1799,7 +1802,7 @@ Deno.test("global", async (t) => {
               x: 2,
               y: 2,
             },
-            args: [context.steps[0].steps[0]],
+            args: [context.steps[0]!.steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1814,7 +1817,7 @@ Deno.test("global", async (t) => {
               x: 1,
               y: 3,
             },
-            args: [context.steps[0].steps[1]],
+            args: [context.steps[0]!.steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
