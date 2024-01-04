@@ -10,7 +10,7 @@ import { comparatorMax } from "./comparator_max.ts";
  * @param range The range to calculate the max for
  * @returns A valid SemVer or INVALID
  */
-export function rangeMax(range: SemVerRange): SemVer | undefined {
+export function rangeMax(range: SemVerRange): SemVer {
   // For and's, you take the smallest max
   // For or's, you take the biggest max
   //[ [1 and 2] or [2 and 3] ] = [ 1 or 2 ] = 2
