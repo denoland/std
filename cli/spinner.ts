@@ -83,7 +83,13 @@ export class Spinner {
     this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
     this.#message = options?.message ?? "";
     this.#interval = options?.interval ?? DEFAULT_INTERVAL;
-    this.#color = options?.color ? COLORS[options.color] : undefined;
+    this.color = options?.color;
+  }
+  set color(value: Color | undefined) {
+    this.#color = value ? COLORS[value] : undefined;
+  }
+  get color() {
+    return this.#color;
   }
 
   /**
@@ -101,10 +107,9 @@ export class Spinner {
     if (this.#active || Deno.stdout.writable.locked) return;
     this.#active = true;
     let i = 0;
-    const color = this.#color ?? "";
-
     // Updates the spinner after the given interval.
     const updateFrame = () => {
+      const color = this.#color ?? "";
       Deno.stdout.writeSync(LINE_CLEAR);
       const frame = encoder.encode(
         color + this.#spinner[i] + COLOR_RESET + " " + this.#message,
