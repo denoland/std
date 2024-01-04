@@ -64,8 +64,8 @@ export interface SpinnerOptions {
 export class Spinner {
   #spinner: string[];
   message: string;
-  #interval: number;
-  #color?: Color;
+  interval: number;
+  color?: Color;
   #intervalId: number | undefined;
   #active = false;
 
@@ -82,8 +82,8 @@ export class Spinner {
   constructor(options?: SpinnerOptions) {
     this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
     this.message = options?.message ?? "";
-    this.#interval = options?.interval ?? DEFAULT_INTERVAL;
-    this.#color = options?.color ? COLORS[options.color] : undefined;
+    this.interval = options?.interval ?? DEFAULT_INTERVAL;
+    this.color = options?.color ? COLORS[options.color] : undefined;
   }
 
   /**
@@ -101,7 +101,7 @@ export class Spinner {
     if (this.#active || Deno.stdout.writable.locked) return;
     this.#active = true;
     let i = 0;
-    const color = this.#color ?? "";
+    const color = this.color ?? "";
 
     // Updates the spinner after the given interval.
     const updateFrame = () => {
@@ -112,7 +112,7 @@ export class Spinner {
       Deno.stdout.writeSync(frame);
       i = (i + 1) % this.#spinner.length;
     };
-    this.#intervalId = setInterval(updateFrame, this.#interval);
+    this.#intervalId = setInterval(updateFrame, this.interval);
   }
   /**
    * Stops the spinner.
