@@ -91,11 +91,9 @@ export class Spinner {
     this.#interval = options?.interval ?? DEFAULT_INTERVAL;
     this.color = options?.color;
   }
-  
-  set color(value?: Color) {
+  set color(value: Color | undefined) {
     this.#color = value ? COLORS[value] : undefined;
   }
-  
   get color() {
     return this.#color;
   }
