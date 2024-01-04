@@ -57,7 +57,10 @@ export interface SpinnerOptions {
    * @default {75}
    */
   interval?: number;
-  /** The color of the spinner. Defaults to the default terminal color. */
+  /**
+   * The color of the spinner. Defaults to the default terminal color.
+   * This can be changed while the spinner is active.
+   */
   color?: Color;
 }
 
