@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { lessThanOrEquals } from "./less_than_or_equals.ts";
+import { lessOrEqual } from "./less_or_equal.ts";
 
 Deno.test({
-  name: "lessThanOrEquals()",
+  name: "lessOrEqual()",
   fn: async (t) => {
     // [version1, version2]
     // version1 should be less than version2
@@ -35,7 +35,7 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = lessThanOrEquals(s0, s1);
+        const actual = lessOrEqual(s0, s1);
         assertEquals(actual, true, `${v0} >= ${v1} : ${actual}`);
       });
     }
