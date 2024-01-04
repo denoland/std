@@ -13,6 +13,7 @@
   },
   "tasks": {
     "test": "deno test --doc --unstable --allow-all --parallel --coverage --trace-ops",
+    "debug": "deno test --doc --unstable --allow-all --parallel --trace-ops --inspect-wait",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | xargs deno check --config browser-compat.tsconfig.json",
     "fmt:licence-headers": "deno run --allow-read --allow-write ./_tools/check_licence.ts",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env=HOME ./_tools/check_deprecation.ts",
