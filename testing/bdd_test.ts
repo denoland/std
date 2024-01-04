@@ -130,15 +130,15 @@ Deno.test("global", async (t) => {
       beforeEach(beforeEachFn);
       afterEach(afterEachFn);
 
-      assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
-      assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+      assertEquals(it({ name: "example 1", fn: fns[0]! }), undefined);
+      assertEquals(it({ name: "example 2", fn: fns[1]! }), undefined);
 
-      assertSpyCalls(fns[0], 0);
-      assertSpyCalls(fns[1], 0);
+      assertSpyCalls(fns[0]!, 0);
+      assertSpyCalls(fns[1]!, 0);
 
       assertSpyCall(test, 0);
       const call = test.calls[0];
-      const options = call.args[0] as Deno.TestDefinition;
+      const options = call?.args[0] as Deno.TestDefinition;
       assertEquals(Object.keys(options).sort(), ["fn", "name"]);
       assertEquals(options.name, "global");
 
@@ -151,7 +151,7 @@ Deno.test("global", async (t) => {
       test.restore();
     }
 
-    let fn = fns[0];
+    let fn = fns[0]!;
     assertSpyCall(fn, 0, {
       self: { allTimer: 1, eachTimer: 2 },
       args: [context.steps[0]],
@@ -159,7 +159,7 @@ Deno.test("global", async (t) => {
     });
     assertSpyCalls(fn, 1);
 
-    fn = fns[1];
+    fn = fns[1]!;
     assertSpyCall(fn, 0, {
       self: { allTimer: 1, eachTimer: 3 },
       args: [context.steps[1]],
@@ -190,7 +190,7 @@ Deno.test("global", async (t) => {
         assertSpyCalls(fn, 0);
         assertSpyCall(test, 0);
         const call = test.calls[0];
-        const options = call.args[0] as Deno.TestDefinition;
+        const options = call?.args[0] as Deno.TestDefinition;
         assertEquals(
           Object.keys(options).sort(),
           ["name", "fn", ...Object.keys(expectedOptions)].sort(),
@@ -692,7 +692,7 @@ Deno.test("global", async (t) => {
 
         assertSpyCall(test, 0);
         const call = test.calls[0];
-        const options = call.args[0] as Deno.TestDefinition;
+        const options = call?.args[0] as Deno.TestDefinition;
         assertEquals(
           Object.keys(options).sort(),
           ["name", "fn", ...Object.keys(expectedOptions)].sort(),
@@ -702,8 +702,8 @@ Deno.test("global", async (t) => {
           ...expectedOptions,
         });
 
-        assertSpyCalls(fns[0], 0);
-        assertSpyCalls(fns[1], 0);
+        assertSpyCalls(fns[0]!, 0);
+        assertSpyCalls(fns[1]!, 0);
 
         const context = new TestContext("example");
         const result = options.fn(context);
@@ -711,14 +711,14 @@ Deno.test("global", async (t) => {
         assertEquals(await result, undefined);
         assertSpyCalls(context.spies.step, 2);
 
-        let fn = fns[0];
+        let fn = fns[0]!;
         assertSpyCall(fn, 0, {
           self: {},
           args: [context.steps[0]],
           returned: undefined,
         });
 
-        fn = fns[1];
+        fn = fns[1]!;
         assertSpyCall(fn, 0, {
           self: {},
           args: [context.steps[1]],
@@ -760,8 +760,8 @@ Deno.test("global", async (t) => {
           await assertMinimumOptions((fns) => {
             const suite = describe({ name: "example" });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -770,12 +770,12 @@ Deno.test("global", async (t) => {
           const suite = describe({
             name: "example",
             fn: () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             },
             ...baseOptions,
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }));
     });
 
@@ -785,8 +785,8 @@ Deno.test("global", async (t) => {
         await assertMinimumOptions((fns) => {
           const suite = describe("example");
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }),
     );
 
@@ -797,8 +797,8 @@ Deno.test("global", async (t) => {
           await assertMinimumOptions((fns) => {
             const suite = describe("example", {});
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -806,12 +806,12 @@ Deno.test("global", async (t) => {
         await assertAllOptions((fns) => {
           const suite = describe("example", {
             fn: () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             },
             ...baseOptions,
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }));
     });
 
@@ -820,10 +820,10 @@ Deno.test("global", async (t) => {
       async () =>
         await assertMinimumOptions((fns) => {
           const suite = describe("example", () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }),
     );
 
@@ -832,10 +832,10 @@ Deno.test("global", async (t) => {
       async () =>
         await assertMinimumOptions((fns) => {
           const suite = describe(function example() {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }),
     );
 
@@ -845,10 +845,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe("example", {}, () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -857,10 +857,10 @@ Deno.test("global", async (t) => {
           const suite = describe("example", {
             ...baseOptions,
           }, () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }));
     });
 
@@ -870,10 +870,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe({ name: "example" }, () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -883,10 +883,10 @@ Deno.test("global", async (t) => {
             name: "example",
             ...baseOptions,
           }, () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }));
     });
 
@@ -896,10 +896,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe({}, function example() {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -908,10 +908,10 @@ Deno.test("global", async (t) => {
           const suite = describe({
             ...baseOptions,
           }, function example() {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
-          assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+          assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
         }));
     });
 
@@ -945,8 +945,8 @@ Deno.test("global", async (t) => {
             await assertMinimumOptions((fns) => {
               const suite = describe.only({ name: "example" });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -957,12 +957,12 @@ Deno.test("global", async (t) => {
               const suite = describe.only({
                 name: "example",
                 fn: () => {
-                  assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                  assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
                 },
                 ...baseOptions,
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -973,8 +973,8 @@ Deno.test("global", async (t) => {
           await assertMinimumOptions((fns) => {
             const suite = describe.only("example");
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -985,8 +985,8 @@ Deno.test("global", async (t) => {
             await assertMinimumOptions((fns) => {
               const suite = describe.only("example", {});
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -996,12 +996,12 @@ Deno.test("global", async (t) => {
             await assertAllOptions((fns) => {
               const suite = describe.only("example", {
                 fn: () => {
-                  assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                  assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
                 },
                 ...baseOptions,
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1011,10 +1011,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe.only("example", () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -1023,10 +1023,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe.only(function example() {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -1036,10 +1036,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.only("example", {}, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1050,10 +1050,10 @@ Deno.test("global", async (t) => {
               const suite = describe.only("example", {
                 ...baseOptions,
               }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1064,10 +1064,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.only({ name: "example" }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1079,10 +1079,10 @@ Deno.test("global", async (t) => {
                 name: "example",
                 ...baseOptions,
               }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1093,10 +1093,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.only({}, function example() {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1107,10 +1107,10 @@ Deno.test("global", async (t) => {
               const suite = describe.only({
                 ...baseOptions,
               }, function example() {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1146,8 +1146,8 @@ Deno.test("global", async (t) => {
             await assertMinimumOptions((fns) => {
               const suite = describe.ignore({ name: "example" });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1158,12 +1158,12 @@ Deno.test("global", async (t) => {
               const suite = describe.ignore({
                 name: "example",
                 fn: () => {
-                  assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                  assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
                 },
                 ...baseOptions,
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1174,8 +1174,8 @@ Deno.test("global", async (t) => {
           await assertMinimumOptions((fns) => {
             const suite = describe.ignore("example");
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -1186,8 +1186,8 @@ Deno.test("global", async (t) => {
             await assertMinimumOptions((fns) => {
               const suite = describe.ignore("example", {});
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "a", fn: fns[0] }), undefined);
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "a", fn: fns[0]! }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1197,12 +1197,12 @@ Deno.test("global", async (t) => {
             await assertAllOptions((fns) => {
               const suite = describe.ignore("example", {
                 fn: () => {
-                  assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                  assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
                 },
                 ...baseOptions,
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1212,10 +1212,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe.ignore("example", () => {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -1224,10 +1224,10 @@ Deno.test("global", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe.ignore(function example() {
-              assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+              assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             });
             assert(suite && typeof suite.symbol === "symbol");
-            assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+            assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
           }),
       );
 
@@ -1237,10 +1237,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.ignore("example", {}, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1251,10 +1251,10 @@ Deno.test("global", async (t) => {
               const suite = describe.ignore("example", {
                 ...baseOptions,
               }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1265,10 +1265,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.ignore({ name: "example" }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1280,10 +1280,10 @@ Deno.test("global", async (t) => {
                 name: "example",
                 ...baseOptions,
               }, () => {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1294,10 +1294,10 @@ Deno.test("global", async (t) => {
           async () =>
             await assertMinimumOptions((fns) => {
               const suite = describe.ignore({}, function example() {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
 
@@ -1308,10 +1308,10 @@ Deno.test("global", async (t) => {
               const suite = describe.ignore({
                 ...baseOptions,
               }, function example() {
-                assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+                assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
               });
               assert(suite && typeof suite.symbol === "symbol");
-              assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ suite, name: "b", fn: fns[1]! }), undefined);
             }),
         );
       });
@@ -1336,7 +1336,7 @@ Deno.test("global", async (t) => {
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(
             Object.keys(options).sort(),
             ["name", "only", "fn"].sort(),
@@ -1346,8 +1346,8 @@ Deno.test("global", async (t) => {
             only: true,
           });
 
-          assertSpyCalls(fns[0], 0);
-          assertSpyCalls(fns[1], 0);
+          assertSpyCalls(fns[0]!, 0);
+          assertSpyCalls(fns[1]!, 0);
 
           const context = new TestContext("example");
           const result = options.fn(context);
@@ -1355,17 +1355,17 @@ Deno.test("global", async (t) => {
           assertEquals(await result, undefined);
           assertSpyCalls(context.spies.step, 1);
 
-          let fn = fns[0];
+          let fn = fns[0]!;
           assertSpyCalls(fn, 0);
 
-          fn = fns[1];
+          fn = fns[1]!;
           assertSpyCall(fn, 0, {
             self: {},
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
 
-          fn = fns[2];
+          fn = fns[2]!;
           assertSpyCalls(fn, 0);
         } finally {
           TestSuiteInternal.reset();
@@ -1376,44 +1376,44 @@ Deno.test("global", async (t) => {
       await t.step("it", async () =>
         await assertOnly((fns) => {
           describe("example", () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
-            assertEquals(it.only({ name: "b", fn: fns[1] }), undefined);
-            assertEquals(it({ name: "c", fn: fns[2] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
+            assertEquals(it.only({ name: "b", fn: fns[1]! }), undefined);
+            assertEquals(it({ name: "c", fn: fns[2]! }), undefined);
           });
         }));
 
       await t.step("nested it", async () =>
         await assertOnly((fns) => {
           describe("example", () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             describe("nested", () => {
-              assertEquals(it.only({ name: "b", fn: fns[1] }), undefined);
+              assertEquals(it.only({ name: "b", fn: fns[1]! }), undefined);
             });
-            assertEquals(it({ name: "c", fn: fns[2] }), undefined);
+            assertEquals(it({ name: "c", fn: fns[2]! }), undefined);
           });
         }));
 
       await t.step("describe", async () =>
         await assertOnly((fns) => {
           describe("example", () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             describe.only("nested", () => {
-              assertEquals(it({ name: "b", fn: fns[1] }), undefined);
+              assertEquals(it({ name: "b", fn: fns[1]! }), undefined);
             });
-            assertEquals(it({ name: "c", fn: fns[2] }), undefined);
+            assertEquals(it({ name: "c", fn: fns[2]! }), undefined);
           });
         }));
 
       await t.step("nested describe", async () =>
         await assertOnly((fns) => {
           describe("example", () => {
-            assertEquals(it({ name: "a", fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", fn: fns[0]! }), undefined);
             describe("nested", () => {
               describe.only("nested 2", () => {
-                assertEquals(it({ name: "b", fn: fns[1] }), undefined);
+                assertEquals(it({ name: "b", fn: fns[1]! }), undefined);
               });
             });
-            assertEquals(it({ name: "c", fn: fns[2] }), undefined);
+            assertEquals(it({ name: "c", fn: fns[2]! }), undefined);
           });
         }));
     });
@@ -1434,7 +1434,7 @@ Deno.test("global", async (t) => {
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(
             Object.keys(options).sort(),
             ["name", "fn"].sort(),
@@ -1443,8 +1443,8 @@ Deno.test("global", async (t) => {
             name: "example",
           });
 
-          assertSpyCalls(fns[0], 0);
-          assertSpyCalls(fns[1], 0);
+          assertSpyCalls(fns[0]!, 0);
+          assertSpyCalls(fns[1]!, 0);
 
           const context = new TestContext("example");
           const result = options.fn(context);
@@ -1452,17 +1452,17 @@ Deno.test("global", async (t) => {
           assertEquals(await result, undefined);
           assertSpyCalls(context.spies.step, 1);
 
-          let fn = fns[0];
+          let fn = fns[0]!;
           assertSpyCalls(fn, 0);
 
-          fn = fns[1];
+          fn = fns[1]!;
           assertSpyCall(fn, 0, {
             self: {},
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
 
-          fn = fns[2];
+          fn = fns[2]!;
           assertSpyCalls(fn, 0);
         } finally {
           TestSuiteInternal.reset();
@@ -1473,33 +1473,33 @@ Deno.test("global", async (t) => {
       await t.step("it", async () =>
         await assertOnly((fns) => {
           const suite = describe("example");
-          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
-          assertEquals(it.only({ name: "b", suite, fn: fns[1] }), undefined);
-          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+          assertEquals(it({ name: "a", suite, fn: fns[0]! }), undefined);
+          assertEquals(it.only({ name: "b", suite, fn: fns[1]! }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2]! }), undefined);
         }));
 
       await t.step("deep child it", async () =>
         await assertOnly((fns) => {
           const suite = describe("example");
-          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          assertEquals(it({ name: "a", suite, fn: fns[0]! }), undefined);
           const childSuite = describe(suite, "child");
           assertEquals(
-            it.only({ name: "b", suite: childSuite, fn: fns[1] }),
+            it.only({ name: "b", suite: childSuite, fn: fns[1]! }),
             undefined,
           );
-          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2]! }), undefined);
         }));
 
       await t.step("describe", async () =>
         await assertOnly((fns) => {
           const suite = describe("example");
-          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          assertEquals(it({ name: "a", suite, fn: fns[0]! }), undefined);
           const childSuite = describe.only(suite, "child");
           assertEquals(
-            it({ name: "b", suite: childSuite, fn: fns[1] }),
+            it({ name: "b", suite: childSuite, fn: fns[1]! }),
             undefined,
           );
-          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2]! }), undefined);
         }));
 
       await t.step(
@@ -1507,14 +1507,14 @@ Deno.test("global", async (t) => {
         async () =>
           await assertOnly((fns) => {
             const suite = describe("example");
-            assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+            assertEquals(it({ name: "a", suite, fn: fns[0]! }), undefined);
             const childSuite = describe(suite, "child");
             const child2Suite = describe.only(childSuite, "child 2");
             assertEquals(
-              it({ name: "b", suite: child2Suite, fn: fns[1] }),
+              it({ name: "b", suite: child2Suite, fn: fns[1]! }),
               undefined,
             );
-            assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+            assertEquals(it({ name: "c", suite, fn: fns[2]! }), undefined);
           }),
       );
     });
@@ -1543,12 +1543,12 @@ Deno.test("global", async (t) => {
         try {
           cb({ beforeAllFn, afterAllFn, beforeEachFn, afterEachFn, fns });
 
-          assertSpyCalls(fns[0], 0);
-          assertSpyCalls(fns[1], 0);
+          assertSpyCalls(fns[0]!, 0);
+          assertSpyCalls(fns[1]!, 0);
 
           assertSpyCall(test, 0);
           const call = test.calls[0];
-          const options = call.args[0] as Deno.TestDefinition;
+          const options = call?.args[0] as Deno.TestDefinition;
           assertEquals(Object.keys(options).sort(), ["fn", "name"]);
           assertEquals(options.name, "example");
 
@@ -1561,7 +1561,7 @@ Deno.test("global", async (t) => {
           test.restore();
         }
 
-        let fn = fns[0];
+        let fn = fns[0]!;
         assertSpyCall(fn, 0, {
           self: { allTimer: 1, eachTimer: 2 },
           args: [context.steps[0]],
@@ -1569,7 +1569,7 @@ Deno.test("global", async (t) => {
         });
         assertSpyCalls(fn, 1);
 
-        fn = fns[1];
+        fn = fns[1]!;
         assertSpyCall(fn, 0, {
           self: { allTimer: 1, eachTimer: 3 },
           args: [context.steps[1]],
@@ -1595,8 +1595,8 @@ Deno.test("global", async (t) => {
                 beforeEach(beforeEachFn);
                 afterEach(afterEachFn);
 
-                assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
-                assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+                assertEquals(it({ name: "example 1", fn: fns[0]! }), undefined);
+                assertEquals(it({ name: "example 2", fn: fns[1]! }), undefined);
               });
             },
           ),
@@ -1615,11 +1615,11 @@ Deno.test("global", async (t) => {
                 afterEach: afterEachFn,
                 fn: () => {
                   assertEquals(
-                    it({ name: "example 1", fn: fns[0] }),
+                    it({ name: "example 1", fn: fns[0]! }),
                     undefined,
                   );
                   assertEquals(
-                    it({ name: "example 2", fn: fns[1] }),
+                    it({ name: "example 2", fn: fns[1]! }),
                     undefined,
                   );
                 },
@@ -1645,17 +1645,17 @@ Deno.test("global", async (t) => {
               afterEach(afterEachFn);
 
               describe("nested", () => {
-                assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
-                assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+                assertEquals(it({ name: "example 1", fn: fns[0]! }), undefined);
+                assertEquals(it({ name: "example 2", fn: fns[1]! }), undefined);
               });
             });
 
-            assertSpyCalls(fns[0], 0);
-            assertSpyCalls(fns[1], 0);
+            assertSpyCalls(fns[0]!, 0);
+            assertSpyCalls(fns[1]!, 0);
 
             assertSpyCall(test, 0);
             const call = test.calls[0];
-            const options = call.args[0] as Deno.TestDefinition;
+            const options = call?.args[0] as Deno.TestDefinition;
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
@@ -1666,24 +1666,24 @@ Deno.test("global", async (t) => {
 
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.steps[0].spies.step, 2);
+            assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
           }
 
-          let fn = fns[0];
+          let fn = fns[0]!;
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 2 },
-            args: [context.steps[0].steps[0]],
+            args: [context.steps[0]!.steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
 
-          fn = fns[1];
+          fn = fns[1]!;
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 3 },
-            args: [context.steps[0].steps[1]],
+            args: [context.steps[0]!.steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1762,17 +1762,17 @@ Deno.test("global", async (t) => {
                 beforeEach(beforeEachFnNested);
                 afterEach(afterEachFnNested);
 
-                assertEquals(it({ name: "example 1", fn: fns[0] }), undefined);
-                assertEquals(it({ name: "example 2", fn: fns[1] }), undefined);
+                assertEquals(it({ name: "example 1", fn: fns[0]! }), undefined);
+                assertEquals(it({ name: "example 2", fn: fns[1]! }), undefined);
               });
             });
 
-            assertSpyCalls(fns[0], 0);
-            assertSpyCalls(fns[1], 0);
+            assertSpyCalls(fns[0]!, 0);
+            assertSpyCalls(fns[1]!, 0);
 
             assertSpyCall(test, 0);
             const call = test.calls[0];
-            const options = call.args[0] as Deno.TestDefinition;
+            const options = call?.args[0] as Deno.TestDefinition;
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
@@ -1783,13 +1783,13 @@ Deno.test("global", async (t) => {
 
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.steps[0].spies.step, 2);
+            assertSpyCalls(context.steps[0]!.spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
           }
 
-          let fn = fns[0];
+          let fn = fns[0]!;
           assertSpyCall(fn, 0, {
             self: {
               allTimer: 1,
@@ -1799,12 +1799,12 @@ Deno.test("global", async (t) => {
               x: 2,
               y: 2,
             },
-            args: [context.steps[0].steps[0]],
+            args: [context.steps[0]!.steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
 
-          fn = fns[1];
+          fn = fns[1]!;
           assertSpyCall(fn, 0, {
             self: {
               allTimer: 1,
@@ -1814,7 +1814,7 @@ Deno.test("global", async (t) => {
               x: 1,
               y: 3,
             },
-            args: [context.steps[0].steps[1]],
+            args: [context.steps[0]!.steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);

@@ -349,7 +349,7 @@ const sessions: Set<Spy<any, any[], any>>[] = [];
 // deno-lint-ignore no-explicit-any
 function getSession(): Set<Spy<any, any[], any>> {
   if (sessions.length === 0) sessions.push(new Set());
-  return sessions[sessions.length - 1];
+  return sessions[sessions.length - 1]!;
 }
 // deno-lint-ignore no-explicit-any
 function registerMock(spy: Spy<any, any[], any>) {
@@ -808,6 +808,19 @@ export interface ExpectedSpyCall<
   };
 }
 
+function getSpyCall<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
+  spy: SpyLike<Self, Args, Return>,
+  callIndex: number,
+): SpyCall {
+  if (spy.calls.length < (callIndex + 1)) {
+    throw new AssertionError("spy not called as much as expected");
+  }
+  return spy.calls[callIndex]!;
+}
 /**
  * Asserts that a spy is called as expected.
  */
@@ -820,10 +833,7 @@ export function assertSpyCall<
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Return>,
 ) {
-  if (spy.calls.length < (callIndex + 1)) {
-    throw new AssertionError("spy not called as much as expected");
-  }
-  const call: SpyCall = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
   if (expected) {
     if (expected.args) {
       try {
@@ -905,7 +915,7 @@ export async function assertSpyCallAsync<
     delete expectedSync.error;
   }
   assertSpyCall(spy, callIndex, expectedSync);
-  const call = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
 
   if (call.error) {
     throw new AssertionError(
@@ -981,9 +991,8 @@ export function assertSpyCallArg<
   argIndex: number,
   expected: ExpectedArg,
 ): ExpectedArg {
-  assertSpyCall(spy, callIndex);
-  const call = spy.calls[callIndex];
-  const arg = call.args[argIndex];
+  const call = getSpyCall(spy, callIndex);
+  const arg = call?.args[argIndex];
   assertEquals(arg, expected);
   return arg as ExpectedArg;
 }
@@ -1039,8 +1048,7 @@ export function assertSpyCallArgs<
   argsEnd?: number | ExpectedArgs,
   expected?: ExpectedArgs,
 ): ExpectedArgs {
-  assertSpyCall(spy, callIndex);
-  const call = spy.calls[callIndex];
+  const call = getSpyCall(spy, callIndex);
   if (!expected) {
     expected = argsEnd as ExpectedArgs;
     argsEnd = undefined;
@@ -1074,8 +1082,8 @@ export function returnsThis<
 // deno-lint-ignore no-explicit-any
 export function returnsArg<Arg, Self = any>(
   idx: number,
-): (this: Self, ...args: Arg[]) => Arg {
-  return function (...args: Arg[]): Arg {
+): (this: Self, ...args: Arg[]) => Arg | undefined {
+  return function (...args: Arg[]): Arg | undefined {
     return args[idx];
   };
 }
