@@ -17,7 +17,7 @@ import {
  * @param s1
  * @returns
  *
- * @deprecated (will be removed in 0.213.0)
+ * @deprecated (will be removed in 0.213.0) The build metadata should not be used for comparing versions. See https://semver.org/#spec-item-10 for details.
  */
 export function compareBuild(
   s0: SemVer,
