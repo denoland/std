@@ -19,8 +19,14 @@ async function assertWalkPaths(
   const entries = await Array.fromAsync(walk(root, options));
 
   const expected = expectedPaths.map((path) => resolve(root, path));
-  assertEquals(entries.length, expected.length);
   assertArrayIncludes(entries.map(({ path }) => path), expected);
+  assertEquals(
+    entries.length,
+    expected.length,
+    `Lengths differ: ${
+      JSON.stringify(entries.map(({ path }) => path), null, 2)
+    } vs ${JSON.stringify(expected, null, 2)}`,
+  );
 }
 
 function assertWalkSyncPaths(
@@ -32,8 +38,14 @@ function assertWalkSyncPaths(
   const entriesSync = Array.from(walkSync(root, options));
 
   const expected = expectedPaths.map((path) => resolve(root, path));
-  assertEquals(entriesSync.length, expected.length);
   assertArrayIncludes(entriesSync.map(({ path }) => path), expected);
+  assertEquals(
+    entriesSync.length,
+    expected.length,
+    `Lengths differ: ${
+      JSON.stringify(entriesSync.map(({ path }) => path), null, 2)
+    } vs ${JSON.stringify(expected, null, 2)}`,
+  );
 }
 
 Deno.test("walk() returns current dir for empty dir", async () => {
