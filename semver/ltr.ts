@@ -3,7 +3,7 @@ import type { SemVer, SemVerRange } from "./types.ts";
 import { lt } from "./lt.ts";
 import { rangeMin } from "./range_min.ts";
 
-/** Greater than range comparison */
+/** Less than range comparison */
 export function ltr(
   version: SemVer,
   range: SemVerRange,
