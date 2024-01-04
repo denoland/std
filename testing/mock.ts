@@ -1085,7 +1085,9 @@ export function returnsArg<Arg, Self = any>(
 ): (this: Self, ...args: Arg[]) => Arg {
   return function (...args: Arg[]): Arg {
     if (!(idx in args)) {
-      throw new TypeError("");
+      throw new TypeError(
+        `Could not get argument at ${idx} as there were only ${args.length} arguments`,
+      );
     }
     return args[idx]!;
   };
