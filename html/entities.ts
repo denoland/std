@@ -63,7 +63,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  *
  * // Default options (only handles &<>'" and numeric entities)
  * unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"); // "<>'&AA"
- * unescape("&thorn;&eth;"; // "&thorn;&eth;"
+ * unescape("&thorn;&eth;"); // "&thorn;&eth;"
  *
  * // Using the full named entity list from the HTML spec (~47K un-minified)
  * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
