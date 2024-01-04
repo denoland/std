@@ -43,17 +43,17 @@ export interface SpinnerOptions {
   /**
    * The sequence of characters to be iterated through for animation.
    *
-   * @default ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+   * @default {["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]}
    */
   spinner?: string[];
+  /** The message to display next to the spinner. */
+  message?: string;
   /**
    * The time between each frame of the spinner in milliseconds.
    *
-   * @default 75
+   * @default {75}
    */
   interval?: number;
-  /** The message to display next to the spinner. */
-  message?: string;
   /** The color of the spinner. Defaults to the default terminal color. */
   color?: Color;
 }
@@ -63,11 +63,11 @@ export interface SpinnerOptions {
  */
 export class Spinner {
   #spinner: string[];
-  #interval: number;
   message: string;
+  #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
-  #frameIndex = 0;
+  #active = false;
 
   /**
    * Creates a new spinner.
@@ -79,51 +79,11 @@ export class Spinner {
    * const spinner = new Spinner({ message: "Loading..." });
    * ```
    */
-  constructor(
-    {
-      spinner = DEFAULT_SPINNER,
-      interval = DEFAULT_INTERVAL,
-      message = "",
-      color,
-    }: SpinnerOptions = {},
-  ) {
-    this.#spinner = spinner;
-    this.#interval = interval;
-    this.message = message;
-    this.color = color;
-  }
-
-  set color(value: Color | undefined) {
-    this.#color = value ? COLORS[value] : undefined;
-  }
-  get color() {
-    return this.#color;
-  }
-
-  set interval(value: number) {
-    if (value === this.#interval) return;
-    this.#interval = value;
-
-    if (!this.#intervalId) return;
-    clearInterval(this.#intervalId);
-    this.#intervalId = setInterval(
-      this.#updateFrame.bind(this),
-      this.#interval,
-    );
-  }
-  get interval() {
-    return this.#interval;
-  }
-
-  #updateFrame() {
-    const color = this.color ?? "";
-    Deno.stdout.writeSync(LINE_CLEAR);
-    const frame = encoder.encode(
-      color + this.#spinner[this.#frameIndex] + COLOR_RESET + " " +
-        this.message,
-    );
-    Deno.stdout.writeSync(frame);
-    this.#frameIndex = (this.#frameIndex + 1) % this.#spinner.length;
+  constructor(options?: SpinnerOptions) {
+    this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
+    this.message = options?.message ?? "";
+    this.#interval = options?.interval ?? DEFAULT_INTERVAL;
+    this.#color = options?.color ? COLORS[options.color] : undefined;
   }
 
   /**
@@ -138,12 +98,21 @@ export class Spinner {
    * ```
    */
   start() {
-    if (this.#intervalId || Deno.stdout.writable.locked) return;
-    this.#frameIndex = 0;
-    this.#intervalId = setInterval(
-      this.#updateFrame.bind(this),
-      this.#interval,
-    );
+    if (this.#active || Deno.stdout.writable.locked) return;
+    this.#active = true;
+    let i = 0;
+    const color = this.#color ?? "";
+
+    // Updates the spinner after the given interval.
+    const updateFrame = () => {
+      Deno.stdout.writeSync(LINE_CLEAR);
+      const frame = encoder.encode(
+        color + this.#spinner[i] + COLOR_RESET + " " + this.message,
+      );
+      Deno.stdout.writeSync(frame);
+      i = (i + 1) % this.#spinner.length;
+    };
+    this.#intervalId = setInterval(updateFrame, this.#interval);
   }
   /**
    * Stops the spinner.
@@ -162,10 +131,10 @@ export class Spinner {
    * ```
    */
   stop() {
-    if (!this.#intervalId) return;
-    clearInterval(this.#intervalId);
-    Deno.stdout.writeSync(LINE_CLEAR); // Clear the current line
-    this.#frameIndex = 0;
-    this.#intervalId = undefined;
+    if (this.#intervalId && this.#active) {
+      clearInterval(this.#intervalId);
+      Deno.stdout.writeSync(LINE_CLEAR); // Clear the current line
+      this.#active = false;
+    }
   }
 }
