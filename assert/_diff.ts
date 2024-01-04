@@ -288,7 +288,7 @@ export function diffstr(A: string, B: string) {
   // and merge "space-diff" if surrounded by word-diff for cleaner displays
   function createDetails(
     line: DiffResult<string>,
-    tokens: Array<DiffResult<string>>,
+    tokens: DiffResult<string>[],
   ) {
     return tokens.filter(({ type }) => type === line.type || type === "common")
       .map((result, i, t) => {
