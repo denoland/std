@@ -110,7 +110,7 @@ export class Spinner {
     Deno.stdout.writeSync(LINE_CLEAR);
     const frame = encoder.encode(
       color + this.#spinner[this.#frameIndex] + COLOR_RESET + " " +
-        this.#message,
+        this.message,
     );
     Deno.stdout.writeSync(frame);
     this.#frameIndex = (this.#frameIndex + 1) % this.#spinner.length;
