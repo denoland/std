@@ -578,21 +578,21 @@ Deno.test("mockSession and mockSessionAsync", async () => {
     assertEquals(actions.map((action) => action.restored), expected);
   }
   await mockSessionAsync(async () => {
-    actions.push(spy(points[0]!, "action"));
+    actions.push(spy(points[0], "action"));
     assertRestored([false]);
     await mockSessionAsync(async () => {
       await Promise.resolve();
-      actions.push(spy(points[1]!, "action"));
+      actions.push(spy(points[1], "action"));
       assertRestored([false, false]);
       mockSession(() => {
-        actions.push(spy(points[2]!, "action"));
-        actions.push(spy(points[3]!, "action"));
+        actions.push(spy(points[2], "action"));
+        actions.push(spy(points[3], "action"));
         assertRestored([false, false, false, false]);
       })();
-      actions.push(spy(points[4]!, "action"));
+      actions.push(spy(points[4], "action"));
       assertRestored([false, false, true, true, false]);
     })();
-    actions.push(spy(points[5]!, "action"));
+    actions.push(spy(points[5], "action"));
     assertRestored([false, true, true, true, true, false]);
   })();
   assertRestored(Array(6).fill(true));
@@ -610,7 +610,14 @@ Deno.test("mockSession and mockSessionAsync", async () => {
 });
 
 Deno.test("mockSession and restore current session", () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
@@ -626,24 +633,24 @@ Deno.test("mockSession and restore current session", () => {
 
     actions = [];
     try {
-      actions.push(spy(points[0]!, "action"));
+      actions.push(spy(points[0], "action"));
       try {
         mockSession();
-        actions.push(spy(points[1]!, "action"));
+        actions.push(spy(points[1], "action"));
         try {
           mockSession();
-          actions.push(spy(points[2]!, "action"));
-          actions.push(spy(points[3]!, "action"));
+          actions.push(spy(points[2], "action"));
+          actions.push(spy(points[3], "action"));
         } finally {
           assertRestored([false, false, false, false]);
           restore();
         }
-        actions.push(spy(points[4]!, "action"));
+        actions.push(spy(points[4], "action"));
       } finally {
         assertRestored([false, false, true, true, false]);
         restore();
       }
-      actions.push(spy(points[5]!, "action"));
+      actions.push(spy(points[5], "action"));
     } finally {
       assertRestored([false, true, true, true, true, false]);
       restore();
@@ -664,7 +671,14 @@ Deno.test("mockSession and restore current session", () => {
 });
 
 Deno.test("mockSession and restore multiple sessions", () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);
@@ -672,19 +686,19 @@ Deno.test("mockSession and restore multiple sessions", () => {
   try {
     actions = [];
     try {
-      actions.push(spy(points[0]!, "action"));
+      actions.push(spy(points[0], "action"));
       const id = mockSession();
       try {
-        actions.push(spy(points[1]!, "action"));
-        actions.push(spy(points[2]!, "action"));
+        actions.push(spy(points[1], "action"));
+        actions.push(spy(points[2], "action"));
         mockSession();
-        actions.push(spy(points[3]!, "action"));
-        actions.push(spy(points[4]!, "action"));
+        actions.push(spy(points[3], "action"));
+        actions.push(spy(points[4], "action"));
       } finally {
         assertRestored([false, false, false, false, false]);
         restore(id);
       }
-      actions.push(spy(points[5]!, "action"));
+      actions.push(spy(points[5], "action"));
     } finally {
       assertRestored([false, true, true, true, true, false]);
       restore();
