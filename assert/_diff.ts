@@ -16,18 +16,14 @@ interface FarthestPoint {
   id: number;
 }
 
-export const DiffType = {
-  removed: "removed",
-  common: "common",
-  added: "added",
-} as const;
+export const DIFF_TYPES = ["added", "removed", "common"] as const;
 
-export type DiffType = keyof typeof DiffType;
+export type DiffType = typeof DIFF_TYPES[number];
 
 export interface DiffResult<T> {
   type: DiffType;
   value: T;
-  details?: Array<DiffResult<T>>;
+  details?: DiffResult<T>[];
 }
 
 const REMOVED = 1;
@@ -54,7 +50,7 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
  * @param A Actual value
  * @param B Expected value
  */
-export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
+export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
   const prefixCommon = createCommon(A, B);
   const suffixCommon = createCommon(
     A.slice(prefixCommon.length),
@@ -74,20 +70,18 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   if (!M && !N && !suffixCommon.length && !prefixCommon.length) return [];
   if (!N) {
     return [
-      ...prefixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-      ),
-      ...A.map(
-        (a): DiffResult<typeof a> => ({
-          type: swapped ? DiffType.added : DiffType.removed,
-          value: a,
-        }),
-      ),
-      ...suffixCommon.map(
-        (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-      ),
+      ...prefixCommon.map((
+        value,
+      ) => ({ type: "common", value } as DiffResult<T>)),
+      ...A.map((
+        value,
+      ) => ({ type: swapped ? "added" : "removed", value } as DiffResult<T>)),
+      ...suffixCommon.map((
+        value,
+      ) => ({ type: "common", value } as DiffResult<T>)),
     ];
   }
+
   const offset = N;
   const delta = M - N;
   const size = M + N + 1;
@@ -113,40 +107,33 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     B: T[],
     current: FarthestPoint,
     swapped: boolean,
-  ): Array<{
-    type: DiffType;
-    value: T;
-  }> {
-    const M = A.length;
-    const N = B.length;
-    const result = [];
-    let a = M - 1;
-    let b = N - 1;
+  ): DiffResult<T>[] {
+    const result: DiffResult<T>[] = [];
+    let a = A.length - 1;
+    let b = B.length - 1;
     let j = routes[current.id];
     let type = routes[current.id + diffTypesPtrOffset];
-    while (true) {
-      if (!j && !type) break;
+
+    while (j || type) {
       const prev = j;
-      if (type === REMOVED) {
-        result.unshift({
-          type: swapped ? DiffType.removed : DiffType.added,
-          value: B[b],
-        });
-        b -= 1;
-      } else if (type === ADDED) {
-        result.unshift({
-          type: swapped ? DiffType.added : DiffType.removed,
-          value: A[a],
-        });
-        a -= 1;
-      } else {
-        result.unshift({ type: DiffType.common, value: A[a] });
-        a -= 1;
-        b -= 1;
+      let diffType: DiffType = "common";
+      let value = A[a];
+      switch (type) {
+        case REMOVED:
+          diffType = swapped ? "removed" : "added";
+          value = B[b];
+          break;
+        case ADDED:
+          diffType = swapped ? "added" : "removed";
+          break;
       }
+      result.unshift({ type: diffType, value });
+      a -= type !== REMOVED ? 1 : 0;
+      b -= type !== ADDED ? 1 : 0;
       j = routes[prev];
       type = routes[prev + diffTypesPtrOffset];
     }
+
     return result;
   }
 
@@ -156,14 +143,10 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     k: number,
     M: number,
   ): FarthestPoint {
-    if (slide && slide.y === -1 && down && down.y === -1) {
+    if (!slide || slide.y === -1) {
       return { y: 0, id: 0 };
     }
-    if (
-      (down && down.y === -1) ||
-      k === M ||
-      (slide && slide.y) > (down && down.y) + 1
-    ) {
+    if (!down || down.y === -1 || k === M || slide.y > down.y + 1) {
       const prev = slide.id;
       ptr++;
       routes[ptr] = prev;
@@ -192,11 +175,10 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     const fp = createFP(slide, down, k, M);
     while (fp.y + k < M && fp.y < N && A[fp.y + k] === B[fp.y]) {
       const prev = fp.id;
-      ptr++;
-      fp.id = ptr;
-      fp.y += 1;
-      routes[ptr] = prev;
-      routes[ptr + diffTypesPtrOffset] = COMMON;
+      fp.id = ++ptr;
+      fp.y++;
+      routes[fp.id] = prev;
+      routes[fp.id + diffTypesPtrOffset] = COMMON;
     }
     return fp;
   }
@@ -232,14 +214,11 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
       B,
     );
   }
+
   return [
-    ...prefixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-    ),
+    ...prefixCommon.map((c) => ({ type: "common", value: c } as DiffResult<T>)),
     ...backTrace(A, B, fp[delta + offset], swapped),
-    ...suffixCommon.map(
-      (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
-    ),
+    ...suffixCommon.map((c) => ({ type: "common", value: c } as DiffResult<T>)),
   ];
 }
 
@@ -311,20 +290,19 @@ export function diffstr(A: string, B: string) {
     line: DiffResult<string>,
     tokens: Array<DiffResult<string>>,
   ) {
-    return tokens.filter(({ type }) =>
-      type === line.type || type === DiffType.common
-    ).map((result, i, t) => {
-      if (
-        (result.type === DiffType.common) && (t[i - 1]) &&
-        (t[i - 1]?.type === t[i + 1]?.type) && /\s+/.test(result.value)
-      ) {
-        return {
-          ...result,
-          type: t[i - 1].type,
-        };
-      }
-      return result;
-    });
+    return tokens.filter(({ type }) => type === line.type || type === "common")
+      .map((result, i, t) => {
+        if (
+          (result.type === "common") && (t[i - 1]) &&
+          (t[i - 1]?.type === t[i + 1]?.type) && /\s+/.test(result.value)
+        ) {
+          return {
+            ...result,
+            type: t[i - 1].type,
+          };
+        }
+        return result;
+      });
   }
 
   // Compute multi-line diff
@@ -333,12 +311,13 @@ export function diffstr(A: string, B: string) {
     tokenize(`${unescape(B)}\n`),
   );
 
-  const added = [], removed = [];
+  const added: DiffResult<string>[] = [];
+  const removed: DiffResult<string>[] = [];
   for (const result of diffResult) {
-    if (result.type === DiffType.added) {
+    if (result.type === "added") {
       added.push(result);
     }
-    if (result.type === DiffType.removed) {
+    if (result.type === "removed") {
       removed.push(result);
     }
   }
@@ -348,8 +327,8 @@ export function diffstr(A: string, B: string) {
   const aLines = hasMoreRemovedLines ? added : removed;
   const bLines = hasMoreRemovedLines ? removed : added;
   for (const a of aLines) {
-    let tokens = [] as Array<DiffResult<string>>,
-      b: undefined | DiffResult<string>;
+    let tokens: DiffResult<string>[] = [];
+    let b: undefined | DiffResult<string>;
     // Search another diff line with at least one common token
     while (bLines.length) {
       b = bLines.shift();
@@ -361,7 +340,7 @@ export function diffstr(A: string, B: string) {
       tokens = diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
-          type === DiffType.common && value.trim().length
+          type === "common" && value.trim().length
         )
       ) {
         break;
@@ -390,10 +369,10 @@ function createColor(
   // https://github.com/denoland/deno_std/issues/2575
   background = false;
   switch (diffType) {
-    case DiffType.added:
+    case "added":
       return (s: string): string =>
         background ? bgGreen(white(s)) : green(bold(s));
-    case DiffType.removed:
+    case "removed":
       return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
     default:
       return white;
@@ -406,9 +385,9 @@ function createColor(
  */
 function createSign(diffType: DiffType): string {
   switch (diffType) {
-    case DiffType.added:
+    case "added":
       return "+   ";
-    case DiffType.removed:
+    case "removed":
       return "-   ";
     default:
       return "    ";
@@ -432,7 +411,7 @@ export function buildMessage(
   diffResult.forEach((result: DiffResult<string>) => {
     const c = createColor(result.type);
     const line = result.details?.map((detail) =>
-      detail.type !== DiffType.common
+      detail.type !== "common"
         ? createColor(detail.type, { background: true })(detail.value)
         : detail.value
     ).join("") ?? result.value;
