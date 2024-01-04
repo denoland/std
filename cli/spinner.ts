@@ -68,6 +68,7 @@ export class Spinner {
   #color?: Color;
   #intervalId: number | undefined;
   #active = false;
+  #frameIndex = 0;
 
   /**
    * Creates a new spinner.
@@ -86,6 +87,32 @@ export class Spinner {
     this.#color = options?.color ? COLORS[options.color] : undefined;
   }
 
+  set interval(value: number) {
+    if (this.#interval === value) return;
+    this.#interval = value;
+
+    if (!this.#active) return;
+    clearInterval(this.#intervalId);
+    this.#intervalId = setInterval(
+      this.#updateFrame.bind(this),
+      this.#interval,
+    );
+  }
+  get interval() {
+    return this.#interval;
+  }
+
+  #updateFrame() {
+    const color = this.#color ?? "";
+    Deno.stdout.writeSync(LINE_CLEAR);
+    const frame = encoder.encode(
+      color + this.#spinner[this.#frameIndex] + COLOR_RESET + " " +
+        this.#message,
+    );
+    Deno.stdout.writeSync(frame);
+    this.#frameIndex = (this.#frameIndex + 1) % this.#spinner.length;
+  }
+
   /**
    * Starts the spinner.
    *
@@ -100,19 +127,11 @@ export class Spinner {
   start() {
     if (this.#active || Deno.stdout.writable.locked) return;
     this.#active = true;
-    let i = 0;
-    const color = this.#color ?? "";
-
-    // Updates the spinner after the given interval.
-    const updateFrame = () => {
-      Deno.stdout.writeSync(LINE_CLEAR);
-      const frame = encoder.encode(
-        color + this.#spinner[i] + COLOR_RESET + " " + this.#message,
-      );
-      Deno.stdout.writeSync(frame);
-      i = (i + 1) % this.#spinner.length;
-    };
-    this.#intervalId = setInterval(updateFrame, this.#interval);
+    this.#frameIndex = 0;
+    this.#intervalId = setInterval(
+      this.#updateFrame.bind(this),
+      this.#interval,
+    );
   }
   /**
    * Stops the spinner.
