@@ -16,7 +16,7 @@ export function rangeMin(range: SemVerRange): SemVer {
     for (const comparator of comparators) {
       const candidate = comparatorMin(comparator.semver, comparator.operator);
       if (!testRange(candidate, range)) continue;
-      min = min && lt(min, candidate) ? min : candidate;
+      min = (min && lt(min, candidate)) ? min : candidate;
     }
   }
   return min ?? INVALID;

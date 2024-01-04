@@ -16,7 +16,7 @@ export function rangeMax(range: SemVerRange): SemVer {
     for (const comparator of comparators) {
       const candidate = comparatorMax(comparator.semver, comparator.operator);
       if (!testRange(candidate, range)) continue;
-      max = max && gt(max, candidate) ? max : candidate;
+      max = (max && gt(max, candidate)) ? max : candidate;
     }
   }
   return max ?? INVALID;
