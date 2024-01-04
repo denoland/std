@@ -13,6 +13,7 @@ Deno.test({
       ["1.2.3", "1.0.0 - 1.2.3", false],
       ["0.0.0", "1.0.0 - 1.2.2", true],
       ["1.0.0", "1.0.0 - 1.2.3", false],
+      ["2.5.0", ">= 1.0.0 < 2.0.0 || >=3.0.0 < 4.0.0", true],
     ];
     for (const [version, range, expected] of steps) {
       await t.step({
