@@ -46,7 +46,10 @@ export interface SpinnerOptions {
    * @default {["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]}
    */
   spinner?: string[];
-  /** The message to display next to the spinner. */
+  /**
+   * The message to display next to the spinner. This can be changed while the
+   * spinner is active.
+   */
   message?: string;
   /**
    * The time between each frame of the spinner in milliseconds.
@@ -63,7 +66,7 @@ export interface SpinnerOptions {
  */
 export class Spinner {
   #spinner: string[];
-  #message: string;
+  message: string;
   #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
@@ -82,7 +85,7 @@ export class Spinner {
    */
   constructor(options?: SpinnerOptions) {
     this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
-    this.#message = options?.message ?? "";
+    this.message = options?.message ?? "";
     this.#interval = options?.interval ?? DEFAULT_INTERVAL;
     this.#color = options?.color ? COLORS[options.color] : undefined;
   }
