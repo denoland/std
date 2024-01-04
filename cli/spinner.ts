@@ -50,7 +50,7 @@ export interface SpinnerOptions {
   message?: string;
   /**
    * The time between each frame of the spinner in milliseconds.
-   *
+   * This can be changed while the spinner is active.
    * @default {75}
    */
   interval?: number;
