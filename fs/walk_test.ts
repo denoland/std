@@ -116,35 +116,71 @@ Deno.test("walkSync() accepts skip option as regExps", () =>
 
 // https://github.com/denoland/deno_std/issues/1358
 Deno.test("walk() accepts followSymlinks option set to true", async () =>
-  await assertWalkPaths("symlink", [".", "a", "a/z", "a", "a/z", "x", "x"], {
+  await assertWalkPaths("symlink", [
+    ".",
+    "a",
+    "a/z",
+    "a",
+    "a/z",
+    "x",
+    "x",
+  ], {
     followSymlinks: true,
   }));
 
 Deno.test("walkSync() accepts followSymlinks option set to true", () =>
-  assertWalkSyncPaths("symlink", [".", "a", "a/z", "a", "a/z", "x", "x"], {
+  assertWalkSyncPaths("symlink", [
+    ".",
+    "a",
+    "a/z",
+    "a",
+    "a/z",
+    "x",
+    "x",
+  ], {
     followSymlinks: true,
   }));
 
 Deno.test("walk() accepts followSymlinks option set to true with canonicalize option set to false", async () =>
-  await assertWalkPaths("symlink", [".", "a", "a/z", "b", "b/z", "x", "y"], {
+  await assertWalkPaths("symlink", [
+    ".",
+    "a",
+    "a/z",
+    "la",
+    "la/z",
+    "x",
+    "lx",
+  ], {
     followSymlinks: true,
     canonicalize: false,
   }));
 
 Deno.test("walkSync() accepts followSymlinks option set to true with canonicalize option set to false", () =>
-  assertWalkSyncPaths("symlink", [".", "a", "a/z", "b", "b/z", "x", "y"], {
+  assertWalkSyncPaths("symlink", [
+    ".",
+    "a",
+    "a/z",
+    "la",
+    "la/z",
+    "x",
+    "lx",
+  ], {
     followSymlinks: true,
     canonicalize: false,
   }));
 
 Deno.test("walk() accepts followSymlinks option set to false", async () => {
-  await assertWalkPaths("symlink", [".", "a", "a/z", "b", "x", "y"], {
-    followSymlinks: false,
-  });
+  await assertWalkPaths(
+    "symlink",
+    [".", "a", "a/z", "la", "x", "lx"],
+    {
+      followSymlinks: false,
+    },
+  );
 });
 
 Deno.test("walkSync() accepts followSymlinks option set to false", () => {
-  assertWalkSyncPaths("symlink", [".", "a", "a/z", "b", "x", "y"], {
+  assertWalkSyncPaths("symlink", [".", "a", "a/z", "la", "x", "lx"], {
     followSymlinks: false,
   });
 });
