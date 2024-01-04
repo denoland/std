@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** Object structure for a list of HTML entities. */
 export type EntityList = Record<string, string>;
 
 const rawToEntityEntries = [
@@ -22,24 +23,24 @@ const rawToEntity = new Map<string, string>(rawToEntityEntries);
 const rawRe = new RegExp(`[${[...rawToEntity.keys()].join("")}]`, "g");
 
 /**
- * Escapes text for safe interpolation into HTML text content and quoted attributes
+ * Escapes text for safe interpolation into HTML text content and quoted attributes.
  *
  * @example
  * ```ts
  * import { escape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
- * assertEquals(escape("<>'&AA"), "&lt;&gt;&#39;&amp;AA");
+ * escape("<>'&AA"); // "&lt;&gt;&#39;&amp;AA"
  *
- * // characters that don't need to be escaped will be left alone,
- * // even if named HTML entities exist for them
- * assertEquals(escape("þð"), "þð");
+ * // Characters that don't need to be escaped will be left alone,
+ * // even if named HTML entities exist for them.
+ * escape("þð"); // "þð"
  * ```
  */
 export function escape(str: string): string {
   return str.replaceAll(rawRe, (m) => rawToEntity.get(m)!);
 }
 
+/** Options for {@linkcode unescape}. */
 export type UnescapeOptions = { entityList: EntityList };
 
 const defaultUnescapeOptions: UnescapeOptions = {
@@ -54,20 +55,20 @@ const RX_HEX_ENTITY = /&#x(\p{AHex}+);/gu;
 const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 
 /**
- * Unescapes HTML entities in text
+ * Unescapes HTML entities in text.
  *
  * @example
  * ```ts
  * import { unescape } from "https://deno.land/std@$STD_VERSION/html/entities.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_equals.ts";
  *
- * // default options (only handles &<>'" and numeric entities)
- * assertEquals(unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"), "<>'&AA");
- * assertEquals(unescape("&thorn;&eth;"), "&thorn;&eth;");
+ * // Default options (only handles &<>'" and numeric entities)
+ * unescape("&lt;&gt;&apos;&amp;&#65;&#x41;"); // "<>'&AA"
+ * unescape("&thorn;&eth;"; // "&thorn;&eth;"
  *
- * // using the full named entity list from the HTML spec (~47K unminified)
+ * // Using the full named entity list from the HTML spec (~47K un-minified)
  * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
- * assertEquals(unescape("&thorn;&eth;", { entityList }), "þð");
+ *
+ * unescape("&thorn;&eth;", { entityList }); // "þð"
  * ```
  */
 export function unescape(
