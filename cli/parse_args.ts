@@ -619,29 +619,28 @@ export function parseArgs<
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    let groups = arg.match(/^--(?<key>[^=]+)=(?<value>.*)$/s)?.groups;
-    if (groups) {
-      const { key, value } = groups;
+    if (/^--.+=/.test(arg)) {
+      const m = arg.match(/^--([^=]+)=(.*)$/s);
+      assert(m !== null);
+      const [, key, value] = m;
+
       if (flags.bools[key]) {
         const booleanValue = value !== "false";
         setArg(key, booleanValue, arg);
       } else {
         setArg(key, value, arg);
       }
-      continue;
-    }
-
-    groups = arg.match(/^--no-(?<key>.+)/)?.groups;
-    if (groups && Object.keys(flags.negatable).includes(groups.key)) {
-      setArg(groups.key, false, arg, false);
-      continue;
-    }
-
-    groups = arg.match(/^--(?<key>.+)/)?.groups;
-    if (groups) {
-      const { key } = groups;
+    } else if (
+      /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
+    ) {
+      const m = arg.match(/^--no-(.+)/);
+      assert(m !== null);
+      setArg(m[1], false, arg, false);
+    } else if (/^--.+/.test(arg)) {
+      const m = arg.match(/^--(.+)/);
+      assert(m !== null);
+      const [, key] = m;
       const next = args[i + 1];
-
       if (
         next !== undefined &&
         !/^-/.test(next) &&
@@ -651,21 +650,15 @@ export function parseArgs<
       ) {
         setArg(key, next, arg);
         i++;
-        continue;
-      }
-
-      if (/^(true|false)$/.test(next)) {
+      } else if (/^(true|false)$/.test(next)) {
         setArg(key, next === "true", arg);
         i++;
-        continue;
+      } else {
+        setArg(key, get(flags.strings, key) ? "" : true, arg);
       }
-
-      setArg(key, get(flags.strings, key) ? "" : true, arg);
-      continue;
-    }
-
-    if (/^-[^-]+/.test(arg)) {
+    } else if (/^-[^-]+/.test(arg)) {
       const letters = arg.slice(1, -1).split("");
+
       let broken = false;
       for (let j = 0; j < letters.length; j++) {
         const next = arg.slice(j + 2);
@@ -716,16 +709,14 @@ export function parseArgs<
           setArg(key, get(flags.strings, key) ? "" : true, arg);
         }
       }
-
-      continue;
-    }
-
-    if (!flags.unknownFn || flags.unknownFn(arg) !== false) {
-      argv._.push(flags.strings["_"] ?? !isNumber(arg) ? arg : Number(arg));
-    }
-    if (stopEarly) {
-      argv._.push(...args.slice(i + 1));
-      break;
+    } else {
+      if (!flags.unknownFn || flags.unknownFn(arg) !== false) {
+        argv._.push(flags.strings["_"] ?? !isNumber(arg) ? arg : Number(arg));
+      }
+      if (stopEarly) {
+        argv._.push(...args.slice(i + 1));
+        break;
+      }
     }
   }
 
