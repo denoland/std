@@ -565,7 +565,14 @@ Deno.test("stub types", () => {
 });
 
 Deno.test("mockSession and mockSessionAsync", async () => {
-  const points = Array(6).fill(undefined).map(() => new Point(2, 3));
+  const points = [
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+    new Point(2, 3),
+  ] as const;
   let actions: Spy<Point, unknown[], unknown>[] = [];
   function assertRestored(expected: boolean[]) {
     assertEquals(actions.map((action) => action.restored), expected);

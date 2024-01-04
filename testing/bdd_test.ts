@@ -118,9 +118,9 @@ Deno.test("global", async (t) => {
   }
 
   await t.step("global hooks", async () => {
-    const test = stub(Deno, "test"),
-      fns = [spy(), spy()],
-      { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
+    const test = stub(Deno, "test");
+    const fns = [spy(), spy()] as const;
+    const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
     const context = new TestContext("global");
     try {
