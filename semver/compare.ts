@@ -14,30 +14,16 @@ import {
  *
  * Sorts in ascending order if passed to `Array.sort()`,
  */
-
-const compareMatchers = ["version", "prerelease", "buildmetadata"] as const;
-
 export function compare(
   s0: SemVer,
   s1: SemVer,
-  { compareMatcher = "prerelease" }: {
-    compareMatcher?: typeof compareMatchers[number];
-  } = {},
 ): 1 | 0 | -1 {
   if (s0 === s1) return 0;
-  const compareMatcherIndex = compareMatchers.indexOf(compareMatcher);
-
   return (
     compareNumber(s0.major, s1.major) ||
     compareNumber(s0.minor, s1.minor) ||
     compareNumber(s0.patch, s1.patch) ||
-    (compareMatcherIndex >= compareMatchers.indexOf("prerelease")
-      ? checkIdentifier(s0.prerelease, s1.prerelease) ||
-        compareIdentifier(s0.prerelease, s1.prerelease)
-      : 0) ||
-    (compareMatcherIndex >= compareMatchers.indexOf("buildmetadata")
-      ? checkIdentifier(s1.build, s0.build) ||
-        compareIdentifier(s0.build, s1.build)
-      : 0)
+    checkIdentifier(s0.prerelease, s1.prerelease) ||
+    compareIdentifier(s0.prerelease, s1.prerelease)
   );
 }
