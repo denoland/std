@@ -1633,7 +1633,7 @@ Deno.test("global", async (t) => {
         "nested",
         async () => {
           const test = stub(Deno, "test");
-          const fns = [spy(), spy()] as readonly [Spy, Spy];
+          const fns = [spy(), spy()] as const;
           const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } =
             hookFns();
 
