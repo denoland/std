@@ -90,7 +90,7 @@ export class Spinner {
     this.#spinner = spinner;
     this.#message = message;
     this.#interval = interval;
-    this.#color = color;
+    this.#color = color ? COLORS[color] : undefined;
   }
 
   /**
