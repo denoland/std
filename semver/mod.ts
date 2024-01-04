@@ -305,7 +305,6 @@ export * from "./range_format.ts";
 export * from "./range_intersects.ts";
 export * from "./range_max.ts";
 export * from "./range_min.ts";
-export * from "./rcompare.ts";
 export * from "./rsort.ts";
 export * from "./sort.ts";
 export * from "./types.ts";
