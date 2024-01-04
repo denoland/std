@@ -137,7 +137,6 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
       j = routes[prev];
       type = routes[prev + diffTypesPtrOffset];
     }
-
     return result;
   }
 
