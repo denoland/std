@@ -1087,7 +1087,7 @@ export function returnsArg<Arg, Self = any>(
     if (!(idx in args)) {
       throw new TypeError("");
     }
-    return args[idx];
+    return args[idx]!;
   };
 }
 
