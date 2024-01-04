@@ -10,7 +10,7 @@ import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
 import { Type } from "./type.ts";
 
 Deno.test({
-  name: "stringified correctly",
+  name: "stringify()",
   fn() {
     const FIXTURE = {
       foo: {
@@ -46,8 +46,7 @@ binary: !<tag:yaml.org,2002:binary> SGVsbG8=
 });
 
 Deno.test({
-  name:
-    "`!!js/*` yaml types are not handled in default schemas while stringifying",
+  name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const object = { undefined: undefined };
     assertThrows(
@@ -59,8 +58,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "`!!js/*` yaml types are correctly handled with extended schema while stringifying",
+  name: "stringify() handles `!!js/*` yaml types with extended schema",
   fn() {
     const object = {
       regexp: {
@@ -81,7 +79,8 @@ undefined: !<tag:yaml.org,2002:js/undefined> ''
 });
 
 Deno.test({
-  name: "`!!js/function` yaml with extended schema throws while stringifying",
+  name:
+    "stringify() throws with `!!js/function` yaml types with extended schema",
   fn() {
     const func = function foobar() {
       return "hello world!";
@@ -94,7 +93,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!*` yaml user defined types are supported while stringifying",
+  name: "stringify() handles `!*` yaml user defined types",
   fn() {
     const PointYamlType = new Type("!point", {
       kind: "sequence",
