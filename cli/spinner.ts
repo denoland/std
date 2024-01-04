@@ -46,7 +46,10 @@ export interface SpinnerOptions {
    * @default {["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]}
    */
   spinner?: string[];
-  /** The message to display next to the spinner. */
+  /**
+   * The message to display next to the spinner. This can be changed while the
+   * spinner is active.
+   */
   message?: string;
   /**
    * The time between each frame of the spinner in milliseconds.
