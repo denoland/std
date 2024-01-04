@@ -3,7 +3,7 @@ import { compare } from "./compare.ts";
 import type { SemVer } from "./types.ts";
 
 /**
- * @returns `true` if they're logically equivalent, even if they're not the exact same version object.
+ * Returns `true` if both semantic versions are logically equivalent, even if they're not the exact same version object.
  *
  * This is equal to `compare(s0, s1) === 0`.
  */
