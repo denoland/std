@@ -122,14 +122,17 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
         case REMOVED:
           diffType = swapped ? "removed" : "added";
           value = B[b];
+          b--;
           break;
         case ADDED:
           diffType = swapped ? "added" : "removed";
+          a--;
           break;
+        default:
+          a--;
+          b--;
       }
       result.unshift({ type: diffType, value });
-      a -= type !== REMOVED ? 1 : 0;
-      b -= type !== ADDED ? 1 : 0;
       j = routes[prev];
       type = routes[prev + diffTypesPtrOffset];
     }
