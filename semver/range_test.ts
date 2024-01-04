@@ -1,7 +1,7 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
-import { rangeFormat } from "./range_format.ts";
+import { formatRange } from "./format_range.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
 import { testRange } from "./test_range.ts";
@@ -278,7 +278,7 @@ Deno.test({
         name: `${r} -> ${expected}`,
         fn: () => {
           const range = parseRange(r);
-          const actual = rangeFormat(range);
+          const actual = formatRange(range);
           assertEquals(actual, expected);
         },
       });
