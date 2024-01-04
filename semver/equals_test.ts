@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { eq } from "./eq.ts";
+import { equals } from "./equals.ts";
 
 Deno.test({
-  name: "comparison",
+  name: "equals()",
   fn: async (t) => {
     // [version1, version2]
     // version1 should be greater than version2
@@ -39,10 +39,10 @@ Deno.test({
         const s0 = parse(v0);
         const s1 = parse(v1);
 
-        const eq0 = eq(s0, s0);
-        const eq1 = eq(s1, s1);
-        const eq2 = eq(s0, s1);
-        const eq3 = eq(s1, s0);
+        const eq0 = equals(s0, s0);
+        const eq1 = equals(s1, s1);
+        const eq2 = equals(s0, s1);
+        const eq3 = equals(s1, s0);
         const op = expected ? "==" : "!=";
 
         assert(eq0, `${s0} == ${s0}`);
