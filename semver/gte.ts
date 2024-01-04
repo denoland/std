@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { greaterThanOrEquals } from "./greater_than_or_equals.ts";
+import { greaterOrEqual } from "./greater_or_equal.ts";
 
 /**
  * Greater than or equal to comparison
- * @deprecated (will be removed after 0.213.0) Use {@linkcode greaterThanOrEquals} instead.
+ * @deprecated (will be removed after 0.213.0) Use {@linkcode greaterOrEqual} instead.
  */
-export const gte = greaterThanOrEquals;
+export const gte = greaterOrEqual;
