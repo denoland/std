@@ -4,6 +4,7 @@ import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
 import loader from './boot/loader.md?raw'
 import README from './boot/README.md?raw'
+import assert from 'assert-fast'
 import Debug from 'debug'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
@@ -13,11 +14,13 @@ export default class Artifact {
   #dir
   #cache
   #opts
-  static async boot({ filesystemName = 'fs', wipe = false } = {}) {
+  static async boot({ filesystem, path = 'fs', wipe = false } = {}) {
     const artifact = new Artifact()
-    const fs = new LightningFS(filesystemName, { wipe })
-    artifact.#fs = fs.promises
-    artifact.#dir = '/hal'
+    if (!filesystem) {
+      filesystem = new LightningFS(path, { wipe })
+    }
+    artifact.#fs = filesystem.promises
+    artifact.#dir = path + '/hal'
     artifact.#cache = {}
     artifact.#opts = {
       fs: artifact.#fs,
@@ -25,6 +28,7 @@ export default class Artifact {
       cache: artifact.#cache,
     }
     await artifact.#load()
+    return artifact
   }
   async #load() {
     debug('checking repo')
@@ -52,7 +56,12 @@ export default class Artifact {
   }
   async init() {
     debug('creating repo')
-    await git.init({ fs: this.#fs, dir: '/hal' })
+    await this.#fs.mkdir(this.#dir).catch((e) => {
+      if (e.message.startsWith('EEXIST')) {
+        return
+      }
+    })
+    await git.init(this.#opts)
     const readmeP = this.#fs.writeFile(this.#dir + '/README.md', README)
     const loaderP = this.#fs.writeFile(this.#dir + '/loader.md', loader)
     await Promise.all([readmeP, loaderP])
@@ -64,5 +73,18 @@ export default class Artifact {
       message: 'boot',
       author: { name: 'HAL' },
     })
+  }
+  async prompt(text) {
+    assert(typeof text === 'string', `text must be a string`)
+    assert(text, `text must not be empty`)
+
+    // should be able to make a function call in a generic way
+    // so a call to the AI should be defined how any call is made
+
+    // load up the README.md file
+    // extract out the sysprompt
+    // make the openAI function call
+    // pipe the response back
+    // clear any tension, which might require extra functions to run.
   }
 }

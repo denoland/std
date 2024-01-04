@@ -106,7 +106,7 @@ export const ArtifactBoot = {
     async function initArtifact() {
       Debug.enable('*artifact')
       artifact = await Artifact.boot({
-        filesystemName: 'Git.stories',
+        path: 'Git.stories',
         wipe: true,
       })
     },
