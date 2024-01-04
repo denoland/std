@@ -131,6 +131,7 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
         default:
           a--;
           b--;
+          break;
       }
       result.unshift({ type: diffType, value });
       j = routes[prev];
