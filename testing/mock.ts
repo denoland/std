@@ -1082,14 +1082,9 @@ export function returnsThis<
 // deno-lint-ignore no-explicit-any
 export function returnsArg<Arg, Self = any>(
   idx: number,
-): (this: Self, ...args: Arg[]) => Arg {
-  return function (...args: Arg[]): Arg {
-    if (!(idx in args)) {
-      throw new TypeError(
-        `Could not get argument at ${idx} as there were only ${args.length} arguments`,
-      );
-    }
-    return args[idx]!;
+): (this: Self, ...args: Arg[]) => Arg | undefined {
+  return function (...args: Arg[]): Arg | undefined {
+    return args[idx];
   };
 }
 

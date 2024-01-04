@@ -1782,12 +1782,12 @@ Deno.test("returnsThis", () => {
 
 Deno.test("returnsArg", () => {
   let callback = returnsArg(0);
-  assertThrows(() => callback());
+  assertEquals(callback(), undefined);
   assertEquals(callback("a"), "a");
   assertEquals(callback("b", "c"), "b");
   callback = returnsArg(1);
-  assertThrows(() => callback());
-  assertThrows(() => callback("a"));
+  assertEquals(callback(), undefined);
+  assertEquals(callback("a"), undefined);
   assertEquals(callback("b", "c"), "c");
   assertEquals(callback("d", "e", "f"), "e");
 });
