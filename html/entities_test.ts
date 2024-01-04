@@ -4,7 +4,7 @@ import { escape, unescape } from "./entities.ts";
 import { assertEquals } from "../assert/mod.ts";
 import entityList from "./named_entity_list.json" assert { type: "json" };
 
-Deno.test("escape", async (t) => {
+Deno.test("escape()", async (t) => {
   await t.step('escapes &<>"', () => {
     assertEquals(escape("&<>'\""), "&amp;&lt;&gt;&#39;&quot;");
   });
@@ -22,7 +22,7 @@ Deno.test("escape", async (t) => {
   );
 });
 
-Deno.test("unescape", async (t) => {
+Deno.test("unescape()", async (t) => {
   await t.step("round-trips with escape", () => {
     const chars = "&<>'\"";
     assertEquals(unescape(escape(chars)), chars);
@@ -69,7 +69,7 @@ Deno.test("unescape", async (t) => {
     });
   });
 
-  await t.step("decimal", async (t) => {
+  await t.step("unescape() handles decimal", async (t) => {
     await t.step("unescapes decimal", () => {
       assertEquals(unescape("&#46;"), ".");
     });
@@ -87,7 +87,7 @@ Deno.test("unescape", async (t) => {
     );
   });
 
-  await t.step("hex", async (t) => {
+  await t.step("unescape() handles hex", async (t) => {
     await t.step("unescapes lower-case hex", () => {
       assertEquals(unescape("&#x2e;"), ".");
     });

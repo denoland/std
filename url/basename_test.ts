@@ -12,7 +12,7 @@ const TESTSUITE: [[string | URL, string?], string][] = [
   [[new URL("https://deno.land///")], "deno.land"],
 ];
 
-Deno.test("basename", function () {
+Deno.test("basename()", function () {
   for (const [[test_url, suffix], expected] of TESTSUITE) {
     assertEquals(url.basename(test_url, suffix), expected);
   }

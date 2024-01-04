@@ -10,7 +10,7 @@ import { YAMLError } from "./_error.ts";
 import { Type } from "./type.ts";
 
 Deno.test({
-  name: "`parse` parses single document yaml string",
+  name: "parse() handles single document yaml string",
   fn() {
     const yaml = `
       test: toto
@@ -27,7 +27,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`parseAll` parses the yaml string with multiple documents",
+  name: "parseAll() handles yaml string with multiple documents",
   fn() {
     const yaml = `
 ---
@@ -59,7 +59,7 @@ name: Eve
 });
 
 Deno.test({
-  name: "`!!js/*` yaml types are not handled in default schemas while parsing",
+  name: "parse() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const yaml = `undefined: !!js/undefined ~`;
     assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
@@ -68,7 +68,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "`!!js/*` yaml types are correctly handled with extended schema while parsing",
+    "parse() handles `!!js/*` yaml types woth extended schema while parsing",
   fn() {
     const yaml = `
       regexp:
@@ -90,7 +90,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!!js/function` yaml type with extended schema throws while parsing",
+  name: "parse() throws with `!!js/function` yaml type with extended schema",
   fn() {
     const func = function foobar() {
       return "hello world!";
@@ -106,7 +106,7 @@ ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 });
 
 Deno.test({
-  name: "`!*` yaml user defined types are supported while parsing",
+  name: "parse() handles `!*` yaml user defined types",
   fn() {
     const PointYamlType = new Type("!point", {
       kind: "sequence",
@@ -131,7 +131,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`parseAll` accepts parse options",
+  name: "parseAll() accepts parse options",
   fn() {
     const yaml = `
 ---
@@ -174,7 +174,7 @@ regexp: !!js/regexp bar
 });
 
 Deno.test({
-  name: "parse __proto__",
+  name: "parse() handles __proto__",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
     // instead of `target[key] = value` when parsing the object.
@@ -218,7 +218,7 @@ merge_test:
 });
 
 Deno.test({
-  name: "parse returns `null` when yaml is empty or only comments",
+  name: "parse() returns `null` when yaml is empty or only comments",
   fn() {
     const expected = null;
 
@@ -232,7 +232,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse binary type",
+  name: "parse() handles binary type",
   fn() {
     const yaml = `message: !!binary "SGVsbG8="`;
     assertEquals(parse(yaml), {
