@@ -349,7 +349,7 @@ const sessions: Set<Spy<any, any[], any>>[] = [];
 // deno-lint-ignore no-explicit-any
 function getSession(): Set<Spy<any, any[], any>> {
   if (sessions.length === 0) sessions.push(new Set());
-  return sessions[sessions.length - 1]!;
+  return sessions.at(-1)!;
 }
 // deno-lint-ignore no-explicit-any
 function registerMock(spy: Spy<any, any[], any>) {
