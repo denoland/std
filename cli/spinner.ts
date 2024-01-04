@@ -103,6 +103,8 @@ export class Spinner {
   set interval(value: number) {
     if (value === this.#interval) return;
     this.#interval = value;
+
+    if (!this.#intervalId) return;
     clearInterval(this.#intervalId);
     this.#intervalId = setInterval(
       this.#updateFrame.bind(this),
