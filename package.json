@@ -53,6 +53,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-storybook": "^0.6.15",
+    "fake-indexeddb": "^5.0.2",
     "prop-types": "^15.8.1",
     "storybook": "^7.6.7",
     "vite": "^5.0.10",
@@ -73,18 +74,5 @@
   },
   "bugs": {
     "url": "https://github.com/dreamcatcher-tech/artifact/issues"
-  },
-  "wallaby": {
-    "workers": {
-      "restart": true
-    },
-    "autoDetect": "true",
-    "tests": [
-      "src/**/*.test.js"
-    ],
-    "files": [
-      "src/**/*.js",
-      "!src/**/*.test.js"
-    ]
   }
 }

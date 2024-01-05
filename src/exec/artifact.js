@@ -6,7 +6,8 @@ import { Buffer } from 'buffer'
 import loader from '../boot/loader.md?raw'
 import README from '../boot/README.md?raw'
 import assert from 'assert-fast'
-import promptRunner from './promptRunner.js'
+import promptRunner from './prompt-runner.js'
+import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
@@ -17,12 +18,14 @@ export default class Artifact {
   #cache
   #opts
   #session
+  #trigger
   static async boot({ filesystem, path = 'fs', wipe = false } = {}) {
     const artifact = new Artifact()
     const prefix = filesystem ? path : ''
     if (!filesystem) {
       filesystem = new LightningFS(path, { wipe })
     }
+    artifact.#trigger = TriggerFS.create()
     artifact.#fs = filesystem.promises
     artifact.#dir = prefix + '/hal'
     artifact.#session = prefix + '/hal/.session.json'
@@ -77,6 +80,7 @@ export default class Artifact {
       message: 'boot',
       author: { name: 'HAL' },
     })
+    this.#trigger.commit()
   }
   async prompt(text) {
     assert(typeof text === 'string', `text must be a string`)
@@ -116,12 +120,14 @@ export default class Artifact {
     // - system now waits for the next prompt / driver / tension
 
     const sessionPath = this.#session
-    await promptRunner({ fs: this.#fs, sessionPath, text })
+    const trigger = this.#trigger
+    await promptRunner({ fs: this.#fs, sessionPath, text, trigger })
     await git.commit({
       ...this.#opts,
       message: 'promptRunner',
       author: { name: 'promptRunner' },
     })
+    this.#trigger.commit()
   }
   async read(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
@@ -131,5 +137,12 @@ export default class Artifact {
   async log({ filepath, depth }) {
     const log = await git.log({ ...this.#opts, filepath, depth })
     return log
+  }
+  subscribe(path, cb) {
+    const initial = this.#fs.readFile(path, 'utf8')
+    return this.#trigger.subscribe(path, cb, initial)
+  }
+  subscribeCommits(path, cb) {
+    return this.#trigger.subscribeCommits(path, cb)
   }
 }

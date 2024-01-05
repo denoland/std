@@ -8,6 +8,9 @@ import PropTypes from 'prop-types'
 import Debug from 'debug'
 import Messages from './Messages'
 
+// TODO put the git commit hash under the input box, along with date, time,
+// who the current user is, size, latency, etc.
+
 const debug = Debug('AI:ThreeBox')
 
 const ThreeBox = ({ preload, preSubmit }) => {
@@ -24,9 +27,6 @@ const ThreeBox = ({ preload, preSubmit }) => {
   const onTranscription = useCallback((isTranscribing) => {
     setIsTranscribing(isTranscribing)
   }, [])
-
-  // how are actions defined ?
-
 
   const onSend = useCallback(
     (value) => hal.ownActions.prompt(value).catch(setError),

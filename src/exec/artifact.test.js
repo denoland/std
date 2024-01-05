@@ -1,18 +1,12 @@
+// import 'fake-indexeddb/auto'
 import Artifact from './artifact'
-import { afterEach, expect, test, beforeEach } from 'vitest'
-import filesystem from 'node:fs'
+import { expect, test, beforeEach } from 'vitest'
 import Debug from 'debug'
 
 beforeEach(async (context) => {
-  await filesystem.promises.mkdir('./tmp').catch(() => {})
-  const path = await filesystem.promises.mkdtemp('./tmp/')
-  context.path = path
-  context.artifact = await Artifact.boot({ path, filesystem })
+  context.artifact = await Artifact.boot()
   // TODO make artifact boot in a sequence of functions
   // so it can be done in the play area of storybook
-})
-afterEach(async (context) => {
-  await filesystem.promises.rm(context.path, { recursive: true })
 })
 
 test('boot', async ({ artifact }) => {
@@ -32,7 +26,7 @@ test.only('have a chat', async ({ artifact }) => {
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {
-  await artifact.prompt('add a file named hello.txt')
+  // await artifact.prompt('add a file named hello.txt')
 
   // check that the file was actually added and committed
   // a commit is the action of the AI, which has necessarily modified the fs

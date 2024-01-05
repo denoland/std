@@ -1,29 +1,22 @@
 import play from './play'
 import { Page } from '../examples/Page'
-
+import React, { useEffect } from 'react'
 import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
 import Debug from 'debug'
 import Artifact from '../exec/artifact'
+import { Provider } from './Provider'
+import { useArtifact, useLatestCommit, usePrompt } from '../react/hooks'
 globalThis.Buffer = Buffer
 
 // do 10k customer records
 // then sync it down from a server
 
-// need a bootloader, to start the execution engine with some defaults.
-// starts the LLM and the first chat thing.
-
-// chat is just adding a message to the git file.
 // truncation means you can recover it from history, but keeps the context small
 
-// create the base fs on disk, the upload it to the browser version.
-
-// OPERATIONS:
-// 1.
-
 // use the stuck loop to control how the system behaves ?
-// stucks as base dir ?
+// stucks as a base dir.
 
 // make a folder:
 // get the help that matches this goal
@@ -33,18 +26,42 @@ globalThis.Buffer = Buffer
 // maintain a vector db of what is store in the filesystem, particularly in the
 // stucks folder, which is indexed by goal.
 
-// make a simple calculator
+// make a simple calculator to do some math via function calls
 // do some lensing
 
+// make two bots talk to each other, and also allow you to talk directly to a bot
+
 // githooks, so when changes come in, system integrity can be maintained
+// possibly githooks are how all functions are triggered
 
 export default {
   title: 'Git',
   component: Page,
-  parameters: {
-    // More on how to position stories at: https://storybook.js.org/docs/configure/story-layout
-    layout: 'fullscreen',
-  },
+}
+
+const Renderer = () => {
+  const session = useArtifact('/hal/.session.json')
+  const prompt = usePrompt('/hal/.session.json')
+  console.log(session)
+  useEffect(() => {
+    prompt('say a single word')
+  }, [prompt])
+  const commit = useLatestCommit()
+  return (
+    <>
+      <div>{session}</div>
+      <br />
+      <div>{JSON.stringify(commit, null, 2)}</div>
+    </>
+  )
+}
+
+export const Subscribe = () => {
+  return (
+    <Provider wipe>
+      <Renderer />
+    </Provider>
+  )
 }
 
 const fs = new LightningFS('fs', { wipe: true })

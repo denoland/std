@@ -15,7 +15,7 @@ const ai = new OpenAI({
   dangerouslyAllowBrowser: true,
 })
 
-export default async ({ fs, sessionPath, text }) => {
+export default async ({ fs, sessionPath, text, trigger }) => {
   // read in the file
   // add the latest user session
   // ? where would the sysprompt have come from ?
@@ -23,6 +23,10 @@ export default async ({ fs, sessionPath, text }) => {
   const session = await fs.readFile(sessionPath, 'utf8')
   const messages = JSON.parse(session)
   messages.push({ role: 'user', content: text })
+  const file = JSON.stringify(messages)
+  await fs.writeFile(sessionPath, file)
+  trigger.write(sessionPath, file)
+
   const args = {
     model,
     temperature: 0,
@@ -63,7 +67,9 @@ export default async ({ fs, sessionPath, text }) => {
 
     // TODO debounce this writing
     // TODO add a ram cache atop the fs
-    await fs.writeFile(sessionPath, JSON.stringify([...messages, assistant]))
+    const file = JSON.stringify([...messages, assistant])
+    await fs.writeFile(sessionPath, file)
+    trigger.write(sessionPath, file)
   }
 }
 
