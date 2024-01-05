@@ -48,7 +48,7 @@ export interface LoggerOptions {
 
 export class Logger {
   #level: LogLevel;
-  #handlers: BaseHandler[];
+  handlers: BaseHandler[];
   readonly #loggerName: string;
 
   constructor(
@@ -59,7 +59,7 @@ export class Logger {
     this.#loggerName = loggerName;
     /* TODO: Remove this unnecessary typecast after 0.211.0 */
     this.#level = getLevelByName(levelName) as LogLevel;
-    this.#handlers = options.handlers || [];
+    this.handlers = options.handlers || [];
   }
 
   /**
@@ -97,13 +97,6 @@ export class Logger {
     return this.#loggerName;
   }
 
-  set handlers(hndls: BaseHandler[]) {
-    this.#handlers = hndls;
-  }
-  get handlers(): BaseHandler[] {
-    return this.#handlers;
-  }
-
   /**
    * If the level of the logger is greater than the level to log, then nothing
    * is logged, otherwise a log record is passed to each log handler.  `msg` data
@@ -136,7 +129,7 @@ export class Logger {
       loggerName: this.loggerName,
     });
 
-    this.#handlers.forEach((handler) => {
+    this.handlers.forEach((handler) => {
       handler.handle(record);
     });
 
