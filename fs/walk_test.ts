@@ -46,6 +46,9 @@ function assertWalkSyncPaths(
       JSON.stringify(entriesSync.map(({ path }) => path), null, 2)
     } vs ${JSON.stringify(expected, null, 2)}`,
   );
+  //
+  assertEquals(entriesSync.length, expected.length);
+  //cf7a322b (wip)
 }
 
 Deno.test("walk() returns current dir for empty dir", async () => {
@@ -128,17 +131,22 @@ Deno.test("walkSync() accepts skip option as regExps", () =>
 
 // https://github.com/denoland/deno_std/issues/1358
 Deno.test("walk() accepts followSymlinks option set to true", async () =>
-  await assertWalkPaths("symlink", [
-    ".",
-    "a",
-    "a/z",
-    "a",
-    "a/z",
-    "x",
-    "x",
-  ], {
-    followSymlinks: true,
-  }));
+  await assertWalkPaths(
+    "symlink",
+    [
+      ".",
+      "a",
+      "a/z",
+      "a",
+      "a/z",
+      "x",
+      "x",
+      "broken",
+    ],
+    {
+      followSymlinks: true,
+    },
+  ));
 
 Deno.test("walkSync() accepts followSymlinks option set to true", () =>
   assertWalkSyncPaths("symlink", [
@@ -149,6 +157,7 @@ Deno.test("walkSync() accepts followSymlinks option set to true", () =>
     "a/z",
     "x",
     "x",
+    "broken",
   ], {
     followSymlinks: true,
   }));
@@ -162,6 +171,7 @@ Deno.test("walk() accepts followSymlinks option set to true with canonicalize op
     "la/z",
     "x",
     "lx",
+    "broken",
   ], {
     followSymlinks: true,
     canonicalize: false,
@@ -176,15 +186,38 @@ Deno.test("walkSync() accepts followSymlinks option set to true with canonicaliz
     "la/z",
     "x",
     "lx",
+    "broken",
   ], {
     followSymlinks: true,
     canonicalize: false,
   }));
 
+Deno.test("walk() ignore broken symlinks when followSymlinks is true and includeSymlinks is false", async () => {
+  await assertWalkPaths(
+    "symlink",
+    [".", "a", "a/z", "x", "a", "a/z", "x"],
+    {
+      followSymlinks: true,
+      includeSymlinks: false,
+    },
+  );
+});
+
+Deno.test("walkSync() ignore broken symlinks when followSymlinks is true and includeSymlinks is false", () => {
+  assertWalkSyncPaths(
+    "symlink",
+    [".", "a", "a/z", "x", "a", "a/z", "x"],
+    {
+      followSymlinks: true,
+      includeSymlinks: false,
+    },
+  );
+});
+
 Deno.test("walk() accepts followSymlinks option set to false", async () => {
   await assertWalkPaths(
     "symlink",
-    [".", "a", "a/z", "la", "x", "lx"],
+    [".", "a", "a/z", "la", "x", "lx", "broken"],
     {
       followSymlinks: false,
     },
@@ -192,7 +225,7 @@ Deno.test("walk() accepts followSymlinks option set to false", async () => {
 });
 
 Deno.test("walkSync() accepts followSymlinks option set to false", () => {
-  assertWalkSyncPaths("symlink", [".", "a", "a/z", "la", "x", "lx"], {
+  assertWalkSyncPaths("symlink", [".", "a", "a/z", "la", "x", "lx", "broken"], {
     followSymlinks: false,
   });
 });

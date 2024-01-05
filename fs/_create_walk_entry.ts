@@ -19,7 +19,7 @@ export function createWalkEntrySync(path: string | URL): WalkEntry {
   path = toPathString(path);
   path = normalize(path);
   const name = basename(path);
-  const info = Deno.statSync(path);
+  const info = Deno.lstatSync(path);
   return {
     path,
     name,
@@ -34,7 +34,7 @@ export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
   path = toPathString(path);
   path = normalize(path);
   const name = basename(path);
-  const info = await Deno.stat(path);
+  const info = await Deno.lstat(path);
   return {
     path,
     name,
