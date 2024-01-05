@@ -8,9 +8,5 @@ export function split(input: string) {
   return input.split(/(?=[A-Z])+/).filter(Boolean);
 }
 export function capitalizeWord(word: string): string {
-  if (!word) return word;
-  const firstChar = word[0];
-  const firstCharAsUpperCase = firstChar.toLocaleUpperCase();
-  const restOfTheString = word.slice(1).toLocaleLowerCase();
-  return `${firstCharAsUpperCase}${restOfTheString}`;
+  return word ? word[0].toLocaleUpperCase() + word.slice(1).toLocaleLowerCase() : word;
 }
