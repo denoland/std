@@ -1,28 +1,42 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Optional object interface for `JsonStringifyStream`. */
+/** Options for {@linkcode JsonStringifyStream}. */
 export interface StringifyStreamOptions {
-  /** Prefix to be added after stringify.
+  /**
+   * Prefix to be added after stringify.
    *
    * @default {""}
    */
   readonly prefix?: string;
-  /** Suffix to be added after stringify.
+  /**
+   * Suffix to be added after stringify.
    *
    * @default {"\n"}
    */
   readonly suffix?: string;
-  /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
+  /**
+   * Controls the buffer of the {@linkcode TransformStream} used internally.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#writablestrategy}
+   */
   readonly writableStrategy?: QueuingStrategy<unknown>;
-  /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
+  /**
+   * Controls the buffer of the {@linkcode TransformStream} used internally.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#readablestrategy}
+   */
   readonly readableStrategy?: QueuingStrategy<string>;
 }
 
 /**
  * Convert each chunk to JSON string.
  *
- * This can be used to stringify [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/), [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), and [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
+ * This can be used to stringify {@link https://jsonlines.org/|JSON lines},
+ * {@link https://ndjson.org/|NDJSON},
+ * {@link https://datatracker.ietf.org/doc/html/rfc7464|JSON Text Sequences},
+ * and {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
+ *
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is "" and the default suffix is "\n".
  *
  * @example
@@ -82,14 +96,7 @@ export interface StringifyStreamOptions {
  * ```
  */
 export class JsonStringifyStream extends TransformStream<unknown, string> {
-  /**
-   * Construct new instance
-   * @param options
-   * @param options.prefix - Prefix added to the stringified chunks. Default to ""
-   * @param options.suffix - Suffix added to the stringified chunks. Default to "\n"
-   * @param options.writableStrategy - Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   * @param options.readableStrategy - Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   */
+  /** Constructs new instance. */
   constructor({
     prefix = "",
     suffix = "\n",
