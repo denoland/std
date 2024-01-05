@@ -371,8 +371,8 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
     o = (get(o, key) ?? {}) as NestedMapping;
   });
 
-  const key = keys[keys.length - 1];
-  return hasOwn(o, key);
+  const key = keys.at(-1);
+  return typeof key !== "undefined" && hasOwn(o, key);
 }
 
 /** Take a set of command line arguments, optionally with a set of options, and
@@ -467,8 +467,9 @@ export function parseArgs<
       } else {
         aliases[key] = val as Array<string>;
       }
-      for (const alias of getForce(aliases, key)) {
-        aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
+      const aliasesForKey = getForce(aliases, key);
+      for (const alias of aliasesForKey) {
+        aliases[alias] = [key].concat(aliasesForKey.filter((y) => alias !== y));
       }
     }
   }
@@ -567,7 +568,7 @@ export function parseArgs<
       o = get(o, key) as NestedMapping;
     });
 
-    const key = keys[keys.length - 1];
+    const key = keys.at(-1)!;
     const collectable = collect && !!get(flags.collect, name);
 
     if (!collectable) {
@@ -618,11 +619,13 @@ export function parseArgs<
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    assert(typeof arg !== "undefined");
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
       assert(m !== null);
       const [, key, value] = m;
+      assert(typeof key !== "undefined");
 
       if (flags.bools[key]) {
         const booleanValue = value !== "false";
@@ -634,11 +637,11 @@ export function parseArgs<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m !== null);
+      assert(m !== null && typeof m[1] !== "undefined");
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m !== null);
+      assert(m !== null && typeof m[1] !== "undefined");
       const [, key] = m;
       const next = args[i + 1];
       if (
@@ -650,7 +653,7 @@ export function parseArgs<
       ) {
         setArg(key, next, arg);
         i++;
-      } else if (/^(true|false)$/.test(next)) {
+      } else if (typeof next !== "undefined" && /^(true|false)$/.test(next)) {
         setArg(key, next === "true", arg);
         i++;
       } else {
@@ -660,50 +663,51 @@ export function parseArgs<
       const letters = arg.slice(1, -1).split("");
 
       let broken = false;
-      for (let j = 0; j < letters.length; j++) {
+      for (const [j, letter] of letters.entries()) {
         const next = arg.slice(j + 2);
 
         if (next === "-") {
-          setArg(letters[j], next, arg);
+          setArg(letter, next, arg);
           continue;
         }
 
-        if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
-          setArg(letters[j], next.split(/=(.+)/)[1], arg);
+        if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
+          setArg(letter, next.split(/=(.+)/)[1], arg);
           broken = true;
           break;
         }
 
         if (
-          /[A-Za-z]/.test(letters[j]) &&
+          /[A-Za-z]/.test(letter) &&
           /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)
         ) {
-          setArg(letters[j], next, arg);
+          setArg(letter, next, arg);
           broken = true;
           break;
         }
 
-        if (letters[j + 1] && letters[j + 1].match(/\W/)) {
-          setArg(letters[j], arg.slice(j + 2), arg);
+        if (letters[j + 1]?.match(/\W/)) {
+          setArg(letter, arg.slice(j + 2), arg);
           broken = true;
           break;
         } else {
-          setArg(letters[j], get(flags.strings, letters[j]) ? "" : true, arg);
+          setArg(letter, get(flags.strings, letter) ? "" : true, arg);
         }
       }
 
-      const [key] = arg.slice(-1);
+      const key = arg.at(-1)!;
       if (!broken && key !== "-") {
+        const nextArg = args[i + 1];
         if (
-          args[i + 1] &&
-          !/^(-|--)[^-]/.test(args[i + 1]) &&
+          nextArg &&
+          !/^(-|--)[^-]/.test(nextArg) &&
           !get(flags.bools, key) &&
           (get(aliases, key) ? !aliasIsBoolean(key) : true)
         ) {
-          setArg(key, args[i + 1], arg);
+          setArg(key, nextArg, arg);
           i++;
-        } else if (args[i + 1] && /^(true|false)$/.test(args[i + 1])) {
-          setArg(key, args[i + 1] === "true", arg);
+        } else if (nextArg && /^(true|false)$/.test(nextArg)) {
+          setArg(key, nextArg === "true", arg);
           i++;
         } else {
           setArg(key, get(flags.strings, key) ? "" : true, arg);
@@ -724,8 +728,9 @@ export function parseArgs<
     if (!hasKey(argv, key.split("."))) {
       setKey(argv, key, value, false);
 
-      if (aliases[key]) {
-        for (const x of aliases[key]) {
+      const alias = aliases[key];
+      if (typeof alias !== "undefined") {
+        for (const x of alias) {
           setKey(argv, x, value, false);
         }
       }
