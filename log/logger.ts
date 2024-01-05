@@ -179,9 +179,19 @@ export class Logger {
     return this.#_log(LogLevels.INFO, msg, ...args);
   }
 
+  /** @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead. */
   warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
   warning<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   warning<T>(
+    msg: (T extends GenericFunction ? never : T) | (() => T),
+    ...args: unknown[]
+  ): T | undefined {
+    return this.warn(msg as () => T, ...args);
+  }
+
+  warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  warn<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
+  warn<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {

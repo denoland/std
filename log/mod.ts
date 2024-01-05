@@ -139,7 +139,7 @@
  * // additional logger configurations. You can log any data type.
  * log.debug("Hello world");
  * log.info(123456);
- * log.warning(true);
+ * log.warn(true);
  * log.error({ foo: "bar", fizz: "bazz" });
  * log.critical("500 Internal server error");
  *
@@ -174,7 +174,7 @@
  * // get default logger.
  * logger = log.getLogger();
  * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
- * logger.warning(41256); // logs to both `console` and `file` handlers.
+ * logger.warn(41256); // logs to both `console` and `file` handlers.
  *
  * // get custom logger
  * logger = log.getLogger("tasks");
@@ -498,7 +498,11 @@ export function info<T>(
   return getLogger("default").info(msg, ...args);
 }
 
-/** Log with warning level, using default logger. */
+/**
+ * @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead.
+ *
+ * Log with warning level, using default logger.
+ */
 export function warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
 export function warning<T>(
   msg: T extends GenericFunction ? never : T,
@@ -510,12 +514,30 @@ export function warning<T>(
 ): T | undefined {
   // Assist TS compiler with pass-through generic type
   if (msg instanceof Function) {
-    return getLogger("default").warning(msg, ...args);
+    return warn(msg, ...args);
   }
-  return getLogger("default").warning(msg, ...args);
+  return warn(msg, ...args);
 }
 
-/** Log with error level, using default logger. */
+/** Log with warning level, using default logger. */
+export function warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
+export function warn<T>(
+  msg: T extends GenericFunction ? never : T,
+  ...args: unknown[]
+): T;
+export function warn<T>(
+  msg: (T extends GenericFunction ? never : T) | (() => T),
+  ...args: unknown[]
+): T | undefined {
+  // Assist TS compiler with pass-through generic type
+  if (msg instanceof Function) {
+    return getLogger("default").warn(msg, ...args);
+  }
+  return getLogger("default").warn(msg, ...args);
+}
+
+/** Log with e
+ * rror level, using default logger. */
 export function error<T>(msg: () => T, ...args: unknown[]): T | undefined;
 export function error<T>(
   msg: T extends GenericFunction ? never : T,
