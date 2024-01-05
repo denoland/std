@@ -96,7 +96,6 @@ Check out the documentation [here](https://deno.land/std?doc).
 | permissions  | Deprecated |
 | regexp       | Unstable   |
 | semver       | Unstable   |
-| signal       | Deprecated |
 | streams      | Unstable   |
 | testing      | Stable     |
 | toml         | Stable     |

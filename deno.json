@@ -33,6 +33,7 @@
     "cov",
     "jsonc/testdata",
     "front_matter/testdata",
-    "coverage"
+    "coverage",
+    "docs"
   ]
 }
