@@ -8,9 +8,8 @@ import { capitalizeWord, split } from "./_util.ts";
  * @example
  * ```ts
  * import { toCamelCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(toCamelCase("deno is awesome"), "denoIsAwesome");
+ * toCamelCase("deno is awesome"); // "denoIsAwesome"
  * ```
  *
  * @param input The string that is going to be converted into camelCase
@@ -27,9 +26,8 @@ export function toCamelCase(input: string): string {
  * @example
  * ```ts
  * import { toKebabCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(toKebabCase("deno is awesome"), "deno-is-awesome");
+ * toKebabCase("deno is awesome"); // "deno-is-awesome"
  * ```
  *
  * @param input is the string that is going to be converted into kebab-case
@@ -45,9 +43,8 @@ export function toKebabCase(input: string): string {
  * @example
  * ```ts
  * import { toPascalCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(toPascalCase("deno is awesome"), "DenoIsAwesome");
+ * toPascalCase("deno is awesome"); // "DenoIsAwesome"
  * ```
  *
  * @param input The string that is going to be converted into PascalCase
@@ -63,9 +60,8 @@ export function toPascalCase(input: string): string {
  * @example
  * ```ts
  * import { toScreamingSnakeCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(toScreamingSnakeCase("deno is awesome"), "DENO_IS_AWESOME");
+ * toScreamingSnakeCase("deno is awesome"); // "DENO_IS_AWESOME"
  * ```
  *
  * @param input is the string that is going to be converted into SCREAMING_SNAKE_CASE
@@ -81,8 +77,8 @@ export function toScreamingSnakeCase(input: string): string {
  * @example
  * ```ts
  * import { toSentenceCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- * assertEquals(toSentenceCase("deno is awesome"), "Deno is awesome");
+ *
+ * toSentenceCase("deno is awesome"); // "Deno is awesome"
  * ```
  *
  * @param input is the string that is going to be converted into Sentence case
@@ -102,8 +98,7 @@ export function toSentenceCase(input: string): string {
  * @example
  * ```ts
  * import { toSnakeCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
- * assertEquals(toSnakeCase("deno is awesome"), "deno_is_awesome");
+ * toSnakeCase("deno is awesome"); // "deno_is_awesome"
  * ```
  *
  * @param input is the string that is going to be converted into snake_case
@@ -119,9 +114,8 @@ export function toSnakeCase(input: string): string {
  * @example
  * ```ts
  * import { toTitleCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
- * assertEquals(toTitleCase("deno is awesome"), "Deno Is Awesome");
+ * toTitleCase("deno is awesome"); // "Deno Is Awesome"
  * ```
  *
  * @param input is the string that is going to be converted into Title Case
