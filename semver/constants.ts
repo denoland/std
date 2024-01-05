@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerComparator } from "./types.ts";
+import type { Comparator, SemVer } from "./types.ts";
 
 /**
  * MAX is a sentinel value used by some range calculations.
@@ -65,19 +65,15 @@ export const ANY: SemVer = {
 /**
  * A comparator which will span all valid semantic versions
  */
-export const ALL: SemVerComparator = {
+export const ALL: Comparator = {
   operator: "",
   semver: ANY,
-  min: MIN,
-  max: MAX,
 };
 
 /**
  * A comparator which will not span any semantic versions
  */
-export const NONE: SemVerComparator = {
+export const NONE: Comparator = {
   operator: "<",
   semver: MIN,
-  min: MAX,
-  max: MIN,
 };
