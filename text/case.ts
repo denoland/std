@@ -22,7 +22,7 @@ export function toCamelCase(input: string): string {
 }
 
 /**
- * Converts a input into kebab-case
+ * Converts a string into kebab-case
  *
  * @example
  * ```ts
@@ -40,7 +40,7 @@ export function toKebabCase(input: string): string {
 }
 
 /**
- * Converts a input into PascalCase
+ * Converts a string into PascalCase
  *
  * @example
  * ```ts
@@ -58,7 +58,7 @@ export function toPascalCase(input: string): string {
 }
 
 /**
- * Converts a input into SCREAMING_SNAKE_CASE
+ * Converts a string into SCREAMING_SNAKE_CASE
  *
  * @example
  * ```ts
@@ -76,7 +76,7 @@ export function toScreamingSnakeCase(input: string): string {
 }
 
 /**
- * Converts a input into Sentence case
+ * Converts a string into Sentence case
  *
  * @example
  * ```ts
@@ -97,7 +97,7 @@ export function toSentenceCase(input: string): string {
 }
 
 /**
- * Converts a input into snake_case
+ * Converts a string into snake_case
  *
  * @example
  * ```ts
@@ -114,7 +114,7 @@ export function toSnakeCase(input: string): string {
 }
 
 /**
- * Converts a input into Title Case
+ * Converts a string into Title Case
  *
  * @example
  * ```ts
