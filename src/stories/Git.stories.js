@@ -5,7 +5,7 @@ import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
 import Debug from 'debug'
-import Artifact from '../artifact'
+import Artifact from '../exec/artifact'
 globalThis.Buffer = Buffer
 
 // do 10k customer records
@@ -111,7 +111,16 @@ export const ArtifactBoot = {
       })
     },
     async function prompt() {
-      // send in a prompt message, see what comes back
+      await artifact.prompt('say a single word')
+      const session = await artifact.read('/.session.json')
+      const messages = JSON.parse(session)
+      console.log(messages)
+    },
+    async function prompt() {
+      await artifact.prompt('say what again')
+      const session = await artifact.read('/.session.json')
+      const messages = JSON.parse(session)
+      console.log(messages)
     },
   ]),
 }

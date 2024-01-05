@@ -1,6 +1,7 @@
 import Artifact from './artifact'
 import { afterEach, expect, test, beforeEach } from 'vitest'
-import filesystem from 'fs'
+import filesystem from 'node:fs'
+import Debug from 'debug'
 
 beforeEach(async (context) => {
   await filesystem.promises.mkdir('./tmp').catch(() => {})
@@ -11,7 +12,7 @@ beforeEach(async (context) => {
   // so it can be done in the play area of storybook
 })
 afterEach(async (context) => {
-  await filesystem.promises.rmdir(context.path, { recursive: true })
+  await filesystem.promises.rm(context.path, { recursive: true })
 })
 
 test('boot', async ({ artifact }) => {
@@ -19,9 +20,16 @@ test('boot', async ({ artifact }) => {
 })
 
 test.only('have a chat', async ({ artifact }) => {
-  await artifact.prompt('hello world')
-  //
+  Debug.enable('*promptRunner')
+  await artifact.prompt('say a single word')
+  const session = await artifact.read('/.session.json')
+  const messages = JSON.parse(session)
+  expect(messages.length).toEqual(2)
+  const log = await artifact.log({ depth: 1 })
+  expect(log.length).toEqual(1)
+  expect(log[0].commit.message).toEqual('promptRunner\n')
 })
+test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {
   await artifact.prompt('add a file named hello.txt')
