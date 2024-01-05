@@ -44,7 +44,9 @@ const Renderer = () => {
   const prompt = usePrompt('/hal/.session.json')
   console.log(session)
   useEffect(() => {
-    prompt('say a single word')
+    if (prompt) {
+      prompt('say a single word')
+    }
   }, [prompt])
   const commit = useLatestCommit()
   return (

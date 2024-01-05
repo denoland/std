@@ -16,26 +16,25 @@ const ai = new OpenAI({
 })
 
 export default async ({ fs, sessionPath, text, trigger }) => {
-  // read in the file
-  // add the latest user session
   // ? where would the sysprompt have come from ?
-
   const session = await fs.readFile(sessionPath, 'utf8')
   const messages = JSON.parse(session)
   messages.push({ role: 'user', content: text })
-  const file = JSON.stringify(messages)
-  await fs.writeFile(sessionPath, file)
-  trigger.write(sessionPath, file)
+  const write = writerFactory(fs, sessionPath, trigger)
+  await write(messages)
 
   const args = {
     model,
     temperature: 0,
-    messages,
+    messages: [...messages],
     stream: true,
     seed: 1337,
   }
-  const streamCall = await ai.chat.completions.create(args)
   const assistant = { role: 'assistant' }
+  messages.push(assistant)
+  await write(messages)
+  const streamCall = await ai.chat.completions.create(args)
+
   for await (const part of streamCall) {
     const content = part.choices[0]?.delta?.content || ''
     if (!assistant.content) {
@@ -67,7 +66,14 @@ export default async ({ fs, sessionPath, text, trigger }) => {
 
     // TODO debounce this writing
     // TODO add a ram cache atop the fs
-    const file = JSON.stringify([...messages, assistant])
+    await write(messages)
+  }
+}
+
+const writerFactory = (fs, sessionPath, trigger) => {
+  return async (messages) => {
+    assert(Array.isArray(messages), 'messages must be an array')
+    const file = JSON.stringify(messages)
     await fs.writeFile(sessionPath, file)
     trigger.write(sessionPath, file)
   }

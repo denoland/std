@@ -42,16 +42,18 @@ export const useAction = (path) => {
 export const usePrompt = (path = '/') => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   // TODO change to be a wrapper around useAction
-  const { artifactPromise } = useContext(ArtifactContext)
-  return useCallback(
+  const { artifact } = useContext(ArtifactContext)
+  const prompt = useCallback(
     async (text) => {
       assert(typeof text === 'string', `text must be a string`)
       assert(text, `text must not be empty`)
-      const artifact = await artifactPromise
       await artifact.prompt(text)
     },
-    [artifactPromise]
+    [artifact]
   )
+  if (artifact) {
+    return prompt
+  }
 }
 
 export const useCommits = (depth = 1, path) => {
