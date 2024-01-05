@@ -3,7 +3,7 @@
 import { capitalizeWord, split } from "./_util.ts";
 
 /**
- * Converts a input into camelCase
+ * Converts a string into camelCase.
  *
  * @example
  * ```ts
