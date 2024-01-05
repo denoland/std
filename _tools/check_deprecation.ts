@@ -20,6 +20,7 @@ const EXCLUDED_PATHS = [
   "encoing/_toml",
   "_tools",
   "_util",
+  "docs",
 ];
 
 const ROOT = new URL("../", import.meta.url);
