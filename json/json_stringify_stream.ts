@@ -19,12 +19,16 @@ export interface StringifyStreamOptions {
    * Controls the buffer of the {@linkcode TransformStream} used internally.
    *
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#writablestrategy}
+   *
+   * @deprecated (will be removed in 0.214.0)
    */
   readonly writableStrategy?: QueuingStrategy<unknown>;
   /**
    * Controls the buffer of the {@linkcode TransformStream} used internally.
    *
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#readablestrategy}
+   *
+   * @deprecated (will be removed in 0.214.0)
    */
   readonly readableStrategy?: QueuingStrategy<string>;
 }
