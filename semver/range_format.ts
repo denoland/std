@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { formatRange } from "./format_range.ts";
+import { SemVerRange } from "./types.ts";
 
 /**
  * Formats the range into a string
@@ -10,4 +11,6 @@ import { formatRange } from "./format_range.ts";
  *
  * @deprecated (will be removed after 0.213.0) Use {@linkcode formatRange} instead.
  */
-export const rangeFormat = formatRange;
+export function rangeFormat(range: SemVerRange): string {
+  return formatRange(range);
+}
