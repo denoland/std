@@ -13,69 +13,37 @@ Deno.test({
 });
 
 Deno.test({
-  name: "split() trims input",
-  async fn(t) {
-    await t.step({
-      name: "whitespace",
-      fn() {
-        const result = split("  deno  Is AWESOME ");
-        const expected = ["deno", "Is", "AWESOME"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "camel case",
-      fn() {
-        const result = split("  denoIsAwesome ");
-        const expected = ["deno", "Is", "Awesome"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "kebab case",
-      fn() {
-        const result = split("--deno--is-awesome-");
-        const expected = ["deno", "is", "awesome"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "screaming snake case",
-      fn() {
-        const result = split(" __DENO__IS_AWESOME_ ");
-        const expected = ["DENO", "IS", "AWESOME"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "sentence case",
-      fn() {
-        const result = split("  Deno  is awesome ");
-        const expected = ["Deno", "is", "awesome"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "snake case",
-      fn() {
-        const result = split(" __deno__is_awesome_ ");
-        const expected = ["deno", "is", "awesome"];
-        assertEquals(result, expected);
-      },
-    });
-    await t.step({
-      name: "title case",
-      fn() {
-        const result = split("  Deno  Is Awesome ");
-        const expected = ["Deno", "Is", "Awesome"];
-        assertEquals(result, expected);
-      },
-    });
+  name: "split() handles singleDelimiter option",
+  fn() {
+    const result = split("I am up-to-date!", { singleDelimiter: false });
+    const expected = ["I", "am", "up", "to", "date!"];
+    assertEquals(result, expected);
   },
 });
 
 Deno.test({
-  name: "split() handles camel case",
+  name: "split() handles removeSpecialCharacters option",
+  fn() {
+    const result = split("I am up-to-date!", { removeSpecialCharacters: true });
+    const expected = ["I", "am", "up", "to", "date"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles singleDelimiter and removeSpecialCharacters option",
+  fn() {
+    const result = split("I am up-to-date!", {
+      singleDelimiter: true,
+      removeSpecialCharacters: true,
+    });
+    const expected = ["I", "am", "up-to-date"];
+    assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "split() handles upper case delimiter",
   fn() {
     const result = split("denoIsAwesome");
     const expected = ["deno", "Is", "Awesome"];
@@ -84,19 +52,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "split() handles kebab case",
+  name: "split() handles hyphen delimiter",
   fn() {
     const result = split("deno-is-awesome");
     const expected = ["deno", "is", "awesome"];
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "split() handles pascal case",
-  fn() {
-    const result = split("DenoIsAwesome");
-    const expected = ["Deno", "Is", "Awesome"];
     assertEquals(result, expected);
   },
 });
@@ -111,28 +70,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "split() handles sentence case",
-  fn() {
-    const result = split("Deno is awesome");
-    const expected = ["Deno", "is", "awesome"];
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "split() handles snake case",
+  name: "split() handles underscore delimiter",
   fn() {
     const result = split("deno_is_awesome");
     const expected = ["deno", "is", "awesome"];
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "split() handles title case",
-  fn() {
-    const result = split("Deno Is Awesome");
-    const expected = ["Deno", "Is", "Awesome"];
     assertEquals(result, expected);
   },
 });

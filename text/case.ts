@@ -16,7 +16,8 @@ import { capitalizeWord, split } from "./_util.ts";
  * @returns The string as camelCase
  */
 export function toCamelCase(input: string): string {
-  const [first = "", ...rest] = split(input);
+  input = input.trim();
+  const [first = "", ...rest] = split(input, { removeSpecialCharacters: true });
   return [first.toLocaleLowerCase(), ...rest.map(capitalizeWord)].join("");
 }
 
@@ -34,7 +35,10 @@ export function toCamelCase(input: string): string {
  * @returns The string as kebab-case
  */
 export function toKebabCase(input: string): string {
-  return split(input).join("-").toLocaleLowerCase();
+  input = input.trim();
+  return split(input, { removeSpecialCharacters: true })
+    .join("-")
+    .toLocaleLowerCase();
 }
 
 /**
@@ -51,7 +55,10 @@ export function toKebabCase(input: string): string {
  * @returns The string as PascalCase
  */
 export function toPascalCase(input: string): string {
-  return split(input).map(capitalizeWord).join("");
+  input = input.trim();
+  return split(input, { removeSpecialCharacters: true })
+    .map(capitalizeWord)
+    .join("");
 }
 
 /**
@@ -85,11 +92,12 @@ export function toScreamingSnakeCase(input: string): string {
  * @returns The string as Sentence case
  */
 export function toSentenceCase(input: string): string {
-  const [first = "", ...rest] = split(input);
+  const [first = "", ...rest] = split(input, { singleDelimiter: true });
   return [
     capitalizeWord(first),
     ...rest.map((word) => word.toLocaleLowerCase()),
-  ].join(" ");
+  ]
+    .join(" ");
 }
 
 /**
@@ -105,7 +113,10 @@ export function toSentenceCase(input: string): string {
  * @returns The string as snake_case
  */
 export function toSnakeCase(input: string): string {
-  return split(input).join("_").toLocaleLowerCase();
+  input = input.trim();
+  return split(input, { removeSpecialCharacters: true })
+    .join("_")
+    .toLocaleLowerCase();
 }
 
 /**
@@ -122,5 +133,5 @@ export function toSnakeCase(input: string): string {
  * @returns The string as Title Case
  */
 export function toTitleCase(input: string): string {
-  return split(input).map(capitalizeWord).join(" ");
+  return split(input, { singleDelimiter: true }).map(capitalizeWord).join(" ");
 }
