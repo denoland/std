@@ -116,7 +116,7 @@ export default class Artifact {
     await git.commit({
       ...this.#opts,
       message: 'promptRunner',
-      author: { name: 'promptRunner' },
+      author: { name: 'HAL' },
     })
     this.#trigger.commit()
     return result
@@ -131,10 +131,12 @@ export default class Artifact {
     return log
   }
   subscribe(path, cb) {
+    // TODO cache the results for a path
     const initial = this.#fs.readFile(path, 'utf8')
     return this.#trigger.subscribe(path, cb, initial)
   }
   subscribeCommits(path, cb) {
+    // TODO cache the results
     return this.#trigger.subscribeCommits(path, cb)
   }
 }

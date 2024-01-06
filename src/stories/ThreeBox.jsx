@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 import Debug from 'debug'
 import Messages from './Messages'
 import { useArtifactJSON } from '../react/hooks'
+import Git from './Git'
 
 // TODO put the git commit hash under the input box, along with date, time,
 // who the current user is, size, latency, etc.
@@ -54,6 +55,7 @@ const ThreeBox = ({ preload, presubmit }) => {
           presubmit={presubmit}
           onTranscription={onTranscription}
         />
+        <Git />
       </Stack>
       <Box sx={{ flexGrow: 1, p: 1 }}>
         <Paper elevation={6} sx={{ height: '100%', flexGrow: 1 }}>
