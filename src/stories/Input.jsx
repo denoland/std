@@ -12,15 +12,14 @@ import MicIcon from '@mui/icons-material/Mic'
 import Attach from '@mui/icons-material/AttachFile'
 import SendIcon from '@mui/icons-material/ArrowUpwardRounded'
 import OpenAI from 'openai'
+import { Buffer } from 'buffer'
 
 if (!import.meta.env.VITE_OPENAI_API_KEY) {
   throw new Error('VITE_OPENAI_API_KEY is not defined')
 }
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
+const { VITE_OPENAI_API_KEY } = import.meta.env
+const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
+const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
 const debug = Debug('AI:Input')
 

@@ -2,19 +2,17 @@ import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import Debug from 'debug'
 import assert from 'assert-fast'
+import { Buffer } from 'buffer'
 const debug = Debug('AI:promptRunner')
 const model = 'gpt-4-1106-preview'
 // const model = 'gpt-3.5-turbo-1106'
-const env = import.meta.env
-const { VITE_OPENAI_API_KEY } = env
-const apiKey = VITE_OPENAI_API_KEY
-if (!apiKey) {
+const { VITE_OPENAI_API_KEY } = import.meta.env
+
+if (!VITE_OPENAI_API_KEY) {
   throw new Error('missing openai api key')
 }
-const ai = new OpenAI({
-  apiKey,
-  dangerouslyAllowBrowser: true,
-})
+const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
+const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
 export default async ({ fs, sessionPath, text, trigger }) => {
   // ? where would the sysprompt have come from ?
