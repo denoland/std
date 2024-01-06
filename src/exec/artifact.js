@@ -19,16 +19,12 @@ export default class Artifact {
   #opts
   #session
   #trigger
-  static async boot({ filesystem, path = 'fs', wipe = false } = {}) {
+  static async boot({ path = 'fs', wipe = false } = {}) {
     const artifact = new Artifact()
-    const prefix = filesystem ? path : ''
-    if (!filesystem) {
-      filesystem = new LightningFS(path, { wipe })
-    }
     artifact.#trigger = TriggerFS.create()
-    artifact.#fs = filesystem.promises
-    artifact.#dir = prefix + '/hal'
-    artifact.#session = prefix + '/hal/.session.json'
+    artifact.#fs = new LightningFS(path, { wipe }).promises
+    artifact.#dir = '/hal'
+    artifact.#session = '/hal/.session.json'
     artifact.#cache = {}
     artifact.#opts = {
       fs: artifact.#fs,
@@ -42,7 +38,8 @@ export default class Artifact {
     debug('checking repo')
     let isGitPresent = false
     try {
-      const gitRoot = await git.findRoot(this.#opts)
+      const filepath = this.#dir
+      const gitRoot = await git.findRoot({ ...this.#opts, filepath })
       debug('gitRoot', gitRoot)
       isGitPresent = true
     } catch (e) {
