@@ -18,7 +18,7 @@ export function assertObjectMatch(
   actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
   msg?: string,
-) {
+): void {
   type loose = Record<PropertyKey, unknown>;
 
   function filter(a: loose, b: loose) {
