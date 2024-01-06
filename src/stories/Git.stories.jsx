@@ -40,7 +40,7 @@ globalThis.Buffer = Buffer
 // reprioritize it
 // provide all the features of the todolist in redux
 
-// push a backup to github
+// push a backup to github.
 
 export default {
   title: 'Git',
