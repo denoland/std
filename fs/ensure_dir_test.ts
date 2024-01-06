@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertRejects, assertThrows } from "../assert/mod.ts";
+import { assertRejects, assertThrows, assertEquals } from "../assert/mod.ts";
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
@@ -69,6 +69,30 @@ Deno.test("ensureDirSync() ensures existing dir exists", function () {
   }
 });
 
+Deno.test("ensureDir() accepts links to dirs", async function () {
+  const ldir = path.join(testdataDir, "ldir");
+
+  await ensureDir(ldir);
+
+  // test dir should still exists.
+  await Deno.stat(ldir);
+  // ldir should be still be a symlink
+  const { isSymlink } = await Deno.lstat(ldir);
+  assertEquals(isSymlink, true);
+});
+
+Deno.test("ensureDirSync() accepts links to dirs", function () {
+  const ldir = path.join(testdataDir, "ldir");
+
+  ensureDirSync(ldir);
+
+  // test dir should still exists.
+  Deno.statSync(ldir);
+  // ldir should be still be a symlink
+  const { isSymlink } = Deno.lstatSync(ldir);
+  assertEquals(isSymlink, true);
+});
+
 Deno.test("ensureDir() rejects if input is a file", async function () {
   const baseDir = path.join(testdataDir, "exist_file");
   const testFile = path.join(baseDir, "test");
@@ -105,6 +129,30 @@ Deno.test("ensureDirSync() throws if input is a file", function () {
   } finally {
     Deno.removeSync(baseDir, { recursive: true });
   }
+});
+
+Deno.test("ensureDir() rejects links to files", async function () {
+  const lf = path.join(testdataDir, "lf");
+
+  await assertRejects(
+    async () => {
+      await ensureDir(lf);
+    },
+    Error,
+    `Ensure path exists, expected 'dir', got 'file'`,
+  );
+});
+
+Deno.test("ensureDirSync() rejects links to files", function () {
+  const lf = path.join(testdataDir, "lf");
+
+  assertThrows(
+    () => {
+      ensureDirSync(lf);
+    },
+    Error,
+    `Ensure path exists, expected 'dir', got 'file'`,
+  );
 });
 
 Deno.test({
