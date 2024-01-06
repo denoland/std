@@ -5,7 +5,7 @@ import { formatRange } from "./format_range.ts";
 import { parseRange } from "./parse_range.ts";
 
 Deno.test({
-  name: "validRange",
+  name: "formatRange()",
   fn: async (t) => {
     const versions: [string, string][] = [
       ["1.0.0 - 2.0.0", ">=1.0.0 <=2.0.0"],
