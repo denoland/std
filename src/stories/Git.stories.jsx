@@ -1,6 +1,6 @@
 import play from './play'
 import { Page } from '../examples/Page'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import git from 'isomorphic-git'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
@@ -42,7 +42,6 @@ export default {
 const Renderer = () => {
   const session = useArtifact('/hal/.session.json')
   const prompt = usePrompt('/hal/.session.json')
-  console.log(session)
   useEffect(() => {
     if (prompt) {
       prompt('say a single word')

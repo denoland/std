@@ -1,7 +1,6 @@
 import CircularProgress from '@mui/material/CircularProgress'
 import { green } from '@mui/material/colors'
 import Chip from '@mui/material/Chip'
-import React from 'react'
 import PropTypes from 'prop-types'
 import Debug from 'debug'
 import DaveIcon from '@mui/icons-material/SentimentDissatisfied'
@@ -26,7 +25,7 @@ import DraftsIcon from '@mui/icons-material/Drafts'
 import FolderIcon from '@mui/icons-material/Folder'
 import RuleIcon from '@mui/icons-material/Rule'
 import Tooltip from '@mui/material/Tooltip'
-import { ToolAction } from './ToolAction'
+// import { ToolAction } from './ToolAction'
 
 const debug = Debug('AI:ThreeBox')
 const STATUS = { RUNNING: 'RUNNING', DONE: 'DONE', ERROR: 'ERROR' }
@@ -44,12 +43,12 @@ const Progress = () => (
   />
 )
 
-const Chat = ({ text, status, type }) => (
+const Chat = ({ content, type }) => (
   <TimelineItem>
     <TimelineSeparator>
       <TimelineDot color={chatColors[type]} sx={{ position: 'relative' }}>
         {chatIcons[type]}
-        {status !== STATUS.DONE && <Progress />}
+        {!content && <Progress />}
       </TimelineDot>
     </TimelineSeparator>
     <TimelineContent>
@@ -57,14 +56,13 @@ const Chat = ({ text, status, type }) => (
         {chatTitles[type]}
       </Typography>
       <br />
-      <Markdown wrapper="React.Fragment">{text}</Markdown>
+      <Markdown wrapper="React.Fragment">{content || ''}</Markdown>
     </TimelineContent>
   </TimelineItem>
 )
 Chat.propTypes = {
   type: PropTypes.oneOf(['user', 'goalie', 'runner']),
-  text: PropTypes.string,
-  status: PropTypes.oneOf(Object.values(STATUS)),
+  content: PropTypes.string,
 }
 const chatColors = { user: 'primary', goalie: 'warning', runner: 'secondary' }
 const chatTitles = { user: 'Dave', goalie: 'HAL', runner: 'HAL' }
@@ -74,26 +72,17 @@ const chatIcons = {
   runner: <ToolIcon />,
 }
 
-const Dave = ({ text, status }) => (
-  <Chat text={text} status={status} type="user" />
-)
+const Dave = ({ content }) => <Chat content={content} type="user" />
 Dave.propTypes = {
-  text: PropTypes.string,
-  status: PropTypes.oneOf(Object.values(STATUS)),
+  content: PropTypes.string,
 }
-const Goalie = ({ text, status }) => (
-  <Chat text={text} status={status} type="goalie" />
-)
-Goalie.propTypes = {
-  text: PropTypes.string,
-  status: PropTypes.oneOf(Object.values(STATUS)),
+const Assistant = ({ content }) => <Chat content={content} type="goalie" />
+Assistant.propTypes = {
+  content: PropTypes.string,
 }
-const Runner = ({ text, status }) => (
-  <Chat text={text} status={status} type="runner" />
-)
+const Runner = ({ content }) => <Chat content={content} type="runner" />
 Runner.propTypes = {
-  text: PropTypes.string,
-  status: PropTypes.oneOf(Object.values(STATUS)),
+  content: PropTypes.string,
 }
 
 const Goal = ({ text, status, helps }) => {
@@ -198,7 +187,7 @@ const Tool = ({ status, cmd, schema, args, output, consequences }) => (
       <TimelineConnector sx={{ bgcolor: 'secondary.main' }} />
     </TimelineSeparator>
     <TimelineContent>
-      <ToolAction name={cmd} schema={schema} args={args} output={output} />
+      {/* <ToolAction name={cmd} schema={schema} args={args} output={output} /> */}
     </TimelineContent>
   </TimelineItem>
 )
@@ -211,11 +200,7 @@ Tool.propTypes = {
   consequences: PropTypes.object,
 }
 
-const Messages = ({ crisp, isTranscribing }) => {
-  if (!crisp || crisp.isLoading) {
-    return
-  }
-  const { messages } = crisp.state
+const Messages = ({ messages = [], isTranscribing }) => {
   return (
     <Timeline
       sx={{
@@ -225,32 +210,36 @@ const Messages = ({ crisp, isTranscribing }) => {
         },
       }}
     >
-      {messages.map(({ type, status, text, helps, ...rest }, i) => {
-        switch (type) {
-          case 'USER':
-            return <Dave key={i} text={text} status={status} />
-          case 'GOALIE':
-            return <Goalie key={i} text={text} status={status} />
-          case 'GOAL':
-            return <Goal key={i} text={text} status={status} helps={helps} />
-          case 'RUNNER':
-            return <Runner key={i} text={text} status={status} />
-          case 'TOOL':
-            return <Tool key={i} {...rest} status={status} />
-          case 'GOAL_END':
-            return null
+      {messages.map(({ role, content }, key) => {
+        switch (role) {
+          case 'user':
+            return <Dave key={key} content={content} />
+          case 'assistant':
+            return <Assistant key={key} content={content} />
+          // case 'GOAL':
+          //   return <Goal key={key} text={text} status={status} helps={helps} />
+          // case 'RUNNER':
+          //   return <Runner key={key} text={text} status={status} />
+          // case 'TOOL':
+          //   return <Tool key={key} {...rest} status={status} />
+          // case 'GOAL_END':
+          //   return null
           default:
-            throw new Error(`unknown type ${type}`)
+            throw new Error(`unknown type ${role}`)
         }
       })}
-      {isTranscribing && (
-        <Dave text="(transcribing...)" status="TRANSCRIBING" />
-      )}
+      {isTranscribing && <Dave content="(transcribing...)" />}
     </Timeline>
   )
 }
 Messages.propTypes = {
   isTranscribing: PropTypes.bool,
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      role: PropTypes.string,
+      content: PropTypes.string,
+    })
+  ),
 }
 
 export default Messages

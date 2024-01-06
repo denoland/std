@@ -85,31 +85,16 @@ export default class Artifact {
   async prompt(text) {
     assert(typeof text === 'string', `text must be a string`)
     assert(text, `text must not be empty`)
-
-    // should be able to make a function call in a generic way
-    // so a call to the AI should be defined how any call is made
-
-    // .pipe tells it what file to put it in, what code to use to do that,
-    // and what continuation action to take afterwards.
-
-    // inputs:
-    // - path to the session file
-    // - text the user just put in
-
-    // outputs:
-    // - a file will be updated or created
-    // - the ai will be called
-    // - the ai will stream its responses back into the file
-
-    // read in the response when done
-    // carry on with whatever we were doing ?
+    // TODO move to a generic call model internally as well as for extra fns
+    // TODO use a link to redirect output to different places
+    // there should be one input per session
 
     // V1
     // - read in the session file, which is .json
     // - obtain lock on the session file
     // - modify the json with the latest prompt
     // - write the json back to the session file
-    // - do a commit and release the lock
+    // - do a commit and release the lock, maybe trigger githooks
     // - trigger an api call to openai using the given file
 
     // - openai api function grabs lock on the session file
@@ -118,16 +103,23 @@ export default class Artifact {
     // - releases the lock
     // - makes a commit with the user being the api caller
     // - system now waits for the next prompt / driver / tension
+    // - maybe run the githooks based on what is configured
 
     const sessionPath = this.#session
     const trigger = this.#trigger
-    await promptRunner({ fs: this.#fs, sessionPath, text, trigger })
+    const result = await promptRunner({
+      fs: this.#fs,
+      sessionPath,
+      text,
+      trigger,
+    })
     await git.commit({
       ...this.#opts,
       message: 'promptRunner',
       author: { name: 'promptRunner' },
     })
     this.#trigger.commit()
+    return result
   }
   async read(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)

@@ -4,6 +4,7 @@ import Debug from 'debug'
 import assert from 'assert-fast'
 const debug = Debug('AI:promptRunner')
 const model = 'gpt-4-1106-preview'
+// const model = 'gpt-3.5-turbo-1106'
 const env = import.meta.env
 const { VITE_OPENAI_API_KEY } = env
 const apiKey = VITE_OPENAI_API_KEY
@@ -68,6 +69,7 @@ export default async ({ fs, sessionPath, text, trigger }) => {
     // TODO add a ram cache atop the fs
     await write(messages)
   }
+  return assistant
 }
 
 const writerFactory = (fs, sessionPath, trigger) => {

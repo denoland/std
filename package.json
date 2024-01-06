@@ -13,13 +13,16 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "reinstall": "rm -rf node_modules package-lock.json && npm install"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
     "@isomorphic-git/lightning-fs": "^4.6.0",
-    "@mui/icons-material": "^5.15.3",
+    "@mui/icons-material": "5.15.3",
     "@mui/lab": "^5.0.0-alpha.159",
-    "@mui/material": "^5.15.3",
+    "@mui/material": "5.15.3",
     "assert-fast": "^1.0.3",
     "buffer": "^6.0.3",
     "debug": "^4.3.4",
@@ -74,5 +77,10 @@
   },
   "bugs": {
     "url": "https://github.com/dreamcatcher-tech/artifact/issues"
+  },
+  "wallaby": {
+    "runners": {
+      "restart": true
+    }
   }
 }

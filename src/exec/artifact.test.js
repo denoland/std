@@ -14,8 +14,9 @@ test('boot', async ({ artifact }) => {
 })
 
 test.only('have a chat', async ({ artifact }) => {
-  Debug.enable('*promptRunner')
-  await artifact.prompt('say a single word')
+  Debug.enable('AI*')
+  const result = await artifact.prompt('return an exclaimation mark')
+  expect(result.content).toEqual('!')
   const session = await artifact.read('/.session.json')
   const messages = JSON.parse(session)
   expect(messages.length).toEqual(2)

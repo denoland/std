@@ -3,48 +3,30 @@ import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import { StateBoard } from './StateBoard'
-import React, { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Debug from 'debug'
 import Messages from './Messages'
+import { useArtifactJSON } from '../react/hooks'
 
 // TODO put the git commit hash under the input box, along with date, time,
 // who the current user is, size, latency, etc.
 
 const debug = Debug('AI:ThreeBox')
 
-const ThreeBox = ({ preload, preSubmit }) => {
-  const [error, setError] = useState()
-  if (error) {
-    throw error
-  }
+const ThreeBox = ({ preload, presubmit }) => {
   useEffect(() => {
-    setTimeout(() => {
+    const id = setInterval(() => {
       window.scrollTo(0, document.body.scrollHeight)
     }, 100)
+    return () => clearInterval(id)
   }, [])
   const [isTranscribing, setIsTranscribing] = useState(false)
   const onTranscription = useCallback((isTranscribing) => {
     setIsTranscribing(isTranscribing)
   }, [])
 
-  const onSend = useCallback(
-    (value) => hal.ownActions.prompt(value).catch(setError),
-    [hal]
-  )
-  useEffect(() => {
-    if (!crisp || crisp.isLoadingChildren || !crisp.hasChild('.HAL')) {
-      return
-    }
-    const next = crisp.getChild('.HAL')
-    if (next !== hal) {
-      debug('setHal', next)
-      setHal(next)
-    }
-  }, [crisp])
-  if (!hal || hal.isLoadingActions) {
-    return
-  }
+  const messages = useArtifactJSON('/hal/.session.json')
   return (
     <Box
       sx={{
@@ -60,19 +42,22 @@ const ThreeBox = ({ preload, preSubmit }) => {
         justifyContent="flex-end"
         pb={3}
         pr={1}
-        sx={{ minHeight: '100%', maxWidth: '500px' }}
+        sx={{
+          minHeight: '100%',
+          minWidth: '600px',
+          maxWidth: '600px',
+        }}
       >
-        <Messages crisp={hal} isTranscribing={isTranscribing} />
+        <Messages messages={messages} isTranscribing={isTranscribing} />
         <Input
-          onSend={onSend}
           preload={preload}
-          preSubmit={preSubmit}
+          presubmit={presubmit}
           onTranscription={onTranscription}
         />
       </Stack>
       <Box sx={{ flexGrow: 1, p: 1 }}>
         <Paper elevation={6} sx={{ height: '100%', flexGrow: 1 }}>
-          <StateBoard crisp={crisp} />
+          <StateBoard />
         </Paper>
       </Box>
     </Box>
@@ -80,7 +65,7 @@ const ThreeBox = ({ preload, preSubmit }) => {
 }
 ThreeBox.propTypes = {
   preload: PropTypes.string,
-  preSubmit: PropTypes.bool,
+  presubmit: PropTypes.bool,
 }
 
 export default ThreeBox

@@ -16,6 +16,14 @@ export const useArtifact = (path) => {
   return file
 }
 
+export const useArtifactJSON = (path) => {
+  const file = useArtifact(path)
+  if (file === undefined) {
+    return
+  }
+  return JSON.parse(file)
+}
+
 export const useAction = (path) => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   const { artifact } = useContext(ArtifactContext)
@@ -34,8 +42,6 @@ export const useAction = (path) => {
     }
 
     await artifact.write(path, JSON.stringify(next))
-    // do a commit ?
-    // trigger the function to run, or at least log that with the supervisor
   }
 }
 
@@ -43,17 +49,31 @@ export const usePrompt = (path = '/') => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   // TODO change to be a wrapper around useAction
   const { artifact } = useContext(ArtifactContext)
+  const [buffer, setBuffer] = useState([])
+  useEffect(() => {
+    if (!artifact || !buffer.length) {
+      return
+    }
+    for (const { resolve, text } of buffer) {
+      artifact.prompt(text).then(resolve)
+    }
+    setBuffer([])
+  }, [artifact, buffer])
   const prompt = useCallback(
     async (text) => {
       assert(typeof text === 'string', `text must be a string`)
       assert(text, `text must not be empty`)
-      await artifact.prompt(text)
+      if (!artifact) {
+        let resolve
+        const promise = new Promise((r) => (resolve = r))
+        setBuffer((buffer) => [...buffer, { resolve, text }])
+        return promise
+      }
+      return await artifact.prompt(text)
     },
     [artifact]
   )
-  if (artifact) {
-    return prompt
-  }
+  return prompt
 }
 
 export const useCommits = (depth = 1, path) => {

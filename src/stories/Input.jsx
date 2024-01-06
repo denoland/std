@@ -1,7 +1,8 @@
+import { usePrompt } from '../react/hooks'
 import { useAudioRecorder } from 'react-audio-voice-recorder'
 import { useFilePicker } from 'use-file-picker'
 import { LiveAudioVisualizer } from 'react-audio-visualize'
-import React, { useRef, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import Debug from 'debug'
 import InputAdornment from '@mui/material/InputAdornment'
@@ -37,7 +38,12 @@ const Mic = ({ onEvent }) => (
 )
 Mic.propTypes = { onEvent: PropTypes.func.isRequired }
 
-const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
+const Input = ({ preload, presubmit, onTranscription }) => {
+  const [error, setError] = useState()
+  if (error) {
+    throw error
+  }
+
   const [value, setValue] = useState(preload || '')
   const [disabled, setDisabled] = useState(false)
   const [isTransReady, setIsTransReady] = useState(false)
@@ -52,12 +58,18 @@ const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
     startRecording()
     onTranscription && onTranscription(true)
     setDisabled(true)
-  }, [startRecording])
+  }, [startRecording, onTranscription])
+
+  const prompt = usePrompt()
   const send = useCallback(() => {
+    debug('send', value)
     setValue('')
     setDisabled(true)
-    onSend(value).finally(() => setDisabled(false))
-  }, [onSend, value])
+    prompt(value)
+      .catch(setError)
+      .finally(() => setDisabled(false))
+      .then((result) => debug('result', result?.content))
+  }, [prompt, value])
 
   useEffect(() => {
     if (!recordingBlob) {
@@ -77,7 +89,7 @@ const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
         onTranscription && onTranscription(false)
         setDisabled(false)
       })
-  }, [recordingBlob])
+  }, [recordingBlob, onTranscription])
   useEffect(() => {
     if (!isTransReady) {
       return
@@ -105,6 +117,7 @@ const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
   const { openFilePicker, filesContent, loading } = useFilePicker({
     accept: '.txt',
   })
+  // TODO if a file is uploaded, store on fs, then sample it, then goal it
   if (!disabled) {
     inputProps.startAdornment = (
       <InputAdornment position="start">
@@ -146,14 +159,16 @@ const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
     }
     window.addEventListener('keydown', listener)
     return () => window.removeEventListener('keydown', listener)
-  }, [[start, stop, disabled]])
+  }, [start, disabled, isRecording, stopRecording])
 
+  const [doPreSubmit, setDoPreSubmit] = useState(presubmit)
   useEffect(() => {
-    if (!preSubmit) {
+    if (!doPreSubmit) {
       return
     }
+    setDoPreSubmit()
     send(value)
-  }, [])
+  }, [doPreSubmit, send, value])
 
   return (
     <TextField
@@ -179,9 +194,8 @@ const Input = ({ onSend, preload, preSubmit, onTranscription }) => {
   )
 }
 Input.propTypes = {
-  onSend: PropTypes.func.isRequired,
   preload: PropTypes.string,
-  preSubmit: PropTypes.bool,
+  presubmit: PropTypes.bool,
   onTranscription: PropTypes.func,
 }
 

@@ -1,7 +1,7 @@
 /** @type { import('@storybook/react').Preview } */
 const preview = {
   parameters: {
-    layout: 'fullscreen',
+    layout: 'padded',
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
       matchers: {

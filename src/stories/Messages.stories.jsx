@@ -1,14 +1,19 @@
-import React from 'react'
 import Messages from './Messages'
 import play from './play'
 import Debug from 'debug'
 const debug = Debug('Messages')
-export const STATUS = { RUNNING: 'RUNNING', DONE: 'DONE', ERROR: 'ERROR' }
+const STATUS = { RUNNING: 'RUNNING', DONE: 'DONE', ERROR: 'ERROR' }
 
 export default {
-  title: 'AI',
-  component: Messages,
+  title: 'Messages',
+  // component: Messages,
 }
+
+const messages = [
+  { role: 'user', content: 'say a single word' },
+  { role: 'assistant', content: 'Hello!' },
+]
+
 const state = {
   mode: 'GOALIE',
   messages: [
@@ -83,15 +88,8 @@ const state = {
   ],
 }
 
-const Template = (args) => {
-  return (
-    <Engine dev={{ hal: { installer: { state } } }} {...args}>
-      <Syncer path="/.HAL">
-        <Messages />
-      </Syncer>
-    </Engine>
-  )
+const Template = () => {
+  return <Messages messages={messages} />
 }
 
-export const WithTools = Template.bind({})
-WithTools.play = play([{ bootHal: {} }])
+export const Chat = Template.bind({})
