@@ -34,6 +34,14 @@ globalThis.Buffer = Buffer
 // githooks, so when changes come in, system integrity can be maintained
 // possibly githooks are how all functions are triggered
 
+// generate an image and store it
+
+// generate a task list of things to do
+// reprioritize it
+// provide all the features of the todolist in redux
+
+// push a backup to github
+
 export default {
   title: 'Git',
   component: Page,
