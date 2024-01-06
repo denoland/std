@@ -42,6 +42,27 @@ globalThis.Buffer = Buffer
 
 // push a backup to github
 
+// load the sysprompt
+// edit the sysprompt from within hal
+// do an action that triggers some conventional code
+// then convert the api calls to openai to do this conventional way
+
+// implement the stuckloop
+
+// do some distributed computing where multiple machines reach consensus
+
+// pull in npm packages using SSRI and ipfs
+
+// push stucks to a remote repo
+
+// write to a file
+
+// sort customers
+
+// ping google
+
+// stucks, if they sound generic, should include default offerings to try do some more things by searching wider
+
 export default {
   title: 'Git',
   component: Page,

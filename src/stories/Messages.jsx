@@ -1,3 +1,4 @@
+import './messages.css'
 import CircularProgress from '@mui/material/CircularProgress'
 import { green } from '@mui/material/colors'
 import Chip from '@mui/material/Chip'
@@ -6,7 +7,6 @@ import Debug from 'debug'
 import DaveIcon from '@mui/icons-material/SentimentDissatisfied'
 import ToolIcon from '@mui/icons-material/Construction'
 import GoalIcon from '@mui/icons-material/GpsFixed'
-import Markdown from 'markdown-to-jsx'
 import Timeline from '@mui/lab/Timeline'
 import TimelineItem, { timelineItemClasses } from '@mui/lab/TimelineItem'
 import TimelineSeparator from '@mui/lab/TimelineSeparator'
@@ -26,6 +26,8 @@ import FolderIcon from '@mui/icons-material/Folder'
 import RuleIcon from '@mui/icons-material/Rule'
 import Tooltip from '@mui/material/Tooltip'
 // import { ToolAction } from './ToolAction'
+import remarkGfm from 'remark-gfm'
+import Markdown from 'react-markdown'
 
 const debug = Debug('AI:ThreeBox')
 const STATUS = { RUNNING: 'RUNNING', DONE: 'DONE', ERROR: 'ERROR' }
@@ -51,12 +53,12 @@ const Chat = ({ content, type }) => (
         {!content && <Progress />}
       </TimelineDot>
     </TimelineSeparator>
-    <TimelineContent>
+    <TimelineContent className="parent">
       <Typography variant="h6" component="span">
         {chatTitles[type]}
       </Typography>
       <br />
-      <Markdown wrapper="React.Fragment">{content || ''}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]}>{content || ''}</Markdown>
     </TimelineContent>
   </TimelineItem>
 )
@@ -139,7 +141,7 @@ const Goal = ({ text, status, helps }) => {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <Markdown wrapper="React.Fragment">
+                      <Markdown remarkPlugins={[remarkGfm]}>
                         {instructions}
                       </Markdown>
                     }
@@ -153,7 +155,7 @@ const Goal = ({ text, status, helps }) => {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <Markdown wrapper="React.Fragment">{done}</Markdown>
+                      <Markdown remarkPlugins={[remarkGfm]}>{done}</Markdown>
                     }
                   />
                 </ListItem>

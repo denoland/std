@@ -1,6 +1,7 @@
 import Messages from './Messages'
 import play from './play'
 import Debug from 'debug'
+import Box from '@mui/material/Box'
 const debug = Debug('Messages')
 const STATUS = { RUNNING: 'RUNNING', DONE: 'DONE', ERROR: 'ERROR' }
 
@@ -12,6 +13,16 @@ export default {
 const messages = [
   { role: 'user', content: 'say a single word' },
   { role: 'assistant', content: 'Hello!' },
+  {
+    role: 'assistant',
+    content: `
+  \`\`\`markdown
+  ![Placeholder Image](https://via.placeholder.com/150 "This is a placeholder image")
+  \`\`\`
+  ![Placeholder Image](https://via.placeholder.com/150 "This is a placeholder image")
+  
+  When you view this in a compatible environment, you should see a 150x150 pixel placeholder image with the alt text "Placeholder Image" and a title that appears as a tooltip saying "This is a placeholder image".`,
+  },
 ]
 
 const state = {
@@ -93,3 +104,11 @@ const Template = () => {
 }
 
 export const Chat = Template.bind({})
+export const Narrow = () => {
+  return (
+    <Box sx={{ background: 'red', maxWidth: '400px' }}>
+      <Messages messages={messages} />
+    </Box>
+  )
+}
+// Narrow.parameters = { layout: 'centered' }

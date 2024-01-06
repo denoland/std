@@ -28,7 +28,6 @@
     "debug": "^4.3.4",
     "isomorphic-git": "^1.25.2",
     "lodash.merge": "^4.6.2",
-    "markdown-to-jsx": "^7.4.0",
     "openai": "^4.24.1",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
@@ -36,6 +35,8 @@
     "react-audio-voice-recorder": "^2.2.0",
     "react-dom": "^18.2.0",
     "react-inspector": "^6.0.2",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
     "use-file-picker": "^2.1.1"
   },
   "devDependencies": {
