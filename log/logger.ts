@@ -181,6 +181,7 @@ export class Logger {
 
   /** @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead. */
   warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /** @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead. */
   warning<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   warning<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
