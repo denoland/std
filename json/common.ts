@@ -10,10 +10,21 @@ export type JsonValue =
   | boolean
   | null;
 
-/** Optional object interface for `JSONParseStream` and `ConcatenatedJsonParseStream`. */
+/**
+ * Options for {@linkcode JsonParseStream} and
+ * {@linkcode ConcatenatedJsonParseStream}.
+ */
 export interface ParseStreamOptions {
-  /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
+  /**
+   * Controls the buffer of the {@linkcode TransformStream} used internally.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#writablestrategy}
+   */
   readonly writableStrategy?: QueuingStrategy<string>;
-  /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
+  /**
+   * Controls the buffer of the {@linkcode TransformStream} used internally.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream#readablestrategy}
+   */
   readonly readableStrategy?: QueuingStrategy<JsonValue>;
 }

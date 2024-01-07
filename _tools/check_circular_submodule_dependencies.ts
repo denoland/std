@@ -113,7 +113,6 @@ deps["path"] = await check("path", "needs clean up");
 deps["permissions"] = await check("permissions", "deprecated");
 deps["regexp"] = await check("regexp", "not ready");
 deps["semver"] = await check("semver", "not ready");
-deps["signal"] = await check("signal", "deprecated");
 deps["streams"] = await check("streams", "needs clean up");
 deps["testing"] = await check("testing", "ready", [
   "bdd.ts",

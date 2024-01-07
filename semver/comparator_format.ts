@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVerComparator } from "./types.ts";
+import type { Comparator } from "./types.ts";
 import { format } from "./format.ts";
 
 /**
@@ -8,7 +8,7 @@ import { format } from "./format.ts";
  * @param comparator
  * @returns A string representation of the comparator
  */
-export function comparatorFormat(comparator: SemVerComparator): string {
+export function comparatorFormat(comparator: Comparator): string {
   const { semver, operator } = comparator;
   return `${operator}${format(semver)}`;
 }
