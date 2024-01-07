@@ -46,7 +46,10 @@ export interface SpinnerOptions {
    * @default {["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]}
    */
   spinner?: string[];
-  /** The message to display next to the spinner. */
+  /**
+   * The message to display next to the spinner. This can be changed while the
+   * spinner is active.
+   */
   message?: string;
   /**
    * The time between each frame of the spinner in milliseconds.
@@ -54,7 +57,10 @@ export interface SpinnerOptions {
    * @default {75}
    */
   interval?: number;
-  /** The color of the spinner. Defaults to the default terminal color. */
+  /**
+   * The color of the spinner. Defaults to the default terminal color.
+   * This can be changed while the spinner is active.
+   */
   color?: Color;
 }
 
@@ -63,7 +69,7 @@ export interface SpinnerOptions {
  */
 export class Spinner {
   #spinner: string[];
-  #message: string;
+  message: string;
   #interval: number;
   #color?: Color;
   #intervalId: number | undefined;
@@ -88,9 +94,17 @@ export class Spinner {
     }: SpinnerOptions = {},
   ) {
     this.#spinner = spinner;
-    this.#message = message;
+    this.message = message;
     this.#interval = interval;
-    this.#color = color ? COLORS[color] : undefined;
+    this.color = color;
+  }
+
+  set color(value: Color | undefined) {
+    this.#color = value ? COLORS[value] : undefined;
+  }
+
+  get color() {
+    return this.#color;
   }
 
   /**
@@ -108,13 +122,12 @@ export class Spinner {
     if (this.#active || Deno.stdout.writable.locked) return;
     this.#active = true;
     let i = 0;
-    const color = this.#color ?? "";
-
     // Updates the spinner after the given interval.
     const updateFrame = () => {
+      const color = this.#color ?? "";
       Deno.stdout.writeSync(LINE_CLEAR);
       const frame = encoder.encode(
-        color + this.#spinner[i] + COLOR_RESET + " " + this.#message,
+        color + this.#spinner[i] + COLOR_RESET + " " + this.message,
       );
       Deno.stdout.writeSync(frame);
       i = (i + 1) % this.#spinner.length;

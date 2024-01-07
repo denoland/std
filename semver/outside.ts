@@ -4,7 +4,7 @@ import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { lt } from "./lt.ts";
 import { ALL, ANY } from "./constants.ts";
-import type { SemVer, SemVerComparator, SemVerRange } from "./types.ts";
+import type { Comparator, SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
 
 /**
@@ -40,8 +40,8 @@ export function outside(
   }
 
   for (const comparators of range.ranges) {
-    let high: SemVerComparator | undefined = undefined;
-    let low: SemVerComparator | undefined = undefined;
+    let high: Comparator | undefined = undefined;
+    let low: Comparator | undefined = undefined;
     for (let comparator of comparators) {
       if (comparator.semver === ANY) {
         comparator = ALL;

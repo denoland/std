@@ -13,7 +13,7 @@ const primitives = new Map(
 );
 
 /**
- * Stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
+ * Stream to parse {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON|Concatenated JSON}.
  *
  * @example
  * ```ts
@@ -33,13 +33,12 @@ const primitives = new Map(
  */
 export class ConcatenatedJsonParseStream
   implements TransformStream<string, JsonValue> {
+  /** A writable stream of byte data. */
   readonly writable: WritableStream<string>;
+  /** A readable stream of byte data. */
   readonly readable: ReadableStream<JsonValue>;
-  /**
-   * @param options
-   * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
-   */
+
+  /** Constructs a new instance. */
   constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
