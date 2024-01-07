@@ -3,12 +3,13 @@
 .vscode/settings.json
 .vim
 **/cov/
-/crypto/_wasm/target
+crypto/_wasm/target
 deno.lock
-/console/testdata/unicode_width_crate/target
+console/testdata/unicode_width_crate/target
 html_cov/
 cov.lcov
-/http/testdata/%25A.txt
-/http/testdata/file#2.txt
-/http/testdata/test file.txt
-/coverage/
+http/testdata/%25A.txt
+http/testdata/file#2.txt
+http/testdata/test file.txt
+coverage/
+docs/

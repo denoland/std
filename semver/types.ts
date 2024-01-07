@@ -23,6 +23,7 @@ export type Operator = typeof OPERATORS[number];
 
 /**
  * The style to use when formatting a SemVer object into a string
+ * @deprecated (will be removed in 0.213.0)
  */
 export type FormatStyle =
   | "full"
@@ -42,21 +43,6 @@ export interface Comparator {
   operator: Operator;
   semver: SemVer;
 }
-/**
- * @deprecated (will be removed in 0.212.0) Use {@linkcode Comparator} instead.
- */
-export interface SemVerComparator {
-  operator: Operator;
-  semver: SemVer;
-  /**
-   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
-   */
-  min: SemVer;
-  /**
-   * @deprecated (will be removed in 0.212.0) use {@linkcode comparatorMin} instead.
-   */
-  max: SemVer;
-}
 
 /**
  * A SemVer object parsed into its constituent parts.
@@ -69,7 +55,7 @@ export interface SemVer {
   build?: string[];
 }
 
-type SemVerRangeAnd = SemVerComparator[];
+type SemVerRangeAnd = Comparator[];
 type SemVerRangeOr = SemVerRangeAnd[];
 
 /**

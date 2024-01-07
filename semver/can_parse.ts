@@ -1,15 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 
-/**
- * @deprecated (will be removed in 0.212.0) Use a string argument instead.
- */
-export function canParse(version: SemVer): boolean;
-export function canParse(version: string): boolean;
-export function canParse(version: string | SemVer) {
+export function canParse(version: string): boolean {
   try {
-    parse(version as SemVer);
+    parse(version);
     return true;
   } catch (err) {
     if (!(err instanceof TypeError)) {

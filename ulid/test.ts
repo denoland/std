@@ -19,7 +19,7 @@ import {
   monotonicFactory,
 } from "./_util.ts";
 
-Deno.test("increment base32", async (t) => {
+Deno.test("incrementBase32()", async (t) => {
   await t.step("increments correctly", () => {
     assertEquals("A109D", incrementBase32("A109C"));
   });
@@ -48,7 +48,7 @@ Deno.test("increment base32", async (t) => {
   });
 });
 
-Deno.test("encodeTime", async (t) => {
+Deno.test("encodeTime()", async (t) => {
   await t.step("should return expected encoded result", () => {
     assertEquals("01ARYZ6S41", encodeTime(1469918176385, 10));
   });
@@ -95,13 +95,13 @@ Deno.test("encodeTime", async (t) => {
   });
 });
 
-Deno.test("encodeRandom", async (t) => {
+Deno.test("encodeRandom()", async (t) => {
   await t.step("should return correct length", () => {
     assertEquals(12, encodeRandom(12).length);
   });
 });
 
-Deno.test("decodeTime", async (t) => {
+Deno.test("decodeTime()", async (t) => {
   await t.step("should return correct timestamp", () => {
     const timestamp = Date.now();
     const id = ulid(timestamp);
@@ -136,7 +136,7 @@ Deno.test("decodeTime", async (t) => {
   });
 });
 
-Deno.test("ulid", async (t) => {
+Deno.test("ulid()", async (t) => {
   await t.step("should return correct length", () => {
     assertEquals(26, ulid().length);
   });
@@ -149,7 +149,7 @@ Deno.test("ulid", async (t) => {
   );
 });
 
-Deno.test("monotonicity", async (t) => {
+Deno.test("monotonicUlid() handles monotonicity", async (t) => {
   function encodeRandom(len: number): string {
     let str = "";
     const randomBytes = new Array(len).fill(30);
