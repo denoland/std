@@ -148,7 +148,7 @@
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *
- *     file: new log.handlers.FileHandler("WARNING", {
+ *     file: new log.handlers.FileHandler("WARN", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
  *       formatter: (record) => `${record.levelName} ${record.msg}`,
@@ -173,7 +173,7 @@
  *
  * // get default logger.
  * logger = log.getLogger();
- * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
+ * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARN" level.
  * logger.warn(41256); // logs to both `console` and `file` handlers.
  *
  * // get custom logger
@@ -504,6 +504,11 @@ export function info<T>(
  * Log with warning level, using default logger.
  */
 export function warning<T>(msg: () => T, ...args: unknown[]): T | undefined;
+/**
+ * @deprecated (will be removed after 0.214.0) Use {@linkcode warn} instead.
+ *
+ * Log with warning level, using default logger.
+ */
 export function warning<T>(
   msg: T extends GenericFunction ? never : T,
   ...args: unknown[]
@@ -536,8 +541,7 @@ export function warn<T>(
   return getLogger("default").warn(msg, ...args);
 }
 
-/** Log with e
- * rror level, using default logger. */
+/** Log with error level, using default logger. */
 export function error<T>(msg: () => T, ...args: unknown[]): T | undefined;
 export function error<T>(
   msg: T extends GenericFunction ? never : T,
