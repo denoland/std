@@ -1,13 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { Operator, SemVerComparator } from "./types.ts";
+import type { Comparator, Operator } from "./types.ts";
 import {
   COMPARATOR_REGEXP,
   parseBuild,
   parseNumber,
   parsePrerelease,
 } from "./_shared.ts";
-import { comparatorMin } from "./comparator_min.ts";
-import { comparatorMax } from "./comparator_max.ts";
 import { ANY, NONE } from "./constants.ts";
 
 type REGEXP_GROUPS = {
@@ -20,11 +18,11 @@ type REGEXP_GROUPS = {
 };
 
 /**
- * Parses a comparator string into a valid SemVerComparator.
+ * Parses a comparator string into a valid Comparator.
  * @param comparator
- * @returns A valid SemVerComparator
+ * @returns A valid Comparator
  */
-export function parseComparator(comparator: string): SemVerComparator {
+export function parseComparator(comparator: string): Comparator {
   const match = comparator.match(COMPARATOR_REGEXP);
   const groups = match?.groups;
 
@@ -47,8 +45,5 @@ export function parseComparator(comparator: string): SemVerComparator {
     }
     : ANY;
 
-  const min = comparatorMin(semver, operator);
-  const max = comparatorMax(semver, operator);
-
-  return { ...semver, operator, semver, min, max };
+  return { operator, ...semver, semver };
 }

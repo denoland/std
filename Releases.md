@@ -1,3 +1,29 @@
+### 0.211.0 / 2024.01.04
+
+- BREAKING(collections): remove `groupBy()` (#3923)
+- BREAKING(crypto): remove stable `KeyStack()` (#4055)
+- BREAKING(front_matter): remove deprecated APIs (#4013)
+- BREAKING(http): remove deprecated `createCommonResponse()` and `Status` APIs
+  (#4014)
+- BREAKING(path): remove deprecated APIs (#4016)
+- BREAKING: remove `types.d.ts` at top level (#3922)
+- deprecation(log): string type for `BaseHandler.formatter` (#4023)
+- deprecation(semver): deprecate `compareBuild()` (#4088)
+- deprecation(semver): deprecate `format()` `style` argument (#4050)
+- deprecation(semver): deprecate `testComparator()` (#4037)
+- deprecation(semver): deprecate cmp (#4025)
+- deprecation(semver): rename rsort to reverseSort (#4032)
+- feat(cli): make `Spinner.message` able to be changed on-the-fly (#4079)
+- feat(semver): optional SemVer build and prerelease properties (#4024)
+- fix(cli): document milliseconds unit for `Spinner.interval` (#4017)
+- fix(cli/spinner): export private type aliases used in public API (#4012)
+- fix(expect): align toEqual to jest (#4034)
+- fix(expect): align toStrictEqual behavior to jest (#4035)
+- fix(expect): invalid return typing (#4011)
+- fix(fs): fix `expandGlob()` test race condition (#4081)
+- fix(semver): remove `undefined` return type from `rangeMax()` (#4089)
+- fix(toml): testdata typo (#4074)
+
 ### 0.210.0 / 2023.12.21
 
 - BREAKING(crypto): remove `toHashString()` (#3924)
