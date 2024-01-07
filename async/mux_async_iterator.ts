@@ -73,8 +73,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
       await this.#signal.promise;
 
       // Note that while we're looping over `yields`, new items may be added.
-      for (let i = 0; i < this.#yields.length; i++) {
-        const { iterator, value } = this.#yields[i];
+      for (const { iterator, value } of this.#yields) {
         yield value;
         this.#callIteratorNext(iterator);
       }
