@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 const backslashRE = /\\/g;
 
@@ -109,20 +110,20 @@ const windowsJoinTests = [
 Deno.test("posix.join()", function () {
   joinTests.forEach(function (p) {
     const _p = p[0] as string[];
-    const actual = path.posix.join.apply(null, _p);
+    const actual = posix.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });
 
-Deno.test("win32.join()", function () {
+Deno.test("windows.join()", function () {
   joinTests.forEach(function (p) {
     const _p = p[0] as string[];
-    const actual = path.win32.join.apply(null, _p).replace(backslashRE, "/");
+    const actual = windows.join.apply(null, _p).replace(backslashRE, "/");
     assertEquals(actual, p[1]);
   });
   windowsJoinTests.forEach(function (p) {
     const _p = p[0] as string[];
-    const actual = path.win32.join.apply(null, _p);
+    const actual = windows.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });

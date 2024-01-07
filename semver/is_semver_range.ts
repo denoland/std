@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { SemVerRange } from "./types.ts";
-import { isSemVerComparator } from "./is_semver_comparator.ts";
+import { isComparator } from "./is_comparator.ts";
 
 /**
  * Does a deep check on the object to determine if its a valid range.
@@ -19,8 +19,6 @@ export function isSemVerRange(value: unknown): value is SemVerRange {
   const { ranges } = value as SemVerRange;
   return (
     Array.isArray(ranges),
-      ranges.every((r) =>
-        Array.isArray(r) && r.every((c) => isSemVerComparator(c))
-      )
+      ranges.every((r) => Array.isArray(r) && r.every((c) => isComparator(c)))
   );
 }

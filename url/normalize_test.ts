@@ -30,7 +30,7 @@ const TESTSUITE = [
   ],
 ];
 
-Deno.test("normalize", function () {
+Deno.test("normalize()", function () {
   for (const [test_url, expected] of TESTSUITE) {
     assertEquals(url.normalize(test_url), expected);
   }

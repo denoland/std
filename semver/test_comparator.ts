@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerComparator } from "./types.ts";
+import type { Comparator, SemVer } from "./types.ts";
 import { cmp } from "./cmp.ts";
 
 /**
@@ -11,7 +11,7 @@ import { cmp } from "./cmp.ts";
  */
 export function testComparator(
   version: SemVer,
-  comparator: SemVerComparator,
+  comparator: Comparator,
 ): boolean {
   return cmp(version, comparator.operator, comparator.semver);
 }

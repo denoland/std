@@ -2,32 +2,33 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "../assert/mod.ts";
-import * as path from "./mod.ts";
+import * as posix from "./posix/mod.ts";
+import * as windows from "./windows/mod.ts";
 
 Deno.test("posix.isAbsolute()", function () {
-  assertEquals(path.posix.isAbsolute("/home/foo"), true);
-  assertEquals(path.posix.isAbsolute("/home/foo/.."), true);
-  assertEquals(path.posix.isAbsolute("bar/"), false);
-  assertEquals(path.posix.isAbsolute("./baz"), false);
+  assertEquals(posix.isAbsolute("/home/foo"), true);
+  assertEquals(posix.isAbsolute("/home/foo/.."), true);
+  assertEquals(posix.isAbsolute("bar/"), false);
+  assertEquals(posix.isAbsolute("./baz"), false);
 });
 
-Deno.test("win32.isAbsolute()", function () {
-  assertEquals(path.win32.isAbsolute("/"), true);
-  assertEquals(path.win32.isAbsolute("//"), true);
-  assertEquals(path.win32.isAbsolute("//server"), true);
-  assertEquals(path.win32.isAbsolute("//server/file"), true);
-  assertEquals(path.win32.isAbsolute("\\\\server\\file"), true);
-  assertEquals(path.win32.isAbsolute("\\\\server"), true);
-  assertEquals(path.win32.isAbsolute("\\\\"), true);
-  assertEquals(path.win32.isAbsolute("c"), false);
-  assertEquals(path.win32.isAbsolute("c:"), false);
-  assertEquals(path.win32.isAbsolute("c:\\"), true);
-  assertEquals(path.win32.isAbsolute("c:/"), true);
-  assertEquals(path.win32.isAbsolute("c://"), true);
-  assertEquals(path.win32.isAbsolute("C:/Users/"), true);
-  assertEquals(path.win32.isAbsolute("C:\\Users\\"), true);
-  assertEquals(path.win32.isAbsolute("C:cwd/another"), false);
-  assertEquals(path.win32.isAbsolute("C:cwd\\another"), false);
-  assertEquals(path.win32.isAbsolute("directory/directory"), false);
-  assertEquals(path.win32.isAbsolute("directory\\directory"), false);
+Deno.test("windows.isAbsolute()", function () {
+  assertEquals(windows.isAbsolute("/"), true);
+  assertEquals(windows.isAbsolute("//"), true);
+  assertEquals(windows.isAbsolute("//server"), true);
+  assertEquals(windows.isAbsolute("//server/file"), true);
+  assertEquals(windows.isAbsolute("\\\\server\\file"), true);
+  assertEquals(windows.isAbsolute("\\\\server"), true);
+  assertEquals(windows.isAbsolute("\\\\"), true);
+  assertEquals(windows.isAbsolute("c"), false);
+  assertEquals(windows.isAbsolute("c:"), false);
+  assertEquals(windows.isAbsolute("c:\\"), true);
+  assertEquals(windows.isAbsolute("c:/"), true);
+  assertEquals(windows.isAbsolute("c://"), true);
+  assertEquals(windows.isAbsolute("C:/Users/"), true);
+  assertEquals(windows.isAbsolute("C:\\Users\\"), true);
+  assertEquals(windows.isAbsolute("C:cwd/another"), false);
+  assertEquals(windows.isAbsolute("C:cwd\\another"), false);
+  assertEquals(windows.isAbsolute("directory/directory"), false);
+  assertEquals(windows.isAbsolute("directory\\directory"), false);
 });

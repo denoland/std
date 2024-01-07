@@ -22,7 +22,7 @@ const TESTSUITE: [[string | URL, ...string[]], URL][] = [
   ],
 ];
 
-Deno.test("join", function () {
+Deno.test("join()", function () {
   for (const [[test_url, ...paths], expected] of TESTSUITE) {
     assertEquals(url.join(test_url, ...paths), expected);
   }
