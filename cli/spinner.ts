@@ -85,11 +85,18 @@ export class Spinner {
    * const spinner = new Spinner({ message: "Loading..." });
    * ```
    */
-  constructor(options?: SpinnerOptions) {
-    this.#spinner = options?.spinner ?? DEFAULT_SPINNER;
-    this.message = options?.message ?? "";
-    this.#interval = options?.interval ?? DEFAULT_INTERVAL;
-    this.color = options?.color;
+  constructor(
+    {
+      spinner = DEFAULT_SPINNER,
+      message = "",
+      interval = DEFAULT_INTERVAL,
+      color,
+    }: SpinnerOptions = {},
+  ) {
+    this.#spinner = spinner;
+    this.message = message;
+    this.#interval = interval;
+    this.color = color;
   }
 
   set color(value: Color | undefined) {
