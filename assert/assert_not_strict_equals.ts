@@ -18,7 +18,7 @@ export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void {
+) {
   if (!Object.is(actual, expected)) {
     return;
   }

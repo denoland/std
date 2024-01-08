@@ -34,6 +34,7 @@ import {
   HEADER_LENGTH,
   readBlock,
   type TarMeta,
+  UstarFields,
   ustarStructure,
 } from "./_common.ts";
 import { readAll } from "../streams/read_all.ts";
@@ -47,9 +48,9 @@ export interface TarMetaWithLinkName extends TarMeta {
   linkName?: string;
 }
 
-export interface TarHeader {
-  [key: string]: Uint8Array;
-}
+export type TarHeader = {
+  [key in UstarFields]: Uint8Array;
+};
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/utilities/pax.html#tag_20_92_13_06
 // eight checksum bytes taken to be ascii spaces (decimal value 32)
@@ -69,8 +70,8 @@ function trim(buffer: Uint8Array): Uint8Array {
  * Parse file header in a tar archive
  * @param length
  */
-function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
-  const data: { [key: string]: Uint8Array } = {};
+function parseHeader(buffer: Uint8Array): TarHeader {
+  const data = {} as TarHeader;
   let offset = 0;
   ustarStructure.forEach(function (value) {
     const arr = buffer.subarray(offset, offset + value.length);
@@ -222,7 +223,7 @@ export class Untar {
         // Ignore checksum header
         continue;
       }
-      sum += header[i];
+      sum += header[i]!;
     }
     return sum;
   }

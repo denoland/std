@@ -16,7 +16,7 @@ import { AssertionError } from "./assertion_error.ts";
  * assertNotEquals(1, 1); // Throws
  * ```
  */
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;
   }

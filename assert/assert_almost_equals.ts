@@ -22,7 +22,7 @@ export function assertAlmostEquals(
   expected: number,
   tolerance = 1e-7,
   msg?: string,
-): void {
+) {
   if (Object.is(actual, expected)) {
     return;
   }
