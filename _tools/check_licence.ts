@@ -10,6 +10,7 @@ const EXCLUDED_DIRS = [
   "**/crypto/_wasm/target",
   "**/crypto/_wasm/lib",
   "**/.git",
+  "**/docs/**",
 ];
 
 const ROOT = new URL("../", import.meta.url);
