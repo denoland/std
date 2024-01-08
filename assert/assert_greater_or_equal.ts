@@ -19,7 +19,7 @@ export function assertGreaterOrEqual<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void {
+) {
   if (actual >= expected) return;
 
   const actualString = format(actual);
