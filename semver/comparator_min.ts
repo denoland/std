@@ -10,7 +10,7 @@ import { increment } from "./increment.ts";
  * @param operator The operator of the comparator
  * @returns The minimum valid semantic version
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode rangeMin} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeMin} instead.
  */
 export function comparatorMin(semver: SemVer, operator: Operator): SemVer {
   if (semver === ANY) {

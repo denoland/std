@@ -14,7 +14,7 @@ import { ALL, NONE } from "./constants.ts";
  * @param value The value to check if its a Comparator
  * @returns True if the object is a Comparator otherwise false
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode isSemVerRange} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode isSemVerRange} instead.
  */
 export function isComparator(value: unknown): value is Comparator {
   if (

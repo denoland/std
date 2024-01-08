@@ -9,7 +9,7 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  * an out of range semver will be returned.
  * @returns the version, the MAX version or the next smallest patch version
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode rangeMax} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeMax} instead.
  */
 export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
   if (semver === ANY) {

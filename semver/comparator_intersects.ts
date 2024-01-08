@@ -10,7 +10,7 @@ import { comparatorMax } from "./comparator_max.ts";
  * @param c1 The right side comparator
  * @returns True if any part of the comparators intersect
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode rangeIntersects} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeIntersects} instead.
  */
 export function comparatorIntersects(
   c0: Comparator,

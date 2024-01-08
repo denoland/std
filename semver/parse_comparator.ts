@@ -22,7 +22,7 @@ type REGEXP_GROUPS = {
  * @param comparator
  * @returns A valid Comparator
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode parseRange} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode parseRange} instead.
  */
 export function parseComparator(comparator: string): Comparator {
   const match = comparator.match(COMPARATOR_REGEXP);

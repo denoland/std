@@ -7,7 +7,7 @@ import { parseComparator } from "./parse_comparator.ts";
  * @param comparator
  * @returns A valid Comparator or undefined
  *
- * @deprecated (will be removed in 0.213.0) Use {@linkcode tryParseRange} instead.
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode tryParseRange} instead.
  */
 export function tryParseComparator(
   comparator: string,
