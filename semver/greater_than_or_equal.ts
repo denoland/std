@@ -7,7 +7,7 @@ import { compare } from "./compare.ts";
  *
  * This is equal to `compare(s0, s1) >= 0`.
  */
-export function greaterOrEqual(
+export function greaterThanOrEqual(
   s0: SemVer,
   s1: SemVer,
 ): boolean {
