@@ -332,7 +332,22 @@ Deno.test({
     // Test TarEntry type
     const bufSizes = [1, 53, 256, 511];
     const header: TarHeader = {
-      test: new Uint8Array(bufSizes),
+      fileName: new Uint8Array(bufSizes),
+      fileMode: new Uint8Array(bufSizes),
+      uid: new Uint8Array(bufSizes),
+      gid: new Uint8Array(bufSizes),
+      fileSize: new Uint8Array(bufSizes),
+      mtime: new Uint8Array(bufSizes),
+      checksum: new Uint8Array(bufSizes),
+      type: new Uint8Array(bufSizes),
+      linkName: new Uint8Array(bufSizes),
+      ustar: new Uint8Array(bufSizes),
+      owner: new Uint8Array(bufSizes),
+      group: new Uint8Array(bufSizes),
+      majorNumber: new Uint8Array(bufSizes),
+      minorNumber: new Uint8Array(bufSizes),
+      fileNamePrefix: new Uint8Array(bufSizes),
+      padding: new Uint8Array(bufSizes),
     };
     const content = new TextEncoder().encode("hello tar world!");
     const reader = new Buffer(content);
