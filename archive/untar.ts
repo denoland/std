@@ -37,7 +37,7 @@ import {
   UstarFields,
   ustarStructure,
 } from "./_common.ts";
-import { readAll } from "../streams/read_all.ts";
+import { readAll } from "../io/read_all.ts";
 import type { Reader } from "../io/types.d.ts";
 
 /**
