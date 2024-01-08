@@ -10,7 +10,7 @@ import {
   assertThrows,
 } from "../assert/mod.ts";
 import { Buffer } from "./buffer.ts";
-import { writeAllSync } from "../io/write_all.ts";
+import { writeAllSync } from "./write_all.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
 // N controls how many iterations of certain checks are performed.

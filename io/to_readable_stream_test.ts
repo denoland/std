@@ -2,10 +2,10 @@
 
 import { assertEquals } from "../assert/mod.ts";
 import { toReadableStream } from "./to_readable_stream.ts";
-import { Buffer } from "../io/buffer.ts";
+import { Buffer } from "./buffer.ts";
 import { concat } from "../bytes/concat.ts";
 import { copy } from "../bytes/copy.ts";
-import type { Closer, Reader } from "../io/types.d.ts";
+import type { Closer, Reader } from "./types.d.ts";
 
 class MockReaderCloser implements Reader, Closer {
   chunks: Uint8Array[] = [];
