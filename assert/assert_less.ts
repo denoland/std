@@ -14,7 +14,7 @@ import { AssertionError } from "./assertion_error.ts";
  * assertLess(2, 1); // Throws
  * ```
  */
-export function assertLess<T>(actual: T, expected: T, msg?: string): void {
+export function assertLess<T>(actual: T, expected: T, msg?: string) {
   if (actual < expected) return;
 
   const actualString = format(actual);

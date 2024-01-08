@@ -15,7 +15,7 @@ import { AssertionError } from "./assertion_error.ts";
  * assertGreater(0, 1); // Throws
  * ```
  */
-export function assertGreater<T>(actual: T, expected: T, msg?: string): void {
+export function assertGreater<T>(actual: T, expected: T, msg?: string) {
   if (actual > expected) return;
 
   const actualString = format(actual);
