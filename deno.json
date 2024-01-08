@@ -2,7 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "useUnknownInCatchVariables": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "skipLibCheck": true
   },
   "imports": {
     "https://deno.land/std@$STD_VERSION/": "./",
