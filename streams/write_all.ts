@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { Writer, WriterSync } from "../io/types.d.ts";
+import { writeAll as _writeAll } from "../io/write_all.ts";
 export type { Writer, WriterSync };
 
 /**
@@ -29,15 +30,10 @@ export type { Writer, WriterSync };
  * console.log(writer.bytes().length);  // 11
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream},
- * {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo}
- * instead.
+ * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/io/write_all.ts} instead.
  */
 export async function writeAll(w: Writer, arr: Uint8Array) {
-  let nwritten = 0;
-  while (nwritten < arr.length) {
-    nwritten += await w.write(arr.subarray(nwritten));
-  }
+  await _writeAll(w, arr);
 }
 
 /**
