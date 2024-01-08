@@ -28,4 +28,5 @@ export * from "./string_reader.ts";
 export * from "./string_writer.ts";
 export * from "./to_readable_stream.ts";
 export * from "./to_writable_stream.ts";
+export * from "./types.d.ts";
 export * from "./write_all.ts";
