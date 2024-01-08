@@ -25,7 +25,7 @@ export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
   expected: ArrayLikeArg<T>,
   msg?: string,
-): void {
+) {
   const missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
     let found = false;
