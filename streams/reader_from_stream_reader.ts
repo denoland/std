@@ -3,7 +3,7 @@
 
 import { Buffer } from "../io/buffer.ts";
 import { writeAll } from "./write_all.ts";
-import type { Reader } from "../io/types.d.ts";
+import type { Reader } from "../io/types.ts";
 
 /**
  * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
