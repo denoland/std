@@ -3,7 +3,7 @@
 
 import { concat } from "../bytes/concat.ts";
 import { DEFAULT_CHUNK_SIZE } from "./_constants.ts";
-import type { Reader, ReaderSync } from "./types.d.ts";
+import type { Reader, ReaderSync } from "./types.ts";
 
 /**
  * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as

@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { writeAll } from "./write_all.ts";
-import type { Writer } from "./types.d.ts";
+import type { Writer } from "./types.ts";
 import { isCloser } from "./_common.ts";
 
 /** Options for {@linkcode toWritableStream}. */

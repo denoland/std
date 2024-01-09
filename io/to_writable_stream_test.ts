@@ -2,7 +2,7 @@
 
 import { assertEquals } from "../assert/mod.ts";
 import { toWritableStream } from "./to_writable_stream.ts";
-import type { Closer, Writer } from "./types.d.ts";
+import type { Closer, Writer } from "./types.ts";
 
 class MockWriterCloser implements Writer, Closer {
   chunks: Uint8Array[] = [];

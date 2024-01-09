@@ -3,7 +3,7 @@
 
 import { DEFAULT_CHUNK_SIZE } from "./_constants.ts";
 import { isCloser } from "./_common.ts";
-import type { Closer, Reader } from "./types.d.ts";
+import type { Closer, Reader } from "./types.ts";
 
 /** Options for {@linkcode toReadableStream}. */
 export interface ToReadableStreamOptions {

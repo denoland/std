@@ -12,6 +12,7 @@
 export * from "./buf_reader.ts";
 export * from "./buf_writer.ts";
 export * from "./buffer.ts";
+export * from "./copy.ts";
 export * from "./copy_n.ts";
 export * from "./limited_reader.ts";
 export * from "./multi_reader.ts";
@@ -28,5 +29,5 @@ export * from "./string_reader.ts";
 export * from "./string_writer.ts";
 export * from "./to_readable_stream.ts";
 export * from "./to_writable_stream.ts";
-export * from "./types.d.ts";
+export * from "./types.ts";
 export * from "./write_all.ts";
