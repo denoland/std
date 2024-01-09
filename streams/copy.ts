@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, Writer } from "../io/types.d.ts";
+import type { Reader, Writer } from "../io/types.ts";
 
 /**
  * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
