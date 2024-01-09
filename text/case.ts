@@ -62,23 +62,6 @@ export function toPascalCase(input: string): string {
 }
 
 /**
- * Converts a string into SCREAMING_SNAKE_CASE
- *
- * @example
- * ```ts
- * import { toScreamingSnakeCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- *
- * toScreamingSnakeCase("deno is awesome"); // "DENO_IS_AWESOME"
- * ```
- *
- * @param input is the string that is going to be converted into SCREAMING_SNAKE_CASE
- * @returns The string as SCREAMING_SNAKE_CASE
- */
-export function toScreamingSnakeCase(input: string): string {
-  return toSnakeCase(input).toLocaleUpperCase();
-}
-
-/**
  * Converts a string into Sentence case
  *
  * @example
