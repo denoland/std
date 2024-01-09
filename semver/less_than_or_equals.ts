@@ -3,13 +3,13 @@ import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Greater than or equal to comparison
+ * Less than or equal to comparison
  *
- * This is equal to `compare(s0, s1) >= 0`.
+ * This is equal to `compare(s0, s1) <= 0`.
  */
-export function greaterThanOrEqual(
+export function lessThanOrEquals(
   s0: SemVer,
   s1: SemVer,
 ): boolean {
-  return compare(s0, s1) >= 0;
+  return compare(s0, s1) <= 0;
 }
