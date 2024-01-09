@@ -1,4 +1,4 @@
-import Runner from './runner.js'
+import IO from './io.js'
 import { deserializeError } from 'serialize-error'
 import validator from './validator.js'
 import posix from 'path-browserify'
@@ -22,7 +22,7 @@ export default class Artifact {
   #opts
   #session
   #trigger
-  #runner
+  #io
   static async boot({ path = 'fs', wipe = false } = {}) {
     const artifact = new Artifact()
     artifact.#trigger = TriggerFS.create()
@@ -35,9 +35,9 @@ export default class Artifact {
       dir: artifact.#dir,
       cache: artifact.#cache,
     }
-    artifact.#runner = Runner.create({ artifact, opts: artifact.#opts })
+    artifact.#io = IO.create({ artifact, opts: artifact.#opts })
     await artifact.#load()
-    await artifact.#runner.start()
+    await artifact.#io.start()
     return artifact
   }
   async #load() {
@@ -196,7 +196,7 @@ export default class Artifact {
     return actions
   }
   overloadExecutable(path, localPath) {
-    this.#runner.overloadExecutable(path, localPath)
+    this.#io.overloadExecutable(path, localPath)
   }
   async dispatch(ioPath, functionName, parameters) {
     assert(posix.isAbsolute(ioPath), `ioPath must be absolute: ${ioPath}`)
