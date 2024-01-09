@@ -5,7 +5,7 @@ interface SplitOptions {
   removeSpecialCharacters?: boolean;
 }
 
-export function split(
+export function splitToWords(
   input: string,
   { singleDelimiter = false, removeSpecialCharacters }: SplitOptions = {},
 ) {

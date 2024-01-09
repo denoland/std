@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { capitalizeWord, split } from "./_util.ts";
+import { capitalizeWord, splitToWords } from "./_util.ts";
 
 /**
  * Converts a string into camelCase.
@@ -17,7 +17,9 @@ import { capitalizeWord, split } from "./_util.ts";
  */
 export function toCamelCase(input: string): string {
   input = input.trim();
-  const [first = "", ...rest] = split(input, { removeSpecialCharacters: true });
+  const [first = "", ...rest] = splitToWords(input, {
+    removeSpecialCharacters: true,
+  });
   return [first.toLocaleLowerCase(), ...rest.map(capitalizeWord)].join("");
 }
 
@@ -36,7 +38,7 @@ export function toCamelCase(input: string): string {
  */
 export function toKebabCase(input: string): string {
   input = input.trim();
-  return split(input, { removeSpecialCharacters: true })
+  return splitToWords(input, { removeSpecialCharacters: true })
     .join("-")
     .toLocaleLowerCase();
 }
@@ -56,7 +58,7 @@ export function toKebabCase(input: string): string {
  */
 export function toPascalCase(input: string): string {
   input = input.trim();
-  return split(input, { removeSpecialCharacters: true })
+  return splitToWords(input, { removeSpecialCharacters: true })
     .map(capitalizeWord)
     .join("");
 }
@@ -75,7 +77,7 @@ export function toPascalCase(input: string): string {
  * @returns The string as Sentence case
  */
 export function toSentenceCase(input: string): string {
-  const [first = "", ...rest] = split(input, { singleDelimiter: true });
+  const [first = "", ...rest] = splitToWords(input, { singleDelimiter: true });
   return [
     capitalizeWord(first),
     ...rest.map((word) => word.toLocaleLowerCase()),
@@ -97,7 +99,7 @@ export function toSentenceCase(input: string): string {
  */
 export function toSnakeCase(input: string): string {
   input = input.trim();
-  return split(input, { removeSpecialCharacters: true })
+  return splitToWords(input, { removeSpecialCharacters: true })
     .join("_")
     .toLocaleLowerCase();
 }
@@ -116,5 +118,6 @@ export function toSnakeCase(input: string): string {
  * @returns The string as Title Case
  */
 export function toTitleCase(input: string): string {
-  return split(input, { singleDelimiter: true }).map(capitalizeWord).join(" ");
+  return splitToWords(input, { singleDelimiter: true }).map(capitalizeWord)
+    .join(" ");
 }
