@@ -619,13 +619,13 @@ export function parseArgs<
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    assert(typeof arg !== "undefined");
+    assert(arg !== undefined);
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
       assert(m !== null);
       const [, key, value] = m;
-      assert(typeof key !== "undefined");
+      assert(key !== undefined);
 
       if (flags.bools[key]) {
         const booleanValue = value !== "false";
@@ -637,11 +637,11 @@ export function parseArgs<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m !== null && typeof m[1] !== "undefined");
+      assert(m !== null && m[1] !== undefined);
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m !== null && typeof m[1] !== "undefined");
+      assert(m !== null && m[1] !== undefined);
       const [, key] = m;
       const next = args[i + 1];
       if (
@@ -653,7 +653,7 @@ export function parseArgs<
       ) {
         setArg(key, next, arg);
         i++;
-      } else if (typeof next !== "undefined" && /^(true|false)$/.test(next)) {
+      } else if (next !== undefined && /^(true|false)$/.test(next)) {
         setArg(key, next === "true", arg);
         i++;
       } else {
@@ -729,7 +729,7 @@ export function parseArgs<
       setKey(argv, key, value, false);
 
       const alias = aliases[key];
-      if (typeof alias !== "undefined") {
+      if (alias !== undefined) {
         for (const x of alias) {
           setKey(argv, x, value, false);
         }
