@@ -30,7 +30,7 @@ export type { Writer, WriterSync };
  * console.log(writer.bytes().length);  // 11
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/io/write_all.ts} instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/write_all.ts} instead.
  */
 export async function writeAll(w: Writer, arr: Uint8Array) {
   await _writeAll(w, arr);
@@ -61,9 +61,7 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  * console.log(writer.bytes().length);  // 11
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream},
- * {@linkcode ReadableStream.from} and {@linkcode ReadableStream.pipeTo}
- * instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/write_all.ts} instead.
  */
 export function writeAllSync(w: WriterSync, arr: Uint8Array) {
   let nwritten = 0;

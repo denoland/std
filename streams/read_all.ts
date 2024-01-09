@@ -29,7 +29,7 @@ import type { Reader, ReaderSync } from "../io/types.ts";
  * const bufferContent = await readAll(reader);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/io/read_all.ts} instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/read_all.ts} instead.
  */
 export async function readAll(r: Reader): Promise<Uint8Array> {
   return await _readAll(r);
@@ -59,8 +59,7 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
  * const bufferContent = readAllSync(reader);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} and
- * {@linkcode toArrayBuffer} instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/read_all.ts} instead.
  */
 export function readAllSync(r: ReaderSync): Uint8Array {
   const buf = new Buffer();

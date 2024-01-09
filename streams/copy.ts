@@ -22,7 +22,7 @@ import type { Reader, Writer } from "../io/types.ts";
  * @param dst The destination to copy to
  * @param options Can be used to tune size of the buffer. Default size is 32kB
  *
- * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/io/copy.ts} instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/copy.ts} instead.
  */
 export async function copy(
   src: Reader,
