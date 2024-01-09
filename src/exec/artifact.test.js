@@ -1,4 +1,3 @@
-// import 'fake-indexeddb/auto'
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 import Debug from 'debug'
@@ -13,7 +12,7 @@ test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
 
-test.only('have a chat', async ({ artifact }) => {
+test('have a chat', async ({ artifact }) => {
   Debug.enable('AI*')
   const result = await artifact.prompt('return an exclaimation mark')
   expect(result.content).toEqual('!')

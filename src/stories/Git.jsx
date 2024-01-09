@@ -29,7 +29,7 @@ const Info = ({ commit }) => {
       <Typography mt={1} variant="caption" component="span">
         <i>commit: </i>
         <b>{oid.slice(0, 8)}</b> <i>by: </i> {name} <i>message: </i>
-        {message} <i>time: </i>
+        {message} <i>when: </i>
         {since}
       </Typography>
     </>

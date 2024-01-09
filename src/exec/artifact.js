@@ -1,3 +1,6 @@
+import Runner from './runner.js'
+import { deserializeError } from 'serialize-error'
+import validator from './validator.js'
 import posix from 'path-browserify'
 import git from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
@@ -19,6 +22,7 @@ export default class Artifact {
   #opts
   #session
   #trigger
+  #runner
   static async boot({ path = 'fs', wipe = false } = {}) {
     const artifact = new Artifact()
     artifact.#trigger = TriggerFS.create()
@@ -31,7 +35,9 @@ export default class Artifact {
       dir: artifact.#dir,
       cache: artifact.#cache,
     }
+    artifact.#runner = Runner.create({ artifact, opts: artifact.#opts })
     await artifact.#load()
+    await artifact.#runner.start()
     return artifact
   }
   async #load() {
@@ -46,7 +52,7 @@ export default class Artifact {
       isGitPresent = false
     }
     if (!isGitPresent) {
-      await this.init()
+      await this.#init()
     }
 
     // then look for tension in the fs we just loaded
@@ -57,7 +63,7 @@ export default class Artifact {
     // with no AI, it should be at least a filesystem with base commands
     // TODO add an emergency exit key sequence to default the pipe
   }
-  async init() {
+  async #init() {
     debug('creating repo')
     await this.#fs.mkdir(this.#dir).catch((e) => {
       if (!e.message.startsWith('EEXIST')) {
@@ -69,15 +75,7 @@ export default class Artifact {
     const loaderP = this.#fs.writeFile(this.#dir + '/loader.md', loader)
     const sessionP = this.#fs.writeFile(this.#session, JSON.stringify([]))
     await Promise.all([readmeP, loaderP, sessionP])
-    const status = await git.statusMatrix(this.#opts)
-    const files = status.map((status) => status[0])
-    await git.add({ ...this.#opts, filepath: files })
-    await git.commit({
-      ...this.#opts,
-      message: 'boot',
-      author: { name: 'HAL' },
-    })
-    this.#trigger.commit()
+    await this.#commitAll({ message: 'init', author: { name: 'HAL' } })
   }
   async prompt(text) {
     assert(typeof text === 'string', `text must be a string`)
@@ -110,12 +108,7 @@ export default class Artifact {
       text,
       trigger,
     })
-    await git.commit({
-      ...this.#opts,
-      message: 'promptRunner',
-      author: { name: 'HAL' },
-    })
-    this.#trigger.commit()
+    await this.#commitAll({ message: 'promptRunner', author: { name: 'HAL' } })
     return result
   }
   async read(path) {
@@ -132,8 +125,147 @@ export default class Artifact {
     const initial = this.#fs.readFile(path, 'utf8')
     return this.#trigger.subscribe(path, cb, initial)
   }
-  subscribeCommits(path, cb) {
+  // TODO ensure subscriptions await the callback in a queue
+  // so implementations can be asured they get called in sequence
+  async subscribeCommits(filepath, cb) {
+    assert(posix.isAbsolute(filepath), `filepath must be absolute: ${filepath}`)
     // TODO cache the results
-    return this.#trigger.subscribeCommits(path, cb)
+    // async since needs to find the nearest repo root
+    const repoPath = await git.findRoot({ ...this.#opts, filepath })
+    assert(repoPath, `repoPath not found: ${filepath}`)
+    // TODO order the async git functions using an async iterable
+    if (repoPath === filepath) {
+      return this.#trigger.subscribeCommits(repoPath, cb)
+    }
+    const relative = posix.relative(repoPath, filepath)
+    return this.#trigger.subscribeCommits(repoPath, async () => {
+      // TODO move to using a walker with the hash
+
+      const commit = await git.log({
+        ...this.#opts,
+        depth: 1,
+        filepath: relative,
+        force: true,
+      })
+      if (!commit.length) {
+        return
+      }
+      // TODO ensure the worktree is the actual unfettered item
+      // TODO handle directories ?
+      const file = await this.#fs.readFile(filepath, 'utf8')
+      cb(file)
+    })
   }
+  async createIO({ path, isolate }) {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    assert(path.endsWith('.io.json'), `path must end with .io.json`)
+    assert(typeof isolate === 'object', `isolate must be an object`)
+    // TODO error if something already there
+    // TODO load the isolate in a worker to check it loads correctly
+
+    const io = {
+      isolate,
+      sequence: 0,
+      inputs: {},
+      outputs: {},
+      // how to clean the queue out ?
+    }
+    await this.#commitIO(path, io, 'createIO')
+
+    // drop down the json item
+    // check the api schema matches the loaded code
+    // commit the code, possibly register with procman
+  }
+  async actions(path) {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    // assert the path is an io path
+    const io = await this.readIO(path)
+    const { isolate } = io
+    // check the schema, or rely on the hooks to ensure the format is correct
+    const { api } = isolate
+    const actions = {}
+    for (const functionName of Object.keys(api)) {
+      const schema = api[functionName]
+      const validate = validator(schema)
+      actions[functionName] = async (parameters) => {
+        validate(parameters)
+        return this.dispatch(path, functionName, parameters)
+      }
+    }
+    Object.freeze(actions)
+    return actions
+  }
+  overloadExecutable(path, localPath) {
+    this.#runner.overloadExecutable(path, localPath)
+  }
+  async dispatch(ioPath, functionName, parameters) {
+    assert(posix.isAbsolute(ioPath), `ioPath must be absolute: ${ioPath}`)
+    const io = await this.readIO(ioPath)
+
+    const { id, next } = input(io, functionName, parameters)
+    let resolve, reject
+    const promise = new Promise((res, rej) => {
+      resolve = res
+      reject = rej
+    })
+    const unsubscribe = await this.subscribeCommits(ioPath, (file) => {
+      const next = JSON.parse(file)
+
+      const { outputs } = next
+      const output = outputs[id]
+      if (!output) {
+        return
+      }
+      if (output.error) {
+        reject(deserializeError(output.error))
+      } else {
+        resolve(output.result)
+      }
+      unsubscribe()
+    })
+    // this is not strictly necessary
+    await this.#commitIO(ioPath, next, 'dispatch')
+    return promise
+  }
+  async readIO(path) {
+    // TODO assert the path is not dirty
+    // TODO check the schema of the IO file
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const raw = await this.#fs.readFile(path, 'utf8')
+    return JSON.parse(raw)
+  }
+  async #commitIO(path, io, message) {
+    const file = JSON.stringify(io, null, 2)
+    await this.#fs.writeFile(path, file)
+    this.#trigger.write(path, file)
+    await this.#commitAll({ message, author: { name: 'HAL' } })
+  }
+  async replyIO(filepath, id, result, error) {
+    // TODO handle further processes being spawned
+    // TODO allow to buffer multiple replies into a single commit
+
+    filepath = '/hal/' + filepath
+    assert(posix.isAbsolute(filepath), `path must be absolute: ${filepath}`)
+    const io = await this.readIO(filepath)
+    const { outputs } = io
+    assert(!outputs[id], `id ${id} found in outputs`)
+    outputs[id] = { result, error }
+    await this.#commitIO(filepath, io, 'replyIO')
+  }
+  async #commitAll({ message, author }) {
+    const status = await git.statusMatrix(this.#opts)
+    const files = status.map((status) => status[0])
+    await git.add({ ...this.#opts, filepath: files })
+    const hash = await git.commit({ ...this.#opts, message, author })
+    this.#trigger.commit(this.#dir, hash)
+  }
+}
+
+const input = (io, functionName, parameters) => {
+  const { inputs, outputs } = io
+  const sequence = io.sequence + 1
+  const action = { [functionName]: parameters }
+  const nextInputs = { ...inputs, [sequence]: action }
+  const next = { ...io, sequence, inputs: nextInputs, outputs }
+  return { id: sequence, next }
 }

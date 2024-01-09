@@ -59,6 +59,14 @@ globalThis.Buffer = Buffer
 
 // sort customers
 
+// display something in the stateboard
+
+// edit portions of a text based on chat, then turn that in on itself
+
+// do a vector search on goals
+
+// show background processes that are happening after an initial trigger
+
 // ping google
 
 // stucks, if they sound generic, should include default offerings to try do some more things by searching wider

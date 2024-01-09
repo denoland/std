@@ -20,11 +20,7 @@ export default class TriggerFS {
     callbacks.add(cb)
 
     //TODO if there is already a file, trigger the callback instantly
-    initial
-      .catch((e) => {
-        console.error(e)
-      })
-      .then(cb)
+    initial.then(cb).catch(() => {})
 
     return () => {
       callbacks.delete(cb)
@@ -43,29 +39,44 @@ export default class TriggerFS {
       cb(file)
     }
   }
-  subscribeCommits(path, cb) {
-    // TODO handle pathing in commits
+  subscribeCommits(repoPath, cb) {
+    assert(posix.isAbsolute(repoPath), `path must be absolute: ${repoPath}`)
     assert(typeof cb === 'function', `cb must be a function`)
-    if (!this.#commitSubscriptions.has(path)) {
-      this.#commitSubscriptions.set(path, new Set())
+    if (!this.#commitSubscriptions.has(repoPath)) {
+      this.#commitSubscriptions.set(repoPath, { callbacks: new Set() })
     }
-    const callbacks = this.#commitSubscriptions.get(path)
+    const { callbacks, latest } = this.#commitSubscriptions.get(repoPath)
     callbacks.add(cb)
+    if (latest) {
+      cb(latest)
+    }
     return () => {
       callbacks.delete(cb)
       if (callbacks.size === 0) {
-        this.#commitSubscriptions.delete(path)
+        this.#commitSubscriptions.delete(repoPath)
       }
     }
   }
-  commit(path) {
-    // TODO handle pathing in commits
-    if (!this.#commitSubscriptions.has(path)) {
-      this.#commitSubscriptions.set(path, new Set())
+  commit(repoPath, hash) {
+    assert(posix.isAbsolute(repoPath), `path must be absolute: ${repoPath}`)
+    assert(typeof hash === 'string', `hash must be a string`)
+    assert(/^[0-9a-f]{40}$/i.test(hash), `hash must be a SHA1 hash: ${hash}`)
+
+    // for speed, get the root, then subscribe to that
+    // then check the path is inside the root, then trigger the callback
+
+    if (!this.#commitSubscriptions.has(repoPath)) {
+      this.#commitSubscriptions.set(repoPath, {
+        callbacks: new Set(),
+        latest: hash,
+      })
     }
-    const callbacks = this.#commitSubscriptions.get(path)
+    const subs = this.#commitSubscriptions.get(repoPath)
+    subs.latest = hash
+    const { callbacks } = subs
     for (const cb of callbacks) {
-      cb()
+      // TODO break the thread here, but preserve call order using iterable
+      cb(hash)
     }
   }
 }
