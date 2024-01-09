@@ -12,18 +12,6 @@ export const LogLevels = {
   WARNING: 30,
   ERROR: 40,
   CRITICAL: 50,
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  0: "NOTSET",
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  10: "DEBUG",
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  20: "INFO",
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  30: "WARNING",
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  40: "ERROR",
-  /* @deprecated (will be removed after 0.211.0) Use {@linkcode getLevelName} instead */
-  50: "CRITICAL",
 } as const;
 
 /** Union of valid log levels */
@@ -49,10 +37,8 @@ const byLevel: Record<LogLevel, LevelName> = {
 /**
  * Returns the numeric log level associated with the passed,
  * stringy log level name.
- *
- * @returns - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
  */
-export function getLevelByName(name: LevelName): number {
+export function getLevelByName(name: LevelName): LogLevel {
   const level = LogLevels[name];
   if (level !== undefined) {
     return level;
@@ -60,12 +46,8 @@ export function getLevelByName(name: LevelName): number {
   throw new Error(`no log level found for name: ${name}`);
 }
 
-/**
- * Returns the stringy log level name provided the numeric log level
- *
- * @param level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
- */
-export function getLevelName(level: number): LevelName {
+/** Returns the stringy log level name provided the numeric log level. */
+export function getLevelName(level: LogLevel): LevelName {
   const levelName = byLevel[level as LogLevel];
   if (levelName) {
     return levelName;

@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Writer, WriterSync } from "../io/types.d.ts";
 import { writeAll as _writeAll } from "../io/write_all.ts";
+import type { Writer, WriterSync } from "../io/types.ts";
 export type { Writer, WriterSync };
 
 /**

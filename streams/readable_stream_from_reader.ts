@@ -1,8 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { Closer, Reader } from "../io/types.d.ts";
 import { toReadableStream } from "../io/to_readable_stream.ts";
+import type { Closer, Reader } from "../io/types.ts";
 export type { Closer };
 
 /**
