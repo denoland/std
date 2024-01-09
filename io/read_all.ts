@@ -25,14 +25,13 @@ import type { Reader, ReaderSync } from "./types.ts";
 export async function readAll(reader: Reader): Promise<Uint8Array> {
   const chunks: Uint8Array[] = [];
   while (true) {
-    const chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
+    let chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
     const n = await reader.read(chunk);
     if (n === null) {
       break;
     }
     if (n < DEFAULT_CHUNK_SIZE) {
-      chunks.push(chunk.subarray(0, n));
-      break;
+      chunk = chunk.subarray(0, n);
     }
     chunks.push(chunk);
   }
