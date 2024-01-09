@@ -372,7 +372,7 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
   });
 
   const key = keys.at(-1);
-  return typeof key !== "undefined" && hasOwn(o, key);
+  return key !== undefined && hasOwn(o, key);
 }
 
 /** Take a set of command line arguments, optionally with a set of options, and
