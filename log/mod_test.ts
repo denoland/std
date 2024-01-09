@@ -122,9 +122,9 @@ Deno.test({
     assertEquals(testHandler.messages[2], "CRITICAL critical");
 
     testHandler.messages = [];
-    logger.level = LogLevels.WARN;
-    assertEquals(logger.levelName, "WARN");
-    assertEquals(logger.level, LogLevels.WARN);
+    logger.level = LogLevels.WARNING;
+    assertEquals(logger.levelName, "WARNING");
+    assertEquals(logger.level, LogLevels.WARNING);
 
     logger.debug("debug2");
     logger.error("error2");

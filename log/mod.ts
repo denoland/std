@@ -148,7 +148,7 @@
  *   handlers: {
  *     console: new log.handlers.ConsoleHandler("DEBUG"),
  *
- *     file: new log.handlers.FileHandler("WARN", {
+ *     file: new log.handlers.FileHandler("WARNING", {
  *       filename: "./log.txt",
  *       // you can change format of output message using any keys in `LogRecord`.
  *       formatter: (record) => `${record.levelName} ${record.msg}`,
@@ -173,7 +173,7 @@
  *
  * // get default logger.
  * logger = log.getLogger();
- * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARN" level.
+ * logger.debug("fizz"); // logs to `console`, because `file` handler requires "WARNING" level.
  * logger.warn(41256); // logs to both `console` and `file` handlers.
  *
  * // get custom logger

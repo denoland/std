@@ -88,7 +88,7 @@ export class ConsoleHandler extends BaseHandler {
       case LogLevels.INFO:
         msg = blue(msg);
         break;
-      case LogLevels.WARN:
+      case LogLevels.WARNING:
         msg = yellow(msg);
         break;
       case LogLevels.ERROR:

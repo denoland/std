@@ -33,7 +33,7 @@ Deno.test("simpleHandler", function () {
       [
         "DEBUG debug-test",
         "INFO info-test",
-        "WARN warn-test",
+        "WARNING warning-test",
         "ERROR error-test",
         "CRITICAL critical-test",
       ],
@@ -42,14 +42,14 @@ Deno.test("simpleHandler", function () {
       LogLevels.INFO,
       [
         "INFO info-test",
-        "WARN warn-test",
+        "WARNING warning-test",
         "ERROR error-test",
         "CRITICAL critical-test",
       ],
     ],
     [
-      LogLevels.WARN,
-      ["WARN warn-test", "ERROR error-test", "CRITICAL critical-test"],
+      LogLevels.WARNING,
+      ["WARNING warning-test", "ERROR error-test", "CRITICAL critical-test"],
     ],
     [LogLevels.ERROR, ["ERROR error-test", "CRITICAL critical-test"]],
     [LogLevels.CRITICAL, ["CRITICAL critical-test"]],
@@ -164,7 +164,7 @@ Deno.test({
       }
     }
 
-    const testFileHandler = new TestFileHandler("WARN", {
+    const testFileHandler = new TestFileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -175,7 +175,7 @@ Deno.test({
         new LogRecord({
           msg: "The starry heavens above me and the moral law within me.",
           args: [],
-          level: LogLevels.WARN,
+          level: LogLevels.WARNING,
           loggerName: "default",
         }),
       );
@@ -188,7 +188,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler with mode 'w' will wipe clean existing log file",
   async fn() {
-    const fileHandler = new FileHandler("WARN", {
+    const fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -198,7 +198,7 @@ Deno.test({
       new LogRecord({
         msg: "Hello World",
         args: [],
-        level: LogLevels.WARN,
+        level: LogLevels.WARNING,
         loggerName: "default",
       }),
     );
@@ -210,7 +210,7 @@ Deno.test({
       new LogRecord({
         msg: "Hello World",
         args: [],
-        level: LogLevels.WARN,
+        level: LogLevels.WARNING,
         loggerName: "default",
       }),
     );
@@ -225,7 +225,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler with mode 'x' will throw if log file already exists",
   fn() {
-    const fileHandler = new FileHandler("WARN", {
+    const fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "x",
     });
@@ -259,7 +259,7 @@ Deno.test({
       new TextEncoder().encode("hello world"),
     );
 
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 50,
       maxBackupCount: 3,
@@ -285,7 +285,7 @@ Deno.test({
       LOG_FILE + ".3",
       new TextEncoder().encode("hello world"),
     );
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 50,
       maxBackupCount: 3,
@@ -308,7 +308,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler with first rollover, monitor step by step",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 25,
       maxBackupCount: 3,
@@ -358,7 +358,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler with first rollover, check all at once",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 25,
       maxBackupCount: 3,
@@ -418,7 +418,7 @@ Deno.test({
       new TextEncoder().encode("original log.3 file"),
     );
 
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 2,
       maxBackupCount: 3,
@@ -463,7 +463,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        const fileHandler = new RotatingFileHandler("WARN", {
+        const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
           maxBytes: 0,
           maxBackupCount: 3,
@@ -482,7 +482,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        const fileHandler = new RotatingFileHandler("WARN", {
+        const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
           maxBytes: 50,
           maxBackupCount: 0,
@@ -499,7 +499,7 @@ Deno.test({
 Deno.test({
   name: "Window unload flushes buffer",
   async fn() {
-    const fileHandler = new FileHandler("WARN", {
+    const fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -525,7 +525,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler: rotate on byte length, not msg length",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARN", {
+    const fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 7,
       maxBackupCount: 1,
@@ -559,7 +559,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler: Critical logs trigger immediate flush",
   async fn() {
-    const fileHandler = new FileHandler("WARN", {
+    const fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });

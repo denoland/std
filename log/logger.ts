@@ -184,7 +184,7 @@ export class Logger {
     msg: (T extends GenericFunction ? never : T) | (() => T),
     ...args: unknown[]
   ): T | undefined {
-    return this.#_log(LogLevels.WARN, msg, ...args);
+    return this.#_log(LogLevels.WARNING, msg, ...args);
   }
 
   error<T>(msg: () => T, ...args: unknown[]): T | undefined;

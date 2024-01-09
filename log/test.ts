@@ -23,7 +23,7 @@ Deno.test("defaultHandlers", async function () {
   } = {
     DEBUG: log.debug,
     INFO: log.info,
-    WARN: log.warn,
+    WARNING: log.warn,
     ERROR: log.error,
     CRITICAL: log.critical,
   };
