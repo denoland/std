@@ -11,6 +11,8 @@ import { isComparator } from "./is_comparator.ts";
  * Adds a type assertion if true.
  * @param value The value to check if its a valid SemVerRange
  * @returns True if its a valid SemVerRange otherwise false.
+ *
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode isRange} instead.
  */
 export function isSemVerRange(value: unknown): value is SemVerRange {
   if (value === null || value === undefined) return false;
@@ -18,7 +20,7 @@ export function isSemVerRange(value: unknown): value is SemVerRange {
   if (typeof value !== "object") return false;
   const { ranges } = value as SemVerRange;
   return (
-    Array.isArray(ranges),
-      ranges.every((r) => Array.isArray(r) && r.every((c) => isComparator(c)))
+    Array.isArray(ranges) &&
+    ranges.every((r) => Array.isArray(r) && r.every((c) => isComparator(c)))
   );
 }

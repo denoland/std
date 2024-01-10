@@ -67,6 +67,7 @@ export const ANY: SemVer = {
  */
 export const ALL: Comparator = {
   operator: "",
+  ...ANY,
   semver: ANY,
 };
 
@@ -75,5 +76,6 @@ export const ALL: Comparator = {
  */
 export const NONE: Comparator = {
   operator: "<",
+  ...MIN,
   semver: MIN,
 };

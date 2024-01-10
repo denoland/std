@@ -14,5 +14,5 @@ export function testComparator(
   version: SemVer,
   comparator: Comparator,
 ): boolean {
-  return cmp(version, comparator.operator, comparator.semver);
+  return cmp(version, comparator.operator, comparator.semver ?? comparator);
 }
