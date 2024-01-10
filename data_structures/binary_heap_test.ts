@@ -95,13 +95,13 @@ Deno.test("BinaryHeap contains objects", () => {
 
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
   const expectedValue: number[] = [6, 0, 8, 2, 5, 4, 1, 7, 3];
-  for (let i = 0; i < ids.length; i++) {
+  for (const [i, value] of expectedValue.entries()) {
     assertEquals(heap.length, ids.length - i);
     assertEquals(heap.isEmpty(), false);
 
     const expectedContainer = {
       id: expected[i],
-      values: [expectedValue[i]! - 1, expectedValue[i], expectedValue[i]! + 1],
+      values: [value - 1, value, value + 1],
     };
     assertEquals(heap.peek(), expectedContainer);
     assertEquals(heap.pop(), expectedContainer);
