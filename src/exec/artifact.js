@@ -79,23 +79,6 @@ export default class Artifact {
     assert(text, `text must not be empty`)
     // TODO move to a generic call model internally as well as for extra fns
     // TODO use a link to redirect output to different places
-    // there should be one input per session
-
-    // V1
-    // - read in the session file, which is .json
-    // - obtain lock on the session file
-    // - modify the json with the latest prompt
-    // - write the json back to the session file
-    // - do a commit and release the lock, maybe trigger githooks
-    // - trigger an api call to openai using the given file
-
-    // - openai api function grabs lock on the session file
-    // - reads the session file
-    // - makes the openai api, streaming the results back into the session file
-    // - releases the lock
-    // - makes a commit with the user being the api caller
-    // - system now waits for the next prompt / driver / tension
-    // - maybe run the githooks based on what is configured
 
     const sessionPath = this.#session
     const trigger = this.#trigger
@@ -165,20 +148,14 @@ export default class Artifact {
       sequence: 0,
       inputs: {},
       outputs: {},
-      // how to clean the queue out ?
     }
     await this.#commitIO(path, io, 'createIO')
-
-    // drop down the json item
-    // check the api schema matches the loaded code
-    // commit the code, possibly register with procman
   }
   async actions(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    // assert the path is an io path
+    assert(path.endsWith('.io.json'), `path must end with .io.json`)
     const io = await this.readIO(path)
     const { isolate } = io
-    // check the schema, or rely on the hooks to ensure the format is correct
     const { api } = isolate
     const actions = {}
     for (const functionName of Object.keys(api)) {
@@ -234,6 +211,7 @@ export default class Artifact {
     const file = JSON.stringify(io, null, 2)
     await this.#fs.writeFile(path, file)
     this.#trigger.write(path, file)
+    // TODO maybe commit just the file
     await this.#commitAll({ message, author: { name: 'HAL' } })
   }
   async replyIO(filepath, id, result, error) {
