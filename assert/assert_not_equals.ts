@@ -12,8 +12,8 @@ import { AssertionError } from "./assertion_error.ts";
  * ```ts
  * import { assertNotEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_equals.ts";
  *
- * assertNotEquals(1, 2); // Doesn't throw
- * assertNotEquals(1, 1); // Throws
+ * assertNotEquals(1 as number, 2); // Doesn't throw
+ * assertNotEquals(1 as number, 1); // Throws
  * ```
  */
 export function assertNotEquals<A, T extends A>(

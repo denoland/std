@@ -333,12 +333,8 @@ export function assertMatch(
  *
  * @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/assert/assert_not_equals.ts} instead.
  */
-export function assertNotEquals<A, T extends A>(
-  actual: T,
-  expected: T,
-  msg?: string,
-) {
-  asserts.assertNotEquals<A, T>(actual, expected, msg);
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
+  asserts.assertNotEquals<T, T>(actual, expected, msg);
 }
 
 /**
