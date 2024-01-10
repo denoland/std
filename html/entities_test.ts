@@ -2,7 +2,7 @@
 
 import { escape, unescape } from "./entities.ts";
 import { assertEquals } from "../assert/mod.ts";
-import entityList from "./named_entity_list.json" assert { type: "json" };
+import entityList from "./named_entity_list.json" with { type: "json" };
 
 Deno.test("escape()", async (t) => {
   await t.step('escapes &<>"', () => {

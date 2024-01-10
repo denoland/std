@@ -7,7 +7,7 @@ Deno.test({
   name: "UserAgent.prototype.browser",
   async fn(t) {
     const specs = (await import("./testdata/user_agent/browser-all.json", {
-      assert: { type: "json" },
+      with: { type: "json" },
     })).default;
     for (const { desc, ua, expect: { major, name, version } } of specs) {
       await t.step({
@@ -29,7 +29,7 @@ Deno.test({
   name: "UserAgent.prototype.cpu",
   async fn(t) {
     const specs = (await import("./testdata/user_agent/cpu-all.json", {
-      assert: { type: "json" },
+      with: { type: "json" },
     })).default;
     for (const { desc: name, ua, expect } of specs) {
       await t.step({
@@ -47,7 +47,7 @@ Deno.test({
   name: "UserAgent.prototype.device",
   async fn(t) {
     const specs = (await import("./testdata/user_agent/device-all.json", {
-      assert: { type: "json" },
+      with: { type: "json" },
     })).default;
     for (const { desc: name, ua, expect: { vendor, model, type } } of specs) {
       await t.step({
@@ -69,7 +69,7 @@ Deno.test({
   name: "UserAgent.prototype.engine",
   async fn(t) {
     const specs = (await import("./testdata/user_agent/engine-all.json", {
-      assert: { type: "json" },
+      with: { type: "json" },
     })).default;
     for (const { desc, ua, expect: { name, version } } of specs) {
       await t.step({
@@ -90,7 +90,7 @@ Deno.test({
   name: "UserAgent.prototype.os",
   async fn(t) {
     const specs = (await import("./testdata/user_agent/os-all.json", {
-      assert: { type: "json" },
+      with: { type: "json" },
     })).default;
     for (const { desc, ua, expect: { name, version } } of specs) {
       await t.step({
