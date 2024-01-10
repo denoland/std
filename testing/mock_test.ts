@@ -227,7 +227,7 @@ Deno.test("spy instance method", () => {
   });
   assertSpyCalls(func, 10);
 
-  assertNotEquals(func, Point.prototype.action);
+  assertNotEquals<unknown, Point["action"]>(func, Point.prototype.action);
   assertEquals(point.action, func);
 
   assertEquals(func.restored, false);
@@ -264,8 +264,11 @@ Deno.test("spy instance method symbol", () => {
     args: [],
   });
   assertSpyCalls(func, 2);
-
-  assertNotEquals(func, Point.prototype[Symbol.iterator]);
+  assertNotEquals<unknown, Point[typeof Symbol.iterator]>(
+    func,
+    Point.prototype[Symbol.iterator],
+  );
+  func;
   assertEquals(point[Symbol.iterator], func);
 
   assertEquals(func.restored, false);
@@ -326,7 +329,10 @@ Deno.test("spy instance method property descriptor", () => {
   });
   assertSpyCalls(action, 4);
 
-  assertNotEquals(action, actionDescriptor.value);
+  assertNotEquals<unknown, () => void>(
+    action,
+    actionDescriptor.value,
+  );
   assertEquals(point.action, action);
 
   assertEquals(action.restored, false);
