@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertExists } from "https://deno.land/std@$STD_VERSION/assert/assert_exists.ts";
+import { assertExists } from "../assert/assert_exists.ts";
 import { describeTextureFormat } from "./describe_texture_format.ts";
 
 function textureDimensionArrayLayerCount(
