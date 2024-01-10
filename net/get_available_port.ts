@@ -1,5 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+/** Option bag for available port method */
+export interface GetAvailablePortOptions {
+  /** A port to check availability of first. If the port isn't available, fall back to another port. */
+  preferredPort?: number;
+}
+
 /**
  * Returns an available network port.
  *
@@ -11,7 +17,21 @@
  * Deno.serve({ port }, () => new Response("Hello, world!"));
  * ```
  */
-export function getAvailablePort(): number {
+export function getAvailablePort(options?: GetAvailablePortOptions): number {
+  if (options?.preferredPort) {
+    try {
+      // Check if the preferred port is available
+      const listener = Deno.listen({ port: options.preferredPort });
+      listener.close();
+      return (listener.addr as Deno.NetAddr).port;
+    } catch (e) {
+      // If the preferred port is not available, fall through and find an available port
+      if (!(e instanceof Deno.errors.AddrInUse)) {
+        throw e;
+      }
+    }
+  }
+
   const listener = Deno.listen({ port: 0 });
   listener.close();
   return (listener.addr as Deno.NetAddr).port;
