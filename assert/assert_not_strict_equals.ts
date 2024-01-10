@@ -10,8 +10,8 @@ import { format } from "./_format.ts";
  * ```ts
  * import { assertNotStrictEquals } from "https://deno.land/std@$STD_VERSION/assert/assert_not_strict_equals.ts";
  *
- * assertNotStrictEquals(1, 1); // Doesn't throw
- * assertNotStrictEquals(1, 2); // Throws
+ * assertNotStrictEquals(1 as number, 1); // Doesn't throw
+ * assertNotStrictEquals(1 as number, 2); // Throws
  * ```
  */
 export function assertNotStrictEquals<A, T extends A>(
