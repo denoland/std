@@ -4,6 +4,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { resolve } from "./resolve.ts";
 
 const windowsTests =
   // arguments                               result
@@ -48,4 +49,10 @@ Deno.test("windows.resolve()", function () {
     const actual = windows.resolve.apply(null, _p);
     assertEquals(actual, p[1]);
   });
+});
+
+Deno.test("resolve() returns current working directory if input is empty", function () {
+  const pwd = Deno.cwd();
+  assertEquals(resolve(""), pwd);
+  assertEquals(resolve("", ""), pwd);
 });
