@@ -66,7 +66,7 @@ const entityListRegexCache = new WeakMap<EntityList, RegExp>();
  * unescape("&thorn;&eth;"); // "&thorn;&eth;"
  *
  * // Using the full named entity list from the HTML spec (~47K un-minified)
- * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" assert { type: "json" };
+ * import entityList from "https://deno.land/std@$STD_VERSION/html/named_entity_list.json" with { type: "json" };
  *
  * unescape("&thorn;&eth;", { entityList }); // "þð"
  * ```
