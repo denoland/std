@@ -262,8 +262,8 @@ export function convertRowToObject(
     );
   }
   const out: Record<string, unknown> = {};
-  for (let i = 0; i < row.length; i++) {
-    out[headers[i]] = row[i];
+  for (const [index, header] of headers.entries()) {
+    out[header] = row[index];
   }
   return out;
 }
