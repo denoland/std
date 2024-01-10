@@ -74,10 +74,8 @@ const defaultRetryOptions: Required<RetryOptions> = {
  * Retries as long as the given function throws. If the attempts are exhausted,
  * throws a {@linkcode RetryError} with `cause` set to the inner exception.
  *
- * The backoff is calculated by multiplying `minTimeout` with `multiplier` to
- * the power of the current attempt counter (starting at 0 up to `maxAttempts
- * - 1`). It is capped at `maxTimeout` however. How long the actual delay is,
- * depends on `jitter`.
+ * The backoff is calculated by multiplying `minTimeout` with `multiplier` to the power of the current attempt counter (starting at 0 up to `maxAttempts - 1`). It is capped at `maxTimeout` however.
+ * How long the actual delay is, depends on `jitter`.
  *
  * When `jitter` is the default value of `1`, waits between two attempts for a
  * randomized amount between 0 and the backoff time. With the default options

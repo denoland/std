@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
-import type { Reader, ReaderSync } from "../io/types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.ts";
 
 export type { Reader, ReaderSync };
 

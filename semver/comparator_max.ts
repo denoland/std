@@ -8,6 +8,8 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  * If an invalid comparator is given such as <0.0.0 then
  * an out of range semver will be returned.
  * @returns the version, the MAX version or the next smallest patch version
+ *
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeMax} instead.
  */
 export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
   if (semver === ANY) {
