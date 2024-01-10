@@ -7,7 +7,6 @@ import {
   toPascalCase,
   toSentenceCase,
   toSnakeCase,
-  toTitleCase,
 } from "./case.ts";
 
 Deno.test("toCamelCase() handles an empty string", () => {
@@ -174,39 +173,6 @@ Deno.test({
   fn() {
     const result = toSnakeCase(" deno Is AWESOME ");
     const expected = "deno_is_awesome";
-    assertEquals(result, expected);
-  },
-});
-Deno.test("toTitleCase() handles an empty string", () => {
-  assertEquals(toTitleCase(""), "");
-});
-
-Deno.test("toTitleCase() converts a single word", () => {
-  const input = "shruberry";
-  const expected = "Shruberry";
-  assertEquals(toTitleCase(input), expected);
-});
-
-Deno.test("toTitleCase() converts a sentence", () => {
-  const input = "she turned me into a newt";
-  const expected = "She Turned Me Into A Newt";
-  assertEquals(toTitleCase(input), expected);
-});
-
-Deno.test({
-  name: "toTitleCase() converts multiple delimiters",
-  fn() {
-    const result = toTitleCase("I am up-to-date!");
-    const expected = "I Am Up-to-date!";
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "toTitleCase() trims whitespace",
-  fn() {
-    const result = toTitleCase(" deno Is AWESOME ");
-    const expected = "Deno Is Awesome";
     assertEquals(result, expected);
   },
 });

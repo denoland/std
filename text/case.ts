@@ -103,21 +103,3 @@ export function toSnakeCase(input: string): string {
     .join("_")
     .toLocaleLowerCase();
 }
-
-/**
- * Converts a string into Title Case
- *
- * @example
- * ```ts
- * import { toTitleCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- *
- * toTitleCase("deno is awesome"); // "Deno Is Awesome"
- * ```
- *
- * @param input is the string that is going to be converted into Title Case
- * @returns The string as Title Case
- */
-export function toTitleCase(input: string): string {
-  return splitToWords(input, { singleDelimiter: true }).map(capitalizeWord)
-    .join(" ");
-}
