@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Ported from unicode_width rust crate, Copyright (c) 2015 The Rust Project Developers. MIT license.
 
-import data from "./_data.json" assert { type: "json" };
+import data from "./_data.json" with { type: "json" };
 import { runLengthDecode } from "./_rle.ts";
 
 let tables: Uint8Array[] | null = null;
