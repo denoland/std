@@ -299,8 +299,7 @@ Deno.test("serveDir() traverses encoded URI path", async () => {
 
 Deno.test("serveDir() serves unusual filename", async () => {
   const filePath = join(testdataDir, "%");
-  const file = await Deno.create(filePath);
-  file.close();
+  using file = await Deno.create(filePath);
 
   const req1 = new Request("http://localhost/%25");
   const res1 = await serveDir(req1, serveDirOptions);

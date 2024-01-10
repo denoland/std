@@ -24,7 +24,7 @@ Deno.test("existsSync() returns false for a non-existent path", function () {
 Deno.test("exists() returns true for an existing file", async function () {
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
-  const tempFile = await Deno.create(tempFilePath);
+  using tempFile = await Deno.create(tempFilePath);
   try {
     assertEquals(await exists(tempFilePath), true);
     assertEquals(await exists(tempFilePath, {}), true);
@@ -54,7 +54,6 @@ Deno.test("exists() returns true for an existing file", async function () {
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempFilePath, 0o644);
     }
-    tempFile.close();
     await Deno.remove(tempDirPath, { recursive: true });
   }
 });
@@ -63,7 +62,7 @@ Deno.test("exists() returns true for an existing file symlink", async function (
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
-  const tempFile = await Deno.create(tempFilePath);
+  using tempFile = await Deno.create(tempFilePath);
   try {
     await Deno.symlink(tempFilePath, tempLinkFilePath);
     assertEquals(await exists(tempLinkFilePath), true);
@@ -95,7 +94,6 @@ Deno.test("exists() returns true for an existing file symlink", async function (
     if (Deno.build.os !== "windows") {
       await Deno.chmod(tempFilePath, 0o644);
     }
-    tempFile.close();
     await Deno.remove(tempDirPath, { recursive: true });
   }
 });
@@ -103,7 +101,7 @@ Deno.test("exists() returns true for an existing file symlink", async function (
 Deno.test("existsSync() returns true for an existing file", function () {
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
-  const tempFile = Deno.createSync(tempFilePath);
+  using tempFile = Deno.createSync(tempFilePath);
   try {
     assertEquals(existsSync(tempFilePath), true);
     assertEquals(existsSync(tempFilePath, {}), true);
@@ -133,7 +131,6 @@ Deno.test("existsSync() returns true for an existing file", function () {
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempFilePath, 0o644);
     }
-    tempFile.close();
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
@@ -142,7 +139,7 @@ Deno.test("existsSync() returns true for an existing file symlink", function () 
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
-  const tempFile = Deno.createSync(tempFilePath);
+  using tempFile = Deno.createSync(tempFilePath);
   try {
     Deno.symlinkSync(tempFilePath, tempLinkFilePath);
     assertEquals(existsSync(tempLinkFilePath), true);
@@ -174,7 +171,6 @@ Deno.test("existsSync() returns true for an existing file symlink", function () 
     if (Deno.build.os !== "windows") {
       Deno.chmodSync(tempFilePath, 0o644);
     }
-    tempFile.close();
     Deno.removeSync(tempDirPath, { recursive: true });
   }
 });

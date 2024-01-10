@@ -56,13 +56,12 @@ Deno.test("readStringDelimAndLines", async function () {
 
 Deno.test("readLinesWithEncodingISO-8859-15", async function () {
   const lines_ = [];
-  const file_ = await Deno.open("./io/testdata/iso-8859-15.txt");
+  using file_ = await Deno.open("./io/testdata/iso-8859-15.txt");
 
   for await (const l of readLines(file_, { encoding: "iso-8859-15" })) {
     lines_.push(l);
   }
 
-  file_.close();
 
   assertEquals(lines_.length, 12);
   assertEquals(lines_, [

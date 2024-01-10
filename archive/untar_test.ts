@@ -120,11 +120,10 @@ Deno.test(
     const outputFile = resolve(testdataDir, "test.tar");
 
     const tar = await createTar(entries);
-    const file = await Deno.open(outputFile, { create: true, write: true });
+    using file = await Deno.open(outputFile, { create: true, write: true });
     await copy(tar.getReader(), file);
-    file.close();
 
-    const reader = await Deno.open(outputFile, { read: true });
+    using reader = await Deno.open(outputFile, { read: true });
     // read data from a tar archive
     const untar = new Untar(reader);
 
@@ -134,7 +133,6 @@ Deno.test(
       assertEquals(expected.name, entry.fileName);
     }
 
-    reader.close();
     await Deno.remove(outputFile);
     assertEquals(entries.length, 0);
   },
@@ -159,7 +157,7 @@ Deno.test("Untar() reads from FileReader", async () => {
   await copy(tar.getReader(), file);
   file.close();
 
-  const reader = await Deno.open(outputFile, { read: true });
+  using reader = await Deno.open(outputFile, { read: true });
   // read data from a tar archive
   const untar = new Untar(reader);
 
@@ -176,7 +174,6 @@ Deno.test("Untar() reads from FileReader", async () => {
     assertEquals(expected.name, entry.fileName);
   }
 
-  reader.close();
   await Deno.remove(outputFile);
   assertEquals(entries.length, 0);
 });

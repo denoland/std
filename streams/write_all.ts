@@ -18,9 +18,8 @@ export type { Writer, WriterSync };
  *
  * // Example writing to file
  * contentBytes = new TextEncoder().encode("Hello World");
- * const file = await Deno.open('test.file', {write: true});
+ * using file = await Deno.open('test.file', {write: true});
  * await writeAll(file, contentBytes);
- * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");
@@ -54,9 +53,8 @@ export async function writeAll(w: Writer, arr: Uint8Array) {
  *
  * // Example writing to file
  * contentBytes = new TextEncoder().encode("Hello World");
- * const file = Deno.openSync('test.file', {write: true});
+ * using file = Deno.openSync('test.file', {write: true});
  * writeAllSync(file, contentBytes);
- * file.close();
  *
  * // Example writing to buffer
  * contentBytes = new TextEncoder().encode("Hello World");

@@ -12,7 +12,6 @@
  * ```
  */
 export function getAvailablePort(): number {
-  const listener = Deno.listen({ port: 0 });
-  listener.close();
+  using listener = Deno.listen({ port: 0 });
   return (listener.addr as Deno.NetAddr).port;
 }
