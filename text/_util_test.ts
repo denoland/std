@@ -13,7 +13,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "split() handles removeSpecialCharacters option",
+  name: "split() handles mixed delimiters",
   fn() {
     const result = splitToWords("I am up-to-date!");
     const expected = ["I", "am", "up", "to", "date"];

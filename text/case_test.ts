@@ -18,21 +18,17 @@ Deno.test("toCamelCase() converts a sentence", () => {
   const expected = "sheTurnedMeIntoANewt";
   assertEquals(toCamelCase(input), expected);
 });
-Deno.test({
-  name: "toCamelCase() converts multiple delimiters",
-  fn() {
-    const result = toCamelCase("I am up-to-date!");
-    const expected = "iAmUpToDate";
-    assertEquals(result, expected);
-  },
+
+Deno.test("toCamelCase() converts multiple delimiters", () => {
+  const result = toCamelCase("I am up-to-date!");
+  const expected = "iAmUpToDate";
+  assertEquals(result, expected);
 });
-Deno.test({
-  name: "toCamelCase() trims whitespace",
-  fn() {
-    const result = toCamelCase(" deno Is AWESOME ");
-    const expected = "denoIsAwesome";
-    assertEquals(result, expected);
-  },
+
+Deno.test("toCamelCase() trims whitespace", () => {
+  const result = toCamelCase(" deno Is AWESOME ");
+  const expected = "denoIsAwesome";
+  assertEquals(result, expected);
 });
 
 Deno.test("toKebabCase() handles an empty string", () => {
@@ -51,22 +47,16 @@ Deno.test("toKebabCase() converts a sentence", () => {
   assertEquals(toKebabCase(input), expected);
 });
 
-Deno.test({
-  name: "toKebabCase() converts multiple delimiters",
-  fn() {
-    const result = toKebabCase("I am up-to-date!");
-    const expected = "i-am-up-to-date";
-    assertEquals(result, expected);
-  },
+Deno.test("toKebabCase() converts multiple delimiters", () => {
+  const result = toKebabCase("I am up-to-date!");
+  const expected = "i-am-up-to-date";
+  assertEquals(result, expected);
 });
 
-Deno.test({
-  name: "toKebabCase() trims whitespace",
-  fn() {
-    const result = toKebabCase(" deno Is AWESOME ");
-    const expected = "deno-is-awesome";
-    assertEquals(result, expected);
-  },
+Deno.test("toKebabCase() trims whitespace", () => {
+  const result = toKebabCase(" deno Is AWESOME ");
+  const expected = "deno-is-awesome";
+  assertEquals(result, expected);
 });
 
 Deno.test("toPascalCase() handles empty string", () => {
@@ -85,22 +75,16 @@ Deno.test("toPascalCase() converts a sentence", () => {
   assertEquals(toPascalCase(input), expected);
 });
 
-Deno.test({
-  name: "toPascalCase() converts multiple delimiters",
-  fn() {
-    const result = toPascalCase("I am up-to-date!");
-    const expected = "IAmUpToDate";
-    assertEquals(result, expected);
-  },
+Deno.test("toPascalCase() converts multiple delimiters", () => {
+  const result = toPascalCase("I am up-to-date!");
+  const expected = "IAmUpToDate";
+  assertEquals(result, expected);
 });
 
-Deno.test({
-  name: "toPascalCase() trims whitespace",
-  fn() {
-    const result = toPascalCase(" deno Is AWESOME ");
-    const expected = "DenoIsAwesome";
-    assertEquals(result, expected);
-  },
+Deno.test("toPascalCase() trims whitespace", () => {
+  const result = toPascalCase(" deno Is AWESOME ");
+  const expected = "DenoIsAwesome";
+  assertEquals(result, expected);
 });
 
 Deno.test("toSnakeCase() handles an empty string", () => {
@@ -119,20 +103,14 @@ Deno.test("toSnakeCase() converts a sentence", () => {
   assertEquals(toSnakeCase(input), expected);
 });
 
-Deno.test({
-  name: "toSnakeCase() converts multiple delimiters",
-  fn() {
-    const result = toSnakeCase("I am up-to-date!");
-    const expected = "i_am_up_to_date";
-    assertEquals(result, expected);
-  },
+Deno.test("toSnakeCase() converts multiple delimiters", () => {
+  const result = toSnakeCase("I am up-to-date!");
+  const expected = "i_am_up_to_date";
+  assertEquals(result, expected);
 });
 
-Deno.test({
-  name: "toSnakeCase() trims whitespace",
-  fn() {
-    const result = toSnakeCase(" deno Is AWESOME ");
-    const expected = "deno_is_awesome";
-    assertEquals(result, expected);
-  },
+Deno.test("toSnakeCase() trims whitespace", () => {
+  const result = toSnakeCase(" deno Is AWESOME ");
+  const expected = "deno_is_awesome";
+  assertEquals(result, expected);
 });

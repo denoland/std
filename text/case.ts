@@ -22,7 +22,7 @@ export function toCamelCase(input: string): string {
 }
 
 /**
- * Converts a string into kebab-case
+ * Converts a string into kebab-case.
  *
  * @example
  * ```ts
@@ -31,7 +31,7 @@ export function toCamelCase(input: string): string {
  * toKebabCase("deno is awesome"); // "deno-is-awesome"
  * ```
  *
- * @param input is the string that is going to be converted into kebab-case
+ * @param input The string that is going to be converted into kebab-case
  * @returns The string as kebab-case
  */
 export function toKebabCase(input: string): string {
@@ -40,7 +40,7 @@ export function toKebabCase(input: string): string {
 }
 
 /**
- * Converts a string into PascalCase
+ * Converts a string into PascalCase.
  *
  * @example
  * ```ts
@@ -58,7 +58,7 @@ export function toPascalCase(input: string): string {
 }
 
 /**
- * Converts a string into snake_case
+ * Converts a string into snake_case.
  *
  * @example
  * ```ts
@@ -66,7 +66,7 @@ export function toPascalCase(input: string): string {
  * toSnakeCase("deno is awesome"); // "deno_is_awesome"
  * ```
  *
- * @param input is the string that is going to be converted into snake_case
+ * @param input The string that is going to be converted into snake_case
  * @returns The string as snake_case
  */
 export function toSnakeCase(input: string): string {
