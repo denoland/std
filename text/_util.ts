@@ -2,8 +2,8 @@
 
 export function splitToWords(input: string) {
   input = input.replaceAll(/[^a-zA-Z0-9\s-_]/g, "");
-  if (/[\s-_]+/.test(input)) return input.split(/[\s-_]+/).filter(Boolean);
-  return input.split(/(?=[A-Z])+/).filter(Boolean);
+  if (/[\s-_]+/.test(input)) return input.split(/[\s-_]+/);
+  return input.split(/(?=[A-Z])+/);
 }
 
 export function capitalizeWord(word: string): string {
