@@ -16,7 +16,11 @@ import { AssertionError } from "./assertion_error.ts";
  * assertNotEquals(1, 1); // Throws
  * ```
  */
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
+export function assertNotEquals<A, T extends A>(
+  actual: A,
+  expected: T,
+  msg?: string,
+): asserts actual is Exclude<A, T> {
   if (!equal(actual, expected)) {
     return;
   }

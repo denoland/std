@@ -14,11 +14,11 @@ import { format } from "./_format.ts";
  * assertNotStrictEquals(1, 2); // Throws
  * ```
  */
-export function assertNotStrictEquals<T>(
-  actual: T,
+export function assertNotStrictEquals<A, T extends A>(
+  actual: A,
   expected: T,
   msg?: string,
-) {
+): asserts actual is Exclude<A, T> {
   if (!Object.is(actual, expected)) {
     return;
   }

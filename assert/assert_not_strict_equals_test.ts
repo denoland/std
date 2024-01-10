@@ -4,10 +4,10 @@ import { AssertionError, assertNotStrictEquals, assertThrows } from "./mod.ts";
 Deno.test({
   name: "strictly unequal pass case",
   fn() {
-    assertNotStrictEquals(true, false);
-    assertNotStrictEquals(10, 11);
-    assertNotStrictEquals("abc", "xyz");
-    assertNotStrictEquals<unknown>(1, "1");
+    assertNotStrictEquals<unknown, unknown>(true, false);
+    assertNotStrictEquals<unknown, unknown>(10, 11);
+    assertNotStrictEquals<unknown, unknown>("abc", "xyz");
+    assertNotStrictEquals<unknown, unknown>(1, "1");
     assertNotStrictEquals(-0, +0);
 
     const xs = [1, false, "foo"];

@@ -9,8 +9,8 @@ import {
 Deno.test("NotEquals", function () {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
-  assertNotEquals<unknown>(a, b);
-  assertNotEquals("Denosaurus", "Tyrannosaurus");
+  assertNotEquals<unknown, unknown>(a, b);
+  assertNotEquals<unknown, unknown>("Denosaurus", "Tyrannosaurus");
   assertNotEquals(
     new Date(2019, 0, 3, 4, 20, 1, 10),
     new Date(2019, 0, 3, 4, 20, 1, 20),
