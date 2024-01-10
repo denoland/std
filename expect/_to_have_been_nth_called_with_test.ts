@@ -22,6 +22,13 @@ Deno.test("expect().", () => {
   assertThrows(() => {
     expect(mockFn).toHaveBeenNthCalledWith(1, 4, 5, 6);
   }, AssertionError);
+  assertThrows(
+    () => {
+      expect(mockFn).toHaveBeenNthCalledWith(4, 10, 11, 12);
+    },
+    AssertionError,
+    "Expected the n-th call (n=4) of mock function is with 10, 11, 12, but the n-th call does not exist.",
+  );
 
   assertThrows(() => {
     expect(mockFn).not.toHaveBeenNthCalledWith(2, 4, 5, 6);
