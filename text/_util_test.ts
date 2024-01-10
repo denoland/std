@@ -13,33 +13,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "split() handles singleDelimiter option",
-  fn() {
-    const result = splitToWords("I am up-to-date!", { singleDelimiter: false });
-    const expected = ["I", "am", "up", "to", "date!"];
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
   name: "split() handles removeSpecialCharacters option",
   fn() {
-    const result = splitToWords("I am up-to-date!", {
-      removeSpecialCharacters: true,
-    });
+    const result = splitToWords("I am up-to-date!");
     const expected = ["I", "am", "up", "to", "date"];
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "split() handles singleDelimiter and removeSpecialCharacters option",
-  fn() {
-    const result = splitToWords("I am up-to-date!", {
-      singleDelimiter: true,
-      removeSpecialCharacters: true,
-    });
-    const expected = ["I", "am", "up-to-date"];
     assertEquals(result, expected);
   },
 });

@@ -1,13 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../assert/assert_equals.ts";
-import {
-  toCamelCase,
-  toKebabCase,
-  toPascalCase,
-  toSentenceCase,
-  toSnakeCase,
-} from "./case.ts";
+import { toCamelCase, toKebabCase, toPascalCase, toSnakeCase } from "./case.ts";
 
 Deno.test("toCamelCase() handles an empty string", () => {
   assertEquals(toCamelCase(""), "");
@@ -105,40 +99,6 @@ Deno.test({
   fn() {
     const result = toPascalCase(" deno Is AWESOME ");
     const expected = "DenoIsAwesome";
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test("toSentenceCase() handles an empty string", () => {
-  assertEquals(toSentenceCase(""), "");
-});
-
-Deno.test("toSentenceCase() converts a single word", () => {
-  const input = "Shruberry";
-  const expected = "Shruberry";
-  assertEquals(toSentenceCase(input), expected);
-});
-
-Deno.test("toSentenceCase() converts a sentence", () => {
-  const input = "she turned me into a newt";
-  const expected = "She turned me into a newt";
-  assertEquals(toSentenceCase(input), expected);
-});
-
-Deno.test({
-  name: "toSentenceCase() converts multiple delimiters",
-  fn() {
-    const result = toSentenceCase("I am up-to-date!");
-    const expected = "I am up-to-date!";
-    assertEquals(result, expected);
-  },
-});
-
-Deno.test({
-  name: "toSentenceCase() trims whitespace",
-  fn() {
-    const result = toSentenceCase(" deno Is Awesome ");
-    const expected = "Deno is awesome";
     assertEquals(result, expected);
   },
 });

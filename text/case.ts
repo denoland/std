@@ -17,9 +17,7 @@ import { capitalizeWord, splitToWords } from "./_util.ts";
  */
 export function toCamelCase(input: string): string {
   input = input.trim();
-  const [first = "", ...rest] = splitToWords(input, {
-    removeSpecialCharacters: true,
-  });
+  const [first = "", ...rest] = splitToWords(input);
   return [first.toLocaleLowerCase(), ...rest.map(capitalizeWord)].join("");
 }
 
@@ -38,9 +36,7 @@ export function toCamelCase(input: string): string {
  */
 export function toKebabCase(input: string): string {
   input = input.trim();
-  return splitToWords(input, { removeSpecialCharacters: true })
-    .join("-")
-    .toLocaleLowerCase();
+  return splitToWords(input).join("-").toLocaleLowerCase();
 }
 
 /**
@@ -58,31 +54,7 @@ export function toKebabCase(input: string): string {
  */
 export function toPascalCase(input: string): string {
   input = input.trim();
-  return splitToWords(input, { removeSpecialCharacters: true })
-    .map(capitalizeWord)
-    .join("");
-}
-
-/**
- * Converts a string into Sentence case
- *
- * @example
- * ```ts
- * import { toSentenceCase } from "https://deno.land/std@$STD_VERSION/text/case.ts";
- *
- * toSentenceCase("deno is awesome"); // "Deno is awesome"
- * ```
- *
- * @param input is the string that is going to be converted into Sentence case
- * @returns The string as Sentence case
- */
-export function toSentenceCase(input: string): string {
-  const [first = "", ...rest] = splitToWords(input, { singleDelimiter: true });
-  return [
-    capitalizeWord(first),
-    ...rest.map((word) => word.toLocaleLowerCase()),
-  ]
-    .join(" ");
+  return splitToWords(input).map(capitalizeWord).join("");
 }
 
 /**
@@ -99,7 +71,5 @@ export function toSentenceCase(input: string): string {
  */
 export function toSnakeCase(input: string): string {
   input = input.trim();
-  return splitToWords(input, { removeSpecialCharacters: true })
-    .join("_")
-    .toLocaleLowerCase();
+  return splitToWords(input).join("_").toLocaleLowerCase();
 }
