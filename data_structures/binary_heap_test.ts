@@ -13,8 +13,8 @@ Deno.test("BinaryHeap works with default descend comparator", () => {
   assertEquals(maxHeap.length, 0);
   assertEquals(maxHeap.isEmpty(), true);
   assertEquals(maxHeap.peek(), undefined);
-  for (let i = 0; i < values.length; i++) {
-    assertEquals(maxHeap.push(values[i]), i + 1);
+  for (const [i, value] of values.entries()) {
+    assertEquals(maxHeap.push(value), i + 1);
   }
   assertEquals(maxHeap.length, values.length);
   assertEquals(maxHeap.isEmpty(), false);
@@ -50,8 +50,8 @@ Deno.test("BinaryHeap works with ascend comparator", () => {
   assertEquals(minHeap.length, 0);
   assertEquals(minHeap.isEmpty(), true);
   assertEquals(minHeap.peek(), undefined);
-  for (let i = 0; i < values.length; i++) {
-    assertEquals(minHeap.push(values[i]), i + 1);
+  for (const [i, value] of values.entries()) {
+    assertEquals(minHeap.push(value), i + 1);
   }
   assertEquals(minHeap.length, values.length);
   assertEquals(minHeap.isEmpty(), false);
@@ -85,8 +85,8 @@ Deno.test("BinaryHeap contains objects", () => {
   ) => ascend(a.id, b.id));
   const ids: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
-  for (let i = 0; i < ids.length; i++) {
-    const newContainer: Container = { id: ids[i], values: [] };
+  for (const [i, id] of ids.entries()) {
+    const newContainer: Container = { id, values: [] };
     assertEquals(heap.push(newContainer), i + 1);
     newContainer.values.push(i - 1, i, i + 1);
     assertEquals(heap.length, i + 1);
@@ -95,13 +95,13 @@ Deno.test("BinaryHeap contains objects", () => {
 
   const expected: number[] = [-100, -10, -9, -1, 0, 1, 9, 10, 100];
   const expectedValue: number[] = [6, 0, 8, 2, 5, 4, 1, 7, 3];
-  for (let i = 0; i < ids.length; i++) {
+  for (const [i, value] of expectedValue.entries()) {
     assertEquals(heap.length, ids.length - i);
     assertEquals(heap.isEmpty(), false);
 
     const expectedContainer = {
       id: expected[i],
-      values: [expectedValue[i] - 1, expectedValue[i], expectedValue[i] + 1],
+      values: [value - 1, value, value + 1],
     };
     assertEquals(heap.peek(), expectedContainer);
     assertEquals(heap.pop(), expectedContainer);

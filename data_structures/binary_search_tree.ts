@@ -378,7 +378,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
         nodes.push(node);
         node = node.left;
       } else {
-        const lastNode: BinarySearchNode<T> = nodes[nodes.length - 1];
+        const lastNode: BinarySearchNode<T> = nodes.at(-1)!;
         if (lastNode.right && lastNode.right !== lastNodeVisited) {
           node = lastNode.right;
         } else {
