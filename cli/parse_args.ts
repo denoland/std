@@ -655,7 +655,7 @@ export function parseArgs<
       ) {
         setArg(key, next, arg);
         i++;
-      } else if (next !== undefined && /^(true|false)$/.test(next)) {
+      } else if (next !== undefined && (next === "true" || next === "false")) {
         setArg(key, next === "true", arg);
         i++;
       } else {
@@ -673,7 +673,7 @@ export function parseArgs<
           continue;
         }
 
-        if (/[A-Za-z]/.test(letter) && /=/.test(next)) {
+        if (/[A-Za-z]/.test(letter) && next.includes("=")) {
           setArg(letter, next.split(/=(.+)/)[1], arg);
           broken = true;
           break;
@@ -708,7 +708,7 @@ export function parseArgs<
         ) {
           setArg(key, nextArg, arg);
           i++;
-        } else if (nextArg && /^(true|false)$/.test(nextArg)) {
+        } else if (nextArg && (nextArg === "true" || nextArg === "false")) {
           setArg(key, nextArg === "true", arg);
           i++;
         } else {
