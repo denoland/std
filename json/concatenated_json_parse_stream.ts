@@ -4,8 +4,8 @@ import type { JsonValue, ParseStreamOptions } from "./common.ts";
 import { parse } from "./_common.ts";
 
 const blank = new Set(" \t\r\n");
-function isBlankChar(char: string) {
-  return blank.has(char);
+function isBlankChar(char: string | undefined) {
+  return char !== undefined && blank.has(char);
 }
 
 const primitives = new Map(
