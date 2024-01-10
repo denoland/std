@@ -265,7 +265,6 @@ Deno.test("spy instance method symbol", () => {
   });
   assertSpyCalls(func, 2);
   assertNotEquals(func as unknown, Point.prototype[Symbol.iterator]);
-  func;
   assertEquals(point[Symbol.iterator], func);
 
   assertEquals(func.restored, false);
