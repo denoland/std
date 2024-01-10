@@ -35,7 +35,6 @@ test.only('ping', async ({ artifact }) => {
   const path = '/hal/ping.io.json'
   await artifact.createIO({ path, isolate })
   const actions = await artifact.actions('/hal/ping.io.json')
-  // const result = await actions.ping({ url: 'https://google.com' })
   const result = await actions.local({})
   expect(result).toBe('local reply')
   const second = await actions.local({})

@@ -57,13 +57,7 @@ export default class Artifact {
     if (!isGitPresent) {
       await this.#init()
     }
-
-    // then look for tension in the fs we just loaded
-
-    // want to get to an api call out to openai, and can only use md files and ai to do so
-    // the bootai is always present
-
-    // with no AI, it should be at least a filesystem with base commands
+    // TODO walk for IO changes with no ooutputs and load them
     // TODO add an emergency exit key sequence to default the pipe
   }
   async #init() {

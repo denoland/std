@@ -14,6 +14,9 @@ if (!VITE_OPENAI_API_KEY) {
 const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
 const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
+// hooks to get filesystem access which handles triggers and permissions
+// hooks to handle commits and memos
+
 export default async ({ fs, sessionPath, text, trigger }) => {
   // ? where would the sysprompt have come from ?
   const session = await fs.readFile(sessionPath, 'utf8')

@@ -40,6 +40,7 @@ export default class IO {
 
       for (const { actions, io, path } of changes) {
         // TODO handle the isolate changing
+        // TODO handle resetting the IO which would terminate all in progress
         if (!this.#workerCache.has(path)) {
           const {
             isolate: { code, api },
