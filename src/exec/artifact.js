@@ -7,9 +7,8 @@ import http from 'isomorphic-git/http/web'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
 import loader from '../boot/loader.md?raw'
-import README from '../boot/README.md?raw'
+import sysprompt from '../boot/chat-system-prompt.md?raw'
 import assert from 'assert-fast'
-import promptRunner from './prompt-runner.js'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
 const debug = Debug('AI:artifact')
@@ -35,7 +34,8 @@ export default class Artifact {
       dir: artifact.#dir,
       cache: artifact.#cache,
     }
-    artifact.#io = IO.create({ artifact, opts: artifact.#opts })
+    const opts = { ...artifact.#opts, trigger: artifact.#trigger }
+    artifact.#io = IO.create({ artifact, opts })
     await artifact.#load()
     await artifact.#io.start()
     return artifact
@@ -68,28 +68,31 @@ export default class Artifact {
       }
     })
     await git.init(this.#opts)
-    const readmeP = this.#fs.writeFile(this.#dir + '/README.md', README)
+    const promptP = this.#fs.writeFile(
+      this.#dir + '/chat-system-prompt.md',
+      sysprompt
+    )
     const loaderP = this.#fs.writeFile(this.#dir + '/loader.md', loader)
     const sessionP = this.#fs.writeFile(this.#session, JSON.stringify([]))
-    await Promise.all([readmeP, loaderP, sessionP])
+    await Promise.all([promptP, loaderP, sessionP])
     await this.#commitAll({ message: 'init', author: { name: 'HAL' } })
   }
-  async prompt(text) {
-    assert(typeof text === 'string', `text must be a string`)
-    assert(text, `text must not be empty`)
-    // TODO move to a generic call model internally as well as for extra fns
-    // TODO use a link to redirect output to different places
-
-    const sessionPath = this.#session
-    const trigger = this.#trigger
-    const result = await promptRunner({
-      fs: this.#fs,
-      sessionPath,
-      text,
-      trigger,
-    })
-    await this.#commitAll({ message: 'promptRunner', author: { name: 'HAL' } })
-    return result
+  async chatUp() {
+    const name = 'chat-1.io.json'
+    const path = '/hal/' + name
+    const codePath = '/hal/ai-io.js'
+    const sessionPath = '/hal/chat-1.session.json'
+    const systemPromptPath = '/hal/chat-system-prompt.md'
+    const isolate = {
+      codePath,
+      type: 'function',
+      language: 'javascript',
+      api: await this.#io.loadWorker(codePath),
+      config: { sessionPath, systemPromptPath },
+    }
+    await this.#fs.writeFile('/hal/chat-1.session.json', JSON.stringify([]))
+    await this.createIO({ path, isolate })
+    return await this.actions(path)
   }
   async read(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
@@ -214,17 +217,17 @@ export default class Artifact {
     // TODO maybe commit just the file
     await this.#commitAll({ message, author: { name: 'HAL' } })
   }
-  async replyIO(filepath, id, result, error) {
+  async replyIO({ path, functionName, id, result, error }) {
     // TODO handle further processes being spawned
     // TODO allow to buffer multiple replies into a single commit
 
-    filepath = '/hal/' + filepath
-    assert(posix.isAbsolute(filepath), `path must be absolute: ${filepath}`)
-    const io = await this.readIO(filepath)
+    path = '/hal/' + path
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const io = await this.readIO(path)
     const { outputs } = io
     assert(!outputs[id], `id ${id} found in outputs`)
     outputs[id] = { result, error }
-    await this.#commitIO(filepath, io, 'replyIO')
+    await this.#commitIO(path, io, `Reply: ${path}:${functionName}():${id}`)
   }
   async #commitAll({ message, author }) {
     const status = await git.statusMatrix(this.#opts)

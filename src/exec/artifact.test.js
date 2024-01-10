@@ -1,3 +1,4 @@
+import './ai-io' // cause vite to watch this dynamically imported file
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 import Debug from 'debug'
@@ -12,17 +13,19 @@ test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
 
-test('have a chat', async ({ artifact }) => {
-  Debug.enable('AI*')
-  const result = await artifact.prompt('return an exclaimation mark')
+test.only('have a chat', async ({ artifact }) => {
+  artifact.overloadExecutable('/hal/ai-io.js', './ai-io.js')
+  const { prompt } = await artifact.chatUp()
+
+  const result = await prompt({ text: 'return an exclaimation mark' })
   expect(result.content).toEqual('!')
-  const session = await artifact.read('/.session.json')
+  const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
-  expect(messages.length).toEqual(2)
+  expect(messages.length).toEqual(3)
   const log = await artifact.log({ depth: 1 })
   expect(log.length).toEqual(1)
-  expect(log[0].commit.message).toEqual('promptRunner\n')
-})
+  expect(log[0].commit.message.startsWith('Reply: ')).toBeTruthy()
+}, 10000)
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {
@@ -36,3 +39,10 @@ test('add a file', async ({ artifact }) => {
   const contents = await artifact.read('hello.txt')
   expect(contents).toEqual('hello world')
 })
+
+/**
+ * Tooling:
+ * - glob mapper, where it runs a function on each file
+ * - sys prompt editing
+ * - relay (simply passes actions thru to another io channel)
+ */

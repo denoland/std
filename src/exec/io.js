@@ -1,5 +1,6 @@
+import equals from 'fast-deep-equal'
 import validator from './validator'
-import { Thread, spawn, Worker } from 'threads'
+import ioWorker from './io-worker'
 import assert from 'assert-fast'
 import git, { TREE } from 'isomorphic-git'
 import { posix } from 'path-browserify'
@@ -41,15 +42,13 @@ export default class IO {
       for (const { actions, io, path } of changes) {
         // TODO handle the isolate changing
         // TODO handle resetting the IO which would terminate all in progress
+        const { isolate } = io
         if (!this.#workerCache.has(path)) {
-          const {
-            isolate: { code, api },
-          } = io
-          let codePath = code
-          if (this.#debuggingOverloads.has(code)) {
-            codePath = this.#debuggingOverloads.get(code)
-          }
-          const worker = await spawn(new Worker(codePath))
+          const { codePath, api } = isolate
+          const resolvedCodePath = this.#resolveCodePath(codePath)
+          const worker = ioWorker(this.#opts)
+          const loadedApi = await worker.load(resolvedCodePath)
+          assert(equals(loadedApi, api), 'api mismatch')
           this.#workerCache.set(path, { api, worker })
           // TODO LRU the cache
         }
@@ -59,25 +58,41 @@ export default class IO {
             const schema = api[functionName]
             validator(schema)(parameters)
             console.log('calling', functionName, parameters)
-            worker[functionName](parameters)
+            worker
+              .call(functionName, parameters, isolate.config)
               .then((result) => {
-                console.log('result', result)
-                return this.#artifact.replyIO(path, id, result)
+                return this.#artifact.replyIO({
+                  path,
+                  functionName,
+                  id,
+                  result,
+                })
               })
-              .catch((error) => {
-                console.log('error', error)
-                return this.#artifact.replyIO(path, id, serializeError(error))
+              .catch((errorObj) => {
+                const error = serializeError(errorObj)
+                return this.#artifact.replyIO({ path, functionName, id, error })
               })
           }
         }
       }
     })
   }
+  #resolveCodePath(codePath) {
+    if (this.#debuggingOverloads.has(codePath)) {
+      return this.#debuggingOverloads.get(codePath)
+    }
+    return codePath
+  }
+  async loadWorker(codePath) {
+    const resolvedCodePath = this.#resolveCodePath(codePath)
+    const worker = ioWorker(this.#opts)
+    return await worker.load(resolvedCodePath)
+  }
   async stop() {
     const cached = [...this.#workerCache.values()]
     this.#workerCache.clear()
     for (const { worker } of cached) {
-      await Thread.terminate(worker)
+      // await Thread.terminate(worker)
     }
   }
   overloadExecutable(path, localPath) {

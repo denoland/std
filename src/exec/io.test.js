@@ -1,18 +1,6 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
-import Debug from 'debug'
-const debug = Debug('test')
-const api = {
-  ping: {
-    type: 'object',
-    properties: { url: { type: 'string' } },
-    // these could specify named exports, or fallback to default export
-  },
-  local: {
-    type: 'object',
-    properties: {},
-  },
-}
+import { api } from './io.fixture'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -20,7 +8,7 @@ beforeEach(async (context) => {
   // so it can be done in the play area of storybook
 })
 
-test.only('ping', async ({ artifact }) => {
+test('ping', async ({ artifact }) => {
   // ? how does this relate to stucks and discoveries ?
   // stucks would be just another type of code that loads ?
 

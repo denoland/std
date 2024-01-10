@@ -1,7 +1,19 @@
 import assert from 'assert-fast'
-import { expose } from 'threads/worker'
 
-expose({
+// TODO document new covenant format
+
+export const api = {
+  ping: {
+    type: 'object',
+    properties: { url: { type: 'string' } },
+  },
+  local: {
+    type: 'object',
+    properties: {},
+  },
+}
+
+export const functions = {
   async ping({ url }) {
     assert(url, 'url required')
     assert(url.startsWith('http'), 'url must start with http')
@@ -14,4 +26,4 @@ expose({
   local() {
     return 'local reply'
   },
-})
+}

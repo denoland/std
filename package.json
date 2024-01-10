@@ -27,6 +27,7 @@
     "assert-fast": "^1.0.3",
     "buffer": "^6.0.3",
     "debug": "^4.3.4",
+    "fast-deep-equal": "^3.1.3",
     "isomorphic-git": "^1.25.3",
     "lodash.merge": "^4.6.2",
     "openai": "^4.24.2",
@@ -89,9 +90,6 @@
   "wallaby": {
     "runners": {
       "restart": true
-    },
-    "env": {
-      "type": "node"
     }
   }
 }
