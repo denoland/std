@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { Buffer } from "../io/buffer.ts";
-import type { Reader, ReaderSync } from "../io/types.d.ts";
+import type { Reader, ReaderSync } from "../io/types.ts";
 
 /**
  * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as

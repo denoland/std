@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVerComparator } from "./types.ts";
+import type { Comparator } from "./types.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
 import { comparatorMin } from "./comparator_min.ts";
@@ -9,10 +9,12 @@ import { comparatorMax } from "./comparator_max.ts";
  * @param c0 The left side comparator
  * @param c1 The right side comparator
  * @returns True if any part of the comparators intersect
+ *
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeIntersects} instead.
  */
 export function comparatorIntersects(
-  c0: SemVerComparator,
-  c1: SemVerComparator,
+  c0: Comparator,
+  c1: Comparator,
 ): boolean {
   const l0 = comparatorMin(c0.semver, c0.operator);
   const l1 = comparatorMax(c0.semver, c0.operator);

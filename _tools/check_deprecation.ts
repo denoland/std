@@ -17,9 +17,10 @@ const EXCLUDED_PATHS = [
   "crypto/_wasm",
   "crypto/_fnv",
   "encoding/_yaml",
-  "encoing/_toml",
+  "encoding/_toml",
   "_tools",
   "_util",
+  "docs",
 ];
 
 const ROOT = new URL("../", import.meta.url);

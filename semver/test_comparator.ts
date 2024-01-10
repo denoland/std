@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerComparator } from "./types.ts";
+import type { Comparator, SemVer } from "./types.ts";
 import { cmp } from "./cmp.ts";
 
 /**
@@ -7,11 +7,12 @@ import { cmp } from "./cmp.ts";
  * @param version The version to compare
  * @param comparator The comparator
  * @returns True if the version is within the comparators set otherwise false
- * @deprecated (will be removed in 0.213.0) Use {@linkcode compare} instead.
+ *
+ * @deprecated (will be removed in 0.214.0) Use {@linkcode testRange} instead.
  */
 export function testComparator(
   version: SemVer,
-  comparator: SemVerComparator,
+  comparator: Comparator,
 ): boolean {
   return cmp(version, comparator.operator, comparator.semver);
 }

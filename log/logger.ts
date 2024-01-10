@@ -9,8 +9,7 @@ export type GenericFunction = (...args: any[]) => any;
 export interface LogRecordOptions {
   msg: string;
   args: unknown[];
-  /* @deprecated (will be changed 0.211.0) Use {@linkcode LogLevel} instead */
-  level: number;
+  level: LogLevel;
   loggerName: string;
 }
 
@@ -48,7 +47,7 @@ export interface LoggerOptions {
 
 export class Logger {
   #level: LogLevel;
-  #handlers: BaseHandler[];
+  handlers: BaseHandler[];
   readonly #loggerName: string;
 
   constructor(
@@ -57,29 +56,19 @@ export class Logger {
     options: LoggerOptions = {},
   ) {
     this.#loggerName = loggerName;
-    /* TODO: Remove this unnecessary typecast after 0.211.0 */
-    this.#level = getLevelByName(levelName) as LogLevel;
-    this.#handlers = options.handlers || [];
+    this.#level = getLevelByName(levelName);
+    this.handlers = options.handlers || [];
   }
 
-  /**
-   * Use this to retrieve the current numeric log level.
-   *
-   * @returns - Deprecated (will return {@linkcode LogLevel} after 0.211.0)
-   */
-  get level(): number {
+  /** Use this to retrieve the current numeric log level. */
+  get level(): LogLevel {
     return this.#level;
   }
 
-  /**
-   * Use this to set the numeric log level.
-   *
-   * @param level - Deprecated (will accept {@linkcode LogLevel} after 0.211.0)
-   */
-  set level(level: number) {
+  /** Use this to set the numeric log level. */
+  set level(level: LogLevel) {
     try {
-      /* TODO: Remove this unnecessary typecast after 0.211.0 */
-      this.#level = getLevelByName(getLevelName(level)) as LogLevel;
+      this.#level = getLevelByName(getLevelName(level));
     } catch (_) {
       throw new TypeError(`Invalid log level: ${level}`);
     }
@@ -89,19 +78,11 @@ export class Logger {
     return getLevelName(this.#level);
   }
   set levelName(levelName: LevelName) {
-    /* TODO: Remove this unnecessary typecast after 0.211.0 */
-    this.#level = getLevelByName(levelName) as LogLevel;
+    this.#level = getLevelByName(levelName);
   }
 
   get loggerName(): string {
     return this.#loggerName;
-  }
-
-  set handlers(hndls: BaseHandler[]) {
-    this.#handlers = hndls;
-  }
-  get handlers(): BaseHandler[] {
-    return this.#handlers;
   }
 
   /**
@@ -136,7 +117,7 @@ export class Logger {
       loggerName: this.loggerName,
     });
 
-    this.#handlers.forEach((handler) => {
+    this.handlers.forEach((handler) => {
       handler.handle(record);
     });
 
