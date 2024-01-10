@@ -266,7 +266,7 @@ export function toBeNaN(context: MatcherContext): MatchResult {
 export function toBeNull(context: MatcherContext): MatchResult {
   if (context.isNot) {
     assertNotStrictEquals(
-      context.value as number,
+      context.value,
       null,
       context.customMessage || `Expected ${context.value} to not be null`,
     );
