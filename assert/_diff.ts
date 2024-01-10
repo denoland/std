@@ -41,7 +41,7 @@ function createCommon<T>(A: T[], B: T[], reverse?: boolean): T[] {
     if (
       A[reverse ? A.length - i - 1 : i] === B[reverse ? B.length - i - 1 : i]
     ) {
-      common.push(A[reverse ? A.length - i - 1 : i]);
+      common.push(A[reverse ? A.length - i - 1 : i]!);
     } else {
       return common;
     }
@@ -130,22 +130,22 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
       if (type === REMOVED) {
         result.unshift({
           type: swapped ? DiffType.removed : DiffType.added,
-          value: B[b],
+          value: B[b]!,
         });
         b -= 1;
       } else if (type === ADDED) {
         result.unshift({
           type: swapped ? DiffType.added : DiffType.removed,
-          value: A[a],
+          value: A[a]!,
         });
         a -= 1;
       } else {
-        result.unshift({ type: DiffType.common, value: A[a] });
+        result.unshift({ type: DiffType.common, value: A[a]! });
         a -= 1;
         b -= 1;
       }
-      j = routes[prev];
-      type = routes[prev + diffTypesPtrOffset];
+      j = routes[prev!];
+      type = routes[prev! + diffTypesPtrOffset];
     }
     return result;
   }
@@ -201,13 +201,13 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     return fp;
   }
 
-  while (fp[delta + offset].y < N) {
+  while (fp[delta + offset]!.y < N) {
     p = p + 1;
     for (let k = -p; k < delta; ++k) {
       fp[k + offset] = snake(
         k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
+        fp[k - 1 + offset]!,
+        fp[k + 1 + offset]!,
         offset,
         A,
         B,
@@ -216,8 +216,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     for (let k = delta + p; k > delta; --k) {
       fp[k + offset] = snake(
         k,
-        fp[k - 1 + offset],
-        fp[k + 1 + offset],
+        fp[k - 1 + offset]!,
+        fp[k + 1 + offset]!,
         offset,
         A,
         B,
@@ -225,8 +225,8 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     }
     fp[delta + offset] = snake(
       delta,
-      fp[delta - 1 + offset],
-      fp[delta + 1 + offset],
+      fp[delta - 1 + offset]!,
+      fp[delta + 1 + offset]!,
       offset,
       A,
       B,
@@ -236,7 +236,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     ...prefixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
-    ...backTrace(A, B, fp[delta + offset], swapped),
+    ...backTrace(A, B, fp[delta + offset]!, swapped),
     ...suffixCommon.map(
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
@@ -275,8 +275,8 @@ export function diffstr(A: string, B: string) {
       // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
       for (let i = 0; i < tokens.length - 1; i++) {
         if (
-          !tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) &&
-          words.test(tokens[i + 2])
+          !tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]!) &&
+          words.test(tokens[i + 2]!)
         ) {
           tokens[i] += tokens[i + 2];
           tokens.splice(i + 1, 2);
@@ -296,9 +296,9 @@ export function diffstr(A: string, B: string) {
       // Merge the content and line separators into single tokens
       for (let i = 0; i < lines.length; i++) {
         if (i % 2) {
-          tokens[tokens.length - 1] += lines[i];
+          tokens[tokens.length - 1]! += lines[i]!;
         } else {
-          tokens.push(lines[i]);
+          tokens.push(lines[i]!);
         }
       }
       return tokens;
@@ -320,7 +320,7 @@ export function diffstr(A: string, B: string) {
       ) {
         return {
           ...result,
-          type: t[i - 1].type,
+          type: t[i - 1]!.type,
         };
       }
       return result;
@@ -358,7 +358,7 @@ export function diffstr(A: string, B: string) {
         tokenize(b?.value ?? "", { wordDiff: true }),
       ] as string[][];
       if (hasMoreRemovedLines) tokenized.reverse();
-      tokens = diff(tokenized[0], tokenized[1]);
+      tokens = diff(tokenized[0]!, tokenized[1]!);
       if (
         tokens.some(({ type, value }) =>
           type === DiffType.common && value.trim().length
