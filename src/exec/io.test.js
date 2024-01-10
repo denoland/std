@@ -21,16 +21,6 @@ beforeEach(async (context) => {
 })
 
 test.only('ping', async ({ artifact }) => {
-  artifact.subscribe('/hal/ping.io.json', (data) => {
-    // console.log('io', data)
-  })
-  await artifact.subscribeCommits('/hal', (hash) => {
-    console.log('commit', hash)
-  })
-  await artifact.subscribeCommits('/hal/ping.io.json', (file) => {
-    console.log('file', file)
-  })
-
   // ? how does this relate to stucks and discoveries ?
   // stucks would be just another type of code that loads ?
 

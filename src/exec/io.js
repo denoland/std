@@ -1,5 +1,5 @@
 import validator from './validator'
-import { spawn, Worker } from 'threads'
+import { Thread, spawn, Worker } from 'threads'
 import assert from 'assert-fast'
 import git, { TREE } from 'isomorphic-git'
 import { posix } from 'path-browserify'
@@ -21,13 +21,6 @@ export default class IO {
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
     await this.#artifact.subscribeCommits('/hal', async (ref) => {
-      // walk for any io.json files
-      // see if they changed based on the last commit
-      // if so, grab the worker or create one
-      // pass the action off
-      // update the output to signal invocation
-      // wait until long enough has passed or other actions have occured
-
       const commit = await git.readCommit({ ...this.#opts, oid: ref })
       const { parent } = commit.commit
       const changes = await git.walk({
@@ -78,6 +71,13 @@ export default class IO {
         }
       }
     })
+  }
+  async stop() {
+    const cached = [...this.#workerCache.values()]
+    this.#workerCache.clear()
+    for (const { worker } of cached) {
+      await Thread.terminate(worker)
+    }
   }
   overloadExecutable(path, localPath) {
     // TODO allow glob pattern overrides

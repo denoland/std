@@ -40,6 +40,9 @@ export default class Artifact {
     await artifact.#io.start()
     return artifact
   }
+  async stop() {
+    await this.#io.stop()
+  }
   async #load() {
     debug('checking repo')
     let isGitPresent = false
