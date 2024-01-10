@@ -6,5 +6,6 @@ export default defineConfig({
   plugins: [react()],
   test: {
     setupFiles: ['fake-indexeddb/auto'],
+    testTimeout: 500,
   },
 })

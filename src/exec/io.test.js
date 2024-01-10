@@ -25,7 +25,7 @@ test.only('ping', async ({ artifact }) => {
     // console.log('io', data)
   })
   await artifact.subscribeCommits('/hal', (hash) => {
-    // console.log('commit', hash)
+    console.log('commit', hash)
   })
   await artifact.subscribeCommits('/hal/ping.io.json', (file) => {
     console.log('file', file)
@@ -48,9 +48,6 @@ test.only('ping', async ({ artifact }) => {
   // const result = await actions.ping({ url: 'https://google.com' })
   const result = await actions.local({})
   expect(result).toBe('local reply')
-
-  // interrogate the artifact to see what it has done
-
-  // overrides in this system is just changing the path in the repo to the code
-  // to be local code, rather than a remote npm package or something.
+  const second = await actions.local({})
+  expect(second).toBe(result)
 })

@@ -1,18 +1,18 @@
 import validator from './validator'
-import { spawn, Thread, Worker } from 'threads'
+import { spawn, Worker } from 'threads'
 import assert from 'assert-fast'
-import git, { TREE, WORKDIR, STAGE } from 'isomorphic-git'
+import git, { TREE } from 'isomorphic-git'
 import { posix } from 'path-browserify'
 import { toString } from 'uint8arrays/to-string'
 import { serializeError } from 'serialize-error'
 
-export default class Runner {
+export default class IO {
   #artifact
   #opts
   #debuggingOverloads = new Map()
   #workerCache = new Map()
   static create({ artifact, opts }) {
-    const runner = new Runner()
+    const runner = new IO()
     runner.#artifact = artifact
     runner.#opts = opts
     return runner
@@ -37,7 +37,9 @@ export default class Runner {
           if (path.endsWith('.io.json') && current) {
             // TODO use the artifact readio method, to check schema
             const io = JSON.parse(toString(await current.content(), 'utf8'))
-            const actions = newActions(io.inputs, previous?.inputs || {})
+            const previousIo =
+              previous && JSON.parse(toString(await previous.content(), 'utf8'))
+            const actions = newActions(io.inputs, previousIo?.inputs || {})
             return { path, actions, io }
           }
         },
@@ -53,9 +55,9 @@ export default class Runner {
           if (this.#debuggingOverloads.has(code)) {
             codePath = this.#debuggingOverloads.get(code)
           }
-          console.log('spawning', codePath)
           const worker = await spawn(new Worker(codePath))
           this.#workerCache.set(path, { api, worker })
+          // TODO LRU the cache
         }
         const { api, worker } = this.#workerCache.get(path)
         for (const { action, id } of actions) {
@@ -65,9 +67,11 @@ export default class Runner {
             console.log('calling', functionName, parameters)
             worker[functionName](parameters)
               .then((result) => {
+                console.log('result', result)
                 return this.#artifact.replyIO(path, id, result)
               })
               .catch((error) => {
+                console.log('error', error)
                 return this.#artifact.replyIO(path, id, serializeError(error))
               })
           }

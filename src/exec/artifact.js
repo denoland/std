@@ -223,7 +223,6 @@ export default class Artifact {
       }
       unsubscribe()
     })
-    // this is not strictly necessary
     await this.#commitIO(ioPath, next, 'dispatch')
     return promise
   }
@@ -263,9 +262,10 @@ export default class Artifact {
 
 const input = (io, functionName, parameters) => {
   const { inputs, outputs } = io
-  const sequence = io.sequence + 1
+  const id = io.sequence
   const action = { [functionName]: parameters }
-  const nextInputs = { ...inputs, [sequence]: action }
+  const nextInputs = { ...inputs, [id]: action }
+  const sequence = id + 1
   const next = { ...io, sequence, inputs: nextInputs, outputs }
-  return { id: sequence, next }
+  return { id, next }
 }
