@@ -59,7 +59,7 @@ Deno.test({
   name: "assertEquals() throws when types are not equal",
   fn() {
     assertThrows(
-      () => assertEquals<unknown, unknown>(1, "1"),
+      () => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
         "Values are not equal.",
@@ -92,11 +92,7 @@ Deno.test({
   name: "assertEquals() throws when object elements are not equal",
   fn() {
     assertThrows(
-      () =>
-        assertEquals<unknown, unknown>(
-          { a: 1, b: "2", c: 3 },
-          { a: 1, b: 2, c: [3] },
-        ),
+      () => assertEquals({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
       AssertionError,
       `
     {

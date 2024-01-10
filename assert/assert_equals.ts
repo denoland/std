@@ -23,8 +23,8 @@ import { CAN_NOT_DISPLAY } from "./_constants.ts";
  *
  * Note: formatter option is experimental and may be removed in the future.
  */
-export function assertEquals<A, T extends A>(
-  actual: A,
+export function assertEquals<T>(
+  actual: unknown,
   expected: T,
   msg?: string,
   options: { formatter?: (value: unknown) => string } = {},
