@@ -118,7 +118,7 @@ class JSONCParser {
   *#tokenize(): Generator<Token, void> {
     for (let i = 0; i < this.#length; i++) {
       // skip whitespace
-      if (this.#whitespace.has(this.#text[i])) {
+      if (this.#whitespace.has(this.#text[i]!)) {
         continue;
       }
 
@@ -194,7 +194,7 @@ class JSONCParser {
         default: { // parse null, true, false or number token
           const startIndex = i;
           for (; i < this.#length; i++) { // read until find numberEndToken
-            if (this.#numberEndToken.has(this.#text[i])) {
+            if (this.#numberEndToken.has(this.#text[i]!)) {
               break;
             }
           }
