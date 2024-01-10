@@ -218,21 +218,13 @@ Deno.test(
       hostname: "localhost",
       port: getPort(),
     };
-    const listener = Deno.listen(listenOptions);
+    using listener = Deno.listen(listenOptions);
 
     await assertRejects(
       () => server.serve(listener),
       Deno.errors.Http,
       "Server closed",
     );
-
-    try {
-      listener.close();
-    } catch (error) {
-      if (!(error instanceof Deno.errors.BadResource)) {
-        throw error;
-      }
-    }
   },
 );
 
@@ -548,7 +540,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   try {
     // Invalid certificate, connection should throw on first read or write
     // but should not crash the server.
-    const badConn = await Deno.connectTls({
+    using badConn = await Deno.connectTls({
       hostname,
       port,
       // missing certFile
@@ -561,10 +553,8 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
-    badConn.close();
-
     // Valid request after invalid
-    const conn = await Deno.connectTls({
+    using conn = await Deno.connectTls({
       hostname,
       port,
       certFile: join(testdataDir, "tls/RootCA.pem"),
@@ -576,8 +566,6 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
     );
 
     const response = new TextDecoder().decode(await readAll(conn));
-
-    conn.close();
 
     assert(response.includes(`HTTP/1.0 ${status}`), "Status code not correct");
     assert(response.includes(body), "Response body not correct");
@@ -612,7 +600,7 @@ Deno.test({
     try {
       // Invalid certificate, connection should throw on first read or write
       // but should not crash the server.
-      const badConn = await Deno.connectTls({
+      using badConn = await Deno.connectTls({
         hostname,
         port,
         // missing certFile
@@ -625,10 +613,8 @@ Deno.test({
         "Read with missing certFile didn't throw an InvalidData error when it should have.",
       );
 
-      badConn.close();
-
       // Valid request after invalid
-      const conn = await Deno.connectTls({
+      using conn = await Deno.connectTls({
         hostname,
         port,
         certFile: join(testdataDir, "tls/RootCA.pem"),
@@ -640,8 +626,6 @@ Deno.test({
       );
 
       const response = new TextDecoder().decode(await readAll(conn));
-
-      conn.close();
 
       assert(
         response.includes(`HTTP/1.0 ${status}`),
@@ -797,7 +781,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   try {
     // Invalid certificate, connection should throw on first read or write
     // but should not crash the server.
-    const badConn = await Deno.connectTls({
+    using badConn = await Deno.connectTls({
       hostname,
       port,
       // missing certFile
@@ -810,10 +794,8 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
-    badConn.close();
-
     // Valid request after invalid
-    const conn = await Deno.connectTls({
+    using conn = await Deno.connectTls({
       hostname,
       port,
       certFile: join(testdataDir, "tls/RootCA.pem"),
@@ -826,8 +808,6 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
 
     const response = new TextDecoder().decode(await readAll(conn));
 
-    conn.close();
-
     assert(response.includes(`HTTP/1.0 ${status}`), "Status code not correct");
     assert(response.includes(body), "Response body not correct");
   } finally {
@@ -839,10 +819,9 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
 Deno.test(
   "Server should not reject when the listener is closed (though the server will continually try and fail to accept connections on the listener until it is closed)",
   async () => {
-    const listener = Deno.listen({ port: getPort() });
+    using listener = Deno.listen({ port: getPort() });
     const handler = () => new Response();
     const server = new Server({ handler });
-    listener.close();
 
     let servePromise;
 
@@ -1099,12 +1078,11 @@ Deno.test(
     const server = new Server({ handler });
     const servePromise = server.serve(listener);
 
-    const conn = await Deno.connect(listenOptions);
+    using conn = await Deno.connect(listenOptions);
 
     await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
     await onRequest.promise;
-    conn.close();
 
     await postRespondWith.promise;
     server.close();
@@ -1133,12 +1111,11 @@ Deno.test("Server should not reject when the handler throws", async () => {
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
 
-  const conn = await Deno.connect(listenOptions);
+  using conn = await Deno.connect(listenOptions);
 
   await writeAll(conn, new TextEncoder().encode(`GET / HTTP/1.0\r\n\r\n`));
 
   await postRespondWith.promise;
-  conn.close();
   server.close();
   await servePromise;
 });
@@ -1476,7 +1453,7 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
   });
 
   try {
-    const conn = await Deno.connectTls({
+    using conn = await Deno.connectTls({
       hostname,
       port,
       certFile: join(testdataDir, "tls/RootCA.pem"),

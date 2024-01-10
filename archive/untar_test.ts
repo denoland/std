@@ -153,9 +153,8 @@ Deno.test("Untar() reads from FileReader", async () => {
   const outputFile = resolve(testdataDir, "test.tar");
 
   const tar = await createTar(entries);
-  const file = await Deno.open(outputFile, { create: true, write: true });
+  using file = await Deno.open(outputFile, { create: true, write: true });
   await copy(tar.getReader(), file);
-  file.close();
 
   using reader = await Deno.open(outputFile, { read: true });
   // read data from a tar archive
@@ -226,7 +225,7 @@ Deno.test(
 
 Deno.test("Untar() works with Linux generated tar", async () => {
   const filePath = resolve(testdataDir, "deno.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMeta & { content?: Uint8Array };
 
@@ -316,8 +315,6 @@ Deno.test("Untar() works with Linux generated tar", async () => {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });
 
 Deno.test({
@@ -366,7 +363,7 @@ Deno.test({
 
 Deno.test("Untar() handles archive with link", async function () {
   const filePath = resolve(testdataDir, "with_link.tar");
-  const file = await Deno.open(filePath, { read: true });
+  using file = await Deno.open(filePath, { read: true });
 
   type ExpectedEntry = TarMetaWithLinkName & { content?: Uint8Array };
 
@@ -411,6 +408,4 @@ Deno.test("Untar() handles archive with link", async function () {
       assertEquals(content, await readAll(entry));
     }
   }
-
-  file.close();
 });
