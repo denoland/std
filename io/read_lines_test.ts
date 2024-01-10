@@ -62,7 +62,6 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
     lines_.push(l);
   }
 
-
   assertEquals(lines_.length, 12);
   assertEquals(lines_, [
     "\u0020!\"#$%&'()*+,-./",
