@@ -27,19 +27,19 @@ export function levenshteinDistance(str1: string, str2: string): number {
       const char1 = str1[str1Index];
       const char2 = str2[str2Index];
       if (char1 === char2) {
-        tempDistances.push(distances[str1Index]);
+        tempDistances.push(distances[str1Index]!);
       } else {
         tempDistances.push(
           1 +
             Math.min(
-              distances[str1Index],
-              distances[str1Index + 1],
-              tempDistances[tempDistances.length - 1],
+              distances[str1Index]!,
+              distances[str1Index + 1]!,
+              tempDistances.at(-1)!,
             ),
         );
       }
     }
     distances = tempDistances;
   }
-  return distances[distances.length - 1];
+  return distances.at(-1)!;
 }
