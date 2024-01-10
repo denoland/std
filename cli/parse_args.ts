@@ -16,7 +16,7 @@
  *
  * @module
  */
-import { assert } from "../assert/assert.ts";
+import { assertExists } from "../assert/assert_exists.ts";
 
 /** Combines recursively all intersection types and returns a new single type. */
 type Id<TRecord> = TRecord extends Record<string, unknown>
@@ -355,7 +355,7 @@ function get<TValue>(
 
 function getForce<TValue>(obj: Record<string, TValue>, key: string): TValue {
   const v = get(obj, key);
-  assert(v !== undefined);
+  assertExists(v);
   return v;
 }
 
@@ -619,13 +619,13 @@ export function parseArgs<
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    assert(arg !== undefined);
+    assertExists(arg);
 
     if (/^--.+=/.test(arg)) {
       const m = arg.match(/^--([^=]+)=(.*)$/s);
-      assert(m !== null);
+      assertExists(m);
       const [, key, value] = m;
-      assert(key !== undefined);
+      assertExists(key);
 
       if (flags.bools[key]) {
         const booleanValue = value !== "false";
@@ -637,11 +637,13 @@ export function parseArgs<
       /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
     ) {
       const m = arg.match(/^--no-(.+)/);
-      assert(m !== null && m[1] !== undefined);
+      assertExists(m);
+      assertExists(m[1]);
       setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
-      assert(m !== null && m[1] !== undefined);
+      assertExists(m);
+      assertExists(m[1]);
       const [, key] = m;
       const next = args[i + 1];
       if (
