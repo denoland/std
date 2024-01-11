@@ -28,6 +28,7 @@ const ThreeBox = ({ preload, presubmit }) => {
   }, [])
 
   const messages = useArtifactJSON('/chat-1.session.json')
+  debug('messages', messages)
   return (
     <Box
       sx={{

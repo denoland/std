@@ -3,8 +3,8 @@ import OpenAI from 'openai'
 import { isolate } from './io-hooks'
 import assert from 'assert-fast'
 import { Buffer } from 'buffer'
-const model = 'gpt-4-1106-preview'
-// const model = 'gpt-3.5-turbo-1106'
+// const model = 'gpt-4-1106-preview'
+const model = 'gpt-3.5-turbo-1106'
 
 const { VITE_OPENAI_API_KEY } = import.meta.env
 

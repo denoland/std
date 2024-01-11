@@ -1,5 +1,7 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
+import Debug from 'debug'
+Debug.enable('*')
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -10,11 +12,9 @@ beforeEach(async (context) => {
 test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
-
-test.only('have a chat', async ({ artifact }) => {
+test.only('have a chat', async function ({ artifact }) {
   artifact.overloadExecutable('/hal/isolate-chat.js', './isolate-chat.js')
   const { prompt } = await artifact.chatUp()
-
   const result = await prompt({ text: 'return an exclaimation mark' })
   expect(result.content).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
@@ -23,7 +23,7 @@ test.only('have a chat', async ({ artifact }) => {
   const log = await artifact.log({ depth: 1 })
   expect(log.length).toEqual(1)
   expect(log[0].commit.message.startsWith('Reply: ')).toBeTruthy()
-}, 10000)
+}, 1500)
 test.skip('edit boot files')
 
 test('add a file', async ({ artifact }) => {

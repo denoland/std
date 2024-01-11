@@ -21,7 +21,7 @@ export default class IO {
   // TODO track purging that is due - immdediately after a commit, clear io.
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
-    await this.#artifact.subscribeCommits('.', async (ref) => {
+    await this.#artifact.subscribeCommits('/', async (ref) => {
       const commit = await git.readCommit({ ...this.#opts, oid: ref })
       const { parent } = commit.commit
       const changes = await git.walk({
@@ -84,7 +84,7 @@ export default class IO {
       assert(match, `invalid codePath: ${codePath} with override: ${override}`)
       const [, name] = match
       assert(name, `invalid slug: ${name}`)
-      return override
+      return name
     }
     throw new Error(`Not Implemented: dynamic imports ${codePath}`)
   }

@@ -1,6 +1,8 @@
 import { createContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import Artifact from '../exec/artifact'
+import Debug from 'debug'
+const debug = Debug('AI:Provider')
 
 export const ArtifactContext = createContext({})
 
@@ -15,12 +17,22 @@ export const Provider = ({ children, wipe = false }) => {
   }
   useEffect(() => {
     // TODO move to a serviceworker
-    Artifact.boot({
+    debug('booting')
+    const promise = Artifact.boot({
       path: 'artifact',
       wipe,
     })
-      .then(setArtifact)
-      .catch(setError)
+    promise.then(setArtifact).catch(setError)
+    return () => {
+      debug('shutdown')
+      promise.then((artifact) => {
+        setArtifact((current) => {
+          if (current !== artifact) {
+            return current
+          }
+        })
+      })
+    }
   }, [wipe])
 
   return (

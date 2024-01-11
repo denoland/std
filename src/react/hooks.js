@@ -11,7 +11,11 @@ export const useArtifact = (path) => {
     if (!artifact) {
       return
     }
-    return artifact.subscribe(path, setFile)
+    const unsubscribe = artifact.subscribe(path, setFile)
+    return () => {
+      unsubscribe()
+      setFile(undefined)
+    }
   }, [artifact, path])
   return file
 }
@@ -24,39 +28,70 @@ export const useArtifactJSON = (path) => {
   return JSON.parse(file)
 }
 
-export const useAction = (path) => {
+export const useActions = (path) => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   const { artifact } = useContext(ArtifactContext)
-  const file = useArtifact(path) // TODO gracefully check existence
-  assert(file, `channel must be defined`)
-  const channel = JSON.parse(file)
-  // TODO check the format of the channel
-  const { actions, length } = channel
-  return async (parameters) => {
-    assert(typeof parameters === 'object', `parameters must be an object`)
-    // TODO produce schema functions for the channel
-
-    const next = {
-      actions: { ...actions, [length]: parameters },
-      length: length + 1,
-    }
-
-    await artifact.write(path, JSON.stringify(next))
+  const [actions, setActions] = useState()
+  const [error, setError] = useState()
+  if (error) {
+    throw error
   }
+  useEffect(() => {
+    if (!artifact) {
+      setActions()
+      return
+    }
+    let active = true
+    artifact
+      .actions(path)
+      .then((actions) => {
+        if (active) {
+          setActions(actions)
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          if (error.message.startsWith('ENOENT')) {
+            setActions()
+            return
+          }
+          setError(error)
+          setActions()
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [artifact, path])
+  return actions
 }
 
-export const usePrompt = (path = '/') => {
+export const usePrompt = (path = '/chat-1.io.json') => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   // TODO change to be a wrapper around useAction
-  const { artifact } = useContext(ArtifactContext)
+  const actions = useActions(path)
   const [buffer, setBuffer] = useState([])
   const [prompt, setPrompt] = useState()
+  const { artifact } = useContext(ArtifactContext)
+  const [error, setError] = useState()
+  if (error) {
+    throw error
+  }
+
+  useEffect(() => {
+    if (!actions) {
+      return
+    }
+    setPrompt(() => actions.prompt)
+  }, [actions])
+
   useEffect(() => {
     if (!artifact) {
       return
     }
-    artifact.chatUp().then((actions) => setPrompt(() => actions.prompt))
+    artifact.chatUp().catch(setError)
   }, [artifact])
+
   useEffect(() => {
     if (!prompt || !buffer.length) {
       return
@@ -66,6 +101,7 @@ export const usePrompt = (path = '/') => {
     }
     setBuffer([])
   }, [prompt, buffer])
+
   const bufferingPrompt = useCallback(
     async (text) => {
       assert(typeof text === 'string', `text must be a string`)
@@ -83,7 +119,7 @@ export const usePrompt = (path = '/') => {
   return bufferingPrompt
 }
 
-export const useCommits = (depth = 1, path = '.') => {
+export const useCommits = (depth = 1, path = '/') => {
   assert(Number.isInteger(depth), `depth must be an integer: ${depth}`)
   assert(depth > 0, `depth must be greater than 0: ${depth}`)
   // TODO fix pathing
@@ -106,7 +142,7 @@ export const useCommits = (depth = 1, path = '.') => {
   return commits
 }
 
-export const useLatestCommit = (path = '.') => {
+export const useLatestCommit = (path = '/') => {
   const commits = useCommits(1, path)
   return commits[0]
 }

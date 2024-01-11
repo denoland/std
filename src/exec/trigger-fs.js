@@ -1,18 +1,22 @@
 import posix from 'path-browserify'
 import assert from 'assert-fast'
-
+import Debug from 'debug'
+const debug = Debug('AI:trigger-fs')
 export default class TriggerFS {
   #subscriptions = new Map() // map of paths to sets of callbacks
   #commitSubscriptions = new Map() // map of paths to sets of callbacks
   static create() {
+    debug('create')
     const trigger = new TriggerFS()
     return trigger
   }
   subscribe(path, cb, initial) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    assert(path.startsWith('/hal'), `path must start with /hal: ${path}`)
     assert(typeof cb === 'function', `cb must be a function`)
     assert(typeof initial.then === 'function', `initial must be a promise`)
 
+    debug('subscribe', path)
     if (!this.#subscriptions.has(path)) {
       this.#subscriptions.set(path, new Set())
     }
@@ -31,10 +35,13 @@ export default class TriggerFS {
   }
   write(path, file) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    assert(path.startsWith('/hal'), `path must start with /hal: ${path}`)
     const callbacks = this.#subscriptions.get(path)
     if (!callbacks) {
+      debug('no callbacks for path', path)
       return
     }
+    debug('write', path)
     for (const cb of callbacks) {
       cb(file)
     }

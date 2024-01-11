@@ -79,8 +79,7 @@ export default class Artifact {
     await this.#commitAll({ message: 'init', author: { name: 'HAL' } })
   }
   async chatUp() {
-    const name = 'chat-1.io.json'
-    const path = '/hal/' + name
+    const path = '/chat-1.io.json'
     const codePath = '/hal/isolate-chat.js'
     const sessionPath = '/hal/chat-1.session.json'
     const systemPromptPath = '/hal/chat-system-prompt.md'
@@ -91,7 +90,7 @@ export default class Artifact {
       api: await this.#io.loadWorker(codePath),
       config: { sessionPath, systemPromptPath },
     }
-    await this.#fs.writeFile('/hal/chat-1.session.json', JSON.stringify([]))
+    await this.#fs.writeFile(sessionPath, JSON.stringify([]))
     await this.createIO({ path, isolate })
     return await this.actions(path)
   }
@@ -121,7 +120,9 @@ export default class Artifact {
     // TODO do an initial load up so the subscriber starts with the latest one
     // TODO root vs file should be different function calls
     // async since needs to find the nearest repo root
-    filepath = posix.resolve('/hal', filepath)
+    assert(posix.isAbsolute(filepath), `filepath must be absolute: ${filepath}`)
+    filepath = filepath === '/' ? '' : filepath
+    filepath = posix.normalize('/hal' + filepath)
     const repoPath = await git.findRoot({ ...this.#opts, filepath })
     assert(repoPath, `repoPath not found: ${filepath}`)
     // TODO order the async git functions using an async iterable
@@ -164,7 +165,7 @@ export default class Artifact {
   }
   async actions(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    assert(path.endsWith('.io.json'), `path must end with .io.json`)
+    assert(path.endsWith('.io.json'), `path must end with .io.json: ${path}`)
     const io = await this.readIO(path)
     const { isolate } = io
     const { api } = isolate
@@ -215,14 +216,14 @@ export default class Artifact {
     // TODO assert the path is not dirty
     // TODO check the schema of the IO file
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    const raw = await this.#fs.readFile(path, 'utf8')
+    const raw = await this.#fs.readFile(this.#dir + path, 'utf8')
     return JSON.parse(raw)
   }
   async #commitIO(path, io, message) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
     const file = JSON.stringify(io, null, 2)
-    await this.#fs.writeFile(path, file)
-    this.#trigger.write(path, file)
+    await this.#fs.writeFile(this.#dir + path, file)
+    this.#trigger.write(this.#dir + path, file)
     // TODO maybe commit just the file
     await this.#commitAll({ message, author: { name: 'HAL' } })
   }
