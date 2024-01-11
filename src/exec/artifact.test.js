@@ -12,7 +12,7 @@ test('boot', async ({ artifact }) => {
   expect(artifact).toBeInstanceOf(Artifact)
 })
 test('have a chat', async function ({ artifact }) {
-  artifact.overloadExecutable('/hal/isolate-chat.js', './isolate-chat.js')
+  artifact.overloadExecutable('/hal/isolates/chat.js', '../isolates/chat.js')
   const { prompt } = await artifact.chatUp()
   const result = await prompt({ text: 'return an exclaimation mark' })
   expect(result.content.trim()).toEqual('!')

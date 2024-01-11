@@ -80,7 +80,7 @@ export default class Artifact {
   }
   async chatUp() {
     const path = '/chat-1.io.json'
-    const codePath = '/hal/isolate-chat.js'
+    const codePath = '/hal/isolates/chat.js'
     const sessionPath = '/hal/chat-1.session.json'
     const systemPromptPath = '/hal/chat-system-prompt.md'
     const isolate = {

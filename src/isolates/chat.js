@@ -1,6 +1,6 @@
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
-import { isolate } from './io-hooks'
+import { isolate } from '../exec/io-hooks'
 import assert from 'assert-fast'
 import { Buffer } from 'buffer'
 import Debug from 'debug'

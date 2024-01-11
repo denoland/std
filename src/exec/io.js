@@ -87,7 +87,7 @@ export default class IO {
     debug('resolveCodePath', codePath)
     if (this.#debuggingOverloads.has(codePath)) {
       const override = this.#debuggingOverloads.get(codePath)
-      const viteImportRegex = /^\.\/isolate-(.*)\.js$/
+      const viteImportRegex = /^\.\.\/isolates\/(.*)\.js$/
       const match = override.match(viteImportRegex)
       assert(match, `invalid codePath: ${codePath} with override: ${override}`)
       const [, name] = match
@@ -98,6 +98,7 @@ export default class IO {
   }
   async loadWorker(codePath) {
     const resolvedCodePath = this.#resolveCodePath(codePath)
+    debug('resolved', codePath, 'to', resolvedCodePath)
     const worker = ioWorker(this.#opts)
     return await worker.load(resolvedCodePath)
   }

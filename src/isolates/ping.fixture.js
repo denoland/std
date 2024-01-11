@@ -1,7 +1,5 @@
 import assert from 'assert-fast'
 
-// TODO document new covenant format
-
 export const api = {
   ping: {
     type: 'object',

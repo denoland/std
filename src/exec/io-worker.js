@@ -35,10 +35,11 @@ export default ({ fs, trigger }) => {
   let code
   return {
     async load(codePathSlug) {
+      debug('load', codePathSlug)
       assert(!code, 'code already loaded')
       // TODO load from the git repo or some other path like a cdn
       // TODO deduplicate by codepath ?
-      code = await import(`./isolate-${codePathSlug}.js`)
+      code = await import(`../isolates/${codePathSlug}.js`)
       const { functions, api } = code
       assert(typeof functions === 'object', 'functions not exported')
       assert(typeof api === 'object', 'api not exported')
