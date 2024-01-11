@@ -63,9 +63,12 @@ interface Code {
 }
 
 /** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff` */
-interface Rgb {
+export interface Rgb {
+  /** Red component value */
   r: number;
+  /** Green component value */
   g: number;
+  /** Blue component value */
   b: number;
 }
 
@@ -113,7 +116,7 @@ function run(str: string, code: Code): string {
 }
 
 /**
- * Reset the text modified
+ * Reset the text modified.
  * @param str text to reset
  */
 export function reset(str: string): string {
@@ -562,15 +565,16 @@ const ANSI_PATTERN = new RegExp(
 );
 
 /**
- * @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
- *
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
+ *
+ *  @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
  */
 export const stripColor: typeof stripAnsiCode = stripAnsiCode;
 
 /**
  * Remove ANSI escape codes from the string.
+ *
  * @param string to remove ANSI escape codes from
  */
 export function stripAnsiCode(string: string): string {
