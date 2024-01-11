@@ -29,13 +29,10 @@ Deno.test("expect().", () => {
 });
 
 Deno.test("expect().toHaveBeenNthCalledWith() should throw when mock call does not exist", () => {
-  // Given
   const mockFn = fn();
 
-  // When
   mockFn("hello");
 
-  // Then
   expect(mockFn).toHaveBeenNthCalledWith(1, "hello");
   assertThrows(
     () => {
