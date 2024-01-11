@@ -24,7 +24,7 @@ const TESTSUITE = [
     new URL("https://deno.land///"),
     new URL("https://deno.land"),
   ],
-];
+] as const;
 
 Deno.test("dirname()", function () {
   for (const [test_url, expected] of TESTSUITE) {

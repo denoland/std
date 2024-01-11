@@ -56,7 +56,7 @@ function recognize(str: string, formats?: Format[]): Format {
     formats = Object.keys(MAP_FORMAT_TO_RECOGNIZER_RX) as Format[];
   }
 
-  const [firstLine] = str.split(/(\r?\n)/);
+  const [firstLine] = str.split(/(\r?\n)/) as [string];
 
   for (const format of formats) {
     if (format === "unknown") {
