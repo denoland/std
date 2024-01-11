@@ -169,7 +169,7 @@ Deno.test({
   async fn() {
     const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      using listener = Deno.listen({ path, transport: "unix" });
+      using _listener = Deno.listen({ path, transport: "unix" });
       await assertWalkPaths("socket", [".", "a.sock", ".gitignore"], {
         followSymlinks: true,
       });
@@ -186,7 +186,7 @@ Deno.test({
   async fn() {
     const path = resolve(testdataDir, "socket", "a.sock");
     try {
-      using listener = Deno.listen({ path, transport: "unix" });
+      using _listener = Deno.listen({ path, transport: "unix" });
       assertWalkSyncPaths("socket", [".", "a.sock", ".gitignore"], {
         followSymlinks: true,
       });

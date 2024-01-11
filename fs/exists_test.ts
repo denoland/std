@@ -24,7 +24,7 @@ Deno.test("existsSync() returns false for a non-existent path", function () {
 Deno.test("exists() returns true for an existing file", async function () {
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
-  using tempFile = await Deno.create(tempFilePath);
+  using _tempFile = await Deno.create(tempFilePath);
   try {
     assertEquals(await exists(tempFilePath), true);
     assertEquals(await exists(tempFilePath, {}), true);
@@ -62,7 +62,7 @@ Deno.test("exists() returns true for an existing file symlink", async function (
   const tempDirPath = await Deno.makeTempDir();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
-  using tempFile = await Deno.create(tempFilePath);
+  using _tempFile = await Deno.create(tempFilePath);
   try {
     await Deno.symlink(tempFilePath, tempLinkFilePath);
     assertEquals(await exists(tempLinkFilePath), true);
@@ -101,7 +101,7 @@ Deno.test("exists() returns true for an existing file symlink", async function (
 Deno.test("existsSync() returns true for an existing file", function () {
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
-  using tempFile = Deno.createSync(tempFilePath);
+  using _tempFile = Deno.createSync(tempFilePath);
   try {
     assertEquals(existsSync(tempFilePath), true);
     assertEquals(existsSync(tempFilePath, {}), true);
@@ -139,7 +139,7 @@ Deno.test("existsSync() returns true for an existing file symlink", function () 
   const tempDirPath = Deno.makeTempDirSync();
   const tempFilePath = path.join(tempDirPath, "0.ts");
   const tempLinkFilePath = path.join(tempDirPath, "0-link.ts");
-  using tempFile = Deno.createSync(tempFilePath);
+  using _tempFile = Deno.createSync(tempFilePath);
   try {
     Deno.symlinkSync(tempFilePath, tempLinkFilePath);
     assertEquals(existsSync(tempLinkFilePath), true);
