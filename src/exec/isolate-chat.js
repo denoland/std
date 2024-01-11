@@ -3,6 +3,8 @@ import OpenAI from 'openai'
 import { isolate } from './io-hooks'
 import assert from 'assert-fast'
 import { Buffer } from 'buffer'
+import Debug from 'debug'
+const debug = Debug('AI:isolate-chat')
 // const model = 'gpt-4-1106-preview'
 const model = 'gpt-3.5-turbo-1106'
 
@@ -57,9 +59,10 @@ export const functions = {
     await fs.writeJS(messages, sessionPath)
 
     const streamCall = await ai.chat.completions.create(args)
-
+    debug('streamCall placed')
     for await (const part of streamCall) {
       const content = part.choices[0]?.delta?.content || ''
+      debug('streamCall part', content)
       if (!assistant.content) {
         assistant.content = ''
       }
@@ -91,6 +94,7 @@ export const functions = {
 
       await fs.writeJS(messages, sessionPath)
     }
+    debug('streamCall complete')
     return assistant
   },
 }

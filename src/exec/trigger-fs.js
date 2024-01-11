@@ -47,6 +47,7 @@ export default class TriggerFS {
     }
   }
   subscribeCommits(repoPath, cb) {
+    debug('subscribeCommits', repoPath)
     assert(typeof cb === 'function', `cb must be a function`)
     if (!this.#commitSubscriptions.has(repoPath)) {
       this.#commitSubscriptions.set(repoPath, { callbacks: new Set() })

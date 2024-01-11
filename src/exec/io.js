@@ -6,6 +6,8 @@ import git, { TREE } from 'isomorphic-git'
 import { posix } from 'path-browserify'
 import { toString } from 'uint8arrays/to-string'
 import { serializeError } from 'serialize-error'
+import Debug from 'debug'
+const debug = Debug('AI:io')
 
 export default class IO {
   #artifact
@@ -22,6 +24,7 @@ export default class IO {
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
     await this.#artifact.subscribeCommits('/', async (ref) => {
+      debug('io commit triggered', ref.substr(0, 7))
       const commit = await git.readCommit({ ...this.#opts, oid: ref })
       const { parent } = commit.commit
       const changes = await git.walk({
@@ -34,7 +37,7 @@ export default class IO {
             const previousIo =
               previous && JSON.parse(toString(await previous.content(), 'utf8'))
             const actions = newActions(io.inputs, previousIo?.inputs || {})
-            return { path, actions, io }
+            return { path: '/' + path, actions, io }
           }
         },
       })
@@ -42,6 +45,7 @@ export default class IO {
       for (const { actions, io, path } of changes) {
         // TODO handle the isolate changing
         // TODO handle resetting the IO which would terminate all in progress
+        debug('io changes', path, actions)
         const { isolate } = io
         if (!this.#workerCache.has(path)) {
           const { codePath, api } = isolate
@@ -57,6 +61,7 @@ export default class IO {
           for (const [functionName, parameters] of Object.entries(action)) {
             const schema = api[functionName]
             validator(schema)(parameters)
+            debug('dispatch', path, functionName, parameters)
             worker
               .call(functionName, parameters, isolate.config)
               .then((result) => {
@@ -69,6 +74,7 @@ export default class IO {
               })
               .catch((errorObj) => {
                 const error = serializeError(errorObj)
+                debug('dispatch error', error)
                 return this.#artifact.replyIO({ path, functionName, id, error })
               })
           }
@@ -77,6 +83,8 @@ export default class IO {
     })
   }
   #resolveCodePath(codePath) {
+    assert(posix.isAbsolute(codePath), `codePath must be absolute: ${codePath}`)
+    debug('resolveCodePath', codePath)
     if (this.#debuggingOverloads.has(codePath)) {
       const override = this.#debuggingOverloads.get(codePath)
       const viteImportRegex = /^\.\/isolate-(.*)\.js$/

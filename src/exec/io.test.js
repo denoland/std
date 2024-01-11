@@ -1,6 +1,6 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
-import { api } from './io.fixture'
+import { api } from './isolate-ping.fixture'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -11,18 +11,16 @@ beforeEach(async (context) => {
 test('ping', async ({ artifact }) => {
   // ? how does this relate to stucks and discoveries ?
   // stucks would be just another type of code that loads ?
-
-  artifact.overloadExecutable('/hal/ping.fixture.js', './io.fixture.js')
-
+  artifact.overloadExecutable('/ping.fixture.js', './isolate-ping.fixture.js')
   const isolate = {
-    code: '/hal/ping.fixture.js',
+    codePath: '/ping.fixture.js',
     type: 'function',
     language: 'javascript',
     api,
   }
-  const path = '/hal/ping.io.json'
+  const path = '/ping.io.json'
   await artifact.createIO({ path, isolate })
-  const actions = await artifact.actions('/hal/ping.io.json')
+  const actions = await artifact.actions('/ping.io.json')
   const result = await actions.local({})
   expect(result).toBe('local reply')
   const second = await actions.local({})

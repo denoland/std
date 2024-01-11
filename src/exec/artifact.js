@@ -186,6 +186,7 @@ export default class Artifact {
   }
   async dispatch(ioPath, functionName, parameters) {
     assert(posix.isAbsolute(ioPath), `ioPath must be absolute: ${ioPath}`)
+    debug('dispatch', ioPath, functionName, parameters)
     const io = await this.readIO(ioPath)
 
     const { id, next } = input(io, functionName, parameters)
@@ -195,6 +196,7 @@ export default class Artifact {
       reject = rej
     })
     const unsubscribe = await this.subscribeCommits(ioPath, (file) => {
+      debug('dispatch commit trigger', ioPath)
       const next = JSON.parse(file)
 
       const { outputs } = next
@@ -236,6 +238,7 @@ export default class Artifact {
     const { outputs } = io
     assert(!outputs[id], `id ${id} found in outputs`)
     outputs[id] = { result, error }
+    debug('replyIO', path, functionName, id, result, error)
     await this.#commitIO(absolute, io, `Reply: ${path}:${functionName}():${id}`)
   }
   async #commitAll({ message, author }) {

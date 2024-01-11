@@ -22,10 +22,12 @@ jobs:
       - name: Install
         run: npm install
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
         env:
-          # NODE_OPTIONS: --max-old-space-size=8192
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
 
       - name: Deploy to GitHub Pages
