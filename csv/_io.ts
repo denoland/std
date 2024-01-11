@@ -5,6 +5,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../assert/assert.ts";
 
+/** Options for {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
    *
@@ -223,6 +224,7 @@ export class ParseError extends SyntaxError {
   /** Column (rune index) where the error occurred */
   column: number | null;
 
+  /** Constructs a new instance. */
   constructor(
     start: number,
     line: number,
@@ -262,28 +264,36 @@ export function convertRowToObject(
     );
   }
   const out: Record<string, unknown> = {};
-  for (let i = 0; i < row.length; i++) {
-    out[headers[i]] = row[i];
+  for (const [index, header] of headers.entries()) {
+    out[header] = row[index];
   }
   return out;
 }
 
-// deno-fmt-ignore
+/** Options for {@linkcode parse} and {@linkcode CsvParseStream}. */
 export type ParseResult<ParseOptions, T> =
   // If `columns` option is specified, the return type is Record type.
   T extends ParseOptions & { columns: readonly (infer C extends string)[] }
     ? RecordWithColumn<C>[]
-  // If `skipFirstRow` option is specified, the return type is Record type.
-  : T extends ParseOptions & { skipFirstRow: true }
-    ? Record<string, string | undefined>[]
-  // If `columns` and `skipFirstRow` option is _not_ specified, the return type is string[][].
-  : T extends ParseOptions & { columns?: undefined; skipFirstRow?: false | undefined }
-    ? string[][]
-  // else, the return type is Record type or string[][].
-  : Record<string, string | undefined>[] | string[][];
+    // If `skipFirstRow` option is specified, the return type is Record type.
+    : T extends ParseOptions & { skipFirstRow: true }
+      ? Record<string, string | undefined>[]
+    // If `columns` and `skipFirstRow` option is _not_ specified, the return type is string[][].
+    : T extends
+      ParseOptions & { columns?: undefined; skipFirstRow?: false | undefined }
+      ? string[][]
+    // else, the return type is Record type or string[][].
+    : Record<string, string | undefined>[] | string[][];
 
-// RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string>
-// RecordWithColumn<string> => Record<string, string | undefined>
-type RecordWithColumn<C extends string> = string extends C
+/**
+ * Record type with column type.
+ *
+ * @example
+ * ```
+ * type RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string>
+ * type RecordWithColumn<string> => Record<string, string | undefined>
+ * ```
+ */
+export type RecordWithColumn<C extends string> = string extends C
   ? Record<string, string | undefined>
   : Record<C, string>;

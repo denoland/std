@@ -12,7 +12,7 @@
  * if `NO_COLOR` is set.
  *
  * @example
- * ```typescript
+ * ```ts
  * import {
  *   bgBlue,
  *   bgRgb24,
@@ -63,9 +63,12 @@ interface Code {
 }
 
 /** RGB 8-bits per channel. Each in range `0->255` or `0x00->0xff` */
-interface Rgb {
+export interface Rgb {
+  /** Red component value */
   r: number;
+  /** Green component value */
   g: number;
+  /** Blue component value */
   b: number;
 }
 
@@ -113,7 +116,7 @@ function run(str: string, code: Code): string {
 }
 
 /**
- * Reset the text modified
+ * Reset the text modified.
  * @param str text to reset
  */
 export function reset(str: string): string {
@@ -480,9 +483,10 @@ export function bgRgb8(str: string, color: number): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { rgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
- *      rgb24("foo", 0xff00ff);
- *      rgb24("foo", {r: 255, g: 0, b: 255});
+ * import { rgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *
+ * rgb24("foo", 0xff00ff);
+ * rgb24("foo", {r: 255, g: 0, b: 255});
  * ```
  * @param str text color to apply 24bit rgb to
  * @param color code
@@ -520,9 +524,10 @@ export function rgb24(str: string, color: number | Rgb): string {
  * To produce the color magenta:
  *
  * ```ts
- *      import { bgRgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
- *      bgRgb24("foo", 0xff00ff);
- *      bgRgb24("foo", {r: 255, g: 0, b: 255});
+ * import { bgRgb24 } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
+ *
+ * bgRgb24("foo", 0xff00ff);
+ * bgRgb24("foo", {r: 255, g: 0, b: 255});
  * ```
  * @param str text color to apply 24bit rgb to
  * @param color code
@@ -562,15 +567,16 @@ const ANSI_PATTERN = new RegExp(
 );
 
 /**
- * @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
- *
  * Remove ANSI escape codes from the string.
  * @param string to remove ANSI escape codes from
+ *
+ *  @deprecated (will be removed in 1.0.0) Use {@linkcode stripAnsiCode} instead.
  */
 export const stripColor: typeof stripAnsiCode = stripAnsiCode;
 
 /**
  * Remove ANSI escape codes from the string.
+ *
  * @param string to remove ANSI escape codes from
  */
 export function stripAnsiCode(string: string): string {
