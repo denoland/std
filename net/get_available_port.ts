@@ -1,8 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Option bag for available port method */
+/** Options for {@linkcode getAvailablePort}. */
 export interface GetAvailablePortOptions {
-  /** A port to check availability of first. If the port isn't available, fall back to another port. */
+  /**
+   * A port to check availability of first. If the port isn't available, fall
+   * back to another port.
+   */
   preferredPort?: number;
 }
 
