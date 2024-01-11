@@ -9,6 +9,7 @@
     "test": "NODE_NO_WARNINGS=1 vitest run",
     "watch": "NODE_NO_WARNINGS=1 DEBUG_COLORS=1 vitest dev",
     "dev": "npm run storybook",
+    "vite": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",

@@ -36,7 +36,6 @@ export default class Artifact {
     }
     const opts = { ...artifact.#opts, trigger: artifact.#trigger }
     artifact.#io = IO.create({ artifact, opts })
-    artifact.overloadExecutable('/hal/isolate-chat.js', './isolate-chat.js')
     await artifact.#load()
     await artifact.#io.start()
     return artifact

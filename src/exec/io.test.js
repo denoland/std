@@ -11,9 +11,8 @@ beforeEach(async (context) => {
 test('ping', async ({ artifact }) => {
   // ? how does this relate to stucks and discoveries ?
   // stucks would be just another type of code that loads ?
-  artifact.overloadExecutable('/ping.fixture.js', '../isolates/ping.fixture.js')
   const isolate = {
-    codePath: '/ping.fixture.js',
+    codePath: '/hal/isolates/ping.fixture.js',
     type: 'function',
     language: 'javascript',
     api,

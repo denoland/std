@@ -85,16 +85,18 @@ export default class IO {
   #resolveCodePath(codePath) {
     assert(posix.isAbsolute(codePath), `codePath must be absolute: ${codePath}`)
     debug('resolveCodePath', codePath)
+    let override
     if (this.#debuggingOverloads.has(codePath)) {
-      const override = this.#debuggingOverloads.get(codePath)
-      const viteImportRegex = /^\.\.\/isolates\/(.*)\.js$/
-      const match = override.match(viteImportRegex)
-      assert(match, `invalid codePath: ${codePath} with override: ${override}`)
-      const [, name] = match
-      assert(name, `invalid slug: ${name}`)
-      return name
+      // TODO get this working when it is actually needed somewhere
+      codePath = this.#debuggingOverloads.get(codePath)
+      override = codePath
     }
-    throw new Error(`Not Implemented: dynamic imports ${codePath}`)
+    const viteImportRegex = /^\/hal\/isolates\/(.*)\.js$/
+    const match = codePath.match(viteImportRegex)
+    assert(match, `invalid codePath: ${codePath} with override: ${override}`)
+    const [, name] = match
+    assert(name, `invalid slug: ${name}`)
+    return name
   }
   async loadWorker(codePath) {
     const resolvedCodePath = this.#resolveCodePath(codePath)
