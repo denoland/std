@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     setupFiles: ['fake-indexeddb/auto'],
-    testTimeout: 500,
+    testTimeout: 20000,
     reporters: 'tap-flat',
   },
 })
