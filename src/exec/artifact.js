@@ -99,8 +99,8 @@ export default class Artifact {
     const contents = await this.#fs.readFile(this.#dir + path, 'utf8')
     return contents
   }
-  async log({ filepath = '.', depth }) {
-    filepath = posix.resolve('/hal', filepath)
+  async log({ filepath = '/', depth }) {
+    filepath = filepath === '/' ? '/hal' : posix.resolve('/hal', filepath)
     const repoPath = await git.findRoot({ ...this.#opts, filepath })
     assert(repoPath, `repoPath not found: ${filepath}`)
     const relative = posix.relative(repoPath, filepath) //?

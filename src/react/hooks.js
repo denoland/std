@@ -2,6 +2,8 @@ import { useContext, useEffect, useState, useCallback } from 'react'
 import { ArtifactContext } from '../stories/Provider'
 import assert from 'assert-fast'
 import posix from 'path-browserify'
+import Debug from 'debug'
+const debug = Debug('AI:hooks')
 
 export const useArtifact = (path) => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
@@ -32,13 +34,30 @@ export const useActions = (path) => {
   assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
   const { artifact } = useContext(ArtifactContext)
   const [actions, setActions] = useState()
+  const [fileExists, setFileExists] = useState(false)
   const [error, setError] = useState()
   if (error) {
     throw error
   }
   useEffect(() => {
+    debug('useActions', path, artifact)
     if (!artifact) {
-      setActions()
+      return
+    }
+    const subscriptionPromise = artifact.subscribeCommits(path, () => {
+      debug('commit triggered', path)
+      // TODO handle the case where the file is deleted
+      setFileExists(true)
+    })
+
+    return () => {
+      subscriptionPromise.then((unsubscribe) => unsubscribe())
+      setFileExists(false)
+    }
+  }, [artifact, path])
+
+  useEffect(() => {
+    if (!fileExists) {
       return
     }
     let active = true
@@ -51,18 +70,13 @@ export const useActions = (path) => {
       })
       .catch((error) => {
         if (active) {
-          if (error.message.startsWith('ENOENT')) {
-            setActions()
-            return
-          }
           setError(error)
-          setActions()
         }
       })
     return () => {
       active = false
     }
-  }, [artifact, path])
+  }, [artifact, path, fileExists])
   return actions
 }
 
@@ -82,6 +96,7 @@ export const usePrompt = (path = '/chat-1.io.json') => {
     if (!actions) {
       return
     }
+    debug('setting prompt')
     setPrompt(() => actions.prompt)
   }, [actions])
 
@@ -89,6 +104,7 @@ export const usePrompt = (path = '/chat-1.io.json') => {
     if (!artifact) {
       return
     }
+    debug('chatting up', artifact)
     artifact.chatUp().catch(setError)
   }, [artifact])
 
@@ -97,6 +113,7 @@ export const usePrompt = (path = '/chat-1.io.json') => {
       return
     }
     for (const { resolve, text } of buffer) {
+      debug('draining prompt buffer', text)
       prompt({ text }).then(resolve)
     }
     setBuffer([])
@@ -107,11 +124,13 @@ export const usePrompt = (path = '/chat-1.io.json') => {
       assert(typeof text === 'string', `text must be a string`)
       assert(text, `text must not be empty`)
       if (!prompt) {
+        debug('buffering prompt', text)
         let resolve
         const promise = new Promise((r) => (resolve = r))
         setBuffer((buffer) => [...buffer, { resolve, text }])
         return promise
       }
+      debug('prompt', text)
       return await prompt({ text })
     },
     [prompt]

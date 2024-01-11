@@ -8,7 +8,7 @@ export default {
 }
 
 const Template = (args) => {
-  Debug.enable('AI:*')
+  Debug.enable('*')
   return (
     <Provider wipe>
       <Input {...args} />
