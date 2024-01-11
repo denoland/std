@@ -13,10 +13,6 @@ import { isComparator } from "./is_comparator.ts";
  * @returns True if its a valid Range otherwise false.
  */
 export function isRange(value: unknown): value is Range {
-  if (value === null || value === undefined) return false;
-  if (!Array.isArray(value)) return false;
-  const range = value as Range;
-  return range.every((r) =>
-    Array.isArray(r) && r.every((c) => isComparator(c))
-  );
+  return Array.isArray(value) &&
+    value.every((r) => Array.isArray(r) && r.every((c) => isComparator(c)));
 }
