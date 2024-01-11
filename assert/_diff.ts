@@ -16,9 +16,7 @@ interface FarthestPoint {
   id: number;
 }
 
-export const DIFF_TYPES = ["added", "removed", "common"] as const;
-
-export type DiffType = typeof DIFF_TYPES[number];
+type DiffType = "added" | "removed" | "common";
 
 export interface DiffResult<T> {
   type: DiffType;
@@ -163,14 +161,12 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
       routes[ptr] = prev;
       routes[ptr + diffTypesPtrOffset] = ADDED;
       return { y: slide.y, id: ptr };
-    } else if (down && !isAdding) {
+    } else {
       const prev = down.id;
       ptr++;
       routes[ptr] = prev;
       routes[ptr + diffTypesPtrOffset] = REMOVED;
       return { y: down.y + 1, id: ptr };
-    } else {
-      throw new Error("Unexpected missing FarthestPoint");
     }
   }
 
