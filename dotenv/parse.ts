@@ -54,6 +54,17 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
   }
 }
 
+/**
+ * Parse `.env` file output in an object.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/parse.ts";
+ *
+ * const env = parse("GREETING=hello world");
+ * env.GREETING; // "hello world"
+ * ```
+ */
 export function parse(rawDotenv: string): Record<string, string> {
   const env: Record<string, string> = {};
 
