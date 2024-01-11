@@ -50,33 +50,40 @@ export const usePrompt = (path = '/') => {
   // TODO change to be a wrapper around useAction
   const { artifact } = useContext(ArtifactContext)
   const [buffer, setBuffer] = useState([])
+  const [prompt, setPrompt] = useState()
   useEffect(() => {
-    if (!artifact || !buffer.length) {
+    if (!artifact) {
+      return
+    }
+    artifact.chatUp().then((actions) => setPrompt(() => actions.prompt))
+  }, [artifact])
+  useEffect(() => {
+    if (!prompt || !buffer.length) {
       return
     }
     for (const { resolve, text } of buffer) {
-      artifact.prompt(text).then(resolve)
+      prompt({ text }).then(resolve)
     }
     setBuffer([])
-  }, [artifact, buffer])
-  const prompt = useCallback(
+  }, [prompt, buffer])
+  const bufferingPrompt = useCallback(
     async (text) => {
       assert(typeof text === 'string', `text must be a string`)
       assert(text, `text must not be empty`)
-      if (!artifact) {
+      if (!prompt) {
         let resolve
         const promise = new Promise((r) => (resolve = r))
         setBuffer((buffer) => [...buffer, { resolve, text }])
         return promise
       }
-      return await artifact.prompt(text)
+      return await prompt({ text })
     },
-    [artifact]
+    [prompt]
   )
-  return prompt
+  return bufferingPrompt
 }
 
-export const useCommits = (depth = 1, path) => {
+export const useCommits = (depth = 1, path = '.') => {
   assert(Number.isInteger(depth), `depth must be an integer: ${depth}`)
   assert(depth > 0, `depth must be greater than 0: ${depth}`)
   // TODO fix pathing
@@ -88,17 +95,18 @@ export const useCommits = (depth = 1, path) => {
     if (!artifact) {
       return
     }
-    const subscription = artifact.subscribeCommits(path, () => {
+    const subscriptionPromise = artifact.subscribeCommits(path, () => {
+      // TODO get the root
       artifact.log({ filepath: path, depth }).then(setCommits)
     })
-    // TODO handle race condition in initial commits
-    artifact.log({ filepath: path, depth }).then(setCommits)
-    return subscription
+    return () => {
+      subscriptionPromise.then((unsubscribe) => unsubscribe())
+    }
   }, [depth, artifact, path])
   return commits
 }
 
-export const useLatestCommit = (path) => {
+export const useLatestCommit = (path = '.') => {
   const commits = useCommits(1, path)
   return commits[0]
 }

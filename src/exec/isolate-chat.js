@@ -1,7 +1,6 @@
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { isolate } from './io-hooks'
-import Debug from 'debug'
 import assert from 'assert-fast'
 import { Buffer } from 'buffer'
 const model = 'gpt-4-1106-preview'
@@ -14,9 +13,6 @@ if (!VITE_OPENAI_API_KEY) {
 }
 const apiKey = Buffer.from(VITE_OPENAI_API_KEY, 'base64').toString('utf-8')
 const ai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
-
-// hooks to get filesystem access which handles triggers and permissions
-// hooks to handle commits and memos
 
 export const api = {
   prompt: {
@@ -38,7 +34,7 @@ export const functions = {
 
     const { sessionPath, systemPromptPath } = config
     const fs = isolate()
-    const messages = await fs.read(sessionPath)
+    const messages = await fs.readJS(sessionPath)
     assert(Array.isArray(messages), 'messages must be an array')
 
     // read in the sysprompt from the
@@ -58,7 +54,7 @@ export const functions = {
     }
     const assistant = { role: 'assistant' }
     messages.push(assistant)
-    await fs.write(messages, sessionPath)
+    await fs.writeJS(messages, sessionPath)
 
     const streamCall = await ai.chat.completions.create(args)
 
@@ -93,7 +89,7 @@ export const functions = {
         }
       }
 
-      await fs.write(messages, sessionPath)
+      await fs.writeJS(messages, sessionPath)
     }
     return assistant
   },

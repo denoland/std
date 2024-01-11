@@ -40,7 +40,6 @@ export default class TriggerFS {
     }
   }
   subscribeCommits(repoPath, cb) {
-    assert(posix.isAbsolute(repoPath), `path must be absolute: ${repoPath}`)
     assert(typeof cb === 'function', `cb must be a function`)
     if (!this.#commitSubscriptions.has(repoPath)) {
       this.#commitSubscriptions.set(repoPath, { callbacks: new Set() })

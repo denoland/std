@@ -6,13 +6,18 @@ export default ({ fs, trigger }) => {
   // TODO scope filesystem access
   if (!globalThis['@@io-worker-hooks']) {
     globalThis['@@io-worker-hooks'] = {
-      async write(js, path) {
+      async writeJS(js, path) {
         assert(path, 'path is required')
-        const string = JSON.stringify(js, null, 2)
-        await fs.writeFile(path, string)
-        trigger.write(path, js)
+        const file = JSON.stringify(js, null, 2)
+        await fs.writeFile(path, file)
+        trigger.write(path, file)
       },
-      async read(path) {
+      async writeFile(file, path) {
+        assert(path, 'path is required')
+        await fs.writeFile(path, file)
+        trigger.write(path, file)
+      },
+      async readJS(path) {
         assert(path, 'path is required')
         const string = await fs.readFile(path, 'utf8')
         return JSON.parse(string)

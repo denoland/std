@@ -27,7 +27,7 @@ const ThreeBox = ({ preload, presubmit }) => {
     setIsTranscribing(isTranscribing)
   }, [])
 
-  const messages = useArtifactJSON('/hal/.session.json')
+  const messages = useArtifactJSON('/chat-1.session.json')
   return (
     <Box
       sx={{

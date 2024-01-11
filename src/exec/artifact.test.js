@@ -1,7 +1,5 @@
-import './ai-io' // cause vite to watch this dynamically imported file
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
-import Debug from 'debug'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -14,7 +12,7 @@ test('boot', async ({ artifact }) => {
 })
 
 test.only('have a chat', async ({ artifact }) => {
-  artifact.overloadExecutable('/hal/ai-io.js', './ai-io.js')
+  artifact.overloadExecutable('/hal/isolate-chat.js', './isolate-chat.js')
   const { prompt } = await artifact.chatUp()
 
   const result = await prompt({ text: 'return an exclaimation mark' })

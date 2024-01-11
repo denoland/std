@@ -21,7 +21,7 @@ export default class IO {
   // TODO track purging that is due - immdediately after a commit, clear io.
   async start() {
     // TODO subscribe to writes, so we can do internal actions with less commits
-    await this.#artifact.subscribeCommits('/hal', async (ref) => {
+    await this.#artifact.subscribeCommits('.', async (ref) => {
       const commit = await git.readCommit({ ...this.#opts, oid: ref })
       const { parent } = commit.commit
       const changes = await git.walk({
@@ -57,7 +57,6 @@ export default class IO {
           for (const [functionName, parameters] of Object.entries(action)) {
             const schema = api[functionName]
             validator(schema)(parameters)
-            console.log('calling', functionName, parameters)
             worker
               .call(functionName, parameters, isolate.config)
               .then((result) => {
@@ -79,9 +78,15 @@ export default class IO {
   }
   #resolveCodePath(codePath) {
     if (this.#debuggingOverloads.has(codePath)) {
-      return this.#debuggingOverloads.get(codePath)
+      const override = this.#debuggingOverloads.get(codePath)
+      const viteImportRegex = /^\.\/isolate-(.*)\.js$/
+      const match = override.match(viteImportRegex)
+      assert(match, `invalid codePath: ${codePath} with override: ${override}`)
+      const [, name] = match
+      assert(name, `invalid slug: ${name}`)
+      return override
     }
-    return codePath
+    throw new Error(`Not Implemented: dynamic imports ${codePath}`)
   }
   async loadWorker(codePath) {
     const resolvedCodePath = this.#resolveCodePath(codePath)

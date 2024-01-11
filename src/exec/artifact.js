@@ -36,6 +36,7 @@ export default class Artifact {
     }
     const opts = { ...artifact.#opts, trigger: artifact.#trigger }
     artifact.#io = IO.create({ artifact, opts })
+    artifact.overloadExecutable('/hal/isolate-chat.js', './isolate-chat.js')
     await artifact.#load()
     await artifact.#io.start()
     return artifact
@@ -80,7 +81,7 @@ export default class Artifact {
   async chatUp() {
     const name = 'chat-1.io.json'
     const path = '/hal/' + name
-    const codePath = '/hal/ai-io.js'
+    const codePath = '/hal/isolate-chat.js'
     const sessionPath = '/hal/chat-1.session.json'
     const systemPromptPath = '/hal/chat-system-prompt.md'
     const isolate = {
@@ -99,21 +100,28 @@ export default class Artifact {
     const contents = await this.#fs.readFile(this.#dir + path, 'utf8')
     return contents
   }
-  async log({ filepath, depth }) {
-    const log = await git.log({ ...this.#opts, filepath, depth })
-    return log
+  async log({ filepath = '.', depth }) {
+    filepath = posix.resolve('/hal', filepath)
+    const repoPath = await git.findRoot({ ...this.#opts, filepath })
+    assert(repoPath, `repoPath not found: ${filepath}`)
+    const relative = posix.relative(repoPath, filepath) //?
+    return await git.log({ ...this.#opts, filepath: relative, depth })
   }
   subscribe(path, cb) {
     // TODO cache the results for a path
-    const initial = this.#fs.readFile(path, 'utf8')
-    return this.#trigger.subscribe(path, cb, initial)
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const absolute = this.#dir + path
+    const initial = this.#fs.readFile(absolute, 'utf8')
+    return this.#trigger.subscribe(absolute, cb, initial)
   }
   // TODO ensure subscriptions await the callback in a queue
   // so implementations can be asured they get called in sequence
   async subscribeCommits(filepath, cb) {
-    assert(posix.isAbsolute(filepath), `filepath must be absolute: ${filepath}`)
     // TODO cache the results
+    // TODO do an initial load up so the subscriber starts with the latest one
+    // TODO root vs file should be different function calls
     // async since needs to find the nearest repo root
+    filepath = posix.resolve('/hal', filepath)
     const repoPath = await git.findRoot({ ...this.#opts, filepath })
     assert(repoPath, `repoPath not found: ${filepath}`)
     // TODO order the async git functions using an async iterable

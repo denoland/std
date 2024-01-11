@@ -9,12 +9,18 @@ export const ArtifactContext = createContext({})
 export const Provider = ({ children, wipe = false }) => {
   // boot up artifact
   const [artifact, setArtifact] = useState()
+  const [error, setError] = useState()
+  if (error) {
+    throw error
+  }
   useEffect(() => {
     // TODO move to a serviceworker
     Artifact.boot({
       path: 'artifact',
       wipe,
-    }).then(setArtifact)
+    })
+      .then(setArtifact)
+      .catch(setError)
   }, [wipe])
 
   return (
