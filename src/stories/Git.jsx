@@ -62,12 +62,12 @@ function formatElapsedTime(secondsElapsed) {
     formattedString += `${days} day${days > 1 ? 's' : ''}, `
   }
   if (hours > 0) {
-    formattedString += `${hours} hour${hours > 1 ? 's' : ''}, `
+    formattedString += `${hours} hr${hours > 1 ? 's' : ''}, `
   }
   if (minutes > 0) {
-    formattedString += `${minutes} minute${minutes > 1 ? 's' : ''}, `
+    formattedString += `${minutes} min${minutes > 1 ? 's' : ''}, `
   }
-  formattedString += `${seconds} second${seconds > 1 ? 's' : ''} ago`
+  formattedString += `${seconds} sec${seconds > 1 ? 's' : ''} ago`
 
   return formattedString
 }

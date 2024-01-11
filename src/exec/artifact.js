@@ -219,6 +219,7 @@ export default class Artifact {
     return JSON.parse(raw)
   }
   async #commitIO(path, io, message) {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
     const file = JSON.stringify(io, null, 2)
     await this.#fs.writeFile(path, file)
     this.#trigger.write(path, file)
@@ -229,13 +230,12 @@ export default class Artifact {
     // TODO handle further processes being spawned
     // TODO allow to buffer multiple replies into a single commit
 
-    path = '/hal/' + path
-    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    const io = await this.readIO(path)
+    const absolute = posix.resolve('/hal', path)
+    const io = await this.readIO(absolute)
     const { outputs } = io
     assert(!outputs[id], `id ${id} found in outputs`)
     outputs[id] = { result, error }
-    await this.#commitIO(path, io, `Reply: ${path}:${functionName}():${id}`)
+    await this.#commitIO(absolute, io, `Reply: ${path}:${functionName}():${id}`)
   }
   async #commitAll({ message, author }) {
     const status = await git.statusMatrix(this.#opts)
