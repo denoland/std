@@ -1541,6 +1541,7 @@ Deno.test("serve - doesn't print the message when onListen set to undefined", as
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
+      "--no-lock",
       `
         import { serve } from "./http/server.ts";
         serve(() => new Response("hello"), { onListen: undefined });
@@ -1557,6 +1558,7 @@ Deno.test("serve - can print customized start-up message in onListen handler", a
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
+      "--no-lock",
       `
         import { serve } from "./http/server.ts";
         serve(() => new Response("hello"), { onListen({ port, hostname }) {

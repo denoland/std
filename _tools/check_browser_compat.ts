@@ -16,6 +16,7 @@ function isBrowserCompatible(filePath: string): boolean {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "check",
+      "--no-lock",
       "--config",
       "browser-compat.tsconfig.json",
       filePath,
