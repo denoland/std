@@ -58,6 +58,7 @@ export const functions = {
     messages.push(assistant)
     await fs.writeJS(messages, sessionPath)
 
+    debug('streamCall started')
     const streamCall = await ai.chat.completions.create(args)
     debug('streamCall placed')
     for await (const part of streamCall) {

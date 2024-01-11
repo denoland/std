@@ -10,11 +10,16 @@ export const useArtifact = (path) => {
   const { artifact } = useContext(ArtifactContext)
   const [file, setFile] = useState()
   useEffect(() => {
+    debug('useArtifact', path, artifact)
     if (!artifact) {
       return
     }
-    const unsubscribe = artifact.subscribe(path, setFile)
+    const unsubscribe = artifact.subscribe(path, (file) => {
+      debug('artifact file', path)
+      setFile(file)
+    })
     return () => {
+      debug('useArtifact unmount', path)
       unsubscribe()
       setFile(undefined)
     }
@@ -44,13 +49,19 @@ export const useActions = (path) => {
     if (!artifact) {
       return
     }
+    let active = true
     const subscriptionPromise = artifact.subscribeCommits(path, () => {
+      if (!active) {
+        return
+      }
       debug('commit triggered', path)
       // TODO handle the case where the file is deleted
       setFileExists(true)
     })
 
     return () => {
+      debug('useActions unmount', path)
+      active = false
       subscriptionPromise.then((unsubscribe) => unsubscribe())
       setFileExists(false)
     }
@@ -74,6 +85,7 @@ export const useActions = (path) => {
         }
       })
     return () => {
+      debug('useActions unmount', path)
       active = false
     }
   }, [artifact, path, fileExists])
@@ -105,7 +117,17 @@ export const usePrompt = (path = '/chat-1.io.json') => {
       return
     }
     debug('chatting up', artifact)
-    artifact.chatUp().catch(setError)
+    let active = true
+    artifact.chatUp().catch((error) => {
+      if (!active) {
+        return
+      }
+      setError(error)
+    })
+    return () => {
+      debug('chatting down')
+      active = false
+    }
   }, [artifact])
 
   useEffect(() => {
@@ -114,9 +136,18 @@ export const usePrompt = (path = '/chat-1.io.json') => {
     }
     for (const { resolve, text } of buffer) {
       debug('draining prompt buffer', text)
-      prompt({ text }).then(resolve)
+      prompt({ text }).then((result) => {
+        if (active) {
+          resolve(result)
+        }
+      })
     }
     setBuffer([])
+    let active = true
+    return () => {
+      active = false
+      debug('draining prompt buffer unmount')
+    }
   }, [prompt, buffer])
 
   const bufferingPrompt = useCallback(
@@ -150,11 +181,17 @@ export const useCommits = (depth = 1, path = '/') => {
     if (!artifact) {
       return
     }
+    let active = true
     const subscriptionPromise = artifact.subscribeCommits(path, () => {
+      if (!active) {
+        return
+      }
       // TODO get the root
       artifact.log({ filepath: path, depth }).then(setCommits)
     })
     return () => {
+      debug('useCommits unmount', path)
+      active = false
       subscriptionPromise.then((unsubscribe) => unsubscribe())
     }
   }, [depth, artifact, path])

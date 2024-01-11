@@ -15,10 +15,10 @@ export default class IO {
   #debuggingOverloads = new Map()
   #workerCache = new Map()
   static create({ artifact, opts }) {
-    const runner = new IO()
-    runner.#artifact = artifact
-    runner.#opts = opts
-    return runner
+    const io = new IO()
+    io.#artifact = artifact
+    io.#opts = opts
+    return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
   async start() {

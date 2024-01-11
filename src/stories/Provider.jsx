@@ -22,16 +22,24 @@ export const Provider = ({ children, wipe = false }) => {
       path: 'artifact',
       wipe,
     })
-    promise.then(setArtifact).catch(setError)
+    let active = true
+    promise
+      .then((artifact) => {
+        if (active) {
+          setArtifact(artifact)
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          return
+        }
+        setError(error)
+      })
     return () => {
       debug('shutdown')
-      promise.then((artifact) => {
-        setArtifact((current) => {
-          if (current !== artifact) {
-            return current
-          }
-        })
-      })
+      active = false
+      setArtifact()
+      promise.then((artifact) => artifact.stop())
     }
   }, [wipe])
 

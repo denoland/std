@@ -5,33 +5,31 @@ const debug = Debug('AI:io-worker')
 export default ({ fs, trigger }) => {
   // TODO inside isolation using unique hooks for each worker
   // TODO scope filesystem access
-  if (!globalThis['@@io-worker-hooks']) {
-    globalThis['@@io-worker-hooks'] = {
-      async writeJS(js, path) {
-        debug('writeJS', path)
-        assert(path, 'path is required')
-        const file = JSON.stringify(js, null, 2)
-        await fs.writeFile(path, file)
-        trigger.write(path, file)
-      },
-      async writeFile(file, path) {
-        debug('writeFile', path)
-        assert(path, 'path is required')
-        await fs.writeFile(path, file)
-        trigger.write(path, file)
-      },
-      async readJS(path) {
-        debug('readJS', path)
-        assert(path, 'path is required')
-        const string = await fs.readFile(path, 'utf8')
-        return JSON.parse(string)
-      },
-      async readFile(path) {
-        debug('readFile', path)
-        assert(path, 'path is required')
-        return fs.readFile(path, 'utf8')
-      },
-    }
+  globalThis['@@io-worker-hooks'] = {
+    async writeJS(js, path) {
+      debug('writeJS', path)
+      assert(path, 'path is required')
+      const file = JSON.stringify(js, null, 2)
+      await fs.writeFile(path, file)
+      trigger.write(path, file)
+    },
+    async writeFile(file, path) {
+      debug('writeFile', path)
+      assert(path, 'path is required')
+      await fs.writeFile(path, file)
+      trigger.write(path, file)
+    },
+    async readJS(path) {
+      debug('readJS', path)
+      assert(path, 'path is required')
+      const string = await fs.readFile(path, 'utf8')
+      return JSON.parse(string)
+    },
+    async readFile(path) {
+      debug('readFile', path)
+      assert(path, 'path is required')
+      return fs.readFile(path, 'utf8')
+    },
   }
 
   let code
