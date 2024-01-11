@@ -10,7 +10,7 @@ const TESTSUITE = [
   [new URL("https://deno.land/std/assert/mod.ts#header"), ".ts"],
   [new URL("https://deno.land/std/assert/mod."), "."],
   [new URL("https://deno.land/std/assert/mod"), ""],
-];
+] as const;
 
 Deno.test("extname()", function () {
   for (const [test_url, expected] of TESTSUITE) {

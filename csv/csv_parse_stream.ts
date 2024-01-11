@@ -11,6 +11,7 @@ import {
 } from "../csv/_io.ts";
 import { TextDelimiterStream } from "../streams/text_delimiter_stream.ts";
 
+/** Options for {@linkcode CsvParseStream}. */
 export interface CsvParseStreamOptions extends ReadOptions {
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
@@ -54,15 +55,16 @@ function stripLastCR(s: string): string {
   return s.endsWith("\r") ? s.slice(0, -1) : s;
 }
 
-type RowType<T> = T extends undefined ? string[]
+/** Row return type. */
+export type RowType<T> = T extends undefined ? string[]
   : ParseResult<CsvParseStreamOptions, T>[number];
 
 /**
- * Read data from a CSV-encoded stream or file.
- * Provides an auto/custom mapper for columns.
+ * Read data from a CSV-encoded stream or file. Provides an auto/custom mapper
+ * for columns.
  *
  * A `CsvParseStream` expects input conforming to
- * [RFC 4180](https://rfc-editor.org/rfc/rfc4180.html).
+ * {@link https://tools.ietf.org/html/rfc4180 | RFC 4180}.
  *
  * @example
  * ```ts
@@ -87,6 +89,7 @@ export class CsvParseStream<
 
   #headers: readonly string[] = [];
 
+  /** Construct a new instance. */
   constructor(options?: T) {
     this.#options = {
       ...defaultReadOptions,
@@ -167,10 +170,12 @@ export class CsvParseStream<
     }
   }
 
+  /** The instance's {@linkcode ReadableStream}. */
   get readable(): ReadableStream<RowType<T>> {
     return this.#readable as ReadableStream<RowType<T>>;
   }
 
+  /** The instance's {@linkcode WritableStream}. */
   get writable(): WritableStream<string> {
     return this.#lines.writable;
   }
