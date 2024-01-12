@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { Operator, SemVer } from "./types.ts";
-import { ANY, INVALID, MAX } from "./constants.ts";
+import * as c from "./_comparator.ts";
 
 /**
  * The maximum version that could match this comparator.
@@ -12,38 +12,5 @@ import { ANY, INVALID, MAX } from "./constants.ts";
  * @deprecated (will be removed in 0.214.0) Use {@linkcode rangeMax} instead.
  */
 export function comparatorMax(semver: SemVer, operator: Operator): SemVer {
-  if (semver === ANY) {
-    return MAX;
-  }
-  switch (operator) {
-    case "!=":
-    case "!==":
-    case ">":
-    case ">=":
-      return MAX;
-    case "":
-    case "=":
-    case "==":
-    case "===":
-    case "<=":
-      return semver;
-    case "<": {
-      const patch = semver.patch - 1;
-      const minor = patch >= 0 ? semver.minor : semver.minor - 1;
-      const major = minor >= 0 ? semver.major : semver.major - 1;
-      // if you try to do <0.0.0 it will Give you -∞.∞.∞
-      // which means no SemVer can compare successfully to it.
-      if (major < 0) {
-        return INVALID;
-      } else {
-        return {
-          major,
-          minor: minor >= 0 ? minor : Number.POSITIVE_INFINITY,
-          patch: patch >= 0 ? patch : Number.POSITIVE_INFINITY,
-          prerelease: [],
-          build: [],
-        };
-      }
-    }
-  }
+  return c.comparatorMax(semver, operator);
 }

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { Comparator } from "./types.ts";
-import { parseComparator } from "./parse_comparator.ts";
+import { parseComparator } from "./_comparator.ts";
 /**
  * Parses a comparator string into a valid Comparator or returns undefined if not valid.
  * @param comparator

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { comparatorIntersects } from "./comparator_intersects.ts";
+import { comparatorIntersects } from "./_comparator.ts";
 import type { Comparator, SemVerRange } from "./types.ts";
 
 function rangesSatisfiable(ranges: SemVerRange[]): boolean {

@@ -4,8 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { parseRange } from "./parse_range.ts";
 import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
-import { parseComparator } from "./parse_comparator.ts";
-import { comparatorFormat } from "./comparator_format.ts";
+import { formatComparator, parseComparator } from "./_comparator.ts";
 
 Deno.test({
   name: "comparators",
@@ -163,11 +162,11 @@ Deno.test({
 
 Deno.test("tostrings", function () {
   assertEquals(
-    comparatorFormat(parseComparator(">= v1.2.3")),
+    formatComparator(parseComparator(">= v1.2.3")),
     ">=1.2.3",
   );
   assertEquals(
-    comparatorFormat(parseComparator(">= v1.2.3-pre.1+b.2")),
+    formatComparator(parseComparator(">= v1.2.3-pre.1+b.2")),
     ">=1.2.3-pre.1+b.2",
   );
 });

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import type { SemVerRange } from "./types.ts";
-import { comparatorFormat } from "./comparator_format.ts";
+import { formatComparator } from "./_comparator.ts";
 
 /**
  * Formats the range into a string
@@ -9,6 +9,6 @@ import { comparatorFormat } from "./comparator_format.ts";
  * @returns A string representation of the range
  */
 export function formatRange(range: SemVerRange): string {
-  return range.ranges.map((c) => c.map((c) => comparatorFormat(c)).join(" "))
+  return range.ranges.map((c) => c.map((c) => formatComparator(c)).join(" "))
     .join("||");
 }

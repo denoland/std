@@ -2,7 +2,7 @@
 import { INVALID } from "./constants.ts";
 import type { SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
-import { comparatorMin } from "./comparator_min.ts";
+import { comparatorMin } from "./_comparator.ts";
 import { lt } from "./lt.ts";
 
 /**

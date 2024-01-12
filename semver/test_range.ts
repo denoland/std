@@ -2,8 +2,8 @@
 import type { SemVer, SemVerRange } from "./types.ts";
 import { gte } from "./gte.ts";
 import { lte } from "./lte.ts";
-import { comparatorMin } from "./comparator_min.ts";
-import { comparatorMax } from "./comparator_max.ts";
+import { comparatorMin } from "./_comparator.ts";
+import { comparatorMax } from "./_comparator.ts";
 
 /**
  * Test to see if the version satisfies the range.
