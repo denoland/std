@@ -3,7 +3,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertThrows } from "../assert/assert_throws.ts";
 import { assertEquals, assertExists } from "../assert/mod.ts";
-import { byteLength, decodeBase32, encodeBase32 } from "./base32.ts";
+import { decodeBase32, encodeBase32 } from "./base32.ts";
 
 // Lifted from https://stackoverflow.com/questions/38987784
 const fromHexString = (hexString: string): Uint8Array =>
@@ -122,22 +122,6 @@ Deno.test({
       () => decodeBase32("OOOO=="),
       "Invalid pad length",
     );
-  },
-});
-
-Deno.test({
-  name: "encodeBase32() checks byteLength",
-  fn() {
-    const tests: [string, number][] = [
-      ["JBSWY3DPEBLW64TMMQ======", 11],
-      ["3X4A5PRBX4NR4EVGJROMNJ2LLWJN2===", 18],
-      ["WB2K5C467XQPC7ZXXTFN3YAG2A4ZS62ZZDX3AWW5", 25],
-      ["6L6CGGN5FFCXZTIB5DQZJ3U327UXFGFWMEG7JKYPHVN2UCZNPTHWTAU63N2O33Y=", 39],
-    ];
-
-    for (const [input, expect] of tests) {
-      assertEquals(byteLength(input), expect);
-    }
   },
 });
 
