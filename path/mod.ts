@@ -44,10 +44,13 @@ export const win32: typeof _windows = _windows;
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/posix/mod.ts} instead. */
 export const posix: typeof _posix = _posix;
 
+/**
+ * @deprecated (will be removed in 1.0.0) Use "seperator" instead.
+ */
 export const sep: "/" | "\\" = isWindows ? _windows.sep : _posix.sep;
 
 export * from "./basename.ts";
-export * from "./delimiter.ts";
+export * from "./constants.ts";
 export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./format.ts";

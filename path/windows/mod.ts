@@ -22,10 +22,13 @@
  * @module
  */
 
+/**
+ * @deprecated (will be removed in 1.0.0) Use "seperator" instead.
+ */
 export const sep = "\\";
-export const delimiter = ";";
 
 export * from "./basename.ts";
+export * from "./constants.ts";
 export * from "./dirname.ts";
 export * from "./extname.ts";
 export * from "./format.ts";
