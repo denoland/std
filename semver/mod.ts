@@ -271,7 +271,6 @@
  *
  * @module
  */
-export * from "./cmp.ts";
 export * from "./comparator_format.ts";
 export * from "./comparator_intersects.ts";
 export * from "./comparator_max.ts";
