@@ -3,6 +3,10 @@
 
 import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 
+/**
+ * Duration units for {@linkcode DifferenceFormat} and
+ * {@linkcode DifferenceOptions}.
+ */
 export type Unit =
   | "milliseconds"
   | "seconds"
@@ -14,8 +18,10 @@ export type Unit =
   | "quarters"
   | "years";
 
+/** Return type for {@linkcode difference}. */
 export type DifferenceFormat = Partial<Record<Unit, number>>;
 
+/** Options for {@linkcode difference}. */
 export type DifferenceOptions = {
   units?: Unit[];
 };

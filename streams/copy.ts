@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DEFAULT_BUFFER_SIZE } from "./_common.ts";
+import { copy as _copy } from "../io/copy.ts";
 import type { Reader, Writer } from "../io/types.ts";
 
 /**
@@ -22,8 +22,7 @@ import type { Reader, Writer } from "../io/types.ts";
  * @param dst The destination to copy to
  * @param options Can be used to tune size of the buffer. Default size is 32kB
  *
- * @deprecated (will be removed after 1.0.0) Use
- * {@linkcode ReadableStream.pipeTo} instead.
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/io/copy.ts} instead.
  */
 export async function copy(
   src: Reader,
@@ -32,21 +31,5 @@ export async function copy(
     bufSize?: number;
   },
 ): Promise<number> {
-  let n = 0;
-  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
-  const b = new Uint8Array(bufSize);
-  let gotEOF = false;
-  while (gotEOF === false) {
-    const result = await src.read(b);
-    if (result === null) {
-      gotEOF = true;
-    } else {
-      let nwritten = 0;
-      while (nwritten < result) {
-        nwritten += await dst.write(b.subarray(nwritten, result));
-      }
-      n += nwritten;
-    }
-  }
-  return n;
+  return await _copy(src, dst, options);
 }

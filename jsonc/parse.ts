@@ -1,8 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** {@linkcode parse} function for parsing
- * [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
+/**
+ * {@linkcode parse} function for parsing
+ * {@link https://code.visualstudio.com/docs/languages/json#_json-with-comments | JSONC}
  * (JSON with Comments) strings.
  *
  * This module is browser compatible.
@@ -15,6 +16,7 @@ import { assert } from "../assert/assert.ts";
 import type { JsonValue } from "../json/common.ts";
 export type { JsonValue } from "../json/common.ts";
 
+/** Options for {@linkcode parse}. */
 export interface ParseOptions {
   /** Allow trailing commas at the end of arrays and objects.
    *
@@ -25,18 +27,17 @@ export interface ParseOptions {
 
 /**
  * Converts a JSON with Comments (JSONC) string into an object.
- * If a syntax error is found, throw a SyntaxError.
+ * If a syntax error is found, throw a {@linkcode SyntaxError}.
  *
  * @example
- *
  * ```ts
- * import * as JSONC from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
+ * import { parse } from "https://deno.land/std@$STD_VERSION/jsonc/mod.ts";
  *
- * console.log(JSONC.parse('{"foo": "bar", } // comment')); //=> { foo: "bar" }
- * console.log(JSONC.parse('{"foo": "bar", } /* comment *\/')); //=> { foo: "bar" }
- * console.log(JSONC.parse('{"foo": "bar" } // comment', {
+ * console.log(parse('{"foo": "bar", } // comment')); // { foo: "bar" }
+ * console.log(parse('{"foo": "bar", } /* comment *\/')); // { foo: "bar" }
+ * console.log(parse('{"foo": "bar" } // comment', {
  *   allowTrailingComma: false,
- * })); //=> { foo: "bar" }
+ * })); // { foo: "bar" }
  * ```
  *
  * @param text A valid JSONC string.
@@ -118,7 +119,7 @@ class JSONCParser {
   *#tokenize(): Generator<Token, void> {
     for (let i = 0; i < this.#length; i++) {
       // skip whitespace
-      if (this.#whitespace.has(this.#text[i])) {
+      if (this.#whitespace.has(this.#text[i]!)) {
         continue;
       }
 
@@ -194,7 +195,7 @@ class JSONCParser {
         default: { // parse null, true, false or number token
           const startIndex = i;
           for (; i < this.#length; i++) { // read until find numberEndToken
-            if (this.#numberEndToken.has(this.#text[i])) {
+            if (this.#numberEndToken.has(this.#text[i]!)) {
               break;
             }
           }
