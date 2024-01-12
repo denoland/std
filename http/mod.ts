@@ -63,7 +63,6 @@
  */
 
 export * from "./cookie.ts";
-export * from "./cookie_map.ts";
 export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
