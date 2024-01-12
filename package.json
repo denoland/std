@@ -69,6 +69,7 @@
     "fake-indexeddb": "^5.0.2",
     "prop-types": "^15.8.1",
     "storybook": "^7.6.7",
+    "unplugin-auto-import": "^0.17.3",
     "vite": "^5.0.11",
     "vitest": "^1.1.3"
   },

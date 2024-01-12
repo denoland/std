@@ -1,6 +1,5 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
-import Debug from 'debug'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
