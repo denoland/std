@@ -13,6 +13,7 @@ Deno.test({
         "run",
         "--allow-read",
         "--allow-env",
+        "--no-lock",
         path.join(testdataDir, "./app_load.ts"),
       ],
       clearEnv: true,
@@ -34,6 +35,7 @@ Deno.test({
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
+        "--no-lock",
         "--allow-read",
         "--allow-env",
         path.join(testdataDir, "./app_load_parent.ts"),

@@ -1,3 +1,30 @@
+### 0.212.0 / 2024.01.12
+
+- BREAKING(encoding): remove `base32.byteLength()` (#4173)
+- BREAKING(log): remove deprecated APIs (#4104)
+- BREAKING(semver): remove `SemVerComparator` (#4109)
+- BREAKING(semver): remove `canParse()` non-string overload (#4108)
+- BREAKING(semver): remove `cmp()` (#4171)
+- BREAKING(semver): remove `isSemVerComparator()` (#4107)
+- BREAKING(semver): remove `parse(semver: string)` overload (#4172)
+- BREAKING(semver): remove `rcompare()` (#4106)
+- BREAKING: remove `std/signal` sub-module (#4105)
+- deprecation(io): move types file (#4133)
+- deprecation(log): deprecate `LogLevels.WARNING` (#4170)
+- deprecation(log): move handlers to single-export files (#4176)
+- deprecation(log): rename `warning()` to `warn()` (#4117)
+- deprecation(semver): deprecate `Comparator` functions (#4131)
+- deprecation(semver): deprecate `sort()` (#4098)
+- deprecation(semver): rename `rangeFormat()` to `formatRange()` (#4090)
+- feat(cli): make `Spinner.color` public (#4092)
+- feat(io): re-introduce IO functions (#4128)
+- feat(net): add `preferredPort` option to `getAvailablePort()` (#4151)
+- feat(text): cases (#4082)
+- fix(fs): reduce perm requirement of `ensureDir()` (#4041)
+- fix(http): punt removal version of `unstable_cookie_map.ts` (#4125)
+- fix: add `--no-lock` to spawned process args in tests (#4168)
+- fix: use `with` keyword for import attributes (#4141)
+
 ### 0.211.0 / 2024.01.04
 
 - BREAKING(collections): remove `groupBy()` (#3923)

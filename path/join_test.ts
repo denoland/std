@@ -2,6 +2,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { join } from "./join.ts";
 
 const backslashRE = /\\/g;
 
@@ -126,4 +127,13 @@ Deno.test("windows.join()", function () {
     const actual = windows.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
+});
+
+Deno.test(`join() returns "." if input is empty`, function () {
+  assertEquals(join(""), ".");
+  assertEquals(join("", ""), ".");
+
+  const pwd = Deno.cwd();
+  assertEquals(join(pwd), pwd);
+  assertEquals(join(pwd, ""), pwd);
 });

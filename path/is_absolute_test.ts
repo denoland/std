@@ -4,6 +4,7 @@
 import { assertEquals } from "../assert/mod.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { isAbsolute } from "./is_absolute.ts";
 
 Deno.test("posix.isAbsolute()", function () {
   assertEquals(posix.isAbsolute("/home/foo"), true);
@@ -31,4 +32,8 @@ Deno.test("windows.isAbsolute()", function () {
   assertEquals(windows.isAbsolute("C:cwd\\another"), false);
   assertEquals(windows.isAbsolute("directory/directory"), false);
   assertEquals(windows.isAbsolute("directory\\directory"), false);
+});
+
+Deno.test("isAbsolute() returns false if input is empty", function () {
+  assertEquals(isAbsolute(""), false);
 });
