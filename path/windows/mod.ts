@@ -23,7 +23,7 @@
  */
 
 /**
- * @deprecated (will be removed in 1.0.0) Use "seperator" instead.
+ * @deprecated (will be removed in 1.0.0) Use "separator" instead.
  */
 export const sep = "\\";
 

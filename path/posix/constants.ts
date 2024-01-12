@@ -2,5 +2,5 @@
 // This module is browser compatible.
 
 export const delimiter = ":";
-export const seperator = "/";
-export const seperatorPattern = /\/+/;
+export const separator = "/";
+export const separatorPattern = /\/+/;

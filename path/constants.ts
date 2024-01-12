@@ -3,5 +3,5 @@
 import { isWindows } from "./_os.ts";
 
 export const delimiter = isWindows ? ";" : ":";
-export const seperator = isWindows ? "\\" : "/";
-export const seperatorPattern = isWindows ? /[\\/]+/ : /\/+/;
+export const separator = isWindows ? "\\" : "/";
+export const separatorPattern = isWindows ? /[\\/]+/ : /\/+/;

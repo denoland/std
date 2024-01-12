@@ -45,7 +45,7 @@ export const win32: typeof _windows = _windows;
 export const posix: typeof _posix = _posix;
 
 /**
- * @deprecated (will be removed in 1.0.0) Use "seperator" instead.
+ * @deprecated (will be removed in 1.0.0) Use "separator" instead.
  */
 export const sep: "/" | "\\" = isWindows ? _windows.sep : _posix.sep;
 
