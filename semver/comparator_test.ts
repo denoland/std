@@ -6,6 +6,7 @@ import { parse } from "./parse.ts";
 import { testRange } from "./test_range.ts";
 import { parseComparator } from "./parse_comparator.ts";
 import { comparatorFormat } from "./comparator_format.ts";
+import { Comparator } from "https://deno.land/std@$STD_VERSION/semver/types.ts";
 
 Deno.test({
   name: "comparators",
@@ -161,13 +162,31 @@ Deno.test({
   },
 });
 
-Deno.test("tostrings", function () {
+Deno.test("comparatorFormat() handles semver inheritance", function () {
   assertEquals(
     comparatorFormat(parseComparator(">= v1.2.3")),
     ">=1.2.3",
   );
   assertEquals(
     comparatorFormat(parseComparator(">= v1.2.3-pre.1+b.2")),
+    ">=1.2.3-pre.1+b.2",
+  );
+});
+
+Deno.test("comparatorFormat() handles deprecated Comparator.semver property", function () {
+  const c1 = parseComparator(">= v1.2.3");
+  assertEquals(
+    comparatorFormat(
+      { operator: c1.operator, semver: c1.semver } as Comparator,
+    ),
+    ">=1.2.3",
+  );
+  const c2 = parseComparator(">= v1.2.3-pre.1+b.2");
+
+  assertEquals(
+    comparatorFormat(
+      { operator: c2.operator, semver: c2.semver } as Comparator,
+    ),
     ">=1.2.3-pre.1+b.2",
   );
 });
