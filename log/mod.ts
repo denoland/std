@@ -369,6 +369,10 @@ import { assert } from "../assert/assert.ts";
 import type { LevelName } from "./levels.ts";
 import { jsonFormatter } from "./formatters.ts";
 
+export * from "./base_handler.ts";
+export * from "./console_handler.ts";
+export * from "./file_handler.ts";
+export * from "./rotating_file_handler.ts";
 export { LogLevels } from "./levels.ts";
 export type { LevelName, LogLevel } from "./levels.ts";
 export { Logger } from "./logger.ts";
@@ -430,6 +434,8 @@ const state = {
  *
  * For examples check source code of {@linkcode FileHandler}`
  * and {@linkcode TestHandler}.
+ *
+ * @deprecated (will be removed in 0.214.0) Import the specific handler needed instead.
  */
 export const handlers = {
   BaseHandler,
