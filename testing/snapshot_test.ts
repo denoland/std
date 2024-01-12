@@ -296,6 +296,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
         const process = new Deno.Command(Deno.execPath(), {
           args: [
             "test",
+            "--no-lock",
             "--allow-all",
             tempTestFilePath,
             "--",
@@ -347,7 +348,14 @@ Deno.test(
       await Deno.writeTextFile(tempTestFilePath, test);
 
       const command = new Deno.Command(Deno.execPath(), {
-        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
+        args: [
+          "test",
+          "--no-lock",
+          "--allow-all",
+          tempTestFilePath,
+          "--",
+          "-u",
+        ],
       });
       const { stdout, stderr } = await command.output();
 
@@ -492,7 +500,14 @@ Deno.test(
       await Deno.writeTextFile(tempTestFilePath, test);
 
       const command = new Deno.Command(Deno.execPath(), {
-        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
+        args: [
+          "test",
+          "--no-lock",
+          "--allow-all",
+          tempTestFilePath,
+          "--",
+          "-u",
+        ],
       });
       const { stdout, stderr } = await command.output();
 
@@ -606,6 +621,7 @@ Deno.test(
       const command = new Deno.Command(Deno.execPath(), {
         args: [
           "test",
+          "--no-lock",
           "--allow-all",
           tempTestFilePath1,
           tempTestFilePath2,

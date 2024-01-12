@@ -50,17 +50,6 @@ function getLens(b32: string): [number, number] {
   return [validLen, placeHoldersLen];
 }
 
-/**
- * Returns number of bytes encoded in the given RFC4648 base32 string input.
- * @param b32
- *
- * @deprecated (will be removed in 0.212.0)
- */
-export function byteLength(b32: string): number {
-  const [validLen, placeHoldersLen] = getLens(b32);
-  return _byteLength(validLen, placeHoldersLen);
-}
-
 function _byteLength(validLen: number, placeHoldersLen: number): number {
   return ((validLen + placeHoldersLen) * 5) / 8 - _getPadLen(placeHoldersLen);
 }
