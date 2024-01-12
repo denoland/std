@@ -2,8 +2,8 @@
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { writeAll } from "../streams/write_all.ts";
-import { readAll } from "../streams/read_all.ts";
+import { writeAll } from "../io/write_all.ts";
+import { readAll } from "../io/read_all.ts";
 import { delay } from "../async/mod.ts";
 import {
   assert,
