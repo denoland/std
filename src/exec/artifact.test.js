@@ -1,3 +1,4 @@
+import Debug from 'debug'
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 
@@ -31,6 +32,27 @@ test('add a file', async ({ artifact }) => {
   // expect(files).toEqual(['hello.txt'])
   // const contents = await artifact.read('hello.txt')
   // expect(contents).toEqual('hello world')
+})
+
+Debug.enable('AI:*')
+test.only('reset session', async ({ artifact }) => {
+  const { prompt } = await artifact.goalUp()
+  const result = await prompt({ text: 'reset my session' })
+  // it should double check if thats what you want
+  // it should ask if you want to delete the current session, or just start a
+  // new one and keep the old one
+
+  // go into the stuckloop to find what the best looking help is
+  // this function can be arbitrarily complex, or simple.
+
+  // be able to edit and refine how the stuckloop works, and wire up different
+  // models
+
+  // so make a function that is stuck-rag
+
+  // then make a function that is post a stuck
+
+  // then publish the stucks to the internet
 })
 
 /**

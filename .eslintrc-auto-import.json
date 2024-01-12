@@ -1,5 +1,5 @@
 {
   "globals": {
-    "Debug": true
+    "Debug": "readonly"
   }
 }

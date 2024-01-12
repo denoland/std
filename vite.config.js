@@ -8,8 +8,8 @@ export default defineConfig({
     AutoImport({
       imports: [{ debug: [['default', 'Debug']] }],
       eslintrc: {
-        enabled: true, // Default `false`
-        globalsPropValue: true, // Default `true`, (true | false | 'readonly' | 'readable' | 'writable' | 'writeable')
+        enabled: true,
+        globalsPropValue: 'readonly',
       },
     }),
     react(),

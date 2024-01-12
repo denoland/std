@@ -6,8 +6,6 @@ import git from 'isomorphic-git'
 import http from 'isomorphic-git/http/web'
 import LightningFS from '@isomorphic-git/lightning-fs'
 import { Buffer } from 'buffer'
-import loader from '../boot/loader.md?raw'
-import sysprompt from '../boot/chat-system-prompt.md?raw'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
@@ -68,20 +66,39 @@ export default class Artifact {
       }
     })
     await git.init(this.#opts)
-    const promptP = this.#fs.writeFile(
-      this.#dir + '/chat-system-prompt.md',
-      sysprompt
+    await this.#fs.mkdir(this.#dir + '/prompts')
+    const prompts = ['goalie', 'loader', 'chat']
+    await Promise.all(
+      prompts.map(async (slug) => {
+        const name = '/prompts/' + slug + '.md'
+        const file = await import(`../prompts/${slug}.md?raw`)
+        await this.#fs.writeFile(this.#dir + name, file.default)
+      })
     )
-    const loaderP = this.#fs.writeFile(this.#dir + '/loader.md', loader)
-    const sessionP = this.#fs.writeFile(this.#session, JSON.stringify([]))
-    await Promise.all([promptP, loaderP, sessionP])
+    debug('filesystem created')
     await this.#commitAll({ message: 'init', author: { name: 'HAL' } })
   }
   async chatUp() {
     const path = '/chat-1.io.json'
     const codePath = '/hal/isolates/chat.js'
     const sessionPath = '/hal/chat-1.session.json'
-    const systemPromptPath = '/hal/chat-system-prompt.md'
+    const systemPromptPath = '/hal/prompts/chat.md'
+    const isolate = {
+      codePath,
+      type: 'function',
+      language: 'javascript',
+      api: await this.#io.loadWorker(codePath),
+      config: { sessionPath, systemPromptPath },
+    }
+    await this.#fs.writeFile(sessionPath, JSON.stringify([]))
+    await this.createIO({ path, isolate })
+    return await this.actions(path)
+  }
+  async goalUp() {
+    const path = '/chat-1.io.json'
+    const codePath = '/hal/isolates/chat.js'
+    const sessionPath = '/hal/chat-1.session.json'
+    const systemPromptPath = '/hal/prompts/goalie.md'
     const isolate = {
       codePath,
       type: 'function',
@@ -243,7 +260,7 @@ export default class Artifact {
   async #commitAll({ message, author }) {
     const status = await git.statusMatrix(this.#opts)
     const files = status.map((status) => status[0])
-    await git.add({ ...this.#opts, filepath: files })
+    await git.add({ ...this.#opts, filepath: files[0] })
     const hash = await git.commit({ ...this.#opts, message, author })
     this.#trigger.commit(this.#dir, hash)
   }

@@ -38,10 +38,8 @@ export default class TriggerFS {
     assert(path.startsWith('/hal'), `path must start with /hal: ${path}`)
     const callbacks = this.#subscriptions.get(path)
     if (!callbacks) {
-      debug('no callbacks for path', path)
       return
     }
-    debug('write', path)
     for (const cb of callbacks) {
       cb(file)
     }
