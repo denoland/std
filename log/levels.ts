@@ -9,8 +9,7 @@ export const LogLevels = {
   NOTSET: 0,
   DEBUG: 10,
   INFO: 20,
-  WARN: 30,
-  /** @deprecated (will be removed after 0.214.0) Use {@linkcode LogLevels.WARN} instead. */
+  /** @deprecated (will be removed after 0.214.0) Will be changed to {@linkcode WARN}. */
   WARNING: 30,
   ERROR: 40,
   CRITICAL: 50,
