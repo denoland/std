@@ -67,6 +67,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-storybook": "^0.6.15",
     "fake-indexeddb": "^5.0.2",
+    "git-rev-sync": "^3.0.2",
     "prop-types": "^15.8.1",
     "storybook": "^7.6.7",
     "unplugin-auto-import": "^0.17.3",

@@ -14,10 +14,11 @@ export default class IO {
   #opts
   #debuggingOverloads = new Map()
   #workerCache = new Map()
+  #promiseMap = new Map() // path -> promise ?
   static create({ artifact, opts }) {
     const io = new IO()
     io.#artifact = artifact
-    io.#opts = opts
+    io.#opts = { ...opts, artifact }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
@@ -25,64 +26,63 @@ export default class IO {
     // TODO subscribe to writes, so we can do internal actions with less commits
     await this.#artifact.subscribeCommits('/', async (ref) => {
       debug('io commit triggered', ref.substr(0, 7))
-      const commit = await git.readCommit({ ...this.#opts, oid: ref })
-      const { parent } = commit.commit
-      const changes = await git.walk({
-        ...this.#opts,
-        trees: [TREE({ ref }), TREE({ ref: parent[0] })],
-        map: async (path, [current, previous]) => {
-          if (path.endsWith('.io.json') && current) {
-            // TODO use the artifact readio method, to check schema
-            const io = JSON.parse(toString(await current.content(), 'utf8'))
-            const previousIo =
-              previous && JSON.parse(toString(await previous.content(), 'utf8'))
-            const actions = newActions(io.inputs, previousIo?.inputs || {})
-            return { path: '/' + path, actions, io }
-          }
-        },
-      })
+      const changes = await this.#diffChanges(ref)
 
       for (const { actions, io, path } of changes) {
-        // TODO handle the isolate changing
         // TODO handle resetting the IO which would terminate all in progress
         debug('io changes', path, actions)
-        const { isolate } = io
-        if (!this.#workerCache.has(path)) {
-          const { codePath, api } = isolate
-          const resolvedCodePath = this.#resolveCodePath(codePath)
-          const worker = ioWorker(this.#opts)
-          const loadedApi = await worker.load(resolvedCodePath)
-          assert(equals(loadedApi, api), 'api mismatch')
-          this.#workerCache.set(path, { api, worker })
-          // TODO LRU the cache
-        }
-        const { api, worker } = this.#workerCache.get(path)
+        const { api, worker } = await this.#ensureWorker(path, io)
         for (const { action, id } of actions) {
           for (const [functionName, parameters] of Object.entries(action)) {
             const schema = api[functionName]
             validator(schema)(parameters)
             debug('dispatch', path, functionName, parameters)
+            const args = { path, functionName, id }
             worker
-              .call(functionName, parameters, isolate.config)
-              .then((result) => {
-                return this.#artifact.replyIO({
-                  path,
-                  functionName,
-                  id,
-                  result,
-                })
-              })
+              .execute(functionName, parameters, io.isolate.config)
+              .then((result) => this.#artifact.replyIO({ ...args, result }))
               .catch((errorObj) => {
                 const error = serializeError(errorObj)
                 debug('dispatch error', error)
-                return this.#artifact.replyIO({ path, functionName, id, error })
+                return this.#artifact.replyIO({ ...args, error })
               })
           }
         }
       }
     })
   }
-  #resolveCodePath(codePath) {
+  async #diffChanges(ref) {
+    const commit = await git.readCommit({ ...this.#opts, oid: ref })
+    const { parent } = commit.commit
+    return await git.walk({
+      ...this.#opts,
+      trees: [TREE({ ref }), TREE({ ref: parent[0] })],
+      map: async (path, [current, previous]) => {
+        if (path.endsWith('.io.json') && current) {
+          // TODO use the artifact readio method, to check schema
+          const io = JSON.parse(toString(await current.content(), 'utf8'))
+          const previousIo =
+            previous && JSON.parse(toString(await previous.content(), 'utf8'))
+          const actions = newActions(io.inputs, previousIo?.inputs || {})
+          return { path: '/' + path, actions, io }
+        }
+      },
+    })
+  }
+  async #ensureWorker(path, io) {
+    if (!this.#workerCache.has(path)) {
+      // TODO handle the isolate changing
+      const { codePath, api } = io.isolate
+      const resolvedCodePath = this.#resolveCodePathSlug(codePath)
+      const worker = ioWorker(this.#opts)
+      const loadedApi = await worker.load(resolvedCodePath)
+      assert(equals(loadedApi, api), 'api mismatch')
+      this.#workerCache.set(path, { api, worker })
+      // TODO LRU the cache
+    }
+    return this.#workerCache.get(path)
+  }
+  #resolveCodePathSlug(codePath) {
     assert(posix.isAbsolute(codePath), `codePath must be absolute: ${codePath}`)
     debug('resolveCodePath', codePath)
     let override
@@ -94,12 +94,12 @@ export default class IO {
     const viteImportRegex = /^\/hal\/isolates\/(.*)\.js$/
     const match = codePath.match(viteImportRegex)
     assert(match, `invalid codePath: ${codePath} with override: ${override}`)
-    const [, name] = match
-    assert(name, `invalid slug: ${name}`)
-    return name
+    const [, slug] = match
+    assert(slug, `invalid slug: ${slug}`)
+    return slug
   }
   async loadWorker(codePath) {
-    const resolvedCodePath = this.#resolveCodePath(codePath)
+    const resolvedCodePath = this.#resolveCodePathSlug(codePath)
     debug('resolved', codePath, 'to', resolvedCodePath)
     const worker = ioWorker(this.#opts)
     return await worker.load(resolvedCodePath)

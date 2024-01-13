@@ -9,6 +9,7 @@ import { Buffer } from 'buffer'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
+import equal from 'fast-deep-equal'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
 
@@ -170,7 +171,8 @@ export default class Artifact {
     assert(typeof isolate === 'object', `isolate must be an object`)
     // TODO error if something already there
     // TODO load the isolate in a worker to check it loads correctly
-
+    const api = await this.#io.loadWorker(isolate.codePath)
+    assert(equal(api, isolate.api), 'api mismatch')
     const io = {
       isolate,
       sequence: 0,
@@ -182,19 +184,22 @@ export default class Artifact {
   async actions(path) {
     assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
     assert(path.endsWith('.io.json'), `path must end with .io.json: ${path}`)
+    debug('actions', path)
     const io = await this.readIO(path)
     const { isolate } = io
     const { api } = isolate
     const actions = {}
     for (const functionName of Object.keys(api)) {
+      // TODO make this a lazy proxy that replaces keys each time it is called
       const schema = api[functionName]
       const validate = validator(schema)
-      actions[functionName] = async (parameters) => {
+      actions[functionName] = async (parameters = {}) => {
         validate(parameters)
         return this.dispatch(path, functionName, parameters)
       }
     }
     Object.freeze(actions)
+    debug('actions', path, Object.keys(actions))
     return actions
   }
   overloadExecutable(path, localPath) {
@@ -211,6 +216,8 @@ export default class Artifact {
       resolve = res
       reject = rej
     })
+    // TODO use promise maps for callback of the prompt
+
     const unsubscribe = await this.subscribeCommits(ioPath, (file) => {
       debug('dispatch commit trigger', ioPath)
       const next = JSON.parse(file)
@@ -230,21 +237,6 @@ export default class Artifact {
     await this.#commitIO(ioPath, next, 'dispatch')
     return promise
   }
-  async readIO(path) {
-    // TODO assert the path is not dirty
-    // TODO check the schema of the IO file
-    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    const raw = await this.#fs.readFile(this.#dir + path, 'utf8')
-    return JSON.parse(raw)
-  }
-  async #commitIO(path, io, message) {
-    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    const file = JSON.stringify(io, null, 2)
-    await this.#fs.writeFile(this.#dir + path, file)
-    this.#trigger.write(this.#dir + path, file)
-    // TODO maybe commit just the file
-    await this.#commitAll({ message, author: { name: 'HAL' } })
-  }
   async replyIO({ path, functionName, id, result, error }) {
     // TODO handle further processes being spawned
     // TODO allow to buffer multiple replies into a single commit
@@ -256,11 +248,35 @@ export default class Artifact {
     outputs[id] = { result, error }
     debug('replyIO', path, functionName, id, result, error)
     await this.#commitIO(absolute, io, `Reply: ${path}:${functionName}():${id}`)
+    // TODO resolve the promise map here
+  }
+  async readIO(path) {
+    // TODO assert the path is not dirty
+    // TODO check the schema of the IO file
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const raw = await this.#fs.readFile(this.#dir + path, 'utf8')
+    return JSON.parse(raw)
+  }
+  async #commitIO(path, io, message) {
+    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
+    const absolute = this.#dir + path
+    debug('commitIO', path, absolute)
+    const file = JSON.stringify(io, null, 2)
+    await this.#fs.writeFile(absolute, file)
+    this.#trigger.write(absolute, file)
+    const filepath = posix.relative(this.#dir, absolute)
+    await git.add({ ...this.#opts, filepath })
+    // TODO move to one branch per io process
+    await this.#commitAll({ message, author: { name: 'HAL' } })
   }
   async #commitAll({ message, author }) {
     const status = await git.statusMatrix(this.#opts)
     const files = status.map((status) => status[0])
     await git.add({ ...this.#opts, filepath: files[0] })
+    await this.#commit({ message, author })
+  }
+  async #commit({ message, author }) {
+    // TODO check commit not empty
     const hash = await git.commit({ ...this.#opts, message, author })
     this.#trigger.commit(this.#dir, hash)
   }

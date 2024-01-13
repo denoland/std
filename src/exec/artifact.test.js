@@ -35,7 +35,7 @@ test('add a file', async ({ artifact }) => {
 })
 
 Debug.enable('AI:*')
-test.only('reset session', async ({ artifact }) => {
+test('reset session', async ({ artifact }) => {
   const { prompt } = await artifact.goalUp()
   const result = await prompt({ text: 'reset my session' })
   // it should double check if thats what you want

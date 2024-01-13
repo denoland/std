@@ -1,6 +1,6 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
-import { api } from '../isolates/ping.fixture'
+import Debug from 'debug'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -9,8 +9,7 @@ beforeEach(async (context) => {
 })
 
 test('ping', async ({ artifact }) => {
-  // ? how does this relate to stucks and discoveries ?
-  // stucks would be just another type of code that loads ?
+  const { api } = await import('../isolates/io.fixture')
   const isolate = {
     codePath: '/hal/isolates/ping.fixture.js',
     type: 'function',
@@ -24,4 +23,20 @@ test('ping', async ({ artifact }) => {
   expect(result).toBe('local reply')
   const second = await actions.local({})
   expect(second).toBe(result)
+})
+test.only('child process', async ({ artifact }) => {
+  const { api } = await import('../isolates/io.fixture')
+  const isolate = {
+    codePath: '/hal/isolates/io.fixture.js',
+    type: 'function',
+    language: 'javascript',
+    api,
+  }
+  const path = '/ping.io.json'
+  await artifact.createIO({ path, isolate })
+  await artifact.createIO({ path: '/pong.io.json', isolate })
+  const actions = await artifact.actions(path)
+  Debug.enable('AI:*')
+  const result = await actions.ping()
+  expect(result).toBe('remote pong')
 })

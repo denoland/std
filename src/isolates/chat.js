@@ -1,3 +1,4 @@
+import posix from 'path-browserify'
 import merge from 'lodash.merge'
 import OpenAI from 'openai'
 import { isolate } from '../exec/io-hooks'
@@ -33,68 +34,30 @@ export const functions = {
   prompt: async ({ text }, config) => {
     assert(typeof text === 'string', 'text must be a string')
     assert(text.length, 'text must not be empty')
-
     const { sessionPath, systemPromptPath } = config
     const fs = isolate()
     const messages = await fs.readJS(sessionPath)
     assert(Array.isArray(messages), 'messages must be an array')
 
-    // read in the sysprompt from the
     const sysprompt = await fs.readFile(systemPromptPath)
-
-    // reinsert the sysprompt in case it changed
     messages.shift()
+    // add in the tools that can be called
     messages.unshift({ role: 'assistant', content: sysprompt })
 
-    messages.push({ role: 'user', content: text })
-    const args = {
-      model,
-      temperature: 0,
-      messages: [...messages],
-      stream: true,
-      seed: 1337,
+    if (text) {
+      messages.push({ role: 'user', content: text })
     }
-    const assistant = { role: 'assistant' }
-    messages.push(assistant)
-    await fs.writeJS(messages, sessionPath)
+    // gives back the last assistant message
+    const assistant = await execute(messages, sessionPath)
+    // the reply would be some progress update, or a promise ?
 
-    debug('streamCall started')
-    const streamCall = await ai.chat.completions.create(args)
-    debug('streamCall placed')
-    for await (const part of streamCall) {
-      const content = part.choices[0]?.delta?.content || ''
-      if (!assistant.content) {
-        assistant.content = ''
-      }
-      assistant.content += content
+    // outputs should trace what other calls out were made
+    // they should have been made in such a way as to be recoverable
+    // or, for this initial purpose, we can just execute the actions directly
+    // as functionality is more important than correctness.
 
-      const toolCalls = part.choices[0]?.delta?.tool_calls
-      if (toolCalls) {
-        assert(Array.isArray(toolCalls), 'toolCalls must be an array')
-        if (!assistant.toolCalls) {
-          assistant.toolCalls = []
-        }
-        for (const call of toolCalls) {
-          let { index, ...rest } = call
-          assert(Number.isInteger(index), 'toolCalls index must be an integer')
+    // await useAction('tools', assistant.toolCalls, config)
 
-          let args = assistant.toolCalls[index]?.function?.arguments || ''
-          args += rest?.function?.arguments || ''
-          if (args && isArgsParseable(args)) {
-            if (!assistant.toolCalls[index]) {
-              assistant.toolCalls[index] = {}
-            }
-            rest = merge({}, rest, {
-              function: { arguments: JSON.parse(args) },
-            })
-            merge(assistant.toolCalls[index], rest)
-          }
-        }
-      }
-
-      await fs.writeJS(messages, sessionPath)
-    }
-    debug('streamCall complete')
     return assistant
   },
 }
@@ -106,4 +69,82 @@ const isArgsParseable = (args) => {
   } catch (err) {
     return false
   }
+}
+
+const execute = async (messages, sessionPath) => {
+  const args = {
+    model,
+    temperature: 0,
+    messages: [...messages],
+    stream: true,
+    seed: 1337,
+  }
+  const assistant = { role: 'assistant' }
+  messages.push(assistant)
+  const fs = isolate()
+  await fs.writeJS(messages, sessionPath)
+
+  debug('streamCall started')
+  const streamCall = await ai.chat.completions.create(args)
+  debug('streamCall placed')
+  for await (const part of streamCall) {
+    const content = part.choices[0]?.delta?.content || ''
+    if (!assistant.content) {
+      assistant.content = ''
+    }
+    assistant.content += content
+
+    const toolCalls = part.choices[0]?.delta?.tool_calls
+    if (toolCalls) {
+      assert(Array.isArray(toolCalls), 'toolCalls must be an array')
+      if (!assistant.toolCalls) {
+        assistant.toolCalls = []
+      }
+      for (const call of toolCalls) {
+        let { index, ...rest } = call
+        assert(Number.isInteger(index), 'toolCalls index must be an integer')
+
+        let args = assistant.toolCalls[index]?.function?.arguments || ''
+        args += rest?.function?.arguments || ''
+        if (args && isArgsParseable(args)) {
+          if (!assistant.toolCalls[index]) {
+            assistant.toolCalls[index] = {}
+          }
+          rest = merge({}, rest, {
+            function: { arguments: JSON.parse(args) },
+          })
+          merge(assistant.toolCalls[index], rest)
+        }
+      }
+    }
+    await fs.writeJS(messages, sessionPath)
+  }
+  debug('streamCall complete')
+  return tools(messages, sessionPath)
+}
+
+const tools = async (messages, sessionPath) => {
+  assert(Array.isArray(messages), 'messages must be an array')
+  assert(posix.isAbsolute(sessionPath), 'sessionPath must be absolute')
+  const assistant = messages
+  if (!assistant.toolCalls) {
+    return assistant
+  }
+  for (const call of assistant.toolCalls) {
+    const { function: functionName, arguments: args } = call
+
+    await io(path, functionName, args)
+
+    // make sure these were what the prompt was loaded with
+    // get the path from the config
+    // dispatch an action to those io channels
+    // ? should commit happen
+
+    // need a different dispatch, since no waiting for results
+    // io watcher should handle new replies too
+    const result = await fs.call(functionName, arguments)
+    call.result = result
+    // load these up on the messages again, and re-run the ai
+  }
+  return execute(messages, sessionPath)
 }
