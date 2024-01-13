@@ -343,7 +343,7 @@ function setNested(
   object: NestedMapping,
   keys: string[],
   value: unknown,
-  collect: boolean,
+  collect = false,
 ) {
   keys.slice(0, -1).forEach((key) => {
     object[key] ??= {};
@@ -684,9 +684,9 @@ export function parseArgs<
   for (const [key, value] of Object.entries(defaults)) {
     const keys = key.split(".");
     if (!hasNested(argv, keys)) {
-      setNested(argv, key.split("."), value, false);
+      setNested(argv, keys, value);
       aliasMap.get(key)?.forEach((key) =>
-        setNested(argv, key.split("."), value, false)
+        setNested(argv, key.split("."), value)
       );
     }
   }
@@ -695,14 +695,14 @@ export function parseArgs<
     const keys = key.split(".");
     if (!hasNested(argv, keys)) {
       const value = collectSet.has(key) ? [] : false;
-      setNested(argv, key.split("."), value, false);
+      setNested(argv, keys, value);
     }
   }
 
   for (const key of stringSet.keys()) {
     const keys = key.split(".");
     if (!hasNested(argv, keys) && collectSet.has(key)) {
-      setNested(argv, key.split("."), [], false);
+      setNested(argv, keys, []);
     }
   }
 
