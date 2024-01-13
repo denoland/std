@@ -341,12 +341,10 @@ function isNumber(x: unknown): boolean {
 
 function setNested(
   object: NestedMapping,
-  name: string,
+  keys: string[],
   value: unknown,
   collect: boolean,
 ) {
-  const keys = name.split(".");
-
   keys.slice(0, -1).forEach((key) => {
     object[key] ??= {};
     object = object[key] as NestedMapping;
@@ -354,20 +352,17 @@ function setNested(
 
   const key = keys[keys.length - 1];
 
-  if (!collect) {
-    object[key] = value;
-    return;
+  if (collect) {
+    const v = object[key];
+    if (Array.isArray(v)) {
+      v.push(value);
+      return;
+    }
+
+    value = v ? [v, value] : [value];
   }
-  const v = object[key];
-  if (Array.isArray(v)) {
-    (object[key] as unknown[]).push(value);
-    return;
-  }
-  if (v === undefined) {
-    object[key] = [value];
-    return;
-  }
-  object[key] = [v, value];
+
+  object[key] = value;
 }
 
 function hasNested(object: NestedMapping, keys: string[]): boolean {
@@ -551,9 +546,9 @@ export function parseArgs<
     value = parseValue(stringSet, key, value);
 
     const collectable = collect && collectSet.has(key);
-    setNested(argv, key, value, collectable);
+    setNested(argv, key.split("."), value, collectable);
     aliasMap.get(key)?.forEach((key) =>
-      setNested(argv, key, value, collectable)
+      setNested(argv, key.split("."), value, collectable)
     );
   }
 
@@ -689,8 +684,10 @@ export function parseArgs<
   for (const [key, value] of Object.entries(defaults)) {
     const keys = key.split(".");
     if (!hasNested(argv, keys)) {
-      setNested(argv, key, value, false);
-      aliasMap.get(key)?.forEach((x) => setNested(argv, x, value, false));
+      setNested(argv, key.split("."), value, false);
+      aliasMap.get(key)?.forEach((key) =>
+        setNested(argv, key.split("."), value, false)
+      );
     }
   }
 
@@ -698,14 +695,14 @@ export function parseArgs<
     const keys = key.split(".");
     if (!hasNested(argv, keys)) {
       const value = collectSet.has(key) ? [] : false;
-      setNested(argv, key, value, false);
+      setNested(argv, key.split("."), value, false);
     }
   }
 
   for (const key of stringSet.keys()) {
     const keys = key.split(".");
     if (!hasNested(argv, keys) && collectSet.has(key)) {
-      setNested(argv, key, [], false);
+      setNested(argv, key.split("."), [], false);
     }
   }
 
