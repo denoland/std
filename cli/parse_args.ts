@@ -666,7 +666,8 @@ export function parseArgs<
           setArg(key, nextArg, arg, true);
           i++;
         } else if (nextArg && isBooleanValue(nextArg)) {
-          setArg(key, nextArg === "true", arg, true);
+          const value = parseBooleanValue(nextArg);
+          setArg(key, value, arg, true);
           i++;
         } else {
           setArg(key, stringSet.has(key) ? "" : true, arg, true);
