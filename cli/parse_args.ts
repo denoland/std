@@ -411,7 +411,7 @@ const FLAG_REGEXP =
  * return an object representing the flags found in the passed arguments.
  *
  * By default, any arguments starting with `-` or `--` are considered boolean
- *  If the argument name is followed by an equal sign (`=`) it is
+ * flags. If the argument name is followed by an equal sign (`=`) it is
  * considered a key-value pair. Any arguments which could not be parsed are
  * available in the `_` property of the returned object.
  *
