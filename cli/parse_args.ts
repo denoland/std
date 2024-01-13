@@ -405,7 +405,7 @@ function isBooleanValue(value: string) {
 }
 
 const FLAG_REGEXP =
-  /^(?:-(?:(?<doubleDash>-)(?<no>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
 
 /** Take a set of command line arguments, optionally with a set of options, and
  * return an object representing the flags found in the passed arguments.
@@ -576,7 +576,7 @@ export function parseArgs<
     const groups = arg.match(FLAG_REGEXP)?.groups;
 
     if (groups) {
-      const { doubleDash, no } = groups;
+      const { doubleDash, negated } = groups;
       let key = groups.key;
       let value: unknown = groups.value;
 
@@ -587,7 +587,7 @@ export function parseArgs<
           continue;
         }
 
-        if (no) {
+        if (negated) {
           if (negatableSet.has(key)) {
             setArg(key, false, arg, false);
             continue;
