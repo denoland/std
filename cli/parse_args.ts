@@ -393,7 +393,7 @@ function isBooleanString(value: string) {
   return BOOLEAN_VALUE_REGEXP.test(value);
 }
 
-function parseBooleanValue(value: unknown) {
+function parseBooleanString(value: unknown) {
   return value !== "false";
 }
 
@@ -580,7 +580,7 @@ export function parseArgs<
 
       if (doubleDash) {
         if (value) {
-          if (booleanSet.has(key)) value = parseBooleanValue(value);
+          if (booleanSet.has(key)) value = parseBooleanString(value);
           setArgument(key, value, arg, true);
           continue;
         }
@@ -611,7 +611,7 @@ export function parseArgs<
         }
 
         if (isBooleanString(next)) {
-          value = parseBooleanValue(next);
+          value = parseBooleanString(next);
           i++;
           setArgument(key, value, arg, true);
           continue;
@@ -674,7 +674,7 @@ export function parseArgs<
           setArgument(key, nextArg, arg, true);
           i++;
         } else if (nextArg && isBooleanString(nextArg)) {
-          const value = parseBooleanValue(nextArg);
+          const value = parseBooleanString(nextArg);
           setArgument(key, value, arg, true);
           i++;
         } else {
