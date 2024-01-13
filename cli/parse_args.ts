@@ -387,10 +387,6 @@ function aliasIsBoolean(
   return false;
 }
 
-function parseValue(stringSet: Set<string>, key: string, value: unknown) {
-  return !stringSet.has(key) && isNumber(value) ? Number(value) : value;
-}
-
 const BOOLEAN_VALUE_REGEXP = /^(true|false)$/;
 
 function isBooleanValue(value: string) {
@@ -537,7 +533,12 @@ export function parseArgs<
 
   const argv: Args = { _: [] };
 
-  function setArg(key: string, value: unknown, arg: string, collect: boolean) {
+  function setArgument(
+    key: string,
+    value: string | number | boolean,
+    arg: string,
+    collect: boolean,
+  ) {
     if (
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
@@ -547,7 +548,9 @@ export function parseArgs<
     ) {
       return;
     }
-    value = parseValue(stringSet, key, value);
+    if (typeof value === "string" && !stringSet.has(key)) {
+      value = isNumber(value) ? Number(value) : value;
+    }
 
     const collectable = collect && collectSet.has(key);
     setNested(argv, key.split("."), value, collectable);
@@ -573,18 +576,18 @@ export function parseArgs<
     if (groups) {
       const { doubleDash, negated } = groups;
       let key = groups.key;
-      let value: unknown = groups.value;
+      let value: string | number | boolean = groups.value;
 
       if (doubleDash) {
         if (value) {
           if (booleanSet.has(key)) value = parseBooleanValue(value);
-          setArg(key, value, arg, true);
+          setArgument(key, value, arg, true);
           continue;
         }
 
         if (negated) {
           if (negatableSet.has(key)) {
-            setArg(key, false, arg, false);
+            setArgument(key, false, arg, false);
             continue;
           }
           key = `no-${key}`;
@@ -603,19 +606,19 @@ export function parseArgs<
         ) {
           value = next;
           i++;
-          setArg(key, value, arg, true);
+          setArgument(key, value, arg, true);
           continue;
         }
 
         if (isBooleanValue(next)) {
           value = parseBooleanValue(next);
           i++;
-          setArg(key, value, arg, true);
+          setArgument(key, value, arg, true);
           continue;
         }
 
         value = stringSet.has(key) ? "" : true;
-        setArg(key, value, arg, true);
+        setArgument(key, value, arg, true);
         continue;
       }
       const letters = arg.slice(1, -1).split("");
@@ -625,12 +628,12 @@ export function parseArgs<
         const next = arg.slice(j + 2);
 
         if (next === "-") {
-          setArg(letters[j], next, arg, true);
+          setArgument(letters[j], next, arg, true);
           continue;
         }
 
         if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
-          setArg(letters[j], next.split(/=(.+)/)[1], arg, true);
+          setArgument(letters[j], next.split(/=(.+)/)[1], arg, true);
           broken = true;
           break;
         }
@@ -639,17 +642,22 @@ export function parseArgs<
           /[A-Za-z]/.test(letters[j]) &&
           /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)
         ) {
-          setArg(letters[j], next, arg, true);
+          setArgument(letters[j], next, arg, true);
           broken = true;
           break;
         }
 
         if (letters[j + 1] && letters[j + 1].match(/\W/)) {
-          setArg(letters[j], arg.slice(j + 2), arg, true);
+          setArgument(letters[j], arg.slice(j + 2), arg, true);
           broken = true;
           break;
         }
-        setArg(letters[j], stringSet.has(letters[j]) ? "" : true, arg, true);
+        setArgument(
+          letters[j],
+          stringSet.has(letters[j]) ? "" : true,
+          arg,
+          true,
+        );
       }
 
       key = arg.slice(-1);
@@ -663,14 +671,14 @@ export function parseArgs<
             ? !aliasIsBoolean(aliasMap, booleanSet, key)
             : true)
         ) {
-          setArg(key, nextArg, arg, true);
+          setArgument(key, nextArg, arg, true);
           i++;
         } else if (nextArg && isBooleanValue(nextArg)) {
           const value = parseBooleanValue(nextArg);
-          setArg(key, value, arg, true);
+          setArgument(key, value, arg, true);
           i++;
         } else {
-          setArg(key, stringSet.has(key) ? "" : true, arg, true);
+          setArgument(key, stringSet.has(key) ? "" : true, arg, true);
         }
       }
       continue;
