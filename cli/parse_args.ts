@@ -397,6 +397,10 @@ function isBooleanValue(value: string) {
   return BOOLEAN_VALUE_REGEXP.test(value);
 }
 
+function parseBooleanValue(value: unknown) {
+  return value !== "false";
+}
+
 const FLAG_REGEXP =
   /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
 
@@ -573,7 +577,7 @@ export function parseArgs<
 
       if (doubleDash) {
         if (value) {
-          if (booleanSet.has(key)) value = value !== "false";
+          if (booleanSet.has(key)) value = parseBooleanValue(value);
           setArg(key, value, arg, true);
           continue;
         }
@@ -604,7 +608,7 @@ export function parseArgs<
         }
 
         if (isBooleanValue(next)) {
-          value = next === "true";
+          value = parseBooleanValue(next);
           i++;
           setArg(key, value, arg, true);
           continue;
@@ -661,7 +665,7 @@ export function parseArgs<
         ) {
           setArg(key, nextArg, arg, true);
           i++;
-        } else if (nextArg && /^(true|false)$/.test(nextArg)) {
+        } else if (nextArg && isBooleanValue(nextArg)) {
           setArg(key, nextArg === "true", arg, true);
           i++;
         } else {
