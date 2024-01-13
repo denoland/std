@@ -358,16 +358,12 @@
 
 import { Logger } from "./logger.ts";
 import type { GenericFunction, LogRecord } from "./logger.ts";
-import {
-  BaseHandler,
-  ConsoleHandler,
-  FileHandler,
-  RotatingFileHandler,
-  WriterHandler,
-} from "./handlers.ts";
 import { assert } from "../assert/assert.ts";
 import type { LevelName } from "./levels.ts";
 import { jsonFormatter } from "./formatters.ts";
+import { ConsoleHandler } from "./console_handler.ts";
+import { BaseHandler } from "./base_handler.ts";
+import { FileHandler, RotatingFileHandler, WriterHandler } from "./handlers.ts";
 
 export * from "./base_handler.ts";
 export * from "./console_handler.ts";
