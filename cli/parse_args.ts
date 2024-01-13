@@ -499,8 +499,9 @@ export function parseArgs<
   }
 
   if (boolean) {
-    if (typeof boolean === "boolean") allBools = !!boolean;
-    else {
+    if (typeof boolean === "boolean") {
+      allBools = boolean;
+    } else {
       const booleanArgs = Array.isArray(boolean) ? boolean : [boolean];
       for (const key of booleanArgs.filter(Boolean)) {
         booleanSet.add(key);
@@ -537,12 +538,7 @@ export function parseArgs<
 
   const argv: Args = { _: [] };
 
-  function setArg(
-    key: string,
-    value: unknown,
-    arg: string,
-    collect: boolean,
-  ) {
+  function setArg(key: string, value: unknown, arg: string, collect: boolean) {
     if (
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
@@ -554,9 +550,10 @@ export function parseArgs<
     }
     value = parseValue(stringSet, key, value);
 
-    setNested(argv, key, value, collect && collectSet.has(key));
+    const collectable = collect && collectSet.has(key);
+    setNested(argv, key, value, collectable);
     aliasMap.get(key)?.forEach((key) =>
-      setNested(argv, key, value, collect && collectSet.has(key))
+      setNested(argv, key, value, collectable)
     );
   }
 
