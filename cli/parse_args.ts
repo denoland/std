@@ -333,7 +333,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function isNumber(x: unknown): boolean {
+function isNumberString(x: unknown): boolean {
   if (typeof x === "number") return true;
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
@@ -389,7 +389,7 @@ function aliasIsBoolean(
 
 const BOOLEAN_VALUE_REGEXP = /^(true|false)$/;
 
-function isBooleanValue(value: string) {
+function isBooleanString(value: string) {
   return BOOLEAN_VALUE_REGEXP.test(value);
 }
 
@@ -549,7 +549,7 @@ export function parseArgs<
       return;
     }
     if (typeof value === "string" && !stringSet.has(key)) {
-      value = isNumber(value) ? Number(value) : value;
+      value = isNumberString(value) ? Number(value) : value;
     }
 
     const collectable = collect && collectSet.has(key);
@@ -610,7 +610,7 @@ export function parseArgs<
           continue;
         }
 
-        if (isBooleanValue(next)) {
+        if (isBooleanString(next)) {
           value = parseBooleanValue(next);
           i++;
           setArgument(key, value, arg, true);
@@ -673,7 +673,7 @@ export function parseArgs<
         ) {
           setArgument(key, nextArg, arg, true);
           i++;
-        } else if (nextArg && isBooleanValue(nextArg)) {
+        } else if (nextArg && isBooleanString(nextArg)) {
           const value = parseBooleanValue(nextArg);
           setArgument(key, value, arg, true);
           i++;
@@ -685,7 +685,9 @@ export function parseArgs<
     }
 
     if (unknownFn?.(arg) !== false) {
-      argv._.push(stringSet.has("_") || !isNumber(arg) ? arg : Number(arg));
+      argv._.push(
+        stringSet.has("_") || !isNumberString(arg) ? arg : Number(arg),
+      );
     }
 
     if (stopEarly) {
