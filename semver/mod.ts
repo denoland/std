@@ -275,7 +275,6 @@ export * from "./comparator_format.ts";
 export * from "./comparator_intersects.ts";
 export * from "./comparator_max.ts";
 export * from "./comparator_min.ts";
-export * from "./compare_build.ts";
 export * from "./compare.ts";
 export * from "./constants.ts";
 export * from "./difference.ts";
