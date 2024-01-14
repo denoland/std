@@ -172,7 +172,10 @@ export default class Artifact {
     // TODO error if something already there
     // TODO load the isolate in a worker to check it loads correctly
     const api = await this.#io.loadWorker(isolate.codePath)
-    assert(equal(api, isolate.api), 'api mismatch')
+    if (isolate.api) {
+      assert(equal(api, isolate.api), 'api mismatch')
+    }
+    isolate = { type: 'function', language: 'javascript', ...isolate, api }
     const io = {
       isolate,
       sequence: 0,
@@ -270,9 +273,8 @@ export default class Artifact {
     await this.#commitAll({ message, author: { name: 'HAL' } })
   }
   async #commitAll({ message, author }) {
-    const status = await git.statusMatrix(this.#opts)
-    const files = status.map((status) => status[0])
-    await git.add({ ...this.#opts, filepath: files[0] })
+    // TODO confirm this adds all files
+    await git.add({ ...this.#opts, filepath: '.' })
     await this.#commit({ message, author })
   }
   async #commit({ message, author }) {

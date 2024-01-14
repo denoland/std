@@ -51,6 +51,19 @@ export const functions = {
     debug('assistant', assistant)
     return assistant
   },
+  engage: async ({ helpPath }, config) => {
+    // load up the help from the helpPath using the helpreader
+    // load up the commands that are to be injected
+  },
+
+  // mounting the help would be the same as setting it at the end of an io queue
+  // this might be easier than calling something that then calls the io queue
+}
+
+const helpReader = async (helpPath) => {
+  // read in the help
+  // check the schema for it
+  // send back an object with some convenience methods
 }
 
 const isArgsParseable = (args) => {

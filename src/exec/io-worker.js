@@ -53,7 +53,7 @@ export default ({ fs, trigger, artifact }) => {
       assert(typeof functions === 'object', 'functions not exported')
       assert(Object.keys(code.api).length, 'api not exported')
       const missing = Object.keys(api).filter((key) => !functions[key])
-      assert(!missing.length, `Missing APIs: ${missing.join(', ')}`)
+      assert(!missing.length, `Missing functions: ${missing.join(', ')}`)
       return api
     },
     async execute(functionName, parameters, config) {

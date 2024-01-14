@@ -5,9 +5,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 const VITE_GIT_HASH = JSON.stringify(git.long('.'))
 const VITE_GIT_DATE = JSON.stringify(git.date())
 
-console.log('VITE_GIT_HASH', VITE_GIT_HASH)
-console.log('VITE_GIT_DATE', VITE_GIT_DATE)
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [

@@ -1,6 +1,6 @@
 # Helps
 
-If AI is a god function that represents a summation of every function every
+If AI is a universal function that represents a summation of every function ever
 written, then helps are the specific parameters with which to call that function
 to get a reliable result back
 
@@ -99,3 +99,10 @@ is happy about using. Once it is done, it will call the runner with the path to
 the help that it found.
 
 At the start, the stuck finder function is just an AI function
+
+### Using Help as pure executable
+
+We should be able to specify pure code that runs using the help format. This
+would be no different from an isolate. Some commands, in fact, will be helps at
+the end of IO queues that can called on directly to perform tasks, rather than
+dynamically like helps do - ie: they are permanent functions, not jitters.
