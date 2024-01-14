@@ -194,7 +194,7 @@ Deno.test("digest() keeps memory usage reasonable with large inputs", async () =
   `;
 
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", code],
+    args: ["eval", "--no-lock", code],
     cwd: moduleDir,
   });
 
@@ -278,7 +278,7 @@ Deno.test("digest() keeps memory usage reasonable with many calls", async () => 
   `;
 
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", code],
+    args: ["eval", "--no-lock", code],
     cwd: moduleDir,
   });
   const { stdout, success } = await command.output();

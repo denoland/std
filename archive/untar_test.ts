@@ -10,7 +10,7 @@ import {
 } from "./untar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy } from "../streams/copy.ts";
-import { readAll } from "../streams/read_all.ts";
+import { readAll } from "../io/read_all.ts";
 import { filePath, testdataDir } from "./_test_common.ts";
 
 interface TestEntry {
