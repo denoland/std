@@ -11,7 +11,7 @@ beforeEach(async (context) => {
 test('ping', async ({ artifact }) => {
   const { api } = await import('../isolates/io.fixture')
   const isolate = {
-    codePath: '/hal/isolates/ping.fixture.js',
+    codePath: '/hal/isolates/io.fixture.js',
     type: 'function',
     language: 'javascript',
     api,
@@ -19,12 +19,12 @@ test('ping', async ({ artifact }) => {
   const path = '/ping.io.json'
   await artifact.createIO({ path, isolate })
   const actions = await artifact.actions('/ping.io.json')
-  const result = await actions.local({})
+  const result = await actions.local()
   expect(result).toBe('local reply')
   const second = await actions.local({})
   expect(second).toBe(result)
 })
-test.only('child process', async ({ artifact }) => {
+test('child process', async ({ artifact }) => {
   const { api } = await import('../isolates/io.fixture')
   const isolate = {
     codePath: '/hal/isolates/io.fixture.js',
@@ -36,7 +36,6 @@ test.only('child process', async ({ artifact }) => {
   await artifact.createIO({ path, isolate })
   await artifact.createIO({ path: '/pong.io.json', isolate })
   const actions = await artifact.actions(path)
-  Debug.enable('AI:*')
   const result = await actions.ping()
   expect(result).toBe('remote pong')
 })

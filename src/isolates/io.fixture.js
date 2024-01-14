@@ -10,6 +10,11 @@ export const api = {
     type: 'object',
     properties: {},
   },
+  local: {
+    description: 'ping locally',
+    type: 'object',
+    properties: {},
+  },
 }
 export const functions = {
   ping: async () => {
@@ -19,5 +24,8 @@ export const functions = {
   },
   pong: async () => {
     return 'remote pong'
+  },
+  local: async () => {
+    return 'local reply'
   },
 }

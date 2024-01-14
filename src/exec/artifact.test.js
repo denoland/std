@@ -14,7 +14,7 @@ test('boot', async ({ artifact }) => {
 test('have a chat', async function ({ artifact }) {
   const { prompt } = await artifact.chatUp()
   const result = await prompt({ text: 'return an exclaimation mark' })
-  expect(result.content.trim()).toEqual('!')
+  expect(result.trim()).toEqual('!')
   const session = await artifact.read('/chat-1.session.json')
   const messages = JSON.parse(session)
   expect(messages.length).toEqual(3)

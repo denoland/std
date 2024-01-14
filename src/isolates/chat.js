@@ -47,17 +47,8 @@ export const functions = {
     if (text) {
       messages.push({ role: 'user', content: text })
     }
-    // gives back the last assistant message
     const assistant = await execute(messages, sessionPath)
-    // the reply would be some progress update, or a promise ?
-
-    // outputs should trace what other calls out were made
-    // they should have been made in such a way as to be recoverable
-    // or, for this initial purpose, we can just execute the actions directly
-    // as functionality is more important than correctness.
-
-    // await useAction('tools', assistant.toolCalls, config)
-
+    debug('assistant', assistant)
     return assistant
   },
 }
@@ -126,9 +117,9 @@ const execute = async (messages, sessionPath) => {
 const tools = async (messages, sessionPath) => {
   assert(Array.isArray(messages), 'messages must be an array')
   assert(posix.isAbsolute(sessionPath), 'sessionPath must be absolute')
-  const assistant = messages
+  const assistant = messages[messages.length - 1]
   if (!assistant.toolCalls) {
-    return assistant
+    return assistant.content
   }
   for (const call of assistant.toolCalls) {
     const { function: functionName, arguments: args } = call

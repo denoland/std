@@ -1,3 +1,4 @@
+import { expect } from 'vitest'
 import IO from './io.js'
 import { deserializeError } from 'serialize-error'
 import validator from './validator.js'
@@ -9,7 +10,6 @@ import { Buffer } from 'buffer'
 import assert from 'assert-fast'
 import TriggerFS from './trigger-fs.js'
 import Debug from 'debug'
-import equal from 'fast-deep-equal'
 const debug = Debug('AI:artifact')
 globalThis.Buffer = Buffer
 
@@ -172,7 +172,7 @@ export default class Artifact {
     // TODO error if something already there
     // TODO load the isolate in a worker to check it loads correctly
     const api = await this.#io.loadWorker(isolate.codePath)
-    assert(equal(api, isolate.api), 'api mismatch')
+    expect(api, 'api mismatch').toEqual(isolate.api)
     const io = {
       isolate,
       sequence: 0,
