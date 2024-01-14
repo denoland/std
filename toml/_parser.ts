@@ -411,7 +411,7 @@ function EscapeSequence(scanner: Scanner): ParseResult<string> {
         return success("\\");
       default:
         scanner.next();
-        return success(scanner.char());
+        return failure();
     }
   } else {
     return failure();

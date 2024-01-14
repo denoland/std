@@ -61,6 +61,8 @@ Deno.test({
       'a"\n\t\b\\\あ🦕',
     );
     assertEquals(parse('""'), "");
+    assertEquals(parse('"a\\n"'), "a\n");
+    assertEquals(parse('"a\\0b\\?c"'), "abc");
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
     assertThrows(() => parse('"a\nb"'));
@@ -93,6 +95,14 @@ Violets are\\tblue"""`),
     The quick brown \\
     fox jumps over \\
     the lazy dog.\\
+    """`),
+      "The quick brown fox jumps over the lazy dog.",
+    );
+    assertEquals(
+      parse(`"""\\
+    The quick brown \\
+    fox jumps over\\? \\
+    the lazy dog\\0.\\
     """`),
       "The quick brown fox jumps over the lazy dog.",
     );
