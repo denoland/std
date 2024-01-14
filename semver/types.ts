@@ -22,20 +22,6 @@ export type ReleaseType =
 export type Operator = typeof OPERATORS[number];
 
 /**
- * The style to use when formatting a SemVer object into a string
- * @deprecated (will be removed in 0.213.0)
- */
-export type FormatStyle =
-  | "full"
-  | "release"
-  | "primary"
-  | "build"
-  | "pre"
-  | "patch"
-  | "minor"
-  | "major";
-
-/**
  * The shape of a valid semantic version comparator
  * @example >=0.0.0
  */
