@@ -24,8 +24,7 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
   if (options?.preferredPort) {
     try {
       // Check if the preferred port is available
-      const listener = Deno.listen({ port: options.preferredPort });
-      listener.close();
+      using listener = Deno.listen({ port: options.preferredPort });
       return (listener.addr as Deno.NetAddr).port;
     } catch (e) {
       // If the preferred port is not available, fall through and find an available port
@@ -35,7 +34,6 @@ export function getAvailablePort(options?: GetAvailablePortOptions): number {
     }
   }
 
-  const listener = Deno.listen({ port: 0 });
-  listener.close();
+  using listener = Deno.listen({ port: 0 });
   return (listener.addr as Deno.NetAddr).port;
 }

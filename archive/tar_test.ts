@@ -110,17 +110,15 @@ Deno.test("Tar() checks directory entry type", async function () {
   });
 
   const outputFile = resolve(testdataDir, "directory_type_test.tar");
-  const file = await Deno.open(outputFile, { create: true, write: true });
+  using file = await Deno.open(outputFile, { create: true, write: true });
   await copy(tar.getReader(), file);
-  file.close();
 
-  const reader = await Deno.open(outputFile, { read: true });
+  using reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
   await Array.fromAsync(
     untar,
     (entry) => assertEquals(entry.type, "directory"),
   );
 
-  reader.close();
   await Deno.remove(outputFile);
 });

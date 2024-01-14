@@ -14,11 +14,10 @@ import type { Reader } from "../io/types.ts";
  * import { readerFromStreamReader } from "https://deno.land/std@$STD_VERSION/streams/reader_from_stream_reader.ts";
  *
  * const res = await fetch("https://deno.land");
- * const file = await Deno.open("./deno.land.html", { create: true, write: true });
+ * using file = await Deno.open("./deno.land.html", { create: true, write: true });
  *
  * const reader = readerFromStreamReader(res.body!.getReader());
  * await copy(reader, file);
- * file.close();
  * ```
  *
  * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
