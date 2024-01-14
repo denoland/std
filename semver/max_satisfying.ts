@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import type { SemVer, SemVerRange } from "./types.ts";
+import type { Range, SemVer, SemVerRange } from "./types.ts";
 import { testRange } from "./test_range.ts";
 import { gt } from "./gt.ts";
 
@@ -12,7 +12,7 @@ import { gt } from "./gt.ts";
  */
 export function maxSatisfying(
   versions: SemVer[],
-  range: SemVerRange,
+  range: SemVerRange | Range,
 ): SemVer | undefined {
   let max;
   for (const version of versions) {
