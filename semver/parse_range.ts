@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { ALL } from "./constants.ts";
-import type { SemVerRange } from "./types.ts";
+import type { Range, SemVerRange } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
 
@@ -315,9 +315,10 @@ function parseRangeString(string: string) {
  * @param range The range set string
  * @returns A valid semantic range
  */
-export function parseRange(range: string): SemVerRange {
+export function parseRange(range: string): SemVerRange & Range {
   const ranges = range
     .split(/\s*\|\|\s*/)
     .map((range) => parseHyphenRange(range).flatMap(parseRangeString));
-  return { ranges };
+  Object.defineProperty(ranges, "ranges", { value: ranges });
+  return ranges as SemVerRange & Range;
 }

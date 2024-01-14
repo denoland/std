@@ -18,9 +18,8 @@ import type { Reader, ReaderSync } from "../io/types.ts";
  * const stdinContent = await readAll(Deno.stdin);
  *
  * // Example from file
- * const file = await Deno.open("my_file.txt", {read: true});
+ * using file = await Deno.open("my_file.txt", {read: true});
  * const myFileContent = await readAll(file);
- * file.close();
  *
  * // Example from buffer
  * const myData = new Uint8Array(100);
@@ -48,9 +47,8 @@ export async function readAll(r: Reader): Promise<Uint8Array> {
  * const stdinContent = readAllSync(Deno.stdin);
  *
  * // Example from file
- * const file = Deno.openSync("my_file.txt", {read: true});
+ * using file = Deno.openSync("my_file.txt", {read: true});
  * const myFileContent = readAllSync(file);
- * file.close();
  *
  * // Example from buffer
  * const myData = new Uint8Array(100);

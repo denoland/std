@@ -24,18 +24,18 @@ export function testComparator(
     case "=":
     case "==":
     case "===":
-      return eq(version, comparator.semver);
+      return eq(version, comparator.semver ?? comparator);
     case "!=":
     case "!==":
-      return neq(version, comparator.semver);
+      return neq(version, comparator.semver ?? comparator);
     case ">":
-      return gt(version, comparator.semver);
+      return gt(version, comparator.semver ?? comparator);
     case ">=":
-      return gte(version, comparator.semver);
+      return gte(version, comparator.semver ?? comparator);
     case "<":
-      return lt(version, comparator.semver);
+      return lt(version, comparator.semver ?? comparator);
     case "<=":
-      return lte(version, comparator.semver);
+      return lte(version, comparator.semver ?? comparator);
     default:
       throw new TypeError(`Invalid operator: ${comparator.operator}`);
   }
