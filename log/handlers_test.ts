@@ -12,7 +12,9 @@ import {
   LogLevelNames,
   LogLevels,
 } from "./levels.ts";
-import { BaseHandler, FileHandler, RotatingFileHandler } from "./handlers.ts";
+import { BaseHandler } from "./base_handler.ts";
+import { FileHandler } from "./file_handler.ts";
+import { RotatingFileHandler } from "./rotating_file_handler.ts";
 import { LogRecord } from "./logger.ts";
 import { existsSync } from "../fs/exists.ts";
 
