@@ -6,7 +6,10 @@ import type { Reader } from "./types.ts";
 /**
  * Reader utility for combining multiple readers
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecate (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and {@linkcode https://deno.land/std/streams/merge_readable_streams | mergeReadableStreams}
+ * instead.
  */
 export class MultiReader implements Reader {
   readonly #readers: Reader[];

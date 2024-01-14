@@ -12,7 +12,11 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param dest Writer
  * @param size Read size
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/streams/limited_transform_stream.ts | LimitedTransformStream}
+ * instead.
  */
 export async function copyN(
   r: Reader,

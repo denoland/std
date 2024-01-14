@@ -32,7 +32,8 @@ import { Buffer } from "./buffer.ts";
  * abcdef
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode Buffer} and
+ * {@linkcode TextEncoder} instead.
  */
 export class StringReader extends Buffer {
   constructor(s: string) {

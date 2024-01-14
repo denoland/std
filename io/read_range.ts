@@ -7,7 +7,11 @@ import type { Reader, ReaderSync } from "./types.ts";
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/streams/byte_slice_stream.ts | ByteSliceStream}
+ * instead.
  */
 export interface ByteRange {
   /** The 0 based index of the start byte for a range. */
@@ -32,7 +36,11 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/streams/byte_slice_stream.ts | ByteSliceStream}
+ * instead.
  */
 export async function readRange(
   r: Reader & Deno.Seeker,
@@ -72,7 +80,11 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/streams/byte_slice_stream.ts | ByteSliceStream}
+ * instead.
  */
 export function readRangeSync(
   r: ReaderSync & Deno.SeekerSync,

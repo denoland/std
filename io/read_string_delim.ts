@@ -20,7 +20,11 @@ import { readDelim } from "./read_delim.ts";
  * }
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream},
+ * {@linkcode TextDecoderStream} and
+ * {@linkcode https://deno.land/std/streams/text_delimiter_stream.ts | TextDelimiterStream}
+ * instead.
  */
 export async function* readStringDelim(
   reader: Reader,

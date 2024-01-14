@@ -3,7 +3,8 @@
 
 /**
  * @module
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 
 import { assert } from "../assert/assert.ts";
@@ -17,7 +18,8 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 export class BufferFullError extends Error {
   override name = "BufferFullError";
@@ -27,7 +29,8 @@ export class BufferFullError extends Error {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 export class PartialReadError extends Error {
   override name = "PartialReadError";
@@ -40,7 +43,10 @@ export class PartialReadError extends Error {
 /**
  * Result type returned by of BufReader.readLine().
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and {@linkcode https://deno.land/std/io/text_line_stream.ts | TextLineStream}
+ * instead.
  */
 export interface ReadLineResult {
   line: Uint8Array;
@@ -48,7 +54,8 @@ export interface ReadLineResult {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
@@ -257,6 +264,11 @@ export class BufReader implements Reader {
    * Calling `unreadByte()` after `readLine()` will always unread the last byte
    * read (possibly a character belonging to the line end) even if that byte is
    * not part of the line returned by `readLine()`.
+   *
+   * @deprecated (will be removed in 0.215.0) Use
+   * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+   * and {@linkcode https://deno.land/std/io/text_line_stream.ts | TextLineStream}
+   * instead.
    */
   async readLine(): Promise<ReadLineResult | null> {
     let line: Uint8Array | null = null;

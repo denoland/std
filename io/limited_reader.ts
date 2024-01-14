@@ -10,7 +10,11 @@
 import type { Reader } from "./types.ts";
 
 /**
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/io/limited_transform_stream.ts | LimitedTransformStream}
+ * instead.
  */
 export class LimitedReader implements Reader {
   constructor(public reader: Reader, public limit: number) {}

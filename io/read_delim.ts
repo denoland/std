@@ -28,7 +28,11 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /**
  * Read delimited bytes from a Reader.
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_readable_stream.ts | toReadableStream}
+ * and
+ * {@linkcode https://deno.land/std/streams/delimiter_stream.ts | DelimiterStream}
+ * instead.
  */
 export async function* readDelim(
   reader: Reader,

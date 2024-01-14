@@ -40,7 +40,8 @@ abstract class AbstractBufBase {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -133,7 +134,8 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.WriterSync.
  *
- * @deprecated (will be removed after 1.0.0) Use the [Web Streams API]{@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API} instead.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/buffer.ts | Buffer} instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;
