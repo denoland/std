@@ -1,4 +1,4 @@
-import { expect } from 'vitest'
+import equal from 'fast-deep-equal'
 import IO from './io.js'
 import { deserializeError } from 'serialize-error'
 import validator from './validator.js'
@@ -172,7 +172,7 @@ export default class Artifact {
     // TODO error if something already there
     // TODO load the isolate in a worker to check it loads correctly
     const api = await this.#io.loadWorker(isolate.codePath)
-    expect(api, 'api mismatch').toEqual(isolate.api)
+    assert(equal(api, isolate.api), 'api mismatch')
     const io = {
       isolate,
       sequence: 0,
