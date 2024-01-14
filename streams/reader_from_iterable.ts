@@ -10,7 +10,7 @@ import { Reader } from "../io/types.ts";
  *
  * ```ts
  * import { readerFromIterable } from "https://deno.land/std@$STD_VERSION/streams/reader_from_iterable.ts";
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  *
  * const file = await Deno.open("metrics.txt", { write: true });
  * const reader = readerFromIterable((async function* () {

@@ -10,7 +10,7 @@ import type { Reader } from "../io/types.ts";
  *
  * @example
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  * import { readerFromStreamReader } from "https://deno.land/std@$STD_VERSION/streams/reader_from_stream_reader.ts";
  *
  * const res = await fetch("https://deno.land");
