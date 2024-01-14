@@ -2,8 +2,8 @@
 import { ConnInfo, serve, serveListener, Server, serveTls } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { writeAll } from "../streams/write_all.ts";
-import { readAll } from "../streams/read_all.ts";
+import { writeAll } from "../io/write_all.ts";
+import { readAll } from "../io/read_all.ts";
 import { delay } from "../async/mod.ts";
 import {
   assert,
@@ -1541,6 +1541,7 @@ Deno.test("serve - doesn't print the message when onListen set to undefined", as
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
+      "--no-lock",
       `
         import { serve } from "./http/server.ts";
         serve(() => new Response("hello"), { onListen: undefined });
@@ -1557,6 +1558,7 @@ Deno.test("serve - can print customized start-up message in onListen handler", a
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
+      "--no-lock",
       `
         import { serve } from "./http/server.ts";
         serve(() => new Response("hello"), { onListen({ port, hostname }) {

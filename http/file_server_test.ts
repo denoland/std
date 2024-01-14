@@ -345,6 +345,7 @@ Deno.test("serveDir() script prints help", async () => {
       "run",
       "--no-check",
       "--quiet",
+      "--no-lock",
       "file_server.ts",
       "--help",
     ],
@@ -361,6 +362,7 @@ Deno.test("serveDir() script prints version", async () => {
       "run",
       "--no-check",
       "--quiet",
+      "--no-lock",
       "file_server.ts",
       "--version",
     ],
@@ -389,6 +391,7 @@ Deno.test("serveDir() script fails with partial TLS args", async () => {
       "--quiet",
       "--allow-read",
       "--allow-net",
+      "--no-lock",
       "file_server.ts",
       ".",
       "--host",
@@ -801,7 +804,7 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
     assertEquals(res.headers.get("etag"), \`${hashedDenoDeploymentId}\`);
   `;
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["eval", code],
+    args: ["eval", "--no-lock", code],
     stdout: "null",
     stderr: "null",
     env: { DENO_DEPLOYMENT_ID },

@@ -210,7 +210,7 @@ merge_test:
     const command = new Deno.Command(Deno.execPath(), {
       stdout: "inherit",
       stderr: "inherit",
-      args: ["eval", testCode],
+      args: ["eval", "--no-lock", testCode],
     });
     const { success } = await command.output();
     assert(success);

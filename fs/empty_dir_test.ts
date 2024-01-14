@@ -203,7 +203,7 @@ for (const s of scenes) {
       );
 
       try {
-        const args = ["run", "--quiet", "--no-prompt"];
+        const args = ["run", "--no-lock", "--quiet", "--no-prompt"];
 
         if (s.read) {
           args.push("--allow-read");

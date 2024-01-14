@@ -6,13 +6,17 @@ import { existsSync } from "../fs/exists.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 const PAGE_SIZE = 4096;
+/** @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/base_handler.ts}. */
 export type FormatterFunction = (logRecord: LogRecord) => string;
+/** @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/file_handler.ts}. */
 export type LogMode = "a" | "w" | "x";
 
+/** @deprecated (will be removed in 0.214.0) Use {@linkcode BaseHandlerOptions} from {@link https://deno.land/std/log/base_handler.ts}. */
 export interface HandlerOptions {
   formatter?: string | FormatterFunction;
 }
 
+/** @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/base_handler.ts} instead. */
 export class BaseHandler {
   level: number;
   levelName: LevelName;
@@ -57,6 +61,7 @@ export class BaseHandler {
   destroy() {}
 }
 
+/** @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/console_handler.ts} instead. */
 export interface ConsoleHandlerOptions extends HandlerOptions {
   useColors?: boolean;
 }
@@ -64,6 +69,8 @@ export interface ConsoleHandlerOptions extends HandlerOptions {
 /**
  * This is the default logger. It will output color coded log messages to the
  * console via `console.log()`.
+ *
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/console_handler.ts} instead.
  */
 export class ConsoleHandler extends BaseHandler {
   #useColors?: boolean;
@@ -109,6 +116,7 @@ export class ConsoleHandler extends BaseHandler {
   }
 }
 
+/** @deprecated (will be removed in 0.214.0) */
 export abstract class WriterHandler extends BaseHandler {
   #encoder = new TextEncoder();
 
@@ -137,6 +145,8 @@ interface FileHandlerOptions extends HandlerOptions {
  *   exists.
  *
  * This handler requires `--allow-write` permission on the log file.
+ *
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/file_handler.ts} instead.
  */
 export class FileHandler extends WriterHandler {
   protected _file: Deno.FsFile | undefined;
@@ -255,6 +265,8 @@ interface RotatingFileHandlerOptions extends FileHandlerOptions {
  *
  * This handler requires both `--allow-read` and `--allow-write` permissions on
  * the log files.
+ *
+ * @deprecated (will be removed in 0.214.0) Import from {@link https://deno.land/std/log/rotating_file_handler.ts} instead.
  */
 export class RotatingFileHandler extends FileHandler {
   #maxBytes: number;
