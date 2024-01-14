@@ -34,9 +34,9 @@
  * @module
  */
 
-import { isWindows } from "./_os.ts";
 import * as _windows from "./windows/mod.ts";
 import * as _posix from "./posix/mod.ts";
+import { SEPARATOR } from "./constants.ts";
 
 /** @deprecated (will be removed after 1.0.0) Import from {@link https://deno.land/std/path/windows/mod.ts} instead. */
 export const win32: typeof _windows = _windows;
@@ -45,9 +45,9 @@ export const win32: typeof _windows = _windows;
 export const posix: typeof _posix = _posix;
 
 /**
- * @deprecated (will be removed in 0.216.0) Use {@linkcode SEPARATOR} from {@link https://deno.land/std/path/constants.ts} instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode SEPARATOR} instead.
  */
-export const sep: "/" | "\\" = isWindows ? _windows.sep : _posix.sep;
+export const sep = SEPARATOR;
 
 export * from "./basename.ts";
 export * from "./constants.ts";
