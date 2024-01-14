@@ -363,7 +363,9 @@ import type { LevelName } from "./levels.ts";
 import { jsonFormatter } from "./formatters.ts";
 import { ConsoleHandler } from "./console_handler.ts";
 import { BaseHandler } from "./base_handler.ts";
-import { FileHandler, RotatingFileHandler, WriterHandler } from "./handlers.ts";
+import { RotatingFileHandler } from "./rotating_file_handler.ts";
+import { FileHandler } from "./file_handler.ts";
+import { WriterHandler } from "./handlers.ts";
 
 export * from "./base_handler.ts";
 export * from "./console_handler.ts";
