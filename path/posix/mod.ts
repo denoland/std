@@ -23,7 +23,7 @@
  */
 
 /**
- * @deprecated (will be removed in 1.0.0) Use "separator" instead.
+ * @deprecated (will be removed in 0.216.0) Use {@linkcode SEPARATOR} from {@link https://deno.land/std/path/posix/constants.ts} instead.
  */
 export const sep = "/";
 
