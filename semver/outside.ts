@@ -13,6 +13,8 @@ import { rangeMin } from "./range_min.ts";
  * @param range The range of possible versions
  * @param hilo The operator for the comparison or both if undefined.
  * @returns True if the version is outside of the range based on the operator
+ *
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode gtr}, {@linkcode ltr} or {@linkcode testRange} instead.
  */
 export function outside(
   version: SemVer,
