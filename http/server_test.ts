@@ -1468,8 +1468,6 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
 
     const response = new TextDecoder().decode(await readAll(conn));
 
-    conn.close();
-
     assert(
       response.includes(`HTTP/1.0 ${status}`),
       "Status code not correct",
