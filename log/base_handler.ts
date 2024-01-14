@@ -51,4 +51,8 @@ export class BaseHandler {
   log(_msg: string) {}
   setup() {}
   destroy() {}
+
+  [Symbol.dispose]() {
+    this.destroy();
+  }
 }
