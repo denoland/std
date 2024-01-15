@@ -432,7 +432,7 @@ export function toMatch(
 
 export function toMatchObject(
   context: MatcherContext,
-  expected: Record<PropertyKey, unknown>,
+  expected: Record<PropertyKey, unknown> | Array<Record<PropertyKey, unknown>>,
 ): MatchResult {
   if (context.isNot) {
     let objectMatch = false;
@@ -440,7 +440,7 @@ export function toMatchObject(
       assertObjectMatch(
         // deno-lint-ignore no-explicit-any
         context.value as Record<PropertyKey, any>,
-        expected,
+        expected as Record<PropertyKey, unknown>,
         context.customMessage,
       );
       objectMatch = true;
@@ -459,7 +459,7 @@ export function toMatchObject(
     assertObjectMatch(
       // deno-lint-ignore no-explicit-any
       context.value as Record<PropertyKey, any>,
-      expected,
+      expected as Record<PropertyKey, unknown>,
       context.customMessage,
     );
   }
