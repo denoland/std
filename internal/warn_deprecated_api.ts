@@ -1,6 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+// deno-lint-ignore no-explicit-any
+const { Deno } = globalThis as any;
+
 const ALREADY_WARNED_DEPRECATED = new Set<string>();
 
 interface WarnDeprecatedApiConfig {
@@ -22,11 +25,11 @@ interface WarnDeprecatedApiConfig {
  */
 export function warnDeprecatedApi(config: WarnDeprecatedApiConfig) {
   if (
-    Deno.permissions.querySync({
+    Deno?.permissions.querySync({
         name: "env",
         variable: "NO_DEPRECATION_WARNINGS",
       }).state === "granted" &&
-    Deno.env.get("NO_DEPRECATION_WARNINGS") === "1"
+    Deno?.env.get("NO_DEPRECATION_WARNINGS") === "1"
   ) return;
 
   const stackLines = config.stack.split("\n");
