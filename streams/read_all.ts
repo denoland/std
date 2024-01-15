@@ -1,8 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { readAll as _readAll } from "../io/read_all.ts";
-import { Buffer } from "../io/buffer.ts";
+import {
+  readAll as _readAll,
+  readAllSync as _readAllSync,
+} from "../io/read_all.ts";
 import type { Reader, ReaderSync } from "../io/types.ts";
 import { warnDeprecatedApi } from "../internal/warn_deprecated_api.ts";
 
@@ -73,7 +75,5 @@ export function readAllSync(r: ReaderSync): Uint8Array {
     version: "0.214.0",
     message: "Import from `https://deno.land/std/io/read_all.ts` instead.",
   });
-  const buf = new Buffer();
-  buf.readFromSync(r);
-  return buf.bytes();
+  return _readAllSync(r);
 }
