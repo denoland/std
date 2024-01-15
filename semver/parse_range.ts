@@ -3,8 +3,7 @@ import { ALL } from "./constants.ts";
 import type { Range, SemVerRange } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
-import { parsePrerelease } from "./_shared.ts";
-import { parseBuild } from "./_shared.ts";
+import { parseBuild, parsePrerelease } from "./_shared.ts";
 
 function isWildcard(id: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
