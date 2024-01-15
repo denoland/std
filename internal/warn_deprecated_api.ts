@@ -14,8 +14,21 @@ interface WarnDeprecatedApiConfig {
   message?: string;
 }
 
-/** Prints a warning message to the console for the given deprecated API. */
+/**
+ * Prints a warning message to the console for the given deprecated API.
+ *
+ * These warnings can be disabled by setting `NO_DEPRECATION_WARNINGS=1`
+ * in the current process.
+ */
 export function warnDeprecatedApi(config: WarnDeprecatedApiConfig) {
+  if (
+    Deno.permissions.querySync({
+        name: "env",
+        variable: "NO_DEPRECATION_WARNINGS",
+      }).state === "granted" &&
+    Deno.env.get("NO_DEPRECATION_WARNINGS") === "1"
+  ) return;
+
   const stackLines = config.stack.split("\n");
   stackLines.shift();
   const stackString = stackLines.join("\n");
