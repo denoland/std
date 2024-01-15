@@ -24,12 +24,10 @@ interface WarnDeprecatedApiConfig {
  * in the current process.
  */
 export function warnDeprecatedApi(config: WarnDeprecatedApiConfig) {
+  const variable = "NO_DEPRECATION_WARNINGS";
   if (
-    Deno?.permissions.querySync({
-        name: "env",
-        variable: "NO_DEPRECATION_WARNINGS",
-      }).state === "granted" &&
-    Deno?.env.get("NO_DEPRECATION_WARNINGS") === "1"
+    Deno?.permissions.querySync({ name: "env", variable }).state ===
+      "granted" && Deno?.env.get(variable) === "1"
   ) return;
 
   // Remove the prepending "Error\n" from the stack output.
