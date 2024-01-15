@@ -35,7 +35,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated (will be removed in 0.215.0) Use {@linkcode ReadableStream} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode ReadableStreamDefaultReader} instead.
  */
 export async function* iterateReader(
   r: Reader,
