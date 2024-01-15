@@ -2,7 +2,7 @@
 import { assert, assertEquals, assertMatch } from "../assert/mod.ts";
 import { Logger, LogRecord } from "./logger.ts";
 import { LevelName, LogLevels } from "./levels.ts";
-import { BaseHandler } from "./handlers.ts";
+import { BaseHandler } from "./base_handler.ts";
 
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
@@ -70,12 +70,12 @@ Deno.test("logFunctions", function () {
     const logger = new Logger("default", level, { handlers: [handler] });
     const debugData = logger.debug("foo");
     const infoData = logger.info("bar");
-    const warningData = logger.warning("baz");
+    const warnData = logger.warn("baz");
     const errorData = logger.error("boo");
     const criticalData = logger.critical("doo");
     assertEquals(debugData, "foo");
     assertEquals(infoData, "bar");
-    assertEquals(warningData, "baz");
+    assertEquals(warnData, "baz");
     assertEquals(errorData, "boo");
     assertEquals(criticalData, "doo");
     return handler;
@@ -177,9 +177,9 @@ Deno.test(
     assertEquals(handler.messages[3], "INFO null");
 
     // number
-    const data5: number = logger.warning(3);
+    const data5: number = logger.warn(3);
     assertEquals(data5, 3);
-    const data6: number = logger.warning(3, 1);
+    const data6: number = logger.warn(3, 1);
     assertEquals(data6, 3);
     assertEquals(handler.messages[4], "WARNING 3");
     assertEquals(handler.messages[5], "WARNING 3");
@@ -217,9 +217,9 @@ Deno.test(
     assertEquals(handler.messages[13], "INFO Symbol(a)");
 
     // function
-    const data15: string | undefined = logger.warning(fn);
+    const data15: string | undefined = logger.warn(fn);
     assertEquals(data15, "abc");
-    const data16: string | undefined = logger.warning(fn, 1);
+    const data16: string | undefined = logger.warn(fn, 1);
     assertEquals(data16, "abc");
     assertEquals(handler.messages[14], "WARNING abc");
     assertEquals(handler.messages[15], "WARNING abc");

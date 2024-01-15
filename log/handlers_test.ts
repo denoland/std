@@ -12,7 +12,9 @@ import {
   LogLevelNames,
   LogLevels,
 } from "./levels.ts";
-import { BaseHandler, FileHandler, RotatingFileHandler } from "./handlers.ts";
+import { BaseHandler } from "./base_handler.ts";
+import { FileHandler } from "./file_handler.ts";
+import { RotatingFileHandler } from "./rotating_file_handler.ts";
 import { LogRecord } from "./logger.ts";
 import { existsSync } from "../fs/exists.ts";
 
@@ -164,7 +166,7 @@ Deno.test({
       }
     }
 
-    const testFileHandler = new TestFileHandler("WARNING", {
+    using testFileHandler = new TestFileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -180,8 +182,6 @@ Deno.test({
         }),
       );
     }
-
-    testFileHandler.destroy();
   },
 });
 
@@ -225,7 +225,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler with mode 'x' will throw if log file already exists",
   fn() {
-    const fileHandler = new FileHandler("WARNING", {
+    using fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "x",
     });
@@ -234,8 +234,6 @@ Deno.test({
     assertThrows(() => {
       fileHandler.setup();
     }, Deno.errors.AlreadyExists);
-
-    fileHandler.destroy();
 
     Deno.removeSync(LOG_FILE);
   },
@@ -285,7 +283,7 @@ Deno.test({
       LOG_FILE + ".3",
       new TextEncoder().encode("hello world"),
     );
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    using fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 50,
       maxBackupCount: 3,
@@ -299,7 +297,6 @@ Deno.test({
       "Backup log file " + LOG_FILE + ".3 already exists",
     );
 
-    fileHandler.destroy();
     Deno.removeSync(LOG_FILE + ".3");
     Deno.removeSync(LOG_FILE);
   },
@@ -308,7 +305,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler with first rollover, monitor step by step",
   async fn() {
-    const fileHandler = new RotatingFileHandler("WARNING", {
+    using fileHandler = new RotatingFileHandler("WARNING", {
       filename: LOG_FILE,
       maxBytes: 25,
       maxBackupCount: 3,
@@ -348,7 +345,6 @@ Deno.test({
     // Rollover occurred. Log file now has 1 record, rollover file has the original 2
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
     assertEquals((await Deno.stat(LOG_FILE + ".1")).size, 20);
-    fileHandler.destroy();
 
     Deno.removeSync(LOG_FILE);
     Deno.removeSync(LOG_FILE + ".1");
@@ -559,7 +555,7 @@ Deno.test({
 Deno.test({
   name: "FileHandler: Critical logs trigger immediate flush",
   async fn() {
-    const fileHandler = new FileHandler("WARNING", {
+    using fileHandler = new FileHandler("WARNING", {
       filename: LOG_FILE,
       mode: "w",
     });
@@ -592,7 +588,6 @@ Deno.test({
     // ERROR record is 10 bytes, CRITICAL is 13 bytes
     assertEquals(fileSize2, 23);
 
-    fileHandler.destroy();
     Deno.removeSync(LOG_FILE);
   },
 });

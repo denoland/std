@@ -542,7 +542,7 @@ export function toHaveBeenLastCalledWith(
 ): MatchResult {
   const calls = getMockCalls(context.value);
   const hasBeenCalled = calls.length > 0 &&
-    equal(calls[calls.length - 1].args, expected);
+    equal(calls.at(-1)?.args, expected);
 
   if (context.isNot) {
     if (hasBeenCalled) {
@@ -583,7 +583,7 @@ export function toHaveBeenNthCalledWith(
   const calls = getMockCalls(context.value);
   const callIndex = nth - 1;
   const hasBeenCalled = calls.length > callIndex &&
-    equal(calls[callIndex].args, expected);
+    equal(calls[callIndex]?.args, expected);
 
   if (context.isNot) {
     if (hasBeenCalled) {
@@ -596,7 +596,7 @@ export function toHaveBeenNthCalledWith(
   } else {
     if (!hasBeenCalled) {
       const nthCall = calls[callIndex];
-      if (!nth) {
+      if (!nthCall) {
         throw new AssertionError(
           `Expected the n-th call (n=${nth}) of mock function is with ${
             inspectArgs(expected)
@@ -689,7 +689,7 @@ export function toHaveLastReturnedWith(
   const calls = getMockCalls(context.value);
   const returned = calls.filter((call) => call.returns);
   const lastReturnedWithExpected = returned.length > 0 &&
-    equal(returned[returned.length - 1].returned, expected);
+    equal(returned.at(-1)?.returned, expected);
 
   if (context.isNot) {
     if (lastReturnedWithExpected) {

@@ -271,12 +271,10 @@
  *
  * @module
  */
-export * from "./cmp.ts";
 export * from "./comparator_format.ts";
 export * from "./comparator_intersects.ts";
 export * from "./comparator_max.ts";
 export * from "./comparator_min.ts";
-export * from "./compare_build.ts";
 export * from "./compare.ts";
 export * from "./constants.ts";
 export * from "./difference.ts";
@@ -304,7 +302,6 @@ export * from "./range_format.ts";
 export * from "./range_intersects.ts";
 export * from "./range_max.ts";
 export * from "./range_min.ts";
-export * from "./rsort.ts";
 export * from "./sort.ts";
 export * from "./types.ts";
 export * from "./lte.ts";

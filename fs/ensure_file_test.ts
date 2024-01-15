@@ -165,6 +165,7 @@ Deno.test({
       await new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
+          "--no-lock",
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).output();
@@ -201,6 +202,7 @@ Deno.test({
       new Deno.Command(Deno.execPath(), {
         args: [
           "eval",
+          "--no-lock",
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).outputSync();

@@ -1,0 +1,24 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+import { assert, assertEquals } from "../assert/mod.ts";
+import { writeAll, writeAllSync } from "./write_all.ts";
+import { Buffer } from "./buffer.ts";
+import { init } from "./_test_common.ts";
+
+Deno.test("writeAll()", async () => {
+  const testBytes = init();
+  assert(testBytes);
+  const writer = new Buffer();
+  await writeAll(writer, testBytes);
+  const actualBytes = writer.bytes();
+  assertEquals(testBytes, actualBytes);
+});
+
+Deno.test("writeAllSync()", () => {
+  const testBytes = init();
+  assert(testBytes);
+  const writer = new Buffer();
+  writeAllSync(writer, testBytes);
+  const actualBytes = writer.bytes();
+  assertEquals(testBytes, actualBytes);
+});
