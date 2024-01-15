@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { lessThan } from "./less_than.ts";
+import { less } from "./less.ts";
 
 Deno.test({
-  name: "lessThan()",
+  name: "less()",
   fn: async (t) => {
     // [version1, version2]
     // version1 should be greater than version2
@@ -34,7 +34,7 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = lessThan(s0, s1);
+        const actual = less(s0, s1);
         assertEquals(actual, false, `${v0} < ${v1} : ${actual}`);
       });
     }

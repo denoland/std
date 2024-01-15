@@ -7,9 +7,6 @@ import { compare } from "./compare.ts";
  *
  * This is equal to `compare(s0, s1) !== 0`.
  */
-export function notEquals(
-  s0: SemVer,
-  s1: SemVer,
-): boolean {
+export function notEquals(s0: SemVer, s1: SemVer): boolean {
   return compare(s0, s1) !== 0;
 }

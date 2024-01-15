@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { lessThanOrEqual } from "./less_than_or_equal.ts";
+import { lessOrEqual } from "./less_or_equal.ts";
 import { SemVer } from "./types.ts";
 
 /**
  * Less than or equal to comparison
  *
- * @deprecated (will be removed after 0.213.0) Use {@linkcode lessThanOrEqual} instead.
+ * @deprecated (will be removed after 0.213.0) Use {@linkcode lessOrEqual} instead.
  */
 export function lte(s0: SemVer, s1: SemVer): boolean {
-  return lessThanOrEqual(s0, s1);
+  return lessOrEqual(s0, s1);
 }
