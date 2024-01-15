@@ -14,7 +14,7 @@ export interface DBEntry {
 }
 
 /** A map of extensions for a given media type. */
-export const extensions = new Map<string, string[]>();
+export const extensions: Map<string, string[]> = new Map();
 
 export function consumeToken(v: string): [token: string, rest: string] {
   const notPos = indexOf(v, isNotTokenChar);
