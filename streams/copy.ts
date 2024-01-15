@@ -3,6 +3,7 @@
 
 import { copy as _copy } from "../io/copy.ts";
 import type { Reader, Writer } from "../io/types.ts";
+import { warnDeprecatedApi } from "../tools/warn_deprecated_api.ts";
 
 /**
  * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
@@ -31,5 +32,10 @@ export async function copy(
     bufSize?: number;
   },
 ): Promise<number> {
+  warnDeprecatedApi(
+    "copy()",
+    "0.214.0",
+    "Import from `https://deno.land/std/io/copy.ts` instead.",
+  );
   return await _copy(src, dst, options);
 }
