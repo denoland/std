@@ -3,17 +3,7 @@
 
 const ALREADY_WARNED_DEPRECATED = new Set<string>();
 
-/**
- * Prints a warning message to the console for the given deprecated API.
- *
- * @example
- * ```ts
- * import { warnDeprecatedApi } from "https://deno.land/std@$STD_VERSION/tools/warn_deprecated_api.ts";
- *
- * // Prints "Warning Use of deprecated API `copy()`. Import from `https://deno.land/std/io/copy.ts` instead."
- * warnDeprecatedApi("copy()", "Import from `https://deno.land/std/io/copy.ts` instead.");
- * ```
- */
+/** Prints a warning message to the console for the given deprecated API. */
 export function warnDeprecatedApi(
   apiName: string,
   version: string,

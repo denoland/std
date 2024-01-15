@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/assert_equals.ts";
-// import { warnDeprecatedApi } from "./warn_deprecated_api.ts";
 
 Deno.test("warnDeprecatedApi()", async () => {
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--quiet", "--no-lock", "./tools/testdata/fn.ts"],
+    args: ["run", "--quiet", "--no-lock", "./internal/testdata/fn.ts"],
+    stderr: "inherit",
   });
   const { success, stdout } = await command.output();
   const output = new TextDecoder().decode(stdout);

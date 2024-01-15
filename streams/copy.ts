@@ -3,7 +3,7 @@
 
 import { copy as _copy } from "../io/copy.ts";
 import type { Reader, Writer } from "../io/types.ts";
-import { warnDeprecatedApi } from "../tools/warn_deprecated_api.ts";
+import { warnDeprecatedApi } from "../internal/warn_deprecated_api.ts";
 
 /**
  * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
