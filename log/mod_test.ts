@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../assert/mod.ts";
 import {
+  BaseHandler,
   critical,
   debug,
   error,
@@ -12,7 +13,6 @@ import {
   setup,
   warn,
 } from "./mod.ts";
-import { BaseHandler } from "./handlers.ts";
 
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
