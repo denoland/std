@@ -1,5 +1,5 @@
 import Debug from 'debug'
-const debug = Debug('AI:help-runner')
+const debug = Debug('AI:engage-help')
 export const api = {
   engage: {
     description: 'engage the help',
@@ -14,7 +14,8 @@ export const api = {
 }
 
 export const functions = {
-  engage: async ({ helpPath }, config) => {
-    debug('engage', helpPath)
+  engage: async ({ help }) => {
+    debug('engage', help)
+    return 'testing'
   },
 }

@@ -30,10 +30,11 @@ export default ({ fs, trigger, artifact }) => {
       assert(path, 'path is required')
       return fs.readFile(path, 'utf8')
     },
-    async actions(path) {
-      // TODO this is horrifically wrong
-      // https://github.com/dreamcatcher-tech/artifact/issues/1
-      return artifact.actions(path)
+    async actions(isolate) {
+      return artifact.actions(isolate)
+    },
+    async spawns(isolate) {
+      return artifact.spawns(isolate)
     },
   }
   // TODO useMemo  where it caches the result for recoverability by a commit
@@ -42,12 +43,11 @@ export default ({ fs, trigger, artifact }) => {
 
   let code
   return {
-    async load(codePathSlug) {
-      debug('load slug', codePathSlug)
+    async load(isolate) {
+      debug('load isolate', isolate)
       assert(!code, 'code already loaded')
       // TODO load from the git repo or some other path like a cdn
-      // TODO deduplicate by codepath ?
-      code = await import(`../isolates/${codePathSlug}.js`)
+      code = await import(`../isolates/${isolate}.js`)
       const { functions, api } = code
       assert(typeof api === 'object', 'api not exported')
       assert(typeof functions === 'object', 'functions not exported')

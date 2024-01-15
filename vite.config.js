@@ -23,7 +23,7 @@ export default defineConfig({
   },
   test: {
     setupFiles: ['fake-indexeddb/auto'],
-    testTimeout: 20000,
+    testTimeout: 600,
     reporters: 'tap-flat',
   },
 })

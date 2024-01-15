@@ -22,6 +22,14 @@ make conventional function calls.
 
 Helps can be nested so that they can reply on other helps, like dependencies.
 
+It is how to call something, not how to get something that will be called a
+certain way - it is function invocation. It is a collection of function
+invocation parameters, tested to have reliable outputs, indexed by the problems
+they are trying to solve, to make it more accessible to an AI trying to solve
+problems on the fly. This is different to npm, where npm is a collection of
+things to be invoked, not the invocations themselves, altho npx acts in the same
+way.
+
 ## Sections
 
 All sections are optional, and with nothing specified, a deprompted AI will be
@@ -30,15 +38,13 @@ called with the default model.
 ### Config
 
 This is a freeform area that can be used to store any data needed for the
-execution of the help.
-We might move this section to be inside of Runner
+execution of the help. We might move this section to be inside of Runner
 
 ### Runner
 
-Different AI models need different runners. The type of runner needs to be
-given with the help so we know what to call. In some cases we may need to go
-fetch more code to be able to run these other AI models in an isolated
-environment.
+Different AI models need different runners. The type of runner needs to be given
+with the help so we know what to call. In some cases we may need to go fetch
+more code to be able to run these other AI models in an isolated environment.
 
 It says that this piece of code is supposed to be run using this Help, which
 includes this set of config parameters
@@ -46,9 +52,9 @@ includes this set of config parameters
 ### Commands
 
 This the list of function names and paths to access the commands that will be
-run. These will be loaded up to be available to the AI to call as it wishes.
-The API defined at this location will inform the model of the parameter format
-and purpose.
+run. These will be loaded up to be available to the AI to call as it wishes. The
+API defined at this location will inform the model of the parameter format and
+purpose.
 
 ### Instructions
 
@@ -74,29 +80,28 @@ overall Done condition is also evaluated.
 
 If make a reply convention where if the runner needs more info, it invokes the
 moreInfo() function and then it gets passed back in to the caller, which then
-figures out what it needs and then makes another call back. This call back
-is crossed over as the response to the original call, so the original call
-can then be resumed with the new information.
+figures out what it needs and then makes another call back. This call back is
+crossed over as the response to the original call, so the original call can then
+be resumed with the new information.
 
 We can have similar conventions for progress updates being sent back for long
 running processes.
 
 The chat session is preserved by way of it being dedicated and in its own
-branch.
-This might mean that actions should be prefixed by the branch that called them ?
-or can they be blanked upon merge, since the history can be found by tracing the
-files ? Tracing branches means the actions would be already filtered by the
-process that was calling them.
+branch. This might mean that actions should be prefixed by the branch that
+called them ? or can they be blanked upon merge, since the history can be found
+by tracing the files ? Tracing branches means the actions would be already
+filtered by the process that was calling them.
 
 ## Examples
 
 ### Using Help as the user prompt
 
 When the system first boots, we have to support a prompt response system. This
-is provided under the hood by a help. This first help is the goalie, and it
-will loop around using the 'stuck-finder' function until it has a help that it
-is happy about using. Once it is done, it will call the runner with the path to
-the help that it found.
+is provided under the hood by a help. This first help is the goalie, and it will
+loop around using the 'stuck-finder' function until it has a help that it is
+happy about using. Once it is done, it will call the runner with the path to the
+help that it found.
 
 At the start, the stuck finder function is just an AI function
 

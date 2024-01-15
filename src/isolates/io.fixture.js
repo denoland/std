@@ -1,9 +1,15 @@
-import { actions } from '../exec/io-hooks'
+import { spawns } from '../exec/io-hooks'
+import Debug from 'debug'
+const debug = Debug('AI:io.fixture')
+
 export const api = {
-  ping: {
+  spawn: {
     description: 'ping the AI',
     type: 'object',
-    properties: {},
+    additionalProperties: false,
+    properties: {
+      isolate: { type: 'string' },
+    },
   },
   pong: {
     description: 'ping the AI',
@@ -17,8 +23,9 @@ export const api = {
   },
 }
 export const functions = {
-  ping: async () => {
-    const { pong } = await actions('/pong.io.json')
+  spawn: async ({ isolate }) => {
+    debug('spawn', isolate)
+    const { pong } = await spawns(isolate)
     const result = await pong()
     return result
   },

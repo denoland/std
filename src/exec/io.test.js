@@ -1,6 +1,7 @@
 import Artifact from './artifact'
 import { expect, test, beforeEach } from 'vitest'
 import Debug from 'debug'
+const isolate = 'io.fixture'
 
 beforeEach(async (context) => {
   context.artifact = await Artifact.boot()
@@ -9,33 +10,20 @@ beforeEach(async (context) => {
 })
 
 test('ping', async ({ artifact }) => {
-  const { api } = await import('../isolates/io.fixture')
-  const isolate = {
-    codePath: '/hal/isolates/io.fixture.js',
-    type: 'function',
-    language: 'javascript',
-    api,
-  }
-  const path = '/ping.io.json'
-  await artifact.createIO({ path, isolate })
-  const actions = await artifact.actions('/ping.io.json')
+  const actions = await artifact.actions(isolate)
   const result = await actions.local()
   expect(result).toBe('local reply')
   const second = await actions.local({})
   expect(second).toBe(result)
+  await expect(() => actions.local('throwme')).rejects.toThrow(
+    'Parameters Validation Error'
+  )
 })
-test('child process', async ({ artifact }) => {
-  const { api } = await import('../isolates/io.fixture')
-  const isolate = {
-    codePath: '/hal/isolates/io.fixture.js',
-    type: 'function',
-    language: 'javascript',
-    api,
-  }
-  const path = '/ping.io.json'
-  await artifact.createIO({ path, isolate })
-  await artifact.createIO({ path: '/pong.io.json', isolate })
-  const actions = await artifact.actions(path)
-  const result = await actions.ping()
+test('child to self', async ({ artifact }) => {})
+test('child to child', async ({ artifact }) => {})
+test('child to parent', async ({ artifact }) => {})
+test.only('child process', async ({ artifact }) => {
+  const actions = await artifact.actions(isolate)
+  const result = await actions.spawn({ isolate })
   expect(result).toBe('remote pong')
 })

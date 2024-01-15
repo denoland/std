@@ -17,10 +17,25 @@ test('execute ping by tool call', async function ({ artifact }) {
   // test that in fact local was pinged
 })
 test.skip('help with no commands') // should be able to run anything really
-test.only('run ping help directly', async ({ artifact }) => {
-  Debug.enable('AI:help-runner')
-  await setupRunner(artifact)
-  await setupPingIO(artifact)
+test('dispatch', async ({ artifact }) => {
+  Debug.enable('AI:*')
+  const isolate = 'engage-help'
+  const name = 'engage'
+  const parameters = { help: 'ping.fixture' }
+  // dispatch causes the function to execute in this branch
+  const result = await artifact.dispatch({ isolate, name, parameters })
+  console.log(result)
+  expect(result).toEqual('ping.fixture')
+})
+
+test('spawn', async ({ artifact }) => {
+  // spawn creates a new branch and executes the function
+  const isolate = { codePath: '/hal/isolates/help-runner.js' }
+  const name = 'engage'
+  const parameters = { help: 'ping.fixture' }
+  const result = await artifact.spawn({ isolate, name, parameters })
+  console.log(result)
+  expect(result).toEqual('ping.fixture')
 })
 
 const setupRunner = async (artifact) => {

@@ -1,3 +1,4 @@
+import { deserializeError } from 'serialize-error'
 import equals from 'fast-deep-equal'
 import validator from './validator'
 import ioWorker from './io-worker'
@@ -8,17 +9,26 @@ import { toString } from 'uint8arrays/to-string'
 import { serializeError } from 'serialize-error'
 import Debug from 'debug'
 const debug = Debug('AI:io')
+export const defaultBranch = 'main'
+
+export const PROCTYPES = {
+  SELF: 'SELF',
+  SPAWN: 'SPAWN',
+  LOCAL: 'LOCAL',
+  REMOTE: 'REMOTE',
+}
+const IO_PATH = '/.io.json'
 
 export default class IO {
   #artifact
   #opts
-  #debuggingOverloads = new Map()
   #workerCache = new Map()
-  #promiseMap = new Map() // path -> promise ?
+  #promises = new Map() // path -> promise ?
   static create({ artifact, opts }) {
     const io = new IO()
     io.#artifact = artifact
-    io.#opts = { ...opts, artifact }
+    const { fs, dir, cache } = opts
+    io.#opts = { fs, dir, cache, artifact }
     return io
   }
   // TODO track purging that is due - immdediately after a commit, clear io.
@@ -26,110 +36,230 @@ export default class IO {
     // TODO subscribe to writes, so we can do internal actions with less commits
     await this.#artifact.subscribeCommits('/', async (ref) => {
       debug('io commit triggered', ref.substr(0, 7))
-      const changes = await this.#diffChanges(ref)
-
-      for (const { actions, io, path } of changes) {
-        // TODO handle resetting the IO which would terminate all in progress
-        debug('io changes', path, actions)
-        const { api, worker } = await this.#ensureWorker(path, io)
-        for (const { action, id } of actions) {
-          for (const [functionName, parameters] of Object.entries(action)) {
-            const schema = api[functionName]
-            validator(schema)(parameters)
-            debug('dispatch', path, functionName, parameters)
-            const args = { path, functionName, id }
-            worker
-              .execute(functionName, parameters, io.isolate.config)
-              .then((result) => this.#artifact.replyIO({ ...args, result }))
-              .catch((errorObj) => {
-                const error = serializeError(errorObj)
-                debug('dispatch error', error)
-                return this.#artifact.replyIO({ ...args, error })
-              })
-          }
+      // TODO handle resetting the IO which would terminate all in progress
+      const { io, changes } = await this.#diffChanges(ref)
+      if (!changes) {
+        return
+      }
+      const { inputs, outputs } = changes
+      const branchName = await git.currentBranch(this.#opts)
+      debug('io changes', branchName, inputs.length, outputs.length)
+      for (const { input, id } of inputs) {
+        const { isolate, name, parameters, proctype } = input
+        if (proctype === PROCTYPES.SPAWN) {
+          debug('spawn', isolate, name, parameters)
+          await this.#spawn({ id, isolate, name, parameters })
+        } else if (proctype === PROCTYPES.SELF) {
+          debug('self', isolate, name, parameters)
+          Promise.resolve()
+            .then(async () => {
+              const { api, worker } = await this.#ensureWorker(isolate)
+              const schema = api[name]
+              validator(schema)(parameters)
+              return worker.execute(name, parameters)
+            })
+            .then((result) => {
+              debug('self result', result)
+              return this.#replyIO({ id, result })
+            })
+            .catch((errorObj) => {
+              const error = serializeError(errorObj)
+              debug('self error', error)
+              return this.#replyIO({ id, error })
+            })
         }
       }
+      for (const { output, id } of outputs) {
+        const { result, error } = output
+        const pid = `${branchName}_${id}`
+        if (id === 0 && branchName !== defaultBranch) {
+          const origin = io.inputs[0]
+          return await this.#settleBranch(origin, output)
+        }
+        const { resolve, reject } = this.#promises.get(pid)
+        if (error) {
+          reject(deserializeError(error))
+        } else {
+          resolve(result)
+        }
+        this.#promises.delete(pid)
+      }
     })
+  }
+  async #settleBranch({ address }, { result, error }) {
+    assert(address, 'address is required')
+    const { branchName, id } = address
+    debug('settleBranch', branchName, id, result, error)
+
+    // checkout the parent branch
+    const incoming = await git.currentBranch(this.#opts)
+    await git.checkout({ ...this.#opts, ref: branchName })
+    const commitResult = await git.commit({
+      ...this.#opts,
+      message: 'settleBranch',
+      author: { name: 'HAL' },
+      parent: ['HEAD', incoming],
+    })
+    await git.deleteBranch({ ...this.#opts, ref: incoming })
+    debug('commitResult', commitResult)
+    // TODO address this reply to know which commit it came from
+    // can let the receiver decide if they want to import changed files
+    await this.#replyIO({ id, result, error })
+  }
+  async #spawn({ id, isolate, name, parameters }) {
+    // TODO if the isolate has an init function, call it
+    const branchName = await git.currentBranch(this.#opts)
+    const action = { isolate, name, parameters, proctype: PROCTYPES.SELF }
+    action.address = { branchName, id }
+
+    const [{ oid }] = await git.log({ ...this.#opts, depth: 1 })
+    const ref = `${oid}-${id}`
+    await git.branch({ ...this.#opts, ref, checkout: true })
+    await this.#artifact.delete(IO_PATH)
+    const io = await this.readIO()
+    const { next } = input(io, action)
+    await this.#commitIO(next, 'spawn')
+  }
+  async #replyIO({ id, result, error }) {
+    const io = await this.readIO()
+    const { outputs } = io
+    assert(!outputs[id], `id ${id} found in outputs`)
+    const next = { ...io, outputs: { ...outputs, [id]: { result, error } } }
+    await this.#commitIO(next, 'replyIO')
+  }
+  async #ensureWorker(isolate) {
+    assert(!posix.isAbsolute(isolate), `isolate must be relative: ${isolate}`)
+    if (!this.#workerCache.has(isolate)) {
+      // TODO handle the isolate changing
+      // TODO isolate by branch as well as name
+      debug('ensureWorker', isolate)
+      const worker = ioWorker(this.#opts)
+      const api = await worker.load(isolate)
+      this.#workerCache.set(isolate, { api, worker })
+      // TODO LRU the cache
+    }
+    return this.#workerCache.get(isolate)
+  }
+  async workerApi(isolate) {
+    const { api } = await this.#ensureWorker(isolate)
+    return api
+  }
+  async loadWorker(isolate) {
+    debug('loadWorker', isolate)
+    const worker = ioWorker(this.#opts)
+    return await worker.load(isolate)
+  }
+  async stop() {
+    this.#workerCache.clear()
+  }
+  async dispatch({ isolate, name, parameters, proctype }) {
+    const io = await this.readIO()
+    const action = { isolate, name, parameters, proctype }
+    const { id, next } = input(io, action)
+    const branchName = await git.currentBranch(this.#opts)
+
+    let resolve, reject
+    const promise = new Promise((res, rej) => {
+      resolve = res
+      reject = rej
+    })
+    const pid = `${branchName}_${id}`
+    debug('dispatch pid', pid)
+    assert(!this.#promises.has(pid), `pid ${pid} already exists`)
+    this.#promises.set(pid, { resolve, reject })
+
+    await this.#commitIO(next, 'dispatch')
+    return promise
+  }
+  async readIO() {
+    // TODO assert the io file is not dirty
+    // TODO check the schema of the IO file
+    const empty = {
+      sequence: 0,
+      inputs: {},
+      outputs: {},
+    }
+    try {
+      const raw = await this.#artifact.read(IO_PATH)
+      return JSON.parse(raw)
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return empty
+      }
+      throw e
+    }
+  }
+  async #commitIO(io, message) {
+    debug('commitIO', message)
+    const file = JSON.stringify(io, null, 2)
+    await this.#artifact.writeCommit(IO_PATH, file, message)
   }
   async #diffChanges(ref) {
     const commit = await git.readCommit({ ...this.#opts, oid: ref })
     const { parent } = commit.commit
-    return await git.walk({
+    let io
+    const changes = await git.walk({
       ...this.#opts,
       trees: [TREE({ ref }), TREE({ ref: parent[0] })],
       map: async (path, [current, previous]) => {
-        if (path.endsWith('.io.json') && current) {
+        if (current && current.type === 'tree') {
+          return null
+        }
+        if (previous && previous.type === 'tree') {
+          return null
+        }
+        if (path === IO_PATH.substring('/'.length) && current) {
           // TODO use the artifact readio method, to check schema
-          const io = JSON.parse(toString(await current.content(), 'utf8'))
+          const currentContent = await current.content()
+          io = JSON.parse(toString(currentContent, 'utf8'))
+          const previousContent = previous && (await previous.content())
           const previousIo =
-            previous && JSON.parse(toString(await previous.content(), 'utf8'))
-          const actions = newActions(io.inputs, previousIo?.inputs || {})
-          return { path: '/' + path, actions, io }
+            previous && JSON.parse(toString(previousContent, 'utf8'))
+          const inputs = newInputs(io.inputs, previousIo?.inputs || {})
+          const outputs = newOutputs(io.outputs, previousIo?.outputs || {})
+          return { inputs, outputs }
         }
       },
     })
-  }
-  async #ensureWorker(path, io) {
-    if (!this.#workerCache.has(path)) {
-      // TODO handle the isolate changing
-      const { codePath, api } = io.isolate
-      const resolvedCodePath = this.#resolveCodePathSlug(codePath)
-      const worker = ioWorker(this.#opts)
-      const loadedApi = await worker.load(resolvedCodePath)
-      assert(equals(loadedApi, api), 'api mismatch')
-      this.#workerCache.set(path, { api, worker })
-      // TODO LRU the cache
-    }
-    return this.#workerCache.get(path)
-  }
-  #resolveCodePathSlug(codePath) {
-    assert(posix.isAbsolute(codePath), `codePath must be absolute: ${codePath}`)
-    debug('resolveCodePath', codePath)
-    let override
-    if (this.#debuggingOverloads.has(codePath)) {
-      // TODO get this working when it is actually needed somewhere
-      codePath = this.#debuggingOverloads.get(codePath)
-      override = codePath
-    }
-    const viteImportRegex = /^\/hal\/isolates\/(.*)\.js$/
-    const match = codePath.match(viteImportRegex)
-    assert(match, `invalid codePath: ${codePath} with override: ${override}`)
-    const [, slug] = match
-    assert(slug, `invalid slug: ${slug}`)
-    return slug
-  }
-  async loadWorker(codePath) {
-    const resolvedCodePath = this.#resolveCodePathSlug(codePath)
-    debug('resolved', codePath, 'to', resolvedCodePath)
-    const worker = ioWorker(this.#opts)
-    return await worker.load(resolvedCodePath)
-  }
-  async stop() {
-    const cached = [...this.#workerCache.values()]
-    this.#workerCache.clear()
-    for (const { worker } of cached) {
-      // await Thread.terminate(worker)
-    }
-  }
-  overloadExecutable(path, localPath) {
-    // TODO allow glob pattern overrides
-    // TODO allow artifact to be single threaded fro debugging the workers
-    // TODO assert we are not in production mode
-    // TODO check it exists by loading it in a webworker module
-    assert(posix.isAbsolute(path), `path must be absolute: ${path}`)
-    this.#debuggingOverloads.set(path, localPath)
+    assert(changes.length < 2, `at most one change: ${changes.length}`)
+    return { changes: changes[0], io }
   }
 }
 
-const newActions = (inputs, previous) => {
+const newInputs = (inputs, previous) => {
   const indices = []
   // TODO BUT if you blanked them every commit, no need to diff them ?
   for (const id of Object.keys(inputs)) {
-    if (previous[id]) {
+    if (previous[id] && equals(inputs[id], previous[id])) {
       continue
     }
     indices.push(Number.parseInt(id))
   }
   indices.sort((a, b) => a - b)
-  return indices.map((id) => ({ action: inputs[id], id }))
+  return indices.map((id) => ({ input: inputs[id], id }))
+}
+// TODO merge these two functions together
+const newOutputs = (outputs, previous) => {
+  const indices = []
+  for (const id of Object.keys(outputs)) {
+    if (previous[id] && equals(outputs[id], previous[id])) {
+      continue
+    }
+    indices.push(Number.parseInt(id))
+  }
+  indices.sort((a, b) => a - b)
+  return indices.map((id) => ({ output: outputs[id], id }))
+}
+
+const input = (io, action) => {
+  // if no address, it was a loopback only action
+  const { proctype } = action
+  assert(PROCTYPES[proctype], `invalid proctype: ${proctype}`)
+  const { inputs, outputs } = io
+  const id = io.sequence
+  // TODO io only contains legitimate json values
+  const nextInputs = { ...inputs, [id]: action }
+  const sequence = id + 1
+  const next = { ...io, sequence, inputs: nextInputs, outputs }
+  return { id, next }
 }
