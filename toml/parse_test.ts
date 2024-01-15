@@ -99,13 +99,14 @@ Violets are\\tblue"""`),
       "The quick brown fox jumps over the lazy dog.",
     );
     assertThrows(
-      () => parse(`"""\\
+      () =>
+        parse(`"""\\
     The quick brown \\
     fox jumps over\\? \\
     the lazy dog\\0.\\
     """`),
       TOMLParseError,
-      "Invalid escape sequence"
+      "Invalid escape sequence",
     );
   },
 });
