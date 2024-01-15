@@ -62,7 +62,7 @@ Deno.test({
     );
     assertEquals(parse('""'), "");
     assertEquals(parse('"a\\n"'), "a\n");
-    assertEquals(parse('"a\\0b\\?c"'), "abc");
+    assertThrows(() => parse('"a\\0b\\?c"'));
     assertThrows(() => parse(""));
     assertThrows(() => parse('"a'));
     assertThrows(() => parse('"a\nb"'));
@@ -98,13 +98,14 @@ Violets are\\tblue"""`),
     """`),
       "The quick brown fox jumps over the lazy dog.",
     );
-    assertEquals(
-      parse(`"""\\
+    assertThrows(
+      () => parse(`"""\\
     The quick brown \\
     fox jumps over\\? \\
     the lazy dog\\0.\\
     """`),
-      "The quick brown fox jumps over the lazy dog.",
+      TOMLParseError,
+      "Invalid escape sequence"
     );
   },
 });

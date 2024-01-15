@@ -410,8 +410,7 @@ function EscapeSequence(scanner: Scanner): ParseResult<string> {
         scanner.next();
         return success("\\");
       default:
-        scanner.next();
-        return failure();
+        throw new TOMLParseError(`Invalid escape sequence: ${scanner.char()}`)
     }
   } else {
     return failure();
