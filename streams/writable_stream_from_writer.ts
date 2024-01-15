@@ -14,7 +14,9 @@ function isCloser(value: unknown): value is Closer {
 /**
  * Options for {@linkcode writableStreamFromWriter}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_writable_stream.ts | toWritableStream}
+ * instead.
  */
 export interface WritableStreamFromWriterOptions {
   /**
@@ -29,7 +31,9 @@ export interface WritableStreamFromWriterOptions {
 /**
  * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode WritableStream} directly.
+ * @deprecated (will be removed in 0.215.0) Use
+ * {@linkcode https://deno.land/std/io/to_writable_stream.ts | toWritableStream}
+ * instead.
  */
 export function writableStreamFromWriter(
   writer: Writer,

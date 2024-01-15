@@ -20,7 +20,7 @@ import type { Reader } from "../io/types.ts";
  * await copy(reader, file);
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStreamDefaultReader} directly.
+ * @deprecated (will be removed after 0.215.0) Use {@linkcode ReadableStreamDefaultReader} directly.
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,

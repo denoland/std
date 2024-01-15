@@ -35,7 +35,7 @@ export type { Reader, ReaderSync };
  * }
  * ```
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode ReadableStream} instead.
  */
 export async function* iterateReader(
   r: Reader,
@@ -87,7 +87,7 @@ export async function* iterateReader(
  * responsibility to copy contents of the buffer if needed; otherwise the
  * next iteration will overwrite contents of previously returned chunk.
  *
- * @deprecated (will be removed after 1.0.0) Use {@linkcode ReadableStream} instead.
+ * @deprecated (will be removed in 0.215.0) Use {@linkcode ReadableStream} instead.
  */
 export function* iterateReaderSync(
   r: ReaderSync,
