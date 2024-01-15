@@ -103,7 +103,7 @@ export class Spinner {
     this.#color = value ? COLORS[value] : undefined;
   }
 
-  get color() {
+  get color(): Color | undefined {
     return this.#color;
   }
 
