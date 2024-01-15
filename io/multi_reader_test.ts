@@ -4,7 +4,7 @@ import { assertEquals } from "../assert/mod.ts";
 import { MultiReader } from "./multi_reader.ts";
 import { StringWriter } from "./string_writer.ts";
 import { copyN } from "./copy_n.ts";
-import { copy } from "../streams/copy.ts";
+import { copy } from "./copy.ts";
 import { StringReader } from "./string_reader.ts";
 
 Deno.test("ioMultiReader", async function () {
