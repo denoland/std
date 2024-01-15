@@ -75,7 +75,9 @@ export interface Expected {
   toHaveReturned(): void;
   toMatch(expected: RegExp): void;
   toMatchObject(
-    expected: Record<PropertyKey, unknown> | Array<Record<PropertyKey, unknown>>,
+    expected:
+      | Record<PropertyKey, unknown>
+      | Record<PropertyKey, unknown>[],
   ): void;
   toReturn(): void;
   toReturnTimes(expected: number): void;

@@ -432,7 +432,7 @@ export function toMatch(
 
 export function toMatchObject(
   context: MatcherContext,
-  expected: Record<PropertyKey, unknown> | Array<Record<PropertyKey, unknown>>,
+  expected: Record<PropertyKey, unknown> | Record<PropertyKey, unknown>[],
 ): MatchResult {
   if (context.isNot) {
     let objectMatch = false;
