@@ -10,16 +10,8 @@ import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
  * @returns A valid SemVer
  */
 export function parse(version: string): SemVer {
-  if (typeof version !== "string") {
-    throw new TypeError(
-      `version must be a string`,
-    );
-  }
-
   if (version.length > MAX_LENGTH) {
-    throw new TypeError(
-      `version is longer than ${MAX_LENGTH} characters`,
-    );
+    throw new TypeError(`version is longer than ${MAX_LENGTH} characters`);
   }
 
   version = version.trim();
@@ -30,17 +22,8 @@ export function parse(version: string): SemVer {
   const major = parseNumber(groups.major, "Invalid major version");
   const minor = parseNumber(groups.minor, "Invalid minor version");
   const patch = parseNumber(groups.patch, "Invalid patch version");
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.buildmetadata ?? "");
 
-  const prerelease = groups.prerelease
-    ? parsePrerelease(groups.prerelease)
-    : [];
-  const build = groups.buildmetadata ? parseBuild(groups.buildmetadata) : [];
-
-  return {
-    major,
-    minor,
-    patch,
-    prerelease,
-    build,
-  };
+  return { major, minor, patch, prerelease, build };
 }
