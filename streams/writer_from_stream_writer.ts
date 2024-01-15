@@ -8,7 +8,7 @@ import type { Writer } from "../io/types.ts";
  *
  * @example
  * ```ts
- * import { copy } from "https://deno.land/std@$STD_VERSION/streams/copy.ts";
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
  * import { writerFromStreamWriter } from "https://deno.land/std@$STD_VERSION/streams/writer_from_stream_writer.ts";
  *
  * using file = await Deno.open("./deno.land.html", { read: true });
