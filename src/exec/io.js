@@ -51,22 +51,18 @@ export default class IO {
           await this.#spawn({ id, isolate, name, parameters })
         } else if (proctype === PROCTYPES.SELF) {
           debug('self', isolate, name, parameters)
-          Promise.resolve()
-            .then(async () => {
-              const { api, worker } = await this.#ensureWorker(isolate)
-              const schema = api[name]
-              validator(schema)(parameters)
-              return worker.execute(name, parameters)
-            })
-            .then((result) => {
-              debug('self result', result)
-              return this.#replyIO({ id, result })
-            })
-            .catch((errorObj) => {
-              const error = serializeError(errorObj)
-              debug('self error', error)
-              return this.#replyIO({ id, error })
-            })
+          const { api, worker } = await this.#ensureWorker(isolate)
+          const schema = api[name]
+          validator(schema)(parameters)
+          try {
+            const result = await worker.execute(name, parameters)
+            debug('self result', result)
+            await this.#replyIO({ id, result })
+          } catch (errorObj) {
+            debug('self error', errorObj)
+            const error = serializeError(errorObj)
+            return this.#replyIO({ id, error })
+          }
         }
       }
       for (const { output, id } of outputs) {
