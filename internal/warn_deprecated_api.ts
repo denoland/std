@@ -32,18 +32,18 @@ export function warnDeprecatedApi(config: WarnDeprecatedApiConfig) {
     Deno?.env.get("NO_DEPRECATION_WARNINGS") === "1"
   ) return;
 
-  const stackLines = config.stack.split("\n");
-  stackLines.shift();
-  const stackString = stackLines.join("\n");
+  // Remove the prepending "Error\n" from the stack output.
+  const stack = config.stack.slice(6);
+  const key = config.name + stack;
 
-  const key = config.name + stackString;
   if (ALREADY_WARNED_DEPRECATED.has(key)) return;
   ALREADY_WARNED_DEPRECATED.add(key);
+
   console.log(
     "%cWarning",
     "color: yellow;",
     `Use of deprecated API \`${config.name}\`. This API will be removed in ${config.version} of the Deno Standard Library.`,
     config.message ?? "",
-    "\n" + stackString,
+    "\n" + stack,
   );
 }
