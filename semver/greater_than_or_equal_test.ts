@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../assert/mod.ts";
 import { parse } from "./parse.ts";
-import { greaterThanOrEquals } from "./greater_than_or_equals.ts";
+import { greaterThanOrEqual } from "./greater_than_or_equal.ts";
 
 Deno.test({
   name: "greaterThanOrEquals()",
@@ -35,7 +35,7 @@ Deno.test({
       await t.step(`${v0} <=> ${v1}`, () => {
         const s0 = parse(v0);
         const s1 = parse(v1);
-        const actual = greaterThanOrEquals(s0, s1);
+        const actual = greaterThanOrEqual(s0, s1);
         assertEquals(actual, true, `${v0} >= ${v1} : ${actual}`);
       });
     }
