@@ -2,7 +2,12 @@
 import { warnDeprecatedApi } from "../warn_deprecated_api.ts";
 
 function fn() {
-  warnDeprecatedApi("fn()", new Error().stack!, "1.0.0", "Use `y` instead.");
+  warnDeprecatedApi({
+    name: "fn()",
+    stack: new Error().stack!,
+    version: "1.0.0",
+    message: "Use `y` instead.",
+  });
   console.log("Hello, world!");
 }
 

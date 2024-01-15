@@ -3,25 +3,31 @@
 
 const ALREADY_WARNED_DEPRECATED = new Set<string>();
 
+interface WarnDeprecatedApiConfig {
+  /** The name of the deprecated API. */
+  name: string;
+  /** The stack trace of the deprecated API. */
+  stack: string;
+  /** The version in which the API will be removed. */
+  version: string;
+  /** An optional message to print. */
+  message?: string;
+}
+
 /** Prints a warning message to the console for the given deprecated API. */
-export function warnDeprecatedApi(
-  apiName: string,
-  stack: string,
-  version: string,
-  message = "",
-) {
-  const stackLines = stack.split("\n");
+export function warnDeprecatedApi(config: WarnDeprecatedApiConfig) {
+  const stackLines = config.stack.split("\n");
   stackLines.shift();
   const stackString = stackLines.join("\n");
 
-  const key = apiName + stackString;
+  const key = config.name + stackString;
   if (ALREADY_WARNED_DEPRECATED.has(key)) return;
   ALREADY_WARNED_DEPRECATED.add(key);
   console.log(
     "%cWarning",
     "color: yellow;",
-    `Use of deprecated API \`${apiName}\`. This API will be removed in ${version} of the Deno Standard Library.`,
-    message,
+    `Use of deprecated API \`${config.name}\`. This API will be removed in ${config.version} of the Deno Standard Library.`,
+    config.message ?? "",
     "\n" + stackString,
   );
 }

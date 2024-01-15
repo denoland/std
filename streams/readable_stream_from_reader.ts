@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { warnDeprecatedApi } from "../internal/warn_deprecated_api.ts";
 import { toReadableStream } from "../io/to_readable_stream.ts";
 import type { Closer, Reader } from "../io/types.ts";
 export type { Closer };
@@ -49,5 +50,11 @@ export function readableStreamFromReader(
   reader: Reader | (Reader & Closer),
   options: ReadableStreamFromReaderOptions = {},
 ): ReadableStream<Uint8Array> {
+  warnDeprecatedApi({
+    name: "readableStreamFromReader()",
+    stack: new Error().stack!,
+    version: "1.0.0",
+    message: "Use `toReadableStream()` instead.",
+  });
   return toReadableStream(reader, options);
 }

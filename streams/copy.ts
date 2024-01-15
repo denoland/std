@@ -32,10 +32,11 @@ export async function copy(
     bufSize?: number;
   },
 ): Promise<number> {
-  warnDeprecatedApi(
-    "copy()",
-    "0.214.0",
-    "Import from `https://deno.land/std/io/copy.ts` instead.",
-  );
+  warnDeprecatedApi({
+    name: "copy()",
+    stack: new Error().stack!,
+    version: "0.214.0",
+    message: "Import from `https://deno.land/std/io/copy.ts` instead.",
+  });
   return await _copy(src, dst, options);
 }
