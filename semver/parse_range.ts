@@ -3,6 +3,8 @@ import { ALL } from "./constants.ts";
 import type { Range, SemVerRange } from "./types.ts";
 import { OPERATOR_XRANGE_REGEXP, XRANGE } from "./_shared.ts";
 import { parseComparator } from "./parse_comparator.ts";
+import { parsePrerelease } from "./_shared.ts";
+import { parseBuild } from "./_shared.ts";
 
 function isWildcard(id: string): boolean {
   return !id || id.toLowerCase() === "x" || id === "*";
@@ -78,52 +80,39 @@ function handleCaretOperator(groups: {
   if (majorIsWildcard) return ALL;
   if (minorIsWildcard) {
     return [
-      parseComparator(`>=${major}.0.0`),
-      parseComparator(`<${major + 1}.0.0`),
+      { operator: ">=", major, minor: 0, patch: 0 },
+      { operator: "<", major: major + 1, minor: 0, patch: 0 },
     ];
   }
   if (patchIsWildcard) {
     if (major === 0) {
       return [
-        parseComparator(`>=${major}.${minor}.0`),
-        parseComparator(`<${major}.${minor + 1}.0`),
+        { operator: ">=", major, minor, patch: 0 },
+        { operator: "<", major, minor: minor + 1, patch: 0 },
       ];
     }
     return [
-      parseComparator(`>=${major}.${minor}.0`),
-      parseComparator(`<${major + 1}.0.0`),
+      { operator: ">=", major, minor, patch: 0 },
+      { operator: "<", major: major + 1, minor: 0, patch: 0 },
     ];
   }
 
-  const prerelease = groups.prerelease ? `-${groups.prerelease}` : "";
-
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
   if (major === 0) {
     if (minor === 0) {
       return [
-        parseComparator(
-          `>=${major}.${minor}.${patch}${prerelease}`,
-        ),
-        parseComparator(
-          `<${major}.${minor}.${patch + 1}`,
-        ),
+        { operator: ">=", major, minor, patch, prerelease },
+        { operator: "<", major, minor, patch: patch + 1 },
       ];
     }
     return [
-      parseComparator(
-        `>=${major}.${minor}.${patch}${prerelease}`,
-      ),
-      parseComparator(
-        `<${major}.${minor + 1}.0`,
-      ),
+      { operator: ">=", major, minor, patch, prerelease },
+      { operator: "<", major, minor: minor + 1, patch: 0 },
     ];
   }
   return [
-    parseComparator(
-      `>=${major}.${minor}.${patch}${prerelease}`,
-    ),
-    parseComparator(
-      `<${major + 1}.0.0`,
-    ),
+    { operator: ">=", major, minor, patch, prerelease },
+    { operator: "<", major: major + 1, minor: 0, patch: 0 },
   ];
 }
 function handleTildeOperator(
@@ -140,25 +129,20 @@ function handleTildeOperator(
   if (majorIsWildcard) return ALL;
   if (minorIsWildcard) {
     return [
-      parseComparator(`>=${major}.0.0`),
-      parseComparator(`<${major + 1}.0.0`),
+      { operator: ">=", major, minor: 0, patch: 0 },
+      { operator: "<", major: major + 1, minor: 0, patch: 0 },
     ];
   }
   if (patchIsWildcard) {
     return [
-      parseComparator(`>=${major}.${minor}.0`),
-      parseComparator(`<${major}.${minor + 1}.0`),
+      { operator: ">=", major, minor, patch: 0 },
+      { operator: "<", major, minor: minor + 1, patch: 0 },
     ];
   }
-  const prerelease = groups.prerelease ? `-${groups.prerelease}` : "";
-
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
   return [
-    parseComparator(
-      `>=${major}.${minor}.${patch}${prerelease}`,
-    ),
-    parseComparator(
-      `<${major}.${minor + 1}.0`,
-    ),
+    { operator: ">=", major, minor, patch, prerelease },
+    { operator: "<", major, minor: minor + 1, patch: 0 },
   ];
 }
 function handleLessThanOperator(
@@ -172,17 +156,15 @@ function handleLessThanOperator(
   const minor = +groups.minor;
   const patch = +groups.patch;
 
-  if (majorIsWildcard) return parseComparator("<0.0.0");
+  if (majorIsWildcard) return { operator: "<", major: 0, minor: 0, patch: 0 };
   if (minorIsWildcard) {
-    if (patchIsWildcard) return parseComparator(`<${major}.0.0`);
-    return parseComparator(`<${major}.${minor}.0`);
+    if (patchIsWildcard) return { operator: "<", major, minor: 0, patch: 0 };
+    return { operator: "<", major, minor, patch: 0 };
   }
-  if (patchIsWildcard) return parseComparator(`<${major}.${minor}.0`);
-  return parseComparator(
-    `<${major}.${minor}.${patch}${
-      groups.prerelease ? `-${groups.prerelease}` : ""
-    }${groups.build ? `+${groups.build}` : ""}`,
-  );
+  if (patchIsWildcard) return { operator: "<", major, minor, patch: 0 };
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.build ?? "");
+  return { operator: "<", major, minor, patch, prerelease, build };
 }
 function handleLessThanOrEqualOperator(
   groups: RegExpGroups,
@@ -195,15 +177,17 @@ function handleLessThanOrEqualOperator(
   const patch = +groups.patch;
 
   if (minorIsWildcard) {
-    if (patchIsWildcard) return parseComparator(`<${major + 1}.0.0`);
-    return parseComparator(`<${major}.${minor + 1}.0`);
+    if (patchIsWildcard) {
+      return { operator: "<", major: major + 1, minor: 0, patch: 0 };
+    }
+    return { operator: "<", major, minor: minor + 1, patch: 0 };
   }
-  if (patchIsWildcard) return parseComparator(`<${major}.${minor + 1}.0`);
-  return parseComparator(
-    `<=${major}.${minor}.${patch}${
-      groups.prerelease ? `-${groups.prerelease}` : ""
-    }${groups.build ? `+${groups.build}` : ""}`,
-  );
+  if (patchIsWildcard) {
+    return { operator: "<", major, minor: minor + 1, patch: 0 };
+  }
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.build ?? "");
+  return { operator: "<=", major, minor, patch, prerelease, build };
 }
 function handleGreaterThanOperator(
   groups: RegExpGroups,
@@ -216,17 +200,19 @@ function handleGreaterThanOperator(
   const minor = +groups.minor;
   const patch = +groups.patch;
 
-  if (majorIsWildcard) return parseComparator("<0.0.0");
+  if (majorIsWildcard) return { operator: "<", major: 0, minor: 0, patch: 0 };
   if (minorIsWildcard) {
-    if (patchIsWildcard) return parseComparator(`>=${major + 1}.0.0`);
-    return parseComparator(`>${major}.${minor + 1}.0`);
+    if (patchIsWildcard) {
+      return { operator: ">=", major: major + 1, minor: 0, patch: 0 };
+    }
+    return { operator: ">", major: major + 1, minor: 0, patch: 0 };
   }
-  if (patchIsWildcard) return parseComparator(`>${major}.${minor + 1}.0`);
-  return parseComparator(
-    `>${major}.${minor}.${patch}${
-      groups.prerelease ? `-${groups.prerelease}` : ""
-    }${groups.build ? `+${groups.build}` : ""}`,
-  );
+  if (patchIsWildcard) {
+    return { operator: ">", major: major + 1, minor: 0, patch: 0 };
+  }
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.build ?? "");
+  return { operator: ">", major, minor, patch, prerelease, build };
 }
 function handleGreaterOrEqualOperator(
   groups: RegExpGroups,
@@ -241,15 +227,13 @@ function handleGreaterOrEqualOperator(
 
   if (majorIsWildcard) return ALL;
   if (minorIsWildcard) {
-    if (patchIsWildcard) return parseComparator(`>=${major}.0.0`);
-    return parseComparator(`>=${major}.${minor}.0`);
+    if (patchIsWildcard) return { operator: ">=", major, minor: 0, patch: 0 };
+    return { operator: ">=", major, minor, patch: 0 };
   }
-  if (patchIsWildcard) return parseComparator(`>=${major}.${minor}.0`);
-  return parseComparator(
-    `>=${major}.${minor}.${patch}${
-      groups.prerelease ? `-${groups.prerelease}` : ""
-    }${groups.build ? `+${groups.build}` : ""}`,
-  );
+  if (patchIsWildcard) return { operator: ">=", major, minor, patch: 0 };
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.build ?? "");
+  return { operator: ">=", major, minor, patch, prerelease, build };
 }
 function handleEqualOperator(groups: RegExpGroups) {
   const majorIsWildcard = isWildcard(groups.major);
@@ -263,25 +247,19 @@ function handleEqualOperator(groups: RegExpGroups) {
   if (majorIsWildcard) return ALL;
   if (minorIsWildcard) {
     return [
-      parseComparator(`>=${major}.0.0`),
-      parseComparator(`<${major + 1}.0.0`),
+      { operator: ">=", major, minor: 0, patch: 0 },
+      { operator: "<", major: major + 1, minor: 0, patch: 0 },
     ];
   }
   if (patchIsWildcard) {
     return [
-      parseComparator(
-        `>=${major}.${minor}.0`,
-      ),
-      parseComparator(
-        `<${major}.${minor + 1}.0`,
-      ),
+      { operator: ">=", major, minor, patch: 0 },
+      { operator: "<", major, minor: minor + 1, patch: 0 },
     ];
   }
-  return parseComparator(
-    `${major}.${minor}.${patch}${
-      groups.prerelease ? `-${groups.prerelease}` : ""
-    }${groups.build ? `+${groups.build}` : ""}`,
-  );
+  const prerelease = parsePrerelease(groups.prerelease ?? "");
+  const build = parseBuild(groups.build ?? "");
+  return { operator: "", major, minor, patch, prerelease, build };
 }
 
 function parseRangeString(string: string) {
