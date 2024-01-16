@@ -17,9 +17,9 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
- *
  * Information about the connection a request arrived on.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandlerInfo} instead.
  */
 export interface ConnInfo {
   /** The local address of the connection. */
@@ -29,14 +29,14 @@ export interface ConnInfo {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
- *
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
  *
  * If a handler throws, the server calling the handler will assume the impact
  * of the error is isolated to the individual request. It will catch the error
  * and close the underlying connection.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeHandler} instead.
  */
 export type Handler = (
   request: Request,
@@ -44,9 +44,9 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
- *
  * Options for running an HTTP server.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
@@ -61,9 +61,9 @@ export interface ServerInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
- *
  * Used to construct an HTTP server.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  */
 export class Server {
   #port?: number;
@@ -498,9 +498,9 @@ export class Server {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
- *
  * Additional serve options.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeInit} instead.
  */
 export interface ServeInit extends Partial<Deno.ListenOptions> {
   /** An AbortSignal to close the server and all connections. */
@@ -514,9 +514,9 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
- *
  * Additional serve listener options.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeOptions} instead.
  */
 export interface ServeListenerOptions {
   /** An AbortSignal to close the server and all connections. */
@@ -530,8 +530,6 @@ export interface ServeListenerOptions {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
- *
  * Constructs a server, accepts incoming connections on the given listener, and
  * handles requests on these connections with the given handler.
  *
@@ -554,6 +552,8 @@ export interface ServeListenerOptions {
  * @param listener The listener to accept connections from.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  */
 export async function serveListener(
   listener: Deno.Listener,
@@ -577,8 +577,6 @@ function hostnameForDisplay(hostname: string) {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
- *
  * Serves HTTP requests with the given handler.
  *
  * You can specify an object with a port and hostname option, which is the
@@ -622,6 +620,8 @@ function hostnameForDisplay(hostname: string) {
  *
  * @param handler The handler for individual HTTP requests.
  * @param options The options. See `ServeInit` documentation for details.
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  */
 export async function serve(
   handler: Handler,
@@ -681,8 +681,6 @@ export interface ServeTlsInit extends ServeInit {
 }
 
 /**
- * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
- *
  * Serves HTTPS requests with the given handler.
  *
  * You must specify `key` or `keyFile` and `cert` or `certFile` options.
@@ -740,6 +738,8 @@ export interface ServeTlsInit extends ServeInit {
  * @param handler The handler for individual HTTPS requests.
  * @param options The options. See `ServeTlsInit` documentation for details.
  * @returns
+ *
+ * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.serve} instead.
  */
 export async function serveTls(
   handler: Handler,
