@@ -664,7 +664,7 @@ export async function serve(
 }
 
 /**
- * Intialization parameters for {@linkcode serveTls}.
+ * Initialization parameters for {@linkcode serveTls}.
  *
  * @deprecated (will be removed after 1.0.0) Use {@linkcode Deno.ServeTlsOptions} instead.
  */
